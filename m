@@ -1,182 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756450AbYHRSlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866AbYHRSld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756450AbYHRSlI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 14:41:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbYHRSko
+	id S1756866AbYHRSld (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 14:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756559AbYHRSlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 14:40:44 -0400
-Received: from mga03.intel.com ([143.182.124.21]:2096 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753427AbYHRSkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 14:40:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,229,1217833200"; 
-   d="scan'208";a="34890833"
-Message-Id: <20080818183605.719267000@linux-os.sc.intel.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 18 Aug 2008 11:35:46 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: greg@kroah.com, mingo@elte.hu
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [stable 1/2] x86-64: Clean up save/restore_i387() usage
-Content-Disposition: inline; filename=fpu_code_cleanup.patch
+	Mon, 18 Aug 2008 14:41:22 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:45550 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753781AbYHRSlU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 14:41:20 -0400
+Date: Mon, 18 Aug 2008 12:40:43 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kristen.c.accardi@intel.com,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: [PATCH 1/1 #2] PCI: add acpi_find_root_bridge_handle
+Message-ID: <20080818184043.GC23155@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Jiri Slaby <jirislaby@gmail.com>, jbarnes@virtuousgeek.org,
+	linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+	kristen.c.accardi@intel.com,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+References: <20080818175402.GA23155@ldl.fc.hp.com> <1219083774-6833-1-git-send-email-jirislaby@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1219083774-6833-1-git-send-email-jirislaby@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Upstream commit: b30f3ae50cd03ef2ff433a5030fbf88dd8323528]
+* Jiri Slaby <jirislaby@gmail.com>:
+> Consolidate finding of a root bridge and getting its handle to the
+> one inline function. It's cut&pasted on multiple places. Use this
+> new inline in those.
+> 
+> Updates:
+> - added a comment to the acpi_find_root_bridge_handle
 
-Suresh Siddha wants to fix a possible FPU leakage in error conditions,
-but the fact that save/restore_i387() are inlines in a header file makes
-that harder to do than necessary.  So start off with an obvious cleanup.
+Acked-by: Alex Chiang <achiang@hp.com>
 
-This just moves the x86-64 version of save/restore_i387() out of the
-header file, and moves it to the only file that it is actually used in:
-arch/x86/kernel/signal_64.c.  So exposing it in a header file was wrong
-to begin with.
+Thanks.
 
-[ Side note: I'd like to fix up some of the games we play with the
-  32-bit version of these functions too, but that's a separate
-  matter.  The 32-bit versions are shared - under different names
-  at that! - by both the native x86-32 code and the x86-64 32-bit
-  compatibility code ]
+/ac
 
-Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: <stable@kernel.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
----
-
-Index: linux-2.6.26.2/arch/x86/kernel/signal_64.c
-===================================================================
---- linux-2.6.26.2.orig/arch/x86/kernel/signal_64.c	2008-08-06 09:19:01.000000000 -0700
-+++ linux-2.6.26.2/arch/x86/kernel/signal_64.c	2008-08-18 11:16:43.000000000 -0700
-@@ -53,6 +53,59 @@
- 	return do_sigaltstack(uss, uoss, regs->sp);
- }
- 
-+/*
-+ * Signal frame handlers.
-+ */
-+
-+static inline int save_i387(struct _fpstate __user *buf)
-+{
-+	struct task_struct *tsk = current;
-+	int err = 0;
-+
-+	BUILD_BUG_ON(sizeof(struct user_i387_struct) !=
-+			sizeof(tsk->thread.xstate->fxsave));
-+
-+	if ((unsigned long)buf % 16)
-+		printk("save_i387: bad fpstate %p\n", buf);
-+
-+	if (!used_math())
-+		return 0;
-+	clear_used_math(); /* trigger finit */
-+	if (task_thread_info(tsk)->status & TS_USEDFPU) {
-+		err = save_i387_checking((struct i387_fxsave_struct __user *)
-+					 buf);
-+		if (err)
-+			return err;
-+		task_thread_info(tsk)->status &= ~TS_USEDFPU;
-+		stts();
-+	} else {
-+		if (__copy_to_user(buf, &tsk->thread.xstate->fxsave,
-+				   sizeof(struct i387_fxsave_struct)))
-+			return -1;
-+	}
-+	return 1;
-+}
-+
-+/*
-+ * This restores directly out of user space. Exceptions are handled.
-+ */
-+static inline int restore_i387(struct _fpstate __user *buf)
-+{
-+	struct task_struct *tsk = current;
-+	int err;
-+
-+	if (!used_math()) {
-+		err = init_fpu(tsk);
-+		if (err)
-+			return err;
-+	}
-+
-+	if (!(task_thread_info(current)->status & TS_USEDFPU)) {
-+		clts();
-+		task_thread_info(current)->status |= TS_USEDFPU;
-+	}
-+	return restore_fpu_checking((__force struct i387_fxsave_struct *)buf);
-+}
- 
- /*
-  * Do a signal return; undo the signal stack.
-Index: linux-2.6.26.2/include/asm-x86/i387.h
-===================================================================
---- linux-2.6.26.2.orig/include/asm-x86/i387.h	2008-08-06 09:19:01.000000000 -0700
-+++ linux-2.6.26.2/include/asm-x86/i387.h	2008-08-18 11:16:43.000000000 -0700
-@@ -137,60 +137,6 @@
- 	task_thread_info(tsk)->status &= ~TS_USEDFPU;
- }
- 
--/*
-- * Signal frame handlers.
-- */
--
--static inline int save_i387(struct _fpstate __user *buf)
--{
--	struct task_struct *tsk = current;
--	int err = 0;
--
--	BUILD_BUG_ON(sizeof(struct user_i387_struct) !=
--			sizeof(tsk->thread.xstate->fxsave));
--
--	if ((unsigned long)buf % 16)
--		printk("save_i387: bad fpstate %p\n", buf);
--
--	if (!used_math())
--		return 0;
--	clear_used_math(); /* trigger finit */
--	if (task_thread_info(tsk)->status & TS_USEDFPU) {
--		err = save_i387_checking((struct i387_fxsave_struct __user *)
--					 buf);
--		if (err)
--			return err;
--		task_thread_info(tsk)->status &= ~TS_USEDFPU;
--		stts();
--	} else {
--		if (__copy_to_user(buf, &tsk->thread.xstate->fxsave,
--				   sizeof(struct i387_fxsave_struct)))
--			return -1;
--	}
--	return 1;
--}
--
--/*
-- * This restores directly out of user space. Exceptions are handled.
-- */
--static inline int restore_i387(struct _fpstate __user *buf)
--{
--	struct task_struct *tsk = current;
--	int err;
--
--	if (!used_math()) {
--		err = init_fpu(tsk);
--		if (err)
--			return err;
--	}
--
--	if (!(task_thread_info(current)->status & TS_USEDFPU)) {
--		clts();
--		task_thread_info(current)->status |= TS_USEDFPU;
--	}
--	return restore_fpu_checking((__force struct i387_fxsave_struct *)buf);
--}
--
- #else  /* CONFIG_X86_32 */
- 
- extern void finit(void);
-
--- 
-
+> 
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Cc: Alex Chiang <achiang@hp.com>
+> Cc: kristen.c.accardi@intel.com
+> Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+> ---
+>  drivers/pci/hotplug/acpi_pcihp.c   |    5 +----
+>  drivers/pci/pcie/aer/aerdrv_acpi.c |    7 +------
+>  include/linux/pci-acpi.h           |   11 +++++++++++
+>  3 files changed, 13 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/pci/hotplug/acpi_pcihp.c b/drivers/pci/hotplug/acpi_pcihp.c
+> index bd83197..e17ef54 100644
+> --- a/drivers/pci/hotplug/acpi_pcihp.c
+> +++ b/drivers/pci/hotplug/acpi_pcihp.c
+> @@ -404,10 +404,7 @@ int acpi_get_hp_hw_control_from_firmware(struct pci_dev *dev, u32 flags)
+>  	 * OSHP within the scope of the hotplug controller and its parents,
+>  	 * upto the host bridge under which this controller exists.
+>  	 */
+> -	while (pdev->bus->self)
+> -		pdev = pdev->bus->self;
+> -	handle = acpi_get_pci_rootbridge_handle(pci_domain_nr(pdev->bus),
+> -			pdev->bus->number);
+> +	handle = acpi_find_root_bridge_handle(pdev);
+>  	if (handle) {
+>  		acpi_get_name(handle, ACPI_FULL_PATHNAME, &string);
+>  		dbg("Trying to get hotplug control for %s\n",
+> diff --git a/drivers/pci/pcie/aer/aerdrv_acpi.c b/drivers/pci/pcie/aer/aerdrv_acpi.c
+> index 30f581b..6dd7b13 100644
+> --- a/drivers/pci/pcie/aer/aerdrv_acpi.c
+> +++ b/drivers/pci/pcie/aer/aerdrv_acpi.c
+> @@ -36,12 +36,7 @@ int aer_osc_setup(struct pcie_device *pciedev)
+>  	if (acpi_pci_disabled)
+>  		return -1;
+>  
+> -	/* Find root host bridge */
+> -	while (pdev->bus->self)
+> -		pdev = pdev->bus->self;
+> -	handle = acpi_get_pci_rootbridge_handle(
+> -		pci_domain_nr(pdev->bus), pdev->bus->number);
+> -
+> +	handle = acpi_find_root_bridge_handle(pdev);
+>  	if (handle) {
+>  		pcie_osc_support_set(OSC_EXT_PCI_CONFIG_SUPPORT);
+>  		status = pci_osc_control_set(handle,
+> diff --git a/include/linux/pci-acpi.h b/include/linux/pci-acpi.h
+> index 3ba2506..8837928 100644
+> --- a/include/linux/pci-acpi.h
+> +++ b/include/linux/pci-acpi.h
+> @@ -57,6 +57,15 @@ static inline acpi_status pcie_osc_support_set(u32 flags)
+>  {
+>  	return __pci_osc_support_set(flags, PCI_EXPRESS_ROOT_HID_STRING);
+>  }
+> +static inline acpi_handle acpi_find_root_bridge_handle(struct pci_dev *pdev)
+> +{
+> +	/* Find root host bridge */
+> +	while (pdev->bus->self)
+> +		pdev = pdev->bus->self;
+> +
+> +	return acpi_get_pci_rootbridge_handle(pci_domain_nr(pdev->bus),
+> +			pdev->bus->number);
+> +}
+>  #else
+>  #if !defined(AE_ERROR)
+>  typedef u32 		acpi_status;
+> @@ -66,6 +75,8 @@ static inline acpi_status pci_osc_control_set(acpi_handle handle, u32 flags)
+>  {return AE_ERROR;}
+>  static inline acpi_status pci_osc_support_set(u32 flags) {return AE_ERROR;} 
+>  static inline acpi_status pcie_osc_support_set(u32 flags) {return AE_ERROR;}
+> +static inline acpi_handle acpi_find_root_bridge_handle(struct pci_dev *pdev)
+> +{ return NULL; }
+>  #endif
+>  
+>  #endif	/* _PCI_ACPI_H_ */
+> -- 
+> 1.5.6.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
