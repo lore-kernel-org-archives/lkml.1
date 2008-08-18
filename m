@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbYHRQe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbYHRQjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755097AbYHRQe2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 12:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbYHRQeT
+	id S1754516AbYHRQjW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 12:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbYHRQjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 12:34:19 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:3985 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751502AbYHRQeS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 12:34:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=D8j1kOoLkd5xMFr5cu8ZPcKyOptaiNWurC0mIiQD0r8T0Gp271jTuph6k6GBejgZjR
-         Ncl7aeP+QzCwPm4gP5ttgXbHkiXNob3aKIe1Dvsp/w0vy8Tw484bOhIojiZ+nDybF/Fv
-         TejmshjCw3is3p+pl7G5jtqnng8mTXT/E4RnY=
-Message-ID: <48A9F8E9.8030303@gmail.com>
-Date: Mon, 18 Aug 2008 18:34:17 -0400
-From: roel kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Mon, 18 Aug 2008 12:39:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45858 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751418AbYHRQjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 12:39:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: Re: Warning in during hotplug on 2.6.27-rc2-git5
+Date: Mon, 18 Aug 2008 18:42:24 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       "Greg KH" <greg@kroah.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+References: <200808141753.58547.rjw@sisk.pl> <200808181638.37707.rjw@sisk.pl> <6453C3CB8E2B3646B0D020C112613273C5AC7D@sausexmb4.amd.com>
+In-Reply-To: <6453C3CB8E2B3646B0D020C112613273C5AC7D@sausexmb4.amd.com>
 MIME-Version: 1.0
-To: paulus@samba.org, benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] POWERPC: duplicate test of MACIO_FLAG_SCCB_ON
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808181842.26099.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-untested, is it correct?
+On Monday, 18 of August 2008, Langsdorf, Mark wrote:
+> > > > > I'm still seeing it on 2.6.27-rc2, even with the 
+> > > > > patch here http://lkml.org/lkml/2008/7/30/171 and the
+> > > > > wbinvd_halt code patch applied.  Maybe something else
+> > > > > broke in some of the recent hotplug changes?
+> >
+> > I have a couple of questions, then:
+> > - Does it fail identically for all CPUs or for CPU4 and above only?
+> > - Did previous kernels, most importantly 2.6.26, work correctly?
+> 
+> It turns out 2.6.26 also fails.
 
-arch/powerpc/include/asm/pmac_feature.h:359:
-#define MACIO_FLAG_SCCA_ON  0x00000001
-#define MACIO_FLAG_SCCB_ON  0x00000002
----
-duplicate test of MACIO_FLAG_SCCB_ON
+OK, so I'll drop the bug from the list of recent regressions.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
-index 5169ecc..e6c0040 100644
---- a/arch/powerpc/platforms/powermac/feature.c
-+++ b/arch/powerpc/platforms/powermac/feature.c
-@@ -2677,7 +2677,7 @@ static void __init probe_one_macio(const char *name, const char *compat, int typ
- 	macio_chips[i].of_node	= node;
- 	macio_chips[i].type	= type;
- 	macio_chips[i].base	= base;
--	macio_chips[i].flags	= MACIO_FLAG_SCCB_ON | MACIO_FLAG_SCCB_ON;
-+	macio_chips[i].flags	= MACIO_FLAG_SCCA_ON | MACIO_FLAG_SCCB_ON;
- 	macio_chips[i].name	= macio_names[type];
- 	revp = of_get_property(node, "revision-id", NULL);
- 	if (revp)
+> It is only failing for CPU4+, I'm not sure why that would be significant.
+
+Because I cannot reproduce it on a single-socket AMD quad-core. :-)
+
+> > Also, can you please attach dmesg output, including the 
+> > offlining of a CPU that would later lead to the problem
+> > with cpu_up(), to the Bugzilla entry at
+> > http://bugzilla.kernel.org/show_bug.cgi?id=11337 ?
+> 
+> I did.
+
+Thanks.  I think we can further debug this using Bugzilla if you don't mind.
+
+Best,
+Rafael
