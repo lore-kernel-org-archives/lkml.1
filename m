@@ -1,80 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbYHRMOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753260AbYHRMRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753350AbYHRMOd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 08:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbYHRMOZ
+	id S1753260AbYHRMRc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 08:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbYHRMRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 08:14:25 -0400
-Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:44822 "HELO
-	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752070AbYHRMOZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 08:14:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Yo5SzKuo2L74FVR9t++AZwm13IcB6uGWg/SPcoX7sC2ySuk9Mztw4KVMTMfnWqB7lQ0Mhk1C9BijNOIVhigzmfCzSuIYvTytVWLCFnke5ZLm/dqIJwWddEBHsSbESd4VRViF3daLlQaLvvUjfk8NkAFxEHvDduB6gQq3eV2hCDM=  ;
-X-YMail-OSG: m2wf5jQVM1l0tgYkUR..nBSLkVqFKX4JBVt5px_uslc3Pdser8Rm_7qjL8yd7NQsX3m8RmcaH0HEoOix9bJNvcBomEjg8tPIQVtANN8kyicRj8zmS_KI4NivUWRGUjDzmqI-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: SCHED_FIFO and SCHED_RR broken by cfs
-Date: Mon, 18 Aug 2008 22:14:08 +1000
-User-Agent: KMail/1.9.5
-Cc: "Torvalds, Linus" <torvalds@linux-foundation.org>,
-       Stefani Seibold <stefani@seibold.net>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com
-References: <1218880552.11912.9.camel@matrix> <200808182124.17359.nickpiggin@yahoo.com.au> <1219060315.10800.338.camel@twins>
-In-Reply-To: <1219060315.10800.338.camel@twins>
+	Mon, 18 Aug 2008 08:17:22 -0400
+Received: from mail.lang.hm ([64.81.33.126]:40264 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750947AbYHRMRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 08:17:21 -0400
+Date: Mon, 18 Aug 2008 05:16:58 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: rmeijer@xs4all.nl
+cc: Casey Schaufler <casey@schaufler-ca.com>, Peter Dolding <oiaohm@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, capibara@xs4all.nl,
+       Eric Paris <eparis@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       Rik van Riel <riel@redhat.com>, davecb@sun.com,
+       linux-security-module@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
+       Mihai Don??u <mdontu@bitdefender.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       malware-list@lists.printk.net, Pavel Machek <pavel@suse.cz>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: scanner interface proposal was: [TALPA] Intro to a linux     
+ interface for on access scanning
+In-Reply-To: <17956.82.95.100.23.1219056651.squirrel@webmail.xs4all.nl>
+Message-ID: <alpine.DEB.1.10.0808180514230.12859@asgard.lang.hm>
+References: <17956.82.95.100.23.1219056651.squirrel@webmail.xs4all.nl>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808182214.08942.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 August 2008 21:51, Peter Zijlstra wrote:
-> On Mon, 2008-08-18 at 21:24 +1000, Nick Piggin wrote:
-> > Really, you think the enterprise distros will willingly break POSIX
-> > and their own backwards compatiblity by default? I wouldn't have
-> > thought so, but anyway I guess they are free to make that choice, so
-> > where's the problem?
+On Mon, 18 Aug 2008, Rob Meijer wrote:
+
+> On Mon, August 18, 2008 02:58, david@lang.hm wrote:
+>> since many people apparently missed this writeup I'm re-sending it.
+>>
+>> please try to seperate disagreement with the threat model this is
+>> addressing with disagreement with the design.
 >
-> I'm not seeing why you're making such a big fuss over this - IMO its not
-> such a significant breakage. Esp since very few realtime apps will
-> require such large amounts of time to ever run into the throttle.
+> agreed.
 >
-> If their usage is 95%+ cpu they must have magic WCET estamates - or like
-> in this case, be a benchmark app which IMHO just abuses the real-time
-> class.
+>
+>> 3. (and the biggest batch) statements that this won't protect against
+>> problem X (where X was not in the threat model)
+>>
+>>    arguing againt this design is the wrong thing to do. argue against the
+>> threat model instead, preferrably by proposing a different threat model
+>> and allowing for a debate of which is appropriate.
+>>
+>> the threat model that was sent out (by others, not by me) basicly boils
+>> down to "don't allow programs to access/execute 'unscanned' data. don't
+>> try to defend against actions of programs already running or
+>> malicious user actions" there were further comments listing things it's
+>> not trying to cover.
+>
+> I have multiple issues with this model:
+>
+> 1) It is basically the model used by black-list centric virus scanners.
+>   Recent demonstrations have shown how apparently easy it is to bypass
+>   blacklist technology, thus investing in providing hooks for technology
+>   that is arguably quickly becoming obsolete is IMO questionable.
+> 2) Whitelisting, while a great partial solution is insufficient to become
+>   a solution all by itself. It does not lend itself to the single
+>   allow or kill approach above.
+> 3) Most of the malware problem comes from the fact that software runs with
+>   all of the user her privileges while it could run with much less (least
+>   even) without (much) possibilities of doing malice.
+>
+> The combination of these makes me come to the conclusion that a much more
+> viable alternative model would be:
+>
+> "Don't allow (whitelist) unscanned programs to run with user privileges.
+> Allow unscanned and untrusted programs to run with (dynamic) least
+> authority. No blacklist scanning."
 
-Note that this certainly does not have to be the case. It is perfectly
-valid to dynamically scale the work performed according to the amount
-of CPU time available but still be sensitive to latency.
+I think this model can support your mode of operation
 
-video decoding would be a really simple example. But you can't just
-"know" how all RT apps are coded and think this is no problem.
+since the checking software is run in userspace (initially as the user) 
+couldn't the 'scan' kicked off by the absense of a 'scanned-by-' tag 
+trigger the 'least authority' mode?
 
-
-> It's like running your real-time code on a 5% slower cpu - if it runs
-> correctly on the 5% slower cpu, it will run correctly here too.
-
-Aside from the latency issue which makes this statement incorrect...
-If the code does not run correctly on a 5% slower CPU, it will break.
-How is that OK?
-
-You might expect many systems would include at least a 5% margin of
-error, but if the kernel takes 5%, then that's 5% of the safety
-margin gone, so while the app might "work", it might no longer
-meet requirements.
-
-
-> Note that correctness from a RT pov is making your deadline.
-
-Correctness from the kernel's POV is implementing APIs as advertised,
-and just as importantly, not changing them. We can argue about how RT
-apps work, but there is no argument that the kernel has broken
-backwards compatibility and standards.
+David Lang
