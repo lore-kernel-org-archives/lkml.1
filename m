@@ -1,135 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbYHRREy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbYHRRHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754695AbYHRREy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 13:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbYHRREq
+	id S1754904AbYHRRHv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 13:07:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYHRRHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 13:04:46 -0400
-Received: from tomts25.bellnexxia.net ([209.226.175.188]:64938 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752222AbYHRREq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 13:04:46 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AskIAFVFqUhMRKxB/2dsb2JhbACBYoEssTKBWA
-Date: Mon, 18 Aug 2008 13:04:42 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: Eran Liberty <liberty@extricom.com>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linuxppc-dev@ozlabs.org, rostedt@goodmis.org
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-Message-ID: <20080818170442.GA29337@Krystal>
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com> <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal> <48A99F51.8090504@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <48A99F51.8090504@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:03:38 up 74 days, 21:44,  6 users,  load average: 5.91, 2.65,
-	1.29
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Mon, 18 Aug 2008 13:07:43 -0400
+Received: from mail.lang.hm ([64.81.33.126]:54685 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751502AbYHRRHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 13:07:42 -0400
+Date: Mon, 18 Aug 2008 10:07:30 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: tvrtko.ursulin@sophos.com
+cc: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@kernel.org>,
+       capibara@xs4all.nl, Casey Schaufler <casey@schaufler-ca.com>,
+       davecb@sun.com, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org, malware-list@lists.printk.net,
+       malware-list-bounces@dmesg.printk.net,
+       Mihai Don??u <mdontu@bitdefender.com>, Peter Dolding <oiaohm@gmail.com>,
+       Pavel Machek <pavel@suse.cz>, rmeijer@xs4all.nl
+Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro	to
+ a linux interface for on access scanning
+In-Reply-To: <20080818153212.6A6FD33687F@pmx1.sophos.com>
+Message-ID: <alpine.DEB.1.10.0808181004380.15109@asgard.lang.hm>
+References: <20080818153212.6A6FD33687F@pmx1.sophos.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (srostedt@redhat.com) wrote:
-> Mathieu Desnoyers wrote:
->>
->> Steve ? I just noticed this :
->>
->>
->> ftrace_modify_code(unsigned long ip, unsigned char *old_code,
->>                    unsigned char *new_code)
->> {
->>         unsigned replaced;
->>         unsigned old = *(unsigned *)old_code;
->>         unsigned new = *(unsigned *)new_code;
->>         int faulted = 0;
->>
->>         /*
->>          * Note: Due to modules and __init, code can
->>          *  disappear and change, we need to protect against faulting
->>          *  as well as code changing.
->>          *
->>          * No real locking needed, this code is run through
->>          * kstop_machine.
->>          */
->>         asm volatile (
->>                 "1: lwz         %1, 0(%2)\n"
->>                 "   cmpw        %1, %5\n"
->>                 "   bne         2f\n"
->>                 "   stwu        %3, 0(%2)\n"
->>                 "2:\n"
->>                 ".section .fixup, \"ax\"\n"
->>                 "3:     li %0, 1\n"
->>                 "       b 2b\n"
->>                 ".previous\n"
->>                 ".section __ex_table,\"a\"\n"
->>                 _ASM_ALIGN "\n"
->>                 _ASM_PTR "1b, 3b\n"
->>                 ".previous"
->>                 : "=r"(faulted), "=r"(replaced)
->>                 : "r"(ip), "r"(new),
->>                   "0"(faulted), "r"(old)
->>                 : "memory");
->>
->>         if (replaced != old && replaced != new)
->>                 faulted = 2;
->>
->>         if (!faulted)
->>                 flush_icache_range(ip, ip + 8);
->>
->>         return faulted;
->> }
->>
->> What happens if you are really unlucky and get the following execution
->> sequence ?
->>
->>
->> Load module A at address 0xddfc3e00
->> Populate ftrace function table while the system runs
->> Unload module A
->> Load module B at address 0xddfc3e00
->> Activate ftrace
->> -> At that point, since there is another module loaded in the same
->> address space, it won't fault. If there happens to be an instruction
->> which looks exactly like the instruction we are replacing at the same
->> location, we are introducing a bug. True both on x86 ans powerpc...
->>
->>   
->
-> Hi Mathieu,
->
-> Yep I know of this issue, and it is very unlikely it would happen.  But 
-> that's not good enough, so this is why I did this:
->
-> http://marc.info/?l=linux-kernel&m=121876928124384&w=2
-> http://marc.info/?l=linux-kernel&m=121876938524523&w=2
->
-> ;-)
->
-> On powerpc it would be less likely an issue since the code segments are all 
-> 4 bytes aligned. And a call being replaced would be a call to mcount 
-> (relative jump). A call to mcount would be the same for both. Then again, 
-> we could be replacing a nop, but most likely that wouldn't hurt either, 
-> since nops are seldom used, and if we did call mcount, it would probably 
-> not hurt. But it would be an issue if Module B happen to put a data section 
-> that matched the code to jmp to mcount or a nop.
->
+On Mon, 18 Aug 2008, tvrtko.ursulin@sophos.com wrote:
 
-Ah, I did not see this one passing by :) That's the right solution
-indeed. I guess it's not in 2.6.27-rc2/rc3 though ? I wonder if the
-bug can be repeated with a module-free kernel ?
-
-Mathieu
-
-> -- Steve
+> Theodore Tso <tytso@mit.edu> wrote on 18/08/2008 15:25:11:
 >
+>> On Mon, Aug 18, 2008 at 02:15:24PM +0100, tvrtko.ursulin@sophos.com
+> wrote:
+>>> Then there is still a question of who allows some binary to declare
+> itself
+>>> exempt. If that decision was a mistake, or it gets compromised
+> security
+>>> will be off. A very powerful mechanism which must not be easily
+>>> accessible.  With a good cache your worries go away even without a
+> scheme
+>>> like this.
+>>
+>> I have one word for you --- bittorrent.  If you are downloading a very
+>> large torrent (say approximately a gigabyte), and it contains many
+>> pdf's that are say a few megabytes a piece, and things are coming in
+>> tribbles, having either a indexing scanner or an AV scanner wake up
+>> and rescan the file from scratch each time a tiny piece of the pdf
+>> comes in is going to eat your machine alive....
+>
+> Huh? I was never advocating re-scan after each modification and I even
+> explicitly said it does not make sense for AV not only for performance but
+> because it will be useless most of the time. I thought sending out
+> modified notification on close makes sense because it is a natural point,
+> unless someone is trying to subvert which is out of scope. Other have
+> suggested time delay and lumping up.
+>
+> Also, just to double-check, you don't think AV scanning would read the
+> whole file on every write?
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+if it doesn't read the entire file and only reads the parts that change, 
+out-of-order writes (which bittorrent does a _lot_ of) can assemble a 
+virus from pieces and the scanner will never see it.
+
+as for Ted's issue, the scanner(s) would get notified when the file was 
+dirtied, they would then get notified if something scanned the file and it 
+was marked dirty again after that. If nothing got around to scanning the 
+file then all the following writes would not send any notification becouse 
+the file would already be dirty.
+
+David Lang
