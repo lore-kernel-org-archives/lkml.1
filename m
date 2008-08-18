@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757179AbYHRSm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbYHRSoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757179AbYHRSm6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 14:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbYHRSms
+	id S1757243AbYHRSoB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 14:44:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbYHRSnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 14:42:48 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:49990 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754914AbYHRSmr (ORCPT
+	Mon, 18 Aug 2008 14:43:52 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:53343 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753448AbYHRSnw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 14:42:47 -0400
-Date: Mon, 18 Aug 2008 12:42:46 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Matt_Domsch@dell.com,
-       Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH] ata: Add support for Long Logical Sectors and Long Physical Sectors
-Message-ID: <20080818184246.GH677@parisc-linux.org>
-References: <1217957207-23116-1-git-send-email-matthew@wil.cx> <1217957207-23116-3-git-send-email-matthew@wil.cx> <48A8B211.8030103@pobox.com> <20080818181523.GG677@parisc-linux.org> <20080818190629.22fd618c@lxorguk.ukuu.org.uk>
+	Mon, 18 Aug 2008 14:43:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=MYTtUwk9cDoHV6eSa17bmXvsIupTjEubY2XWLedQ/kzEQGuX/BGhfy7I9u4UdVsxEc
+         mf7D+82/ljt3F/ltzXFalPtayIiDxEdWtyIMyR67Vk5BBHPiiXHNQv/YiSPenE/Emlp7
+         gzdGQQR6lvxZJ0JGp/ycWpBTc7Nzql40SoF10=
+Message-ID: <19f34abd0808181143n6df11e16j90413c0ccae80176@mail.gmail.com>
+Date: Mon, 18 Aug 2008 20:43:50 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "David Howells" <dhowells@redhat.com>, "James Morris" <jmorris@namei.org>
+Subject: =?UTF-8?Q?include/linux/security.h:_In_function_=E2=80=98securi?= =?UTF-8?Q?ty=5Fptrace=5Ftraceme=E2=80=99:_err?= =?UTF-8?Q?or:_=E2=80=98parent=E2=80=99_undeclared?=
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080818190629.22fd618c@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 18, 2008 at 07:06:29PM +0100, Alan Cox wrote:
-> > +	static const char command_sect_size[256] = {
-> > +		[ ATA_CMD_CFA_TRANSLATE_SECTOR ] = DEVICE,
-> 
-> Should be a bit array so we can do a single fast test_bit()
-> 
-> > +	if (size == UNKNOWN && printk_ratelimit())
-> > +		printk("Unknown ata cmd %d, assuming 512 byte sector size\n",
-> > +				command);
-> 
-> or two bits ;)
+Hi,
 
-;-)  How about two 256-bit arrays?
+Is this known and/or fixed?
 
-The first is set for "Use device sector size", the second is set for
-"Yes, we know about this command, don't warn".  The most common commands
-(reads and writes) will hit the first test and never try the second test.
+commit b09c3e3f1710b554348c98e78fbf4a661918779a:
 
-> Rest looks ok. I'll probably send a follow up patch to make most pata
-> drivers return "no" to anything but 512 until we can test them with real
-> devices.
+In file included from arch/x86/kernel/ptrace.c:19:
+include/linux/security.h: In function 'security_ptrace_traceme':
+include/linux/security.h:1760: error: 'parent' undeclared (first use
+in this function)
+include/linux/security.h:1760: error: (Each undeclared identifier is
+reported only once
+include/linux/security.h:1760: error: for each function it appears in.)
 
-Why do we need to do that?  Leaving sector_size_supported() unset means
-exactly "no to anything but 512".  I'll be quite surprised if we see
-PATA drives supporting 4096 or 520 byte sectors anyway.  It seems like
-a premium feature.
+Was introduced by:
+
+commit 5cd9c58fbe9ec92b45b27e131719af4f2bd9eb40
+Author: David Howells <dhowells@redhat.com>
+Date:   Thu Aug 14 11:37:28 2008 +0100
+
+    security: Fix setting of PF_SUPERPRIV by __capable()
+
++static inline int security_ptrace_traceme(struct task_struct *child)
+ {
+-       return cap_ptrace(parent, child, mode);
++       return cap_ptrace_traceme(parent);
+ }
+
+
+Vegard
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
