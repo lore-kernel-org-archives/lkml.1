@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934066AbYHRTsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934104AbYHRTsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934066AbYHRTsZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758672AbYHRTne
+	id S934104AbYHRTsq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933580AbYHRTn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:43:34 -0400
-Received: from ns.suse.de ([195.135.220.2]:49777 "EHLO mx1.suse.de"
+	Mon, 18 Aug 2008 15:43:58 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49856 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765564AbYHRTna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:43:30 -0400
-Date: Mon, 18 Aug 2008 12:20:56 -0700
+	id S933577AbYHRTn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:43:57 -0400
+Date: Mon, 18 Aug 2008 12:21:00 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Steve French <sfrench@us.ibm.com>
-Subject: [patch 45/49] CIFS: Fix compiler warning on 64-bit
-Message-ID: <20080818192056.GT10350@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jan Beulich <jbeulich@novell.com>,
+       Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 46/49] x86: fix spin_is_contended()
+Message-ID: <20080818192100.GU10350@suse.de>
 References: <20080818191012.663450219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="cifs-fix-compiler-warning-on-64-bit.patch"
+Content-Disposition: inline; filename="x86-fix-spin_is_contended.patch"
 In-Reply-To: <20080818191834.GA10350@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,26 +42,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jan Beulich <jbeulich@novell.com>
 
-commit 04e1e0cccade330ab3715ce59234f7e3b087e246 upstream.
+commit 7bc069c6bc4ede519a7116be1b9e149a1dbf787a upstream
 
-Signed-off-by: Steve French <sfrench@us.ibm.com>
-Cc: Eugene Teo <eteo@redhat.com>
+The masked difference is what needs to be compared against 1, rather
+than the difference of masked values (which can be negative).
+
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Acked-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/cifs/asn1.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/asm-x86/spinlock.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/fs/cifs/asn1.c
-+++ b/fs/cifs/asn1.c
-@@ -400,7 +400,7 @@ asn1_oid_decode(struct asn1_ctx *ctx,
- 	size = eoc - ctx->pointer + 1;
+--- a/include/asm-x86/spinlock.h
++++ b/include/asm-x86/spinlock.h
+@@ -75,7 +75,7 @@ static inline int __raw_spin_is_contende
+ {
+ 	int tmp = *(volatile signed int *)(&(lock)->slock);
  
- 	/* first subid actually encodes first two subids */
--	if (size < 2 || size > ULONG_MAX/sizeof(unsigned long))
-+	if (size < 2 || size > UINT_MAX/sizeof(unsigned long))
- 		return 0;
+-	return (((tmp >> 8) & 0xff) - (tmp & 0xff)) > 1;
++	return (((tmp >> 8) - tmp) & 0xff) > 1;
+ }
  
- 	*oid = kmalloc(size * sizeof(unsigned long), GFP_ATOMIC);
+ static inline void __raw_spin_lock(raw_spinlock_t *lock)
+@@ -141,7 +141,7 @@ static inline int __raw_spin_is_contende
+ {
+ 	int tmp = *(volatile signed int *)(&(lock)->slock);
+ 
+-	return (((tmp >> 16) & 0xffff) - (tmp & 0xffff)) > 1;
++	return (((tmp >> 16) - tmp) & 0xffff) > 1;
+ }
+ 
+ static inline void __raw_spin_lock(raw_spinlock_t *lock)
 
 -- 
