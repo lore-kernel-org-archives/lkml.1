@@ -1,113 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbYHRLYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbYHRLpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752933AbYHRLYk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 07:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbYHRLYc
+	id S1752858AbYHRLpp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 07:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYHRLpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 07:24:32 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:25213 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751434AbYHRLYb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 07:24:31 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=eIi9ExysllpahHsdssb8+7JaJ+jKvIgQwgUkjO6tOa2+xtnLKmWjQZ20ZF8RjWNKECMrj/dtEhG8igsg+arEZD0mFQ8zZ91JaMxPzJmGh9fQ1upA8fPekVFK35oWL/I0eau2WHKtBATRMX5xKbe9anY8V1yiQj4hfnxXjBF2lx0=  ;
-X-YMail-OSG: neR9gRoVM1nW2TWLodn48ArafmBl9nqwDeF8xaIgbVT1wcJTeqFLQWZ3636wyMHB36xIuU_pEaTQr0IsLsMVkHlOa_T8PMot2sScs9wKLQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: SCHED_FIFO and SCHED_RR broken by cfs
-Date: Mon, 18 Aug 2008 21:24:17 +1000
-User-Agent: KMail/1.9.5
-Cc: "Torvalds, Linus" <torvalds@linux-foundation.org>,
-       Stefani Seibold <stefani@seibold.net>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com
-References: <1218880552.11912.9.camel@matrix> <200808182058.07346.nickpiggin@yahoo.com.au> <1219057765.10800.315.camel@twins>
-In-Reply-To: <1219057765.10800.315.camel@twins>
+	Mon, 18 Aug 2008 07:45:36 -0400
+Received: from mail.lang.hm ([64.81.33.126]:46513 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751345AbYHRLpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 07:45:35 -0400
+Date: Mon, 18 Aug 2008 04:44:12 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: tvrtko.ursulin@sophos.com
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@kernel.org>,
+       capibara@xs4all.nl, Casey Schaufler <casey@schaufler-ca.com>,
+       davecb@sun.com, Eric Paris <eparis@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org, malware-list@lists.printk.net,
+       malware-list-bounces@dmesg.printk.net,
+       Mihai Don??u <mdontu@bitdefender.com>, Peter Dolding <oiaohm@gmail.com>,
+       Pavel Machek <pavel@suse.cz>, Rik van Riel <riel@redhat.com>,
+       rmeijer@xs4all.nl, Theodore Tso <tytso@mit.edu>
+Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro to
+ a linux interface for on access scanning (fwd)
+In-Reply-To: <20080818103126.3461C2FE848@pmx1.sophos.com>
+Message-ID: <alpine.DEB.1.10.0808180441560.12859@asgard.lang.hm>
+References: <20080818103126.3461C2FE848@pmx1.sophos.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808182124.17359.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 August 2008 21:09, Peter Zijlstra wrote:
-> On Mon, 2008-08-18 at 20:58 +1000, Nick Piggin wrote:
-> > On Monday 18 August 2008 20:50, Peter Zijlstra wrote:
-> > > On Sun, 2008-08-17 at 23:04 +1000, Nick Piggin wrote:
-> > > > On Sunday 17 August 2008 00:53, Peter Zijlstra wrote:
-> > > > > Has nothing to do with CFS, but everything to do with the fact that
-> > > > > we now have a 95% bandwidth control by default.
-> > > > >
-> > > > > Does doing:
-> > > > >
-> > > > > echo -1 > /proc/sys/kernel/sched_rt_runtime_us
-> > > > >
-> > > > > fix it?
-> > > > >
-> > > > > So, up to 95% cpu usage (per sched_rt_period_us) FIFO and RR behave
-> > > > > like they always did, once they cross that line, they'll be
-> > > > > throttled.
-> > > > >
-> > > > > 95% seemed like a sane default in that it leaves a little room to
-> > > > > recover from a run-away rt process (esp handy now that !root users
-> > > > > can also use RT scheduling classes), and should be enough for most
-> > > > > applications as they usually don't consume all that much time.
-> > > >
-> > > > Did it seem sane to break POSIX and backwards compatiblity by
-> > > > default?
-> > >
-> > > Up to a point, yes.
-> > >
-> > > There were quite a few complaints that runaway RT tasks could render a
-> > > machine unusable - which made 'desktop' usage of the RT class unsafe.
-> >
-> > Right, but it is restricted to root, and if the task is run as root
-> > then it can equally break the system in any number of ways. So the
-> > complaints are just wrong.
+On Mon, 18 Aug 2008, tvrtko.ursulin@sophos.com wrote:
+
+> David Lang wrote on 18/08/2008 02:25:44:
 >
-> Not so, we have RLIMIT_RTPRIO and quite a few people using it.
-
-OK, but it's the same as any privilige granted. You have to be careful
-with it.
-
-TBH, it's pretty trivial to write a watchdog process in your RT app.
-Actually, many *real* RT applications use one in order to help with
-failover/failstop/etc. and I expect _all_ non trivial ones should be
-using a watchdog when under development or running in a debugging
-mode.
-
-
-> > I have no problems with having some non-default mode to throttle by
-> > default. And we already have the sysrq which can downgrade RT tasks.
+>> what is not covered by this design that is covered by the threat model
+> being
+>> proposed?
+>>
+>> what did I over complicate in this design? or is it the minimum feature
+> set
+>> needed?
+>>
+>> are any of the features I list impossible to implement?
 >
-> Yeah - except that most distros disable sysrq and not a single desktop
-> user knows about it.
+> One more thing - this proposal does not work where there are no extended
+> attributes (whether at all or they are disabled at mount time). I think
+> that is a serious flaw or at least disadvantage compared to the posted
+> implementation.
 
-What are they doing writing RT apps then?
+good point. I should have listed that.
 
+I don't see it as a serious flaw, people who care about this feature can 
+just pick an appropriate filesystem to use.
 
-> > > This 95%/1s default allows most RT tasks to run without having to
-> > > tinker with the settings, and for those who do need something else,
-> > > they can get it too, but will have to turn a knob.
-> >
-> > And that could also easily cause huge problems for code that does the
-> > *right* thing.
-> >
-> > > But I guess we could change the default back to unlimited and default
-> > > to unsafe if people feel strongly about this.
-> >
-> > Yes, you can't just break the API like this. Please do fix.
->
-> Sigh - I guess that means all distros will just set a limit in their
-> init scripts - leaving those above in the same situation.
+but if extended attributes are not found a strict implementation could 
+fall back to scanning on every file access (the extended attributes are 
+being used to cache the results of the scans)
 
-Really, you think the enterprise distros will willingly break POSIX
-and their own backwards compatiblity by default? I wouldn't have
-thought so, but anyway I guess they are free to make that choice, so
-where's the problem?
+David Lang
