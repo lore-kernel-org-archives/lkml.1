@@ -1,100 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbYHRM37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbYHRMav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754517AbYHRM37 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 08:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbYHRM3Z
+	id S1754832AbYHRMav (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 08:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbYHRMaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 08:29:25 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:33928 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753921AbYHRM3X (ORCPT
+	Mon, 18 Aug 2008 08:30:20 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:3096 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754562AbYHRMaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 08:29:23 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "axboe@kernel.dk" <axboe@kernel.dk>,
-       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/3] Remove XFS specific ioctl interfaces for freeze feature
-Message-Id: <20080818212827t-sato@mail.jp.nec.com>
-Mime-Version: 1.0
-X-Mailer: WeMail32[2.51] ID:1K0086
-From: Takashi Sato <t-sato@yk.jp.nec.com>
-Date: Mon, 18 Aug 2008 21:28:27 +0900
+	Mon, 18 Aug 2008 08:30:17 -0400
+Date: Mon, 18 Aug 2008 06:30:16 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: alan@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: tty-kref-modcount oops in linux-next
+Message-ID: <20080818123016.GA2537@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, alan@redhat.com,
+	linux-kernel@vger.kernel.org
+References: <20080813203438.GT25902@ldl.fc.hp.com> <20080813213348.68263ad7@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080813213348.68263ad7@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It removes XFS specific ioctl interfaces and request codes
-for freeze feature.
-This patch has been supplied by David Chinner.
+* Alan Cox <alan@lxorguk.ukuu.org.uk>:
+> On Wed, 13 Aug 2008 14:34:38 -0600
+> Alex Chiang <achiang@hp.com> wrote:
+> > 
+> > Booting the latest linux-next kernel (20080812) on my HP rx6600
+> > (ia64) results in an oops. This is a SLES10 userspace, but I
+> > don't know if that matters.
+> 
+> Thanks I pushed a few fixes into the ttydev tree today so hopefully they
+> are fixed, if not drop me another email and we'll work through your case
+> as well
 
-Signed-off-by: Dave Chinner <dgc@sgi.com>
-Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
----
- linux-2.6/xfs_ioctl.c   |   15 ---------------
- linux-2.6/xfs_ioctl32.c |    2 --
- xfs_fs.h                |    4 ++--
- 3 files changed, 2 insertions(+), 19 deletions(-)
+Thanks, the latest linux-next (20080818) boots just fine now.
 
-diff -uprN -X linux-2.6.27-rc2.org/Documentation/dontdiff linux-2.6.27-rc2-freeze/fs/xfs/linux-2.6/xfs_ioctl.c linux-2.6
-.27-rc2-xfs/fs/xfs/linux-2.6/xfs_ioctl.c
---- linux-2.6.27-rc2-freeze/fs/xfs/linux-2.6/xfs_ioctl.c	2008-08-07 08:58:45.000000000 +0900
-+++ linux-2.6.27-rc2-xfs/fs/xfs/linux-2.6/xfs_ioctl.c	2008-08-07 09:01:53.000000000 +0900
-@@ -1529,21 +1529,6 @@ xfs_ioctl(
- 		return -error;
- 	}
- 
--	case XFS_IOC_FREEZE:
--		if (!capable(CAP_SYS_ADMIN))
--			return -EPERM;
--
--		if (inode->i_sb->s_frozen == SB_UNFROZEN)
--			freeze_bdev(inode->i_sb->s_bdev);
--		return 0;
--
--	case XFS_IOC_THAW:
--		if (!capable(CAP_SYS_ADMIN))
--			return -EPERM;
--		if (inode->i_sb->s_frozen != SB_UNFROZEN)
--			thaw_bdev(inode->i_sb->s_bdev, inode->i_sb);
--		return 0;
--
- 	case XFS_IOC_GOINGDOWN: {
- 		__uint32_t in;
- 
-diff -uprN -X linux-2.6.27-rc2.org/Documentation/dontdiff linux-2.6.27-rc2-freeze/fs/xfs/linux-2.6/xfs_ioctl32.c linux-2
-.6.27-rc2-xfs/fs/xfs/linux-2.6/xfs_ioctl32.c
---- linux-2.6.27-rc2-freeze/fs/xfs/linux-2.6/xfs_ioctl32.c	2008-08-07 08:58:45.000000000 +0900
-+++ linux-2.6.27-rc2-xfs/fs/xfs/linux-2.6/xfs_ioctl32.c	2008-08-07 09:01:53.000000000 +0900
-@@ -398,8 +398,6 @@ xfs_compat_ioctl(
- 	case XFS_IOC_FSGROWFSDATA:
- 	case XFS_IOC_FSGROWFSLOG:
- 	case XFS_IOC_FSGROWFSRT:
--	case XFS_IOC_FREEZE:
--	case XFS_IOC_THAW:
- 	case XFS_IOC_GOINGDOWN:
- 	case XFS_IOC_ERROR_INJECTION:
- 	case XFS_IOC_ERROR_CLEARALL:
-diff -uprN -X linux-2.6.27-rc2.org/Documentation/dontdiff linux-2.6.27-rc2-freeze/fs/xfs/xfs_fs.h linux-2.6.27-rc2-xfs/f
-s/xfs/xfs_fs.h
---- linux-2.6.27-rc2-freeze/fs/xfs/xfs_fs.h	2008-08-07 08:58:45.000000000 +0900
-+++ linux-2.6.27-rc2-xfs/fs/xfs/xfs_fs.h	2008-08-07 09:01:53.000000000 +0900
-@@ -477,8 +477,8 @@ typedef struct xfs_handle {
- #define XFS_IOC_ERROR_INJECTION	     _IOW ('X', 116, struct xfs_error_injection)
- #define XFS_IOC_ERROR_CLEARALL	     _IOW ('X', 117, struct xfs_error_injection)
- /*	XFS_IOC_ATTRCTL_BY_HANDLE -- deprecated 118	 */
--#define XFS_IOC_FREEZE		     _IOWR('X', 119, int)
--#define XFS_IOC_THAW		     _IOWR('X', 120, int)
-+/*	XFS_IOC_FREEZE		  -- FIFREEZE   119	 */
-+/*	XFS_IOC_THAW		  -- FITHAW     120	 */
- #define XFS_IOC_FSSETDM_BY_HANDLE    _IOW ('X', 121, struct xfs_fsop_setdm_handlereq)
- #define XFS_IOC_ATTRLIST_BY_HANDLE   _IOW ('X', 122, struct xfs_fsop_attrlist_handlereq)
- #define XFS_IOC_ATTRMULTI_BY_HANDLE  _IOW ('X', 123, struct xfs_fsop_attrmulti_handlereq)
+/ac
+
