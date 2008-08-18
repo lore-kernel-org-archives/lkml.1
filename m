@@ -1,80 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbYHRTGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761067AbYHRTHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758668AbYHRTGM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:06:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762529AbYHRTDt
+	id S1761067AbYHRTHt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756527AbYHRTFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:03:49 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37153 "EHLO mx2.suse.de"
+	Mon, 18 Aug 2008 15:05:01 -0400
+Received: from mail.lang.hm ([64.81.33.126]:53200 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757679AbYHRTDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:03:48 -0400
-Date: Mon, 18 Aug 2008 11:45:17 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 47/60] sparc64: Fix end-of-stack checking in
-	save_stack_trace().
-Message-ID: <20080818184517.GV29394@suse.de>
-References: <20080818183230.966310219@mini.kroah.org>
+	id S1762761AbYHRTE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:04:59 -0400
+Date: Mon, 18 Aug 2008 12:04:36 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Eric Paris <eparis@redhat.com>
+cc: Jan Harkes <jaharkes@cs.cmu.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       tvrtko.ursulin@sophos.com, Theodore Tso <tytso@mit.edu>, davecb@sun.com,
+       Adrian Bunk <bunk@kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       malware-list@lists.printk.net, Casey Schaufler <casey@schaufler-ca.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro	to
+ a linux interface for on access scanning
+In-Reply-To: <1219085176.15566.100.camel@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0808181159400.15109@asgard.lang.hm>
+References: <20080818153212.6A6FD33687F@pmx1.sophos.com>  <1219076143.15566.39.camel@localhost.localdomain>  <20080818171500.78590801@lxorguk.ukuu.org.uk>  <1219080504.15566.65.camel@localhost.localdomain>  <20080818182556.13ced58f@lxorguk.ukuu.org.uk> 
+ <1219082097.15566.82.camel@localhost.localdomain>  <20080818183540.GA5470@cs.cmu.edu> <1219085176.15566.100.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0001-sparc64-Fix-end-of-stack-checking-in-save_stack_tra.patch"
-In-Reply-To: <20080818184035.GA29394@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.26-stable review patch.  If anyone has any objections, please let us know.
+On Mon, 18 Aug 2008, Eric Paris wrote:
 
-------------------
-From: David S. Miller <davem@davemloft.net>
+> On Mon, 2008-08-18 at 14:35 -0400, Jan Harkes wrote:
+>
+>> The devil is in the details, and besides everyone trying to heap other
+>> things on, one thing that keeps getting brought up, and seemingly keeps
+>> getting ignored is the fact that there already is a perfectly reasonable
+>> interface to pass file system events (open, close, read, write, etc) to
+>> userspace applications in the form of FUSE which has already in some
+>> ways solved issues wrt. subtle deadlocks that can happen when you bounce
+>> from an in-kernel context to a userspace application.
+>
+> Can you help me write/prototype something that will work for every
+> regular file anywhere on the system including the kernel binary
+> in /boot, the glibc libraries in /lib/ld-linux.so, /sbin/ldconfig and
+> every file on every USB stick you put into the machine?  When all of
+> these are on separate partitions?  Every file under / needs to be
+> exported to the scanner.  I'm very willing to believe fuse is the way to
+> go for an HSM, but I don't see how to get every single file on the
+> system through the FUSE based scanner.
+>
+> Yes propagation is an important use of file scanning (maybe the
+> biggest), but we clearly can't secure every part of the border, and I
+> don't know how to use fuse to do it all rather than just pieces and
+> parts.
+>
+> You're absolutely right about this thread droning on.  But I've got code
+> that solves the problems.  If someone else shows me better code rather
+> than talk I'm all for it!
 
-[ Upstream commit 433c5f706856689be25928a99636e724fb3ea7cf ]
+the issue is that the kernel developers are not that interested in 
+creating one-off interfaces for anti-virus scanners. If the interfaces are 
+more general and able to be used for a wider variety of problems they are 
+much more interested in having them implemented.
 
-Bug reported by Alexander Beregalov.
+unfortunantly you went off and developed a bunch of code before talking to 
+people about what the appropriate interfaces would look like, (this is a 
+common problem, see the 'how to participate in the kernel' document at 
+http://ldn.linuxfoundation.org/book/how-participate-linux-community)
 
-Before we dereference the stack frame or try to peek at the
-pt_regs magic value, make sure the entire object is within
-the kernel stack bounds.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- arch/sparc64/kernel/stacktrace.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
---- a/arch/sparc64/kernel/stacktrace.c
-+++ b/arch/sparc64/kernel/stacktrace.c
-@@ -25,13 +25,15 @@ void save_stack_trace(struct stack_trace
- 
- 		/* Bogus frame pointer? */
- 		if (fp < (thread_base + sizeof(struct thread_info)) ||
--		    fp >= (thread_base + THREAD_SIZE))
-+		    fp > (thread_base + THREAD_SIZE - sizeof(struct sparc_stackf)))
- 			break;
- 
- 		sf = (struct sparc_stackf *) fp;
- 		regs = (struct pt_regs *) (sf + 1);
- 
--		if ((regs->magic & ~0x1ff) == PT_REGS_MAGIC) {
-+		if (((unsigned long)regs <=
-+		     (thread_base + THREAD_SIZE - sizeof(*regs))) &&
-+		    (regs->magic & ~0x1ff) == PT_REGS_MAGIC) {
- 			if (!(regs->tstate & TSTATE_PRIV))
- 				break;
- 			pc = regs->tpc;
-
--- 
+David Lang
