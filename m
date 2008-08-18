@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934104AbYHRTsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932472AbYHRTtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934104AbYHRTsq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933580AbYHRTn6
+	id S932472AbYHRTtP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933635AbYHRToe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:43:58 -0400
-Received: from cantor.suse.de ([195.135.220.2]:49856 "EHLO mx1.suse.de"
+	Mon, 18 Aug 2008 15:44:34 -0400
+Received: from ns.suse.de ([195.135.220.2]:49922 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933577AbYHRTn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:43:57 -0400
-Date: Mon, 18 Aug 2008 12:21:00 -0700
+	id S1762903AbYHRTo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:44:27 -0400
+Date: Mon, 18 Aug 2008 12:21:02 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jan Beulich <jbeulich@novell.com>,
-       Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 46/49] x86: fix spin_is_contended()
-Message-ID: <20080818192100.GU10350@suse.de>
+       alan@lxorguk.ukuu.org.uk, Joerg Roedel <joro@8bytes.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 47/49] x86: fix setup code crashes on my old 486 box
+Message-ID: <20080818192102.GV10350@suse.de>
 References: <20080818191012.663450219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-fix-spin_is_contended.patch"
+Content-Disposition: inline; filename="x86-fix-setup-code-crashes-on-my-old-486-box.patch"
 In-Reply-To: <20080818191834.GA10350@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,41 +40,99 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jan Beulich <jbeulich@novell.com>
+From: Joerg Roedel <joro@8bytes.org>
 
-commit 7bc069c6bc4ede519a7116be1b9e149a1dbf787a upstream
+commit 7b27718bdb1b70166383dec91391df5534d449ee upstream
 
-The masked difference is what needs to be compared against 1, rather
-than the difference of masked values (which can be negative).
+yesterday I tried to reactivate my old 486 box and wanted to install a
+current Linux with latest kernel on it. But it turned out that the
+latest kernel does not boot because the machine crashes early in the
+setup code.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Acked-by: Nick Piggin <npiggin@suse.de>
+After some debugging it turned out that the problem is the query_ist()
+function. If this interrupt with that function is called the machine
+simply locks up. It looks like a BIOS bug. Looking for a workaround for
+this problem I wrote the attached patch. It checks for the CPUID
+instruction and if it is not implemented it does not call the speedstep
+BIOS function. As far as I know speedstep should be available since some
+Pentium earliest.
+
+Alan Cox observed that it's available since the Pentium II, so cpuid
+levels 4 and 5 can be excluded altogether.
+
+H. Peter Anvin cleaned up the code some more:
+
+> Right in concept, but I dislike the implementation (duplication of the
+> CPU detect code we already have).  Could you try this patch and see if
+> it works for you?
+
+which, with a small modification to fix a build error with it the
+resulting kernel boots on my machine.
+
+Signed-off-by: Joerg Roedel <joro@8bytes.org>
+Signed-off-by: "H. Peter Anvin" <hpa@zytor.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/asm-x86/spinlock.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/boot/boot.h     |    8 ++++++++
+ arch/x86/boot/cpucheck.c |    8 +-------
+ arch/x86/boot/main.c     |    4 ++++
+ 3 files changed, 13 insertions(+), 7 deletions(-)
 
---- a/include/asm-x86/spinlock.h
-+++ b/include/asm-x86/spinlock.h
-@@ -75,7 +75,7 @@ static inline int __raw_spin_is_contende
+--- a/arch/x86/boot/boot.h
++++ b/arch/x86/boot/boot.h
+@@ -27,6 +27,8 @@
+ #include <asm/boot.h>
+ #include <asm/setup.h>
+ 
++#define NCAPINTS   8
++
+ /* Useful macros */
+ #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
+ 
+@@ -244,6 +246,12 @@ int cmdline_find_option(const char *opti
+ int cmdline_find_option_bool(const char *option);
+ 
+ /* cpu.c, cpucheck.c */
++struct cpu_features {
++	int level;		/* Family, or 64 for x86-64 */
++	int model;
++	u32 flags[NCAPINTS];
++};
++extern struct cpu_features cpu;
+ int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr);
+ int validate_cpu(void);
+ 
+--- a/arch/x86/boot/cpucheck.c
++++ b/arch/x86/boot/cpucheck.c
+@@ -32,13 +32,7 @@
+ #include <asm/required-features.h>
+ #include <asm/msr-index.h>
+ 
+-struct cpu_features {
+-	int level;		/* Family, or 64 for x86-64 */
+-	int model;
+-	u32 flags[NCAPINTS];
+-};
+-
+-static struct cpu_features cpu;
++struct cpu_features cpu;
+ static u32 cpu_vendor[3];
+ static u32 err_flags[NCAPINTS];
+ 
+--- a/arch/x86/boot/main.c
++++ b/arch/x86/boot/main.c
+@@ -75,6 +75,10 @@ static void keyboard_set_repeat(void)
+  */
+ static void query_ist(void)
  {
- 	int tmp = *(volatile signed int *)(&(lock)->slock);
- 
--	return (((tmp >> 8) & 0xff) - (tmp & 0xff)) > 1;
-+	return (((tmp >> 8) - tmp) & 0xff) > 1;
- }
- 
- static inline void __raw_spin_lock(raw_spinlock_t *lock)
-@@ -141,7 +141,7 @@ static inline int __raw_spin_is_contende
- {
- 	int tmp = *(volatile signed int *)(&(lock)->slock);
- 
--	return (((tmp >> 16) & 0xffff) - (tmp & 0xffff)) > 1;
-+	return (((tmp >> 16) - tmp) & 0xffff) > 1;
- }
- 
- static inline void __raw_spin_lock(raw_spinlock_t *lock)
++	/* Some 486 BIOSes apparently crash on this call */
++	if (cpu.level < 6)
++		return;
++
+ 	asm("int $0x15"
+ 	    : "=a" (boot_params.ist_info.signature),
+ 	      "=b" (boot_params.ist_info.command),
 
 -- 
