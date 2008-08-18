@@ -1,135 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbYHRHyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753606AbYHRHzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753087AbYHRHyz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 03:54:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYHRHys
+	id S1753606AbYHRHzn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 03:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbYHRHzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 03:54:48 -0400
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:58560 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751216AbYHRHyr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 03:54:47 -0400
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Hugh Dickins <hugh@veritas.com>, Johannes Weiner <hannes@saeurebad.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Kel Modderman <kel@otaku42.de>, Markus Armbruster <armbru@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Jaya Kumar <jayakumar.lkml@gmail.com>
-In-Reply-To: <200808181132.43718.nickpiggin@yahoo.com.au>
-References: <1218697362.26014.9.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0808150049110.17216@blonde.site>
-	 <1218989974.3996.4.camel@localhost.localdomain>
-	 <200808181132.43718.nickpiggin@yahoo.com.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-FP8b9dON4vS9dg72q6o3"
-Date: Mon, 18 Aug 2008 08:54:39 +0100
-Message-Id: <1219046079.3996.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-SA-Exim-Connect-IP: 192.168.1.5
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: kernel BUG at lib/radix-tree.c:473!
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+	Mon, 18 Aug 2008 03:55:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60505 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751019AbYHRHze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 03:55:34 -0400
+Date: Mon, 18 Aug 2008 09:54:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] debug: fix BUILD_BUG_ON() for non-constant expressions
+Message-ID: <20080818075459.GH30694@elte.hu>
+References: <20080816100948.GB19926@martell.zuzino.mipt.ru> <alpine.LFD.1.10.0808170936260.3324@nehalem.linux-foundation.org> <20080817173319.GA2450@elte.hu> <200808181109.43203.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808181109.43203.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-FP8b9dON4vS9dg72q6o3
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-On Mon, 2008-08-18 at 11:32 +1000, Nick Piggin wrote:
-> On Monday 18 August 2008 02:19, Ian Campbell wrote:
-> > FWIW the patch below apparently makes it work for me, but I'm not going
-> > to pretend I follow what's going on, why or what else it breaks ;-)
->=20
-> I think Iwould prefer fs_defio to use its own set_page_dirty
-> function. __set_page_dirty_no_writeback is supposed to be used
-> on pagecache, by filesystems.
+> On Monday 18 August 2008 03:33:19 Ingo Molnar wrote:
+> > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > > Gag me now.
+> > >
+> > > Why not just do
+> > >
+> > >  #define __BBO(c)                sizeof(const char[1 - 2*!!(c)])
+> > >  #define __BBONC(c)              __BBO(!__builtin_constant_p(c))
+> > >  #define BUILD_BUG_ON_ZERO(c)    (__BBO(c) - __BBONC(c))
+> > >  #define BUILD_BUG_ON(c)         (void)BUILD_BUG_ON_ZERO(c)
+> > >
+> > > and be done with it?
+> >
+> > yeah, i first tried a few variants of that (compile-time warnings are
+> > much better than link time warnings), but none worked when i tested
+> > various failure modes.
+> 
+> Hey, I thought I was the "undisputed ruler of Ugly-land".
+> 
+> How about this instead:
+> 
+> #define BUILD_BUG_ON(condition)						\
+> do {									\
+> 	static struct { char arr[1 - 2*!!(condition)]; } x __maybe_unused;	\
+> } while(0)
 
-fbdefio: add set_page_dirty handler to deferred IO FB
+hm, have you tried it and do we get a severe enough link error about 
+that? If the macro gets ignored by the compiler that's really a hard 
+error - such things are essential safeguards of kernel sanity:
 
-Fixes kernel BUG at lib/radix-tree.c:473.
+	/*
+	 * Build-time sanity checks on the kernel image and module
+	 * area mappings. (these are purely build-time and produce no code)
+	 */
+	BUILD_BUG_ON(MODULES_VADDR < KERNEL_IMAGE_START);
+	BUILD_BUG_ON(MODULES_VADDR-KERNEL_IMAGE_START < KERNEL_IMAGE_SIZE);
+	BUILD_BUG_ON(MODULES_LEN + KERNEL_IMAGE_SIZE > 2*PUD_SIZE);
+	BUILD_BUG_ON((KERNEL_IMAGE_START & ~PMD_MASK) != 0);
+	BUILD_BUG_ON((MODULES_VADDR & ~PMD_MASK) != 0);
+	BUILD_BUG_ON(!(MODULES_VADDR > __START_KERNEL));
+	BUILD_BUG_ON(!(((MODULES_END - 1) & PGDIR_MASK) ==
+				(__START_KERNEL & PGDIR_MASK)));
+	BUILD_BUG_ON(__fix_to_virt(__end_of_fixed_addresses) <= MODULES_END);
 
-Previously the handler was incidentally provided by tmpfs but this was
-removed with:
+( and propagating them into runtime failures not only increases bloat,
+  it also makes failures harder to debug. These checks 'run' _early_. )
 
-  commit 14fcc23fdc78e9d32372553ccf21758a9bd56fa1
-  Author: Hugh Dickins <hugh@veritas.com>
-  Date:   Mon Jul 28 15:46:19 2008 -0700
+Link time warnings are easy enough to miss.
 
-    tmpfs: fix kernel BUG in shmem_delete_inode
+So unless there's a better way of doing it all at compile time (i'd 
+really prefer that!) i'd prefer the link time error about botched 
+BUILD_BUG_ON() conditions - as my commits introduce.
 
-relying on this behaviour was incorrect in any case and the BUG
-also appeared when the device node was on an ext3 filesystem.
-
-Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Hugh Dickins <hugh@veritas.com>
-Cc: Johannes Weiner <hannes@saeurebad.de>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Kel Modderman <kel@otaku42.de>
-Cc: Markus Armbruster <armbru@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- drivers/video/fb_defio.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
-index 59df132..214bb7c 100644
---- a/drivers/video/fb_defio.c
-+++ b/drivers/video/fb_defio.c
-@@ -114,11 +114,23 @@ static struct vm_operations_struct
-fb_deferred_io_vm_ops =3D {
- 	.page_mkwrite	=3D fb_deferred_io_mkwrite,
- };
-=20
-+static int fb_deferred_io_set_page_dirty(struct page *page)
-+{
-+	if (!PageDirty(page))
-+		SetPageDirty(page);
-+	return 0;
-+}
-+
-+static const struct address_space_operations fb_deferred_io_aops =3D {
-+	.set_page_dirty =3D fb_deferred_io_set_page_dirty,
-+};
-+
- static int fb_deferred_io_mmap(struct fb_info *info, struct
-vm_area_struct *vma)
- {
- 	vma->vm_ops =3D &fb_deferred_io_vm_ops;
- 	vma->vm_flags |=3D ( VM_IO | VM_RESERVED | VM_DONTEXPAND );
- 	vma->vm_private_data =3D info;
-+	vma->vm_file->f_mapping->a_ops =3D &fb_deferred_io_aops;
- 	return 0;
- }
-=20
---=20
-1.5.6.3
-
---=20
-Ian Campbell
-
-How many Unix hacks does it take to change a light bulb?
-   Let's see, can you use a shell script for that or does it need a C progr=
-am?
-
---=-FP8b9dON4vS9dg72q6o3
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkipKr8ACgkQM0+0qS9rzVnyzACfal+KwazyzyKaZoZqt3kl+gLV
-xlYAoKelOsFl4eEjPEJDXSY9zdr/Yyuv
-=HyxJ
------END PGP SIGNATURE-----
-
---=-FP8b9dON4vS9dg72q6o3--
-
+	Ingo
