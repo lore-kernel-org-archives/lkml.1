@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbYHRORU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754041AbYHROUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753803AbYHRORU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 10:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbYHRORG
+	id S1754041AbYHROUN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 10:20:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbYHROUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 10:17:06 -0400
-Received: from p01c12o145.mxlogic.net ([208.65.145.68]:53089 "EHLO
-	p01c12o145.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752589AbYHRORF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 10:17:05 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 18 Aug 2008 10:20:00 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61732 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752544AbYHROUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 10:20:00 -0400
+Date: Mon, 18 Aug 2008 15:19:05 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+cc: Arjan van de Ven <arjan@infradead.org>, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/6] x86: apic - unify lapic_resume
+In-Reply-To: <20080816201235.GB7182@lenovo>
+Message-ID: <Pine.LNX.4.55.0808181506230.29123@cliff.in.clinika.pl>
+References: <1218914515-26377-1-git-send-email-gorcunov@gmail.com>
+ <f87881899957b7aa08b827cdc6b5dd8cf53e4730.1218914042.git.gorcunov@gmail.com>
+ <722b5bc0303212ca203cadeedae5ede3e23eccb7.1218914042.git.gorcunov@gmail.com>
+ <Pine.LNX.4.55.0808162041190.17944@cliff.in.clinika.pl>
+ <20080816130008.349b031d@infradead.org> <20080816201235.GB7182@lenovo>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Linux 2.6.26 edac errors and ASUS P5W DH Deluxe motherboard
-Date: Mon, 18 Aug 2008 15:17:01 +0100
-Message-ID: <0F10A59FDFFDFD4E9BEBD7365DE672550214F027@uk-email.terastack.bluearc.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Linux 2.6.26 edac errors and ASUS P5W DH Deluxe motherboard
-Thread-Index: AckBPRUPfalAtn12SI2RQV13wrXFuQ==
-From: "Andy Chittenden" <andyc@bluearc.com>
-To: <linux-kernel@vger.kernel.org>
-X-Spam: [F=0.1000000000; S=0.100(2008081101)]
-X-MAIL-FROM: <andyc@bluearc.com>
-X-SOURCE-IP: [62.190.48.218]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've just installed the linux-image-2.6.26-1-amd64 debian package on
-three of our ASUS P5W DH Deluxe based machines and they've all started
-spewing out messages:
+On Sun, 17 Aug 2008, Cyrill Gorcunov wrote:
 
-Message from syslogd@savage at Mon Aug 18 14:01:52 2008 ...
-savage kernel: [   74.389644] EDAC MC0: UE page 0x7fe03, offset 0x0,
-grain 128, row 2, labels ":": i82975x UE
+> it seems this limit is not APIC related since iirc 82489DX allows
+> to address 2^14 bits, x2APIC - more then 128 entities too. So I suspect
+> it somehow cpu bitmap related. Am I wrong (I didn't _check_ the code)?
 
-Message from syslogd@savage at Mon Aug 18 14:01:53 2008 ...
-savage kernel: [   75.555862] EDAC MC0: UE page 0x7fd44, offset 0x0,
-grain 128, row 2, labels ":": i82975x UE
+ For the record: the 82489DX supports an 8-bit physical unit ID so 256
+distinct values are supported.  Of these I gather 255 is taken for the
+broadcast ID in the physical destination mode, but that is nowhere
+explicitly confirmed in the 82489DX docs (it can be implied from protocol
+description though).  While the ID is indeed 8-bit in the 82489DX, for
+systems where future compatibility was a concern Intel recommended the use
+of IDs from 0 through to 14 only in anticipation of the future integrated
+APIC with the physical mode addressing capability limited to 4 bits only
+(and 15 taken for the broadcast ID).
 
-Message from syslogd@savage at Mon Aug 18 14:01:54 2008 ...
-savage kernel: [   76.628039] EDAC MC0: UE page 0x7fd41, offset 0x0,
-grain 128, row 2, labels ":": i82975x UE
+ Full 32 bits are available with the 82489DX for the logical destination 
+mode and only the flat (no cluster) mode is supported.
 
-Message from syslogd@savage at Mon Aug 18 14:01:55 2008 ...
-savage kernel: [   77.629260] EDAC MC0: UE page 0x7fd27, offset 0x0,
-grain 128, row 2, labels ":": i82975x UE
-
-every second.
-
-I've removed that kernel package and they're running previous versions
-of the kernel (eg linux-image-2.6.25-2-amd64) happily. I've run memtest
-on one of them with no problems. So, anyone got any ideas what's causing
-this? (FWIW the machines have all got ECC memory in them).
-
--- 
-Andy, BlueArc Engineering
-
-
+  Maciej
