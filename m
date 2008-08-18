@@ -1,161 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753871AbYHRMuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753871AbYHRMxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753871AbYHRMuX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 08:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbYHRMuH
+	id S1753871AbYHRMxR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 08:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbYHRMxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 08:50:07 -0400
-Received: from web82102.mail.mud.yahoo.com ([209.191.84.215]:44552 "HELO
-	web82102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752447AbYHRMuF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 08:50:05 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=gpy76seoCqB/cs8MQcxtp4/sx7Xo4Dh0kwnIh22dzoYh5nPum4W61qC6pLrbEOTC01aWb2j0vS4R3rsqPEN4aqBM3IqcJ+c902omjP/XSQ338VVZEaOimRR5+XRJG6dQYMTwAsRlxTT00B9PfLwxLol1AUbjdndaweMrM9t/oqk=;
-X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
-Date: Mon, 18 Aug 2008 05:50:04 -0700 (PDT)
-From: David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- success reverting for 2.6.26, need advice
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <612194.7263.qm@web82102.mail.mud.yahoo.com>
+	Mon, 18 Aug 2008 08:53:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34657 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751780AbYHRMxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 08:53:03 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080817011711.GA17528@spacedout.fries.net>
+References: <20080817011711.GA17528@spacedout.fries.net> <20080814103728.13651.1528.stgit@warthog.procyon.org.uk>
+To: David Fries <david@fries.net>
+Cc: dhowells@redhat.com, sfr@canb.auug.org.au, jmorris@namei.org,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] Fix setting of PF_SUPERPRIV by __capable() [BROKEN]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Mon, 18 Aug 2008 13:52:36 +0100
+Message-ID: <17007.1219063956@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Fries <david@fries.net> wrote:
 
-SUMMARY
+> The first two submissions this patch had parent for the argument, the third
+> one has child then parent and fails to compile with SECURITY disabled.
+> Please apply the following patch.
 
-1.  I succeeded in my attempt to revert 2 problem commits and get
-a working 2.6.26 kernel which boots with no lockup without using
-"hpet=disable".
+Yeah...  It seems I found an older version of the patch.  I seem to have too
+many instances floating around in various trees.
 
-2.  I would like to apply the commits between "v2.6.26" and
-"v2.6.27-rc3", but would like advice on the best approach for doing
-so.  I am not sure about the "best" approach to use, and all 3 of
-the files involved were merged into others as 2.6.26 became 2.6.27-rc1.
-
-3.  I am more interested in finding out why Yinghai's commits fail
-on this hardware than I am in reverting those commits.  I still don't
-think those two commits were broken, and have an interest in knowing
-whether the problem lies with my hardware or some nastier issue in
-the kernel waiting to spring on us all later.
-
-
-REVERTING
-
-
-Well, Bill Fink's idea of reverting the 2 successive commits that cause
-my 2 ECS AMD690GM-M2 machines to lock up worked.  I performed these
-steps on Saturday afternoon:
-
-$ git checkout -b my-2.6.26 v2.6.26
-
-$ git revert 3def3d6d
-[manually edit conflict in arch/x86/kernel/e820_64.c]
-
-$ git commit -a
-
-$ git revert 1e934dda
-
-
-It took about 5 minutes, and I now have my very first 2.6.26 kernel
-which can boot and run perfectly without "hpet=disable".  (I am using
-it now as my main kernel on the test machine, but with "notsc" to
-avoid the annoying complaints about TSC being unstable.)
-
-This is the minimum result that I wanted to achieve:  a patch for the
-Debian Kernel Team, in case they are interested in having it.  Is this
-something appropriate for the maintainers of stable 2.6.26.x here to 
-be interested in?
-
-
-HOW BEST TO APPLY CHANGES FROM 2.6.26 TO 2.6.27-rc3
-
-I made no attempt to apply the additional commits up to the current
-tip.  Somewhere between 2.6.26 and 2.6.27-rc1 the files involved
-disappear, part of the process of merging x86_64 with x86_32.  Here
-are the file changes to which I am referring:
-
-arch/x86/kernel/e820_64.c  --> e820.c
-arch/x86/kernel/setup_64.c --> setup.c
-include/asm-x86/e820_64.h  --> e820.h
-
-[Note: arch/x86/kernel/apic_64.c is also involved, but still exists.]
-
-I currently have 2 branches in my local git tree, called:
-
-master
-my-2.6.26
-
-The "master" branch is the cloned "origin/master" from when I did my
-first bisection before bringing my troubles to LKML.  It is Linus' git
-tree:
-
-[remote "origin"]
-    url = git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6
-
-I also have Ingo's "tip" tree available as a remote, but currently have
-no branch for it:
-
-[remote "tip"]
-    url = git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
-    fetch = +refs/heads/*:refs/remotes/tip/*
-
-Should I be trying to preserve all of the individual commits with something
-like 'git rebase' (or even 'git filter-branch'), or should I just use
-'git merge' and not worry about preserving commit history.
-
-
-STILL LOOKING FOR THE REAL PROBLEM
-
-Since Yinghai's commits which I reverted above (3def3d6d... and 1e934dda...)
-work fine for everyone here, including for me on one of my 3 machines, I
-spent the rest of the weekend trying to extract information from kernels
-experiencing the lockup.
-
-I work as a walk-in tutor at a community college, and one of my specialties
-is C++ programming.  I haven't really used C since I first learned it from
-Kochan's _Programming in C_ in 1991.  I have certainly never even looked
-at low-level OS code before, so I was trying to avoid looking at the code...
-leaving that to the experts here.
-
-When the revert worked on Saturday, I had a moment of relief.  Then I became
-angry at the thought that those commits might simply end up reverted without
-anyone ever know the reason why they won't work on my hardware.
-
-I spent the rest of Saturday and all day Sunday reading books, documentation,
-info on websites, etc.  I printed out versions of the functions involved in
-the changes -- before and after the problem commits -- and came up with a
-huge list of ideas for diagnostic code I could use to print info before the
-kernels lock.
-
-I have been trying those diagnostics since Sunday morning.  I still don't know
-what is causing the problem, but I have been able to produce some output that
-rules out certain causes and provides some information.  One big problem is
-that the kernel is in 80x25 text mode when it freezes, so it is difficult to
-keep things from scrolling off the top before I can even read it, much less
-write it down.
-
-However, since I know a place in the kernel code where a function is called
-but never returns, I have been able to print lots of information just before
-the lockup occurs.  I even have the equivalent of 'cat /proc/iomem' for a
-locking kernel.
-
-Is anyone here interested in that information?  (With or without the code used
-to generate it?)  I am sure I will continue to try to solve the real problem
-here, even if I have to study the entire kernel source tree for the next 2 
-years!  I don't want to end up with release after release of the Linux kernel
-which can only run on 2 of my machines with "hpet=disable"!
-
-
-Thank all,
-Dave W.
+Acked-by: David Howells <dhowells@redhat.com>
