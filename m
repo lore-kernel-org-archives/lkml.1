@@ -1,436 +1,906 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbYHRSPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbYHRSRO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754911AbYHRSPw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 14:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbYHRSPm
+	id S1755534AbYHRSRO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 14:17:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYHRSQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 14:15:42 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:42395 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751837AbYHRSPk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 14:15:40 -0400
-Date: Mon, 18 Aug 2008 12:15:24 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Matt_Domsch@dell.com, Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH] ata: Add support for Long Logical Sectors and Long Physical Sectors
-Message-ID: <20080818181523.GG677@parisc-linux.org>
-References: <1217957207-23116-1-git-send-email-matthew@wil.cx> <1217957207-23116-3-git-send-email-matthew@wil.cx> <48A8B211.8030103@pobox.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48A8B211.8030103@pobox.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 18 Aug 2008 14:16:57 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:58480 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753639AbYHRSQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 14:16:55 -0400
+Subject: Re: [BUG] __GFP_THISNODE is not always honored
+From: Adam Litke <agl@us.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: linux-mm <linux-mm@kvack.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       nacc <nacc@linux.vnet.ibm.com>, apw <apw@shadowen.org>,
+       agl <agl@linux.vnet.ibm.com>
+In-Reply-To: <20080818105918.GD32113@csn.ul.ie>
+References: <1218837685.12953.11.camel@localhost.localdomain>
+	 <20080818105918.GD32113@csn.ul.ie>
+Content-Type: multipart/mixed; boundary="=-qNQjZzlx+a0TScHAYAQG"
+Organization: IBM
+Date: Mon, 18 Aug 2008 13:16:52 -0500
+Message-Id: <1219083412.29323.36.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 17, 2008 at 07:19:45PM -0400, Jeff Garzik wrote:
-> Matthew Wilcox wrote:
-> >From: Matthew Wilcox <willy@linux.intel.com>
-> >
-> >ATA 8 adds support for devices that have sector sizes larger than 512
-> >bytes.  We record the sector size in the ata_device and use it instead
-> >of the ATA_SECT_SIZE when the data transfer is a multiple of sectors.
-> >
-> >Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-> >---
-> > drivers/ata/libata-core.c |  127 
-> > +++++++++++++++++++++++++++++++++++++++++++++
-> > drivers/ata/libata-scsi.c |   52 +++++++++++++-----
-> > include/linux/libata.h    |    4 +-
-> > 3 files changed, 168 insertions(+), 15 deletions(-)
+
+--=-qNQjZzlx+a0TScHAYAQG
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+On Mon, 2008-08-18 at 11:59 +0100, Mel Gorman wrote:
+> On (15/08/08 17:01), Adam Litke didst pronounce:
+> > While running the libhugetlbfs test suite on a NUMA machine with 2.6.27-rc3, I
+> > discovered some strange behavior with __GFP_THISNODE.  The hugetlb function
+> > alloc_fresh_huge_page_node() calls alloc_pages_node() with __GFP_THISNODE but
+> > occasionally a page that is not on the requested node is returned. 
 > 
-> Was this ever updated regarding Alan's final comments?
+> That's bad in itself and has wider reaching consequences than hugetlb
+> getting its counters wrong. I believe SLUB depends on __GFP_THISNODE
+> being obeyed for example. Can you boot the machine in question with
+> mminit_loglevel=4 and loglevel=8 set on the command line and send me the
+> dmesg please? It should output the zonelists and I might be able to
+> figure out what's going wrong. Thanks
+
+dmesg output is attached.
+
+> > Since the
+> > hugetlb code assumes that the page will be on the requested node, badness follows
+> > when the page is added to the wrong node's free_list.
+> > 
+> > There is clearly something wrong with the buddy allocator since __GFP_THISNODE
+> > cannot be trusted.  Until that is fixed, the hugetlb code should not assume
+> > that the newly allocated page is on the node asked for.  This patch prevents
+> > the hugetlb pool counters from being corrupted and allows the code to cope with
+> > unbalanced numa allocations.
+> > 
+> > So far my debugging has led me to get_page_from_freelist() inside the
+> > for_each_zone_zonelist() loop.  When buffered_rmqueue() returns a page I
+> > compare the value of page_to_nid(page), zone->node and the node that the
+> > hugetlb code requested with __GFP_THISNODE.  These all match -- except when the
+> > problem triggers.  In that case, zone->node matches the node we asked for but
+> > page_to_nid() does not.
+> > 
 > 
-> I only have this patch (the one initiating the email sub-thread).
+> Feels like the wrong zonelist is being used. The dmesg with
+> mminit_loglevel may tell.
+> 
+> > Workaround patch:
+> > diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> > index 67a7119..7a30a61 100644
+> > --- a/mm/hugetlb.c
+> > +++ b/mm/hugetlb.c
+> > @@ -568,7 +568,7 @@ static struct page *alloc_fresh_huge_page_node(struct hstate *h, int nid)
+> >  			__free_pages(page, huge_page_order(h));
+> >  			return NULL;
+> >  		}
+> > -		prep_new_huge_page(h, page, nid);
+> > +		prep_new_huge_page(h, page, page_to_nid(page));
+> >  	}
+> 
+> This will mask the bug for hugetlb but I wonder if this should be a
+> VM_BUG_ON(page_to_nid(page) != nid) ?
 
-I didn't update it fully; I moved onto something else.  I didn't change
-the first of the two patches, so I'll just include the new version of
-the second one in this mail.  I think it addresses all of Alan's comments.
-I'll have a git tree up soon for you to pull from.
-
-commit dfde7a888bae3b36113b19f37e9edb29be9ae803
-Author: Matthew Wilcox <willy@linux.intel.com>
-Date:   Tue Aug 5 02:25:57 2008 -0400
-
-    ata: Add support for Long Logical Sectors and Long Physical Sectors
-    
-    ATA 8 permits devices that have sector sizes larger than 512 bytes.
-    We support this by recording the sector size in the ata_device and use
-    it instead of the ATA_SECT_SIZE when the data transfer is a multiple
-    of sectors.  Drivers must indicate their support for sector sizes other
-    than 512 by implementing the 'sector_size_supported' port operation.
-    
-    Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 5ba96c5..31e359e 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -446,6 +446,113 @@ void ata_tf_from_fis(const u8 *fis, struct ata_taskfile *tf)
- 	tf->hob_nsect	= fis[13];
- }
- 
-+/**
-+ * ata_sect_size - Returns the sector size to use for a command
-+ * @command: The ATA command byte
-+ * @dev_sect_size: The size of the drive's sectors
-+ *
-+ * Some commands are specified to transfer (a multiple of) 512 bytes of data
-+ * while others transfer a multiple of the number of bytes in a sector.  This
-+ * function knows which commands transfer how much data.
-+ */
-+unsigned ata_sect_size(u8 command, unsigned dev_sect_size)
-+{
-+	enum {
-+		UNKNOWN = 0,
-+		FIVE_TWELVE = 1,
-+		DEVICE = 2,
-+	};
-+
-+	static const char command_sect_size[256] = {
-+		[ ATA_CMD_CFA_TRANSLATE_SECTOR ] = DEVICE,
-+		[ ATA_CMD_CFA_WRITE_MULTI_WITHOUT_ERASE ] = DEVICE,
-+		[ ATA_CMD_CFA_WRITE_SECTORS_WITHOUT_ERASE ] = DEVICE,
-+		[ ATA_CMD_READ ] = DEVICE,
-+		[ ATA_CMD_READ_EXT ] = DEVICE,
-+		[ ATA_CMD_READ_QUEUED ] = DEVICE,
-+		[ ATA_CMD_READ_QUEUED_EXT ] = DEVICE,
-+		[ ATA_CMD_FPDMA_READ ] = DEVICE,
-+		[ ATA_CMD_READ_MULTI ] = DEVICE,
-+		[ ATA_CMD_READ_MULTI_EXT ] = DEVICE,
-+		[ ATA_CMD_PIO_READ ] = DEVICE,
-+		[ ATA_CMD_PIO_READ_EXT ] = DEVICE,
-+		[ ATA_CMD_READ_STREAM_DMA_EXT ] = DEVICE,
-+		[ ATA_CMD_READ_STREAM_EXT ] = DEVICE,
-+		[ ATA_CMD_VERIFY ] = DEVICE,
-+		[ ATA_CMD_VERIFY_EXT ] = DEVICE, /* XXX: not listed in rev 5 */
-+		[ ATA_CMD_WRITE ] = DEVICE,
-+		[ ATA_CMD_WRITE_EXT ] = DEVICE,
-+		[ ATA_CMD_WRITE_FUA_EXT ] = DEVICE,
-+		[ ATA_CMD_WRITE_DMA_QUEUED ] = DEVICE,
-+		[ ATA_CMD_WRITE_DMA_QUEUED_EXT ] = DEVICE,
-+		[ ATA_CMD_WRITE_DMA_QUEUED_FUA_EXT ] = DEVICE,
-+		[ ATA_CMD_FPDMA_WRITE ] = DEVICE,
-+		[ ATA_CMD_WRITE_MULTI ] = DEVICE,
-+		[ ATA_CMD_WRITE_MULTI_EXT ] = DEVICE,
-+		[ ATA_CMD_WRITE_MULTI_FUA_EXT ] = DEVICE,
-+		[ ATA_CMD_PIO_WRITE ] = DEVICE,
-+		[ ATA_CMD_PIO_WRITE_EXT ] = DEVICE,
-+		[ ATA_CMD_WRITE_STREAM_DMA_EXT ] = DEVICE,
-+		[ ATA_CMD_WRITE_STREAM_EXT ] = DEVICE,
-+		[ ATA_CMD_CFA_ERASE_SECTORS ] = FIVE_TWELVE,
-+		[ ATA_CMD_CFA_REQUEST_EXT_ERROR ] = FIVE_TWELVE,
-+		[ ATA_CMD_CHK_MEDIA_CARD_TYPE ] = FIVE_TWELVE,
-+		[ ATA_CMD_CHK_POWER ] = FIVE_TWELVE,
-+		[ ATA_CMD_CONFIG_STREAM ] = FIVE_TWELVE,
-+		[ ATA_CMD_CONF_OVERLAY ] = FIVE_TWELVE,
-+		[ ATA_CMD_DEV_RESET ] = FIVE_TWELVE,
-+		[ ATA_CMD_DLOAD_MCODE ] = FIVE_TWELVE,
-+		[ ATA_CMD_EDD ] = FIVE_TWELVE,
-+		[ ATA_CMD_FLUSH ] = FIVE_TWELVE,
-+		[ ATA_CMD_FLUSH_EXT ] = FIVE_TWELVE,
-+		[ ATA_CMD_ID_ATA ] = FIVE_TWELVE,
-+		[ ATA_CMD_ID_ATAPI ] = FIVE_TWELVE,
-+		[ ATA_CMD_IDLE ] = FIVE_TWELVE,
-+		[ ATA_CMD_IDLEIMMEDIATE ] = FIVE_TWELVE,
-+		[ ATA_CMD_NVCACHE ] = FIVE_TWELVE,
-+		[ ATA_CMD_NOP ] = FIVE_TWELVE,
-+		[ ATA_CMD_PACKET ] = FIVE_TWELVE,
-+		[ ATA_CMD_PMP_READ ] = FIVE_TWELVE,
-+		[ ATA_CMD_READ_LOG_EXT ] = FIVE_TWELVE,
-+		[ ATA_CMD_READ_LOG_DMA_EXT ] = FIVE_TWELVE,
-+		[ ATA_CMD_READ_NATIVE_MAX ] = FIVE_TWELVE,
-+		[ ATA_CMD_READ_NATIVE_MAX_EXT ] = FIVE_TWELVE,
-+		[ ATA_CMD_SEC_DISABLE_PASSWORD ] = FIVE_TWELVE,
-+		[ ATA_CMD_SEC_ERASE_PREPARE ] = FIVE_TWELVE,
-+		[ ATA_CMD_SEC_ERASE_UNIT ] = FIVE_TWELVE,
-+		[ ATA_CMD_SEC_FREEZE_LOCK ] = FIVE_TWELVE,
-+		[ ATA_CMD_SEC_SET_PASSWORD ] = FIVE_TWELVE,
-+		[ ATA_CMD_SEC_UNLOCK ] = FIVE_TWELVE,
-+		[ ATA_CMD_SERVICE ] = FIVE_TWELVE,
-+		[ ATA_CMD_SET_FEATURES ] = FIVE_TWELVE,
-+		[ ATA_CMD_SET_MAX ] = FIVE_TWELVE,
-+		[ ATA_CMD_SET_MAX_EXT ] = FIVE_TWELVE,
-+		[ ATA_CMD_SET_MULTI ] = FIVE_TWELVE,
-+		[ ATA_CMD_SLEEP ] = FIVE_TWELVE,
-+		[ ATA_CMD_SMART ] = FIVE_TWELVE,
-+		[ ATA_CMD_STANDBY ] = FIVE_TWELVE,
-+		[ ATA_CMD_STANDBYNOW1 ] = FIVE_TWELVE,
-+		[ ATA_CMD_TRUSTED_NON_DATA ] = FIVE_TWELVE,
-+		[ ATA_CMD_TRUSTED_RECEIVE ] = FIVE_TWELVE,
-+		[ ATA_CMD_TRUSTED_RECEIVE_DMA ] = FIVE_TWELVE,
-+		[ ATA_CMD_TRUSTED_SEND ] = FIVE_TWELVE,
-+		[ ATA_CMD_TRUSTED_SEND_DMA ] = FIVE_TWELVE,
-+		[ ATA_CMD_PMP_WRITE ] = FIVE_TWELVE,
-+		[ ATA_CMD_WRITE_LOG_EXT ] = FIVE_TWELVE,
-+		[ ATA_CMD_WRITE_LOG_DMA_EXT ] = FIVE_TWELVE,
-+		[ ATA_CMD_WRITE_UNCORRECTABLE_EXT ] = FIVE_TWELVE,
-+		[ ATA_CMD_INIT_DEV_PARAMS ] = FIVE_TWELVE,
-+	};
-+
-+	char size = command_sect_size[command];
-+	if (size == DEVICE)
-+		return dev_sect_size;
-+	if (size == UNKNOWN && printk_ratelimit())
-+		printk("Unknown ata cmd %d, assuming 512 byte sector size\n",
-+				command);
-+	return 512;
-+}
-+
- static const u8 ata_rw_cmds[] = {
- 	/* pio multi */
- 	ATA_CMD_READ_MULTI,
-@@ -1190,6 +1297,25 @@ static u64 ata_id_n_sectors(const u16 *id)
- 	}
- }
- 
-+/*
-+ * ATA supports sector sizes up to 2^33 - 1.  The reported sector size may
-+ * not be a power of two.  The extra bytes are used for user-visible data
-+ * integrity calculations.  Note this is not the same as the ECC which is
-+ * accessed through the SCT Command Transport or READ / WRITE LONG.
-+ */
-+static u64 ata_id_sect_size(const u16 *id)
-+{
-+	u16 word_106 = id[106];
-+	u64 sz;
-+
-+	if ((word_106 & 0xc000) != 0x4000)
-+		return ATA_SECT_SIZE;
-+	if (!(word_106 & (1 << 12)))
-+		return ATA_SECT_SIZE;
-+	sz = (id[117] | ((u64)id[118] << 16)) * 2;
-+	return sz;
-+}
-+
- u64 ata_tf_to_lba48(const struct ata_taskfile *tf)
- {
- 	u64 sectors = 0;
-@@ -2117,6 +2243,20 @@ static void ata_dev_config_ncq(struct ata_device *dev,
- 		snprintf(desc, desc_sz, "NCQ (depth %d/%d)", hdepth, ddepth);
- }
- 
-+static int ata_check_sect_size(struct ata_device *dev)
-+{
-+	/* Every device can handle 512 byte sectors */
-+	if (dev->sect_size == 512)
-+		return 0;
-+	/* Linux doesn't handle sectors above 4GB.  This may be a problem
-+	 * around 2050 or so.  Deal with it then.  */
-+	if (dev->sect_size > 0xffffffffULL)
-+		return -EINVAL;
-+	if (!dev->link->ap->ops->sector_size_supported)
-+		return -EINVAL;
-+	return dev->link->ap->ops->sector_size_supported(dev) ? 0 : -EINVAL;
-+}
-+
- /**
-  *	ata_dev_configure - Configure the specified ATA/ATAPI device
-  *	@dev: Target device to configure
-@@ -2196,6 +2336,7 @@ int ata_dev_configure(struct ata_device *dev)
- 	dev->max_sectors = 0;
- 	dev->cdb_len = 0;
- 	dev->n_sectors = 0;
-+	dev->sect_size = ATA_SECT_SIZE;
- 	dev->cylinders = 0;
- 	dev->heads = 0;
- 	dev->sectors = 0;
-@@ -2235,6 +2376,13 @@ int ata_dev_configure(struct ata_device *dev)
- 		}
- 
- 		dev->n_sectors = ata_id_n_sectors(id);
-+		dev->sect_size = ata_id_sect_size(id);
-+		rc = ata_check_sect_size(dev);
-+		if (rc) {
-+			ata_dev_printk(dev, KERN_ERR, "sector size %lld not "
-+					"supported.\n", dev->sect_size);
-+			goto err_out_nosup;
-+		}
- 
- 		if (dev->id[59] & 0x100)
- 			dev->multi_count = dev->id[59] & 0xff;
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index b9d3ba4..145ea08 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -49,7 +49,6 @@
- 
- #include "libata.h"
- 
--#define SECTOR_SIZE		512
- #define ATA_SCSI_RBUF_SIZE	4096
- 
- static DEFINE_SPINLOCK(ata_scsi_rbuf_lock);
-@@ -347,7 +346,7 @@ static int ata_get_identity(struct scsi_device *sdev, void __user *arg)
- 
- /**
-  *	ata_cmd_ioctl - Handler for HDIO_DRIVE_CMD ioctl
-- *	@scsidev: Device to which we are issuing command
-+ *	@sdev: Device to which we are issuing command
-  *	@arg: User provided data for issuing command
-  *
-  *	LOCKING:
-@@ -356,7 +355,7 @@ static int ata_get_identity(struct scsi_device *sdev, void __user *arg)
-  *	RETURNS:
-  *	Zero on success, negative errno on error.
-  */
--int ata_cmd_ioctl(struct scsi_device *scsidev, void __user *arg)
-+int ata_cmd_ioctl(struct scsi_device *sdev, void __user *arg)
- {
- 	int rc = 0;
- 	u8 scsi_cmd[MAX_COMMAND_SIZE];
-@@ -378,7 +377,8 @@ int ata_cmd_ioctl(struct scsi_device *scsidev, void __user *arg)
- 	memset(scsi_cmd, 0, sizeof(scsi_cmd));
- 
- 	if (args[3]) {
--		argsize = SECTOR_SIZE * args[3];
-+		unsigned sect_size = ata_sect_size(args[0], sdev->sector_size);
-+		argsize = sect_size * args[3];
- 		argbuf = kmalloc(argsize, GFP_KERNEL);
- 		if (argbuf == NULL) {
- 			rc = -ENOMEM;
-@@ -410,7 +410,7 @@ int ata_cmd_ioctl(struct scsi_device *scsidev, void __user *arg)
- 
- 	/* Good values for timeout and retries?  Values below
- 	   from scsi_ioctl_send_command() for default case... */
--	cmd_result = scsi_execute(scsidev, scsi_cmd, data_dir, argbuf, argsize,
-+	cmd_result = scsi_execute(sdev, scsi_cmd, data_dir, argbuf, argsize,
- 				  sensebuf, (10*HZ), 5, 0);
- 
- 	if (driver_byte(cmd_result) == DRIVER_SENSE) {/* sense data available */
-@@ -1493,6 +1493,7 @@ nothing_to_do:
- static unsigned int ata_scsi_rw_xlat(struct ata_queued_cmd *qc)
- {
- 	struct scsi_cmnd *scmd = qc->scsicmd;
-+	struct ata_device *dev = qc->dev;
- 	const u8 *cdb = scmd->cmnd;
- 	unsigned int tf_flags = 0;
- 	u64 block;
-@@ -1549,9 +1550,9 @@ static unsigned int ata_scsi_rw_xlat(struct ata_queued_cmd *qc)
- 		goto nothing_to_do;
- 
- 	qc->flags |= ATA_QCFLAG_IO;
--	qc->nbytes = n_block * ATA_SECT_SIZE;
-+	qc->nbytes = n_block * dev->sect_size;
- 
--	rc = ata_build_rw_tf(&qc->tf, qc->dev, block, n_block, tf_flags,
-+	rc = ata_build_rw_tf(&qc->tf, dev, block, n_block, tf_flags,
- 			     qc->tag);
- 	if (likely(rc == 0))
- 		return 0;
-@@ -2217,10 +2218,25 @@ saving_not_supp:
-  */
- static unsigned int ata_scsiop_read_cap(struct ata_scsi_args *args, u8 *rbuf)
- {
--	u64 last_lba = args->dev->n_sectors - 1; /* LBA of the last block */
-+	struct ata_device *dev = args->dev;
-+	u64 last_lba = dev->n_sectors - 1; /* LBA of the last block */
-+	u32 sector_size;
-+	u8 log_per_phys = 1;
-+	u16 first_sector_offset = 0;
-+	u16 word_106 = dev->id[106];
- 
- 	VPRINTK("ENTER\n");
- 
-+	if ((word_106 & 0xc000) == 0x4000) {
-+		/* Number and offset of logical sectors per physical sector */
-+		if (word_106 & (1 << 13))
-+			log_per_phys = word_106 & 0xf;
-+		if ((dev->id[209] & 0xc000) == 0x4000)
-+			first_sector_offset = dev->id[209] & 0x3fff;
-+	}
-+
-+	sector_size = dev->sect_size;
-+
- 	if (args->cmd->cmnd[0] == READ_CAPACITY) {
- 		if (last_lba >= 0xffffffffULL)
- 			last_lba = 0xffffffff;
-@@ -2231,9 +2247,10 @@ static unsigned int ata_scsiop_read_cap(struct ata_scsi_args *args, u8 *rbuf)
- 		rbuf[2] = last_lba >> (8 * 1);
- 		rbuf[3] = last_lba;
- 
--		/* sector size */
--		rbuf[6] = ATA_SECT_SIZE >> 8;
--		rbuf[7] = ATA_SECT_SIZE & 0xff;
-+		rbuf[4] = sector_size >> (8 * 3);
-+		rbuf[5] = sector_size >> (8 * 2);
-+		rbuf[6] = sector_size >> (8 * 1);
-+		rbuf[7] = sector_size;
- 	} else {
- 		/* sector count, 64-bit */
- 		rbuf[0] = last_lba >> (8 * 7);
-@@ -2246,8 +2263,15 @@ static unsigned int ata_scsiop_read_cap(struct ata_scsi_args *args, u8 *rbuf)
- 		rbuf[7] = last_lba;
- 
- 		/* sector size */
--		rbuf[10] = ATA_SECT_SIZE >> 8;
--		rbuf[11] = ATA_SECT_SIZE & 0xff;
-+		rbuf[8] = sector_size >> (8 * 3);
-+		rbuf[9] = sector_size >> (8 * 2);
-+		rbuf[10] = sector_size >> (8 * 1);
-+		rbuf[11] = sector_size;
-+
-+		rbuf[12] = 0;
-+		rbuf[13] = log_per_phys;
-+		rbuf[14] = first_sector_offset >> 8;
-+		rbuf[15] = first_sector_offset;
- 	}
- 
- 	return 0;
-@@ -2721,7 +2745,7 @@ static unsigned int ata_scsi_pass_thru(struct ata_queued_cmd *qc)
- 	}
- 
- 	/* READ/WRITE LONG use a non-standard sect_size */
--	qc->sect_size = ATA_SECT_SIZE;
-+	qc->sect_size = ata_sect_size(tf->command, dev->sect_size);
- 	switch (tf->command) {
- 	case ATA_CMD_READ_LONG:
- 	case ATA_CMD_READ_LONG_ONCE:
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index 06b8033..16a2132 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -553,8 +553,8 @@ struct ata_ering {
- struct ata_device {
- 	struct ata_link		*link;
- 	unsigned int		devno;		/* 0 or 1 */
--	unsigned long		flags;		/* ATA_DFLAG_xxx */
- 	unsigned int		horkage;	/* List of broken features */
-+	unsigned long		flags;		/* ATA_DFLAG_xxx */
- 	struct scsi_device	*sdev;		/* attached SCSI device */
- #ifdef CONFIG_ATA_ACPI
- 	acpi_handle		acpi_handle;
-@@ -562,6 +562,7 @@ struct ata_device {
- #endif
- 	/* n_sector is used as CLEAR_OFFSET, read comment above CLEAR_OFFSET */
- 	u64			n_sectors;	/* size of device, if ATA */
-+	u64			sect_size;	/* Logical, not physical */
- 	unsigned int		class;		/* ATA_DEV_xxx */
- 
- 	u8			pio_mode;
-@@ -753,6 +754,7 @@ struct ata_port_operations {
- 	unsigned int (*read_id)(struct ata_device *dev, struct ata_taskfile *tf, u16 *id);
- 
- 	void (*dev_config)(struct ata_device *dev);
-+	bool (*sector_size_supported)(struct ata_device *dev);
- 
- 	void (*freeze)(struct ata_port *ap);
- 	void (*thaw)(struct ata_port *ap);
-@@ -956,6 +958,7 @@ extern unsigned int ata_do_dev_read_id(struct ata_device *dev,
- 					struct ata_taskfile *tf, u16 *id);
- extern void ata_qc_complete(struct ata_queued_cmd *qc);
- extern int ata_qc_complete_multiple(struct ata_port *ap, u32 qc_active);
-+extern unsigned ata_sect_size(u8 command, unsigned dev_sect_size);
- extern void ata_scsi_simulate(struct ata_device *dev, struct scsi_cmnd *cmd,
- 			      void (*done)(struct scsi_cmnd *));
- extern int ata_std_bios_param(struct scsi_device *sdev,
+Yeah, the patch was provided for illustrative purposes only.
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
+
+--=-qNQjZzlx+a0TScHAYAQG
+Content-Disposition: attachment; filename=dmesg.out
+Content-Type: text/plain; name=dmesg.out; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+Using pSeries machine description
+Page orders: linear mapping = 24, virtual = 12, io = 12, vmemmap = 24
+Using 1TB segments
+Found initrd at 0xc000000002c00000:0xc000000002f0fc00
+console [udbg0] enabled
+Partition configured for 8 cpus.
+CPU maps initialized for 2 threads per core
+ (thread shift is 1)
+Starting Linux PPC64 #1 SMP Mon Aug 18 16:19:50 UTC 2008
+-----------------------------------------------------
+ppc64_pft_size                = 0x19
+physicalMemorySize            = 0x80000000
+htab_hash_mask                = 0x3ffff
+-----------------------------------------------------
+Initializing cgroup subsys cpuset
+Linux version 2.6.27-rc3-autokern1 (root@tundro5.rchland.ibm.com) (gcc version 4.1.3 20070929 (prerelease) (Ubuntu 4.1.2-16ubuntu2)) #1 SMP Mon Aug 18 16:19:50 UTC 2008
+[boot]0012 Setup Arch
+mminit::memory_register Entering add_active_range(1, 0x0, 0x8000) 0 entries of 256 used
+mminit::memory_register Entering add_active_range(0, 0x8000, 0xc000) 1 entries of 256 used
+mminit::memory_register Entering add_active_range(0, 0xc000, 0x10000) 2 entries of 256 used
+mminit::memory_register Entering add_active_range(0, 0x10000, 0x14000) 2 entries of 256 used
+mminit::memory_register Entering add_active_range(0, 0x14000, 0x18000) 2 entries of 256 used
+mminit::memory_register Entering add_active_range(0, 0x18000, 0x1c000) 2 entries of 256 used
+mminit::memory_register Entering add_active_range(0, 0x1c000, 0x20000) 2 entries of 256 used
+mminit::memory_register Entering add_active_range(0, 0x20000, 0x24000) 2 entries of 256 used
+mminit::memory_register Entering add_active_range(0, 0x24000, 0x28000) 2 entries of 256 used
+mminit::memory_register Entering add_active_range(0, 0x28000, 0x2c000) 2 entries of 256 used
+mminit::memory_register Entering add_active_range(0, 0x2c000, 0x30000) 2 entries of 256 used
+mminit::memory_register Entering add_active_range(0, 0x30000, 0x34000) 2 entries of 256 used
+mminit::memory_register Entering add_active_range(0, 0x34000, 0x38000) 2 entries of 256 used
+mminit::memory_register Entering add_active_range(0, 0x38000, 0x3c000) 2 entries of 256 used
+mminit::memory_register Entering add_active_range(0, 0x3c000, 0x40000) 2 entries of 256 used
+mminit::memory_register Entering add_active_range(0, 0x40000, 0x44000) 2 entries of 256 used
+mminit::memory_register Entering add_active_range(1, 0x44000, 0x48000) 2 entries of 256 used
+mminit::memory_register Entering add_active_range(1, 0x48000, 0x4c000) 3 entries of 256 used
+mminit::memory_register Entering add_active_range(1, 0x4c000, 0x50000) 3 entries of 256 used
+mminit::memory_register Entering add_active_range(1, 0x50000, 0x54000) 3 entries of 256 used
+mminit::memory_register Entering add_active_range(1, 0x54000, 0x58000) 3 entries of 256 used
+mminit::memory_register Entering add_active_range(1, 0x58000, 0x5c000) 3 entries of 256 used
+mminit::memory_register Entering add_active_range(1, 0x5c000, 0x60000) 3 entries of 256 used
+mminit::memory_register Entering add_active_range(1, 0x60000, 0x64000) 3 entries of 256 used
+mminit::memory_register Entering add_active_range(1, 0x64000, 0x68000) 3 entries of 256 used
+mminit::memory_register Entering add_active_range(1, 0x68000, 0x6c000) 3 entries of 256 used
+mminit::memory_register Entering add_active_range(1, 0x6c000, 0x70000) 3 entries of 256 used
+mminit::memory_register Entering add_active_range(1, 0x70000, 0x74000) 3 entries of 256 used
+mminit::memory_register Entering add_active_range(1, 0x74000, 0x78000) 3 entries of 256 used
+mminit::memory_register Entering add_active_range(1, 0x78000, 0x7c000) 3 entries of 256 used
+mminit::memory_register Entering add_active_range(1, 0x7c000, 0x80000) 3 entries of 256 used
+Node 0 Memory: 0x8000000-0x44000000
+Node 1 Memory: 0x0-0x8000000 0x44000000-0x80000000
+EEH: No capable adapters found
+PPC64 nvram contains 15360 bytes
+Using shared processor idle loop
+Zone PFN ranges:
+  DMA      0x00000000 -> 0x00080000
+  Normal   0x00080000 -> 0x00080000
+Movable zone start PFN for each node
+early_node_map[3] active PFN ranges
+    1: 0x00000000 -> 0x00008000
+    0: 0x00008000 -> 0x00044000
+    1: 0x00044000 -> 0x00080000
+mminit::pageflags_layout_widths Section 0 Node 4 Zone 2 Flags 19
+mminit::pageflags_layout_shifts Section 20 Node 4 Zone 2
+mminit::pageflags_layout_offsets Section 0 Node 60 Zone 58
+mminit::pageflags_layout_zoneid Zone ID: 58 -> 64
+mminit::pageflags_layout_usage location: 64 -> 58 unused 58 -> 19 flags 19 -> 0
+On node 0 totalpages: 245760
+mminit::memmap_init DMA zone: 3360 pages used for memmap
+mminit::memmap_init DMA zone: 0 pages reserved
+  DMA zone: 242400 pages, LIFO batch:31
+mminit::memmap_init Initialising map node 0 zone 0 pfns 32768 -> 278528
+mminit::memmap_init Normal zone: 0 pages used for memmap
+mminit::memmap_init Movable zone: 0 pages used for memmap
+On node 1 totalpages: 278528
+mminit::memmap_init DMA zone: 7168 pages used for memmap
+mminit::memmap_init DMA zone: 0 pages reserved
+  DMA zone: 271360 pages, LIFO batch:31
+mminit::memmap_init Initialising map node 1 zone 0 pfns 0 -> 524288
+mminit::memmap_init Normal zone: 0 pages used for memmap
+mminit::memmap_init Movable zone: 0 pages used for memmap
+[boot]0015 Setup Done
+mminit::zonelist general 0:DMA = 0:DMA 1:DMA 
+mminit::zonelist thisnode 0:DMA = 0:DMA 
+mminit::zonelist general 1:DMA = 1:DMA 0:DMA 
+mminit::zonelist thisnode 1:DMA = 1:DMA 
+Built 2 zonelists in Node order, mobility grouping on.  Total pages: 513760
+Policy zone: DMA
+Kernel command line: ro console=hvc0 autobench_args: root=/dev/sda6 ABAT:1219080427 mminit_loglevel=4 loglevel=8 
+[boot]0020 XICS Init
+[boot]0021 XICS Done
+pic: no ISA interrupt controller
+PID hash table entries: 4096 (order: 12, 32768 bytes)
+time_init: decrementer frequency = 512.000000 MHz
+time_init: processor frequency   = 4208.000000 MHz
+clocksource: timebase mult[7d0000] shift[22] registered
+clockevent: decrementer mult[8312] shift[16] cpu[0]
+Console: colour dummy device 80x25
+console handover: boot [udbg0] -> real [hvc0]
+Dentry cache hash table entries: 262144 (order: 9, 2097152 bytes)
+Inode-cache hash table entries: 131072 (order: 8, 1048576 bytes)
+freeing bootmem node 0
+freeing bootmem node 1
+Memory: 2036920k/2097152k available (7204k kernel code, 60876k reserved, 1328k data, 607k bss, 292k init)
+SLUB: Genslabs=13, HWalign=128, Order=0-3, MinObjects=0, CPUs=8, Nodes=16
+Calibrating delay loop... 1021.95 BogoMIPS (lpj=2043904)
+Mount-cache hash table entries: 256
+Initializing cgroup subsys ns
+Initializing cgroup subsys cpuacct
+clockevent: decrementer mult[8312] shift[16] cpu[1]
+Processor 1 found.
+clockevent: decrementer mult[8312] shift[16] cpu[2]
+Processor 2 found.
+clockevent: decrementer mult[8312] shift[16] cpu[3]
+Processor 3 found.
+clockevent: decrementer mult[8312] shift[16] cpu[4]
+Processor 4 found.
+clockevent: decrementer mult[8312] shift[16] cpu[5]
+Processor 5 found.
+clockevent: decrementer mult[8312] shift[16] cpu[6]
+Processor 6 found.
+clockevent: decrementer mult[8312] shift[16] cpu[7]
+Processor 7 found.
+Brought up 8 CPUs
+Node 0 CPUs: 0-7
+Node 1 CPUs:
+CPU0 attaching sched-domain:
+ domain 0: span 0-1 level SIBLING
+  groups: 0 1
+  domain 1: span 0-7 level CPU
+   groups: 0-1 2-3 4-5 6-7
+   domain 2: span 0-7 level NODE
+    groups: 0-7
+CPU1 attaching sched-domain:
+ domain 0: span 0-1 level SIBLING
+  groups: 1 0
+  domain 1: span 0-7 level CPU
+   groups: 0-1 2-3 4-5 6-7
+   domain 2: span 0-7 level NODE
+    groups: 0-7
+CPU2 attaching sched-domain:
+ domain 0: span 2-3 level SIBLING
+  groups: 2 3
+  domain 1: span 0-7 level CPU
+   groups: 2-3 4-5 6-7 0-1
+   domain 2: span 0-7 level NODE
+    groups: 0-7
+CPU3 attaching sched-domain:
+ domain 0: span 2-3 level SIBLING
+  groups: 3 2
+  domain 1: span 0-7 level CPU
+   groups: 2-3 4-5 6-7 0-1
+   domain 2: span 0-7 level NODE
+    groups: 0-7
+CPU4 attaching sched-domain:
+ domain 0: span 4-5 level SIBLING
+  groups: 4 5
+  domain 1: span 0-7 level CPU
+   groups: 4-5 6-7 0-1 2-3
+   domain 2: span 0-7 level NODE
+    groups: 0-7
+CPU5 attaching sched-domain:
+ domain 0: span 4-5 level SIBLING
+  groups: 5 4
+  domain 1: span 0-7 level CPU
+   groups: 4-5 6-7 0-1 2-3
+   domain 2: span 0-7 level NODE
+    groups: 0-7
+CPU6 attaching sched-domain:
+ domain 0: span 6-7 level SIBLING
+  groups: 6 7
+  domain 1: span 0-7 level CPU
+   groups: 6-7 0-1 2-3 4-5
+   domain 2: span 0-7 level NODE
+    groups: 0-7
+CPU7 attaching sched-domain:
+ domain 0: span 6-7 level SIBLING
+  groups: 7 6
+  domain 1: span 0-7 level CPU
+   groups: 6-7 0-1 2-3 4-5
+   domain 2: span 0-7 level NODE
+    groups: 0-7
+net_namespace: 1152 bytes
+NET: Registered protocol family 16
+IBM eBus Device Driver
+PCI: Probing PCI hardware
+PCI: Probing PCI hardware done
+SCSI subsystem initialized
+libata version 3.00 loaded.
+usbcore: registered new interface driver usbfs
+usbcore: registered new interface driver hub
+usbcore: registered new device driver usb
+NET: Registered protocol family 2
+Switched to high resolution mode on CPU 0
+Switched to high resolution mode on CPU 1
+Switched to high resolution mode on CPU 2
+Switched to high resolution mode on CPU 3
+Switched to high resolution mode on CPU 4
+Switched to high resolution mode on CPU 5
+Switched to high resolution mode on CPU 6
+Switched to high resolution mode on CPU 7
+IP route cache hash table entries: 65536 (order: 7, 524288 bytes)
+TCP established hash table entries: 262144 (order: 10, 4194304 bytes)
+TCP bind hash table entries: 65536 (order: 8, 1048576 bytes)
+TCP: Hash tables configured (established 262144 bind 65536)
+TCP reno registered
+NET: Registered protocol family 1
+checking if image is initramfs... it is
+Freeing initrd memory: 3135k freed
+IOMMU table initialized, virtual merging enabled
+RTAS daemon started
+audit: initializing netlink socket (disabled)
+type=2000 audit(1219080539.432:1): initialized
+RTAS: event: 952, Type: Platform Error, Severity: 2
+HugeTLB registered 16 MB page size, pre-allocated 0 pages
+HugeTLB registered 16 GB page size, pre-allocated 0 pages
+HugeTLB registered 64 KB page size, pre-allocated 0 pages
+Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+msgmni has been set to 3984
+Block layer SCSI generic (bsg) driver version 0.4 loaded (major 254)
+io scheduler noop registered
+io scheduler anticipatory registered (default)
+io scheduler deadline registered
+io scheduler cfq registered
+vio_register_driver: driver hvc_console registering
+HVSI: registered 0 devices
+Generic RTC Driver v1.07
+Serial: 8250/16550 driver4 ports, IRQ sharing disabled
+brd: module loaded
+loop: module loaded
+Intel(R) PRO/1000 Network Driver - version 7.3.20-k3-NAPI
+Copyright (c) 1999-2006 Intel Corporation.
+pcnet32.c:v1.35 21.Apr.2008 tsbogend@alpha.franken.de
+e100: Intel(R) PRO/100 Network Driver, 3.5.23-k4-NAPI
+e100: Copyright(c) 1999-2006 Intel Corporation
+drivers/net/ibmveth.c: ibmveth: IBM i/pSeries Virtual Ethernet Driver 1.03
+vio_register_driver: driver ibmveth registering
+console [netcon0] enabled
+netconsole: network logging started
+Uniform Multi-Platform E-IDE driver
+ipr: IBM Power RAID SCSI Device Driver version: 2.4.1 (April 24, 2007)
+vio_register_driver: driver ibmvscsi registering
+ibmvscsi 30000003: SRP_VERSION: 16.a
+scsi0 : IBM POWER Virtual SCSI Adapter 1.5.8
+ibmvscsi 30000003: partner initialization complete
+ibmvscsi 30000003: sent SRP login
+ibmvscsi 30000003: SRP_LOGIN succeeded
+ibmvscsi 30000003: host srp version: 16.a, host partition tundro1 (1), OS 2, max io 262144
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi 0:0:1:0: Direct-Access     IBM      VDASD blkdev     0001 PQ: 0 ANSI: 4
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+scsi scan: INQUIRY result too short (5), using 36
+st: Version 20080504, fixed bufsize 32768, s/g segs 256
+Driver 'st' needs updating - please use bus_type methods
+Driver 'sd' needs updating - please use bus_type methods
+sd 0:0:1:0: [sda] 73400922 512-byte hardware sectors (37581 MB)
+sd 0:0:1:0: [sda] Write Protect is off
+sd 0:0:1:0: [sda] Mode Sense: 0c 00 00 08
+sd 0:0:1:0: [sda] Write cache: disabled, read cache: disabled, doesn't support DPO or FUA
+sd 0:0:1:0: [sda] 73400922 512-byte hardware sectors (37581 MB)
+sd 0:0:1:0: [sda] Write Protect is off
+sd 0:0:1:0: [sda] Mode Sense: 0c 00 00 08
+sd 0:0:1:0: [sda] Write cache: disabled, read cache: disabled, doesn't support DPO or FUA
+ sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
+sd 0:0:1:0: [sda] Attached SCSI disk
+Driver 'sr' needs updating - please use bus_type methods
+sd 0:0:1:0: Attached scsi generic sg0 type 0
+ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
+Initializing USB Mass Storage driver...
+usbcore: registered new interface driver usb-storage
+USB Mass Storage support registered.
+mice: PS/2 mouse device common for all mice
+md: linear personality registered for level -1
+md: raid0 personality registered for level 0
+md: raid1 personality registered for level 1
+device-mapper: ioctl: 4.14.0-ioctl (2008-04-23) initialised: dm-devel@redhat.com
+usbcore: registered new interface driver hiddev
+usbcore: registered new interface driver usbhid
+usbhid: v2.6:USB HID core driver
+oprofile: using ppc64/power6 performance monitoring.
+IPv4 over IPv4 tunneling driver
+TCP cubic registered
+NET: Registered protocol family 17
+RPC: Registered udp transport module.
+RPC: Registered tcp transport module.
+registered taskstats version 1
+Freeing unused kernel memory: 292k freed
+IBM eHEA ethernet device driver (Release EHEA_0092)
+ehea: eth1: Jumbo frames are disabled
+ehea: eth1 -> logical port id #2
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs: mounted filesystem with ordered data mode.
+Unable to find swap-space signature
+EXT3 FS on sda6, internal journal
+Unable to find swap-space signature
+ehea: lan0: Physical port up
+ehea: External switch port is backup port
+
+--=-qNQjZzlx+a0TScHAYAQG--
+
