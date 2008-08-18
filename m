@@ -1,70 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbYHROv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724AbYHRO7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754105AbYHROv4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 10:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbYHROvs
+	id S1753724AbYHRO7k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 10:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbYHRO7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 10:51:48 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:26179 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752672AbYHROvr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 10:51:47 -0400
-Date: Mon, 18 Aug 2008 17:51:31 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] binfmt_misc.c: avoid potential kernel stack overflow
-Message-ID: <20080818145130.GB4818@localhost.localdomain>
-References: <20080818112849.GA4951@localhost.localdomain> <48A98293.5080109@openvz.org> <20080818144418.GA4818@localhost.localdomain>
+	Mon, 18 Aug 2008 10:59:31 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:36707 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751323AbYHRO7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 10:59:30 -0400
+Date: Mon, 18 Aug 2008 10:59:25 -0400
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Layton <jlayton@redhat.com>
+Subject: Re: [PATCH] Fix allocation sizes of knfsd raparm hash
+Message-ID: <20080818145925.GB23127@fieldses.org>
+References: <20080815184032.3acd8032.sfr@canb.auug.org.au> <s5hr68q5rm8.wl%tiwai@suse.de> <20080815190221.GB26563@fieldses.org> <s5hvdy1ny9n.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="XF85m9dhOBO43t/C"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080818144418.GA4818@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-29)
+In-Reply-To: <s5hvdy1ny9n.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Aug 16, 2008 at 10:45:56AM +0200, Takashi Iwai wrote:
+> At Fri, 15 Aug 2008 15:02:21 -0400,
+> J. Bruce Fields wrote:
+> > 
+> > On Fri, Aug 15, 2008 at 03:34:39PM +0200, Takashi Iwai wrote:
+> > > The raparm was allocated in a wrong size in the commit
+> > > 
+> > >    ca80290ebda9009aedc4bd93ede5d397cb1853dc
+> > >    nfsd: permit unauthenticated stat of export root
+> > > 
+> > > and thus it resulted in memory corruption, eventually Oopsing.
+> > > This patch fixes the allocation size.
+> > 
+> > Whoops, my fault, now fixed; thanks!
+> > 
+> > (Out of curiosity--how did you find this?)
+> 
+> Actually I hit the related Oops with the latest linux-next tree.
+> Since this bug appears first on that tree and didn't occur on the
+> previous tree, it was apparently a regression.  So, I looked through
+> changes over knfsd since the previous tree, found a suspicious one,
+> and tried to fix.
+> 
+> The linux-next tree is pretty helpful to catch a regression if one
+> eats own dog foods everyday.
 
---XF85m9dhOBO43t/C
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+OK, now I see my problem: my test systems deliver the rest of their
+results by email, but if I want to check the logs for oops messages I
+still need to remember to log in and look after each test run.  So I got
+lazy and missed the slab errors on nfsd shutdown.
 
-On Mon, Aug 18, 2008 at 05:44:19PM +0300, Kirill A. Shutemov wrote:
-> I have noticed yet another problem: more than one bit of sh_bang can be
-> used on alpha:
->=20
-> fs/exec.c
-> 1189                         return retval;
-> 1190=20
-> 1191                 /* Remember if the application is TASO.  */
-> 1192                 bprm->sh_bang =3D eh->ah.entry < 0x100000000UL;
-> 1193=20
-> 1194                 bprm->file =3D file;
+I wonder what the easiest way would be to automate collection of oops
+messages from the logs?  I suppose I should look at what the code that
+submits to kerneloops.org does.
 
-Sorry. Please ignore this part of the message. %)
+--b.
 
---=20
-Regards,  Kirill A. Shutemov
- + Belarus, Minsk
- + ALT Linux Team, http://www.altlinux.com/
-
---XF85m9dhOBO43t/C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkipjHIACgkQbWYnhzC5v6ofSACePn4RFzSGjr+aQocTpCOMwQYw
-nGQAoIAftNkX0zEgZeWnAX4fE7tqmw97
-=TtBR
------END PGP SIGNATURE-----
-
---XF85m9dhOBO43t/C--
+> 
+> BTW, I've been building linux-next SUSE kernel packages at every
+> linux-next release.  The packages are found in the following URL:
+> 
+>     http://ftp.suse.com/pub/people/tiwai/kernel-next/
+> 
+> If anyone has a SUSE system and would like to try linux-next kernel,
+> just installs the package in addition.  It won't conflict with
+> existing standard kernel packages.
+> 
+> 
+> thanks,
+> 
+> Takashi
+> 
+> > 
+> > --b.
+> > 
+> > > 
+> > > Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> > > 
+> > > ---
+> > > diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+> > > index bfa5453..30d606f 100644
+> > > --- a/fs/nfsd/vfs.c
+> > > +++ b/fs/nfsd/vfs.c
+> > > @@ -2093,7 +2093,7 @@ nfsd_racache_init(int cache_size)
+> > >  
+> > >  		raparm = &raparm_hash[i].pb_head;
+> > >  		for (j = 0; j < nperbucket; j++) {
+> > > -			*raparm = kzalloc(sizeof(*raparm), GFP_KERNEL);
+> > > +			*raparm = kzalloc(sizeof(**raparm), GFP_KERNEL);
+> > >  			if (!*raparm)
+> > >  				goto out_nomem;
+> > >  			raparm = &(*raparm)->p_next;
+> > 
