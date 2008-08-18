@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761586AbYHRT1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755629AbYHRT2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761586AbYHRT1f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760551AbYHRT1I
+	id S1755629AbYHRT2V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761621AbYHRT14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:27:08 -0400
-Received: from ns2.suse.de ([195.135.220.15]:40300 "EHLO mx2.suse.de"
+	Mon, 18 Aug 2008 15:27:56 -0400
+Received: from mail.suse.de ([195.135.220.2]:47610 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762153AbYHRT1G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:27:06 -0400
-Date: Mon, 18 Aug 2008 12:19:25 -0700
+	id S1761625AbYHRT1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:27:54 -0400
+Date: Mon, 18 Aug 2008 12:19:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Frederik Kriewitz <frederik@kriewitz.eu>
-Subject: [patch 06/49] USB: ftdi_sio: add support for Luminance Stellaris
-	Evaluation/Development Kits
-Message-ID: <20080818191925.GG10350@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 08/49] SCSI: scsi_transport_spi: fix oops in revalidate
+Message-ID: <20080818191930.GI10350@suse.de>
 References: <20080818191012.663450219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-ftdi_sio-add-support-for-luminance-stellaris-evaluation-development-kits.patch"
+Content-Disposition: inline; filename="scsi-scsi_transport_spi-fix-oops-in-revalidate.patch"
 In-Reply-To: <20080818191834.GA10350@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,50 +40,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Frederik Kriewitz <frederik@kriewitz.eu>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-commit a00c3cadc2bf50b3c925acdb3d0e5789b1650498 upstream
+commit e8bac9e0647dd04c83fd0bfe7cdfe2f6dfb100d0 upstream
 
-The Patch adds support for Luminance Stellaris Evaluation/Development
-Kits (FTDI 2232C based).
-The PIDs were missing.
+The class_device->device conversion is causing an oops in revalidate
+because it's assuming that the device_for_each_child iterator will only
+return struct scsi_device children.  The conversion made all former
+class_devices children of the device as well, so this assumption is
+broken.  Fix it.
 
-Successfully tested with a Stellaris LM3S8962 Evaluation kit.
-
-Signed-off-by: Frederik Kriewitz <frederik@kriewitz.eu>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/ftdi_sio.c |    4 ++++
- drivers/usb/serial/ftdi_sio.h |    5 +++++
- 2 files changed, 9 insertions(+)
+ drivers/scsi/scsi_transport_spi.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -367,6 +367,10 @@ static struct usb_device_id id_table_com
- 		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
- 	{ USB_DEVICE(FTDI_VID, FTDI_OOCDLINK_PID),
- 		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
-+	{ USB_DEVICE(FTDI_VID, LMI_LM3S_DEVEL_BOARD_PID),
-+		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
-+	{ USB_DEVICE(FTDI_VID, LMI_LM3S_EVAL_BOARD_PID),
-+		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
- 	{ USB_DEVICE(RATOC_VENDOR_ID, RATOC_PRODUCT_ID_USB60F) },
- 	{ },					/* Optional parameter entry */
- 	{ }					/* Terminating entry */
---- a/drivers/usb/serial/ftdi_sio.h
-+++ b/drivers/usb/serial/ftdi_sio.h
-@@ -548,6 +548,11 @@
- #define OLIMEX_VID			0x15BA
- #define OLIMEX_ARM_USB_OCD_PID		0x0003
+--- a/drivers/scsi/scsi_transport_spi.c
++++ b/drivers/scsi/scsi_transport_spi.c
+@@ -360,12 +360,14 @@ spi_transport_rd_attr(rti, "%d\n");
+ spi_transport_rd_attr(pcomp_en, "%d\n");
+ spi_transport_rd_attr(hold_mcs, "%d\n");
  
-+/* Luminary Micro Stellaris Boards, VID = FTDI_VID */
-+/* FTDI 2332C Dual channel device, side A=245 FIFO (JTAG), Side B=RS232 UART */
-+#define LMI_LM3S_DEVEL_BOARD_PID	0xbcd8
-+#define LMI_LM3S_EVAL_BOARD_PID		0xbcd9
-+
- /* www.elsterelectricity.com Elster Unicom III Optical Probe */
- #define FTDI_ELSTER_UNICOM_PID		0xE700 /* Product Id */
+-/* we only care about the first child device so we return 1 */
++/* we only care about the first child device that's a real SCSI device
++ * so we return 1 to terminate the iteration when we find it */
+ static int child_iter(struct device *dev, void *data)
+ {
+-	struct scsi_device *sdev = to_scsi_device(dev);
++	if (!scsi_is_sdev_device(dev))
++		return 0;
+ 
+-	spi_dv_device(sdev);
++	spi_dv_device(to_scsi_device(dev));
+ 	return 1;
+ }
  
 
 -- 
