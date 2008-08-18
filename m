@@ -1,111 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbYHRVI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbYHRVKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752634AbYHRVI4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 17:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbYHRVIr
+	id S1755428AbYHRVKI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 17:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbYHRVJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 17:08:47 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:21197 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751455AbYHRVIq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 17:08:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=p2i+Huj582tGxnPVFPi1Kjuxe15p+q5IuG5aiNtDkAFDSTouzhf5wDu/IdZglAi9JN
-         KS35ES9RzoORDrHHCLQ+kMM0EBN50jM1+R/P0d8VPdkvF1B/gbbVP7pd0DzEB1ACVyHA
-         cj0eoNovlJoHze5rcIU19zJY1VUtuNNZVbSWE=
-Message-ID: <19f34abd0808181408q8a38fc0hfaff02fab6e20681@mail.gmail.com>
-Date: Mon, 18 Aug 2008 23:08:45 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: oprofile + hibernation = badness
-Cc: "Pavel Machek" <pavel@suse.cz>, "Robert Richter" <robert.richter@amd.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@linux.intel.com>,
-       "Philippe Elie" <phil.el@wanadoo.fr>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200808182251.31113.rjw@sisk.pl>
+	Mon, 18 Aug 2008 17:09:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47437 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751455AbYHRVJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 17:09:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Simon Arlott <simon@fire.lp0.eu>
+Subject: Re: forcedeth 10de:0373 doesn't work on resume
+Date: Mon, 18 Aug 2008 23:13:09 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, ranma+kernel@tdiedrich.de,
+       jgarzik@redhat.com
+References: <4898AA28.8000507@simon.arlott.org.uk> <20080818134814.136105c9.akpm@linux-foundation.org>
+In-Reply-To: <20080818134814.136105c9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <19f34abd0808181332k3c02496auabd04e927bb7cab5@mail.gmail.com>
-	 <200808182251.31113.rjw@sisk.pl>
+Message-Id: <200808182313.10235.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 18, 2008 at 10:51 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Apparently nmi_suspend() conflicts with oprofile somehow.  Also, the offlining
-> of non-boot CPUs may confuse it.  It would be helpful to check if the CPU
-> hotplug works with oprofile.
+On Monday, 18 of August 2008, Andrew Morton wrote:
+> On Tue, 05 Aug 2008 20:29:44 +0100
+> Simon Arlott <simon@fire.lp0.eu> wrote:
+> >
+> 
+> [two weeks pass...]
 
-That is a good suggestion :-)
+[Must have missed this message.]
 
-Here is offlining:
+I have a box with forcedeth that evidently works after a resume from
+hibernation.  Unfortunately, so far I haven't been able to make the box
+resume from suspend to RAM.  I'll do my best to try again tomorrow, but there's
+a little hope. :-(
 
-CPU 1 is now offline
-lockdep: fixing up alternatives.
-SMP alternatives: switching to UP code
-CPU0 attaching NULL sched-domain.
-WQ on CPU0, prefer CPU1
-CPU1 attaching NULL sched-domain.
-CPU0 attaching sched-domain:
- domain 0: span 0 level CPU
-  groups: 0
-WQ on CPU0, prefer CPU1
-WQ on CPU0, prefer CPU1
-WQ on CPU0, prefer CPU1
-[repeat last message indefinitely]
+> > My NIC stops working after resuming from standby, it's not receiving any interrupts:
+> > [    0.618266] pci 0000:00:08.0: supports D1
+> > [    0.618267] pci 0000:00:08.0: supports D2
+> > [    0.618269] pci 0000:00:08.0: PME# supported from D0 D1 D2 D3hot D3cold
+> > [    0.618382] pci 0000:00:08.0: PME# disabled
+> > [    0.618513] pci 0000:00:09.0: supports D1
+> > [    0.618523] pci 0000:00:09.0: supports D2
+> > [    0.618532] pci 0000:00:09.0: PME# supported from D0 D1 D2 D3hot D3cold
+> > [    0.618632] pci 0000:00:09.0: PME# disabled
+> > [    0.629767] PM: Adding info for pci:0000:00:08.0
+> > [    0.630304] PM: Adding info for pci:0000:00:09.0
+> > [    0.866667] pci 0000:00:08.0: Enabling HT MSI Mapping
+> > [    0.866804] pci 0000:00:09.0: Enabling HT MSI Mapping
+> > [    1.847264] forcedeth: Reverse Engineered nForce ethernet driver. Version 0.61.
+> > [    1.847918] forcedeth 0000:00:08.0: PCI INT A -> Link[LMAC] -> GSI 21 (level, low) -> IRQ 21
+> > [    1.848121] forcedeth 0000:00:08.0: setting latency timer to 64
+> > [    1.849363] forcedeth 0000:00:08.0: ifname eth2, PHY OUI 0x5043 @ 16, addr 00:e0:81:4d:2b:ec
+> > [    1.849553] forcedeth 0000:00:08.0: highdma csum vlan pwrctl mgmt timirq gbit lnktim msi desc-v3
+> > [    1.850212] forcedeth 0000:00:09.0: PCI INT A -> Link[LMAD] -> GSI 20 (level, low) -> IRQ 20
+> > [    1.850405] forcedeth 0000:00:09.0: setting latency timer to 64
+> > [    1.851684] forcedeth 0000:00:09.0: ifname eth3, PHY OUI 0x5043 @ 17, addr 00:e0:81:4d:2b:ed
+> > [    1.851873] forcedeth 0000:00:09.0: highdma csum vlan pwrctl mgmt timirq gbit lnktim msi desc-v3
+> > [  913.928604] forcedeth 0000:00:08.0: preparing suspend, may wakeup
+> > [  913.928607] forcedeth 0000:00:09.0: preparing suspend, may wakeup
+> > [  916.388326] forcedeth 0000:00:09.0: suspend, may wakeup
+> > [  916.388704] forcedeth 0000:00:09.0: PME# enabled
+> > [  916.388711] forcedeth 0000:00:09.0: wake-up capability enabled by ACPI
+> > [  916.388714] forcedeth 0000:00:09.0: PCI INT A disabled
+> > [  916.398995] forcedeth 0000:00:08.0: suspend, may wakeup
+> > [  916.399741] forcedeth 0000:00:08.0: PME# enabled
+> > [  916.399767] forcedeth 0000:00:08.0: wake-up capability enabled by ACPI
+> > [  916.399786] forcedeth 0000:00:08.0: PCI INT A disabled
+> > [  917.255261] forcedeth 0000:00:09.0: LATE suspend, may wakeup
+> > [  917.255263] forcedeth 0000:00:08.0: LATE suspend, may wakeup
+> > [  917.256004] forcedeth 0000:00:08.0: EARLY resume
+> > [  917.256004] forcedeth 0000:00:09.0: EARLY resume
+> > [  918.015874] forcedeth 0000:00:08.0: resume
+> > [  918.026369] forcedeth 0000:00:08.0: restoring config space at offset 0xf (was 0x14010100, writing 0x1401010a)
+> > [  918.026395] forcedeth 0000:00:08.0: restoring config space at offset 0x7 (was 0x0, writing 0xfdffa400)
+> > [  918.026417] forcedeth 0000:00:08.0: restoring config space at offset 0x6 (was 0x0, writing 0xfdffa800)
+> > [  918.026428] forcedeth 0000:00:08.0: restoring config space at offset 0x5 (was 0x1, writing 0x9401)
+> > [  918.026436] forcedeth 0000:00:08.0: restoring config space at offset 0x4 (was 0x0, writing 0xfdff6000)
+> > [  918.026443] forcedeth 0000:00:08.0: restoring config space at offset 0x1 (was 0xb00000, writing 0xb00007)
+> > [  918.026465] forcedeth 0000:00:08.0: wake-up capability disabled by ACPI
+> > [  918.026471] forcedeth 0000:00:08.0: PME# disabled
+> > [  918.027446] forcedeth 0000:00:09.0: resume
+> > [  918.037096] forcedeth 0000:00:09.0: restoring config space at offset 0xf (was 0x14010100, writing 0x1401010b)
+> > [  918.037115] forcedeth 0000:00:09.0: restoring config space at offset 0x7 (was 0x0, writing 0xfdff4c00)
+> > [  918.037120] forcedeth 0000:00:09.0: restoring config space at offset 0x6 (was 0x0, writing 0xfdffa000)
+> > [  918.037125] forcedeth 0000:00:09.0: restoring config space at offset 0x5 (was 0x1, writing 0x9081)
+> > [  918.037131] forcedeth 0000:00:09.0: restoring config space at offset 0x4 (was 0x0, writing 0xfdff5000)
+> > [  918.037137] forcedeth 0000:00:09.0: restoring config space at offset 0x1 (was 0xb00000, writing 0xb00007)
+> > [  918.037160] forcedeth 0000:00:09.0: wake-up capability disabled by ACPI
+> > [  918.037174] forcedeth 0000:00:09.0: PME# disabled
+> > [  925.810837] forcedeth 0000:00:09.0: completing resume
+> > [  925.810841] forcedeth 0000:00:08.0: completing resume
+> > 
+> > Commit 25d90810ff49d2a63475776f24c74c6bb49b045f ([netdrvr] forcedeth: reorder suspend/resume code) 
+> > introduces pci_disable_device to nv_suspend, but there's no corresponding pci_enable_device in 
+> > nv_resume - so I added one (copied from e1000):
+> > 
+> > diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
+> > index 01b38b0..db4f875 100644
+> > --- a/drivers/net/forcedeth.c
+> > +++ b/drivers/net/forcedeth.c
+> > @@ -5922,6 +5922,13 @@ static int nv_resume(struct pci_dev *pdev)
+> >  
+> >  	pci_set_power_state(pdev, PCI_D0);
+> >  	pci_restore_state(pdev);
+> > +	rc = pci_enable_device(pdev);
+> > +	if (rc) {
+> > +		printk(KERN_ERR "forcedeth: Cannot enable PCI device from suspend\n");
+> > +		return rc;
+> > +	}
+> > +	pci_set_master(pdev);
+> > +
+> >  	/* ack any pending wake events, disable PME */
+> >  	pci_enable_wake(pdev, PCI_D0, 0);
+> >  
+> 
+> That seems like a sensible change.
+> 
+> > This results in interrupts being re-enabled after suspend:
+> > [    0.619558] pci 0000:00:08.0: supports D1
+> > [    0.619560] pci 0000:00:08.0: supports D2
+> > [    0.619561] pci 0000:00:08.0: PME# supported from D0 D1 D2 D3hot D3cold
+> > [    0.619684] pci 0000:00:08.0: PME# disabled
+> > [    0.619826] pci 0000:00:09.0: supports D1
+> > [    0.619828] pci 0000:00:09.0: supports D2
+> > [    0.619837] pci 0000:00:09.0: PME# supported from D0 D1 D2 D3hot D3cold
+> > [    0.619952] pci 0000:00:09.0: PME# disabled
+> > [    0.631145] PM: Adding info for pci:0000:00:08.0
+> > [    0.631699] PM: Adding info for pci:0000:00:09.0
+> > [    0.870662] pci 0000:00:08.0: Enabling HT MSI Mapping
+> > [    0.870809] pci 0000:00:09.0: Enabling HT MSI Mapping
+> > [    1.853343] forcedeth: Reverse Engineered nForce ethernet driver. Version 0.61.
+> > [    1.854016] forcedeth 0000:00:08.0: PCI INT A -> Link[LMAC] -> GSI 21 (level, low) -> IRQ 21
+> > [    1.854217] forcedeth 0000:00:08.0: setting latency timer to 64
+> > [    1.855468] forcedeth 0000:00:08.0: ifname eth2, PHY OUI 0x5043 @ 16, addr 00:e0:81:4d:2b:ec
+> > [    1.855658] forcedeth 0000:00:08.0: highdma csum vlan pwrctl mgmt timirq gbit lnktim msi desc-v3
+> > [    1.856332] forcedeth 0000:00:09.0: PCI INT A -> Link[LMAD] -> GSI 20 (level, low) -> IRQ 20
+> > [    1.856528] forcedeth 0000:00:09.0: setting latency timer to 64
+> > [    1.857815] forcedeth 0000:00:09.0: ifname eth3, PHY OUI 0x5043 @ 17, addr 00:e0:81:4d:2b:ed
+> > [    1.858015] forcedeth 0000:00:09.0: highdma csum vlan pwrctl mgmt timirq gbit lnktim msi desc-v3
+> > [   42.310803] forcedeth 0000:00:08.0: preparing suspend, may wakeup
+> > [   42.310807] forcedeth 0000:00:09.0: preparing suspend, may wakeup
+> > [   44.468801] forcedeth 0000:00:09.0: suspend, may wakeup
+> > [   44.469181] forcedeth 0000:00:09.0: PME# enabled
+> > [   44.469191] forcedeth 0000:00:09.0: wake-up capability enabled by ACPI
+> > [   44.469196] forcedeth 0000:00:09.0: PCI INT A disabled
+> > [   44.479247] forcedeth 0000:00:08.0: suspend, may wakeup
+> > [   44.479981] forcedeth 0000:00:08.0: PME# enabled
+> > [   44.480014] forcedeth 0000:00:08.0: wake-up capability enabled by ACPI
+> > [   44.480025] forcedeth 0000:00:08.0: PCI INT A disabled
+> > [   45.311781] forcedeth 0000:00:09.0: LATE suspend, may wakeup
+> > [   45.311784] forcedeth 0000:00:08.0: LATE suspend, may wakeup
+> > [   45.312005] forcedeth 0000:00:08.0: EARLY resume
+> > [   45.312005] forcedeth 0000:00:09.0: EARLY resume
+> > [   46.067593] forcedeth 0000:00:08.0: resume
+> > [   46.077904] forcedeth 0000:00:08.0: restoring config space at offset 0xf (was 0x14010100, writing 0x1401010a)
+> > [   46.077931] forcedeth 0000:00:08.0: restoring config space at offset 0x7 (was 0x0, writing 0xfdffa400)
+> > [   46.077949] forcedeth 0000:00:08.0: restoring config space at offset 0x6 (was 0x0, writing 0xfdffa800)
+> > [   46.077962] forcedeth 0000:00:08.0: restoring config space at offset 0x5 (was 0x1, writing 0x9401)
+> > [   46.077973] forcedeth 0000:00:08.0: restoring config space at offset 0x4 (was 0x0, writing 0xfdff6000)
+> > [   46.077987] forcedeth 0000:00:08.0: restoring config space at offset 0x1 (was 0xb00000, writing 0xb00007)
+> > [   46.078026] forcedeth 0000:00:08.0: PCI INT A -> Link[LMAC] -> GSI 21 (level, low) -> IRQ 21
+> > [   46.078031] forcedeth 0000:00:08.0: setting latency timer to 64
+> > [   46.078042] forcedeth 0000:00:08.0: wake-up capability disabled by ACPI
+> > [   46.078056] forcedeth 0000:00:08.0: PME# disabled
+> > [   46.079323] forcedeth 0000:00:09.0: resume
+> > [   46.089903] forcedeth 0000:00:09.0: restoring config space at offset 0xf (was 0x14010100, writing 0x1401010b)
+> > [   46.089930] forcedeth 0000:00:09.0: restoring config space at offset 0x7 (was 0x0, writing 0xfdff4c00)
+> > [   46.089952] forcedeth 0000:00:09.0: restoring config space at offset 0x6 (was 0x0, writing 0xfdffa000)
+> > [   46.089959] forcedeth 0000:00:09.0: restoring config space at offset 0x5 (was 0x1, writing 0x9081)
+> > [   46.089964] forcedeth 0000:00:09.0: restoring config space at offset 0x4 (was 0x0, writing 0xfdff5000)
+> > [   46.089970] forcedeth 0000:00:09.0: restoring config space at offset 0x1 (was 0xb00000, writing 0xb00007)
+> > [   46.089998] forcedeth 0000:00:09.0: PCI INT A -> Link[LMAD] -> GSI 20 (level, low) -> IRQ 20
+> > [   46.090003] forcedeth 0000:00:09.0: setting latency timer to 64
+> > [   46.090007] forcedeth 0000:00:09.0: wake-up capability disabled by ACPI
+> > [   46.090013] forcedeth 0000:00:09.0: PME# disabled
+> > [   52.903755] forcedeth 0000:00:09.0: completing resume
+> > [   52.903759] forcedeth 0000:00:08.0: completing resume
+> > 
+> > However, the NIC still doesn't work after resume.
 
-Here is onlining:
+Simon, I'd prefer the full dmesg to the grepped forcedeth messages.
 
-Booting processor 1/1 ip 6000
-Initializing CPU#1
-WQ on CPU0, prefer CPU1
-WQ on CPU0, prefer CPU1
-Calibrating delay using timer specific routine.. 5986.15 BogoMIPS (lpj=29930790)
-CPU: Trace cache: 12K uops, L1 D cache: 16K
-CPU: L2 cache: 2048K
-CPU: Physical Processor ID: 0
-Intel machine check architecture supported.
-Intel machine check reporting enabled on CPU#1.
-CPU1: Intel P4/Xeon Extended MCE MSRs (24) available
-CPU1: Thermal monitoring enabled
-x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
-CPU1: Intel(R) Pentium(R) 4 CPU 3.00GHz stepping 05
-checking TSC synchronization [CPU#0 -> CPU#1]:
-Measured 120 cycles TSC warp between CPUs, turning off TSC clock.
-Marking TSC unstable due to check_tsc_sync_source failed
-APIC error on CPU1: 00(40)
-Clockevents: could not switch to one-shot mode:<7>APIC error on CPU1: 40(40)
- lapic is not functional.
-Could not switch to high resolution mode on CPU 0
-Clockevents: could not switch to one-shot mode: lapic is not functional.
-Could not switch to high resolution mode on CPU 1
-APIC error on CPU1: 40(40)
-[sched domains messages
-WQ on CPU0, prefer CPU1
-APIC error on CPU1: 40(40)
-[repeat last message 9 times]
+I guess this was resume from suspend to RAM?
 
-Then follows this pattern indefinitely:
+> Is it still broken in current kernels?
 
-WQ on CPU0, prefer CPU1
-APIC error on CPU1: 40(40)
-[repeat last message 9 times]
+It probably is.
 
-That's basically the same thing as I saw with suspend. So it can be
-reproduced easily with CPU hotplug.
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Thanks,
+Rafael
