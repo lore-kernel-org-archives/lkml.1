@@ -1,71 +1,303 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758147AbYHRUah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758230AbYHRUcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758147AbYHRUah (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 16:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757883AbYHRUaA
+	id S1758230AbYHRUcs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 16:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYHRUci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 16:30:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52138 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757863AbYHRU37 (ORCPT
+	Mon, 18 Aug 2008 16:32:38 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:35525 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752600AbYHRUch (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 16:29:59 -0400
-Date: Mon, 18 Aug 2008 13:28:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andreas Mohr <andi@lisas.de>
-Cc: linux@dominikbrodowski.net, andi@lisas.de, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, johnstul@us.ibm.com,
-       hirofumi@mail.parknet.co.jp, alan@lxorguk.ukuu.org.uk,
-       arjan@infradead.org
-Subject: Re: [PATCH 2/2] acpi_pm.c: check for monotonicity
-Message-Id: <20080818132858.b844a1d4.akpm@linux-foundation.org>
-In-Reply-To: <20080818201844.GA3506@rhlx01.hs-esslingen.de>
-References: <20080818200017.GA11247@rhlx01.hs-esslingen.de>
-	<20080810101730.GA10024@rhlx01.hs-esslingen.de>
-	<20080810162920.GA9860@comet.dominikbrodowski.net>
-	<20080810190759.GA1879@rhlx01.hs-esslingen.de>
-	<20080818190325.GA12581@comet.dominikbrodowski.net>
-	<20080818121924.6b61f7af.akpm@linux-foundation.org>
-	<20080818193517.GA22097@isilmar.linta.de>
-	<20080818124755.162f24d1.akpm@linux-foundation.org>
-	<20080818200916.GA18209@comet.dominikbrodowski.net>
-	<20080818201115.GC18209@comet.dominikbrodowski.net>
-	<20080818201844.GA3506@rhlx01.hs-esslingen.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 18 Aug 2008 16:32:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=OoQ3PtF48vL69lnqUx7waTlEugkpfCSYd0CsUG+kr/T+/q9vOLiZFVNfTsKKJGUXro
+         U7wusT6f5clE5wbZISUQrmcfUn2R745ycQIUEgm1HEVoa/GWOA8w/SzSio5TsbYBm2Xs
+         irc4C6E798X0pB66gN6AfJ+MZqRxxfeFo4qzQ=
+Message-ID: <19f34abd0808181332k3c02496auabd04e927bb7cab5@mail.gmail.com>
+Date: Mon, 18 Aug 2008 22:32:35 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Pavel Machek" <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Robert Richter" <robert.richter@amd.com>,
+       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@linux.intel.com>,
+       "Philippe Elie" <phil.el@wanadoo.fr>
+Subject: oprofile + hibernation = badness
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Aug 2008 22:18:44 +0200
-Andreas Mohr <andi@lisas.de> wrote:
+Hi,
 
-> Hi,
-> 
-> On Mon, Aug 18, 2008 at 10:11:15PM +0200, Dominik Brodowski wrote:
-> > +	if (good != 10) {
-> > +		printk(KERN_INFO "PM-Timer had no reasonable result:"
-> > +		       " 0x%#llx - aborting.\n", value1);
-> > +		return -ENODEV;
-> >  	}
-> > -	printk(KERN_INFO "PM-Timer had no reasonable result:"
-> > -			" 0x%#llx - aborting.\n", value1);
-> > -	return -ENODEV;
-> 
-> Technically spoken this log message could now be considered partially
-> outdated... (we're doing 10 evaluations after all, not one with a
-> precise end result).
-> 
-> 
-> Seeing a define for those several open-coded 10 loops values would be nice.
-> 
+I'm probably crazy to do it, but...
 
-Also it's a bit dodgy printing a cycle_t with %llx.  We don't _know_
-that cycle_t was implemented with `long long' - if this was always
-true, we wouldn't (or shouldn't) have a cycle_t at all.
+    $ opcontrol --start
+    $ echo disk > /sys/power/state
 
-But it seems that it happens to work for all architectures which
-implement acpi.
+...leads to lots of badness/strangeness. First, lots of APIC errors:
 
+APIC error on CPU0: 40(40)
+[repeat 8 times]
+APIC error on CPU1: 40(40)
+APIC error on CPU1: 40(40)
+APIC error on CPU0: 40(40)
+
+These keep on coming all through the suspend/shutdown sequence, also
+intermixing with other messages. I'm guessing oprofile is trying to
+NMI CPUs that have been brought down?
+
+Now I get some ACPI Exceptions, but I think that these are unrelated
+to starting oprofile, because I have seen them on regular shutdowns as
+well:
+
+PM: Syncing filesystems ... done.
+Freezing user space processes ... (elapsed 0.00 seconds) done.
+Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+PM: Shrinking memory... done (0 pages freed)
+PM: Freed 0 kbytes in 0.44 seconds (0.00 MB/s)
+Suspending console(s) (use no_console_suspend to debug)
+ACPI Exception (exoparg2-0444): AE_AML_PACKAGE_LIMIT, Index
+(000000007) is beyond end of object [20080609]
+ACPI Error (psparse-0530): Method parse/execution failed
+[\_SB_.PCI0.IDE0.GTM_] (Node f783bfc0), AE_AML_PACKAGE_LIMIT
+ACPI Error (psparse-0530): Method parse/execution failed
+[\_SB_.PCI0.IDE0.CHN0._GTM] (Node f783bb40), AE_AML_PACKAGE_LIMIT
+ACPI handle has no context!
+serial 00:0d: disabled
+serial 00:06: disabled
+ehci_hcd 0000:00:1d.7: PCI INT A disabled
+uhci_hcd 0000:00:1d.3: PCI INT D disabled
+uhci_hcd 0000:00:1d.2: PCI INT C disabled
+uhci_hcd 0000:00:1d.1: PCI INT B disabled
+uhci_hcd 0000:00:1d.0: PCI INT A disabled
+ACPI: Preparing to enter system sleep state S4
+
+After that, I see the message "WQ on CPU0, prefer CPU1" a few times.
+This must also be bad.
+
+Now some warnings:
+
+------------[ cut here ]------------
+WARNING: at /uio/arkimedes/s29/vegardno/git-working/linux-2.6/kernel/smp.c:328 s
+mp_call_function_mask+0x194/0x1a0()
+Pid: 3711, comm: bash Not tainted 2.6.27-rc3-00415-g122c9e0 #10
+ [<c013584f>] warn_on_slowpath+0x4f/0x80
+ [<c0585ff8>] ? log_sample+0xa8/0xc0
+ [<c03e4e8d>] ? device_power_down+0x5d/0x110
+ [<c0586140>] ? oprofile_add_ext_sample+0x40/0xc0
+ [<c05861f4>] ? oprofile_add_sample+0x34/0x50
+ [<c0588f5c>] ? p4_check_ctr+0x13c/0x160
+ [<c0160c54>] smp_call_function_mask+0x194/0x1a0
+ [<c0587940>] ? nmi_cpu_stop+0x0/0x30
+ [<c014e04c>] ? __atomic_notifier_call_chain+0x3c/0x50
+ [<c014e07a>] ? atomic_notifier_call_chain+0x1a/0x20
+ [<c014e0ad>] ? notify_die+0x2d/0x30
+ [<c0587940>] ? nmi_cpu_stop+0x0/0x30
+ [<c0160c90>] smp_call_function+0x30/0x60
+ [<c0587940>] ? nmi_cpu_stop+0x0/0x30
+ [<c013a16c>] on_each_cpu+0x2c/0x80
+ [<c05878d4>] nmi_stop+0x14/0x20
+ [<c05878f5>] nmi_suspend+0x15/0x20
+ [<c03dff63>] sysdev_suspend+0xa3/0x1f0
+ [<c03e4f0c>] device_power_down+0xdc/0x110
+ [<c016355b>] hibernation_snapshot+0x15b/0x220
+ [<c013644b>] ? printk+0x1b/0x20
+ [<c0162742>] ? freeze_processes+0x52/0xa0
+ [<c0163700>] hibernate+0xe0/0x180
+ [<c01621b0>] ? state_store+0x0/0xd0
+ [<c016226f>] state_store+0xbf/0xd0
+ [<c01621b0>] ? state_store+0x0/0xd0
+ [<c03618d4>] kobj_attr_store+0x24/0x30
+ [<c01e66c2>] sysfs_write_file+0xa2/0x100
+ [<c01a85b6>] vfs_write+0x96/0x130
+ [<c01e6620>] ? sysfs_write_file+0x0/0x100
+ [<c01a8afd>] sys_write+0x3d/0x70
+ [<c01040db>] sysenter_do_call+0x12/0x3f
+ [<c0670000>] ? _read_unlock_irqrestore+0x60/0x70
+ =======================
+---[ end trace df36f449a70f1c8e ]---
+PM: Creating hibernation image:
+PM: Need to copy 54048 pages
+PM: Hibernation image created (54048 pages copied)
+x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+Intel machine check architecture supported.
+BUG: using smp_processor_id() in preemptible [00000000] code: bash/3711
+caller is intel_p4_mcheck_init+0xb9/0x2b0
+Pid: 3711, comm: bash Tainted: G        W 2.6.27-rc3-00415-g122c9e0 #10
+ [<c037664e>] debug_smp_processor_id+0xce/0xd0
+ [<c010e919>] intel_p4_mcheck_init+0xb9/0x2b0
+ [<c010dcd9>] mcheck_init+0x59/0x80
+ [<c0589636>] restore_processor_state+0x1f6/0x230
+ [<c01635d1>] hibernation_snapshot+0x1d1/0x220
+ [<c013644b>] ? printk+0x1b/0x20
+ [<c0162742>] ? freeze_processes+0x52/0xa0
+ [<c0163700>] hibernate+0xe0/0x180
+ [<c01621b0>] ? state_store+0x0/0xd0
+ [<c016226f>] state_store+0xbf/0xd0
+ [<c01621b0>] ? state_store+0x0/0xd0
+ [<c03618d4>] kobj_attr_store+0x24/0x30
+ [<c01e66c2>] sysfs_write_file+0xa2/0x100
+ [<c01a85b6>] vfs_write+0x96/0x130
+ [<c01e6620>] ? sysfs_write_file+0x0/0x100
+ [<c01a8afd>] sys_write+0x3d/0x70
+ [<c01040db>] sysenter_do_call+0x12/0x3f
+ [<c0670000>] ? _read_unlock_irqrestore+0x60/0x70
+ =======================
+Intel machine check reporting enabled on CPU#0.
+BUG: using smp_processor_id() in preemptible [00000000] code: bash/3711
+caller is intel_p4_mcheck_init+0x100/0x2b0
+Pid: 3711, comm: bash Tainted: G        W 2.6.27-rc3-00415-g122c9e0 #10
+ [<c037664e>] debug_smp_processor_id+0xce/0xd0
+ [<c010e960>] intel_p4_mcheck_init+0x100/0x2b0
+ [<c010dcd9>] mcheck_init+0x59/0x80
+ [<c0589636>] restore_processor_state+0x1f6/0x230
+ [<c01635d1>] hibernation_snapshot+0x1d1/0x220
+ [<c013644b>] ? printk+0x1b/0x20
+ [<c0162742>] ? freeze_processes+0x52/0xa0
+ [<c0163700>] hibernate+0xe0/0x180
+ [<c01621b0>] ? state_store+0x0/0xd0
+ [<c016226f>] state_store+0xbf/0xd0
+ [<c01621b0>] ? state_store+0x0/0xd0
+ [<c03618d4>] kobj_attr_store+0x24/0x30
+ [<c01e66c2>] sysfs_write_file+0xa2/0x100
+ [<c01a85b6>] vfs_write+0x96/0x130
+ [<c01e6620>] ? sysfs_write_file+0x0/0x100
+ [<c01a8afd>] sys_write+0x3d/0x70
+ [<c01040db>] sysenter_do_call+0x12/0x3f
+ [<c0670000>] ? _read_unlock_irqrestore+0x60/0x70
+ =======================
+CPU0: Intel P4/Xeon Extended MCE MSRs (24) available
+BUG: using smp_processor_id() in preemptible [00000000] code: bash/3711
+caller is intel_p4_mcheck_init+0x119/0x2b0
+Pid: 3711, comm: bash Tainted: G        W 2.6.27-rc3-00415-g122c9e0 #10
+ [<c037664e>] debug_smp_processor_id+0xce/0xd0
+ [<c010e979>] intel_p4_mcheck_init+0x119/0x2b0
+ [<c010dcd9>] mcheck_init+0x59/0x80
+ [<c0589636>] restore_processor_state+0x1f6/0x230
+ [<c01635d1>] hibernation_snapshot+0x1d1/0x220
+ [<c013644b>] ? printk+0x1b/0x20
+ [<c0162742>] ? freeze_processes+0x52/0xa0
+ [<c0163700>] hibernate+0xe0/0x180
+ [<c01621b0>] ? state_store+0x0/0xd0
+ [<c016226f>] state_store+0xbf/0xd0
+ [<c01621b0>] ? state_store+0x0/0xd0
+ [<c03618d4>] kobj_attr_store+0x24/0x30
+ [<c01e66c2>] sysfs_write_file+0xa2/0x100
+ [<c01a85b6>] vfs_write+0x96/0x130
+ [<c01e6620>] ? sysfs_write_file+0x0/0x100
+ [<c01a8afd>] sys_write+0x3d/0x70
+ [<c01040db>] sysenter_do_call+0x12/0x3f
+ [<c0670000>] ? _read_unlock_irqrestore+0x60/0x70
+ =======================
+CPU0: Thermal monitoring enabled
+Force enabled HPET at resume
+BUG: using smp_processor_id() in preemptible [00000000] code: bash/3711
+caller is retrigger_next_event+0x15/0xb0
+Pid: 3711, comm: bash Tainted: G        W 2.6.27-rc3-00415-g122c9e0 #10
+ [<c037664e>] debug_smp_processor_id+0xce/0xd0
+ [<c014c6c5>] retrigger_next_event+0x15/0xb0
+ [<c066d3bf>] ? preempt_schedule+0x3f/0x50
+ [<c066fe1c>] ? _spin_unlock+0x3c/0x50
+ [<c014c76a>] hres_timers_resume+0xa/0x10
+ [<c01509bc>] timekeeping_resume+0x12c/0x180
+ [<c03df894>] __sysdev_resume+0x14/0x50
+ [<c03dfdae>] sysdev_resume+0x3e/0x80
+ [<c03e4f4b>] device_power_up+0xb/0x20
+ [<c01635b0>] hibernation_snapshot+0x1b0/0x220
+ [<c013644b>] ? printk+0x1b/0x20
+ [<c0162742>] ? freeze_processes+0x52/0xa0
+ [<c0163700>] hibernate+0xe0/0x180
+ [<c01621b0>] ? state_store+0x0/0xd0
+ [<c016226f>] state_store+0xbf/0xd0
+ [<c01621b0>] ? state_store+0x0/0xd0
+ [<c03618d4>] kobj_attr_store+0x24/0x30
+ [<c01e66c2>] sysfs_write_file+0xa2/0x100
+ [<c01a85b6>] vfs_write+0x96/0x130
+ [<c01e6620>] ? sysfs_write_file+0x0/0x100
+ [<c01a8afd>] sys_write+0x3d/0x70
+ [<c01040db>] sysenter_do_call+0x12/0x3f
+ [<c0670000>] ? _read_unlock_irqrestore+0x60/0x70
+ =======================
+Enabling non-boot CPUs ...
+
+...and then, while writing the image, it looks something like this:
+
+APIC error on CPU1: 40(40)
+^H^H^H^H  3%<7>APIC error on CPU1: 40(40)
+WQ on CPU0, prefer CPU1
+APIC error on CPU1: 40(40)
+[8 times]
+APIC error on CPU1: 40(40)
+WQ on CPU0, prefer CPU1
+...
+
+The machine comes back with this spamming the logs (rate of about 2 KB/sec):
+
+WQ on CPU0, prefer CPU1
+APIC error on CPU1: 40(40)
+[9 times, repeat]
+
+I can still log in with ssh and reboot the machine, which finally
+gives this warning:
+
+BUG: sleeping function called from invalid context at kernel/sched.c:4625
+in_atomic():1, irqs_disabled():0
+INFO: lockdep is turned off.
+Pid: 4027, comm: oprofiled Tainted: G        W 2.6.27-rc3-00415-g122c9e0 #10
+ [<c012c98e>] __might_sleep+0xee/0x140
+ [<c066c8d8>] wait_for_common+0x28/0x130
+ [<c01595bb>] ? trace_hardirqs_on+0xb/0x10
+ [<c066ff13>] ? _spin_unlock_irqrestore+0x43/0x70
+ [<c066ca72>] wait_for_completion+0x12/0x20
+ [<c014715d>] synchronize_rcu+0x2d/0x40
+ [<c01471f0>] ? wakeme_after_rcu+0x0/0x10
+ [<c01595bb>] ? trace_hardirqs_on+0xb/0x10
+ [<c014e156>] atomic_notifier_chain_unregister+0x36/0x50
+ [<c014e17f>] unregister_die_notifier+0xf/0x20
+ [<c0587b84>] nmi_shutdown+0x44/0x80
+ [<c0585d4a>] oprofile_shutdown+0x2a/0x60
+ [<c0586b50>] event_buffer_release+0x10/0x40
+ [<c01a8f26>] __fput+0xb6/0x180
+ [<c01a92a9>] fput+0x19/0x20
+ [<c01a63c7>] filp_close+0x47/0x70
+ [<c013741b>] put_files_struct+0x9b/0xb0
+ [<c0137472>] exit_files+0x42/0x60
+ [<c01386a2>] do_exit+0x192/0x880
+ [<c014d3b6>] ? up_read+0x16/0x30
+ [<c0120493>] ? do_page_fault+0x2e3/0x700
+ [<c01a7cc0>] ? do_sync_write+0x0/0x110
+ [<c0138dc1>] do_group_exit+0x31/0x90
+ [<c0138e2f>] sys_exit_group+0xf/0x20
+ [<c01040db>] sysenter_do_call+0x12/0x3f
+ =======================
+Sending all processes the KILL signal...
+
+The last time I did this, the machine also came up with a corrupt ext3
+root filesystem. But it didn't happen this time, so I guess it could
+also be unrelated.
+
+What would be the proper way to fix all this? Should oprofile be able
+to profile the suspend/resume code as well? Or should "echo disk" give
+-EBUSY if oprofile is running? Or
+do we simply insert a huge kludge in the form of mutual exclusion
+between oprofile and suspend in the Kconfig?
+
+Thanks,
+
+
+Vegard
+
+PS: This is not a regression. It's probably always been like that.
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
