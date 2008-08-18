@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbYHRTcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764561AbYHRTcI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756131AbYHRTcb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:32:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757863AbYHRTbg
+	id S1764561AbYHRTcI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:32:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbYHRTbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:31:36 -0400
-Received: from ns1.suse.de ([195.135.220.2]:48205 "EHLO mx1.suse.de"
+	Mon, 18 Aug 2008 15:31:11 -0400
+Received: from mx2.suse.de ([195.135.220.15]:41000 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933229AbYHRTbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:31:34 -0400
-Date: Mon, 18 Aug 2008 12:19:53 -0700
+	id S1754552AbYHRTbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:31:10 -0400
+Date: Mon, 18 Aug 2008 12:19:51 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Sven Wegener <sven.wegener@stealer.net>,
-       Simon Horman <horms@verge.net.au>
-Subject: [patch 17/49] ipvs: Fix possible deadlock in estimator code
-Message-ID: <20080818191953.GR10350@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Petr Vandrovec <VANDROVE@vc.cvut.cz>
+Subject: [patch 16/49] matrox maven: fix a broken error path
+Message-ID: <20080818191951.GQ10350@suse.de>
 References: <20080818191012.663450219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ipvs-fix-possible-deadlock-in-estimator-code.patch"
+Content-Disposition: inline; filename="matrox-maven-fix-a-broken-error-path.patch"
 In-Reply-To: <20080818191834.GA10350@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,41 +41,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Sven Wegener <sven.wegener@stealer.net>
+From: Jean Delvare <khali@linux-fr.org>
 
-commit 8ab19ea36c5c5340ff598e4d15fc084eb65671dc upstream
+commit 5ede40f87957c6ededf9284c8339722a97b9dfb6 upstream
 
-There is a slight chance for a deadlock in the estimator code. We can't call
-del_timer_sync() while holding our lock, as the timer might be active and
-spinning for the lock on another cpu. Work around this issue by using
-try_to_del_timer_sync() and releasing the lock. We could actually delete the
-timer outside of our lock, as the add and kill functions are only every called
-from userspace via [gs]etsockopt() and are serialized by a mutex, but better
-make this explicit.
+I broke an error path with d03c21ec0be7787ff6b75dcf56c0e96209ccbfbd,
+sorry about that.
 
-Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
-Acked-by: Simon Horman <horms@verge.net.au>
+The machine will crash if the i2c_attach_client() or maven_init_client()
+calls fail, although nobody has yet reported this happening.
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Petr Vandrovec <VANDROVE@vc.cvut.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/ipvs/ip_vs_est.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/video/matrox/matroxfb_maven.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/ipv4/ipvs/ip_vs_est.c
-+++ b/net/ipv4/ipvs/ip_vs_est.c
-@@ -172,8 +172,11 @@ void ip_vs_kill_estimator(struct ip_vs_s
- 		kfree(est);
- 		killed++;
- 	}
--	if (killed && est_list == NULL)
--		del_timer_sync(&est_timer);
-+	while (killed && !est_list && try_to_del_timer_sync(&est_timer) < 0) {
-+		write_unlock_bh(&est_lock);
-+		cpu_relax();
-+		write_lock_bh(&est_lock);
-+	}
- 	write_unlock_bh(&est_lock);
+--- a/drivers/video/matrox/matroxfb_maven.c
++++ b/drivers/video/matrox/matroxfb_maven.c
+@@ -1266,7 +1266,7 @@ static int maven_detect_client(struct i2
+ ERROR4:;
+ 	i2c_detach_client(new_client);
+ ERROR3:;
+-	kfree(new_client);
++	kfree(data);
+ ERROR0:;
+ 	return err;
  }
- 
 
 -- 
