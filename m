@@ -1,59 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752095AbYHREjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752367AbYHREoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752095AbYHREjQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 00:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYHREjH
+	id S1752367AbYHREoV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 00:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbYHREoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 00:39:07 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33883 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbYHREjH (ORCPT
+	Mon, 18 Aug 2008 00:44:13 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:60378 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750966AbYHREoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 00:39:07 -0400
-Message-ID: <48A8FC21.9060908@zytor.com>
-Date: Sun, 17 Aug 2008 21:35:45 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: David Fries <david@fries.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix i486 suspend to disk CR4 oops
-References: <20080818040340.GB17528@spacedout.fries.net> <Pine.LNX.4.55.0808180510480.26857@cliff.in.clinika.pl>
-In-Reply-To: <Pine.LNX.4.55.0808180510480.26857@cliff.in.clinika.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 18 Aug 2008 00:44:12 -0400
+Date: Sun, 17 Aug 2008 21:44:22 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: chrisw@sous-sol.org, akpm <akpm@linux-foundation.org>
+Subject: [PATCH] security: add/fix security kernel-doc
+Message-Id: <20080817214422.3d7b6c8a.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki wrote:
-> On Sun, 17 Aug 2008, David Fries wrote:
-> 
->> arch/x86/power/cpu_32.c __save_processor_state calls read_cr4()
->> only a i486 CPU doesn't have the CR4 register.  Trying to read it
->> produces an invalid opcode oops during suspend to disk.
-> [...]
->> diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
->> index 81e5ab6..bd0f2a3 100644
->> --- a/arch/x86/kernel/acpi/sleep.c
->> +++ b/arch/x86/kernel/acpi/sleep.c
->> @@ -86,7 +86,9 @@ int acpi_save_state_mem(void)
->>  #endif /* !CONFIG_64BIT */
->>  
->>  	header->pmode_cr0 = read_cr0();
->> -	header->pmode_cr4 = read_cr4();
->> +	/* cr4 was introduced in the Pentium CPU */
->> +	if (boot_cpu_data.x86 >= 5)
->> +		header->pmode_cr4 = read_cr4();
->>  	header->realmode_flags = acpi_realmode_flags;
->>  	header->real_magic = 0x12345678;
->>  
-> 
->  NACK.  Later i486 chips do have CR4 -- for PSE, VME, etc. (the set of
-> features varies across the line).  Use a fixup as elsewhere or something.
-> 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-The other alternative is to probe for the CPUID instruction (via 
-EFLAGS.ID) -- CR4 is present if and only if CPUID exists.
+Add security/inode.c functions to the kernel-api docbook.
+Use '%' on constants in kernel-doc notation.
+Fix several typos/spellos in security function descriptions.
 
-	-hpa
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/DocBook/kernel-api.tmpl |    1 +
+ security/inode.c                      |   33 ++++++++++++++++-----------------
+ security/security.c                   |    8 ++++----
+ 3 files changed, 21 insertions(+), 21 deletions(-)
+
+--- lin2627-rc3g4-kerndoc.orig/Documentation/DocBook/kernel-api.tmpl
++++ lin2627-rc3g4-kerndoc/Documentation/DocBook/kernel-api.tmpl
+@@ -283,6 +283,7 @@ X!Earch/x86/kernel/mca_32.c
+   <chapter id="security">
+      <title>Security Framework</title>
+ !Isecurity/security.c
++!Esecurity/inode.c
+   </chapter>
+ 
+   <chapter id="audit">
+--- lin2627-rc3g4-kerndoc.orig/security/inode.c
++++ lin2627-rc3g4-kerndoc/security/inode.c
+@@ -190,7 +190,7 @@ static int create_by_name(const char *na
+  * @name: a pointer to a string containing the name of the file to create.
+  * @mode: the permission that the file should have
+  * @parent: a pointer to the parent dentry for this file.  This should be a
+- *          directory dentry if set.  If this paramater is NULL, then the
++ *          directory dentry if set.  If this parameter is %NULL, then the
+  *          file will be created in the root of the securityfs filesystem.
+  * @data: a pointer to something that the caller will want to get to later
+  *        on.  The inode.i_private pointer will point to this value on
+@@ -199,18 +199,18 @@ static int create_by_name(const char *na
+  *        this file.
+  *
+  * This is the basic "create a file" function for securityfs.  It allows for a
+- * wide range of flexibility in createing a file, or a directory (if you
++ * wide range of flexibility in creating a file, or a directory (if you
+  * want to create a directory, the securityfs_create_dir() function is
+- * recommended to be used instead.)
++ * recommended to be used instead).
+  *
+- * This function will return a pointer to a dentry if it succeeds.  This
++ * This function returns a pointer to a dentry if it succeeds.  This
+  * pointer must be passed to the securityfs_remove() function when the file is
+  * to be removed (no automatic cleanup happens if your module is unloaded,
+- * you are responsible here.)  If an error occurs, NULL will be returned.
++ * you are responsible here).  If an error occurs, %NULL is returned.
+  *
+- * If securityfs is not enabled in the kernel, the value -ENODEV will be
++ * If securityfs is not enabled in the kernel, the value %-ENODEV is
+  * returned.  It is not wise to check for this value, but rather, check for
+- * NULL or !NULL instead as to eliminate the need for #ifdef in the calling
++ * %NULL or !%NULL instead as to eliminate the need for #ifdef in the calling
+  * code.
+  */
+ struct dentry *securityfs_create_file(const char *name, mode_t mode,
+@@ -252,19 +252,19 @@ EXPORT_SYMBOL_GPL(securityfs_create_file
+  * @name: a pointer to a string containing the name of the directory to
+  *        create.
+  * @parent: a pointer to the parent dentry for this file.  This should be a
+- *          directory dentry if set.  If this paramater is NULL, then the
++ *          directory dentry if set.  If this parameter is %NULL, then the
+  *          directory will be created in the root of the securityfs filesystem.
+  *
+- * This function creates a directory in securityfs with the given name.
++ * This function creates a directory in securityfs with the given @name.
+  *
+- * This function will return a pointer to a dentry if it succeeds.  This
++ * This function returns a pointer to a dentry if it succeeds.  This
+  * pointer must be passed to the securityfs_remove() function when the file is
+  * to be removed (no automatic cleanup happens if your module is unloaded,
+- * you are responsible here.)  If an error occurs, NULL will be returned.
++ * you are responsible here).  If an error occurs, %NULL will be returned.
+  *
+- * If securityfs is not enabled in the kernel, the value -ENODEV will be
++ * If securityfs is not enabled in the kernel, the value %-ENODEV is
+  * returned.  It is not wise to check for this value, but rather, check for
+- * NULL or !NULL instead as to eliminate the need for #ifdef in the calling
++ * %NULL or !%NULL instead as to eliminate the need for #ifdef in the calling
+  * code.
+  */
+ struct dentry *securityfs_create_dir(const char *name, struct dentry *parent)
+@@ -278,16 +278,15 @@ EXPORT_SYMBOL_GPL(securityfs_create_dir)
+ /**
+  * securityfs_remove - removes a file or directory from the securityfs filesystem
+  *
+- * @dentry: a pointer to a the dentry of the file or directory to be
+- *          removed.
++ * @dentry: a pointer to a the dentry of the file or directory to be removed.
+  *
+  * This function removes a file or directory in securityfs that was previously
+  * created with a call to another securityfs function (like
+  * securityfs_create_file() or variants thereof.)
+  *
+  * This function is required to be called in order for the file to be
+- * removed, no automatic cleanup of files will happen when a module is
+- * removed, you are responsible here.
++ * removed. No automatic cleanup of files will happen when a module is
++ * removed; you are responsible here.
+  */
+ void securityfs_remove(struct dentry *dentry)
+ {
+--- lin2627-rc3g4-kerndoc.orig/security/security.c
++++ lin2627-rc3g4-kerndoc/security/security.c
+@@ -82,8 +82,8 @@ __setup("security=", choose_lsm);
+  *
+  * Return true if:
+  *	-The passed LSM is the one chosen by user at boot time,
+- *	-or user didsn't specify a specific LSM and we're the first to ask
+- *	 for registeration permissoin,
++ *	-or user didn't specify a specific LSM and we're the first to ask
++ *	 for registration permission,
+  *	-or the passed LSM is currently loaded.
+  * Otherwise, return false.
+  */
+@@ -101,13 +101,13 @@ int __init security_module_enable(struct
+  * register_security - registers a security framework with the kernel
+  * @ops: a pointer to the struct security_options that is to be registered
+  *
+- * This function is to allow a security module to register itself with the
++ * This function allows a security module to register itself with the
+  * kernel security subsystem.  Some rudimentary checking is done on the @ops
+  * value passed to this function. You'll need to check first if your LSM
+  * is allowed to register its @ops by calling security_module_enable(@ops).
+  *
+  * If there is already a security module registered with the kernel,
+- * an error will be returned.  Otherwise 0 is returned on success.
++ * an error will be returned.  Otherwise %0 is returned on success.
+  */
+ int register_security(struct security_operations *ops)
+ {
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
