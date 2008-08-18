@@ -1,199 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbYHRKTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752807AbYHRKZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbYHRKTm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 06:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYHRKTb
+	id S1752807AbYHRKZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 06:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYHRKZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 06:19:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43925 "EHLO ogre.sisk.pl"
+	Mon, 18 Aug 2008 06:25:52 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:33581 "EHLO pmx1.sophos.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751083AbYHRKTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 06:19:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot - v2
-Date: Mon, 18 Aug 2008 12:22:48 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Jeff Garzik" <jgarzik@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <86802c440808171358y55361a52pa6d0aacf44a1875f@mail.gmail.com> <200808172347.36582.rjw@sisk.pl>
-In-Reply-To: <200808172347.36582.rjw@sisk.pl>
+	id S1751179AbYHRKZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 06:25:51 -0400
+In-Reply-To: <1219054440.10800.291.camel@twins>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
+       Arjan van de Ven <arjan@infradead.org>, douglas.leeder@sophos.com,
+       hch@infradead.org, Helge Hafting <helge.hafting@aitel.hist.no>,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       malware-list-bounces@dmesg.printk.net, viro@ZenIV.linux.org.uk
+Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808181222.49576.rjw@sisk.pl>
+X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
+From: tvrtko.ursulin@sophos.com
+Date: Mon, 18 Aug 2008 11:24:44 +0100
+X-MIMETrack: S/MIME Sign by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
+ 26, 2006) at 18/08/2008 11:25:40,
+	Serialize by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
+ 26, 2006) at 18/08/2008 11:25:40,
+	Serialize complete at 18/08/2008 11:25:40,
+	S/MIME Sign failed at 18/08/2008 11:25:40: The cryptographic key was not
+ found,
+	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 18/08/2008 11:24:49,
+	Serialize complete at 18/08/2008 11:24:49
+Content-Type: text/plain; charset="US-ASCII"
+Message-Id: <20080818102552.C71C42FE81F@pmx1.sophos.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 17 of August 2008, Rafael J. Wysocki wrote:
-> On Sunday, 17 of August 2008, Yinghai Lu wrote:
-> > On Sun, Aug 17, 2008 at 12:34 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > On Sunday, 17 of August 2008, Rafael J. Wysocki wrote:
-> > >> On Sunday, 17 of August 2008, Yinghai Lu wrote:
-> > >> > On Sun, Aug 17, 2008 at 9:55 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > >> > > On Sunday, 17 of August 2008, Rafael J. Wysocki wrote:
-> > >> > >> On Sunday, 17 of August 2008, Yinghai Lu wrote:
-> > >> > >> > after
-> > >> > >> >
-> > >> > >> > | commit f735a2a1a4f2a0f5cd823ce323e82675990469e2
-> > >> > >> > | Author: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-> > >> > >> > | Date:   Sun May 18 15:02:37 2008 +0200
-> > >> > >> > |
-> > >> > >> > |    [netdrvr] forcedeth: setup wake-on-lan before shutting down
-> > >> > >> > |
-> > >> > >> > |    When hibernating in 'shutdown' mode, after saving the image the suspend hook
-> > >> > >> > |    is not called again.
-> > >> > >> > |    However, if the device is in promiscous mode, wake-on-lan will not work.
-> > >> > >> > |    This adds a shutdown hook to setup wake-on-lan before the final shutdown.
-> > >> > >> > |
-> > >> > >> > |    Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-> > >> > >> > |    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-> > >> > >> >
-> > >> > >> > my servers with nvidia mcp55 nic doesn't work with msi in second kernel by kexec
-> > >> > >> >
-> > >> > >> > after remove pci_set_power_state(, PCI_D3hot) that nic/msi will work again.
-> > >> > >> >
-> > >> > >> > check with e1000 is using pci_choose_state in _shutdown.
-> > >> > >
-> > >> > > This is wrong.
-> > >> > >
-> > >> > >> > So change that pci_choose_state(pdev, ...), and it works.
-> > >> > >>
-> > >> > >> Well, this doesn't look like a good solution to me, because you're putting
-> > >> > >> PMSG_SUSPEND in there, which is not correct for shutdown.  The right thing to
-> > >> > >> do would be to avoid changing the device power state if nv_shutdown() is
-> > >> > >> used for kexec or to rework the initialization of the adapter to handle the
-> > >> > >> case when it's initially in D3.
-> > >> > >>
-> > >> > >> Does it help if you just remove the pci_set_power_state(pdev, PCI_D3hot)
-> > >> > >> altogether?
-> > >> > >
-> > >> > > Ah, sorry.  I see it does.
-> > >> > >
-> > >> > > Actually, I think you can use pci_prepare_to_sleep() instead of
-> > >> > > pci_enable_wake() / pci_set_power_state() combo.  It wasn't designed for this
-> > >> > > purpose, but should work nevertheless.
-> > >> > >
-> > >> > > Can you please check if the appended patch works instead of your one?
-> > >> > >
-> > >> > > Rafael
-> > >> > >
-> > >> > > ---
-> > >> > > Fix the problem that boxes with NVidia MCP55 don't work with MSI
-> > >> > > in a kexeced kernel.
-> > >> > >
-> > >> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > >> > > ---
-> > >> > >  drivers/net/forcedeth.c |    4 +---
-> > >> > >  1 file changed, 1 insertion(+), 3 deletions(-)
-> > >> > >
-> > >> > > Index: linux-2.6/drivers/net/forcedeth.c
-> > >> > > ===================================================================
-> > >> > > --- linux-2.6.orig/drivers/net/forcedeth.c
-> > >> > > +++ linux-2.6/drivers/net/forcedeth.c
-> > >> > > @@ -5975,10 +5975,8 @@ static void nv_shutdown(struct pci_dev *
-> > >> > >        if (netif_running(dev))
-> > >> > >                nv_close(dev);
-> > >> > >
-> > >> > > -       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-> > >> > > -       pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
-> > >> > >        pci_disable_device(pdev);
-> > >> > > -       pci_set_power_state(pdev, PCI_D3hot);
-> > >> > > +       pci_prepare_to_sleep(pdev);
-> > >> > >  }
-> > >> > >  #else
-> > >> > >  #define nv_suspend NULL
-> > >> > >
-> > >> > >
-> > >> >
-> > >> > your patch doesn't work...  it seems that silicon has problem with D3Hot
-> > >>
-> > >> Okay, so perhaps it's better to do something like this:
-> > >>
-> > >> ---
-> > >>  drivers/net/forcedeth.c |    8 +++++---
-> > >>  1 file changed, 5 insertions(+), 3 deletions(-)
-> > >>
-> > >> Index: linux-2.6/drivers/net/forcedeth.c
-> > >> ===================================================================
-> > >> --- linux-2.6.orig/drivers/net/forcedeth.c
-> > >> +++ linux-2.6/drivers/net/forcedeth.c
-> > >> @@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
-> > >>       if (netif_running(dev))
-> > >>               nv_close(dev);
-> > >>
-> > >> -     pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-> > >> -     pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
-> > >>       pci_disable_device(pdev);
-> > >> -     pci_set_power_state(pdev, PCI_D3hot);
-> > >> +     if (system_state == SYS_POWER_OFF) {
-> > >
-> > > Sorry, it should be SYSTEM_POWER_OFF here.  Corrected patch is appended.
-> > >
-> > >> +             if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
-> > >> +                     pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-> > >> +             pci_set_power_state(pdev, PCI_D3hot);
-> > >> +     }
-> > >>  }
-> > >>  #else
-> > >>  #define nv_suspend NULL
-> > >> --
-> > >
-> > > ---
-> > >  drivers/net/forcedeth.c |    8 +++++---
-> > >  1 file changed, 5 insertions(+), 3 deletions(-)
-> > >
-> > > Index: linux-2.6/drivers/net/forcedeth.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/drivers/net/forcedeth.c
-> > > +++ linux-2.6/drivers/net/forcedeth.c
-> > > @@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
-> > >        if (netif_running(dev))
-> > >                nv_close(dev);
-> > >
-> > > -       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-> > > -       pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
-> > >        pci_disable_device(pdev);
-> > > -       pci_set_power_state(pdev, PCI_D3hot);
-> > > +       if (system_state == SYSTEM_POWER_OFF) {
-> > > +               if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
-> > > +                       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-> > > +               pci_set_power_state(pdev, PCI_D3hot);
-> > > +       }
-> > >  }
-> > >  #else
-> > >  #define nv_suspend NULL
-> > >
-> > 
-> > why not like e1000 to
-> > pci_set_power_state(pdev, pci_choose_state(pdev, PMSG_SUSPEND));
-> > 
-> > pci_choose_state would check if platform support those state...
-> 
-> ... but ->shutdown() only involves the platform in the
-> 'system_state == SYSTEM_POWER_OFF' case!
-> 
-> In fact, using pci_choose_state() in ->shutdown() is a very convoluted way of
-> checking the 'system_state' value, and not a 100% reliable one. :-)
-> 
-> Namely, the fact that pci_choose_state() returns you D0 instead of D3hot for
-> 'system_state != SYSTEM_POWER_OFF' is a pure coincidence (accidentally, there
-> is an ACPI handle for the device, but there need not be one) and you should
-> not rely on that in general.  Generally speaking, pci_choose_state() is not to
-> be used outside of the drivers' ->suspend() routines.
-> 
-> [Yes, this means e1000 will have to be fixed, as I said before.]
-> 
-> Apart from this, pci_choose_state() is broken and will shortly be deprecated.
-> Moreover, in future all direct references to PMSG_SUSPEND from the drivers
-> will be removed.
+Peter Zijlstra wrote on 18/08/2008 11:14:00:
 
-Does the last patch work for you BTW?
+> On Mon, 2008-08-18 at 12:09 +0200, Helge Hafting wrote:
+> > 
+> > Scanning on open should be a last resort. Scan in advance when you 
+can.
+> > Of course, removable media cannot be scanned until it is inserted and 
+> > mounted,
+> > that is obvious. The scanning can start as soon as the filesystem is 
+> > mounted though,
+> > there is no reason to wait until users try to access something.
+> > 
+> > A CD inserted into a CD-server may not necessarily be needed 
+immediately, so
+> > scanning in advance will help here too. The user inserting a CD in a 
+home
+> > computer may start to use stuff right away, or perhaps he spends
+> > some time reading the docs before a complicated install. Sill room for 
+some
+> > scanning in advance, which also may end up with the nice effect of 
+> > caching the CD.
+> 
+> Hmm, then there is the issue that an active scanner will avoid me from
+> removing the media again. Most annoysome when the machine won't promptly
+> give back the disk.
+> 
+> Imagine me browsing through a stack of unmarked dvd-rw media trying to
+> find the one with the right file on it, but having to wait every time
+> for the whole media to get scanned..
+> 
+> Not a nice picture.
 
-Rafael
+I agree. And not only that but also the fact that most of the time I would 
+not want mount to trigger a background scan of everything because not all 
+might be accessed later. Therefore it would be just wasting resources and 
+ruining user experience. This argument is flawed in a way that is 
+unsolvable in the same way normal preload to page cache is unsolvable 
+because it is impossible to predict the usage pattern.
+
+--
+Tvrtko A. Ursulin
+Senior Software Engineer, Sophos
+
+"Views and opinions expressed in this email are strictly those of the 
+author.
+ The contents has not been reviewed or approved by Sophos."
+ 
+
+Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
+OX14 3YP, United Kingdom.
+
+Company Reg No 2096520. VAT Reg No GB 348 3873 20.
+
