@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYHRWQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbYHRW0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755403AbYHRWQV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 18:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbYHRWQN
+	id S1755965AbYHRW0B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 18:26:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYHRWZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 18:16:13 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:56349 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751049AbYHRWQM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 18:16:12 -0400
-From: Anthony Liguori <aliguori@us.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@qumranet.com>,
-       virtualization@lists.linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Anthony Liguori <aliguori@us.ibm.com>
-Subject: [PATCH] virtio_balloon: fix towards_target when deflating balloon
-Date: Mon, 18 Aug 2008 17:15:31 -0500
-Message-Id: <1219097731-1224-1-git-send-email-aliguori@us.ibm.com>
-X-Mailer: git-send-email 1.5.5.1
+	Mon, 18 Aug 2008 18:25:52 -0400
+Received: from tundra.namei.org ([65.99.196.166]:49062 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751188AbYHRWZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 18:25:51 -0400
+Date: Tue, 19 Aug 2008 08:23:12 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Cordelia <cordsam@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] audit: Moved variable declaration to beginning of
+ function
+In-Reply-To: <48A9A73F.9060400@linux.vnet.ibm.com>
+Message-ID: <alpine.LRH.1.10.0808190822350.24485@tundra.namei.org>
+References: <48A9A73F.9060400@linux.vnet.ibm.com>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Both v and vb->num_pages are u32 and unsigned int respectively.  If v is less
-than vb->num_pages (and it is, when deflating the balloon), the result is a
-very large 32-bit number.  Since we're returning a s64, instead of getting the
-same negative number we desire, we get a very large positive number.
+On Mon, 18 Aug 2008, Cordelia wrote:
 
-This handles the case where v < vb->num_pages and ensures we get a small,
-negative, s64 as the result.
+> got rid of compilation warning:
+> ISO C90 forbids mixed declarations and code
+> 
+> Signed-off-by: Cordelia Sam <cordesam@gmail.com>
+> ---
+>  kernel/auditsc.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/auditsc.c b/kernel/auditsc.c
+> index 972f8e6..59cedfb 100644
+> --- a/kernel/auditsc.c
+> +++ b/kernel/auditsc.c
+> @@ -243,10 +243,11 @@ static inline int open_arg(int flags, int mask)
+>  
+>  static int audit_match_perm(struct audit_context *ctx, int mask)
+>  {
+> +	unsigned n;
+>  	if (unlikely(!ctx))
+>  		return 0;
+>  
+> -	unsigned n = ctx->major;
+> +	n = ctx->major;
+>  	switch (audit_classify_syscall(ctx->arch, n)) {
+>  	case 0:	/* native */
+>  		if ((mask & AUDIT_PERM_WRITE) &&
 
-Rusty: please push this for 2.6.27-rc4.  It's probably appropriate for the
-stable tree too as it will cause an unexpected OOM when ballooning.
 
-Signed-off-by: Anthony Liguori <aliguori@us.ibm.com>
+Reviewed-by: James Morris <jmorris@namei.org>
 
-diff --git a/drivers/virtio/virtio_balloon.c b/drivers/virtio/virtio_balloon.c
-index bfef604..bd3c384 100644
---- a/drivers/virtio/virtio_balloon.c
-+++ b/drivers/virtio/virtio_balloon.c
-@@ -158,7 +158,10 @@ static inline s64 towards_target(struct virtio_balloon *vb)
- 	vb->vdev->config->get(vb->vdev,
- 			      offsetof(struct virtio_balloon_config, num_pages),
- 			      &v, sizeof(v));
--	return v - vb->num_pages;
-+	if (v < vb->num_pages)
-+		return -(s64)(vb->num_pages - v);
-+	else
-+		return v - vb->num_pages;
- }
- 
- static void update_balloon_size(struct virtio_balloon *vb)
+-- 
+James Morris
+<jmorris@namei.org>
