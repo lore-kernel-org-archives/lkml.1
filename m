@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754932AbYHRVcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbYHRVfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754932AbYHRVcX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 17:32:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbYHRVcN
+	id S1754591AbYHRVfS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 17:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYHRVfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 17:32:13 -0400
-Received: from gv-out-0910.google.com ([216.239.58.191]:31627 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752868AbYHRVcM (ORCPT
+	Mon, 18 Aug 2008 17:35:00 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:37821 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752372AbYHRVe7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 17:32:12 -0400
+	Mon, 18 Aug 2008 17:34:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=OxYsI6BtnhavBvlXrryMO5F2J2jacRUbeKPzSgPWmzBc2hwPpO+cUSkwQpdehoXaI6
-         UrynX4ncQIbaam/iZt4JKwzXHR8afgB+lZ39kgwSseRBLYYydz8LL7fUhqErOcNeQzWL
-         2JyfpfFH1qZbVL+HSjYshemprEUHhcbVqaVgw=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCH 0/5] ide debugging macros
-Date: Mon, 18 Aug 2008 23:29:13 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Borislav Petkov <petkovbb@gmail.com>
-References: <1218993826-4571-1-git-send-email-petkovbb@gmail.com> <200808182308.38345.bzolnier@gmail.com>
-In-Reply-To: <200808182308.38345.bzolnier@gmail.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=IArEIIuFVUazTLrgPiSjUCI4mEg6z+iOroc6bDnnAJJl9kqMl673VDmW3m78Pf2pDq
+         jBe+WgIfQzdriwe/uheITmlfcPka32UNmZEwkUd6ubHrfZeMbJwfNYKQB+9yWEz4C5k/
+         wrCrvdtlteRnlKpYDBv07tNZYl2odLDspyJUU=
+Message-ID: <86802c440808181434q2c3b20fcs197c52c51717e782@mail.gmail.com>
+Date: Mon, 18 Aug 2008 14:34:58 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Simon Arlott" <simon@fire.lp0.eu>
+Subject: Re: [linux-pm] forcedeth 10de:0373 doesn't work on resume
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Andrew Morton" <akpm@linux-foundation.org>, jgarzik@redhat.com,
+       netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, ranma+kernel@tdiedrich.de
+In-Reply-To: <48A9E8B3.4040800@simon.arlott.org.uk>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200808182329.13199.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4898AA28.8000507@simon.arlott.org.uk>
+	 <20080818134814.136105c9.akpm@linux-foundation.org>
+	 <200808182313.10235.rjw@sisk.pl>
+	 <48A9E8B3.4040800@simon.arlott.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 August 2008, Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi,
-> 
-> On Sunday 17 August 2008, Borislav Petkov wrote:
-> > Hi Bart,
-> > 
-> > here's something i've been wanting to do for a long time: debugging macros. The
-> > reason for it is that i got tired of adding debug printk's everytime i'm testing
-> > something so here we go.
-> > 
-> > The debugging macro is similar to the old ones but is one for all drivers
-> > (currently only ide-floppy), is nice on branch prediction and is controlled by a
-> > drive->debug_mask switch which is a module parameter and as such can be set at
-> > module load time, of course. I've been thinking of adding also a sysfs attribute
-> > too but can't seem to find quite the justification for it so no sysfs for now :)
-> 
-> if you look closely you should already find it :)
-> 
-> [ module parameters are exported through sysfs and it uses 0644 mask ]
+On Mon, Aug 18, 2008 at 2:25 PM, Simon Arlott <simon@fire.lp0.eu> wrote:
+> On 18/08/08 22:13, Rafael J. Wysocki wrote:
+>
+>>> Is it still broken in current kernels?
+>>
+>> It probably is.
+>
+> If I have MSI enabled, it still doesn't work.
 
-Together with sysfs device-driver binding/unbinding support it
-can probably substitute for lack of sysfs attribute for now. ;)
+same problem with nv_shutdown about setting it to D3Hot?
 
-Anyway adding a proper device sysfs attribute will be trivial
-(ide_dev_attrs[]) but lets wait with it until things settle down.
-
-Thanks,
-Bart
+YH
