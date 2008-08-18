@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760921AbYHRSyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760639AbYHRSxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760921AbYHRSyp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 14:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760746AbYHRSxs
+	id S1760639AbYHRSxa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 14:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760186AbYHRSwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 14:53:48 -0400
-Received: from ns.suse.de ([195.135.220.2]:42310 "EHLO mx1.suse.de"
+	Mon, 18 Aug 2008 14:52:33 -0400
+Received: from mx2.suse.de ([195.135.220.15]:35184 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760736AbYHRSxr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 14:53:47 -0400
-Date: Mon, 18 Aug 2008 11:43:16 -0700
+	id S1760177AbYHRSwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 14:52:31 -0400
+Date: Mon, 18 Aug 2008 11:43:07 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, David Howells <dhowells@redhat.com>,
-       Gunter Kukkukk <linux@kukkukk.com>, Steve French <sfrench@us.ibm.com>
-Subject: [patch 22/60] CIFS: mount of IPC$ breaks with iget patch
-Message-ID: <20080818184316.GW29394@suse.de>
+       alan@lxorguk.ukuu.org.uk, Andre Schenk <andre@melior.s.bawue.de>
+Subject: [patch 19/60] USB: ftdi_sio: Add USB Product Id for ELV HS485
+Message-ID: <20080818184307.GT29394@suse.de>
 References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="cifs-mount-of-ipc-breaks-with-iget-patch.patch"
+Content-Disposition: inline; filename="usb-ftdi_sio-add-usb-product-id-for-elv-hs485.patch"
 In-Reply-To: <20080818184035.GA29394@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,39 +38,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Steve French <sfrench@us.ibm.com>
+From: Andre Schenk <andre@melior.s.bawue.de>
 
-commit ad661334b8ae421154b121ee6ad3b56807adbf11 upstream
+commit b5894a500127fce1db1309db5f9ca8b77a2ac266 upstream
 
-In looking at network named pipe support on cifs, I noticed that
-Dave Howell's iget patch:
+USB product id registration for the ELV HS485 USB adapter (www.elv.de) to
+their home automation bus system. Applies to 2.6.26.
 
-    iget: stop CIFS from using iget() and read_inode()
-
-broke mounts to IPC$ (the interprocess communication share), and don't
-handle the error case (when getting info on the root inode fails).
-
-Thanks to Gunter who noted a typo in a debug line in the original
-version of this patch.
-
-CC: David Howells <dhowells@redhat.com>
-CC: Gunter Kukkukk <linux@kukkukk.com>
-Signed-off-by: Steve French <sfrench@us.ibm.com>
+Signed-off-by: Andre Schenk <andre@melior.s.bawue.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/cifs/inode.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/usb/serial/ftdi_sio.c |    1 +
+ drivers/usb/serial/ftdi_sio.h |    1 +
+ 2 files changed, 2 insertions(+)
 
---- a/fs/cifs/inode.c
-+++ b/fs/cifs/inode.c
-@@ -649,6 +649,7 @@ struct inode *cifs_iget(struct super_blo
- 		inode->i_fop = &simple_dir_operations;
- 		inode->i_uid = cifs_sb->mnt_uid;
- 		inode->i_gid = cifs_sb->mnt_gid;
-+	} else if (rc) {
- 		_FreeXid(xid);
- 		iget_failed(inode);
- 		return ERR_PTR(rc);
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -553,6 +553,7 @@ static struct usb_device_id id_table_com
+ 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_FHZ1300PC_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_EM1010PC_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_WS500_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_HS485_PID) },
+ 	{ USB_DEVICE(FTDI_VID, LINX_SDMUSBQSS_PID) },
+ 	{ USB_DEVICE(FTDI_VID, LINX_MASTERDEVEL2_PID) },
+ 	{ USB_DEVICE(FTDI_VID, LINX_FUTURE_0_PID) },
+--- a/drivers/usb/serial/ftdi_sio.h
++++ b/drivers/usb/serial/ftdi_sio.h
+@@ -524,6 +524,7 @@
+ #define FTDI_ELV_WS300PC_PID	0xE0F6	/* PC-Wetterstation (WS 300 PC) */
+ #define FTDI_ELV_FHZ1300PC_PID	0xE0E8	/* FHZ 1300 PC */
+ #define FTDI_ELV_WS500_PID	0xE0E9	/* PC-Wetterstation (WS 500) */
++#define FTDI_ELV_HS485_PID	0xE0EA	/* USB to RS-485 adapter */
+ #define FTDI_ELV_EM1010PC_PID	0xE0EF	/* Engery monitor EM 1010 PC */
+ 
+ /*
 
 -- 
