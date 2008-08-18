@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbYHRQ3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbYHRQdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754713AbYHRQ3h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 12:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbYHRQ3a
+	id S1754063AbYHRQdR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 12:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYHRQdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 12:29:30 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:14187 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751502AbYHRQ33 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 12:29:29 -0400
-X-BigFish: VPS-37(z21eWz1432R936eQ1805Mzzzz2f39iz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K5T1SJ-02-2LM-01
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Warning in during hotplug on 2.6.27-rc2-git5
-Date: Mon, 18 Aug 2008 11:29:15 -0500
-Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AC7D@sausexmb4.amd.com>
-In-Reply-To: <200808181638.37707.rjw@sisk.pl>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Warning in during hotplug on 2.6.27-rc2-git5
-Thread-Index: AckBP7R8eMwIT6WYQZKrttYeCPI52QAD7Bkw
-References: <200808141753.58547.rjw@sisk.pl> <200808172353.54479.rjw@sisk.pl> <6453C3CB8E2B3646B0D020C112613273C5AC7B@sausexmb4.amd.com> <200808181638.37707.rjw@sisk.pl>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: "Andi Kleen" <andi@firstfloor.org>, <linux-kernel@vger.kernel.org>,
-       "Greg KH" <greg@kroah.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 18 Aug 2008 16:29:17.0232 (UTC) FILETIME=[8F241300:01C9014F]
+	Mon, 18 Aug 2008 12:33:05 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35227 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751051AbYHRQdD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 12:33:03 -0400
+Date: Mon, 18 Aug 2008 17:15:00 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Eric Paris <eparis@redhat.com>
+Cc: tvrtko.ursulin@sophos.com, Theodore Tso <tytso@mit.edu>, davecb@sun.com,
+       david@lang.hm, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       malware-list@lists.printk.net, Casey Schaufler <casey@schaufler-ca.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro	to
+ a linux interface for on access scanning
+Message-ID: <20080818171500.78590801@lxorguk.ukuu.org.uk>
+In-Reply-To: <1219076143.15566.39.camel@localhost.localdomain>
+References: <20080818153212.6A6FD33687F@pmx1.sophos.com>
+	<1219076143.15566.39.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > I'm still seeing it on 2.6.27-rc2, even with the 
-> > > > patch here http://lkml.org/lkml/2008/7/30/171 and the
-> > > > wbinvd_halt code patch applied.  Maybe something else
-> > > > broke in some of the recent hotplug changes?
->
-> I have a couple of questions, then:
-> - Does it fail identically for all CPUs or for CPU4 and above only?
-> - Did previous kernels, most importantly 2.6.26, work correctly?
+> On async notification we fire a message to everything that registered
+> 'simultaneously.' On blocking we fire a message to everything in
+> priority order and block until we get a response.  That response should
+> be of the form ALLOW/DENY and should include "mark result"/"don't mark
+> result."
 
-It turns out 2.6.26 also fails.  It is only failing for CPU4+,
-I'm not sure why that would be significant.
+No can do - you get stuck with recursive events with the virus checker
+trying to stop the indexer from indexing a worm.
 
-> Also, can you please attach dmesg output, including the 
-> offlining of a CPU that would later lead to the problem
-> with cpu_up(), to the Bugzilla entry at
-> http://bugzilla.kernel.org/show_bug.cgi?id=11337 ?
+> read -> we have the ALLOW/mark result bit in core set so just allow.
 
-I did.
+Don't think we need this - SELinux can do that bit
 
--Mark Langsdorf
-Operating System Research Center
-AMD
+> mtime update -> clear ALLOW/"mark result" bit in core, send async
+> notification to userspace
+
+Why via the kernel ?
+
+> The communication with userspace has a very specific need.  The scanning
+> process needs to get 'something' that will give it access to the
+> original file/inode/data being worked on.  My previous patch set does
+
+file handle. Really you need to give the handle of the object because it
+may not have a name or a meaningful inode number
 
