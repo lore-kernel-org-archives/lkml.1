@@ -1,101 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724AbYHRO7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752903AbYHRPBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753724AbYHRO7k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 10:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbYHRO7b
+	id S1752903AbYHRPBV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 11:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbYHRPBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 10:59:31 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:36707 "EHLO fieldses.org"
+	Mon, 18 Aug 2008 11:01:13 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:52984 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751323AbYHRO7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 10:59:30 -0400
-Date: Mon, 18 Aug 2008 10:59:25 -0400
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Jeff Layton <jlayton@redhat.com>
-Subject: Re: [PATCH] Fix allocation sizes of knfsd raparm hash
-Message-ID: <20080818145925.GB23127@fieldses.org>
-References: <20080815184032.3acd8032.sfr@canb.auug.org.au> <s5hr68q5rm8.wl%tiwai@suse.de> <20080815190221.GB26563@fieldses.org> <s5hvdy1ny9n.wl%tiwai@suse.de>
+	id S1751188AbYHRPBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 11:01:12 -0400
+In-Reply-To: <20080814111210.GI6995@ucw.cz>
+Subject: Re: [PATCH 1/4] integrity: TPM internel kernel interface
+To: Pavel Machek <pavel@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OFFC89CC8B.668BE16F-ON852574A9.00517F82-852574A9.00527E25@us.ibm.com>
+From: Kenneth Goldman <kgoldman@us.ibm.com>
+Date: Mon, 18 Aug 2008 11:01:04 -0400
+X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V85_M1_05262008|May 26, 2008) at
+ 08/18/2008 11:01:10
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5hvdy1ny9n.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 16, 2008 at 10:45:56AM +0200, Takashi Iwai wrote:
-> At Fri, 15 Aug 2008 15:02:21 -0400,
-> J. Bruce Fields wrote:
-> > 
-> > On Fri, Aug 15, 2008 at 03:34:39PM +0200, Takashi Iwai wrote:
-> > > The raparm was allocated in a wrong size in the commit
-> > > 
-> > >    ca80290ebda9009aedc4bd93ede5d397cb1853dc
-> > >    nfsd: permit unauthenticated stat of export root
-> > > 
-> > > and thus it resulted in memory corruption, eventually Oopsing.
-> > > This patch fixes the allocation size.
-> > 
-> > Whoops, my fault, now fixed; thanks!
-> > 
-> > (Out of curiosity--how did you find this?)
-> 
-> Actually I hit the related Oops with the latest linux-next tree.
-> Since this bug appears first on that tree and didn't occur on the
-> previous tree, it was apparently a regression.  So, I looked through
-> changes over knfsd since the previous tree, found a suspicious one,
-> and tried to fix.
-> 
-> The linux-next tree is pretty helpful to catch a regression if one
-> eats own dog foods everyday.
+Pavel Machek <pavel@suse.cz> wrote on 08/14/2008 07:12:10 AM:
 
-OK, now I see my problem: my test systems deliver the rest of their
-results by email, but if I want to check the logs for oops messages I
-still need to remember to log in and look after each test run.  So I got
-lazy and missed the slab errors on nfsd shutdown.
+> Only 2 TPMs I've seen were on pluggable modules... which was fortunate
+> because they slowed down boot by 5+ minutes, and broke it completely
+> in other cases. Nickname 'kurvitko' (aka useless trash that breaks
+> stuff). They are currently lying under my table, disconnected.
+>
+> (OTOH they were not on PCI, but on some low-count pin header).
 
-I wonder what the easiest way would be to automate collection of oops
-messages from the logs?  I suppose I should look at what the code that
-submits to kerneloops.org does.
+1 - The pluggable modules use a standard LPC bus header.  In my>
+experience, all the TPM vendors supply them in low quantities for
+evaluation and test, but no one expects them to be used in
+production because of the security issues.
 
---b.
+2 - I'd be interested to know whether the slowdown was in
+the BIOS, in the OS boot, or on bringup of an application?
+Was this Linux or some other OS?
 
-> 
-> BTW, I've been building linux-next SUSE kernel packages at every
-> linux-next release.  The packages are found in the following URL:
-> 
->     http://ftp.suse.com/pub/people/tiwai/kernel-next/
-> 
-> If anyone has a SUSE system and would like to try linux-next kernel,
-> just installs the package in addition.  It won't conflict with
-> existing standard kernel packages.
-> 
-> 
-> thanks,
-> 
-> Takashi
-> 
-> > 
-> > --b.
-> > 
-> > > 
-> > > Signed-off-by: Takashi Iwai <tiwai@suse.de>
-> > > 
-> > > ---
-> > > diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
-> > > index bfa5453..30d606f 100644
-> > > --- a/fs/nfsd/vfs.c
-> > > +++ b/fs/nfsd/vfs.c
-> > > @@ -2093,7 +2093,7 @@ nfsd_racache_init(int cache_size)
-> > >  
-> > >  		raparm = &raparm_hash[i].pb_head;
-> > >  		for (j = 0; j < nperbucket; j++) {
-> > > -			*raparm = kzalloc(sizeof(*raparm), GFP_KERNEL);
-> > > +			*raparm = kzalloc(sizeof(**raparm), GFP_KERNEL);
-> > >  			if (!*raparm)
-> > >  				goto out_nomem;
-> > >  			raparm = &(*raparm)->p_next;
-> > 
+Both the TCG and the platform vendors are very sensitive to
+the BIOS part of the boot time.  For example, the TPM self test
+is broken into a fast part for features that are required
+before boot and a slower part that can be done later. There
+are recommendations to break up hashing to remove the TPM
+from the critical path.
+
+Even then, the slowest TPM operation is keypair creation,
+on the order of 1-5 seconds, which should not be required
+during boot.  I wonder if the problem was actually a code
+bug or unsupported operation causing timeouts?
+
+It would be great if you could debug a bit and report your
+findings to us.
+
