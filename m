@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131AbYHRHVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbYHRHYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753131AbYHRHVL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 03:21:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbYHRHU5
+	id S1752549AbYHRHYx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 03:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbYHRHYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 03:20:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41587 "EHLO mx2.mail.elte.hu"
+	Mon, 18 Aug 2008 03:24:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60602 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750986AbYHRHU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 03:20:56 -0400
-Date: Mon, 18 Aug 2008 09:20:36 +0200
+	id S1751083AbYHRHYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 03:24:45 -0400
+Date: Mon, 18 Aug 2008 09:24:32 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@linux.intel.com>, Paul Jackson <pj@sgi.com>,
-       hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] Fix new warnings in real mode code
-Message-ID: <20080818072036.GA30694@elte.hu>
-References: <1219043161-19712-1-git-send-email-andi@firstfloor.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, hpa@zytor.com, tglx@linutronix.de,
+       macro@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/9] -tip/apic merging one more series
+Message-ID: <20080818072432.GA6204@elte.hu>
+References: <1219002107-21832-1-git-send-email-gorcunov@gmail.com> <86802c440808171453i2869a7f3x1db27307dbec4db7@mail.gmail.com> <aa79d98a0808172122sfab2336ldfcccc88e4316712@mail.gmail.com> <20080818071820.GB17961@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1219043161-19712-1-git-send-email-andi@firstfloor.org>
+In-Reply-To: <20080818071820.GB17961@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,22 +35,14 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andi Kleen <andi@firstfloor.org> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> This recent patch
+> > Oh...indeed. Thanks Yinghai! - will fix it today evening.
+> > Ingo drop this patch please (if it was applied).
 > 
-> commit c3965bd15118742d72b4bc1a290d37b3f081eb98
-> Author: Paul Jackson <pj@sgi.com>
-> Date:   Wed May 14 08:15:34 2008 -0700
-> 
->     x86 boot: proper use of ARRAY_SIZE instead of repeated E820MAX constant
-> 
-> caused these new warnings during a normal build:
-> 
-> In file included from linux-2.6/arch/x86/boot/memory.c:17:
-> linux-2.6/include/linux/log2.h: In function '__ilog2_u32':
-> linux-2.6/include/linux/log2.h:34: warning: implicit declaration of function 'fls'
+> hm, none of these patches has lapic_resume mentioned and current 
+> tip/master's version doesnt seem broken so there's nothing to drop.
 
-applied to tip/x86/urgent, thanks.
+ah, i see Yinghai's fix. I'll apply that to tip/x86/apic.
 
 	Ingo
