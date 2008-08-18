@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758552AbYHRTEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762622AbYHRTEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758552AbYHRTEu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:04:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762474AbYHRTCh
+	id S1762622AbYHRTEf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759750AbYHRTCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:02:37 -0400
-Received: from mx2.suse.de ([195.135.220.15]:37004 "EHLO mx2.suse.de"
+	Mon, 18 Aug 2008 15:02:13 -0400
+Received: from cantor.suse.de ([195.135.220.2]:43892 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757693AbYHRTCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:02:36 -0400
-Date: Mon, 18 Aug 2008 11:45:10 -0700
+	id S1756436AbYHRTCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:02:11 -0400
+Date: Mon, 18 Aug 2008 11:45:07 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 44/60] radeon: misc corrections
-Message-ID: <20080818184510.GS29394@suse.de>
+       alan@lxorguk.ukuu.org.uk, Steve French <sfrench@us.ibm.com>
+Subject: [patch 43/60] CIFS: Fix compiler warning on 64-bit
+Message-ID: <20080818184507.GR29394@suse.de>
 References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="radeon-misc-corrections.patch"
+Content-Disposition: inline; filename="cifs-fix-compiler-warning-on-64-bit.patch"
 In-Reply-To: <20080818184035.GA29394@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,79 +38,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: David Miller <davem@davemloft.net>
+From: Jan Beulich <jbeulich@novell.com>
 
-Commit efc491814308f89d5ef6c4fe19ae4552a67d4132 upstream
+commit 04e1e0cccade330ab3715ce59234f7e3b087e246 upstream.
 
-radeon: misc corrections
-
-I have a new PCI-E radeon RV380 series card (PCI device ID 5b64) that
-hangs in my sparc64 boxes when the init scripts set the font.  The problem
-goes away if I disable acceleration.
-
-I haven't figured out that bug yet, but along the way I found some
-corrections to make based upon some auditing.
-
-1) The RB2D_DC_FLUSH_ALL value used by the kernel fb driver
-   and the XORG video driver differ.  I've made the kernel
-   match what XORG is using.
-
-2) In radeonfb_engine_reset() we have top-level code structure
-   that roughly looks like:
-
-	if (family is 300, 350, or V350)
-		do this;
-	else
-		do that;
-	...
-	if (family is NOT 300, OR
-	    family is NOT 350, OR
-	    family is NOT V350)
-		do another thing;
-
-   this last conditional makes no sense, is always true,
-   and obviously was likely meant to be "family is NOT
-   300, 350, or V350".  So I've made the code match the
-   intent.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Tested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Steve French <sfrench@us.ibm.com>
+Cc: Eugene Teo <eteo@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/video/aty/radeon_accel.c |    4 ++--
- include/video/radeon.h           |    5 +++--
- 2 files changed, 5 insertions(+), 4 deletions(-)
+ fs/cifs/asn1.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/video/aty/radeon_accel.c
-+++ b/drivers/video/aty/radeon_accel.c
-@@ -249,8 +249,8 @@ void radeonfb_engine_reset(struct radeon
- 	INREG(HOST_PATH_CNTL);
- 	OUTREG(HOST_PATH_CNTL, host_path_cntl);
+--- a/fs/cifs/asn1.c
++++ b/fs/cifs/asn1.c
+@@ -400,7 +400,7 @@ asn1_oid_decode(struct asn1_ctx *ctx,
+ 	size = eoc - ctx->pointer + 1;
  
--	if (rinfo->family != CHIP_FAMILY_R300 ||
--	    rinfo->family != CHIP_FAMILY_R350 ||
-+	if (rinfo->family != CHIP_FAMILY_R300 &&
-+	    rinfo->family != CHIP_FAMILY_R350 &&
- 	    rinfo->family != CHIP_FAMILY_RV350)
- 		OUTREG(RBBM_SOFT_RESET, rbbm_soft_reset);
+ 	/* first subid actually encodes first two subids */
+-	if (size < 2 || size > ULONG_MAX/sizeof(unsigned long))
++	if (size < 2 || size > UINT_MAX/sizeof(unsigned long))
+ 		return 0;
  
---- a/include/video/radeon.h
-+++ b/include/video/radeon.h
-@@ -527,8 +527,9 @@
- 
- 
- /* DSTCACHE_CTLSTAT bit constants */
--#define RB2D_DC_FLUSH				   (3 << 0)
--#define RB2D_DC_FLUSH_ALL			   0xf
-+#define RB2D_DC_FLUSH_2D			   (1 << 0)
-+#define RB2D_DC_FREE_2D				   (1 << 2)
-+#define RB2D_DC_FLUSH_ALL			   (RB2D_DC_FLUSH_2D | RB2D_DC_FREE_2D)
- #define RB2D_DC_BUSY				   (1 << 31)
- 
- 
+ 	*oid = kmalloc(size * sizeof(unsigned long), GFP_ATOMIC);
 
 -- 
