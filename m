@@ -1,154 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761641AbYHRS5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761070AbYHRSzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761641AbYHRS5f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 14:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761267AbYHRSz4
+	id S1761070AbYHRSzA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 14:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756285AbYHRSyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 14:55:56 -0400
-Received: from mail9.dslextreme.com ([66.51.199.94]:45836 "HELO
-	mail9.dslextreme.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757723AbYHRSzy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 14:55:54 -0400
-Message-ID: <48A9BDC0.9070800@gawab.com>
-Date: Mon, 18 Aug 2008 11:21:52 -0700
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
+	Mon, 18 Aug 2008 14:54:20 -0400
+Received: from isilmar.linta.de ([213.133.102.198]:35935 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760868AbYHRSyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 14:54:09 -0400
+Date: Mon, 18 Aug 2008 20:50:25 +0200
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [RFC] PCMCIA patches for 2.6.28
+Message-ID: <20080818185025.GA11647@comet.dominikbrodowski.net>
+Mail-Followup-To: linux-pcmcia@lists.infradead.org,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Michal Januszewski <spock@gentoo.org>,
-       Antonino Daplas <adaplas@gmail.com>, Greg KH <gregkh@suse.de>,
-       Rafael Wysocki <rjw@sisk.pl>,
-       Romano Giannetti <romano.giannetti@gmail.com>,
-       Adrian Bunk <bunk@kernel.org>,
-       Jeremy Nickurak <kernel-bugs@atrus.rifetech.com>
-Subject: Backport hr-tick fix into .25/.26
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Hi,
 
-Since the introduction of 2.6.25-rc1 kernel I've been experiencing 
-screen blanking during boot up.
-I've reported this issue before (http://lkml.org/lkml/2008/3/12/290), 
-and Rafael Wysocki opened a bug report 
-(http://bugzilla.kernel.org/show_bug.cgi?id=10235).
-Since the problem seemed to be related to the x server, I reported it to 
-their bug tracker (https://bugs.freedesktop.org/show_bug.cgi?id=15602).
+the following pcmcia-related patches are in the queue for 2.6.28 and
+are available in the git repository at:
 
-I've tested with 2 computers, both with Intel graphic cards and various 
-versions of Ubuntu. Sorry, I couldn't do more testing :(
-I know of one other person that ran into what seems to be the same bug. 
-(http://lkml.org/lkml/2008/6/10/137 | 
-http://bugzilla.kernel.org/show_bug.cgi?id=10892)
+  git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
 
-Now since 2.6.27-rc1 the bug has been resolved. I did a git bisect and 
-found both the commit that introduced the bug and also the one that 
-fixed it.
-Greg (and stable team), I was wondering if the commit that went into .27 
-that fixed the bug could be backported into both the .25 and .26 stable 
-kernels?
+Comments, reviews and feedback are welcome. The diffstat and list of changes
+follows; the individual diffs are sent (at least) to the linux-pcmcia list.
 
+Dominik Brodowski (40):
+      pcmcia: only copy CIS override data once
+      pcmcia: add pcmcia_loop_config() helper
+      pcmcia: use pcmcia_loop_config in pata and ide drivers
+      pcmcia: use pcmcia_loop_config in bluetooth drivers
+      pcmcia: use dev_printk and dev_dbg in yenta_socket
+      pcmcia: use dev_printk in module pcmcia_core
+      pcmcia: use dev_printk in module pcmcia
+      pcmcia: use dev_printk in module rsrc_nonstatic
+      pcmcia: don't add extra DEBUG cflag
+      pcmcia: remove unused cs_socket_name() definition
+      pcmcia: use pcmcia_loop_config in scsi pcmcia drivers
+      pcmcia: use pcmcia_loop_config in ISDN pcmcia drivers
+      pcmcia: use pcmcia_loop_config in net pcmcia drivers
+      pcmcia: use pcmcia_loop_config in misc pcmcia drivers
+      pcmcia: pcmcia_config_loop() ConfigIndex unification
+      pcmcia: pcmcia_config_loop() default CIS entry handling
+      pcmcia: pcmcia_config_loop() improvement by passing vcc
+      Merge branches 'pcmcia-config-loop' and 'pcmcia-printk' into pcmcia
+      pcmcia: remove remaining in-kernel pcmcia_get_configuration_info() users
+      pcmcia: move pccard_get_configuration_info to ioctl
+      pcmcia: move config_info_t definition to ioctl-related parts in header files
+      pcmcia: deprecate CS_SUCCESS
+      pcmcia: deprecate unused CS_ error codes
+      pcmcia: deprecate CS_OUT_OF_RESOURCE
+      pcmcia: deprecate CS_UNSUPPORTED_*
+      pcmcia: deprecate CS_BAD_VCC and CS_BAD_VPP
+      pcmcia: deprecate CS_NO_CARD
+      pcmcia: deprecate CS_GENERAL_FAILURE
+      pcmcia: deprecate CS_BAD_HANDLE
+      pcmcia: deprecate CS_CONFIGURATION_LOCKED
+      pcmcia: deprecate CS_IN_USE
+      pcmcia: deprecate CS_NO_MORE_ITEMS
+      pcmcia: deprecate CS_BAD_ATTRIBUTE, CS_BAD_TYPE and CS_BAD_PAGE
+      pcmcia: deprecate CS_BAD_BASE, CS_BAD_IRQ, CS_BAD_OFFSET and CS_BAD_SIZE
+      pcmcia: deprecate CS_BAD_ARGS
+      pcmcia: deprecate CS_BAD_TUPLE
+      pcmcia: remove CS_ error codes alltogether
+      pcmcia: use dev_printk for cs_error()
+      pcmcia: uniform device IDs of pata_pcmcia and ide-cs
+      pcmcia: don't add extra DEBUG cflag bugfix
 
-This commit introduced the bug.
-
-commit 8f4d37ec073c17e2d4aa8851df5837d798606d6f
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Fri Jan 25 21:08:29 2008 +0100
-
-sched: high-res preemption tick
-
-Use HR-timers (when available) to deliver an accurate preemption tick.
-
-The regular scheduler tick that runs at 1/HZ can be too coarse when nice 
-level
-are used. The fairness system will still keep the cpu utilisation 'fair' by
-then delaying the task that got an excessive amount of CPU time but try to
-minimize this by delivering preemption points spot-on.
-
-The average frequency of this extra interrupt is sched_latency / nr_latency.
-Which need not be higher than 1/HZ, its just that the distribution 
-within the
-sched_latency period is important.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-:040000 040000 ab225228500f7a19d5ad20ca12ca3fc8ff5f5ad1 
-f1742e1d225a72aecea9d6961ed989b5943d31d8 M arch
-:040000 040000 25d85e4ef7a71b0cc76801a2526ebeb4dce180fe 
-ae61510186b4fad708ef0211ac169decba16d4e5 M include
-:040000 040000 9247cec7dd506c648ac027c17e5a07145aa41b26 
-950832cc1dc4d30923f593ecec883a06b45d62e9 M kernel
-
-
-And this one fixed it
-
-commit 31656519e132f6612584815f128c83976a9aaaef
-Author: Peter Zijlstra <peterz@infradead.org>
-Date: Fri Jul 18 18:01:23 2008 +0200
-
-sched, x86: clean up hrtick implementation
-
-random uvesafb failures were reported against Gentoo:
-
-http://bugs.gentoo.org/show_bug.cgi?id=222799
-
-and Mihai Moldovan bisected it back to:
-
- > 8f4d37ec073c17e2d4aa8851df5837d798606d6f is first bad commit
- > commit 8f4d37ec073c17e2d4aa8851df5837d798606d6f
- > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
- > Date: Fri Jan 25 21:08:29 2008 +0100
- >
- > sched: high-res preemption tick
-
-Linus suspected it to be hrtick + vm86 interaction and observed:
-
- > Btw, Peter, Ingo: I think that commit is doing bad things. They aren't
- > _incorrect_ per se, but they are definitely bad.
- >
- > Why?
- >
- > Using random _TIF_WORK_MASK flags is really impolite for doing
- > "scheduling" work. There's a reason that arch/x86/kernel/entry_32.S
- > special-cases the _TIF_NEED_RESCHED flag: we don't want to exit out of
- > vm86 mode unnecessarily.
- >
- > See the "work_notifysig_v86" label, and how it does that
- > "save_v86_state()" thing etc etc.
-
-Right, I never liked having to fiddle with those TIF flags. Initially I
-needed it because the hrtimer base lock could not nest in the rq lock.
-That however is fixed these days.
-
-Currently the only reason left to fiddle with the TIF flags is remote
-wakeups. We cannot program a remote cpu's hrtimer. I've been thinking
-about using the new and improved IPI function call stuff to implement
-hrtimer_start_on().
-
-However that does require that smp_call_function_single(.wait=0) works
-from interrupt context - /me looks at the latest series from Jens - Yes
-that does seem to be supported, good.
-
-Here's a stab at cleaning this stuff up ...
-
-Mihai reported test success as well.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Tested-by: Mihai Moldovan <ionic@ionic.de>
-Cc: Michal Januszewski <spock@gentoo.org>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-:040000 040000 5ae152350652713c58bd1700ba2c776a556b6985 
-40d22771987dc5814a1e18aa3cee82ae9e4faea5 M arch
-:040000 040000 4dfe3c6abd244d2da57b7801e47f073899124376 
-3863e3311a21dc049d5ad98f45c272e4a5269a2b M include
-:040000 040000 236b2824be1c7cf3c899a090498e4151543bba31 
-9f9779c89b781d8fa8950468deee42f419339bd7 M kernel
-
-Justin Madru
+ Documentation/pcmcia/driver-changes.txt |    6 +
+ drivers/ata/pata_pcmcia.c               |  168 ++++++--------
+ drivers/bluetooth/bluecard_cs.c         |    8 +-
+ drivers/bluetooth/bt3c_cs.c             |  123 ++++------
+ drivers/bluetooth/btuart_cs.c           |  124 ++++------
+ drivers/bluetooth/dtl1_cs.c             |   67 ++-----
+ drivers/char/pcmcia/cm4000_cs.c         |   73 ++----
+ drivers/char/pcmcia/cm4040_cs.c         |   79 +++----
+ drivers/char/pcmcia/ipwireless/main.c   |   46 ++---
+ drivers/ide/legacy/ide-cs.c             |  155 ++++++-------
+ drivers/isdn/hardware/avm/avm_cs.c      |   85 +++-----
+ drivers/isdn/hisax/avma1_cs.c           |   81 ++-----
+ drivers/isdn/hisax/elsa_cs.c            |   77 ++-----
+ drivers/isdn/hisax/sedlbauer_cs.c       |  197 ++++++++---------
+ drivers/isdn/hisax/teles_cs.c           |   77 ++-----
+ drivers/mtd/maps/pcmciamtd.c            |   26 +--
+ drivers/net/pcmcia/3c574_cs.c           |    6 +-
+ drivers/net/pcmcia/3c589_cs.c           |    6 +-
+ drivers/net/pcmcia/axnet_cs.c           |   77 +++----
+ drivers/net/pcmcia/com20020_cs.c        |    8 +-
+ drivers/net/pcmcia/fmvj18x_cs.c         |   18 +-
+ drivers/net/pcmcia/ibmtr_cs.c           |    2 +-
+ drivers/net/pcmcia/pcnet_cs.c           |   85 ++++----
+ drivers/net/pcmcia/smc91c92_cs.c        |  138 +++++-------
+ drivers/net/pcmcia/xirc2ps_cs.c         |   75 ++++---
+ drivers/net/wireless/airo_cs.c          |  222 +++++++++---------
+ drivers/net/wireless/atmel_cs.c         |  119 +++++------
+ drivers/net/wireless/b43/pcmcia.c       |   14 +-
+ drivers/net/wireless/hostap/hostap_cs.c |  235 +++++++++-----------
+ drivers/net/wireless/netwave_cs.c       |    4 +-
+ drivers/net/wireless/orinoco_cs.c       |  163 ++++++--------
+ drivers/net/wireless/ray_cs.c           |    4 +-
+ drivers/net/wireless/spectrum_cs.c      |  162 ++++++--------
+ drivers/net/wireless/wavelan_cs.c       |   16 +-
+ drivers/net/wireless/wl3501_cs.c        |    4 +-
+ drivers/parport/parport_cs.c            |   70 +++----
+ drivers/pcmcia/Makefile                 |    4 -
+ drivers/pcmcia/cardbus.c                |    2 +-
+ drivers/pcmcia/cistpl.c                 |  240 +++++++++++----------
+ drivers/pcmcia/cs.c                     |   72 +++---
+ drivers/pcmcia/cs_internal.h            |   11 +-
+ drivers/pcmcia/ds.c                     |  238 +++++++++-----------
+ drivers/pcmcia/ds_internal.h            |    2 +-
+ drivers/pcmcia/m32r_cfc.c               |    2 +-
+ drivers/pcmcia/m32r_pcc.c               |    2 +-
+ drivers/pcmcia/m8xx_pcmcia.c            |    4 +-
+ drivers/pcmcia/o2micro.h                |    6 +-
+ drivers/pcmcia/pcmcia_ioctl.c           |  114 ++++++++--
+ drivers/pcmcia/pcmcia_resource.c        |  374 +++++++++++++++++--------------
+ drivers/pcmcia/rsrc_nonstatic.c         |   67 +++---
+ drivers/pcmcia/soc_common.c             |    2 +-
+ drivers/pcmcia/socket_sysfs.c           |   13 +-
+ drivers/pcmcia/tcic.c                   |    2 +-
+ drivers/pcmcia/ti113x.h                 |   70 +++---
+ drivers/pcmcia/yenta_socket.c           |   77 ++++---
+ drivers/scsi/pcmcia/aha152x_stub.c      |   58 +++---
+ drivers/scsi/pcmcia/fdomain_stub.c      |   37 ++--
+ drivers/scsi/pcmcia/nsp_cs.c            |  192 ++++++++--------
+ drivers/scsi/pcmcia/qlogic_stub.c       |   47 ++---
+ drivers/scsi/pcmcia/sym53c500_cs.c      |   46 ++--
+ drivers/serial/serial_cs.c              |  300 +++++++++++--------------
+ drivers/ssb/pcmcia.c                    |   22 +-
+ drivers/telephony/ixj_pcmcia.c          |   72 +++----
+ drivers/usb/host/sl811_cs.c             |  130 +++++-------
+ include/pcmcia/cistpl.h                 |   18 +-
+ include/pcmcia/cs.h                     |   55 -----
+ include/pcmcia/ds.h                     |   43 ++++-
+ include/pcmcia/ss.h                     |    4 +-
+ 68 files changed, 2346 insertions(+), 2800 deletions(-)
