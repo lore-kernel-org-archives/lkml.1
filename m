@@ -1,111 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbYHRPmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbYHRPnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754025AbYHRPmj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 11:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbYHRPma
+	id S1752680AbYHRPnd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 11:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYHRPnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 11:42:30 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:28262 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751369AbYHRPm3 (ORCPT
+	Mon, 18 Aug 2008 11:43:25 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55791 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751713AbYHRPnY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 11:42:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=isXyHfzimIzGk6+SOqoeO73OJcKI8PJTjxRdUcDkon2+JgF/sVT1Gr3uEAMv6ROo6N
-         iXGgSKs9OG7mjC8bnn+8v/TBICuNmBNFwxawnOOOMdZQTIQutl9OwdUnNIjyqwacCVuu
-         SraGroBr8MwcTY2J496pNOus8Ss64WC6Me5Qw=
-Date: Mon, 18 Aug 2008 11:42:24 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC]  Resolve 2 year old issue with different demands
-	on EVIOCGRAB
-Message-ID: <20080818112609.ZZRA012@mailhub.coreip.homeip.net>
-References: <18596.58273.713075.332009@notabene.brown> <20080815022453.GA9438@anvil.corenet.prv> <18600.51093.613662.435395@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18600.51093.613662.435395@notabene.brown>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 18 Aug 2008 11:43:24 -0400
+Date: Mon, 18 Aug 2008 16:25:26 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Tosoni" <jp.tosoni@acksys.fr>
+Cc: "'Laurent Pinchart'" <laurentp@cse-semaphore.com>,
+       "'Aristeu Rozanski'" <arozansk@redhat.com>,
+       <linux-serial@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v1] 8250: add support for DTR/DSR hardware flow control
+Message-ID: <20080818162526.1975dace@lxorguk.ukuu.org.uk>
+In-Reply-To: <000f01c8f88c$ad29d950$2e01a8c0@acksys.local>
+References: <200808071032.16709.laurentp@cse-semaphore.com>
+	<000f01c8f88c$ad29d950$2e01a8c0@acksys.local>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 18, 2008 at 10:51:33AM +1000, Neil Brown wrote:
-> On Thursday August 14, dmitry.torokhov@gmail.com wrote:
-> > Hi Neil,
-> > 
-> > On Fri, Aug 15, 2008 at 12:02:09PM +1000, Neil Brown wrote:
-> > > 
-> > > I'll let the comments in the patch below to most of the talking.
-> > > This came up because I wanted to use EVIOCGRAB in some code on an
-> > > Openmoko Freerunner, and found that EVIOCGRAG does different things on
-> > > that kernel to elsewhere.  I looked into why, and found that there was
-> > > a good reason but that the issues hadn't been completely resolved.  I
-> > > hope to help resolve the issues so that EVIOCGRAB can behave the same
-> > > everywhere, and still meet everybody's needs.
-> > > 
-> > > I would have Cc:ed to Magnus Vigerlof who wrote the original patch on
-> > > which this is based, but his Email address doesn't appear in lkml.org.
-> > > 
-> > 
-> > I don't think this is a viable solution - there are other "good"
-> > handlers beisdes evdev, such as rfkill-input, which will still get
-> > disabled by the "lightweight" grabs.
-> > 
-> > Overall I think it is application's responsibility to not use
-> > multiplexing devices if they use evdev, bit I can consider adding a new
-> > interface (maybe another ioctl) that would disable event delivery though
-> > certain interfaces for a device.
-> 
-> Hi,
-> 
->  I think you are saying that if the X server (for example) uses evdev
->  at all, it should use evdev exclusively for getting events, and not
->  use /dev/mice or whatever the equivalent is for keyboard (/dev/tty??).
+On Thu, 7 Aug 2008 14:54:05 +0200
+"Tosoni" <jp.tosoni@acksys.fr> wrote:
 
-Not quite, but generally yes - using multiplexing devices makes the
-task of filtering out duplicate events much harder so it is better not
-to use them. You can use /dev/input/eventX and /dev/input/mouseX
-pretty easily but /dev/input/eventX and /dev/input/mice is hard to use
-together.
+> About a RS485 ioctl: could you consider the attached files which are already
+> in the Linux kernel (in include/asm-cris).
+> They define a TIOCSERSETRS485 (ioctl.h), and the data structure (rs485.h)
+> with allows to specify timings. Sounds just like what we want ?
 
->  But the X server still needs to know a little bit about /dev/tty to
->  make sure that control-C doesn't get delivered the wrong way.  That's
->  awkward.
+I had a deeper look at this for RS485 and the answer is "sort of". I've
+reworked the structure to keep it the same size irrespective of 32/64bit
+systems, and to make stuff flags that can be, plus add some extra u32
+words in case we need to (.. when we need to ;)) add stuff later.
 
-Does it need to do anything besides switching VC into the raw mode?
+Comments, thoughts - will this do what people in the RS485 world need ?
 
->  It also negates much of the power of the input layer (easy hot-plug).
->  I don't much like that approach.
-> 
+Alan
+--------------
 
-I think this is the only sensible approach though. X needs to have
-native hotplug capabilities anyway because of all these new mice that
-have bazillion of buttons on them that PS/2 emulation simply can not
-support. And once you have hotplug support in X and don't rely on
-myultiplexors anymore you can remove bunch of things, like grabbing
-devices in one fashion or another and you can even keep the devices
-open while switching to the text mode - no need to close and reopen
-them all the time.
+tty: Cris has a nice RS485 ioctl so we should steal it
 
->  I think your 'can consider' option involves the application (X
->  server) saying  "I want to use both /dev/input/eventX and
->  /dev/input/mice, so I'll break the connection between those so as not
->  to cause problems".
-> 
+From: Alan Cox <alan@redhat.com>
 
-Are there other applications besides X that have this kind of issue?
-Hmm, GPM - hotplug scripts can probably just restart it any time they
-see a mouse-like device appearing or going away.. DirectFB?
+JP Tosoni observed:
 
-I think that the best solution is to fix applications, rather than
-special case multiplexing devices like you suggested below.
+"About a RS485 ioctl: could you consider the attached files which are
+ already in the Linux kernel (in include/asm-cris).  They define a
+ TIOCSERSETRS485 (ioctl.h), and the data structure (rs485.h)
+ with allows to specify timings. Sounds just like what we want ?"
 
-Thanks.
+and he's right: sort of. Rework the structure to use flag bits and make the
+time delay a fixed sized field so we don't get 32/64bit problems. Add the ioctls
+to x86 so that people know what to add to their platform of choice.
 
--- 
-Dmitry
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
+
+ include/asm-x86/ioctls.h |    2 ++
+ include/linux/serial.h   |   16 ++++++++++++++++
+ 2 files changed, 18 insertions(+), 0 deletions(-)
+
+
+diff --git a/include/asm-x86/ioctls.h b/include/asm-x86/ioctls.h
+index c0c338b..2cd4775 100644
+--- a/include/asm-x86/ioctls.h
++++ b/include/asm-x86/ioctls.h
+@@ -51,6 +51,8 @@
+ #define TCSETS2		_IOW('T', 0x2B, struct termios2)
+ #define TCSETSW2	_IOW('T', 0x2C, struct termios2)
+ #define TCSETSF2	_IOW('T', 0x2D, struct termios2)
++#define TIOCGRS485	0x542E
++#define TIOCSRS485	0x542F
+ #define TIOCGPTN	_IOR('T', 0x30, unsigned int)
+ 				/* Get Pty Number (of pty-mux device) */
+ #define TIOCSPTLCK	_IOW('T', 0x31, int)  /* Lock/unlock Pty */
+diff --git a/include/linux/serial.h b/include/linux/serial.h
+index deb7143..1ea8d92 100644
+--- a/include/linux/serial.h
++++ b/include/linux/serial.h
+@@ -173,6 +173,22 @@ struct serial_icounter_struct {
+ 	int reserved[9];
+ };
+ 
++/*
++ * Serial interface for controlling RS485 settings on chips with suitable
++ * support. Set with TIOCSRS485 and get with TIOCGRS485 if supported by your
++ * platform. The set function returns the new state, with any unsupported bits
++ * reverted appropriately.
++ */
++
++struct serial_rs485 {
++	__u32	flags;			/* RS485 feature flags */
++#define SER_RS485_ENABLED		(1 << 0)
++#define SER_RS485_RTS_ON_SEND		(1 << 1)
++#define SER_RS485_RTS_AFTER_SEND	(1 << 2)
++	__u32	delay_rts_before_send;	/* Milliseconds */
++	__u32	padding[6];		/* Memory is cheap, new structs
++					   are a royal PITA .. */
++};
+ 
+ #ifdef __KERNEL__
+ #include <linux/compiler.h>
