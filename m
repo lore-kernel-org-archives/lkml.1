@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbYHRQnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbYHRQoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754901AbYHRQnX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 12:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbYHRQnO
+	id S1755212AbYHRQoS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 12:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbYHRQoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 12:43:14 -0400
-Received: from gv-out-0910.google.com ([216.239.58.184]:11074 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754186AbYHRQnN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 12:43:13 -0400
-Message-ID: <e700089d0808180943m1bc403d4v3ee578a81e2d96cf@mail.gmail.com>
-Date: Mon, 18 Aug 2008 12:43:10 -0400
-From: "Yousaf Jindal" <yousaf.jindal@pi.edu.pk>
-To: "Tomas Winkler" <tomasw@gmail.com>
-Subject: Re: [ANNOUNCE] Wifi Link 5300 and 5100 Series
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1ba2fa240808180547md32b43au7b1beaccab1f5fd6@mail.gmail.com>
+	Mon, 18 Aug 2008 12:44:09 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:50878 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752398AbYHRQoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 12:44:08 -0400
+Message-ID: <48A9A6C0.6070109@linux.vnet.ibm.com>
+Date: Mon, 18 Aug 2008 09:43:44 -0700
+From: Cordelia <cordsam@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] pci: Changed list_for_each to list_for_each_entry
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e700089d0808151307j27d6c61dw3a1dd174e4e8610c@mail.gmail.com>
-	 <e700089d0808160326k337cec2dm65271b38812a4263@mail.gmail.com>
-	 <1ba2fa240808180112l284086f4x64168d994743398@mail.gmail.com>
-	 <e700089d0808180315s4851ed0fqea6b64c83eb570f@mail.gmail.com>
-	 <1ba2fa240808180547md32b43au7b1beaccab1f5fd6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 18, 2008 at 8:47 AM, Tomas Winkler <tomasw@gmail.com> wrote:
-> On Mon, Aug 18, 2008 at 1:15 PM, Yousaf Jindal <yousaf.jindal@pi.edu.pk> wrote:
->> On Mon, Aug 18, 2008 at 4:12 AM, Tomas Winkler <tomasw@gmail.com> wrote:
->>>
->>> Please try attached patch (not sure it will help tough)
->>> I also will need output of
->>>  >cat /sys/class/net/wlan0/devices/version
->>>
->>>
->>> Thanks
->>> Tomas
->>
->> $ cat /sys/class/net/wlan0/device/version
->> fw not loaded
->> EEPROM version: 0x11e
->>
-> Where did you get this card from?
-> Thanks
-> Tomas
->
+Signed-off-by: Cordelia Sam <cordesam@gmail.com>
+---
+ drivers/pci/probe.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-The card is included with Asus M50Vm-B2 laptops. ( e.g.,
-http://www.newegg.com/Product/Product.aspx?Item=N82E16834220344 )
-
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index a04498d..6a7ba36 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -1245,13 +1245,11 @@ static int __init pci_sort_bf_cmp(const struct pci_dev *a, const struct pci_dev
+  */
+ static void __init pci_insertion_sort_klist(struct pci_dev *a, struct list_head *list)
+ {
+-	struct list_head *pos;
+ 	struct klist_node *n;
+ 	struct device *dev;
+ 	struct pci_dev *b;
+ 
+-	list_for_each(pos, list) {
+-		n = container_of(pos, struct klist_node, n_node);
++	list_for_each_entry(n, list, n_node) {
+ 		dev = container_of(n, struct device, knode_bus);
+ 		b = to_pci_dev(dev);
+ 		if (pci_sort_bf_cmp(a, b) <= 0) {
 -- 
-Yousaf Jindal
-Director of Technology
-Pakistani Institute
+1.5.4.3
