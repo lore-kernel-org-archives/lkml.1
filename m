@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761220AbYHRTlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762641AbYHRTlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761220AbYHRTlT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932600AbYHRThv
+	id S1762641AbYHRTlm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932844AbYHRThx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:37:51 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:15599 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764473AbYHRThs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:37:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:reply-to:user-agent:mime-version:to:subject
-         :references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=hHJKMhVqcRHVyKZoTl13Fcx2BPwZgFBIEhhkuH0bT4QcTyh09muEa1zVSv+dfr3ioD
-         SmDDHpGYnO9pDyjV/zaDsbeFFbstPP8xeANRoM9gS3hRShhLMX0h8pFJ5QuOUtYAYzoo
-         QAlQNxROdBHS25Iilhp4ebtgt/KbWVeeR7wGw=
-Message-ID: <48A9CF89.9090304@bellsouth.net>
-Date: Mon, 18 Aug 2008 14:37:45 -0500
-Reply-To: jacliburn@bellsouth.net
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Mon, 18 Aug 2008 15:37:53 -0400
+Received: from ns1.suse.de ([195.135.220.2]:48987 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764543AbYHRThw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:37:52 -0400
+Date: Mon, 18 Aug 2008 12:20:25 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       Al Viro <viro@zeniv.linux.org.uk>, Jeff Dike <jdike@addtoit.com>
+Subject: [patch 31/49] uml: missed kmalloc() in pcap_user.c
+Message-ID: <20080818192025.GF10350@suse.de>
+References: <20080818191012.663450219@mini.kroah.org>
 MIME-Version: 1.0
-To: Grant Coady <gcoady.lk@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, neilb@suse.de,
-       bfields@fieldses.org, linux-nfs@vger.kernel.org
-Subject: Re: NFS regression?  Odd delays and lockups accessing an NFS export.
-References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com> <20080818185048.GO20684@miggy.org>
-In-Reply-To: <20080818185048.GO20684@miggy.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-From: "J. K. Cliburn" <jcliburn@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="uml-missed-kmalloc-in-pcap_user.c.patch"
+In-Reply-To: <20080818191834.GA10350@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Athanasius wrote:
-> On Mon, Aug 18, 2008 at 12:02:20PM +1000, Grant Coady wrote:
->> I've been using NFS here for years, lately there's something odd going on 
->> since about a month or so.  Previously reported last month:
->> http://www.gossamer-threads.com/lists/linux/kernel/951419?page=last
->>
->> Now with 2.6.27-rc3 on one of the client boxes I get a complete stall 
->> at odd times when accessing the server's exported directory, cannot 
->> see a pattern to it.  Eventually recovers after a Ctrl-C.  Nothing in 
->> the server or client log files.  Not easy to reproduce either.
-> 
->   I wonder if this is what I've been seeing.  I've been otherwise too
-> busy to properly report it, thinking that *someone* else must also be
-> seeing it and it's being worked on, else it's a subtle configuration
-> problem my end.
-> 
->   I first started seeing this with 2.6.26 on the client end, 
+2.6.25-stable review patch.  If anyone has any objections, please let us know.
 
-I see you're running the atl1 driver on your client.  I'm chasing an 
-intermittent bug in that driver that seems to be affected by certain 
-offload parameters.  Try disabling TSO and see if things improve.
+------------------
 
-ethtool -K eth0 tso off
+From: Al Viro <viro@ftp.linux.org.uk>
 
-Let me know if it helps.
+commit 296cd66f7f6e130fe08e6880ecb13c3fc615a8db upstream
 
-Jay
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Acked-by: Jeff Dike <jdike@addtoit.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ arch/um/drivers/pcap_user.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/arch/um/drivers/pcap_user.c
++++ b/arch/um/drivers/pcap_user.c
+@@ -50,7 +50,7 @@ static int pcap_open(void *data)
+ 			return -EIO;
+ 		}
+ 
+-		pri->compiled = kmalloc(sizeof(struct bpf_program),
++		pri->compiled = uml_kmalloc(sizeof(struct bpf_program),
+ 					UM_GFP_KERNEL);
+ 		if (pri->compiled == NULL) {
+ 			printk(UM_KERN_ERR "pcap_open : kmalloc failed\n");
+
+-- 
