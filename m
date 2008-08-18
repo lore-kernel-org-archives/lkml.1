@@ -1,71 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbYHRWj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYHRWnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754782AbYHRWj4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 18:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYHRWjp
+	id S1755843AbYHRWnX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 18:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbYHRWnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 18:39:45 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45705 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752568AbYHRWjo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 18:39:44 -0400
-Date: Tue, 19 Aug 2008 00:40:58 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: tvrtko.ursulin@sophos.com
-Cc: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@kernel.org>,
-       capibara@xs4all.nl, Casey Schaufler <casey@schaufler-ca.com>,
-       davecb@sun.com, david@lang.hm,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org, malware-list@lists.printk.net,
-       malware-list-bounces@dmesg.printk.net,
-       Mihai Don??u <mdontu@bitdefender.com>, Peter Dolding <oiaohm@gmail.com>,
-       rmeijer@xs4all.nl
-Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro to
-	a linux interface for on access scanning
-Message-ID: <20080818224058.GA2311@elf.ucw.cz>
-References: <20080818142511.GC8184@mit.edu> <20080818153212.6A6FD33687F@pmx1.sophos.com>
+	Mon, 18 Aug 2008 18:43:11 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:60279 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752599AbYHRWnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 18:43:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	b=NxSuHjvuFmiTAt6iEDB5nSxWHebS0KTgB0y2X2Skt5/B7r1lqJACVAXwdE6rRLJvo5EJ2c9nbX/qekoGTTjOYaWM6nEjSppLlRzlR0Zsja/vQJGQ1huC45gjdSzN9hBx;
+Message-ID: <48A9FAD8.9000503@simon.arlott.org.uk>
+Date: Mon, 18 Aug 2008 23:42:32 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080818153212.6A6FD33687F@pmx1.sophos.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>, Jeff Garzik <jgarzik@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev <netdev@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot
+ - v2
+References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <200808181222.49576.rjw@sisk.pl> <86802c440808181450y5e908b6eo3e6d54bfca6f2d8f@mail.gmail.com> <200808190008.54743.rjw@sisk.pl>
+In-Reply-To: <200808190008.54743.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > On Mon, Aug 18, 2008 at 02:15:24PM +0100, tvrtko.ursulin@sophos.com 
-> wrote:
-> > > Then there is still a question of who allows some binary to declare 
-> itself 
-> > > exempt. If that decision was a mistake, or it gets compromised 
-> security 
-> > > will be off. A very powerful mechanism which must not be easily 
-> > > accessible.  With a good cache your worries go away even without a 
-> scheme 
-> > > like this.
-> > 
-> > I have one word for you --- bittorrent.  If you are downloading a very
-> > large torrent (say approximately a gigabyte), and it contains many
-> > pdf's that are say a few megabytes a piece, and things are coming in
-> > tribbles, having either a indexing scanner or an AV scanner wake up
-> > and rescan the file from scratch each time a tiny piece of the pdf
-> > comes in is going to eat your machine alive....
+On 18/08/08 23:08, Rafael J. Wysocki wrote:
+> On Monday, 18 of August 2008, Yinghai Lu wrote:
+>> On Mon, Aug 18, 2008 at 3:22 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> 
+>> >> > >  drivers/net/forcedeth.c |    8 +++++---
+>> >> > >  1 file changed, 5 insertions(+), 3 deletions(-)
+>> >> > >
+>> >> > > Index: linux-2.6/drivers/net/forcedeth.c
+>> >> > > ===================================================================
+>> >> > > --- linux-2.6.orig/drivers/net/forcedeth.c
+>> >> > > +++ linux-2.6/drivers/net/forcedeth.c
+>> >> > > @@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
+>> >> > >        if (netif_running(dev))
+>> >> > >                nv_close(dev);
+>> >> > >
+>> >> > > -       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+>> >> > > -       pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+>> >> > >        pci_disable_device(pdev);
+>> >> > > -       pci_set_power_state(pdev, PCI_D3hot);
+>> >> > > +       if (system_state == SYSTEM_POWER_OFF) {
+>> >> > > +               if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
+>> >> > > +                       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+>> >> > > +               pci_set_power_state(pdev, PCI_D3hot);
+>> >> > > +       }
+>> >> > >  }
+>> >> > >  #else
+>> >> > >  #define nv_suspend NULL
+>> >> > >
+>> >> >
+>> 
+>> > Does the last patch work for you BTW?
+>> >
+>> 
+>> it works.
 > 
-> Huh? I was never advocating re-scan after each modification and I even 
-> explicitly said it does not make sense for AV not only for performance but 
-> because it will be useless most of the time. I thought sending out 
-> modified notification on close makes sense because it is a natural point, 
-> unless someone is trying to subvert which is out of scope. Other
-> have 
+> OK, thanks for testing.
+> 
+> I think we can use it as a quick fix for 2.6.27.  Do you agree?
+> 
+> Still, it would be helpful to verify if this is the same MSI issue reported by
+> Simon.
 
-Why do you think non-malicious applications won't write after close /
-keep file open forever?
-									Pavel
+I tried to test that patch but even without it standby/resume has stopped working:
+http://img89.imageshack.us/img89/1861/1005552wb5.jpg (standby, tainted)
+http://img89.imageshack.us/img89/5409/1005561ys2.jpg (resume)
+http://img503.imageshack.us/img503/8720/1005571bc0.jpg (resume)
+http://img135.imageshack.us/img135/5048/1005572be3.jpg (standby)
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Simon Arlott
