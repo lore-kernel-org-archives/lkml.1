@@ -1,127 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbYHRASW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYHRAXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754246AbYHRASW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 20:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYHRASI
+	id S1754189AbYHRAXT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 20:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYHRAXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 20:18:08 -0400
-Received: from mail.lang.hm ([64.81.33.126]:41612 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751700AbYHRASH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 20:18:07 -0400
-Date: Sun, 17 Aug 2008 17:17:49 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Casey Schaufler <casey@schaufler-ca.com>
-cc: Pavel Machek <pavel@suse.cz>, Eric Paris <eparis@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Rik van Riel <riel@redhat.com>,
-       davecb@sun.com, linux-security-module@vger.kernel.org,
-       Adrian Bunk <bunk@kernel.org>, Mihai Don??u <mdontu@bitdefender.com>,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
- access scanning
-In-Reply-To: <48A8BBBA.6070206@schaufler-ca.com>
-Message-ID: <alpine.DEB.1.10.0808171708230.12859@asgard.lang.hm>
-References: <20080813125638.GB6995@ucw.cz> <20080813135207.CC08C3765BC@pmx1.sophos.com> <20080814125410.GA2262@elf.ucw.cz> <2629CC4E1D22A64593B02C43E855530304AE4BE3@USILMS12.ca.com> <20080814223918.GC6370@elf.ucw.cz> <20080814200005.6b363716@bree.surriel.com>
- <20080815004335.GF13048@mit.edu> <1218769209.16613.31.camel@localhost.localdomain> <20080817221258.GC21112@atrey.karlin.mff.cuni.cz> <alpine.DEB.1.10.0808171542160.12859@asgard.lang.hm> <20080817225844.GE21112@atrey.karlin.mff.cuni.cz>
- <48A8BBBA.6070206@schaufler-ca.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 17 Aug 2008 20:23:09 -0400
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:52357 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751758AbYHRAXI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 20:23:08 -0400
+Message-ID: <48A8C0E9.6030300@lwfinger.net>
+Date: Sun, 17 Aug 2008 19:23:05 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: linville@tuxdriver.com
+CC: David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-08-17
+References: <20080817185605.GC30679@tuxdriver.com> <20080817.151251.204370966.davem@davemloft.net>
+In-Reply-To: <20080817.151251.204370966.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Aug 2008, Casey Schaufler wrote:
+David Miller wrote:
+> Their commit messages reference SHA IDs but do not give a commit
+> header line text reference as well.
+> 
+>       p54: Fix regression due to commit b19fa1f
 
-> Pavel Machek wrote:
->>>>> And I still don't get this 'mmap problem' that I don't solve that
->>>>> libmalware magically solves.  What?  don't use mmap?  I certainly hope
->>>>> not.
->>>>> 
->>>> Don't use mmap, it is as simple as that. AFAICS mmap(MAP_SHARED) --
->>>> which is basically shared memory -- is fundamentally incompatible with
->>>> reliable virus scanning.
->>>> 
->>>> ...or do you have a reasonable solution for mmap?
->>>> 
->>> mmap has a few different problems
->>> 
->>> 1. intercepting reads and writes to take action at that time
->>> 
->>> 2. the fact that two programs can use it as an inter-process communication 
->>> mechanism.
->>> 
->> 
->> ...can and will use it as an IPC. So we need to modify some
->> applications.
->> 
->> Rather than modify all the applications using mmap (you can't tell if
->> the other side is going to use it for shared memory... right?), we
->> could simply modify all the Windows-facing applications using mmap.
->>
->> 
->>> if you are worried about the IPC aspects, all you can do is forbid it, 
->> 
->> Can you automatically tell if applications are using mmap for IPC?
->> 
->> BTW in another mail you wanted to include /var/log/syslog from
->> scanning. You should not be doing that if syslog is exported to
->> Windows systems. Of course, you can get away with scanning syslog when
->> Windows client tries to read it, which should be acceptable...
->> 									Pavel
->> 
->
-> There is a solution to this whole scanning thing, but I've been
-> reluctant to suggest it, and it will be pretty obvious why y'all
-> probably don't want to try it. Just to be sure the options are
-> out on the table, here goes.
->
-> Define an xattr, let's call it "UNSCANNED", which has as its value
-> a timestamp. A regular file with this attribute cannot be executed
-> or opened,(exec or open hangs or fails, either behavior has merit
-> and downsides) and it requires privilege (perhaps CAP_MAC_ADMIN)
-> to remove the attribute. File creation attaches the attribute. Any
-> open for write attaches the attribute.
->
-> Your scanner runs with privilege (say CAP_MAC_OVERRIDE) and passes
-> judgment on files with this attribute, removing either the file, if
-> it is Evil, or the attribute, if it is Good. The scanner is invoked
-> when a file that was open with write access is closed. This can be
-> done using mechanisms already discussed on this thread.
->
-> If you like, you could use a "SCANNED" attribute instead of an
-> "UNSCANNED" attribute, and reverse the sense of the test. The
-> major difference will show up on filesystems that don't support
-> xattrs. The implications should be obvious.
->
-> Now at the beginning I said that you wouldn't like this scheme,
-> and it shouldn't take a security expert to see the usability problems.
-> This is how an old school trusted systems junkie (like me) would do
-> it, and I don't see a better way that would actually achieve the
-> stated goals. If you wanted you could implement an LSM to do the
-> labeling bit in a day or two, the notification in about the same
-> time, which would leave the scanner as the long pole in your
-> development schedule.
+John,
 
-did you read the proposal I wrote up? it's similar to (but more flexible 
-than) what you are saying
+This commit message should fix the above patch:
+=============
 
-it would allow for multiple 'scanned' tags (to allow for multiple scanning 
-programs). the kernel would clear the tags when the file is dirtied (not 
-when it is closed, the file may not be closed for weeks after all), there 
-is a mechanism to tell the scanner(s) that a file was modified (rather 
-then having to scan the entire filesystem), and if the scan was not done 
-yet when a file is opened the scanner(s) can be invoked at that time.
+From: Christian Lamparter <chunkeey@web.de>
 
-> P.S. - Library based security doesn't work.
+Commit b19fa1f, entitled "net: Delete NETDEVICES_MULTIQUEUE kconfig
+option" breaks p54pci and p54usb.
 
-why not? (with the appropriate kernel support)
+Additionally, the old logic always tx'ed cts frames (if enabled)
+with a short preamble when [rate > 3]. (i.e. with any 802.11g rate).
+Of course this isn't that bad, but it's still wrong!
 
-it actually wouldn't be hard to have the kernel check the xattr, what 
-would be hard is hving the kernel know when it should then invoke the 
-scanner(s) and when it shouldn't. This is a policy decision that doesn't 
-belong in the kernel.
+Signed-off-by: Christian Lamparter <chunkeey@web.de>
+Acked-by: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: <stable@kernel.org>         [2.6.25.x, 2.6.26.x]
+---
 
-David Lang
+Larry
