@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbYHROFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547AbYHROFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754556AbYHROFk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 10:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbYHROFF
+	id S1752547AbYHROFV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 10:05:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbYHROEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 10:05:05 -0400
-Received: from mail.windriver.com ([147.11.1.11]:52502 "EHLO mail.wrs.com"
+	Mon, 18 Aug 2008 10:04:33 -0400
+Received: from tundra.namei.org ([65.99.196.166]:56365 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752718AbYHROFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 10:05:03 -0400
-Message-ID: <48A98193.2010606@windriver.com>
-Date: Mon, 18 Aug 2008 09:05:07 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	id S1752686AbYHROEc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 10:04:32 -0400
+Date: Tue, 19 Aug 2008 00:03:23 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: David Howells <dhowells@redhat.com>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-next@vger.kernel.org, David Fries <david@fries.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: origin tree build failure
+In-Reply-To: <17141.1219064130@redhat.com>
+Message-ID: <alpine.LRH.1.10.0808190000210.21404@tundra.namei.org>
+References: <20080818100151.c2e9e508.sfr@canb.auug.org.au> <17141.1219064130@redhat.com>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-To: amruth_pv@yahoo.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: KGDB 2..26 fails to wait while booting
-References: <903878.21411.qm@web45204.mail.sp1.yahoo.com>
-In-Reply-To: <903878.21411.qm@web45204.mail.sp1.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Aug 2008 14:05:02.0047 (UTC) FILETIME=[683FA6F0:01C9013B]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-amruth wrote:
-> Hi
-> I have created 2.6.26 kernel with KGDB enabled but the system fails to
-wait. Can anybody provide me detailed info on how to setup the grub
-configuration to wait until gdb connects from development machine.
-> Thanks
-> Amruth p.v
->
->
->      
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+On Mon, 18 Aug 2008, David Howells wrote:
 
-What parameters did you use in grub?
+> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> 
+> > As expected (reported by David Fries), today's linux-next build (powerpc
+> > ppc64_defconfig) failed like this:
+> > 
+> > In file included from include/linux/tracehook.h:52,
+> >                  from arch/powerpc/kernel/signal.c:13:
+> > include/linux/security.h: In function 'security_ptrace_traceme':
+> > include/linux/security.h:1760: error: 'parent' undeclared (first use in this function)
+> > 
+> > Caused by commit 5cd9c58fbe9ec92b45b27e131719af4f2bd9eb40 ("security: Fix
+> > setting of PF_SUPERPRIV by __capable()").  The version of this commit
+> > that has been in the linux-next tree from Aug 8 to Aug 15 is correct, so
+> > I have no idea what happened.
+> 
+> I accidentally posted an old patch which James, maybe, substituted for the
+> good one that he had.
 
-Generally speaking you have to setup the boot parameters to be something
-like:
+I took the patch you sent me, although after some IRC discussion, what 
+should have happened is that I should have git-cherry-pick'd the patch 
+from the next-creds branch (where it had been tested in linux-next for 
+some time) into for-linus rather than asking for an updated patch.
 
-kgdboc=ttyS0,115200 kgdbwait
+Sorry folks.
 
-Jason.
 
+- James
+-- 
+James Morris
+<jmorris@namei.org>
