@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762801AbYHRTFO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932631AbYHRTDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762801AbYHRTFO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:05:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932509AbYHRTDD
+	id S932631AbYHRTDq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758474AbYHRTB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:03:03 -0400
-Received: from mx1.suse.de ([195.135.220.2]:43978 "EHLO mx1.suse.de"
+	Mon, 18 Aug 2008 15:01:27 -0400
+Received: from ns1.suse.de ([195.135.220.2]:43773 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932507AbYHRTDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:03:00 -0400
-Date: Mon, 18 Aug 2008 11:45:12 -0700
+	id S1762199AbYHRTBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:01:24 -0400
+Date: Mon, 18 Aug 2008 11:44:55 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, TAKADA Yoshihito <takada@mbf.nifty.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [patch 45/60] cs5520: add enablebits checking
-Message-ID: <20080818184512.GT29394@suse.de>
+       alan@lxorguk.ukuu.org.uk, Yinghal Lu <yhlu.kernel@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, maximilian attems <max@stro.at>,
+       Peter Palfrader <weasel@debian.org>, dann frazier <dannf@debian.org>
+Subject: [patch 41/60] x86: amd opteron TOM2 mask val fix
+Message-ID: <20080818184455.GP29394@suse.de>
 References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="cs5520-add-enablebits-checking.patch"
+Content-Disposition: inline; filename="x86-amd-opteron-tom2-mask-val-fix.patch"
 In-Reply-To: <20080818184035.GA29394@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,33 +40,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+From: Yinghai Lu <yhlu.kernel@gmail.com>
 
-upstream commit is 24307ffabd5b39bad443641f54b12ee2ba7a38ac
+commit 8004dd965b13b01a96def054d420f6df7ff22d53 upstream.
 
-Based on sparse comments in OpenFirmware code
-(no Cx5510/Cx5520 datasheet here).
+there is a typo in the mask value, need to remove that extra 0,
+to avoid 4bit clearing.
 
-This fixes 2.6.26 regression reported by TAKADA
-and caused by addition of warm-plug support.
-
-Tested-by: TAKADA Yoshihito <takada@mbf.nifty.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Signed-off-by: Yinghal Lu <yhlu.kernel@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: maximilian attems <max@stro.at>
+Cc: Peter Palfrader <weasel@debian.org>
+Cc: dann frazier <dannf@debian.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- drivers/ide/pci/cs5520.c |    1 +
- 1 file changed, 1 insertion(+)
 
---- a/drivers/ide/pci/cs5520.c
-+++ b/drivers/ide/pci/cs5520.c
-@@ -123,6 +123,7 @@ static const struct ide_dma_ops cs5520_d
- #define DECLARE_CS_DEV(name_str)				\
- 	{							\
- 		.name		= name_str,			\
-+		.enablebits	= { {0x60, 0x01, 0x01}, {0x60, 0x02, 0x02} }, \
- 		.port_ops	= &cs5520_port_ops,		\
- 		.dma_ops	= &cs5520_dma_ops,		\
- 		.host_flags	= IDE_HFLAG_ISA_PORTS |		\
+---
+ arch/x86/kernel/cpu/mtrr/generic.c |    2 +-
+ arch/x86/pci/k8-bus_64.c           |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -219,7 +219,7 @@ void __init get_mtrr_state(void)
+ 		tom2 = hi;
+ 		tom2 <<= 32;
+ 		tom2 |= lo;
+-		tom2 &= 0xffffff8000000ULL;
++		tom2 &= 0xffffff800000ULL;
+ 	}
+ 	if (mtrr_show) {
+ 		int high_width;
+--- a/arch/x86/pci/k8-bus_64.c
++++ b/arch/x86/pci/k8-bus_64.c
+@@ -384,7 +384,7 @@ static int __init early_fill_mp_bus_info
+ 	/* need to take out [0, TOM) for RAM*/
+ 	address = MSR_K8_TOP_MEM1;
+ 	rdmsrl(address, val);
+-	end = (val & 0xffffff8000000ULL);
++	end = (val & 0xffffff800000ULL);
+ 	printk(KERN_INFO "TOM: %016lx aka %ldM\n", end, end>>20);
+ 	if (end < (1ULL<<32))
+ 		update_range(range, 0, end - 1);
+@@ -478,7 +478,7 @@ static int __init early_fill_mp_bus_info
+ 		/* TOP_MEM2 */
+ 		address = MSR_K8_TOP_MEM2;
+ 		rdmsrl(address, val);
+-		end = (val & 0xffffff8000000ULL);
++		end = (val & 0xffffff800000ULL);
+ 		printk(KERN_INFO "TOM2: %016lx aka %ldM\n", end, end>>20);
+ 		update_range(range, 1ULL<<32, end - 1);
+ 	}
 
 -- 
