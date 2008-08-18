@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbYHREQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752332AbYHREWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753821AbYHREQe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 00:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYHREQ0
+	id S1752332AbYHREWr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 00:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750829AbYHREWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 00:16:26 -0400
-Received: from ozlabs.org ([203.10.76.45]:46806 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750848AbYHREQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 00:16:25 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 2/2] Remove deprecated stop_machine_run
-Date: Mon, 18 Aug 2008 14:15:01 +1000
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
-References: <200808181414.11164.rusty@rustcorp.com.au>
-In-Reply-To: <200808181414.11164.rusty@rustcorp.com.au>
+	Mon, 18 Aug 2008 00:22:38 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:30206 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750752AbYHREWh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 00:22:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jEZ72sCebhBq6HnNYnzlXkc4JrOrwq16v8FQP5trfc4M2vbiBi5Lh9OV008gDkHrSA
+         7eRNYKG4+NkYttf0AX6E2fijbvJIhmxWK/m7wJLjJbExctvypqnC4gE7wHnH2BqQ7R8K
+         cxgrtDHhScCuTXujYKlmY6jjeZisEj8Zr++ZI=
+Message-ID: <aa79d98a0808172122sfab2336ldfcccc88e4316712@mail.gmail.com>
+Date: Mon, 18 Aug 2008 08:22:37 +0400
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH 0/9] -tip/apic merging one more series
+Cc: hpa@zytor.com, mingo@elte.hu, tglx@linutronix.de, macro@linux-mips.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <86802c440808171453i2869a7f3x1db27307dbec4db7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808181415.01344.rusty@rustcorp.com.au>
+References: <1219002107-21832-1-git-send-email-gorcunov@gmail.com>
+	 <86802c440808171453i2869a7f3x1db27307dbec4db7@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Everyone should be using stop_machine() now.  The staged API
-transition helped life in linux-next.
+On Mon, Aug 18, 2008 at 1:53 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> please check if you need { } otherwise you broke 64 bit
+>
+>
+> static int lapic_resume(struct sys_device *dev)
+> {
+>        unsigned int l, h;
+>        unsigned long flags;
+>        int maxlvt;
+>
+>        if (!apic_pm_state.active)
+>                return 0;
+>
+>        maxlvt = lapic_get_maxlvt();
+>
+>        local_irq_save(flags);
+>
+> #ifdef CONFIG_X86_64
+>        if (x2apic)
+>                enable_x2apic();
+>        else
+> #endif
+>                /*
+>                 * Make sure the APICBASE points to the right address
+>                 *
+>                 * FIXME! This will be wrong if we ever support suspend on
+>                 * SMP! We'll need to do this as part of the CPU restore!
+>                 */
+>                rdmsr(MSR_IA32_APICBASE, l, h);
+>                l &= ~MSR_IA32_APICBASE_BASE;
+>                l |= MSR_IA32_APICBASE_ENABLE | mp_lapic_addr;
+>                wrmsr(MSR_IA32_APICBASE, l, h);
+>
+>
+> YH
+>
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- include/linux/stop_machine.h |   19 +------------------
- 1 file changed, 1 insertion(+), 18 deletions(-)
-
-diff -r 80bd8b4418f0 include/linux/stop_machine.h
---- a/include/linux/stop_machine.h	Wed Aug 13 15:55:29 2008 +1000
-+++ b/include/linux/stop_machine.h	Wed Aug 13 15:57:08 2008 +1000
-@@ -3,15 +3,12 @@
- /* "Bogolock": stop the entire machine, disable interrupts.  This is a
-    very heavy lock, which is equivalent to grabbing every spinlock
-    (and more).  So the "read" side to such a lock is anything which
--   diables preeempt. */
-+   disables preeempt. */
- #include <linux/cpu.h>
- #include <linux/cpumask.h>
- #include <asm/system.h>
- 
- #if defined(CONFIG_STOP_MACHINE) && defined(CONFIG_SMP)
--
--/* Deprecated, but useful for transition. */
--#define ALL_CPUS ~0U
- 
- /**
-  * stop_machine: freeze the machine on all CPUs and run this function
-@@ -50,18 +47,4 @@ static inline int stop_machine(int (*fn)
- 	return ret;
- }
- #endif /* CONFIG_SMP */
--
--static inline int __deprecated stop_machine_run(int (*fn)(void *), void *data,
--						unsigned int cpu)
--{
--	/* If they don't care which cpu fn runs on, just pick one. */
--	if (cpu == NR_CPUS)
--		return stop_machine(fn, data, NULL);
--	else if (cpu == ~0U)
--		return stop_machine(fn, data, &cpu_possible_map);
--	else {
--		cpumask_t cpus = cpumask_of_cpu(cpu);
--		return stop_machine(fn, data, &cpus);
--	}
--}
- #endif /* _LINUX_STOP_MACHINE */
+Oh...indeed. Thanks Yinghai! - will fix it today evening.
+Ingo drop this patch please (if it was applied).
