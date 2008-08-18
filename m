@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760639AbYHRSxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbYHRSyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760639AbYHRSxa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 14:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760186AbYHRSwd
+	id S1760841AbYHRSyA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 14:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760555AbYHRSxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 14:52:33 -0400
-Received: from mx2.suse.de ([195.135.220.15]:35184 "EHLO mx2.suse.de"
+	Mon, 18 Aug 2008 14:53:22 -0400
+Received: from mx2.suse.de ([195.135.220.15]:35395 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760177AbYHRSwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 14:52:31 -0400
-Date: Mon, 18 Aug 2008 11:43:07 -0700
+	id S1755931AbYHRSxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 14:53:21 -0400
+Date: Mon, 18 Aug 2008 11:43:13 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andre Schenk <andre@melior.s.bawue.de>
-Subject: [patch 19/60] USB: ftdi_sio: Add USB Product Id for ELV HS485
-Message-ID: <20080818184307.GT29394@suse.de>
+       alan@lxorguk.ukuu.org.uk, Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       Andi Kleen <ak@linux.intel.com>
+Subject: [patch 21/60] acer-wmi: Fix wireless and bluetooth on early AMW0
+	v2 laptops
+Message-ID: <20080818184313.GV29394@suse.de>
 References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-ftdi_sio-add-usb-product-id-for-elv-hs485.patch"
+Content-Disposition: inline; filename="acer-wmi-fix-wireless-and-bluetooth-on-early-amw0-v2-laptops.patch"
 In-Reply-To: <20080818184035.GA29394@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,40 +40,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Andre Schenk <andre@melior.s.bawue.de>
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
 
-commit b5894a500127fce1db1309db5f9ca8b77a2ac266 upstream
+commit 5c742b45dd5fbbb6cf74d3378341704f4b23c5e8 upstream
 
-USB product id registration for the ELV HS485 USB adapter (www.elv.de) to
-their home automation bus system. Applies to 2.6.26.
+In the old acer_acpi, I discovered that on some of the newer AMW0 laptops
+that supported the WMID methods, they don't work properly for setting the
+wireless and bluetooth values.
 
-Signed-off-by: Andre Schenk <andre@melior.s.bawue.de>
+So for the AMW0 V2 laptops, we want to use both the 'old' AMW0 and the
+'new' WMID methods for setting wireless & bluetooth to guarantee we always
+enable it.
+
+This was fixed in acer_acpi some time ago, but I forgot to port the patch
+over to acer-wmi when it was merged.
+
+(Without this patch, early AMW0 V2 laptops such as the Aspire 5040 won't
+work with acer-wmi, where-as they did with the old acer_acpi).
+
+AK: fix compilation
+
+Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/ftdi_sio.c |    1 +
- drivers/usb/serial/ftdi_sio.h |    1 +
- 2 files changed, 2 insertions(+)
+ drivers/misc/acer-wmi.c |   19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -553,6 +553,7 @@ static struct usb_device_id id_table_com
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_FHZ1300PC_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_EM1010PC_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_WS500_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_HS485_PID) },
- 	{ USB_DEVICE(FTDI_VID, LINX_SDMUSBQSS_PID) },
- 	{ USB_DEVICE(FTDI_VID, LINX_MASTERDEVEL2_PID) },
- 	{ USB_DEVICE(FTDI_VID, LINX_FUTURE_0_PID) },
---- a/drivers/usb/serial/ftdi_sio.h
-+++ b/drivers/usb/serial/ftdi_sio.h
-@@ -524,6 +524,7 @@
- #define FTDI_ELV_WS300PC_PID	0xE0F6	/* PC-Wetterstation (WS 300 PC) */
- #define FTDI_ELV_FHZ1300PC_PID	0xE0E8	/* FHZ 1300 PC */
- #define FTDI_ELV_WS500_PID	0xE0E9	/* PC-Wetterstation (WS 500) */
-+#define FTDI_ELV_HS485_PID	0xE0EA	/* USB to RS-485 adapter */
- #define FTDI_ELV_EM1010PC_PID	0xE0EF	/* Engery monitor EM 1010 PC */
+--- a/drivers/misc/acer-wmi.c
++++ b/drivers/misc/acer-wmi.c
+@@ -742,11 +742,30 @@ static acpi_status get_u32(u32 *value, u
  
- /*
+ static acpi_status set_u32(u32 value, u32 cap)
+ {
++	acpi_status status;
++
+ 	if (interface->capability & cap) {
+ 		switch (interface->type) {
+ 		case ACER_AMW0:
+ 			return AMW0_set_u32(value, cap, interface);
+ 		case ACER_AMW0_V2:
++			if (cap == ACER_CAP_MAILLED)
++				return AMW0_set_u32(value, cap, interface);
++
++			/*
++			 * On some models, some WMID methods don't toggle
++			 * properly. For those cases, we want to run the AMW0
++			 * method afterwards to be certain we've really toggled
++			 * the device state.
++			 */
++			if (cap == ACER_CAP_WIRELESS ||
++				cap == ACER_CAP_BLUETOOTH) {
++				status = WMID_set_u32(value, cap, interface);
++				if (ACPI_FAILURE(status))
++					return status;
++
++				return AMW0_set_u32(value, cap, interface);
++			}
+ 		case ACER_WMID:
+ 			return WMID_set_u32(value, cap, interface);
+ 		default:
 
 -- 
