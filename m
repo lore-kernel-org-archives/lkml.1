@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758314AbYHRTDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762387AbYHRTCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758314AbYHRTDa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932393AbYHRTBJ
+	id S1762387AbYHRTCX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762031AbYHRTAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:01:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45153 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762180AbYHRTBH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:01:07 -0400
-Date: Mon, 18 Aug 2008 11:59:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Joe Perches <joe@perches.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] Fair low-latency rwlock v5
-In-Reply-To: <20080817191034.GA5258@Krystal>
-Message-ID: <alpine.LFD.1.10.0808181150420.3324@nehalem.linux-foundation.org>
-References: <20080816073926.GA19546@Krystal> <48A6EC77.8080904@zytor.com> <20080816154330.GA5880@Krystal> <alpine.LFD.1.10.0808161014300.3324@nehalem.linux-foundation.org> <20080816211954.GB7358@Krystal> <alpine.LFD.1.10.0808161422290.3324@nehalem.linux-foundation.org>
- <20080817075335.GA25019@Krystal> <alpine.LFD.1.10.0808170909420.3324@nehalem.linux-foundation.org> <20080817191034.GA5258@Krystal>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 18 Aug 2008 15:00:14 -0400
+Received: from mx2.suse.de ([195.135.220.15]:36795 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762025AbYHRTAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:00:12 -0400
+Date: Mon, 18 Aug 2008 11:44:48 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Hans Verkuil <hverkuil@xs4all.nl>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: [patch 38/60] i2c: Fix NULL pointer dereference in
+	i2c_new_probed_device
+Message-ID: <20080818184448.GM29394@suse.de>
+References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="i2c-fix-null-pointer-dereference-in-i2c_new_probed_device.patch"
+In-Reply-To: <20080818184035.GA29394@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
+------------------
 
-On Sun, 17 Aug 2008, Mathieu Desnoyers wrote:
-> 
-> Ah, you are right. This new version implements a "single cmpxchg"
-> uncontended code path, changes the _fast semantic for "trylock
-> uncontended" and also adds the trylock primitives.
+From: Hans Verkuil <hverkuil@xs4all.nl>
 
-Can you also finally
+Already in Linus' tree:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b25b791b13aaa336b56c4f9bd417ff126363f80b
 
- - separate out the fastpaths more clearly. The slowpaths should not be 
-   even visible in the I$ footprint. The fastpaths are probably better off 
-   as a separate "fastpath.S" file to make sure that the compiler doesn't 
-   inline the slowpath or do other insane things.
+Fix a NULL pointer dereference that happened when calling
+i2c_new_probed_device on one of the addresses for which we use byte
+reads instead of quick write for detection purpose (that is: 0x30-0x37
+and 0x50-0x5f).
 
-   If the fastpath isn't just a few instructions, there's something wrong. 
-   It should be written in assembly, so that it's very clear what the 
-   fastpath is. Because most of the time, the fastpath is all that really 
-   matters (at least as long as there is some reasonable slow-path and 
-   contention behaviour - the slowpath matters int hat it shouldn't ever 
-   be a _problem_).
+Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
- - don't call these "fair". They may be fairER than the regular rwlocks,
-   but you'd really need to explain that, and true fairness you (a) can't
-   really get without explicit queueing and (b) probably don't even want, 
-   because the only starvation people tend to worry about is reader vs 
-   writer, and writer-writer fairness tends to be unimportant. So it's not 
-   that people want the (expensive) "fairness" it's really that they want 
-   something _reasonably_ fair considering the normal worries.
+---
+ drivers/i2c/i2c-core.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-   (ie if you have so much write activity that you get into write-write 
-   fairness worries, you shouldn't be using a rwlock to begin with, so 
-   that level of fairness is simply not very interesting).
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -1196,9 +1196,11 @@ i2c_new_probed_device(struct i2c_adapter
+ 		if ((addr_list[i] & ~0x07) == 0x30
+ 		 || (addr_list[i] & ~0x0f) == 0x50
+ 		 || !i2c_check_functionality(adap, I2C_FUNC_SMBUS_QUICK)) {
++			union i2c_smbus_data data;
++
+ 			if (i2c_smbus_xfer(adap, addr_list[i], 0,
+ 					   I2C_SMBUS_READ, 0,
+-					   I2C_SMBUS_BYTE, NULL) >= 0)
++					   I2C_SMBUS_BYTE, &data) >= 0)
+ 				break;
+ 		} else {
+ 			if (i2c_smbus_xfer(adap, addr_list[i], 0,
 
-   People react emotionally and too strongly to to words like "fairness" 
-   or "freedom". Different people have different ideas on what they mean, 
-   and take them to pointless extremes. So just don't use the words, they 
-   just detract from the real issue.
-
-Also, the performance numbers on their own are pretty irrelevant, since 
-there's nothing to compare them to. It would be much more relevant if you 
-had a "this is what the standard rwlock" does as a comparison for each 
-number.
-
-				Linus
+-- 
