@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbYHRWg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbYHRWhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755507AbYHRWg5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 18:36:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbYHRWgp
+	id S1756232AbYHRWhl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 18:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbYHRWha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 18:36:45 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:41507 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753474AbYHRWgo (ORCPT
+	Mon, 18 Aug 2008 18:37:30 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:55165 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752568AbYHRWh3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 18:36:44 -0400
+	Mon, 18 Aug 2008 18:37:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=C+XVZvkFzuwlLPWRv5Awy6JKIukrsz3JIoLhqgil3y8nrtgfzbXDXj1InQW2QGhFVW
-         03gQr1uWey6JlwJOqIKO4NBt8sZJfD4dPliseNWw/Zy9LxY3U7f7kh5ZUdZLeSrrbrxD
-         5APmoVB+kPzDOwn1hEDmouR3Y8pjIFZ+4qhzg=
-Message-ID: <86802c440808181536j2c214cc3k47e73fd147b4fee1@mail.gmail.com>
-Date: Mon, 18 Aug 2008 15:36:43 -0700
+        b=hMvgu33WE/R+L2O89tgkdoJT1hji4PuhmucyQzn8NdXkg8PYQ0zVxx1ZX3QAe91Cx9
+         z498oDu6NCUKblhbMDBAzTnvdiuHxhiGiv0GLUqgrVuX+P4Sp3O0RPIO5M9wFNxXkFNJ
+         HrOvUYCVBxK13Xn5TvTbjerabiXVHqFoDh3pI=
+Message-ID: <86802c440808181537y7399ba98x67dc5040aa80c7ee@mail.gmail.com>
+Date: Mon, 18 Aug 2008 15:37:27 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot - v2
