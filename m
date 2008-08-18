@@ -1,66 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbYHRK7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbYHRK7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbYHRK7X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 06:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYHRK7O
+	id S1754300AbYHRK7h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 06:59:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbYHRK7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 06:59:14 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:59118 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbYHRK7N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 06:59:13 -0400
-Subject: Re: linux-next: Tree for August 14 (sysfs/acpi errors)
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Greg KH <greg@kroah.com>, Andi Kleen <andi@firstfloor.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-In-Reply-To: <200808181943.23034.rusty@rustcorp.com.au>
-References: <3ae72650808150427q364842ccicf0a0978b30ca98c@mail.gmail.com>
-	 <87hc9kxpp8.fsf@basil.nowhere.org> <20080818034851.GB30843@kroah.com>
-	 <200808181943.23034.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Date: Mon, 18 Aug 2008 12:58:44 +0200
-Message-Id: <1219057124.21867.6.camel@lgn.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19PkDMiLFroObEzf4fPZAWb5IPSrhSi2BSW8iv
- J0XEkf/VIpTkvbCo10Rwfw+X8Ymd7zfPWJRYJr8AvAr6Xb2x2W
- uCT4R0DFlEbYUi5mVCnVd+HDivj3ezH
+	Mon, 18 Aug 2008 06:59:21 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:57455 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753058AbYHRK7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 06:59:20 -0400
+Date: Mon, 18 Aug 2008 11:59:18 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Adam Litke <agl@us.ibm.com>
+Cc: linux-mm <linux-mm@kvack.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       nacc <nacc@linux.vnet.ibm.com>, apw <apw@shadowen.org>,
+       agl <agl@linux.vnet.ibm.com>
+Subject: Re: [BUG] __GFP_THISNODE is not always honored
+Message-ID: <20080818105918.GD32113@csn.ul.ie>
+References: <1218837685.12953.11.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1218837685.12953.11.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-18 at 19:43 +1000, Rusty Russell wrote:
-> On Monday 18 August 2008 13:48:51 Greg KH wrote:
-> > On Sun, Aug 17, 2008 at 05:53:07AM +0200, Andi Kleen wrote:
-> > > Greg KH <greg@kroah.com> writes:
-> > > >> No!
-> > > >
-> > > > What you are doing here is wrong, trying to create two files with the
-> > > > same name.  You just should not be doing that at all, it's that simple.
-> > > > Fix the broken code/link order, don't paper it over in the sysfs layer.
-> > >
-> > > Sorry, but relying on link order for anything is a mistake. It is subtle
-> > > and fragile and just means it'll eventually break again because it's
-> > > near impossible to properly maintain.
-> >
-> > We rely on link order for all sorts of things, this isn't new at all.
-> 
-> Sure, but this code should be rewritten to check if the directory exists,
-> rather assuming it based on "previous prefix was the same".
-> 
-> It's relying on a horribly undocumented assumption, and it broke.
-> 
-> We need to change kernel_param_sysfs_setup() to do something
-> like "kobject_find(module_kset, name)" and only allocate a new mk if that
-> fails.
+On (15/08/08 17:01), Adam Litke didst pronounce:
+> While running the libhugetlbfs test suite on a NUMA machine with 2.6.27-rc3, I
+> discovered some strange behavior with __GFP_THISNODE.  The hugetlb function
+> alloc_fresh_huge_page_node() calls alloc_pages_node() with __GFP_THISNODE but
+> occasionally a page that is not on the requested node is returned. 
 
-kobj = kset_find_obj(module_kset, name) should return an existing object
-with that name (and take a reference on it, which needs to be dropped).
+That's bad in itself and has wider reaching consequences than hugetlb
+getting its counters wrong. I believe SLUB depends on __GFP_THISNODE
+being obeyed for example. Can you boot the machine in question with
+mminit_loglevel=4 and loglevel=8 set on the command line and send me the
+dmesg please? It should output the zonelists and I might be able to
+figure out what's going wrong. Thanks
 
-Kay
+> Since the
+> hugetlb code assumes that the page will be on the requested node, badness follows
+> when the page is added to the wrong node's free_list.
+> 
+> There is clearly something wrong with the buddy allocator since __GFP_THISNODE
+> cannot be trusted.  Until that is fixed, the hugetlb code should not assume
+> that the newly allocated page is on the node asked for.  This patch prevents
+> the hugetlb pool counters from being corrupted and allows the code to cope with
+> unbalanced numa allocations.
+> 
+> So far my debugging has led me to get_page_from_freelist() inside the
+> for_each_zone_zonelist() loop.  When buffered_rmqueue() returns a page I
+> compare the value of page_to_nid(page), zone->node and the node that the
+> hugetlb code requested with __GFP_THISNODE.  These all match -- except when the
+> problem triggers.  In that case, zone->node matches the node we asked for but
+> page_to_nid() does not.
+> 
 
+Feels like the wrong zonelist is being used. The dmesg with
+mminit_loglevel may tell.
+
+> Workaround patch:
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index 67a7119..7a30a61 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -568,7 +568,7 @@ static struct page *alloc_fresh_huge_page_node(struct hstate *h, int nid)
+>  			__free_pages(page, huge_page_order(h));
+>  			return NULL;
+>  		}
+> -		prep_new_huge_page(h, page, nid);
+> +		prep_new_huge_page(h, page, page_to_nid(page));
+>  	}
+
+This will mask the bug for hugetlb but I wonder if this should be a
+VM_BUG_ON(page_to_nid(page) != nid) ?
+
+>  
+>  	return page;
+> 
+> -- 
+> Adam Litke - (agl at us.ibm.com)
+> IBM Linux Technology Center
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
