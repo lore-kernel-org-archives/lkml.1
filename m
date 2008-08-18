@@ -1,94 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbYHRJPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbYHRJXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753573AbYHRJPn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 05:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYHRJP0
+	id S1752655AbYHRJXw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 05:23:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYHRJXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 05:15:26 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58833 "EHLO
+	Mon, 18 Aug 2008 05:23:44 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49594 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752680AbYHRJPY (ORCPT
+	with ESMTP id S1751105AbYHRJXm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 05:15:24 -0400
-Date: Mon, 18 Aug 2008 11:15:23 +0200
+	Mon, 18 Aug 2008 05:23:42 -0400
+Date: Mon, 18 Aug 2008 11:23:20 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Fries <david@fries.net>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] Fix i486 suspend to disk CR4 oops
-Message-ID: <20080818091522.GA6635@atrey.karlin.mff.cuni.cz>
-References: <20080818040340.GB17528@spacedout.fries.net> <20080818064120.GA28941@elte.hu>
+To: Tim Hockin <thockin@hockin.org>
+Cc: Jan Blunck <jblunck@suse.de>, Greg KH <gregkh@suse.de>,
+       Joe Perches <joe@perches.com>, schwidefsky@de.ibm.com,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Jochen =?iso-8859-2?B?Vm/f?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>
+Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
+Message-ID: <20080818092317.GD6635@atrey.karlin.mff.cuni.cz>
+References: <20080730165656.118280544@de.ibm.com> <20080730171156.824640459@de.ibm.com> <b3ece790808121735t21b4a629iaf6a968b30332d74@mail.gmail.com> <1218733457.2651.11.camel@localhost> <b3ece790808141150s3770531bsc88ec387e0f840d3@mail.gmail.com> <1218769739.24527.76.camel@localhost> <20080815034419.GB803@suse.de> <b3ece790808142233y3150b4d1sfeaa0342dbac31a6@mail.gmail.com> <20080815112117.GP10078@bolzano.suse.de> <b3ece790808150839i54fde73uf068cb04d4027156@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080818064120.GA28941@elte.hu>
+In-Reply-To: <b3ece790808150839i54fde73uf068cb04d4027156@mail.gmail.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> * David Fries <david@fries.net> wrote:
-> 
-> > arch/x86/power/cpu_32.c __save_processor_state calls read_cr4() only a 
-> > i486 CPU doesn't have the CR4 register.  Trying to read it produces an 
-> > invalid opcode oops during suspend to disk.
-> > 
-> > Added the check (boot_cpu_data.x86 >= 5) before reading the register.  
-> > If the value to be written is zero the write is skipped.
-> > 
-> > arch/x86/power/hibernate_asm_32.S
-> > done: swapped the use of %eax and %ecx to use jecxz for
-> > the zero test and jump over store to %cr4.
-> > restore_image: s/%ecx/%eax/ to be consistent with done:
-> > 
-> > In addition to __save_processor_state, acpi_save_state_mem, 
-> > efi_call_phys_prelog, and efi_call_phys_epilog had checks added (acpi 
-> > restore was in assembly and already had a check for non-zero).  There 
-> > were other reads and writes of CR4, but MCE and virtualization 
-> > shouldn't be executed on a i486 anyway.
-> > 
-> > Signed-off-by: David Fries <david@fries.net>
-> 
-> applied to tip/x86/urgent, thanks David. I've changed the conditions to 
-> read_cr4_safe() instead - that's cleaner. Could you please check whether 
-> the patch below works fine too on your box?
-> 
-> Rafael, Pavel - does the commit below look good to you too?
-> 
-> 	Ingo
-> 
-> ---------------------->
-> >From e437fa5586f2e3b2aaeba649fae52be1f9a6eabb Mon Sep 17 00:00:00 2001
-> From: David Fries <david@fries.net>
-> Date: Sun, 17 Aug 2008 23:03:40 -0500
-> Subject: [PATCH] x86: fix i486 suspend to disk CR4 oops
-> 
-> arch/x86/power/cpu_32.c __save_processor_state calls read_cr4()
-> only a i486 CPU doesn't have the CR4 register.  Trying to read it
-> produces an invalid opcode oops during suspend to disk.
-> 
-> Use the safe rc4 reading op instead. If the value to be written is
-> zero the write is skipped.
-> 
-> arch/x86/power/hibernate_asm_32.S
-> done: swapped the use of %eax and %ecx to use jecxz for
-> the zero test and jump over store to %cr4.
-> restore_image: s/%ecx/%eax/ to be consistent with done:
-> 
-> In addition to __save_processor_state, acpi_save_state_mem,
-> efi_call_phys_prelog, and efi_call_phys_epilog had checks added
-> (acpi restore was in assembly and already had a check for
-> non-zero).  There were other reads and writes of CR4, but MCE and
-> virtualization shouldn't be executed on a i486 anyway.
-> 
-> Signed-off-by: David Fries <david@fries.net>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Hi!
 
-Acked-by: Pavel Machek <pavel@suse.cz>
+> > I don't think that he wants to unify all the printk's in the system. I don't
+> > think that reporting all errors "in the same way as an ATA error" makes any
+> > sense. That would just lead to very stupid and unnatural messages for all
+> > errors that are not like "ATA errors". Annotation of existing errors is a much
+> > more flexible and feasible solution to that problem.
+> 
+> Please don't misinterpret.  I don't want to make other errors parse
+> like an ATA error, I want to make the plumbing be parallel.  I want
+> one umbrella mechanism for reporting things that are more important
+> than just-another-printk().
+> 
+> Because frankly, "parse dmesg" is a pretty crappy way to have to
+> monitor your system for failures, and I am tired of explaining to
+> people why we still do that.
 
+"parse dmesg" does not work for monitoring your system for failures;
+dmesg buffer can overflow.
 
+If something fails, you should get errno returned for userspace, and
+that's where you should be doing the monitoring.
+
+So... what parts don't return enough information to userspace so that
+you need to parse dmesg? Lets fix them.
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
