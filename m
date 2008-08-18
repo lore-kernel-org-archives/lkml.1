@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761457AbYHRTi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762615AbYHRTjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761457AbYHRTi3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765002AbYHRTfv
+	id S1762615AbYHRTjW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933391AbYHRTgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:35:51 -0400
-Received: from ns2.suse.de ([195.135.220.15]:41530 "EHLO mx2.suse.de"
+	Mon, 18 Aug 2008 15:36:39 -0400
+Received: from cantor.suse.de ([195.135.220.2]:48841 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762440AbYHRTft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:35:49 -0400
-Date: Mon, 18 Aug 2008 12:20:14 -0700
+	id S933384AbYHRTgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:36:38 -0400
+Date: Mon, 18 Aug 2008 12:20:19 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 26/49] sparc64: Do not clobber %g7 in setcontext() trap.
-Message-ID: <20080818192014.GA10350@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       Jeff Dike <jdike@linux.intel.com>, WANG Cong <xiyou.wangcong@gmail.com>
+Subject: [patch 28/49] uml: fix bad NTP interaction with clock
+Message-ID: <20080818192019.GC10350@suse.de>
 References: <20080818191012.663450219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sparc64-do-not-clobber-g7-in-setcontext-trap.patch"
+Content-Disposition: inline; filename="uml-fix-bad-ntp-interaction-with-clock.patch"
 In-Reply-To: <20080818191834.GA10350@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,43 +41,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David S. Miller <davem@davemloft.net>
+From: Jeff Dike <jdike@addtoit.com>
 
-[ Upstream commit 0a4949c4414af2eb91414bcd8e2a8ac3706f7dde ]
+commit cfd28f6695d0fc047478480791a21bdd4967f98e upstream
 
-That's the userland thread register, so we should never try to change
-it like this.
+UML's supposed nanosecond clock interacts badly with NTP when NTP
+decides that the clock has drifted ahead and needs to be slowed down.
+Slowing down the clock is done by decrementing the cycle-to-nanosecond
+multiplier, which is 1.  Decrementing that gives you 0 and time is
+stopped.
 
-Based upon glibc bug nptl/6577 and suggestions by Jakub Jelinek.
+This is fixed by switching to a microsecond clock, with a multiplier
+of 1000.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sparc64/kernel/signal.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ arch/um/kernel/time.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/arch/sparc64/kernel/signal.c
-+++ b/arch/sparc64/kernel/signal.c
-@@ -2,7 +2,7 @@
-  *  arch/sparc64/kernel/signal.c
-  *
-  *  Copyright (C) 1991, 1992  Linus Torvalds
-- *  Copyright (C) 1995 David S. Miller (davem@caip.rutgers.edu)
-+ *  Copyright (C) 1995, 2008 David S. Miller (davem@davemloft.net)
-  *  Copyright (C) 1996 Miguel de Icaza (miguel@nuclecu.unam.mx)
-  *  Copyright (C) 1997 Eddie C. Dost   (ecd@skynet.be)
-  *  Copyright (C) 1997,1998 Jakub Jelinek   (jj@sunsite.mff.cuni.cz)
-@@ -90,7 +90,9 @@ asmlinkage void sparc64_set_context(stru
- 	err |= __get_user(regs->u_regs[UREG_G4], (&(*grp)[MC_G4]));
- 	err |= __get_user(regs->u_regs[UREG_G5], (&(*grp)[MC_G5]));
- 	err |= __get_user(regs->u_regs[UREG_G6], (&(*grp)[MC_G6]));
--	err |= __get_user(regs->u_regs[UREG_G7], (&(*grp)[MC_G7]));
-+
-+	/* Skip %g7 as that's the thread register in userspace.  */
-+
- 	err |= __get_user(regs->u_regs[UREG_I0], (&(*grp)[MC_O0]));
- 	err |= __get_user(regs->u_regs[UREG_I1], (&(*grp)[MC_O1]));
- 	err |= __get_user(regs->u_regs[UREG_I2], (&(*grp)[MC_O2]));
+--- a/arch/um/kernel/time.c
++++ b/arch/um/kernel/time.c
+@@ -74,7 +74,7 @@ static irqreturn_t um_timer(int irq, voi
+ 
+ static cycle_t itimer_read(void)
+ {
+-	return os_nsecs();
++	return os_nsecs() / 1000;
+ }
+ 
+ static struct clocksource itimer_clocksource = {
+@@ -82,7 +82,7 @@ static struct clocksource itimer_clockso
+ 	.rating		= 300,
+ 	.read		= itimer_read,
+ 	.mask		= CLOCKSOURCE_MASK(64),
+-	.mult		= 1,
++	.mult		= 1000,
+ 	.shift		= 0,
+ 	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
+ };
 
 -- 
