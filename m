@@ -1,75 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbYHRR5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbYHRR6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756023AbYHRR5i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 13:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbYHRR5T
+	id S1755649AbYHRR6r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 13:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbYHRR6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 13:57:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39110 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754096AbYHRR5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 13:57:18 -0400
-Subject: Re: [malware-list] scanner interface proposal was: [TALPA]
-	Intro	to a linux interface for on access scanning
-From: Eric Paris <eparis@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: tvrtko.ursulin@sophos.com, Theodore Tso <tytso@mit.edu>, davecb@sun.com,
-       david@lang.hm, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       malware-list@lists.printk.net, Casey Schaufler <casey@schaufler-ca.com>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <20080818182556.13ced58f@lxorguk.ukuu.org.uk>
-References: <20080818153212.6A6FD33687F@pmx1.sophos.com>
-	 <1219076143.15566.39.camel@localhost.localdomain>
-	 <20080818171500.78590801@lxorguk.ukuu.org.uk>
-	 <1219080504.15566.65.camel@localhost.localdomain>
-	 <20080818182556.13ced58f@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Mon, 18 Aug 2008 13:54:57 -0400
-Message-Id: <1219082097.15566.82.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Aug 2008 13:58:39 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37744 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753199AbYHRR6j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 13:58:39 -0400
+Date: Mon, 18 Aug 2008 10:30:48 -0700
+From: Greg KH <greg@kroah.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: stable@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [stable] Patch Upstream: x64, fpu: fix possible FPU leakage in
+	error conditions
+Message-ID: <20080818173048.GA16194@kroah.com>
+References: <200808170025.m7H0PAL6026263@hera.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808170025.m7H0PAL6026263@hera.kernel.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-18 at 18:25 +0100, Alan Cox wrote:
-> > I think I'm going to stick with my special file in securityfs since it
-> > makes it some simple to install the fd in the scanning process (as
-> > opposed to netlink where I don't even know how it would be possible...)
+
+Suresh, the following patch does not apply to the 2.6.26.2 kernel.  If
+you feel it should be also commited there, can you please provide a
+backported version and send it to stable@kernel.org?
+
+thanks,
+
+greg k-h
+
+> commit: 6ffac1e90a17ea0aded5c581204397421eec91b6
+> From: Suresh Siddha <suresh.b.siddha@intel.com>
+> Date: Thu, 24 Jul 2008 18:07:56 -0700
+> Subject: x64, fpu: fix possible FPU leakage in error conditions
 > 
-> AF_UNIX passes file handles just fine. I'm not sure netlink will help you
-> here anyway - isn't it lossy under load ?
-
-But the file being installed needs to be at least RD for AV/Indexer.
-Particularly of interest to people here would be a file opened O_WRONLY
-and then the indexer wouldn't have the ability to read the data that was
-just written.  So we need a new FD, can't just send the old one.
-
-I'd also assume that an HSM would need a WR file descriptor, which isn't
-easy.  I've found that (through trial and error not understanding the
-code) trying to make new descriptors for the new process have WR often
-returned with ETXTBUSY....
-
-I think I might just give RO file descriptors and if an HSM comes along
-work with them to get WR fd's working....
-
-> Also securityfs is more special purpose magic here - what does it have to
-> do with a general purpose notifier API ? I'd actually generalise the
-> notifier properly and go for a syscall.
-
-Well, securityfs is really just a location for a bunch of interfaces.
-The real 'magic' is that I defined my own read and write functions on a
-special inode.
-
-Lets assume a new syscall (and I know you tried to describe this too me
-before but I can't remember it and I'm having some e-mail history
-trouble) what would it look like?  A scanner constantly calls scan() to
-block for data to be scanned?  So an AV, HSM, or indexer all would be
-blocking in scan() just waiting for data?  How do they respond?  How is
-it better, cleaner, or more general than a 'special' file they
-read/write?
-
--Eric
-
+> On Thu, Jul 24, 2008 at 03:43:44PM -0700, Linus Torvalds wrote:
+> > So how about this patch as a starting point? This is the RightThing(tm) to
+> > do regardless, and if it then makes it easier to do some other cleanups,
+> > we should do it first. What do you think?
+> 
+> restore_fpu_checking() calls init_fpu() in error conditions.
+> 
+> While this is wrong(as our main intention is to clear the fpu state of
+> the thread), this was benign before commit 92d140e21f1 ("x86: fix taking
+> DNA during 64bit sigreturn").
+> 
+> Post commit 92d140e21f1, live FPU registers may not belong to this
+> process at this error scenario.
+> 
+> In the error condition for restore_fpu_checking() (especially during the
+> 64bit signal return), we are doing init_fpu(), which saves the live FPU
+> register state (possibly belonging to some other process context) into
+> the thread struct (through unlazy_fpu() in init_fpu()). This is wrong
+> and can leak the FPU data.
+> 
+> For the signal handler restore error condition in restore_i387(), clear
+> the fpu state present in the thread struct(before ultimately sending a
+> SIGSEGV for badframe).
+> 
+> For the paranoid error condition check in math_state_restore(), send a
+> SIGSEGV, if we fail to restore the state.
+> 
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> Cc: <stable@kernel.org>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/kernel/signal_64.c |   11 ++++++++++-
+>  arch/x86/kernel/traps_64.c  |    9 ++++++++-
+>  include/asm-x86/i387.h      |    2 --
+>  3 files changed, 18 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
+> index b45ef8d..ca316b5 100644
+> --- a/arch/x86/kernel/signal_64.c
+> +++ b/arch/x86/kernel/signal_64.c
+> @@ -104,7 +104,16 @@ static inline int restore_i387(struct _fpstate __user *buf)
+>  		clts();
+>  		task_thread_info(current)->status |= TS_USEDFPU;
+>  	}
+> -	return restore_fpu_checking((__force struct i387_fxsave_struct *)buf);
+> +	err = restore_fpu_checking((__force struct i387_fxsave_struct *)buf);
+> +	if (unlikely(err)) {
+> +		/*
+> +		 * Encountered an error while doing the restore from the
+> +		 * user buffer, clear the fpu state.
+> +		 */
+> +		clear_fpu(tsk);
+> +		clear_used_math();
+> +	}
+> +	return err;
+>  }
+>  
+>  /*
+> diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
+> index 3f18d73..513caac 100644
+> --- a/arch/x86/kernel/traps_64.c
+> +++ b/arch/x86/kernel/traps_64.c
+> @@ -1131,7 +1131,14 @@ asmlinkage void math_state_restore(void)
+>  	}
+>  
+>  	clts();				/* Allow maths ops (or we recurse) */
+> -	restore_fpu_checking(&me->thread.xstate->fxsave);
+> +	/*
+> +	 * Paranoid restore. send a SIGSEGV if we fail to restore the state.
+> +	 */
+> +	if (unlikely(restore_fpu_checking(&me->thread.xstate->fxsave))) {
+> +		stts();
+> +		force_sig(SIGSEGV, me);
+> +		return;
+> +	}
+>  	task_thread_info(me)->status |= TS_USEDFPU;
+>  	me->fpu_counter++;
+>  }
+> diff --git a/include/asm-x86/i387.h b/include/asm-x86/i387.h
+> index 96fa844..0048fb7 100644
+> --- a/include/asm-x86/i387.h
+> +++ b/include/asm-x86/i387.h
+> @@ -62,8 +62,6 @@ static inline int restore_fpu_checking(struct i387_fxsave_struct *fx)
+>  #else
+>  		     : [fx] "cdaSDb" (fx), "m" (*fx), "0" (0));
+>  #endif
+> -	if (unlikely(err))
+> -		init_fpu(current);
+>  	return err;
+>  }
+>  
