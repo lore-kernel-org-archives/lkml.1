@@ -1,255 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752499AbYHRH7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbYHRIA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752499AbYHRH7u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 03:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbYHRH7m
+	id S1753214AbYHRIA3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 04:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYHRIAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 03:59:42 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58428 "EHLO smtps.tip.net.au"
+	Mon, 18 Aug 2008 04:00:14 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39944 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750829AbYHRH7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 03:59:40 -0400
-Date: Mon, 18 Aug 2008 17:59:31 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for August 18
-Message-Id: <20080818175931.52d2b2d6.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__18_Aug_2008_17_59_31_+1000_f39p8ouNxrXRhmZS"
+	id S1751028AbYHRIAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 04:00:12 -0400
+Date: Mon, 18 Aug 2008 09:59:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH -v3 6/7] kexec jump: __ftrace_enabled_save/restore
+Message-ID: <20080818075937.GI30694@elte.hu>
+References: <1218510876.24951.45.camel@caritas-dev.intel.com> <20080815124938.GB24663@elte.hu> <1219022293.5663.14.camel@yhuang-dev.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1219022293.5663.14.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__18_Aug_2008_17_59_31_+1000_f39p8ouNxrXRhmZS
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+* Huang Ying <ying.huang@intel.com> wrote:
 
-Changes since next-20080815:
+> On Fri, 2008-08-15 at 14:49 +0200, Ingo Molnar wrote:
+> > * Huang Ying <ying.huang@intel.com> wrote:
+> > 
+> > > +/* Ftrace disable/restore without lock. Some synchronization mechanism
+> > > + * must be used to prevent ftrace_enabled to be changed between
+> > > + * disable/restore. */
+> > 
+> > use the proper comment style please:
+> > 
+> > /*
+> >  *
+> >  */
+> 
+> OK. I will change it.
 
-Linus' tree gained a build fix patch.
+it's upstream already, please send a followup clean up patch.
 
-The arm-current tree lost its conflict.
+> > > +static inline int __ftrace_enabled_save(void)
+> > > +{
+> > > +#ifdef CONFIG_FTRACE
+> > > +	int saved_ftrace_enabled = ftrace_enabled;
+> > > +	ftrace_enabled = 0;
+> > > +	return saved_ftrace_enabled;
+> > > +#else
+> > > +	return 0;
+> > > +#endif
+> > > +}
+> > > +
+> > > +static inline void __ftrace_enabled_restore(int enabled)
+> > > +{
+> > > +#ifdef CONFIG_FTRACE
+> > > +	ftrace_enabled = enabled;
+> > > +#endif
+> > > +}
+> > 
+> > hm, what is this used for?
+> > 
+> > also, instead of such an ugly inline, why not create a proper 
+> > kernel/trace/* function for this. That would also give it access to all 
+> > the proper locking mechanisms - instead of relying on some extral 
+> > mechanism.
+> 
+> This function is used for kexec jump in machine_kexec(). Where all 
+> non-boot CPUs and IRQ are disabled, system is going to kexec, and it 
+> is not allowed to schedule to other process in this circumstance, so a 
+> non-lock version is needed. A locked version has been implemented by 
+> Steven Rostedt, I think it can be used for other circumstance.
 
-The ftrace tree lost its build failure revert.
+ok, fair enough.
 
-The acpi tree lost its build failure patch.
-
-The ttydev tree gained a conflict against Linus' tree.
-
-The creds tree gained 3 conflicts against Linus' tree.
-
-I have also applied the following patches for known problems:
-
-	Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
-	driver-core: don't export static functions
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 110 trees (counting Linus' and 14 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Applying Fix setting of PF_SUPERPRIV by __capable()
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-2.6.26
-Merging dwmw2/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging ftrace/auto-ftrace-next
-CONFLICT (content): Merge conflict in kernel/module.c
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-CONFLICT (content): Merge conflict in kernel/fork.c
-Merging timers/auto-timers-next
-Merging x86/auto-x86-next
-CONFLICT (content): Merge conflict in include/asm-x86/pda.h
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging avr32/avr32-arch
-Merging v4l-dvb/stable
-Merging s390/features
-Merging sh/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging blackfin/for-linus
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-CONFLICT (content): Merge conflict in include/asm-x86/kvm.h
-Merging dlm/next
-Merging scsi/master
-Merging ia64/test
-Merging tests/master
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging ocfs2/linux-next
-Merging quilt/m68k
-Merging powerpc/powerpc-next
-Merging ext4/next
-Merging 4xx/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging sparc/master
-Merging galak/powerpc-next
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-CONFLICT (content): Merge conflict in include/asm-x86/cpufeature.h
-Merging vfs/for-next
-CONFLICT (content): Merge conflict in fs/nfsd/export.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_export.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_iops.c
-Merging sound/for-next
-Merging arm/devel
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging semaphore/semaphore
-Merging semaphore-removal/semaphore-removal
-Merging bkl-removal/bkl-removal
-Merging trivial/next
-CONFLICT (content): Merge conflict in Documentation/edac.txt
-CONFLICT (content): Merge conflict in include/linux/securebits.h
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Kconfig
-CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Makefile
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging m68knommu/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging cris/for-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in arch/x86/kernel/process_64.c
-CONFLICT (content): Merge conflict in arch/x86/kernel/traps_64.c
-CONFLICT (content): Merge conflict in mm/Makefile
-CONFLICT (content): Merge conflict in mm/slab.c
-Merging generic-ipi/auto-generic-ipi-next
-Merging mips/mips-for-linux-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/reg-for-linus
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-CONFLICT (content): Merge conflict in drivers/char/tty_io.c
-CONFLICT (content): Merge conflict in drivers/char/vt.c
-CONFLICT (content): Merge conflict in drivers/net/usb/hso.c
-CONFLICT (content): Merge conflict in drivers/usb/class/cdc-acm.c
-Merging agp/agp-next
-Merging creds/next-creds
-CONFLICT (content): Merge conflict in fs/namespace.c
-CONFLICT (content): Merge conflict in fs/nfsd/nfs4recover.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_linux.h
-CONFLICT (content): Merge conflict in fs/xfs/xfs_inode.c
-CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.c
-CONFLICT (content): Merge conflict in include/linux/capability.h
-CONFLICT (add/add): Merge conflict in include/linux/cred.h
-CONFLICT (content): Merge conflict in kernel/exit.c
-CONFLICT (content): Merge conflict in kernel/fork.c
-CONFLICT (content): Merge conflict in security/commoncap.c
-CONFLICT (content): Merge conflict in security/selinux/hooks.c
-CONFLICT (content): Merge conflict in security/smack/smack_lsm.c
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-CONFLICT (content): Merge conflict in include/linux/init.h
-Applying Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
-Applying driver-core: don't export static functions
-
---Signature=_Mon__18_Aug_2008_17_59_31_+1000_f39p8ouNxrXRhmZS
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkipK+MACgkQjjKRsyhoI8xFUACgmQiPKRekGwiJ0IYx9SiS1bnN
-ng4AoK+8Y0w8mpwBWUY8pOSzr1KCsJoD
-=0UIo
------END PGP SIGNATURE-----
-
---Signature=_Mon__18_Aug_2008_17_59_31_+1000_f39p8ouNxrXRhmZS--
+	Ingo
