@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760097AbYHRSwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbYHRSzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760097AbYHRSwU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 14:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759747AbYHRSvW
+	id S1757338AbYHRSzl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 14:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbYHRSyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 14:51:22 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35011 "EHLO mx2.suse.de"
+	Mon, 18 Aug 2008 14:54:24 -0400
+Received: from mx2.suse.de ([195.135.220.15]:35618 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759738AbYHRSvU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 14:51:20 -0400
-Date: Mon, 18 Aug 2008 11:43:00 -0700
+	id S1760880AbYHRSyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 14:54:13 -0400
+Date: Mon, 18 Aug 2008 11:43:18 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,64 +22,41 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Johannes Berg <johannes@sipsolutions.net>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 16/60] USB: usb-storage: quirk around v1.11 firmware on
-	Nikon D4
-Message-ID: <20080818184300.GQ29394@suse.de>
+       alan@lxorguk.ukuu.org.uk, Steve French <sfrench@us.ibm.com>
+Subject: [patch 23/60] CIFS: if get root inode fails during mount, cleanup
+	tree connection
+Message-ID: <20080818184318.GX29394@suse.de>
 References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-usb-storage-quirk-around-v1.11-firmware-on-nikon-d4.patch"
+Content-Disposition: inline; filename="cifs-if-get-root-inode-fails-during-mount-cleanup-tree-connection.patch"
 In-Reply-To: <20080818184035.GA29394@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.26-stable review patch.  If anyone has any objections, please let us know.
+From: Steve French <sfrench@us.ibm.com>
 
-------------------
-From: Dave Jones <davej@redhat.com>
+commit 2c731afb0d4ba16018b400c75665fbdb8feb2175 upstream
 
-commit b9a097f26e55968cbc52e30a4a2e73d32d7604ce upstream
-
-usb-storage: quirk around v1.11 firmware on Nikon D40
-
-https://bugzilla.redhat.com/show_bug.cgi?id=454028
-Just as in earlier firmware versions, we need to perform this
-quirk for the latest version too.
-
-Speculatively do the entry for the D80 too, as they seem to
-have the same firmware problems historically.
-
-Signed-off-by: Dave Jones <davej@redhat.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Steve French <sfrench@us.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/unusual_devs.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ fs/cifs/cifsfs.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -358,14 +358,14 @@ UNUSUAL_DEV(  0x04b0, 0x040f, 0x0100, 0x
- 		US_FL_FIX_CAPACITY),
+--- a/fs/cifs/cifsfs.c
++++ b/fs/cifs/cifsfs.c
+@@ -175,6 +175,8 @@ out_no_root:
+ 	if (inode)
+ 		iput(inode);
  
- /* Reported by Emil Larsson <emil@swip.net> */
--UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0110,
-+UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0111,
- 		"NIKON",
- 		"NIKON DSC D80",
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_CAPACITY),
- 
- /* Reported by Ortwin Glueck <odi@odi.ch> */
--UNUSUAL_DEV(  0x04b0, 0x0413, 0x0110, 0x0110,
-+UNUSUAL_DEV(  0x04b0, 0x0413, 0x0110, 0x0111,
- 		"NIKON",
- 		"NIKON DSC D40",
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
++	cifs_umount(sb, cifs_sb);
++
+ out_mount_failed:
+ 	if (cifs_sb) {
+ #ifdef CONFIG_CIFS_DFS_UPCALL
 
 -- 
