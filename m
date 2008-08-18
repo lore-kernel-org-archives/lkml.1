@@ -1,217 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbYHRUA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754AbYHRUEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756940AbYHRUA4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 16:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756384AbYHRUAd
+	id S1753754AbYHRUEG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 16:04:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYHRUDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 16:00:33 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:22853 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756280AbYHRUAb (ORCPT
+	Mon, 18 Aug 2008 16:03:54 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:48850 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751453AbYHRUDx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 16:00:31 -0400
-Date: Mon, 18 Aug 2008 12:57:44 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: penberg@cs.helsinki.fi, mathieu.desnoyers@polymtl.ca,
-       cl@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, rdunlap@xenotime.net, mpm@selenic.com,
-       rostedt@goodmis.org, tglx@linutronix.de
-Subject: Re: [PATCH 2/5] kmemtrace: Additional documentation.
-Message-Id: <20080818125744.b4fdc958.randy.dunlap@oracle.com>
-In-Reply-To: <1218388447-5578-3-git-send-email-eduard.munteanu@linux360.ro>
-References: <1218388447-5578-1-git-send-email-eduard.munteanu@linux360.ro>
-	<1218388447-5578-2-git-send-email-eduard.munteanu@linux360.ro>
-	<1218388447-5578-3-git-send-email-eduard.munteanu@linux360.ro>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 18 Aug 2008 16:03:53 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>
+References: <200808160326.m7G3QR1G012726@terminus.zytor.com>
+	<86802c440808152342m772d5eabs59a9c93ffe4cf557@mail.gmail.com>
+	<1218898238.3940.6.camel@localhost.localdomain>
+	<20080816163945.74d487e9@lxorguk.ukuu.org.uk>
+	<1218903209.3940.14.camel@localhost.localdomain>
+	<86802c440808161156rf48f23ai9d77ce3cab36f02a@mail.gmail.com>
+	<1218918341.3940.49.camel@localhost.localdomain>
+	<86802c440808161334q75a7d019ofade0b6cabf3f74d@mail.gmail.com>
+	<1218919547.3940.57.camel@localhost.localdomain>
+	<86802c440808161517y1eaa5a4eo817b8a1bf75945be@mail.gmail.com>
+	<1218928162.3940.62.camel@localhost.localdomain>
+Date: Mon, 18 Aug 2008 12:59:58 -0700
+In-Reply-To: <1218928162.3940.62.camel@localhost.localdomain> (James
+	Bottomley's message of "Sat, 16 Aug 2008 18:09:22 -0500")
+Message-ID: <m14p5i2iwx.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;James Bottomley <James.Bottomley@HansenPartnership.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4815]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] pci: change msi-x vector to 32bit
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 Aug 2008 20:14:04 +0300 Eduard - Gabriel Munteanu wrote:
+James Bottomley <James.Bottomley@HansenPartnership.com> writes:
 
-> Documented kmemtrace's ABI, purpose and design. Also includes a short
-> usage guide, FAQ, as well as a link to the userspace application's Git
-> repository, which is currently hosted at repo.or.cz.
-> 
-> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> ---
->  Documentation/ABI/testing/debugfs-kmemtrace |   71 +++++++++++++++
->  Documentation/vm/kmemtrace.txt              |  126 +++++++++++++++++++++++++++
->  2 files changed, 197 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/ABI/testing/debugfs-kmemtrace
->  create mode 100644 Documentation/vm/kmemtrace.txt
-> 
-> diff --git a/Documentation/ABI/testing/debugfs-kmemtrace b/Documentation/ABI/testing/debugfs-kmemtrace
-> new file mode 100644
-> index 0000000..a5ff9a6
-> --- /dev/null
-> +++ b/Documentation/ABI/testing/debugfs-kmemtrace
-> @@ -0,0 +1,71 @@
-> +What:		/sys/kernel/debug/kmemtrace/
-> +Date:		July 2008
-> +Contact:	Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> +Description:
-> +
-> +In kmemtrace-enabled kernels, the following files are created:
-> +
-> +/sys/kernel/debug/kmemtrace/
-> +	cpu<n>		(0400)	Per-CPU tracing data, see below. (binary)
-> +	total_overruns	(0400)	Total number of bytes which were dropped from
-> +				cpu<n> files because of full buffer condition,
-> +				non-binary. (text)
-> +	abi_version	(0400)	Kernel's kmemtrace ABI version. (text)
-> +
-> +Each per-CPU file should be read according to the relay interface. That is,
-> +the reader should set affinity to that specific CPU and, as currently done by
-> +the userspace application (though there are other methods), use poll() with
-> +an infinite timeout before every read(). Otherwise, erroneous data may be
-> +read. The binary data has the following _core_ format:
-> +
-> +	Event ID	(1 byte)	Unsigned integer, one of:
-> +		0 - represents an allocation (KMEMTRACE_EVENT_ALLOC)
-> +		1 - represents a freeing of previously allocated memory
-> +		    (KMEMTRACE_EVENT_FREE)
-> +	Type ID		(1 byte)	Unsigned integer, one of:
-> +		0 - this is a kmalloc() / kfree()
-> +		1 - this is a kmem_cache_alloc() / kmem_cache_free()
-> +		2 - this is a __get_free_pages() et al.
-> +	Event size	(2 bytes)	Unsigned integer representing the
-> +					size of this event. Used to extend
-> +					kmemtrace. Discard the bytes you
-> +					don't know about.
-> +	Sequence number	(4 bytes)	Signed integer used to reorder data
-> +					logged on SMP machines. Wraparound
-> +					must be taken into account, although
-> +					it is unlikely.
-> +	Caller address	(8 bytes)	Return address to the caller.
-> +	Pointer to mem	(8 bytes)	Pointer to target memory area. Can be
-> +					NULL, but not all such calls might be
-> +					recorded.
-> +
-> +In case of KMEMTRACE_EVENT_ALLOC events, the next fields follow:
-> +
-> +	Requested bytes	(8 bytes)	Total number of requested bytes,
-> +					unsigned, must not be zero.
-> +	Allocated bytes (8 bytes)	Total number of actually allocated
-> +					bytes, unsigned, must not be lower
-> +					than requested bytes.
-> +	Requested flags	(4 bytes)	GFP flags supplied by the caller.
-> +	Target CPU	(4 bytes)	Signed integer, valid for event id 1.
-> +					If equal to -1, target CPU is the same
-> +					as origin CPU, but the reverse might
-> +					not be true.
-> +
-> +The data is made available in the same endianness the machine has.
-> +
-> +Other event ids and type ids may be defined and added. Other fields may be
-> +added by increasing event size, but see below for details.
-> +Every modification to the ABI, including new id definitions, are followed
-> +by bumping the ABI version by one.
-> +
-> +Adding new data to the packet (features) is done at the end of the mandatory
-> +data:
-> +	Feature size	(2 byte)
-> +	Feature ID	(1 byte)
-> +	Feature data	(Feature size - 4 bytes)
+> On Sat, 2008-08-16 at 15:17 -0700, Yinghai Lu wrote:
+>> On Sat, Aug 16, 2008 at 1:45 PM, James Bottomley
+>> <James.Bottomley@hansenpartnership.com> wrote:
+>> >> > What I still don't quite get is the benefit of large IRQ spaces ...
+>> >> > particularly if you encode things the system doesn't really need to know
+>> >> > in them.
+>> >>
+>> >> then set nr_irqs = nr_cpu_ids * NR_VECTORS))
+>> >> and count down for msi/msi-x?
+>> >
+>> > No, what I mean is that msis can trip directly to CPUs, so this is an
+>> > affinity thing (that MSI is directly bound to that CPU now), so in the
+>> > matrixed way we display this in show_interrupts() with the CPU along the
+>> > top and the IRQ down the side, it doesn't make sense to me to encode IRQ
+>> > affinity in the irq number again.   So it makes more sense to assign the
+>> > vectors based on both the irq number and the CPU affinity so that if the
+>> > PCI MSI for qla is assigned to CPU4 you can reassign it to CPU5 and so
+>> > on.
+>> 
+>> msi-x entry index, cpu_vector, irq number...
+>> 
+>> you want to different cpus have same vector?
+>
+> Obviously I'm not communicating very well.  Your apparent assumption is
+> that irq number == vector.  
 
-Why is this "- 4 bytes"?  Is there an implied alignment byte somewhere in the
-features "struct"?  How about making it explicit?
+Careful.  There are two entities termed vector in this conversation.
+There is the MSI-X vector which can hold up to 4096 entries per device.
+There is the idt vector which has 256 entries per cpu.
 
+> What I'm saying is that's not what we've
+> done for individually vectored CPU interrupts in other architectures.
+> In those we did (cpu no, irq) == vector.  i.e. the affinity and the irq
+> number identify the vector.  For non-numa systems, this is effectively
+> what you're interested in doing anyway.  For numa systems, it just
+> becomes a sparse matrix.
 
-> +
-> +
-> +Users:
-> +	kmemtrace-user - git://repo.or.cz/kmemtrace-user.git
-> +
-> diff --git a/Documentation/vm/kmemtrace.txt b/Documentation/vm/kmemtrace.txt
-> new file mode 100644
-> index 0000000..75360b1
-> --- /dev/null
-> +++ b/Documentation/vm/kmemtrace.txt
-> @@ -0,0 +1,126 @@
-> +			kmemtrace - Kernel Memory Tracer
-> +
-> +			  by Eduard - Gabriel Munteanu
-> +			     <eduard.munteanu@linux360.ro>
-> +
-> +I. Introduction
-> +===============
-> +
-> +kmemtrace helps kernel developers figure out two things:
-> +1) how different allocators (SLAB, SLUB etc.) perform
-> +2) how kernel code allocates memory and how much
-> +
-> +To do this, we trace every allocation and export information to the userspace
-> +through the relay interface. We export things such as the number of requested
-> +bytes, the number of bytes actually allocated (i.e. including internal
-> +fragmentation), whether this is a slab allocation or a plain kmalloc() and so
-> +on.
-> +
-> +The actual analysis is performed by a userspace tool (see section III for
-> +details on where to get it from). It logs the data exported by the kernel,
-> +processes it and (as of writing this) can provide the following information:
-> +- the total amount of memory allocated and fragmentation per call-site
-> +- the amount of memory allocated and fragmentation per allocation
-> +- total memory allocated and fragmentation in the collected dataset
-> +- number of cross-CPU allocation and frees (makes sense in NUMA environments)
-> +
-> +Moreover, it can potentially find inconsistent and erroneous behavior in
-> +kernel code, such as using slab free functions on kmalloc'ed memory or
-> +allocating less memory than requested (but not truly failed allocations).
-> +
-> +kmemtrace also makes provisions for tracing on some arch and analysing the
-> +data on another.
-> +
-> +II. Design and goals
-> +====================
-> +
-> +kmemtrace was designed to handle rather large amounts of data. Thus, it uses
-> +the relay interface to export whatever is logged to userspace, which then
-> +stores it. Analysis and reporting is done asynchronously, that is, after the
-> +data is collected and stored. By design, it allows one to log and analyse
-> +on different machines and different arches.
-> +
-> +As of writing this, the ABI is not considered stable, though it might not
-> +change much. However, no guarantees are made about compatibility yet. When
-> +deemed stable, the ABI should still allow easy extension while maintaining
-> +backward compatibility. This is described further in Documentation/ABI.
-> +
-> +Summary of design goals:
-> +	- allow logging and analysis to be done across different machines
-> +	- be fast and anticipate usage in high-load environments (*)
-> +	- be reasonably extensible
-> +	- make it possible for GNU/Linux distributions to have kmemtrace
-> +	included in their repositories
-> +
-> +(*) - one of the reasons Pekka Enberg's original userspace data analysis
-> +    tool's code was rewritten from Perl to C (although this is more than a
-> +    simple conversion)
-> +
-> +
-> +III. Quick usage guide
-> +======================
-> +
-> +1) Get a kernel that supports kmemtrace and build it accordingly (i.e. enable
-> +CONFIG_KMEMTRACE and CONFIG_DEFAULT_ENABLED).
+I believe assign_irq_vector on x86_64 and soon on x86_32 does this already.
 
-                        CONFIG_KMEMTRACE_DEFAULT_ENABLED
+The number that was being changed was the irq number of for the
+msi-x ``vectors'' from some random free irq number to roughly
+bus(8 bits):device+function(8 bits):msix-vector(12 bits) so that we
+could have a stable irq number for msi irqs.
 
-> +
-> +2) Get the userspace tool and build it:
+Once pci domain is considered it is hard to claim we have enough bits.
+I expect we need at least pci domains to have one per NUMA node, in
+the general case.
 
-...
+The big motivation for killing NR_IRQS sized arrays comes from 2 directions.
+msi-x which allows up to 4096 irqs per device and nic vendors starting
+to produce cards with 256 queues, and from large SGI systems that don't do
+I/O and want to be supported with the same kernel build as smaller systems.
+A kernel built to handle 4096*32 irqs which is more or less reasonable if
+the system was I/O heavy is a ridiculously sized array on smaller machines.
 
+So a static irq_desc is out.  And since with the combination of msi-x hotplug
+we can not tell how many irq sources and thus irq numbers the machine is going
+to have we can not reasonably even have a dynamic array at boot time.  Further
+we also want to allocate the irq_desc entries in node-local memory on NUMA
+machines for better performance.  Which means we need to dynamically allocate
+irq_desc entries and have some lookup mechanism from irq# to irq_desc entry.
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+So once we have all of that.  It becomes possible to look at assigning a static
+irq number to each pci (bus:device:function:msi-x vector) pair so the system
+is more reproducible.
+
+Eric
