@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbYHRWFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758303AbYHRWHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758257AbYHRWFz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 18:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbYHRWFn
+	id S1758303AbYHRWHA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 18:07:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbYHRWGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 18:05:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47814 "EHLO ogre.sisk.pl"
+	Mon, 18 Aug 2008 18:06:52 -0400
+Received: from gate.crashing.org ([63.228.1.57]:38699 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754867AbYHRWFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 18:05:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot - v2
-Date: Tue, 19 Aug 2008 00:08:53 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Jeff Garzik" <jgarzik@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       Simon Arlott <simon@fire.lp0.eu>
-References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <200808181222.49576.rjw@sisk.pl> <86802c440808181450y5e908b6eo3e6d54bfca6f2d8f@mail.gmail.com>
-In-Reply-To: <86802c440808181450y5e908b6eo3e6d54bfca6f2d8f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1753473AbYHRWGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 18:06:51 -0400
+Subject: Re: [PATCH] RADEON: duplicate PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: roel kluin <roel.kluin@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <48AA3900.80305@gmail.com>
+References: <48AA3900.80305@gmail.com>
+Content-Type: text/plain
+Date: Tue, 19 Aug 2008 08:06:40 +1000
+Message-Id: <1219097200.28339.94.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808190008.54743.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 18 of August 2008, Yinghai Lu wrote:
-> On Mon, Aug 18, 2008 at 3:22 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> >> > >  drivers/net/forcedeth.c |    8 +++++---
-> >> > >  1 file changed, 5 insertions(+), 3 deletions(-)
-> >> > >
-> >> > > Index: linux-2.6/drivers/net/forcedeth.c
-> >> > > ===================================================================
-> >> > > --- linux-2.6.orig/drivers/net/forcedeth.c
-> >> > > +++ linux-2.6/drivers/net/forcedeth.c
-> >> > > @@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
-> >> > >        if (netif_running(dev))
-> >> > >                nv_close(dev);
-> >> > >
-> >> > > -       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-> >> > > -       pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
-> >> > >        pci_disable_device(pdev);
-> >> > > -       pci_set_power_state(pdev, PCI_D3hot);
-> >> > > +       if (system_state == SYSTEM_POWER_OFF) {
-> >> > > +               if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
-> >> > > +                       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-> >> > > +               pci_set_power_state(pdev, PCI_D3hot);
-> >> > > +       }
-> >> > >  }
-> >> > >  #else
-> >> > >  #define nv_suspend NULL
-> >> > >
-> >> >
-> 
-> > Does the last patch work for you BTW?
-> >
-> 
-> it works.
+On Mon, 2008-08-18 at 23:07 -0400, roel kluin wrote:
+> untested, is it correct?
+> ---
+> duplicate PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb
 
-OK, thanks for testing.
+Hard to say... this code originates from ATI. I'll have to dig a bit
+to see what is the right bit combo I suppose.
 
-I think we can use it as a quick fix for 2.6.27.  Do you agree?
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
+> index 675abda..74d2e65 100644
+> --- a/drivers/video/aty/radeon_pm.c
+> +++ b/drivers/video/aty/radeon_pm.c
+> @@ -210,7 +210,7 @@ static void radeon_pm_disable_dynamic_mode(struct radeonfb_info *rinfo)
+>  			 PIXCLKS_CNTL__R300_PIXCLK_TRANS_ALWAYS_ONb	|
+>  			 PIXCLKS_CNTL__R300_PIXCLK_TVO_ALWAYS_ONb	|
+>  			 PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb		|
+> -			 PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb		|
+> +			 PIXCLKS_CNTL__R300_P2G2CLK_DAC_ALWAYS_ONb	|
+>  			 PIXCLKS_CNTL__R300_DISP_DAC_PIXCLK_DAC2_BLANK_OFF);
+>                  OUTPLL(pllPIXCLKS_CNTL, tmp);
+>  
+> @@ -392,7 +392,7 @@ static void radeon_pm_enable_dynamic_mode(struct radeonfb_info *rinfo)
+>  			PIXCLKS_CNTL__R300_PIXCLK_TRANS_ALWAYS_ONb      |
+>  			PIXCLKS_CNTL__R300_PIXCLK_TVO_ALWAYS_ONb        |
+>  			PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb           |
+> -			PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb);
+> +			PIXCLKS_CNTL__R300_P2G2CLK_DAC_ALWAYS_ONb);
+>  		OUTPLL(pllPIXCLKS_CNTL, tmp);
+>  
+>  		tmp = INPLL(pllMCLK_MISC);
 
-Still, it would be helpful to verify if this is the same MSI issue reported by
-Simon.
-
-Thanks,
-Rafael
