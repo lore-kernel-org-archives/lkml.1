@@ -1,90 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754304AbYHROdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbYHROfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754304AbYHROdy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 10:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbYHROdq
+	id S1754680AbYHROfi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 10:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYHROf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 10:33:46 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:16818 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752809AbYHROdp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 10:33:45 -0400
-Date: Mon, 18 Aug 2008 18:33:43 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Cc: linuxppc-dev@ozlabs.org, Greg Kroah-Hartman <greg@kroah.com>,
-       linux-usb@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Li Yang <leoli@freescale.com>, linux-kernel@vger.kernel.org,
-       Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 1/3] gpiolib: make gpio_to_chip() public
-Message-ID: <20080818143343.GA30812@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080808161717.GA19095@polina.dev.rtsoft.ru> <200808141645.56418.laurentp@cse-semaphore.com> <20080814151022.GA9885@oksana.dev.rtsoft.ru> <200808181558.50182.laurentp@cse-semaphore.com>
+	Mon, 18 Aug 2008 10:35:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45341 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752730AbYHROfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 10:35:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: Re: Warning in during hotplug on 2.6.27-rc2-git5
+Date: Mon, 18 Aug 2008 16:38:36 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       "Greg KH" <greg@kroah.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+References: <200808141753.58547.rjw@sisk.pl> <200808172353.54479.rjw@sisk.pl> <6453C3CB8E2B3646B0D020C112613273C5AC7B@sausexmb4.amd.com>
+In-Reply-To: <6453C3CB8E2B3646B0D020C112613273C5AC7B@sausexmb4.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200808181558.50182.laurentp@cse-semaphore.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200808181638.37707.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 18, 2008 at 03:58:46PM +0200, Laurent Pinchart wrote:
-[...]
-> > Not exactly. But you can do this way, if you need to preserve
-> > a direction. What I did is a bit different though.
+On Monday, 18 of August 2008, Langsdorf, Mark wrote:
+> > > > The only way I could see that happening if CPU_DEAD/CPU_ONLINE
+> > > > is not properly balanced.
+> > > 
+> > > I'm still seeing it on 2.6.27-rc2, even with the 
+> > > patch here http://lkml.org/lkml/2008/7/30/171 and the
+> > > wbinvd_halt code patch applied.  Maybe something else
+> > > broke in some of the recent hotplug changes?
 > > 
-> > qe_gpio_set_dedicated() actually just restores a mode that
-> > firmware had set up, including direction (since direction could
-> > be a part of dedicated configuration).
-> > 
-> > That is, upon GPIO controller registration, we save all registers,
-> > then driver can set up a pin to a GPIO mode via standard API, and
-> > then it can _revert_ a pin to a dedicated function via
-> > qe_gpio_set_dedicated() call. Dedicated function is specified by
-> > the firmware (or board file), we're just restoring it.
+> > Mark, have you tried to test with commit 
+> > 34ae7f35a21694aa5cb8829dc5142c39d73d6ba0
+> > (your "preregister support for powernow-k8" patch) reverted 
+> > and MCE enabled?
 > 
-> The semantic of the set_dedicated() operation needs to be clearly
-> defined then.
+> Yes, it's a failure on a clean 2.6.27-rc2 installation.
 
-It is. We set up a dedicated function that firmware (or board file)
-has configured.
+Ah, the commit was done after -rc2, sorry.
 
-> I can live with this behaviour, but it might not be
-> acceptable for everybody.
+I have a couple of questions, then:
+- Does it fail identically for all CPUs or for CPU4 and above only?
+- Did previous kernels, most importantly 2.6.26, work correctly?
 
-For example?
+Also, can you please attach dmesg output, including the offlining of a CPU
+that would later lead to the problem with cpu_up(), to the Bugzilla entry at
+http://bugzilla.kernel.org/show_bug.cgi?id=11337 ?
 
-> Your patch requires the firmware to set a pin in dedicated mode at
-> bootup in order to be used later in dedicated mode.
-
-Yes. On a PowerPC this is always true: firmware should set up PIO
-config. Linux' board file could fixup the firmware though.
-
-Another option would be to add some argument to the set_dedicated
-call, thus the software could specify arbitrary dedicated
-function (thus no need to save/restore anything). But this would
-be SOC-model specific, thus no driver can use this argument anyway.
-
-> If, for some
-> reason (driver not loaded, ...), no GPIO user shows up for that
-> pin, it will stay configured in dedicated mode.
-
-Yes.
-
-> It might be better to set the PAR bit unconditionally in
-
-Why it might be better? That way you may set up wrong _GPIO_
-mode, because you didn't set PAR bit (when PAR bit set
-DIR/ODR/DAT bits are losing their meanings).
-
-> qe_gpio_set_dedicated() instead of restoring its value. That way
-> the board initialization code could just set the DIR, DAT and ODR
-> bits for dedicated mode but still configure the pin in GPIO mode.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Thanks,
+Rafael
