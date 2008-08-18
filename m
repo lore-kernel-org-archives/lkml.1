@@ -1,62 +1,402 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759231AbYHRTJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763209AbYHRTIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759231AbYHRTJu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762825AbYHRTF2
+	id S1763209AbYHRTIR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762775AbYHRTFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:05:28 -0400
-Received: from isilmar.linta.de ([213.133.102.198]:40475 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762821AbYHRTFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:05:20 -0400
-Date: Mon, 18 Aug 2008 21:03:25 +0200
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       akpm@linux-foundation.org
-Cc: john stultz <johnstul@us.ibm.com>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>, Andreas Mohr <andi@lisas.de>
-Subject: [git pull?] clocksource: ACPI pmtmr bugfixes [Was: Re: ACPI
-	PM-Timer on K6-3 SiS5591: Houston...]
-Message-ID: <20080818190325.GA12581@comet.dominikbrodowski.net>
-Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-	akpm@linux-foundation.org, john stultz <johnstul@us.ibm.com>,
-	OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Andreas Mohr <andi@lisas.de>
-References: <20080810101730.GA10024@rhlx01.hs-esslingen.de> <20080810162920.GA9860@comet.dominikbrodowski.net> <20080810190759.GA1879@rhlx01.hs-esslingen.de>
+	Mon, 18 Aug 2008 15:05:06 -0400
+Received: from mx1.suse.de ([195.135.220.2]:44208 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762761AbYHRTFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:05:02 -0400
+Date: Mon, 18 Aug 2008 11:45:24 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 50/60] sparc64: Implement IRQ stacks.
+Message-ID: <20080818184524.GY29394@suse.de>
+References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080810190759.GA1879@rhlx01.hs-esslingen.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Disposition: inline; filename="0005-sparc64-Implement-IRQ-stacks.patch"
+In-Reply-To: <20080818184035.GA29394@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
-anyone willing to take these two patches? Possibly 2.6.27 material; hasn't
-been in -next or -mm.
+------------------
+From: David S. Miller <davem@davemloft.net>
 
-Best,
-	Dominik
+[ Upstream commit 4f70f7a91bffdcc39f088748dc678953eb9a3fbd ]
 
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-The following changes since commit 796aadeb1b2db9b5d463946766c5bbfd7717158c:
-  Linus Torvalds (1):
-        Merge branch 'fixes' of git://git.kernel.org/.../davej/cpufreq
+---
+ arch/sparc64/kernel/irq.c        |   52 ++++++++++++++++++++++++++++++++++
+ arch/sparc64/kernel/kstack.h     |   58 +++++++++++++++++++++++++++++++++++++++
+ arch/sparc64/kernel/process.c    |   27 ++++--------------
+ arch/sparc64/kernel/stacktrace.c |   10 ++----
+ arch/sparc64/kernel/traps.c      |    7 ++--
+ arch/sparc64/lib/mcount.S        |   22 ++++++++++++++
+ arch/sparc64/mm/init.c           |   11 +++++++
+ include/asm-sparc64/irq.h        |    4 ++
+ 8 files changed, 161 insertions(+), 30 deletions(-)
 
-are available in the git repository at:
+--- a/arch/sparc64/kernel/irq.c
++++ b/arch/sparc64/kernel/irq.c
+@@ -682,10 +682,32 @@ void ack_bad_irq(unsigned int virt_irq)
+ 	       ino, virt_irq);
+ }
+ 
++void *hardirq_stack[NR_CPUS];
++void *softirq_stack[NR_CPUS];
++
++static __attribute__((always_inline)) void *set_hardirq_stack(void)
++{
++	void *orig_sp, *sp = hardirq_stack[smp_processor_id()];
++
++	__asm__ __volatile__("mov %%sp, %0" : "=r" (orig_sp));
++	if (orig_sp < sp ||
++	    orig_sp > (sp + THREAD_SIZE)) {
++		sp += THREAD_SIZE - 192 - STACK_BIAS;
++		__asm__ __volatile__("mov %0, %%sp" : : "r" (sp));
++	}
++
++	return orig_sp;
++}
++static __attribute__((always_inline)) void restore_hardirq_stack(void *orig_sp)
++{
++	__asm__ __volatile__("mov %0, %%sp" : : "r" (orig_sp));
++}
++
+ void handler_irq(int irq, struct pt_regs *regs)
+ {
+ 	unsigned long pstate, bucket_pa;
+ 	struct pt_regs *old_regs;
++	void *orig_sp;
+ 
+ 	clear_softint(1 << irq);
+ 
+@@ -703,6 +725,8 @@ void handler_irq(int irq, struct pt_regs
+ 			       "i" (PSTATE_IE)
+ 			     : "memory");
+ 
++	orig_sp = set_hardirq_stack();
++
+ 	while (bucket_pa) {
+ 		struct irq_desc *desc;
+ 		unsigned long next_pa;
+@@ -719,10 +743,38 @@ void handler_irq(int irq, struct pt_regs
+ 		bucket_pa = next_pa;
+ 	}
+ 
++	restore_hardirq_stack(orig_sp);
++
+ 	irq_exit();
+ 	set_irq_regs(old_regs);
+ }
+ 
++void do_softirq(void)
++{
++	unsigned long flags;
++
++	if (in_interrupt())
++		return;
++
++	local_irq_save(flags);
++
++	if (local_softirq_pending()) {
++		void *orig_sp, *sp = softirq_stack[smp_processor_id()];
++
++		sp += THREAD_SIZE - 192 - STACK_BIAS;
++
++		__asm__ __volatile__("mov %%sp, %0\n\t"
++				     "mov %1, %%sp"
++				     : "=&r" (orig_sp)
++				     : "r" (sp));
++		__do_softirq();
++		__asm__ __volatile__("mov %0, %%sp"
++				     : : "r" (orig_sp));
++	}
++
++	local_irq_restore(flags);
++}
++
+ #ifdef CONFIG_HOTPLUG_CPU
+ void fixup_irqs(void)
+ {
+--- /dev/null
++++ b/arch/sparc64/kernel/kstack.h
+@@ -0,0 +1,58 @@
++#ifndef _KSTACK_H
++#define _KSTACK_H
++
++#include <linux/thread_info.h>
++#include <linux/sched.h>
++#include <asm/ptrace.h>
++#include <asm/irq.h>
++
++/* SP must be STACK_BIAS adjusted already.  */
++static inline bool kstack_valid(struct thread_info *tp, unsigned long sp)
++{
++	unsigned long base = (unsigned long) tp;
++
++	if (sp >= (base + sizeof(struct thread_info)) &&
++	    sp <= (base + THREAD_SIZE - sizeof(struct sparc_stackf)))
++		return true;
++
++	base = (unsigned long) hardirq_stack[tp->cpu];
++	if (sp >= base &&
++	    sp <= (base + THREAD_SIZE - sizeof(struct sparc_stackf)))
++		return true;
++	base = (unsigned long) softirq_stack[tp->cpu];
++	if (sp >= base &&
++	    sp <= (base + THREAD_SIZE - sizeof(struct sparc_stackf)))
++		return true;
++
++	return false;
++}
++
++/* Does "regs" point to a valid pt_regs trap frame?  */
++static inline bool kstack_is_trap_frame(struct thread_info *tp, struct pt_regs *regs)
++{
++	unsigned long base = (unsigned long) tp;
++	unsigned long addr = (unsigned long) regs;
++
++	if (addr >= base &&
++	    addr <= (base + THREAD_SIZE - sizeof(*regs)))
++		goto check_magic;
++
++	base = (unsigned long) hardirq_stack[tp->cpu];
++	if (addr >= base &&
++	    addr <= (base + THREAD_SIZE - sizeof(*regs)))
++		goto check_magic;
++	base = (unsigned long) softirq_stack[tp->cpu];
++	if (addr >= base &&
++	    addr <= (base + THREAD_SIZE - sizeof(*regs)))
++		goto check_magic;
++
++	return false;
++
++check_magic:
++	if ((regs->magic & ~0x1ff) == PT_REGS_MAGIC)
++		return true;
++	return false;
++
++}
++
++#endif /* _KSTACK_H */
+--- a/arch/sparc64/kernel/process.c
++++ b/arch/sparc64/kernel/process.c
+@@ -55,6 +55,8 @@
+ 
+ /* #define VERBOSE_SHOWREGS */
+ 
++#include "kstack.h"
++
+ static void sparc64_yield(int cpu)
+ {
+ 	if (tlb_type != hypervisor)
+@@ -305,19 +307,6 @@ void show_regs(struct pt_regs *regs)
+ struct global_reg_snapshot global_reg_snapshot[NR_CPUS];
+ static DEFINE_SPINLOCK(global_reg_snapshot_lock);
+ 
+-static bool kstack_valid(struct thread_info *tp, struct reg_window *rw)
+-{
+-	unsigned long thread_base, fp;
+-
+-	thread_base = (unsigned long) tp;
+-	fp = (unsigned long) rw;
+-
+-	if (fp < (thread_base + sizeof(struct thread_info)) ||
+-	    fp >= (thread_base + THREAD_SIZE))
+-		return false;
+-	return true;
+-}
+-
+ static void __global_reg_self(struct thread_info *tp, struct pt_regs *regs,
+ 			      int this_cpu)
+ {
+@@ -334,11 +323,11 @@ static void __global_reg_self(struct thr
+ 
+ 		rw = (struct reg_window *)
+ 			(regs->u_regs[UREG_FP] + STACK_BIAS);
+-		if (kstack_valid(tp, rw)) {
++		if (kstack_valid(tp, (unsigned long) rw)) {
+ 			global_reg_snapshot[this_cpu].i7 = rw->ins[7];
+ 			rw = (struct reg_window *)
+ 				(rw->ins[6] + STACK_BIAS);
+-			if (kstack_valid(tp, rw))
++			if (kstack_valid(tp, (unsigned long) rw))
+ 				global_reg_snapshot[this_cpu].rpc = rw->ins[7];
+ 		}
+ 	} else {
+@@ -899,7 +888,7 @@ out:
+ unsigned long get_wchan(struct task_struct *task)
+ {
+ 	unsigned long pc, fp, bias = 0;
+-	unsigned long thread_info_base;
++	struct thread_info *tp;
+ 	struct reg_window *rw;
+         unsigned long ret = 0;
+ 	int count = 0; 
+@@ -908,14 +897,12 @@ unsigned long get_wchan(struct task_stru
+             task->state == TASK_RUNNING)
+ 		goto out;
+ 
+-	thread_info_base = (unsigned long) task_stack_page(task);
++	tp = task_thread_info(task);
+ 	bias = STACK_BIAS;
+ 	fp = task_thread_info(task)->ksp + bias;
+ 
+ 	do {
+-		/* Bogus frame pointer? */
+-		if (fp < (thread_info_base + sizeof(struct thread_info)) ||
+-		    fp >= (thread_info_base + THREAD_SIZE))
++		if (!kstack_valid(tp, fp))
+ 			break;
+ 		rw = (struct reg_window *) fp;
+ 		pc = rw->ins[7];
+--- a/arch/sparc64/kernel/stacktrace.c
++++ b/arch/sparc64/kernel/stacktrace.c
+@@ -4,6 +4,8 @@
+ #include <asm/ptrace.h>
+ #include <asm/stacktrace.h>
+ 
++#include "kstack.h"
++
+ void save_stack_trace(struct stack_trace *trace)
+ {
+ 	unsigned long ksp, fp, thread_base;
+@@ -23,17 +25,13 @@ void save_stack_trace(struct stack_trace
+ 		struct pt_regs *regs;
+ 		unsigned long pc;
+ 
+-		/* Bogus frame pointer? */
+-		if (fp < (thread_base + sizeof(struct thread_info)) ||
+-		    fp > (thread_base + THREAD_SIZE - sizeof(struct sparc_stackf)))
++		if (!kstack_valid(tp, fp))
+ 			break;
+ 
+ 		sf = (struct sparc_stackf *) fp;
+ 		regs = (struct pt_regs *) (sf + 1);
+ 
+-		if (((unsigned long)regs <=
+-		     (thread_base + THREAD_SIZE - sizeof(*regs))) &&
+-		    (regs->magic & ~0x1ff) == PT_REGS_MAGIC) {
++		if (kstack_is_trap_frame(tp, regs)) {
+ 			if (!(regs->tstate & TSTATE_PRIV))
+ 				break;
+ 			pc = regs->tpc;
+--- a/arch/sparc64/kernel/traps.c
++++ b/arch/sparc64/kernel/traps.c
+@@ -43,6 +43,7 @@
+ #include <asm/prom.h>
+ 
+ #include "entry.h"
++#include "kstack.h"
+ 
+ /* When an irrecoverable trap occurs at tl > 0, the trap entry
+  * code logs the trap state registers at every level in the trap
+@@ -2120,14 +2121,12 @@ void show_stack(struct task_struct *tsk,
+ 		struct pt_regs *regs;
+ 		unsigned long pc;
+ 
+-		/* Bogus frame pointer? */
+-		if (fp < (thread_base + sizeof(struct thread_info)) ||
+-		    fp >= (thread_base + THREAD_SIZE))
++		if (!kstack_valid(tp, fp))
+ 			break;
+ 		sf = (struct sparc_stackf *) fp;
+ 		regs = (struct pt_regs *) (sf + 1);
+ 
+-		if ((regs->magic & ~0x1ff) == PT_REGS_MAGIC) {
++		if (kstack_is_trap_frame(tp, regs)) {
+ 			if (!(regs->tstate & TSTATE_PRIV))
+ 				break;
+ 			pc = regs->tpc;
+--- a/arch/sparc64/lib/mcount.S
++++ b/arch/sparc64/lib/mcount.S
+@@ -46,6 +46,28 @@ _mcount:
+ 	cmp		%sp, %g3
+ 	bg,pt		%xcc, 1f
+ 	 nop
++	lduh		[%g6 + TI_CPU], %g1
++	sethi		%hi(hardirq_stack), %g3
++	or		%g3, %lo(hardirq_stack), %g3
++	sllx		%g1, 3, %g1
++	ldx		[%g3 + %g1], %g7
++	sub		%g7, STACK_BIAS, %g7
++	cmp		%sp, %g7
++	bleu,pt		%xcc, 2f
++	 sethi		%hi(THREAD_SIZE), %g3
++	add		%g7, %g3, %g7
++	cmp		%sp, %g7
++	blu,pn		%xcc, 1f
++2:	 sethi		%hi(softirq_stack), %g3
++	or		%g3, %lo(softirq_stack), %g3
++	ldx		[%g3 + %g1], %g7
++	cmp		%sp, %g7
++	bleu,pt		%xcc, 2f
++	 sethi		%hi(THREAD_SIZE), %g3
++	add		%g7, %g3, %g7
++	cmp		%sp, %g7
++	blu,pn		%xcc, 1f
++	 nop
+ 	/* If we are already on ovstack, don't hop onto it
+ 	 * again, we are already trying to output the stack overflow
+ 	 * message.
+--- a/arch/sparc64/mm/init.c
++++ b/arch/sparc64/mm/init.c
+@@ -49,6 +49,7 @@
+ #include <asm/sstate.h>
+ #include <asm/mdesc.h>
+ #include <asm/cpudata.h>
++#include <asm/irq.h>
+ 
+ #define MAX_PHYS_ADDRESS	(1UL << 42UL)
+ #define KPTE_BITMAP_CHUNK_SZ	(256UL * 1024UL * 1024UL)
+@@ -1817,6 +1818,16 @@ void __init paging_init(void)
+ 	if (tlb_type == hypervisor)
+ 		sun4v_mdesc_init();
+ 
++	/* Once the OF device tree and MDESC have been setup, we know
++	 * the list of possible cpus.  Therefore we can allocate the
++	 * IRQ stacks.
++	 */
++	for_each_possible_cpu(i) {
++		/* XXX Use node local allocations... XXX */
++		softirq_stack[i] = __va(lmb_alloc(THREAD_SIZE, THREAD_SIZE));
++		hardirq_stack[i] = __va(lmb_alloc(THREAD_SIZE, THREAD_SIZE));
++	}
++
+ 	/* Setup bootmem... */
+ 	last_valid_pfn = end_pfn = bootmem_init(phys_base);
+ 
+--- a/include/asm-sparc64/irq.h
++++ b/include/asm-sparc64/irq.h
+@@ -90,4 +90,8 @@ static inline unsigned long get_softint(
+ 	return retval;
+ }
+ 
++extern void *hardirq_stack[NR_CPUS];
++extern void *softirq_stack[NR_CPUS];
++#define __ARCH_HAS_DO_SOFTIRQ
++
+ #endif
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git clocksource
-
-Dominik Brodowski (2):
-      acpi_pm.c: use proper read function also in errata mode.
-      acpi_pm.c: check for monotonicity
-
- drivers/clocksource/acpi_pm.c |   50 +++++++++++++++++++++++-----------------
- 1 files changed, 29 insertions(+), 21 deletions(-)
+-- 
