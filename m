@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757424AbYHRSp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbYHRSpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757424AbYHRSp1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 14:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbYHRSpM
+	id S1757551AbYHRSpm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 14:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbYHRSpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 14:45:12 -0400
-Received: from ns.suse.de ([195.135.220.2]:40937 "EHLO mx1.suse.de"
+	Mon, 18 Aug 2008 14:45:32 -0400
+Received: from ns1.suse.de ([195.135.220.2]:40991 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755449AbYHRSpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 14:45:10 -0400
-Date: Mon, 18 Aug 2008 11:41:07 -0700
+	id S1754688AbYHRSpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 14:45:31 -0400
+Date: Mon, 18 Aug 2008 11:41:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: [patch 01/60] mlock() fix return values
-Message-ID: <20080818184107.GB29394@suse.de>
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 02/60] SCSI: ses: fix VPD inquiry overrun
+Message-ID: <20080818184126.GC29394@suse.de>
 References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mlock-fix-return-values.patch"
+Content-Disposition: inline; filename="scsi-ses-fix-vpd-inquiry-overrun.patch"
 In-Reply-To: <20080818184035.GA29394@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,162 +39,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-commit a477097d9c37c1cf289c7f0257dffcfa42d50197 upstream
+commit 671a99c8eb2f1dde08ac5538d8cd912047c61ddf upstream
 
-Halesh says:
+There are a few kerneloops.org reports like this one:
 
-Please find the below testcase provide to test mlock.
+http://www.kerneloops.org/search.php?search=ses_match_to_enclosure
 
-Test Case :
-===========================
+That seem to imply we're running off the end of the VPD inquiry data
+(although at 512 bytes, it should be long enough for just about
+anything).  we should be using correctly sized buffers anyway, so put
+those in and hope this oops goes away.
 
-#include <sys/resource.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <stdlib.h>
-
-int main(void)
-{
-  int fd,ret, i = 0;
-  char *addr, *addr1 = NULL;
-  unsigned int page_size;
-  struct rlimit rlim;
-
-  if (0 != geteuid())
-  {
-   printf("Execute this pgm as root\n");
-   exit(1);
-  }
-
-  /* create a file */
-  if ((fd = open("mmap_test.c",O_RDWR|O_CREAT,0755)) == -1)
-  {
-   printf("cant create test file\n");
-   exit(1);
-  }
-
-  page_size = sysconf(_SC_PAGE_SIZE);
-
-  /* set the MEMLOCK limit */
-  rlim.rlim_cur = 2000;
-  rlim.rlim_max = 2000;
-
-  if ((ret = setrlimit(RLIMIT_MEMLOCK,&rlim)) != 0)
-  {
-   printf("Cant change limit values\n");
-   exit(1);
-  }
-
-  addr = 0;
-  while (1)
-  {
-  /* map a page into memory each time*/
-  if ((addr = (char *) mmap(addr,page_size, PROT_READ |
-PROT_WRITE,MAP_SHARED,fd,0)) == MAP_FAILED)
-  {
-   printf("cant do mmap on file\n");
-   exit(1);
-  }
-
-  if (0 == i)
-    addr1 = addr;
-  i++;
-  errno = 0;
-  /* lock the mapped memory pagewise*/
-  if ((ret = mlock((char *)addr, 1500)) == -1)
-  {
-   printf("errno value is %d\n", errno);
-   printf("cant lock maped region\n");
-   exit(1);
-  }
-  addr = addr + page_size;
- }
-}
-======================================================
-
-This testcase results in an mlock() failure with errno 14 that is EFAULT,
-but it has nowhere been specified that mlock() will return EFAULT.  When I
-tested the same on older kernels like 2.6.18, I got the correct result i.e
-errno 12 (ENOMEM).
-
-I think in source code mlock(2), setting errno ENOMEM has been missed in
-do_mlock() , on mlock_fixup() failure.
-
-SUSv3 requires the following behavior frmo mlock(2).
-
-[ENOMEM]
-    Some or all of the address range specified by the addr and
-    len arguments does not correspond to valid mapped pages
-    in the address space of the process.
-
-[EAGAIN]
-    Some or all of the memory identified by the operation could not
-    be locked when the call was made.
-
-This rule isn't so nice and slighly strange.  but many people think
-POSIX/SUS compliance is important.
-
-Reported-by: Halesh Sadashiv <halesh.sadashiv@ap.sony.com>
-Tested-by: Halesh Sadashiv <halesh.sadashiv@ap.sony.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/memory.c |   16 +++++++++++++---
- mm/mlock.c  |    2 --
- 2 files changed, 13 insertions(+), 5 deletions(-)
+ drivers/scsi/ses.c |   18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2748,16 +2748,26 @@ int make_pages_present(unsigned long add
- 
- 	vma = find_vma(current->mm, addr);
- 	if (!vma)
--		return -1;
-+		return -ENOMEM;
- 	write = (vma->vm_flags & VM_WRITE) != 0;
- 	BUG_ON(addr >= end);
- 	BUG_ON(end > vma->vm_end);
- 	len = DIV_ROUND_UP(end, PAGE_SIZE) - addr/PAGE_SIZE;
- 	ret = get_user_pages(current, current->mm, addr,
- 			len, write, 0, NULL, NULL);
--	if (ret < 0)
-+	if (ret < 0) {
-+		/*
-+		   SUS require strange return value to mlock
-+		    - invalid addr generate to ENOMEM.
-+		    - out of memory should generate EAGAIN.
-+		*/
-+		if (ret == -EFAULT)
-+			ret = -ENOMEM;
-+		else if (ret == -ENOMEM)
-+			ret = -EAGAIN;
- 		return ret;
--	return ret == len ? 0 : -1;
-+	}
-+	return ret == len ? 0 : -ENOMEM;
+--- a/drivers/scsi/ses.c
++++ b/drivers/scsi/ses.c
+@@ -345,14 +345,14 @@ static int ses_enclosure_find_by_addr(st
+ 	return 0;
  }
  
- #if !defined(__HAVE_ARCH_GATE_AREA)
---- a/mm/mlock.c
-+++ b/mm/mlock.c
-@@ -78,8 +78,6 @@ success:
+-#define VPD_INQUIRY_SIZE 512
++#define VPD_INQUIRY_SIZE 36
  
- 	mm->locked_vm -= pages;
- out:
--	if (ret == -ENOMEM)
--		ret = -EAGAIN;
- 	return ret;
- }
+ static void ses_match_to_enclosure(struct enclosure_device *edev,
+ 				   struct scsi_device *sdev)
+ {
+ 	unsigned char *buf = kmalloc(VPD_INQUIRY_SIZE, GFP_KERNEL);
+ 	unsigned char *desc;
+-	int len;
++	u16 vpd_len;
+ 	struct efd efd = {
+ 		.addr = 0,
+ 	};
+@@ -372,9 +372,19 @@ static void ses_match_to_enclosure(struc
+ 			     VPD_INQUIRY_SIZE, NULL, SES_TIMEOUT, SES_RETRIES))
+ 		goto free;
  
+-	len = (buf[2] << 8) + buf[3];
++	vpd_len = (buf[2] << 8) + buf[3];
++	kfree(buf);
++	buf = kmalloc(vpd_len, GFP_KERNEL);
++	if (!buf)
++		return;
++	cmd[3] = vpd_len >> 8;
++	cmd[4] = vpd_len & 0xff;
++	if (scsi_execute_req(sdev, cmd, DMA_FROM_DEVICE, buf,
++			     vpd_len, NULL, SES_TIMEOUT, SES_RETRIES))
++		goto free;
++
+ 	desc = buf + 4;
+-	while (desc < buf + len) {
++	while (desc < buf + vpd_len) {
+ 		enum scsi_protocol proto = desc[0] >> 4;
+ 		u8 code_set = desc[0] & 0x0f;
+ 		u8 piv = desc[1] & 0x80;
 
 -- 
