@@ -1,90 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbYHRKyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbYHRK63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753575AbYHRKyZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 06:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYHRKyP
+	id S1753203AbYHRK63 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 06:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbYHRK6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 06:54:15 -0400
-Received: from pmx1.sophos.com ([213.31.172.16]:35717 "EHLO pmx1.sophos.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751506AbYHRKyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 06:54:13 -0400
-In-Reply-To: <e7d8f83e0808171711y3a60b0d2s4e4770bf4c362bc9@mail.gmail.com>
-To: "Peter Dolding" <oiaohm@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       malware-list@lists.printk.net
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon	access
- scanning
+	Mon, 18 Aug 2008 06:58:21 -0400
+Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:20700 "HELO
+	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751291AbYHRK6V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 06:58:21 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=GKLY7Q0lNICXEq3MA5vFhaN851Cp8UE9QxoE2u5NgwdZfUnu+2/Keu0zcmjX3IExDYlTm/DsX+al1NdM56/ITwBR99Rs8M9JucFiYT6clJPTi011dbg1PCHl0ihzHTg4+VJU7qNjxWQ8uG+7WbQzQfRrnrBXyUX/S+uvcHV8Pow=  ;
+X-YMail-OSG: zNMyZmMVM1lM3DmkWf82UXZvh4roJgiXQsn1Dfs4P_JT_BfN3x_mH6uPLDlz1A8s5nCqFsllkRohJDhbm_TUGqSFB7Tr5yx_iLmd5MCCU278R478nHpgeCvqia4LCvGItww-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <peterz@infradead.org>,
+       "Torvalds, Linus" <torvalds@linux-foundation.org>
+Subject: Re: SCHED_FIFO and SCHED_RR broken by cfs
+Date: Mon, 18 Aug 2008 20:58:07 +1000
+User-Agent: KMail/1.9.5
+Cc: Stefani Seibold <stefani@seibold.net>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com
+References: <1218880552.11912.9.camel@matrix> <200808172304.50103.nickpiggin@yahoo.com.au> <1219056601.10800.306.camel@twins>
+In-Reply-To: <1219056601.10800.306.camel@twins>
 MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
-From: douglas.leeder@sophos.com
-Date: Mon, 18 Aug 2008 11:54:18 +0100
-X-MIMETrack: Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 18/08/2008 11:53:16,
-	Serialize complete at 18/08/2008 11:53:16
-Content-Type: text/plain; charset="US-ASCII"
-Message-Id: <20080818105417.1EE932FE865@pmx1.sophos.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808182058.07346.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-malware-list-bounces@dmesg.printk.net wrote on 2008-08-18 01:11:24:
+On Monday 18 August 2008 20:50, Peter Zijlstra wrote:
+> On Sun, 2008-08-17 at 23:04 +1000, Nick Piggin wrote:
+> > On Sunday 17 August 2008 00:53, Peter Zijlstra wrote:
+> > > Has nothing to do with CFS, but everything to do with the fact that we
+> > > now have a 95% bandwidth control by default.
+> > >
+> > > Does doing:
+> > >
+> > > echo -1 > /proc/sys/kernel/sched_rt_runtime_us
+> > >
+> > > fix it?
+> > >
+> > > So, up to 95% cpu usage (per sched_rt_period_us) FIFO and RR behave
+> > > like they always did, once they cross that line, they'll be throttled.
+> > >
+> > > 95% seemed like a sane default in that it leaves a little room to
+> > > recover from a run-away rt process (esp handy now that !root users can
+> > > also use RT scheduling classes), and should be enough for most
+> > > applications as they usually don't consume all that much time.
+> >
+> > Did it seem sane to break POSIX and backwards compatiblity by default?
+>
+> Up to a point, yes.
+>
+> There were quite a few complaints that runaway RT tasks could render a
+> machine unusable - which made 'desktop' usage of the RT class unsafe.
 
-> In answer to the small enough set of files idea.   The simple issue is
-> that one time cost of black list scanning gets longer and longer and
-> longer as the black list gets longer and longer and longer.   Sooner
-> or latter its going to be longer than the amount of time people are
-> prepared to wait for a file to be approved and longer than the time
-> taken to white list scan the file by a large margin.  It is already
-> longer by a large margin to white list scanning.    CPU sizes not
-> expanding as fast on Linux kind brings the black list o heck problem
-> sooner.   Lot of anti-virus black lists are embeding white lists
-> methods so they can operate now inside the time window.   The wall is
-> coming and its simply not avoidable all they are currently doing is
-> just stopping themselves from going splat into it.  White list methods
-> will have to become more dominate one day there is no other path
-> forward for scanning content.
+Right, but it is restricted to root, and if the task is run as root
+then it can equally break the system in any number of ways. So the
+complaints are just wrong.
 
-The problem with white-lists is who gets to decide what's on them:
+I have no problems with having some non-default mode to throttle by
+default. And we already have the sysrq which can downgrade RT tasks.
 
-a) The end-user: Easy to get around - a social engineering attack.
-        The problem is if you make all the good applications the
-        user downloads appear identical to any random malware they 
-        download, the end-users will treat them the same.
 
-b) The network administrator: Often doesn't exist (e.g. home users), but
-        even when they do exist, they are often too over-worked to 
-        handle a white-listing solution. For example Windows provides 
-        white-listing in policies (AFAIK), but still there is a market
-        for AV software.
-        The admin probably ends up authorizing anything the end-users 
-want.
-                (Thus leading to the same problems as a)...)
+> This 95%/1s default allows most RT tasks to run without having to tinker
+> with the settings, and for those who do need something else, they can
+> get it too, but will have to turn a knob.
 
-c) The White-listing software company: Now has to maintain a perfect 
-database
-        of known-good software, without letting in any malware.
-        Also problems with edge-cases such as adware.
-        Also needs some way of handling private software, and 
-self-compiled software.
-                (which probably leads to a) or b)...)
+And that could also easily cause huge problems for code that does the
+*right* thing.
 
-d) Third-party: All the problems of c) with more trust issues, plus
-        iphone-ish lock-in problems.
 
-The other problem that I can see is that white-list scanners have to be
-much more exact on the matching (either checksums or signatures), as the
-malware authors will be trying to look-like authorized software.
+> But I guess we could change the default back to unlimited and default to
+> unsafe if people feel strongly about this.
 
-black-list scanners can afford heuristic detection, because good-software 
-authors
-aren't trying to look like malware.
-
--- 
-Douglas Leeder
-
-Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
-OX14 3YP, United Kingdom.
-
-Company Reg No 2096520. VAT Reg No GB 348 3873 20.
-
+Yes, you can't just break the API like this. Please do fix.
