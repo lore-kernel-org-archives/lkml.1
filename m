@@ -1,228 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbYHRTUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757934AbYHRTVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754248AbYHRTUz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbYHRTUp
+	id S1757934AbYHRTVi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbYHRTV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:20:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45809 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751475AbYHRTUn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:20:43 -0400
-Date: Mon, 18 Aug 2008 12:19:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       johnstul@us.ibm.com, hirofumi@mail.parknet.co.jp,
-       alan@lxorguk.ukuu.org.uk, arjan@infradead.org, andi@lisas.de
-Subject: Re: [git pull?] clocksource: ACPI pmtmr bugfixes [Was: Re: ACPI
- PM-Timer on K6-3 SiS5591: Houston...]
-Message-Id: <20080818121924.6b61f7af.akpm@linux-foundation.org>
-In-Reply-To: <20080818190325.GA12581@comet.dominikbrodowski.net>
-References: <20080810101730.GA10024@rhlx01.hs-esslingen.de>
-	<20080810162920.GA9860@comet.dominikbrodowski.net>
-	<20080810190759.GA1879@rhlx01.hs-esslingen.de>
-	<20080818190325.GA12581@comet.dominikbrodowski.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Aug 2008 15:21:26 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:39798 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754910AbYHRTVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:21:24 -0400
+Date: Mon, 18 Aug 2008 12:18:34 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/49] 2.6.25-stable review
+Message-ID: <20080818191834.GA10350@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Aug 2008 21:03:25 +0200
-Dominik Brodowski <linux@dominikbrodowski.net> wrote:
+This is the start of the stable review cycle for the 2.6.25.16 release.
+There are 49 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-> Hi,
-> 
-> anyone willing to take these two patches? Possibly 2.6.27 material; hasn't
-> been in -next or -mm.
-> 
-> Best,
-> 	Dominik
-> 
-> 
-> The following changes since commit 796aadeb1b2db9b5d463946766c5bbfd7717158c:
->   Linus Torvalds (1):
->         Merge branch 'fixes' of git://git.kernel.org/.../davej/cpufreq
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git clocksource
-> 
-> Dominik Brodowski (2):
->       acpi_pm.c: use proper read function also in errata mode.
->       acpi_pm.c: check for monotonicity
-> 
->  drivers/clocksource/acpi_pm.c |   50 +++++++++++++++++++++++-----------------
->  1 files changed, 29 insertions(+), 21 deletions(-)
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-A bare git URL is somewhat user-unfriendly.
+Responses should be made by Wed, August 20, 17:00:00 UTC.  Anything
+received after that time might be too late.
 
-<fiddle, fiddle>
-
-: commit b985f0517e31c1204b5aafb94f86202948f00e16
-: Author: Dominik Brodowski <linux@dominikbrodowski.net>
-: Date:   Sun Aug 10 21:24:21 2008 +0200
-: 
-:     acpi_pm.c: use proper read function also in errata mode.
-:     
-:     When acpi_pm is used in errata mode (three reads instead of one), also the
-:     acpi_pm init functions need to use three reads instead of just one.
-
-hm, why?  Was there some observeable problem which this change improved?
-
-:     Thanks to Andreas Mohr for spotting this issue.
-:     
-:     CC: John Stultz <johnstul@us.ibm.com>
-:     CC: Thomas Gleixner <tglx@linutronix.de>
-:     CC: Ingo Molnar <mingo@elte.hu>
-:     Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
-: 
-: diff --git a/drivers/clocksource/acpi_pm.c b/drivers/clocksource/acpi_pm.c
-: index 5ca1d80..2c00edd 100644
-: --- a/drivers/clocksource/acpi_pm.c
-: +++ b/drivers/clocksource/acpi_pm.c
-: @@ -151,13 +151,13 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_LE,
-:   */
-:  static int verify_pmtmr_rate(void)
-:  {
-: -	u32 value1, value2;
-: +	cycle_t value1, value2;
-:  	unsigned long count, delta;
-:  
-:  	mach_prepare_counter();
-: -	value1 = read_pmtmr();
-: +	value1 = clocksource_acpi_pm.read()
-:  	mach_countup(&count);
-: -	value2 = read_pmtmr();
-: +	value2 = clocksource_acpi_pm.read()
-:  	delta = (value2 - value1) & ACPI_PM_MASK;
-:  
-:  	/* Check that the PMTMR delta is within 5% of what we expect */
-: @@ -177,7 +177,7 @@ static int verify_pmtmr_rate(void)
-:  
-:  static int __init init_acpi_pm_clocksource(void)
-:  {
-: -	u32 value1, value2;
-: +	cycle_t value1, value2;
-:  	unsigned int i;
-:  
-:  	if (!pmtmr_ioport)
-: @@ -187,9 +187,9 @@ static int __init init_acpi_pm_clocksource(void)
-:  						clocksource_acpi_pm.shift);
-:  
-:  	/* "verify" this timing source: */
-: -	value1 = read_pmtmr();
-: +	value1 = clocksource_acpi_pm.read();
-:  	for (i = 0; i < 10000; i++) {
-: -		value2 = read_pmtmr();
-: +		value2 = clocksource_acpi_pm.read();
-:  		if (value2 == value1)
-:  			continue;
-:  		if (value2 > value1)
-: @@ -197,11 +197,11 @@ static int __init init_acpi_pm_clocksource(void)
-:  		if ((value2 < value1) && ((value2) < 0xFFF))
-:  			goto pm_good;
-:  		printk(KERN_INFO "PM-Timer had inconsistent results:"
-: -			" 0x%#x, 0x%#x - aborting.\n", value1, value2);
-: +			" 0x%#llx, 0x%#llx - aborting.\n", value1, value2);
-:  		return -EINVAL;
-:  	}
-:  	printk(KERN_INFO "PM-Timer had no reasonable result:"
-: -			" 0x%#x - aborting.\n", value1);
-: +			" 0x%#llx - aborting.\n", value1);
-:  	return -ENODEV;
-:  
-:  pm_good:
-: 
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.16-rc1.gz
+and the diffstat can be found below.
 
 
-and
+thanks,
 
-: commit a44299593315e055f28fe96b4767a85c46b2955f
-: Author: Dominik Brodowski <linux@dominikbrodowski.net>
-: Date:   Sun Aug 10 21:34:54 2008 +0200
-: 
-:     acpi_pm.c: check for monotonicity
-:     
-:     Expand the check for monotonicity by doing ten tests instead of one.
-
-Why?
-
-:     Applies on top of "acpi_pm.c: use proper read function also in errata mode."
-:     
-:     CC: John Stultz <johnstul@us.ibm.com>
-:     CC: Thomas Gleixner <tglx@linutronix.de>
-:     CC: Ingo Molnar <mingo@elte.hu>
-:     Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
-: 
-: diff --git a/drivers/clocksource/acpi_pm.c b/drivers/clocksource/acpi_pm.c
-: index 2c00edd..f05c4fb 100644
-: --- a/drivers/clocksource/acpi_pm.c
-: +++ b/drivers/clocksource/acpi_pm.c
-: @@ -178,7 +178,7 @@ static int verify_pmtmr_rate(void)
-:  static int __init init_acpi_pm_clocksource(void)
-:  {
-:  	cycle_t value1, value2;
-: -	unsigned int i;
-: +	unsigned int i, j, good = 0;
-:  
-:  	if (!pmtmr_ioport)
-:  		return -ENODEV;
-: @@ -187,24 +187,32 @@ static int __init init_acpi_pm_clocksource(void)
-:  						clocksource_acpi_pm.shift);
-:  
-:  	/* "verify" this timing source: */
-: -	value1 = clocksource_acpi_pm.read();
-: -	for (i = 0; i < 10000; i++) {
-: -		value2 = clocksource_acpi_pm.read();
-: -		if (value2 == value1)
-: -			continue;
-: -		if (value2 > value1)
-: -			goto pm_good;
-: -		if ((value2 < value1) && ((value2) < 0xFFF))
-: -			goto pm_good;
-: -		printk(KERN_INFO "PM-Timer had inconsistent results:"
-: -			" 0x%#llx, 0x%#llx - aborting.\n", value1, value2);
-: -		return -EINVAL;
-: +	for (j = 0; j < 10; j++) {
-: +		value1 = clocksource_acpi_pm.read();
-: +		for (i = 0; i < 10000; i++) {
-: +			value2 = clocksource_acpi_pm.read();
-: +			if (value2 == value1)
-: +				continue;
-: +			if (value2 > value1)
-: +				good++;
-: +				break;
-: +			if ((value2 < value1) && ((value2) < 0xFFF))
-: +				good++;
-: +				break;
-: +			printk(KERN_INFO "PM-Timer had inconsistent results:"
-: +			       " 0x%#llx, 0x%#llx - aborting.\n",
-: +			       value1, value2);
-: +			return -EINVAL;
-: +		}
-: +		udelay(300 * i);
-: +	}
-: +
-: +	if (good != 10) {
-: +		printk(KERN_INFO "PM-Timer had no reasonable result:"
-: +		       " 0x%#llx - aborting.\n", value1);
-: +		return -ENODEV;
-:  	}
-: -	printk(KERN_INFO "PM-Timer had no reasonable result:"
-: -			" 0x%#llx - aborting.\n", value1);
-: -	return -ENODEV;
-:  
-: -pm_good:
-:  	if (verify_pmtmr_rate() != 0)
-:  		return -ENODEV;
-:  
+the -stable release team
 
 
-I guess this file falls under Thomas's git-hrt tree.  I can queue the
-patches up and spam Thomas with them, but I'm at a bit of a loss
-regarding their priority due to the above questions.
+ Makefile                                 |    2 -
+ arch/sparc64/kernel/signal.c             |    6 ++-
+ arch/um/Makefile                         |    1 
+ arch/um/Makefile-i386                    |    7 +++
+ arch/um/Makefile-x86_64                  |    3 +
+ arch/um/drivers/chan_user.c              |    1 
+ arch/um/drivers/cow_sys.h                |    2 -
+ arch/um/drivers/daemon_user.c            |    4 +-
+ arch/um/drivers/fd.c                     |    2 -
+ arch/um/drivers/mcast_user.c             |    3 +
+ arch/um/drivers/net_user.c               |    2 -
+ arch/um/drivers/pcap_user.c              |    2 -
+ arch/um/drivers/port_user.c              |    2 -
+ arch/um/drivers/pty.c                    |    2 -
+ arch/um/drivers/slip_user.c              |    2 -
+ arch/um/drivers/tty.c                    |    2 -
+ arch/um/drivers/xterm.c                  |    2 -
+ arch/um/include/init.h                   |    8 ++++
+ arch/um/include/os.h                     |    2 -
+ arch/um/include/process.h                |    4 +-
+ arch/um/include/um_malloc.h              |    9 +---
+ arch/um/kernel/mem.c                     |    5 ++
+ arch/um/kernel/time.c                    |    4 +-
+ arch/um/kernel/um_arch.c                 |    7 ++-
+ arch/um/os-Linux/drivers/ethertap_user.c |    4 +-
+ arch/um/os-Linux/helper.c                |    5 +-
+ arch/um/os-Linux/main.c                  |    2 -
+ arch/um/os-Linux/sigio.c                 |    4 +-
+ arch/um/os-Linux/signal.c                |    1 
+ arch/um/os-Linux/skas/process.c          |    2 -
+ arch/um/os-Linux/start_up.c              |   25 ++++++++----
+ arch/um/os-Linux/sys-i386/task_size.c    |   38 ++++++++++++++-----
+ arch/um/os-Linux/sys-x86_64/task_size.c  |    2 -
+ arch/um/os-Linux/time.c                  |   61 ++++++++++++++++++++++++++++---
+ arch/um/sys-x86_64/ksyms.c               |    5 ++
+ arch/x86/boot/boot.h                     |    8 ++++
+ arch/x86/boot/cpucheck.c                 |    8 ----
+ arch/x86/boot/main.c                     |    4 ++
+ block/scsi_ioctl.c                       |    2 -
+ drivers/i2c/i2c-core.c                   |    4 +-
+ drivers/ide/ide-cd.c                     |   18 +++++----
+ drivers/misc/acer-wmi.c                  |   19 +++++++++
+ drivers/net/r8169.c                      |    6 ++-
+ drivers/scsi/hptiop.c                    |    7 +++
+ drivers/scsi/qla2xxx/qla_attr.c          |   43 ++++++++++++++-------
+ drivers/scsi/qla2xxx/qla_def.h           |    1 
+ drivers/scsi/qla2xxx/qla_gbl.h           |    2 +
+ drivers/scsi/qla2xxx/qla_init.c          |   16 ++------
+ drivers/scsi/qla2xxx/qla_os.c            |   55 ++++++++++++++++++++-------
+ drivers/scsi/scsi_transport_spi.c        |    8 ++--
+ drivers/scsi/ses.c                       |   18 +++++++--
+ drivers/usb/serial/ftdi_sio.c            |    5 ++
+ drivers/usb/serial/ftdi_sio.h            |    6 +++
+ drivers/usb/serial/pl2303.c              |    1 
+ drivers/usb/serial/pl2303.h              |    4 --
+ drivers/usb/serial/usb-serial.c          |    7 +--
+ drivers/usb/storage/unusual_devs.h       |   18 ++++++++-
+ drivers/video/aty/radeon_accel.c         |   12 +++++-
+ drivers/video/matrox/matroxfb_maven.c    |    2 -
+ fs/cifs/asn1.c                           |    2 -
+ fs/cifs/cifsfs.c                         |    2 +
+ fs/cifs/inode.c                          |    1 
+ include/asm-sparc64/futex.h              |    2 -
+ include/asm-x86/spinlock.h               |    4 +-
+ include/linux/usb/serial.h               |    3 +
+ include/video/radeon.h                   |    9 +++-
+ kernel/posix-timers.c                    |   19 +++++++--
+ kernel/relay.c                           |   12 +++++-
+ kernel/signal.c                          |    1 
+ lib/random32.c                           |   48 +++++++++++++-----------
+ mm/memory.c                              |   16 ++++++--
+ mm/mlock.c                               |    2 -
+ net/dccp/proto.c                         |    5 ++
+ net/ipv4/ipvs/ip_vs_est.c                |    7 ++-
+ net/ipv4/netfilter/nf_nat_snmp_basic.c   |    2 -
+ net/ipv6/ip6_output.c                    |    4 ++
+ 76 files changed, 464 insertions(+), 182 deletions(-)
