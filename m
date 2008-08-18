@@ -1,104 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbYHRWjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbYHRWj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755940AbYHRWjT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 18:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYHRWjI
+	id S1754782AbYHRWj4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 18:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYHRWjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 18:39:08 -0400
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:34128 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751811AbYHRWjH (ORCPT
+	Mon, 18 Aug 2008 18:39:45 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45705 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752568AbYHRWjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 18:39:07 -0400
-Message-ID: <48A9FA05.9000601@lwfinger.net>
-Date: Mon, 18 Aug 2008 17:39:01 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Mon, 18 Aug 2008 18:39:44 -0400
+Date: Tue, 19 Aug 2008 00:40:58 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: tvrtko.ursulin@sophos.com
+Cc: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@kernel.org>,
+       capibara@xs4all.nl, Casey Schaufler <casey@schaufler-ca.com>,
+       davecb@sun.com, david@lang.hm,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org, malware-list@lists.printk.net,
+       malware-list-bounces@dmesg.printk.net,
+       Mihai Don??u <mdontu@bitdefender.com>, Peter Dolding <oiaohm@gmail.com>,
+       rmeijer@xs4all.nl
+Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro to
+	a linux interface for on access scanning
+Message-ID: <20080818224058.GA2311@elf.ucw.cz>
+References: <20080818142511.GC8184@mit.edu> <20080818153212.6A6FD33687F@pmx1.sophos.com>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Regression in 2.6.27-rc2 when cross-building the kernel
-References: <48A63D98.3070900@lwfinger.net> <20080818193253.GA30856@uranus.ravnborg.org>
-In-Reply-To: <20080818193253.GA30856@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080818153212.6A6FD33687F@pmx1.sophos.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
+Hi!
+
+> > On Mon, Aug 18, 2008 at 02:15:24PM +0100, tvrtko.ursulin@sophos.com 
+> wrote:
+> > > Then there is still a question of who allows some binary to declare 
+> itself 
+> > > exempt. If that decision was a mistake, or it gets compromised 
+> security 
+> > > will be off. A very powerful mechanism which must not be easily 
+> > > accessible.  With a good cache your worries go away even without a 
+> scheme 
+> > > like this.
+> > 
+> > I have one word for you --- bittorrent.  If you are downloading a very
+> > large torrent (say approximately a gigabyte), and it contains many
+> > pdf's that are say a few megabytes a piece, and things are coming in
+> > tribbles, having either a indexing scanner or an AV scanner wake up
+> > and rescan the file from scratch each time a tiny piece of the pdf
+> > comes in is going to eat your machine alive....
 > 
-> Can you try do do a "make V=1 modules_install install" and post the
-> output up to and including the first call to fixdep.
-> 
-> Neither of these targets should use fixdep and I assume it is 
-> down in firmware/ but lets see.
+> Huh? I was never advocating re-scan after each modification and I even 
+> explicitly said it does not make sense for AV not only for performance but 
+> because it will be useless most of the time. I thought sending out 
+> modified notification on close makes sense because it is a natural point, 
+> unless someone is trying to subvert which is out of scope. Other
+> have 
 
-finger@mtech:/ide1/mtech/wireless-testing> sudo make V=1 
-modules_install install
-make -f /ide1/mtech/wireless-testing/scripts/Makefile.modinst
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/arch/x86/crypto; cp 
-arch/x86/crypto/aes-i586.ko 
-/lib/modules/2.6.27-rc2-wl/kernel/arch/x86/crypto ; true 
-/lib/modules/2.6.27-rc2-wl/kernel/arch/x86/crypto/aes-i586.ko
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-crypto/aead.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-/lib/modules/2.6.27-rc2-wl/kernel/crypto/aead.ko
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-crypto/aes_generic.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-/lib/modules/2.6.27-rc2-wl/kernel/crypto/aes_generic.ko
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-crypto/anubis.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-/lib/modules/2.6.27-rc2-wl/kernel/crypto/anubis.ko
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-crypto/arc4.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-/lib/modules/2.6.27-rc2-wl/kernel/crypto/arc4.ko
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-crypto/authenc.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-/lib/modules/2.6.27-rc2-wl/kernel/crypto/authenc.ko
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-crypto/blowfish.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-/lib/modules/2.6.27-rc2-wl/kernel/crypto/blowfish.ko
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-crypto/cast5.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-/lib/modules/2.6.27-rc2-wl/kernel/crypto/cast5.ko
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-crypto/cast6.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-/lib/modules/2.6.27-rc2-wl/kernel/crypto/cast6.ko
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp crypto/cbc.ko 
-/lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-/lib/modules/2.6.27-rc2-wl/kernel/crypto/cbc.ko
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-crypto/crc32c.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-/lib/modules/2.6.27-rc2-wl/kernel/crypto/crc32c.ko
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-crypto/crypto_blkcipher.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; 
-true /lib/modules/2.6.27-rc2-wl/kernel/crypto/crypto_blkcipher.ko
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-crypto/crypto_null.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-/lib/modules/2.6.27-rc2-wl/kernel/crypto/crypto_null.ko
-
--- snipped similar commands that were repeated --
-
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/sound/pci/ac97; cp 
-sound/pci/ac97/snd-ac97-codec.ko 
-/lib/modules/2.6.27-rc2-wl/kernel/sound/pci/ac97 ; true 
-/lib/modules/2.6.27-rc2-wl/kernel/sound/pci/ac97/snd-ac97-codec.ko
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/sound/pci; cp 
-sound/pci/snd-es1938.ko /lib/modules/2.6.27-rc2-wl/kernel/sound/pci ; 
-true /lib/modules/2.6.27-rc2-wl/kernel/sound/pci/snd-es1938.ko
-   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/sound; cp 
-sound/soundcore.ko /lib/modules/2.6.27-rc2-wl/kernel/sound ; true 
-/lib/modules/2.6.27-rc2-wl/kernel/sound/soundcore.ko
-make -f /ide1/mtech/wireless-testing/scripts/Makefile.fwinst 
-obj=firmware __fw_modinst
-   gcc -Wp,-MD,firmware/.ihex2fw.d -Wall -Wstrict-prototypes -O2 
--fomit-frame-pointer     -o firmware/ihex2fw firmware/ihex2fw.c
-/bin/sh: scripts/basic/fixdep: cannot execute binary file
-make[1]: *** [firmware/ihex2fw] Error 126
-make: *** [_modinst_post] Error 2
-
-
-As you suspected, it is when building firmware.
-
-Larry
+Why do you think non-malicious applications won't write after close /
+keep file open forever?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
