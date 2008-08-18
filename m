@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932432AbYHRTCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762801AbYHRTFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932432AbYHRTCm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:02:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762092AbYHRTAh
+	id S1762801AbYHRTFO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:05:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932509AbYHRTDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:00:37 -0400
-Received: from ns1.suse.de ([195.135.220.2]:43678 "EHLO mx1.suse.de"
+	Mon, 18 Aug 2008 15:03:03 -0400
+Received: from mx1.suse.de ([195.135.220.2]:43978 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762084AbYHRTAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:00:35 -0400
-Date: Mon, 18 Aug 2008 11:44:50 -0700
+	id S932507AbYHRTDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:03:00 -0400
+Date: Mon, 18 Aug 2008 11:45:12 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>
-Subject: [patch 39/60] i2c: Let users select algorithm drivers manually
-	again
-Message-ID: <20080818184450.GN29394@suse.de>
+       alan@lxorguk.ukuu.org.uk, TAKADA Yoshihito <takada@mbf.nifty.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [patch 45/60] cs5520: add enablebits checking
+Message-ID: <20080818184512.GT29394@suse.de>
 References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="i2c-let-users-select-algorithm-drivers-manually-again.patch"
+Content-Disposition: inline; filename="cs5520-add-enablebits-checking.patch"
 In-Reply-To: <20080818184035.GA29394@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,77 +39,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jean Delvare <khali@linux-fr.org>
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Already in Linus' tree:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8d24f8dcb7ead491704e274883b2c627062f6235
+upstream commit is 24307ffabd5b39bad443641f54b12ee2ba7a38ac
 
-In kernel 2.6.26, the ability to select I2C algorithm drivers manually
-was removed, as all in-kernel drivers do that automatically. However
-there were some complaints that it was a problem for out-of-tree I2C
-bus drivers. In order to address these complaints, let's allow manual
-selection of these drivers again, but still hide them by default for
-better general user experience.
+Based on sparse comments in OpenFirmware code
+(no Cx5510/Cx5520 datasheet here).
 
-This closes bug #11140:
-http://bugzilla.kernel.org/show_bug.cgi?id=11140
+This fixes 2.6.26 regression reported by TAKADA
+and caused by addition of warm-plug support.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Tested-by: TAKADA Yoshihito <takada@mbf.nifty.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/i2c/Kconfig       |   14 ++++++++++++++
- drivers/i2c/algos/Kconfig |   11 ++++++++---
- 2 files changed, 22 insertions(+), 3 deletions(-)
+ drivers/ide/pci/cs5520.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/i2c/algos/Kconfig
-+++ b/drivers/i2c/algos/Kconfig
-@@ -2,15 +2,20 @@
- # I2C algorithm drivers configuration
- #
- 
-+menu "I2C Algorithms"
-+	depends on !I2C_HELPER_AUTO
-+
- config I2C_ALGOBIT
--	tristate
-+	tristate "I2C bit-banging interfaces"
- 
- config I2C_ALGOPCF
--	tristate
-+	tristate "I2C PCF 8584 interfaces"
- 
- config I2C_ALGOPCA
--	tristate
-+	tristate "I2C PCA 9564 interfaces"
- 
- config I2C_ALGO_SGI
- 	tristate
- 	depends on SGI_IP22 || SGI_IP32 || X86_VISWS
-+
-+endmenu
---- a/drivers/i2c/Kconfig
-+++ b/drivers/i2c/Kconfig
-@@ -38,6 +38,20 @@ config I2C_CHARDEV
- 	  This support is also available as a module.  If so, the module 
- 	  will be called i2c-dev.
- 
-+config I2C_HELPER_AUTO
-+	bool "Autoselect pertinent helper modules"
-+	default y
-+	help
-+	  Some I2C bus drivers require so-called "I2C algorithm" modules
-+	  to work. These are basically software-only abstractions of generic
-+	  I2C interfaces. This option will autoselect them so that you don't
-+	  have to care.
-+
-+	  Unselect this only if you need to enable additional helper
-+	  modules, for example for use with external I2C bus drivers.
-+
-+	  In doubt, say Y.
-+
- source drivers/i2c/algos/Kconfig
- source drivers/i2c/busses/Kconfig
- source drivers/i2c/chips/Kconfig
+--- a/drivers/ide/pci/cs5520.c
++++ b/drivers/ide/pci/cs5520.c
+@@ -123,6 +123,7 @@ static const struct ide_dma_ops cs5520_d
+ #define DECLARE_CS_DEV(name_str)				\
+ 	{							\
+ 		.name		= name_str,			\
++		.enablebits	= { {0x60, 0x01, 0x01}, {0x60, 0x02, 0x02} }, \
+ 		.port_ops	= &cs5520_port_ops,		\
+ 		.dma_ops	= &cs5520_dma_ops,		\
+ 		.host_flags	= IDE_HFLAG_ISA_PORTS |		\
 
 -- 
