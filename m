@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753178AbYHREo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751502AbYHREpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753178AbYHREo4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 00:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbYHREos
+	id S1751502AbYHREpQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 00:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYHREo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 00:44:48 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:14016 "EHLO
+	Mon, 18 Aug 2008 00:44:58 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:14036 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbYHREor (ORCPT
+	with ESMTP id S1753199AbYHREo5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 00:44:47 -0400
-Date: Sun, 17 Aug 2008 21:44:42 -0700
+	Mon, 18 Aug 2008 00:44:57 -0400
+Date: Sun, 17 Aug 2008 21:44:56 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, miklos@szeredi.hu
-Subject: [PATCH 1/2] documentation: split and build smount.c
-Message-Id: <20080817214442.ca4345ce.randy.dunlap@oracle.com>
+Cc: akpm <akpm@linux-foundation.org>, sfr@canb.auug.org.au
+Subject: [PATCH 2/2] documentation: split and build dnotify_test program
+Message-Id: <20080817214456.e8c765fa.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -31,225 +31,119 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Make smount.c source file and add that to Makefile so that its
-build can be checked.
+Make dnotify_test.c source file and add it to Makefile so that
+bitrot can be prevented.
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Miklos Szeredi <miklos@szeredi.hu>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- Documentation/Makefile                      |    2 
- Documentation/filesystems/00-INDEX          |    2 
- Documentation/filesystems/Makefile          |    8 ++
- Documentation/filesystems/sharedsubtree.txt |   82 +---------------------------
- Documentation/filesystems/smount.c          |   73 ++++++++++++++++++++++++
- 5 files changed, 88 insertions(+), 79 deletions(-)
+ Documentation/filesystems/00-INDEX       |    2 +
+ Documentation/filesystems/Makefile       |    2 -
+ Documentation/filesystems/dnotify.txt    |   36 -------------------------------
+ Documentation/filesystems/dnotify_test.c |   34 +++++++++++++++++++++++++++++
+ 4 files changed, 38 insertions(+), 36 deletions(-)
 
---- /dev/null
-+++ lin2627-rc3g4-kerndoc/Documentation/filesystems/smount.c
-@@ -0,0 +1,73 @@
-+//
-+//this code was developed my Miklos Szeredi <miklos@szeredi.hu>
-+//and modified by Ram Pai <linuxram@us.ibm.com>
-+// sample usage:
-+//              smount /tmp shared
-+//
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <string.h>
-+#include <sys/mount.h>
-+#include <sys/fsuid.h>
-+
-+#ifndef MS_REC
-+#define MS_REC		0x4000	/* 16384: Recursive loopback */
-+#endif
-+
-+#ifndef MS_SHARED
-+#define MS_SHARED		1<<20	/* Shared */
-+#endif
-+
-+#ifndef MS_PRIVATE
-+#define MS_PRIVATE		1<<18	/* Private */
-+#endif
-+
-+#ifndef MS_SLAVE
-+#define MS_SLAVE		1<<19	/* Slave */
-+#endif
-+
-+#ifndef MS_UNBINDABLE
-+#define MS_UNBINDABLE		1<<17	/* Unbindable */
-+#endif
-+
-+int main(int argc, char *argv[])
-+{
-+	int type;
-+	if(argc != 3) {
-+		fprintf(stderr, "usage: %s dir "
-+		"<rshared|rslave|rprivate|runbindable|shared|slave"
-+		"|private|unbindable>\n" , argv[0]);
-+		return 1;
-+	}
-+
-+	fprintf(stdout, "%s %s %s\n", argv[0], argv[1], argv[2]);
-+
-+	if (strcmp(argv[2],"rshared")==0)
-+		type=(MS_SHARED|MS_REC);
-+	else if (strcmp(argv[2],"rslave")==0)
-+		type=(MS_SLAVE|MS_REC);
-+	else if (strcmp(argv[2],"rprivate")==0)
-+		type=(MS_PRIVATE|MS_REC);
-+	else if (strcmp(argv[2],"runbindable")==0)
-+		type=(MS_UNBINDABLE|MS_REC);
-+	else if (strcmp(argv[2],"shared")==0)
-+		type=MS_SHARED;
-+	else if (strcmp(argv[2],"slave")==0)
-+		type=MS_SLAVE;
-+	else if (strcmp(argv[2],"private")==0)
-+		type=MS_PRIVATE;
-+	else if (strcmp(argv[2],"unbindable")==0)
-+		type=MS_UNBINDABLE;
-+	else {
-+		fprintf(stderr, "invalid operation: %s\n", argv[2]);
-+		return 1;
-+	}
-+	setfsuid(getuid());
-+
-+	if(mount("", argv[1], "dontcare", type, "") == -1) {
-+		perror("mount");
-+		return 1;
-+	}
-+	return 0;
-+}
---- lin2627-rc3g4-kerndoc.orig/Documentation/filesystems/sharedsubtree.txt
-+++ lin2627-rc3g4-kerndoc/Documentation/filesystems/sharedsubtree.txt
-@@ -47,6 +47,7 @@ replicas continue to be exactly same.
- 	note: mount command does not yet support the --make-shared flag.
- 	I have included a small C program which does the same by executing
- 	'smount /mnt shared'
-+	[see Documentation/filesystems/smount.c]
- 
- 	#mount --bind /mnt /tmp
- 	The above command replicates the mount at /mnt to the mountpoint /tmp
-@@ -141,87 +142,12 @@ replicas continue to be exactly same.
- 
- 	Currently the mount command is not aware of shared subtree features.
- 	Work is in progress to add the support in mount ( util-linux package ).
--	Till then use the following program.
-+	Until then use the 'smount' program that is located in
-+	"Documentation/filesystems/smount.c" and build it like:
- 
--	------------------------------------------------------------------------
--	//
--	//this code was developed my Miklos Szeredi <miklos@szeredi.hu>
--	//and modified by Ram Pai <linuxram@us.ibm.com>
--	// sample usage:
--	//              smount /tmp shared
--	//
--	#include <stdio.h>
--	#include <stdlib.h>
--	#include <unistd.h>
--	#include <string.h>
--	#include <sys/mount.h>
--	#include <sys/fsuid.h>
--
--	#ifndef MS_REC
--	#define MS_REC		0x4000	/* 16384: Recursive loopback */
--	#endif
--
--	#ifndef MS_SHARED
--	#define MS_SHARED		1<<20	/* Shared */
--	#endif
--
--	#ifndef MS_PRIVATE
--	#define MS_PRIVATE		1<<18	/* Private */
--	#endif
--
--	#ifndef MS_SLAVE
--	#define MS_SLAVE		1<<19	/* Slave */
--	#endif
--
--	#ifndef MS_UNBINDABLE
--	#define MS_UNBINDABLE		1<<17	/* Unbindable */
--	#endif
--
--	int main(int argc, char *argv[])
--	{
--		int type;
--		if(argc != 3) {
--			fprintf(stderr, "usage: %s dir "
--			"<rshared|rslave|rprivate|runbindable|shared|slave"
--			"|private|unbindable>\n" , argv[0]);
--			return 1;
--		}
--
--		fprintf(stdout, "%s %s %s\n", argv[0], argv[1], argv[2]);
--
--		if (strcmp(argv[2],"rshared")==0)
--			type=(MS_SHARED|MS_REC);
--		else if (strcmp(argv[2],"rslave")==0)
--			type=(MS_SLAVE|MS_REC);
--		else if (strcmp(argv[2],"rprivate")==0)
--			type=(MS_PRIVATE|MS_REC);
--		else if (strcmp(argv[2],"runbindable")==0)
--			type=(MS_UNBINDABLE|MS_REC);
--		else if (strcmp(argv[2],"shared")==0)
--			type=MS_SHARED;
--		else if (strcmp(argv[2],"slave")==0)
--			type=MS_SLAVE;
--		else if (strcmp(argv[2],"private")==0)
--			type=MS_PRIVATE;
--		else if (strcmp(argv[2],"unbindable")==0)
--			type=MS_UNBINDABLE;
--		else {
--			fprintf(stderr, "invalid operation: %s\n", argv[2]);
--			return 1;
--		}
--		setfsuid(getuid());
--
--		if(mount("", argv[1], "dontcare", type, "") == -1) {
--			perror("mount");
--			return 1;
--		}
--		return 0;
--	}
--	-----------------------------------------------------------------------
--
--	Copy the above code snippet into smount.c
- 	gcc -o smount smount.c
- 
-+	-----------------------------------------------------------------------
- 
- 	(i) To mark all the mounts under /mnt as shared execute the following
- 	command:
---- lin2627-rc3g4-kerndoc.orig/Documentation/Makefile
-+++ lin2627-rc3g4-kerndoc/Documentation/Makefile
-@@ -1,3 +1,3 @@
- obj-m := DocBook/ accounting/ auxdisplay/ connector/ \
--	filesystems/configfs/ ia64/ networking/ \
-+	filesystems/ filesystems/configfs/ ia64/ networking/ \
- 	pcmcia/ spi/ video4linux/ vm/ watchdog/src/
---- /dev/null
+--- lin2627-rc3g4-kerndoc.orig/Documentation/filesystems/Makefile
 +++ lin2627-rc3g4-kerndoc/Documentation/filesystems/Makefile
-@@ -0,0 +1,8 @@
-+# kbuild trick to avoid linker error. Can be omitted if a module is built.
-+obj- := dummy.o
+@@ -2,7 +2,7 @@
+ obj- := dummy.o
+ 
+ # List of programs to build
+-hostprogs-y := smount
++hostprogs-y := smount dnotify_test
+ 
+ # Tell kbuild to always build the programs
+ always := $(hostprogs-y)
+--- lin2627-rc3g4-kerndoc.orig/Documentation/filesystems/dnotify.txt
++++ lin2627-rc3g4-kerndoc/Documentation/filesystems/dnotify.txt
+@@ -62,38 +62,4 @@ disabled, fcntl(fd, F_NOTIFY, ...) will 
+ 
+ Example
+ -------
+-
+-	#define _GNU_SOURCE	/* needed to get the defines */
+-	#include <fcntl.h>	/* in glibc 2.2 this has the needed
+-					   values defined */
+-	#include <signal.h>
+-	#include <stdio.h>
+-	#include <unistd.h>
+-
+-	static volatile int event_fd;
+-
+-	static void handler(int sig, siginfo_t *si, void *data)
+-	{
+-		event_fd = si->si_fd;
+-	}
+-
+-	int main(void)
+-	{
+-		struct sigaction act;
+-		int fd;
+-
+-		act.sa_sigaction = handler;
+-		sigemptyset(&act.sa_mask);
+-		act.sa_flags = SA_SIGINFO;
+-		sigaction(SIGRTMIN + 1, &act, NULL);
+-
+-		fd = open(".", O_RDONLY);
+-		fcntl(fd, F_SETSIG, SIGRTMIN + 1);
+-		fcntl(fd, F_NOTIFY, DN_MODIFY|DN_CREATE|DN_MULTISHOT);
+-		/* we will now be notified if any of the files
+-		   in "." is modified or new files are created */
+-		while (1) {
+-			pause();
+-			printf("Got event on fd=%d\n", event_fd);
+-		}
+-	}
++See Documentation/filesystems/dnotify_test.c for an example.
+--- /dev/null
++++ lin2627-rc3g4-kerndoc/Documentation/filesystems/dnotify_test.c
+@@ -0,0 +1,34 @@
++#define _GNU_SOURCE	/* needed to get the defines */
++#include <fcntl.h>	/* in glibc 2.2 this has the needed
++				   values defined */
++#include <signal.h>
++#include <stdio.h>
++#include <unistd.h>
 +
-+# List of programs to build
-+hostprogs-y := smount
++static volatile int event_fd;
 +
-+# Tell kbuild to always build the programs
-+always := $(hostprogs-y)
++static void handler(int sig, siginfo_t *si, void *data)
++{
++	event_fd = si->si_fd;
++}
++
++int main(void)
++{
++	struct sigaction act;
++	int fd;
++
++	act.sa_sigaction = handler;
++	sigemptyset(&act.sa_mask);
++	act.sa_flags = SA_SIGINFO;
++	sigaction(SIGRTMIN + 1, &act, NULL);
++
++	fd = open(".", O_RDONLY);
++	fcntl(fd, F_SETSIG, SIGRTMIN + 1);
++	fcntl(fd, F_NOTIFY, DN_MODIFY|DN_CREATE|DN_MULTISHOT);
++	/* we will now be notified if any of the files
++	   in "." is modified or new files are created */
++	while (1) {
++		pause();
++		printf("Got event on fd=%d\n", event_fd);
++	}
++}
 --- lin2627-rc3g4-kerndoc.orig/Documentation/filesystems/00-INDEX
 +++ lin2627-rc3g4-kerndoc/Documentation/filesystems/00-INDEX
-@@ -92,6 +92,8 @@ sharedsubtree.txt
- 	- a description of shared subtrees for namespaces.
- smbfs.txt
- 	- info on using filesystems with the SMB protocol (Win 3.11 and NT).
-+smount.c
-+	- sample source code for mounting shared subtrees
- spufs.txt
- 	- info and mount options for the SPU filesystem used on Cell.
- sysfs-pci.txt
+@@ -34,6 +34,8 @@ dlmfs.txt
+ 	- info on the userspace interface to the OCFS2 DLM.
+ dnotify.txt
+ 	- info about directory notification in Linux.
++dnotify_test.c
++	- example program for dnotify
+ ecryptfs.txt
+ 	- docs on eCryptfs: stacked cryptographic filesystem for Linux.
+ ext2.txt
 
 
 ---
