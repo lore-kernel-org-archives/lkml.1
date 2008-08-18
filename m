@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932714AbYHRTFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758552AbYHRTEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932714AbYHRTFs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932547AbYHRTD0
+	id S1758552AbYHRTEu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762474AbYHRTCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:03:26 -0400
-Received: from ns1.suse.de ([195.135.220.2]:44029 "EHLO mx1.suse.de"
+	Mon, 18 Aug 2008 15:02:37 -0400
+Received: from mx2.suse.de ([195.135.220.15]:37004 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932541AbYHRTDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:03:25 -0400
-Date: Mon, 18 Aug 2008 11:45:14 -0700
+	id S1757693AbYHRTCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:02:36 -0400
+Date: Mon, 18 Aug 2008 11:45:10 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,17 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>,
-       Herton Ronaldo Krzesinski <herton@mandriva.com.br>,
-       Hin-Tak Leung <htl10@users.sourceforge.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 46/60] rtl8187: Fix lockups due to concurrent access to
-	config routine
-Message-ID: <20080818184514.GU29394@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 44/60] radeon: misc corrections
+Message-ID: <20080818184510.GS29394@suse.de>
 References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="rtl8187-fix-lockups-due-to-concurrent-access-to-config-routine.patch"
+Content-Disposition: inline; filename="radeon-misc-corrections.patch"
 In-Reply-To: <20080818184035.GA29394@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,67 +40,79 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Larry Finger <Larry.Finger@lwfinger.net>
+From: David Miller <davem@davemloft.net>
 
-With the rtl8187 driver, the config routine is not protected against
-access before a previous call has completed. When this happens, the
-TX loopback that is needed to change channels may cause the chip to
-be locked with a reset needed to restore communications. This patch
-entered mainline as commit 7dcdd073bf78bb6958bbc12a1a47754a0f3c4721.
+Commit efc491814308f89d5ef6c4fe19ae4552a67d4132 upstream
 
-The problem was found by Herton Ronaldo Krzesinski <herton@mandriva.com.br>,
-who also suggested this type of fix.
+radeon: misc corrections
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-Acked-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Acked-by: Hin-Tak Leung <htl10@users.sourceforge.net>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+I have a new PCI-E radeon RV380 series card (PCI device ID 5b64) that
+hangs in my sparc64 boxes when the init scripts set the font.  The problem
+goes away if I disable acceleration.
+
+I haven't figured out that bug yet, but along the way I found some
+corrections to make based upon some auditing.
+
+1) The RB2D_DC_FLUSH_ALL value used by the kernel fb driver
+   and the XORG video driver differ.  I've made the kernel
+   match what XORG is using.
+
+2) In radeonfb_engine_reset() we have top-level code structure
+   that roughly looks like:
+
+	if (family is 300, 350, or V350)
+		do this;
+	else
+		do that;
+	...
+	if (family is NOT 300, OR
+	    family is NOT 350, OR
+	    family is NOT V350)
+		do another thing;
+
+   this last conditional makes no sense, is always true,
+   and obviously was likely meant to be "family is NOT
+   300, 350, or V350".  So I've made the code match the
+   intent.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Tested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- drivers/net/wireless/rtl8187.h     |    4 ++++
- drivers/net/wireless/rtl8187_dev.c |    3 +++
- 2 files changed, 7 insertions(+)
+ drivers/video/aty/radeon_accel.c |    4 ++--
+ include/video/radeon.h           |    5 +++--
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
---- a/drivers/net/wireless/rtl8187_dev.c
-+++ b/drivers/net/wireless/rtl8187_dev.c
-@@ -580,6 +580,7 @@ static int rtl8187_config(struct ieee802
- 	struct rtl8187_priv *priv = dev->priv;
- 	u32 reg;
+--- a/drivers/video/aty/radeon_accel.c
++++ b/drivers/video/aty/radeon_accel.c
+@@ -249,8 +249,8 @@ void radeonfb_engine_reset(struct radeon
+ 	INREG(HOST_PATH_CNTL);
+ 	OUTREG(HOST_PATH_CNTL, host_path_cntl);
  
-+	mutex_lock(&priv->conf_mutex);
- 	reg = rtl818x_ioread32(priv, &priv->map->TX_CONF);
- 	/* Enable TX loopback on MAC level to avoid TX during channel
- 	 * changes, as this has be seen to causes problems and the
-@@ -610,6 +611,7 @@ static int rtl8187_config(struct ieee802
- 	rtl818x_iowrite16(priv, &priv->map->ATIMTR_INTERVAL, 100);
- 	rtl818x_iowrite16(priv, &priv->map->BEACON_INTERVAL, 100);
- 	rtl818x_iowrite16(priv, &priv->map->BEACON_INTERVAL_TIME, 100);
-+	mutex_unlock(&priv->conf_mutex);
- 	return 0;
- }
+-	if (rinfo->family != CHIP_FAMILY_R300 ||
+-	    rinfo->family != CHIP_FAMILY_R350 ||
++	if (rinfo->family != CHIP_FAMILY_R300 &&
++	    rinfo->family != CHIP_FAMILY_R350 &&
+ 	    rinfo->family != CHIP_FAMILY_RV350)
+ 		OUTREG(RBBM_SOFT_RESET, rbbm_soft_reset);
  
-@@ -814,6 +816,7 @@ static int __devinit rtl8187_probe(struc
- 		printk(KERN_ERR "rtl8187: Cannot register device\n");
- 		goto err_free_dev;
- 	}
-+	mutex_init(&priv->conf_mutex);
+--- a/include/video/radeon.h
++++ b/include/video/radeon.h
+@@ -527,8 +527,9 @@
  
- 	printk(KERN_INFO "%s: hwaddr %s, rtl8187 V%d + %s\n",
- 	       wiphy_name(dev->wiphy), print_mac(mac, dev->wiphy->perm_addr),
---- a/drivers/net/wireless/rtl8187.h
-+++ b/drivers/net/wireless/rtl8187.h
-@@ -67,6 +67,10 @@ struct rtl8187_priv {
- 	const struct rtl818x_rf_ops *rf;
- 	struct ieee80211_vif *vif;
- 	int mode;
-+	/* The mutex protects the TX loopback state.
-+	 * Any attempt to set channels concurrently locks the device.
-+	 */
-+	struct mutex conf_mutex;
  
- 	/* rtl8187 specific */
- 	struct ieee80211_channel channels[14];
+ /* DSTCACHE_CTLSTAT bit constants */
+-#define RB2D_DC_FLUSH				   (3 << 0)
+-#define RB2D_DC_FLUSH_ALL			   0xf
++#define RB2D_DC_FLUSH_2D			   (1 << 0)
++#define RB2D_DC_FREE_2D				   (1 << 2)
++#define RB2D_DC_FLUSH_ALL			   (RB2D_DC_FLUSH_2D | RB2D_DC_FREE_2D)
+ #define RB2D_DC_BUSY				   (1 << 31)
+ 
+ 
 
 -- 
