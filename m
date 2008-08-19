@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754510AbYHSHrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbYHSHtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754510AbYHSHrR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 03:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbYHSHrB
+	id S1754558AbYHSHtP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 03:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYHSHtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 03:47:01 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46475 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752653AbYHSHrA (ORCPT
+	Tue, 19 Aug 2008 03:49:00 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53439 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752062AbYHSHs7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 03:47:00 -0400
-Date: Tue, 19 Aug 2008 09:48:46 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 0 of 9] x86/smp function calls: convert x86 tlb flushes to use function calls [POST 2]
-Message-ID: <20080819074846.GE9807@one.firstfloor.org>
-References: <patchbomb.1219083817@localhost> <20080819004531.GI9914@elte.hu> <20080819073214.GD9807@one.firstfloor.org> <48AA79C4.8060309@goop.org>
+	Tue, 19 Aug 2008 03:48:59 -0400
+Subject: Re: Regression in 2.6.27-rc2 when cross-building the kernel
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080819044854.GA2276@uranus.ravnborg.org>
+References: <48A63D98.3070900@lwfinger.net>
+	 <20080818193253.GA30856@uranus.ravnborg.org>
+	 <48A9FA05.9000601@lwfinger.net> <20080819044854.GA2276@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Tue, 19 Aug 2008 08:48:55 +0100
+Message-Id: <1219132135.3184.461.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48AA79C4.8060309@goop.org>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Don't pay attention to that number.  It's only the extra latency of a HT
-> context->HT context function call + tlb flush.  Which means 1) the tlb
-> is shared anyway, so the extra flush is redundant, 2) they're not really
-> concurrent, 3) it's going down the single-cpu call, rather than the
-> multi-cpu one, 4) it's only measuring the latency for a particular tlb
-> flush, and doesn't take into account any throughput improvements the
-> extra queueing may add.
+On Tue, 2008-08-19 at 06:48 +0200, Sam Ravnborg wrote:
+> 
+> And Larry log say it is so.
+> 
+> David - did you have a patch to fix this already?
 
-A lot of flushes are synchronous. See the rest of my email that
-you snipped.
+The fix was to 'build' the firmware blobs at the same time as 'make
+modules', so that they're already built and don't need to be built at
+modules_install time. That went in a while ago though.
 
--Andi
+Why is ihex2fw being rebuilt?
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+
+
