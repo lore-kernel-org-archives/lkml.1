@@ -1,176 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbYHSOrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753776AbYHSOuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754044AbYHSOrZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 10:47:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYHSOrP
+	id S1753776AbYHSOuq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 10:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYHSOue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 10:47:15 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:59079 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752402AbYHSOrO (ORCPT
+	Tue, 19 Aug 2008 10:50:34 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:21335 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751375AbYHSOud (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 10:47:14 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtIFANV4qkhMRKxB/2dsb2JhbACBYrNAgVg
-Date: Tue, 19 Aug 2008 10:42:11 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Eran Liberty <liberty@extricom.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Steven Rostedt <srostedt@redhat.com>,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-Message-ID: <20080819144211.GB21929@Krystal>
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com> <48A9901B.1080900@redhat.com> <48A9BEA3.10906@extricom.com> <alpine.DEB.1.10.0808181439480.796@gandalf.stny.rr.com> <48AAB7FF.4070502@extricom.com> <20080819130533.GA18611@Krystal> <48AAD702.10700@extricom.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 10:50:33 -0400
+Date: Tue, 19 Aug 2008 18:50:31 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org, Greg Kroah-Hartman <greg@kroah.com>,
+       linux-usb@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Li Yang <leoli@freescale.com>, linux-kernel@vger.kernel.org,
+       Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 1/3] gpiolib: make gpio_to_chip() public
+Message-ID: <20080819145031.GA28616@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080808161717.GA19095@polina.dev.rtsoft.ru> <200808181644.45480.laurentp@cse-semaphore.com> <20080818153300.GA10163@oksana.dev.rtsoft.ru> <200808191126.33133.laurentp@cse-semaphore.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
 Content-Disposition: inline
-In-Reply-To: <48AAD702.10700@extricom.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:33:38 up 75 days, 19:14,  7 users,  load average: 0.29, 0.47,
-	0.69
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <200808191126.33133.laurentp@cse-semaphore.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Eran Liberty (liberty@extricom.com) wrote:
-> Mathieu Desnoyers wrote:
->> Can you also give us
->>
->> objdump -S --start-address=0xC00BB724 vmlinux | head 20
->>
->> ?
->>
->> Then we could compare the result with the OOPS instruction dump :
->>
->> 7c0802a6 bf61000c 3f60c038 7c3f0b78 90010024 7c7c1b78 7c9d2378 83db32a0
->> 73c00001 7f83e378 7fa4eb78 4082002f <00000000> 2f830000 409e0030 801b32a0
->>
->> Mathieu
->>
->>   
->
-> to give you more context I have run:
-> > powerpc-linux-gnu-objdump -S --start-address=0xC00BB700 vmlinux | head -n 
-> 60
->
-> the discrepancy starts at address:
-> c00bb720: 40 82 00 30 <=> 40 82 00 2f
-> c00bb724: 4b ff fe 61 <=> 00 00 00 00
->
+On Tue, Aug 19, 2008 at 11:26:28AM +0200, Laurent Pinchart wrote:
+[...]
+> > I didn't say "SOC-specific". I said "SOC-model specific", which
+> > means that the driver would be not portable even across QE chips
+> > (i.e. MPC8323 vs. MPC8360, you can assume that the "CLK12" function
+> > is having same PAR/ODR/DAT/DIR bits).
+> 
+> If I'm not mistaken, the PAR bit is used to select between GPIO and
+> dedicated mode by definition. It should be safe to assume that setting
+> a GPIO in dedicated mode requires the PAR bit to be set. But as I
+> stated above, we can ignore that for now until a hardware use case
+> comes up.
 
-Ah !
+One more thing: you're assuming that there is one par bit, but
+there are two par bits for QE chips. Which one would you set in
+set_dedicated()? ;-)
 
-I think I see what could be wrong :
+> > > > > If, for some
+> > > > > reason (driver not loaded, ...), no GPIO user shows up for that
+> > > > > pin, it will stay configured in dedicated mode.
+> > > > 
+> > > > Yes.
+> > > > 
+> > > > > It might be better to set the PAR bit unconditionally in
+> > > > 
+> > > > Why it might be better?
+> > > 
+> > > Because, as explained a few lines down, the board initialization code
+> > > will be able to configure a pin in a known state (PAR not set) at boot
+> > > time until a driver requests the pin to be switched to dedicated mode.
+> > 
+> > You can do this as I described above. But prior to this, yes, you have
+> > to configure the pins and let Linux save these values. There is no other
+> > way to pass this information, unfortunately.
+> 
+> Ok.
+> 
+> I started implementing CPM2 dedicated mode support to be used in the
+> CPM UART driver for RTS/CTS flow control, and soon realized there was
+> a show stopper. The CPM UART driver is mostly CPM1/CPM2 agnostic.
+> I can't use a function such as cpm2_gpio32_set_dedicated, as that
+> wouldn't work on a CPM1 (at least not on all its ports). I could call
+> the right function depending on which port the GPIO is on, but that's
+> really hackish and would defeat the purpose of using GPIOs.
 
-First we have :
+You can easily refactor cpm gpio code so that you'll have
+common cpm structure with platform-specific "GPIO API extension"
+callbacks. Something like this:
 
-static unsigned int ftrace_nop = 0x60000000;
+/*
+ * generic structure, does not know anything about cpm1/2/qe, or
+ * ports width.
+ */
+struct cpm_gpio_chip {
+	struct of_mm_gpio_chip mm_gc;
+	spinlock_t lock;
+	void (*set_dedicated)(unsigned int gpio);
+};
 
-We probably replace the original function call by this nop.
+struct cpm1_gpio16_chip {
+	struct cpm_gpio_chip cpgc;
 
-Then we do :
+	/* shadowed data register to clear/set bits safely */
+	u16 cpdata;
+};
 
-notrace unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+void cpm_gpio_set_dedicated(unsigned int gpio)
 {
-        static unsigned int op;
+	struct gpio_chip *gc = gpio_to_chip(gpio);
+	struct of_gpio_chip *ofgc = to_of_gpio_chip(gc);
+	struct cpm_gpio_chip *cpgc = to_cpm_gpio_chip(ofgc);
 
-        /*
-         * It would be nice to just use create_function_call, but that will
-         * update the code itself. Here we need to just return the
-         * instruction that is going to be modified, without modifying the
-         * code.
-         */
-        addr = GET_ADDR(addr);
-
-        /* Set to "bl addr" */
-        op = 0x48000001 | (ftrace_calc_offset(ip, addr) & 0x03fffffc);
-
-        /*
-         * No locking needed, this must be called via kstop_machine
-         * which in essence is like running on a uniprocessor machine.
-         */
-        return (unsigned char *)&op;
+	if (cpgc->set_dedicated)
+		cpgc->set_dedicated(gc->base - gpio);
 }
 
-And I guess we must be doing a 0x48000001 | 0x0; or something ?
+> What we
+> really need there is a set_dedicated/set_option/set_whatever function
+> in the GPIO API :-/
 
-Also, we have to consider that POWERPC 64 functions are :
-
-/* PowerPC64's functions are data that points to the functions */
-
-And this does not seem to hold for ppc32. Therefore, it is strange to me
-that the same code is used for the update.. are we updating the correct
-site ?
-
-Mathieu
-
-> vmlinux:     file format elf32-powerpc
->
-> Disassembly of section .text:
->
-> c00bb700 <d_lookup+0x1c>:
-> * d_lookup() is protected against the concurrent renames in some unrelated
-> * directory using the seqlockt_t rename_lock.
-> */
->
-> struct dentry * d_lookup(struct dentry * parent, struct qstr * name)
-> {
-> c00bb700:       7c 3f 0b 78     mr      r31,r1
-> c00bb704:       90 01 00 24     stw     r0,36(r1)
-> c00bb708:       7c 7c 1b 78     mr      r28,r3
-> c00bb70c:       7c 9d 23 78     mr      r29,r4
-> c00bb710:       83 db 32 a0     lwz     r30,12960(r27)
-> {
->        unsigned ret;
->
-> repeat:
->        ret = sl->sequence;
->        smp_rmb();
-> c00bb714:       73 c0 00 01     andi.   r0,r30,1
->        struct dentry * dentry = NULL;
->        unsigned long seq;
->
->        do {
->                seq = read_seqbegin(&rename_lock);
->                dentry = __d_lookup(parent, name);
-> c00bb718:       7f 83 e3 78     mr      r3,r28
-> c00bb71c:       7f a4 eb 78     mr      r4,r29
->        if (unlikely(ret & 1)) {
-> c00bb720:       40 82 00 30     bne-    c00bb750 <d_lookup+0x6c>
-> c00bb724:       4b ff fe 61     bl      c00bb584 <__d_lookup>
->                if (dentry)
-> c00bb728:       2f 83 00 00     cmpwi   cr7,r3,0
-> c00bb72c:       40 9e 00 30     bne-    cr7,c00bb75c <d_lookup+0x78>
-> *
-> * If sequence value changed then writer changed data while in section.
-> */
-> static __always_inline int read_seqretry(const seqlock_t *sl, unsigned 
-> start)
-> {
->        smp_rmb();
-> c00bb730:       80 1b 32 a0     lwz     r0,12960(r27)
->                        break;
->        } while (read_seqretry(&rename_lock, seq));
-> c00bb734:       7f 80 f0 00     cmpw    cr7,r0,r30
-> c00bb738:       41 9e 00 24     beq-    cr7,c00bb75c <d_lookup+0x78>
-> /* Start of read calculation -- fetch last complete writer token */
-> static __always_inline unsigned read_seqbegin(const seqlock_t *sl)
-> {
->        unsigned ret;
->
-> repeat:
-> c00bb73c:       7c 1e 03 78     mr      r30,r0
->        ret = sl->sequence;
->        smp_rmb();
-> c00bb740:       73 c0 00 01     andi.   r0,r30,1
->        struct dentry * dentry = NULL;
->
+Won't happen. ;-)
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
