@@ -1,131 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbYHSXui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756AbYHSXyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754506AbYHSXui (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 19:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbYHSXu2
+	id S1754756AbYHSXyT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 19:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbYHSXyC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 19:50:28 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:12344 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752736AbYHSXu1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 19:50:27 -0400
-Date: Tue, 19 Aug 2008 17:50:26 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Rolf Eike Beer <eike-kernel@sf-tec.de>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, kristen.c.accardi@intel.com,
-       kaneshige.kenji@jp.fujitsu.com
-Subject: Re: [PATCH 04/13] PCI: acpiphp: remove 'name' parameter
-Message-ID: <20080819235026.GG18842@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Rolf Eike Beer <eike-kernel@sf-tec.de>,
-	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-	kristen.c.accardi@intel.com, kaneshige.kenji@jp.fujitsu.com
-References: <20080816235504.5461.20733.stgit@blender.achiang> <200808171059.50802.eike-kernel@sf-tec.de> <20080819183908.GD18842@ldl.fc.hp.com> <200808191440.05930.jbarnes@virtuousgeek.org>
+	Tue, 19 Aug 2008 19:54:02 -0400
+Received: from gw.goop.org ([64.81.55.164]:53210 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751826AbYHSXyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 19:54:01 -0400
+Message-ID: <48AB5D17.5030600@goop.org>
+Date: Tue, 19 Aug 2008 16:53:59 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808191440.05930.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+To: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #11313] Plugging HDMI causes "unable to handle kernel paging
+ request"
+References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>	 <sNRO-BDDjQL.A.DYF.sazpIB@albercik> <b170af450808171228i37951c6vd77071da7584669b@mail.gmail.com>
+In-Reply-To: <b170af450808171228i37951c6vd77071da7584669b@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jesse Barnes <jbarnes@virtuousgeek.org>:
-> On Tuesday, August 19, 2008 11:39 am Alex Chiang wrote:
-> > * Rolf Eike Beer <eike-kernel@sf-tec.de>:
-> > > Alex Chiang wrote:
-> > > > +static inline const char *slot_name(struct slot *slot)
-> > > > +{
-> > > > +	return hotplug_slot_name(slot->hotplug_slot);
-> > > > +}
-> > > > +
-> > > >  /*
-> > > >   * struct acpiphp_bridge - PCI bridge information
-> > > >   *
-> > >
-> > > I don't see a point in this function. Why not call hotplug_slot_name()
-> > > directly?
-> >
-> > You're correct that we don't exactly need it in acpiphp. However,
-> > it is a useful helper function for some of the other drivers, and
-> > I thought it would be better to keep consistency if possible.
-> >
-> > Also, it helps later on, when trying to stay below the 80 column
-> > limit. :)
-> 
-> If they're all identical, maybe we should pull this up into a
-> common function (with a short name :).  That can be a
-> subsequent cleanup though.
+Rafał Miłecki wrote:
+> Bug still exists in current git (tested 15 minutes ago).
+>   
 
-Ok, I'll save this for next time. Or someone else can have the
-git glory. ;)
+Could you apply this patch and post the output of dmesg from booting (no
+need to crash it again).
 
-> > > > @@ -84,7 +87,6 @@ static struct hotplug_slot_ops acpi_hotplug_slot_ops
-> > > > = { .get_adapter_status	= get_adapter_status,
-> > > >  };
-> > > >
-> > > > -
-> > > >  /**
-> > > >   * acpiphp_register_attention - set attention LED callback
-> > > >   * @info: must be completely filled with LED callbacks
-> > >
-> > > Fuzz.
-> >
-> > Yes, it's fuzz, but my practice has been to clean up* source files
-> > during the course of making actual, functional changes. Better
-> > than sending a mostly-useless whitespace patchbomb, IMO.
-> >
-> > * Note that "clean up" here means "reasonable cleanup" that
-> >   doesn't detract from reading the rest of the patch.
-> 
-> Yeah the main reason for separating whitespace changes from
-> real ones is to avoid making the patch hard to read in case a
-> problem crops up.  Killing an extra newline doesn't make things
-> harder to read, imo, so it's fine with me if you keep it
-> (though if you *do* end up doing a cleanup patch later you
-> could save it for that).
+Thanks,
+    J
 
-I'll keep the 'kill the newline' here but drop the kerneldoc
-stuff. As you point out, kerneldoc will take either */ or **/.
+diff -r 3f465c361b3c arch/x86/mm/init_64.c
+--- a/arch/x86/mm/init_64.c	Wed Aug 13 20:50:10 2008 -0700
++++ b/arch/x86/mm/init_64.c	Tue Aug 19 16:50:10 2008 -0700
+@@ -331,6 +331,8 @@
+ 		}
+ 
+ 		if (pmd_val(*pmd)) {
++			printk("addr %lx reusing pmd %lx %016lx\n",
++			       address, __pa(pmd), pmd_val(*pmd));
+ 			if (!pmd_large(*pmd))
+ 				last_map_addr = phys_pte_update(pmd, address,
+ 								 end);
+@@ -392,6 +394,8 @@
+ 		}
+ 
+ 		if (pud_val(*pud)) {
++			printk("addr %lx reusing pud %lx %016lx\n",
++			       addr, __pa(pud), pud_val(*pud));
+ 			if (!pud_large(*pud))
+ 				last_map_addr = phys_pmd_update(pud, addr, end,
+ 							 page_size_mask);
+@@ -500,6 +504,8 @@
+ 			next = end;
+ 
+ 		if (pgd_val(*pgd)) {
++			printk("addr %lx reusing pgd %lx %016lx\n",
++			       __pa(start), __pa(pgd), pgd_val(*pgd));
+ 			last_map_addr = phys_pud_update(pgd, __pa(start),
+ 						 __pa(end), page_size_mask);
+ 			continue;
 
-> > > >  	acpiphp_slot->slot = slot;
-> > > > -	snprintf(slot->name, sizeof(slot->name), "%u", slot->acpi_slot->sun);
-> > > > +	memset(name, 0, SLOT_NAME_SIZE);
-> > > > +	snprintf(name, SLOT_NAME_SIZE, "%u", slot->acpi_slot->sun);
-> > >
-> > > The memset() is not needed at all. And the sizeof is IMHO a good idea
-> > > anyway as it allows to get rid of the define.
-> >
-> > Hm, don't need a memset? I won't have garbage on the stack?
-> > </n00b>
-> 
-> Yeah, but you'll overwrite it with snprintf anyway, so the memset is 
-> redundant.
-
-Ok. I went through and removed the superfluous memsets, and
-changed instances of snprintf() to scnprintf().
-
-> > On the other hand, keeping the #define is important, because
-> > again, that's the established convention of the PCI hotplug
-> > drivers.
-> >
-> > Thanks for the review.
-> 
-> Going from the define to sizeof() everywhere could be another
-> cleanup, but I don't have strong feelings about that.
-
-Ok, saving these for next time too.
-
-I'll hold off from sending v2 until I hear comments from
-Kenji-san, so if he has any suggestions, I can incorporate them
-all in v2.
-
-Thanks.
-
-/ac
 
