@@ -1,49 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759261AbYHSUTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbYHSUUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759261AbYHSUTX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 16:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbYHSUTP
+	id S1759314AbYHSUUd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 16:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbYHSUUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 16:19:15 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:56704 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753564AbYHSUTO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 16:19:14 -0400
-Message-ID: <48AB2A01.2050500@cs.helsinki.fi>
-Date: Tue, 19 Aug 2008 23:16:01 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Tue, 19 Aug 2008 16:20:23 -0400
+Received: from gw.goop.org ([64.81.55.164]:54400 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752913AbYHSUUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 16:20:23 -0400
+Message-ID: <48AB2AD8.8080108@goop.org>
+Date: Tue, 19 Aug 2008 13:19:36 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rdunlap@xenotime.net,
-       mpm@selenic.com, tglx@linutronix.de, rostedt@goodmis.org,
-       mathieu.desnoyers@polymtl.ca, tzanussi@gmail.com
-Subject: Re: [PATCH 3/5] SLUB: Replace __builtin_return_address(0) with	_RET_IP_.
-References: <1219167807-5407-1-git-send-email-eduard.munteanu@linux360.ro> <1219167807-5407-2-git-send-email-eduard.munteanu@linux360.ro> <1219167807-5407-3-git-send-email-eduard.munteanu@linux360.ro> <48AB0D69.4090703@linux-foundation.org> <20080819182423.GA5520@localhost> <48AB1769.3040703@linux-foundation.org> <48AB1A5B.3020305@cs.helsinki.fi> <48AB2A4A.7040103@linux-foundation.org>
-In-Reply-To: <48AB2A4A.7040103@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: [PATCH] x86/paravirt: add spin_lock_flags lock op
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> Pekka Enberg wrote:
-> 
->> This looks wrong. The '%pS' thingy has a special purpose:
->>
->> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7daf705f362e349983e92037a198b8821db198af
-> 
-> True. Just had 10 minutes to do the patch. Can someone stitch all of the good
-> things from all three patches together?
+It is useful for a pv_lock_ops backend to know whether interrupts are
+enabled or not in the context a spin_lock is being called.  This
+allows it to enable interrupts while spinning, which could be
+particularly helpful when spinning becomes blocking.
 
-I already did that:
+The default implementation just calls the normal spin_lock op,
+ignoring the flags.
 
-http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=3c0a0d0e24234704387f6356ffc7b47758dc1e05
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/kernel/paravirt-spinlocks.c |    6 ++++++
+ include/asm-x86/paravirt.h           |    7 +++++++
+ include/asm-x86/spinlock.h           |    9 +++++++--
+ 3 files changed, 20 insertions(+), 2 deletions(-)
 
-It's compiled-tested too. I had to do some changes to 
-include/linux/slab.h as well.
+===================================================================
+--- a/arch/x86/kernel/paravirt-spinlocks.c
++++ b/arch/x86/kernel/paravirt-spinlocks.c
+@@ -7,12 +7,18 @@
+ 
+ #include <asm/paravirt.h>
+ 
++static void default_spin_lock_flags(struct raw_spinlock *lock, unsigned long flags)
++{
++	__raw_spin_lock(lock);
++}
++
+ struct pv_lock_ops pv_lock_ops = {
+ #ifdef CONFIG_SMP
+ 	.spin_is_locked = __ticket_spin_is_locked,
+ 	.spin_is_contended = __ticket_spin_is_contended,
+ 
+ 	.spin_lock = __ticket_spin_lock,
++	.spin_lock_flags = default_spin_lock_flags,
+ 	.spin_trylock = __ticket_spin_trylock,
+ 	.spin_unlock = __ticket_spin_unlock,
+ #endif
+===================================================================
+--- a/include/asm-x86/paravirt.h
++++ b/include/asm-x86/paravirt.h
+@@ -328,6 +328,7 @@
+ 	int (*spin_is_locked)(struct raw_spinlock *lock);
+ 	int (*spin_is_contended)(struct raw_spinlock *lock);
+ 	void (*spin_lock)(struct raw_spinlock *lock);
++	void (*spin_lock_flags)(struct raw_spinlock *lock, unsigned long flags);
+ 	int (*spin_trylock)(struct raw_spinlock *lock);
+ 	void (*spin_unlock)(struct raw_spinlock *lock);
+ };
+@@ -1396,6 +1397,12 @@
+ 	PVOP_VCALL1(pv_lock_ops.spin_lock, lock);
+ }
+ 
++static __always_inline void __raw_spin_lock_flags(struct raw_spinlock *lock,
++						  unsigned long flags)
++{
++	PVOP_VCALL2(pv_lock_ops.spin_lock_flags, lock, flags);
++}
++
+ static __always_inline int __raw_spin_trylock(struct raw_spinlock *lock)
+ {
+ 	return PVOP_CALL1(int, pv_lock_ops.spin_trylock, lock);
+===================================================================
+--- a/include/asm-x86/spinlock.h
++++ b/include/asm-x86/spinlock.h
+@@ -182,8 +182,6 @@
+ }
+ #endif
+ 
+-#define __raw_spin_lock_flags(lock, flags) __raw_spin_lock(lock)
+-
+ #ifdef CONFIG_PARAVIRT
+ /*
+  * Define virtualization-friendly old-style lock byte lock, for use in
+@@ -272,6 +270,13 @@
+ {
+ 	__ticket_spin_unlock(lock);
+ }
++
++static __always_inline void __raw_spin_lock_flags(raw_spinlock_t *lock,
++						  unsigned long flags)
++{
++	__raw_spin_lock(lock);
++}
++
+ #endif	/* CONFIG_PARAVIRT */
+ 
+ static inline void __raw_spin_unlock_wait(raw_spinlock_t *lock)
 
-		Pekka
+
