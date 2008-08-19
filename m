@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbYHSQLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbYHSQPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755307AbYHSQLo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 12:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708AbYHSQLf
+	id S1755413AbYHSQPx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 12:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbYHSQPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 12:11:35 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:54670 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751759AbYHSQLf (ORCPT
+	Tue, 19 Aug 2008 12:15:45 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:22654 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752727AbYHSQPo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 12:11:35 -0400
-Message-ID: <48AAEFBE.5060406@zytor.com>
-Date: Tue, 19 Aug 2008 09:07:26 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 19 Aug 2008 12:15:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Wefav8cGvOaIlqM9DTc8SQDQ4iHJ3GAv3Fxgfrsa6WG2XnZoAp+fC2I+tPnhvY97YP
+         76joW+uMWosnh0a35yhjn37yNsCZEEVFbvXscbkyRNOYcqBqhfGr4bKW6HCB7ihbPwnj
+         7gsgyUiEWXf7nQcvQNivquMeXg8YkvO3375rs=
+Date: Tue, 19 Aug 2008 18:15:19 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Kevin Diggs <kevdig@hypersurf.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [Fwd: Corrections please ...]
+Message-ID: <20080819161512.GA5401@joi>
+References: <48AA27AF.9070407@hypersurf.com> <20080819024125.GM19760@disturbed> <48AA7F47.5050805@hypersurf.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: David Fries <david@fries.net>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] i486 CR4 oops, no_console_suspend
-References: <20080818040340.GB17528@spacedout.fries.net> <20080818064120.GA28941@elte.hu> <20080819033710.GD17528@spacedout.fries.net> <20080819093454.GG28713@elte.hu>
-In-Reply-To: <20080819093454.GG28713@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48AA7F47.5050805@hypersurf.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> 
-> i've had trouble no end with getting even kernel messages out to the 
-> serial console during critical phases of suspend/resume. (especially in 
-> combination with earlyprintk=ttyS0 - not surprisingly)
-> 
-> Especially during resume the UART is initialized back to something 
-> really slow - 300 bauds or 9600 bauds. (depends on the chipset i guess) 
-> So even though it works, it will only worked reliably when i 
-> standardized all my baud settings to that very low setting.
-> 
+On Tue, Aug 19, 2008 at 01:07:35AM -0700, Kevin Diggs wrote:
+> Dave Chinner wrote:
+>> On Mon, Aug 18, 2008 at 06:53:51PM -0700, Kevin Diggs wrote:
+>>> Could someone ... anyone take a look at these kernel doc additions?
+>> .....
+>>> +/**
+>>> + * complete: - signals a single thread waiting on this completion
+>>> + * @x:  holds the state of this particular completion
+>>> + *
+>>> + * This will wake up a single thread waiting on this completion. If  
+>>> multiple
+>> Your mailer appears to be wrapping lines.
+>>> + * threads are waiting ???
+>>> + */
+>>> void complete(struct completion *x)
+>>> {
+>>>        unsigned long flags;
+>> complete() will only wake one waiting thread. If there are multiple
+>> waiters, then further calls to complete() are required to wake them,
+>> or a single call to complete_all() could be used.
+>>> EXPORT_SYMBOL(wait_for_completion);
+>>>
+>>> +/**
+>
+> Take 2 ...
 
-Probably depends on the BIOS, actually; I suspect you end up with the 
-standard BIOS setting, which is *usually* 9600 bps.
+You might want to read Documentation/SubmittingPatches.
+(Especially points 2, 7, 11 and 12)
 
-	-hpa
+Marcin
