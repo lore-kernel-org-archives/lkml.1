@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754436AbYHSGX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbYHSG2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754436AbYHSGX0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 02:23:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbYHSGXQ
+	id S1754529AbYHSG2W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 02:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYHSG2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 02:23:16 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:30688 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751759AbYHSGXO (ORCPT
+	Tue, 19 Aug 2008 02:28:14 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45605 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751083AbYHSG2N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 02:23:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent:from;
-        b=N9gHE4wyokDuhW8n/pFhNNa/g/7LkJUPVSU8WptIEznJw0SHEyVQzv/j3iG4ItB4km
-         Q8xa3XD8xHUW3WiKMoaBQZvHstCjmfSBJIswMMdhcwS26fIGrr0A42ux5BiYS4JBT7iL
-         7I638D9AyuSNysqk/6/1kVKybkJZ3DPx5Qxac=
-Date: Tue, 19 Aug 2008 08:23:17 +0200
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 0/5] ide debugging macros
-Message-ID: <20080819062317.GB30315@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1218993826-4571-1-git-send-email-petkovbb@gmail.com> <200808182308.38345.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808182308.38345.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+	Tue, 19 Aug 2008 02:28:13 -0400
+Subject: Re: Backport hr-tick fix into .25/.26
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Justin Madru <jdm64@gawab.com>, lkml <linux-kernel@vger.kernel.org>,
+       Michal Januszewski <spock@gentoo.org>,
+       Antonino Daplas <adaplas@gmail.com>, Greg KH <gregkh@suse.de>,
+       Rafael Wysocki <rjw@sisk.pl>,
+       Romano Giannetti <romano.giannetti@gmail.com>,
+       Adrian Bunk <bunk@kernel.org>,
+       Jeremy Nickurak <kernel-bugs@atrus.rifetech.com>
+In-Reply-To: <20080819003110.GH9914@elte.hu>
+References: <48A9BDC0.9070800@gawab.com>  <20080819003110.GH9914@elte.hu>
+Content-Type: text/plain
+Date: Tue, 19 Aug 2008 08:28:16 +0200
+Message-Id: <1219127296.10800.357.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 18, 2008 at 11:08:38PM +0200, Bartlomiej Zolnierkiewicz wrote:
+On Tue, 2008-08-19 at 02:31 +0200, Ingo Molnar wrote:
+> * Justin Madru <jdm64@gawab.com> wrote:
 > 
-> Hi,
+> > This commit introduced the bug.
+> > commit 8f4d37ec073c17e2d4aa8851df5837d798606d6f
+> > sched: high-res preemption tick
 > 
-> On Sunday 17 August 2008, Borislav Petkov wrote:
-> > Hi Bart,
-> > 
-> > here's something i've been wanting to do for a long time: debugging macros. The
-> > reason for it is that i got tired of adding debug printk's everytime i'm testing
-> > something so here we go.
-> > 
-> > The debugging macro is similar to the old ones but is one for all drivers
-> > (currently only ide-floppy), is nice on branch prediction and is controlled by a
-> > drive->debug_mask switch which is a module parameter and as such can be set at
-> > module load time, of course. I've been thinking of adding also a sysfs attribute
-> > too but can't seem to find quite the justification for it so no sysfs for now :)
+> > And this one fixed it
+> >
+> > commit 31656519e132f6612584815f128c83976a9aaaef
+> > sched, x86: clean up hrtick implementation
 > 
-> if you look closely you should already find it :)
+> hm, the backport of 31656519 is a bit intrusive.
 > 
-> [ module parameters are exported through sysfs and it uses 0644 mask ]
+> find below is an (untested!) version of it - i havent even build-tested 
+> it. Does it work for you? But this is Greg's call really.
+> 
 
-Aah, i get it now, it's /sys/bus/ide/drivers/ide-floppy/module/parameters/debug_mask.
-However, it'd be better if it were /sys/bus/ide/drivers/ide-floppy/debug_mask.
-Probably a symlink or a true /sysfs parameter? Maybe later :).
+It largely depends on all the new IPI stuff that went into 27 as well,
+so I'd be surprised if its easily backportable..
 
--- 
-Regards/Gruss,
-    Boris.
