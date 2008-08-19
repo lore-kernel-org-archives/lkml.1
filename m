@@ -1,22 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbYHSJVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbYHSJWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754775AbYHSJVn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 05:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbYHSJVc
+	id S1755399AbYHSJWA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 05:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbYHSJVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 05:21:32 -0400
-Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:44343
+	Tue, 19 Aug 2008 05:21:33 -0400
+Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:44352
 	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751125AbYHSJVb (ORCPT
+	with ESMTP id S1752810AbYHSJVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 19 Aug 2008 05:21:31 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH RT 0/2] Misc fixes for 2.6.26-rt1
+Subject: [PATCH RT 1/2] seqlock: make sure that raw_seqlock_t retries readers
+	while writes are pending
 To: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de
 Cc: ghaskins@novell.com, linux-kernel@vger.kernel.org,
        linux-rt-users@vger.kernel.org
-Date: Tue, 19 Aug 2008 05:19:13 -0400
-Message-ID: <20080819091817.21725.81831.stgit@dev.haskins.net>
+Date: Tue, 19 Aug 2008 05:19:18 -0400
+Message-ID: <20080819091918.21725.39839.stgit@dev.haskins.net>
+In-Reply-To: <20080819091817.21725.81831.stgit@dev.haskins.net>
+References: <20080819091817.21725.81831.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -25,18 +28,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo, Thomas, Steven,
-  Please consider the following patches for 2.6.26-rt2
+The seqlock protocol is broken in -rt for raw_seqlock_t objects.  This
+manifested in my 2.6.26-rt1 kernel as a 500ms (yes, millisecond) spike
+which was traced out with ftrace/preemptirqsoff to be originating in
+the HRT (hrtimer_interrupt, to be precise).  It would occasionally
+spin processing the same CLOCK_MONOTONIC timer (the scheduler-tick)
+in a tight loop with interrupts disabled.  Investigating, it turned out
+that the time-basis recorded for "now" early in the interrupt was
+momentarily moved 500ms in the future.  This caused all timers with
+correct expiration times to appear to have expired a long time ago.
+Even rescheduling the timer via hrtimer_forward ultimately placed the
+timer in an "expired" state since the "now" basis was in the future.
 
+So I began investigating how this time-basis (derived from ktime_get())
+could have done this.  I observed that ktime_get() readers were able to
+successfully read a time value even while another core held a
+write-lock on the xtime_lock.  Therefore the fundamental issue was
+that ktime_get was able to return transitional states of the
+xtime/clocksource infrastructure, which is clearly not intended.
+
+I root caused the issue to the raw_seqlock_t implementation.  It was
+missing support for retrying a reader if it finds a write-pending
+flag.  Investigating further, I think I can speculate why.
+
+Back in April, Ingo and Thomas checked in a fix to mainline for seqlocks,
+referenced here:
+
+	commit 88a411c07b6fedcfc97b8dc51ae18540bd2beda0
+	Author: Ingo Molnar <mingo@elte.hu>
+	Date:   Thu Apr 3 09:06:13 2008 +0200
+
+	seqlock: livelock fix
+
+	Thomas Gleixner debugged a particularly ugly seqlock related livelock:
+	do not process the seq-read section if we know it beforehand that the
+	test at the end of the section will fail ...
+
+	Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+Of course, mainline only has seqlock_t.  In -rt, we have both seqlock_t
+and raw_seqlock_t.  It would appear that the merge-resolution for
+commit 88a411c07b6 to the -rt branch inadvertently applied one hunk
+of the fix to seqlock_t, and the other to raw_seqlock_t.  The normal
+seqlocks now have two checks for retry, while the raw_seqlocks have none.
+This lack of a check is what causes the protocol failure, which ultimately
+caused the bad clock info and a latency spike.
+
+This patch corrects the above condition by applying the conceptual change
+from 88a411c07b6 to both seqlock_t and raw_seqlock_t equally.  The observed
+problems with the HRT spike are confirmed to no longer be reproducible as
+as result.
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>
 ---
 
-Gregory Haskins (2):
-      ftrace: fix elevated preempt_count in wakeup-tracer
-      seqlock: make sure that raw_seqlock_t retries readers while writes are pending
+ include/linux/seqlock.h |   12 ++++++++++--
+ 1 files changed, 10 insertions(+), 2 deletions(-)
 
-
- include/linux/seqlock.h           |   12 ++++++++++--
- kernel/trace/trace_sched_wakeup.c |    2 ++
- 2 files changed, 12 insertions(+), 2 deletions(-)
-
+diff --git a/include/linux/seqlock.h b/include/linux/seqlock.h
+index e6ecb46..345d726 100644
+--- a/include/linux/seqlock.h
++++ b/include/linux/seqlock.h
+@@ -145,7 +145,7 @@ static inline int __read_seqretry(seqlock_t *sl, unsigned iv)
+ 	int ret;
+ 
+ 	smp_rmb();
+-	ret = (iv & 1) | (sl->sequence ^ iv);
++	ret = (sl->sequence != iv);
+ 	/*
+ 	 * If invalid then serialize with the writer, to make sure we
+ 	 * are not livelocking it:
+@@ -228,8 +228,16 @@ static __always_inline int __write_tryseqlock_raw(raw_seqlock_t *sl)
+ 
+ static __always_inline unsigned __read_seqbegin_raw(const raw_seqlock_t *sl)
+ {
+-	unsigned ret = sl->sequence;
++	unsigned ret;
++
++repeat:
++	ret = sl->sequence;
+ 	smp_rmb();
++	if (unlikely(ret & 1)) {
++		cpu_relax();
++		goto repeat;
++	}
++
+ 	return ret;
+ }
+ 
 
