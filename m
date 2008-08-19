@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758323AbYHSVWK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbYHSVWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758323AbYHSVWK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:22:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbYHSVVv
+	id S1758765AbYHSVWc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbYHSVVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:21:51 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48236
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751073AbYHSVVv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:21:51 -0400
-Date: Tue, 19 Aug 2008 14:21:50 -0700 (PDT)
-Message-Id: <20080819.142150.129314008.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: marcel@holtmann.org, akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.1.10.0808191348540.3324@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0808190952000.3324@nehalem.linux-foundation.org>
-	<1219170451.7591.175.camel@violet.holtmann.net>
-	<alpine.LFD.1.10.0808191348540.3324@nehalem.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 19 Aug 2008 17:21:53 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:10357 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753475AbYHSVVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 17:21:52 -0400
+Date: Tue, 19 Aug 2008 21:25:08 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Regression in 2.6.27-rc2 when cross-building the kernel
+Message-ID: <20080819192508.GA6774@uranus.ravnborg.org>
+References: <48A63D98.3070900@lwfinger.net> <20080818193253.GA30856@uranus.ravnborg.org> <48A9FA05.9000601@lwfinger.net> <20080819044854.GA2276@uranus.ravnborg.org> <1219132135.3184.461.camel@pmac.infradead.org> <48AAFB4C.1030300@lwfinger.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48AAFB4C.1030300@lwfinger.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 19 Aug 2008 13:54:03 -0700 (PDT)
+On Tue, Aug 19, 2008 at 11:56:44AM -0500, Larry Finger wrote:
+> David Woodhouse wrote:
+> >On Tue, 2008-08-19 at 06:48 +0200, Sam Ravnborg wrote:
+> >>And Larry log say it is so.
+> >>
+> >>David - did you have a patch to fix this already?
+> >
+> >The fix was to 'build' the firmware blobs at the same time as 'make
+> >modules', so that they're already built and don't need to be built at
+> >modules_install time. That went in a while ago though.
+> >
+> >Why is ihex2fw being rebuilt?
+> >
+> 
+> sudo make V=2 modules_install says:
+> 
+>   HOSTCC  firmware/ihex2fw - due to: /usr/include/gnu/stubs-64.h 
+> /usr/lib64/gcc/x86_64-suse-linux/4.3/include/stddef.h 
+> /usr/lib64/gcc/x86_64-suse-linux/4.3/include-fixed/limits.h 
+> /usr/lib64/gcc/x86_64-suse-linux/4.3/include-fixed/syslimits.h 
+> /usr/lib64/gcc/x86_64-suse-linux/4.3/include/stdarg.h
+> /bin/sh: scripts/basic/fixdep: cannot execute binary file
+> make[1]: *** [firmware/ihex2fw] Error 126
+> make: *** [_modinst_post] Error 2
 
-> As it is, it seems like some people think that the merge window is when 
-> you send any random crap that hasn't even been tested, and then after the 
-> merge window you send the stuff that looks "obviously good".
+Do you have some logging info before we start to build ihex2fw?
 
-We are perpetuating this mind set, aren't we?  I could be wrong
-but this is how I see things currently.
-
-I agree, we should be working on regressions fixes now.  And we should
-essentially be doing so up until the merge window opens up again,
-right?
-
-When do people following those rules have time to work on new stuff?
-Especially people like me who have to review and merge everyone else's
-work as well as help fix bugs.
-
-And not just subsystem maintainers like me, it's also the same for
-people who are experienced, dilligent, and work on fixing bugs.
-That kind of work is very time consuming.
-
-So given that, who spends a decent amount of time working on features?
-People who aren't dilligent working on bugs before the merge window,
-and new developers, that's who.
-
-linux-next is great, I love it, it solves all the merge hassles that
-used to knock us out during the merge window and make life hell.
-
-But it doesn't fix the time delegation problem.
-
-There is always this "oh crap, I just spent 3 months doing nothing
-but fixing bugs" feeling a lot of us core folks get right before
-the merge window opens up.
-
-So instead of getting the best work from the best people we have,
-we get this last minute flurry of development in the days leading
-up to the merge window openning up.
-
-Maybe it's just a longing for the golden era of 2.${ODD}.x style
-development, who knows :-)
+	Sam
