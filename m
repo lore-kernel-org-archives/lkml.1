@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758840AbYHSVqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759199AbYHSVrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758840AbYHSVqU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbYHSVqM
+	id S1759199AbYHSVrX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbYHSVrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:46:12 -0400
-Received: from main.gmane.org ([80.91.229.2]:35448 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752692AbYHSVqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:46:10 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH 0/0] Power domain and clock domain patches for omap
-Date: Tue, 19 Aug 2008 21:46:00 +0000 (UTC)
-Message-ID: <g8feuo$i9$1@ger.gmane.org>
-References: <1216221555-18958-1-git-send-email-tony@atomide.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: ppp89-110-31-4.pppoe.avangarddsl.ru
-User-Agent: Pan/0.132 (Waxed in Black)
-Cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
+	Tue, 19 Aug 2008 17:47:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38982 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752725AbYHSVrI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 17:47:08 -0400
+Date: Tue, 19 Aug 2008 14:46:46 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: rjw@sisk.pl, akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+In-Reply-To: <20080819.143556.245692295.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.10.0808191440440.3324@nehalem.linux-foundation.org>
+References: <20080819.140458.236030589.davem@davemloft.net> <200808192315.48718.rjw@sisk.pl> <alpine.LFD.1.10.0808191425050.3324@nehalem.linux-foundation.org> <20080819.143556.245692295.davem@davemloft.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tony Lindgren wrote:
 
-> Hi all,
+
+On Tue, 19 Aug 2008, David Miller wrote:
 > 
-> This patch series contains power domain and clock domain specific
-> patches for omap posted to linux-arm-kernel list during 2.6.25-rc5.
-> 
-> I'm reposting the series to a wider audience as Russell King suspected
-> that other archs may be interested in reviewing these too, or at least
-> some parts of the code.
-> 
-> Please take a look and comment the code. Also please point out the
-> pieces of code that may be suitable for your arch too!
+> That change was made under the pretext that it was tested heavily and
+> that if we hit any problem whatsoever with it that we couldn't fix
+> quickly it would be reverted.
 
-There is one major flaw IMO in this code. Please correct me if I'm wrong:
-Driver A: powerdomain_register()
-Driver B: powerdomain_get()
-Driver A: powerdomain_unregister()
+David, I will say this one more time:
 
-Then Driver B has a reference to unregistered domain. And as powerdomains
-lack any type of refcounting this can lead to any type of memory access
-bugs if Driver A is unloaded from the kernel.
+ - as long as you concentrate on individual commits, you're missing the 
+   big picture.
 
--- 
-With best wishes
-Dmitry
+you can _always_ make excuses for individual commits. That's not my point. 
+Or rather, it actually verry much _is_ my point. If you have the mindset 
+that you're looking for excuses why any individual commit is ok to merge, 
+then you don't end up with a coupld of individual commits any more: you 
+end up with a LOT OF CHURN.
 
+It's not the individual commits. You're looking at the individual trees, 
+and you're missing the forest. The problem isn't the individual trees. The 
+problem is that there's a metric sh*tload of individual trees, what we in 
+the tree industry call a 'forest'. You're not seeing it.
 
+And btw, don't get me wrong - you're not the only problem spot. During the 
+-rc's leading up to 2.6.26, drivers/merdia was actually a _bigger_ 
+problem. I happen to care less about that (the same way I care less about 
+some odd-ball architectures), but I have to admit that drivers/media was a 
+total disaster last time around.
+
+So if it makes you feel any better, others have been even worse.  But this 
+networking problem ha been going on for quite a while.
+
+So the problem here really is that you seem overly eager to make excuses 
+for individual patches. And if they _stayed_ "individual" it would all be 
+good. But they don't seem to.
+
+			Linus
