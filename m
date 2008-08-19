@@ -1,74 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756AbYHSXyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbYHSX66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754756AbYHSXyT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 19:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbYHSXyC
+	id S1754854AbYHSX66 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 19:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYHSX6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 19:54:02 -0400
-Received: from gw.goop.org ([64.81.55.164]:53210 "EHLO mail.goop.org"
+	Tue, 19 Aug 2008 19:58:49 -0400
+Received: from gw.goop.org ([64.81.55.164]:49619 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751826AbYHSXyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 19:54:01 -0400
-Message-ID: <48AB5D17.5030600@goop.org>
-Date: Tue, 19 Aug 2008 16:53:59 -0700
+	id S1753292AbYHSX6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 19:58:49 -0400
+Message-ID: <48AB5E36.8030400@goop.org>
+Date: Tue, 19 Aug 2008 16:58:46 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #11313] Plugging HDMI causes "unable to handle kernel paging
- request"
-References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>	 <sNRO-BDDjQL.A.DYF.sazpIB@albercik> <b170af450808171228i37951c6vd77071da7584669b@mail.gmail.com>
-In-Reply-To: <b170af450808171228i37951c6vd77071da7584669b@mail.gmail.com>
+To: benh@kernel.crashing.org
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Scott Wood <scottwood@freescale.com>,
+       Eran Liberty <liberty@extricom.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+References: <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>	 <48A9AFA7.8080508@freescale.com>	 <alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>	 <1219110814.8062.2.camel@pasglop>	 <alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>	 <1219113549.8062.13.camel@pasglop>	 <alpine.DEB.1.10.0808182240330.13401@gandalf.stny.rr.com>	 <20080819024707.GA22659@Krystal>	 <alpine.DEB.1.10.0808191247001.28232@gandalf.stny.rr.com>	 <20080819173453.GA28239@Krystal> <1219182471.7826.16.camel@pasglop>
+In-Reply-To: <1219182471.7826.16.camel@pasglop>
 X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafał Miłecki wrote:
-> Bug still exists in current git (tested 15 minutes ago).
+Benjamin Herrenschmidt wrote:
+>> Ok, there are two cases where it's ok :
+>>
+>> 1 - in stop_machine, considering we are not touching code executed in
+>> NMI handlers.
+>> 2 - when using my replace_instruction_safe() which uses a temporary
+>> breakpoint when doing the instruction replacement.
+>>
+>> In those cases you could use text_poke_early().
+>>     
+>
+> Note that vmap/vunmap will be very slow.
 >   
 
-Could you apply this patch and post the output of dmesg from booting (no
-need to crash it again).
+Don't we have Nick's speedups now?
 
-Thanks,
     J
-
-diff -r 3f465c361b3c arch/x86/mm/init_64.c
---- a/arch/x86/mm/init_64.c	Wed Aug 13 20:50:10 2008 -0700
-+++ b/arch/x86/mm/init_64.c	Tue Aug 19 16:50:10 2008 -0700
-@@ -331,6 +331,8 @@
- 		}
- 
- 		if (pmd_val(*pmd)) {
-+			printk("addr %lx reusing pmd %lx %016lx\n",
-+			       address, __pa(pmd), pmd_val(*pmd));
- 			if (!pmd_large(*pmd))
- 				last_map_addr = phys_pte_update(pmd, address,
- 								 end);
-@@ -392,6 +394,8 @@
- 		}
- 
- 		if (pud_val(*pud)) {
-+			printk("addr %lx reusing pud %lx %016lx\n",
-+			       addr, __pa(pud), pud_val(*pud));
- 			if (!pud_large(*pud))
- 				last_map_addr = phys_pmd_update(pud, addr, end,
- 							 page_size_mask);
-@@ -500,6 +504,8 @@
- 			next = end;
- 
- 		if (pgd_val(*pgd)) {
-+			printk("addr %lx reusing pgd %lx %016lx\n",
-+			       __pa(start), __pa(pgd), pgd_val(*pgd));
- 			last_map_addr = phys_pud_update(pgd, __pa(start),
- 						 __pa(end), page_size_mask);
- 			continue;
-
-
