@@ -1,58 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbYHSDcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbYHSDhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754300AbYHSDcU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 23:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbYHSDcM
+	id S1754531AbYHSDhx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 23:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbYHSDhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 23:32:12 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:35176 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751940AbYHSDcL (ORCPT
+	Mon, 18 Aug 2008 23:37:45 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:60832 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752062AbYHSDho (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 23:32:11 -0400
-Date: Mon, 18 Aug 2008 23:32:08 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Scott Wood <scottwood@freescale.com>,
-       Eran Liberty <liberty@extricom.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-In-Reply-To: <20080819024707.GA22659@Krystal>
-Message-ID: <alpine.DEB.1.10.0808182329220.13401@gandalf.stny.rr.com>
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com> <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal> <48A9AFA7.8080508@freescale.com> <alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com> <1219110814.8062.2.camel@pasglop>
- <alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com> <1219113549.8062.13.camel@pasglop> <alpine.DEB.1.10.0808182240330.13401@gandalf.stny.rr.com> <20080819024707.GA22659@Krystal>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 18 Aug 2008 23:37:44 -0400
+Message-ID: <48AA4003.5080300@linux.vnet.ibm.com>
+Date: Tue, 19 Aug 2008 09:07:39 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] mm_owner: fix cgroup null dereference
+References: <1218745013-9537-1-git-send-email-jirislaby@gmail.com> <48A49C78.7070100@linux.vnet.ibm.com> <48A9E82E.3060009@gmail.com>
+In-Reply-To: <48A9E82E.3060009@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 18 Aug 2008, Mathieu Desnoyers wrote:
-
-> * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > 
-> > On Tue, 19 Aug 2008, Benjamin Herrenschmidt wrote:
-> > 
-> > > 
-> > > > Hmm, this was originally copied from x86, where we did a cmpxchg, but that 
-> > > > is probably not needed since all of this is done in kstop_machine. Also, 
-> > > > only the "get" is needed. If we don't fault there, we wont fault on the 
-> > > > put (unless we have permissions wrong, and that would be a bug).
-> > > 
-> > > Would it ? How do we make sure the kernel text is mapped writeable ?
-> > 
-> > We map it writeable if FTRACE is enabled.
-> > 
+Jiri Slaby wrote:
+> On 08/14/2008 10:58 PM, Balbir Singh wrote:
+>> Jiri Slaby wrote:
+>>> Hi,
+>>>
+>>> found this in mmotm, a fix for
+>>> mm-owner-fix-race-between-swap-and-exit.patch
+>>>
+>> Thanks for catching this
 > 
-> Argh. See text_poke(). It's there exactly for this purpose on x86.
+> Hmm, unfortunately there is one more issue with this patch.
+> memrlimit_cgroup_subsys doesn't expect NULL new cgroup and NULL task.
+> memrlimit_cgroup_mm_owner_changed blows up (called from
+> cgroup_mm_owner_callbacks as ss->mm_owner_changed).
+> 
+> I'm out for few days, please solve it somehow. Full oops message follows.
+> 
 
-Ouch, I just did. text_poke is quite heavy. It would be interesting to see 
-that performed on 20,000 locations at one time. I could play with it, but 
-I'm a bit nervous.
+Could you please help me with the steps to reproduce the problem.  I don't seem
+to be hitting the mm->owner changed callback. I did have a test case for it when
+I developed mm->owner functionality, but it does not trigger an oops for me.
 
--- Steve
+> BUG: unable to handle kernel NULL pointer dereference at 00000000000004ac
+> IP: [<ffffffff8056c469>] _spin_lock+0x9/0x20
+> PGD 3ef84067 PUD 0
+> Oops: 0002 [2] SMP
+> last sysfs file: /sys/devices/platform/coretemp.1/temp1_input
+> CPU 0
+> Modules linked in: usblp ath5k mac80211 cfg80211 arc4 ecb cryptomgr aead
+> crypto_blkcipher crypto_algapi usbhid ohci1394 hid led_class ieee1394 evdev
+> rtc_cmos floppy ff_memless [last unloaded: cfg80211]
+> Pid: 27360, comm: automount Tainted: G      D W 2.6.27-rc3-mm1_64 #441
+> RIP: 0010:[<ffffffff8056c469>]  [<ffffffff8056c469>] _spin_lock+0x9/0x20
+> RSP: 0018:ffff88007839fd98  EFLAGS: 00010282
+> RAX: 0000000000000100 RBX: 0000000000000000 RCX: 0000000000000000
+> RDX: 0000000000000000 RSI: ffffffff807d5f28 RDI: 00000000000004ac
+> RBP: ffff88007839fd98 R08: 00000000cc62b515 R09: 00000000f8f36e74
+> R10: 0000000000000001 R11: 0000000000000000 R12: 00000000000004ac
+> R13: ffffffff807d5f28 R14: ffff880047e2e500 R15: ffff880047e2e680
+> FS:  00007fca50fa66f0(0000) GS:ffffffff8070a480(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> CR2: 00000000000004ac CR3: 000000004510f000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process automount (pid: 27360, threadinfo ffff88007839e000, task ffff880047e2e500)
+> Stack:  ffff88007839fdb8 ffffffff80238ab3 ffffffff80589750 0000000000000000
+>  ffff88007839fde8 ffffffff802b3f4b ffff8800010205b0 ffffffff80589750
+>  0000000000000000 0000000000000000 ffff88007839fe18 ffffffff80270446
+> Call Trace:
+>  [<ffffffff80238ab3>] get_task_mm+0x23/0x60
+>  [<ffffffff802b3f4b>] memrlimit_cgroup_mm_owner_changed+0x1b/0x80
+>  [<ffffffff80270446>] cgroup_mm_owner_callbacks+0x76/0x90
+>  [<ffffffff8023d4d4>] mm_update_next_owner+0x1c4/0x240
+>  [<ffffffff8023d65a>] exit_mm+0x10a/0x150
+>  [<ffffffff8023f2ac>] do_exit+0x1dc/0x940
+>  [<ffffffff8023375b>] ? wake_up_state+0xb/0x10
+>  [<ffffffff802485c8>] ? signal_wake_up+0x38/0x40
+>  [<ffffffff8023fa50>] do_group_exit+0x40/0xb0
+>  [<ffffffff8023fad2>] sys_exit_group+0x12/0x20
+>  [<ffffffff8020c65b>] system_call_fastpath+0x16/0x1b
+> Code: 00 00 55 48 89 e5 fa f0 81 2f 00 00 00 01 74 05 e8 dd 17 de ff c9 c3 66 66
+> 2e 0f 1f 84 00 00 00 00 00 55 b8 00 01 00 00 48 89 e5 <f0> 66 0f c1 07 38 e0 74
+> 06 f3 90 8a 07 eb f6 c9 c3 66 0f 1f 44
+> RIP  [<ffffffff8056c469>] _spin_lock+0x9/0x20
+>  RSP <ffff88007839fd98>
+> CR2: 00000000000004ac
+> ---[ end trace 4eaa2a86a8e2da22 ]---
+
+
+-- 
+	Balbir
