@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234AbYHSRC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756436AbYHSRDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756234AbYHSRC5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 13:02:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYHSRCt
+	id S1756436AbYHSRDu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 13:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYHSRDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 13:02:49 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:21291 "EHLO
-	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752126AbYHSRCs convert rfc822-to-8bit (ORCPT
+	Tue, 19 Aug 2008 13:03:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33223 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752751AbYHSRDi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 13:02:48 -0400
-X-BigFish: VPS-41(z21eWz1432R1447R1805M1fa4Lzzzzz32i6bh43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0K5UY05-02-893-01
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Tue, 19 Aug 2008 13:03:38 -0400
+Date: Tue, 19 Aug 2008 10:03:07 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+In-Reply-To: <20080819.041706.261399060.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.10.0808190952000.3324@nehalem.linux-foundation.org>
+References: <20080819.041706.261399060.davem@davemloft.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [Regression] 2.6.27-rc2-git4: suspend and power off fails on Asus M3A32-MVP
-Date: Tue, 19 Aug 2008 12:02:35 -0500
-Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AC8B@sausexmb4.amd.com>
-In-Reply-To: <200808191903.30437.rjw@sisk.pl>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Regression] 2.6.27-rc2-git4: suspend and power off fails on Asus M3A32-MVP
-Thread-Index: AckCHRXAzgSKT2yWSrSmHol8PD3ybAAADSDA
-References: <200808092321.16711.rjw@sisk.pl> <6453C3CB8E2B3646B0D020C112613273C5AC60@sausexmb4.amd.com> <200808191903.30437.rjw@sisk.pl>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Dave Jones" <davej@redhat.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>, <kernel-testers@vger.kernel.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Arnold, Frank" <Frank.Arnold@amd.com>
-X-OriginalArrivalTime: 19 Aug 2008 17:02:38.0115 (UTC) FILETIME=[622C5730:01C9021D]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > It is sufficient to revert commit 
-> > > 34ae7f35a21694aa5cb8829dc5142c39d73d6ba0 to
-> > > make things work again.
-> > 
-> > Thanks for the clear report.  I'll look into it and try to fix it.
-> 
-> Any news?
 
-Revert the patch for now.  I'm still looking into getting 
-a reliable reproduction and I do not have a fix at this time.
 
--Mark Langsdorf
-Operating System Research Center
-AMD
+On Tue, 19 Aug 2008, David Miller wrote:
+>
+>  114 files changed, 1533 insertions(+), 898 deletions(-)
 
+David, this absolutely _has_ to stop.
+
+We're after -rc3. Your network merges continue to be too f*cking large, 
+and this has been going on for many months now. If you cannot throttle 
+people, I will have to throttle you and stop pulling things.
+
+I'm going to take this, but really - this isn't just new drivers or 
+something like that that you've used as an excuse for big pulls before, 
+this is a _lot_ of changes to existing code.
+
+Tell your people to look at the regression list, and if it's not there, 
+they should stop.
+
+I realize that this problem is partly because when I see the pull requests 
+from you, I effectively see a combined pull from multiple different 
+sources, and in that sense it's not quite as big. But the networking pulls 
+have _consistently_ had the problem that they keep on being big not just 
+after -rc3, but after -rc4 and on, and I get the distinct feeling that 
+you're not moving the pain downwards, and aren't telling the people under 
+you to keep it clean and minimal and regressions only.
+
+For example, those BT updates looked in no way like regression fixes. So 
+what the f*ck were they doing there? And why do you think all those driver 
+updates cannot cause new regressions? 
+
+If it's not a regression fix, it shouldn't be there. It should be in the 
+queue for the next version. Why is that apparently so hard for the network 
+people?
+
+		Linus
