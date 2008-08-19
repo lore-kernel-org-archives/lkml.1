@@ -1,52 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758252AbYHSTPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490AbYHSTRO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758252AbYHSTPd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 15:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757737AbYHSTPM
+	id S1755490AbYHSTRO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 15:17:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbYHSTQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 15:15:12 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:50718 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755195AbYHSTPK (ORCPT
+	Tue, 19 Aug 2008 15:16:59 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:30498 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750925AbYHSTQ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 15:15:10 -0400
-Date: Tue, 19 Aug 2008 13:15:08 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Josef Bacik <jbacik@redhat.com>
-Cc: linux-kernel@vger.kernel.org, rwheeler@redhat.com, tglx@linutronix.de,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 1/2] add hrtimer_sleep_ns helper function
-Message-ID: <20080819191508.GD8318@parisc-linux.org>
-References: <20080806190819.GH27394@unused.rdu.redhat.com>
+	Tue, 19 Aug 2008 15:16:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=EazVKxEXwrWv9E8mqXw29Na71iomHGGMFquJ8HFaAr3saYIFHvPCgj2KhZI04/v/HZ
+         TNlXOfIjVRjszvhIwalxc6cytVpXp21qB9gznz8eGQFkR6SXdajMyKLVtXe/zX+6Ltxv
+         G4mV3nNPwQmf6mWko1W+NbMDrfbkgintzWzFQ=
+Message-ID: <ac9c93b10808191216q64c41222n7752c24c089e3303@mail.gmail.com>
+Date: Tue, 19 Aug 2008 21:16:56 +0200
+From: "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: inclusion of <endian.h> in a kernel header? ok or not?
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080806190819.GH27394@unused.rdu.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 03:08:19PM -0400, Josef Bacik wrote:
-> -static int __sched do_nanosleep(struct hrtimer_sleeper *t, enum hrtimer_mode mode)
-> +static int __sched do_nanosleep(struct hrtimer_sleeper *t, enum hrtimer_mode mode,
-> +				int interruptible)
->  {
->  	hrtimer_init_sleeper(t, current);
->  
->  	do {
-> -		set_current_state(TASK_INTERRUPTIBLE);
-> +		set_current_state(interruptible ? TASK_INTERRUPTIBLE :
-> +				  TASK_UNINTERRUPTIBLE);
+Is it ok to #include <endian.h> in a kernel header file.
+This is done in linux/patchkey.h and linux/soundcard.h but other
+places seem to prefer <asm/byteorder.h>
 
-I don't see any users (in this patch or the next) of people wanting
-uninterruptible nanosleeps.  We shouldn't be introducing new
-TASK_UNINTERRUPTIBLE users, but instead using TASK_KILLABLE if the user
-really can't cope with signals in a sensible manner.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Basically I am looking for a simple way to isolate a piece of endian
+specific code (something like #ifdef BIG_ENDIAN ...#endif
