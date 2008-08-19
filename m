@@ -1,90 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbYHSLGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbYHSLIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753927AbYHSLGp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 07:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbYHSLGi
+	id S1754091AbYHSLIW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 07:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbYHSLII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 07:06:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58153 "EHLO mx3.mail.elte.hu"
+	Tue, 19 Aug 2008 07:08:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53087 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751854AbYHSLGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 07:06:37 -0400
-Date: Tue, 19 Aug 2008 13:05:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, Stefani Seibold <stefani@seibold.net>,
-       Dario Faggioli <raistlin@linux.it>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
-Message-ID: <20080819110557.GA18608@elte.hu>
-References: <20080819103301.787700742@chello.nl> <20080819103844.459178947@chello.nl>
+	id S1752062AbYHSLIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 07:08:06 -0400
+Message-ID: <48AAA7F7.5090501@redhat.com>
+Date: Tue, 19 Aug 2008 07:01:11 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+Reply-To: rwheeler@redhat.com
+Organization: Red Hat
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080819103844.459178947@chello.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andreas Dilger <adilger@sun.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Josef Bacik <jbacik@redhat.com>,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 2/2] improve ext3 fsync batching
+References: <20080806190819.GH27394@unused.rdu.redhat.com> <20080806191536.GI27394@unused.rdu.redhat.com> <20080818213128.3a76d1e8.akpm@linux-foundation.org> <20080819054414.GM3392@webber.adilger.int>
+In-Reply-To: <20080819054414.GM3392@webber.adilger.int>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andreas Dilger wrote:
+> On Aug 18, 2008  21:31 -0700, Andrew Morton wrote:
+>   
+>> On Wed, 6 Aug 2008 15:15:36 -0400 Josef Bacik <jbacik@redhat.com> wrote:
+>>     
+>>> Using the following fs_mark command to test the speeds
+>>>
+>>> ./fs_mark -d /mnt/ext3-test -s 4096 -n 2000 -D 64 -t 2
+>>>
+>>> I got the following results (with write cacheing turned off)
+>>>
+>>> type	threads		with patch	without patch
+>>> sata	2		26.4		27.8
+>>> sata	4		44.6		44.4
+>>> sata	8		70.4		72.8
+>>> sata	16		75.2		89.6
+>>> sata	32		92.7		96.0
+>>> ram	1		2399.1		2398.8
+>>> ram	2		257.3		3603.0
+>>> ram	4		395.6		4827.9
+>>> ram	8		659.0		4721.1
+>>> ram	16		1326.4		4373.3
+>>> ram	32		1964.2		3816.3
+>>>
+>>> I used a ramdisk to emulate a "fast" disk since I don't happen to have a
+>>> clariion sitting around.  I didn't test single thread in the sata case as it
+>>> should be relatively the same between the two.  Thanks,
+>>>       
+>> This is all a bit mysterious.  That delay doesn't have much at all to
+>> do with commit times.  The code is looping around giving other
+>> userspace processes an opportunity to get scheduled and to run an fsync
+>> and to join the current transaction rather than having to start a new
+>> one.
+>>
+>> (that code was quite effective when I first added it, but in more
+>> recent testing, which was some time ago, it doesn't appear to provide
+>> any improvement.  This needs to be understood)
+>>     
+>
+> I don't think it is mysterious at all.  With a HZ=100 system 1 jiffie
+> is 10ms, which was comparable to the seek time of a disk, so sleeping
+> for 1 jiffie to avoid doing 2 transactions was a win.  With a flash
+> device (simulated by RAM here) seek time is 1ms so waiting 10ms
+> isn't going to be useful if there are only 2 threads and both have
+> already joined the transaction.
+>   
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+The code was originally tuned to S-ATA & ATA disk response times which 
+are closer to 12-15ms. Sleeping for 10ms (100HZ kernel) or 4ms (250HZ) 
+did not overly penalize the low thread count case and worked well for 
+higher thread counts (and ext3 special cases the single threaded writer 
+so no sleep happens).
 
-> Disable bandwidth control by default.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  kernel/sched.c |   17 +++++++----------
->  1 file changed, 7 insertions(+), 10 deletions(-)
-> 
-> Index: linux-2.6/kernel/sched.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sched.c
-> +++ linux-2.6/kernel/sched.c
-> @@ -824,9 +824,9 @@ static __read_mostly int scheduler_runni
->  
->  /*
->   * part of the period that we allow rt tasks to run in us.
-> - * default: 0.95s
-> + * default: inf
->   */
-> -int sysctl_sched_rt_runtime = 950000;
-> +int sysctl_sched_rt_runtime = -1;
+This is still a really, really good thing to do, but we need to sleep 
+less when the device characteristics are radically different. For 
+example, a fibre channel attached disk array drops that 12-15 ms down to 
+1.5 ms (not to mention RAM disks!).
+>   
+>> Also, I'd expect that the average commit time is much longer that one
+>> jiffy on most disks, and perhaps even on fast disks and maybe even on
+>> ramdisk.  So perhaps what's happened here is that you've increased the
+>> sleep period and more tasks are joining particular transactions.
+>>
+>> Or you've shortened the sleep time (which wasn't really doing anything
+>> useful) and this causes tasks to spend less time asleep.
+>>     
+>
+> I think both are true.  By making the sleep time dynamic it removes
+> the "useless" sleep time, but can also increase the sleep time if
+> there are many threads and the commit cost is better amortized over
+> more operations.
+>
+> Cheers, Andreas
+> --
+> Andreas Dilger
+> Sr. Staff Engineer, Lustre Group
+> Sun Microsystems of Canada, Inc.
+>
+>   
 
-The fixes look good to me, but this enabling of infinite RT task lockups 
-is not an improvement.
+It would be great to be able to use this batching technique for faster 
+devices, but we currently sleep 3-4 times longer waiting to batch for an 
+array than it takes to complete the transaction.
 
-The thing is, i got far more bugreports about locked up RT tasks where 
-the lockup was unintentional, than real bugreports about anyone 
-_intending_ for the whole box to come to a grinding halt because a 
-high-prio RT tasks is monopolizing the CPU.
+Thanks!
 
-In fact there's only been this artificial test so far.
+Ric
 
-So could you please just increase the chunking to 10 seconds or so, from 
-the current 1 second? Anyone locking up the system for more than 10 
-seconds via an RT task has to deal with many other issues already.
 
-I.e. keep the system borderline debuggable (up to 10 seconds delays are 
-_not_ nice so people will notice) - but it's still a marked improvement 
-from completly locked up desktops.
-
-And those who really need longer than 10 second periods can set it 
-higher, or even (if they want to live dangerously or run POSIX 
-conformance tests) make it infinite (set it to -1) - and will have to 
-deal with other things like the softlockup watchdog as well.
-
-Ok?
-
-	Ingo
