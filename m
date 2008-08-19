@@ -1,88 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757018AbYHSSBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbYHSSEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757018AbYHSSBX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 14:01:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbYHSSBO
+	id S1756352AbYHSSEA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 14:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbYHSSDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 14:01:14 -0400
-Received: from mercury.realtime.net ([205.238.132.86]:40341 "EHLO
-	ruth.realtime.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753042AbYHSSBN (ORCPT
+	Tue, 19 Aug 2008 14:03:51 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:20545 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753608AbYHSSDu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 14:01:13 -0400
-In-Reply-To: <20080817210659.06601a3b@hyperion.delvare>
-References: <for-27-patch1-0@bga.com> <200808151046.59590.jbarnes@virtuousgeek.org> <20080815205500.1945916f@hyperion.delvare> <200808151215.02499.jbarnes@virtuousgeek.org> <20080816062259.GB20541@kroah.com> <20080817210659.06601a3b@hyperion.delvare>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <98dd991a397dfe6393cec9f89eae0ba3@bga.com>
+	Tue, 19 Aug 2008 14:03:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id:from;
+        b=LjS+nMsLqyiF60r2RN6qoW7ByGQFOA0qAMk+hejEH4Ne5XJHRemWufS8FLelMu8Yr1
+         TydnreGm8d9+FjQN5kwEaAyAjcUmGwrGQ1FMRjLDGTfxAjD9xjdf+sw9CUuVZ94p70Zu
+         ZeU4OXhQbW04IjzOlY5w+nP4r65gD7hgqfgQ0=
+To: Alex Riesen <raa.lkml@gmail.com>
+Subject: Re: rt2500pci: rt2500pci_bbp_read: Error - BBPCSR register busy. Read failed.
+Date: Tue, 19 Aug 2008 20:03:44 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       rt2400-devel@lists.sourceforge.net
+References: <20080819173524.GA4708@steel.home>
+In-Reply-To: <20080819173524.GA4708@steel.home>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Cc: Michael Ellerman <michael@ellerman.id.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH/RFC] pci: dynids.use_driver_data considered harmful
-Date: Tue, 19 Aug 2008 13:01:47 -0500
-To: Jean Delvare <khali@linux-fr.org>
-X-Mailer: Apple Mail (2.624)
-X-Originating-IP: 216.126.174.45
+Content-Disposition: inline
+Message-Id: <200808192003.45072.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 17, 2008, at 2:06 PM, Jean Delvare wrote:
-> On Fri, 15 Aug 2008 23:22:59 -0700, Greg KH wrote:
->> On Fri, Aug 15, 2008 at 12:15:01PM -0700, Jesse Barnes wrote:
->>> On Friday, August 15, 2008 11:55 am Jean Delvare wrote:
->>>> In fact we can do even better than that. We could accept from
->>>> user-space only driver_data values which at least one device ID 
->>>> entry in
->>>> the driver already uses. That should be fairly easy to implement, 
->>>> and
->>>> would offer a level of safety an order of magnitude above what we 
->>>> have
->>>> at the moment... And it works both ways: if 0 is not a valid data 
->>>> for
->>>> some driver, that would force the user to provide a non-zero (and
->>>> valid) data value. And it guarantees that the user can't ask for
->>>> something the driver doesn't expect, so drivers don't even need 
->>>> extra
->>>> checks. And no need for a use_driver_data flag either.
->>>
->>> Meaning a driver audit of the usage?  Yeah that would be great.
+Hi,
 
-Thanks Jean for doing this.  Sometimes things move quickly after a long 
-stall.  I thought about proposing a similar patch and therefore have to 
-say Ack.
+> The rt2500 driver in 2.6.27-rc3 (v2.6.27-rc3-552-g3c3a15a) constantly
+> produces a lot of this messages in log (slowdown quite noticable):
+> 
+>     kernel: phy0 -> rt2500pci_bbp_read: Error - BBPCSR register busy. Read failed.
+>     kernel: phy0 -> rt2500pci_bbp_write: Error - BBPCSR register busy. Write failed.
+>     last message repeated 40 times
+>     kernel: phy0 -> rt2500pci_rf_write: Error - RFCSR register busy. Write failed.
+>     last message repeated 7 times
+>     kernel: phy0 -> rt2500pci_bbp_write: Error - BBPCSR register busy. Write failed.
 
->>>> The only drawback is that it prevents the user from passing a "new"
->>>> data value even if it would be valid. But honestly, I don't expect 
->>>> that
->>>> case to happen frequently... if ever at all. So I'd say the benefits
->>>> totally outweight the drawback.
+This is a bad sign, the slowdown is expected since the driver is continuously looping
+waiting for the registers to become available. Did this PCI card work in the past, and
+if so with what driver?
 
-There are a few drivers that could benefit, mainly ones that I 
-identified as using flags.  For example, the radeon driver uses 
-different fields of the data to specify crt controller, video output 
-device, etc.   I'm fine with deferring a flag for such drivers until 
-someone audits a driver and wants the support.
+Does this card work on another PC, or does the windows or legacy driver work with
+this card?
 
->>>>
->>>> If the interested people agree with the idea, I'll look into
->>>> implementing it.
->>>
->>> Well the audit would show if user supplied "new" values are needed; 
->>> otherwise
->>> the approach sounds good to me.
->>
->> That sounds reasonable, and should work properly.
->>
->> No objection from me.
+(Yes, all suggestions above imply suspicion about the hardware itself rather then the driver)
 
-so, if anyone asks,
+Ivo
 
-Concept-Acked-By: Milton Miller <miltonm@bga.com>
-
-milton
-
+> The card is a RaLink RT2500 PCI (not mini-PCI, it is a normal desktop
+> system, Gigabyte GA-8IPE1000 motherboard):
+> 
+>     02:04.0 Ethernet controller: RaLink RT2500 802.11g Cardbus/mini-PCI (rev 01)
+> 	    Subsystem: Micro-Star International Co., Ltd. Unknown device 6834
+> 	    Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+> 	    Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=slow >TAbort- <TAbort- <MAbort- >SERR- <PERR+
+> 	    Latency: 32, Cache Line Size: 32 bytes
+> 	    Interrupt: pin A routed to IRQ 11
+> 	    Region 0: Memory at fa000000 (32-bit, non-prefetchable) [size=8K]
+> 	    Capabilities: [40] Power Management version 2
+> 		    Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+> 		    Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> 
+> The system is a P4 with HT enabled (and active). The .config is below:
