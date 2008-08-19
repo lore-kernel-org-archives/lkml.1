@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbYHSHkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbYHSHoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754249AbYHSHkh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 03:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbYHSHk3
+	id S1754300AbYHSHoS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 03:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYHSHoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 03:40:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47190 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752274AbYHSHk2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 03:40:28 -0400
-Date: Tue, 19 Aug 2008 00:40:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ico Doornekamp <lkml@zevv.nl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: TIOCGWINSZ retuns old pty size after receiving SIGWINCH
-Message-Id: <20080819004026.2dac3ba6.akpm@linux-foundation.org>
-In-Reply-To: <20080810150859.GO3653@pruts.nl>
-References: <20080810150859.GO3653@pruts.nl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 19 Aug 2008 03:44:06 -0400
+Received: from gw.goop.org ([64.81.55.164]:39802 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752421AbYHSHoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 03:44:06 -0400
+Message-ID: <48AA79C4.8060309@goop.org>
+Date: Tue, 19 Aug 2008 00:44:04 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       x86@kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 0 of 9] x86/smp function calls: convert x86 tlb flushes
+ to use function calls [POST 2]
+References: <patchbomb.1219083817@localhost> <20080819004531.GI9914@elte.hu> <20080819073214.GD9807@one.firstfloor.org>
+In-Reply-To: <20080819073214.GD9807@one.firstfloor.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 Aug 2008 17:08:59 +0200 Ico Doornekamp <lkml@zevv.nl> wrote:
+Andi Kleen wrote:
+>> nice stuff!
+>>     
+>
+> If only those 35% wouldn't be there ...
+>   
 
-> 
-> Hello,
-> 
-> Recently my X terminals showed annoying behaviour where the application
-> in the terminal was not resized properly to the actual size of the X
-> terminal emulator window, resulting in a lot of misaligned text on the
-> screen. Hunting the issue down from the windowmanager and the terminal
-> emulator program, I suspect the problem might lie in the kernel. I'm
-> running 2.6.26 on a dual core i386.
-> 
-> What I see is this: the userspace application receives a SIGWINCH signal
-> and acquires the terminal size usign the TIOCGWINSZ ioctl. It seems that
-> in some cases the old instead of the new terminal size is returned.
-> A small delay before the ioctl seems to 'fix' this behaviour.
-> 
-> I noticed some changes involving locking in the the pty code in the last
-> kernel verions, could one of these changes cause the above behaviour ? If
-> so, wouldn't this affect much more users ?
-> 
+Don't pay attention to that number.  It's only the extra latency of a HT
+context->HT context function call + tlb flush.  Which means 1) the tlb
+is shared anyway, so the extra flush is redundant, 2) they're not really
+concurrent, 3) it's going down the single-cpu call, rather than the
+multi-cpu one, 4) it's only measuring the latency for a particular tlb
+flush, and doesn't take into account any throughput improvements the
+extra queueing may add.
 
-hm, that code is pretty simple and although it does the SIGWINCH and
-the window-size setting in a peculiar order, it looks to be race-free.
+I don't really know what the nett consequence of all that is, but it
+means the number has almost no bearing on multicore results, esp with >2
+cores.
 
-Approximately what proportion of the time does it go wrong?
+    J
