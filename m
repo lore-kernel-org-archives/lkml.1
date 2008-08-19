@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758871AbYHSVlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758682AbYHSVn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758871AbYHSVlg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757771AbYHSVkd
+	id S1758682AbYHSVn6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:43:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753615AbYHSVnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:40:33 -0400
-Received: from mail-gx0-f29.google.com ([209.85.217.29]:43305 "EHLO
-	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757229AbYHSVkc (ORCPT
+	Tue, 19 Aug 2008 17:43:50 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38605 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752849AbYHSVnt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:40:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=E0nSTMYlveAsiT1TXkxlCuT9M3MJlBbyKJnV/roVQPh4UqIECHSTiw2plEenKr0Hew
-         kEuhJv/YwB97S1FKO6XzfBVPulSuTWuYXd30kLzWv1bQOfYHZSGXQA1FpZS9ct/Jc0+z
-         ab5EwLKRmki3x1xTnIcK0CnzL6c2bb/Hxnk7I=
-Date: Wed, 20 Aug 2008 00:37:08 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: "Randy.Dunlap" <rdunlap@xenotime.net>
-Cc: penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       mpm@selenic.com, tglx@linutronix.de, rostedt@goodmis.org,
-       cl@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       tzanussi@gmail.com
-Subject: Re: [PATCH 1/5] Revert "kmemtrace: fix printk format warnings"
-Message-ID: <20080819213708.GA5861@localhost>
-References: <1219167807-5407-1-git-send-email-eduard.munteanu@linux360.ro> <Pine.LNX.4.64.0808191049260.7877@shark.he.net> <20080819175440.GA5435@localhost> <Pine.LNX.4.64.0808191229330.7877@shark.he.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0808191229330.7877@shark.he.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 19 Aug 2008 17:43:49 -0400
+Date: Tue, 19 Aug 2008 21:29:37 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Cc: "Anton Vorontsov" <avorontsov@ru.mvista.com>,
+       "Alessandro Zummo" <a.zummo@towertech.it>,
+       "Andrew Morton" <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
+Subject: Re: [PATCH 1/2] rtc: rtc-ds1374: fix 'no irq' case handling
+Message-ID: <20080819212937.01dfd024@lxorguk.ukuu.org.uk>
+In-Reply-To: <9e4733910808191339s28a05f90pef57961e8d24fbdb@mail.gmail.com>
+References: <20080812161733.GA32164@oksana.dev.rtsoft.ru>
+	<9e4733910808191339s28a05f90pef57961e8d24fbdb@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 19, 2008 at 12:32:14PM -0700, Randy.Dunlap wrote:
-> > > 
-> > > Such as what?
-> > > 
-> > > Can marker probes be fixed instead?
+> Shouldn't this be
 > 
-> Did you answer this?
-
-Yes, they can be fixed, but the probe functions will likely show
-warnings unless the way we parse vargs is fixed as well.
-
-> > > After seeing & fixing lots of various warnings in the last few days,
-> > > I'm thinking that people don't look at/heed warnings nowadays.  Sad.
-> > > Maybe there are just so many that they are lost in the noise.
-> > 
-> > Hi,
-> > 
-> > Check the next patch in the series, it provides the alternate fix.
+> >  -       if (client->irq <= NO_IRQ)
 > 
-> Yep, I saw that later.
-> 
-> > I favor this approach more because it involves fewer changes and we
-> > don't have to use things like "%zu" (which make data type size less
-> > apparent).
-> 
-> %zu is regular C language.  I.e., I don't get the data type not being
-> apparent issue...
+> instead of
 
-Yes, I know. But I feel like using unsigned long is consistent with the
-way we handle the call site pointers and gfp_t. Pointers are cast to
-unsigned long (in _RET_IP_) and size_t's actual range and size is more
-apparent if it's cast to unsigned long as well (since allocation sizes
-should scale the same as pointers do, and we know sizeof(unsigned long)
-== sizeof(void *) on GCC).
+NO_IRQ is obsolete. client->irq != is the test and IRQ numbers are
+unsigned.
 
-> Maybe kmemtrace should just make everything be long long... :(
-
-I was merely trying to sort this out faster and more consistent.
-
-> -- 
-> ~Randy
+Alan
