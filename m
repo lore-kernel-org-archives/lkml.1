@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756724AbYHSNtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbYHSNt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756724AbYHSNtX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 09:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756428AbYHSNsO
+	id S1756912AbYHSNt4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 09:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbYHSNs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 09:48:14 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:39717 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756418AbYHSNsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 09:48:13 -0400
-Date: Tue, 19 Aug 2008 16:48:01 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: dhowells@redhat.com
-Cc: linux-kernel@vger.kernel.org, Brice Goglin <brice@myri.com>,
-       netdev@vger.kernel.org
-Subject: frv must provide ioremap_wc
-Message-ID: <20080819134801.GI8852@cs181140183.pp.htv.fi>
+	Tue, 19 Aug 2008 09:48:57 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:40771 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756619AbYHSNs4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 09:48:56 -0400
+Message-ID: <48AACF41.5090905@linux.vnet.ibm.com>
+Date: Tue, 19 Aug 2008 19:18:49 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Hirokazu Takahashi <taka@valinux.co.jp>
+CC: ryov@valinux.co.jp, kamezawa.hiroyu@jp.fujitsu.com,
+       xen-devel@lists.xensource.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       dm-devel@redhat.com, agk@sourceware.org, xemul@openvz.org,
+       fernando@oss.ntt.co.jp
+Subject: Re: [PATCH 4/7] bio-cgroup: Split the cgroup memory subsystem into
+ two parts
+References: <20080818103938.8b4e8bfa.kamezawa.hiroyu@jp.fujitsu.com> <20080819.122811.59660409.ryov@valinux.co.jp> <48AA4594.1000908@linux.vnet.ibm.com> <20080819.214635.70071441.taka@valinux.co.jp>
+In-Reply-To: <20080819.214635.70071441.taka@valinux.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<--  snip  -->
+Hirokazu Takahashi wrote:
+> Hi,
+> 
+>>>> I'm now writing remove-lock-page-cgroup patches. it works well.
+>>>> please wait for a while...
+>>> I'm looking forward to those patches.
+>>>
+>>> By the way, I'm glad if memory-cgroup has a feature which can make a
+>>> page_cgroup move between cgroups with small overhead. It makes
+>>> bio-cgroup improve the accuracy of tracking down pages.
+>> Page movement can be a very expensive operation and is proportional to the size
+>> of the control group. I think movement should be an optional feature, if we ever
+>> add it.
+> 
+> Yes, we should avoid moving pages as far as it is balanced fairly well
+> between groups.
+> 
+> But I want to move pages between bio-cgoups in case it started charging
+> quite a few I/O requests to a wrong bio-cgroup. I think it will be okay
+> if pages moves between bio-cgroups, but they don't need to move between
+> memory cgroups. I know the latter is really heavy and the effect seems
+> to be so limited.
 
-...
-  CC      drivers/net/myri10ge/myri10ge.o
-myri10ge.c: In function 'myri10ge_probe':
-myri10ge.c:3725: error: implicit declaration of function 'ioremap_wc'
-...
-make[4]: *** [drivers/net/myri10ge/myri10ge.o] Error 1
-
-<--  snip  -->
-
-http://kerneltrap.org/mailarchive/linux-netdev/2008/8/11/2889824/thread 
-contains a discussion of the same problem on ARM.
-
-cu
-Adrian
+I was under the impression that you wanted memory-cgroup to provide the page
+movement feature. That is not on the TODO list for us now.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Balbir
