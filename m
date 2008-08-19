@@ -1,179 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbYHSHCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbYHSHGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753317AbYHSHCU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 03:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYHSHCJ
+	id S1753566AbYHSHGB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 03:06:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYHSHFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 03:02:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45713 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751085AbYHSHCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 03:02:08 -0400
-Message-ID: <48AA6F67.1020805@redhat.com>
-Date: Tue, 19 Aug 2008 08:59:51 +0200
-From: Chris Lalancette <clalance@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 19 Aug 2008 03:05:52 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:45029 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751928AbYHSHFv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 03:05:51 -0400
+Date: Tue, 19 Aug 2008 10:05:48 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+cc: alan@lxorguk.ukuu.org.uk
+Subject: [PATCH] nubus: fix mis-indented statement
+Message-ID: <Pine.LNX.4.64.0808190959040.4551@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH]: Expand Xen blkfront for > 16 xvd
-Content-Type: multipart/mixed;
- boundary="------------000600060904070801000403"
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-977394540-1219129548=:4551"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000600060904070801000403
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Until recently, the maximum number of xvd block devices you could attach to
-a Xen domU was 16.  This limitation turned out to be problematic for some users,
-so it was expanded to handle a much larger number of disks.  However, this
-requires a couple of changes in the way that blkfront scans for disks.  This
-functionality is already present in the Xen linux-2.6.18-xen.hg tree; the
-attached patch adds this functionality to the mainline xen-blkfront
-implementation.  I successfully tested it on a 2.6.25 tree.  I build tested it
-on 2.6.27-rc3, but couldn't get that tree to boot due to some other bug.
+---696208474-977394540-1219129548=:4551
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-Signed-off-by: Chris Lalancette <clalance@redhat.com>
-Acked-by: Jeremy Fitzhardinge <jeremy@goop.org>
 
---------------000600060904070801000403
-Content-Type: text/x-patch;
- name="lkml-blkfront-expand-xvd.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="lkml-blkfront-expand-xvd.patch"
+It seems this is the right way around because otherwise the
+len usage in the outer loop would be pretty pointless.
 
-diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
-index 3ca643c..bff602c 100644
---- a/drivers/block/xen-blkfront.c
-+++ b/drivers/block/xen-blkfront.c
-@@ -105,15 +105,17 @@ static DEFINE_SPINLOCK(blkif_io_lock);
- #define GRANT_INVALID_REF	0
- 
- #define PARTS_PER_DISK		16
-+#define PARTS_PER_EXT_DISK      256
- 
- #define BLKIF_MAJOR(dev) ((dev)>>8)
- #define BLKIF_MINOR(dev) ((dev) & 0xff)
- 
--#define DEV_NAME	"xvd"	/* name in /dev */
-+#define EXT_SHIFT 28
-+#define EXTENDED (1<<EXT_SHIFT)
-+#define VDEV_IS_EXTENDED(dev) ((dev)&(EXTENDED))
-+#define BLKIF_MINOR_EXT(dev) ((dev)&(~EXTENDED))
- 
--/* Information about our VBDs. */
--#define MAX_VBDS 64
--static LIST_HEAD(vbds_list);
-+#define DEV_NAME	"xvd"	/* name in /dev */
- 
- static int get_id_from_freelist(struct blkfront_info *info)
- {
-@@ -386,31 +388,60 @@ static int xlvbd_barrier(struct blkfront_info *info)
- }
- 
- 
--static int xlvbd_alloc_gendisk(int minor, blkif_sector_t capacity,
--			       int vdevice, u16 vdisk_info, u16 sector_size,
--			       struct blkfront_info *info)
-+static int xlvbd_alloc_gendisk(blkif_sector_t capacity,
-+			       struct blkfront_info *info,
-+			       u16 vdisk_info, u16 sector_size)
- {
- 	struct gendisk *gd;
- 	int nr_minors = 1;
- 	int err = -ENODEV;
-+	unsigned int offset;
-+	int minor;
-+	int nr_parts;
- 
- 	BUG_ON(info->gd != NULL);
- 	BUG_ON(info->rq != NULL);
- 
--	if ((minor % PARTS_PER_DISK) == 0)
--		nr_minors = PARTS_PER_DISK;
-+	if ((info->vdevice>>EXT_SHIFT) > 1) {
-+		/* this is above the extended range; something is wrong */
-+		printk(KERN_WARNING "blkfront: vdevice 0x%x is above the extended range; ignoring\n", info->vdevice);
-+		return -ENODEV;
-+	}
-+
-+	if (!VDEV_IS_EXTENDED(info->vdevice)) {
-+		minor = BLKIF_MINOR(info->vdevice);
-+		nr_parts = PARTS_PER_DISK;
-+	} else {
-+		minor = BLKIF_MINOR_EXT(info->vdevice);
-+		nr_parts = PARTS_PER_EXT_DISK;
-+	}
-+
-+	if ((minor % nr_parts) == 0)
-+		nr_minors = nr_parts;
- 
- 	gd = alloc_disk(nr_minors);
- 	if (gd == NULL)
- 		goto out;
- 
--	if (nr_minors > 1)
--		sprintf(gd->disk_name, "%s%c", DEV_NAME,
--			'a' + minor / PARTS_PER_DISK);
--	else
--		sprintf(gd->disk_name, "%s%c%d", DEV_NAME,
--			'a' + minor / PARTS_PER_DISK,
--			minor % PARTS_PER_DISK);
-+	offset = minor / nr_parts;
-+
-+	if (nr_minors > 1) {
-+		if (offset < 26)
-+			sprintf(gd->disk_name, "%s%c", DEV_NAME, 'a' + offset);
-+		else
-+			sprintf(gd->disk_name, "%s%c%c", DEV_NAME,
-+				'a' + ((offset / 26)-1), 'a' + (offset % 26));
-+	} else {
-+		if (offset < 26)
-+			sprintf(gd->disk_name, "%s%c%d", DEV_NAME,
-+				'a' + offset,
-+				minor & (nr_parts - 1));
-+		else
-+			sprintf(gd->disk_name, "%s%c%c%d", DEV_NAME,
-+				'a' + ((offset / 26) - 1),
-+				'a' + (offset % 26),
-+				minor & (nr_parts - 1));
-+	}
- 
- 	gd->major = XENVBD_MAJOR;
- 	gd->first_minor = minor;
-@@ -699,8 +730,13 @@ static int blkfront_probe(struct xenbus_device *dev,
- 	err = xenbus_scanf(XBT_NIL, dev->nodename,
- 			   "virtual-device", "%i", &vdevice);
- 	if (err != 1) {
--		xenbus_dev_fatal(dev, err, "reading virtual-device");
--		return err;
-+		/* go looking in the extended area instead */
-+		err = xenbus_scanf(XBT_NIL, dev->nodename, "virtual-device-ext",
-+				   "%i", &vdevice);
-+		if (err != 1) {
-+			xenbus_dev_fatal(dev, err, "reading virtual-device");
-+			return err;
-+		}
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+---
+ drivers/nubus/nubus.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/nubus/nubus.c b/drivers/nubus/nubus.c
+index 2f047e5..f5f7584 100644
+--- a/drivers/nubus/nubus.c
++++ b/drivers/nubus/nubus.c
+@@ -126,7 +126,7 @@ static void nubus_advance(unsigned char **ptr, int len, int map)
+ 	{
+ 		while(not_useful(p,map))
+ 			p++;
+-			p++;
++		p++;
+ 		len--;
  	}
- 
- 	info = kzalloc(sizeof(*info), GFP_KERNEL);
-@@ -861,9 +897,7 @@ static void blkfront_connect(struct blkfront_info *info)
- 	if (err)
- 		info->feature_barrier = 0;
- 
--	err = xlvbd_alloc_gendisk(BLKIF_MINOR(info->vdevice),
--				  sectors, info->vdevice,
--				  binfo, sector_size, info);
-+	err = xlvbd_alloc_gendisk(sectors, info, binfo, sector_size);
- 	if (err) {
- 		xenbus_dev_fatal(info->xbdev, err, "xlvbd_add at %s",
- 				 info->xbdev->otherend);
+ 	*ptr = p;
+-- 
+1.5.2.2
 
---------------000600060904070801000403--
+---696208474-977394540-1219129548=:4551--
