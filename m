@@ -1,102 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbYHSNYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYHSNd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752845AbYHSNYT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 09:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750882AbYHSNYJ
+	id S1753371AbYHSNd2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 09:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYHSNdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 09:24:09 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:56470 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbYHSNYJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 09:24:09 -0400
-Message-ID: <48AAC8E7.1030506@novell.com>
-Date: Tue, 19 Aug 2008 09:21:43 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Tue, 19 Aug 2008 09:33:20 -0400
+Received: from ns2.suse.de ([195.135.220.15]:50374 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751337AbYHSNdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 09:33:19 -0400
+From: Oliver Neukum <oneukum@suse.de>
+Organization: Novell
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Power management for SCSI
+Date: Tue, 19 Aug 2008 15:33:14 +0200
+User-Agent: KMail/1.9.9
+Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org,
+       James.Bottomley@hansenpartnership.com,
+       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
+References: <Pine.LNX.4.44L0.0808151110380.23570-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808151110380.23570-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH RT 2/2] ftrace: fix elevated preempt_count in	wakeup-tracer
-References: <20080819091817.21725.81831.stgit@dev.haskins.net>	 <20080819091923.21725.41087.stgit@dev.haskins.net> <1219151556.10800.383.camel@twins>
-In-Reply-To: <1219151556.10800.383.camel@twins>
-X-Enigmail-Version: 0.95.6
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigC878401C36B1637DB7921246"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808191533.15244.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigC878401C36B1637DB7921246
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+Am Freitag 15 August 2008 17:25:13 schrieb Alan Stern:
+> On Fri, 15 Aug 2008, Oliver Neukum wrote:
+> 
+> > Am Freitag 15 August 2008 00:25:28 schrieb Alan Stern:
 
-Peter Zijlstra wrote:
-> On Tue, 2008-08-19 at 05:19 -0400, Gregory Haskins wrote:
->  =20
->> Suggested by Steve Rostedt to fix an observed "+1" in the preempt-coun=
-t
->>
->> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->> ---
->>
->>  kernel/trace/trace_sched_wakeup.c |    2 ++
->>  1 files changed, 2 insertions(+), 0 deletions(-)
->>
->> diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sc=
-hed_wakeup.c
->> index c3a15bd..ae523fd 100644
->> --- a/kernel/trace/trace_sched_wakeup.c
->> +++ b/kernel/trace/trace_sched_wakeup.c
->> @@ -70,7 +70,9 @@ wakeup_tracer_call(unsigned long ip, unsigned long p=
-arent_ip)
->>  	if (task_cpu(wakeup_task) !=3D cpu)
->>  		goto unlock;
->> =20
->> +	preempt_enable_no_resched_notrace();
->>  	trace_function(tr, data, ip, parent_ip, flags);
->> +	preempt_disable_notrace();
->>    =20
->
-> Is preempt_count > 1 at all times here?
->
-> If not, it might drop to 0 and any interrupt might cause preemption -
-> and its not obvious to me that that is actually correct.
->  =20
-According to Steve, we are already in an interrupt-disabled section=20
-here, but I will defer to him.  He suggested I try this over an IRC=20
-conversation when I noticed a strange wakeup trace, and it seems to have =
+Hi,
 
-solved the problem.
+> > Yes, that means under some circumstances you cannot suspend the
+> > member closest to the CPU, but under others you can. In a tree this question
+> > is very simply answered, on a bus you will actually need to compute whether
+> > you need the connection to the bus.
 
-Im really sending this patch more of a reminder to Steve that he was=20
-going to fix this, rather than to accept my patch as is.  Of course I=20
-don't mind if it is accepted as is, and I can make the prologue/comments =
+> More to the point is whether you should ever suspend any of these 
+> devices if there can be multiple initiators.  But that's a separate 
+> question.
 
-more descriptive if necessary.  But if Steve wants to do something like=20
-fold this into his ftrace series, that is fine too.  I just didn't want=20
-it to be forgotten ;)
+But one that needs to be addressed.
 
--Greg
+> > It is true that you won't need the bus if all other members on the bus have
+> > been suspended, but that's not very good because physically spinning
+> > down and up a disk is a very expensive operation, while suspending a host
+> > adapter can be trivial.
+> 
+> What is your point?  You seem to be saying that it would be nice to
+> suspend a host adapter at times when some of the SCSI targets beneath
+> it are not suspended.  I agree, but how would you determine whether
+> such a thing was safe?
+
+I suggest by talking to the HLDs.
+
+It seems to me that abstractly talking there are three criteria for suspension
+
+- the cpu needs to talk to the device now
+- the device may need to talk to the CPU at unpredictable times
+- suspending has side effects
+
+Suspension in USB has always side effects. That's not true for other
+subsystems. It seems to me that for the general case we need to divorce
+the notion of a child being suspended itself from a child agreeing to its
+parent being suspended.
+
+	Regards
+		Oliver
 
 
-
---------------enigC878401C36B1637DB7921246
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkiqyOcACgkQlOSOBdgZUxmLDACfTlvc2CWpJogDCOvz6oEaCnDK
-lTMAnivubK1GAQcsHM/6oJdz65pZ9KXN
-=wIqa
------END PGP SIGNATURE-----
-
---------------enigC878401C36B1637DB7921246--
