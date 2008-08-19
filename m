@@ -1,144 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757891AbYHSTCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbYHSTC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757891AbYHSTCV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 15:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbYHSTCG
+	id S1757984AbYHSTC6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 15:02:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbYHSTCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 15:02:06 -0400
-Received: from el-out-1112.google.com ([209.85.162.183]:13492 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756168AbYHSTCD (ORCPT
+	Tue, 19 Aug 2008 15:02:49 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:38540 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751943AbYHSTCs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 15:02:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=QVNKQJlW9smBIuNzQNv/LV3RosbNE2JrAxjJu6fLgKEZ3SLQo1cmaFZOqIvwSV6cH1
-         9fn+RQ/l1qPpfrZuXzAKaLMdH/Mrl417dq0wWNPy0Ptqcr8jCr5se20ALZzU74KHFLlS
-         2tRpcV6YI/i/iPb1AX8Egsy/avtGs0fbqB28g=
-Subject: Re: [PATCH 18/23] sparc: use the new byteorder headers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080819.014350.79505195.davem@davemloft.net>
-References: <1219106897.17033.71.camel@brick>
-	 <20080819.014350.79505195.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 19 Aug 2008 12:02:00 -0700
-Message-Id: <1219172520.17033.85.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 19 Aug 2008 15:02:48 -0400
+Message-ID: <48AB1817.8040100@cs.helsinki.fi>
+Date: Tue, 19 Aug 2008 21:59:35 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rdunlap@xenotime.net,
+       mpm@selenic.com, tglx@linutronix.de, rostedt@goodmis.org,
+       mathieu.desnoyers@polymtl.ca, tzanussi@gmail.com
+Subject: Re: [PATCH 3/5] SLUB: Replace __builtin_return_address(0) with	_RET_IP_.
+References: <1219167807-5407-1-git-send-email-eduard.munteanu@linux360.ro> <1219167807-5407-2-git-send-email-eduard.munteanu@linux360.ro> <1219167807-5407-3-git-send-email-eduard.munteanu@linux360.ro> <48AB0D69.4090703@linux-foundation.org> <20080819182423.GA5520@localhost> <48AB1769.3040703@linux-foundation.org>
+In-Reply-To: <48AB1769.3040703@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-19 at 01:43 -0700, David Miller wrote:
-> From: Harvey Harrison <harvey.harrison@gmail.com>
-> Date: Mon, 18 Aug 2008 17:48:17 -0700
+Christoph Lameter wrote:
+> Eduard - Gabriel Munteanu wrote:
+>> On Tue, Aug 19, 2008 at 01:14:01PM -0500, Christoph Lameter wrote:
+>>> Eduard - Gabriel Munteanu wrote:
+>>>
+>>>>  void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
+>>>>  {
+>>>> -	return slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
+>>>> +	return slab_alloc(s, gfpflags, -1, (void *) _RET_IP_);
+>>>>  }
+>>> Could you get rid of the casts by changing the type of parameter of slab_alloc()?
+>> I just looked at it and it isn't a trivial change. slab_alloc() calls
+>> other functions which expect a void ptr. Even if slab_alloc() were to
+>> take an unsigned long and then cast it to a void ptr, other functions do
+>> call slab_alloc() with void ptr arguments (so the casts would move
+>> there).
+>>
+>> I'd rather have this merged as it is and change things later, so that
+>> kmemtrace gets some testing from Pekka and others. 
+>>
 > 
-> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> Well maybe this patch will do it then:
 > 
-> I'm not so sure about this.
+> Subject: slub: Use _RET_IP and use "unsigned long" for kernel text addresses
 > 
-> If I understand the ___swab*() inlines in linux/swab.h,
-> it has the following priority of swapping methods:
+> Use _RET_IP_ instead of buildint_return_address() and make slub use unsigned long
+> instead of void * for addresses.
 > 
-> 1) If arch defines __arch_swab*(), this is used.
-> 
-> 2) If arch defines __arch_swab*p(), variable is popped onto
->    the stack and we do the pointer based operation.
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
-2a) If defined(__SWAB_64_THRU_32__) swab64 uses swab32 internally.
+Heh, heh. I'm happy to take your patch or alternatively you can ACK mine 
+(which is slightly different):
 
-> 
-> 3) Else normal C version is used.
-> 
-
-Your above understanding is correct.
-
-> Case #2 is totally disagree with.
-> 
-> Especially for small swaps such as 16-bit the inline expansion
-> of the portable C code is going to be much better than popping
-> the variable onto and then back off the stack.
-> 
-
-I thought gcc wasn't too bad for this case these days for attribute_const
-inlines?  But without evidence to back it up, you're right that the
-generic C version should just be used if an arch hasn't provided an
-override.
-
-> Sparc 64-bit only provides the __arch_swab*p() routines so
-> #2 is what will in fact be used here.
-> 
-> So NACK based upon that analysis.
-
-From: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: [PATCH] byteorder: use generic C version for value byteswapping
-
-David Miller noted that popping the variable on and back off the stack
-will probably be more expensive than just using the generic C byteswapping
-code.  Remove the fallback to the swap-from-pointer helper when no
-arch override for the value byteswap has been defined.
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- include/linux/swab.h |   10 ----------
- 1 files changed, 0 insertions(+), 10 deletions(-)
-
-diff --git a/include/linux/swab.h b/include/linux/swab.h
-index 270d5c2..bbed279 100644
---- a/include/linux/swab.h
-+++ b/include/linux/swab.h
-@@ -47,8 +47,6 @@ static inline __attribute_const__ __u16 ___swab16(__u16 val)
- {
- #ifdef __arch_swab16
- 	return __arch_swab16(val);
--#elif defined(__arch_swab16p)
--	return __arch_swab16p(&val);
- #else
- 	return __const_swab16(val);
- #endif
-@@ -58,8 +56,6 @@ static inline __attribute_const__ __u32 ___swab32(__u32 val)
- {
- #ifdef __arch_swab32
- 	return __arch_swab32(val);
--#elif defined(__arch_swab32p)
--	return __arch_swab32p(&val);
- #else
- 	return __const_swab32(val);
- #endif
-@@ -69,8 +65,6 @@ static inline __attribute_const__ __u64 ___swab64(__u64 val)
- {
- #ifdef __arch_swab64
- 	return __arch_swab64(val);
--#elif defined(__arch_swab64p)
--	return __arch_swab64p(&val);
- #elif defined(__SWAB_64_THRU_32__)
- 	__u32 h = val >> 32;
- 	__u32 l = val & ((1ULL << 32) - 1);
-@@ -84,8 +78,6 @@ static inline __attribute_const__ __u32 ___swahw32(__u32 val)
- {
- #ifdef __arch_swahw32
- 	return __arch_swahw32(val);
--#elif defined(__arch_swahw32p)
--	return __arch_swahw32p(&val);
- #else
- 	return __const_swahw32(val);
- #endif
-@@ -95,8 +87,6 @@ static inline __attribute_const__ __u32 ___swahb32(__u32 val)
- {
- #ifdef __arch_swahb32
- 	return __arch_swahb32(val);
--#elif defined(__arch_swahb32p)
--	return __arch_swahb32p(&val);
- #else
- 	return __const_swahb32(val);
- #endif
--- 
-1.6.0.274.g8aacc
-
-
+http://lkml.org/lkml/2008/8/19/336
 
