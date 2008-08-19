@@ -1,507 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbYHSAcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbYHSAev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756154AbYHSAcG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 20:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbYHSAbm
+	id S1755948AbYHSAev (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 20:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbYHSAen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 20:31:42 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46728 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752933AbYHSAbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 20:31:39 -0400
-Date: Tue, 19 Aug 2008 02:31:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Justin Madru <jdm64@gawab.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Michal Januszewski <spock@gentoo.org>,
-       Antonino Daplas <adaplas@gmail.com>, Greg KH <gregkh@suse.de>,
-       Rafael Wysocki <rjw@sisk.pl>,
-       Romano Giannetti <romano.giannetti@gmail.com>,
-       Adrian Bunk <bunk@kernel.org>,
-       Jeremy Nickurak <kernel-bugs@atrus.rifetech.com>
-Subject: Re: Backport hr-tick fix into .25/.26
-Message-ID: <20080819003110.GH9914@elte.hu>
-References: <48A9BDC0.9070800@gawab.com>
+	Mon, 18 Aug 2008 20:34:43 -0400
+Received: from web82104.mail.mud.yahoo.com ([209.191.84.217]:20386 "HELO
+	web82104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752314AbYHSAem (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 20:34:42 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=OywTRfgdY8qEnccgZBo6BgEoIwGbf62rF40cT+ClkJsWVbxA2JDBGWFkA0C9JwutjhN/6pRS4zSThTXl6wb/zbxrx6UnosC4X7i4INRDL4N17/oFU69+v5hIXjswPMJG6oG755cKXI0KlB5LyfJlyWxmTLBVgMp9/p1j8zwdjt0=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Mon, 18 Aug 2008 17:34:41 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- connection between HPET and lockups found
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       netdev <netdev@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48A9BDC0.9070800@gawab.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-ID: <887650.67133.qm@web82104.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Justin Madru <jdm64@gawab.com> wrote:
+As part of my experiments to determine the root cause of my lockups,
+I was searching through the kernel sources trying to discover any
+connection between the changes in the commits introducing the lockups
+(3def3d6d... and 1e934dda...) and the fact that "hpet=disable" 
+alleviates the lockups.
 
-> This commit introduced the bug.
-> commit 8f4d37ec073c17e2d4aa8851df5837d798606d6f
-> sched: high-res preemption tick
+I finally discovered something that looks promising!
 
-> And this one fixed it
->
-> commit 31656519e132f6612584815f128c83976a9aaaef
-> sched, x86: clean up hrtick implementation
 
-hm, the backport of 31656519 is a bit intrusive.
+Both of those commits introduce changes involving insert_resource(),
+and I found the function hpet_insert_resource() in
+arch/x86/kernel/acpi/boot.c that also uses insert_resource():
 
-find below is an (untested!) version of it - i havent even build-tested 
-it. Does it work for you? But this is Greg's call really.
+static __init int hpet_insert_resource(void)
+{
+        if (!hpet_res)
+                return 1;
 
-	Ingo
+        return insert_resource(&iomem_resource, hpet_res);
+}
 
--------------->
->From 76cc8db4610c37f0d6b73d224517ce2526b681b6 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 19 Aug 2008 02:29:00 +0200
-Subject: [PATCH] sched, x86: clean up hrtick implementation
 
-random uvesafb failures were reported against Gentoo:
+The effect of "hpet=disable" is to prevent the hpet_res pointer,
 
-  http://bugs.gentoo.org/show_bug.cgi?id=222799
+    static struct __initdata resource *hpet_res;
 
-and Mihai Moldovan bisected it back to:
+from being attached to memory, keeping it NULL and causing the
+return value to indicate that the HPET resource was not assigned.
 
-> 8f4d37ec073c17e2d4aa8851df5837d798606d6f is first bad commit
-> commit 8f4d37ec073c17e2d4aa8851df5837d798606d6f
-> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date:   Fri Jan 25 21:08:29 2008 +0100
->
->    sched: high-res preemption tick
+When not using "hpet=disable", the memory location of hpet_res
+is added to the iomem_resource tree.  The code that obtains the
+memory for hpet_res is in the same file, in the lines immediately
+preceding:
 
-Linus suspected it to be hrtick + vm86 interaction and observed:
+static int __init acpi_parse_hpet(struct acpi_table_header *table)
+{
+        struct acpi_table_hpet *hpet_tbl;
 
-> Btw, Peter, Ingo: I think that commit is doing bad things. They aren't
-> _incorrect_ per se, but they are definitely bad.
->
-> Why?
->
-> Using random _TIF_WORK_MASK flags is really impolite for doing
-> "scheduling" work. There's a reason that arch/x86/kernel/entry_32.S
-> special-cases the _TIF_NEED_RESCHED flag: we don't want to exit out of
-> vm86 mode unnecessarily.
->
-> See the "work_notifysig_v86" label, and how it does that
-> "save_v86_state()" thing etc etc.
+...
+#define HPET_RESOURCE_NAME_SIZE 9
+        hpet_res = alloc_bootmem(sizeof(*hpet_res) + HPET_RESOURCE_NAME_SIZE);
 
-Right, I never liked having to fiddle with those TIF flags. Initially I
-needed it because the hrtimer base lock could not nest in the rq lock.
-That however is fixed these days.
+...
+        return 0;
+}
 
-Currently the only reason left to fiddle with the TIF flags is remote
-wakeups. We cannot program a remote cpu's hrtimer. I've been thinking
-about using the new and improved IPI function call stuff to implement
-hrtimer_start_on().
 
-However that does require that smp_call_function_single(.wait=0) works
-from interrupt context - /me looks at the latest series from Jens - Yes
-that does seem to be supported, good.
+Trying to discover if something was going haywire in this part of the code,
+I tried to capture some data which I could save until just before the kernel
+locks so that I could printk() it and still see it without having it scroll
+off the top:
 
-Here's a stab at cleaning this stuff up ...
-
-Mihai reported test success as well.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Tested-by: Mihai Moldovan <ionic@ionic.de>
-Cc: Michal Januszewski <spock@gentoo.org>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-Conflicts:
-
-	include/asm-x86/thread_info.h
-	kernel/sched.c
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/signal_32.c |    3 -
- arch/x86/kernel/signal_64.c |    3 -
- kernel/Kconfig.hz           |    2 +-
- kernel/sched.c              |  197 +++++++++++++------------------------------
- kernel/sched_fair.c         |    5 +-
- 5 files changed, 61 insertions(+), 149 deletions(-)
-
-diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index d923736..e1fc7bd 100644
---- a/arch/x86/kernel/signal_32.c
-+++ b/arch/x86/kernel/signal_32.c
-@@ -667,8 +667,5 @@ do_notify_resume(struct pt_regs *regs, void *unused, __u32 thread_info_flags)
- 	if (thread_info_flags & _TIF_SIGPENDING)
- 		do_signal(regs);
+===== BEGIN DIFF ==========
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 9d3528c..c4670a6 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -644,6 +644,11 @@ static int __init acpi_parse_sbf(struct acpi_table_header *table)
  
--	if (thread_info_flags & _TIF_HRTICK_RESCHED)
--		hrtick_resched();
--
- 	clear_thread_flag(TIF_IRET);
- }
-diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
-index e53b267..88023fc 100644
---- a/arch/x86/kernel/signal_64.c
-+++ b/arch/x86/kernel/signal_64.c
-@@ -502,9 +502,6 @@ void do_notify_resume(struct pt_regs *regs, void *unused,
- 	/* deal with pending signal delivery */
- 	if (thread_info_flags & _TIF_SIGPENDING)
- 		do_signal(regs);
--
--	if (thread_info_flags & _TIF_HRTICK_RESCHED)
--		hrtick_resched();
- }
+ static struct __initdata resource *hpet_res;
  
- void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
-diff --git a/kernel/Kconfig.hz b/kernel/Kconfig.hz
-index 526128a..2a202a8 100644
---- a/kernel/Kconfig.hz
-+++ b/kernel/Kconfig.hz
-@@ -55,4 +55,4 @@ config HZ
- 	default 1000 if HZ_1000
- 
- config SCHED_HRTICK
--	def_bool HIGH_RES_TIMERS && X86
-+	def_bool HIGH_RES_TIMERS
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 4e2f603..b955d92 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -532,8 +532,10 @@ struct rq {
- #endif
- 
- #ifdef CONFIG_SCHED_HRTICK
--	unsigned long hrtick_flags;
--	ktime_t hrtick_expire;
-+#ifdef CONFIG_SMP
-+	int hrtick_csd_pending;
-+	struct call_single_data hrtick_csd;
-+#endif
- 	struct hrtimer hrtick_timer;
- #endif
- 
-@@ -996,13 +998,6 @@ static struct rq *this_rq_lock(void)
- 	return rq;
- }
- 
--static void __resched_task(struct task_struct *p, int tif_bit);
--
--static inline void resched_task(struct task_struct *p)
--{
--	__resched_task(p, TIF_NEED_RESCHED);
--}
--
- #ifdef CONFIG_SCHED_HRTICK
- /*
-  * Use HR-timers to deliver accurate preemption points.
-@@ -1014,25 +1009,6 @@ static inline void resched_task(struct task_struct *p)
-  * When we get rescheduled we reprogram the hrtick_timer outside of the
-  * rq->lock.
-  */
--static inline void resched_hrt(struct task_struct *p)
--{
--	__resched_task(p, TIF_HRTICK_RESCHED);
--}
--
--static inline void resched_rq(struct rq *rq)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&rq->lock, flags);
--	resched_task(rq->curr);
--	spin_unlock_irqrestore(&rq->lock, flags);
--}
--
--enum {
--	HRTICK_SET,		/* re-programm hrtick_timer */
--	HRTICK_RESET,		/* not a new slice */
--	HRTICK_BLOCK,		/* stop hrtick operations */
--};
- 
- /*
-  * Use hrtick when:
-@@ -1043,40 +1019,11 @@ static inline int hrtick_enabled(struct rq *rq)
- {
- 	if (!sched_feat(HRTICK))
- 		return 0;
--	if (unlikely(test_bit(HRTICK_BLOCK, &rq->hrtick_flags)))
-+	if (!cpu_online(cpu_of(rq)))
- 		return 0;
- 	return hrtimer_is_hres_active(&rq->hrtick_timer);
- }
- 
--/*
-- * Called to set the hrtick timer state.
-- *
-- * called with rq->lock held and irqs disabled
-- */
--static void hrtick_start(struct rq *rq, u64 delay, int reset)
--{
--	assert_spin_locked(&rq->lock);
--
--	/*
--	 * preempt at: now + delay
--	 */
--	rq->hrtick_expire =
--		ktime_add_ns(rq->hrtick_timer.base->get_time(), delay);
--	/*
--	 * indicate we need to program the timer
--	 */
--	__set_bit(HRTICK_SET, &rq->hrtick_flags);
--	if (reset)
--		__set_bit(HRTICK_RESET, &rq->hrtick_flags);
--
--	/*
--	 * New slices are called from the schedule path and don't need a
--	 * forced reschedule.
--	 */
--	if (reset)
--		resched_hrt(rq->curr);
--}
--
- static void hrtick_clear(struct rq *rq)
- {
- 	if (hrtimer_active(&rq->hrtick_timer))
-@@ -1084,32 +1031,6 @@ static void hrtick_clear(struct rq *rq)
- }
- 
- /*
-- * Update the timer from the possible pending state.
-- */
--static void hrtick_set(struct rq *rq)
--{
--	ktime_t time;
--	int set, reset;
--	unsigned long flags;
--
--	WARN_ON_ONCE(cpu_of(rq) != smp_processor_id());
--
--	spin_lock_irqsave(&rq->lock, flags);
--	set = __test_and_clear_bit(HRTICK_SET, &rq->hrtick_flags);
--	reset = __test_and_clear_bit(HRTICK_RESET, &rq->hrtick_flags);
--	time = rq->hrtick_expire;
--	clear_thread_flag(TIF_HRTICK_RESCHED);
--	spin_unlock_irqrestore(&rq->lock, flags);
--
--	if (set) {
--		hrtimer_start(&rq->hrtick_timer, time, HRTIMER_MODE_ABS);
--		if (reset && !hrtimer_active(&rq->hrtick_timer))
--			resched_rq(rq);
--	} else
--		hrtick_clear(rq);
--}
--
--/*
-  * High-resolution timer tick.
-  * Runs from hardirq context with interrupts disabled.
-  */
-@@ -1128,27 +1049,37 @@ static enum hrtimer_restart hrtick(struct hrtimer *timer)
- }
- 
- #ifdef CONFIG_SMP
--static void hotplug_hrtick_disable(int cpu)
-+/*
-+ * called from hardirq (IPI) context
-+ */
-+static void __hrtick_start(void *arg)
- {
--	struct rq *rq = cpu_rq(cpu);
--	unsigned long flags;
--
--	spin_lock_irqsave(&rq->lock, flags);
--	rq->hrtick_flags = 0;
--	__set_bit(HRTICK_BLOCK, &rq->hrtick_flags);
--	spin_unlock_irqrestore(&rq->lock, flags);
-+	struct rq *rq = arg;
- 
--	hrtick_clear(rq);
-+	spin_lock(&rq->lock);
-+	hrtimer_restart(&rq->hrtick_timer);
-+	rq->hrtick_csd_pending = 0;
-+	spin_unlock(&rq->lock);
- }
- 
--static void hotplug_hrtick_enable(int cpu)
-+/*
-+ * Called to set the hrtick timer state.
-+ *
-+ * called with rq->lock held and irqs disabled
-+ */
-+static void hrtick_start(struct rq *rq, u64 delay)
- {
--	struct rq *rq = cpu_rq(cpu);
--	unsigned long flags;
-+	struct hrtimer *timer = &rq->hrtick_timer;
-+	ktime_t time = ktime_add_ns(timer->base->get_time(), delay);
- 
--	spin_lock_irqsave(&rq->lock, flags);
--	__clear_bit(HRTICK_BLOCK, &rq->hrtick_flags);
--	spin_unlock_irqrestore(&rq->lock, flags);
-+	timer->expires = time;
++extern void *dw_hpet_res;
++extern int dw_broken_bios;
++extern unsigned dw_seq;
++extern unsigned dw_req_size;
 +
-+	if (rq == this_rq()) {
-+		hrtimer_restart(timer);
-+	} else if (!rq->hrtick_csd_pending) {
-+		__smp_call_function_single(cpu_of(rq), &rq->hrtick_csd);
-+		rq->hrtick_csd_pending = 1;
-+	}
+ static int __init acpi_parse_hpet(struct acpi_table_header *table)
+ {
+     struct acpi_table_hpet *hpet_tbl;
+@@ -672,6 +677,9 @@ static int __init acpi_parse_hpet(struct acpi_table_header *table)
+                hpet_tbl->id, hpet_address);
+         return 0;
+     }
++
++    dw_broken_bios = 0;
++
+ #ifdef CONFIG_X86_64
+     /*
+      * Some even more broken BIOSes advertise HPET at
+@@ -679,6 +687,8 @@ static int __init acpi_parse_hpet(struct acpi_table_header *table)
+      * some noise:
+      */
+     if (hpet_address == 0xfed0000000000000UL) {
++            dw_broken_bios = 1;
++
+         if (!hpet_force_user) {
+             printk(KERN_WARNING PREFIX "HPET id: %#x "
+                    "base: 0xfed0000000000000 is bogus\n "
+@@ -702,12 +712,15 @@ static int __init acpi_parse_hpet(struct acpi_table_header *table)
+      */
+ #define HPET_RESOURCE_NAME_SIZE 9
+     hpet_res = alloc_bootmem(sizeof(*hpet_res) + HPET_RESOURCE_NAME_SIZE);
++    dw_hpet_res = hpet_res;
++    dw_req_size = sizeof (*hpet_res) + HPET_RESOURCE_NAME_SIZE;
+ 
+     hpet_res->name = (void *)&hpet_res[1];
+     hpet_res->flags = IORESOURCE_MEM;
+     snprintf((char *)hpet_res->name, HPET_RESOURCE_NAME_SIZE, "HPET %u",
+          hpet_tbl->sequence);
+ 
++    dw_seq = hpet_tbl->sequence;
+     hpet_res->start = hpet_address;
+     hpet_res->end = hpet_address + (1 * 1024) - 1;
+ 
+@@ -718,12 +731,19 @@ static int __init acpi_parse_hpet(struct acpi_table_header *table)
+  * hpet_insert_resource inserts the HPET resources used into the resource
+  * tree.
+  */
++extern int dw_ir_retval;
++
+ static __init int hpet_insert_resource(void)
+ {
++        int retval;
++
+     if (!hpet_res)
+         return 1;
+ 
+-    return insert_resource(&iomem_resource, hpet_res);
++    retval = insert_resource(&iomem_resource, hpet_res);
++    dw_ir_retval = retval;
++
++    return retval;
  }
  
- static int
-@@ -1163,16 +1094,7 @@ hotplug_hrtick(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 	case CPU_DOWN_PREPARE_FROZEN:
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
--		hotplug_hrtick_disable(cpu);
--		return NOTIFY_OK;
--
--	case CPU_UP_PREPARE:
--	case CPU_UP_PREPARE_FROZEN:
--	case CPU_DOWN_FAILED:
--	case CPU_DOWN_FAILED_FROZEN:
--	case CPU_ONLINE:
--	case CPU_ONLINE_FROZEN:
--		hotplug_hrtick_enable(cpu);
-+		hrtick_clear(cpu_rq(cpu));
- 		return NOTIFY_OK;
- 	}
- 
-@@ -1183,46 +1105,45 @@ static void init_hrtick(void)
- {
- 	hotcpu_notifier(hotplug_hrtick, 0);
- }
--#endif /* CONFIG_SMP */
-+#else
-+/*
-+ * Called to set the hrtick timer state.
-+ *
-+ * called with rq->lock held and irqs disabled
-+ */
-+static void hrtick_start(struct rq *rq, u64 delay)
-+{
-+	hrtimer_start(&rq->hrtick_timer, ns_to_ktime(delay), HRTIMER_MODE_REL);
-+}
- 
--static void init_rq_hrtick(struct rq *rq)
-+static void init_hrtick(void)
- {
--	rq->hrtick_flags = 0;
--	hrtimer_init(&rq->hrtick_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
--	rq->hrtick_timer.function = hrtick;
--	rq->hrtick_timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_SOFTIRQ;
- }
-+#endif /* CONFIG_SMP */
- 
--void hrtick_resched(void)
-+static void init_rq_hrtick(struct rq *rq)
- {
--	struct rq *rq;
--	unsigned long flags;
-+#ifdef CONFIG_SMP
-+	rq->hrtick_csd_pending = 0;
- 
--	if (!test_thread_flag(TIF_HRTICK_RESCHED))
--		return;
-+	rq->hrtick_csd.flags = 0;
-+	rq->hrtick_csd.func = __hrtick_start;
-+	rq->hrtick_csd.info = rq;
-+#endif
- 
--	local_irq_save(flags);
--	rq = cpu_rq(smp_processor_id());
--	hrtick_set(rq);
--	local_irq_restore(flags);
-+	hrtimer_init(&rq->hrtick_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-+	rq->hrtick_timer.function = hrtick;
-+	rq->hrtick_timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_SOFTIRQ;
- }
- #else
- static inline void hrtick_clear(struct rq *rq)
- {
+ late_initcall(hpet_insert_resource);
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 600bb23..fe27b94 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -4304,10 +4304,21 @@ void free_netdev(struct net_device *dev)
+     put_device(&dev->dev);
  }
  
--static inline void hrtick_set(struct rq *rq)
--{
--}
--
- static inline void init_rq_hrtick(struct rq *rq)
++void *dw_hpet_res;
++int dw_broken_bios;
++unsigned dw_seq;
++int dw_ir_retval;
++unsigned dw_req_size;
++
+ /* Synchronize with packet receive processing. */
+ void synchronize_net(void)
  {
+     might_sleep();
++
++    printk ("Data from arch/x86/kernel/acpi/boot.c:\n");
++    printk ("  hpet_res = %p    requested size: %u\n", dw_hpet_res, dw_req_size);
++    printk ("  sequence = %u    insert_resource() returned:  %d\n", dw_seq, dw_ir_retval);
++        printk ("  broken_bios: %d\n", dw_broken_bios);
+     synchronize_rcu();
  }
- 
--void hrtick_resched(void)
--{
--}
--
- static inline void init_hrtick(void)
- {
- }
-@@ -1241,16 +1162,16 @@ static inline void init_hrtick(void)
- #define tsk_is_polling(t) test_tsk_thread_flag(t, TIF_POLLING_NRFLAG)
- #endif
- 
--static void __resched_task(struct task_struct *p, int tif_bit)
-+static void resched_task(struct task_struct *p)
- {
- 	int cpu;
- 
- 	assert_spin_locked(&task_rq(p)->lock);
- 
--	if (unlikely(test_tsk_thread_flag(p, tif_bit)))
-+	if (unlikely(test_tsk_thread_flag(p, TIF_NEED_RESCHED)))
- 		return;
- 
--	set_tsk_thread_flag(p, tif_bit);
-+	set_tsk_thread_flag(p, TIF_NEED_RESCHED);
- 
- 	cpu = task_cpu(p);
- 	if (cpu == smp_processor_id())
-@@ -1316,10 +1237,10 @@ void wake_up_idle_cpu(int cpu)
- #endif
- 
- #else
--static void __resched_task(struct task_struct *p, int tif_bit)
-+static void resched_task(struct task_struct *p)
- {
- 	assert_spin_locked(&task_rq(p)->lock);
--	set_tsk_thread_flag(p, tif_bit);
-+	set_tsk_need_resched(p);
- }
- #endif
- 
-@@ -4204,8 +4125,6 @@ need_resched_nonpreemptible:
- 	} else
- 		spin_unlock_irq(&rq->lock);
- 
--	hrtick_set(rq);
--
- 	if (unlikely(reacquire_kernel_lock(current) < 0))
- 		goto need_resched_nonpreemptible;
- 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 08ae848..e193a9d 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -808,7 +808,6 @@ entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
- #ifdef CONFIG_SCHED_HRTICK
- static void hrtick_start_fair(struct rq *rq, struct task_struct *p)
- {
--	int requeue = rq->curr == p;
- 	struct sched_entity *se = &p->se;
- 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
- 
-@@ -829,10 +828,10 @@ static void hrtick_start_fair(struct rq *rq, struct task_struct *p)
- 		 * Don't schedule slices shorter than 10000ns, that just
- 		 * doesn't make sense. Rely on vruntime for fairness.
- 		 */
--		if (!requeue)
-+		if (rq->curr != p)
- 			delta = max(10000LL, delta);
- 
--		hrtick_start(rq, delta, requeue);
-+		hrtick_start(rq, delta);
- 	}
- }
- #else
+===== END DIFF ==========
+
+
+The output I get when the kernel locks up looks perfectly OK, except
+maybe for the address of hpet_res (which I am not knowledgeable enough
+to judge):
+
+Data from arch/x86/kernel/acpi/boot.c:
+  hpet_res = ffff88000100f000    broken_bios: 0
+  sequence = 0    insert_resource() returned: 0
+
+
+I see some recent (Aug. 2008) discussion of alloc_bootmem() being 
+broken, so maybe that is related to my problem.
+
+Does this connection between HPET and insert_resource() look meaningful,
+or is this a coincidence?
+
+
+Thanks,
+Dave W.
