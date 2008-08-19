@@ -1,115 +1,310 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbYHSIDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbYHSIEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754594AbYHSIDi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 04:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbYHSIDN
+	id S1754670AbYHSIEX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 04:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753634AbYHSIDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 04:03:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45292 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752690AbYHSIDK (ORCPT
+	Tue, 19 Aug 2008 04:03:55 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:18746 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753525AbYHSIDx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 04:03:10 -0400
-Date: Tue, 19 Aug 2008 01:03:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Cc: "Alexey Dobriyan" <adobriyan@gmail.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: latest -git: kernel hangs when pulling the plug on 8139too
-Message-Id: <20080819010307.bf31e0b2.akpm@linux-foundation.org>
-In-Reply-To: <19f34abd0808121354n5374b51n88f3c131567c4989@mail.gmail.com>
-References: <19f34abd0808110949n5d7d363es66325b87a8fb0fd1@mail.gmail.com>
-	<20080811192739.GB5791@martell.zuzino.mipt.ru>
-	<19f34abd0808121020l4a0552a0v3d48b181d980d600@mail.gmail.com>
-	<19f34abd0808121202p6a59917ey561ac48012fb92ca@mail.gmail.com>
-	<19f34abd0808121346w60f37ac0mf8e4ed20549af0e1@mail.gmail.com>
-	<19f34abd0808121354n5374b51n88f3c131567c4989@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 04:03:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=uO/9a5KdmotRiXKRMx/ixIjgk97mYUTCy+xGyql3SF8pAoKRY9Lv3CYBdrMyHL955T
+         z8yi7r44Or0YIDf9qdJ9zsk8zuKe64e9ly3HGzxOu/8Jc2pUyEgvZmb0E8hABXVCj5WS
+         IF2EaPpsVgrxMaw7s+Ppatw8ELx7iD9/NvTq8=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] dyn_array: split dyn_array functions from init/main.c
+Date: Tue, 19 Aug 2008 01:03:03 -0700
+Message-Id: <1219132983-20208-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Aug 2008 22:54:31 +0200 "Vegard Nossum" <vegard.nossum@gmail.com> wrote:
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-> Oops, I spoke a bit too soon.
-> 
-> On Tue, Aug 12, 2008 at 10:46 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> >  [<c0119b05>] nmi_watchdog_tick+0x1d5/0x1e0
-> >  [<c0106217>] do_nmi+0x97/0x2d0
-> >  [<c0591f03>] nmi_stack_correct+0x26/0x2b
-> >  [<c028007b>] ? as_remove_queued_request+0x9b/0xb0
-> >  [<c028a218>] ? delay_tsc+0x98/0xb8
-> >  [<c028a0b9>] __delay+0x9/0x10
-> >  [<c0299579>] _raw_spin_lock+0xb9/0x140
-> >  [<c015623b>] ? trace_hardirqs_off+0xb/0x10
-> >  [<c05916b6>] _spin_lock_irqsave+0x76/0x90
-> >  [<c035b255>] ? rtl8139_start_xmit+0x65/0x130
-> >  [<c035b255>] rtl8139_start_xmit+0x65/0x130
-> 
-> Acquires &tp->lock.
-> 
-> >  [<c04c5e28>] netpoll_send_skb+0x158/0x1a0
-> >  [<c04c62fb>] netpoll_send_udp+0x1db/0x1f0
-> >  [<c037c70c>] write_msg+0x8c/0xc0
-> >  [<c0135883>] __call_console_drivers+0x53/0x60
-> >  [<c01358db>] _call_console_drivers+0x4b/0x90
-> >  [<c0135a25>] release_console_sem+0xc5/0x1f0
-> >  [<c0135f0b>] vprintk+0x1ab/0x3e0
-> >  [<c0591acc>] ? _spin_unlock_irqrestore+0x6c/0x70
-> >  [<c01460e1>] ? __queue_work+0x31/0x40
-> >  [<c01461e5>] ? queue_work+0x45/0x50
-> >  [<c014629f>] ? queue_delayed_work+0xf/0x30
-> >  [<c0591aa3>] ? _spin_unlock_irqrestore+0x43/0x70
-> >  [<c01462d1>] ? schedule_delayed_work+0x11/0x20
-> >  [<c013615b>] printk+0x1b/0x20
-> >  [<c0349736>] mii_check_media+0x196/0x1e0
-> >  [<c059127b>] ? _spin_lock+0x5b/0x70
-> >  [<c03597f4>] rtl_check_media+0x24/0x30
-> >  [<c035a0ea>] rtl8139_interrupt+0x42a/0x4a0
-> 
-> Acquires &tp->lock.
-> 
-> >  [<c01716d8>] handle_IRQ_event+0x28/0x70
-> >  [<c0172d9b>] handle_fasteoi_irq+0x6b/0xe0
-> >  [<c0107128>] do_IRQ+0x48/0xa0
-> >  [<c028a604>] ? trace_hardirqs_off_thunk+0xc/0x18
-> >  [<c0104a5c>] common_interrupt+0x28/0x30
-> >  [<c015007b>] ? update_wall_time+0x36b/0x7d0
-> >  [<c010ae8c>] ? mwait_idle+0x3c/0x50
-> >  [<c010285c>] cpu_idle+0x6c/0x120
-> >  [<c056bb32>] rest_init+0x62/0x70
-> >  =======================
-> > <4>---[ end trace 33bf576b6277932f ]---
-> >
-> > ...this seems to contain at least a little bit of useful information.
-> >
-> > Looks to me like it's quite simply a recursive printk. I don't
-> > understand why the printk code doesn't catch this, though.
-> 
-> Nope. It tries to take a lock that is already held. Instead: How can
-> it be solved?
-> 
+---
+ init/Makefile    |    2 
+ init/dyn_array.c |  124 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ init/main.c      |  118 ----------------------------------------------------
+ 3 files changed, 125 insertions(+), 119 deletions(-)
 
-Not doing a printk while holding the lock which will block the printk
-is one way:
-
---- a/drivers/net/8139too.c~a
-+++ a/drivers/net/8139too.c
-@@ -1358,7 +1358,7 @@ static void rtl_check_media (struct net_
- 	struct rtl8139_private *tp = netdev_priv(dev);
+Index: linux-2.6/init/Makefile
+===================================================================
+--- linux-2.6.orig/init/Makefile
++++ linux-2.6/init/Makefile
+@@ -2,7 +2,7 @@
+ # Makefile for the linux kernel.
+ #
  
- 	if (tp->phys[0] >= 0) {
--		mii_check_media(&tp->mii, netif_msg_link(tp), init_media);
-+		mii_check_media(&tp->mii, 0, init_media);
- 	}
+-obj-y                          := main.o version.o mounts.o
++obj-y                          := main.o dyn_array.o version.o mounts.o
+ ifneq ($(CONFIG_BLK_DEV_INITRD),y)
+ obj-y                          += noinitramfs.o
+ else
+Index: linux-2.6/init/main.c
+===================================================================
+--- linux-2.6.orig/init/main.c
++++ linux-2.6/init/main.c
+@@ -545,124 +545,6 @@ void __init __weak thread_info_cache_ini
+ {
  }
  
-_
-
-however it might be smarter to disable NETIF_MSG_LINK on that interface
-if it is being used for netconsole.
-
+-void pre_alloc_dyn_array(void)
+-{
+-#ifdef CONFIG_HAVE_DYN_ARRAY
+-	unsigned long total_size = 0, size, phys;
+-	unsigned long max_align = 1;
+-	struct dyn_array **daa;
+-	char *ptr;
+-
+-	/* get the total size at first */
+-	for (daa = __dyn_array_start ; daa < __dyn_array_end; daa++) {
+-		struct dyn_array *da = *daa;
+-
+-		size = da->size * (*da->nr);
+-		print_fn_descriptor_symbol("dyn_array %s ", da->name);
+-		printk(KERN_CONT "size:%#lx nr:%d align:%#lx\n",
+-			da->size, *da->nr, da->align);
+-		total_size += roundup(size, da->align);
+-		if (da->align > max_align)
+-			max_align = da->align;
+-	}
+-	if (total_size)
+-		printk(KERN_DEBUG "dyn_array total_size: %#lx\n",
+-			 total_size);
+-	else
+-		return;
+-
+-	/* allocate them all together */
+-	max_align = max_t(unsigned long, max_align, PAGE_SIZE);
+-	ptr = __alloc_bootmem_nopanic(total_size, max_align, 0);
+-	if (!ptr)
+-		panic("Can not alloc dyn_alloc\n");
+-
+-	phys = virt_to_phys(ptr);
+-	for (daa = __dyn_array_start ; daa < __dyn_array_end; daa++) {
+-		struct dyn_array *da = *daa;
+-
+-		size = da->size * (*da->nr);
+-		print_fn_descriptor_symbol("dyn_array %s ", da->name);
+-
+-		phys = roundup(phys, da->align);
+-		*da->name = phys_to_virt(phys);
+-		printk(KERN_CONT " ==> [%#lx - %#lx]\n", phys, phys + size);
+-
+-		phys += size;
+-
+-		if (da->init_work)
+-			da->init_work(da);
+-	}
+-#else
+-#ifdef CONFIF_GENERIC_HARDIRQS
+-	unsigned int i;
+-
+-	for (i = 0; i < NR_IRQS; i++)
+-		irq_desc[i].irq = i;
+-#endif
+-#endif
+-}
+-
+-unsigned long per_cpu_dyn_array_size(unsigned long *align)
+-{
+-	unsigned long total_size = 0;
+-#ifdef CONFIG_HAVE_DYN_ARRAY
+-	unsigned long size;
+-	struct dyn_array **daa;
+-	unsigned max_align = 1;
+-
+-	for (daa = __per_cpu_dyn_array_start ; daa < __per_cpu_dyn_array_end; daa++) {
+-		struct dyn_array *da = *daa;
+-
+-		size = da->size * (*da->nr);
+-		print_fn_descriptor_symbol("per_cpu_dyn_array %s ", da->name);
+-		printk(KERN_CONT "size:%#lx nr:%d align:%#lx\n",
+-			da->size, *da->nr, da->align);
+-		total_size += roundup(size, da->align);
+-		if (da->align > max_align)
+-			max_align = da->align;
+-	}
+-	if (total_size) {
+-		printk(KERN_DEBUG "per_cpu_dyn_array total_size: %#lx\n",
+-			 total_size);
+-		*align = max_align;
+-	}
+-#endif
+-	return total_size;
+-}
+-
+-void per_cpu_alloc_dyn_array(int cpu, char *ptr)
+-{
+-#ifdef CONFIG_HAVE_DYN_ARRAY
+-	unsigned long size, phys;
+-	struct dyn_array **daa;
+-	unsigned long addr;
+-	void **array;
+-
+-	phys = virt_to_phys(ptr);
+-	for (daa = __per_cpu_dyn_array_start ; daa < __per_cpu_dyn_array_end; daa++) {
+-		struct dyn_array *da = *daa;
+-
+-		size = da->size * (*da->nr);
+-		print_fn_descriptor_symbol("per_cpu_dyn_array %s ", da->name);
+-
+-		phys = roundup(phys, da->align);
+-		addr = (unsigned long)da->name;
+-		addr += per_cpu_offset(cpu);
+-		array = (void **)addr;
+-		*array = phys_to_virt(phys);
+-		*da->name = *array; /* so init_work could use it directly */
+-		printk(KERN_CONT " ==> [%#lx - %#lx]\n", phys, phys + size);
+-
+-		phys += size;
+-
+-		if (da->init_work) {
+-			da->init_work(da);
+-		}
+-	}
+-#endif
+-}
+-
+ asmlinkage void __init start_kernel(void)
+ {
+ 	char * command_line;
+Index: linux-2.6/init/dyn_array.c
+===================================================================
+--- /dev/null
++++ linux-2.6/init/dyn_array.c
+@@ -0,0 +1,124 @@
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/kallsyms.h>
++#include <linux/init.h>
++#include <linux/bootmem.h>
++#include <linux/irq.h>
++
++void __init pre_alloc_dyn_array(void)
++{
++#ifdef CONFIG_HAVE_DYN_ARRAY
++	unsigned long total_size = 0, size, phys;
++	unsigned long max_align = 1;
++	struct dyn_array **daa;
++	char *ptr;
++
++	/* get the total size at first */
++	for (daa = __dyn_array_start ; daa < __dyn_array_end; daa++) {
++		struct dyn_array *da = *daa;
++
++		size = da->size * (*da->nr);
++		print_fn_descriptor_symbol("dyn_array %s ", da->name);
++		printk(KERN_CONT "size:%#lx nr:%d align:%#lx\n",
++			da->size, *da->nr, da->align);
++		total_size += roundup(size, da->align);
++		if (da->align > max_align)
++			max_align = da->align;
++	}
++	if (total_size)
++		printk(KERN_DEBUG "dyn_array total_size: %#lx\n",
++			 total_size);
++	else
++		return;
++
++	/* allocate them all together */
++	max_align = max_t(unsigned long, max_align, PAGE_SIZE);
++	ptr = __alloc_bootmem_nopanic(total_size, max_align, 0);
++	if (!ptr)
++		panic("Can not alloc dyn_alloc\n");
++
++	phys = virt_to_phys(ptr);
++	for (daa = __dyn_array_start ; daa < __dyn_array_end; daa++) {
++		struct dyn_array *da = *daa;
++
++		size = da->size * (*da->nr);
++		print_fn_descriptor_symbol("dyn_array %s ", da->name);
++
++		phys = roundup(phys, da->align);
++		*da->name = phys_to_virt(phys);
++		printk(KERN_CONT " ==> [%#lx - %#lx]\n", phys, phys + size);
++
++		phys += size;
++
++		if (da->init_work)
++			da->init_work(da);
++	}
++#else
++#ifdef CONFIF_GENERIC_HARDIRQS
++	unsigned int i;
++
++	for (i = 0; i < NR_IRQS; i++)
++		irq_desc[i].irq = i;
++#endif
++#endif
++}
++
++unsigned long __init per_cpu_dyn_array_size(unsigned long *align)
++{
++	unsigned long total_size = 0;
++#ifdef CONFIG_HAVE_DYN_ARRAY
++	unsigned long size;
++	struct dyn_array **daa;
++	unsigned max_align = 1;
++
++	for (daa = __per_cpu_dyn_array_start ; daa < __per_cpu_dyn_array_end; daa++) {
++		struct dyn_array *da = *daa;
++
++		size = da->size * (*da->nr);
++		print_fn_descriptor_symbol("per_cpu_dyn_array %s ", da->name);
++		printk(KERN_CONT "size:%#lx nr:%d align:%#lx\n",
++			da->size, *da->nr, da->align);
++		total_size += roundup(size, da->align);
++		if (da->align > max_align)
++			max_align = da->align;
++	}
++	if (total_size) {
++		printk(KERN_DEBUG "per_cpu_dyn_array total_size: %#lx\n",
++			 total_size);
++		*align = max_align;
++	}
++#endif
++	return total_size;
++}
++
++void __init per_cpu_alloc_dyn_array(int cpu, char *ptr)
++{
++#ifdef CONFIG_HAVE_DYN_ARRAY
++	unsigned long size, phys;
++	struct dyn_array **daa;
++	unsigned long addr;
++	void **array;
++
++	phys = virt_to_phys(ptr);
++	for (daa = __per_cpu_dyn_array_start ; daa < __per_cpu_dyn_array_end; daa++) {
++		struct dyn_array *da = *daa;
++
++		size = da->size * (*da->nr);
++		print_fn_descriptor_symbol("per_cpu_dyn_array %s ", da->name);
++
++		phys = roundup(phys, da->align);
++		addr = (unsigned long)da->name;
++		addr += per_cpu_offset(cpu);
++		array = (void **)addr;
++		*array = phys_to_virt(phys);
++		*da->name = *array; /* so init_work could use it directly */
++		printk(KERN_CONT " ==> [%#lx - %#lx]\n", phys, phys + size);
++
++		phys += size;
++
++		if (da->init_work) {
++			da->init_work(da);
++		}
++	}
++#endif
++}
