@@ -1,96 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbYHSR5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756688AbYHSR6L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756755AbYHSR5B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 13:57:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYHSR4v
+	id S1756688AbYHSR6L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 13:58:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbYHSR54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 13:56:51 -0400
-Received: from pruts.nl ([82.94.235.106]:41037 "EHLO iron.pruts.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753188AbYHSR4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 13:56:50 -0400
-Date: Tue, 19 Aug 2008 19:56:39 +0200
-From: Ico Doornekamp <lkml@zevv.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: TIOCGWINSZ retuns old pty size after receiving SIGWINCH
-Message-ID: <20080819175639.GI29842@pruts.nl>
-References: <20080810150859.GO3653@pruts.nl> <20080819004026.2dac3ba6.akpm@linux-foundation.org> <20080819075414.GV29842@pruts.nl> <20080819010702.c5300420.akpm@linux-foundation.org> <20080819114423.GB29842@pruts.nl>
+	Tue, 19 Aug 2008 13:57:56 -0400
+Received: from ti-out-0910.google.com ([209.85.142.190]:45762 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753418AbYHSR5z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 13:57:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=cBpz22HGQbxfM0OpDs0z8D2yUTv5yd3sL+qnGdVNtwFVIKj2eRMEb0tOx4vIPhtsid
+         oONOFU601TLzcUqb27OuLi5y5Kh9TewjPMc/mIZlFqIP6ifDpL7iiP83eHrFQosl1LNT
+         kv3c2zi1DWiUnR0LlORjvqmPoN7RDM5qEND24=
+Date: Tue, 19 Aug 2008 20:54:40 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: "Randy.Dunlap" <rdunlap@xenotime.net>
+Cc: penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       mpm@selenic.com, tglx@linutronix.de, rostedt@goodmis.org,
+       cl@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       tzanussi@gmail.com
+Subject: Re: [PATCH 1/5] Revert "kmemtrace: fix printk format warnings"
+Message-ID: <20080819175440.GA5435@localhost>
+References: <1219167807-5407-1-git-send-email-eduard.munteanu@linux360.ro> <Pine.LNX.4.64.0808191049260.7877@shark.he.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080819114423.GB29842@pruts.nl>
-X-Prutser: true
-X-PGP-key: 4202FA2F
-X-PGP-KeyServer: subkeys.pgp.net
-X-PGP-Fingerprint: F042 F5CD B0A6 EC6A CB80  A829 CACD A4B5 4202 FA2F
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <Pine.LNX.4.64.0808191049260.7877@shark.he.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 19, 2008 at 10:51:32AM -0700, Randy.Dunlap wrote:
+> On Tue, 19 Aug 2008, Eduard - Gabriel Munteanu wrote:
+> 
+> > This reverts commit 79cf3d5e207243eecb1c4331c569e17700fa08fa.
+> > 
+> > The reverted commit, while it fixed printk format warnings, it resulted in
+> > marker-probe format mismatches. Another approach should be used to fix
+> > these warnings.
+> 
+> Such as what?
+> 
+> Can marker probes be fixed instead?
+> 
+> After seeing & fixing lots of various warnings in the last few days,
+> I'm thinking that people don't look at/heed warnings nowadays.  Sad.
+> Maybe there are just so many that they are lost in the noise.
+
+Hi,
+
+Check the next patch in the series, it provides the alternate fix.
+I favor this approach more because it involves fewer changes and we
+don't have to use things like "%zu" (which make data type size less
+apparent).
 
 
-* On 2008-08-19 Ico Doornekamp <lkml@zevv.nl> wrote  :
-
-> 
-> 
-> * On 2008-08-19 Andrew Morton <akpm@linux-foundation.org> wrote  :
-> 
-> > On Tue, 19 Aug 2008 09:54:14 +0200 Ico Doornekamp <lkml@zevv.nl> wrote:
-> > > 
-> > > * On 2008-08-19 Andrew Morton <akpm@linux-foundation.org> wrote  :
-> > > 
-> > > > On Sun, 10 Aug 2008 17:08:59 +0200 Ico Doornekamp <lkml@zevv.nl> wrote:
-> > > > 
-> > > > > Recently my X terminals showed annoying behaviour where the application
-> > > > > in the terminal was not resized properly to the actual size of the X
-> > > > > terminal emulator window, resulting in a lot of misaligned text on the
-> > > > > screen. Hunting the issue down from the windowmanager and the terminal
-> > > > > emulator program, I suspect the problem might lie in the kernel. I'm
-> > > > > running 2.6.26 on a dual core i386.
-> > > > > 
-> > > > > What I see is this: the userspace application receives a SIGWINCH signal
-> > > > > and acquires the terminal size usign the TIOCGWINSZ ioctl. It seems that
-> > > > > in some cases the old instead of the new terminal size is returned.
-> > > > > A small delay before the ioctl seems to 'fix' this behaviour.
-> > > > > 
-> > > > > I noticed some changes involving locking in the the pty code in the last
-> > > > > kernel verions, could one of these changes cause the above behaviour ? If
-> > > > > so, wouldn't this affect much more users ?
-> > > > 
-> > > > hm, that code is pretty simple and although it does the SIGWINCH and
-> > > > the window-size setting in a peculiar order, it looks to be race-free.
-> > > > 
-> > > > Approximately what proportion of the time does it go wrong?
-> > > 
-> > > I guess about 10 to 20% of the resizes. I happen to be using a tiling
-> > > window manager which causes resizing more often and more agressive then
-> > > 'normal' window managers, I guess this helps triggering the problem.
-> > > 
-> > > I temporary worked around this issue this by changing the order of the
-> > > signal and the updating of the pty size in tty_io.c's tiocswinsz(), but
-> > > this is not much of a real fix.
-> > > 
-> > 
-> > Well damn.  Are you sure?  The code looks solid to me.
-> > 
-> > At least, it does after 
-> > 
-> > Author: Alan Cox <alan@redhat.com>  2008-08-15 02:39:38
-> > Committer: Linus Torvalds <torvalds@linux-foundation.org>  2008-08-15 10:34:07
-> > Parent: 000b9151d7851cc1e490b2a76d0206e524f43cca (Fix race/oops in tty layer after BKL pushdown)
-> > Branches: git-cifs, git-ia64, git-nfs, git-powerpc-merge, linux-next, remotes/origin/master
-> > Follows: v2.6.27-rc3
-> > Precedes: next-20080818
-> > 
-> >     tty: remove resize window special case
-> > 
-> > perhaps you're still running a kernel which is earlier than that?
-> 
-> I reported the behaviour on 2.6.26.2, but I was not aware this issue was
-> adressed already in the 2.6.27 tree. I will update to the latest 2.6.27
-> rc and report if the problem still persists.
-
-I am not able to reproduce the problem with git 2.6.27-rc3-next-20080819.
+	Cheers,
+	Eduard
 
