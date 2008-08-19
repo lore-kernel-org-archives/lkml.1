@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbYHSOae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbYHSOc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753141AbYHSOae (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 10:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbYHSOa0
+	id S1753511AbYHSOc3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 10:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbYHSOcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 10:30:26 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:49208 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750864AbYHSOaZ (ORCPT
+	Tue, 19 Aug 2008 10:32:20 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:51678 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750788AbYHSOcU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 10:30:25 -0400
-Date: Tue, 19 Aug 2008 19:43:45 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] mm_owner: fix cgroup null dereference
-Message-ID: <20080819141344.GF25239@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Jiri Slaby <jirislaby@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <1218745013-9537-1-git-send-email-jirislaby@gmail.com>
+	Tue, 19 Aug 2008 10:32:20 -0400
+Date: Tue, 19 Aug 2008 10:32:19 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Pavel Machek <pavel@suse.cz>
+cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       <James.Bottomley@HansenPartnership.com>, <teheo@novell.com>,
+       <oneukum@suse.de>
+Subject: Re: Power management for SCSI
+In-Reply-To: <20080819073839.GA8726@atrey.karlin.mff.cuni.cz>
+Message-ID: <Pine.LNX.4.44L0.0808191027070.2669-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1218745013-9537-1-git-send-email-jirislaby@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jiri Slaby <jirislaby@gmail.com> [2008-08-14 22:16:53]:
+On Tue, 19 Aug 2008, Pavel Machek wrote:
 
-> Hi,
-> 
-> found this in mmotm, a fix for
-> mm-owner-fix-race-between-swap-and-exit.patch
->
+> Would it make sense to split the patches into "autosuspend for SCSI
+> devices" and "autosuspend for SCSI controllers" for easier
+> review/merge? I guess I'll start with the devices, they seem easier...
 
-Does the patch below fix your problem, it's against mmotm 19th August
-2008.
+It really should be split up differently.  The topics of interest are:
 
- 
-Reported-by: jirislaby@gmail.com
+	idle detection for SCSI devices,
 
-Jiri reported a problem and saw an oops when the memrlimit-fix-race-with-swap
-patch is applied. He sent his patch on top to fix the problem, but ran into
-another issue. The root cause of the problem is that we are not suppose
-to call task_cgroup on NULL tasks. This patch reverts Jiri's patch and
-does not call task_cgroup if the passed task_struct (old) is NULL.
+	autosuspend for SCSI targets and its relation to suspend
+	for SCSI devices,
 
+	passing suspend & resume notifications to the transport class,
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+	adding a USB transport class so that usb-storage can respond
+	to those notifications,
 
- kernel/cgroup.c |    5 +++--
- kernel/exit.c   |    2 +-
- 2 files changed, 4 insertions(+), 3 deletions(-)
+	modifying other transport classes as needed so that the LLDs
+	can power-down links or host adapters.
 
-diff -puN kernel/exit.c~memrlimit-fix-race-with-swap-oops kernel/exit.c
---- linux-2.6.27-rc3/kernel/exit.c~memrlimit-fix-race-with-swap-oops	2008-08-19 18:50:39.000000000 +0530
-+++ linux-2.6.27-rc3-balbir/kernel/exit.c	2008-08-19 18:51:05.000000000 +0530
-@@ -641,8 +641,8 @@ retry:
- 	 * the callback and take action
- 	 */
- 	down_write(&mm->mmap_sem);
--	cgroup_mm_owner_callbacks(mm->owner, NULL);
- 	mm->owner = NULL;
-+	cgroup_mm_owner_callbacks(mm->owner, NULL);
- 	up_write(&mm->mmap_sem);
- 	return;
- 
-diff -puN kernel/cgroup.c~memrlimit-fix-race-with-swap-oops kernel/cgroup.c
---- linux-2.6.27-rc3/kernel/cgroup.c~memrlimit-fix-race-with-swap-oops	2008-08-19 18:50:39.000000000 +0530
-+++ linux-2.6.27-rc3-balbir/kernel/cgroup.c	2008-08-19 18:55:38.000000000 +0530
-@@ -2743,13 +2743,14 @@ void cgroup_fork_callbacks(struct task_s
-  */
- void cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new)
- {
--	struct cgroup *oldcgrp, *newcgrp = NULL;
-+	struct cgroup *oldcgrp = NULL, *newcgrp = NULL;
- 
- 	if (need_mm_owner_callback) {
- 		int i;
- 		for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
- 			struct cgroup_subsys *ss = subsys[i];
--			oldcgrp = task_cgroup(old, ss->subsys_id);
-+			if (old)
-+				oldcgrp = task_cgroup(old, ss->subsys_id);
- 			if (new)
- 				newcgrp = task_cgroup(new, ss->subsys_id);
- 			if (oldcgrp == newcgrp)
-diff -puN mm/memrlimitcgroup.c~memrlimit-fix-race-with-swap-oops mm/memrlimitcgroup.c
-_
+I think that covers it.  Oliver may have some additional suggestions.
 
--- 
-	Balbir
+Alan Stern
+
