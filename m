@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbYHSRQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755672AbYHSRSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755473AbYHSRQs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 13:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYHSRQk
+	id S1755672AbYHSRSy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 13:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbYHSRSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 13:16:40 -0400
-Received: from gv-out-0910.google.com ([216.239.58.190]:17269 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752421AbYHSRQj (ORCPT
+	Tue, 19 Aug 2008 13:18:46 -0400
+Received: from web82205.mail.mud.yahoo.com ([209.191.86.100]:47918 "HELO
+	web82205.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753064AbYHSRSp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 13:16:39 -0400
-Message-ID: <48AAFFF0.7020405@colorfullife.com>
-Date: Tue, 19 Aug 2008 19:16:32 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 19 Aug 2008 13:18:45 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Aug 2008 13:18:45 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=Ag7Cl1ymM9z7NaxHHPW4PIt+X38sDLfxae0OhLcWPXQkSGYhkwSCwhqnXop0rMxTrMaI7HnNkmvY0ztac0KIMMakTygyTe2JwTsaqAoHQqFj7g+fSd9Prq53Ukh8N9EYYZGrWCv/+GPDQzmFL0wSjllaG/BQsTvoxpn0xWTlG/k=;
+X-YMail-OSG: 89_bf9kVM1nDfDvUmdxZGKHWe04OeKvoyqwgh0d_5xNU3Ltrti9timnTuripHwkmNOwZ4Y_U0f9V87lNUx09BkfckINBA33HtLUPc9Gdo93ACr0xmSf5Gb4UkHc6cIs-
+Date: Tue, 19 Aug 2008 10:12:04 -0700 (PDT)
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [BUG] rtc uie emulation deadlocks
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: a.zummo@towertech.it, Linux Kernel List <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>
+In-Reply-To: <20080819005320.00075dba.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com, mingo@elte.hu
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, oleg@tv-sign.ru,
-       dipankar@in.ibm.com, rostedt@goodmis.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com
-Subject: nohz_cpu_mask question (was: Re: [PATCH tip/core/rcu] classic RCU
- locking and memory-barrier cleanups)
-References: <20080805162144.GA8297@linux.vnet.ibm.com> <489936E5.7020509@colorfullife.com> <20080807031806.GA6910@linux.vnet.ibm.com> <48A93D49.2000601@colorfullife.com> <20080818140404.GD6847@linux.vnet.ibm.com> <48AAA501.8010502@colorfullife.com> <20080819140339.GF7106@linux.vnet.ibm.com>
-In-Reply-To: <20080819140339.GF7106@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <915094.18966.qm@web82205.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-can someone explain me nohz_cpu_mask?
+--- Andrew Morton <akpm@linux-foundation.org> wrote:
 
-If I understand it correctly, it merely means that this cpu does not 
-take timer interrupts, correct?
-The cpu can still take "real" interupts, e.g. a nic interrupt. The cpu 
-could also do softirq processing.
+> On Mon, 11 Aug 2008 14:43:39 +0100 Russell King
+> <rmk+lkml@arm.linux.org.uk> wrote:
+> 
+> > The locking looks a rather random in there, so I'm not going to try to
+> > create a patch.
+> > 
+> 
+> Looks like this was caused by
+> 
+> commit 5ad31a575157147b43fa84ef1e21471661653878
+> Author: David Brownell <david-b@pacbell.net>
+> Date:   Wed Jul 23 21:30:33 2008 -0700
+> 
+>     rtc: remove BKL for ioctl()
 
-Is that correct? Ingo?
+I'm sure I saw someone else's fixup patch for that a couple weeks ago.
+(Looks).  Yes:
 
-If nohz cpus can take normal interrupts, then it would be wrong to 
-exclude these cpus from the mask of cpus that must pass a quiescent 
-cycle - a softirq could hold on a pointers.
-
---
-    Manfred
+http://groups.google.com/group/rtc-linux/browse_thread/thread/ad65b883739f8c92#
