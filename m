@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758518AbYHSUZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759483AbYHSU1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758518AbYHSUZS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 16:25:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbYHSUZF
+	id S1759483AbYHSU1d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 16:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbYHSU1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 16:25:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37451 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753632AbYHSUZE (ORCPT
+	Tue, 19 Aug 2008 16:27:23 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:39017 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754338AbYHSU1W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 16:25:04 -0400
-Message-ID: <48AB2BCE.1080607@linux-foundation.org>
-Date: Tue, 19 Aug 2008 15:23:42 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Tue, 19 Aug 2008 16:27:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id:from;
+        b=nnhc7l9HBjyuiqkYdYsuKWvVo4o6m17kSVaSkRRs6tbMD+NO4pjyaXPpLrjp5tHyNz
+         qGkKWKwM1zfZY9cUPshDWu3MDv+NcaCzQcwaXJZAMjC3yFjvu/u4dTL4uCstftUIUI0O
+         ryVo9xpfgH2g9bubxArmAUH+sbfqVAay48hmw=
+To: "Alex Riesen" <raa.lkml@gmail.com>
+Subject: Re: rt2500pci: false alarm (was rt2500pci_bbp_read: Error - BBPCSR register busy. Read failed)
+Date: Tue, 19 Aug 2008 22:25:44 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+References: <81b0412b0808191208y6bef9187nc57fa74c08a92d54@mail.gmail.com>
+In-Reply-To: <81b0412b0808191208y6bef9187nc57fa74c08a92d54@mail.gmail.com>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rdunlap@xenotime.net,
-       mpm@selenic.com, tglx@linutronix.de, rostedt@goodmis.org,
-       mathieu.desnoyers@polymtl.ca, tzanussi@gmail.com
-Subject: Re: [PATCH 3/5] SLUB: Replace __builtin_return_address(0) with	_RET_IP_.
-References: <1219167807-5407-1-git-send-email-eduard.munteanu@linux360.ro> <1219167807-5407-2-git-send-email-eduard.munteanu@linux360.ro> <1219167807-5407-3-git-send-email-eduard.munteanu@linux360.ro> <48AB0D69.4090703@linux-foundation.org> <20080819182423.GA5520@localhost> <48AB1769.3040703@linux-foundation.org> <48AB1A5B.3020305@cs.helsinki.fi> <48AB2A4A.7040103@linux-foundation.org> <48AB2A01.2050500@cs.helsinki.fi>
-In-Reply-To: <48AB2A01.2050500@cs.helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808192225.45030.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
+On Tuesday 19 August 2008, Alex Riesen wrote:
+> 2008/8/19 Alex Riesen <raa.lkml@gmail.com>:
+> > 2008/8/19 Ivo van Doorn <ivdoorn@gmail.com>:
+> >>> The rt2500 driver in 2.6.27-rc3 (v2.6.27-rc3-552-g3c3a15a) constantly
+> >>> produces a lot of this messages in log (slowdown quite noticable):
+> >>>
+> >>>     kernel: phy0 -> rt2500pci_bbp_read: Error - BBPCSR register busy. Read failed.
+> >
+> > It surely did, but I honestly don't remember what with. I'll try to bisect.
+> >
+> 
+> Ok, it _is_ the hardware. Precisely: it is a dusty box in a dark humid corner.
+> I reseated the card and suddenly everything started working.
+> 
+> I'm really sorry. The error description was actually a very good
+> hint at the problem.
 
-> It's compiled-tested too. I had to do some changes to
-> include/linux/slab.h as well.
+Well good to hear that at least the card itself isn't broken and it was
+only a matter of moving the card a bit to make it work. :)
 
-Please recompile with CONFIG_SLUB_DEBUG off to find some breakage.  F.e.
-
-static inline int alloc_debug_processing(struct kmem_cache *s,
-        struct page *page, void *object, void *addr) { return 0; }
-
-static inline int free_debug_processing(struct kmem_cache *s,
-        struct page *page, void *object, void *addr) { return 0; }
+Ivo
