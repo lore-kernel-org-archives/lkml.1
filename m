@@ -1,43 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbYHSToL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbYHSTof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757578AbYHSToL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 15:44:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbYHSTnz
+	id S1757982AbYHSTof (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 15:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYHSToY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 15:43:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58199 "EHLO mx1.redhat.com"
+	Tue, 19 Aug 2008 15:44:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58215 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752686AbYHSTny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 15:43:54 -0400
+	id S1754330AbYHSToW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 15:44:22 -0400
+Date: Tue, 19 Aug 2008 15:43:25 -0400
+From: Dave Jones <davej@redhat.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Langsdorf, Mark" <mark.langsdorf@amd.com>,
+       LKML <linux-kernel@vger.kernel.org>, kernel-testers@vger.kernel.org,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "Arnold, Frank" <Frank.Arnold@amd.com>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>
+Subject: Re: [PATCH] Revert "[CPUFREQ][2/2] preregister support for
+	powernow-k8"
+Message-ID: <20080819194325.GA641@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"Langsdorf, Mark" <mark.langsdorf@amd.com>,
+	LKML <linux-kernel@vger.kernel.org>, kernel-testers@vger.kernel.org,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	"Arnold, Frank" <Frank.Arnold@amd.com>,
+	Torsten Kaiser <just.for.lkml@googlemail.com>
+References: <200808092321.16711.rjw@sisk.pl> <6453C3CB8E2B3646B0D020C112613273C5AC60@sausexmb4.amd.com> <200808192137.55818.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-X-Fcc: ~/Mail/linus
-Cc: oleg@tv-sign.ru, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       rjw@sisk.pl
-Subject: Re: tracehook breaks dhcpcd child processing
-In-Reply-To: Andi Kleen's message of  Tuesday, 19 August 2008 17:57:22 +0200 <20080819155722.GA25695@basil.nowhere.org>
-References: <20080819155722.GA25695@basil.nowhere.org>
-X-Zippy-Says: I just bought FLATBUSH from MICKEY MANTLE!
-Message-Id: <20080819194318.8572815426B@magilla.localdomain>
-Date: Tue, 19 Aug 2008 12:43:18 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <200808192137.55818.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the report.
+On Tue, Aug 19, 2008 at 09:37:54PM +0200, Rafael J. Wysocki wrote:
+ > From: Rafael J. Wysocki <rjw@sisk.pl>
+ > 
+ > Revert "[CPUFREQ][2/2] preregister support for powernow-k8"
+ >     
+ > Revert commit 34ae7f35a21694aa5cb8829dc5142c39d73d6ba0
+ > ("[CPUFREQ][2/2] preregister support for powernow-k8") that causes
+ > regressions tracked as:
+ > http://bugzilla.kernel.org/show_bug.cgi?id=11296 ,
+ > http://bugzilla.kernel.org/show_bug.cgi?id=11339 .
+ > Namely, my test box with the Asus M3A32-MVP mainboard and the AMD
+ > Phenom 9850 CPU crashes during hibernation, suspend to RAM and ACPI
+ > power off, apparently due to a failing CPU hotplug notifier.  In
+ > turn, on the Torsten Kaiser's test system only one CPU is correctly
+ > handled by cpufreq.  These problems go away after reverting
+ > 34ae7f35a21694aa5cb8829dc5142c39d73d6ba0, but unfortunately they are
+ > quite difficult to debug.
+ > 
+ > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Was this problem after the fixes in:
-commit 5861bbfcc10fc0358abf52c7d22850c8d180f0b0
-commit 5c7edcd7ee6b77b88252fe4096dce1a46a60c829
-?
+ACKed-by: Dave Jones <davej@redhat.com>
 
-Do you know the process-level details that cause the problem?
-(i.e. exits with what parent/signals/etc conditions)
-It may take me a bit to set up an opensuse 11.0 vm to try its dhcpcd.
+	Dave
 
-
-Thanks,
-Roland
+-- 
+http://www.codemonkey.org.uk
