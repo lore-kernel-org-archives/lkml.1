@@ -1,79 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755081AbYHSWe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbYHSWfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755081AbYHSWe7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 18:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbYHSWen
+	id S1755464AbYHSWfa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 18:35:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbYHSWfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 18:34:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38631 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752721AbYHSWem (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 18:34:42 -0400
-Date: Tue, 19 Aug 2008 15:34:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl
-Subject: Re: [PATCH 2/2] ide: add proper PCI PM support
-Message-Id: <20080819153437.68272594.akpm@linux-foundation.org>
-In-Reply-To: <200808021917.04847.bzolnier@gmail.com>
-References: <200808021917.04847.bzolnier@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 18:35:00 -0400
+Received: from japan.chezphil.org ([77.240.5.4]:1829 "EHLO japan.chezphil.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755000AbYHSWe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 18:34:59 -0400
+X-Greylist: delayed 2238 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Aug 2008 18:34:58 EDT
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Date: Tue, 19 Aug 2008 22:57:37 +0100
+Subject: Any intelfb support for 945GME chip id 8086:27ae, used in Eee 901 ?
+Message-ID: <1219183057845@dmwebmail.dmwebmail.chezphil.org>
+X-Mailer: Decimail Webmail 3alpha16
+MIME-Version: 1.0
+Content-Type: text/plain; format="flowed"
+From: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2 Aug 2008 19:17:04 +0200
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+Hi All,
 
-> -static unsigned int __devinit init_chipset_aec62xx(struct pci_dev *dev)
-> +static unsigned int init_chipset_aec62xx(struct pci_dev *dev)
->  {
->  	/* These are necessary to get AEC6280 Macintosh cards to work */
->  	if ((dev->device == PCI_DEVICE_ID_ARTOP_ATP865) ||
-> @@ -307,6 +307,10 @@ static struct pci_driver driver = {
->  	.id_table	= aec62xx_pci_tbl,
->  	.probe		= aec62xx_init_one,
->  	.remove		= aec62xx_remove,
-> +#ifdef CONFIG_PM
-> +	.suspend	= ide_pci_suspend,
-> +	.resume		= ide_pci_resume,
-> +#endif
->  };
->  
->  static int __init aec62xx_ide_init(void)
-> Index: b/drivers/ide/pci/alim15x3.c
-> ===================================================================
-> --- a/drivers/ide/pci/alim15x3.c
-> +++ b/drivers/ide/pci/alim15x3.c
-> @@ -213,7 +213,7 @@ static int ali15x3_dma_setup(ide_drive_t
->   *	appropriate also sets up the 1533 southbridge.
->   */
->  
-> -static unsigned int __devinit init_chipset_ali15x3(struct pci_dev *dev)
-> +static unsigned int init_chipset_ali15x3(struct pci_dev *dev)
->  {
->  	unsigned long flags;
->  	u8 tmpbyte;
-> @@ -581,6 +581,10 @@ static struct pci_driver driver = {
->  	.id_table	= alim15x3_pci_tbl,
->  	.probe		= alim15x3_init_one,
->  	.remove		= ide_pci_remove,
-> +#ifdef CONFIG_PM
-> +	.suspend	= ide_pci_suspend,
-> +	.resume		= ide_pci_resume,
-> +#endif
+My new ASUS Eee 901 claims to have:
 
-Please do
+00:02.0 VGA compatible controller: Intel Corporation Mobile 945GME 
+Express Integrated Graphics Controller (rev 03)
+00:02.0 0300: 8086:27ae
 
-#ifndef CONFIG_PM
-#define ide_pci_suspend NULL
-#define ide_pci_resume NULL
-#endif
+As far as I can see there is not yet any support for this chip, though 
+the 945GM (no E on the end) with id 8086:27a2 is supported.
 
-in a header file and then remove all these ifdefs.
+Is someone working on this?  I suppose there's a good chance that the 
+differences are small or trivial.
 
-It's a pretty common convention and will clean things up rather a lot.
+Where does development of the intelfb driver happen?  I have found 
+David Airlie's intelfb git tree at kernel.org, but it doesn't seem to 
+have been updated for a while.
+
+
+Thanks for any suggestions.
+
+Phil.
+
+
+
+
