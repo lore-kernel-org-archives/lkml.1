@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760194AbYHSVzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759806AbYHSV5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760194AbYHSVzY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:55:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760407AbYHSVx3
+	id S1759806AbYHSV5A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbYHSV4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:53:29 -0400
-Received: from lucidpixels.com ([75.144.35.66]:53163 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760401AbYHSVx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:53:28 -0400
-Date: Tue, 19 Aug 2008 17:53:27 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: User discussion about IVTV <ivtv-users@ivtvdriver.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [ivtv-users] Hauppauge 1192 WinTV-HVR-1950: Kernel Oops :(
-In-Reply-To: <alpine.DEB.1.10.0808191631030.8579@p34.internal.lan>
-Message-ID: <alpine.DEB.1.10.0808191752590.12937@p34.internal.lan>
-References: <alpine.DEB.1.10.0808191631030.8579@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 19 Aug 2008 17:56:48 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39718
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752194AbYHSV4s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 17:56:48 -0400
+Date: Tue, 19 Aug 2008 14:56:47 -0700 (PDT)
+Message-Id: <20080819.145647.75276312.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.1.10.0808191446560.3324@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0808191432040.3324@nehalem.linux-foundation.org>
+	<20080819.144015.40311904.davem@davemloft.net>
+	<alpine.LFD.1.10.0808191446560.3324@nehalem.linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Aug 2008, Justin Piszcz wrote:
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 19 Aug 2008 14:50:36 -0700 (PDT)
 
-> 2.6.26.2:
->
-> [   15.745116] usbcore: registered new interface driver pvrusb2
-> [   16.023474] pvrusb2: Device initialization completed successfully.
+> In other words, I would be a lot happier if you didn't say "majority". I 
+> would be a ton happioer if you could HONESTLY say that every single one 
+> was a regression.
+> 
+> And the thing is, you cannot. Some of the ones I pointed you to were 
+> actually regressions due to _other_ patches you had much too happily sent 
+> me after the merge window had already closed).
 
-Closer now:
-
-[  749.791189] pvrusb2: Device initialization completed successfully.
-[  749.791214] pvrusb2: registered device video0 [mpeg]
-[  749.791218] DVB: registering new adapter (pvrusb2-dvb)
-[  749.824133] tda829x 1-0042: setting tuner address to 60
-[  749.846540] tda18271 1-0060: creating new instance
-[  749.877130] TDA18271HD/C1 detected @ 1-0060
-[  750.817127] tda829x 1-0042: type set to tda8295+18271
-[  755.394132] firmware: requesting v4l-cx2341x-enc.fw
-[  757.528628] DVB: registering frontend 0 (Samsung S5H1411 QAM/8VSB Frontend)...
-[  757.530626] tda829x 1-0042: type set to tda8295
-[  757.567455] tda18271 1-0060: attaching existing instance
-[  767.156610] pvrusb2: WARNING: No decoder present
-
-# cat /dev/video0
-cat: /dev/video0: Input/output error
-
-
+Fair enough.
