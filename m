@@ -1,58 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbYHSES4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbYHSE2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754939AbYHSES4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 00:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbYHSESs
+	id S1754665AbYHSE2P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 00:28:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbYHSE1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 00:18:48 -0400
-Received: from gate.crashing.org ([63.228.1.57]:36340 "EHLO gate.crashing.org"
+	Tue, 19 Aug 2008 00:27:54 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47791 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751192AbYHSESs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 00:18:48 -0400
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Scott Wood <scottwood@freescale.com>, Eran Liberty <liberty@extricom.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Steven Rostedt <srostedt@redhat.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
-	 <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
-	 <48A9AFA7.8080508@freescale.com>
-	 <alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>
-	 <1219110814.8062.2.camel@pasglop>
-	 <alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>
-	 <1219113549.8062.13.camel@pasglop> <1219114600.8062.15.camel@pasglop>
-	 <alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Tue, 19 Aug 2008 14:17:11 +1000
-Message-Id: <1219119431.8062.35.camel@pasglop>
+	id S1750991AbYHSE1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 00:27:53 -0400
+Date: Tue, 19 Aug 2008 14:27:39 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-08-18
+Message-Id: <20080819142739.aee40461.sfr@canb.auug.org.au>
+In-Reply-To: <20080818.211632.251536898.davem@davemloft.net>
+References: <20080817185605.GC30679@tuxdriver.com>
+	<20080817.151251.204370966.davem@davemloft.net>
+	<20080818151551.GA5524@tuxdriver.com>
+	<20080818.211632.251536898.davem@davemloft.net>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__19_Aug_2008_14_27_39_+1000_TomPPdzDZIhuXn4u"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-18 at 23:12 -0400, Steven Rostedt wrote:
-> On Tue, 19 Aug 2008, Benjamin Herrenschmidt wrote:
-> 
-> > Ok, so i did a patch, but it doesn't fix the problem. So
-> > there's something else whacking on the stack frames.
-> 
-> Is it 32 bit or 64?  I've tested the 64 bit quite a bit, but not so much 
-> the 32 (my powerbook is not usually that stable).
+--Signature=_Tue__19_Aug_2008_14_27_39_+1000_TomPPdzDZIhuXn4u
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-32-bit. Reproduced on powerbook by a user, 440, 750, ...
+Hi Dave,
 
-> You might want to look at the entry.S mcount code too.
+On Mon, 18 Aug 2008 21:16:32 -0700 (PDT) David Miller <davem@davemloft.net>=
+ wrote:
+>
+> From: "John W. Linville" <linville@tuxdriver.com>
+> Date: Mon, 18 Aug 2008 11:15:51 -0400
+>=20
+> > (Revision 2, commit references in changelogs augmented w/ subject text.)
+> >=20
+> > Here is the latest round of wireless fixes for 2.6.27.  The silliest one
+> > is the one from Adrian Bunk, which applies the gcc-related fix to ath9k
+> > again because there were two identical pieces of code to fix -- I guess
+> > I didn't get the joke *facepalm*...
+> >=20
+> > I don't think there is anything else remarkable, although I think we fix
+> > a couple of the current regressions on LKML.
+>=20
+> Pulled thanks John.
+>=20
+> Assuming nothing shows up in my build testing I'll push this out
+> to kernel.org shortly.
 
-Yeah, I had a look, nothing obviously bad there, but I may just
-have missed it :-)
+Just as an extra datapoint, this has already merged into linux-next and
+built fine for a powerpc ppc64_defconfig and x86_64 allmodconfig this
+morning.  And yesterday's linux-next had the previous version of these
+patches (only commit comment differences as far as I am aware) and the
+build logs are at http://kisskb.ellerman.id.au/linux-next .
 
-Ben.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__19_Aug_2008_14_27_39_+1000_TomPPdzDZIhuXn4u
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiqS7sACgkQjjKRsyhoI8zOiACdGJnVh2E+UkQOhHwYCqwdwjTv
+R4UAoICe1FKj5b0I4N133k2IYqT/0feV
+=qC4V
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__19_Aug_2008_14_27_39_+1000_TomPPdzDZIhuXn4u--
