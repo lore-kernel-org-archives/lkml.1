@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbYHSPhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754536AbYHSPnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754299AbYHSPhb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 11:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbYHSPhT
+	id S1754536AbYHSPnw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 11:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYHSPno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 11:37:19 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:43780 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752470AbYHSPhR (ORCPT
+	Tue, 19 Aug 2008 11:43:44 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:2991 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751718AbYHSPnn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 11:37:17 -0400
+	Tue, 19 Aug 2008 11:43:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vS0D1WWXpMbPqO6qPbB7hAR3ZE3zctOK/J5UwhvoLt6Nw2C+IsKjXjl4cq9RN3LNqw
-         mTw20/SYRzXGIZzrvSi0hUFUtiYxWFm8McIjI6uA9NUUHzioM+znndxzgno/acnDQ22i
-         cuT/2cONwslUwAkpnYqOBY3VUNBlt4gIP6rvQ=
-Date: Tue, 19 Aug 2008 11:37:13 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] drivers/input/evdev.c: Fix printf() format for sizeof
-Message-ID: <20080819113632.ZZRA012@mailhub.coreip.homeip.net>
-References: <Pine.LNX.4.64.0808191137160.1565@vixen.sonytel.be>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=lmrP7OtsIKMQR+GcTy5jWH9H3yILGiuCzXkmd81eTxwKc2iBS1SOrCN/J5HjxlNy+7
+         SgIC3ikjgGG4wPUPrFkvmyer2+fUaDW+An/OIHaCLmLemZeBQnOdUwFDqjq3ww8NVqpP
+         aMgjlPLRYgxgyKN7ht8QycGoS6zfMd3CB0KSA=
+Message-ID: <48AAEA2A.3010107@gmail.com>
+Date: Tue, 19 Aug 2008 11:43:38 -0400
+From: roel kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0808191137160.1565@vixen.sonytel.be>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+CC: paulus@samba.org, benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH v2] powerpc, scc: duplicate SCC_UHC_USBCEN
+References: <20080819.220200.-1300539182.kouish@swc.toshiba.co.jp>
+In-Reply-To: <20080819.220200.-1300539182.kouish@swc.toshiba.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 19, 2008 at 11:43:32AM +0200, Geert Uytterhoeven wrote:
-> commit f2afa7711f8585ffc088ba538b9a510e0d5dca12 ("Input: paper over a bug in
-> Synaptics X driver") introduced a compiler warning on 64-bit platforms, as
-> sizeof() returns a size_t, not an (unsigned) int:
+Kou Ishizaki wrote:
 > 
-> | drivers/input/evdev.c: In function 'handle_eviocgbit':
-> | drivers/input/evdev.c:684: warning: format '%d' expects type 'int', but argument 3 has type 'long unsigned int'
+> Roel,
 > 
-> Use the proper `z' modifier for size_t, and make the printf() formats for the
-> sizes unsigned while we're at it.
+>> untested, is it correct?
 > 
+> Your patch is correct.
+> 
+> Thanks for your pointing it out and sending the patch. I tested your
+> patch and it works good.
+> 
+> Fortunately, this bug is not fatal because it seems that the SCC-UHC
+> sets SCC_UHC_USBEN and SCC_UHC_USBCEN at once.
+> 
+> 
+> Your patch does not contain 'Signed-off-by' line. Could you re-post it
+> with your sign?
 
-Oops... Applied, thank you Geert.
+Sorry for that and thanks for testing.
+---
+duplicate SCC_UHC_USBCEN
 
--- 
-Dmitry
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/arch/powerpc/platforms/cell/celleb_scc_uhc.c b/arch/powerpc/platforms/cell/celleb_scc_uhc.c
+index d63b720..b086f33 100644
+--- a/arch/powerpc/platforms/cell/celleb_scc_uhc.c
++++ b/arch/powerpc/platforms/cell/celleb_scc_uhc.c
+@@ -31,7 +31,7 @@
+ 
+ static inline int uhc_clkctrl_ready(u32 val)
+ {
+-	const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBCEN;
++	const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBEN;
+ 	return((val & mask) == mask);
+ }
+ 
