@@ -1,32 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759598AbYHSUgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759741AbYHSUg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759598AbYHSUgJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 16:36:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758160AbYHSUfw
+	id S1759741AbYHSUg1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 16:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758853AbYHSUfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 19 Aug 2008 16:35:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58772 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758334AbYHSUfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 19 Aug 2008 16:35:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58946 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755113AbYHSUfu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 16:35:50 -0400
-Date: Tue, 19 Aug 2008 13:34:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: rwheeler@redhat.com
-Cc: adilger@sun.com, jbacik@redhat.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 2/2] improve ext3 fsync batching
-Message-Id: <20080819133423.7b8175d6.akpm@linux-foundation.org>
-In-Reply-To: <48AB144F.1070606@redhat.com>
-References: <20080806190819.GH27394@unused.rdu.redhat.com>
-	<20080806191536.GI27394@unused.rdu.redhat.com>
-	<20080818213128.3a76d1e8.akpm@linux-foundation.org>
-	<20080819054414.GM3392@webber.adilger.int>
-	<48AAA7F7.5090501@redhat.com>
-	<20080819105638.aae4086f.akpm@linux-foundation.org>
-	<48AB144F.1070606@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Date: Tue, 19 Aug 2008 16:33:45 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Eric Paris <eparis@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Jan Harkes <jaharkes@cs.cmu.edu>,
+       "Press, Jonathan" <Jonathan.Press@ca.com>, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       hch@infradead.org, andi@firstfloor.org, viro@ZenIV.linux.org.uk
+Subject: Re: HSM (was Re: [malware-list] TALPA - a threat model?  well
+ sorta.)
+Message-ID: <20080819163345.196961f9@riellaptop.surriel.com>
+In-Reply-To: <20080819192027.GA6484@ucw.cz>
+References: <20080813205906.559d3f37@lxorguk.ukuu.org.uk>
+	<2629CC4E1D22A64593B02C43E855530304AE4BC2@USILMS12.ca.com>
+	<20080813173529.7069b5f1@cuia.bos.redhat.com>
+	<20080815201622.GD31584@cs.cmu.edu>
+	<20080815150509.20ffb91d@infradead.org>
+	<1219015177.27389.1.camel@localhost.localdomain>
+	<20080818163313.72927af7@lxorguk.ukuu.org.uk>
+	<20080818124339.4b65b6c0@riellaptop.surriel.com>
+	<20080819071416.GA14731@elf.ucw.cz>
+	<20080819121032.02632c09@riellaptop.surriel.com>
+	<20080819192027.GA6484@ucw.cz>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -34,80 +42,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Aug 2008 14:43:27 -0400
-Ric Wheeler <rwheeler@redhat.com> wrote:
+On Tue, 19 Aug 2008 21:20:27 +0200
+Pavel Machek <pavel@suse.cz> wrote:
 
-> Andrew Morton wrote:
-> > On Tue, 19 Aug 2008 07:01:11 -0400 Ric Wheeler <rwheeler@redhat.com> wrote:
-> >
-> >   
-> >> It would be great to be able to use this batching technique for faster 
-> >> devices, but we currently sleep 3-4 times longer waiting to batch for an 
-> >> array than it takes to complete the transaction.
-> >>     
-> >
-> > Obviously, tuning that delay down to the minimum necessary is a good
-> > thing.  But doing it based on commit-time seems indirect at best.  What
-> > happens on a slower disk when commit times are in the tens of
-> > milliseconds?  When someone runs a concurrent `dd if=/dev/zero of=foo'
-> > when commit times go up to seconds?
-> >
-> > Perhaps a better scheme would be to tune it based on how many other
-> > processes are joining that transaction.  If it's "zero" then decrease
-> > the timeout.  But one would need to work out how to increase it, which
-> > perhaps could be done by detecting the case where process A runs an
-> > fsync when a commit is currently in progress, and that commit was
-> > caused by process B's fsync.
-> >
-> > But before doing all that I would recommend/ask that the following be
-> > investigated:
-> >
-> > - How effective is the present code?
-> >
-> >   - What happens when it is simply removed?
-> >
-> >   - Add instrumentation (a counter and a printk) to work out how
-> >     many other tasks are joining this task's transaction.
-> >
-> >     - If the answer is "zero" or "small", work out why.
-> >
-> >   - See if we can increase its effectiveness.
-> >
-> > Because it could be that the code broke.  There might be issues with
-> > higher-level locks which are preventing the batching.  For example, if
-> > all the files which the test app is syncing are in the same directory,
-> > perhaps all the tasks are piling up on that directory's i_mutex?
-> >   
+> > If you think FUSE+unionfs is a cleaner solution than one
+> > hook in the VFS, I've got a bridge to sell you.
 > 
-> One other way to think about this is as a fairly normal queuing problem:
+> If you can do it with one clean enough hook, I'll buy that bridge.
 > 
->     (1) arrival rate is the rate at which we see new tasks coming into 
-> the code
->     (2) service time is basically the time spent committing the 
-> transaction to storage
-> 
-> and we have the assumption that some number of tasks can join a 
-> transaction more or less for "free."
-> 
-> What the existing code assumes is that all devices have an equal service 
-> time. That worked well as long as we only looked at devices that were 
-> roughly equal (10-20 ms latencies) or used a higher HZ for the kernel 
-> (1000HZ and you don't see this as much as with 100HZ).
-> 
-> The two key issues that Josef's code tried to address are that first 
-> assumption that all devices have a similar service time and the tie 
-> between how long we wait and the HZ.
+> [If you want to do 'list directory before files are there' -- and you
+> seem to want to from description above -- fuse seems like a way to
+> go.]
 
-yes, I see the (indirect) logic.  But I wonder about whether there's a
-direct way of measuring the thing we really want to measure.
+For a poor man's HSM, it may be a possibility to simply restore
+all the files as sparse files, fetching the content on demand.
 
-Also, I'd be heaps less scared of the change if it did
+The files can be marked as HSM-empty files with some kind of
+bit flag or xattr.
 
-	commit_time = min(commit_time, one jiffy)
+Restoring sparse files takes very little time.
 
+This scheme could even work for directories, so you can start
+using the filesystem before the whole directory tree has been
+restored.
 
-> It would seem to be generically 
-> useful to be able to sleep for less than 1 jiffie, not just for file 
-> systems, but maybe also in some other contexts?
+All it needs is block-on-open when the file has a special flag
+or xattr set.
 
-Sure.
+-- 
+All rights reversed.
