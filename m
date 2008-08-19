@@ -1,45 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbYHSPXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbYHSPZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbYHSPXp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 11:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYHSPXf
+	id S1755166AbYHSPZS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 11:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbYHSPZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 11:23:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60474 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752472AbYHSPXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 11:23:34 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <a4423d670808190536m7896c849xaa47ab608e954cf9@mail.gmail.com>
-References: <a4423d670808190536m7896c849xaa47ab608e954cf9@mail.gmail.com>
-To: "Alexander Beregalov" <a.beregalov@gmail.com>
-Cc: dhowells@redhat.com, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for August 19: CRED: BUG: bad unlock balance detected!
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
-Date: Tue, 19 Aug 2008 16:23:18 +0100
-Message-ID: <24643.1219159398@redhat.com>
+	Tue, 19 Aug 2008 11:25:05 -0400
+Received: from adsl-67-120-171-161.dsl.lsan03.pacbell.net ([67.120.171.161]:44056
+	"HELO linuxace.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752664AbYHSPZE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 11:25:04 -0400
+Date: Tue, 19 Aug 2008 08:25:04 -0700
+From: Phil Oester <kernel@linuxace.com>
+To: Hinko Kocevar <hinko.kocevar@cetrtapot.si>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: iptables-1.4.0 with 2.6.26
+Message-ID: <20080819152504.GA13246@linuxace.com>
+References: <48AAAFEB.8020608@cetrtapot.si> <20080819140601.GA5135@linuxace.com> <48AAD48E.3030409@cetrtapot.si>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48AAD48E.3030409@cetrtapot.si>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 19, 2008 at 04:11:26PM +0200, Hinko Kocevar wrote:
+> Well, it builds.
+> But trying to add simple rule fails:
+> 
+> hinkok@alala /tmp/iptables-1.4.1.1 $ sudo ./iptables -A INPUT -p tcp --dport 80 -j DROP
+> iptables v1.4.1.1: Unknown arg `--dport'
+> Try `iptables -h' or 'iptables --help' for more information.
 
-Alexander Beregalov <a.beregalov@gmail.com> wrote:
+Yes, that wouldn't work unless you built a static iptables binary (--enable-static).
+Please run make install, then it will work for you from the install directory.
 
-> [   25.742287] [ BUG: bad unlock balance detected! ]
-> [   25.750284] -------------------------------------
-> [   25.758404] rc/404 is trying to release lock (&p->cred_exec_mutex) at:
-> [   25.766716] [<00000000006aff78>] mutex_unlock+0x10/0x20
-> [   25.775078] but there are no more locks to release!
-
-I forgot to lock cred_exec_mutex in compat_do_execve().  I've posted a patch
-which should fix this:
-
-Subject: [PATCH] CRED: Take cred_exec_mutex in compat_do_execve() and fix
-	error handling in do_execve()
-
-David
+Phil
