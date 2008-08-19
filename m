@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754994AbYHSPXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbYHSPXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754994AbYHSPXW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 11:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbYHSPXL
+	id S1755341AbYHSPXp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 11:23:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYHSPXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 11:23:11 -0400
-Received: from styx.suse.cz ([82.119.242.94]:43981 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752439AbYHSPXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 11:23:10 -0400
-Date: Tue, 19 Aug 2008 17:23:07 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Randy Dunlap <rdunlap@xenotime.net>
-cc: Aivils Stoss <aivils@latnet.lv>, stern@rowland.harvard.edu,
-       lud <linux-usb@vger.kernel.org>,
-       Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxconsole-dev@lists.sourceforge.net
-Subject: Re: PROBLEM: USB keyboards works only 4 per PC host port
-In-Reply-To: <20080819081936.37fef673.rdunlap@xenotime.net>
-Message-ID: <alpine.LNX.1.10.0808191721560.18058@jikos.suse.cz>
-References: <200808080702.24969.aivils@latnet.lv> <200808181642.49489.aivils@latnet.lv> <20080818081432.782d9632.rdunlap@xenotime.net> <200808191527.06945.aivils@latnet.lv> <20080819081936.37fef673.rdunlap@xenotime.net>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 19 Aug 2008 11:23:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60474 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752472AbYHSPXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 11:23:34 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <a4423d670808190536m7896c849xaa47ab608e954cf9@mail.gmail.com>
+References: <a4423d670808190536m7896c849xaa47ab608e954cf9@mail.gmail.com>
+To: "Alexander Beregalov" <a.beregalov@gmail.com>
+Cc: dhowells@redhat.com, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for August 19: CRED: BUG: bad unlock balance detected!
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Tue, 19 Aug 2008 16:23:18 +0100
+Message-ID: <24643.1219159398@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Aug 2008, Randy Dunlap wrote:
 
-> > 2.6.22-1-mepis-smp
-> > Quite stable. Have oops sometime inside evdev. Support up to 16 
-> > USB keyboards, where 4 hubs are plugged into PC and 4 keyboards on
-> > each hub. Any hub cascade support only 4 keyboards, where 5th or more
-> > is registered but don't send input events. Oops inside evdev , when
-> > USB keyboard unplugged. No slow down even all USB keyboards does
-> > not work properly. My be this one support more than 16 keyboards, but
-> > i don't have PC USB ports enough.
-> Has the evdev oops been reported and/or fixed? I think that we would 
-> prefer to fix that soonish.
+Alexander Beregalov <a.beregalov@gmail.com> wrote:
 
-We haven't seen the respective oops yet, or have I missed it?
+> [   25.742287] [ BUG: bad unlock balance detected! ]
+> [   25.750284] -------------------------------------
+> [   25.758404] rc/404 is trying to release lock (&p->cred_exec_mutex) at:
+> [   25.766716] [<00000000006aff78>] mutex_unlock+0x10/0x20
+> [   25.775078] but there are no more locks to release!
 
-I'd bet it is fixed in newer kernels by patches that introduce proper 
-locking into evdev code.
+I forgot to lock cred_exec_mutex in compat_do_execve().  I've posted a patch
+which should fix this:
 
--- 
-Jiri Kosina
-SUSE Labs
+Subject: [PATCH] CRED: Take cred_exec_mutex in compat_do_execve() and fix
+	error handling in do_execve()
+
+David
