@@ -1,72 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbYHSNAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755136AbYHSNBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754757AbYHSNAN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 09:00:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbYHSNAA
+	id S1755136AbYHSNBG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 09:01:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbYHSNAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 09:00:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35149 "EHLO mx1.redhat.com"
+	Tue, 19 Aug 2008 09:00:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55375 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753291AbYHSM77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 08:59:59 -0400
-Date: Tue, 19 Aug 2008 08:57:10 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Paul Menage <menage@google.com>
-Cc: righi.andrea@gmail.com, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
-       Morton Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Graf <tgraf@redhat.com>, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [RFC] [PATCH -mm] cgroup: uid-based rules to add processes
-	efficiently in the right cgroup
-Message-ID: <20080819125710.GA18972@redhat.com>
-References: <20080703155446.GB9275@redhat.com> <6599ad830807100223m2453963cwcfbe6eb1ad54d517@mail.gmail.com> <20080710104852.797fe79c@cuia.bos.redhat.com> <20080710154035.GA12043@redhat.com> <20080711095501.cefff6df.kamezawa.hiroyu@jp.fujitsu.com> <20080714135719.GE16673@redhat.com> <487B665B.9080205@sun.com> <20080714152142.GJ16673@redhat.com> <48A7FE7B.3060309@gmail.com> <6599ad830808181405i3ec1f9fdp4d8ca7ab675b2c5f@mail.gmail.com>
+	id S1753441AbYHSNAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 09:00:53 -0400
+Date: Tue, 19 Aug 2008 14:59:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Stefani Seibold <stefani@seibold.net>,
+       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
+Message-ID: <20080819125954.GA20210@elte.hu>
+References: <20080819103301.787700742@chello.nl> <20080819103844.459178947@chello.nl> <20080819110557.GA18608@elte.hu> <200808192117.52070.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6599ad830808181405i3ec1f9fdp4d8ca7ab675b2c5f@mail.gmail.com>
+In-Reply-To: <200808192117.52070.nickpiggin@yahoo.com.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 18, 2008 at 02:05:36PM -0700, Paul Menage wrote:
-> On Sun, Aug 17, 2008 at 3:33 AM, Andrea Righi <righi.andrea@gmail.com> wrote:
-> >
-> > [ I wrote this patch for a "special purpose" environment, where a lot of
-> > short-lived processes belonging to different users are spawned by
-> > different daemons,
-> 
-> What kinds of daemons are these? Is it not possible to add some
-> libcgroup calls to these daemons?
-> 
-> I'm reluctant to add features like this to the kernel side of cgroups
-> due to their "magical" nature - any task that does a setuid() now
-> risks being swept off into a different cgroup.
-> 
-> Having the cgroup attachment done explicitly e.g. by a PAM library at
-> login time is much less likely to cause unexpected behaviour.
-> 
-> Maybe if we had a way to control which tasks the magical setuid
-> switching occurs for, it might be more acceptable. (Perhaps base it on
-> the cgroup of the task that's doing the setuid as well?
 
-Hi Paul,
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-Same thing will happen if we implement the daemon in user space. A task
-who does seteuid(), can be swept away to a different cgroup based on 
-rules specified in /etc/cgrules.conf. 
+> [...] Let's retain our API specifications and backwards compatibilty 
+> by default. [...]
 
-What do you mean by risk? This is the policy set up by system admin and
-behaviour would seem consistent as per the policy. If an admin decides
-that tasks of user "apache" should run into /container/cpu/apache cgroup and
-if a "root" tasks does seteuid(apache), then it manes sense to move task
-to /container/cpu/apache.
+I agree with you that the 1 second default was a bit too tight - and we 
+should definitely change that (and it's changed already).
 
-Exactly what kind of scenario do you have in mind when you want the policy
-to be enforced selectively based on task (tid)?
+So changing the "allow RT tasks up to 10 seconds uninterrupted CPU 
+monopolization" is OK to me - it still keeps runaway CPU loops (which 
+are in the vast majority) debuggable, while allowing common-sense RT 
+task usage.
 
-Thanks
-Vivek
+But changing that back to the other extreme: "allow lockups by default" 
+is unreasonable IMO - especially in the face of rtlimit that allows 
+unprivileged tasks to gain RT privileges.
+
+As an experiment try running a 100% CPU using SCHED_FIFO:99 RT task. It 
+does not result in a usable Linux system - it interacts with too many 
+normal system activities. It is a very, very special mode of operation 
+and anyone using Linux in such a way has to take precautions and has to 
+tune things specially anyway. (has to turn off the softlockup watchdog, 
+has to make sure IO requests do not time out artificially, etc.) You 
+wont even get normal keyboard or console behavior in most cases.
+
+Furthermore, if by "API specifications" you mean POSIX - to get a 
+conformant POSIX run one has to change a lot of things on a typical 
+Linux system anyway. APIs and utilities have to be crippled to be "POSIX 
+compliant".
+
+In other words: we use common sense when thinking about specifications. 
+The kernel's defaults are about being reasonable by default.
+
+I have no _strong_ feelings about it, but i dont see the practical value 
+in going beyond 10 seconds - as it turns a rather useful robustness 
+feature off by default (and keeps it untested, etc.).
+
+	Ingo
