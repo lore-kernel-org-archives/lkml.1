@@ -1,176 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757619AbYHSTDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646AbYHSTIP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757619AbYHSTDi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 15:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758004AbYHSTDF
+	id S1754646AbYHSTIP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 15:08:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbYHSTH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 15:03:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50145 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752807AbYHSTDD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 15:03:03 -0400
-Date: Tue, 19 Aug 2008 12:03:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ico Doornekamp <lkml@zevv.nl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: TIOCGWINSZ retuns old pty size after receiving SIGWINCH
-Message-Id: <20080819120300.91cc6b08.akpm@linux-foundation.org>
-In-Reply-To: <20080819175639.GI29842@pruts.nl>
-References: <20080810150859.GO3653@pruts.nl>
-	<20080819004026.2dac3ba6.akpm@linux-foundation.org>
-	<20080819075414.GV29842@pruts.nl>
-	<20080819010702.c5300420.akpm@linux-foundation.org>
-	<20080819114423.GB29842@pruts.nl>
-	<20080819175639.GI29842@pruts.nl>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 19 Aug 2008 15:07:59 -0400
+Received: from mga11.intel.com ([192.55.52.93]:11320 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752686AbYHSTH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 15:07:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,236,1217833200"; 
+   d="scan'208";a="608034202"
+Date: Tue, 19 Aug 2008 12:07:57 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Dave Airlie <airlied@gmail.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "dri-users@lists.sourceforge.net" <dri-users@lists.sourceforge.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: AGP and PAT (induced?) problem (on AMD family 6)
+Message-ID: <20080819190757.GA17470@linux-os.sc.intel.com>
+References: <48972EA8.8040001@keyaccess.nl> <20080815142218.GC12954@elte.hu> <48A59FAC.7050605@keyaccess.nl> <48AA9C3B.5030309@keyaccess.nl> <20080819102633.GE6722@elte.hu> <48AAD680.7020508@keyaccess.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48AAD680.7020508@keyaccess.nl>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Aug 2008 19:56:39 +0200
-Ico Doornekamp <lkml@zevv.nl> wrote:
-
+On Tue, Aug 19, 2008 at 07:19:44AM -0700, Rene Herman wrote:
+> On 19-08-08 12:26, Ingo Molnar wrote:
 > 
+> > * Rene Herman <rene.herman@keyaccess.nl> wrote:
+> >
+> >> On 15-08-08 17:24, Rene Herman wrote:
+> >>
+> >>> On 15-08-08 16:22, Ingo Molnar wrote:
+> >>>
+> >>>> (more people Cc:-ed)
+> >>> Thank you. Additional information at http://lkml.org/lkml/2008/8/6/449
+> >>>
+> >>>> agreed - +12 seconds wait suggest some rather fundamental breakage.
+> >>>> Did we go back to uncached for some critical display area that makes
+> >>>> X start up (shut down) that slowly? Did we mark the BIOS uncacheable
+> >>>> perhaps, causing X to execute BIOS code very slowly?
+> >>> Quite a lot "uncached-minus" in those lists. I am desperately trying to
+> >>> avoid a clue about mostly anything graphics related so, "I dunno".
+> >>>
+> >>> I haven't just disabled PAT yet (although I was about to just do so)
+> >>> and am available for testing.
+> >> <waiting with bated breath>
+> >>
+> >> Additional observation with respect to first,next shutdown:
+> >>
+> >> With Option "AGPSize" "64", and booted with "nopat", X startup (from
+> >> startx<enter> to functional desktop) is approximately 5 seconds,
+> >> shutdown is 1 second as calibration times.
+> >>
+> >> Booted without "nopat", X startup seems to alternate between 10+ and
+> >> 16+ seconds and for shutdown -- the first shutdown after boot takes
+> >> some 14 seconds total, subsequent shutdowns settle at around 5
+> >> seconds.
+> >
+> > would it be possible to start up and shut down X in the slow case via
+> > strace, by doing something like this:
+> >
+> >   strace -f -ttt -TTT -o trace.log startx
+> >
+> > and see which system calls (or other activities) took suspiciously long?
 > 
-> * On 2008-08-19 Ico Doornekamp <lkml@zevv.nl> wrote  :
+> It wouldn't it seems. Root X (needed for the strace) works fine but
+> started this way hangs indefinitely.
 > 
-> > 
-> > 
-> > * On 2008-08-19 Andrew Morton <akpm@linux-foundation.org> wrote  :
-> > 
-> > > On Tue, 19 Aug 2008 09:54:14 +0200 Ico Doornekamp <lkml@zevv.nl> wrote:
-> > > > 
-> > > > * On 2008-08-19 Andrew Morton <akpm@linux-foundation.org> wrote  :
-> > > > 
-> > > > > On Sun, 10 Aug 2008 17:08:59 +0200 Ico Doornekamp <lkml@zevv.nl> wrote:
-> > > > > 
-> > > > > > Recently my X terminals showed annoying behaviour where the application
-> > > > > > in the terminal was not resized properly to the actual size of the X
-> > > > > > terminal emulator window, resulting in a lot of misaligned text on the
-> > > > > > screen. Hunting the issue down from the windowmanager and the terminal
-> > > > > > emulator program, I suspect the problem might lie in the kernel. I'm
-> > > > > > running 2.6.26 on a dual core i386.
-> > > > > > 
-> > > > > > What I see is this: the userspace application receives a SIGWINCH signal
-> > > > > > and acquires the terminal size usign the TIOCGWINSZ ioctl. It seems that
-> > > > > > in some cases the old instead of the new terminal size is returned.
-> > > > > > A small delay before the ioctl seems to 'fix' this behaviour.
-> > > > > > 
-> > > > > > I noticed some changes involving locking in the the pty code in the last
-> > > > > > kernel verions, could one of these changes cause the above behaviour ? If
-> > > > > > so, wouldn't this affect much more users ?
-> > > > > 
-> > > > > hm, that code is pretty simple and although it does the SIGWINCH and
-> > > > > the window-size setting in a peculiar order, it looks to be race-free.
-> > > > > 
-> > > > > Approximately what proportion of the time does it go wrong?
-> > > > 
-> > > > I guess about 10 to 20% of the resizes. I happen to be using a tiling
-> > > > window manager which causes resizing more often and more agressive then
-> > > > 'normal' window managers, I guess this helps triggering the problem.
-> > > > 
-> > > > I temporary worked around this issue this by changing the order of the
-> > > > signal and the updating of the pty size in tty_io.c's tiocswinsz(), but
-> > > > this is not much of a real fix.
-> > > > 
-> > > 
-> > > Well damn.  Are you sure?  The code looks solid to me.
-> > > 
-> > > At least, it does after 
-> > > 
-> > > Author: Alan Cox <alan@redhat.com>  2008-08-15 02:39:38
-> > > Committer: Linus Torvalds <torvalds@linux-foundation.org>  2008-08-15 10:34:07
-> > > Parent: 000b9151d7851cc1e490b2a76d0206e524f43cca (Fix race/oops in tty layer after BKL pushdown)
-> > > Branches: git-cifs, git-ia64, git-nfs, git-powerpc-merge, linux-next, remotes/origin/master
-> > > Follows: v2.6.27-rc3
-> > > Precedes: next-20080818
-> > > 
-> > >     tty: remove resize window special case
-> > > 
-> > > perhaps you're still running a kernel which is earlier than that?
-> > 
-> > I reported the behaviour on 2.6.26.2, but I was not aware this issue was
-> > adressed already in the 2.6.27 tree. I will update to the latest 2.6.27
-> > rc and report if the problem still persists.
+> I believe the 14 seconds for first shutdown to 5 later might be telling.
+> Sounds like something might have fixed up uncached entries.
 > 
-> I am not able to reproduce the problem with git 2.6.27-rc3-next-20080819.
+> I'd really like a reply from the AGP or PAT side right about now.
+> 
 
-That's linux-next, yes?
+Hmm. Looks like there are more than 16000 entries in the PAT list!
 
-linux-next has additional locking in there:
+This delay may be due to the overhead of parsing this linked list everytime
+for a new entry, rather than any problem with cache setting itself.
 
-commit 2283faa9cec083b6ddc1fa02a974ce1c797e847f
-Author: Alan Cox <alan@redhat.com>
-Date:   Thu Aug 14 09:53:22 2008 +1000
+I am working on a patch to optimize this pat list parsing for the simple case.
+Should be able to send it out later today, for testing.
 
-    tty-fix-pty-termios-race
-    
-    Kanru Chen posted a patch versus the old code which deals with the case
-    where you resize the pty side of a pty/tty pair. In that situation the
-    termios data is updated for both pty and tty but the locks are not held
-    on both sides.
-    
-    This reimplements the fix against the updated tty code. Patch by self but
-    the hard bit (noticing and fixing the bug) is thanks to Kanru Chen.
-    
-    Signed-off-by: Alan Cox <alan@redhat.com>
+Thanks,
+Venki
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index a8ddcba..779c6b5 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -2068,7 +2068,7 @@ static int tiocgwinsz(struct tty_struct *tty, struct winsize __user *arg)
- /**
-  *	tty_do_resize		-	resize event
-  *	@tty: tty being resized
-- *	@real_tty: real tty (if using a pty/tty pair)
-+ *	@real_tty: real tty (not the same as tty if using a pty/tty pair)
-  *	@rows: rows (character)
-  *	@cols: cols (character)
-  *
-@@ -2085,6 +2085,14 @@ int tty_do_resize(struct tty_struct *tty, struct tty_struct *real_tty,
- 	mutex_lock(&tty->termios_mutex);
- 	if (!memcmp(ws, &tty->winsize, sizeof(*ws)))
- 		goto done;
-+
-+	/* If a pty/tty pair is updated we will have a real_tty defined
-+	   which doesn't match the tty. In this case as we will update
-+	   both of the tty termios sets. We can lock both mutex safely here
-+	   as in this case real_tty is the tty, tty is the pty side and we
-+	   have lock ordering */
-+	if (real_tty != tty)
-+		mutex_lock(&real_tty->termios_mutex);
- 	/* Get the PID values and reference them so we can
- 	   avoid holding the tty ctrl lock while sending signals */
- 	spin_lock_irqsave(&tty->ctrl_lock, flags);
-@@ -2102,6 +2110,8 @@ int tty_do_resize(struct tty_struct *tty, struct tty_struct *real_tty,
- 
- 	tty->winsize = *ws;
- 	real_tty->winsize = *ws;
-+	if (real_tty != tty)
-+		mutex_unlock(&real_tty->termios_mutex);
- done:
- 	mutex_unlock(&tty->termios_mutex);
- 	return 0;
-
-which perhaps fixed the problem.
-
-
-This bug may have been present in released kernels for some time - I
-think I read in another thread that CPU scheduler changes might have
-caused it to surface.  Doesn't matter really - we don't want
-user-visible races like this affecting desktop applications in stable
-kernels!
-
-Can you please help us to complete this list?
-
-2.6.25.x:	?
-2.6.26.x:	bad
-2.6.27-rc3/4:	?
-linux-next	good
-
-Thanks.
