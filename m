@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbYHSQzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbYHSQ47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857AbYHSQzN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 12:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYHSQzA
+	id S1756702AbYHSQ47 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 12:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbYHSQ4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 12:55:00 -0400
-Received: from smtp02.citrix.com ([66.165.176.63]:18496 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751171AbYHSQy7 (ORCPT
+	Tue, 19 Aug 2008 12:56:51 -0400
+Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:54277 "EHLO
+	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751777AbYHSQ4v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 12:54:59 -0400
-X-IronPort-AV: E=Sophos;i="4.32,236,1217822400"; 
-   d="scan'208";a="16524028"
-Message-ID: <48AAFAE4.7070409@citrix.com>
-Date: Tue, 19 Aug 2008 17:55:00 +0100
-From: Alex Nixon <alex.nixon@citrix.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Tue, 19 Aug 2008 12:56:51 -0400
+Message-ID: <48AAFB4C.1030300@lwfinger.net>
+Date: Tue, 19 Aug 2008 11:56:44 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] X86:  Change the default value of nr_irqs from 32 to NR_IRQs
-Content-Type: text/plain; charset=ISO-8859-1
+To: David Woodhouse <dwmw2@infradead.org>
+CC: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Regression in 2.6.27-rc2 when cross-building the kernel
+References: <48A63D98.3070900@lwfinger.net>	 <20080818193253.GA30856@uranus.ravnborg.org>	 <48A9FA05.9000601@lwfinger.net> <20080819044854.GA2276@uranus.ravnborg.org> <1219132135.3184.461.camel@pmac.infradead.org>
+In-Reply-To: <1219132135.3184.461.camel@pmac.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Aug 2008 16:54:59.0095 (UTC) FILETIME=[50937270:01C9021C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alex Nixon <alex.nixon@citrix.com>
-Date: Tue, 19 Aug 2008 17:49:37 +0100
-Subject: [PATCH] X86:  Change the default value of nr_irqs from 32 to NR_IRQs
+David Woodhouse wrote:
+> On Tue, 2008-08-19 at 06:48 +0200, Sam Ravnborg wrote:
+>> And Larry log say it is so.
+>>
+>> David - did you have a patch to fix this already?
+> 
+> The fix was to 'build' the firmware blobs at the same time as 'make
+> modules', so that they're already built and don't need to be built at
+> modules_install time. That went in a while ago though.
+> 
+> Why is ihex2fw being rebuilt?
+> 
 
-If the number of discovered IRQs is suspiciously low, this patch causes the number reported to default to NR_IRQS, rather than 32.  NR_IRQS has already been defined to be a sensible value for the current system (in particular, at least 224 when paravirtualisation is involved).
+sudo make V=2 modules_install says:
 
-Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
----
- arch/x86/kernel/io_apic.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+   HOSTCC  firmware/ihex2fw - due to: /usr/include/gnu/stubs-64.h 
+/usr/lib64/gcc/x86_64-suse-linux/4.3/include/stddef.h 
+/usr/lib64/gcc/x86_64-suse-linux/4.3/include-fixed/limits.h 
+/usr/lib64/gcc/x86_64-suse-linux/4.3/include-fixed/syslimits.h 
+/usr/lib64/gcc/x86_64-suse-linux/4.3/include/stdarg.h
+/bin/sh: scripts/basic/fixdep: cannot execute binary file
+make[1]: *** [firmware/ihex2fw] Error 126
+make: *** [_modinst_post] Error 2
 
-diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
-index 30ff794..11bffa1 100644
---- a/arch/x86/kernel/io_apic.c
-+++ b/arch/x86/kernel/io_apic.c
-@@ -3632,7 +3632,7 @@ int __init probe_nr_irqs(void)
- 
- 	/* something wrong ? */
- 	if (nr < 32)
--		nr = 32;
-+		nr = NR_IRQS;
- 
- 	return nr;
- }
--- 
-1.5.4.3
+Larry
 
