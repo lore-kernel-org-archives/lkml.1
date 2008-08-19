@@ -1,91 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbYHSOdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbYHSOd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753571AbYHSOdB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 10:33:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYHSOct
+	id S1754499AbYHSOd2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 10:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbYHSOc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 10:32:49 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:42363 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752612AbYHSOcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 10:32:48 -0400
-Date: Tue, 19 Aug 2008 17:32:38 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: gerg@uclinux.org, jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [2.6 patch] m68knommu: let PCI depend on BROKEN
-Message-ID: <20080819143238.GK8852@cs181140183.pp.htv.fi>
-References: <20080819134718.GH8852@cs181140183.pp.htv.fi> <Pine.LNX.4.64.0808191613100.9575@anakin>
+	Tue, 19 Aug 2008 10:32:59 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:41051 "EHLO
+	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753971AbYHSOc6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 10:32:58 -0400
+X-BigFish: VPS4(zzzz10d3izzz32i43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0K5UR2L-03-AJ4-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com
+CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       muli@il.ibm.com, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 4/8] x86: add alloc_coherent dma_ops callback to NOMMU driver
+Date: Tue, 19 Aug 2008 16:32:42 +0200
+Message-ID: <1219156366-32498-5-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.3.7
+In-Reply-To: <1219156366-32498-1-git-send-email-joerg.roedel@amd.com>
+References: <1219156366-32498-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 19 Aug 2008 14:32:46.0640 (UTC) FILETIME=[72D62300:01C90208]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0808191613100.9575@anakin>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 19, 2008 at 04:13:33PM +0200, Geert Uytterhoeven wrote:
-> On Tue, 19 Aug 2008, Adrian Bunk wrote:
-> > There exists blackfin hardware with PCI support, but the support
-> > currently in the kernel fails to build starting with:
-> > 
-> > <--  snip  -->
-> > 
-> > ...
-> >   CC      init/main.o
-> > In file included from dma-mapping.h:5,
-> >                  from dma-mapping.h:52,
-> >                  from dmaengine.h:29,
-> >                  from skbuff.h:29,
-> >                  from netlink.h:155,
-> >                  from genetlink.h:4,
-> >                  from genetlink.h:4,
-> >                  from taskstats_kern.h:12,
-> >                  from main.c:46:
-> > dma-mapping.h: In function 'dma_supported': ma-mapping.h:24: 
-> > error: implicit declaration of function 'pci_dma_supported'
-> > ...
-> > make[2]: *** [init/main.o] Error 1
-> > 
-> > 
-> > <--  snip  -->
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > 
-> > ---
-> > 3bdc07c86b6fd5fc18b7676a75c3ff907e00e807 
-> > diff --git a/arch/m68knommu/Kconfig b/arch/m68knommu/Kconfig
-> > index 2e7515e..77a5bdf 100644
-> > --- a/arch/m68knommu/Kconfig
-> > +++ b/arch/m68knommu/Kconfig
-> > @@ -702,6 +702,7 @@ menu "Bus options (PCI, PCMCIA, EISA, MCA, ISA)"
-> >  
-> >  config PCI
-> >  	bool "PCI support"
-> > +	depends on BROKEN
-> >  	help
-> >  	  Support for PCI bus.
-> 
-> blackfin != m68knommu
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kernel/pci-nommu.c |   55 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 55 insertions(+), 0 deletions(-)
 
-s/blackfin/m68knommu/ in the patch description (relict from copying it 
-from the other similar patch, see http://lkml.org/lkml/2008/8/19/196).
-
-The error message and the patch are for m68knommu.
-
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-
-cu
-Adrian
-
+diff --git a/arch/x86/kernel/pci-nommu.c b/arch/x86/kernel/pci-nommu.c
+index 3f91f71..b8ce83c 100644
+--- a/arch/x86/kernel/pci-nommu.c
++++ b/arch/x86/kernel/pci-nommu.c
+@@ -72,7 +72,62 @@ static int nommu_map_sg(struct device *hwdev, struct scatterlist *sg,
+ 	return nents;
+ }
+ 
++static void *
++nommu_alloc_coherent(struct device *hwdev, size_t size,
++		     dma_addr_t *dma_addr, gfp_t gfp)
++{
++	unsigned long dma_mask;
++	int node;
++	struct page *page;
++
++	if (hwdev->dma_mask == NULL)
++		return NULL;
++
++	gfp &= ~(__GFP_DMA | __GFP_HIGHMEM | __GFP_DMA32);
++	gfp |= __GFP_ZERO;
++
++	dma_mask = hwdev->coherent_dma_mask;
++	if (!dma_mask)
++		dma_mask = *(hwdev->dma_mask);
++
++	if (dma_mask < DMA_24BIT_MASK)
++		return NULL;
++
++	node = dev_to_node(hwdev);
++
++#ifdef CONFIG_X86_64
++	if (dma_mask <= DMA_32BIT_MASK)
++		gfp |= GFP_DMA32;
++#endif
++
++	/* No alloc-free penalty for ISA devices */
++	if (dma_mask == DMA_24BIT_MASK)
++		gfp |= GFP_DMA;
++
++again:
++	page = alloc_pages_node(node, gfp, get_order(size));
++	if (!page)
++		return NULL;
++
++	if ((page_to_phys(page) + size > dma_mask) && !(gfp & GFP_DMA)) {
++		free_pages((unsigned long)page_address(page), get_order(size));
++		gfp |= GFP_DMA;
++		goto again;
++	}
++
++	*dma_addr = page_to_phys(page);
++	if (check_addr("alloc_coherent", hwdev, *dma_addr, size)) {
++		flush_write_buffers();
++		return page_address(page);
++	}
++
++	free_pages((unsigned long)page_address(page), get_order(size));
++
++	return NULL;
++}
++
+ struct dma_mapping_ops nommu_dma_ops = {
++	.alloc_coherent = nommu_alloc_coherent,
+ 	.map_single = nommu_map_single,
+ 	.map_sg = nommu_map_sg,
+ 	.is_phys = 1,
 -- 
+1.5.3.7
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
