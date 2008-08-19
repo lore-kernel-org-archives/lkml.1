@@ -1,61 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbYHSWWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbYHSWW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754425AbYHSWWV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 18:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYHSWWK
+	id S1754507AbYHSWW4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 18:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbYHSWW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 18:22:10 -0400
-Received: from homer.mvista.com ([63.81.120.155]:17050 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751746AbYHSWWJ (ORCPT
+	Tue, 19 Aug 2008 18:22:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57473 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755431AbYHSWW2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 18:22:09 -0400
-Message-ID: <48AB478B.5040209@ru.mvista.com>
-Date: Wed, 20 Aug 2008 02:22:03 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Tue, 19 Aug 2008 18:22:28 -0400
+Date: Tue, 19 Aug 2008 15:21:21 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bart Trojanowski <bart@jukie.net>
+cc: linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] make lock_super recursive to simulate BKL
+In-Reply-To: <1219183590-19529-1-git-send-email-bart@jukie.net>
+Message-ID: <alpine.LFD.1.10.0808191517591.3324@nehalem.linux-foundation.org>
+References: <20080819220311.GA28029@jukie.net> <1219183590-19529-1-git-send-email-bart@jukie.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/5] ide: ->ide_dma_clear_irq() -> ->clear_irq()
-References: <200808192031.40288.bzolnier@gmail.com>
-In-Reply-To: <200808192031.40288.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
 
-Bartlomiej Zolnierkiewicz wrote:
 
-> * Rename ->ide_dma_clear_irq method to ->clear_irq
->   and move it from ide_hwif_t to struct ide_port_ops.
+On Tue, 19 Aug 2008, Bart Trojanowski wrote:
 >
-> * Move ->waiting_for_dma check inside ->clear_irq method.
->
-> * Move ->dma_base check inside ->clear_irq method.
->
-> piix.c:
-> * Add ich_port_ops and remove init_hwif_ich() wrapper.
->
-> There should be no functional changes caused by this patch.
->   
+> This fixes a regression introduced when BKL was removed from the
+> vfat driver in commit 8f5934278d1d86590244c2791b28f77d67466007.
 
-   Good. I think it's worth implementing this method in at least 
-cmd64x.c which actually reads the IDE interrupt latch bits (independent 
-from the DMA interrupt status) in the dma_test_irq() methods but never 
-clears them, so the latches may reflect a non-current state of the IDE 
-interrupt...
-   It may also be worth considering turning this method into 
-test-and-clear, so that we can get the actual IDE interrupt state on the 
-chips that implement this...
+I agree that it's going to almost certainly fix the regression, but could 
+you test the following patch instead as an alternative? I'd rather remove 
+the broken recursive lockign than introduce it as an acceptable concept.
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+		Linus
+---
+ fs/fat/inode.c |   10 +++-------
+ 1 files changed, 3 insertions(+), 7 deletions(-)
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-MBR, Sergei
-
-
+diff --git a/fs/fat/inode.c b/fs/fat/inode.c
+index 6d266d7..80ff338 100644
+--- a/fs/fat/inode.c
++++ b/fs/fat/inode.c
+@@ -562,26 +562,23 @@ static int fat_write_inode(struct inode *inode, int wait)
+ 	struct buffer_head *bh;
+ 	struct msdos_dir_entry *raw_entry;
+ 	loff_t i_pos;
+-	int err = 0;
++	int err;
+ 
+ retry:
+ 	i_pos = MSDOS_I(inode)->i_pos;
+ 	if (inode->i_ino == MSDOS_ROOT_INO || !i_pos)
+ 		return 0;
+ 
+-	lock_super(sb);
+ 	bh = sb_bread(sb, i_pos >> sbi->dir_per_block_bits);
+ 	if (!bh) {
+ 		printk(KERN_ERR "FAT: unable to read inode block "
+ 		       "for updating (i_pos %lld)\n", i_pos);
+-		err = -EIO;
+-		goto out;
++		return -EIO;
+ 	}
+ 	spin_lock(&sbi->inode_hash_lock);
+ 	if (i_pos != MSDOS_I(inode)->i_pos) {
+ 		spin_unlock(&sbi->inode_hash_lock);
+ 		brelse(bh);
+-		unlock_super(sb);
+ 		goto retry;
+ 	}
+ 
+@@ -607,11 +604,10 @@ retry:
+ 	}
+ 	spin_unlock(&sbi->inode_hash_lock);
+ 	mark_buffer_dirty(bh);
++	err = 0;
+ 	if (wait)
+ 		err = sync_dirty_buffer(bh);
+ 	brelse(bh);
+-out:
+-	unlock_super(sb);
+ 	return err;
+ }
+ 
