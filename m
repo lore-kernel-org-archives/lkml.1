@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759199AbYHSVrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759417AbYHSVsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759199AbYHSVrX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbYHSVrJ
+	id S1759417AbYHSVsj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYHSVsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:47:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38982 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752725AbYHSVrI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:47:08 -0400
-Date: Tue, 19 Aug 2008 14:46:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-cc: rjw@sisk.pl, akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-In-Reply-To: <20080819.143556.245692295.davem@davemloft.net>
-Message-ID: <alpine.LFD.1.10.0808191440440.3324@nehalem.linux-foundation.org>
-References: <20080819.140458.236030589.davem@davemloft.net> <200808192315.48718.rjw@sisk.pl> <alpine.LFD.1.10.0808191425050.3324@nehalem.linux-foundation.org> <20080819.143556.245692295.davem@davemloft.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 19 Aug 2008 17:48:31 -0400
+Received: from gate.crashing.org ([63.228.1.57]:49002 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752466AbYHSVsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 17:48:30 -0400
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Eran Liberty <liberty@extricom.com>, Steven Rostedt <srostedt@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linuxppc-dev@ozlabs.org, rostedt@goodmis.org
+In-Reply-To: <20080819130216.GA18001@Krystal>
+References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
+	 <48A9901B.1080900@redhat.com> <48A9BEA3.10906@extricom.com>
+	 <20080818184158.GA1798@Krystal> <48AA98E4.6060606@extricom.com>
+	 <20080819130216.GA18001@Krystal>
+Content-Type: text/plain
+Date: Wed, 20 Aug 2008 07:46:44 +1000
+Message-Id: <1219182404.7826.14.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+> Register GPR30 is always zero... (also true for the other oops)
 
-On Tue, 19 Aug 2008, David Miller wrote:
-> 
-> That change was made under the pretext that it was tested heavily and
-> that if we hit any problem whatsoever with it that we couldn't fix
-> quickly it would be reverted.
+>From my experiments, -a- non volatile register gets corrupted. Not
+always the same and not always with the same value.
 
-David, I will say this one more time:
+The corruption -seems- to happen due to corruption of the location on
+the stack where it was saved to / restored from in a previous function
+call or interrupt.
 
- - as long as you concentrate on individual commits, you're missing the 
-   big picture.
+I haven't yet tracked down what actually whacks the stack.
 
-you can _always_ make excuses for individual commits. That's not my point. 
-Or rather, it actually verry much _is_ my point. If you have the mindset 
-that you're looking for excuses why any individual commit is ok to merge, 
-then you don't end up with a coupld of individual commits any more: you 
-end up with a LOT OF CHURN.
+Ben.
 
-It's not the individual commits. You're looking at the individual trees, 
-and you're missing the forest. The problem isn't the individual trees. The 
-problem is that there's a metric sh*tload of individual trees, what we in 
-the tree industry call a 'forest'. You're not seeing it.
 
-And btw, don't get me wrong - you're not the only problem spot. During the 
--rc's leading up to 2.6.26, drivers/merdia was actually a _bigger_ 
-problem. I happen to care less about that (the same way I care less about 
-some odd-ball architectures), but I have to admit that drivers/media was a 
-total disaster last time around.
-
-So if it makes you feel any better, others have been even worse.  But this 
-networking problem ha been going on for quite a while.
-
-So the problem here really is that you seem overly eager to make excuses 
-for individual patches. And if they _stayed_ "individual" it would all be 
-good. But they don't seem to.
-
-			Linus
