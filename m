@@ -1,204 +1,367 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884AbYHSBPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbYHSBQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756884AbYHSBPs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 21:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbYHSBP1
+	id S1756751AbYHSBQU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 21:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbYHSBPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 21:15:27 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:24687 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754375AbYHSBP0 (ORCPT
+	Mon, 18 Aug 2008 21:15:39 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:37092 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756540AbYHSBPh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 21:15:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=AXsDOMoC0wvmVKOhUJCn0LQ4sjrl4ekK+uc6bzgY9J6qBJ8Rixdw35R9QF/vHiMNSP
-         N6xbKx64BtotBoymtd7vDHABoNAL53LJl2ODeLZR+l1OGDgnOBbPLXJ62bJg5F9Fml6u
-         L5dsb7eyPSx9sVSqlxX6VkqXTF8c2mZyf1Vmc=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] x86: probe nr_irqs even only mptable is used
-Date: Mon, 18 Aug 2008 18:14:36 -0700
-Message-Id: <1219108476-30501-1-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
+	Mon, 18 Aug 2008 21:15:37 -0400
+Date: Mon, 18 Aug 2008 18:14:09 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       miklos@szeredi.hu
+Subject: [PATCH v2] documentation: split and build smount.c
+Message-Id: <20080818181409.f2861821.randy.dunlap@oracle.com>
+In-Reply-To: <20080818050431.GA20692@infradead.org>
+References: <20080817214442.ca4345ce.randy.dunlap@oracle.com>
+	<20080818050431.GA20692@infradead.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-for !CONFIG_HAVE_SPARSE_IRQ
+On Mon, 18 Aug 2008 01:04:31 -0400 Christoph Hellwig wrote:
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> Just remove it, and modern /bin/mount handles shared subtrees just fine
 
+Miklos... ?
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+mount(8) handles shared subtrees just fine, so remove the smount
+program from Documentation/filesystems/sharedsubtree.txt.
+
+Fix annoying "Lets" -> "Let's".
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Miklos Szeredi <miklos@szeredi.hu>
 ---
- arch/x86/kernel/acpi/boot.c |   25 -------------------------
- arch/x86/kernel/io_apic.c   |   43 ++++++++++++++++++++++++++++++-------------
- arch/x86/kernel/setup.c     |    6 +++---
- include/asm-x86/io_apic.h   |    7 +++++++
- include/asm-x86/mpspec.h    |    1 -
- 5 files changed, 40 insertions(+), 42 deletions(-)
+ Documentation/filesystems/sharedsubtree.txt |  192 +++-------------------------
+ 1 file changed, 25 insertions(+), 167 deletions(-)
 
-Index: linux-2.6/arch/x86/kernel/acpi/boot.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
-+++ linux-2.6/arch/x86/kernel/acpi/boot.c
-@@ -961,29 +961,6 @@ void __init mp_register_ioapic(int id, u
- 	nr_ioapics++;
- }
+--- lin2627-rc3g4-kerndoc.orig/Documentation/filesystems/sharedsubtree.txt
++++ lin2627-rc3g4-kerndoc/Documentation/filesystems/sharedsubtree.txt
+@@ -41,12 +41,11 @@ replicas continue to be exactly same.
  
--int get_nr_irqs_via_madt(void)
--{
--	int idx;
--	int nr = 0;
+ 	Here is an example:
+ 
+-	Lets say /mnt has a mount that is shared.
++	Let's say /mnt has a mount that is shared.
+ 	mount --make-shared /mnt
+ 
+-	note: mount command does not yet support the --make-shared flag.
+-	I have included a small C program which does the same by executing
+-	'smount /mnt shared'
++	Note: mount(8) command now supports the --make-shared flag,
++	so the sample 'smount' program is no longer needed.
+ 
+ 	#mount --bind /mnt /tmp
+ 	The above command replicates the mount at /mnt to the mountpoint /tmp
+@@ -58,7 +57,7 @@ replicas continue to be exactly same.
+ 	#ls /tmp
+ 	a b c
+ 
+-	Now lets say we mount a device at /tmp/a
++	Now let's say we mount a device at /tmp/a
+ 	#mount /dev/sd0  /tmp/a
+ 
+ 	#ls /tmp/a
+@@ -80,20 +79,19 @@ replicas continue to be exactly same.
+ 
+ 	Here is an example:
+ 
+-	Lets say /mnt has a mount which is shared.
++	Let's say /mnt has a mount which is shared.
+ 	#mount --make-shared /mnt
+ 
+-	Lets bind mount /mnt to /tmp
++	Let's bind mount /mnt to /tmp
+ 	#mount --bind /mnt /tmp
+ 
+ 	the new mount at /tmp becomes a shared mount and it is a replica of
+ 	the mount at /mnt.
+ 
+-	Now lets make the mount at /tmp; a slave of /mnt
++	Now let's make the mount at /tmp; a slave of /mnt
+ 	#mount --make-slave /tmp
+-	[or smount /tmp slave]
+ 
+-	lets mount /dev/sd0 on /mnt/a
++	let's mount /dev/sd0 on /mnt/a
+ 	#mount /dev/sd0 /mnt/a
+ 
+ 	#ls /mnt/a
+@@ -104,7 +102,7 @@ replicas continue to be exactly same.
+ 
+ 	Note the mount event has propagated to the mount at /tmp
+ 
+-	However lets see what happens if we mount something on the mount at /tmp
++	However let's see what happens if we mount something on the mount at /tmp
+ 
+ 	#mount /dev/sd1 /tmp/b
+ 
+@@ -124,12 +122,11 @@ replicas continue to be exactly same.
+ 
+ 2d) A unbindable mount is a unbindable private mount
+ 
+-	lets say we have a mount at /mnt and we make is unbindable
++	let's say we have a mount at /mnt and we make is unbindable
+ 
+ 	#mount --make-unbindable /mnt
+-	 [ smount /mnt  unbindable ]
+ 
+-	 Lets try to bind mount this mount somewhere else.
++	 Let's try to bind mount this mount somewhere else.
+ 	 # mount --bind /mnt /tmp
+ 	 mount: wrong fs type, bad option, bad superblock on /mnt,
+ 	        or too many mounted file systems
+@@ -139,147 +136,8 @@ replicas continue to be exactly same.
+ 
+ 3) smount command
+ 
+-	Currently the mount command is not aware of shared subtree features.
+-	Work is in progress to add the support in mount ( util-linux package ).
+-	Till then use the following program.
 -
--	for (idx = 0; idx < nr_ioapics; idx++) {
--		if (mp_ioapic_routing[idx].gsi_end > nr)
--			nr = mp_ioapic_routing[idx].gsi_end;
+-	------------------------------------------------------------------------
+-	//
+-	//this code was developed my Miklos Szeredi <miklos@szeredi.hu>
+-	//and modified by Ram Pai <linuxram@us.ibm.com>
+-	// sample usage:
+-	//              smount /tmp shared
+-	//
+-	#include <stdio.h>
+-	#include <stdlib.h>
+-	#include <unistd.h>
+-	#include <string.h>
+-	#include <sys/mount.h>
+-	#include <sys/fsuid.h>
+-
+-	#ifndef MS_REC
+-	#define MS_REC		0x4000	/* 16384: Recursive loopback */
+-	#endif
+-
+-	#ifndef MS_SHARED
+-	#define MS_SHARED		1<<20	/* Shared */
+-	#endif
+-
+-	#ifndef MS_PRIVATE
+-	#define MS_PRIVATE		1<<18	/* Private */
+-	#endif
+-
+-	#ifndef MS_SLAVE
+-	#define MS_SLAVE		1<<19	/* Slave */
+-	#endif
+-
+-	#ifndef MS_UNBINDABLE
+-	#define MS_UNBINDABLE		1<<17	/* Unbindable */
+-	#endif
+-
+-	int main(int argc, char *argv[])
+-	{
+-		int type;
+-		if(argc != 3) {
+-			fprintf(stderr, "usage: %s dir "
+-			"<rshared|rslave|rprivate|runbindable|shared|slave"
+-			"|private|unbindable>\n" , argv[0]);
+-			return 1;
+-		}
+-
+-		fprintf(stdout, "%s %s %s\n", argv[0], argv[1], argv[2]);
+-
+-		if (strcmp(argv[2],"rshared")==0)
+-			type=(MS_SHARED|MS_REC);
+-		else if (strcmp(argv[2],"rslave")==0)
+-			type=(MS_SLAVE|MS_REC);
+-		else if (strcmp(argv[2],"rprivate")==0)
+-			type=(MS_PRIVATE|MS_REC);
+-		else if (strcmp(argv[2],"runbindable")==0)
+-			type=(MS_UNBINDABLE|MS_REC);
+-		else if (strcmp(argv[2],"shared")==0)
+-			type=MS_SHARED;
+-		else if (strcmp(argv[2],"slave")==0)
+-			type=MS_SLAVE;
+-		else if (strcmp(argv[2],"private")==0)
+-			type=MS_PRIVATE;
+-		else if (strcmp(argv[2],"unbindable")==0)
+-			type=MS_UNBINDABLE;
+-		else {
+-			fprintf(stderr, "invalid operation: %s\n", argv[2]);
+-			return 1;
+-		}
+-		setfsuid(getuid());
+-
+-		if(mount("", argv[1], "dontcare", type, "") == -1) {
+-			perror("mount");
+-			return 1;
+-		}
+-		return 0;
 -	}
+-	-----------------------------------------------------------------------
 -
--	nr++;
+-	Copy the above code snippet into smount.c
+-	gcc -o smount smount.c
 -
--	/* double it for hotplug and msi and nmi */
--	nr <<= 1;
 -
--	/* something wrong ? */
--	if (nr < 32)
--		nr = 32;
+-	(i) To mark all the mounts under /mnt as shared execute the following
+-	command:
 -
--	return nr;
+-	 	smount /mnt rshared
+-		the corresponding syntax planned for mount command is
+-		mount --make-rshared /mnt
 -
--}
+-	    just to mark a mount /mnt as shared, execute the following
+-	    command:
+-	 	smount /mnt shared
+-		the corresponding syntax planned for mount command is
+-		mount --make-shared /mnt
 -
- static void assign_to_mp_irq(struct mp_config_intsrc *m,
- 				    struct mp_config_intsrc *mp_irq)
- {
-@@ -1282,8 +1259,6 @@ static int __init acpi_parse_madt_ioapic
- 	}
+-	(ii) To mark all the shared mounts under /mnt as slave execute the
+-	following
+-
+-	     command:
+-		smount /mnt rslave
+-		the corresponding syntax planned for mount command is
+-		mount --make-rslave /mnt
+-
+-	    just to mark a mount /mnt as slave, execute the following
+-	    command:
+-	 	smount /mnt slave
+-		the corresponding syntax planned for mount command is
+-		mount --make-slave /mnt
+-
+-	(iii) To mark all the mounts under /mnt as private execute the
+-	following command:
+-
+-		smount /mnt rprivate
+-		the corresponding syntax planned for mount command is
+-		mount --make-rprivate /mnt
+-
+-	    just to mark a mount /mnt as private, execute the following
+-	    command:
+-	 	smount /mnt private
+-		the corresponding syntax planned for mount command is
+-		mount --make-private /mnt
+-
+-	      NOTE: by default all the mounts are created as private. But if
+-	      you want to change some shared/slave/unbindable  mount as
+-	      private at a later point in time, this command can help.
+-
+-	(iv) To mark all the mounts under /mnt as unbindable execute the
+-	following
+-
+-	     command:
+-		smount /mnt runbindable
+-		the corresponding syntax planned for mount command is
+-		mount --make-runbindable /mnt
+-
+-	    just to mark a mount /mnt as unbindable, execute the following
+-	    command:
+-	 	smount /mnt unbindable
+-		the corresponding syntax planned for mount command is
+-		mount --make-unbindable /mnt
++	Modern mount(8) command is aware of shared subtree features,
++	so use it instead of the 'smount' command. [source code removed]
  
  
--	nr_irqs = get_nr_irqs_via_madt();
--
- 	count =
- 	    acpi_table_parse_madt(ACPI_MADT_TYPE_INTERRUPT_OVERRIDE, acpi_parse_int_src_ovr,
- 				  nr_irqs);
-Index: linux-2.6/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/io_apic.c
-+++ linux-2.6/arch/x86/kernel/io_apic.c
-@@ -3607,6 +3607,36 @@ int arch_setup_ht_irq(unsigned int irq,
- }
- #endif /* CONFIG_HT_IRQ */
+ 4) Use cases
+@@ -558,7 +416,7 @@ replicas continue to be exactly same.
+ 	then the subtree under the unbindable mount is pruned in the new
+ 	location.
  
-+int __init io_apic_get_redir_entries (int ioapic)
-+{
-+	union IO_APIC_reg_01	reg_01;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&ioapic_lock, flags);
-+	reg_01.raw = io_apic_read(ioapic, 1);
-+	spin_unlock_irqrestore(&ioapic_lock, flags);
-+
-+	return reg_01.bits.entries;
-+}
-+
-+int __init probe_nr_irqs(void)
-+{
-+	int idx;
-+	int nr = 0;
-+
-+	for (idx = 0; idx < nr_ioapics; idx++)
-+		nr += io_apic_get_redir_entries(idx);
-+
-+	/* double it for hotplug and msi and nmi */
-+	nr <<= 1;
-+
-+	/* something wrong ? */
-+	if (nr < 32)
-+		nr = 32;
-+
-+	return nr;
-+}
-+
- /* --------------------------------------------------------------------------
-                           ACPI-based IOAPIC Configuration
-    -------------------------------------------------------------------------- */
-@@ -3701,19 +3731,6 @@ int __init io_apic_get_version(int ioapi
- }
- #endif
+-	eg: lets say we have the following mount tree.
++	eg: let's say we have the following mount tree.
  
--int __init io_apic_get_redir_entries (int ioapic)
--{
--	union IO_APIC_reg_01	reg_01;
--	unsigned long flags;
--
--	spin_lock_irqsave(&ioapic_lock, flags);
--	reg_01.raw = io_apic_read(ioapic, 1);
--	spin_unlock_irqrestore(&ioapic_lock, flags);
--
--	return reg_01.bits.entries;
--}
--
--
- int io_apic_set_pci_routing (int ioapic, int pin, int irq, int triggering, int polarity)
- {
- 	if (!IO_APIC_IRQ(irq)) {
-Index: linux-2.6/arch/x86/kernel/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -873,15 +873,15 @@ void __init setup_arch(char **cmdline_p)
- 	prefill_possible_map();
+ 		A
+ 	      /   \
+@@ -566,7 +424,7 @@ replicas continue to be exactly same.
+ 	     / \ / \
+ 	     D E F G
  
- #ifdef CONFIG_X86_64
--	/* need to wait for nr_cpu_ids settle down */
--	if (nr_irqs == NR_IRQS)
--		nr_irqs = 32 * nr_cpu_ids + 224;
- 	init_cpu_to_node();
- #endif
+-	     Lets say all the mount except the mount C in the tree are
++	     Let's say all the mount except the mount C in the tree are
+ 	     of a type other than unbindable.
  
- 	init_apic_mappings();
- 	ioapic_init_mappings();
+ 	     If this tree is rbound to say Z
+@@ -683,13 +541,13 @@ replicas continue to be exactly same.
+ 	'b' on mounts that receive propagation from mount 'B' and does not have
+ 	sub-mounts within them are unmounted.
  
-+	/* need to wait for io_apic is mapped */
-+	nr_irqs = probe_nr_irqs();
-+
- 	kvm_guest_init();
+-	Example: Lets say 'B1', 'B2', 'B3' are shared mounts that propagate to
++	Example: Let's say 'B1', 'B2', 'B3' are shared mounts that propagate to
+ 	each other.
  
- 	res_kernel[0] = &code_resource;
-Index: linux-2.6/include/asm-x86/mpspec.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/mpspec.h
-+++ linux-2.6/include/asm-x86/mpspec.h
-@@ -59,7 +59,6 @@ extern void mp_override_legacy_irq(u8 bu
- 				   u32 gsi);
- extern void mp_config_acpi_legacy_irqs(void);
- extern int mp_register_gsi(u32 gsi, int edge_level, int active_high_low);
--extern int get_nr_irqs_via_madt(void);
- #ifdef CONFIG_X86_IO_APIC
- extern int mp_config_acpi_gsi(unsigned char number, unsigned int devfn, u8 pin,
- 				u32 gsi, int triggering, int polarity);
-Index: linux-2.6/include/asm-x86/io_apic.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/io_apic.h
-+++ linux-2.6/include/asm-x86/io_apic.h
-@@ -197,10 +197,17 @@ extern void restore_IO_APIC_setup(void);
- extern void reinit_intr_remapped_IO_APIC(int);
- #endif
+-	lets say 'A1', 'A2', 'A3' are first mounted at dentry 'b' on mount
++	let's say 'A1', 'A2', 'A3' are first mounted at dentry 'b' on mount
+ 	'B1', 'B2' and 'B3' respectively.
  
-+extern int probe_nr_irqs(void);
-+
- #else  /* !CONFIG_X86_IO_APIC */
- #define io_apic_assign_pci_irqs 0
- static const int timer_through_8259 = 0;
- static inline void ioapic_init_mappings(void) { }
-+
-+static inline int probe_nr_irqs(void)
-+{
-+	return NR_IRQS;
-+}
- #endif
+-	lets say 'C1', 'C2', 'C3' are next mounted at the same dentry 'b' on
++	let's say 'C1', 'C2', 'C3' are next mounted at the same dentry 'b' on
+ 	mount 'B1', 'B2' and 'B3' respectively.
  
- #endif /* ASM_X86__IO_APIC_H */
+ 	if 'C1' is unmounted, all the mounts that are most-recently-mounted on
+@@ -710,7 +568,7 @@ replicas continue to be exactly same.
+ 	A cloned namespace contains all the mounts as that of the parent
+ 	namespace.
+ 
+-	Lets say 'A' and 'B' are the corresponding mounts in the parent and the
++	Let's say 'A' and 'B' are the corresponding mounts in the parent and the
+ 	child namespace.
+ 
+ 	If 'A' is shared, then 'B' is also shared and 'A' and 'B' propagate to
+@@ -759,11 +617,11 @@ replicas continue to be exactly same.
+ 		mount --make-slave /mnt
+ 
+ 		At this point we have the first mount at /tmp and
+-		its root dentry is 1. Lets call this mount 'A'
++		its root dentry is 1. Let's call this mount 'A'
+ 		And then we have a second mount at /tmp1 with root
+-		dentry 2. Lets call this mount 'B'
++		dentry 2. Let's call this mount 'B'
+ 		Next we have a third mount at /mnt with root dentry
+-		mnt. Lets call this mount 'C'
++		mnt. Let's call this mount 'C'
+ 
+ 		'B' is the slave of 'A' and 'C' is a slave of 'B'
+ 		A -> B -> C
+@@ -794,7 +652,7 @@ replicas continue to be exactly same.
+ 
+ 	Q3 Why is unbindable mount needed?
+ 
+-		Lets say we want to replicate the mount tree at multiple
++		Let's say we want to replicate the mount tree at multiple
+ 		locations within the same subtree.
+ 
+ 		if one rbind mounts a tree within the same subtree 'n' times
+@@ -803,7 +661,7 @@ replicas continue to be exactly same.
+ 		mounts. Here is a example.
+ 
+ 		step 1:
+-		   lets say the root tree has just two directories with
++		   let's say the root tree has just two directories with
+ 		   one vfsmount.
+ 				    root
+ 				   /    \
+@@ -875,7 +733,7 @@ replicas continue to be exactly same.
+ 		Unclonable mounts come in handy here.
+ 
+ 		step 1:
+-		   lets say the root tree has just two directories with
++		   let's say the root tree has just two directories with
+ 		   one vfsmount.
+ 				    root
+ 				   /    \
