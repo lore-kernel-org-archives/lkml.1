@@ -1,81 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755794AbYHSAil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbYHSAjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755794AbYHSAil (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 20:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbYHSAid
+	id S1756306AbYHSAjX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 20:39:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbYHSAjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 20:38:33 -0400
-Received: from fmailhost06.isp.att.net ([204.127.217.106]:58799 "EHLO
-	fmailhost06.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751706AbYHSAid (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 20:38:33 -0400
-X-Greylist: delayed 603 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Aug 2008 20:38:33 EDT
-X-Originating-IP: [65.12.36.233]
-Date: Mon, 18 Aug 2008 19:28:13 -0500
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, link@miggy.org,
-       ian@jeffray.co.uk, csnook@redhat.com, jie.yang@atheros.com,
-       m@fhloston.org
-Subject: [PATCH] atl1: disable TSO by default
-Message-ID: <20080818192813.0d0dc1fd@osprey.hogchain.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAIVBMVEV2dXOAgYNxSD+aemaal42A
- gIBqYV2UU07Ik5GXfoFMRTdbKiVwAAACbUlEQVQ4jXXTzWvbMBQAcG3EZsmt0Owc3pgNPo1oxNFt
- pQnEN3Wrs3UnkdXq5tOwIdq9Pci3gUqJexo55KC/cs9O/dHBRIiMfpb03rNE4v800jxIQRzsXPEP
- jDwndhNelo9/ngE/SFdKmZQnfOT0YSSlQBKLiJBDH6w9SPwlp5evpduDr9biQqkV8Rh7p4NRNSO1
- 4BHhpjLpIK2gWksIgl0LPLCHoBIcX6dp2kGKMYnfGJnjIFungZeuHA6dhSvqLXrA1zJmVKayCu1w
- DKuGAU+WZRRCsLdBFXgLl2Sw3N2ZEJDAn3VwEV9FK12YUGW+yqlIWiD30U5rbSi2efGuhRfxEXRB
- 8e+uJE/AL5z78xrqVg6aBHlMTj9V7x/RJOMGHHI11ItVUW+B0JakkGPcUsJNHuY7/ZA04X4xwQ/D
- 3I0FGgaT8iFponoJ26F+sNbu51O7l7QHHtNTbxMc5o/W+kw0S31Ub5i+pQBq/hjYPVPbJ/ic/aoC
- pbTQtxlAvvnZgNod89Y4D2sFXpMHZWU1yHb6Ft+g2aTJY84iY2iY4ySGmWdvmxlDprHkCgd1yDRV
- bXVfFQiZjyuyaU5p1pZkTbXBbxRagAyU2rZfcH2tTQ7+FpNQ4Ofb7lxdFzTHDGqAvHdEv0cIezi2
- be+0vzdUqawaDSATHfB7itGiIfrQu2p8UQOOooHTh5lUPn6lva/qQrWwQpCUTv08hGe3dkU9KWmJ
- Z2EGpAeDFc3kN8oMNbNJ/AzMFERUhjmehB7ws6XBTTnfeOXT9T/C9dn4HEshpPWIjDvgi5Px2U0G
- Hl7dzaQHg8U4Xn6oa4g3vVnqLz3ribDLdyFmAAAAAElFTkSuQmCC
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Aug 2008 20:39:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40122 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754326AbYHSAjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 20:39:12 -0400
+Date: Tue, 19 Aug 2008 02:38:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] irq: rename irq_desc() to to_irq_desc() - fix #3
+Message-ID: <20080819003856.GA5486@elte.hu>
+References: <1219092290-30154-1-git-send-email-yhlu.kernel@gmail.com> <1219092290-30154-2-git-send-email-yhlu.kernel@gmail.com> <1219092290-30154-3-git-send-email-yhlu.kernel@gmail.com> <20080819001126.GB9914@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080819001126.GB9914@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The atl1 driver is causing stalled connections and file corruption
-whenever TSO is enabled.  Two examples are here:
 
-http://lkml.org/lkml/2008/7/15/325
-http://lkml.org/lkml/2008/8/18/543
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Disable TSO by default until we can determine the source of the
-problem.
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> 
+> > add create_irq_nr, and retore create_irq to old
+> 
+> applied all 3 patches to tip/irq/sparseirq - thanks Yinghai!
 
-Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
-cc: stable@kernel.org
+build fix for tip/master, from tip/x86/spinlocks. I merged that branch 
+into tip/irq/sparseirq and applied this fix.
+
+	Ingo
+
+------------>
+>From 1f73df742c77472d2e14e47b8c568218952af1d7 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 19 Aug 2008 02:33:39 +0200
+Subject: [PATCH] irq: build fix
+
+fix:
+
+ arch/x86/xen/spinlock.c: In function 'xen_spin_lock_slow':
+ arch/x86/xen/spinlock.c:90: error: 'struct kernel_stat' has no member named 'irqs'
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ arch/x86/xen/spinlock.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Jeff, I've been trying to find the source of this problem in my
-spare time for a few weeks now, but haven't been successful.  We
-turned on TSO by default in 2.6.26 after fixing a nasty performance
-bug in it, but there's apparently another bug lurking.
-
-This patch needs to be also applied to 2.6.26, hence the cc to
-stable.
-
- drivers/net/atlx/atl1.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-index e6a7bb7..e23ce77 100644
---- a/drivers/net/atlx/atl1.c
-+++ b/drivers/net/atlx/atl1.c
-@@ -3022,7 +3022,6 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
- 	netdev->features = NETIF_F_HW_CSUM;
- 	netdev->features |= NETIF_F_SG;
- 	netdev->features |= (NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX);
--	netdev->features |= NETIF_F_TSO;
- 	netdev->features |= NETIF_F_LLTX;
+diff --git a/arch/x86/xen/spinlock.c b/arch/x86/xen/spinlock.c
+index 8dc4d31..dc21378 100644
+--- a/arch/x86/xen/spinlock.c
++++ b/arch/x86/xen/spinlock.c
+@@ -87,7 +87,7 @@ static noinline int xen_spin_lock_slow(struct raw_spinlock *lock)
  
- 	/*
--- 
-1.5.5.1
+ 	/* block until irq becomes pending */
+ 	xen_poll_irq(irq);
+-	kstat_this_cpu.irqs[irq]++;
++	kstat_irqs_this_cpu(&irq_desc[irq])++;
+ 
+ out:
+ 	unspinning_lock(xl);
