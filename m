@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbYHSGxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbYHSGzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753148AbYHSGxa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 02:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbYHSGxV
+	id S1753321AbYHSGzR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 02:55:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbYHSGzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 02:53:21 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:35365 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750789AbYHSGxU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 02:53:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=kujb5B+aNwe7ROJbuxnqN1/iRe5Zk4S8wYwOc4WFb20D3mb6v9ZTcd91BeIaiRyc+d
-         LWYygJdak8V21miutmz1l2Vv1Skjc+I24LLTr2L4uKYNRJFcuOdm4Oqud/UTESChACJd
-         iQeRjh+OGEpEd2RaJK+tOMmJLHc7JkDJDeTw0=
-Message-ID: <19f34abd0808182353n2174760ao135732327130a727@mail.gmail.com>
-Date: Tue, 19 Aug 2008 08:53:19 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.25.11-97.fc9 (P): idr_remove called for id=236 which is not allocated
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080818231546.73020e41@lxorguk.ukuu.org.uk>
+	Tue, 19 Aug 2008 02:55:03 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36040 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750789AbYHSGzC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 02:55:02 -0400
+Message-ID: <48AA6DC4.9060709@redhat.com>
+Date: Tue, 19 Aug 2008 08:52:52 +0200
+From: Chris Lalancette <clalance@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Xen-devel] Re: [PATCH]: Expand Xen blkfront for > 16 xvd
+References: <48A400EC.9040407@redhat.com> <48A9AE88.3060507@goop.org>
+In-Reply-To: <48A9AE88.3060507@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0808150811w2b77479fnead3ae6b527ad4dc@mail.gmail.com>
-	 <19f34abd0808150827m5128c8f6wd517796d95227654@mail.gmail.com>
-	 <20080815162848.08ff793c@lxorguk.ukuu.org.uk>
-	 <19f34abd0808151426i69256b59m25a9a0676b50a6ba@mail.gmail.com>
-	 <20080818231546.73020e41@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 19, 2008 at 12:15 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> pty: If the administrator creates a device not for a ptmx slave don't error
->
-> From: Alan Cox <alan@redhat.com>
->
->
-> The open path for ptmx slaves is via the ptmx device. Opening them any
-> other way is not allowed. Vegard Nossum found that previously this was not
-> the case and mknod foo c 128 42; cat foo would produce nasty diagnostics
-> ---
+Jeremy Fitzhardinge wrote:
+> Chris Lalancette wrote:
+>> Jeremy,
+>>      Until recently, the maximum number of xvd block devices you could attach to
+>> a Xen domU was 16.  This limitation turned out to be problematic for some users,
+>> so it was expanded to handle a much larger number of disks.  However, this
+>> requires a couple of changes in the way that blkfront scans for disks.  This
+>> functionality is already present in the Xen linux-2.6.18-xen.hg tree; the
+>> attached patch adds this functionality to the mainline xen-blkfront
+>> implementation.
+> 
+> I haven't tested this yet.  You have tested it OK with some pvops
+> kernel?  If so, send it to Jens Axboe with my ack.
 
-Thanks, this seems to work for me. I do get a "SLAP" in dmesg each
-time, however :-)
+Yes, I tested it with a 2.6.25-something Fedora 9 pv-ops kernel (i386).  I'll
+send it along to Jens.
 
+> 
+>>   I successfully tested it on a 2.6.25 tree.  I build tested it
+>> on 2.6.27-rc3, but couldn't get that tree to boot due to some other bug.
+> 
+> What other bug?
 
-Vegard
+This is http://bugzilla.redhat.com/show_bug.cgi?id=459067, that I think you've
+already looked at.  Basically any F-10 or upstream git kernel is crashing on an
+i386 RHEL-5 HV.  We were a little confused by your comment in that bug, however;
+we were under the impression that the fix you mentioned was specifically a
+32-on-64 fix, not for 32-on-32.  If we were wrong, please point it out.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Thanks,
+Chris Lalancette
