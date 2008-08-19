@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbYHSKfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbYHSKg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755565AbYHSKfg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 06:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbYHSKf0
+	id S1755762AbYHSKg1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 06:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbYHSKgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 06:35:26 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53501 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752415AbYHSKfZ (ORCPT
+	Tue, 19 Aug 2008 06:36:17 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:60587 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751718AbYHSKgQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 06:35:25 -0400
-Date: Tue, 19 Aug 2008 19:34:18 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: No, really, stop trying to delete slab until you've finished making slub perform as well
-Cc: kosaki.motohiro@jp.fujitsu.com, Matthew Wilcox <matthew@wil.cx>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
-       Rik van Riel <riel@redhat.com>
-In-Reply-To: <48A98259.7030101@linux-foundation.org>
-References: <20080818193143.60D7.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48A98259.7030101@linux-foundation.org>
-Message-Id: <20080819192515.12C5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 19 Aug 2008 06:36:16 -0400
+Message-ID: <48AAA217.8040307@linux.vnet.ibm.com>
+Date: Tue, 19 Aug 2008 16:06:07 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] mm_owner: fix cgroup null dereference
+References: <1218745013-9537-1-git-send-email-jirislaby@gmail.com> <48A49C78.7070100@linux.vnet.ibm.com> <48A9E82E.3060009@gmail.com> <48AA4003.5080300@linux.vnet.ibm.com> <48AA970D.5050403@gmail.com>
+In-Reply-To: <48AA970D.5050403@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +#if 0
-> >         if (!s->remote_node_defrag_ratio ||
-> >                         get_cycles() % 1024 > s->remote_node_defrag_ratio)
-> >                 return NULL;
-> > +#endif
-> > 
-> >         zonelist = node_zonelist(slab_node(current->mempolicy), flags);
-> >         for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
+Jiri Slaby wrote:
+> On 08/19/2008 05:37 AM, Balbir Singh wrote:
+>> Could you please help me with the steps to reproduce the problem.  I don't seem
+>> to be hitting the mm->owner changed callback. I did have a test case for it when
+>> I developed mm->owner functionality, but it does not trigger an oops for me.
 > 
-> Hmmm.... So always take from partial lists works? That is the same effect that
-> the setting of the remote_defrag_ratio to 100 should have had (its multiplied
-> by 10 when storing it).
+> I have no idea. My config is at:
+> http://decibel.fi.muni.cz/~xslaby/config-memrlimit-oops
+> I don't play with cgroups or anything, I just work on the system. Do you need a
+> test case, it's obvious from the code as far as I can see?
 
-Sorry, I don't know reason.
-OK, I'll digg it more.
+Yes, the problem is obvious, but I usually use small test cases or test
+scenarios to verify that the problem is fixed.
 
-> So its a NUMA only phenomenon. How is performance affected?
-
-Unfortunately, I can't mesure it.
-
-because
-   - Fujitsu server can access remote node fastly than typical numa server.
-     So, my performance number often isn't typical.
-   - My box (4G x2node) is very small in NUMA machine.
-     but that is large server improving mechanism.
-
-IOW, My box didn't happend performance regression.
-but I think it isn't typical.
-
-
-
+-- 
+	Balbir
