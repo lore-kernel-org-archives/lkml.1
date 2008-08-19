@@ -1,70 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbYHSSUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbYHSSVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787AbYHSSUO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 14:20:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbYHSST6
+	id S1754135AbYHSSVT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 14:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbYHSSVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 14:19:58 -0400
-Received: from el-out-1112.google.com ([209.85.162.176]:7322 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbYHSST5 (ORCPT
+	Tue, 19 Aug 2008 14:21:06 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:59769 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751777AbYHSSVF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 14:19:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=BeJ+JzyN46NsESL8aMOsNvoGrLaTRY1fElPLDO77K+YETvv4yhl1aFJzUn8mm0VI3L
-         34rHaG7hMR/ngDVFacqCV1AsubP91YDQA8x8EvCdK/dMSCrVyrPKctY95i8vlN8dkXu5
-         yKnIZlwU/MneoYh2HsWk7BZRNGuuxajsttQDo=
-Message-ID: <81b0412b0808191119y3fe473bbi43ca5524ff4d20ac@mail.gmail.com>
-Date: Tue, 19 Aug 2008 20:19:56 +0200
-From: "Alex Riesen" <raa.lkml@gmail.com>
-To: "Ivo van Doorn" <ivdoorn@gmail.com>
-Subject: Re: rt2500pci: rt2500pci_bbp_read: Error - BBPCSR register busy. Read failed.
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-In-Reply-To: <200808192003.45072.IvDoorn@gmail.com>
+	Tue, 19 Aug 2008 14:21:05 -0400
+Date: Tue, 19 Aug 2008 14:21:03 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: juanslayton@dslextreme.com
+cc: Aivils Stoss <aivils@latnet.lv>, <jkosina@suse.cz>,
+       lud <linux-usb@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       <linuxconsole-dev@lists.sourceforge.net>, <linux-input@vger.kernel.org>
+Subject: Re: PROBLEM: USB keyboards works only 4 per PC host port
+In-Reply-To: <25da0a65dd8a41208a8a0c0a.20080819094057.whnafynlgba@webmail.dslextreme.com>
+Message-ID: <Pine.LNX.4.44L0.0808191400150.3391-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080819173524.GA4708@steel.home>
-	 <200808192003.45072.IvDoorn@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/19 Ivo van Doorn <ivdoorn@gmail.com>:
->> The rt2500 driver in 2.6.27-rc3 (v2.6.27-rc3-552-g3c3a15a) constantly
->> produces a lot of this messages in log (slowdown quite noticable):
->>
->>     kernel: phy0 -> rt2500pci_bbp_read: Error - BBPCSR register busy. Read failed.
->>     kernel: phy0 -> rt2500pci_bbp_write: Error - BBPCSR register busy. Write failed.
->>     last message repeated 40 times
->>     kernel: phy0 -> rt2500pci_rf_write: Error - RFCSR register busy. Write failed.
->>     last message repeated 7 times
->>     kernel: phy0 -> rt2500pci_bbp_write: Error - BBPCSR register busy. Write failed.
->
-> This is a bad sign, the slowdown is expected since the driver is continuously looping
-> waiting for the registers to become available. Did this PCI card work in the past, and
-> if so with what driver?
+On Tue, 19 Aug 2008 juanslayton@dslextreme.com wrote:
 
-It surely did, but I honestly don't remember what with. I'll try to bisect.
+> I have to apologize for my limited knowledge, but mere ignorance never yet
+> kept a teacher quiet.  I am trying to follow this discussion because
+> Aivils and I are  basically trying to do the same thing.  In my case I am
+> presently running 20 keyboards on a 2.6.26 kernel, using an EHCI
+> controller, and they all work fine.
 
-> Does this card work on another PC, or does the windows or legacy driver work with
-> this card?
+You must be using some hubs.  The results you get will depend on the 
+type of hub you use.
 
-No Windows here, but see below
+> If I understand your analysis, Aivils' problem is because the UHCI
+> controllers are too slow.
 
-> (Yes, all suggestions above imply suspicion about the hardware itself rather then the driver)
+Not just that; it also is a question of scheduling.  The uhci-hcd
+driver isn't very clever about scheduling, and it tries to put all the
+packets into the same frame.  If the packets were distributed among
+multiple frames then the limit would be considerably higher (eight
+times higher in this case).
 
-Well, it used to crash some industrial board (I believe it was some
-Boser, HS-series, with
-this card in a PCI slot of its backplane). So you're not alone in your
-suspicions (OTOH,
-that board was known to misbehave itself).
+I'm not sure of the scheduling details in the ohci-hcd driver; they
+might well be more flexible than in uhci-hcd.  In which case a single
+OHCI controller would be able to handle up to 32 of these keyboards, 
+even though it is no faster than a UHCI controller.
 
-I have no particular need for that card, so if someone wants it for
-testing I gladly
-part with it (and if you happen be in Germany, I'll just mail it).
+>  (I just happened to get lucky with another
+> controller.)  I am left with two questions.
+> 
+> 1.  What if Aivils needs more than 16 keyboards?  (Standard class sizes
+> here in California run from 20 to about 30.)  Is there any way he can do
+> this without a faster controller?
+
+You should realize that Aivils _does_ have an EHCI controller.  He just
+isn't using it, because his hubs are old.  So the easiest approach for 
+him would be to buy USB-2.0 hubs.
+
+If he doesn't want to do that there are a few ways, but they mostly
+boil down to getting more controllers.  If he is good at kernel
+programming, he could upgrade the scheduling algorithm in uhci-hcd --
+but that will be a messy job and probably not worth the time spent
+(which is why I've never done it).
+
+> 2.  What does the bandwidth limitation say about the maximum number of
+> boards with the EHCI controller?  I modified the kernel evdev.c and
+> input.c files to raise the maximum events from 32 to 64, but I hadn't
+> figured in the effects of bandwidth.
+
+Like I said above, it depends on the type of hub you use.  If you have
+hubs with multiple Transaction Translators then the bandwidth limit
+will be very high.  I don't know how high exactly, but probably higher
+than other limits, like the maximum number of USB devices on a single
+bus (127).
+
+If you have hubs with only a single Transaction Translator then the
+limit will be lower, but still pretty high.  Certainly you would be
+able to connect no more than four keyboards to each hub, but you could
+have many hubs.  The details would depend on the scheduling algorithm 
+in ehci-hcd, which I'm also not familiar with.
+
+If you have only full-speed hubs (i.e., USB-1.1 hubs rather than
+USB-2.0) then you won't be able to make use of the EHCI controller at
+all.  That's the situation Aivils is in.
+
+Alan Stern
+
