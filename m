@@ -1,115 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbYHSGSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754436AbYHSGX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140AbYHSGSY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 02:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYHSGSQ
+	id S1754436AbYHSGX0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 02:23:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbYHSGXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 02:18:16 -0400
-Received: from gw.goop.org ([64.81.55.164]:43372 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752168AbYHSGSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 02:18:15 -0400
-Message-ID: <48AA65A5.8020408@goop.org>
-Date: Mon, 18 Aug 2008 23:18:13 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 19 Aug 2008 02:23:16 -0400
+Received: from fk-out-0910.google.com ([209.85.128.187]:30688 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751759AbYHSGXO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 02:23:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent:from;
+        b=N9gHE4wyokDuhW8n/pFhNNa/g/7LkJUPVSU8WptIEznJw0SHEyVQzv/j3iG4ItB4km
+         Q8xa3XD8xHUW3WiKMoaBQZvHstCjmfSBJIswMMdhcwS26fIGrr0A42ux5BiYS4JBT7iL
+         7I638D9AyuSNysqk/6/1kVKybkJZ3DPx5Qxac=
+Date: Tue, 19 Aug 2008 08:23:17 +0200
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 0/5] ide debugging macros
+Message-ID: <20080819062317.GB30315@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1218993826-4571-1-git-send-email-petkovbb@gmail.com> <200808182308.38345.bzolnier@gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 0 of 9] x86/smp function calls: convert x86 tlb flushes
- to use function calls [POST 2]
-References: <patchbomb.1219083817@localhost> <20080819004531.GI9914@elte.hu> <20080819012816.GA7897@elte.hu>
-In-Reply-To: <20080819012816.GA7897@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808182308.38345.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
->
->   
->> nice stuff!
->>
->> I suspect the extra cost might be worth it for two reasons: 1) we 
->> could optimize the cross-call implementation further 2) on systems 
->> where TLB flushes actually matter, the ability to overlap multiple TLB 
->> flushes to the same single CPU might improve workloads.
->>
->> FYI, i've created a new -tip topic for your patches, tip/x86/tlbflush. 
->> It's based on tip/irq/sparseirq (there are a good deal of dependencies 
->> with that topic).
->>     
->
-> i threw it into -tip testing for a while - triggered the lockdep warning 
-> on 64-bit below.
->
-> 	Ingo
->
-> ------------>
-> checking TSC synchronization [CPU#0 -> CPU#1]: passed.
->
-> =============================================
-> [ INFO: possible recursive locking detected ]
-> 2.6.27-rc3-tip #1
-> ---------------------------------------------
-> swapper/0 is trying to acquire lock:
->  (&call_function_queues[i].lock){....}, at: [<ffffffff8026cbba>] ipi_call_lock_irq+0x25/0x2e
->
-> but task is already holding lock:
->  (&call_function_queues[i].lock){....}, at: [<ffffffff8026cbba>] ipi_call_lock_irq+0x25/0x2e
->   
+On Mon, Aug 18, 2008 at 11:08:38PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> 
+> Hi,
+> 
+> On Sunday 17 August 2008, Borislav Petkov wrote:
+> > Hi Bart,
+> > 
+> > here's something i've been wanting to do for a long time: debugging macros. The
+> > reason for it is that i got tired of adding debug printk's everytime i'm testing
+> > something so here we go.
+> > 
+> > The debugging macro is similar to the old ones but is one for all drivers
+> > (currently only ide-floppy), is nice on branch prediction and is controlled by a
+> > drive->debug_mask switch which is a module parameter and as such can be set at
+> > module load time, of course. I've been thinking of adding also a sysfs attribute
+> > too but can't seem to find quite the justification for it so no sysfs for now :)
+> 
+> if you look closely you should already find it :)
+> 
+> [ module parameters are exported through sysfs and it uses 0644 mask ]
 
-I think this might be a spurious "holding multiple locks in the same
-class" bug.  All the queue locks are presumably in the same class, and
-ipi_call_lock_irq() wants to hold them all to lock out any IPIs. 
-Spurious because this is the only place which holds more than one queue
-lock, and it always locks 0->N.
+Aah, i get it now, it's /sys/bus/ide/drivers/ide-floppy/module/parameters/debug_mask.
+However, it'd be better if it were /sys/bus/ide/drivers/ide-floppy/debug_mask.
+Probably a symlink or a true /sysfs parameter? Maybe later :).
 
-I guess the fix is to use an outer lock and use spin_lock_nested() (now
-that it exists).  Something along these lines?
-
-    J
-
-diff -r 22ebc3296a6f kernel/smp.c
---- a/kernel/smp.c	Mon Aug 18 15:12:14 2008 -0700
-+++ b/kernel/smp.c	Mon Aug 18 22:52:22 2008 -0700
-@@ -18,6 +18,9 @@
- #else
- #define	NQUEUES	1
- #endif
-+
-+/* Hold queues_lock when taking more than one queue[].lock at once */
-+static DEFINE_SPINLOCK(queues_lock);
- 
- static DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
- struct ____cacheline_aligned queue {
-@@ -446,8 +449,10 @@
- {
- 	int i;
- 
-+	spin_lock_irq(&queues_lock);
-+
- 	for(i = 0; i < NQUEUES; i++)
--		spin_lock_irq(&call_function_queues[i].lock);
-+		spin_lock_nest_lock(&call_function_queues[i].lock, &queues_lock);
- }
- 
- void ipi_call_unlock_irq(void)
-@@ -455,7 +460,9 @@
- 	int i;
- 
- 	for(i = 0; i < NQUEUES; i++)
--		spin_unlock_irq(&call_function_queues[i].lock);
-+		spin_unlock(&call_function_queues[i].lock);
-+
-+	spin_unlock_irq(&queues_lock);
- }
- 
- 
-
-
+-- 
+Regards/Gruss,
+    Boris.
