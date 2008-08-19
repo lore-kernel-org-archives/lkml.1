@@ -1,56 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbYHSLx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753673AbYHSMFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754046AbYHSLx6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 07:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbYHSLxu
+	id S1753673AbYHSMFA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 08:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbYHSMEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 07:53:50 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:40857 "EHLO
-	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752793AbYHSLxu (ORCPT
+	Tue, 19 Aug 2008 08:04:52 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:60251 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751073AbYHSMEv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 07:53:50 -0400
-X-BigFish: VPS-36(zz1432R98dR936eQ62a3L1805Mzz10d3izzz32i6bh66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0K5UJPB-01-4JU-01
-Date: Tue, 19 Aug 2008 13:53:18 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       oprofile-list@lists.sourceforge.net, Paul Mackerras <paulus@samba.org>,
-       cel <cel@linux.vnet.ibm.com>
-Subject: Re: powerpc/cell/oprofile: avoid double free of profile buffer
-Message-ID: <20080819115317.GD1488@erda.amd.com>
-References: <1217620879.15667.145.camel@carll-linux-desktop> <18591.30474.127939.243247@cargo.ozlabs.ibm.com> <200808110918.57293.arnd@arndb.de> <200808110925.44243.arnd@arndb.de>
+	Tue, 19 Aug 2008 08:04:51 -0400
+Message-ID: <48AAB693.8080906@s5r6.in-berlin.de>
+Date: Tue, 19 Aug 2008 14:03:31 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <200808110925.44243.arnd@arndb.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 19 Aug 2008 11:53:38.0462 (UTC) FILETIME=[37ADCBE0:01C901F2]
+To: Kevin Diggs <kevdig@hypersurf.com>
+CC: linux-kernel@vger.kernel.org, Dave Chinner <david@fromorbit.com>
+Subject: Re: [Fwd: Corrections please ...]
+References: <48AA27AF.9070407@hypersurf.com> <20080819024125.GM19760@disturbed> <48AA7F47.5050805@hypersurf.com>
+In-Reply-To: <48AA7F47.5050805@hypersurf.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11.08.08 09:25:43, Arnd Bergmann wrote:
-> From: Carl Love <cel@us.ibm.com>
-> 
-> If an error occurs on opcontrol start, the event and per cpu buffers
-> are released.  If later opcontrol shutdown is called then the free
-> function will be called again to free buffers that no longer
-> exist.  This results in a kernel oops.  The following changes
-> prevent the call to delete buffers that don't exist.
-> 
-> Signed-off-by: Carl Love <carll@us.ibm.com>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Kevin Diggs wrote:
+> Files attached this time ...
 
-Acked-by: Robert Richter <robert.richter@amd.com>
+Alas several MUAs don't quote attachments in replies.  Hence the optimum
+would be if you use a MUA which allows to insert text files without
+whitespace change.
 
--Robert
+Also, when you respond on LKML, always use "reply to all" to keep
+previous responders in a thread Cc'd.  This is necessary due to the high
+volume of LKML, and in order to not force people to subscribe to LKML.
 
+
+> --- include/linux/completion.h.orig	2008-08-13 00:56:52.000000000 -0700
+> +++ include/linux/completion.h	2008-08-18 13:00:23.000000000 -0700
+> @@ -10,6 +10,16 @@
+>  
+>  #include <linux/wait.h>
+>  
+> +/**
+> + * struct completion - structure used to maintain state for a "completion"
+> + * @done:  counting variable used to signal completion
+> + * @wait:  internal wait queue head; used for locking and synchronization
+> + *
+> + * This is the structure used to maintain the state for a "completion". See
+> + * also:  complete(), wait_for_completion() (and friends _timeout,
+> + * _interruptible, _interruptible_timeout, and _killable), init_completion(),
+> + * and macros DECLARE_COMPLETION() and INIT_COMPLETION().
+> + */
+>  struct completion {
+>  	unsigned int done;
+>  	wait_queue_head_t wait;
+
+.done and .wait are not public AFAIU and should therefore not be
+documented as an API.
+
+
+> @@ -36,6 +46,13 @@
+>  # define DECLARE_COMPLETION_ONSTACK(work) DECLARE_COMPLETION(work)
+>  #endif
+>  
+> +/**
+> + * init_completion: - Initialize a dynamically allocated completion
+> + * @x:  completion structure that is to be initialized
+> + *
+> + * This inline function will initialize a dynamically created completion
+> + * structure.
+> + */
+>  static inline void init_completion(struct completion *x)
+>  {
+>  	x->done = 0;
+
+The last sentence is redundant and should be omitted.
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+Stefan Richter
+-=====-==--- =--- =--==
+http://arcgraph.de/sr/
