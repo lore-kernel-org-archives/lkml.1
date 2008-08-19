@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753627AbYHSLE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbYHSLGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753627AbYHSLE2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 07:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbYHSLEU
+	id S1753927AbYHSLGp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 07:06:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbYHSLGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 07:04:20 -0400
-Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:33361 "HELO
-	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751779AbYHSLET (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 07:04:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=D/6dN5Gc8pzqmo0QdLfAYzHcEQF7I0fNFiFphg1niBJ2OHhVUqpbtxPrRhAn/ITzQqs2/Gzel9WilwAJmvk6qaYE/J+lJfP53E1+x30hUZ2OQ3oiDGQSgvGWkUJmMIzNoXQuKOTvD0UrTytu/jKD4OS0IrOFSD34vq50TZgybbE=  ;
-X-YMail-OSG: koV3FsAVM1m6WXJFHodQuBWteoc41WZ6y9iicKHA1gFLBwCuvKoLyA3pkoXHq8ebxKprgBY3NBWGdPeU9dSBRE70agcp4A7FmjRPwCZiQnvElXL6q.em9bM1G2wH5vm6xek-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 0 of 9] x86/smp function calls: convert x86 tlb flushes to use function calls [POST 2]
-Date: Tue, 19 Aug 2008 21:04:05 +1000
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-References: <patchbomb.1219083817@localhost> <200808191956.59898.nickpiggin@yahoo.com.au> <20080819103100.GH9807@one.firstfloor.org>
-In-Reply-To: <20080819103100.GH9807@one.firstfloor.org>
+	Tue, 19 Aug 2008 07:06:38 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58153 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751854AbYHSLGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 07:06:37 -0400
+Date: Tue, 19 Aug 2008 13:05:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, Stefani Seibold <stefani@seibold.net>,
+       Dario Faggioli <raistlin@linux.it>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
+Message-ID: <20080819110557.GA18608@elte.hu>
+References: <20080819103301.787700742@chello.nl> <20080819103844.459178947@chello.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808192104.05322.nickpiggin@yahoo.com.au>
+In-Reply-To: <20080819103844.459178947@chello.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 August 2008 20:31, Andi Kleen wrote:
-> > I'm especially sore about mmap because I have a customer with a
-> > database that uses a lot of mmap/munmap and those calls have slowed
-> > down something like 50%(!!) from 2.6.early to 2.6.late.
->
-> These are small mmaps right? Also in this case no kmalloc should
-> be needed anyways.
 
-Yes, smallish mmaps. But larger ones weren't much better.
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
+> Disable bandwidth control by default.
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  kernel/sched.c |   17 +++++++----------
+>  1 file changed, 7 insertions(+), 10 deletions(-)
+> 
+> Index: linux-2.6/kernel/sched.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sched.c
+> +++ linux-2.6/kernel/sched.c
+> @@ -824,9 +824,9 @@ static __read_mostly int scheduler_runni
+>  
+>  /*
+>   * part of the period that we allow rt tasks to run in us.
+> - * default: 0.95s
+> + * default: inf
+>   */
+> -int sysctl_sched_rt_runtime = 950000;
+> +int sysctl_sched_rt_runtime = -1;
 
-> AFAIK mmap flushing hasn't changed much in 2.6 and it tends
-> to batch well anyways in this case (unlike vmscan swapping). I would be
-> careful to really optimize the real culprits which are likely elsewhere.
+The fixes look good to me, but this enabling of infinite RT task lockups 
+is not an improvement.
 
-It wasn't actually the TLB flushing side of it that was causing
-the slowdown IIRC. It's just all over the map.
+The thing is, i got far more bugreports about locked up RT tasks where 
+the lockup was unintentional, than real bugreports about anyone 
+_intending_ for the whole box to come to a grinding halt because a 
+high-prio RT tasks is monopolizing the CPU.
 
-Notifier hooks; accounting statistics; 4lpt; cond_resched and
-low latency code causing functions to spill more to stack; cache
-misses from data structures increasing or becoming unaligned...
+In fact there's only been this artificial test so far.
 
-Basically just lots of little straws that added up to kill the
-camel. I didn't even get to the bottom of the whole thing. But
-my point is that even 1% here and there eventually adds up to a
-big headache for someone. For some features it is obviously
-inevitable to slowdown, but in all other cases we should always
-be aiming to make the kernel faster rather than slower.
+So could you please just increase the chunking to 10 seconds or so, from 
+the current 1 second? Anyone locking up the system for more than 10 
+seconds via an RT task has to deal with many other issues already.
+
+I.e. keep the system borderline debuggable (up to 10 seconds delays are 
+_not_ nice so people will notice) - but it's still a marked improvement 
+from completly locked up desktops.
+
+And those who really need longer than 10 second periods can set it 
+higher, or even (if they want to live dangerously or run POSIX 
+conformance tests) make it infinite (set it to -1) - and will have to 
+deal with other things like the softlockup watchdog as well.
+
+Ok?
+
+	Ingo
