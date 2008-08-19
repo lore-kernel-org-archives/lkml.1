@@ -1,50 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbYHSSvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbYHSSzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757384AbYHSSvV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 14:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbYHSSvL
+	id S1756861AbYHSSzv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 14:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYHSSzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 14:51:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:32966 "EHLO mx1.redhat.com"
+	Tue, 19 Aug 2008 14:55:44 -0400
+Received: from mga02.intel.com ([134.134.136.20]:24346 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752544AbYHSSvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 14:51:09 -0400
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       "Randy.Dunlap" <rdunlap@xenotime.net>, penberg@cs.helsinki.fi,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, mpm@selenic.com,
-       tglx@linutronix.de, rostedt@goodmis.org, cl@linux-foundation.org,
-       tzanussi@gmail.com
-Subject: Re: [PATCH 1/5] Revert "kmemtrace: fix printk format warnings"
-References: <1219167807-5407-1-git-send-email-eduard.munteanu@linux360.ro>
-	<Pine.LNX.4.64.0808191049260.7877@shark.he.net>
-	<20080819175440.GA5435@localhost> <20080819181652.GA29757@Krystal>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Tue, 19 Aug 2008 14:47:16 -0400
-In-Reply-To: <20080819181652.GA29757@Krystal> (Mathieu Desnoyers's message of "Tue, 19 Aug 2008 14:16:53 -0400")
-Message-ID: <y0md4k4zvt7.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
+	id S1751039AbYHSSzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 14:55:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,236,1217833200"; 
+   d="scan'208";a="327466397"
+Date: Tue, 19 Aug 2008 11:54:41 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: yhlu.kernel@gmail.com, mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com, x86@kernel.org
+Subject: [patch] fix intr-remap with dyn_array/nr_irqs changes
+Message-ID: <20080819185441.GC1152@linux-os.sc.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
+I didn't find time to closely review the dyn_array/nr_irqs changes. But
+the appended patch is needed to fix the broken intr-remapping support on
+x86/tip
 
-> [...]
-> Is this kmemtrace marker meant to be exposed to userspace ?
-> I suspect not.
-> [...]
-> Tracepoints = in-kernel tracing API.
-> Markers = Data-formatting tracing API, meant to export the data either
-> to user-space in text or binary format.
+And also, I don't see any locks used in to_irq_desc_with_new(). How are
+we handling the concurrent usage scenarios. And also, this code can use
+some cleanups (like the names, to_irq_desc_with_new()?) etc.
 
-FWIW, that was certainly not the intent of markers.  It was to try to
-satisfy both sorts of uses with relative type-safety and a minimum of
-code.  Tracepoints may be nice if one needs somewhat (how much?) more
-performance, and is willing to burden someone else with the necessary
-extra code (such as tracepoint-to-marker conversion modules) to expose
-the same data to "userspace" tools like lttng/systemtap.
+thanks,
+suresh
+---
 
-- FChE
+In irq_2_iommu_with_new() and set_irte_irq(), irq_desc or
+irq_2_iommu pointers may not be allocated. So use the routines which
+will allocate them if they are not already allocated.
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+
+diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
+index 3593f0f..fbd82ff 100644
+--- a/drivers/pci/intr_remapping.c
++++ b/drivers/pci/intr_remapping.c
+@@ -76,7 +76,10 @@ static struct irq_2_iommu *irq_2_iommu_with_new(unsigned int irq)
+ 	struct irq_desc *desc;
+ 	struct irq_2_iommu *irq_iommu;
+ 
+-	desc = to_irq_desc(irq);
++	/*
++	 * alloc irq desc if not allocated already.
++	 */
++	desc = to_irq_desc_with_new(irq);
+ 
+ 	BUG_ON(!desc);
+ 
+@@ -255,11 +258,7 @@ int set_irte_irq(int irq, struct intel_iommu *iommu, u16 index, u16 subhandle)
+ 	struct irq_2_iommu *irq_iommu;
+ 
+ 	spin_lock(&irq_2_ir_lock);
+-	irq_iommu = valid_irq_2_iommu(irq);
+-	if (!irq_iommu) {
+-		spin_unlock(&irq_2_ir_lock);
+-		return -1;
+-	}
++	irq_iommu = irq_2_iommu_with_new(irq);
+ 
+ 	irq_iommu->iommu = iommu;
+ 	irq_iommu->irte_index = index;
