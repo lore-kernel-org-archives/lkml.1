@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbYHSAEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754991AbYHSAJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754745AbYHSAEX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 20:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYHSAEO
+	id S1754991AbYHSAJf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 20:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYHSAJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 20:04:14 -0400
-Received: from mail.lang.hm ([64.81.33.126]:55825 "EHLO bifrost.lang.hm"
+	Mon, 18 Aug 2008 20:09:27 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42648 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751722AbYHSAEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 20:04:13 -0400
-Date: Mon, 18 Aug 2008 17:03:52 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Pavel Machek <pavel@suse.cz>
-cc: Arjan van de Ven <arjan@infradead.org>, Eric Paris <eparis@redhat.com>,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       andi@firstfloor.org, riel@redhat.com, greg@kroah.com, tytso@mit.edu,
-       viro@ZenIV.linux.org.uk, alan@lxorguk.ukuu.org.uk, peterz@infradead.org,
-       hch@infradead.org
-Subject: Re: TALPA - a threat model?  well sorta.
-In-Reply-To: <20080818133038.GA4819@ucw.cz>
-Message-ID: <alpine.DEB.1.10.0808181700570.15109@asgard.lang.hm>
-References: <1218645375.3540.71.camel@localhost.localdomain> <20080813103951.1e3e5827@infradead.org> <20080815160615.GD8860@ucw.cz> <alpine.DEB.1.10.0808180521010.12859@asgard.lang.hm> <20080818133038.GA4819@ucw.cz>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1753321AbYHSAJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 20:09:26 -0400
+Date: Tue, 19 Aug 2008 02:09:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, macro@linux-mips.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/15] apic: unification series 5
+Message-ID: <20080819000910.GA9914@elte.hu>
+References: <1219077963-22883-1-git-send-email-gorcunov@gmail.com> <48A9AFC4.8060505@zytor.com> <20080818191233.GA31466@lenovo>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080818191233.GA31466@lenovo>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Aug 2008, Pavel Machek wrote:
 
-> Hi!
->
->>> How does it work? Memory can still change after mmap;
->>> scanning at the
->>> mmap time is _NOT_ enough.
->>>
->>> You could do 'when app attempts to dirty memory,
->>> synchronously unmap
->>> it from all apps that have it mapped' and then do sync
->>> scan on
->>> pagefault time; but that sounds impractical.
->>
->> what is the threat you are trying to defend against?
->>
->> for some threats you are right, for others the scan at
->> mmap time is enough.
->
-> I don't see any threats when check at mmap time is okay.
->
-> As soon as file servers use mmap, this race can bite you even in very
-> simple 'make sure Linux fileserver does not pass on windows malwar'
-> threat model.
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-if you check the file at the time you mmap it and don't expect other 
-programs to change the file under you while you are reading it, there's 
-nothing to worry about.
+> [H. Peter Anvin - Mon, Aug 18, 2008 at 10:22:12AM -0700]
+> > Cyrill Gorcunov wrote:
+> >>
+> >> With this series 32bit code compilation warns:
+> >>
+> >> arch/x86/kernel/apic_32.c: In function ‘end_local_APIC_setup’:
+> >> arch/x86/kernel/apic_32.c:1165: warning: ISO C90 forbids mixed declarations and code
+> >> arch/x86/kernel/apic_32.c: In function ‘disconnect_bsp_APIC’:
+> >> arch/x86/kernel/apic_32.c:1446: warning: ISO C90 forbids mixed declarations and code
+> >> cyrill@lenovo linux-2.6.git $ 
+> >>
+> >> So parenthesis will be needed to eliminate them... but
+> >> I think it could be too ugly... need some time to think.
+> >> So patches 8/15 and 10/15 sould be not applied for now - just review them.
+> >> Thanks for patience!
+> >>
+> >
+> > Typically, just move the declaration to the top of the function  
+> > (followed by a blank line.)
+> >
+> > 	-hpa
+> >
+> Here is compilation warnings fix
 
-shared mmap with one program being able to write to it is a expecially 
-hard case of the general problem that if someone writes to a file as you 
-are serving it, you don't know what goes out, it may be part of the old 
-file and part of the new file. it's just easier to see this problem with 
-mmap and harder to catch it.
+applied the 15 patches and this fixlet to tip/x86/apic - thanks Cyrill.
 
-David Lang
+> Please check if it's not worse code form now :)
+
+> +	{
+> +		unsigned int value;
+> +		/* Disable the local apic timer */
+> +		value = apic_read(APIC_LVTT);
+> +		value |= (APIC_LVT_MASKED | LOCAL_TIMER_VECTOR);
+> +		apic_write(APIC_LVTT, value);
+> +	}
+
+that's OK.
+
+	Ingo
