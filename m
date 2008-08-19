@@ -1,69 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbYHSFYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbYHSFhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904AbYHSFYT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 01:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYHSFYJ
+	id S1753932AbYHSFhj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 01:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbYHSFhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 01:24:09 -0400
-Received: from mga11.intel.com ([192.55.52.93]:38976 "EHLO mga11.intel.com"
+	Tue, 19 Aug 2008 01:37:32 -0400
+Received: from gw.goop.org ([64.81.55.164]:32862 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752068AbYHSFYI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 01:24:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,233,1217833200"; 
-   d="scan'208";a="371760925"
-From: "Li, Shaohua" <shaohua.li@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Date: Tue, 19 Aug 2008 13:24:03 +0800
-Subject: RE: [patch]pageattr: cache flush before tlb flush
-Thread-Topic: [patch]pageattr: cache flush before tlb flush
-Thread-Index: AckBumTzQmvgz1DjQSWkY0s+SUN/qQAAUpzg
-Message-ID: <76780B19A496DC4B80439008DAD7076C0D000E86@PDSMSX501.ccr.corp.intel.com>
-References: <1219026451.16428.4.camel@sli10-desk.sh.intel.com>
- <48AA559A.6060903@zytor.com>
-In-Reply-To: <48AA559A.6060903@zytor.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1752459AbYHSFhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 01:37:31 -0400
+Message-ID: <48AA5C19.3010204@goop.org>
+Date: Mon, 18 Aug 2008 22:37:29 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 0 of 9] x86/smp function calls: convert x86 tlb flushes
+ to use function calls [POST 2]
+References: <patchbomb.1219083817@localhost> <20080819004531.GI9914@elte.hu>
+In-Reply-To: <20080819004531.GI9914@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------010307070601020307040202"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------010307070601020307040202
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
+Ingo Molnar wrote:
+> nice stuff!
+>
+> I suspect the extra cost might be worth it for two reasons: 1) we could 
+> optimize the cross-call implementation further
 
->-----Original Message-----
->From: H. Peter Anvin [mailto:hpa@zytor.com]
->Sent: Tuesday, August 19, 2008 1:10 PM
->To: Li, Shaohua
->Cc: lkml; Andrew Morton; Ingo Molnar; Pallipadi, Venkatesh
->Subject: Re: [patch]pageattr: cache flush before tlb flush
->
->Shaohua Li wrote:
->> clflush uses a virtual address but cache line is physical indexed in
->> x86. In my understanding, clflush will do some pagetable walk, so doing
->> cache flush first should reduce some pagetable walk.
->>
->> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
->
->I would say NAK on this.
->
->Doing the CLFLUSH first does cut down on page table walking, but opens a
->hole in the sequencing: first set PAT to an uncachable mode, then flush.
->
->If an unlucky prefetch comes in during this window, then you will have a
->dirty cache again.
->
->So no, this is not a good idea.
-Ok, looks possible in theory.
+Unfortunately, I think the kmalloc fix for the RCU issue is going to
+hurt quite a lot.
 
-Thanks,
-Shaohua
+>  2) on systems where TLB 
+> flushes actually matter, the ability to overlap multiple TLB flushes to 
+> the same single CPU might improve workloads.
+>   
+
+...perhaps.
+
+> FYI, i've created a new -tip topic for your patches, tip/x86/tlbflush. 
+> It's based on tip/irq/sparseirq (there are a good deal of dependencies 
+> with that topic).
+>   
+
+Really?  I didn't see much conflict when rebasing onto current tip.git. 
+Just an incidental context conflict in entry_arch.h.
+
+> It would be nice to see some numbers on sufficiently SMP systems, using 
+> some mmap/munmap intense workload.
+
+I've attached my test program: tlb-mash.c.  Compile with "gcc -o
+tlb-mash tlb-mash.c -lpthread" and run with ./tlb-mash X, where X is the
+number of threads to run (2x cpus works well).  It keeps running until
+killed, with each thread repeatedly mprotecting a page within a shared
+mapping.
+
+    J
+
+--------------010307070601020307040202
+Content-Type: text/x-csrc;
+ name="tlb-mash.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="tlb-mash.c"
+
+#include <stdio.h>
+#include <pthread.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+
+#define MAX_THREADS	256
+
+static char *mapping;
+
+static void *masher(void *v)
+{
+	int id = (int)v;
+	unsigned offset = id * getpagesize();
+
+	printf("started thread %d\n", id);
+
+	for(;;) {
+		mprotect(mapping+offset, getpagesize(), PROT_READ);
+		mprotect(mapping+offset, getpagesize(), PROT_READ | PROT_WRITE);
+	}
+
+	return NULL;
+}
+
+int main(int argc, char **argv)
+{
+	int i;
+	int nthreads = 4;
+	pthread_t threads[MAX_THREADS];
+
+	if (argc == 2) {
+		int t = atoi(argv[1]);
+		if (t != 0)
+			nthreads = t;
+	}
+	if (nthreads > MAX_THREADS)
+		nthreads = MAX_THREADS;
+
+	printf("creating %d threads...\n", nthreads);
+
+	mapping = mmap(0, getpagesize() * nthreads, PROT_NONE,
+		       MAP_POPULATE|MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+	if (mapping == (char *)-1) {
+		perror("mmap failed");
+		return 1;
+	}
+
+	for(i = 0; i < nthreads; i++) {
+		int ret;
+		ret = pthread_create(&threads[i], NULL, masher, (void *)i);
+		if (ret) {
+			printf("pthread create %d failed: %s\n", i, strerror(ret));
+			return 1;
+		}
+	}
+
+	for(i = 0; i < nthreads; i++) {
+		void *ret;
+		pthread_join(threads[i], &ret);
+	}
+
+	return 0;
+}
+
+--------------010307070601020307040202--
