@@ -1,86 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbYHSQfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbYHSQiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756060AbYHSQfZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 12:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbYHSQfO
+	id S1756113AbYHSQiW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 12:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYHSQiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 12:35:14 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:30242 "EHLO
-	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753368AbYHSQfM (ORCPT
+	Tue, 19 Aug 2008 12:38:13 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:56039 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751819AbYHSQiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 12:35:12 -0400
-Message-ID: <48AAF5F7.6040709@panasas.com>
-Date: Tue, 19 Aug 2008 19:33:59 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 19 Aug 2008 12:38:12 -0400
+Date: Tue, 19 Aug 2008 10:37:56 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Alex Chiang <achiang@hp.com>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: create device, function symlinks in /sys/bus/pci/slots/N/
+Message-ID: <20080819163755.GB8318@parisc-linux.org>
+References: <20080818202100.GE23155@ldl.fc.hp.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] debug: fix BUILD_BUG_ON() for non-constant expressions
-References: <20080816100948.GB19926@martell.zuzino.mipt.ru> <alpine.LFD.1.10.0808170936260.3324@nehalem.linux-foundation.org> <20080817173319.GA2450@elte.hu> <200808181109.43203.rusty@rustcorp.com.au> <20080818075459.GH30694@elte.hu> <48A9472F.908@panasas.com> <20080819133422.GA24369@elte.hu>
-In-Reply-To: <20080819133422.GA24369@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Aug 2008 16:33:16.0613 (UTC) FILETIME=[483C7750:01C90219]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080818202100.GE23155@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Boaz Harrosh <bharrosh@panasas.com> wrote:
-> 
->>> Link time warnings are easy enough to miss.
->>>
->>> So unless there's a better way of doing it all at compile time (i'd 
->>> really prefer that!) i'd prefer the link time error about botched 
->>> BUILD_BUG_ON() conditions - as my commits introduce.
->>>
->>> 	Ingo
->>> --
->> #define BUILD_BUG_ON(condition)						\
->> do {
->> 	enum { bad = !!(condition)}; 									\
->> 	static struct { char arr[1 - 2*bad]; } x __maybe_unused;	\
->> } while(0)
->>
->> the enum definition will not let in anything not compile-time constant.
-> 
-> nice trick!
-> 
->> But then I fail on: (include/linux/virtio_config.h:99)
->>
->> 	if (__builtin_constant_p(fbit))
->> 		BUILD_BUG_ON(fbit >= 32);
->>
->> is that code broken?
-> 
-> hmm ... that's a bit sad, gcc ought to have been able to figure this 
-> out. Can this be fixed somehow, without losing the strength of the 
-> checking here? I think we should not change BUILD_BUG_ON() to make it 
-> less useful.
-> 
-> 	Ingo
+On Mon, Aug 18, 2008 at 02:21:00PM -0600, Alex Chiang wrote:
+> The original form of this patch was written by Matthew Wilcox,
+> but did not have links from the sysfs slots/ directory pointing
+> back at devices and functions.
 
-The BUILD_BUG_ON I proposed is not less useful. Actually with current
-BUILD_BUG_ON above code does nothing, since fbit is a function parameter
-it will translate to nothing. Certainly it will not check the size of passed
-parameter, since that was converted on the stack to unsigned int. So my
-definition will catch the bad programing here.
+I think the reason I didn't bother was that you could already get this
+information from the 'address' file.  ie:
 
-If the user of virtio_has_feature() must pass a compile-time constant then
-it must be converted to a MACRO, and then the BUILD_BUG_ON will work.
-Or it should be changed to a BUG_ON() if fbit is a runtime variable.
+$ ls -l /sys/bus/pci/devices/`cat /sys/bus/pci/slots/3/address`*
 
->From what I understood this is what you wanted, some way to make sure
-a BUILD_BUG_ON will check that the check is actually useful (compile-time)
-and is not silently ignored.
+But I don't think we had a way to go from a device to the slot it's in,
+without searching through all the slots for matching address.
 
-Same thing at the other place I sent.
+> +static void remove_sysfs_files(struct pci_slot *slot)
+> +{
+> +	char func[10];
+> +	struct list_head *tmp;
+> +
+> +	list_for_each(tmp, &slot->bus->devices) {
+> +		struct pci_dev *dev = pci_dev_b(tmp);
+> +		if (PCI_SLOT(dev->devfn) != slot->number)
+> +			continue;
+> +		sysfs_remove_link(&dev->dev.kobj, "slot");
+> +
+> +		snprintf(func, 10, "function%d", PCI_FUNC(dev->devfn));
+> +		sysfs_remove_link(&slot->kobj, func);
+> +	}
+> +	sysfs_remove_link(&slot->kobj, "device");
+> +}
+> +
+> +static int create_sysfs_files(struct pci_slot *slot)
+> +{
+> +	int result, lastdev = -1;
+> +	char func[10];
+> +	struct list_head *tmp;
+> +
+> +	list_for_each(tmp, &slot->bus->devices) {
+> +		struct pci_dev *dev = pci_dev_b(tmp);
+> +		if (PCI_SLOT(dev->devfn) != slot->number)
+> +			continue;
 
-Boaz
+Why not use pci_get_slot()?
+
+> +		result = sysfs_create_link(&dev->dev.kobj, &slot->kobj, "slot");
+> +		if (result)
+> +			goto fail;
+> +
+> +		if (PCI_SLOT(dev->devfn) != lastdev) {
+> +			lastdev = PCI_SLOT(dev->devfn);
+> +			result = sysfs_create_link(&slot->kobj,
+> +						   &dev->dev.kobj,
+> +						   "device");
+> +			if (result)
+> +				goto fail;
+> +		}
+> +
+> +		snprintf(func, 10, "function%d", PCI_FUNC(dev->devfn));
+> +		result = sysfs_create_link(&slot->kobj, &dev->dev.kobj, func);
+> +		if (result)
+> +			goto fail;
+> +	}
+> +
+> +	return 0;
+> +
+> +fail:
+> +	remove_sysfs_files(slot);
+> +	return result;
+> +}
+> +
+>  static void pci_slot_release(struct kobject *kobj)
+>  {
+>  	struct pci_slot *slot = to_pci_slot(kobj);
+> @@ -54,6 +108,8 @@ static void pci_slot_release(struct kobject *kobj)
+>  	pr_debug("%s: releasing pci_slot on %x:%d\n", __func__,
+>  		 slot->bus->number, slot->number);
+>  
+> +	remove_sysfs_files(slot);
+> +
+>  	list_del(&slot->list);
+>  
+>  	kfree(slot);
+> @@ -150,6 +206,8 @@ placeholder:
+>  	INIT_LIST_HEAD(&slot->list);
+>  	list_add(&slot->list, &parent->slots);
+>  
+> +	create_sysfs_files(slot);
+> +
+>  	/* Don't care if debug printk has a -1 for slot_nr */
+>  	pr_debug("%s: created pci_slot on %04x:%02x:%02x\n",
+>  		 __func__, pci_domain_nr(parent), parent->number, slot_nr);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
