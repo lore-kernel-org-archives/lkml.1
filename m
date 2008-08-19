@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbYHSUDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758537AbYHSUEN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757841AbYHSUDf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 16:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbYHSUDN
+	id S1758537AbYHSUEN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 16:04:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754520AbYHSUDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 16:03:13 -0400
-Received: from gw.goop.org ([64.81.55.164]:38793 "EHLO mail.goop.org"
+	Tue, 19 Aug 2008 16:03:14 -0400
+Received: from gw.goop.org ([64.81.55.164]:38800 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752913AbYHSUDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753037AbYHSUDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 19 Aug 2008 16:03:12 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 2 of 3] make PFN_PHYS explicitly return phys_addr_t
-X-Mercurial-Node: 74ce18bbd426a14f830437f90112569cba36ee9c
-Message-Id: <74ce18bbd426a14f8304.1219176171@localhost>
+Subject: [PATCH 3 of 3] redefine resource_size_t as phys_addr_t
+X-Mercurial-Node: 969978031590c7a8b64ee838b5e0372f6b480993
+Message-Id: <969978031590c7a8b64e.1219176172@localhost>
 In-Reply-To: <patchbomb.1219176169@localhost>
-Date: Tue, 19 Aug 2008 13:02:51 -0700
+Date: Tue, 19 Aug 2008 13:02:52 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: ehabkost@redhat.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -25,73 +25,138 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PFN_PHYS, as its name suggests, turns a pfn into a physical address.
-However, it is a macro which just operates on its argument without
-modifying its type.  pfns are typed unsigned long, but an unsigned
-long may not be long enough to hold a physical address (32-bit systems
-with more than 32 bits of physcial address).
-
-Make sure we cast to phys_addr_t to return a complete result.
+There's no good reason why a resource_size_t shouldn't just be a
+physical address, so simply redefine it in terms of phys_addr_t.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Eduardo Habkost <ehabkost@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/m32r/mm/discontig.c   |    4 ++--
- include/asm-x86/xen/page.h |    4 ++--
- include/linux/pfn.h        |    6 +++++-
- 3 files changed, 9 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/Kconfig.cputype |    1 -
+ arch/powerpc/sysdev/ppc4xx_pci.c       |   16 ++++++----------
+ arch/x86/Kconfig                       |    1 -
+ arch/x86/kernel/e820.c                 |    4 +---
+ drivers/pci/setup-bus.c                |    9 ++++-----
+ include/linux/types.h                  |    8 ++------
+ 6 files changed, 13 insertions(+), 26 deletions(-)
 
-diff --git a/arch/m32r/mm/discontig.c b/arch/m32r/mm/discontig.c
---- a/arch/m32r/mm/discontig.c
-+++ b/arch/m32r/mm/discontig.c
-@@ -111,9 +111,9 @@
- 				initrd_start, INITRD_SIZE);
- 		} else {
- 			printk("initrd extends beyond end of memory "
--				"(0x%08lx > 0x%08lx)\ndisabling initrd\n",
-+				"(0x%08lx > 0x%08llx)\ndisabling initrd\n",
- 				INITRD_START + INITRD_SIZE,
--				PFN_PHYS(max_low_pfn));
-+			        (unsigned long long)PFN_PHYS(max_low_pfn));
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -135,7 +135,6 @@
+ config PHYS_64BIT
+ 	bool 'Large physical address support' if E500
+ 	depends on 44x || E500
+-	select RESOURCES_64BIT
+ 	default y if 44x
+ 	---help---
+ 	  This option enables kernel support for larger than 32-bit physical
+diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
+--- a/arch/powerpc/sysdev/ppc4xx_pci.c
++++ b/arch/powerpc/sysdev/ppc4xx_pci.c
+@@ -41,13 +41,10 @@
+ #define U64_TO_U32_LOW(val)	((u32)((val) & 0x00000000ffffffffULL))
+ #define U64_TO_U32_HIGH(val)	((u32)((val) >> 32))
  
- 			initrd_start = 0;
+-#ifdef CONFIG_RESOURCES_64BIT
+-#define RES_TO_U32_LOW(val)	U64_TO_U32_LOW(val)
+-#define RES_TO_U32_HIGH(val)	U64_TO_U32_HIGH(val)
+-#else
+-#define RES_TO_U32_LOW(val)	(val)
+-#define RES_TO_U32_HIGH(val)	(0)
+-#endif
++#define RES_TO_U32_LOW(val)	\
++	((sizeof(resource_size_t) > sizeof(u32)) ? U64_TO_U32_LOW(val) : (val))
++#define RES_TO_U32_HIGH(val)	\
++	((sizeof(resource_size_t) > sizeof(u32)) ? U64_TO_U32_HIGH(val) : (0))
+ 
+ static inline int ppc440spe_revA(void)
+ {
+@@ -145,12 +142,11 @@
+ 
+ 		/* Use that */
+ 		res->start = pci_addr;
+-#ifndef CONFIG_RESOURCES_64BIT
+ 		/* Beware of 32 bits resources */
+-		if ((pci_addr + size) > 0x100000000ull)
++		if (sizeof(resource_size_t) == sizeof(u32) &&
++		    (pci_addr + size) > 0x100000000ull)
+ 			res->end = 0xffffffff;
+ 		else
+-#endif
+ 			res->end = res->start + size - 1;
+ 		break;
+ 	}
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -931,7 +931,6 @@
+ 	def_bool n
+ 	prompt "PAE (Physical Address Extension) Support"
+ 	depends on X86_32 && !HIGHMEM4G
+-	select RESOURCES_64BIT
+ 	help
+ 	  PAE is required for NX support, and furthermore enables
+ 	  larger swapspace support for non-overcommit purposes. It
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -1276,12 +1276,10 @@
+ 	res = alloc_bootmem_low(sizeof(struct resource) * e820.nr_map);
+ 	for (i = 0; i < e820.nr_map; i++) {
+ 		end = e820.map[i].addr + e820.map[i].size - 1;
+-#ifndef CONFIG_RESOURCES_64BIT
+-		if (end > 0x100000000ULL) {
++		if (end != (resource_size_t)end) {
+ 			res++;
+ 			continue;
  		}
-diff --git a/include/asm-x86/xen/page.h b/include/asm-x86/xen/page.h
---- a/include/asm-x86/xen/page.h
-+++ b/include/asm-x86/xen/page.h
-@@ -76,13 +76,13 @@
- static inline xmaddr_t phys_to_machine(xpaddr_t phys)
- {
- 	unsigned offset = phys.paddr & ~PAGE_MASK;
--	return XMADDR(PFN_PHYS((u64)pfn_to_mfn(PFN_DOWN(phys.paddr))) | offset);
-+	return XMADDR(PFN_PHYS(pfn_to_mfn(PFN_DOWN(phys.paddr))) | offset);
- }
- 
- static inline xpaddr_t machine_to_phys(xmaddr_t machine)
- {
- 	unsigned offset = machine.maddr & ~PAGE_MASK;
--	return XPADDR(PFN_PHYS((u64)mfn_to_pfn(PFN_DOWN(machine.maddr))) | offset);
-+	return XPADDR(PFN_PHYS(mfn_to_pfn(PFN_DOWN(machine.maddr))) | offset);
- }
- 
- /*
-diff --git a/include/linux/pfn.h b/include/linux/pfn.h
---- a/include/linux/pfn.h
-+++ b/include/linux/pfn.h
-@@ -1,9 +1,13 @@
- #ifndef _LINUX_PFN_H_
- #define _LINUX_PFN_H_
+-#endif
+ 		res->name = e820_type_to_string(e820.map[i].type);
+ 		res->start = e820.map[i].addr;
+ 		res->end = end;
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -377,11 +377,10 @@
+ 	align = 0;
+ 	min_align = 0;
+ 	for (order = 0; order <= max_order; order++) {
+-#ifdef CONFIG_RESOURCES_64BIT
+-		resource_size_t align1 = 1ULL << (order + 20);
+-#else
+-		resource_size_t align1 = 1U << (order + 20);
+-#endif
++		resource_size_t align1 = 1;
 +
-+#ifndef __ASSEMBLY__
-+#include <linux/types.h>
-+#endif
++		align1 <<= (order + 20);
++
+ 		if (!align)
+ 			min_align = align1;
+ 		else if (ALIGN(align + min_align, min_align) < align1)
+diff --git a/include/linux/types.h b/include/linux/types.h
+--- a/include/linux/types.h
++++ b/include/linux/types.h
+@@ -191,17 +191,13 @@
+ #ifdef __KERNEL__
+ typedef unsigned __bitwise__ gfp_t;
  
- #define PFN_ALIGN(x)	(((unsigned long)(x) + (PAGE_SIZE - 1)) & PAGE_MASK)
- #define PFN_UP(x)	(((x) + PAGE_SIZE-1) >> PAGE_SHIFT)
- #define PFN_DOWN(x)	((x) >> PAGE_SHIFT)
--#define PFN_PHYS(x)	((x) << PAGE_SHIFT)
-+#define PFN_PHYS(x)	((phys_addr_t)(x) << PAGE_SHIFT)
- 
+-#ifdef CONFIG_RESOURCES_64BIT
+-typedef u64 resource_size_t;
+-#else
+-typedef u32 resource_size_t;
+-#endif
+-
+ #ifdef CONFIG_PHYS_ADDR_T_64BIT
+ typedef u64 phys_addr_t;
+ #else
+ typedef u32 phys_addr_t;
  #endif
++
++typedef phys_addr_t resource_size_t;
+ 
+ struct ustat {
+ 	__kernel_daddr_t	f_tfree;
 
 
