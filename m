@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbYHSDIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753578AbYHSDMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753179AbYHSDIR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 23:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYHSDIA
+	id S1753578AbYHSDMp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 23:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYHSDMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 23:08:00 -0400
-Received: from ozlabs.org ([203.10.76.45]:43681 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751072AbYHSDIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 23:08:00 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Anthony Liguori <aliguori@us.ibm.com>
-Subject: Re: [PATCH] virtio_balloon: fix towards_target when deflating balloon
-Date: Tue, 19 Aug 2008 11:22:54 +1000
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>,
-       virtualization@lists.linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>
-References: <1219097731-1224-1-git-send-email-aliguori@us.ibm.com>
-In-Reply-To: <1219097731-1224-1-git-send-email-aliguori@us.ibm.com>
+	Mon, 18 Aug 2008 23:12:37 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51333 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751478AbYHSDMg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 23:12:36 -0400
+Date: Mon, 18 Aug 2008 23:12:35 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Scott Wood <scottwood@freescale.com>, Eran Liberty <liberty@extricom.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Steven Rostedt <srostedt@redhat.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+In-Reply-To: <1219114600.8062.15.camel@pasglop>
+Message-ID: <alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>
+References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>  <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>  <48A9AFA7.8080508@freescale.com>  <alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>  <1219110814.8062.2.camel@pasglop>
+  <alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>  <1219113549.8062.13.camel@pasglop> <1219114600.8062.15.camel@pasglop>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808191122.54845.rusty@rustcorp.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 August 2008 08:15:31 Anthony Liguori wrote:
-> -	return v - vb->num_pages;
-> +	if (v < vb->num_pages)
-> +		return -(s64)(vb->num_pages - v);
-> +	else
-> +		return v - vb->num_pages;
 
-With all due respect, WTF?
+On Tue, 19 Aug 2008, Benjamin Herrenschmidt wrote:
 
-Did you mean:
+> Ok, so i did a patch, but it doesn't fix the problem. So
+> there's something else whacking on the stack frames.
 
-	return (s64)v - vb->num_pages;
+Is it 32 bit or 64?  I've tested the 64 bit quite a bit, but not so much 
+the 32 (my powerbook is not usually that stable).
 
-I'm really amazed this bug got this far though...
-Rusty.
+You might want to look at the entry.S mcount code too.
+
+> 
+> Still, here it is:
+
+Thanks,
+
+> 
+> powerpc/ftrace: Fix broken assembly for code replacement
+> 
+> Instead, uses __get_user() and __put_user().
+> 
+
+Acked-by: Steven Rostedt <srostedt@redhat.com>
+
+-- Steve
+
