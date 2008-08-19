@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600AbYHSRzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbYHSR4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755600AbYHSRzq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 13:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbYHSRzd
+	id S1756492AbYHSR4Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 13:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbYHSR4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 13:55:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53820 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752913AbYHSRzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 13:55:32 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Simon Arlott <simon@fire.lp0.eu>
-Subject: Re: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot - v2
-Date: Tue, 19 Aug 2008 19:58:44 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Jeff Garzik <jgarzik@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev <netdev@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <200808190008.54743.rjw@sisk.pl> <48A9FAD8.9000503@simon.arlott.org.uk>
-In-Reply-To: <48A9FAD8.9000503@simon.arlott.org.uk>
+	Tue, 19 Aug 2008 13:56:07 -0400
+Received: from hs-out-0708.google.com ([64.233.178.242]:3974 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752938AbYHSR4D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 13:56:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=pHkzFIf+tI8jpW9vxc3Zu0ewDiGVcAn4zheqJQhk8P5feYfFAtkRF5VI8XAzLleuI8
+         rdrXesQwVpC7SPbw8u3wztFHjB5UbL3WDOtKsc/coaIAkuk1XHdTA8G8aW+Q790H/Ch2
+         IDFjNI7BlnNwiov9Mv3idlCkHLQQ8iEuZD4K4=
+Date: Tue, 19 Aug 2008 13:55:58 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Aivils Stoss <aivils@latnet.lv>,
+       stern@rowland.harvard.edu, lud <linux-usb@vger.kernel.org>,
+       Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxconsole-dev@lists.sourceforge.net
+Subject: Re: PROBLEM: USB keyboards works only 4 per PC host port
+Message-ID: <20080819135447.ZZRA012@mailhub.coreip.homeip.net>
+References: <200808080702.24969.aivils@latnet.lv> <200808181642.49489.aivils@latnet.lv> <20080818081432.782d9632.rdunlap@xenotime.net> <200808191527.06945.aivils@latnet.lv> <20080819081936.37fef673.rdunlap@xenotime.net> <alpine.LNX.1.10.0808191721560.18058@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808191958.45886.rjw@sisk.pl>
+In-Reply-To: <alpine.LNX.1.10.0808191721560.18058@jikos.suse.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 19 of August 2008, Simon Arlott wrote:
-> On 18/08/08 23:08, Rafael J. Wysocki wrote:
-> > On Monday, 18 of August 2008, Yinghai Lu wrote:
-> >> On Mon, Aug 18, 2008 at 3:22 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> 
-> >> >> > >  drivers/net/forcedeth.c |    8 +++++---
-> >> >> > >  1 file changed, 5 insertions(+), 3 deletions(-)
-> >> >> > >
-> >> >> > > Index: linux-2.6/drivers/net/forcedeth.c
-> >> >> > > ===================================================================
-> >> >> > > --- linux-2.6.orig/drivers/net/forcedeth.c
-> >> >> > > +++ linux-2.6/drivers/net/forcedeth.c
-> >> >> > > @@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
-> >> >> > >        if (netif_running(dev))
-> >> >> > >                nv_close(dev);
-> >> >> > >
-> >> >> > > -       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-> >> >> > > -       pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
-> >> >> > >        pci_disable_device(pdev);
-> >> >> > > -       pci_set_power_state(pdev, PCI_D3hot);
-> >> >> > > +       if (system_state == SYSTEM_POWER_OFF) {
-> >> >> > > +               if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
-> >> >> > > +                       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-> >> >> > > +               pci_set_power_state(pdev, PCI_D3hot);
-> >> >> > > +       }
-> >> >> > >  }
-> >> >> > >  #else
-> >> >> > >  #define nv_suspend NULL
-> >> >> > >
-> >> >> >
-> >> 
-> >> > Does the last patch work for you BTW?
-> >> >
-> >> 
-> >> it works.
-> > 
-> > OK, thanks for testing.
-> > 
-> > I think we can use it as a quick fix for 2.6.27.  Do you agree?
-> > 
-> > Still, it would be helpful to verify if this is the same MSI issue reported by
-> > Simon.
+On Tue, Aug 19, 2008 at 05:23:07PM +0200, Jiri Kosina wrote:
+> On Tue, 19 Aug 2008, Randy Dunlap wrote:
 > 
-> I tried to test that patch but even without it standby/resume has stopped working:
+> > > 2.6.22-1-mepis-smp
+> > > Quite stable. Have oops sometime inside evdev. Support up to 16 
+> > > USB keyboards, where 4 hubs are plugged into PC and 4 keyboards on
+> > > each hub. Any hub cascade support only 4 keyboards, where 5th or more
+> > > is registered but don't send input events. Oops inside evdev , when
+> > > USB keyboard unplugged. No slow down even all USB keyboards does
+> > > not work properly. My be this one support more than 16 keyboards, but
+> > > i don't have PC USB ports enough.
+> > Has the evdev oops been reported and/or fixed? I think that we would 
+> > prefer to fix that soonish.
+> 
+> We haven't seen the respective oops yet, or have I missed it?
+> 
+> I'd bet it is fixed in newer kernels by patches that introduce proper 
+> locking into evdev code.
+> 
 
-Which kernel is this?
+If evdev (or any other part of the input sybsystem) still oopses in
+2.6.26 and 2.6.27 I would like to see that oops very much.
 
-> http://img89.imageshack.us/img89/1861/1005552wb5.jpg (standby, tainted)
-> http://img89.imageshack.us/img89/5409/1005561ys2.jpg (resume)
-> http://img503.imageshack.us/img503/8720/1005571bc0.jpg (resume)
-> http://img135.imageshack.us/img135/5048/1005572be3.jpg (standby)
-
-Rafael
+-- 
+Dmitry
