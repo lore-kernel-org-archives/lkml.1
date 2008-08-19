@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759182AbYHSVXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbYHSVXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759182AbYHSVXH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757354AbYHSVWC
+	id S1759259AbYHSVXx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753868AbYHSVXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:22:02 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55720 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756023AbYHSVWA (ORCPT
+	Tue, 19 Aug 2008 17:23:43 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:64165 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753862AbYHSVXm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:22:00 -0400
-Date: Tue, 19 Aug 2008 14:21:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-In-Reply-To: <20080819.140458.236030589.davem@davemloft.net>
-Message-ID: <alpine.LFD.1.10.0808191411390.3324@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0808190952000.3324@nehalem.linux-foundation.org> <20080819.131454.223684377.davem@davemloft.net> <alpine.LFD.1.10.0808191341150.3324@nehalem.linux-foundation.org> <20080819.140458.236030589.davem@davemloft.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 19 Aug 2008 17:23:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Kw+hK92stHc4bhGqP5+klUeHAS4LPlq/c9hVWsCrrkVvhVBibWJFcN999pYkJONkbA
+         QgyNRhU5d976vlR0GafQbpDHQydrOWTfUJ+jIN7oQhq//fkPMkucQuq/5gE1E7iKATpg
+         D9f0nD7rHlw5Eq/IZ69unetog9PxS/852zLD0=
+Message-ID: <9e4733910808191423u34946955lc85caa6b2217b390@mail.gmail.com>
+Date: Tue, 19 Aug 2008 17:23:40 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 1/2] rtc: rtc-ds1374: fix 'no irq' case handling
+Cc: "Anton Vorontsov" <avorontsov@ru.mvista.com>,
+       "Alessandro Zummo" <a.zummo@towertech.it>,
+       "Andrew Morton" <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
+In-Reply-To: <20080819212937.01dfd024@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080812161733.GA32164@oksana.dev.rtsoft.ru>
+	 <9e4733910808191339s28a05f90pef57961e8d24fbdb@mail.gmail.com>
+	 <20080819212937.01dfd024@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 8/19/08, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > Shouldn't this be
+>  >
+>  > >  -       if (client->irq <= NO_IRQ)
+>  >
+>  > instead of
+>
+>
+> NO_IRQ is obsolete. client->irq != is the test and IRQ numbers are
+>  unsigned.
 
+I don't know the status of these platforms....
 
-On Tue, 19 Aug 2008, David Miller wrote:
-> 
-> Those fix a performance regression reported by a real user.
+asm-blackfin/irq.h:#define NO_IRQ ((unsigned int)(-1))
+asm-mn10300/irq.h:#define NO_IRQ		INT_MAX
+asm-parisc/irq.h:#define NO_IRQ		(-1)
 
-Since when?
-
-The thing is, I can do a 
-
-	gitk v2.6.24.. drivers/net/loopback.c
-
-as well as anybody else, and TSO has not been enabled for loopback at 
-least since 2.6.24. Going back to 2.6.23 (which has more changes that I 
-won't comment on), it looks like that LOOPBACK_TSO thing you removed was 
-there back then too.
-
-So the performance regression if it happened must have been due to 
-something else, no?
-
-Oh, I'm sure that enabling TSO speeds things up, but apparently it also 
-basically enables a code-path that hasn't been enabled since at least 
-2.6.23, no?
-
-Really, David. Was the performance regression due to something else, and 
-then by enabling LOOPBACK_TSO it hid the problem? Or what? The thing is, 
--rc3 is _not_ the point to apparently change something that hasn't been 
-changed in about a year (I didn't go any further back in history). 
-
-So what's going on? Do you seriously think it's a good point in time to 
-enable TSO for loopback after a long time of apparently _not_ being 
-enabled? 
-
-It smells like excuses to me. Was this really a "must be in 2.6.27" thing?
-
-And no, it wouldn't bother me if this was a rare thing. Again, let me 
-repeat: the problem is not any of the individual commits _per_se_. The 
-problem is that the network layer stands out. And not in a good way. It 
-stands out as being a layer that gets a _lot_ of churn late in the -rc 
-game.
-
-			Linus
+-- 
+Jon Smirl
+jonsmirl@gmail.com
