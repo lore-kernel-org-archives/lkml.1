@@ -1,87 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbYHSLJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbYHSLMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbYHSLJg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 07:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbYHSLJZ
+	id S1754300AbYHSLMV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 07:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYHSLMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 07:09:25 -0400
-Received: from ns1.suse.de ([195.135.220.2]:57642 "EHLO mx1.suse.de"
+	Tue, 19 Aug 2008 07:12:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45162 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752480AbYHSLJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 07:09:24 -0400
-Date: Tue, 19 Aug 2008 13:09:20 +0200
-From: Karsten Keil <kkeil@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Marcel Holtmann <marcel@holtmann.org>,
+	id S1752368AbYHSLML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 07:12:11 -0400
+Date: Tue, 19 Aug 2008 13:11:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, Stefani Seibold <stefani@seibold.net>,
+       Dario Faggioli <raistlin@linux.it>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Max Krasnyansky <maxk@qualcomm.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: ISDN fixes
-Message-ID: <20080819110920.GB17310@pingi.kke.suse.de>
-References: <20080819101225.GA17310@pingi.kke.suse.de> <1219141608.7591.118.camel@violet.holtmann.net> <87tzdhz46r.fsf@basil.nowhere.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
+Message-ID: <20080819111152.GA8592@elte.hu>
+References: <20080819103301.787700742@chello.nl> <20080819103844.459178947@chello.nl> <20080819110557.GA18608@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <87tzdhz46r.fsf@basil.nowhere.org>
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.60-0.27-smp x86_64
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080819110557.GA18608@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 19, 2008 at 12:31:40PM +0200, Andi Kleen wrote:
-> Marcel Holtmann <marcel@holtmann.org> writes:
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> The fixes look good to me, but this enabling of infinite RT task 
+> lockups is not an improvement.
 > 
-> > Hi Karten,
-> >
-> >> please pull the ISDN fixes from
-> >> git://git.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6.git master
-> >
-> > can you include "git-diff -M --stat --summary" and "git-shortlog" in the
-> > pull requests so others know what changes are in your tree.
+> The thing is, i got far more bugreports about locked up RT tasks where 
+> the lockup was unintentional, than real bugreports about anyone 
+> _intending_ for the whole box to come to a grinding halt because a 
+> high-prio RT tasks is monopolizing the CPU.
 > 
-> The easiest way to do that is git request-pull (just to save you
-> some manpage reading, Karsten) 
+> In fact there's only been this artificial test so far.
+> 
+> So could you please just increase the chunking to 10 seconds or so, 
+> from the current 1 second? Anyone locking up the system for more than 
+> 10 seconds via an RT task has to deal with many other issues already.
+> 
+> I.e. keep the system borderline debuggable (up to 10 seconds delays 
+> are _not_ nice so people will notice) - but it's still a marked 
+> improvement from completly locked up desktops.
+> 
+> And those who really need longer than 10 second periods can set it 
+> higher, or even (if they want to live dangerously or run POSIX 
+> conformance tests) make it infinite (set it to -1) - and will have to 
+> deal with other things like the softlockup watchdog as well.
+> 
+> Ok?
 
-Thanks.
+ok - i've queued the fixes up in tip/sched/rt (not in tip/sched/urgent 
+yet, they need a bit of test-time, but are potential v2.6.27 commits) - 
+see the shortlog below.
 
-The following changes since commit 1fca25427482387689fa27594c992a961d98768f:
-  Linus Torvalds (1):
-        Merge branch 'release' of git://git.kernel.org/.../aegl/linux-2.6
+	Ingo
 
-are available in the git repository at:
+------------------>
+Ingo Molnar (1):
+      sched: set rt-bandwidth period from 1 second to 10 seconds
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6.git master
-
-Harvey Harrison (2):
-      mISDN: annotate iomem pointer and add statics
-      mISDN: endian annotations for struct zt
-
-Ilpo Järvinen (1):
-      misdn: fix multistatement if block missing braces
-
-Julia Lawall (1):
-      drivers/isdn/capi/kcapi.c: Adjust error handling code involving capi_ctr_put
-
-Karsten Keil (7):
-      Cleanup hfc multiport driver
-      Cosmetic fixes
-      Fix lockdep warning
-
- Documentation/isdn/README.mISDN         |   10 ++--
- drivers/isdn/capi/kcapi.c               |    4 +
- drivers/isdn/hardware/mISDN/hfc_multi.h |    4 -
- drivers/isdn/hardware/mISDN/hfc_pci.h   |    4 +-
- drivers/isdn/hardware/mISDN/hfcmulti.c  |  109 +++++++------------------------
- drivers/isdn/hardware/mISDN/hfcpci.c    |   23 +++----
- drivers/isdn/mISDN/dsp_cmx.c            |    3 +-
- drivers/isdn/mISDN/tei.c                |    2 +-
- 8 files changed, 49 insertions(+), 110 deletions(-)
+Peter Zijlstra (5):
+      sched: rt-bandwidth for user grouping interface
+      sched: rt-bandwidth accounting fix
+      sched: rt-bandwidth group disable fixes
+      sched: extract walk_tg_tree()
+      sched: rt-bandwidth fixes
 
 
--- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+ kernel/sched.c    |  215 +++++++++++++++++++++++++++++------------------------
+ kernel/sched_rt.c |   16 ++--
+ kernel/user.c     |    4 +-
+ 3 files changed, 129 insertions(+), 106 deletions(-)
+
