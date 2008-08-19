@@ -1,64 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbYHSR4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbYHSR5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756492AbYHSR4Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 13:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbYHSR4H
+	id S1756755AbYHSR5B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 13:57:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYHSR4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 13:56:07 -0400
-Received: from hs-out-0708.google.com ([64.233.178.242]:3974 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752938AbYHSR4D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 13:56:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=pHkzFIf+tI8jpW9vxc3Zu0ewDiGVcAn4zheqJQhk8P5feYfFAtkRF5VI8XAzLleuI8
-         rdrXesQwVpC7SPbw8u3wztFHjB5UbL3WDOtKsc/coaIAkuk1XHdTA8G8aW+Q790H/Ch2
-         IDFjNI7BlnNwiov9Mv3idlCkHLQQ8iEuZD4K4=
-Date: Tue, 19 Aug 2008 13:55:58 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Aivils Stoss <aivils@latnet.lv>,
-       stern@rowland.harvard.edu, lud <linux-usb@vger.kernel.org>,
-       Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxconsole-dev@lists.sourceforge.net
-Subject: Re: PROBLEM: USB keyboards works only 4 per PC host port
-Message-ID: <20080819135447.ZZRA012@mailhub.coreip.homeip.net>
-References: <200808080702.24969.aivils@latnet.lv> <200808181642.49489.aivils@latnet.lv> <20080818081432.782d9632.rdunlap@xenotime.net> <200808191527.06945.aivils@latnet.lv> <20080819081936.37fef673.rdunlap@xenotime.net> <alpine.LNX.1.10.0808191721560.18058@jikos.suse.cz>
+	Tue, 19 Aug 2008 13:56:51 -0400
+Received: from pruts.nl ([82.94.235.106]:41037 "EHLO iron.pruts.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753188AbYHSR4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 13:56:50 -0400
+Date: Tue, 19 Aug 2008 19:56:39 +0200
+From: Ico Doornekamp <lkml@zevv.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: TIOCGWINSZ retuns old pty size after receiving SIGWINCH
+Message-ID: <20080819175639.GI29842@pruts.nl>
+References: <20080810150859.GO3653@pruts.nl> <20080819004026.2dac3ba6.akpm@linux-foundation.org> <20080819075414.GV29842@pruts.nl> <20080819010702.c5300420.akpm@linux-foundation.org> <20080819114423.GB29842@pruts.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0808191721560.18058@jikos.suse.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080819114423.GB29842@pruts.nl>
+X-Prutser: true
+X-PGP-key: 4202FA2F
+X-PGP-KeyServer: subkeys.pgp.net
+X-PGP-Fingerprint: F042 F5CD B0A6 EC6A CB80  A829 CACD A4B5 4202 FA2F
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 19, 2008 at 05:23:07PM +0200, Jiri Kosina wrote:
-> On Tue, 19 Aug 2008, Randy Dunlap wrote:
-> 
-> > > 2.6.22-1-mepis-smp
-> > > Quite stable. Have oops sometime inside evdev. Support up to 16 
-> > > USB keyboards, where 4 hubs are plugged into PC and 4 keyboards on
-> > > each hub. Any hub cascade support only 4 keyboards, where 5th or more
-> > > is registered but don't send input events. Oops inside evdev , when
-> > > USB keyboard unplugged. No slow down even all USB keyboards does
-> > > not work properly. My be this one support more than 16 keyboards, but
-> > > i don't have PC USB ports enough.
-> > Has the evdev oops been reported and/or fixed? I think that we would 
-> > prefer to fix that soonish.
-> 
-> We haven't seen the respective oops yet, or have I missed it?
-> 
-> I'd bet it is fixed in newer kernels by patches that introduce proper 
-> locking into evdev code.
-> 
 
-If evdev (or any other part of the input sybsystem) still oopses in
-2.6.26 and 2.6.27 I would like to see that oops very much.
 
--- 
-Dmitry
+* On 2008-08-19 Ico Doornekamp <lkml@zevv.nl> wrote  :
+
+> 
+> 
+> * On 2008-08-19 Andrew Morton <akpm@linux-foundation.org> wrote  :
+> 
+> > On Tue, 19 Aug 2008 09:54:14 +0200 Ico Doornekamp <lkml@zevv.nl> wrote:
+> > > 
+> > > * On 2008-08-19 Andrew Morton <akpm@linux-foundation.org> wrote  :
+> > > 
+> > > > On Sun, 10 Aug 2008 17:08:59 +0200 Ico Doornekamp <lkml@zevv.nl> wrote:
+> > > > 
+> > > > > Recently my X terminals showed annoying behaviour where the application
+> > > > > in the terminal was not resized properly to the actual size of the X
+> > > > > terminal emulator window, resulting in a lot of misaligned text on the
+> > > > > screen. Hunting the issue down from the windowmanager and the terminal
+> > > > > emulator program, I suspect the problem might lie in the kernel. I'm
+> > > > > running 2.6.26 on a dual core i386.
+> > > > > 
+> > > > > What I see is this: the userspace application receives a SIGWINCH signal
+> > > > > and acquires the terminal size usign the TIOCGWINSZ ioctl. It seems that
+> > > > > in some cases the old instead of the new terminal size is returned.
+> > > > > A small delay before the ioctl seems to 'fix' this behaviour.
+> > > > > 
+> > > > > I noticed some changes involving locking in the the pty code in the last
+> > > > > kernel verions, could one of these changes cause the above behaviour ? If
+> > > > > so, wouldn't this affect much more users ?
+> > > > 
+> > > > hm, that code is pretty simple and although it does the SIGWINCH and
+> > > > the window-size setting in a peculiar order, it looks to be race-free.
+> > > > 
+> > > > Approximately what proportion of the time does it go wrong?
+> > > 
+> > > I guess about 10 to 20% of the resizes. I happen to be using a tiling
+> > > window manager which causes resizing more often and more agressive then
+> > > 'normal' window managers, I guess this helps triggering the problem.
+> > > 
+> > > I temporary worked around this issue this by changing the order of the
+> > > signal and the updating of the pty size in tty_io.c's tiocswinsz(), but
+> > > this is not much of a real fix.
+> > > 
+> > 
+> > Well damn.  Are you sure?  The code looks solid to me.
+> > 
+> > At least, it does after 
+> > 
+> > Author: Alan Cox <alan@redhat.com>  2008-08-15 02:39:38
+> > Committer: Linus Torvalds <torvalds@linux-foundation.org>  2008-08-15 10:34:07
+> > Parent: 000b9151d7851cc1e490b2a76d0206e524f43cca (Fix race/oops in tty layer after BKL pushdown)
+> > Branches: git-cifs, git-ia64, git-nfs, git-powerpc-merge, linux-next, remotes/origin/master
+> > Follows: v2.6.27-rc3
+> > Precedes: next-20080818
+> > 
+> >     tty: remove resize window special case
+> > 
+> > perhaps you're still running a kernel which is earlier than that?
+> 
+> I reported the behaviour on 2.6.26.2, but I was not aware this issue was
+> adressed already in the 2.6.27 tree. I will update to the latest 2.6.27
+> rc and report if the problem still persists.
+
+I am not able to reproduce the problem with git 2.6.27-rc3-next-20080819.
+
