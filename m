@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbYHSAOL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbYHSAPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755320AbYHSAOL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 20:14:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbYHSAN5
+	id S1755491AbYHSAPP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 20:15:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753739AbYHSAPB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 20:13:57 -0400
-Received: from styx.suse.cz ([82.119.242.94]:46430 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753001AbYHSAN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 20:13:56 -0400
-Date: Tue, 19 Aug 2008 02:13:55 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>,
-       Leo Duran <leo.duran@amd.com>
-Subject: [PATCH] x86 iommu: remove unneeded parenthesis
-Message-ID: <alpine.LNX.1.10.0808190211060.18058@jikos.suse.cz>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Mon, 18 Aug 2008 20:15:01 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35074 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753021AbYHSAPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 20:15:00 -0400
+Date: Tue, 19 Aug 2008 02:14:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: early_printk.c trivial sparse fixes
+Message-ID: <20080819001433.GC9914@elte.hu>
+References: <1219103789.17033.0.camel@brick>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1219103789.17033.0.camel@brick>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The parenthesis in __iommu_queue_command() are not needed when assigning 
-into 'target' variable.
 
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+* Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index de39e1f..69b4d06 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -65,7 +65,7 @@ static int __iommu_queue_command(struct amd_iommu *iommu, struct iommu_cmd *cmd)
-  	u8 *target;
+> arch/x86/kernel/early_printk.c:404:13: warning: incorrect type in assignment (different base types)
+> arch/x86/kernel/early_printk.c:404:13:    expected restricted __le16 [assigned] [usertype] wValue
+> arch/x86/kernel/early_printk.c:404:13:    got int [signed] value
+> arch/x86/kernel/early_printk.c:405:13: warning: incorrect type in assignment (different base types)
+> arch/x86/kernel/early_printk.c:405:13:    expected restricted __le16 [assigned] [usertype] wIndex
+> arch/x86/kernel/early_printk.c:405:13:    got int [signed] index
+> arch/x86/kernel/early_printk.c:406:14: warning: incorrect type in assignment (different base types)
+> arch/x86/kernel/early_printk.c:406:14:    expected restricted __le16 [assigned] [usertype] wLength
+> arch/x86/kernel/early_printk.c:406:14:    got int [signed] size
+> arch/x86/kernel/early_printk.c:845:16: warning: Using plain integer as NULL pointer
+> arch/x86/kernel/early_printk.c:992:13: warning: symbol 'enable_debug_console' was not declared. Should it be static?
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
-  	tail = readl(iommu->mmio_base + MMIO_CMD_TAIL_OFFSET);
--	target = (iommu->cmd_buf + tail);
-+	target = iommu->cmd_buf + tail;
-  	memcpy_toio(target, cmd, sizeof(*cmd));
-  	tail = (tail + sizeof(*cmd)) % iommu->cmd_buf_size;
-  	head = readl(iommu->mmio_base + MMIO_CMD_HEAD_OFFSET);
+applied to tip/x86/early-printk - thanks Harvey!
+
+	Ingo
