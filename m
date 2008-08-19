@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbYHSSPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbYHSSUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756853AbYHSSPk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 14:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbYHSSP3
+	id S1753787AbYHSSUO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 14:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbYHSST6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 14:15:29 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:62347 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756058AbYHSSP2 (ORCPT
+	Tue, 19 Aug 2008 14:19:58 -0400
+Received: from el-out-1112.google.com ([209.85.162.176]:7322 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbYHSST5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 14:15:28 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5364"; a="5666491"
-Message-ID: <48AB0DB6.9060802@qualcomm.com>
-Date: Tue, 19 Aug 2008 11:15:18 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 19 Aug 2008 14:19:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=BeJ+JzyN46NsESL8aMOsNvoGrLaTRY1fElPLDO77K+YETvv4yhl1aFJzUn8mm0VI3L
+         34rHaG7hMR/ngDVFacqCV1AsubP91YDQA8x8EvCdK/dMSCrVyrPKctY95i8vlN8dkXu5
+         yKnIZlwU/MneoYh2HsWk7BZRNGuuxajsttQDo=
+Message-ID: <81b0412b0808191119y3fe473bbi43ca5524ff4d20ac@mail.gmail.com>
+Date: Tue, 19 Aug 2008 20:19:56 +0200
+From: "Alex Riesen" <raa.lkml@gmail.com>
+To: "Ivo van Doorn" <ivdoorn@gmail.com>
+Subject: Re: rt2500pci: rt2500pci_bbp_read: Error - BBPCSR register busy. Read failed.
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+In-Reply-To: <200808192003.45072.IvDoorn@gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Stefani Seibold <stefani@seibold.net>,
-       Dario Faggioli <raistlin@linux.it>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
-References: <20080819103301.787700742@chello.nl> <20080819103844.459178947@chello.nl> <20080819110557.GA18608@elte.hu> <200808192117.52070.nickpiggin@yahoo.com.au> <20080819125954.GA20210@elte.hu>
-In-Reply-To: <20080819125954.GA20210@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080819173524.GA4708@steel.home>
+	 <200808192003.45072.IvDoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> 
->> [...] Let's retain our API specifications and backwards compatibilty 
->> by default. [...]
-> 
-> I agree with you that the 1 second default was a bit too tight - and we 
-> should definitely change that (and it's changed already).
-> 
-> So changing the "allow RT tasks up to 10 seconds uninterrupted CPU 
-> monopolization" is OK to me - it still keeps runaway CPU loops (which 
-> are in the vast majority) debuggable, while allowing common-sense RT 
-> task usage.
-> 
-> But changing that back to the other extreme: "allow lockups by default" 
-> is unreasonable IMO - especially in the face of rtlimit that allows 
-> unprivileged tasks to gain RT privileges.
-> 
-> As an experiment try running a 100% CPU using SCHED_FIFO:99 RT task. It 
-> does not result in a usable Linux system - it interacts with too many 
-> normal system activities. It is a very, very special mode of operation 
-> and anyone using Linux in such a way has to take precautions and has to 
-> tune things specially anyway. (has to turn off the softlockup watchdog, 
-> has to make sure IO requests do not time out artificially, etc.) 
-btw The tuning is actually very easy and straightforward ie not so 
-special anymore. That's one of the use cases that my cpu isolation work 
-was addressing. 2.6.27 will have most of the mechanisms available. All 
-the tuning is done by the 'syspart' package:
-http://git.kernel.org/?p=linux/kernel/git/maxk/syspart.git;a=summary
+2008/8/19 Ivo van Doorn <ivdoorn@gmail.com>:
+>> The rt2500 driver in 2.6.27-rc3 (v2.6.27-rc3-552-g3c3a15a) constantly
+>> produces a lot of this messages in log (slowdown quite noticable):
+>>
+>>     kernel: phy0 -> rt2500pci_bbp_read: Error - BBPCSR register busy. Read failed.
+>>     kernel: phy0 -> rt2500pci_bbp_write: Error - BBPCSR register busy. Write failed.
+>>     last message repeated 40 times
+>>     kernel: phy0 -> rt2500pci_rf_write: Error - RFCSR register busy. Write failed.
+>>     last message repeated 7 times
+>>     kernel: phy0 -> rt2500pci_bbp_write: Error - BBPCSR register busy. Write failed.
+>
+> This is a bad sign, the slowdown is expected since the driver is continuously looping
+> waiting for the registers to become available. Did this PCI card work in the past, and
+> if so with what driver?
 
-> You wont even get normal keyboard or console behavior in most cases.
-Only on a single processor system.
+It surely did, but I honestly don't remember what with. I'll try to bisect.
 
-> Furthermore, if by "API specifications" you mean POSIX - to get a 
-> conformant POSIX run one has to change a lot of things on a typical 
-> Linux system anyway. APIs and utilities have to be crippled to be "POSIX 
-> compliant".
-> 
-> In other words: we use common sense when thinking about specifications. 
-> The kernel's defaults are about being reasonable by default.
-> 
-> I have no _strong_ feelings about it, but i dont see the practical value 
-> in going beyond 10 seconds - as it turns a rather useful robustness 
-> feature off by default (and keeps it untested, etc.).
-Same here. I do not mind setting sysctls. At the same time I agree with 
-Nick that ideally we should not change the meaning of SCHED_FIFO.
+> Does this card work on another PC, or does the windows or legacy driver work with
+> this card?
 
-Max
+No Windows here, but see below
+
+> (Yes, all suggestions above imply suspicion about the hardware itself rather then the driver)
+
+Well, it used to crash some industrial board (I believe it was some
+Boser, HS-series, with
+this card in a PCI slot of its backplane). So you're not alone in your
+suspicions (OTOH,
+that board was known to misbehave itself).
+
+I have no particular need for that card, so if someone wants it for
+testing I gladly
+part with it (and if you happen be in Germany, I'll just mail it).
