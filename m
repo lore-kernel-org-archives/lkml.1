@@ -1,97 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757661AbYHSSom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757546AbYHSSoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757661AbYHSSom (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 14:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbYHSSoO
+	id S1757546AbYHSSoJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 14:44:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756086AbYHSSmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 14:44:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49421 "EHLO mx1.redhat.com"
+	Tue, 19 Aug 2008 14:42:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54067 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757552AbYHSSoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 14:44:12 -0400
-Message-ID: <48AB144F.1070606@redhat.com>
-Date: Tue, 19 Aug 2008 14:43:27 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-Reply-To: rwheeler@redhat.com
-Organization: Red Hat
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1756119AbYHSSmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 14:42:33 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Jeff Garzik" <jgarzik@redhat.com>, David Miller <davem@davemloft.net>
+Subject: [PATCH] forcedeth: Fix kexec regression
+Date: Tue, 19 Aug 2008 20:45:53 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Simon Arlott" <simon@fire.lp0.eu>
+References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <200808190008.54743.rjw@sisk.pl> <86802c440808181536j2c214cc3k47e73fd147b4fee1@mail.gmail.com>
+In-Reply-To: <86802c440808181536j2c214cc3k47e73fd147b4fee1@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: rwheeler@redhat.com, Andreas Dilger <adilger@sun.com>,
-       Josef Bacik <jbacik@redhat.com>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 2/2] improve ext3 fsync batching
-References: <20080806190819.GH27394@unused.rdu.redhat.com>	<20080806191536.GI27394@unused.rdu.redhat.com>	<20080818213128.3a76d1e8.akpm@linux-foundation.org>	<20080819054414.GM3392@webber.adilger.int>	<48AAA7F7.5090501@redhat.com> <20080819105638.aae4086f.akpm@linux-foundation.org>
-In-Reply-To: <20080819105638.aae4086f.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808192045.54779.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 19 Aug 2008 07:01:11 -0400 Ric Wheeler <rwheeler@redhat.com> wrote:
->
->   
->> It would be great to be able to use this batching technique for faster 
->> devices, but we currently sleep 3-4 times longer waiting to batch for an 
->> array than it takes to complete the transaction.
->>     
->
-> Obviously, tuning that delay down to the minimum necessary is a good
-> thing.  But doing it based on commit-time seems indirect at best.  What
-> happens on a slower disk when commit times are in the tens of
-> milliseconds?  When someone runs a concurrent `dd if=/dev/zero of=foo'
-> when commit times go up to seconds?
->
-> Perhaps a better scheme would be to tune it based on how many other
-> processes are joining that transaction.  If it's "zero" then decrease
-> the timeout.  But one would need to work out how to increase it, which
-> perhaps could be done by detecting the case where process A runs an
-> fsync when a commit is currently in progress, and that commit was
-> caused by process B's fsync.
->
-> But before doing all that I would recommend/ask that the following be
-> investigated:
->
-> - How effective is the present code?
->
->   - What happens when it is simply removed?
->
->   - Add instrumentation (a counter and a printk) to work out how
->     many other tasks are joining this task's transaction.
->
->     - If the answer is "zero" or "small", work out why.
->
->   - See if we can increase its effectiveness.
->
-> Because it could be that the code broke.  There might be issues with
-> higher-level locks which are preventing the batching.  For example, if
-> all the files which the test app is syncing are in the same directory,
-> perhaps all the tasks are piling up on that directory's i_mutex?
->   
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-One other way to think about this is as a fairly normal queuing problem:
+forcedeth: Fix kexec regression
 
-    (1) arrival rate is the rate at which we see new tasks coming into 
-the code
-    (2) service time is basically the time spent committing the 
-transaction to storage
+Fix regression tracked as
+http://bugzilla.kernel.org/show_bug.cgi?id=11361 and
+caused by commit f735a2a1a4f2a0f5cd823ce323e82675990469e2
+("[netdrvr] forcedeth: setup wake-on-lan before shutting down")
+that makes network adapters integrated into the NVidia
+MCP55 chipsets fail to work in kexeced kernels.  The problem appears
+to be that if the adapter is put into D3_hot during ->shutdown(),
+it cannot be brought back into D0 after kexec (ref.
+http://marc.info/?l=linux-kernel&m=121900062814967&w=4).  Therefore,
+only put forcedeth into D3 during ->shutdown() if the system is to be
+powered off.
 
-and we have the assumption that some number of tasks can join a 
-transaction more or less for "free."
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Tested-by: Yinghai Lu <yhlu.kernel@gmail.com>
+---
+ drivers/net/forcedeth.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-What the existing code assumes is that all devices have an equal service 
-time. That worked well as long as we only looked at devices that were 
-roughly equal (10-20 ms latencies) or used a higher HZ for the kernel 
-(1000HZ and you don't see this as much as with 100HZ).
-
-The two key issues that Josef's code tried to address are that first 
-assumption that all devices have a similar service time and the tie 
-between how long we wait and the HZ. It would seem to be generically 
-useful to be able to sleep for less than 1 jiffie, not just for file 
-systems, but maybe also in some other contexts?
-
-ric
-
+Index: linux-2.6/drivers/net/forcedeth.c
+===================================================================
+--- linux-2.6.orig/drivers/net/forcedeth.c
++++ linux-2.6/drivers/net/forcedeth.c
+@@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
+ 	if (netif_running(dev))
+ 		nv_close(dev);
+ 
+-	pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+-	pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+ 	pci_disable_device(pdev);
+-	pci_set_power_state(pdev, PCI_D3hot);
++	if (system_state == SYSTEM_POWER_OFF) {
++		if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
++			pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
++		pci_set_power_state(pdev, PCI_D3hot);
++	}
+ }
+ #else
+ #define nv_suspend NULL
