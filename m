@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbYHSQ67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbYHSRAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756777AbYHSQ67 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 12:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbYHSQ6v
+	id S1756697AbYHSRAR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 13:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbYHSRAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 12:58:51 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53445 "EHLO ogre.sisk.pl"
+	Tue, 19 Aug 2008 13:00:03 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53460 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751049AbYHSQ6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 12:58:50 -0400
+	id S1751260AbYHSRAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 13:00:00 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #11330] int3: 0000 in tsc_read_refs when using powernow_k7
-Date: Tue, 19 Aug 2008 19:02:10 +0200
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: Re: [Regression] 2.6.27-rc2-git4: suspend and power off fails on Asus M3A32-MVP
+Date: Tue, 19 Aug 2008 19:03:29 +0200
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Alok Kataria <akataria@vmware.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>, Mikko Vinni <mmvinni@yahoo.com>,
-       the arch/x86 maintainers <x86@kernel.org>
-References: <DLWXHEp37wB.A.duD.yZzpIB@albercik> <20080818183328.GB22989@elte.hu> <20080819002232.GF9914@elte.hu>
-In-Reply-To: <20080819002232.GF9914@elte.hu>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Dave Jones" <davej@redhat.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>, kernel-testers@vger.kernel.org,
+       "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Arnold, Frank" <Frank.Arnold@amd.com>
+References: <200808092321.16711.rjw@sisk.pl> <6453C3CB8E2B3646B0D020C112613273C5AC60@sausexmb4.amd.com>
+In-Reply-To: <6453C3CB8E2B3646B0D020C112613273C5AC60@sausexmb4.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808191902.11282.rjw@sisk.pl>
+Message-Id: <200808191903.30437.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 19 of August 2008, Ingo Molnar wrote:
+On Tuesday, 12 of August 2008, Langsdorf, Mark wrote:
 > 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > > There is this fix 
-> > > 
-> > > commit d554d9a4295dd0595d12eeccbc55d1f495b15176
-> > > Author: Marcin Slusarz <marcin.slusarz@gmail.com>
-> > > Date:   Mon Aug 11 00:07:44 2008 +0200
-> > > 
-> > >     x86, tsc: fix section mismatch warning
-> > > 
-> > > which is in x86/tip-master which fixes this issue. 
-> > > I don't see the fix in the mainline tree yet. 
-> > > 
-> > > Maybe Ingo, has it queued, for upstream ?
-> > > Ingo, other than a section mismatch warning it also fixes a real bug.
+> > Unfortunately, your commit 34ae7f35a21694aa5cb8829dc5142c39d73d6ba0
+> > ("[CPUFREQ][2/2] preregister support for powernow-k8") causes 
+> > a power off/
+> > suspend/ hibernation regression on my test box with the Asus M3A32-MVP
+> > mainboard (AMD 790 chipset) and the Phenom 9850 CPU.
 > > 
-> > yeah, hpa queued it up into x86/urgent as well earlier today, it will go 
-> > out with the next pull request.
+> > Apparently, the patch causes a crash in a CPU hotplug 
+> > notifier to happen, but I'm not really sure of that, since there are a
+> lot of stack 
+> > traces resulting from it and I'm unable to capture them over a serial
+> console.
+> > 
+> > It is sufficient to revert commit 
+> > 34ae7f35a21694aa5cb8829dc5142c39d73d6ba0 to
+> > make things work again.
 > 
-> FYI, commit d554d9a4295d is upstream now, and will be part of -rc4.
+> Thanks for the clear report.  I'll look into it and try to fix it.
 
-Thanks, I closed the bug.
+Any news?
 
 Rafael
