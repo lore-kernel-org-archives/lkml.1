@@ -1,67 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbYHSCoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbYHSCrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597AbYHSCoR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 22:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbYHSCoE
+	id S1754708AbYHSCrV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 22:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbYHSCrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 22:44:04 -0400
-Received: from mail9.dslextreme.com ([66.51.199.94]:43616 "HELO
-	mail9.dslextreme.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752574AbYHSCoB (ORCPT
+	Mon, 18 Aug 2008 22:47:11 -0400
+Received: from tomts36.bellnexxia.net ([209.226.175.93]:51088 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752582AbYHSCrK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 22:44:01 -0400
-Message-ID: <48AA3369.900@gawab.com>
-Date: Mon, 18 Aug 2008 19:43:53 -0700
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: lkml <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Michal Januszewski <spock@gentoo.org>,
-       Antonino Daplas <adaplas@gmail.com>, Greg KH <gregkh@suse.de>,
-       Rafael Wysocki <rjw@sisk.pl>,
-       Romano Giannetti <romano.giannetti@gmail.com>,
-       Adrian Bunk <bunk@kernel.org>,
-       Jeremy Nickurak <kernel-bugs@atrus.rifetech.com>
-Subject: Re: Backport hr-tick fix into .25/.26
-References: <48A9BDC0.9070800@gawab.com> <20080819003110.GH9914@elte.hu>
-In-Reply-To: <20080819003110.GH9914@elte.hu>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 18 Aug 2008 22:47:10 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtIFAN3PqUhMRKxB/2dsb2JhbACBYrN2gVg
+Date: Mon, 18 Aug 2008 22:47:07 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Scott Wood <scottwood@freescale.com>,
+       Eran Liberty <liberty@extricom.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+Message-ID: <20080819024707.GA22659@Krystal>
+References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com> <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal> <48A9AFA7.8080508@freescale.com> <alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com> <1219110814.8062.2.camel@pasglop> <alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com> <1219113549.8062.13.camel@pasglop> <alpine.DEB.1.10.0808182240330.13401@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0808182240330.13401@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 22:46:30 up 75 days,  7:26,  6 users,  load average: 0.40, 0.44,
+	0.41
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> hm, the backport of 31656519 is a bit intrusive.
->
-> find below is an (untested!) version of it - i havent even build-tested 
-> it. Does it work for you? But this is Greg's call really.
->   
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Tue, 19 Aug 2008, Benjamin Herrenschmidt wrote:
+> 
+> > 
+> > > Hmm, this was originally copied from x86, where we did a cmpxchg, but that 
+> > > is probably not needed since all of this is done in kstop_machine. Also, 
+> > > only the "get" is needed. If we don't fault there, we wont fault on the 
+> > > put (unless we have permissions wrong, and that would be a bug).
+> > 
+> > Would it ? How do we make sure the kernel text is mapped writeable ?
+> 
+> We map it writeable if FTRACE is enabled.
+> 
 
-I tried to apply it onto 2.6.26.2, but got this build error:
+Argh. See text_poke(). It's there exactly for this purpose on x86.
 
-CC arch/x86/kernel/i8253.o
-CC kernel/sched.o
-CC arch/x86/kernel/pci-nommu.o
-kernel/sched.c:537: error: field ‘hrtick_csd’ has incomplete type
-kernel/sched.c: In function ‘hrtick_start’:
-kernel/sched.c:1080: error: implicit declaration of function 
-‘__smp_call_function_single’
-CC arch/x86/kernel/tsc_32.o
-make[2]: *** [kernel/sched.o] Error 1
-make[1]: *** [kernel] Error 2
-make[1]: *** Waiting for unfinished jobs....
-CC arch/x86/kernel/io_delay.o
-CC arch/x86/kernel/rtc.o
-CC arch/x86/kernel/trampoline.o
+Mathieu
 
-Was I suppose to use a different kernel? (2.6.25[.x] or 2.6.26) I'll try 
-2.6.25.15
+> > 
+> > > So are you recommending something like
+> > > 
+> > >         int cmd;
+> > > 
+> > > 	if (__get_user(cmd, ip))
+> > > 		goto fault;
+> > > 
+> > > 	if (cmd != old)
+> > > 		goto not_same;
+> > > 
+> > > 	WARN_ON_ONCE(__put_user(cmd, ip));
+> > > 
+> > > If we did this, we could probably put this into the generic code:
+> > 
+> > That would work I suppose, I'll give it a try.
+> > 
+> > > 	if (copy_from_user(cmd, ip, ARCH_CALL_SIZE))
+> > > 		goto fault;
+> > > 
+> > > 	if (memcmp(cmd, old, ARCH_CALL_SIZE) != 0)
+> > > 		goto not_same;
+> > > 
+> > > 	WARN_ON_ONCE(copy_to_user(cmd, ip, ARCH_CALL_SIZE));
+> > 
+> > You need the __ variants or the access_ok() checks will bite
+> > you bad.
+> 
+> Ah, good point ;-)
+> 
+> -- Steve
+> 
 
-Anyways, I know it's Greg's call, and I'm just trying to inform him of a 
-bug that's been fixed upstream that should be backported.
-If he declines, that's ok. I've opened a bug report with Ubuntu. But, it 
-would help if I had a patch to show.
-
-Justin Madru
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
