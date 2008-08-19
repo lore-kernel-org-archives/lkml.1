@@ -1,55 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbYHSGBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbYHSGDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140AbYHSGBZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 02:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbYHSGBQ
+	id S1754592AbYHSGDT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 02:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYHSGDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 02:01:16 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:42370 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750924AbYHSGBQ (ORCPT
+	Tue, 19 Aug 2008 02:03:03 -0400
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:14074 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752443AbYHSGDC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 02:01:16 -0400
-Date: Tue, 19 Aug 2008 09:01:14 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: wim@iguana.be
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] watchdog/at91: fix misleading indentation
-Message-ID: <Pine.LNX.4.64.0808190859320.4551@wrl-59.cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1486158005-1219125674=:4551"
+	Tue, 19 Aug 2008 02:03:02 -0400
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ian Campbell <ijc@hellion.org.uk>,
+       Jaya Kumar <jayakumar.lkml@gmail.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh@veritas.com>, Johannes Weiner <hannes@saeurebad.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Kel Modderman <kel@otaku42.de>,
+       Markus Armbruster <armbru@redhat.com>
+Date: Tue, 19 Aug 2008 07:02:45 +0100
+Message-Id: <1219125765-31833-1-git-send-email-ijc@hellion.org.uk>
+X-Mailer: git-send-email 1.5.6.3
+X-SA-Exim-Connect-IP: 192.168.1.5
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: [PATCH] fbdefio: add set_page_dirty handler to deferred IO FB
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Fixes kernel BUG at lib/radix-tree.c:473.
 
----696208474-1486158005-1219125674=:4551
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Previously the handler was incidentally provided by tmpfs but this was
+removed with:
 
+  commit 14fcc23fdc78e9d32372553ccf21758a9bd56fa1
+  Author: Hugh Dickins <hugh@veritas.com>
+  Date:   Mon Jul 28 15:46:19 2008 -0700
 
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+    tmpfs: fix kernel BUG in shmem_delete_inode
+
+relying on this behaviour was incorrect in any case and the BUG
+also appeared when the device node was on an ext3 filesystem.
+
+Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
+Acked-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+Acked-by: Nick Piggin <npiggin@suse.de>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Hugh Dickins <hugh@veritas.com>
+Cc: Johannes Weiner <hannes@saeurebad.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Kel Modderman <kel@otaku42.de>
+Cc: Markus Armbruster <armbru@redhat.com>
+Cc: stable@vger.kernel.org [14fcc23fd is in 2.6.25.14 and 2.6.26.1]
 ---
- drivers/watchdog/at91rm9200_wdt.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/fb_defio.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/watchdog/at91rm9200_wdt.c b/drivers/watchdog/at91rm9200_wdt.c
-index d061f0a..993e5f5 100644
---- a/drivers/watchdog/at91rm9200_wdt.c
-+++ b/drivers/watchdog/at91rm9200_wdt.c
-@@ -241,7 +241,7 @@ static int at91wdt_resume(struct platform_device *pdev)
- {
- 	if (at91wdt_busy)
- 		at91_wdt_start();
--		return 0;
+diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
+index 59df132..214bb7c 100644
+--- a/drivers/video/fb_defio.c
++++ b/drivers/video/fb_defio.c
+@@ -114,11 +114,23 @@ static struct vm_operations_struct fb_deferred_io_vm_ops = {
+ 	.page_mkwrite	= fb_deferred_io_mkwrite,
+ };
+ 
++static int fb_deferred_io_set_page_dirty(struct page *page)
++{
++	if (!PageDirty(page))
++		SetPageDirty(page);
 +	return 0;
++}
++
++static const struct address_space_operations fb_deferred_io_aops = {
++	.set_page_dirty = fb_deferred_io_set_page_dirty,
++};
++
+ static int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ {
+ 	vma->vm_ops = &fb_deferred_io_vm_ops;
+ 	vma->vm_flags |= ( VM_IO | VM_RESERVED | VM_DONTEXPAND );
+ 	vma->vm_private_data = info;
++	vma->vm_file->f_mapping->a_ops = &fb_deferred_io_aops;
+ 	return 0;
  }
  
- #else
 -- 
-1.5.2.2
+1.5.6.3
 
----696208474-1486158005-1219125674=:4551--
