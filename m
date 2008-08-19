@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbYHSM4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbYHSM5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754609AbYHSM4p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 08:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbYHSM4h
+	id S1754923AbYHSM5U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 08:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391AbYHSM5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 08:56:37 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55584 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753343AbYHSM4g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 08:56:36 -0400
-Date: Tue, 19 Aug 2008 13:37:38 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Aristeu Rozanski <aris@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       jirislaby@gmail.com
-Subject: Re: [PATCH] vt: kill tty->count usage (v2)
-Message-ID: <20080819133738.76181d57@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080818210414.GB7154@redhat.com>
-References: <20080808213625.GK20355@redhat.com>
-	<20080808222635.4fe52b51@lxorguk.ukuu.org.uk>
-	<20080812145812.GH7154@redhat.com>
-	<20080818181902.59ac763b@lxorguk.ukuu.org.uk>
-	<20080818210414.GB7154@redhat.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 08:57:03 -0400
+Received: from saeurebad.de ([85.214.36.134]:53653 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754740AbYHSM5A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 08:57:00 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Vegard Nossum <vegard.nossum@gmail.com>,
+       Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Robert Richter <robert.richter@amd.com>,
+       Philippe Elie <phil.el@wanadoo.fr>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: oprofile + hibernation = badness
+References: <19f34abd0808181332k3c02496auabd04e927bb7cab5@mail.gmail.com>
+	<48AA1E42.6070802@linux.intel.com>
+	<19f34abd0808190012r4418cc4egf9bc25a52056af41@mail.gmail.com>
+	<20080819094905.GA20590@elte.hu> <48AAB8B6.3020802@linux.intel.com>
+Date: Tue, 19 Aug 2008 14:56:37 +0200
+In-Reply-To: <48AAB8B6.3020802@linux.intel.com> (Andi Kleen's message of "Tue,
+	19 Aug 2008 14:12:38 +0200")
+Message-ID: <87skt16u4a.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Aug 2008 17:04:14 -0400
-Aristeu Rozanski <aris@redhat.com> wrote:
+Andi Kleen <ak@linux.intel.com> writes:
 
-> Hi Alan,
-> > > The commit e0426e6a09954d205da2d674a3d368d2715e3afd fixes a real race but
-> > > still isn't enough to prevent these:
-> > > 
-> > > kobject_add_internal failed for vcs7 with -EEXIST, don't try to register
-> > > things with the same name in the same direc.
-> > 
-> > Patch dropped due to testing failures.
-> > 
-> > Boot to run level 3, log in and type "reboot\n". Wait
-> > 
-> > Spews vt->driver_data == NULL warnings and oopses
-> do you mind posting the logs somewhere? I wasn't able to reproduce it here so
-> far.
+> Ingo Molnar wrote:
+>> * Vegard Nossum <vegard.nossum@gmail.com> wrote:
+>>
+>>> This gets rid of the suspend warnings, so it looks to be a step in
+>>> the right direction! FWIW, you may add my Tested-by to the patch.
+>>
+>> i've queued it up in tip/x86/oprofile - thanks guys.
+>
+> I would have thought Robert would take them? He's oprofile
+> maintainer after all.
+>
+>>
+>> Andi, another issue: your patch had 5 spurious whitespace
+>> errors. This is a reoccuring, many years pattern of behavior from
+>> you and you need to fix your workflow to send less sloppy patches. 
+>
+> Yes I forgot you define patch cleanness based on white space.
+>
+> Seriously, It's actually new -- i did this one in git directly instead of
+> quilt and git-commit doesn't seem to know how to drop them. In my older quilt
+> workflow they were always automatically dropped since many years. Both emacs
+> and vim add them and I don't plan to switch editors, sorry.
 
-I had a quick look and there are some obvious races from the change
+You probably misconfigured emacs then.  I ran checkpatch over your patch
+and don't see how and why emacs would add trailing whitespace after a
+opening brace.
 
-You don't seem to have any locking between a hangup occuring at the same
-time as say an ioctl. The f_ops change means no further calls will be
-made to the console code but *not* that current ones won't continue.
+You can use this to be on the safe side:
 
-Most of the time tty->driver_data is internally protected and checked by
-the console_sem but not always. In particular your changes are showing up
-corner cases in do_con_write and in the tty ioctl code.
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-
-
+	Hannes
