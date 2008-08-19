@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbYHSBrI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757674AbYHSBr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757334AbYHSBrI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 21:47:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbYHSBqz
+	id S1757674AbYHSBr1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 21:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbYHSBrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 21:46:55 -0400
-Received: from tomts44-srv.bellnexxia.net ([209.226.175.111]:34788 "EHLO
-	tomts44-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752585AbYHSBqz convert rfc822-to-8bit
+	Mon, 18 Aug 2008 21:47:07 -0400
+Received: from tomts24.bellnexxia.net ([209.226.175.187]:51827 "EHLO
+	tomts24-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757334AbYHSBrG convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 21:46:55 -0400
+	Mon, 18 Aug 2008 21:47:06 -0400
 X-IronPort-Anti-Spam-Filtered: true
 X-IronPort-Anti-Spam-Result: AjAkAOi/qUjR4q+G/2dsb2JhbACJdaYsgWCEAIFX
 X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
@@ -19,11 +19,11 @@ Reply-To: mredward.fring2@btinternet.com
 Organization: CLAIMS OFFICE
 To: <info@bnl.net>
 Subject: File Your Claims
-Date: Mon, 18 Aug 2008 21:46:40 -0400
+Date: Mon, 18 Aug 2008 21:47:04 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-Message-Id: <20080819014653.IIFG1584.tomts44-srv.bellnexxia.net@toip38-bus.srvr.bell.ca>
+Message-Id: <20080819014704.TXXQ1580.tomts24-srv.bellnexxia.net@toip37-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
