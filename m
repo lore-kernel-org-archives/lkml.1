@@ -1,53 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbYHSXac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758083AbYHSXbD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757357AbYHSXac (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 19:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbYHSXaW
+	id S1758083AbYHSXbD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 19:31:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbYHSXau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 19:30:22 -0400
-Received: from tundra.namei.org ([65.99.196.166]:45817 "EHLO tundra.namei.org"
+	Tue, 19 Aug 2008 19:30:50 -0400
+Received: from lucidpixels.com ([75.144.35.66]:54222 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752785AbYHSXaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 19:30:21 -0400
-Date: Wed, 20 Aug 2008 09:29:50 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: David Howells <dhowells@redhat.com>
-cc: a.beregalov@gmail.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] CRED: Take cred_exec_mutex in compat_do_execve() and
- fix error handling in do_execve()
-In-Reply-To: <20080819151829.24589.30461.stgit@warthog.procyon.org.uk>
-Message-ID: <alpine.LRH.1.10.0808200910020.317@tundra.namei.org>
-References: <20080819151829.24589.30461.stgit@warthog.procyon.org.uk>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	id S1753737AbYHSXat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 19:30:49 -0400
+Date: Tue, 19 Aug 2008 19:30:47 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: User discussion about IVTV <ivtv-users@ivtvdriver.org>
+cc: Alan Piszcz <ap@solarrain.com>, linux-kernel@vger.kernel.org
+Subject: Re: [ivtv-users] Hauppauge 1192 WinTV-HVR-1950: Kernel Oops :(
+In-Reply-To: <alpine.DEB.1.10.0808191845320.15091@p34.internal.lan>
+Message-ID: <alpine.DEB.1.10.0808191929260.18449@p34.internal.lan>
+References: <alpine.DEB.1.10.0808191631030.8579@p34.internal.lan> <alpine.DEB.1.10.0808191752590.12937@p34.internal.lan> <alpine.DEB.1.10.0808191823470.15091@p34.internal.lan> <alpine.DEB.1.10.0808191845320.15091@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Aug 2008, David Howells wrote:
-
-> Take cred_exec_mutex in compat_do_execve().  This reflects what do_execve()
-> does.  The mutex protects credentials calculation against PTRACE_ATTACH needing
-> to alter it mid-exec.
-> 
-> Also fix the error handling in do_execve().  The mutex needs to be unlocked if
-> an error occurs after it is taken, but before the install_exec_creds()
-> released it.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
-
-Applied to
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next-creds
-
-Hopefully this will be in the next linux-next tree for testing.
-
-Alexander, please let us know if it fixes the problem you saw.
 
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
+On Tue, 19 Aug 2008, Justin Piszcz wrote:
+
+>
+>
+> On Tue, 19 Aug 2008, Justin Piszcz wrote:
+>
+>>
+>> On Tue, 19 Aug 2008, Justin Piszcz wrote:
+>>
+>>> On Tue, 19 Aug 2008, Justin Piszcz wrote:
+>>>
+>>>> 2.6.26.2:
+>>>>
+>>>> [   15.745116] usbcore: registered new interface driver pvrusb2
+>>>> [   16.023474] pvrusb2: Device initialization completed successfully.
+>>>
+>>> Closer now:
+>>>
+>>> [  749.791189] pvrusb2: Device initialization completed successfully.
+>> Cannot seek backward in linear streams!
+>> Seek failed
+>> ID_VIDEO_ID=0
+>> MPEG-PS file format detected.
+>> ID_AUDIO_ID=0
+>> VIDEO:  MPEG2  720x480  (aspect 2)  29.970 fps  8000.0 kbps (1000.0 kbyte/s)
+>> ID_FILENAME=/dev/video0
+>> ID_DEMUXER=mpegps
+>> ID_VIDEO_FORMAT=0x10000002
+>> ID_VIDEO_BITRATE=8000000
+>> ID_VIDEO_WIDTH=720
+>> ID_VIDEO_HEIGHT=480
+>> ID_VIDEO_FPS=29.970
+>> ID_VIDEO_ASPECT=0.0000
+>> ID_AUDIO_FORMAT=80
+>> ID_AUDIO_BITRATE=0
+>> ID_AUDIO_RATE=0
+>> ID_AUDIO_NCH=0
+>> ID_LENGTH=0.00
+>> ID_SEEKABLE=1
+>> Opening video filter: [eq2]
+>> ==========================================================================
+>> Opening video decoder: [mpegpes] MPEG 1/2 Video passthrough
+>> VDec: vo config request - 720 x 480 (preferred colorspace: Mpeg PES)
+>> Could not find matching colorspace - retrying with -vf scale...
+>> Opening video filter: [scale]
+
+Ok after 2-3 hours of playing around, got it working:
+
+$ cat video.sh
+
+#!/bin/bash
+
+# Set video type.
+echo s-video > /sys/class/pvrusb2/*/ctl_input/cur_val
+echo NTSC-M > /sys/class/pvrusb2/*/ctl_video_standard/cur_val
+
+# The only option I need:
+echo "65535" > /sys/class/pvrusb2/sn-*/ctl_volume/cur_val
+
+# The following was found here:
+# http://www.mail-archive.com/pvrusb2@isely.net/msg00306.html
+#echo "10485760" > /sys/class/pvrusb2/sn-*/ctl_video_bitrate_peak/cur_val
+#echo "8388608" > /sys/class/pvrusb2/sn-*/ctl_video_bitrate/cur_val
+#echo "Constant Bitrate" > /sys/class/pvrusb2/sn-*/ctl_video_bitrate_mode/cur_val
+#echo "224 kbps" > /sys/class/pvrusb2/sn-*/ctl_audio_bitrate/cur_val
+# modify, sound is too low (max is 65535)
+#echo "65535" > /sys/class/pvrusb2/sn-*/ctl_volume/cur_val
+#echo "53738" > /sys/class/pvrusb2/sn-*/ctl_volume/cur_val
+
+# Now you can mplayer /dev/video0!
+# mplayer -vf yadif /dev/video0
+
+Loaded modules:
+
+$ lsmod
+Module                  Size  Used by
+nvidia               7095108  24 
+s5h1411                 8900  1 
+tda18271               34312  2 
+tda8290                12868  2 
+tuner                  26632  0 
+cx25840                27404  0 
+i2c_i801                8208  0 
+pvrusb2               164568  1 
+dvb_core               72128  1 pvrusb2
+cx2341x                12100  1 pvrusb2
+v4l2_common            10240  4 tuner,cx25840,pvrusb2,cx2341x
+videodev               30208  3 tuner,pvrusb2
+v4l1_compat            14404  2 pvrusb2,videodev
+tveeprom               11972  1 pvrusb2
+i2c_core               19092  10 nvidia,s5h1411,tda18271,tda8290,tuner,cx25840,i2c_i801,pvrusb2,v4l2_common,tveeprom
+snd_hda_intel         350420  5 
+snd_hwdep               7044  1 snd_hda_intel
+
+Mplayer works flawlessly.
+
+Note using USB, there is a delay ~2-3 seconds vs. the TV itself.
+
+Justin.
+
+
+
