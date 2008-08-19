@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752805AbYHSEHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbYHSENr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752805AbYHSEHS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 00:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750887AbYHSEHA
+	id S1753104AbYHSENr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 00:13:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbYHSENi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 00:07:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42131 "EHLO
+	Tue, 19 Aug 2008 00:13:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35111 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750861AbYHSEG7 (ORCPT
+	by vger.kernel.org with ESMTP id S1750916AbYHSENi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 00:06:59 -0400
-Date: Mon, 18 Aug 2008 21:06:57 -0700
+	Tue, 19 Aug 2008 00:13:38 -0400
+Date: Mon, 18 Aug 2008 21:12:07 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Huang Ying <ying.huang@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATH -mm] Fix a race condtion of oops_in_progress
-Message-Id: <20080818210657.c7f3cd87.akpm@linux-foundation.org>
-In-Reply-To: <1219025007.5663.22.camel@yhuang-dev.sh.intel.com>
-References: <1219025007.5663.22.camel@yhuang-dev.sh.intel.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] saa7134-core.c: fix warning
+Message-Id: <20080818211207.8da0945f.akpm@linux-foundation.org>
+In-Reply-To: <20080805213111.GA17627@orion>
+References: <20080805213111.GA17627@orion>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,33 +27,110 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Aug 2008 10:03:27 +0800 Huang Ying <ying.huang@intel.com> wrote:
+On Wed, 6 Aug 2008 01:31:11 +0400 Alexander Beregalov <a.beregalov@gmail.com> wrote:
 
-> This patch fix a race condition of oops_in_progress. Which may be
-> changed on multiple CPU simultaneously, but it is changed via
-> non-atomic operation ++/--. This patch changes the definition of
-> oops_in_process from int to atomic_t, and accessing method to atomic
-> operations.
+> From: Alexander Beregalov <a.beregalov@gmail.com>
+> 
+> saa7134-core.c: fix warning
+> 
+> drivers/media/video/saa7134/saa7134-core.c:366: warning:
+> 'saa7134_buffer_requeue' defined but not used
+> 
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+> ---
+> 
+>  drivers/media/video/saa7134/saa7134-core.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/media/video/saa7134/saa7134-core.c b/drivers/media/video/saa7134/saa7134-core.c
+> index 75d6184..0473a79 100644
+> --- a/drivers/media/video/saa7134/saa7134-core.c
+> +++ b/drivers/media/video/saa7134/saa7134-core.c
+> @@ -360,7 +360,7 @@ void saa7134_buffer_timeout(unsigned long data)
+>  }
+>  
+>  /* resends a current buffer in queue after resume */
+> -
+> +#ifdef CONFIG_PM
+>  static int saa7134_buffer_requeue(struct saa7134_dev *dev,
+>  				  struct saa7134_dmaqueue *q)
+>  {
+> @@ -384,7 +384,7 @@ static int saa7134_buffer_requeue(struct saa7134_dev *dev,
+>  
+>  	return 0;
+>  }
+> -
+> +#endif
 
+I changed it as below - we might as well save an ifdef block.
 
-> extern atomic_t oops_in_progress;
-
-In file included from include/asm/system.h:10,
-                 from include/asm/processor.h:17,
-                 from include/asm/atomic_32.h:5,
-                 from include/asm/atomic.h:2,
-                 from include/linux/crypto.h:20,
-                 from arch/x86/kernel/asm-offsets_32.c:7,
-                 from arch/x86/kernel/asm-offsets.c:2:
-include/linux/kernel.h:236: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'oops_in_progress'
-make[1]: *** [arch/x86/kernel/asm-offsets.s] Error 1
-make: *** [prepare0] Error 2
-
-we can't inlude asm/atomic.h from linux/kernel.h because asm/atomic.h
-includes linux/kernel.h via the above route.
-
-And we cannot forward-declare atomic_t by hand because it's a typedef.
-
-Not sure what to do, really.  Find a different header file in which to
-declare oops_in_progress?
+--- a/drivers/media/video/saa7134/saa7134-core.c~saa7134-corec-fix-warning
++++ a/drivers/media/video/saa7134/saa7134-core.c
+@@ -359,32 +359,6 @@ void saa7134_buffer_timeout(unsigned lon
+ 	spin_unlock_irqrestore(&dev->slock,flags);
+ }
+ 
+-/* resends a current buffer in queue after resume */
+-
+-static int saa7134_buffer_requeue(struct saa7134_dev *dev,
+-				  struct saa7134_dmaqueue *q)
+-{
+-	struct saa7134_buf *buf, *next;
+-
+-	assert_spin_locked(&dev->slock);
+-
+-	buf  = q->curr;
+-	next = buf;
+-	dprintk("buffer_requeue\n");
+-
+-	if (!buf)
+-		return 0;
+-
+-	dprintk("buffer_requeue : resending active buffers \n");
+-
+-	if (!list_empty(&q->queue))
+-		next = list_entry(q->queue.next, struct saa7134_buf,
+-					  vb.queue);
+-	buf->activate(dev, buf, next);
+-
+-	return 0;
+-}
+-
+ /* ------------------------------------------------------------------ */
+ 
+ int saa7134_set_dmabits(struct saa7134_dev *dev)
+@@ -1139,6 +1113,32 @@ static void __devexit saa7134_finidev(st
+ }
+ 
+ #ifdef CONFIG_PM
++
++/* resends a current buffer in queue after resume */
++static int saa7134_buffer_requeue(struct saa7134_dev *dev,
++				  struct saa7134_dmaqueue *q)
++{
++	struct saa7134_buf *buf, *next;
++
++	assert_spin_locked(&dev->slock);
++
++	buf  = q->curr;
++	next = buf;
++	dprintk("buffer_requeue\n");
++
++	if (!buf)
++		return 0;
++
++	dprintk("buffer_requeue : resending active buffers \n");
++
++	if (!list_empty(&q->queue))
++		next = list_entry(q->queue.next, struct saa7134_buf,
++					  vb.queue);
++	buf->activate(dev, buf, next);
++
++	return 0;
++}
++
+ static int saa7134_suspend(struct pci_dev *pci_dev , pm_message_t state)
+ {
+ 
+_
 
