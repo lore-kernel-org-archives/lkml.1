@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbYHSHys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYHSH4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755074AbYHSHys (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 03:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbYHSHya
+	id S1754892AbYHSH4n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 03:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642AbYHSH4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 03:54:30 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:65322 "EHLO
-	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754168AbYHSHy3 (ORCPT
+	Tue, 19 Aug 2008 03:56:35 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:38346 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753685AbYHSH4f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 03:54:29 -0400
-X-BigFish: VPS-30(zz1432R98dR1805M936fQzz10d3izzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0K5U8MJ-04-G45-01
-Date: Tue, 19 Aug 2008 09:54:17 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Leo Duran <leo.duran@amd.com>
-Subject: Re: [PATCH] x86 iommu: remove unneeded parenthesis
-Message-ID: <20080819075417.GA12255@amd.com>
-References: <alpine.LNX.1.10.0808190211060.18058@jikos.suse.cz>
+	Tue, 19 Aug 2008 03:56:35 -0400
+Date: Tue, 19 Aug 2008 10:56:33 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: perex@perex.cz
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] mpu401: reindent misindented spinlock
+Message-ID: <Pine.LNX.4.64.0808191054210.4551@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0808190211060.18058@jikos.suse.cz>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 19 Aug 2008 07:54:18.0124 (UTC) FILETIME=[C8401CC0:01C901D0]
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1656498423-1219132593=:4551"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 19, 2008 at 02:13:55AM +0200, Jiri Kosina wrote:
-> The parenthesis in __iommu_queue_command() are not needed when assigning into 'target' variable.
-> 
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> 
-> diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-> index de39e1f..69b4d06 100644
-> --- a/arch/x86/kernel/amd_iommu.c
-> +++ b/arch/x86/kernel/amd_iommu.c
-> @@ -65,7 +65,7 @@ static int __iommu_queue_command(struct amd_iommu *iommu, struct iommu_cmd *cmd)
->  	u8 *target;
-> 
->  	tail = readl(iommu->mmio_base + MMIO_CMD_TAIL_OFFSET);
-> -	target = (iommu->cmd_buf + tail);
-> +	target = iommu->cmd_buf + tail;
->  	memcpy_toio(target, cmd, sizeof(*cmd));
->  	tail = (tail + sizeof(*cmd)) % iommu->cmd_buf_size;
->  	head = readl(iommu->mmio_base + MMIO_CMD_HEAD_OFFSET);
-> 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-True, thanks Jiri.
+---696208474-1656498423-1219132593=:4551
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-Acked-by: Joerg Roedel <joerg.roedel@amd.com>
 
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+---
+ sound/oss/mpu401.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/sound/oss/mpu401.c b/sound/oss/mpu401.c
+index a690ca5..6c0a770 100644
+--- a/sound/oss/mpu401.c
++++ b/sound/oss/mpu401.c
+@@ -1015,7 +1015,7 @@ int attach_mpu401(struct address_info *hw_config, struct module *owner)
+ 		mpu401_chk_version(m, devc);
+ 		if (devc->version == 0)
+ 			mpu401_chk_version(m, devc);
+-			spin_unlock_irqrestore(&devc->lock,flags);
++		spin_unlock_irqrestore(&devc->lock, flags);
+ 	}
+ 
+ 	if (devc->version != 0)
 -- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+1.5.2.2
 
+---696208474-1656498423-1219132593=:4551--
