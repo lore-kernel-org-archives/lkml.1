@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbYHSNMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbYHSNMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbYHSNMV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 09:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbYHSNML
+	id S1755482AbYHSNMr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 09:12:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbYHSNMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 09:12:11 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:41821 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753577AbYHSNMJ (ORCPT
+	Tue, 19 Aug 2008 09:12:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39388 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753835AbYHSNMf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 09:12:09 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: jacliburn@bellsouth.net (Jay Cliburn)
-Subject: Re: [PATCH] atl1: disable TSO by default
-Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       link@miggy.org, ian@jeffray.co.uk, csnook@redhat.com,
-       jie.yang@atheros.com, m@fhloston.org, davem@davemloft.net
-Organization: Core
-In-Reply-To: <20080818192813.0d0dc1fd@osprey.hogchain.net>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1KVQyr-0001Ui-00@gondolin.me.apana.org.au>
-Date: Tue, 19 Aug 2008 23:10:37 +1000
+	Tue, 19 Aug 2008 09:12:35 -0400
+Subject: Re: [PATCH RT 2/2] ftrace: fix elevated preempt_count in
+	wakeup-tracer
+From: Peter Zijlstra <peterz@infradead.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+In-Reply-To: <20080819091923.21725.41087.stgit@dev.haskins.net>
+References: <20080819091817.21725.81831.stgit@dev.haskins.net>
+	 <20080819091923.21725.41087.stgit@dev.haskins.net>
+Content-Type: text/plain
+Date: Tue, 19 Aug 2008 15:12:36 +0200
+Message-Id: <1219151556.10800.383.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Cliburn <jacliburn@bellsouth.net> wrote:
+On Tue, 2008-08-19 at 05:19 -0400, Gregory Haskins wrote:
+> Suggested by Steve Rostedt to fix an observed "+1" in the preempt-count
 > 
-> diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-> index e6a7bb7..e23ce77 100644
-> --- a/drivers/net/atlx/atl1.c
-> +++ b/drivers/net/atlx/atl1.c
-> @@ -3022,7 +3022,6 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
->        netdev->features = NETIF_F_HW_CSUM;
->        netdev->features |= NETIF_F_SG;
->        netdev->features |= (NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX);
-> -       netdev->features |= NETIF_F_TSO;
->        netdev->features |= NETIF_F_LLTX;
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> ---
+> 
+>  kernel/trace/trace_sched_wakeup.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
+> index c3a15bd..ae523fd 100644
+> --- a/kernel/trace/trace_sched_wakeup.c
+> +++ b/kernel/trace/trace_sched_wakeup.c
+> @@ -70,7 +70,9 @@ wakeup_tracer_call(unsigned long ip, unsigned long parent_ip)
+>  	if (task_cpu(wakeup_task) != cpu)
+>  		goto unlock;
+>  
+> +	preempt_enable_no_resched_notrace();
+>  	trace_function(tr, data, ip, parent_ip, flags);
+> +	preempt_disable_notrace();
 
-Another new driver using LLTX, this is not good when we're trying
-to get rid of it.
+Is preempt_count > 1 at all times here?
 
-Perhaps we could just kill it by ignoring the LLTX flag and always
-grabbing the xmit lock.  That should be safe as long as none of these
-drivers grab the xmit lock within their private locks.
+If not, it might drop to 0 and any interrupt might cause preemption -
+and its not obvious to me that that is actually correct.
 
-LLTX drivers will be a tad slower, but that should encourage them
-to stop using it :)
+Just asking, as neither the changelog nor the code fragment enlightens
+me on the subject.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
