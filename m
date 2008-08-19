@@ -1,80 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYHSONs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYHSOTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755984AbYHSONs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 10:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbYHSONk
+	id S1755046AbYHSOTS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 10:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbYHSOTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 10:13:40 -0400
-Received: from winston.telenet-ops.be ([195.130.137.75]:50853 "EHLO
-	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752083AbYHSONj (ORCPT
+	Tue, 19 Aug 2008 10:19:05 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:52757 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751609AbYHSOTE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 10:13:39 -0400
-Date: Tue, 19 Aug 2008 16:13:33 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Adrian Bunk <bunk@kernel.org>
-cc: gerg@uclinux.org, jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [2.6 patch] m68knommu: let PCI depend on BROKEN
-In-Reply-To: <20080819134718.GH8852@cs181140183.pp.htv.fi>
-Message-ID: <Pine.LNX.4.64.0808191613100.9575@anakin>
-References: <20080819134718.GH8852@cs181140183.pp.htv.fi>
+	Tue, 19 Aug 2008 10:19:04 -0400
+Message-ID: <48AAD680.7020508@keyaccess.nl>
+Date: Tue, 19 Aug 2008 16:19:44 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Dave Airlie <airlied@gmail.com>, Shaohua Li <shaohua.li@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, dri-users@lists.sourceforge.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: AGP and PAT (induced?) problem (on AMD family 6)
+References: <48972EA8.8040001@keyaccess.nl> <20080815142218.GC12954@elte.hu> <48A59FAC.7050605@keyaccess.nl> <48AA9C3B.5030309@keyaccess.nl> <20080819102633.GE6722@elte.hu>
+In-Reply-To: <20080819102633.GE6722@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Aug 2008, Adrian Bunk wrote:
-> There exists blackfin hardware with PCI support, but the support
-> currently in the kernel fails to build starting with:
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      init/main.o
-> In file included from dma-mapping.h:5,
->                  from dma-mapping.h:52,
->                  from dmaengine.h:29,
->                  from skbuff.h:29,
->                  from netlink.h:155,
->                  from genetlink.h:4,
->                  from genetlink.h:4,
->                  from taskstats_kern.h:12,
->                  from main.c:46:
-> dma-mapping.h: In function 'dma_supported': ma-mapping.h:24: 
-> error: implicit declaration of function 'pci_dma_supported'
-> ...
-> make[2]: *** [init/main.o] Error 1
-> 
-> 
-> <--  snip  -->
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 3bdc07c86b6fd5fc18b7676a75c3ff907e00e807 
-> diff --git a/arch/m68knommu/Kconfig b/arch/m68knommu/Kconfig
-> index 2e7515e..77a5bdf 100644
-> --- a/arch/m68knommu/Kconfig
-> +++ b/arch/m68knommu/Kconfig
-> @@ -702,6 +702,7 @@ menu "Bus options (PCI, PCMCIA, EISA, MCA, ISA)"
->  
->  config PCI
->  	bool "PCI support"
-> +	depends on BROKEN
->  	help
->  	  Support for PCI bus.
+On 19-08-08 12:26, Ingo Molnar wrote:
 
-blackfin != m68knommu
+> * Rene Herman <rene.herman@keyaccess.nl> wrote:
+> 
+>> On 15-08-08 17:24, Rene Herman wrote:
+>>
+>>> On 15-08-08 16:22, Ingo Molnar wrote:
+>>>
+>>>> (more people Cc:-ed)
+>>> Thank you. Additional information at http://lkml.org/lkml/2008/8/6/449
+>>>
+>>>> agreed - +12 seconds wait suggest some rather fundamental breakage.
+>>>> Did we go back to uncached for some critical display area that makes
+>>>> X start up (shut down) that slowly? Did we mark the BIOS uncacheable
+>>>> perhaps, causing X to execute BIOS code very slowly?
+>>> Quite a lot "uncached-minus" in those lists. I am desperately trying to 
+>>> avoid a clue about mostly anything graphics related so, "I dunno".
+>>>
+>>> I haven't just disabled PAT yet (although I was about to just do so) 
+>>> and am available for testing.
+>> <waiting with bated breath>
+>>
+>> Additional observation with respect to first,next shutdown:
+>>
+>> With Option "AGPSize" "64", and booted with "nopat", X startup (from 
+>> startx<enter> to functional desktop) is approximately 5 seconds, 
+>> shutdown is 1 second as calibration times.
+>>
+>> Booted without "nopat", X startup seems to alternate between 10+ and 
+>> 16+ seconds and for shutdown -- the first shutdown after boot takes 
+>> some 14 seconds total, subsequent shutdowns settle at around 5 
+>> seconds.
+> 
+> would it be possible to start up and shut down X in the slow case via 
+> strace, by doing something like this:
+> 
+>   strace -f -ttt -TTT -o trace.log startx
+> 
+> and see which system calls (or other activities) took suspiciously long?
 
-Gr{oetje,eeting}s,
+It wouldn't it seems. Root X (needed for the strace) works fine but 
+started this way hangs indefinitely.
 
-						Geert
+I believe the 14 seconds for first shutdown to 5 later might be telling. 
+Sounds like something might have fixed up uncached entries.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I'd really like a reply from the AGP or PAT side right about now.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Rene.
