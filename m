@@ -1,45 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbYHSHtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbYHSHxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754754AbYHSHtr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 03:49:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbYHSHti
+	id S1754625AbYHSHxv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 03:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYHSHxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 03:49:38 -0400
-Received: from ns2.suse.de ([195.135.220.15]:39133 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752800AbYHSHti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 03:49:38 -0400
-From: Oliver Neukum <oneukum@suse.de>
-Organization: Novell
-To: linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] Power management for SCSI
-Date: Tue, 19 Aug 2008 09:50:38 +0200
-User-Agent: KMail/1.9.9
-Cc: Pavel Machek <pavel@suse.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       James.Bottomley@hansenpartnership.com,
-       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
-References: <20080813095055.GA475@elf.ucw.cz> <Pine.LNX.4.44L0.0808131026320.2455-100000@iolanthe.rowland.org> <20080819073839.GA8726@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20080819073839.GA8726@atrey.karlin.mff.cuni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 19 Aug 2008 03:53:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37304 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752800AbYHSHxl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 03:53:41 -0400
+Date: Tue, 19 Aug 2008 00:53:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: a.zummo@towertech.it, Linux Kernel List <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [BUG] rtc uie emulation deadlocks
+Message-Id: <20080819005320.00075dba.akpm@linux-foundation.org>
+In-Reply-To: <20080811134339.GA21967@flint.arm.linux.org.uk>
+References: <20080811134339.GA21967@flint.arm.linux.org.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808190950.40790.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 19 August 2008 09:38:39 schrieb Pavel Machek:
- 
-> Would it make sense to split the patches into "autosuspend for SCSI
-> devices" and "autosuspend for SCSI controllers" for easier
-> review/merge? I guess I'll start with the devices, they seem easier...
+On Mon, 11 Aug 2008 14:43:39 +0100 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 
-Runtime PM will have to leave devices alone while error handling is active.
-Unfortunately error handling is done at controller level. So I am afraid
-this would be very difficult.
+> With CONFIG_RTC_INTF_DEV_UIE_EMUL=y, hwclock deadlocks in rtc_read_time
+> due to:
+> 
+> static long rtc_dev_ioctl(struct file *file,
+>                 unsigned int cmd, unsigned long arg)
+> {
+>         err = mutex_lock_interruptible(&rtc->ops_lock);
+>         if (err)
+>                 return err;
+> ...
+>         switch (cmd) {
+> #ifdef CONFIG_RTC_INTF_DEV_UIE_EMUL
+>         case RTC_UIE_OFF:
+>                 clear_uie(rtc);
+>                 break;
+> 
+>         case RTC_UIE_ON:
+>                 err = set_uie(rtc);
+> #endif
+> }
+> 
+> static int set_uie(struct rtc_device *rtc)
+> {
+>         err = rtc_read_time(rtc, &tm);
+> ...
+> 
+> int rtc_read_time(struct rtc_device *rtc, struct rtc_time *tm)
+> {
+>         err = mutex_lock_interruptible(&rtc->ops_lock);
+> 
+> So we try to take the same lock twice...  Not good.
+> 
+> The locking looks a rather random in there, so I'm not going to try to
+> create a patch.
+> 
 
-	Regards
-		Oliver
+Looks like this was caused by
+
+commit 5ad31a575157147b43fa84ef1e21471661653878
+Author: David Brownell <david-b@pacbell.net>
+Date:   Wed Jul 23 21:30:33 2008 -0700
+
+    rtc: remove BKL for ioctl()
+    
+
