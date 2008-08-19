@@ -1,84 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbYHSIHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbYHSIKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754848AbYHSIHu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 04:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbYHSIHf
+	id S1754908AbYHSIKE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 04:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbYHSIJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 04:07:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51874 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752472AbYHSIHd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 04:07:33 -0400
-Date: Tue, 19 Aug 2008 01:07:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ico Doornekamp <lkml@zevv.nl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: TIOCGWINSZ retuns old pty size after receiving SIGWINCH
-Message-Id: <20080819010702.c5300420.akpm@linux-foundation.org>
-In-Reply-To: <20080819075414.GV29842@pruts.nl>
-References: <20080810150859.GO3653@pruts.nl>
-	<20080819004026.2dac3ba6.akpm@linux-foundation.org>
-	<20080819075414.GV29842@pruts.nl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 04:09:46 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:50143 "EHLO pmx1.sophos.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753634AbYHSIJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 04:09:44 -0400
+In-Reply-To: <e7d8f83e0808181815v5ef628ebl3105197f03f4d334@mail.gmail.com>
+To: "Peter Dolding" <oiaohm@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org, malware-list@lists.printk.net
+Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro to	a linux
+ interface for on access scanning
+MIME-Version: 1.0
+X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
+From: douglas.leeder@sophos.com
+Date: Tue, 19 Aug 2008 09:09:50 +0100
+X-MIMETrack: Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 19/08/2008 09:08:46,
+	Serialize complete at 19/08/2008 09:08:46
+Content-Type: text/plain; charset="US-ASCII"
+Message-Id: <20080819080948.4688B3067D2@pmx1.sophos.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Aug 2008 09:54:14 +0200 Ico Doornekamp <lkml@zevv.nl> wrote:
+malware-list-bounces@dmesg.printk.net wrote on 2008-08-19 02:15:49:
+
+> You will see latter where what you just said fails and its issue is
+> preventable too downloader with build in previewer.
+> 
+> Funny enough solution to this is fairly simple.   But does require
+> looking at a white list methods and LSM.
+> 
+> Two major ways.    White list format check method tells you that file
+> is not complete enough so black list scanning is not required yet.  Ok
+> lighter than running 5000 black list signatures over it each time a
+> new block gets added.
+
+
+You seem to have some very funny ideas about what white-listing and 
+black-listing 
+scanners do.
+
+Checking filetypes and checking for complete/non-corrupt files is 
+something
+black-listing scanners do.
+
+Where-as whitelisting: 
+"An emerging approach in combating viruses and malware is to whitelist 
+software which is considered safe to run, blocking all others"
+
+While ensure media files are complete could be done by a scanner that
+also does white-listing, I don't think it's a core part.
+
+> Dealing with bittorrent clients with built in preview is a pain in the
+> you know what.   Since are they reading the file to send to someone
+> else are they reading the file to display in there internal viewer or
+> do they take straight from there download buffer to internal view.
+> Even worse lots of bittorrent streams are encrypted and cannot be
+> scanned while network packets.   So second solution required a LSM
+> around the downloader preventing it in case of breach being able to go
+> anywhere in the system.   LSM only allows access to files that the
+> downloader has downloaded by other applications with more rights when
+> its pasted White list and needed black list scanning.
+
+So?
+
+We not talking about throwing away LSM, or replacing it in any way.
+
+This discussion is about an additional scanning path, for files, for any 
+kind of content-based 
+scanning.
+
 
 > 
-> 
-> * On 2008-08-19 Andrew Morton <akpm@linux-foundation.org> wrote  :
-> 
-> > On Sun, 10 Aug 2008 17:08:59 +0200 Ico Doornekamp <lkml@zevv.nl> wrote:
-> > 
-> > > Recently my X terminals showed annoying behaviour where the application
-> > > in the terminal was not resized properly to the actual size of the X
-> > > terminal emulator window, resulting in a lot of misaligned text on the
-> > > screen. Hunting the issue down from the windowmanager and the terminal
-> > > emulator program, I suspect the problem might lie in the kernel. I'm
-> > > running 2.6.26 on a dual core i386.
-> > > 
-> > > What I see is this: the userspace application receives a SIGWINCH signal
-> > > and acquires the terminal size usign the TIOCGWINSZ ioctl. It seems that
-> > > in some cases the old instead of the new terminal size is returned.
-> > > A small delay before the ioctl seems to 'fix' this behaviour.
-> > > 
-> > > I noticed some changes involving locking in the the pty code in the last
-> > > kernel verions, could one of these changes cause the above behaviour ? If
-> > > so, wouldn't this affect much more users ?
-> > 
-> > hm, that code is pretty simple and although it does the SIGWINCH and
-> > the window-size setting in a peculiar order, it looks to be race-free.
-> > 
-> > Approximately what proportion of the time does it go wrong?
-> 
-> I guess about 10 to 20% of the resizes. I happen to be using a tiling
-> window manager which causes resizing more often and more agressive then
-> 'normal' window managers, I guess this helps triggering the problem.
-> 
-> I temporary worked around this issue this by changing the order of the
-> signal and the updating of the pty size in tty_io.c's tiocswinsz(), but
-> this is not much of a real fix.
-> 
+> Getting this to work without using white list of known format method
+> and LSM is basically imposable because a black list is going to take
+> far to much cpu time scanning incomplete files.
 
-Well damn.  Are you sure?  The code looks solid to me.
+So?
 
-At least, it does after 
 
-Author: Alan Cox <alan@redhat.com>  2008-08-15 02:39:38
-Committer: Linus Torvalds <torvalds@linux-foundation.org>  2008-08-15 10:34:07
-Parent: 000b9151d7851cc1e490b2a76d0206e524f43cca (Fix race/oops in tty layer after BKL pushdown)
-Branches: git-cifs, git-ia64, git-nfs, git-powerpc-merge, linux-next, remotes/origin/master
-Follows: v2.6.27-rc3
-Precedes: next-20080818
+> Lot of windows anti-virus people are way too focused on black list.
+> White list might annoy you from time to time but it can also grant
+> features that users may not want to give up.
 
-    tty: remove resize window special case
+The thing is Windows has had built-in white-listing for a long
+time, and yet there is still a market for AV scanners, this suggests 
+people don't like white-listing.
 
-perhaps you're still running a kernel which is earlier than that?
+Also consider all of the problems and criticism Vista's UAC has had. And 
+UAC is 
+only white-listing privileged operations. 
 
+-- 
+Douglas Leeder
+
+Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
+OX14 3YP, United Kingdom.
+
+Company Reg No 2096520. VAT Reg No GB 348 3873 20.
 
