@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbYHSWfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbYHSWlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755464AbYHSWfa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 18:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbYHSWfA
+	id S1754063AbYHSWlQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 18:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbYHSWk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 18:35:00 -0400
-Received: from japan.chezphil.org ([77.240.5.4]:1829 "EHLO japan.chezphil.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755000AbYHSWe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 18:34:59 -0400
-X-Greylist: delayed 2238 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Aug 2008 18:34:58 EDT
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Date: Tue, 19 Aug 2008 22:57:37 +0100
-Subject: Any intelfb support for 945GME chip id 8086:27ae, used in Eee 901 ?
-Message-ID: <1219183057845@dmwebmail.dmwebmail.chezphil.org>
-X-Mailer: Decimail Webmail 3alpha16
+	Tue, 19 Aug 2008 18:40:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43018 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751907AbYHSWk4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 18:40:56 -0400
+Date: Tue, 19 Aug 2008 15:40:35 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+In-Reply-To: <20080819222612.GA16766@2ka.mipt.ru>
+Message-ID: <alpine.LFD.1.10.0808191536100.3324@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0808191411390.3324@nehalem.linux-foundation.org> <20080819.142735.179034162.davem@davemloft.net> <alpine.LFD.1.10.0808191432040.3324@nehalem.linux-foundation.org> <20080819.144015.40311904.davem@davemloft.net>
+ <alpine.LFD.1.10.0808191446560.3324@nehalem.linux-foundation.org> <20080819222612.GA16766@2ka.mipt.ru>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; format="flowed"
-From: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
-
-My new ASUS Eee 901 claims to have:
-
-00:02.0 VGA compatible controller: Intel Corporation Mobile 945GME 
-Express Integrated Graphics Controller (rev 03)
-00:02.0 0300: 8086:27ae
-
-As far as I can see there is not yet any support for this chip, though 
-the 945GM (no E on the end) with id 8086:27a2 is supported.
-
-Is someone working on this?  I suppose there's a good chance that the 
-differences are small or trivial.
-
-Where does development of the intelfb driver happen?  I have found 
-David Airlie's intelfb git tree at kernel.org, but it doesn't seem to 
-have been updated for a while.
 
 
-Thanks for any suggestions.
+On Wed, 20 Aug 2008, Evgeniy Polyakov wrote:
+> 
+> I belive it was you who told that there is no black and white (another 
+> guy told that there is no spoon, I frequntly confuse).
 
-Phil.
+Yes.
 
+> Any changes made no matter when can not be 100% tested in laboratory 
+> environment, even fixes, which look obviously.
 
+100% agreed.
 
+Please note that I'm not against these things slipping in occasionally. 
+The reason I brought this up in the first place really wasn't the loopback 
+driver issue at all. The reason I brought it up was simply the fact that 
+when I compare the size and frequency of changes, the networking pulls 
+tend to be the worst of the lot of the "core" kernel changes.
 
+I say "core" kernel changes, because things are usually worse for the 
+outliers. As mentioned, networking is actually one of the _better_ guys if 
+you start comparing to the DVB people, or to some of the architectures 
+that often slip the merge window _entirely_, and *all* their changes come 
+in during -rc2 or something.
+
+So it's not that networking is especially bad on an absolute scale in this 
+regard. And it's not like it doesn't happen all the time for everybody 
+else too. But I think networking has ben a bit more cavalier about things 
+than many other core areas.
+
+So no, I'm not asking for black-and-white absolutes here. But I'm asking 
+for a "tightening of the belts". Please don't let it all hang out, ok?
+
+			Linus
