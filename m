@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbYHSWNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbYHSWNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbYHSWNN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 18:13:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbYHSWMa
+	id S1757498AbYHSWNd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 18:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756155AbYHSWMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 18:12:30 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46060 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755525AbYHSWM2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 18:12:28 -0400
-Date: Tue, 19 Aug 2008 22:54:44 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rodolfo Giometti <giometti@linux.it>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Rodolfo Giometti <giometti@linux.it>
-Subject: Re: [PATCH 07/10] tty: new PPS line discipline.
-Message-ID: <20080819225444.5f5aada3@lxorguk.ukuu.org.uk>
-In-Reply-To: <1219182612-13814-8-git-send-email-giometti@linux.it>
-References: <1219182612-13814-1-git-send-email-giometti@linux.it>
-	<1219182612-13814-2-git-send-email-giometti@linux.it>
-	<1219182612-13814-3-git-send-email-giometti@linux.it>
-	<1219182612-13814-4-git-send-email-giometti@linux.it>
-	<1219182612-13814-5-git-send-email-giometti@linux.it>
-	<1219182612-13814-6-git-send-email-giometti@linux.it>
-	<1219182612-13814-7-git-send-email-giometti@linux.it>
-	<1219182612-13814-8-git-send-email-giometti@linux.it>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 18:12:46 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:60898 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752810AbYHSWMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 18:12:44 -0400
+From: "J. Bruce Fields" <bfields@citi.umich.edu>
+To: linux-nfs@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, neilb@suse.de, Trond.Myklebust@netapp.com,
+       NAKANO Hiroaki <nakano.hiroaki@oss.ntt.co.jp>,
+       =?utf-8?q?Fernando=20Luis=20V=C3=A1zquez=20Cao?= 
+	<fernando@oss.ntt.co.jp>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>
+Subject: [PATCH 1/2] locks: allow lockd to process blocked locks during grace period
+Date: Tue, 19 Aug 2008 18:12:42 -0400
+Message-Id: <1219183963-17476-1-git-send-email-bfields@citi.umich.edu>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <20080819221209.GF8331@fieldses.org>
+References: <20080819221209.GF8331@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Aug 2008 23:50:09 +0200
-Rodolfo Giometti <giometti@linux.it> wrote:
+The check here is currently harmless but unnecessary, since, as the
+comment notes, there aren't any blocked-lock callbacks to process
+during the grace period anyway.
 
-> Add a new line discipline for "pulse per second" devices connected to
-> a serial port.
-> 
-> Signed-off-by: Rodolfo Giometti <giometti@linux.it
+And eventually we want to allow multiple grace periods that come and go
+for different filesystems over the course of the lifetime of lockd, at
+which point this check is just going to get in the way.
 
-Ack this and I'll push it upstream anyway so there is a stable number even
-if this doesn't all get upstream for a while.
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+---
+ fs/lockd/svc.c |   12 +++---------
+ 1 files changed, 3 insertions(+), 9 deletions(-)
 
-Acked-by: Alan Cox <alan@redhat.com>
+diff --git a/fs/lockd/svc.c b/fs/lockd/svc.c
+index 1553fec..bdc607b 100644
+--- a/fs/lockd/svc.c
++++ b/fs/lockd/svc.c
+@@ -158,15 +158,9 @@ lockd(void *vrqstp)
+ 			continue;
+ 		}
+ 
+-		/*
+-		 * Retry any blocked locks that have been notified by
+-		 * the VFS. Don't do this during grace period.
+-		 * (Theoretically, there shouldn't even be blocked locks
+-		 * during grace period).
+-		 */
+-		if (!nlmsvc_grace_period) {
+-			timeout = nlmsvc_retry_blocked();
+-		} else if (time_before(grace_period_expire, jiffies))
++		timeout = nlmsvc_retry_blocked();
++
++		if (time_before(grace_period_expire, jiffies))
+ 			clear_grace_period();
+ 
+ 		/*
+-- 
+1.5.5.rc1
+
