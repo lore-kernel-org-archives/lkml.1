@@ -1,54 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757052AbYHSWPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbYHSWQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757052AbYHSWPw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 18:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbYHSWPn
+	id S1753316AbYHSWQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 18:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbYHSWQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 18:15:43 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50502 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752085AbYHSWPm (ORCPT
+	Tue, 19 Aug 2008 18:16:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:48856 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752165AbYHSWQS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 18:15:42 -0400
-Date: Tue, 19 Aug 2008 22:56:59 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rodolfo Giometti <giometti@linux.it>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Rodolfo Giometti <giometti@linux.it>
-Subject: Re: [PATCH 08/10] PPS: serial clients support.
-Message-ID: <20080819225659.3060a49f@lxorguk.ukuu.org.uk>
-In-Reply-To: <1219182612-13814-9-git-send-email-giometti@linux.it>
-References: <1219182612-13814-1-git-send-email-giometti@linux.it>
-	<1219182612-13814-2-git-send-email-giometti@linux.it>
-	<1219182612-13814-3-git-send-email-giometti@linux.it>
-	<1219182612-13814-4-git-send-email-giometti@linux.it>
-	<1219182612-13814-5-git-send-email-giometti@linux.it>
-	<1219182612-13814-6-git-send-email-giometti@linux.it>
-	<1219182612-13814-7-git-send-email-giometti@linux.it>
-	<1219182612-13814-8-git-send-email-giometti@linux.it>
-	<1219182612-13814-9-git-send-email-giometti@linux.it>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 19 Aug 2008 18:16:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=jkHCV4K6sJGV9cXqWpAyB1ejiHITKhUpi0Qd3oA3WdfWqu74zgEr/pa86J3rnDgY/w
+         P2UGiTagENhQs2Y06lo9IOXxXNlOs/hkg4Ndjt+Z05kPQj/YNkoa+Q32lrUdRdFu8r1U
+         x4e0ZjqadKGLyvFS4fsaeo9zOqUhHNpb9UUH0=
+Subject: [1/2 -tip, BUG-fix] x86-microcode: fix unbalanced use of get_cpu()
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Oruba <peter.oruba@amd.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 20 Aug 2008 00:16:13 +0200
+Message-Id: <1219184173.10426.33.camel@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +static void pps_tty_dcd_change(struct uart_port *port, unsigned int status,
-> +				struct timespec *ts)
-> +{
-> +	int id = (int) port->info->port.tty->disc_data;
 
-See you really do want to pass struct tty * upwards anyway 8)
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+
+Subject: x86-microcode: fix unbalanced use of get_cpu()
+
+Don't use get_cpu() at all. Resort to checking a boot-up CPU (#0) in
+microcode_{intel,amd}_module_init().
+
+---
+
+Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
 
 
-Rest of this looks good. Maybe pps ldisc belongs in the n_tty file in the
-end but again that can be twiddled with after the merge.
+commit 9375be36d98cdaecefbd98904609f1aee0d50367
+Author: dimm <dimm@earth.(none)>
+Date:   Tue Aug 19 22:40:41 2008 +0200
+
+    microcode: bug-fix
+
+diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
+index 33b2a21..a6e76cc 100644
+--- a/arch/x86/kernel/microcode_amd.c
++++ b/arch/x86/kernel/microcode_amd.c
+@@ -500,13 +500,15 @@ static struct microcode_ops microcode_amd_ops = {
+ 
+ static int __init microcode_amd_module_init(void)
+ {
+-	struct cpuinfo_x86 *c = &cpu_data(get_cpu());
++	struct cpuinfo_x86 *c = &cpu_data(0);
+ 
+ 	equiv_cpu_table = NULL;
+-	if (c->x86_vendor == X86_VENDOR_AMD)
+-		return microcode_init(&microcode_amd_ops, THIS_MODULE);
+-	else
++	if (c->x86_vendor != X86_VENDOR_AMD) {
++		printk(KERN_ERR "microcode: CPU platform is not AMD-capable\n");
+ 		return -ENODEV;
++	}
++
++	return microcode_init(&microcode_amd_ops, THIS_MODULE);
+ }
+ 
+ static void __exit microcode_amd_module_exit(void)
+diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
+index d2d9d74..6dd8907 100644
+--- a/arch/x86/kernel/microcode_intel.c
++++ b/arch/x86/kernel/microcode_intel.c
+@@ -531,12 +531,14 @@ static struct microcode_ops microcode_intel_ops = {
+ 
+ static int __init microcode_intel_module_init(void)
+ {
+-	struct cpuinfo_x86 *c = &cpu_data(get_cpu());
++	struct cpuinfo_x86 *c = &cpu_data(0);
+ 
+-	if (c->x86_vendor == X86_VENDOR_INTEL)
+-		return microcode_init(&microcode_intel_ops, THIS_MODULE);
+-	else
++	if (c->x86_vendor != X86_VENDOR_INTEL) {
++                printk(KERN_ERR "microcode: CPU platform is not Intel-capable\n");
+ 		return -ENODEV;
++	}
++
++	return microcode_init(&microcode_intel_ops, THIS_MODULE);
+ }
+ 
+ static void __exit microcode_intel_module_exit(void)
+
+
