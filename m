@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754991AbYHSAJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbYHSALy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754991AbYHSAJf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 20:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYHSAJ1
+	id S1755267AbYHSALy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 20:11:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbYHSALm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 20:09:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42648 "EHLO mx2.mail.elte.hu"
+	Mon, 18 Aug 2008 20:11:42 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42956 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753321AbYHSAJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 20:09:26 -0400
-Date: Tue, 19 Aug 2008 02:09:10 +0200
+	id S1753093AbYHSALm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 20:11:42 -0400
+Date: Tue, 19 Aug 2008 02:11:26 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, macro@linux-mips.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/15] apic: unification series 5
-Message-ID: <20080819000910.GA9914@elte.hu>
-References: <1219077963-22883-1-git-send-email-gorcunov@gmail.com> <48A9AFC4.8060505@zytor.com> <20080818191233.GA31466@lenovo>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] irq: rename irq_desc() to to_irq_desc() - fix #3
+Message-ID: <20080819001126.GB9914@elte.hu>
+References: <1219092290-30154-1-git-send-email-yhlu.kernel@gmail.com> <1219092290-30154-2-git-send-email-yhlu.kernel@gmail.com> <1219092290-30154-3-git-send-email-yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080818191233.GA31466@lenovo>
+In-Reply-To: <1219092290-30154-3-git-send-email-yhlu.kernel@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,44 +35,10 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> [H. Peter Anvin - Mon, Aug 18, 2008 at 10:22:12AM -0700]
-> > Cyrill Gorcunov wrote:
-> >>
-> >> With this series 32bit code compilation warns:
-> >>
-> >> arch/x86/kernel/apic_32.c: In function ‘end_local_APIC_setup’:
-> >> arch/x86/kernel/apic_32.c:1165: warning: ISO C90 forbids mixed declarations and code
-> >> arch/x86/kernel/apic_32.c: In function ‘disconnect_bsp_APIC’:
-> >> arch/x86/kernel/apic_32.c:1446: warning: ISO C90 forbids mixed declarations and code
-> >> cyrill@lenovo linux-2.6.git $ 
-> >>
-> >> So parenthesis will be needed to eliminate them... but
-> >> I think it could be too ugly... need some time to think.
-> >> So patches 8/15 and 10/15 sould be not applied for now - just review them.
-> >> Thanks for patience!
-> >>
-> >
-> > Typically, just move the declaration to the top of the function  
-> > (followed by a blank line.)
-> >
-> > 	-hpa
-> >
-> Here is compilation warnings fix
+> add create_irq_nr, and retore create_irq to old
 
-applied the 15 patches and this fixlet to tip/x86/apic - thanks Cyrill.
-
-> Please check if it's not worse code form now :)
-
-> +	{
-> +		unsigned int value;
-> +		/* Disable the local apic timer */
-> +		value = apic_read(APIC_LVTT);
-> +		value |= (APIC_LVT_MASKED | LOCAL_TIMER_VECTOR);
-> +		apic_write(APIC_LVTT, value);
-> +	}
-
-that's OK.
+applied all 3 patches to tip/irq/sparseirq - thanks Yinghai!
 
 	Ingo
