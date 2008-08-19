@@ -1,300 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbYHSSjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbYHSSmJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757206AbYHSSjr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 14:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbYHSSjO
+	id S1754873AbYHSSmJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 14:42:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbYHSSlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 14:39:14 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:19584 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756851AbYHSSjL (ORCPT
+	Tue, 19 Aug 2008 14:41:55 -0400
+Received: from gv-out-0910.google.com ([216.239.58.187]:25109 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751464AbYHSSlx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 14:39:11 -0400
-Date: Tue, 19 Aug 2008 12:39:08 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Rolf Eike Beer <eike-kernel@sf-tec.de>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
-       kaneshige.kenji@jp.fujitsu.com
-Subject: Re: [PATCH 04/13] PCI: acpiphp: remove 'name' parameter
-Message-ID: <20080819183908.GD18842@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Rolf Eike Beer <eike-kernel@sf-tec.de>,
-	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-	jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
-	kaneshige.kenji@jp.fujitsu.com
-References: <20080816235504.5461.20733.stgit@blender.achiang> <20080817001635.5461.39872.stgit@blender.achiang> <200808171059.50802.eike-kernel@sf-tec.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808171059.50802.eike-kernel@sf-tec.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Tue, 19 Aug 2008 14:41:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=Frl3fnI8I9OpZhvbU4IRXBiOjZZXvkOu2A3C54XX6Yzll1gkADyMJ7ud2u/nBhIg7m
+         mPmo1YExtAxazYhFkpKRw+BJZ2ihNglHhMqd+jv3oheFfyyGd2Qb6spQTAvRNrRxjBsg
+         XYdB/JZxPQuCxgQAdnl2r+09g8MDn6BC83Hk8=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Borislav Petkov <petkovbb@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Tue, 19 Aug 2008 20:39:34 +0200
+Message-Id: <20080819183934.16469.69799.sendpatchset@localhost.localdomain>
+Subject: [PATCH 1/6] ide: set IDE_AFLAG_DRQ_INTERRUPT in do_identify()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rolf Eike Beer <eike-kernel@sf-tec.de>:
-> Alex Chiang wrote:
-> > We do not need to manage our own name parameter, especially since
-> > the PCI core can change it on our behalf, in the case of duplicate
-> > slot names.
-> >
-> > Remove 'name' from acpiphp's version of struct slot.
-> >
-> > Cc: jbarnes@virtuousgeek.org
-> > Cc: kristen.c.accardi@intel.com
-> > Cc: kaneshige.kenji@jp.fujitsu.com
-> > Signed-off-by: Alex Chiang <achiang@hp.com>
-> > ---
-> >
-> >  drivers/pci/hotplug/acpiphp.h      |    9 +++++----
-> >  drivers/pci/hotplug/acpiphp_core.c |   36
-> > +++++++++++++++++++----------------- 2 files changed, 24 insertions(+), 21
-> > deletions(-)
-> >
-> > diff --git a/drivers/pci/hotplug/acpiphp.h b/drivers/pci/hotplug/acpiphp.h
-> > index 5a58b07..f9e244d 100644
-> > --- a/drivers/pci/hotplug/acpiphp.h
-> > +++ b/drivers/pci/hotplug/acpiphp.h
-> > @@ -50,9 +50,6 @@
-> >  #define info(format, arg...) printk(KERN_INFO "%s: " format, MY_NAME , ##
-> > arg) #define warn(format, arg...) printk(KERN_WARNING "%s: " format,
-> > MY_NAME , ## arg)
-> >
-> > -/* name size which is used for entries in pcihpfs */
-> > -#define SLOT_NAME_SIZE	20		/* {_SUN} */
-> > -
-> >  struct acpiphp_bridge;
-> >  struct acpiphp_slot;
-> >
-> > @@ -63,9 +60,13 @@ struct slot {
-> >  	struct hotplug_slot	*hotplug_slot;
-> >  	struct acpiphp_slot	*acpi_slot;
-> >  	struct hotplug_slot_info info;
-> > -	char name[SLOT_NAME_SIZE];
-> >  };
-> >
-> > +static inline const char *slot_name(struct slot *slot)
-> > +{
-> > +	return hotplug_slot_name(slot->hotplug_slot);
-> > +}
-> > +
-> >  /*
-> >   * struct acpiphp_bridge - PCI bridge information
-> >   *
-> 
-> I don't see a point in this function. Why not call hotplug_slot_name() 
-> directly? 
+Set IDE_AFLAG_DRQ_INTERRUPT in do_identify() instead of ATAPI
+device drivers *_setup() methods.
 
-You're correct that we don't exactly need it in acpiphp. However,
-it is a useful helper function for some of the other drivers, and
-I thought it would be better to keep consistency if possible.
+While at it:
+- use ata_id_cdb_intr()
 
-Also, it helps later on, when trying to stay below the 80 column
-limit. :)
+There should be no functional changes caused by this patch.
 
-> > diff --git a/drivers/pci/hotplug/acpiphp_core.c
-> > b/drivers/pci/hotplug/acpiphp_core.c index e984176..687cac3 100644
-> > --- a/drivers/pci/hotplug/acpiphp_core.c
-> > +++ b/drivers/pci/hotplug/acpiphp_core.c
-> > @@ -44,6 +44,9 @@
-> >
-> >  #define MY_NAME	"acpiphp"
-> >
-> > +/* name size which is used for entries in pcihpfs */
-> > +#define SLOT_NAME_SIZE  20              /* {_SUN} */
-> > +
-> >  static int debug;
-> >  int acpiphp_debug;
-> >
-> > @@ -84,7 +87,6 @@ static struct hotplug_slot_ops acpi_hotplug_slot_ops = {
-> >  	.get_adapter_status	= get_adapter_status,
-> >  };
-> >
-> > -
-> >  /**
-> >   * acpiphp_register_attention - set attention LED callback
-> >   * @info: must be completely filled with LED callbacks
-> 
-> Fuzz.
+Cc: Borislav Petkov <petkovbb@gmail.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide-cd.c     |    3 ---
+ drivers/ide/ide-floppy.c |    5 -----
+ drivers/ide/ide-probe.c  |    2 ++
+ drivers/ide/ide-tape.c   |    7 -------
+ drivers/scsi/ide-scsi.c  |    2 --
+ 5 files changed, 2 insertions(+), 17 deletions(-)
 
-Yes, it's fuzz, but my practice has been to clean up* source files
-during the course of making actual, functional changes. Better
-than sending a mostly-useless whitespace patchbomb, IMO.
-
-* Note that "clean up" here means "reasonable cleanup" that
-  doesn't detract from reading the rest of the patch.
-
-> > @@ -92,7 +94,7 @@ static struct hotplug_slot_ops acpi_hotplug_slot_ops = {
-> >   * Description: This is used to register a hardware specific ACPI
-> >   * driver that manipulates the attention LED.  All the fields in
-> >   * info must be set.
-> > - */
-> > + **/
-> >  int acpiphp_register_attention(struct acpiphp_attention_info *info)
-> >  {
-> >  	int retval = -EINVAL;
-> 
-> Fuzz. Make the patch look bigger than it actually is. But that's just a note, 
-> Jesse will have to judge if this is acceptable.
-
-See above. Fixing incorrect kerneldoc doesn't seem so bad, IMO.
-
-> > @@ -113,7 +115,7 @@ int acpiphp_register_attention(struct
-> > acpiphp_attention_info *info) * Description: This is used to un-register a
-> > hardware specific acpi * driver that manipulates the attention LED.  The
-> > pointer to the * info struct must be the same as the one used to set it.
-> > - */
-> > + **/
-> >  int acpiphp_unregister_attention(struct acpiphp_attention_info *info)
-> >  {
-> >  	int retval = -EINVAL;
-> > @@ -136,7 +138,7 @@ static int enable_slot(struct hotplug_slot
-> > *hotplug_slot) {
-> >  	struct slot *slot = hotplug_slot->private;
-> >
-> > -	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-> > +	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
-> >
-> >  	/* enable the specified slot */
-> >  	return acpiphp_enable_slot(slot->acpi_slot);
-> > @@ -154,7 +156,7 @@ static int disable_slot(struct hotplug_slot
-> > *hotplug_slot) struct slot *slot = hotplug_slot->private;
-> >  	int retval;
-> >
-> > -	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-> > +	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
-> >
-> >  	/* disable the specified slot */
-> >  	retval = acpiphp_disable_slot(slot->acpi_slot);
-> > @@ -177,7 +179,7 @@ static int disable_slot(struct hotplug_slot
-> > *hotplug_slot) {
-> >  	int retval = -ENODEV;
-> >
-> > - 	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-> > +	dbg("%s - physical_slot = %s\n", __func__,
-> > hotplug_slot_name(hotplug_slot));
-> >
-> >  	if (attention_info && try_module_get(attention_info->owner)) {
-> >  		retval = attention_info->set_attn(hotplug_slot, status);
-> > @@ -200,7 +202,7 @@ static int get_power_status(struct hotplug_slot
-> > *hotplug_slot, u8 *value) {
-> >  	struct slot *slot = hotplug_slot->private;
-> >
-> > -	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-> > +	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
-> >
-> >  	*value = acpiphp_get_power_status(slot->acpi_slot);
-> >
-> > @@ -222,7 +224,7 @@ static int get_attention_status(struct hotplug_slot
-> > *hotplug_slot, u8 *value) {
-> >  	int retval = -EINVAL;
-> >
-> > -	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-> > +	dbg("%s - physical_slot = %s\n", __func__,
-> > hotplug_slot_name(hotplug_slot));
-> >
-> >  	if (attention_info && try_module_get(attention_info->owner)) {
-> >  		retval = attention_info->get_attn(hotplug_slot, value);
-> > @@ -245,7 +247,7 @@ static int get_latch_status(struct hotplug_slot
-> > *hotplug_slot, u8 *value) {
-> >  	struct slot *slot = hotplug_slot->private;
-> >
-> > -	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-> > +	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
-> >
-> >  	*value = acpiphp_get_latch_status(slot->acpi_slot);
-> >
-> > @@ -265,7 +267,7 @@ static int get_adapter_status(struct hotplug_slot
-> > *hotplug_slot, u8 *value) {
-> >  	struct slot *slot = hotplug_slot->private;
-> >
-> > -	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-> > +	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
-> >
-> >  	*value = acpiphp_get_adapter_status(slot->acpi_slot);
-> >
-> > @@ -299,7 +301,7 @@ static void release_slot(struct hotplug_slot
-> > *hotplug_slot) {
-> >  	struct slot *slot = hotplug_slot->private;
-> >
-> > -	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-> > +	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
-> >
-> >  	kfree(slot->hotplug_slot);
-> >  	kfree(slot);
-> > @@ -310,6 +312,7 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot
-> > *acpiphp_slot) {
-> >  	struct slot *slot;
-> >  	int retval = -ENOMEM;
-> > +	char name[SLOT_NAME_SIZE];
-> >
-> >  	slot = kzalloc(sizeof(*slot), GFP_KERNEL);
-> >  	if (!slot)
-> > @@ -321,8 +324,6 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot
-> > *acpiphp_slot)
-> >
-> >  	slot->hotplug_slot->info = &slot->info;
-> >
-> > -	slot->hotplug_slot->name = slot->name;
-> > -
-> >  	slot->hotplug_slot->private = slot;
-> >  	slot->hotplug_slot->release = &release_slot;
-> >  	slot->hotplug_slot->ops = &acpi_hotplug_slot_ops;
-> > @@ -336,12 +337,13 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot
-> > *acpiphp_slot) slot->hotplug_slot->info->cur_bus_speed = PCI_SPEED_UNKNOWN;
-> >
-> >  	acpiphp_slot->slot = slot;
-> > -	snprintf(slot->name, sizeof(slot->name), "%u", slot->acpi_slot->sun);
-> > +	memset(name, 0, SLOT_NAME_SIZE);
-> > +	snprintf(name, SLOT_NAME_SIZE, "%u", slot->acpi_slot->sun);
-> 
-> The memset() is not needed at all. And the sizeof is IMHO a good idea anyway 
-> as it allows to get rid of the define.
-
-Hm, don't need a memset? I won't have garbage on the stack?
-</n00b>
-
-On the other hand, keeping the #define is important, because
-again, that's the established convention of the PCI hotplug
-drivers.
-
-Thanks for the review.
-
-/ac
-
-> 
-> >  	retval = pci_hp_register(slot->hotplug_slot,
-> >  					acpiphp_slot->bridge->pci_bus,
-> >  					acpiphp_slot->device,
-> > -					slot->name);
-> > +					name);
-> >  	if (retval == -EBUSY)
-> >  		goto error_hpslot;
-> >  	if (retval) {
-> > @@ -349,7 +351,7 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot
-> > *acpiphp_slot) goto error_hpslot;
-> >   	}
-> >
-> > -	info("Slot [%s] registered\n", slot->hotplug_slot->name);
-> > +	info("Slot [%s] registered\n", slot_name(slot));
-> >
-> >  	return 0;
-> >  error_hpslot:
-> > @@ -366,7 +368,7 @@ void acpiphp_unregister_hotplug_slot(struct
-> > acpiphp_slot *acpiphp_slot) struct slot *slot = acpiphp_slot->slot;
-> >  	int retval = 0;
-> >
-> > -	info ("Slot [%s] unregistered\n", slot->hotplug_slot->name);
-> > +	info ("Slot [%s] unregistered\n", slot_name(slot));
-> >
-> >  	retval = pci_hp_deregister(slot->hotplug_slot);
-> >  	if (retval)
-> 
-> Greetings,
-> 
-> Eike
-
-
+Index: b/drivers/ide/ide-cd.c
+===================================================================
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -1887,9 +1887,6 @@ static int ide_cdrom_setup(ide_drive_t *
+ 	drive->atapi_flags = IDE_AFLAG_MEDIA_CHANGED | IDE_AFLAG_NO_EJECT |
+ 		       ide_cd_flags(id);
+ 
+-	if ((id[ATA_ID_CONFIG] & 0x0060) == 0x20)
+-		drive->atapi_flags |= IDE_AFLAG_DRQ_INTERRUPT;
+-
+ 	if ((drive->atapi_flags & IDE_AFLAG_VERTOS_300_SSD) &&
+ 	    fw_rev[4] == '1' && fw_rev[6] <= '2')
+ 		drive->atapi_flags |= (IDE_AFLAG_TOCTRACKS_AS_BCD |
+Index: b/drivers/ide/ide-floppy.c
+===================================================================
+--- a/drivers/ide/ide-floppy.c
++++ b/drivers/ide/ide-floppy.c
+@@ -578,16 +578,11 @@ static const struct ide_proc_devset idef
+ static void idefloppy_setup(ide_drive_t *drive, idefloppy_floppy_t *floppy)
+ {
+ 	u16 *id = drive->id;
+-	u8 gcw[2];
+-
+-	*((u16 *)&gcw) = id[ATA_ID_CONFIG];
+ 
+ 	drive->pc_callback	 = ide_floppy_callback;
+ 	drive->pc_update_buffers = idefloppy_update_buffers;
+ 	drive->pc_io_buffers	 = ide_io_buffers;
+ 
+-	if (((gcw[0] & 0x60) >> 5) == 1)
+-		drive->atapi_flags |= IDE_AFLAG_DRQ_INTERRUPT;
+ 	/*
+ 	 * We used to check revisions here. At this point however I'm giving up.
+ 	 * Just assume they are all broken, its easier.
+Index: b/drivers/ide/ide-probe.c
+===================================================================
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -206,6 +206,8 @@ static inline void do_identify (ide_driv
+ 		drive->media = type;
+ 		/* an ATAPI device ignores DRDY */
+ 		drive->ready_stat = 0;
++		if (ata_id_cdb_intr(id))
++			drive->atapi_flags |= IDE_AFLAG_DRQ_INTERRUPT;
+ 		return;
+ 	}
+ 
+Index: b/drivers/ide/ide-tape.c
+===================================================================
+--- a/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -2184,7 +2184,6 @@ static void idetape_setup(ide_drive_t *d
+ 	unsigned long t;
+ 	int speed;
+ 	int buffer_size;
+-	u8 gcw[2];
+ 	u16 *ctl = (u16 *)&tape->caps[12];
+ 
+ 	drive->pc_callback	 = ide_tape_callback;
+@@ -2211,12 +2210,6 @@ static void idetape_setup(ide_drive_t *d
+ 	tape->name[2] = '0' + minor;
+ 	tape->chrdev_dir = IDETAPE_DIR_NONE;
+ 
+-	*((u16 *)&gcw) = drive->id[ATA_ID_CONFIG];
+-
+-	/* Command packet DRQ type */
+-	if (((gcw[0] & 0x60) >> 5) == 1)
+-		set_bit(IDE_AFLAG_DRQ_INTERRUPT, &drive->atapi_flags);
+-
+ 	idetape_get_inquiry_results(drive);
+ 	idetape_get_mode_sense_results(drive);
+ 	ide_tape_get_bsize_from_bdesc(drive);
+Index: b/drivers/scsi/ide-scsi.c
+===================================================================
+--- a/drivers/scsi/ide-scsi.c
++++ b/drivers/scsi/ide-scsi.c
+@@ -385,8 +385,6 @@ static const struct ide_proc_devset ides
+  */
+ static void idescsi_setup (ide_drive_t *drive, idescsi_scsi_t *scsi)
+ {
+-	if ((drive->id[ATA_ID_CONFIG] & 0x0060) == 0x20)
+-		set_bit(IDE_AFLAG_DRQ_INTERRUPT, &drive->atapi_flags);
+ 	clear_bit(IDESCSI_SG_TRANSFORM, &scsi->transform);
+ #if IDESCSI_DEBUG_LOG
+ 	set_bit(IDESCSI_LOG_CMD, &scsi->log);
