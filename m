@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbYHSQrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497AbYHSQsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756224AbYHSQrs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 12:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbYHSQrj
+	id S1756497AbYHSQsF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 12:48:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756178AbYHSQro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 12:47:39 -0400
-Received: from mail5.dslextreme.com ([66.51.199.81]:50028 "HELO
-	mail5.dslextreme.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750921AbYHSQri (ORCPT
+	Tue, 19 Aug 2008 12:47:44 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:61245 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756156AbYHSQrm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 12:47:38 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Aug 2008 12:47:37 EDT
-Message-ID: <25da0a65dd8a41208a8a0c0a.20080819094057.whnafynlgba@webmail.dslextreme.com>
-Date: Tue, 19 Aug 2008 09:40:57 -0700 (PDT)
-Subject: Re: PROBLEM: USB keyboards works only 4 per PC host port
-From: juanslayton@dslextreme.com
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Cc: "Aivils Stoss" <aivils@latnet.lv>, jkosina@suse.cz,
-       "lud" <linux-usb@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       "Randy Dunlap" <rdunlap@xenotime.net>,
-       linuxconsole-dev@lists.sourceforge.net, linux-input@vger.kernel.org
-User-Agent: DSL Extreme Webmail (www.dslextreme.com)
+	Tue, 19 Aug 2008 12:47:42 -0400
+Date: Tue, 19 Aug 2008 12:47:39 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Scott Wood <scottwood@freescale.com>,
+       Eran Liberty <liberty@extricom.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+In-Reply-To: <20080819024707.GA22659@Krystal>
+Message-ID: <alpine.DEB.1.10.0808191247001.28232@gandalf.stny.rr.com>
+References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com> <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal> <48A9AFA7.8080508@freescale.com> <alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com> <1219110814.8062.2.camel@pasglop>
+ <alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com> <1219113549.8062.13.camel@pasglop> <alpine.DEB.1.10.0808182240330.13401@gandalf.stny.rr.com> <20080819024707.GA22659@Krystal>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3
-Importance: Normal
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
+On Mon, 18 Aug 2008, Mathieu Desnoyers wrote:
 
-I have to apologize for my limited knowledge, but mere ignorance never yet
-kept a teacher quiet.  I am trying to follow this discussion because
-Aivils and I are  basically trying to do the same thing.  In my case I am
-presently running 20 keyboards on a 2.6.26 kernel, using an EHCI
-controller, and they all work fine.
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > 
+> > On Tue, 19 Aug 2008, Benjamin Herrenschmidt wrote:
+> > 
+> > > 
+> > > > Hmm, this was originally copied from x86, where we did a cmpxchg, but that 
+> > > > is probably not needed since all of this is done in kstop_machine. Also, 
+> > > > only the "get" is needed. If we don't fault there, we wont fault on the 
+> > > > put (unless we have permissions wrong, and that would be a bug).
+> > > 
+> > > Would it ? How do we make sure the kernel text is mapped writeable ?
+> > 
+> > We map it writeable if FTRACE is enabled.
+> > 
+> 
+> Argh. See text_poke(). It's there exactly for this purpose on x86.
+> 
 
-If I understand your analysis, Aivils' problem is because the UHCI
-controllers are too slow.  (I just happened to get lucky with another
-controller.)  I am left with two questions.
+OK, I just tried text_poke and it unfortunately fails. The problem is that 
+it requires that the text you are changing is aligned and fits on one 
+page. We have no control over that.
 
-1.  What if Aivils needs more than 16 keyboards?  (Standard class sizes
-here in California run from 20 to about 30.)  Is there any way he can do
-this without a faster controller?
-
-2.  What does the bandwidth limitation say about the maximum number of
-boards with the EHCI controller?  I modified the kernel evdev.c and
-input.c files to raise the maximum events from 32 to 64, but I hadn't
-figured in the effects of bandwidth.
-
-> Now if you plugged some of these keyboards into different UHCI
-> controllers on the computer, then the problem wouldn't arise.  Each of
-> your four UHCI controllers has two ports.  So without using any hubs at
-> all, you can plug 8 keyboards into the computer and they will all work.
->
-> If you use some extra hubs as well then you can plug four keyboards
-> into each controller, allowing you to use 16 keyboards total.
->
-> Alan Stern
->
->
-> -------------------------------------------------------------------------
-> This SF.Net email is sponsored by the Moblin Your Move Developer's
-> challenge
-> Build the coolest Linux based applications with Moblin SDK & win great
-> prizes
-> Grand prize is a trip for two to an Open Source event anywhere in the
-> world
-> http://moblin-contest.org/redirect.php?banner_id=100&url=/
-> _______________________________________________
-> Linuxconsole-dev mailing list
-> Linuxconsole-dev@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linuxconsole-dev
->
+-- Steve
 
