@@ -1,128 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbYHSQiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYHSQqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756113AbYHSQiW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 12:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYHSQiN
+	id S1755487AbYHSQqH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 12:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbYHSQp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 12:38:13 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:56039 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751819AbYHSQiM (ORCPT
+	Tue, 19 Aug 2008 12:45:56 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:59150 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753450AbYHSQpz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 12:38:12 -0400
-Date: Tue, 19 Aug 2008 10:37:56 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Alex Chiang <achiang@hp.com>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI: create device, function symlinks in /sys/bus/pci/slots/N/
-Message-ID: <20080819163755.GB8318@parisc-linux.org>
-References: <20080818202100.GE23155@ldl.fc.hp.com>
+	Tue, 19 Aug 2008 12:45:55 -0400
+Message-ID: <48AAF8C0.1010806@linux.vnet.ibm.com>
+Date: Tue, 19 Aug 2008 22:15:52 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080818202100.GE23155@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: Paul Menage <menage@google.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Andrea Righi <righi.andrea@gmail.com>, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [discuss] memrlimit - potential applications that can use
+References: <48AA73B5.7010302@linux.vnet.ibm.com> <1219161525.23641.125.camel@nimitz>
+In-Reply-To: <1219161525.23641.125.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 18, 2008 at 02:21:00PM -0600, Alex Chiang wrote:
-> The original form of this patch was written by Matthew Wilcox,
-> but did not have links from the sysfs slots/ directory pointing
-> back at devices and functions.
+Dave Hansen wrote:
+> On Tue, 2008-08-19 at 12:48 +0530, Balbir Singh wrote:
+>> 1. To provide a soft landing mechanism for applications that exceed their memory
+>> limit. Currently in the memory resource controller, we swap and on failure OOM.
+>> 2. To provide a mechanism similar to memory overcommit for control groups.
+>> Overcommit has finer accounting, we just account for virtual address space usage.
+>> 3. Vserver will directly be able to port over on top of memrlimit (their address
+>> space limitation feature)
+> 
+> Balbir,
+> 
+> This all seems like a little bit too much hand waving to me.  I don't
 
-I think the reason I didn't bother was that you could already get this
-information from the 'address' file.  ie:
+Dave, there is no hand waving, just an honest discussion. Although, you may not
+see it in the background, we still need overcommit protection and we have it
+enabled by default for the system. There are applications that can deal with the
+constraints setup by the administrator and constraints of the environment,
+please see http://en.wikipedia.org/wiki/Autonomic_computing.
 
-$ ls -l /sys/bus/pci/devices/`cat /sys/bus/pci/slots/3/address`*
+> really see a single concrete user in the "potential applications" here.
+> I really don't understand why you're pushing this so hard if you don't
+> have anyone to actually use it.
+> 
+> I just don't see anyone that *needs* it.  There's a lot of "it would be
+> nice", but no "needs".
 
-But I don't think we had a way to go from a device to the slot it's in,
-without searching through all the slots for matching address.
+If you see the original email, I've sent - I've mentioned that we need
+overcommit support (either via memrlimit or by porting over the overcommit
+feature) and the exploiters you are looking for is the same as the ones who need
+overcommit and RLIMIT_AS support.
 
-> +static void remove_sysfs_files(struct pci_slot *slot)
-> +{
-> +	char func[10];
-> +	struct list_head *tmp;
-> +
-> +	list_for_each(tmp, &slot->bus->devices) {
-> +		struct pci_dev *dev = pci_dev_b(tmp);
-> +		if (PCI_SLOT(dev->devfn) != slot->number)
-> +			continue;
-> +		sysfs_remove_link(&dev->dev.kobj, "slot");
-> +
-> +		snprintf(func, 10, "function%d", PCI_FUNC(dev->devfn));
-> +		sysfs_remove_link(&slot->kobj, func);
-> +	}
-> +	sysfs_remove_link(&slot->kobj, "device");
-> +}
-> +
-> +static int create_sysfs_files(struct pci_slot *slot)
-> +{
-> +	int result, lastdev = -1;
-> +	char func[10];
-> +	struct list_head *tmp;
-> +
-> +	list_for_each(tmp, &slot->bus->devices) {
-> +		struct pci_dev *dev = pci_dev_b(tmp);
-> +		if (PCI_SLOT(dev->devfn) != slot->number)
-> +			continue;
+On the memory overcommit front, please see PostgreSQL Server Administrator's
+Guide at
+http://www.network-theory.co.uk/docs/postgresql/vol3/LinuxMemoryOvercommit.html
 
-Why not use pci_get_slot()?
+The guide discusses turning off memory overcommit so that the database is never
+OOM killed, how do we provide these guarantees for a particular control group?
+We can do it system wide, but ideally we want the control point to be per
+control group.
 
-> +		result = sysfs_create_link(&dev->dev.kobj, &slot->kobj, "slot");
-> +		if (result)
-> +			goto fail;
-> +
-> +		if (PCI_SLOT(dev->devfn) != lastdev) {
-> +			lastdev = PCI_SLOT(dev->devfn);
-> +			result = sysfs_create_link(&slot->kobj,
-> +						   &dev->dev.kobj,
-> +						   "device");
-> +			if (result)
-> +				goto fail;
-> +		}
-> +
-> +		snprintf(func, 10, "function%d", PCI_FUNC(dev->devfn));
-> +		result = sysfs_create_link(&slot->kobj, &dev->dev.kobj, func);
-> +		if (result)
-> +			goto fail;
-> +	}
-> +
-> +	return 0;
-> +
-> +fail:
-> +	remove_sysfs_files(slot);
-> +	return result;
-> +}
-> +
->  static void pci_slot_release(struct kobject *kobj)
->  {
->  	struct pci_slot *slot = to_pci_slot(kobj);
-> @@ -54,6 +108,8 @@ static void pci_slot_release(struct kobject *kobj)
->  	pr_debug("%s: releasing pci_slot on %x:%d\n", __func__,
->  		 slot->bus->number, slot->number);
->  
-> +	remove_sysfs_files(slot);
-> +
->  	list_del(&slot->list);
->  
->  	kfree(slot);
-> @@ -150,6 +206,8 @@ placeholder:
->  	INIT_LIST_HEAD(&slot->list);
->  	list_add(&slot->list, &parent->slots);
->  
-> +	create_sysfs_files(slot);
-> +
->  	/* Don't care if debug printk has a -1 for slot_nr */
->  	pr_debug("%s: created pci_slot on %04x:%02x:%02x\n",
->  		 __func__, pci_domain_nr(parent), parent->number, slot_nr);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+As far as other users are concerned, I've listed users of the memory limit
+feature, in the original email I sent out. To try and understand your viewpoint
+better, could you please tell me if
+
+1. You are opposed to overcommit and RLIMIT_AS as features
+
+OR
+
+2. Expanding them to control groups
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+	Balbir
