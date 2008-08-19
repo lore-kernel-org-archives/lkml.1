@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbYHSPxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbYHSPyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754509AbYHSPxg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 11:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbYHSPx0
+	id S1755336AbYHSPyR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 11:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYHSPyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 11:53:26 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:19308 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752599AbYHSPxY (ORCPT
+	Tue, 19 Aug 2008 11:54:01 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:7870 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752809AbYHSPyA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 11:53:24 -0400
-Date: Tue, 19 Aug 2008 09:53:23 -0600
-From: Alex Chiang <achiang@hp.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: jbarnes@virtuousgeek.org, matthew@wil.cx, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI: create device, function symlinks in
-	/sys/bus/pci/slots/N/
-Message-ID: <20080819155323.GA18842@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, jbarnes@virtuousgeek.org,
-	matthew@wil.cx, linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080818202100.GE23155@ldl.fc.hp.com> <48A9F1BC.40002@zytor.com>
+	Tue, 19 Aug 2008 11:54:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=FxKuKL+cSl2u9n0t7qnWbl71GZIZKwhaCtSVBKfiN1EG2vd1D8OjowPMB5aCS6r1tI
+         vGFcu7xIH3dwrW9dXGOItUJ9kIyn1gfM+664Kl4khNSW4Y+tyx3jZt2vaQoEiQvmyGkn
+         W7mTrtXpi543iU4HQcUrxwUik1D1Nm2vRCJQM=
+Message-ID: <48AAEC92.8050108@gmail.com>
+Date: Tue, 19 Aug 2008 11:53:54 -0400
+From: roel kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48A9F1BC.40002@zytor.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+To: Takashi Iwai <tiwai@suse.de>
+CC: Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@ozlabs.org,
+       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+Subject: [alsa-devel] [PATCH v2] duplicate SNDRV_PCM_FMTBIT_S{16,24}_BE
+References: <48AA407C.8090409@gmail.com>	<3ef3fed769e5aa57681bacea1230e82b.squirrel@secure.sipsolutions.net> <s5hbpzpxrfh.wl%tiwai@suse.de>
+In-Reply-To: <s5hbpzpxrfh.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* H. Peter Anvin <hpa@zytor.com>:
-> Alex Chiang wrote:
->> Create convenience symlinks in sysfs, linking slots to devices
->> and functions, and vice versa. These links make it easier for
->> users to figure out which devices actually live in what slots.
->>
->> The device symlink points to the device's first function.
->>
->> For example:
->>
->> sapphire:/sys/bus/pci/slots # ls
->> 1  10  2  3  4  5  6  7  8  9
->>
->> sapphire:/sys/bus/pci/slots # ls -l 3
->> total 0
->> -r--r--r-- 1 root root 65536 Aug 18 14:10 address
->> lrwxrwxrwx 1 root root     0 Aug 18 14:10 device -> ../../../../devices/pci0000:23/0000:23:01.0
->> lrwxrwxrwx 1 root root     0 Aug 18 14:10 function0 -> ../../../../devices/pci0000:23/0000:23:01.0
->> lrwxrwxrwx 1 root root     0 Aug 18 14:10 function1 -> ../../../../devices/pci0000:23/0000:23:01.1
->
-> What's the point with "device" and "function0"?  They appear to be the  
-> same thing by definition.
+Takashi Iwai wrote:
+> At Tue, 19 Aug 2008 08:15:05 +0200 (CEST),
+> Johannes Berg wrote:
+>> roel kluin wrote:
+>>> untested, is it correct?
+>> not a clue, do you know how long ago that was? :)
+>> does the driver check endianness anywhere?
+> 
+> AFAIK snd-aoa supports only bit-endian formats (at least in
+> sound/aoa/soundbus/i2sbus-pcm.c), so this addition makes little
+> sense.
+> 
+> Better to drop the duplicated words there.
 
-Good point, I'll remove 'device'.
+Thanks Johannes and Takashi,
 
-Thanks.
+FWIW this removes the duplicates.
+---
+Remove duplicate assignment of SNDRV_PCM_FMTBIT_S{16,24}_BE bits
 
-/ac
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/sound/aoa/codecs/snd-aoa-codec-tas.c b/sound/aoa/codecs/snd-aoa-codec-tas.c
+index 7a16a33..6c515b2 100644
+--- a/sound/aoa/codecs/snd-aoa-codec-tas.c
++++ b/sound/aoa/codecs/snd-aoa-codec-tas.c
+@@ -654,15 +654,13 @@ static struct snd_kcontrol_new bass_control = {
+ static struct transfer_info tas_transfers[] = {
+ 	{
+ 		/* input */
+-		.formats = SNDRV_PCM_FMTBIT_S16_BE | SNDRV_PCM_FMTBIT_S16_BE |
+-			   SNDRV_PCM_FMTBIT_S24_BE | SNDRV_PCM_FMTBIT_S24_BE,
++		.formats = SNDRV_PCM_FMTBIT_S16_BE | SNDRV_PCM_FMTBIT_S24_BE,
+ 		.rates = SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 | SNDRV_PCM_RATE_48000,
+ 		.transfer_in = 1,
+ 	},
+ 	{
+ 		/* output */
+-		.formats = SNDRV_PCM_FMTBIT_S16_BE | SNDRV_PCM_FMTBIT_S16_BE |
+-			   SNDRV_PCM_FMTBIT_S24_BE | SNDRV_PCM_FMTBIT_S24_BE,
++		.formats = SNDRV_PCM_FMTBIT_S16_BE | SNDRV_PCM_FMTBIT_S24_BE,
+ 		.rates = SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 | SNDRV_PCM_RATE_48000,
+ 		.transfer_in = 0,
+ 	},
 
