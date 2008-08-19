@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYHSNSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518AbYHSNTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755249AbYHSNSl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 09:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYHSNSc
+	id S1755518AbYHSNTb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 09:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbYHSNTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 09:18:32 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:41086 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753845AbYHSNSc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 09:18:32 -0400
-To: Johannes Weiner <hannes@saeurebad.de>
+	Tue, 19 Aug 2008 09:19:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45203 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753391AbYHSNTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 09:19:22 -0400
+Date: Tue, 19 Aug 2008 15:18:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <ak@linux.intel.com>
 Cc: Vegard Nossum <vegard.nossum@gmail.com>, Pavel Machek <pavel@suse.cz>,
        "Rafael J. Wysocki" <rjw@sisk.pl>,
        Robert Richter <robert.richter@amd.com>,
        Philippe Elie <phil.el@wanadoo.fr>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: oprofile + hibernation = badness
-From: Andi Kleen <andi@firstfloor.org>
-References: <19f34abd0808181332k3c02496auabd04e927bb7cab5@mail.gmail.com>
-	<48AA1E42.6070802@linux.intel.com>
-	<19f34abd0808190012r4418cc4egf9bc25a52056af41@mail.gmail.com>
-	<20080819094905.GA20590@elte.hu> <48AAB8B6.3020802@linux.intel.com>
-	<87skt16u4a.fsf@skyscraper.fehenstaub.lan>
-Date: Tue, 19 Aug 2008 15:18:25 +0200
-In-Reply-To: <87skt16u4a.fsf@skyscraper.fehenstaub.lan> (Johannes Weiner's message of "Tue, 19 Aug 2008 14:56:37 +0200")
-Message-ID: <87pro5ywgu.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+Message-ID: <20080819131847.GA31605@elte.hu>
+References: <19f34abd0808181332k3c02496auabd04e927bb7cab5@mail.gmail.com> <48AA1E42.6070802@linux.intel.com> <19f34abd0808190012r4418cc4egf9bc25a52056af41@mail.gmail.com> <20080819094905.GA20590@elte.hu> <48AAB8B6.3020802@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48AAB8B6.3020802@linux.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Weiner <hannes@saeurebad.de> writes:
+
+* Andi Kleen <ak@linux.intel.com> wrote:
+
+>> Andi, another issue: your patch had 5 spurious whitespace errors. 
+>> This is a reoccuring, many years pattern of behavior from you and you 
+>> need to fix your workflow to send less sloppy patches.
 >
-> You probably misconfigured emacs then.  I ran checkpatch over your patch
-> and don't see how and why emacs would add trailing whitespace after a
-> opening brace.
-
-I don't know how, but it does. vim does too sometimes (I use both
-editors) 
-
+> Yes I forgot you define patch cleanness based on white space.
 >
-> You can use this to be on the safe side:
+> Seriously, It's actually new -- i did this one in git directly instead 
+> of quilt and git-commit doesn't seem to know how to drop them. In my 
+> older quilt workflow they were always automatically dropped since many 
+> years. Both emacs and vim add them and I don't plan to switch editors, 
+> sorry.
+
+Thousands of other kernel developers get it right and manage to submit 
+clean patches, so i think you are not trying very hard to actually solve 
+this problem - and your flippant and obtrusive answers do not make it 
+very easy to work with you as a contributor.
+
+>> I fixed up the problems of this patch, no need to resend.
 >
-> (add-hook 'before-save-hook 'delete-trailing-whitespace)
+> I hope you fixed the typos in the commit log too (it really was just a 
+> RFC test patch)
 
-That drops it on all. This means when I edit something which already
-has trailing spaces then the diff is full of noise. That would
-be a cure far worse than the disease[1]
+You've put your signoff in there and Vegard has tested it. The general 
+principle on lkml is that patches can be marked as do-not-apply-yet by 
+adding something like this:
 
-Ideal would be if git-commit dropped them on all new lines, similar to 
-git-apply --whitespace=fix and quilt refresh, but it doesn't seem to know how.
+ Not-Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-But normally maintainers just set these options (at least I do and Andrew
-does too) so it doesn't really matter if the submitted patch has trailing 
-spaces or not because they disappear on the way up. 
+or by not adding a SOB line at all. In that case i either ask people for 
+the SOB or apply them at my own risk.
 
-And that said I refuse to write any more on this silly bike shed topic.
+Thanks,
 
--Andi
-
-[1] to be honest I'm not sure i are actually a disease since I don't
-know of any single problem they cause.
+	Ingo
