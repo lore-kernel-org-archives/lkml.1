@@ -1,213 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759294AbYHSV3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759368AbYHSVai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759294AbYHSV3u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754055AbYHSV3i
+	id S1759368AbYHSVai (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754392AbYHSVaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:29:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52542 "EHLO mx1.redhat.com"
+	Tue, 19 Aug 2008 17:30:25 -0400
+Received: from mms3.broadcom.com ([216.31.210.19]:3242 "EHLO MMS3.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753070AbYHSV3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:29:37 -0400
-Message-ID: <48AB3B2C.1040203@redhat.com>
-Date: Tue, 19 Aug 2008 17:29:16 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-Reply-To: rwheeler@redhat.com
-Organization: Red Hat
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1754282AbYHSVaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 17:30:24 -0400
+X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
+Subject: Re: 2.6.26/tg3 ping roundtrip times > 2000 ms on local network
+From: "Michael Chan" <mchan@broadcom.com>
+To: "David Miller" <davem@davemloft.net>
+cc: "mh+linux-kernel@zugschlus.de" <mh+linux-kernel@zugschlus.de>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       mcarlson@broadcom.com
+In-Reply-To: <20080819.132040.188336475.davem@davemloft.net>
+References: <20080819172019.GA5823@torres.zugschlus.de>
+ <20080819.132040.188336475.davem@davemloft.net>
+Date: Tue, 19 Aug 2008 10:29:22 -0700
+Message-ID: <1219166962.13090.12.camel@HP1>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: adilger@sun.com, jbacik@redhat.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 2/2] improve ext3 fsync batching
-References: <20080806190819.GH27394@unused.rdu.redhat.com>	<20080806191536.GI27394@unused.rdu.redhat.com>	<20080818213128.3a76d1e8.akpm@linux-foundation.org>	<20080819054414.GM3392@webber.adilger.int>	<48AAA7F7.5090501@redhat.com>	<20080819105638.aae4086f.akpm@linux-foundation.org>	<48AB0C1F.1040104@redhat.com>	<20080819132914.6fcc9f29.akpm@linux-foundation.org>	<48AB3353.5000308@redhat.com> <20080819141831.f695dc9c.akpm@linux-foundation.org>
-In-Reply-To: <20080819141831.f695dc9c.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5)
+X-WSS-ID: 64B5E4E24YK7723376-01-01
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 19 Aug 2008 16:55:47 -0400
-> Ric Wheeler <rwheeler@redhat.com> wrote:
->
->   
->>>   
->>>       
->>>>> Perhaps a better scheme would be to tune it based on how many other
->>>>> processes are joining that transaction.  If it's "zero" then decrease
->>>>> the timeout.  But one would need to work out how to increase it, which
->>>>> perhaps could be done by detecting the case where process A runs an
->>>>> fsync when a commit is currently in progress, and that commit was
->>>>> caused by process B's fsync.
->>>>>   
->>>>>       
->>>>>           
->>>> This is really, really a property of the device's latency at any given 
->>>> point in time. If there are no other processes running, we could do an 
->>>> optimization and not wait.
->>>>     
->>>>         
->>> well yes.  This represents yet another attempt to predict future
->>> application behaviour.  The way in which we _usually_ do that is by
->>> monitoring past application behaviour.
->>>   
->>>       
->> This whole area is very similar to the IO elevator area where some of 
->> the same device characteristics are measured.
->>
->>
->>     
->>> Only this patch didn't do that (directly) and I'm wondering why not.
->>>   
->>>       
->> The average transaction commit time is a direct measurement of the past 
->> behaviour, right?
->>     
->
-> Of commit time, yes.  Somewhat - it has obvious failures during
-> transients.
->
-> But there's an assumption here that commit time is usefully correlated
-> with "mean time between fsync()s", which might introduce further
-> inaccuracies.
->
->   
->>>   
->>>       
->>>>> But before doing all that I would recommend/ask that the following be
->>>>> investigated:
->>>>>
->>>>> - How effective is the present code?
->>>>>   
->>>>>       
->>>>>           
->>>> It causes the most expensive storage (arrays) to run 3-4 times slower 
->>>> than they should on a synchronous write workload (NFS server, mail 
->>>> server?) with more than 1 thread. For example, against a small EMC 
->>>> array, I saw single threaded write rates of 720 files/sec against ext3 
->>>> with 1 thread, 225 (if I remember correctly) with 2 ;-)
->>>>     
->>>>         
->>> Current code has:
->>>
->>> 	/*
->>> 	 * Implement synchronous transaction batching.  If the handle
->>> 	 * was synchronous, don't force a commit immediately.  Let's
->>> 	 * yield and let another thread piggyback onto this transaction.
->>> 	 * Keep doing that while new threads continue to arrive.
->>> 	 * It doesn't cost much - we're about to run a commit and sleep
->>> 	 * on IO anyway.  Speeds up many-threaded, many-dir operations
->>> 	 * by 30x or more...
->>> 	 *
->>> 	 * But don't do this if this process was the most recent one to
->>> 	 * perform a synchronous write.  We do this to detect the case where a
->>> 	 * single process is doing a stream of sync writes.  No point in waiting
->>> 	 * for joiners in that case.
->>> 	 */
->>>
->>> has the 30x been reproduced?  If not, what broke?  If so, what effect
->>> did the proposed change have upon it?
->>>   
->>>       
->> The huge gain was only in the case of a RAM disk test which I assume was 
->> not tested against the original patch early on. Against an array (with a 
->> 250HZ kernel), we saw a 2.5x speedup with the new code.
->>     
->
-> You only answered question 3/3 ;)
->
-> I am concerned that the current code is no longer working correctly. 
-> If so then apart from the obvious we-should-fix-that issue, there's
-> also the possibility that we're adding more stuff on top of the broken
-> stuff rather than fixing the broken stuff.
->   
 
-I think it is still working for slow devices, our testing will try and 
-verify that.
+On Tue, 2008-08-19 at 13:20 -0700, David Miller wrote:
+> From: Marc Haber <mh+linux-kernel@zugschlus.de>
+> Date: Tue, 19 Aug 2008 19:20:19 +0200
+> 
+> [ netdev added to CC: ]
+> 
+> > I have one HP DL 140 G1 running with Debian stable and a
+> > locally-built, vanilla kernel. With 2.6.25.11, everything is fine.
+> >
+> > But, after updating to 2.6.26.2, I noticed that pinging the host on
+> > the local ethernet sometimes (e.g. several times a minute, but not
+> > always) results in a round-trip time of larger than two seconds. The
+> > packets are not lost though, they're only severly delayed. For an ssh
+> > session to the host, this feels like somebody rocking a bad network
+> > connector. The same behavior is visible with 2.6.26 and 2.6.26.1.
+> >
+> > Going back to 2.6.25.11 immediately fixes the issue for me.
+> >
+> > Syslog doesn't say anything conspicious, unfortunately. As I don't
+> > have local access to the box, I cannot say whether it's only the
+> > network that freezes or whether it's the entire box.
+> >
+> > Does it make sense to test any later 2.6.25.x kernel, or is there any
+> > post-2.6.26 patch available that may fix the issue for me?
+> >
+> > Strangely, another DL 140 from the same charge runs just fine with
+> > 2.6.26.2.
+> >
 
+The may be the 2.5 second polling that was mistakenly added to the code
+instead of the intended 2.5 msec.
 
->   
->>>   
->>>       
->>>>>   - What happens when it is simply removed?
->>>>>   
->>>>>       
->>>>>           
->>>> If you remove the code, you will not see the throughput rise when you go 
->>>> multithreaded on existing slow devices (S-ATA/ATA for example). Faster 
->>>> devices will not see that 2 threaded drop.
->>>>     
->>>>         
->>> See above - has this been tested and confirmed?
->>>   
->>>       
->> Yes - we (back at EMC) did remove the logic and the fast devices will 
->> write at least at their starting rate (700+ files/sec).
->>     
->
-> Did you observe the effect upon slower devices?
->   
+It has been fixed a few days ago in the net-2.6 tree:
 
-Slower devices were still great with this code, but that can vary with 
-high HZ kernels. Could you have tested and seen poor results with a 
-1000HZ kernel (where the slow devices don't sleep long enough?)
+tg3: Fix firmware event timeouts
 
->   
->>>   
->>>       
->>>>>   - Add instrumentation (a counter and a printk) to work out how
->>>>>     many other tasks are joining this task's transaction.
->>>>>
->>>>>     - If the answer is "zero" or "small", work out why.
->>>>>
->>>>>   - See if we can increase its effectiveness.
->>>>>
->>>>> Because it could be that the code broke.  There might be issues with
->>>>> higher-level locks which are preventing the batching.  For example, if
->>>>> all the files which the test app is syncing are in the same directory,
->>>>> perhaps all the tasks are piling up on that directory's i_mutex?
->>>>>   
->>>>>       
->>>>>           
->>>> I have to admit that I don't see the down side here - we have shown a 
->>>> huge increase for arrays (embarrassingly huge  increase for RAM disks) 
->>>> and see no degradation for the S-ATA/ATA case.
->>>>
->>>> The code is not broken (having been there and done the performance 
->>>> tuning on the original code), it just did not account for the widely 
->>>> varying average response times for different classes of storage ;-)
->>>>     
->>>>         
->>> Well, as I said - last time I checked, it did seem to be broken.  By
->>> what means did you confirm that it is still effective, and what were
->>> the results?
->>>
->>>   
->>>       
->> I think Josef posted those results for S-ATA earlier in the thread and 
->> they were still working. We can repost/rerun to give more detail...
->>     
->
-> Yes please.
->   
-We should do a clean retest and repost with the types of storage we have 
-at hand. Roughly, that would include:
+and it should be in Linus' tree very soon.  This reminds us to send the
+same patch to -stable.
 
-    * RAM disk
-    * mid sized array (FC first,  iSCSI second?)
-    * S-ATA
-    * SAS
+Thanks.
 
-It would also be interesting to test with various HZ settings (100, 250, 
-1000).
-
-Would that fill in most of the interesting spots?
-
-Not sure how much time we have to cover all of these, but we will take a 
-stab at it ;-)
-
-ric
 
