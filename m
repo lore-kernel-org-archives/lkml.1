@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758537AbYHSUEN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758249AbYHSUDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758537AbYHSUEN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 16:04:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754520AbYHSUDO
+	id S1758249AbYHSUDx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 16:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbYHSUDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 19 Aug 2008 16:03:14 -0400
-Received: from gw.goop.org ([64.81.55.164]:38800 "EHLO mail.goop.org"
+Received: from gw.goop.org ([64.81.55.164]:38790 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753037AbYHSUDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752468AbYHSUDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 19 Aug 2008 16:03:12 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 3 of 3] redefine resource_size_t as phys_addr_t
-X-Mercurial-Node: 969978031590c7a8b64ee838b5e0372f6b480993
-Message-Id: <969978031590c7a8b64e.1219176172@localhost>
+Subject: [PATCH 1 of 3] add phys_addr_t for holding physical addresses
+X-Mercurial-Node: 73196c9129c7298f24288d5fea4cecab1f4b74fe
+Message-Id: <73196c9129c7298f2428.1219176170@localhost>
 In-Reply-To: <patchbomb.1219176169@localhost>
-Date: Tue, 19 Aug 2008 13:02:52 -0700
+Date: Tue, 19 Aug 2008 13:02:50 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: ehabkost@redhat.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -25,138 +25,125 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's no good reason why a resource_size_t shouldn't just be a
-physical address, so simply redefine it in terms of phys_addr_t.
+Add a kernel-wide "phys_addr_t" which is guaranteed to be able to hold
+any physical address.  By default it equals the word size of the
+architecture, but a 32-bit architecture can set ARCH_PHYS_ADDR_T_64BIT
+if it needs a 64-bit phys_addr_t.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/platforms/Kconfig.cputype |    1 -
- arch/powerpc/sysdev/ppc4xx_pci.c       |   16 ++++++----------
- arch/x86/Kconfig                       |    1 -
- arch/x86/kernel/e820.c                 |    4 +---
- drivers/pci/setup-bus.c                |    9 ++++-----
- include/linux/types.h                  |    8 ++------
- 6 files changed, 13 insertions(+), 26 deletions(-)
+ arch/powerpc/Kconfig             |    3 +++
+ arch/powerpc/include/asm/types.h |    7 -------
+ arch/x86/Kconfig                 |    3 +++
+ include/asm-x86/page_32.h        |    2 --
+ include/asm-x86/page_64.h        |    1 -
+ include/linux/types.h            |    6 ++++++
+ mm/Kconfig                       |    3 +++
+ 7 files changed, 15 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -135,7 +135,6 @@
- config PHYS_64BIT
- 	bool 'Large physical address support' if E500
- 	depends on 44x || E500
--	select RESOURCES_64BIT
- 	default y if 44x
- 	---help---
- 	  This option enables kernel support for larger than 32-bit physical
-diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
---- a/arch/powerpc/sysdev/ppc4xx_pci.c
-+++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-@@ -41,13 +41,10 @@
- #define U64_TO_U32_LOW(val)	((u32)((val) & 0x00000000ffffffffULL))
- #define U64_TO_U32_HIGH(val)	((u32)((val) >> 32))
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -21,6 +21,9 @@
  
--#ifdef CONFIG_RESOURCES_64BIT
--#define RES_TO_U32_LOW(val)	U64_TO_U32_LOW(val)
--#define RES_TO_U32_HIGH(val)	U64_TO_U32_HIGH(val)
+ config PPC_MERGE
+ 	def_bool y
++
++config ARCH_PHYS_ADDR_T_64BIT
++       def_bool PPC64 || PHYS_64BIT
+ 
+ config MMU
+ 	bool
+diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
+--- a/arch/powerpc/include/asm/types.h
++++ b/arch/powerpc/include/asm/types.h
+@@ -48,13 +48,6 @@
+ 
+ typedef __vector128 vector128;
+ 
+-/* Physical address used by some IO functions */
+-#if defined(CONFIG_PPC64) || defined(CONFIG_PHYS_64BIT)
+-typedef u64 phys_addr_t;
 -#else
--#define RES_TO_U32_LOW(val)	(val)
--#define RES_TO_U32_HIGH(val)	(0)
+-typedef u32 phys_addr_t;
 -#endif
-+#define RES_TO_U32_LOW(val)	\
-+	((sizeof(resource_size_t) > sizeof(u32)) ? U64_TO_U32_LOW(val) : (val))
-+#define RES_TO_U32_HIGH(val)	\
-+	((sizeof(resource_size_t) > sizeof(u32)) ? U64_TO_U32_HIGH(val) : (0))
- 
- static inline int ppc440spe_revA(void)
- {
-@@ -145,12 +142,11 @@
- 
- 		/* Use that */
- 		res->start = pci_addr;
--#ifndef CONFIG_RESOURCES_64BIT
- 		/* Beware of 32 bits resources */
--		if ((pci_addr + size) > 0x100000000ull)
-+		if (sizeof(resource_size_t) == sizeof(u32) &&
-+		    (pci_addr + size) > 0x100000000ull)
- 			res->end = 0xffffffff;
- 		else
--#endif
- 			res->end = res->start + size - 1;
- 		break;
- 	}
+-
+ #ifdef __powerpc64__
+ typedef u64 dma_addr_t;
+ #else
 diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
 --- a/arch/x86/Kconfig
 +++ b/arch/x86/Kconfig
-@@ -931,7 +931,6 @@
- 	def_bool n
- 	prompt "PAE (Physical Address Extension) Support"
- 	depends on X86_32 && !HIGHMEM4G
--	select RESOURCES_64BIT
- 	help
- 	  PAE is required for NX support, and furthermore enables
- 	  larger swapspace support for non-overcommit purposes. It
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -1276,12 +1276,10 @@
- 	res = alloc_bootmem_low(sizeof(struct resource) * e820.nr_map);
- 	for (i = 0; i < e820.nr_map; i++) {
- 		end = e820.map[i].addr + e820.map[i].size - 1;
--#ifndef CONFIG_RESOURCES_64BIT
--		if (end > 0x100000000ULL) {
-+		if (end != (resource_size_t)end) {
- 			res++;
- 			continue;
- 		}
--#endif
- 		res->name = e820_type_to_string(e820.map[i].type);
- 		res->start = e820.map[i].addr;
- 		res->end = end;
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -377,11 +377,10 @@
- 	align = 0;
- 	min_align = 0;
- 	for (order = 0; order <= max_order; order++) {
--#ifdef CONFIG_RESOURCES_64BIT
--		resource_size_t align1 = 1ULL << (order + 20);
--#else
--		resource_size_t align1 = 1U << (order + 20);
--#endif
-+		resource_size_t align1 = 1;
+@@ -938,6 +938,9 @@
+ 	  has the cost of more pagetable lookup overhead, and also
+ 	  consumes more pagetable space per process.
+ 
++config ARCH_PHYS_ADDR_T_64BIT
++       def_bool X86_64 || X86_PAE
 +
-+		align1 <<= (order + 20);
-+
- 		if (!align)
- 			min_align = align1;
- 		else if (ALIGN(align + min_align, min_align) < align1)
+ # Common NUMA Features
+ config NUMA
+ 	bool "Numa Memory Allocation and Scheduler Support (EXPERIMENTAL)"
+diff --git a/include/asm-x86/page_32.h b/include/asm-x86/page_32.h
+--- a/include/asm-x86/page_32.h
++++ b/include/asm-x86/page_32.h
+@@ -33,7 +33,6 @@
+ typedef u64	pudval_t;
+ typedef u64	pgdval_t;
+ typedef u64	pgprotval_t;
+-typedef u64	phys_addr_t;
+ 
+ typedef union {
+ 	struct {
+@@ -54,7 +53,6 @@
+ typedef unsigned long	pudval_t;
+ typedef unsigned long	pgdval_t;
+ typedef unsigned long	pgprotval_t;
+-typedef unsigned long	phys_addr_t;
+ 
+ typedef union {
+ 	pteval_t pte;
+diff --git a/include/asm-x86/page_64.h b/include/asm-x86/page_64.h
+--- a/include/asm-x86/page_64.h
++++ b/include/asm-x86/page_64.h
+@@ -79,7 +79,6 @@
+ typedef unsigned long	pudval_t;
+ typedef unsigned long	pgdval_t;
+ typedef unsigned long	pgprotval_t;
+-typedef unsigned long	phys_addr_t;
+ 
+ typedef struct page *pgtable_t;
+ 
 diff --git a/include/linux/types.h b/include/linux/types.h
 --- a/include/linux/types.h
 +++ b/include/linux/types.h
-@@ -191,17 +191,13 @@
- #ifdef __KERNEL__
- typedef unsigned __bitwise__ gfp_t;
- 
--#ifdef CONFIG_RESOURCES_64BIT
--typedef u64 resource_size_t;
--#else
--typedef u32 resource_size_t;
--#endif
--
- #ifdef CONFIG_PHYS_ADDR_T_64BIT
- typedef u64 phys_addr_t;
- #else
- typedef u32 phys_addr_t;
+@@ -197,6 +197,12 @@
+ typedef u32 resource_size_t;
  #endif
-+
-+typedef phys_addr_t resource_size_t;
  
++#ifdef CONFIG_PHYS_ADDR_T_64BIT
++typedef u64 phys_addr_t;
++#else
++typedef u32 phys_addr_t;
++#endif
++
  struct ustat {
  	__kernel_daddr_t	f_tfree;
+ 	__kernel_ino_t		f_tinode;
+diff --git a/mm/Kconfig b/mm/Kconfig
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -187,6 +187,9 @@
+ 	help
+ 	  This option allows memory and IO resources to be 64 bit.
+ 
++config PHYS_ADDR_T_64BIT
++	def_bool 64BIT || ARCH_PHYS_ADDR_T_64BIT
++
+ config ZONE_DMA_FLAG
+ 	int
+ 	default "0" if !ZONE_DMA
 
 
