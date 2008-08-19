@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753081AbYHSLAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753627AbYHSLE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753081AbYHSLAm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 07:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbYHSLAd
+	id S1753627AbYHSLE2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 07:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbYHSLEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 07:00:33 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35844 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751171AbYHSLAc (ORCPT
+	Tue, 19 Aug 2008 07:04:20 -0400
+Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:33361 "HELO
+	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751779AbYHSLET (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 07:00:32 -0400
-Date: Tue, 19 Aug 2008 12:41:24 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Rik van Riel <riel@redhat.com>
-Cc: david@lang.hm, Eric Paris <eparis@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, davecb@sun.com,
-       linux-security-module@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
-       Mihai Don??u <mdontu@bitdefender.com>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
-	access scanning
-Message-ID: <20080819104124.GA29788@elf.ucw.cz>
-References: <20080814125410.GA2262@elf.ucw.cz> <2629CC4E1D22A64593B02C43E855530304AE4BE3@USILMS12.ca.com> <20080814223918.GC6370@elf.ucw.cz> <20080814200005.6b363716@bree.surriel.com> <20080815004335.GF13048@mit.edu> <1218769209.16613.31.camel@localhost.localdomain> <20080817221258.GC21112@atrey.karlin.mff.cuni.cz> <alpine.DEB.1.10.0808171542160.12859@asgard.lang.hm> <20080817225844.GE21112@atrey.karlin.mff.cuni.cz> <20080817200739.23496033@riellaptop.surriel.com>
+	Tue, 19 Aug 2008 07:04:19 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=D/6dN5Gc8pzqmo0QdLfAYzHcEQF7I0fNFiFphg1niBJ2OHhVUqpbtxPrRhAn/ITzQqs2/Gzel9WilwAJmvk6qaYE/J+lJfP53E1+x30hUZ2OQ3oiDGQSgvGWkUJmMIzNoXQuKOTvD0UrTytu/jKD4OS0IrOFSD34vq50TZgybbE=  ;
+X-YMail-OSG: koV3FsAVM1m6WXJFHodQuBWteoc41WZ6y9iicKHA1gFLBwCuvKoLyA3pkoXHq8ebxKprgBY3NBWGdPeU9dSBRE70agcp4A7FmjRPwCZiQnvElXL6q.em9bM1G2wH5vm6xek-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 0 of 9] x86/smp function calls: convert x86 tlb flushes to use function calls [POST 2]
+Date: Tue, 19 Aug 2008 21:04:05 +1000
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+References: <patchbomb.1219083817@localhost> <200808191956.59898.nickpiggin@yahoo.com.au> <20080819103100.GH9807@one.firstfloor.org>
+In-Reply-To: <20080819103100.GH9807@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080817200739.23496033@riellaptop.surriel.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200808192104.05322.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-08-17 20:07:39, Rik van Riel wrote:
-> On Mon, 18 Aug 2008 00:58:44 +0200
-> Pavel Machek <pavel@suse.cz> wrote:
-> 
-> > Rather than modify all the applications using mmap (you can't tell if
-> > the other side is going to use it for shared memory... right?), we
-> > could simply modify all the Windows-facing applications using mmap.
-> 
-> If web browsers, office suites and mail clients on Windows
-> have certain kinds of vulnerabilities, it is safe to assume
-> that the same programs on Linux will have similar problems.
-> 
-> Can we please get rid of the idea that "Windows facing" is
-> where the whole malware problem is?
-> 
-> As for how to solve it - lets try to come up with a solution
-> that is reasonably high performance and can be used for more
-> than just malware scanning.  
+On Tuesday 19 August 2008 20:31, Andi Kleen wrote:
+> > I'm especially sore about mmap because I have a customer with a
+> > database that uses a lot of mmap/munmap and those calls have slowed
+> > down something like 50%(!!) from 2.6.early to 2.6.late.
+>
+> These are small mmaps right? Also in this case no kmalloc should
+> be needed anyways.
 
-Don't mix exploits with viruses -- they are different.
+Yes, smallish mmaps. But larger ones weren't much better.
 
-Exploit is where application does something very unexpected due to a
-bug.
 
-Virus is where machine works correctly, but user does something
-stupid.
+> AFAIK mmap flushing hasn't changed much in 2.6 and it tends
+> to batch well anyways in this case (unlike vmscan swapping). I would be
+> careful to really optimize the real culprits which are likely elsewhere.
 
-For exploits, randomization + patching + compartments seem like a
-solution. We should be working on "how to confine openoffice.org so
-that it can't do much damage" instead of "how to detect .doc documents
-that makes openoffice.org do something unexpected".
+It wasn't actually the TLB flushing side of it that was causing
+the slowdown IIRC. It's just all over the map.
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Notifier hooks; accounting statistics; 4lpt; cond_resched and
+low latency code causing functions to spill more to stack; cache
+misses from data structures increasing or becoming unaligned...
+
+Basically just lots of little straws that added up to kill the
+camel. I didn't even get to the bottom of the whole thing. But
+my point is that even 1% here and there eventually adds up to a
+big headache for someone. For some features it is obviously
+inevitable to slowdown, but in all other cases we should always
+be aiming to make the kernel faster rather than slower.
