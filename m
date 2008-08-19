@@ -1,86 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYHSQqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbYHSQq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbYHSQqH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 12:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbYHSQp4
+	id S1756111AbYHSQq3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 12:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYHSQqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 12:45:56 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:59150 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753450AbYHSQpz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 12:45:55 -0400
-Message-ID: <48AAF8C0.1010806@linux.vnet.ibm.com>
-Date: Tue, 19 Aug 2008 22:15:52 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Paul Menage <menage@google.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Andrea Righi <righi.andrea@gmail.com>, Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [discuss] memrlimit - potential applications that can use
-References: <48AA73B5.7010302@linux.vnet.ibm.com> <1219161525.23641.125.camel@nimitz>
-In-Reply-To: <1219161525.23641.125.camel@nimitz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 12:46:19 -0400
+Received: from home.keithp.com ([63.227.221.253]:4901 "EHLO keithp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753448AbYHSQqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 12:46:18 -0400
+Subject: Re: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM
+From: Keith Packard <keithp@keithp.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: keithp@keithp.com, Dave Airlie <airlied@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>, Eric Anholt <eric@anholt.net>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200808192000.47070.nickpiggin@yahoo.com.au>
+References: <1217573919-7496-1-git-send-email-eric@anholt.net>
+	 <200808051443.11858.nickpiggin@yahoo.com.au>
+	 <21d7e9970808181817n1d67dc33s58b8d07f63e411a7@mail.gmail.com>
+	 <200808192000.47070.nickpiggin@yahoo.com.au>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Itdh3o6WO2JIJOdc7m+q"
+Date: Tue, 19 Aug 2008 09:46:07 -0700
+Message-Id: <1219164367.10772.420.camel@koto.keithp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> On Tue, 2008-08-19 at 12:48 +0530, Balbir Singh wrote:
->> 1. To provide a soft landing mechanism for applications that exceed their memory
->> limit. Currently in the memory resource controller, we swap and on failure OOM.
->> 2. To provide a mechanism similar to memory overcommit for control groups.
->> Overcommit has finer accounting, we just account for virtual address space usage.
->> 3. Vserver will directly be able to port over on top of memrlimit (their address
->> space limitation feature)
-> 
-> Balbir,
-> 
-> This all seems like a little bit too much hand waving to me.  I don't
 
-Dave, there is no hand waving, just an honest discussion. Although, you may not
-see it in the background, we still need overcommit protection and we have it
-enabled by default for the system. There are applications that can deal with the
-constraints setup by the administrator and constraints of the environment,
-please see http://en.wikipedia.org/wiki/Autonomic_computing.
+--=-Itdh3o6WO2JIJOdc7m+q
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> really see a single concrete user in the "potential applications" here.
-> I really don't understand why you're pushing this so hard if you don't
-> have anyone to actually use it.
-> 
-> I just don't see anyone that *needs* it.  There's a lot of "it would be
-> nice", but no "needs".
+On Tue, 2008-08-19 at 20:00 +1000, Nick Piggin wrote:
 
-If you see the original email, I've sent - I've mentioned that we need
-overcommit support (either via memrlimit or by porting over the overcommit
-feature) and the exploiters you are looking for is the same as the ones who need
-overcommit and RLIMIT_AS support.
+> Not exactly sure what you mean by this. But I would like to see an effort
+> made to use existing userspace APIs in order to do this swappable object
+> allocation over tmpfs scheme. As I said, I don't object to a nice kernel
+> implementation, but we would be in a much better position to assess it if
+> we had an existing userspace implementation to compare it with.
 
-On the memory overcommit front, please see PostgreSQL Server Administrator's
-Guide at
-http://www.network-theory.co.uk/docs/postgresql/vol3/LinuxMemoryOvercommit.html
+We need to allocate objects from kernel mode to get the console running.
+I'd prefer to let that occur before user mode was available. Also,
+emulating the existing fbdev syscall interface will require that we
+allocate objects within the kernel.
 
-The guide discusses turning off memory overcommit so that the database is never
-OOM killed, how do we provide these guarantees for a particular control group?
-We can do it system wide, but ideally we want the control point to be per
-control group.
+Hence, the question about how we should create objects from kernel mode.
+I think we can do this with a series of VFS function calls. Would that
+series of VFS calls be preferable to directly accessing the existing
+shmem API?
 
-As far as other users are concerned, I've listed users of the memory limit
-feature, in the original email I sent out. To try and understand your viewpoint
-better, could you please tell me if
+Another alternative is to improve the existing shmem API to better
+capture what we're trying to do here. Both drm and sysv shm just want
+anonymous pages that are backed by swap. If we started from scratch,
+what API would we like to have here? Would we have it support both shmem
+and hugetlbfs?
 
-1. You are opposed to overcommit and RLIMIT_AS as features
+--=20
+keith.packard@intel.com
 
-OR
+--=-Itdh3o6WO2JIJOdc7m+q
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-2. Expanding them to control groups
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
--- 
-	Balbir
+iD8DBQBIqvjPQp8BWwlsTdMRAliNAKCjkpsiQDdTR3XXklB8fV9G8mXsKACgt4w5
+2LUd+Lue9ae8AaBtn7ivgJQ=
+=aSr4
+-----END PGP SIGNATURE-----
+
+--=-Itdh3o6WO2JIJOdc7m+q--
+
