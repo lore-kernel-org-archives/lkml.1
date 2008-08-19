@@ -1,47 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754470AbYHSFkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbYHSFoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754470AbYHSFkh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 01:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYHSFk3
+	id S1754196AbYHSFoi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 01:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbYHSFo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 01:40:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54509 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752659AbYHSFk2 (ORCPT
+	Tue, 19 Aug 2008 01:44:28 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:46028 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751816AbYHSFo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 01:40:28 -0400
-Date: Mon, 18 Aug 2008 22:40:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Vrabel <david.vrabel@csr.com>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       e1000-devel@lists.sourceforge.net, jeffrey.t.kirsher@intel.com
-Subject: Re: e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-Message-Id: <20080818224011.6fad74dc.akpm@linux-foundation.org>
-In-Reply-To: <489C2457.5030104@csr.com>
-References: <489C2457.5030104@csr.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 01:44:27 -0400
+Date: Mon, 18 Aug 2008 23:44:14 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 2/2] improve ext3 fsync batching
+In-reply-to: <20080818213128.3a76d1e8.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Josef Bacik <jbacik@redhat.com>, linux-kernel@vger.kernel.org,
+       rwheeler@redhat.com, tglx@linutronix.de, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, linux-ext4@vger.kernel.org
+Message-id: <20080819054414.GM3392@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <20080806190819.GH27394@unused.rdu.redhat.com>
+ <20080806191536.GI27394@unused.rdu.redhat.com>
+ <20080818213128.3a76d1e8.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 08 Aug 2008 11:47:51 +0100 David Vrabel <david.vrabel@csr.com> wrote:
-
-> 2.6.27-rc1 kernels appear to corrupt the EEPROM/NVM of the 8086:294c
-> ethernet device (ICH9 I think).  After hacking the driver to ignore the
-> bad CRC and MAC address I could view the EEPROM with ethtool and it was
-> all 0xff.
+On Aug 18, 2008  21:31 -0700, Andrew Morton wrote:
+> On Wed, 6 Aug 2008 15:15:36 -0400 Josef Bacik <jbacik@redhat.com> wrote:
+> > Using the following fs_mark command to test the speeds
+> > 
+> > ./fs_mark -d /mnt/ext3-test -s 4096 -n 2000 -D 64 -t 2
+> > 
+> > I got the following results (with write cacheing turned off)
+> > 
+> > type	threads		with patch	without patch
+> > sata	2		26.4		27.8
+> > sata	4		44.6		44.4
+> > sata	8		70.4		72.8
+> > sata	16		75.2		89.6
+> > sata	32		92.7		96.0
+> > ram	1		2399.1		2398.8
+> > ram	2		257.3		3603.0
+> > ram	4		395.6		4827.9
+> > ram	8		659.0		4721.1
+> > ram	16		1326.4		4373.3
+> > ram	32		1964.2		3816.3
+> > 
+> > I used a ramdisk to emulate a "fast" disk since I don't happen to have a
+> > clariion sitting around.  I didn't test single thread in the sata case as it
+> > should be relatively the same between the two.  Thanks,
 > 
-> Testing EEPROM reads and writes with ethtool appeared to work but after
-> a reboot of the system the ethernet device (see lspci -v output) was no
-> longer present.  Could invalid EEPROM contents with a valid CRC (as
-> would be the case after my read/write tests) result in the device
-> failing to enumerate on the PCIe bus?
+> This is all a bit mysterious.  That delay doesn't have much at all to
+> do with commit times.  The code is looping around giving other
+> userspace processes an opportunity to get scheduled and to run an fsync
+> and to join the current transaction rather than having to start a new
+> one.
+> 
+> (that code was quite effective when I first added it, but in more
+> recent testing, which was some time ago, it doesn't appear to provide
+> any improvement.  This needs to be understood)
 
-Is this still happening in Linus's current tree?
+I don't think it is mysterious at all.  With a HZ=100 system 1 jiffie
+is 10ms, which was comparable to the seek time of a disk, so sleeping
+for 1 jiffie to avoid doing 2 transactions was a win.  With a flash
+device (simulated by RAM here) seek time is 1ms so waiting 10ms
+isn't going to be useful if there are only 2 threads and both have
+already joined the transaction.
 
-Was 2.6.26 OK?
+> Also, I'd expect that the average commit time is much longer that one
+> jiffy on most disks, and perhaps even on fast disks and maybe even on
+> ramdisk.  So perhaps what's happened here is that you've increased the
+> sleep period and more tasks are joining particular transactions.
+> 
+> Or you've shortened the sleep time (which wasn't really doing anything
+> useful) and this causes tasks to spend less time asleep.
 
-Thanks.
+I think both are true.  By making the sleep time dynamic it removes
+the "useless" sleep time, but can also increase the sleep time if
+there are many threads and the commit cost is better amortized over
+more operations.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
