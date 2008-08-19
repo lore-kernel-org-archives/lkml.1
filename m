@@ -1,114 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbYHSEsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbYHSEvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753769AbYHSEsV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 00:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbYHSEsO
+	id S1754236AbYHSEvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 00:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbYHSEvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 00:48:14 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:12451 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751551AbYHSEsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 00:48:13 -0400
-Date: Tue, 19 Aug 2008 06:48:54 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Larry Finger <Larry.Finger@lwfinger.net>,
-       David Woodhouse <dwmw2@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Regression in 2.6.27-rc2 when cross-building the kernel
-Message-ID: <20080819044854.GA2276@uranus.ravnborg.org>
-References: <48A63D98.3070900@lwfinger.net> <20080818193253.GA30856@uranus.ravnborg.org> <48A9FA05.9000601@lwfinger.net>
+	Tue, 19 Aug 2008 00:51:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41990 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751587AbYHSEvF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 00:51:05 -0400
+Date: Mon, 18 Aug 2008 21:50:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Xiaoming.Zhang" <Xiaoming.Zhang@resilience.com>
+Cc: shemminger@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Eric Brower <eric.brower@resilience.com>
+Subject: Re: [PATCH] driver/net/skge.c: Restart the interface when it's
+ options or pauseparam is set
+Message-Id: <20080818215046.f035c715.akpm@linux-foundation.org>
+In-Reply-To: <200808071102.52415.Xiaoming.Zhang@resilience.com>
+References: <200808071102.52415.Xiaoming.Zhang@resilience.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48A9FA05.9000601@lwfinger.net>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 18, 2008 at 05:39:01PM -0500, Larry Finger wrote:
-> Sam Ravnborg wrote:
-> >
-> >Can you try do do a "make V=1 modules_install install" and post the
-> >output up to and including the first call to fixdep.
-> >
-> >Neither of these targets should use fixdep and I assume it is 
-> >down in firmware/ but lets see.
+On Thu, 7 Aug 2008 11:02:52 +0800 "Xiaoming.Zhang" <Xiaoming.Zhang@resilience.com> wrote:
 
-And Larry log say it is so.
+> Hi,
+> 
+> We have an issue of the skge driver: The card won't work when it's options are
+> changed. That's the hardware info:
+> # lspci -v
+> 05:04.0 Ethernet controller: Marvell Technology Group Ltd. 88E8001 Gigabit Ethernet Controller (rev 13)
+>         Subsystem: Marvell Technology Group Ltd. Marvell RDK-8001
+>         Flags: bus master, 66MHz, medium devsel, latency 32, IRQ 16
+>         Memory at d042c000 (32-bit, non-prefetchable) [size=16K]
+>         I/O ports at d000 [size=256]
+>         [virtual] Expansion ROM at 20400000 [disabled] [size=128K]
+>         Capabilities: [48] Power Management version 2
+>         Capabilities: [50] Vital Product Data
+> 
+> The happens in both Linux-2.6.26(skge version 1.23) and RHEL5.2(skge version 1.6).
+> 
+> 
+> For example, at first it is set to "speed 1000 duplex full auto-neg on" and
+> it works, then run 
+>        ethtool -s <ethx> autoneg off
+> or     ethtool -s <ethx> speed 100 duplex full autoneg off
+> 
+> Then it will stop working. After that if we restart the interface:
+> 	ifconifg <ethx> down
+> 	ifconfig <ethx> up
+> It will work again. And `ethtool -A' has the same issue.
+> 
+> So we think after setting the options, the interface should be restarted.
+> That's the patch, thank you.
+> 
+> 
+> skge: Restart the interface when it's options or pauseparam is set.
+> 
+> Signed-off-by: Zhang Xiaoming <xiaoming.zhang@resilience.com>
+> ---
+> diff -uprN linux-2.6.26/drivers/net/skge.c.orig linux-2.6.26/drivers/net/skge.c
+> --- linux-2.6.26/drivers/net/skge.c.orig        2008-08-07 01:26:34.000000000 +0800
+> +++ linux-2.6.26/drivers/net/skge.c     2008-08-07 01:29:31.000000000 +0800
 
-David - did you have a patch to fix this already?
+Your email client turns tabs into spaces.  I turn spaces back into
+tabs, but it gets dull after a while.
 
-[See details below]
+> @@ -367,8 +367,10 @@ static int skge_set_settings(struct net_
+>         skge->autoneg = ecmd->autoneg;
+>         skge->advertising = ecmd->advertising;
+> 
+> -       if (netif_running(dev))
+> -               skge_phy_reset(skge);
+> +       if (netif_running(dev)) {
+> +               skge_down(dev);
+> +               skge_up(dev);
+> +       }
+> 
+>         return (0);
+>  }
+> @@ -609,8 +611,10 @@ static int skge_set_pauseparam(struct ne
+>                         skge->flow_control = FLOW_MODE_NONE;
+>         }
+> 
+> -       if (netif_running(dev))
+> -               skge_phy_reset(skge);
+> +       if (netif_running(dev)) {
+> +               skge_down(dev);
+> +               skge_up(dev);
+> +       }
+> 
+>         return 0;
+>  }
 
-	Sam
+Seems a bit drastic, although skge_set_ring_param() already does this.
 
-> 
-> finger@mtech:/ide1/mtech/wireless-testing> sudo make V=1 
-> modules_install install
-> make -f /ide1/mtech/wireless-testing/scripts/Makefile.modinst
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/arch/x86/crypto; cp 
-> arch/x86/crypto/aes-i586.ko 
-> /lib/modules/2.6.27-rc2-wl/kernel/arch/x86/crypto ; true 
-> /lib/modules/2.6.27-rc2-wl/kernel/arch/x86/crypto/aes-i586.ko
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-> crypto/aead.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-> /lib/modules/2.6.27-rc2-wl/kernel/crypto/aead.ko
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-> crypto/aes_generic.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-> /lib/modules/2.6.27-rc2-wl/kernel/crypto/aes_generic.ko
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-> crypto/anubis.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-> /lib/modules/2.6.27-rc2-wl/kernel/crypto/anubis.ko
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-> crypto/arc4.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-> /lib/modules/2.6.27-rc2-wl/kernel/crypto/arc4.ko
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-> crypto/authenc.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-> /lib/modules/2.6.27-rc2-wl/kernel/crypto/authenc.ko
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-> crypto/blowfish.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-> /lib/modules/2.6.27-rc2-wl/kernel/crypto/blowfish.ko
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-> crypto/cast5.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-> /lib/modules/2.6.27-rc2-wl/kernel/crypto/cast5.ko
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-> crypto/cast6.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-> /lib/modules/2.6.27-rc2-wl/kernel/crypto/cast6.ko
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp crypto/cbc.ko 
-> /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-> /lib/modules/2.6.27-rc2-wl/kernel/crypto/cbc.ko
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-> crypto/crc32c.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-> /lib/modules/2.6.27-rc2-wl/kernel/crypto/crc32c.ko
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-> crypto/crypto_blkcipher.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; 
-> true /lib/modules/2.6.27-rc2-wl/kernel/crypto/crypto_blkcipher.ko
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/crypto; cp 
-> crypto/crypto_null.ko /lib/modules/2.6.27-rc2-wl/kernel/crypto ; true 
-> /lib/modules/2.6.27-rc2-wl/kernel/crypto/crypto_null.ko
-> 
-> -- snipped similar commands that were repeated --
-> 
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/sound/pci/ac97; cp 
-> sound/pci/ac97/snd-ac97-codec.ko 
-> /lib/modules/2.6.27-rc2-wl/kernel/sound/pci/ac97 ; true 
-> /lib/modules/2.6.27-rc2-wl/kernel/sound/pci/ac97/snd-ac97-codec.ko
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/sound/pci; cp 
-> sound/pci/snd-es1938.ko /lib/modules/2.6.27-rc2-wl/kernel/sound/pci ; 
-> true /lib/modules/2.6.27-rc2-wl/kernel/sound/pci/snd-es1938.ko
->   mkdir -p /lib/modules/2.6.27-rc2-wl/kernel/sound; cp 
-> sound/soundcore.ko /lib/modules/2.6.27-rc2-wl/kernel/sound ; true 
-> /lib/modules/2.6.27-rc2-wl/kernel/sound/soundcore.ko
-> make -f /ide1/mtech/wireless-testing/scripts/Makefile.fwinst 
-> obj=firmware __fw_modinst
->   gcc -Wp,-MD,firmware/.ihex2fw.d -Wall -Wstrict-prototypes -O2 
-> -fomit-frame-pointer     -o firmware/ihex2fw firmware/ihex2fw.c
-> /bin/sh: scripts/basic/fixdep: cannot execute binary file
-> make[1]: *** [firmware/ihex2fw] Error 126
-> make: *** [_modinst_post] Error 2
-> 
-> 
-> As you suspected, it is when building firmware.
-> 
-> Larry
+skge_set_ring_param() checks for errors from skge_up(), but the above
+code does not.
+
+Mysterious code sequences like the above should be commented, IMO.
+
+I suspect this patch will be treated more as a bug report than as a
+patch.  We shall see.
+
