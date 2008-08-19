@@ -1,226 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbYHSIKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbYHSISD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755192AbYHSIKz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 04:10:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbYHSIKh
+	id S1754881AbYHSISD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 04:18:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbYHSIRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 04:10:37 -0400
-Received: from smtpauth.hypersurf.com ([209.237.0.8]:50228 "EHLO
-	smtpauth.hypersurf.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752752AbYHSIKf (ORCPT
+	Tue, 19 Aug 2008 04:17:46 -0400
+Received: from p01c12o148.mxlogic.net ([208.65.145.71]:58729 "EHLO
+	p01c12o148.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753100AbYHSIRo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 04:10:35 -0400
-Message-ID: <48AA7F47.5050805@hypersurf.com>
-Date: Tue, 19 Aug 2008 01:07:35 -0700
-From: Kevin Diggs <kevdig@hypersurf.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i486; en-US; rv:1.8b2) Gecko/20050724
+	Tue, 19 Aug 2008 04:17:44 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [Fwd: Corrections please ...]
-References: <48AA27AF.9070407@hypersurf.com> <20080819024125.GM19760@disturbed>
-In-Reply-To: <20080819024125.GM19760@disturbed>
-Content-Type: multipart/mixed;
- boundary="------------080403000003070805030906"
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Linux 2.6.26 edac errors and ASUS P5W DH Deluxe motherboard
+Date: Tue, 19 Aug 2008 09:17:41 +0100
+Message-ID: <0F10A59FDFFDFD4E9BEBD7365DE672550214F0B1@uk-email.terastack.bluearc.com>
+In-Reply-To: <99716.17944.qm@web50106.mail.re2.yahoo.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Linux 2.6.26 edac errors and ASUS P5W DH Deluxe motherboard
+Thread-Index: AckBawTIF6M1CXTESdybYCFhrEHKvAAY6nOg
+References: <0F10A59FDFFDFD4E9BEBD7365DE672550214F027@uk-email.terastack.bluearc.com> <99716.17944.qm@web50106.mail.re2.yahoo.com>
+From: "Andy Chittenden" <andyc@bluearc.com>
+To: "Doug Thompson" <norsk5@yahoo.com>, <linux-kernel@vger.kernel.org>
+X-Spam: [F=0.1000000000; S=0.100(2008081101)]
+X-MAIL-FROM: <andyc@bluearc.com>
+X-SOURCE-IP: [62.190.48.218]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080403000003070805030906
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi Doug
 
-Dave Chinner wrote:
-> On Mon, Aug 18, 2008 at 06:53:51PM -0700, Kevin Diggs wrote:
-> 
->>Could someone ... anyone take a look at these kernel doc additions?
-> 
-> .....
-> 
->>+/**
->>+ * complete: - signals a single thread waiting on this completion
->>+ * @x:  holds the state of this particular completion
->>+ *
->>+ * This will wake up a single thread waiting on this completion. If  
->>multiple
-> 
-> 
-> Your mailer appears to be wrapping lines.
-> 
-> 
->>+ * threads are waiting ???
->>+ */
->> void complete(struct completion *x)
->> {
->>        unsigned long flags;
-> 
-> 
-> complete() will only wake one waiting thread. If there are multiple
-> waiters, then further calls to complete() are required to wake them,
-> or a single call to complete_all() could be used.
-> 
-> 
->> EXPORT_SYMBOL(wait_for_completion);
->>
->>+/**
+> I don't know which version of the  source code was used in the 25 or 
+> the 26 versions of the debian package, but it might be that the later 
+> one is really finding errors as I remember there was some patches 
+> against the i82975x module.
 
-Take 2 ...
+I've done a diff between 2.6.25 and 2.6.26 source code of the
+i82975x_edac module. As you can see, there's not much difference:
 
-Files attached this time ...
+# diff -u linux-2.6.2[56]/drivers/edac/i82975x_edac.c 
+--- linux-2.6.25/drivers/edac/i82975x_edac.c    2008-04-17
+03:49:44.000000000 +0100
++++ linux-2.6.26/drivers/edac/i82975x_edac.c    2008-07-13
+22:51:29.000000000 +0100
+@@ -14,7 +14,7 @@
+ #include <linux/pci.h>
+ #include <linux/pci_ids.h>
+ #include <linux/slab.h>
+-
++#include <linux/edac.h>
+ #include "edac_core.h"
+ 
+ #define I82975X_REVISION       " Ver: 1.0.0 " __DATE__
+@@ -611,6 +611,9 @@
+ 
+        debugf3("%s()\n", __func__);
+ 
++       /* Ensure that the OPSTATE is set correctly for POLL or NMI */
++       opstate_init();
++
+        pci_rc = pci_register_driver(&i82975x_driver);
+        if (pci_rc < 0)
+                goto fail0;
+@@ -664,3 +667,6 @@
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Arvind R. <arvind@acarlab.com>");
+ MODULE_DESCRIPTION("MC support for Intel 82975 memory hub
+controllers");
++
++module_param(edac_op_state, int, 0444);
++MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state:
+0=Poll,1=NMI");
 
-kevin
 
---------------080403000003070805030906
-Content-Type: text/plain;
- name="completion.h.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="completion.h.diff"
+> Are they ALL the same row, or are they different rows? If different, 
+> they could be legit. The same row there might be an issue.
 
---- include/linux/completion.h.orig	2008-08-13 00:56:52.000000000 -0700
-+++ include/linux/completion.h	2008-08-18 13:00:23.000000000 -0700
-@@ -10,6 +10,16 @@
- 
- #include <linux/wait.h>
- 
-+/**
-+ * struct completion - structure used to maintain state for a "completion"
-+ * @done:  counting variable used to signal completion
-+ * @wait:  internal wait queue head; used for locking and synchronization
-+ *
-+ * This is the structure used to maintain the state for a "completion". See
-+ * also:  complete(), wait_for_completion() (and friends _timeout,
-+ * _interruptible, _interruptible_timeout, and _killable), init_completion(),
-+ * and macros DECLARE_COMPLETION() and INIT_COMPLETION().
-+ */
- struct completion {
- 	unsigned int done;
- 	wait_queue_head_t wait;
-@@ -36,6 +46,13 @@
- # define DECLARE_COMPLETION_ONSTACK(work) DECLARE_COMPLETION(work)
- #endif
- 
-+/**
-+ * init_completion: - Initialize a dynamically allocated completion
-+ * @x:  completion structure that is to be initialized
-+ *
-+ * This inline function will initialize a dynamically created completion
-+ * structure.
-+ */
- static inline void init_completion(struct completion *x)
- {
- 	x->done = 0;
+Hmm, they're different. On another m/c, I've managed to find the logged
+info when it booted up 2.6.26:
 
---------------080403000003070805030906
-Content-Type: text/plain;
- name="sched.c.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="sched.c.diff"
+/var/log/kern.log.1.gz:Aug  4 11:38:15 diesel kernel: [    9.079151]
+EDAC MC0: UE page 0x7fe0b, offset 0x0, grain 128, row 1, labels ":":
+i82975x UE
+/var/log/kern.log.1.gz:Aug  4 11:38:15 diesel kernel: [   10.104762]
+EDAC MC0: UE page 0x7e451, offset 0x0, grain 128, row 1, labels ":":
+i82975x UE
+/var/log/kern.log.1.gz:Aug  4 11:38:15 diesel kernel: [   11.110256]
+EDAC MC0: UE page 0x7e7ae, offset 0x0, grain 128, row 1, labels ":":
+i82975x UE
+...
+/var/log/kern.log.1.gz:Aug  4 11:52:05 diesel kernel: [   11.636753]
+EDAC MC0: UE page 0x60000, offset 0x0, grain 128, row 1, labels ":":
+i82975x UE
+/var/log/kern.log.1.gz:Aug  4 11:52:05 diesel kernel: [   12.641616]
+EDAC MC0: UE page 0xde771, offset 0x0, grain 128, row 3, labels ":":
+i82975x UE
+/var/log/kern.log.1.gz:Aug  4 11:52:05 diesel kernel: [   13.734052]
+EDAC MC0: UE page 0xde771, offset 0x0, grain 128, row 3, labels ":":
+i82975x UE
+/var/log/kern.log.1.gz:Aug  4 11:52:05 diesel kernel: [   14.743449]
+EDAC MC0: UE page 0xde771, offset 0x0, grain 128, row 3, labels ":":
+i82975x UE
 
---- kernel/sched.c.orig	2008-08-13 02:22:42.000000000 -0700
-+++ kernel/sched.c	2008-08-19 00:42:41.000000000 -0700
-@@ -4363,6 +4363,16 @@
- }
- EXPORT_SYMBOL_GPL(__wake_up_sync);	/* For internal use only */
- 
-+/**
-+ * complete: - signals a single thread waiting on this completion
-+ * @x:  holds the state of this particular completion
-+ *
-+ * This will wake up a single thread waiting on this completion. If multiple
-+ * threads are waiting ??? (looking for comments on which thread/context will
-+ * be awakened?)
-+ *
-+ * See also complete_all().
-+ */
- void complete(struct completion *x)
- {
- 	unsigned long flags;
-@@ -4374,6 +4384,12 @@
- }
- EXPORT_SYMBOL(complete);
- 
-+/**
-+ * complete_all: - signals all threads waiting on this completion
-+ * @x:  holds the state of this particular completion
-+ *
-+ * This will wake up all threads waiting on this particular completion event.
-+ */
- void complete_all(struct completion *x)
- {
- 	unsigned long flags;
-@@ -4425,12 +4441,28 @@
- 	return timeout;
- }
- 
-+/**
-+ * wait_for_completion: - waits for completion of a task
-+ * @x:  holds the state of this particular completion
-+ *
-+ * This waits to be signaled for completion of a specific task. It is NOT
-+ * interruptible and there is no timeout.
-+ */
- void __sched wait_for_completion(struct completion *x)
- {
- 	wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_UNINTERRUPTIBLE);
- }
- EXPORT_SYMBOL(wait_for_completion);
- 
-+/**
-+ * wait_for_completion_timeout: - waits for completion of a task (w/timeout)
-+ * @x:  holds the state of this particular completion
-+ * @timeout:  timeout value in jiffies
-+ *
-+ * This waits for either a completion of a specific task to be signaled or for a
-+ * specified timeout to expire. The timeout is in jiffies. It is not
-+ * interruptible.
-+ */
- unsigned long __sched
- wait_for_completion_timeout(struct completion *x, unsigned long timeout)
- {
-@@ -4438,6 +4470,13 @@
- }
- EXPORT_SYMBOL(wait_for_completion_timeout);
- 
-+/**
-+ * wait_for_completion_interruptible: - waits for completion of a task (w/intr)
-+ * @x:  holds the state of this particular completion
-+ *
-+ * This waits for completion of a specific task to be signaled. It is
-+ * interruptible.
-+ */
- int __sched wait_for_completion_interruptible(struct completion *x)
- {
- 	long t = wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_INTERRUPTIBLE);
-@@ -4447,6 +4486,14 @@
- }
- EXPORT_SYMBOL(wait_for_completion_interruptible);
- 
-+/**
-+ * wait_for_completion_interruptible_timeout: - waits for completion (w/(to,intr))
-+ * @x:  holds the state of this particular completion
-+ * @timeout:  timeout value in jiffies
-+ *
-+ * This waits for either a completion of a specific task to be signaled or for a
-+ * specified timeout to expire. It is interruptible. The timeout is in jiffies.
-+ */
- unsigned long __sched
- wait_for_completion_interruptible_timeout(struct completion *x,
- 					  unsigned long timeout)
-@@ -4455,6 +4502,13 @@
- }
- EXPORT_SYMBOL(wait_for_completion_interruptible_timeout);
- 
-+/**
-+ * wait_for_completion_killable: - waits for completion of a task (killable)
-+ * @x:  holds the state of this particular completion
-+ *
-+ * This waits to be signaled for completion of a specific task. It can be
-+ * interrupted by a kill signal.
-+ */
- int __sched wait_for_completion_killable(struct completion *x)
- {
- 	long t = wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_KILLABLE);
+> When properly set by edac-utils
+(http://sourceforge.net/projects/edac-utils/) ...
 
---------------080403000003070805030906--
+Thanks for the pointer. I've now installed edac-utils on the offending
+motherboards. It seems that the motherboard is half known about:
+
+# edac-ctl --mainboard
+edac-ctl: mainboard: ASUSTEK COMPUTER INC P5W DH Deluxe
+# edac-ctl --print-labels
+No dimm labels for ASUSTEK COMPUTER INC P5W DH Deluxe
+
+dmidecode gives some memory module info:
+
+Handle 0x0009, DMI type 6, 12 bytes
+Memory Module Information
+        Socket Designation: DIMM0
+        Bank Connections: 9 11
+        Current Speed: 30 ns
+        Type: Unknown FPM Parity ECC SDRAM
+        Installed Size: 2048 MB (Double-bank Connection)
+        Enabled Size: 2048 MB (Double-bank Connection)
+        Error Status: OK
+
+Handle 0x000A, DMI type 6, 12 bytes
+Memory Module Information
+        Socket Designation: DIMM1
+        Bank Connections: 9 11
+        Current Speed: 30 ns
+        Type: Unknown FPM Parity ECC SDRAM
+        Installed Size: 2048 MB (Double-bank Connection)
+        Enabled Size: 2048 MB (Double-bank Connection)
+        Error Status: OK
+
+Handle 0x000B, DMI type 6, 12 bytes
+Memory Module Information
+        Socket Designation: DIMM2
+        Bank Connections: 9 11
+        Current Speed: 30 ns
+        Type: Unknown FPM Parity ECC SDRAM
+        Installed Size: 2048 MB (Double-bank Connection)
+        Enabled Size: 2048 MB (Double-bank Connection)
+        Error Status: OK
+
+Handle 0x000C, DMI type 6, 12 bytes
+Memory Module Information
+        Socket Designation: DIMM3
+        Bank Connections: 9 11
+        Current Speed: 30 ns
+        Type: Unknown FPM Parity ECC SDRAM
+        Installed Size: 2048 MB (Double-bank Connection)
+        Enabled Size: 2048 MB (Double-bank Connection)
+        Error Status: OK
+
+> Since I don't have one of these chipsets, is it possible I could
+access to one or more of these
+machines to take a look around?
+
+Unfortunately not. If there's any commands you'd like me to run, then
+please let me know.
+
+If you could let me know what I need to put in /etc/edac/labels.db, that
+would be appreciated too.
+
+-- 
+Andy, BlueArc Engineering
