@@ -1,95 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbYHSWaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbYHSWcK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756135AbYHSWaj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 18:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbYHSWa1
+	id S1755618AbYHSWcK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 18:32:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbYHSWb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 18:30:27 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:2012 "EHLO mms1.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752747AbYHSWa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 18:30:26 -0400
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
-Date: Tue, 19 Aug 2008 15:30:25 -0700
-From: "Matt Carlson" <mcarlson@broadcom.com>
-To: "Marc Haber" <mh+linux-kernel@zugschlus.de>
-cc: "Michael Chan" <mchan@broadcom.com>, "David Miller" <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Matthew Carlson" <mcarlson@broadcom.com>
-Subject: Re: 2.6.26/tg3 ping roundtrip times > 2000 ms on local network
-Message-ID: <20080819223025.GA11221@xw6200.broadcom.net>
-References: <20080819172019.GA5823@torres.zugschlus.de>
- <20080819.132040.188336475.davem@davemloft.net>
- <1219166962.13090.12.camel@HP1>
- <20080819221439.GA19106@torres.zugschlus.de>
-MIME-Version: 1.0
-In-Reply-To: <20080819221439.GA19106@torres.zugschlus.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 19 Aug 2008 22:30:16.0229 (UTC)
- FILETIME=[27527D50:01C9024B]
-X-WSS-ID: 64B596F04E0121017346-01-01
-Content-Type: multipart/mixed;
- boundary=3V7upXqbjpZ4EhLz
-Content-Disposition: inline
+	Tue, 19 Aug 2008 18:31:56 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:52600 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751364AbYHSWbz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 18:31:55 -0400
+Date: Tue, 19 Aug 2008 15:31:00 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Dave Airlie <airlied@linux.ie>, lkml <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [RFC: -next patch] don't allow FB_SIS=m, DRM_SIS=y
+Message-Id: <20080819153100.3bc3d8ef.randy.dunlap@oracle.com>
+In-Reply-To: <20080813215728.GD7071@cs181140183.pp.htv.fi>
+References: <20080807083228.0fc40405.randy.dunlap@oracle.com>
+	<alpine.DEB.0.82.0808080008050.13875@skynet.skynet.ie>
+	<20080807175552.67d5385d.randy.dunlap@oracle.com>
+	<alpine.DEB.0.82.0808080309270.13875@skynet.skynet.ie>
+	<20080812125906.GC13910@cs181140183.pp.htv.fi>
+	<alpine.DEB.0.82.0808122236130.13090@skynet.skynet.ie>
+	<20080813215728.GD7071@cs181140183.pp.htv.fi>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 14 Aug 2008 00:57:28 +0300 Adrian Bunk wrote:
 
---3V7upXqbjpZ4EhLz
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-Can you try the attached patch?  The patch reduces the delay back to
-what it should have been.  If this helps, then it means you are being
-bitten by the same bug the upstream patch fixed.
-
-On Tue, Aug 19, 2008 at 03:14:39PM -0700, Marc Haber wrote:
-> On Tue, Aug 19, 2008 at 10:29:22AM -0700, Michael Chan wrote:
-> > It has been fixed a few days ago in the net-2.6 tree:
-> >
-> > tg3: Fix firmware event timeouts
-> >
-> > and it should be in Linus' tree very soon.  This reminds us to send the
-> > same patch to -stable.
+> On Tue, Aug 12, 2008 at 10:37:00PM +0100, Dave Airlie wrote:
+> > 
+> > > > 
+> > > > Maybe the other way around, I don't want DRM_SIS influencing whether 
+> > > > FB_SIS is on or off, if the user wants sisfb on, then when they select it, 
+> > > > DRM_SIS should be built in the same way. But if sisfb isn't selected by 
+> > > > the user, then selecting DRM_SIS shouldn't enable it.
+> > > 
+> > > If FB_SIS=m, should DRM_SIS=y be allowed or should in this case DRM_SIS 
+> > > be restricted to n/m?
+> > 
+> > Probably not. if FB_SIS is selected at all, DRM_SIS should match it, if 
+> > FB_SIS isn't selected, DRM_SIS should not select it.
 > 
-> Not having much clue about git, can you send me the patch to try
-> locally?
+> I assume FB_SIS=y, DRM_SIS=m should still be possible?
 > 
-> I am not even sure to have a network issue here.
+> If this assumption is correct the fix is below.
 > 
-> Greetings
-> Marc
+> > Dave.
+> 
+> cu
+> Adrian
+> 
+> 
+> <--  snip  -->
+> 
+> 
+> FB_SIS=m, DRM_SIS=y is not a legal configuration.
+> 
+> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> c303119b9561e13be97f3d4b0d7eaa6930fc21d8 
+> diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+> index 610d6fd..bf9003e 100644
+> --- a/drivers/gpu/drm/Kconfig
+> +++ b/drivers/gpu/drm/Kconfig
+> @@ -87,6 +87,7 @@ config DRM_MGA
+>  config DRM_SIS
+>  	tristate "SiS video cards"
+>  	depends on DRM && AGP
+> +	depends on FB_SIS || FB_SIS=n
+>  	help
+>  	  Choose this option if you have a SiS 630 or compatible video
+>            chipset. If M is selected the module will be called sis. AGP
 > 
 > --
-> -----------------------------------------------------------------------------
-> Marc Haber         | "I don't trust Computers. They | Mailadresse im Header
-> Mannheim, Germany  |  lose things."    Winona Ryder | Fon: *49 621 72739834
-> Nordisch by Nature |  How to make an American Quilt | Fax: *49 3221 2323190
-> 
 
---3V7upXqbjpZ4EhLz
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: attachment;
- filename=timeout.patch
-Content-Transfer-Encoding: 7bit
+Thanks, Adrian.
 
-diff -Nrup a/drivers/net/tg3.c b/drivers/net/tg3.c
---- a/drivers/net/tg3.c	2008-08-06 09:19:01.000000000 -0700
-+++ b/drivers/net/tg3.c	2008-08-19 15:26:50.000000000 -0700
-@@ -1677,7 +1677,7 @@ static void tg3_wait_for_event_ack(struc
- 	int i;
- 
- 	/* Wait for up to 2.5 milliseconds */
--	for (i = 0; i < 250000; i++) {
-+	for (i = 0; i < 250; i++) {
- 		if (!(tr32(GRC_RX_CPU_EVENT) & GRC_RX_CPU_DRIVER_EVENT))
- 			break;
- 		udelay(10);
+I don't know if that's the proper fix, but something needs to be fixed/merged.  :(
 
---3V7upXqbjpZ4EhLz--
 
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
