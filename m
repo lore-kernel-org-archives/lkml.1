@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbYHSQ47@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbYHSQ67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756702AbYHSQ47 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 12:56:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbYHSQ4v
+	id S1756777AbYHSQ67 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 12:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbYHSQ6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 12:56:51 -0400
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:54277 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751777AbYHSQ4v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 12:56:51 -0400
-Message-ID: <48AAFB4C.1030300@lwfinger.net>
-Date: Tue, 19 Aug 2008 11:56:44 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Tue, 19 Aug 2008 12:58:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53445 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751049AbYHSQ6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 12:58:50 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #11330] int3: 0000 in tsc_read_refs when using powernow_k7
+Date: Tue, 19 Aug 2008 19:02:10 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Alok Kataria <akataria@vmware.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>, Mikko Vinni <mmvinni@yahoo.com>,
+       the arch/x86 maintainers <x86@kernel.org>
+References: <DLWXHEp37wB.A.duD.yZzpIB@albercik> <20080818183328.GB22989@elte.hu> <20080819002232.GF9914@elte.hu>
+In-Reply-To: <20080819002232.GF9914@elte.hu>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Regression in 2.6.27-rc2 when cross-building the kernel
-References: <48A63D98.3070900@lwfinger.net>	 <20080818193253.GA30856@uranus.ravnborg.org>	 <48A9FA05.9000601@lwfinger.net> <20080819044854.GA2276@uranus.ravnborg.org> <1219132135.3184.461.camel@pmac.infradead.org>
-In-Reply-To: <1219132135.3184.461.camel@pmac.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808191902.11282.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Tue, 2008-08-19 at 06:48 +0200, Sam Ravnborg wrote:
->> And Larry log say it is so.
->>
->> David - did you have a patch to fix this already?
+On Tuesday, 19 of August 2008, Ingo Molnar wrote:
 > 
-> The fix was to 'build' the firmware blobs at the same time as 'make
-> modules', so that they're already built and don't need to be built at
-> modules_install time. That went in a while ago though.
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> Why is ihex2fw being rebuilt?
+> > > There is this fix 
+> > > 
+> > > commit d554d9a4295dd0595d12eeccbc55d1f495b15176
+> > > Author: Marcin Slusarz <marcin.slusarz@gmail.com>
+> > > Date:   Mon Aug 11 00:07:44 2008 +0200
+> > > 
+> > >     x86, tsc: fix section mismatch warning
+> > > 
+> > > which is in x86/tip-master which fixes this issue. 
+> > > I don't see the fix in the mainline tree yet. 
+> > > 
+> > > Maybe Ingo, has it queued, for upstream ?
+> > > Ingo, other than a section mismatch warning it also fixes a real bug.
+> > 
+> > yeah, hpa queued it up into x86/urgent as well earlier today, it will go 
+> > out with the next pull request.
 > 
+> FYI, commit d554d9a4295d is upstream now, and will be part of -rc4.
 
-sudo make V=2 modules_install says:
+Thanks, I closed the bug.
 
-   HOSTCC  firmware/ihex2fw - due to: /usr/include/gnu/stubs-64.h 
-/usr/lib64/gcc/x86_64-suse-linux/4.3/include/stddef.h 
-/usr/lib64/gcc/x86_64-suse-linux/4.3/include-fixed/limits.h 
-/usr/lib64/gcc/x86_64-suse-linux/4.3/include-fixed/syslimits.h 
-/usr/lib64/gcc/x86_64-suse-linux/4.3/include/stdarg.h
-/bin/sh: scripts/basic/fixdep: cannot execute binary file
-make[1]: *** [firmware/ihex2fw] Error 126
-make: *** [_modinst_post] Error 2
-
-Larry
-
+Rafael
