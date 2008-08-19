@@ -1,91 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759418AbYHSUUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758951AbYHSUX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759418AbYHSUUz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 16:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759337AbYHSUUm
+	id S1758951AbYHSUX2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 16:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbYHSUXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 16:20:42 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48912
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754141AbYHSUUk (ORCPT
+	Tue, 19 Aug 2008 16:23:20 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:57856 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751107AbYHSUXT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 16:20:40 -0400
-Date: Tue, 19 Aug 2008 13:20:40 -0700 (PDT)
-Message-Id: <20080819.132040.188336475.davem@davemloft.net>
-To: mh+linux-kernel@zugschlus.de
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26/tg3 ping roundtrip times > 2000 ms on local network
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080819172019.GA5823@torres.zugschlus.de>
-References: <20080819172019.GA5823@torres.zugschlus.de>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 19 Aug 2008 16:23:19 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqIEABDEqkhMRKxB/2dsb2JhbACBYrU+gVs
+Date: Tue, 19 Aug 2008 16:23:16 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       "Randy.Dunlap" <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, mpm@selenic.com, tglx@linutronix.de,
+       rostedt@goodmis.org, cl@linux-foundation.org, tzanussi@gmail.com
+Subject: Re: [PATCH 1/5] Revert "kmemtrace: fix printk format warnings"
+Message-ID: <20080819202316.GA4188@Krystal>
+References: <1219167807-5407-1-git-send-email-eduard.munteanu@linux360.ro> <Pine.LNX.4.64.0808191049260.7877@shark.he.net> <20080819175440.GA5435@localhost> <20080819181652.GA29757@Krystal> <20080819183203.GB5520@localhost> <48AB1E43.2010408@cs.helsinki.fi>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <48AB1E43.2010408@cs.helsinki.fi>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:22:50 up 76 days,  1:03,  7 users,  load average: 0.21, 0.87,
+	1.10
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marc Haber <mh+linux-kernel@zugschlus.de>
-Date: Tue, 19 Aug 2008 19:20:19 +0200
+* Pekka Enberg (penberg@cs.helsinki.fi) wrote:
+> Eduard - Gabriel Munteanu wrote:
+>> On Tue, Aug 19, 2008 at 02:16:53PM -0400, Mathieu Desnoyers wrote:
+>>> Question :
+>>>
+>>> Is this kmemtrace marker meant to be exposed to userspace ?
+>>>
+>>> I suspect not. In all case, not directly. I expect in-kernel probes to
+>>> be connected on these markers which will get the arguments they need,
+>>> and maybe access the inner data structures. Anyhow, tracepoints should
+>>> be used for that, not markers. You can later put markers in the probes
+>>> which are themselves connected to tracepoints.
+>>>
+>>> Tracepoints = in-kernel tracing API.
+>>>
+>>> Markers = Data-formatting tracing API, meant to export the data either
+>>> to user-space in text or binary format.
+>>>
+>>> See
+>>>
+>>> http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=shortlog
+>>>
+>>> tracepoint-related patches.
+>> I think we're ready to try tracepoints. Pekka, could you merge Mathieu's
+>> tracepoints or otherwise provide a branch where I could submit a
+>> tracepoint conversion patch for kmemtrace?
+>
+> Sorry, that's too much of a hassle for me. I'll happily take your 
+> conversion patch once tracepoints hit mainline. Mathieu, are you aiming for 
+> 2.6.28?
 
-[ netdev added to CC: ]
+Probably. it's in -tip right now, and the new ftrace depends on it. So
+at least 2.6.28 yes.
 
-> I have one HP DL 140 G1 running with Debian stable and a
-> locally-built, vanilla kernel. With 2.6.25.11, everything is fine.
-> 
-> But, after updating to 2.6.26.2, I noticed that pinging the host on
-> the local ethernet sometimes (e.g. several times a minute, but not
-> always) results in a round-trip time of larger than two seconds. The
-> packets are not lost though, they're only severly delayed. For an ssh
-> session to the host, this feels like somebody rocking a bad network
-> connector. The same behavior is visible with 2.6.26 and 2.6.26.1.
-> 
-> Going back to 2.6.25.11 immediately fixes the issue for me.
-> 
-> Syslog doesn't say anything conspicious, unfortunately. As I don't
-> have local access to the box, I cannot say whether it's only the
-> network that freezes or whether it's the entire box.
-> 
-> Does it make sense to test any later 2.6.25.x kernel, or is there any
-> post-2.6.26 patch available that may fix the issue for me?
-> 
-> Strangely, another DL 140 from the same charge runs just fine with
-> 2.6.26.2.
-> 
-> Here is the output of lspci -vvv for the network interface:
-> 
-> 02:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5704 Gigabit Ethernet (rev 02)
->         Subsystem: Broadcom Corporation NetXtreme BCM5704 Gigabit Ethernet
->         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
->         Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
->         Latency: 64 (16000ns min), Cache Line Size: 64 bytes
->         Interrupt: pin A routed to IRQ 19
->         Region 0: Memory at febc0000 (64-bit, non-prefetchable) [size=64K]
->         Region 2: Memory at febb0000 (64-bit, non-prefetchable) [size=64K]
->         Expansion ROM at <ignored> [disabled]
->         Capabilities: [40] PCI-X non-bridge device
->                 Command: DPERE- ERO- RBC=2048 OST=1
->                 Status: Dev=02:00.0 64bit+ 133MHz+ SCD- USC- DC=simple DMMRBC=2048 DMOST=1 DMCRS=16 RSCEM- 266MHz- 533MHz-
->         Capabilities: [48] Power Management version 2
->                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold+)
->                 Status: D0 PME-Enable+ DSel=0 DScale=1 PME-
->         Capabilities: [50] Vital Product Data
->         Capabilities: [58] Message Signalled Interrupts: Mask- 64bit+ Queue=0/3 Enable-
->                 Address: 1502da2a94a95200  Data: 3ca4
-> 
-> If there is any information that can help, please say so.
-> 
-> Greetings
-> Marc
-> 
-> -- 
-> -----------------------------------------------------------------------------
-> Marc Haber         | "I don't trust Computers. They | Mailadresse im Header
-> Mannheim, Germany  |  lose things."    Winona Ryder | Fon: *49 621 72739834
-> Nordisch by Nature |  How to make an American Quilt | Fax: *49 3221 2323190
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
