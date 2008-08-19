@@ -1,53 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758325AbYHSTbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757078AbYHSTbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758325AbYHSTbB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 15:31:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbYHSTai
+	id S1757078AbYHSTbY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 15:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757478AbYHSTao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 15:30:38 -0400
-Received: from mail9.dslextreme.com ([66.51.199.94]:57588 "HELO
-	mail9.dslextreme.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753270AbYHSTah (ORCPT
+	Tue, 19 Aug 2008 15:30:44 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:48854 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756041AbYHSTan (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 15:30:37 -0400
-Message-ID: <48AB1F49.6040207@gawab.com>
-Date: Tue, 19 Aug 2008 12:30:17 -0700
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
+	Tue, 19 Aug 2008 15:30:43 -0400
+Message-ID: <48AB1EA2.4070904@cs.helsinki.fi>
+Date: Tue, 19 Aug 2008 22:27:30 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Michal Januszewski <spock@gentoo.org>,
-       Antonino Daplas <adaplas@gmail.com>, Rafael Wysocki <rjw@sisk.pl>,
-       Romano Giannetti <romano.giannetti@gmail.com>,
-       Adrian Bunk <bunk@kernel.org>,
-       Jeremy Nickurak <kernel-bugs@atrus.rifetech.com>
-Subject: Re: Backport hr-tick fix into .25/.26
-References: <48A9BDC0.9070800@gawab.com> <20080819003110.GH9914@elte.hu> <1219127296.10800.357.camel@twins> <20080819092543.GD28713@elte.hu> <1219138380.10800.376.camel@twins> <20080819182222.GA25576@suse.de>
-In-Reply-To: <20080819182222.GA25576@suse.de>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rdunlap@xenotime.net,
+       mpm@selenic.com, tglx@linutronix.de, rostedt@goodmis.org,
+       cl@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       tzanussi@gmail.com
+Subject: Re: [PATCH 1/5] Revert "kmemtrace: fix printk format warnings"
+References: <1219167807-5407-1-git-send-email-eduard.munteanu@linux360.ro>
+In-Reply-To: <1219167807-5407-1-git-send-email-eduard.munteanu@linux360.ro>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Tue, Aug 19, 2008 at 11:33:00AM +0200, Peter Zijlstra wrote:
->   
->> That's just flipping sched_feat(HRTICK) to 0 by default.
->>     
->
-> That sounds reasonable, I'll take a patch for that for -stable :)
->
-> thanks,
->
-> greg k-h
->
->   
-Thanks Greg :)
+Eduard - Gabriel Munteanu wrote:
+> This reverts commit 79cf3d5e207243eecb1c4331c569e17700fa08fa.
+> 
+> The reverted commit, while it fixed printk format warnings, it resulted in
+> marker-probe format mismatches. Another approach should be used to fix
+> these warnings.
 
-Will the patch make it into 2.6.26.3 and 2.6.25.16, or will it be in the 
-next point releases (2.6.26.4 and 2.6.25.17)?
-
-Justin Madru
+I simply dropped Randy's patch so the revert wasn't needed.
