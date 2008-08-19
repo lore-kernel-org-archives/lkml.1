@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbYHSAzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbYHSA4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758654AbYHSAzk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 20:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755013AbYHSAsg
+	id S1758734AbYHSA4A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 20:56:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbYHSAsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 20:48:36 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:56504 "EHLO
+	Mon, 18 Aug 2008 20:48:39 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:55104 "EHLO
 	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756587AbYHSAsf (ORCPT
+	with ESMTP id S1756596AbYHSAsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 20:48:35 -0400
+	Mon, 18 Aug 2008 20:48:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=ABnkiopI99Vk6oHeyLC+oHNhaM/LaLOhvhMB6G8KU7BGt60bit30vK1Oq4X8d03n/5
-         AJgxVd0wFabXnA4NAO2+O6ijvCcPmAvXunJnjs5kNQOk9kFDk0wQ9+f9S8pn2MkHyPle
-         DiXgAF8g6Z4Pt9+hdTXjbquoEgCcXVbLpdwpg=
-Subject: [PATCH 20/23] xtensa: use the new byteorder headers
+        b=Uuu4Uat60OWnbaX230MgsczIoHDldMFIfMKahTbHazB9Tevi91FYrVJlNk1lwpsWAX
+         G4fOdYoRounuLlKA7ayvvdAegDBjvx2QlseTke7MmQxUkSNBO6AFNBVRVCY3olEFHsAh
+         jk5NwxVDtDczBjGn1Hupref93hvV1f9GTFwTM=
+Subject: [PATCH 21/23] byteorder: fix direct byteswap includes
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Mon, 18 Aug 2008 17:48:19 -0700
-Message-Id: <1219106899.17033.73.camel@brick>
+Date: Mon, 18 Aug 2008 17:48:20 -0700
+Message-Id: <1219106900.17033.74.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -33,67 +33,126 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- include/asm-xtensa/byteorder.h |   32 +++++++++++++++-----------------
- 1 files changed, 15 insertions(+), 17 deletions(-)
+ arch/avr32/mach-at32ap/include/mach/io.h |    3 +--
+ drivers/media/dvb/ttpci/av7110.c         |    2 +-
+ drivers/media/video/cx18/cx18-driver.h   |    2 +-
+ drivers/media/video/ivtv/ivtv-driver.h   |    2 +-
+ drivers/media/video/vpx3220.c            |    2 +-
+ kernel/rcupreempt.c                      |    2 +-
+ tests/rcutorture.c                       |    2 +-
+ 7 files changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/include/asm-xtensa/byteorder.h b/include/asm-xtensa/byteorder.h
-index 765edf1..07d10ad 100644
---- a/include/asm-xtensa/byteorder.h
-+++ b/include/asm-xtensa/byteorder.h
-@@ -14,7 +14,17 @@
- #include <asm/types.h>
- #include <linux/compiler.h>
+diff --git a/arch/avr32/mach-at32ap/include/mach/io.h b/arch/avr32/mach-at32ap/include/mach/io.h
+index 4ec6abc..22ea79b 100644
+--- a/arch/avr32/mach-at32ap/include/mach/io.h
++++ b/arch/avr32/mach-at32ap/include/mach/io.h
+@@ -1,8 +1,7 @@
+ #ifndef __ASM_AVR32_ARCH_AT32AP_IO_H
+ #define __ASM_AVR32_ARCH_AT32AP_IO_H
  
--static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
-+#ifdef __XTENSA_EL__
-+# define __LITTLE_ENDIAN
-+#elif defined(__XTENSA_EB__)
-+# define __BIG_ENDIAN
-+#else
-+# error processor byte order undefined!
-+#endif
-+
-+#define __SWAB_64_THRU_32__
-+
-+static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
- {
-     __u32 res;
-     /* instruction sequence from Xtensa ISA release 2/2000 */
-@@ -28,8 +38,9 @@ static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
- 	    );
-     return res;
- }
-+#define __arch_swab32 __arch_swab32
+-/* For "bizarre" halfword swapping */
+-#include <linux/byteorder/swabb.h>
++#include <linux/swab.h>
  
--static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 x)
-+static inline __attribute_const__ __u16 __arch_swab16(__u16 x)
- {
-     /* Given that 'short' values are signed (i.e., can be negative),
-      * we cannot assume that the upper 16-bits of the register are
-@@ -62,21 +73,8 @@ static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 x)
+ #if defined(CONFIG_AP700X_32_BIT_SMC)
+ # define __swizzle_addr_b(addr)	(addr ^ 3UL)
+diff --git a/drivers/media/dvb/ttpci/av7110.c b/drivers/media/dvb/ttpci/av7110.c
+index 25a1e39..351dea5 100644
+--- a/drivers/media/dvb/ttpci/av7110.c
++++ b/drivers/media/dvb/ttpci/av7110.c
+@@ -36,7 +36,6 @@
+ #include <linux/fs.h>
+ #include <linux/timer.h>
+ #include <linux/poll.h>
+-#include <linux/byteorder/swabb.h>
+ #include <linux/smp_lock.h>
  
-     return res;
- }
-+#define __arch_swab16 __arch_swab16
+ #include <linux/kernel.h>
+@@ -53,6 +52,7 @@
+ #include <linux/kthread.h>
+ #include <asm/unaligned.h>
  
--#define __arch__swab32(x) ___arch__swab32(x)
--#define __arch__swab16(x) ___arch__swab16(x)
--
--#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
--#  define __BYTEORDER_HAS_U64__
--#  define __SWAB_64_THRU_32__
--#endif
--
--#ifdef __XTENSA_EL__
--# include <linux/byteorder/little_endian.h>
--#elif defined(__XTENSA_EB__)
--# include <linux/byteorder/big_endian.h>
--#else
--# error processor byte order undefined!
--#endif
-+#include <linux/byteorder.h>
++#include <asm/byteorder.h>
+ #include <asm/system.h>
  
- #endif /* _XTENSA_BYTEORDER_H */
+ #include <linux/dvb/frontend.h>
+diff --git a/drivers/media/video/cx18/cx18-driver.h b/drivers/media/video/cx18/cx18-driver.h
+index 4801bc7..928388d 100644
+--- a/drivers/media/video/cx18/cx18-driver.h
++++ b/drivers/media/video/cx18/cx18-driver.h
+@@ -38,10 +38,10 @@
+ #include <linux/i2c-algo-bit.h>
+ #include <linux/list.h>
+ #include <linux/unistd.h>
+-#include <linux/byteorder/swab.h>
+ #include <linux/pagemap.h>
+ #include <linux/workqueue.h>
+ #include <linux/mutex.h>
++#include <asm/byteorder.h>
+ 
+ #include <linux/dvb/video.h>
+ #include <linux/dvb/audio.h>
+diff --git a/drivers/media/video/ivtv/ivtv-driver.h b/drivers/media/video/ivtv/ivtv-driver.h
+index ab287b4..966c74d 100644
+--- a/drivers/media/video/ivtv/ivtv-driver.h
++++ b/drivers/media/video/ivtv/ivtv-driver.h
+@@ -49,11 +49,11 @@
+ #include <linux/i2c-algo-bit.h>
+ #include <linux/list.h>
+ #include <linux/unistd.h>
+-#include <linux/byteorder/swab.h>
+ #include <linux/pagemap.h>
+ #include <linux/scatterlist.h>
+ #include <linux/workqueue.h>
+ #include <linux/mutex.h>
++#include <asm/byteorder.h>
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
+ 
+diff --git a/drivers/media/video/vpx3220.c b/drivers/media/video/vpx3220.c
+index 3529302..5920a9e 100644
+--- a/drivers/media/video/vpx3220.c
++++ b/drivers/media/video/vpx3220.c
+@@ -24,7 +24,7 @@
+ #include <linux/types.h>
+ #include <linux/slab.h>
+ 
+-#include <linux/byteorder/swab.h>
++#include <asm/byteorder.h>
+ 
+ #include <asm/io.h>
+ #include <asm/uaccess.h>
+diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
+index 2782793..f0289b9 100644
+--- a/kernel/rcupreempt.c
++++ b/kernel/rcupreempt.c
+@@ -54,9 +54,9 @@
+ #include <linux/cpu.h>
+ #include <linux/random.h>
+ #include <linux/delay.h>
+-#include <linux/byteorder/swabb.h>
+ #include <linux/cpumask.h>
+ #include <linux/rcupreempt_trace.h>
++#include <asm/byteorder.h>
+ 
+ /*
+  * Macro that prevents the compiler from reordering accesses, but does
+diff --git a/tests/rcutorture.c b/tests/rcutorture.c
+index 90b5b12..85cb905 100644
+--- a/tests/rcutorture.c
++++ b/tests/rcutorture.c
+@@ -42,10 +42,10 @@
+ #include <linux/freezer.h>
+ #include <linux/cpu.h>
+ #include <linux/delay.h>
+-#include <linux/byteorder/swabb.h>
+ #include <linux/stat.h>
+ #include <linux/srcu.h>
+ #include <linux/slab.h>
++#include <asm/byteorder.h>
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Paul E. McKenney <paulmck@us.ibm.com> and "
 -- 
 1.6.0.274.g8aacc
 
