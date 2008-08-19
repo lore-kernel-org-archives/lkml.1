@@ -1,64 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757760AbYHSVGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758181AbYHSVGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757760AbYHSVGX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbYHSVGG
+	id S1758181AbYHSVGj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757475AbYHSVGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:06:06 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:48914 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752716AbYHSVGF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:06:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=PzFjmw1MvpZMHg8WbGADv9Sbq91oR3keWRy6B/Ljsnw0ONu2dffpUyVth2hpSmOus+
-         G2tYpZ+VM1peAMtOZt2pUwIIpoT2GBK+If5choj0MnXD/yadoWUOA+SAwRYFDwMg56vE
-         U+S2PzmqgmnLBrPd8WEVPshWzXqxBNULAvYcs=
-Message-ID: <ac9c93b10808191406v61ab2df9o486816f8c3b6b0b0@mail.gmail.com>
-Date: Tue, 19 Aug 2008 23:06:04 +0200
-From: "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: inclusion of <endian.h> in a kernel header? ok or not?
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080819195239.GA21209@cs181140183.pp.htv.fi>
+	Tue, 19 Aug 2008 17:06:17 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54972 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752834AbYHSVGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 17:06:16 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Simon Arlott <simon@fire.lp0.eu>
+Subject: Re: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot - v2
+Date: Tue, 19 Aug 2008 23:09:36 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Jeff Garzik <jgarzik@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev <netdev@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <200808191958.45886.rjw@sisk.pl> <48AB11E2.3040705@simon.arlott.org.uk>
+In-Reply-To: <48AB11E2.3040705@simon.arlott.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <ac9c93b10808191216q64c41222n7752c24c089e3303@mail.gmail.com>
-	 <20080819195239.GA21209@cs181140183.pp.htv.fi>
+Message-Id: <200808192309.37317.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/19 Adrian Bunk <bunk@kernel.org>:
-> On Tue, Aug 19, 2008 at 09:16:56PM +0200, Frans Meulenbroeks wrote:
->> Is it ok to #include <endian.h> in a kernel header file.
->> This is done in linux/patchkey.h and linux/soundcard.h but other
->> places seem to prefer <asm/byteorder.h>
->>...
->
-> Look at the two files you mention - they only do it in userspace.
->
-> And considering that these only users in the kernel are in the OSS code
-> it's most likely not the best solution.
+On Tuesday, 19 of August 2008, Simon Arlott wrote:
+> On 19/08/08 18:58, Rafael J. Wysocki wrote:
+> > On Tuesday, 19 of August 2008, Simon Arlott wrote:
+> >> On 18/08/08 23:08, Rafael J. Wysocki wrote:
+> >> > On Monday, 18 of August 2008, Yinghai Lu wrote:
+> >> >> On Mon, Aug 18, 2008 at 3:22 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> >> 
+> >> >> >> > >  drivers/net/forcedeth.c |    8 +++++---
+> >> >> >> > >  1 file changed, 5 insertions(+), 3 deletions(-)
+> >> >> >> > >
+> >> >> >> > > Index: linux-2.6/drivers/net/forcedeth.c
+> >> >> >> > > ===================================================================
+> >> >> >> > > --- linux-2.6.orig/drivers/net/forcedeth.c
+> >> >> >> > > +++ linux-2.6/drivers/net/forcedeth.c
+> >> >> >> > > @@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
+> >> >> >> > >        if (netif_running(dev))
+> >> >> >> > >                nv_close(dev);
+> >> >> >> > >
+> >> >> >> > > -       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+> >> >> >> > > -       pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+> >> >> >> > >        pci_disable_device(pdev);
+> >> >> >> > > -       pci_set_power_state(pdev, PCI_D3hot);
+> >> >> >> > > +       if (system_state == SYSTEM_POWER_OFF) {
+> >> >> >> > > +               if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
+> >> >> >> > > +                       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+> >> >> >> > > +               pci_set_power_state(pdev, PCI_D3hot);
+> >> >> >> > > +       }
+> >> >> >> > >  }
+> >> >> >> > >  #else
+> >> >> >> > >  #define nv_suspend NULL
+> >> >> >> > >
+> >> >> >> >
+> >> >> 
+> >> >> > Does the last patch work for you BTW?
+> >> >> >
+> >> >> 
+> >> >> it works.
+> >> > 
+> >> > OK, thanks for testing.
+> >> > 
+> >> > I think we can use it as a quick fix for 2.6.27.  Do you agree?
+> >> > 
+> >> > Still, it would be helpful to verify if this is the same MSI issue reported by
+> >> > Simon.
+> >> 
+> >> I tried to test that patch but even without it standby/resume has stopped working:
+> > 
+> > Which kernel is this?
+> 
+> linus-2.6 a7f5aaf36ded825477c4d7167cc6eb1bcdc63191
+> 
+> I've reverted to 2b12a4c524812fb3f6ee590a02e65b95c8c32229 where standby/resume still 
+> works and applied the above patch plus the pci_enable_device patch. It still doesn't 
+> work after resume if MSI is enabled.
 
-Agree.
-But as I want to do it right I'd like to know what the best way is.
-would that be including <asm/byteorder.h> and then have code with
-#ifdef __LITTLE_ENDIAN
-#else
-#endif
-be the preferred solution?
+My patch only affects the shutdown code path and is not related to
+suspend/standby etc.
 
-(I don't want to use the conversion functions just want to get the
-leftmost short from an uint32_t)
+Could you identify the commit that broke standby/resume for you between
+2b12a4c524812fb3f6ee590a02e65b95c8c32229 and
+a7f5aaf36ded825477c4d7167cc6eb1bcdc63191 ?  It looks like that should be
+bisectable.
 
-With gcc 4.1.3 (which is the default on my ubuntu 7.10 dev system) a
-typecast like
-a_short = *(unsigned short volatile *)&a_long;
-which would do the trick gives faulty code with -O2 or up.
+Thanks,
+Rafael
