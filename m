@@ -1,91 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758004AbYHSVgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbYHSVgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758004AbYHSVgP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:36:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbYHSVf5
+	id S1758206AbYHSVgg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbYHSVgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:35:57 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53832
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753087AbYHSVf4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:35:56 -0400
-Date: Tue, 19 Aug 2008 14:35:56 -0700 (PDT)
-Message-Id: <20080819.143556.245692295.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: rjw@sisk.pl, akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.1.10.0808191425050.3324@nehalem.linux-foundation.org>
-References: <20080819.140458.236030589.davem@davemloft.net>
-	<200808192315.48718.rjw@sisk.pl>
-	<alpine.LFD.1.10.0808191425050.3324@nehalem.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 17:36:25 -0400
+Received: from lucidpixels.com ([75.144.35.66]:51110 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757609AbYHSVgY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 17:36:24 -0400
+Date: Tue, 19 Aug 2008 17:36:22 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+cc: ivtv-users@ivtvdriver.org
+Subject: Hauppauge 1192 WinTV-HVR-1950: Kernel Oops :(
+Message-ID: <alpine.DEB.1.10.0808191631030.8579@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 19 Aug 2008 14:28:49 -0700 (PDT)
+2.6.26.2:
 
-> Yeah, and the real cause was apparently another commit that *ALSO* 
-> happened after the merge window!
-> 
-> Guys, you're making excuses for the problem.
-> 
-> The problem that triggered this bugus loopback change was commit 
-> e5a4a72d4f88f4389e9340d383ca67031d1b8536. Look at when that one was done. 
-> 
-> This is my whole _point_. The networking layer is doing development during 
-> the -rc window. And you guys are making excuses for it. Wake up, guys!
+[   15.745116] usbcore: registered new interface driver pvrusb2
+[   15.745116] pvrusb2: Hauppauge WinTV-PVR-USB2 MPEG2 Encoder/Tuner : V4L in-tree version
+[   15.746180] pvrusb2: Debug mask is 31 (0x1f)
+[   15.849246] usb 1-4: reset high speed USB device using ehci_hcd and address 4
+[   16.022828] tveeprom 0-00a2: Hauppauge model 75111, rev C3E9, serial# 3474275
+[   16.022877] tveeprom 0-00a2: MAC address is 00-0D-FE-35-03-63
+[   16.022921] tveeprom 0-00a2: tuner model is Philips 18271_8295 (idx 149, type 54)
+[   16.022978] tveeprom 0-00a2: TV standards NTSC(M) ATSC/DVB Digital (eeprom 0x88)
+[   16.023040] tveeprom 0-00a2: audio processor is CX25843 (idx 37)
+[   16.023081] tveeprom 0-00a2: decoder processor is CX25843 (idx 30)
+[   16.023122] tveeprom 0-00a2: has radio, has IR receiver, has IR transmitter
+[   16.023137] pvrusb2: Supported video standard(s) reported available in hardware: PAL-M/N/Nc;NTSC-M/Mj/Mk;ATSC-8VSB/16VSB
+[   16.023137] pvrusb2: Mapping standards mask=0x300b700 (PAL-M/N/Nc;NTSC-M/Mj/Mk;ATSC-8VSB/16VSB)
+[   16.023137] pvrusb2: Setting up 6 unique standard(s)
+[   16.023179] pvrusb2: Set up standard idx=0 name=PAL-M
+[   16.023219] pvrusb2: Set up standard idx=1 name=PAL-N
+[   16.023259] pvrusb2: Set up standard idx=2 name=PAL-Nc
+[   16.023299] pvrusb2: Set up standard idx=3 name=NTSC-M
+[   16.023340] pvrusb2: Set up standard idx=4 name=NTSC-Mj
+[   16.023380] pvrusb2: Set up standard idx=5 name=NTSC-Mk
+[   16.023421] pvrusb2: Initial video standard (determined by device type): NTSC-M
+[   16.023474] pvrusb2: Device initialization completed successfully.
+[   16.023531] pvrusb2: registered device video0 [mpeg]
+[   16.023572] DVB: registering new adapter (pvrusb2-dvb)
+[   16.074116] firmware: requesting v4l-cx2341x-enc.fw
+[   16.431146] DVB: Unable to find symbol s5h1411_attach()
+[   16.431146] pvrusb2: no frontend was attached!
+[   16.431146] pvrusb2: unregistering DVB devices
 
-That change was made under the pretext that it was tested heavily and
-that if we hit any problem whatsoever with it that we couldn't fix
-quickly it would be reverted.
+Has anyone got one of these working in Linux?
 
-If you look at the pull request I sent you that contained that change,
-I pointed this change out as "highlight" and explained the situation,
-in detail.  Here it is:
+When I compiled them in (instead of making them modules), I get an OOPS
 
-	4) Lennert Buytenhek did some really nice analysis on a network
-	   device that cannot do TSO offloading in hardware.  He checked
-	   out what happens if you enable the software TSO mechanism fallback
-	   we have in the kernel, and it improves CPU utilization tremendously.
+[   15.950121] pvrusb2: Hauppauge WinTV-PVR-USB2 MPEG2 Encoder/Tuner : V4L in-tree version
+[   15.950121] pvrusb2: Debug mask is 31 (0x1f)
+[   16.052664] usb 1-4: reset high speed USB device using ehci_hcd and address 4
+[   16.238140] tvaudio' 1-0042: tda9840 found @ 0x84 (pvrusb2_a)
+[   16.351636] tveeprom 1-00a2: Hauppauge model 75111, rev C3E9, serial# 3474275
+[   16.351681] tveeprom 1-00a2: MAC address is 00-0D-FE-35-03-63
+[   16.351722] tveeprom 1-00a2: tuner model is Philips 18271_8295 (idx 149, type 54)
+[   16.351775] tveeprom 1-00a2: TV standards NTSC(M) ATSC/DVB Digital (eeprom 0x88)
+[   16.351824] tveeprom 1-00a2: audio processor is CX25843 (idx 37)
+[   16.351865] tveeprom 1-00a2: decoder processor is CX25843 (idx 30)
+[   16.351907] tveeprom 1-00a2: has radio, has IR receiver, has IR transmitter
+[   16.351950] pvrusb2: Supported video standard(s) reported available in hardware: PAL-M/N/Nc;NTSC-M/Mj/Mk;ATSC-8VSB/16VSB
+[   16.352004] pvrusb2: Mapping standards mask=0x300b700 (PAL-M/N/Nc;NTSC-M/Mj/Mk;ATSC-8VSB/16VSB)
+[   16.352055] pvrusb2: Setting up 6 unique standard(s)
+[   16.352096] pvrusb2: Set up standard idx=0 name=PAL-M
+[   16.352136] pvrusb2: Set up standard idx=1 name=PAL-N
+[   16.352178] pvrusb2: Set up standard idx=2 name=PAL-Nc
+[   16.352219] pvrusb2: Set up standard idx=3 name=NTSC-M
+[   16.352259] pvrusb2: Set up standard idx=4 name=NTSC-Mj
+[   16.352300] pvrusb2: Set up standard idx=5 name=NTSC-Mk
+[   16.352341] pvrusb2: Initial video standard (determined by device type): NTSC-M
+[   16.353240] pvrusb2: Device initialization completed successfully.
+[   16.353295] pvrusb2: registered device video1 [mpeg]
+[   16.354221] DVB: registering new adapter (pvrusb2-dvb)
+[   16.355002] BUG: unable to handle kernel NULL pointer dereference at 00000000
+[   16.355069] IP: [<00000000>]
+[   16.355138] *pdpt = 000000003779f001 *pde = 0000000000000000 
+[   16.355236] Oops: 0010 [#1] PREEMPT SMP 
+[   16.355358] Modules linked in: pvrusb2 snd_hda_intel snd_hwdep
+[   16.355510] 
+[   16.355548] Pid: 1518, comm: pvrusb2_a Not tainted (2.6.26.2 #6)
+[   16.355589] EIP: 0060:[<00000000>] EFLAGS: 00010246 CPU: 1
+[   16.355630] EIP is at 0x0
+[   16.355658] EAX: 00000000 EBX: c0700020 ECX: f775ff28 EDX: c008561c
+[   16.355658] ESI: f7275400 EDI: f70ac240 EBP: f775ff28 ESP: f775fe20
+[   16.355700]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[   16.355700] Process pvrusb2_a (pid: 1518, ti=f775e000 task=f7fdc040 task.ti=f775e000)
+[   16.355700] Stack: c03563de 00000000 00000c31 c07a5940 c3613990 f775ff38 f775fed8 c361c940 
+[   16.355700]        c0700020 c0700020 c0355f20 f7275400 f7190500 c008561c f899cc65 f899cc72 
+[   16.355700]        00000000 c0355f20 c0362810 f7249000 f775ff28 f775ff28 00000000 00000000 
+[   16.355999] Call Trace:
+[   16.355999]  [<c03563de>] chip_command+0x4be/0x640
+[   16.355999]  [<c0355f20>] chip_command+0x0/0x640
+[   16.355999]  [<f899cc65>] pvr2_i2c_client_cmd+0x175/0x1a0 [pvrusb2]
+[   16.355999]  [<f899cc72>] pvr2_i2c_client_cmd+0x182/0x1a0 [pvrusb2]
+[   16.355999]  [<c0355f20>] chip_command+0x0/0x640
+[   16.355999]  [<c0362810>] saa7185_command+0x0/0x210
+[   16.355999]  [<f899cd29>] pvr2_i2c_core_cmd+0x99/0xb0 [pvrusb2]
+[   16.355999]  [<f899cf5c>] set_audiomode+0x3c/0x50 [pvrusb2]
+[   16.355999]  [<f899cd0d>] pvr2_i2c_core_cmd+0x7d/0xb0 [pvrusb2]
+[   16.355999]  [<f899d01a>] set_volume+0xaa/0x120 [pvrusb2]
+[   16.355999]  [<f899d13d>] set_bcsh+0xad/0x100 [pvrusb2]
+[   16.355999]  [<f899c8ad>] pvr2_i2c_core_sync+0x26d/0x4b0 [pvrusb2]
+[   16.355999]  [<f89a1ee7>] pvr2_hdw_worker_i2c+0x27/0x40 [pvrusb2]
+[   16.356074]  [<c0133f4c>] run_workqueue+0x6c/0x130
+[   16.356074]  [<f89a1ec0>] pvr2_hdw_worker_i2c+0x0/0x40 [pvrusb2]
+[   16.356074]  [<c01342b7>] worker_thread+0x47/0xa0
+[   16.356074]  [<c0137910>] autoremove_wake_function+0x0/0x50
+[   16.356074]  [<c0134270>] worker_thread+0x0/0xa0
+[   16.356074]  [<c0137629>] kthread+0x39/0x70
+[   16.356074]  [<c01375f0>] kthread+0x0/0x70
+[   16.356074]  [<c0103d0f>] kernel_thread_helper+0x7/0x18
+[   16.356074]  =======================
+[   16.356074] Code:  Bad EIP value.
+[   16.356074] EIP: [<00000000>] 0x0 SS:ESP 0068:f775fe20
+[   16.358193] ---[ end trace 3415345cac36f149 ]---
 
-	   It is safe to do this as long as the device in question can
-	   support scatter-gather.
-
-	   Herbert and I are discussing a way to do this even more efficiently
-	   with some help from the device (currently the code has to allocate
-	   extra sk_buff objects as we split up the TSO frame, and then do
-	   a bunch of extra page ref counting, when all we need is some headers
-	   and some way to say where the data portion split points are).
-
-	   If this causes any problems whatsoever, it's trivial to revert this.
-
-Did you read it?  I write those for you specifically, so that you know
-what changes in there are "of note" and you may want to be aware of.
-
-But anyways, let's chalk this one up as inappropriate.
-
-Looking through the rest of the networking changes in this
-pull I see real bug fixes in all of the netxen and e1000
-changes that seemed to stand out.  All of the wireless stuff
-looks like real bug fixes for things reported by real users.
-
-And then there are 2 or 3 cleanups that probably could have
-waited.
-
-And then there is the Bluetooth SCO change which I agree was
-borderline and I should have pushed back on.
-
-There are simply a lot of people fixing a lot of bugs.  And I have to
-stay on top of it all.  And I also have to be able to trust John
-Linville, Jeff Garzik, Marcel, and others so that I don't have to be
-checking up on them every single time.  I look at what they send me,
-and I do push back when I see obviously bogus stuff, but there is a
-trust breakpoint.
