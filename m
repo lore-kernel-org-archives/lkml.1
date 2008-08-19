@@ -1,44 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758111AbYHSVMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbYHSVMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758111AbYHSVMX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbYHSVMM
+	id S1754066AbYHSVMj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbYHSVMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:12:12 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55018 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753070AbYHSVMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:12:10 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: torvalds@linux-foundation.org
-Subject: Re: [GIT]: Networking
-Date: Tue, 19 Aug 2008 23:15:47 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <alpine.LFD.1.10.0808190952000.3324@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808191341150.3324@nehalem.linux-foundation.org> <20080819.140458.236030589.davem@davemloft.net>
-In-Reply-To: <20080819.140458.236030589.davem@davemloft.net>
+	Tue, 19 Aug 2008 17:12:13 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:22707 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753615AbYHSVML (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 17:12:11 -0400
+Date: Wed, 20 Aug 2008 01:12:10 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Alessandro Zummo <a.zummo@towertech.it>,
+       Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
+Subject: Re: [PATCH 1/2] rtc: rtc-ds1374: fix 'no irq' case handling
+Message-ID: <20080819211210.GA16708@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080812161733.GA32164@oksana.dev.rtsoft.ru> <9e4733910808191339s28a05f90pef57961e8d24fbdb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=windows-1251
 Content-Disposition: inline
-Message-Id: <200808192315.48718.rjw@sisk.pl>
+In-Reply-To: <9e4733910808191339s28a05f90pef57961e8d24fbdb@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 19 of August 2008, David Miller wrote:
-> From: Linus Torvalds <torvalds@linux-foundation.org>
-> Date: Tue, 19 Aug 2008 13:47:59 -0700 (PDT)
+On Tue, Aug 19, 2008 at 04:39:09PM -0400, Jon Smirl wrote:
+> On 8/12/08, Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> > On a PowerPC board with ds1374 RTC I'm getting this error while
+> >  RTC tries to probe:
+> >
+> >  rtc-ds1374 0-0068: unable to request IRQ
+> >
+> >  This happens because I2C probing code (drivers/of/of_i2c.c) is
+> >  specifying IRQ0 for 'no irq' case, which is correct.
 > 
-> > Same goes for all the loopback changes. They look like cleanups or feature 
-> > enables.
+> Shouldn't this be
 > 
-> Those fix a performance regression reported by a real user.
+> >  -       if (client->irq <= NO_IRQ)
+> 
+> instead of
+> 
+> >  -       if (client->irq < 0)
+> >  +       if (client->irq <= 0)
+> 
+> Since NO_IRQ can vary by platform (0 or -1)?
 
-FWIW, they fix the recent regression tracked as
-http://bugzilla.kernel.org/show_bug.cgi?id=11316 .
+First of all, NO_IRQ is not defined for every architecture. You can't
+use it for truly cross-platform drivers.
 
-Thanks,
-Rafael
+Secondly, "<= 0" will work for both NO_IRQ == 0 and NO_IRQ == -1,
+since client->irq is signed type.
+
+As for false positives, I don't believe that there is any platform
+that use IRQ0 for external interrupts.
+
+[...]
+> In of_i2c.c shouldn't there be an error check?
+> 
+> 		info.irq = irq_of_parse_and_map(node, 0);
+> 
+> if (info.irq < NO_IRQ) {report error; continue }
+
+irq_of_parse_and_map() returns unsigned type, plus it is defined
+only for PowerPC, and for PowerPC NO_IRQ is always 0.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
