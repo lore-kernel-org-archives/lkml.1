@@ -1,81 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbYHSSeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755099AbYHSSd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755864AbYHSSeQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 14:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbYHSSdy
+	id S1755099AbYHSSd5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 14:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYHSSdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 14:33:54 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:4744 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754851AbYHSSdx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 14:33:53 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5364"; a="5834134"
-Message-ID: <48AB120D.5000600@qualcomm.com>
-Date: Tue, 19 Aug 2008 11:33:49 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 19 Aug 2008 14:33:44 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:60050 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752629AbYHSSdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 14:33:43 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	b=TJT2b8JVVv7aKNpSNXY+pPfWa95IGoKAHCV5m0dGQo55I/hkSHDsBO//LyLfj8EfyV1q1898iObmN5YJgExiatSqkhfmQyRkaK6l/fZdXbtPITc7yqA+rd08Gp74CmgB;
+Message-ID: <48AB11E2.3040705@simon.arlott.org.uk>
+Date: Tue, 19 Aug 2008 19:33:06 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: linux-kernel@vger.kernel.org, Stefani Seibold <stefani@seibold.net>,
-       Dario Faggioli <raistlin@linux.it>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 2/6] sched: rt-bandwidth accounting fix
-References: <20080819103301.787700742@chello.nl> <20080819103844.141902612@chello.nl>
-In-Reply-To: <20080819103844.141902612@chello.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>, Jeff Garzik <jgarzik@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev <netdev@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot
+ - v2
+References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <200808190008.54743.rjw@sisk.pl> <48A9FAD8.9000503@simon.arlott.org.uk> <200808191958.45886.rjw@sisk.pl>
+In-Reply-To: <200808191958.45886.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> It fixes an accounting bug where we would continue accumulating runtime
-> even though the bandwidth control is disabled. This would lead to very long
-> throttle periods once bandwidth control gets turned on again.
+On 19/08/08 18:58, Rafael J. Wysocki wrote:
+> On Tuesday, 19 of August 2008, Simon Arlott wrote:
+>> On 18/08/08 23:08, Rafael J. Wysocki wrote:
+>> > On Monday, 18 of August 2008, Yinghai Lu wrote:
+>> >> On Mon, Aug 18, 2008 at 3:22 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >> 
+>> >> >> > >  drivers/net/forcedeth.c |    8 +++++---
+>> >> >> > >  1 file changed, 5 insertions(+), 3 deletions(-)
+>> >> >> > >
+>> >> >> > > Index: linux-2.6/drivers/net/forcedeth.c
+>> >> >> > > ===================================================================
+>> >> >> > > --- linux-2.6.orig/drivers/net/forcedeth.c
+>> >> >> > > +++ linux-2.6/drivers/net/forcedeth.c
+>> >> >> > > @@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
+>> >> >> > >        if (netif_running(dev))
+>> >> >> > >                nv_close(dev);
+>> >> >> > >
+>> >> >> > > -       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+>> >> >> > > -       pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+>> >> >> > >        pci_disable_device(pdev);
+>> >> >> > > -       pci_set_power_state(pdev, PCI_D3hot);
+>> >> >> > > +       if (system_state == SYSTEM_POWER_OFF) {
+>> >> >> > > +               if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
+>> >> >> > > +                       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+>> >> >> > > +               pci_set_power_state(pdev, PCI_D3hot);
+>> >> >> > > +       }
+>> >> >> > >  }
+>> >> >> > >  #else
+>> >> >> > >  #define nv_suspend NULL
+>> >> >> > >
+>> >> >> >
+>> >> 
+>> >> > Does the last patch work for you BTW?
+>> >> >
+>> >> 
+>> >> it works.
+>> > 
+>> > OK, thanks for testing.
+>> > 
+>> > I think we can use it as a quick fix for 2.6.27.  Do you agree?
+>> > 
+>> > Still, it would be helpful to verify if this is the same MSI issue reported by
+>> > Simon.
+>> 
+>> I tried to test that patch but even without it standby/resume has stopped working:
 > 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  kernel/sched_rt.c |   11 +++++------
->  1 file changed, 5 insertions(+), 6 deletions(-)
-> 
-> Index: linux-2.6/kernel/sched_rt.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sched_rt.c
-> +++ linux-2.6/kernel/sched_rt.c
-> @@ -438,9 +438,6 @@ static int sched_rt_runtime_exceeded(str
->  {
->  	u64 runtime = sched_rt_runtime(rt_rq);
->  
-> -	if (runtime == RUNTIME_INF)
-> -		return 0;
-> -
->  	if (rt_rq->rt_throttled)
->  		return rt_rq_throttled(rt_rq);
->  
-> @@ -491,9 +488,11 @@ static void update_curr_rt(struct rq *rq
->  		rt_rq = rt_rq_of_se(rt_se);
->  
->  		spin_lock(&rt_rq->rt_runtime_lock);
-> -		rt_rq->rt_time += delta_exec;
-> -		if (sched_rt_runtime_exceeded(rt_rq))
-> -			resched_task(curr);
-> +		if (sched_rt_runtime(rt_rq) != RUNTIME_INF) {
-> +			rt_rq->rt_time += delta_exec;
-> +			if (sched_rt_runtime_exceeded(rt_rq))
-> +				resched_task(curr);
-> +		}
->  		spin_unlock(&rt_rq->rt_runtime_lock);
->  	}
->  }
+> Which kernel is this?
 
-This will make 'disabled' case more expensive, will it not ?
-I mean now we'll have to run balance_runtime() even if throttling is 
-disabled.
+linus-2.6 a7f5aaf36ded825477c4d7167cc6eb1bcdc63191
 
-Do you guys mind if I make this stuff configurable ? ie Just like 
-CONFIG_RT_GROUP_SCHED we could add CONFIG_RT_BANDWIDTH_THROTTLE.
+I've reverted to 2b12a4c524812fb3f6ee590a02e65b95c8c32229 where standby/resume still 
+works and applied the above patch plus the pci_enable_device patch. It still doesn't 
+work after resume if MSI is enabled.
 
-Max
+-- 
+Simon Arlott
