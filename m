@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755840AbYHSJvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbYHSJvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755840AbYHSJvT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 05:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbYHSJvE
+	id S1755874AbYHSJvd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 05:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755818AbYHSJvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 05:51:04 -0400
-Received: from cluster-g.mailcontrol.com ([208.87.233.190]:50351 "EHLO
-	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752889AbYHSJvD (ORCPT
+	Tue, 19 Aug 2008 05:51:17 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:16979 "EHLO
+	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755798AbYHSJvP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 05:51:03 -0400
-Message-ID: <48AA9757.3090002@csr.com>
-Date: Tue, 19 Aug 2008 10:50:15 +0100
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Tue, 19 Aug 2008 05:51:15 -0400
+X-BigFish: VPS5(zz7cf0izz10d3izzz32i6bh43j65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0K5UE0T-04-JMB-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com
+CC: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH] fix build error in kernel/rcuclassic.c with latest tip/master
+Date: Tue, 19 Aug 2008 11:50:52 +0200
+Message-ID: <1219139452-7435-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.3.7
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Kernel development list <linux-kernel@vger.kernel.org>,
-       e1000-devel@lists.sourceforge.net, jeffrey.t.kirsher@intel.com,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-Subject: Re: e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-References: <489C2457.5030104@csr.com> <20080818224011.6fad74dc.akpm@linux-foundation.org>
-In-Reply-To: <20080818224011.6fad74dc.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Aug 2008 09:50:15.0805 (UTC) FILETIME=[FB59FAD0:01C901E0]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 19 Aug 2008 09:50:52.0993 (UTC) FILETIME=[11846B10:01C901E1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 08 Aug 2008 11:47:51 +0100 David Vrabel <david.vrabel@csr.com> wrote:
-> 
->> 2.6.27-rc1 kernels appear to corrupt the EEPROM/NVM of the 8086:294c
->> ethernet device (ICH9 I think).  After hacking the driver to ignore the
->> bad CRC and MAC address I could view the EEPROM with ethtool and it was
->> all 0xff.
->>
->> Testing EEPROM reads and writes with ethtool appeared to work but after
->> a reboot of the system the ethernet device (see lspci -v output) was no
->> longer present.  Could invalid EEPROM contents with a valid CRC (as
->> would be the case after my read/write tests) result in the device
->> failing to enumerate on the PCIe bus?
+This patch fixes the following build error for me:
 
-FYI, Jesse Brandeburg replied off-list and said that a corrupt EEPROM
-with a valid CRC can result in the device failing to enumerate.
+  CC      kernel/rcuclassic.o
+/data2/repos/tip/linux.trees.git/kernel/rcuclassic.c: In function ‘__rcu_process_callbacks’:
+/data2/repos/tip/linux.trees.git/kernel/rcuclassic.c:561: error: ‘flags’ undeclared (first use in this function)
+/data2/repos/tip/linux.trees.git/kernel/rcuclassic.c:561: error: (Each undeclared identifier is reported only once
+/data2/repos/tip/linux.trees.git/kernel/rcuclassic.c:561: error: for each function it appears in.)
+/data2/repos/tip/linux.trees.git/kernel/rcuclassic.c:561: warning: type defaults to ‘int’ in declaration of ‘__dummy2’
+/data2/repos/tip/linux.trees.git/kernel/rcuclassic.c:561: warning: comparison of distinct pointer types lacks a cast
+/data2/repos/tip/linux.trees.git/kernel/rcuclassic.c:566: warning: type defaults to ‘int’ in declaration of ‘__dummy2’
+/data2/repos/tip/linux.trees.git/kernel/rcuclassic.c:566: warning: comparison of distinct pointer types lacks a cast
+/data2/repos/tip/linux.trees.git/kernel/rcuclassic.c: In function ‘rcu_init_percpu_data’:
+/data2/repos/tip/linux.trees.git/kernel/rcuclassic.c:713: warning: comparison of distinct pointer types lacks a cast
+/data2/repos/tip/linux.trees.git/kernel/rcuclassic.c:721: warning: comparison of distinct pointer types lacks a cast
+make[2]: *** [kernel/rcuclassic.o] Error 1
 
-> Is this still happening in Linus's current tree?
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ kernel/rcuclassic.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-I don't know, and I'm reluctant to try until I have a reliable way to
-restore an erased EEPROM.
-
-> Was 2.6.26 OK?
-
-2.6.26 was fine.
-
-David
+diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
+index c6b6cf5..2f193e1 100644
+--- a/kernel/rcuclassic.c
++++ b/kernel/rcuclassic.c
+@@ -557,6 +557,8 @@ static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp,
+ 		local_irq_enable();
+ 
+ 		if (rcu_batch_after(rdp->batch, rcp->pending)) {
++			unsigned long flags;
++
+ 			/* and start it/schedule start if it's a new batch */
+ 			spin_lock_irqsave(&rcp->lock, flags);
+ 			if (rcu_batch_after(rdp->batch, rcp->pending)) {
+@@ -708,7 +710,7 @@ void rcu_check_callbacks(int cpu, int user)
+ static void rcu_init_percpu_data(int cpu, struct rcu_ctrlblk *rcp,
+ 						struct rcu_data *rdp)
+ {
+-	long flags;
++	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&rcp->lock, flags);
+ 	memset(rdp, 0, sizeof(*rdp));
 -- 
-David Vrabel, Senior Software Engineer, Drivers
-CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
-Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
+1.5.3.7
+
+
