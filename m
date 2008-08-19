@@ -1,46 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751639AbYHSNis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbYHSNl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751639AbYHSNis (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 09:38:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbYHSNij
+	id S1754677AbYHSNl0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 09:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYHSNlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 09:38:39 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:50035 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750864AbYHSNii (ORCPT
+	Tue, 19 Aug 2008 09:41:16 -0400
+Received: from imx9.toshiba.co.jp ([202.33.96.51]:46525 "EHLO
+	imx9.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751761AbYHSNlO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 09:38:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=s4lcdDfE5lMb422M7Ios37f52NbJFjqbjPbNen2/Gdf/pqMxgrn5ZaCv2FZ/02fU30
-         8FzLm7iz3hiBdFYof4GyvB+o9ocHjy6cRuMZfIlte9t+UioYQ3QV5HgYU/uUBE9A5Zk0
-         VfDLeKeH9LdzGWZ3qXRF4LoYwsFVqbsqx/GTo=
-Message-ID: <ac9c93b10808190638q16fb54d6uef68548b7e5fd526@mail.gmail.com>
-Date: Tue, 19 Aug 2008 15:38:37 +0200
-From: "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>
-To: linux-kernel@vger.kernel.org, jdike@karaya.com, viro@zeniv.linux.org.uk
-Subject: hppfs; CONFIG_HPPFS; used ?? or orphaned??
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 19 Aug 2008 09:41:14 -0400
+X-Greylist: delayed 1957 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Aug 2008 09:41:14 EDT
+Date: Tue, 19 Aug 2008 22:02:00 +0900 (JST)
+Message-Id: <20080819.220200.-1300539182.kouish@swc.toshiba.co.jp>
+To: roel.kluin@gmail.com
+Cc: paulus@samba.org, benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc, scc: duplicate SCC_UHC_USBCEN
+In-Reply-To: <48A9F256.2000901@gmail.com>
+From: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+X-Mailer: Mew version 4.2 on Emacs 21.3 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While roaming through the fs tree I bumped upon the directory hppfs (not hpfs!)
 
-Is this one orphaned?
-I saw that the Makefile references CONFIG_HPPFS, but I could not find
-it in a Kconfig file nor in the .config I generated (not even a
-CONFIG_HPPFS not set line).
-(so either it does not exist, or my eyes are getting old).
 
-As such it does not seem too useful (unless I am overlooking things):
+Roel,
 
-Two options:
-- add it to some Kconfig (and note I cannot do that, I have not the
-faintest idea what it is, actually I got there out of curiosity).
-- rm -rf hppfs
+> untested, is it correct?
+
+Your patch is correct.
+
+Thanks for your pointing it out and sending the patch. I tested your
+patch and it works good.
+
+Fortunately, this bug is not fatal because it seems that the SCC-UHC
+sets SCC_UHC_USBEN and SCC_UHC_USBCEN at once.
+
+
+Your patch does not contain 'Signed-off-by' line. Could you re-post it
+with your sign?
+
+
+> ---
+> arch/powerpc/platforms/cell/celleb_scc.h:224:
+> #define SCC_UHC_USBEN           0x00010000
+> #define SCC_UHC_USBCEN          0x00020000
+> 
+> ---
+> diff --git a/arch/powerpc/platforms/cell/celleb_scc_uhc.c b/arch/powerpc/platforms/cell/celleb_scc_uhc.c
+> index d63b720..b086f33 100644
+> --- a/arch/powerpc/platforms/cell/celleb_scc_uhc.c
+> +++ b/arch/powerpc/platforms/cell/celleb_scc_uhc.c
+> @@ -31,7 +31,7 @@
+>  
+>  static inline int uhc_clkctrl_ready(u32 val)
+>  {
+> -	const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBCEN;
+> +	const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBEN;
+>  	return((val & mask) == mask);
+>  }
+>  
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+Best regards,
+Kou Ishizaki
