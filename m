@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759368AbYHSVai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbYHSVcI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759368AbYHSVai (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754392AbYHSVaZ
+	id S1758647AbYHSVcI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:32:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbYHSVbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:30:25 -0400
-Received: from mms3.broadcom.com ([216.31.210.19]:3242 "EHLO MMS3.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754282AbYHSVaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:30:24 -0400
-X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
-Subject: Re: 2.6.26/tg3 ping roundtrip times > 2000 ms on local network
-From: "Michael Chan" <mchan@broadcom.com>
-To: "David Miller" <davem@davemloft.net>
-cc: "mh+linux-kernel@zugschlus.de" <mh+linux-kernel@zugschlus.de>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       mcarlson@broadcom.com
-In-Reply-To: <20080819.132040.188336475.davem@davemloft.net>
-References: <20080819172019.GA5823@torres.zugschlus.de>
- <20080819.132040.188336475.davem@davemloft.net>
-Date: Tue, 19 Aug 2008 10:29:22 -0700
-Message-ID: <1219166962.13090.12.camel@HP1>
+	Tue, 19 Aug 2008 17:31:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39724 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752883AbYHSVbv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 17:31:51 -0400
+Date: Tue, 19 Aug 2008 14:31:46 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: marcel@holtmann.org, akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+In-Reply-To: <20080819.142150.129314008.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.10.0808191429051.3324@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0808190952000.3324@nehalem.linux-foundation.org> <1219170451.7591.175.camel@violet.holtmann.net> <alpine.LFD.1.10.0808191348540.3324@nehalem.linux-foundation.org> <20080819.142150.129314008.davem@davemloft.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5)
-X-WSS-ID: 64B5E4E24YK7723376-01-01
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 2008-08-19 at 13:20 -0700, David Miller wrote:
-> From: Marc Haber <mh+linux-kernel@zugschlus.de>
-> Date: Tue, 19 Aug 2008 19:20:19 +0200
+
+On Tue, 19 Aug 2008, David Miller wrote:
 > 
-> [ netdev added to CC: ]
-> 
-> > I have one HP DL 140 G1 running with Debian stable and a
-> > locally-built, vanilla kernel. With 2.6.25.11, everything is fine.
-> >
-> > But, after updating to 2.6.26.2, I noticed that pinging the host on
-> > the local ethernet sometimes (e.g. several times a minute, but not
-> > always) results in a round-trip time of larger than two seconds. The
-> > packets are not lost though, they're only severly delayed. For an ssh
-> > session to the host, this feels like somebody rocking a bad network
-> > connector. The same behavior is visible with 2.6.26 and 2.6.26.1.
-> >
-> > Going back to 2.6.25.11 immediately fixes the issue for me.
-> >
-> > Syslog doesn't say anything conspicious, unfortunately. As I don't
-> > have local access to the box, I cannot say whether it's only the
-> > network that freezes or whether it's the entire box.
-> >
-> > Does it make sense to test any later 2.6.25.x kernel, or is there any
-> > post-2.6.26 patch available that may fix the issue for me?
-> >
-> > Strangely, another DL 140 from the same charge runs just fine with
-> > 2.6.26.2.
-> >
+> I agree, we should be working on regressions fixes now.
 
-The may be the 2.5 second polling that was mistakenly added to the code
-instead of the intended 2.5 msec.
+Not just now. For the last two weeks, yes.
 
-It has been fixed a few days ago in the net-2.6 tree:
+> And we should essentially be doing so up until the merge window opens up 
+> again, right?
 
-tg3: Fix firmware event timeouts
+Yes. But any new code should go into another branch (or delayed entirely, 
+but that probably doesn't work wekk for you guys) so that by the time the 
+merge window opens up, it's already ready and rearing to go, and 
+preferably pretty well tested too.
 
-and it should be in Linus' tree very soon.  This reminds us to send the
-same patch to -stable.
+The problem is, you guys end up accepting a lot of stuff even after the 
+merge window. I know why - it's easy to do. It looks obviously fine. And 
+yeah, I let things slide.
 
-Thanks.
+The problem is, I've let things slide for a long time, and you guys don't 
+feel the pain. 
 
+> When do people following those rules have time to work on new stuff?
 
+You can work on the new stuff too, but DON'T F*CKING SEND IT TO ME!
+
+What's so hard to understand about that?
+
+			Linus
