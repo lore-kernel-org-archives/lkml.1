@@ -1,76 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757546AbYHSSoJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbYHSSne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757546AbYHSSoJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 14:44:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756086AbYHSSmg
+	id S1755424AbYHSSne (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 14:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbYHSSm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 14:42:36 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54067 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756119AbYHSSmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 14:42:33 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Jeff Garzik" <jgarzik@redhat.com>, David Miller <davem@davemloft.net>
-Subject: [PATCH] forcedeth: Fix kexec regression
-Date: Tue, 19 Aug 2008 20:45:53 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Simon Arlott" <simon@fire.lp0.eu>
-References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <200808190008.54743.rjw@sisk.pl> <86802c440808181536j2c214cc3k47e73fd147b4fee1@mail.gmail.com>
-In-Reply-To: <86802c440808181536j2c214cc3k47e73fd147b4fee1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808192045.54779.rjw@sisk.pl>
+	Tue, 19 Aug 2008 14:42:26 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:48055 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755515AbYHSSmY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 14:42:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=V7WcCGS5tgOjl9VWhGpRNHB+syIU/sfosE2GutPYSFcit7Y0v68cPl/EL8zLX2/Nbo
+         K71CoMJm+Upwy409IcFUZ5AJvP8AytJwitgO0cj4grI4uFaSaRac3q9o3V1sbPTC15gt
+         dCZjIS0lC0elSgdaq6V6gKwRvc56zkD6AXcdQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Borislav Petkov <petkovbb@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Tue, 19 Aug 2008 20:40:03 +0200
+Message-Id: <20080819184003.16469.39090.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080819183934.16469.69799.sendpatchset@localhost.localdomain>
+References: <20080819183934.16469.69799.sendpatchset@localhost.localdomain>
+Subject: [PATCH 5/6] ide-disk: move all ioctl handling to ide-disk_ioctl.c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+While at it:
+- idedisk_ioctl() -> ide_disk_ioctl()
 
-forcedeth: Fix kexec regression
-
-Fix regression tracked as
-http://bugzilla.kernel.org/show_bug.cgi?id=11361 and
-caused by commit f735a2a1a4f2a0f5cd823ce323e82675990469e2
-("[netdrvr] forcedeth: setup wake-on-lan before shutting down")
-that makes network adapters integrated into the NVidia
-MCP55 chipsets fail to work in kexeced kernels.  The problem appears
-to be that if the adapter is put into D3_hot during ->shutdown(),
-it cannot be brought back into D0 after kexec (ref.
-http://marc.info/?l=linux-kernel&m=121900062814967&w=4).  Therefore,
-only put forcedeth into D3 during ->shutdown() if the system is to be
-powered off.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Tested-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/net/forcedeth.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/ide/Makefile         |    3 +-
+ drivers/ide/ide-disk.c       |   48 +++++++------------------------------------
+ drivers/ide/ide-disk.h       |   25 ++++++++++++++++++++++
+ drivers/ide/ide-disk_ioctl.c |   29 +++++++++++++++++++++++++
+ drivers/ide/ide.c            |   11 +++------
+ include/linux/ide.h          |    7 ++++--
+ 6 files changed, 73 insertions(+), 50 deletions(-)
 
-Index: linux-2.6/drivers/net/forcedeth.c
+Index: b/drivers/ide/Makefile
 ===================================================================
---- linux-2.6.orig/drivers/net/forcedeth.c
-+++ linux-2.6/drivers/net/forcedeth.c
-@@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
- 	if (netif_running(dev))
- 		nv_close(dev);
+--- a/drivers/ide/Makefile
++++ b/drivers/ide/Makefile
+@@ -36,10 +36,11 @@ obj-$(CONFIG_IDE_H8300)			+= h8300/
+ obj-$(CONFIG_IDE_GENERIC)		+= ide-generic.o
+ obj-$(CONFIG_BLK_DEV_IDEPNP)		+= ide-pnp.o
  
--	pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
--	pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
- 	pci_disable_device(pdev);
--	pci_set_power_state(pdev, PCI_D3hot);
-+	if (system_state == SYSTEM_POWER_OFF) {
-+		if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
-+			pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-+		pci_set_power_state(pdev, PCI_D3hot);
-+	}
++ide-disk_mod-y += ide-disk.o ide-disk_ioctl.o
+ ide-cd_mod-y += ide-cd.o ide-cd_ioctl.o ide-cd_verbose.o
+ ide-floppy_mod-y += ide-floppy.o ide-floppy_ioctl.o ide-floppy_proc.o
+ 
+-obj-$(CONFIG_BLK_DEV_IDEDISK)		+= ide-disk.o
++obj-$(CONFIG_BLK_DEV_IDEDISK)		+= ide-disk_mod.o
+ obj-$(CONFIG_BLK_DEV_IDECD)		+= ide-cd_mod.o
+ obj-$(CONFIG_BLK_DEV_IDEFLOPPY)		+= ide-floppy_mod.o
+ obj-$(CONFIG_BLK_DEV_IDETAPE)		+= ide-tape.o
+Index: b/drivers/ide/ide-disk.c
+===================================================================
+--- a/drivers/ide/ide-disk.c
++++ b/drivers/ide/ide-disk.c
+@@ -39,21 +39,12 @@
+ #include <asm/io.h>
+ #include <asm/div64.h>
+ 
+-struct ide_disk_obj {
+-	ide_drive_t	*drive;
+-	ide_driver_t	*driver;
+-	struct gendisk	*disk;
+-	struct kref	kref;
+-	unsigned int	openers;	/* protected by BKL for now */
+-};
++#include "ide-disk.h"
+ 
+ static DEFINE_MUTEX(idedisk_ref_mutex);
+ 
+ #define to_ide_disk(obj) container_of(obj, struct ide_disk_obj, kref)
+ 
+-#define ide_disk_g(disk) \
+-	container_of((disk)->private_data, struct ide_disk_obj, driver)
+-
+ static void ide_disk_release(struct kref *);
+ 
+ static struct ide_disk_obj *ide_disk_get(struct gendisk *disk)
+@@ -716,12 +707,12 @@ static int set_addressing(ide_drive_t *d
+ 	return 0;
  }
- #else
- #define nv_suspend NULL
+ 
+-ide_devset_rw(acoustic, acoustic);
+-ide_devset_rw(address, addressing);
+-ide_devset_rw(multcount, multcount);
+-ide_devset_rw(wcache, wcache);
++ide_ext_devset_rw(acoustic, acoustic);
++ide_ext_devset_rw(address, addressing);
++ide_ext_devset_rw(multcount, multcount);
++ide_ext_devset_rw(wcache, wcache);
+ 
+-ide_devset_rw_sync(nowerr, nowerr);
++ide_ext_devset_rw_sync(nowerr, nowerr);
+ 
+ #ifdef CONFIG_IDE_PROC_FS
+ ide_devset_rw_field(bios_cyl, bios_cyl);
+@@ -1019,30 +1010,6 @@ static int idedisk_getgeo(struct block_d
+ 	return 0;
+ }
+ 
+-static const struct ide_ioctl_devset ide_disk_ioctl_settings[] = {
+-{ HDIO_GET_ADDRESS,	HDIO_SET_ADDRESS,   &ide_devset_address   },
+-{ HDIO_GET_MULTCOUNT,	HDIO_SET_MULTCOUNT, &ide_devset_multcount },
+-{ HDIO_GET_NOWERR,	HDIO_SET_NOWERR,    &ide_devset_nowerr	  },
+-{ HDIO_GET_WCACHE,	HDIO_SET_WCACHE,    &ide_devset_wcache	  },
+-{ HDIO_GET_ACOUSTIC,	HDIO_SET_ACOUSTIC,  &ide_devset_acoustic  },
+-{ 0 }
+-};
+-
+-static int idedisk_ioctl(struct inode *inode, struct file *file,
+-			unsigned int cmd, unsigned long arg)
+-{
+-	struct block_device *bdev = inode->i_bdev;
+-	struct ide_disk_obj *idkp = ide_disk_g(bdev->bd_disk);
+-	ide_drive_t *drive = idkp->drive;
+-	int err;
+-
+-	err = ide_setting_ioctl(drive, bdev, cmd, arg, ide_disk_ioctl_settings);
+-	if (err != -EOPNOTSUPP)
+-		return err;
+-
+-	return generic_ide_ioctl(drive, file, bdev, cmd, arg);
+-}
+-
+ static int idedisk_media_changed(struct gendisk *disk)
+ {
+ 	struct ide_disk_obj *idkp = ide_disk_g(disk);
+@@ -1069,7 +1036,7 @@ static struct block_device_operations id
+ 	.owner			= THIS_MODULE,
+ 	.open			= idedisk_open,
+ 	.release		= idedisk_release,
+-	.ioctl			= idedisk_ioctl,
++	.ioctl			= ide_disk_ioctl,
+ 	.getgeo			= idedisk_getgeo,
+ 	.media_changed		= idedisk_media_changed,
+ 	.revalidate_disk	= idedisk_revalidate_disk
+@@ -1145,6 +1112,7 @@ static int __init idedisk_init(void)
+ }
+ 
+ MODULE_ALIAS("ide:*m-disk*");
++MODULE_ALIAS("ide-disk");
+ module_init(idedisk_init);
+ module_exit(idedisk_exit);
+ MODULE_LICENSE("GPL");
+Index: b/drivers/ide/ide-disk.h
+===================================================================
+--- /dev/null
++++ b/drivers/ide/ide-disk.h
+@@ -0,0 +1,25 @@
++#ifndef __IDE_DISK_H
++#define __IDE_DISK_H
++
++struct ide_disk_obj {
++	ide_drive_t	*drive;
++	ide_driver_t	*driver;
++	struct gendisk	*disk;
++	struct kref	kref;
++	unsigned int	openers;	/* protected by BKL for now */
++};
++
++#define ide_disk_g(disk) \
++	container_of((disk)->private_data, struct ide_disk_obj, driver)
++
++/* ide-disk.c */
++ide_decl_devset(address);
++ide_decl_devset(multcount);
++ide_decl_devset(nowerr);
++ide_decl_devset(wcache);
++ide_decl_devset(acoustic);
++
++/* ide-disk_ioctl.c */
++int ide_disk_ioctl(struct inode *, struct file *, unsigned int, unsigned long);
++
++#endif /* __IDE_DISK_H */
+Index: b/drivers/ide/ide-disk_ioctl.c
+===================================================================
+--- /dev/null
++++ b/drivers/ide/ide-disk_ioctl.c
+@@ -0,0 +1,29 @@
++#include <linux/kernel.h>
++#include <linux/ide.h>
++#include <linux/hdreg.h>
++
++#include "ide-disk.h"
++
++static const struct ide_ioctl_devset ide_disk_ioctl_settings[] = {
++{ HDIO_GET_ADDRESS,	HDIO_SET_ADDRESS,   &ide_devset_address   },
++{ HDIO_GET_MULTCOUNT,	HDIO_SET_MULTCOUNT, &ide_devset_multcount },
++{ HDIO_GET_NOWERR,	HDIO_SET_NOWERR,    &ide_devset_nowerr	  },
++{ HDIO_GET_WCACHE,	HDIO_SET_WCACHE,    &ide_devset_wcache	  },
++{ HDIO_GET_ACOUSTIC,	HDIO_SET_ACOUSTIC,  &ide_devset_acoustic  },
++{ 0 }
++};
++
++int ide_disk_ioctl(struct inode *inode, struct file *file,
++		   unsigned int cmd, unsigned long arg)
++{
++	struct block_device *bdev = inode->i_bdev;
++	struct ide_disk_obj *idkp = ide_disk_g(bdev->bd_disk);
++	ide_drive_t *drive = idkp->drive;
++	int err;
++
++	err = ide_setting_ioctl(drive, bdev, cmd, arg, ide_disk_ioctl_settings);
++	if (err != -EOPNOTSUPP)
++		return err;
++
++	return generic_ide_ioctl(drive, file, bdev, cmd, arg);
++}
+Index: b/drivers/ide/ide.c
+===================================================================
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -392,13 +392,10 @@ static int set_unmaskirq(ide_drive_t *dr
+ 	return 0;
+ }
+ 
+-#define ide_gen_devset_rw(_name, _func) \
+-__IDE_DEVSET(_name, DS_SYNC, get_##_func, set_##_func)
+-
+-ide_gen_devset_rw(io_32bit, io_32bit);
+-ide_gen_devset_rw(keepsettings, ksettings);
+-ide_gen_devset_rw(unmaskirq, unmaskirq);
+-ide_gen_devset_rw(using_dma, using_dma);
++ide_ext_devset_rw_sync(io_32bit, io_32bit);
++ide_ext_devset_rw_sync(keepsettings, ksettings);
++ide_ext_devset_rw_sync(unmaskirq, unmaskirq);
++ide_ext_devset_rw_sync(using_dma, using_dma);
+ __IDE_DEVSET(pio_mode, DS_SYNC, NULL, set_pio_mode);
+ 
+ static int generic_ide_suspend(struct device *dev, pm_message_t mesg)
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -942,8 +942,11 @@ IDE_DEVSET(_name, 0, get_##_func, set_##
+ #define ide_devset_w(_name, _func) \
+ IDE_DEVSET(_name, 0, NULL, set_##_func)
+ 
+-#define ide_devset_rw_sync(_name, _func) \
+-IDE_DEVSET(_name, DS_SYNC, get_##_func, set_##_func)
++#define ide_ext_devset_rw(_name, _func) \
++__IDE_DEVSET(_name, 0, get_##_func, set_##_func)
++
++#define ide_ext_devset_rw_sync(_name, _func) \
++__IDE_DEVSET(_name, DS_SYNC, get_##_func, set_##_func)
+ 
+ #define ide_decl_devset(_name) \
+ extern const struct ide_devset ide_devset_##_name
