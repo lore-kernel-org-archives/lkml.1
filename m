@@ -1,90 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbYHSRv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbYHSRvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbYHSRv0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 13:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYHSRvS
+	id S1756596AbYHSRvw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 13:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756179AbYHSRvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 13:51:18 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50841 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751270AbYHSRvS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 13:51:18 -0400
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] SGI UV: hardcode the TLB flush interrupt system vector
-Message-Id: <E1KVVN9-0006fS-4Z@eag09.americas.sgi.com>
-From: Cliff Wickman <cpw@sgi.com>
-Date: Tue, 19 Aug 2008 12:51:59 -0500
+	Tue, 19 Aug 2008 13:51:40 -0400
+Received: from xenotime.net ([66.160.160.81]:45778 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751746AbYHSRvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 13:51:36 -0400
+Date: Tue, 19 Aug 2008 10:51:32 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+cc: penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       rdunlap@xenotime.net, mpm@selenic.com, tglx@linutronix.de,
+       rostedt@goodmis.org, cl@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, tzanussi@gmail.com
+Subject: Re: [PATCH 1/5] Revert "kmemtrace: fix printk format warnings"
+In-Reply-To: <1219167807-5407-1-git-send-email-eduard.munteanu@linux360.ro>
+Message-ID: <Pine.LNX.4.64.0808191049260.7877@shark.he.net>
+References: <1219167807-5407-1-git-send-email-eduard.munteanu@linux360.ro>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 19 Aug 2008, Eduard - Gabriel Munteanu wrote:
 
-From: Cliff Wickman <cpw@sgi.com>
+> This reverts commit 79cf3d5e207243eecb1c4331c569e17700fa08fa.
+> 
+> The reverted commit, while it fixed printk format warnings, it resulted in
+> marker-probe format mismatches. Another approach should be used to fix
+> these warnings.
 
-The UV TLB shootdown mechanism needs a system interrupt vector.
+Such as what?
 
-Its vector had been hardcoded as 200, but needs to moved to the reserved
-system vector range so that it does not collide with some device vector.
+Can marker probes be fixed instead?
 
-This is still temporary until dynamic system IRQ allocation is provided.
-But it will be needed when real UV hardware becomes available and runs 2.6.27.
+After seeing & fixing lots of various warnings in the last few days,
+I'm thinking that people don't look at/heed warnings nowadays.  Sad.
+Maybe there are just so many that they are lost in the noise.
 
-Diffed against 2.6.27-rc3
 
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
----
- arch/x86/kernel/tlb_uv.c      |    3 ++-
- include/asm-x86/irq_vectors.h |    1 +
- include/asm-x86/uv/uv_bau.h   |    5 -----
- 3 files changed, 3 insertions(+), 6 deletions(-)
+> ---
+>  include/linux/kmemtrace.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/kmemtrace.h b/include/linux/kmemtrace.h
+> index a865064..2c33201 100644
+> --- a/include/linux/kmemtrace.h
+> +++ b/include/linux/kmemtrace.h
+> @@ -31,7 +31,7 @@ static inline void kmemtrace_mark_alloc_node(enum kmemtrace_type_id type_id,
+>  					     int node)
+>  {
+>  	trace_mark(kmemtrace_alloc, "type_id %d call_site %lu ptr %lu "
+> -		   "bytes_req %zu bytes_alloc %zu gfp_flags %lu node %d",
+> +		   "bytes_req %lu bytes_alloc %lu gfp_flags %lu node %d",
+>  		   type_id, call_site, (unsigned long) ptr,
+>  		   bytes_req, bytes_alloc, (unsigned long) gfp_flags, node);
+>  }
+> 
 
-Index: linux/arch/x86/kernel/tlb_uv.c
-===================================================================
---- linux.orig/arch/x86/kernel/tlb_uv.c
-+++ linux/arch/x86/kernel/tlb_uv.c
-@@ -18,6 +18,7 @@
- #include <asm/genapic.h>
- #include <asm/idle.h>
- #include <asm/tsc.h>
-+#include <asm/irq_vectors.h>
- 
- #include <mach_apic.h>
- 
-@@ -786,7 +787,7 @@ static int __init uv_bau_init(void)
- 		uv_init_blade(blade, node, cur_cpu);
- 		cur_cpu += uv_blade_nr_possible_cpus(blade);
- 	}
--	set_intr_gate(UV_BAU_MESSAGE, uv_bau_message_intr1);
-+	alloc_intr_gate(UV_BAU_MESSAGE, uv_bau_message_intr1);
- 	uv_enable_timeouts();
- 
- 	return 0;
-Index: linux/include/asm-x86/irq_vectors.h
-===================================================================
---- linux.orig/include/asm-x86/irq_vectors.h
-+++ linux/include/asm-x86/irq_vectors.h
-@@ -76,6 +76,7 @@
- #define CALL_FUNCTION_SINGLE_VECTOR	0xfb
- #define THERMAL_APIC_VECTOR		0xfa
- #define THRESHOLD_APIC_VECTOR		0xf9
-+#define UV_BAU_MESSAGE			0xf8
- #define INVALIDATE_TLB_VECTOR_END	0xf7
- #define INVALIDATE_TLB_VECTOR_START	0xf0	/* f0-f7 used for TLB flush */
- 
-Index: linux/include/asm-x86/uv/uv_bau.h
-===================================================================
---- linux.orig/include/asm-x86/uv/uv_bau.h
-+++ linux/include/asm-x86/uv/uv_bau.h
-@@ -40,11 +40,6 @@
- #define UV_ACTIVATION_DESCRIPTOR_SIZE	32
- #define UV_DISTRIBUTION_SIZE		256
- #define UV_SW_ACK_NPENDING		8
--#define UV_BAU_MESSAGE			200
--/*
-- * Messaging irq; see irq_64.h and include/asm-x86/hw_irq_64.h
-- * To be dynamically allocated in the future
-- */
- #define UV_NET_ENDPOINT_INTD		0x38
- #define UV_DESC_BASE_PNODE_SHIFT	49
- #define UV_PAYLOADQ_PNODE_SHIFT		49
+-- 
+~Randy
