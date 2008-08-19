@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756466AbYHSBVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756400AbYHSB2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756466AbYHSBVS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 21:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbYHSBVH
+	id S1756400AbYHSB2m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 21:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbYHSB2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 21:21:07 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49431 "EHLO mx3.mail.elte.hu"
+	Mon, 18 Aug 2008 21:28:33 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42984 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754217AbYHSBVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 21:21:05 -0400
-Date: Tue, 19 Aug 2008 03:20:46 +0200
+	id S1754004AbYHSB2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 21:28:32 -0400
+Date: Tue, 19 Aug 2008 03:28:16 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: probe nr_irqs even only mptable is used
-Message-ID: <20080819012044.GE14821@elte.hu>
-References: <1219108476-30501-1-git-send-email-yhlu.kernel@gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 0 of 9] x86/smp function calls: convert x86 tlb flushes
+	to use function calls [POST 2]
+Message-ID: <20080819012816.GA7897@elte.hu>
+References: <patchbomb.1219083817@localhost> <20080819004531.GI9914@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1219108476-30501-1-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <20080819004531.GI9914@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,12 +37,53 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> for !CONFIG_HAVE_SPARSE_IRQ
+> nice stuff!
+> 
+> I suspect the extra cost might be worth it for two reasons: 1) we 
+> could optimize the cross-call implementation further 2) on systems 
+> where TLB flushes actually matter, the ability to overlap multiple TLB 
+> flushes to the same single CPU might improve workloads.
+> 
+> FYI, i've created a new -tip topic for your patches, tip/x86/tlbflush. 
+> It's based on tip/irq/sparseirq (there are a good deal of dependencies 
+> with that topic).
 
-applied to tip/irq/sparseirq, thanks.
-
-This should fix MAXSMP+!SPARSEIRQ bootups and memory footprint, right?
+i threw it into -tip testing for a while - triggered the lockdep warning 
+on 64-bit below.
 
 	Ingo
+
+------------>
+checking TSC synchronization [CPU#0 -> CPU#1]: passed.
+
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.27-rc3-tip #1
+---------------------------------------------
+swapper/0 is trying to acquire lock:
+ (&call_function_queues[i].lock){....}, at: [<ffffffff8026cbba>] ipi_call_lock_irq+0x25/0x2e
+
+but task is already holding lock:
+ (&call_function_queues[i].lock){....}, at: [<ffffffff8026cbba>] ipi_call_lock_irq+0x25/0x2e
+
+other info that might help us debug this:
+1 lock held by swapper/0:
+ #0:  (&call_function_queues[i].lock){....}, at: [<ffffffff8026cbba>] ipi_call_lock_irq+0x25/0x2e
+
+stack backtrace:
+Pid: 0, comm: swapper Not tainted 2.6.27-rc3-tip #1
+Call Trace:
+ [<ffffffff802665c2>] validate_chain+0x53e/0xc26
+ [<ffffffff80263814>] ? trace_hardirqs_off_caller+0x21/0xa4
+ [<ffffffff802638a4>] ? trace_hardirqs_off+0xd/0xf
+ [<ffffffff802673d6>] __lock_acquire+0x72c/0x795
+ [<ffffffff802674cc>] lock_acquire+0x8d/0xba
+ [<ffffffff8026cbba>] ? ipi_call_lock_irq+0x25/0x2e
+ [<ffffffff808aa83c>] _spin_lock_irq+0x44/0x74
+ [<ffffffff8026cbba>] ? ipi_call_lock_irq+0x25/0x2e
+ [<ffffffff8026cbba>] ipi_call_lock_irq+0x25/0x2e
+ [<ffffffff808a4acf>] start_secondary+0x127/0x18e
+Brought up 2 CPUs
+Total of 2 processors activated (11733.31 BogoMIPS).
