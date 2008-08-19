@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbYHSTkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755635AbYHSTnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755368AbYHSTkc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 15:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYHSTkX
+	id S1755635AbYHSTnI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 15:43:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753147AbYHSTmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 15:40:23 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:2749 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752897AbYHSTkW (ORCPT
+	Tue, 19 Aug 2008 15:42:55 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:37410 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752968AbYHSTmy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 15:40:22 -0400
+	Tue, 19 Aug 2008 15:42:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=qG/NbF6LFey2RpO3+GKiET0QoT8ER7TNpo8kAQ+66Oz8GllVahPXe9yLSqIqLPNl7F
-         pH/WZ0UvVA3nkxi9xt1MHVWnp/2pIMqgnW83pvqJqx6DwxRbSRnB+dLpLJUQxOMoKrEp
-         5ujXEsctBzr+UewSoKxXgaRjZBGQQytMCXxyM=
-Message-ID: <86802c440808191240t66ee67c1ub173c462025b6929@mail.gmail.com>
-Date: Tue, 19 Aug 2008 12:40:21 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Suresh Siddha" <suresh.b.siddha@intel.com>
-Subject: Re: [patch] fix intr-remap with dyn_array/nr_irqs changes
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       x86@kernel.org
-In-Reply-To: <20080819185441.GC1152@linux-os.sc.intel.com>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=OzV8bnsnAbdESymQsoZcEwV0hpwSRnfDMtHbBmEk/lrk1GEYjE4ecYpkmXwRcTTess
+         L+X/SPvkjR+LD4Uz/3wtdtKugL0bYlZfDehV43KABjXVJiiDqls3VRAPQVfC/CFU+QQQ
+         WyhPMCH9qFkNv9kRejpAGa1f2ixDHt5b+z1ow=
+Date: Tue, 19 Aug 2008 15:42:50 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Input: evdev - Fix printk() format warning
+Message-ID: <20080819154138.ZZRA012@mailhub.coreip.homeip.net>
+References: <aday72srejx.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080819185441.GC1152@linux-os.sc.intel.com>
+In-Reply-To: <aday72srejx.fsf@cisco.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 19, 2008 at 11:54 AM, Suresh Siddha
-<suresh.b.siddha@intel.com> wrote:
-> I didn't find time to closely review the dyn_array/nr_irqs changes. But
-> the appended patch is needed to fix the broken intr-remapping support on
-> x86/tip
->
-> And also, I don't see any locks used in to_irq_desc_with_new(). How are
-> we handling the concurrent usage scenarios. And also, this code can use
-> some cleanups (like the names, to_irq_desc_with_new()?) etc.
->
-> thanks,
-> suresh
-> ---
->
-> In irq_2_iommu_with_new() and set_irte_irq(), irq_desc or
-> irq_2_iommu pointers may not be allocated. So use the routines which
-> will allocate them if they are not already allocated.
->
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Hi Roland,
 
-i'm trying to rebase sparseirq to tip/x86/core.
+On Tue, Aug 19, 2008 at 12:27:14PM -0700, Roland Dreier wrote:
+>     drivers/input/evdev.c: In function 'handle_eviocgbit':
+>     drivers/input/evdev.c:684: warning: format '%d' expects type 'int', but argument 3 has type 'long unsigned int'
+> 
 
-will address your concern about lock after that.
+Geert beat you to it, I have just committed his fix, but thanks
+anyway and sorry about the mess-up.
 
-Thanks
-
-YH
+-- 
+Dmitry
