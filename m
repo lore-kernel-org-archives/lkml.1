@@ -1,87 +1,300 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756994AbYHSSj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbYHSSjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756994AbYHSSj3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 14:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbYHSSiU
+	id S1757206AbYHSSjr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 14:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbYHSSjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 14:38:20 -0400
-Received: from viefep32-int.chello.at ([62.179.121.50]:36032 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753248AbYHSSiT (ORCPT
+	Tue, 19 Aug 2008 14:39:14 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:19584 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756851AbYHSSjL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 14:38:19 -0400
-Subject: Re: [PATCH 2/6] sched: rt-bandwidth accounting fix
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: linux-kernel@vger.kernel.org, Stefani Seibold <stefani@seibold.net>,
-       Dario Faggioli <raistlin@linux.it>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <48AB120D.5000600@qualcomm.com>
-References: <20080819103301.787700742@chello.nl>
-	 <20080819103844.141902612@chello.nl>  <48AB120D.5000600@qualcomm.com>
-Content-Type: text/plain
-Date: Tue, 19 Aug 2008 20:38:24 +0200
-Message-Id: <1219171104.10800.390.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 14:39:11 -0400
+Date: Tue, 19 Aug 2008 12:39:08 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
+       kaneshige.kenji@jp.fujitsu.com
+Subject: Re: [PATCH 04/13] PCI: acpiphp: remove 'name' parameter
+Message-ID: <20080819183908.GD18842@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Rolf Eike Beer <eike-kernel@sf-tec.de>,
+	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+	jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
+	kaneshige.kenji@jp.fujitsu.com
+References: <20080816235504.5461.20733.stgit@blender.achiang> <20080817001635.5461.39872.stgit@blender.achiang> <200808171059.50802.eike-kernel@sf-tec.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808171059.50802.eike-kernel@sf-tec.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-19 at 11:33 -0700, Max Krasnyansky wrote:
-> Peter Zijlstra wrote:
-> > It fixes an accounting bug where we would continue accumulating runtime
-> > even though the bandwidth control is disabled. This would lead to very long
-> > throttle periods once bandwidth control gets turned on again.
-> > 
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+* Rolf Eike Beer <eike-kernel@sf-tec.de>:
+> Alex Chiang wrote:
+> > We do not need to manage our own name parameter, especially since
+> > the PCI core can change it on our behalf, in the case of duplicate
+> > slot names.
+> >
+> > Remove 'name' from acpiphp's version of struct slot.
+> >
+> > Cc: jbarnes@virtuousgeek.org
+> > Cc: kristen.c.accardi@intel.com
+> > Cc: kaneshige.kenji@jp.fujitsu.com
+> > Signed-off-by: Alex Chiang <achiang@hp.com>
 > > ---
-> >  kernel/sched_rt.c |   11 +++++------
-> >  1 file changed, 5 insertions(+), 6 deletions(-)
-> > 
-> > Index: linux-2.6/kernel/sched_rt.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/sched_rt.c
-> > +++ linux-2.6/kernel/sched_rt.c
-> > @@ -438,9 +438,6 @@ static int sched_rt_runtime_exceeded(str
-> >  {
-> >  	u64 runtime = sched_rt_runtime(rt_rq);
-> >  
-> > -	if (runtime == RUNTIME_INF)
-> > -		return 0;
+> >
+> >  drivers/pci/hotplug/acpiphp.h      |    9 +++++----
+> >  drivers/pci/hotplug/acpiphp_core.c |   36
+> > +++++++++++++++++++----------------- 2 files changed, 24 insertions(+), 21
+> > deletions(-)
+> >
+> > diff --git a/drivers/pci/hotplug/acpiphp.h b/drivers/pci/hotplug/acpiphp.h
+> > index 5a58b07..f9e244d 100644
+> > --- a/drivers/pci/hotplug/acpiphp.h
+> > +++ b/drivers/pci/hotplug/acpiphp.h
+> > @@ -50,9 +50,6 @@
+> >  #define info(format, arg...) printk(KERN_INFO "%s: " format, MY_NAME , ##
+> > arg) #define warn(format, arg...) printk(KERN_WARNING "%s: " format,
+> > MY_NAME , ## arg)
+> >
+> > -/* name size which is used for entries in pcihpfs */
+> > -#define SLOT_NAME_SIZE	20		/* {_SUN} */
 > > -
-> >  	if (rt_rq->rt_throttled)
-> >  		return rt_rq_throttled(rt_rq);
-> >  
-> > @@ -491,9 +488,11 @@ static void update_curr_rt(struct rq *rq
-> >  		rt_rq = rt_rq_of_se(rt_se);
-> >  
-> >  		spin_lock(&rt_rq->rt_runtime_lock);
-> > -		rt_rq->rt_time += delta_exec;
-> > -		if (sched_rt_runtime_exceeded(rt_rq))
-> > -			resched_task(curr);
-> > +		if (sched_rt_runtime(rt_rq) != RUNTIME_INF) {
-> > +			rt_rq->rt_time += delta_exec;
-> > +			if (sched_rt_runtime_exceeded(rt_rq))
-> > +				resched_task(curr);
-> > +		}
-> >  		spin_unlock(&rt_rq->rt_runtime_lock);
-> >  	}
-> >  }
+> >  struct acpiphp_bridge;
+> >  struct acpiphp_slot;
+> >
+> > @@ -63,9 +60,13 @@ struct slot {
+> >  	struct hotplug_slot	*hotplug_slot;
+> >  	struct acpiphp_slot	*acpi_slot;
+> >  	struct hotplug_slot_info info;
+> > -	char name[SLOT_NAME_SIZE];
+> >  };
+> >
+> > +static inline const char *slot_name(struct slot *slot)
+> > +{
+> > +	return hotplug_slot_name(slot->hotplug_slot);
+> > +}
+> > +
+> >  /*
+> >   * struct acpiphp_bridge - PCI bridge information
+> >   *
 > 
-> This will make 'disabled' case more expensive, will it not ?
-> I mean now we'll have to run balance_runtime() even if throttling is 
-> disabled.
+> I don't see a point in this function. Why not call hotplug_slot_name() 
+> directly? 
 
-It should not, its cheaper now. We should never end up in
-balance_runtime as we'll never exceed and hit the throttle path.
+You're correct that we don't exactly need it in acpiphp. However,
+it is a useful helper function for some of the other drivers, and
+I thought it would be better to keep consistency if possible.
 
-> Do you guys mind if I make this stuff configurable ? ie Just like 
-> CONFIG_RT_GROUP_SCHED we could add CONFIG_RT_BANDWIDTH_THROTTLE.
+Also, it helps later on, when trying to stay below the 80 column
+limit. :)
 
-Yeah - please don't do that, its ifdef fest in there - we really should
-reduce the clutter, not add to it.
+> > diff --git a/drivers/pci/hotplug/acpiphp_core.c
+> > b/drivers/pci/hotplug/acpiphp_core.c index e984176..687cac3 100644
+> > --- a/drivers/pci/hotplug/acpiphp_core.c
+> > +++ b/drivers/pci/hotplug/acpiphp_core.c
+> > @@ -44,6 +44,9 @@
+> >
+> >  #define MY_NAME	"acpiphp"
+> >
+> > +/* name size which is used for entries in pcihpfs */
+> > +#define SLOT_NAME_SIZE  20              /* {_SUN} */
+> > +
+> >  static int debug;
+> >  int acpiphp_debug;
+> >
+> > @@ -84,7 +87,6 @@ static struct hotplug_slot_ops acpi_hotplug_slot_ops = {
+> >  	.get_adapter_status	= get_adapter_status,
+> >  };
+> >
+> > -
+> >  /**
+> >   * acpiphp_register_attention - set attention LED callback
+> >   * @info: must be completely filled with LED callbacks
+> 
+> Fuzz.
+
+Yes, it's fuzz, but my practice has been to clean up* source files
+during the course of making actual, functional changes. Better
+than sending a mostly-useless whitespace patchbomb, IMO.
+
+* Note that "clean up" here means "reasonable cleanup" that
+  doesn't detract from reading the rest of the patch.
+
+> > @@ -92,7 +94,7 @@ static struct hotplug_slot_ops acpi_hotplug_slot_ops = {
+> >   * Description: This is used to register a hardware specific ACPI
+> >   * driver that manipulates the attention LED.  All the fields in
+> >   * info must be set.
+> > - */
+> > + **/
+> >  int acpiphp_register_attention(struct acpiphp_attention_info *info)
+> >  {
+> >  	int retval = -EINVAL;
+> 
+> Fuzz. Make the patch look bigger than it actually is. But that's just a note, 
+> Jesse will have to judge if this is acceptable.
+
+See above. Fixing incorrect kerneldoc doesn't seem so bad, IMO.
+
+> > @@ -113,7 +115,7 @@ int acpiphp_register_attention(struct
+> > acpiphp_attention_info *info) * Description: This is used to un-register a
+> > hardware specific acpi * driver that manipulates the attention LED.  The
+> > pointer to the * info struct must be the same as the one used to set it.
+> > - */
+> > + **/
+> >  int acpiphp_unregister_attention(struct acpiphp_attention_info *info)
+> >  {
+> >  	int retval = -EINVAL;
+> > @@ -136,7 +138,7 @@ static int enable_slot(struct hotplug_slot
+> > *hotplug_slot) {
+> >  	struct slot *slot = hotplug_slot->private;
+> >
+> > -	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+> > +	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+> >
+> >  	/* enable the specified slot */
+> >  	return acpiphp_enable_slot(slot->acpi_slot);
+> > @@ -154,7 +156,7 @@ static int disable_slot(struct hotplug_slot
+> > *hotplug_slot) struct slot *slot = hotplug_slot->private;
+> >  	int retval;
+> >
+> > -	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+> > +	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+> >
+> >  	/* disable the specified slot */
+> >  	retval = acpiphp_disable_slot(slot->acpi_slot);
+> > @@ -177,7 +179,7 @@ static int disable_slot(struct hotplug_slot
+> > *hotplug_slot) {
+> >  	int retval = -ENODEV;
+> >
+> > - 	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+> > +	dbg("%s - physical_slot = %s\n", __func__,
+> > hotplug_slot_name(hotplug_slot));
+> >
+> >  	if (attention_info && try_module_get(attention_info->owner)) {
+> >  		retval = attention_info->set_attn(hotplug_slot, status);
+> > @@ -200,7 +202,7 @@ static int get_power_status(struct hotplug_slot
+> > *hotplug_slot, u8 *value) {
+> >  	struct slot *slot = hotplug_slot->private;
+> >
+> > -	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+> > +	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+> >
+> >  	*value = acpiphp_get_power_status(slot->acpi_slot);
+> >
+> > @@ -222,7 +224,7 @@ static int get_attention_status(struct hotplug_slot
+> > *hotplug_slot, u8 *value) {
+> >  	int retval = -EINVAL;
+> >
+> > -	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+> > +	dbg("%s - physical_slot = %s\n", __func__,
+> > hotplug_slot_name(hotplug_slot));
+> >
+> >  	if (attention_info && try_module_get(attention_info->owner)) {
+> >  		retval = attention_info->get_attn(hotplug_slot, value);
+> > @@ -245,7 +247,7 @@ static int get_latch_status(struct hotplug_slot
+> > *hotplug_slot, u8 *value) {
+> >  	struct slot *slot = hotplug_slot->private;
+> >
+> > -	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+> > +	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+> >
+> >  	*value = acpiphp_get_latch_status(slot->acpi_slot);
+> >
+> > @@ -265,7 +267,7 @@ static int get_adapter_status(struct hotplug_slot
+> > *hotplug_slot, u8 *value) {
+> >  	struct slot *slot = hotplug_slot->private;
+> >
+> > -	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+> > +	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+> >
+> >  	*value = acpiphp_get_adapter_status(slot->acpi_slot);
+> >
+> > @@ -299,7 +301,7 @@ static void release_slot(struct hotplug_slot
+> > *hotplug_slot) {
+> >  	struct slot *slot = hotplug_slot->private;
+> >
+> > -	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+> > +	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+> >
+> >  	kfree(slot->hotplug_slot);
+> >  	kfree(slot);
+> > @@ -310,6 +312,7 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot
+> > *acpiphp_slot) {
+> >  	struct slot *slot;
+> >  	int retval = -ENOMEM;
+> > +	char name[SLOT_NAME_SIZE];
+> >
+> >  	slot = kzalloc(sizeof(*slot), GFP_KERNEL);
+> >  	if (!slot)
+> > @@ -321,8 +324,6 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot
+> > *acpiphp_slot)
+> >
+> >  	slot->hotplug_slot->info = &slot->info;
+> >
+> > -	slot->hotplug_slot->name = slot->name;
+> > -
+> >  	slot->hotplug_slot->private = slot;
+> >  	slot->hotplug_slot->release = &release_slot;
+> >  	slot->hotplug_slot->ops = &acpi_hotplug_slot_ops;
+> > @@ -336,12 +337,13 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot
+> > *acpiphp_slot) slot->hotplug_slot->info->cur_bus_speed = PCI_SPEED_UNKNOWN;
+> >
+> >  	acpiphp_slot->slot = slot;
+> > -	snprintf(slot->name, sizeof(slot->name), "%u", slot->acpi_slot->sun);
+> > +	memset(name, 0, SLOT_NAME_SIZE);
+> > +	snprintf(name, SLOT_NAME_SIZE, "%u", slot->acpi_slot->sun);
+> 
+> The memset() is not needed at all. And the sizeof is IMHO a good idea anyway 
+> as it allows to get rid of the define.
+
+Hm, don't need a memset? I won't have garbage on the stack?
+</n00b>
+
+On the other hand, keeping the #define is important, because
+again, that's the established convention of the PCI hotplug
+drivers.
+
+Thanks for the review.
+
+/ac
+
+> 
+> >  	retval = pci_hp_register(slot->hotplug_slot,
+> >  					acpiphp_slot->bridge->pci_bus,
+> >  					acpiphp_slot->device,
+> > -					slot->name);
+> > +					name);
+> >  	if (retval == -EBUSY)
+> >  		goto error_hpslot;
+> >  	if (retval) {
+> > @@ -349,7 +351,7 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot
+> > *acpiphp_slot) goto error_hpslot;
+> >   	}
+> >
+> > -	info("Slot [%s] registered\n", slot->hotplug_slot->name);
+> > +	info("Slot [%s] registered\n", slot_name(slot));
+> >
+> >  	return 0;
+> >  error_hpslot:
+> > @@ -366,7 +368,7 @@ void acpiphp_unregister_hotplug_slot(struct
+> > acpiphp_slot *acpiphp_slot) struct slot *slot = acpiphp_slot->slot;
+> >  	int retval = 0;
+> >
+> > -	info ("Slot [%s] unregistered\n", slot->hotplug_slot->name);
+> > +	info ("Slot [%s] unregistered\n", slot_name(slot));
+> >
+> >  	retval = pci_hp_deregister(slot->hotplug_slot);
+> >  	if (retval)
+> 
+> Greetings,
+> 
+> Eike
+
 
