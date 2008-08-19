@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbYHSQq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbYHSQrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbYHSQq3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 12:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYHSQqT
+	id S1756224AbYHSQrs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 12:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbYHSQrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 12:46:19 -0400
-Received: from home.keithp.com ([63.227.221.253]:4901 "EHLO keithp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753448AbYHSQqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 12:46:18 -0400
-Subject: Re: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM
-From: Keith Packard <keithp@keithp.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: keithp@keithp.com, Dave Airlie <airlied@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>, Eric Anholt <eric@anholt.net>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200808192000.47070.nickpiggin@yahoo.com.au>
-References: <1217573919-7496-1-git-send-email-eric@anholt.net>
-	 <200808051443.11858.nickpiggin@yahoo.com.au>
-	 <21d7e9970808181817n1d67dc33s58b8d07f63e411a7@mail.gmail.com>
-	 <200808192000.47070.nickpiggin@yahoo.com.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Itdh3o6WO2JIJOdc7m+q"
-Date: Tue, 19 Aug 2008 09:46:07 -0700
-Message-Id: <1219164367.10772.420.camel@koto.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Tue, 19 Aug 2008 12:47:39 -0400
+Received: from mail5.dslextreme.com ([66.51.199.81]:50028 "HELO
+	mail5.dslextreme.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750921AbYHSQri (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 12:47:38 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Aug 2008 12:47:37 EDT
+Message-ID: <25da0a65dd8a41208a8a0c0a.20080819094057.whnafynlgba@webmail.dslextreme.com>
+Date: Tue, 19 Aug 2008 09:40:57 -0700 (PDT)
+Subject: Re: PROBLEM: USB keyboards works only 4 per PC host port
+From: juanslayton@dslextreme.com
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Cc: "Aivils Stoss" <aivils@latnet.lv>, jkosina@suse.cz,
+       "lud" <linux-usb@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       "Randy Dunlap" <rdunlap@xenotime.net>,
+       linuxconsole-dev@lists.sourceforge.net, linux-input@vger.kernel.org
+User-Agent: DSL Extreme Webmail (www.dslextreme.com)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-Itdh3o6WO2JIJOdc7m+q
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2008-08-19 at 20:00 +1000, Nick Piggin wrote:
 
-> Not exactly sure what you mean by this. But I would like to see an effort
-> made to use existing userspace APIs in order to do this swappable object
-> allocation over tmpfs scheme. As I said, I don't object to a nice kernel
-> implementation, but we would be in a much better position to assess it if
-> we had an existing userspace implementation to compare it with.
+I have to apologize for my limited knowledge, but mere ignorance never yet
+kept a teacher quiet.  I am trying to follow this discussion because
+Aivils and I are  basically trying to do the same thing.  In my case I am
+presently running 20 keyboards on a 2.6.26 kernel, using an EHCI
+controller, and they all work fine.
 
-We need to allocate objects from kernel mode to get the console running.
-I'd prefer to let that occur before user mode was available. Also,
-emulating the existing fbdev syscall interface will require that we
-allocate objects within the kernel.
+If I understand your analysis, Aivils' problem is because the UHCI
+controllers are too slow.  (I just happened to get lucky with another
+controller.)  I am left with two questions.
 
-Hence, the question about how we should create objects from kernel mode.
-I think we can do this with a series of VFS function calls. Would that
-series of VFS calls be preferable to directly accessing the existing
-shmem API?
+1.  What if Aivils needs more than 16 keyboards?  (Standard class sizes
+here in California run from 20 to about 30.)  Is there any way he can do
+this without a faster controller?
 
-Another alternative is to improve the existing shmem API to better
-capture what we're trying to do here. Both drm and sysv shm just want
-anonymous pages that are backed by swap. If we started from scratch,
-what API would we like to have here? Would we have it support both shmem
-and hugetlbfs?
+2.  What does the bandwidth limitation say about the maximum number of
+boards with the EHCI controller?  I modified the kernel evdev.c and
+input.c files to raise the maximum events from 32 to 64, but I hadn't
+figured in the effects of bandwidth.
 
---=20
-keith.packard@intel.com
-
---=-Itdh3o6WO2JIJOdc7m+q
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQBIqvjPQp8BWwlsTdMRAliNAKCjkpsiQDdTR3XXklB8fV9G8mXsKACgt4w5
-2LUd+Lue9ae8AaBtn7ivgJQ=
-=aSr4
------END PGP SIGNATURE-----
-
---=-Itdh3o6WO2JIJOdc7m+q--
+> Now if you plugged some of these keyboards into different UHCI
+> controllers on the computer, then the problem wouldn't arise.  Each of
+> your four UHCI controllers has two ports.  So without using any hubs at
+> all, you can plug 8 keyboards into the computer and they will all work.
+>
+> If you use some extra hubs as well then you can plug four keyboards
+> into each controller, allowing you to use 16 keyboards total.
+>
+> Alan Stern
+>
+>
+> -------------------------------------------------------------------------
+> This SF.Net email is sponsored by the Moblin Your Move Developer's
+> challenge
+> Build the coolest Linux based applications with Moblin SDK & win great
+> prizes
+> Grand prize is a trip for two to an Open Source event anywhere in the
+> world
+> http://moblin-contest.org/redirect.php?banner_id=100&url=/
+> _______________________________________________
+> Linuxconsole-dev mailing list
+> Linuxconsole-dev@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linuxconsole-dev
+>
 
