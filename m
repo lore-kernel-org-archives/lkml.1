@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755946AbYHSQYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbYHSQbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755946AbYHSQYG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 12:24:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbYHSQXn
+	id S1754759AbYHSQbv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 12:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbYHSQbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 12:23:43 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:49756 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752721AbYHSQXl (ORCPT
+	Tue, 19 Aug 2008 12:31:44 -0400
+Received: from mercury.sdinet.de ([193.103.161.30]:39520 "EHLO
+	mercury.sdinet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbYHSQbn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 12:23:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=pe8ql3zEncZLhGZiYTD/9ilS8cBfX3IP0raEhShsPfiBQ87eMzjr8UMh4pY1Or0bNO
-         LVjO6RYUBfUr8VRECVIbX3qVa197YbBSS+IkXsoDzTBpFjFkma5v3nmkO9X0x6S8cY4I
-         l14iujLmZ/ZA7RYLi+OM0/GIesZtJKQtWsjYY=
-Date: Tue, 19 Aug 2008 12:23:37 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: [git pull] Input updates for 2.6.27-rc3 (part 2)
-Message-ID: <20080819162337.GB21069@anvil.corenet.prv>
+	Tue, 19 Aug 2008 12:31:43 -0400
+Date: Tue, 19 Aug 2008 18:31:41 +0200 (CEST)
+From: Sven-Haegar Koch <haegar@sdinet.de>
+To: Chen Pei Chao <jackie73@ms2.hinet.net>
+cc: linux-kernel@vger.kernel.org, jackie.chen@foxconn.com
+Subject: =?ISO-8859-8?Q?Re=3A_Is_there_linux_RAM_filesystem_with_a_fixed_amount_of_memory=3F=FE?=
+In-Reply-To: <016201c90203$b12fff40$110afea9@acer44836bb3d7>
+Message-ID: <alpine.DEB.1.10.0808191830260.21827@mercury.sdinet.de>
+References: <016201c90203$b12fff40$110afea9@acer44836bb3d7>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Tue, 19 Aug 2008, Chen Pei Chao wrote:
 
-Please pull from:
+> Is there any RAM file system that use a fixed amount of memory at all times
+> and will not grow and
+> shrink dynamically like tmpfs?
+> Thanks in advance.
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+There are the old-style ramdisk block-devices, which will just claim the 
+specified amount of memory and can be formatted with any filesystem.
 
-to receive updates for the input subsystem.
-
-Changelog:
----------
-
-Geert Uytterhoeven (1):
-      Input: evdev - fix printf() format for sizeof
-
-Huang Weiyi (1):
-      Input: remove version.h from drivers that don't need it
-
-Martin Michlmayr (1):
-      Input: cobalt_btns - add missing MODULE_LICENSE
-
-
-Diffstat:
---------
-
- drivers/input/evdev.c                   |    4 ++--
- drivers/input/keyboard/gpio_keys.c      |    1 -
- drivers/input/misc/cobalt_btns.c        |    3 +++
- drivers/input/mouse/gpio_mouse.c        |    1 -
- drivers/input/tablet/gtco.c             |    1 -
- drivers/input/touchscreen/wm9705.c      |    1 -
- drivers/input/touchscreen/wm9712.c      |    1 -
- drivers/input/touchscreen/wm9713.c      |    1 -
- drivers/input/touchscreen/wm97xx-core.c |    1 -
- 9 files changed, 5 insertions(+), 9 deletions(-)
+c'ya
+sven
 
 -- 
-Dmitry
+
+The Internet treats censorship as a routing problem, and routes around
+it. (John Gilmore on http://www.cygnus.com/~gnu/)
