@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462AbYHSIn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbYHSIoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755462AbYHSIn2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 04:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbYHSInT
+	id S1755523AbYHSIoB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 04:44:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYHSInw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 04:43:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37558 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753838AbYHSInS (ORCPT
+	Tue, 19 Aug 2008 04:43:52 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45406
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754024AbYHSInv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 04:43:18 -0400
-Date: Tue, 19 Aug 2008 01:43:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       dbrownell@users.sourceforge.net
-Subject: Re: [PATCH] Make gpiochip label const
-Message-Id: <20080819014305.44a1f9b8.akpm@linux-foundation.org>
-In-Reply-To: <20080817190035.GA29170@doriath.ww600.siemens.net>
-References: <1218573588-25528-1-git-send-email-dbaryshkov@gmail.com>
-	<20080812220619.D2011362B0F@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<20080817190035.GA29170@doriath.ww600.siemens.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 19 Aug 2008 04:43:51 -0400
+Date: Tue, 19 Aug 2008 01:43:50 -0700 (PDT)
+Message-Id: <20080819.014350.79505195.davem@davemloft.net>
+To: harvey.harrison@gmail.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 18/23] sparc: use the new byteorder headers
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1219106897.17033.71.camel@brick>
+References: <1219106897.17033.71.camel@brick>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Aug 2008 23:00:35 +0400 Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
+From: Harvey Harrison <harvey.harrison@gmail.com>
+Date: Mon, 18 Aug 2008 17:48:17 -0700
 
-> On Tue, Aug 12, 2008 at 03:06:19PM -0700, David Brownell wrote:
-> > > From dbaryshkov@gmail.com  Tue Aug 12 13:54:29 2008
-> > > From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-> > > To: linux-kernel@vger.kernel.org
-> > > Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>,
-> > > 	David Brownell <dbrownell@users.sourceforge.net>
-> > > Subject: [PATCH] Make gpiochip label const
-> > > Date: Wed, 13 Aug 2008 00:39:48 +0400
-> > >
-> > > Mark gpiochip label as a const char pointer.
-> > >
-> > > Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
-> > > Cc: David Brownell <dbrownell@users.sourceforge.net>
-> > 
-> > Acked-By: David Brownell <dbrownell@users.sourceforge.net>
-> > 
-> 
-> Sorry to disturb, but will this make into 2.6.27-rc? Thanks.
-> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
-Ordinarily it would not.  Is there some reason why you think it should?
+I'm not so sure about this.
+
+If I understand the ___swab*() inlines in linux/swab.h,
+it has the following priority of swapping methods:
+
+1) If arch defines __arch_swab*(), this is used.
+
+2) If arch defines __arch_swab*p(), variable is popped onto
+   the stack and we do the pointer based operation.
+
+3) Else normal C version is used.
+
+Case #2 is totally disagree with.
+
+Especially for small swaps such as 16-bit the inline expansion
+of the portable C code is going to be much better than popping
+the variable onto and then back off the stack.
+
+Sparc 64-bit only provides the __arch_swab*p() routines so
+#2 is what will in fact be used here.
+
+So NACK based upon that analysis.
