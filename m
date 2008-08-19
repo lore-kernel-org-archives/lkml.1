@@ -1,361 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754450AbYHSLRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbYHSLSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754450AbYHSLRY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 07:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYHSLRL
+	id S1754848AbYHSLSU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 07:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYHSLSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 07:17:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36564
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751569AbYHSLRH convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 07:17:07 -0400
-Date: Tue, 19 Aug 2008 04:17:06 -0700 (PDT)
-Message-Id: <20080819.041706.261399060.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 19 Aug 2008 07:18:08 -0400
+Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:46443 "HELO
+	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751832AbYHSLSH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 07:18:07 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=TOaAxLeDwKfZaX9/gFXgcQoZcU2d/0ZKaWfsVCUjLBxJrylOIALWAtqRREDc4bKNOZZ27Btoicee4i5RY5Zj9/z+IIGm0/SgRayar3OxuFNkh2G8Jbzm1ETS1UDqdKZcZuKqmZDLpA6ffAGJZ7mKnHdpABbQM+5kbt4RebRXU8M=  ;
+X-YMail-OSG: Cwng2BsVM1mdWsDmRY52kWnaBf7rRHbpdZyKS5XcyBGYluBZ4ilb1t8l3TiHM6lPQtuohi.hx.SyaWfXF38NRspVKZ4HcInH61D2lrs0a1JsovDvv5FR8Fl26V83bpSWEp.4qZtigjOCygFxJszLuVYu
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
+Date: Tue, 19 Aug 2008 21:17:51 +1000
+User-Agent: KMail/1.9.5
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Stefani Seibold <stefani@seibold.net>,
+       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20080819103301.787700742@chello.nl> <20080819103844.459178947@chello.nl> <20080819110557.GA18608@elte.hu>
+In-Reply-To: <20080819110557.GA18608@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808192117.52070.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 19 August 2008 21:05, Ingo Molnar wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > Disable bandwidth control by default.
+> >
+> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > ---
+> >  kernel/sched.c |   17 +++++++----------
+> >  1 file changed, 7 insertions(+), 10 deletions(-)
+> >
+> > Index: linux-2.6/kernel/sched.c
+> > ===================================================================
+> > --- linux-2.6.orig/kernel/sched.c
+> > +++ linux-2.6/kernel/sched.c
+> > @@ -824,9 +824,9 @@ static __read_mostly int scheduler_runni
+> >
+> >  /*
+> >   * part of the period that we allow rt tasks to run in us.
+> > - * default: 0.95s
+> > + * default: inf
+> >   */
+> > -int sysctl_sched_rt_runtime = 950000;
+> > +int sysctl_sched_rt_runtime = -1;
+>
+> The fixes look good to me, but this enabling of infinite RT task lockups
+> is not an improvement.
+>
+> The thing is, i got far more bugreports about locked up RT tasks where
+> the lockup was unintentional, than real bugreports about anyone
+> _intending_ for the whole box to come to a grinding halt because a
+> high-prio RT tasks is monopolizing the CPU.
 
-We're still chipping away at the packet scheduler layer locking
-issues, but I feel that this is mostly sorted at this point.
+Why are all these people running poorly written apps then?
 
-Other highlights:
+We don't cater to poorly at the expense of the properly written
+code.
 
-1) Fix for NAT via loopback per regression with GSO by Herbert
-   Xu.
 
-2) Merge in wired driver fixes via Jeff Garzik.
+> In fact there's only been this artificial test so far.
 
-3) Bluetooth updates via Marcel Holtmann.
+No, someone reported that it broke their app.
 
-4) Wireless driver updates via John Linville.
 
-5) Fix to namespace handling in ipv6 from Brian Haley.
+> So could you please just increase the chunking to 10 seconds or so, from
+> the current 1 second? Anyone locking up the system for more than 10
+> seconds via an RT task has to deal with many other issues already.
+>
+> I.e. keep the system borderline debuggable (up to 10 seconds delays are
+> _not_ nice so people will notice) - but it's still a marked improvement
+> from completly locked up desktops.
+>
+> And those who really need longer than 10 second periods can set it
+> higher, or even (if they want to live dangerously or run POSIX
+> conformance tests) make it infinite (set it to -1) - and will have to
+> deal with other things like the softlockup watchdog as well.
+>
+> Ok?
 
-6) DCCP panic fix from Gerrit Renker.
-
-7) Packet scheduler qdisc return value handling fix which can
-   cause TCP crashes.
-
-8) Netfilter bug fixes from Patrick McHardy and co.
-
-Please pull, thanks a lot!
-
-The following changes since commit a7f5aaf36ded825477c4d7167cc6eb1bcdc63191:
-  Linus Torvalds (1):
-        Merge branch 'x86-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Adrian Bunk (2):
-      [netdrvr] uninline atl1e_setup_mac_ctrl()
-      ath9k: work around gcc ICEs (again)
-
-Anders Grafström (1):
-      netfilter: ipt_addrtype: Fix matching of inverted destination address type
-
-Atsushi Nemoto (1):
-      [netdrvr] ne: Use CONFIG_MACH_TX49XX
-
-Ben Dooks (1):
-      AX88796: Fix locking in ethtool support
-
-Brian Haley (1):
-      netns: Add network namespace argument to rt6_fill_node() and ipv6_dev_get_saddr()
-
-Brice Goglin (1):
-      myri10ge: myri10ge_fw_name also overrides the rss firmware
-
-Bruce Allan (7):
-      e1000e: Return 1 instead of a non-zero value for link up indication
-      e1000e: Set InterruptThrottleRate to default when invalid value used
-      e1000e: Use skb_copy_to_linear_data_offset introduced in 2.6.22
-      e1000e: Increase Tx timeout factor for 10Mbps
-      e1000e: increase minimum frame size allowed
-      e1000e: test for unusable MSI support
-      e1000e: remove unnecessary snippet missed in prior check_options update
-
-Christian Lamparter (3):
-      p54: Fix regression due to "net: Delete NETDEVICES_MULTIQUEUE kconfig option"
-      p54: move p54_vdcf_init to the right place.
-      p54u: reset skb's data/tail pointer on requeue
-
-David Brownell (1):
-      Kconfig: HSO driver bugfixes and updates
-
-David S. Miller (18):
-      Merge branch 'upstream-davem' of master.kernel.org:/.../jgarzik/netdev-2.6
-      loopback: Remove rest of LOOPBACK_TSO code.
-      bnx2: Fix build with VLAN_8021Q disabled.
-      pkt_sched: Add 'deactivated' state.
-      pkt_sched: Simplify dev_deactivate() polling loop.
-      pkt_sched: No longer destroy qdiscs from RCU.
-      sch_prio: Use NET_XMIT_SUCCESS instead of "0" constant.
-      pkt_sched: Fix missed RCU unlock in dev_queue_xmit()
-      pkt_sched: Fix return value corruption in HTB and TBF.
-      pkt_sched: Never schedule non-root qdiscs.
-      pkt_sched: Don't hold qdisc lock over qdisc_destroy().
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-      Revert "pkt_sched: Protect gen estimators under est_lock."
-      Revert "pkt_sched: Add BH protection for qdisc_stab_lock."
-      Merge branch 'master' of git://git.kernel.org/.../holtmann/bluetooth-2.6
-      pkt_sched: Prevent livelock in TX queue running.
-
-Dhananjay Phadke (6):
-      netxen: fix mac addr setup
-      netxen: fix rxbuf leak across driver reload
-      netxen: force link update across ifdown/ifup
-      netxen: fix dma watchdog
-      netxen: cleanup interrupt code
-      netxen: update driver version
-
-Gerrit Renker (1):
-      dccp: Fix panic caused by too early termination of retransmission mechanism
-
-Greg Kroah-Hartman (2):
-      USB: HSO: make tty_operations const
-      USB: HSO: minor fixes due to code review
-
-Henrique de Moraes Holschuh (1):
-      rfkill: protect suspended rfkill controllers
-
-Herbert Xu (4):
-      ipv4: Disable route secret interval on zero interval
-      loopback: Enable TSO
-      net: Preserve netfilter attributes in skb_gso_segment using __copy_skb_header
-      loopback: Drop obsolete ip_summed setting
-
-Holger Schurig (1):
-      ssb: allow compilation on systems without PCI
-
-Huang Weiyi (2):
-      [netdrvr] remove unnecessary #include
-      removed unused #include <version.h>
-
-Ilpo Järvinen (1):
-      pkt_sched: remove bogus block (cleanup)
-
-Jarek Poplawski (4):
-      pkt_sched: Fix unlocking in tc_ctl_tfilter()
-      net: Change handling of the __QDISC_STATE_SCHED flag in net_tx_action().
-      pkt_sched: Grab correct lock in notify_and_destroy().
-      pkt_sched: Add lockdep annotation for qdisc locks
-
-Jesse Brandeburg (1):
-      ixgbe: add cx4 device ID
-
-Jiri Slaby (1):
-      iwlwifi: fix printk newlines
-
-Jochen Friedrich (1):
-      rt2x00: Fix txdone_entry_desc_flags
-
-Jussi Kivilinna (1):
-      sch_prio: Use return value from inner qdisc requeue
-
-Larry Finger (2):
-      b43: Fix for SPROM coding error in Linksys WMP54G (BCM4306/3)
-      b43: Fix for another Bluetooth Coexistence SPROM Programming error for BCM4306
-
-Luis R. Rodriguez (1):
-      mac80211: remove kdoc references to IEEE80211_HW_HOST_GEN_BEACON_TEMPLATE
-
-Marcel Holtmann (3):
-      [Bluetooth] Add SCO support to btusb driver
-      [Bluetooth] Fix userspace breakage due missing class links
-      [Bluetooth] Consolidate maintainers information
-
-Mark McLoughlin (1):
-      tun: TUNGETIFF interface to query name and flags
-
-Matt Carlson (6):
-      tg3: Add APE register access locking
-      tg3: Refine APE status check
-      tg3: Preserve register settings for DASH
-      tg3: Turn off ASF "driver alive" heartbeats for APE
-      tg3: Fix firmware event timeouts
-      tg3: Update version to 3.94
-
-Michael Chan (4):
-      bnx2: Fix logic to setup VLAN rx tagging.
-      bnx2: Use proper CONFIG_VLAN_8021Q to compile the VLAN code.
-      bnx2: Reinsert VLAN tag when necessary.
-      bnx2: Update version to 1.8.0.
-
-Michael Karcher (1):
-      ath5k: Don't fiddle with MSI on suspend/resume.
-
-Mikael Pettersson (1):
-      ixp4xx_eth: fix dma_mapping_error() compile errors
-
-Olivier Blin (2):
-      hso: fix oops in read/write callbacks
-      hso: fix refcounting on the ttyHSx devices
-
-Pablo Neira Ayuso (3):
-      netfilter: ctnetlink: fix double helper assignation for NAT'ed conntracks
-      netfilter: ctnetlink: fix sleep in read-side lock section
-      netfilter: ctnetlink: sleepable allocation with spin lock bh
-
-Rafael J. Wysocki (1):
-      sky2: Fix suspend/hibernation/shutdown regression with WOL enabled (rev. 2)
-
-Robert Fitzsimons (1):
-      tlan: Fix two regressions introduced by 64bit conversion.
-
-Ron Rindjunsky (1):
-      mac80211: update new sta's rx timestamp
-
-Rusty Russell (2):
-      net: skb_copy_datagram_from_iovec()
-      tun: fallback if skb_alloc() fails on big packets
-
-Scott Wood (1):
-      gianfar: Call gfar_halt_nodisable() from gfar_halt().
-
-Stefan Buehler (1):
-      tg3: fix 64 bit counter for ethtool stats
-
-Stephen Hemminger (2):
-      bridge: show offload settings
-      nf_nat: use secure_ipv4_port_ephemeral() for NAT port randomization
-
-Vegard Nossum (1):
-      au1000_eth: use 'unsigned long' for irqflags
-
-Yang Hongyang (1):
-      ipv6: Fix the return interface index when get it while no message is received.
-
-matthieu Barthélemy (1):
-      rtl8187: Add USB ID for Netgear WG111V3
-
-roel kluin (1):
-      atl1e: WAKE_MCAST 2x. 1st WAKE_UCAST?
-
- Documentation/rfkill.txt                    |    5 +
- MAINTAINERS                                 |   87 +------
- drivers/bluetooth/Kconfig                   |   10 +-
- drivers/bluetooth/bt3c_cs.c                 |    2 +-
- drivers/bluetooth/btusb.c                   |  282 +++++++++++++++++++-
- drivers/bluetooth/hci_ldisc.c               |    2 +-
- drivers/bluetooth/hci_usb.c                 |    2 +-
- drivers/bluetooth/hci_vhci.c                |    2 +-
- drivers/char/random.c                       |    1 +
- drivers/net/Kconfig                         |    2 +-
- drivers/net/acenic.c                        |    1 -
- drivers/net/arm/ixp4xx_eth.c                |    6 +-
- drivers/net/atl1e/atl1e_ethtool.c           |    2 +-
- drivers/net/au1000_eth.c                    |    2 +-
- drivers/net/ax88796.c                       |    4 +-
- drivers/net/bnx2.c                          |   47 +++-
- drivers/net/bnx2x_link.c                    |    1 -
- drivers/net/bnx2x_main.c                    |    1 -
- drivers/net/cpmac.c                         |    1 -
- drivers/net/e1000e/defines.h                |    2 +-
- drivers/net/e1000e/e1000.h                  |    1 +
- drivers/net/e1000e/ethtool.c                |    2 +-
- drivers/net/e1000e/netdev.c                 |  185 ++++++++++++-
- drivers/net/e1000e/param.c                  |   25 ++-
- drivers/net/gianfar.c                       |    6 +-
- drivers/net/gianfar_sysfs.c                 |    1 -
- drivers/net/ipg.h                           |    2 -
- drivers/net/ixgbe/ixgbe_82598.c             |    1 +
- drivers/net/ixgbe/ixgbe_main.c              |    4 +-
- drivers/net/ixgbe/ixgbe_type.h              |    1 +
- drivers/net/loopback.c                      |   67 -----
- drivers/net/myri10ge/myri10ge.c             |    6 +-
- drivers/net/ne.c                            |    4 +-
- drivers/net/netxen/netxen_nic.h             |    7 +-
- drivers/net/netxen/netxen_nic_hw.c          |   59 +++--
- drivers/net/netxen/netxen_nic_init.c        |   28 +-
- drivers/net/netxen/netxen_nic_main.c        |  210 +++++++--------
- drivers/net/netxen/netxen_nic_phan_reg.h    |    2 +
- drivers/net/ppp_mppe.c                      |    1 -
- drivers/net/pppol2tp.c                      |    1 -
- drivers/net/r6040.c                         |    1 -
- drivers/net/sh_eth.c                        |    1 -
- drivers/net/sky2.c                          |    8 +-
- drivers/net/tehuti.h                        |    1 -
- drivers/net/tg3.c                           |  101 ++++++--
- drivers/net/tg3.h                           |    6 +
- drivers/net/tlan.c                          |    8 +-
- drivers/net/tun.c                           |  105 +++++++-
- drivers/net/typhoon.c                       |    1 -
- drivers/net/usb/Kconfig                     |   21 +-
- drivers/net/usb/hso.c                       |   53 +++--
- drivers/net/wireless/ath5k/base.c           |    9 +-
- drivers/net/wireless/ath9k/hw.c             |    6 +-
- drivers/net/wireless/b43/main.c             |    3 +-
- drivers/net/wireless/ipw2100.c              |    1 -
- drivers/net/wireless/ipw2200.c              |    1 -
- drivers/net/wireless/iwlwifi/iwl-3945.c     |    1 -
- drivers/net/wireless/iwlwifi/iwl-4965.c     |    3 +-
- drivers/net/wireless/iwlwifi/iwl-5000.c     |    1 -
- drivers/net/wireless/iwlwifi/iwl-agn.c      |    1 -
- drivers/net/wireless/iwlwifi/iwl-core.c     |    1 -
- drivers/net/wireless/iwlwifi/iwl-eeprom.c   |    7 +-
- drivers/net/wireless/iwlwifi/iwl-hcmd.c     |    1 -
- drivers/net/wireless/iwlwifi/iwl-power.c    |    1 -
- drivers/net/wireless/iwlwifi/iwl-sta.c      |    4 +-
- drivers/net/wireless/iwlwifi/iwl-tx.c       |    4 +-
- drivers/net/wireless/iwlwifi/iwl3945-base.c |    7 +-
- drivers/net/wireless/p54/p54common.c        |   51 ++--
- drivers/net/wireless/p54/p54common.h        |   18 +-
- drivers/net/wireless/p54/p54usb.c           |   10 +
- drivers/net/wireless/rt2x00/rt2x00queue.h   |    8 +-
- drivers/net/wireless/rt2x00/rt2x00usb.c     |    1 +
- drivers/net/wireless/rtl8187_dev.c          |    1 +
- drivers/ssb/main.c                          |    8 +
- include/linux/if_tun.h                      |    1 +
- include/linux/skbuff.h                      |    4 +
- include/net/addrconf.h                      |    3 +-
- include/net/ip6_route.h                     |    1 +
- include/net/mac80211.h                      |   11 +-
- include/net/sch_generic.h                   |    2 +-
- net/bluetooth/af_bluetooth.c                |    2 +-
- net/bluetooth/bnep/core.c                   |    2 +-
- net/bluetooth/hci_sysfs.c                   |  376 ++++++++++++++-------------
- net/bluetooth/l2cap.c                       |    2 +-
- net/bluetooth/rfcomm/core.c                 |    2 +-
- net/bluetooth/sco.c                         |    2 +-
- net/bridge/br_device.c                      |   15 +-
- net/core/datagram.c                         |   87 ++++++
- net/core/dev.c                              |   49 +++--
- net/core/gen_estimator.c                    |    9 +-
- net/core/skbuff.c                           |   12 +-
- net/dccp/input.c                            |   12 +-
- net/ipv4/netfilter/ipt_addrtype.c           |    2 +-
- net/ipv4/netfilter/nf_nat_proto_common.c    |    8 +-
- net/ipv4/route.c                            |   76 +++++-
- net/ipv6/addrconf.c                         |    3 +-
- net/ipv6/fib6_rules.c                       |    3 +-
- net/ipv6/ip6_fib.c                          |    1 +
- net/ipv6/ip6_output.c                       |    2 +-
- net/ipv6/ipv6_sockglue.c                    |    4 +-
- net/ipv6/ndisc.c                            |    2 +-
- net/ipv6/route.c                            |   12 +-
- net/ipv6/xfrm6_policy.c                     |    4 +-
- net/mac80211/mlme.c                         |    2 +
- net/netfilter/nf_conntrack_netlink.c        |   36 ++--
- net/rfkill/rfkill.c                         |   14 +-
- net/sched/cls_api.c                         |    2 +-
- net/sched/sch_api.c                         |   47 ++--
- net/sched/sch_cbq.c                         |    2 +-
- net/sched/sch_generic.c                     |   68 ++----
- net/sched/sch_htb.c                         |    4 +-
- net/sched/sch_prio.c                        |    4 +-
- net/sched/sch_tbf.c                         |   11 +-
- net/sctp/ipv6.c                             |    3 +-
- 114 files changed, 1533 insertions(+), 898 deletions(-)
+Nack. Let's retain our API specifications and backwards compatibilty
+by default. Advertise the sysrq switch and the setting of the sysctl
+to throttle, but don't break this by default please.
