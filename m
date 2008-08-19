@@ -1,76 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518AbYHSNTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbYHSNYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755518AbYHSNTb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 09:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbYHSNTX
+	id S1752845AbYHSNYT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 09:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750882AbYHSNYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 09:19:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45203 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753391AbYHSNTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 09:19:22 -0400
-Date: Tue, 19 Aug 2008 15:18:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@linux.intel.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, Pavel Machek <pavel@suse.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Robert Richter <robert.richter@amd.com>,
-       Philippe Elie <phil.el@wanadoo.fr>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: oprofile + hibernation = badness
-Message-ID: <20080819131847.GA31605@elte.hu>
-References: <19f34abd0808181332k3c02496auabd04e927bb7cab5@mail.gmail.com> <48AA1E42.6070802@linux.intel.com> <19f34abd0808190012r4418cc4egf9bc25a52056af41@mail.gmail.com> <20080819094905.GA20590@elte.hu> <48AAB8B6.3020802@linux.intel.com>
+	Tue, 19 Aug 2008 09:24:09 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:56470 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750828AbYHSNYJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 09:24:09 -0400
+Message-ID: <48AAC8E7.1030506@novell.com>
+Date: Tue, 19 Aug 2008 09:21:43 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48AAB8B6.3020802@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Peter Zijlstra <peterz@infradead.org>
+CC: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH RT 2/2] ftrace: fix elevated preempt_count in	wakeup-tracer
+References: <20080819091817.21725.81831.stgit@dev.haskins.net>	 <20080819091923.21725.41087.stgit@dev.haskins.net> <1219151556.10800.383.camel@twins>
+In-Reply-To: <1219151556.10800.383.camel@twins>
+X-Enigmail-Version: 0.95.6
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigC878401C36B1637DB7921246"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigC878401C36B1637DB7921246
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-* Andi Kleen <ak@linux.intel.com> wrote:
-
->> Andi, another issue: your patch had 5 spurious whitespace errors. 
->> This is a reoccuring, many years pattern of behavior from you and you 
->> need to fix your workflow to send less sloppy patches.
+Peter Zijlstra wrote:
+> On Tue, 2008-08-19 at 05:19 -0400, Gregory Haskins wrote:
+>  =20
+>> Suggested by Steve Rostedt to fix an observed "+1" in the preempt-coun=
+t
+>>
+>> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+>> ---
+>>
+>>  kernel/trace/trace_sched_wakeup.c |    2 ++
+>>  1 files changed, 2 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sc=
+hed_wakeup.c
+>> index c3a15bd..ae523fd 100644
+>> --- a/kernel/trace/trace_sched_wakeup.c
+>> +++ b/kernel/trace/trace_sched_wakeup.c
+>> @@ -70,7 +70,9 @@ wakeup_tracer_call(unsigned long ip, unsigned long p=
+arent_ip)
+>>  	if (task_cpu(wakeup_task) !=3D cpu)
+>>  		goto unlock;
+>> =20
+>> +	preempt_enable_no_resched_notrace();
+>>  	trace_function(tr, data, ip, parent_ip, flags);
+>> +	preempt_disable_notrace();
+>>    =20
 >
-> Yes I forgot you define patch cleanness based on white space.
+> Is preempt_count > 1 at all times here?
 >
-> Seriously, It's actually new -- i did this one in git directly instead 
-> of quilt and git-commit doesn't seem to know how to drop them. In my 
-> older quilt workflow they were always automatically dropped since many 
-> years. Both emacs and vim add them and I don't plan to switch editors, 
-> sorry.
+> If not, it might drop to 0 and any interrupt might cause preemption -
+> and its not obvious to me that that is actually correct.
+>  =20
+According to Steve, we are already in an interrupt-disabled section=20
+here, but I will defer to him.  He suggested I try this over an IRC=20
+conversation when I noticed a strange wakeup trace, and it seems to have =
 
-Thousands of other kernel developers get it right and manage to submit 
-clean patches, so i think you are not trying very hard to actually solve 
-this problem - and your flippant and obtrusive answers do not make it 
-very easy to work with you as a contributor.
+solved the problem.
 
->> I fixed up the problems of this patch, no need to resend.
->
-> I hope you fixed the typos in the commit log too (it really was just a 
-> RFC test patch)
+Im really sending this patch more of a reminder to Steve that he was=20
+going to fix this, rather than to accept my patch as is.  Of course I=20
+don't mind if it is accepted as is, and I can make the prologue/comments =
 
-You've put your signoff in there and Vegard has tested it. The general 
-principle on lkml is that patches can be marked as do-not-apply-yet by 
-adding something like this:
+more descriptive if necessary.  But if Steve wants to do something like=20
+fold this into his ftrace series, that is fine too.  I just didn't want=20
+it to be forgotten ;)
 
- Not-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+-Greg
 
-or by not adding a SOB line at all. In that case i either ask people for 
-the SOB or apply them at my own risk.
 
-Thanks,
 
-	Ingo
+--------------enigC878401C36B1637DB7921246
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkiqyOcACgkQlOSOBdgZUxmLDACfTlvc2CWpJogDCOvz6oEaCnDK
+lTMAnivubK1GAQcsHM/6oJdz65pZ9KXN
+=wIqa
+-----END PGP SIGNATURE-----
+
+--------------enigC878401C36B1637DB7921246--
