@@ -1,74 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbYHSNl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbYHSNnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754677AbYHSNl0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 09:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYHSNlQ
+	id S1754858AbYHSNnd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 09:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYHSNnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 09:41:16 -0400
-Received: from imx9.toshiba.co.jp ([202.33.96.51]:46525 "EHLO
-	imx9.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751761AbYHSNlO (ORCPT
+	Tue, 19 Aug 2008 09:43:24 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:43312 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752060AbYHSNnY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 09:41:14 -0400
-X-Greylist: delayed 1957 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Aug 2008 09:41:14 EDT
-Date: Tue, 19 Aug 2008 22:02:00 +0900 (JST)
-Message-Id: <20080819.220200.-1300539182.kouish@swc.toshiba.co.jp>
-To: roel.kluin@gmail.com
-Cc: paulus@samba.org, benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc, scc: duplicate SCC_UHC_USBCEN
-In-Reply-To: <48A9F256.2000901@gmail.com>
-From: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-X-Mailer: Mew version 4.2 on Emacs 21.3 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 19 Aug 2008 09:43:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=Z2D+23kSNUgc4Qm9xf/MlUMiHoQsFanxqNyAf2xlVcZ2/sJkR7Rp1vsHDdIil6Li2R
+         XK1jV8ObQSM7LVdRP9WrMKxEysoUgIZE8/SepYI5NikzZLg1K4MbV6L1CvFlGRWS5IXd
+         L6C+msL0a69aTHggzCYjUbNcgvgu9hJl9zyGY=
+Message-ID: <ac9c93b10808190643yc7f9f1dtaf69bff474560e9@mail.gmail.com>
+Date: Tue, 19 Aug 2008 15:43:22 +0200
+From: "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>
+To: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: openpromfs; CONFIG_SUN_OPENPROMFS; used ?? or orphaned??
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+While roaming through the fs tree I bumped upon the directory openpromfs
 
+Is this one orphaned?
+I saw that the Makefile references CONFIG_SUN_OPENPROMFS, but I could not find
+it in a Kconfig file nor in the .config I generated (not even a
+CONFIG_SUN_OPENPROMFS not set line).
+(so either it does not exist, or my eyes are getting old).
 
-Roel,
+As such it does not seem too useful (unless I am overlooking things):
 
-> untested, is it correct?
-
-Your patch is correct.
-
-Thanks for your pointing it out and sending the patch. I tested your
-patch and it works good.
-
-Fortunately, this bug is not fatal because it seems that the SCC-UHC
-sets SCC_UHC_USBEN and SCC_UHC_USBCEN at once.
-
-
-Your patch does not contain 'Signed-off-by' line. Could you re-post it
-with your sign?
-
-
-> ---
-> arch/powerpc/platforms/cell/celleb_scc.h:224:
-> #define SCC_UHC_USBEN           0x00010000
-> #define SCC_UHC_USBCEN          0x00020000
-> 
-> ---
-> diff --git a/arch/powerpc/platforms/cell/celleb_scc_uhc.c b/arch/powerpc/platforms/cell/celleb_scc_uhc.c
-> index d63b720..b086f33 100644
-> --- a/arch/powerpc/platforms/cell/celleb_scc_uhc.c
-> +++ b/arch/powerpc/platforms/cell/celleb_scc_uhc.c
-> @@ -31,7 +31,7 @@
->  
->  static inline int uhc_clkctrl_ready(u32 val)
->  {
-> -	const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBCEN;
-> +	const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBEN;
->  	return((val & mask) == mask);
->  }
->  
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-Best regards,
-Kou Ishizaki
+Two options:
+- add it to some Kconfig (and note I cannot do that, I have not the
+faintest idea what it is, actually I got there out of curiosity).
+- rm -rf openromfs
