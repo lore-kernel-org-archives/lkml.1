@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758917AbYHSW6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbYHSW7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758917AbYHSW6o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 18:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757375AbYHSW6G
+	id S1755453AbYHSW7N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 18:59:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757133AbYHSW6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 18:58:06 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38744 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757115AbYHSW6E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 18:58:04 -0400
-Date: Tue, 19 Aug 2008 23:38:57 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH 05/10] ldisc: new dcd_change() method for line
- disciplines.
-Message-ID: <20080819233857.41b756cc@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080819224930.GI21330@tekkaman>
-References: <1219182612-13814-1-git-send-email-giometti@linux.it>
-	<1219182612-13814-2-git-send-email-giometti@linux.it>
-	<1219182612-13814-3-git-send-email-giometti@linux.it>
-	<1219182612-13814-4-git-send-email-giometti@linux.it>
-	<1219182612-13814-5-git-send-email-giometti@linux.it>
-	<1219182612-13814-6-git-send-email-giometti@linux.it>
-	<20080819225322.69f3215d@lxorguk.ukuu.org.uk>
-	<20080819224930.GI21330@tekkaman>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 18:58:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51608 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752956AbYHSW6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 18:58:20 -0400
+Date: Wed, 20 Aug 2008 00:56:25 +0200
+From: Karel Zak <kzak@redhat.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Christoph Hellwig <hch@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, miklos@szeredi.hu
+Subject: Re: [PATCH v2] documentation: split and build smount.c
+Message-ID: <20080819225625.GG2846@nb.net.home>
+References: <20080817214442.ca4345ce.randy.dunlap@oracle.com> <20080818050431.GA20692@infradead.org> <20080818181409.f2861821.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080818181409.f2861821.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008 00:49:31 +0200
-Rodolfo Giometti <giometti@enneenne.com> wrote:
-
-> On Tue, Aug 19, 2008 at 10:53:22PM +0100, Alan Cox wrote:
-> > > + * void (*dcd_change)(struct uart_port *port, unsigned int status,
-> > > + * 			struct timespec *ts)
-> > > + *
-> > > + *	Tells the discipline that the DCD pin has changed its status and
-> > > + *	the relative timestamp. Pointer ts can be NULL.
-> > >   */
-> > 
-> > uart_port is a specific property of a few random types of interface, pass
-> > a tty struct up. Otherwise looks fine. Might one day expand it to a more
-> > generic change type and pass info on what changed but thats a future
-> > mystery.
+On Mon, Aug 18, 2008 at 06:14:09PM -0700, Randy Dunlap wrote:
+> On Mon, 18 Aug 2008 01:04:31 -0400 Christoph Hellwig wrote:
 > 
-> How can I get the struct uart_port pointer starting from struct
-> tty_struct one?
+> > Just remove it, and modern /bin/mount handles shared subtrees just fine
+> 
+> Miklos... ?
+> 
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> mount(8) handles shared subtrees just fine, so remove the smount
+> program from Documentation/filesystems/sharedsubtree.txt.
+[...]
+> +	Note: mount(8) command now supports the --make-shared flag,
 
-A tty may not even have a uart structure. Why do you need to know the
-interrupt (if such a concept even exists for the given tty) ?
+ Right, ACK ;-)
 
-Alan
+>  	#mount --bind /mnt /tmp
+
+ BTW, people usually use a space between prompt and command, so:
+
+   # mount --bind /mnt /tmp
+
+
+    Karel
+
+
+-- 
+ Karel Zak  <kzak@redhat.com>
