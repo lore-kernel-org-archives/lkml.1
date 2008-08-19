@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758311AbYHSAxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758450AbYHSAyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758311AbYHSAxt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 20:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756534AbYHSAsa
+	id S1758450AbYHSAyU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 20:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbYHSAsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 20:48:30 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:56504 "EHLO
+	Mon, 18 Aug 2008 20:48:31 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:55104 "EHLO
 	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756514AbYHSAs2 (ORCPT
+	with ESMTP id S1756531AbYHSAsa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 20:48:28 -0400
+	Mon, 18 Aug 2008 20:48:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=xELD0ncjKvWTayhv2GB4E+jdMEVYOWsIBjZDhoc6pHV50qfjB+wLpLnU7zZZM/6GoC
-         OaOdYPiwXQoaYe57mXBSo2fR7E6kuh5J60prtRGpEBtgGUD2m+8DPx18OAo+2aW89++L
-         +g7GYKAglotU8V1LupdbJ+kxN6bf6CSZfsX1o=
-Subject: [PATCH 16/23] s390: use the new byteorder headers
+        b=mwsK2TVXW4BPT19A4KJcepgIWyQqvejdBZ7iIJu4CDxAolgZAVboQKrqNAu0pqwnGh
+         dwHuSAFfxxFC2x2IJKOI7Hftma+jUic9TqLzRkPiPPS313VAUySeaicvhyxkMgVfkA1w
+         sIniX5Zp288yC1Og37hyo6L/X/uxEbyd0XwTk=
+Subject: [PATCH 17/23] sh: use the new byteorder headers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Mon, 18 Aug 2008 17:48:14 -0700
-Message-Id: <1219106894.17033.69.camel@brick>
+Date: Mon, 18 Aug 2008 17:48:16 -0700
+Message-Id: <1219106896.17033.70.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -32,136 +31,83 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Acked-by: Paul Mundt <lethal@linux-sh.org>
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- arch/s390/include/asm/byteorder.h |   72 +++++++++++--------------------------
- 1 files changed, 21 insertions(+), 51 deletions(-)
+ arch/sh/include/asm/byteorder.h |   36 +++++++++++++++++-------------------
+ 1 files changed, 17 insertions(+), 19 deletions(-)
 
-diff --git a/arch/s390/include/asm/byteorder.h b/arch/s390/include/asm/byteorder.h
-index 1fe2492..8bcf277 100644
---- a/arch/s390/include/asm/byteorder.h
-+++ b/arch/s390/include/asm/byteorder.h
-@@ -11,32 +11,39 @@
+diff --git a/arch/sh/include/asm/byteorder.h b/arch/sh/include/asm/byteorder.h
+index 4c13e61..f5fa065 100644
+--- a/arch/sh/include/asm/byteorder.h
++++ b/arch/sh/include/asm/byteorder.h
+@@ -8,7 +8,15 @@
+ #include <linux/compiler.h>
+ #include <linux/types.h>
  
- #include <asm/types.h>
- 
--#ifdef __GNUC__
-+#define __BIG_ENDIAN
-+
-+#ifndef __s390x__
-+# define __SWAB_64_THRU_32__
+-static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
++#ifdef __LITTLE_ENDIAN__
++# define __LITTLE_ENDIAN
++#else
++# define __BIG_ENDIAN
 +#endif
- 
- #ifdef __s390x__
--static inline __u64 ___arch__swab64p(const __u64 *x)
-+static inline __u64 __arch_swab64p(const __u64 *x)
++
++#define __SWAB_64_THRU_32__
++
++static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
  {
- 	__u64 result;
+ 	__asm__(
+ #ifdef __SH5__
+@@ -24,8 +32,9 @@ static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
  
- 	asm volatile("lrvg %0,%1" : "=d" (result) : "m" (*x));
- 	return result;
+ 	return x;
  }
-+#define __arch_swab64p __arch_swab64p
++#define __arch_swab32 __arch_swab32
  
--static inline __u64 ___arch__swab64(__u64 x)
-+static inline __u64 __arch_swab64(__u64 x)
+-static inline __attribute_const__ __u16 ___arch__swab16(__u16 x)
++static inline __attribute_const__ __u16 __arch_swab16(__u16 x)
  {
- 	__u64 result;
+ 	__asm__(
+ #ifdef __SH5__
+@@ -39,32 +48,21 @@ static inline __attribute_const__ __u16 ___arch__swab16(__u16 x)
  
- 	asm volatile("lrvgr %0,%1" : "=d" (result) : "d" (x));
- 	return result;
+ 	return x;
+ }
++#define __arch_swab16 __arch_swab16
+ 
+-static inline __u64 ___arch__swab64(__u64 val)
++static inline __u64 __arch_swab64(__u64 val)
+ {
+ 	union {
+ 		struct { __u32 a,b; } s;
+ 		__u64 u;
+ 	} v, w;
+ 	v.u = val;
+-	w.s.b = ___arch__swab32(v.s.a);
+-	w.s.a = ___arch__swab32(v.s.b);
++	w.s.b = __arch_swab32(v.s.a);
++	w.s.a = __arch_swab32(v.s.b);
+ 	return w.u;
  }
 +#define __arch_swab64 __arch_swab64
  
--static inline void ___arch__swab64s(__u64 *x)
-+static inline void __arch_swab64s(__u64 *x)
- {
--	*x = ___arch__swab64p(x);
-+	*x = __arch_swab64p(x);
- }
-+#define __arch_swab64s __arch_swab64s
- #endif /* __s390x__ */
- 
--static inline __u32 ___arch__swab32p(const __u32 *x)
-+static inline __u32 __arch_swab32p(const __u32 *x)
- {
- 	__u32 result;
- 	
-@@ -53,25 +60,20 @@ static inline __u32 ___arch__swab32p(const __u32 *x)
- #endif /* __s390x__ */
- 	return result;
- }
-+#define __arch_swab32p __arch_swab32p
- 
--static inline __u32 ___arch__swab32(__u32 x)
-+#ifdef __s390x__
-+static inline __u32 __arch_swab32(__u32 x)
- {
--#ifndef __s390x__
--	return ___arch__swab32p(&x);
--#else /* __s390x__ */
- 	__u32 result;
- 	
- 	asm volatile("lrvr  %0,%1" : "=d" (result) : "d" (x));
- 	return result;
--#endif /* __s390x__ */
--}
--
--static __inline__ void ___arch__swab32s(__u32 *x)
--{
--	*x = ___arch__swab32p(x);
- }
-+#define __arch_swab32 __arch_swab32
-+#endif /* __s390x__ */
- 
--static __inline__ __u16 ___arch__swab16p(const __u16 *x)
-+static inline __u16 __arch_swab16p(const __u16 *x)
- {
- 	__u16 result;
- 	
-@@ -86,40 +88,8 @@ static __inline__ __u16 ___arch__swab16p(const __u16 *x)
- #endif /* __s390x__ */
- 	return result;
- }
-+#define __arch_swab16p __arch_swab16p
- 
--static __inline__ __u16 ___arch__swab16(__u16 x)
--{
--	return ___arch__swab16p(&x);
--}
--
--static __inline__ void ___arch__swab16s(__u16 *x)
--{
--	*x = ___arch__swab16p(x);
--}
--
--#ifdef __s390x__
 -#define __arch__swab64(x) ___arch__swab64(x)
--#define __arch__swab64p(x) ___arch__swab64p(x)
--#define __arch__swab64s(x) ___arch__swab64s(x)
--#endif /* __s390x__ */
 -#define __arch__swab32(x) ___arch__swab32(x)
 -#define __arch__swab16(x) ___arch__swab16(x)
--#define __arch__swab32p(x) ___arch__swab32p(x)
--#define __arch__swab16p(x) ___arch__swab16p(x)
--#define __arch__swab32s(x) ___arch__swab32s(x)
--#define __arch__swab16s(x) ___arch__swab16s(x)
 -
--#ifndef __s390x__
 -#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
 -#  define __BYTEORDER_HAS_U64__
 -#  define __SWAB_64_THRU_32__
 -#endif
--#else /* __s390x__ */
--#define __BYTEORDER_HAS_U64__
--#endif /* __s390x__ */
 -
--#endif /* __GNUC__ */
--
+-#ifdef __LITTLE_ENDIAN__
+-#include <linux/byteorder/little_endian.h>
+-#else
 -#include <linux/byteorder/big_endian.h>
+-#endif
 +#include <linux/byteorder.h>
  
- #endif /* _S390_BYTEORDER_H */
+ #endif /* __ASM_SH_BYTEORDER_H */
 -- 
 1.6.0.274.g8aacc
 
