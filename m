@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754652AbYHSJtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755840AbYHSJvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754652AbYHSJtz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 05:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbYHSJtm
+	id S1755840AbYHSJvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 05:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbYHSJvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 05:49:42 -0400
-Received: from isilmar.linta.de ([213.133.102.198]:38162 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753099AbYHSJtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 05:49:41 -0400
-Date: Tue, 19 Aug 2008 11:49:38 +0200
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, johnstul@us.ibm.com,
-       hirofumi@mail.parknet.co.jp, alan@lxorguk.ukuu.org.uk,
-       arjan@infradead.org
-Subject: Re: [PATCH 1/2] acpi_pm.c: use proper read function also in errata mode.
-Message-ID: <20080819094938.GA21126@isilmar.linta.de>
-Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org,
-	linux-acpi@vger.kernel.org, johnstul@us.ibm.com,
-	hirofumi@mail.parknet.co.jp, alan@lxorguk.ukuu.org.uk,
-	arjan@infradead.org
-References: <20080810101730.GA10024@rhlx01.hs-esslingen.de> <20080810162920.GA9860@comet.dominikbrodowski.net> <20080810190759.GA1879@rhlx01.hs-esslingen.de> <20080818190325.GA12581@comet.dominikbrodowski.net> <20080818121924.6b61f7af.akpm@linux-foundation.org> <20080818193517.GA22097@isilmar.linta.de> <20080818124755.162f24d1.akpm@linux-foundation.org> <20080818200916.GA18209@comet.dominikbrodowski.net> <20080818201033.GB18209@comet.dominikbrodowski.net> <20080819024334.2f3e69fa.akpm@linux-foundation.org>
+	Tue, 19 Aug 2008 05:51:04 -0400
+Received: from cluster-g.mailcontrol.com ([208.87.233.190]:50351 "EHLO
+	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752889AbYHSJvD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 05:51:03 -0400
+Message-ID: <48AA9757.3090002@csr.com>
+Date: Tue, 19 Aug 2008 10:50:15 +0100
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080819024334.2f3e69fa.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Kernel development list <linux-kernel@vger.kernel.org>,
+       e1000-devel@lists.sourceforge.net, jeffrey.t.kirsher@intel.com,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Subject: Re: e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+References: <489C2457.5030104@csr.com> <20080818224011.6fad74dc.akpm@linux-foundation.org>
+In-Reply-To: <20080818224011.6fad74dc.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Aug 2008 09:50:15.0805 (UTC) FILETIME=[FB59FAD0:01C901E0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 19, 2008 at 02:43:34AM -0700, Andrew Morton wrote:
-> On Mon, 18 Aug 2008 22:10:33 +0200 Dominik Brodowski <linux@dominikbrodowski.net> wrote:
+Andrew Morton wrote:
+> On Fri, 08 Aug 2008 11:47:51 +0100 David Vrabel <david.vrabel@csr.com> wrote:
 > 
-> > -	value1 = read_pmtmr();
-> > +	value1 = clocksource_acpi_pm.read()
-> >  	mach_countup(&count);
-> > -	value2 = read_pmtmr();
-> > +	value2 = clocksource_acpi_pm.read()
-> 
-> compiler got upset.  Did you send the wrong version?
+>> 2.6.27-rc1 kernels appear to corrupt the EEPROM/NVM of the 8086:294c
+>> ethernet device (ICH9 I think).  After hacking the driver to ignore the
+>> bad CRC and MAC address I could view the EEPROM with ethtool and it was
+>> all 0xff.
+>>
+>> Testing EEPROM reads and writes with ethtool appeared to work but after
+>> a reboot of the system the ethernet device (see lspci -v output) was no
+>> longer present.  Could invalid EEPROM contents with a valid CRC (as
+>> would be the case after my read/write tests) result in the device
+>> failing to enumerate on the PCIe bus?
 
-gcc version 4.2.3 (Ubuntu 4.2.3-2ubuntu7) on amd64 worked fine... what did
-yours complain about?
+FYI, Jesse Brandeburg replied off-list and said that a corrupt EEPROM
+with a valid CRC can result in the device failing to enumerate.
 
-Best,
-	Dominik
+> Is this still happening in Linus's current tree?
+
+I don't know, and I'm reluctant to try until I have a reliable way to
+restore an erased EEPROM.
+
+> Was 2.6.26 OK?
+
+2.6.26 was fine.
+
+David
+-- 
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
