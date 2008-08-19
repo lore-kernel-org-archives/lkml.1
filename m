@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbYHSLSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbYHSLms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755199AbYHSLSh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 07:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYHSLS1
+	id S1753837AbYHSLms (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 07:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYHSLmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 07:18:27 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:54091 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754169AbYHSLS0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 07:18:26 -0400
-Date: Tue, 19 Aug 2008 13:20:13 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 0 of 9] x86/smp function calls: convert x86 tlb flushes to use function calls [POST 2]
-Message-ID: <20080819112013.GI9807@one.firstfloor.org>
-References: <patchbomb.1219083817@localhost> <200808191956.59898.nickpiggin@yahoo.com.au> <20080819103100.GH9807@one.firstfloor.org> <200808192104.05322.nickpiggin@yahoo.com.au>
-Mime-Version: 1.0
+	Tue, 19 Aug 2008 07:42:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52927 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751958AbYHSLmh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 07:42:37 -0400
+Date: Tue, 19 Aug 2008 13:42:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, Stefani Seibold <stefani@seibold.net>,
+       Dario Faggioli <raistlin@linux.it>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] sched: extract walk_tg_tree(), fix
+Message-ID: <20080819114204.GA4005@elte.hu>
+References: <20080819103301.787700742@chello.nl> <20080819103844.459178947@chello.nl> <20080819110557.GA18608@elte.hu> <20080819111152.GA8592@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200808192104.05322.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080819111152.GA8592@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> > AFAIK mmap flushing hasn't changed much in 2.6 and it tends
-> > to batch well anyways in this case (unlike vmscan swapping). I would be
-> > careful to really optimize the real culprits which are likely elsewhere.
-> 
-> It wasn't actually the TLB flushing side of it that was causing
-> the slowdown IIRC. It's just all over the map.
 
-The nastiest slowdowns.
+>From fc21334298056c1e0d6428d3abe46b104188a05e Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 19 Aug 2008 13:40:47 +0200
+Subject: [PATCH] sched: extract walk_tg_tree(), fix
 
-> Notifier hooks; accounting statistics; 4lpt; cond_resched and
-> low latency code causing functions to spill more to stack; cache
-> misses from data structures increasing or becoming unaligned...
+fix:
 
-Hmm, on a benchmark here a simple anonymous mmap+munmap is ~3800 cycles.
-Was it ever really that much faster? 
+ kernel/sched.c: In function '__rt_schedulable':
+ kernel/sched.c:8771: error: implicit declaration of function 'walk_tg_tree'
+ kernel/sched.c:8771: error: 'tg_nop' undeclared (first use in this function)
+ kernel/sched.c:8771: error: (Each undeclared identifier is reported only once
+ kernel/sched.c:8771: error: for each function it appears in.)
 
-BTW even simple open+close is about twice as slow.
-> 
-> Basically just lots of little straws that added up to kill the
-> camel. I didn't even get to the bottom of the whole thing. But
-> my point is that even 1% here and there eventually adds up to a
-> big headache for someone. 
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-There is a great classical email floating around how such 1% regressions
-killed Irix eventually. Need to dig that out.
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 59c6683..10f7ad2 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1387,7 +1387,7 @@ static inline void dec_cpu_load(struct rq *rq, unsigned long load)
+ 	update_load_sub(&rq->load, load);
+ }
+ 
+-#if (defined(CONFIG_SMP) && defined(CONFIG_FAIR_GROUP_SCHED)) || defined(SCHED_RT_GROUP_SCHED)
++#if (defined(CONFIG_SMP) && defined(CONFIG_FAIR_GROUP_SCHED)) || defined(CONFIG_SCHED_RT_GROUP_SCHED)
+ typedef int (*tg_visitor)(struct task_group *, void *);
+ 
+ /*
 
-> inevitable to slowdown, but in all other cases we should always
-> be aiming to make the kernel faster rather than slower.
-
-It's hard to catch such regressions later. I wonder if we really need
-some kind of mini benchmark collection that is regularly run
-and that checks latency of such micro operation and points
-out regressions when they happen.
-AFAIK the OpenSolaris people have something like that.
-
--Andi
-> 
