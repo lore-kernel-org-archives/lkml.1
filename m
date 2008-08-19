@@ -1,50 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbYHSVQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbYHSVT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758602AbYHSVQb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756567AbYHSVQO
+	id S1758218AbYHSVT0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbYHSVTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:16:14 -0400
-Received: from www17.your-server.de ([213.133.104.17]:37424 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756289AbYHSVQN (ORCPT
+	Tue, 19 Aug 2008 17:19:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34173 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752845AbYHSVTO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:16:13 -0400
-Message-ID: <1219180571.48ab381bd85e5@213.133.104.17>
-Date: Tue, 19 Aug 2008 23:16:11 +0200
-From: Thomas Meyer <thomas@m3y3r.de>
-To: linux-kernel@vger.kernel.org
-Subject: Fwd: 2.6.26.3: ACPI: Fix thermal shutdowns
-MIME-Version: 1.0
+	Tue, 19 Aug 2008 17:19:14 -0400
+Date: Tue, 19 Aug 2008 14:18:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: rwheeler@redhat.com
+Cc: adilger@sun.com, jbacik@redhat.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 2/2] improve ext3 fsync batching
+Message-Id: <20080819141831.f695dc9c.akpm@linux-foundation.org>
+In-Reply-To: <48AB3353.5000308@redhat.com>
+References: <20080806190819.GH27394@unused.rdu.redhat.com>
+	<20080806191536.GI27394@unused.rdu.redhat.com>
+	<20080818213128.3a76d1e8.akpm@linux-foundation.org>
+	<20080819054414.GM3392@webber.adilger.int>
+	<48AAA7F7.5090501@redhat.com>
+	<20080819105638.aae4086f.akpm@linux-foundation.org>
+	<48AB0C1F.1040104@redhat.com>
+	<20080819132914.6fcc9f29.akpm@linux-foundation.org>
+	<48AB3353.5000308@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.5
-X-Originating-IP: 79.220.116.228
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 19 Aug 2008 16:55:47 -0400
+Ric Wheeler <rwheeler@redhat.com> wrote:
 
-Hi.
+> >   
+> >>> Perhaps a better scheme would be to tune it based on how many other
+> >>> processes are joining that transaction.  If it's "zero" then decrease
+> >>> the timeout.  But one would need to work out how to increase it, which
+> >>> perhaps could be done by detecting the case where process A runs an
+> >>> fsync when a commit is currently in progress, and that commit was
+> >>> caused by process B's fsync.
+> >>>   
+> >>>       
+> >> This is really, really a property of the device's latency at any given 
+> >> point in time. If there are no other processes running, we could do an 
+> >> optimization and not wait.
+> >>     
+> >
+> > well yes.  This represents yet another attempt to predict future
+> > application behaviour.  The way in which we _usually_ do that is by
+> > monitoring past application behaviour.
+> >   
+> This whole area is very similar to the IO elevator area where some of 
+> the same device characteristics are measured.
+> 
+> 
+> > Only this patch didn't do that (directly) and I'm wondering why not.
+> >   
+> 
+> The average transaction commit time is a direct measurement of the past 
+> behaviour, right?
 
-This one should go in 2.6.26.3, too:
+Of commit time, yes.  Somewhat - it has obvious failures during
+transients.
 
-I didn't see it in Greg's list:
+But there's an assumption here that commit time is usefully correlated
+with "mean time between fsync()s", which might introduce further
+inaccuracies.
 
-ACPI: Fix thermal shutdowns
+> >   
+> >>> But before doing all that I would recommend/ask that the following be
+> >>> investigated:
+> >>>
+> >>> - How effective is the present code?
+> >>>   
+> >>>       
+> >> It causes the most expensive storage (arrays) to run 3-4 times slower 
+> >> than they should on a synchronous write workload (NFS server, mail 
+> >> server?) with more than 1 thread. For example, against a small EMC 
+> >> array, I saw single threaded write rates of 720 files/sec against ext3 
+> >> with 1 thread, 225 (if I remember correctly) with 2 ;-)
+> >>     
+> >
+> > Current code has:
+> >
+> > 	/*
+> > 	 * Implement synchronous transaction batching.  If the handle
+> > 	 * was synchronous, don't force a commit immediately.  Let's
+> > 	 * yield and let another thread piggyback onto this transaction.
+> > 	 * Keep doing that while new threads continue to arrive.
+> > 	 * It doesn't cost much - we're about to run a commit and sleep
+> > 	 * on IO anyway.  Speeds up many-threaded, many-dir operations
+> > 	 * by 30x or more...
+> > 	 *
+> > 	 * But don't do this if this process was the most recent one to
+> > 	 * perform a synchronous write.  We do this to detect the case where a
+> > 	 * single process is doing a stream of sync writes.  No point in waiting
+> > 	 * for joiners in that case.
+> > 	 */
+> >
+> > has the 30x been reproduced?  If not, what broke?  If so, what effect
+> > did the proposed change have upon it?
+> >   
+> 
+> The huge gain was only in the case of a RAM disk test which I assume was 
+> not tested against the original patch early on. Against an array (with a 
+> 250HZ kernel), we saw a 2.5x speedup with the new code.
 
-Do not use unsigned int if there is test for negative number...
+You only answered question 3/3 ;)
 
-See drivers/acpi/processor_perflib.c
-  static unsigned int ignore_ppc = -1;
-...
-  if (event == CPUFREQ_START && ignore_ppc <= 0) {
-       ignore_ppc = 0;
-...
+I am concerned that the current code is no longer working correctly. 
+If so then apart from the obvious we-should-fix-that issue, there's
+also the possibility that we're adding more stuff on top of the broken
+stuff rather than fixing the broken stuff.
 
+> >   
+> >>>   - What happens when it is simply removed?
+> >>>   
+> >>>       
+> >> If you remove the code, you will not see the throughput rise when you go 
+> >> multithreaded on existing slow devices (S-ATA/ATA for example). Faster 
+> >> devices will not see that 2 threaded drop.
+> >>     
+> >
+> > See above - has this been tested and confirmed?
+> >   
+> 
+> Yes - we (back at EMC) did remove the logic and the fast devices will 
+> write at least at their starting rate (700+ files/sec).
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9f497bcc695fb828da023d74ad3c966b1e58ad21
+Did you observe the effect upon slower devices?
 
-Greets
-thomas
+> >   
+> >>>   - Add instrumentation (a counter and a printk) to work out how
+> >>>     many other tasks are joining this task's transaction.
+> >>>
+> >>>     - If the answer is "zero" or "small", work out why.
+> >>>
+> >>>   - See if we can increase its effectiveness.
+> >>>
+> >>> Because it could be that the code broke.  There might be issues with
+> >>> higher-level locks which are preventing the batching.  For example, if
+> >>> all the files which the test app is syncing are in the same directory,
+> >>> perhaps all the tasks are piling up on that directory's i_mutex?
+> >>>   
+> >>>       
+> >> I have to admit that I don't see the down side here - we have shown a 
+> >> huge increase for arrays (embarrassingly huge  increase for RAM disks) 
+> >> and see no degradation for the S-ATA/ATA case.
+> >>
+> >> The code is not broken (having been there and done the performance 
+> >> tuning on the original code), it just did not account for the widely 
+> >> varying average response times for different classes of storage ;-)
+> >>     
+> >
+> > Well, as I said - last time I checked, it did seem to be broken.  By
+> > what means did you confirm that it is still effective, and what were
+> > the results?
+> >
+> >   
+> 
+> I think Josef posted those results for S-ATA earlier in the thread and 
+> they were still working. We can repost/rerun to give more detail...
 
+Yes please.
