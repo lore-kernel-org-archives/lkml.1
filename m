@@ -1,59 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757059AbYHSBqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbYHSBrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757059AbYHSBqT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 21:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbYHSBqJ
+	id S1757334AbYHSBrI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 21:47:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbYHSBqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 21:46:09 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38375 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753985AbYHSBqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 21:46:08 -0400
-Date: Tue, 19 Aug 2008 11:45:55 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Linda Xie <lxie@us.ibm.com>
-Subject: [PATCH] hotplug/rpaphp: remove unused error path code
-Message-Id: <20080819114555.c0d2bd50.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Aug 2008 21:46:55 -0400
+Received: from tomts44-srv.bellnexxia.net ([209.226.175.111]:34788 "EHLO
+	tomts44-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752585AbYHSBqz convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 21:46:55 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjAkAOi/qUjR4q+G/2dsb2JhbACJdaYsgWCEAIFX
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [190.144.41.196]
+From: CLAIMS OFFICE <island.view@ns.sympatico.ca>
+Reply-To: mredward.fring2@btinternet.com
+Organization: CLAIMS OFFICE
+To: <info@bnl.net>
+Subject: File Your Claims
+Date: Mon, 18 Aug 2008 21:46:40 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-Id: <20080819014653.IIFG1584.tomts44-srv.bellnexxia.net@toip38-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit f46753c5e354b857b20ab8e0fe7b2579831dc369 ("PCI: introduce pci_slot") removed the need for this error path.  Eliminate this warning:
+Contact:Mr.Edward Fring(mredward.fring2@btinternet.com)for a lump sum pay out of £1,000,000.00 pounds.Provide him with the information  below: 1.Full Name: 2.Full Address:3.sex.4.Occupation.5.Phone/Fax:6.Age.7.Country.8.Nationality.
 
-drivers/pci/hotplug/rpaphp_slot.c: In function 'rpaphp_register_slot':
-drivers/pci/hotplug/rpaphp_slot.c:151: warning: label 'sysfs_fail' defined but not used
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/pci/hotplug/rpaphp_slot.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
-index 9b714ea..5088450 100644
---- a/drivers/pci/hotplug/rpaphp_slot.c
-+++ b/drivers/pci/hotplug/rpaphp_slot.c
-@@ -147,9 +147,5 @@ int rpaphp_register_slot(struct slot *slot)
- 	list_add(&slot->rpaphp_slot_list, &rpaphp_slot_head);
- 	info("Slot [%s] registered\n", slot->name);
- 	return 0;
--
--sysfs_fail:
--	pci_hp_deregister(php_slot);
--	return retval;
- }
- 
--- 
-1.5.6.3
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
