@@ -1,301 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759514AbYHSUf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759598AbYHSUgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759514AbYHSUf1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 16:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754520AbYHSUfT
+	id S1759598AbYHSUgJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 16:36:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758160AbYHSUfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 16:35:19 -0400
-Received: from gw.goop.org ([64.81.55.164]:54900 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753983AbYHSUfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 16:35:17 -0400
-Message-ID: <48AB2E4E.80909@goop.org>
-Date: Tue, 19 Aug 2008 13:34:22 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] xen: add xen_ prefixes to make tracing with ftrace easier
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	Tue, 19 Aug 2008 16:35:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58946 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755113AbYHSUfu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 16:35:50 -0400
+Date: Tue, 19 Aug 2008 13:34:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: rwheeler@redhat.com
+Cc: adilger@sun.com, jbacik@redhat.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 2/2] improve ext3 fsync batching
+Message-Id: <20080819133423.7b8175d6.akpm@linux-foundation.org>
+In-Reply-To: <48AB144F.1070606@redhat.com>
+References: <20080806190819.GH27394@unused.rdu.redhat.com>
+	<20080806191536.GI27394@unused.rdu.redhat.com>
+	<20080818213128.3a76d1e8.akpm@linux-foundation.org>
+	<20080819054414.GM3392@webber.adilger.int>
+	<48AAA7F7.5090501@redhat.com>
+	<20080819105638.aae4086f.akpm@linux-foundation.org>
+	<48AB144F.1070606@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's easier to pattern match on Xen function if they all start with xen_.
+On Tue, 19 Aug 2008 14:43:27 -0400
+Ric Wheeler <rwheeler@redhat.com> wrote:
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/xen/mmu.c |   66 ++++++++++++++++++++++++++--------------------------
- 1 file changed, 34 insertions(+), 32 deletions(-)
+> Andrew Morton wrote:
+> > On Tue, 19 Aug 2008 07:01:11 -0400 Ric Wheeler <rwheeler@redhat.com> wrote:
+> >
+> >   
+> >> It would be great to be able to use this batching technique for faster 
+> >> devices, but we currently sleep 3-4 times longer waiting to batch for an 
+> >> array than it takes to complete the transaction.
+> >>     
+> >
+> > Obviously, tuning that delay down to the minimum necessary is a good
+> > thing.  But doing it based on commit-time seems indirect at best.  What
+> > happens on a slower disk when commit times are in the tens of
+> > milliseconds?  When someone runs a concurrent `dd if=/dev/zero of=foo'
+> > when commit times go up to seconds?
+> >
+> > Perhaps a better scheme would be to tune it based on how many other
+> > processes are joining that transaction.  If it's "zero" then decrease
+> > the timeout.  But one would need to work out how to increase it, which
+> > perhaps could be done by detecting the case where process A runs an
+> > fsync when a commit is currently in progress, and that commit was
+> > caused by process B's fsync.
+> >
+> > But before doing all that I would recommend/ask that the following be
+> > investigated:
+> >
+> > - How effective is the present code?
+> >
+> >   - What happens when it is simply removed?
+> >
+> >   - Add instrumentation (a counter and a printk) to work out how
+> >     many other tasks are joining this task's transaction.
+> >
+> >     - If the answer is "zero" or "small", work out why.
+> >
+> >   - See if we can increase its effectiveness.
+> >
+> > Because it could be that the code broke.  There might be issues with
+> > higher-level locks which are preventing the batching.  For example, if
+> > all the files which the test app is syncing are in the same directory,
+> > perhaps all the tasks are piling up on that directory's i_mutex?
+> >   
+> 
+> One other way to think about this is as a fairly normal queuing problem:
+> 
+>     (1) arrival rate is the rate at which we see new tasks coming into 
+> the code
+>     (2) service time is basically the time spent committing the 
+> transaction to storage
+> 
+> and we have the assumption that some number of tasks can join a 
+> transaction more or less for "free."
+> 
+> What the existing code assumes is that all devices have an equal service 
+> time. That worked well as long as we only looked at devices that were 
+> roughly equal (10-20 ms latencies) or used a higher HZ for the kernel 
+> (1000HZ and you don't see this as much as with 100HZ).
+> 
+> The two key issues that Josef's code tried to address are that first 
+> assumption that all devices have a similar service time and the tie 
+> between how long we wait and the HZ.
 
-===================================================================
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -229,14 +229,14 @@
- }
- 
- 
--static bool page_pinned(void *ptr)
-+static bool xen_page_pinned(void *ptr)
- {
- 	struct page *page = virt_to_page(ptr);
- 
- 	return PagePinned(page);
- }
- 
--static void extend_mmu_update(const struct mmu_update *update)
-+static void xen_extend_mmu_update(const struct mmu_update *update)
- {
- 	struct multicall_space mcs;
- 	struct mmu_update *u;
-@@ -265,7 +265,7 @@
- 	/* ptr may be ioremapped for 64-bit pagetable setup */
- 	u.ptr = arbitrary_virt_to_machine(ptr).maddr;
- 	u.val = pmd_val_ma(val);
--	extend_mmu_update(&u);
-+	xen_extend_mmu_update(&u);
- 
- 	xen_mc_issue(PARAVIRT_LAZY_MMU);
- 
-@@ -276,7 +276,7 @@
- {
- 	/* If page is not pinned, we can just update the entry
- 	   directly */
--	if (!page_pinned(ptr)) {
-+	if (!xen_page_pinned(ptr)) {
- 		*ptr = val;
- 		return;
- 	}
-@@ -334,7 +334,7 @@
- 
- 	u.ptr = virt_to_machine(ptep).maddr | MMU_PT_UPDATE_PRESERVE_AD;
- 	u.val = pte_val_ma(pte);
--	extend_mmu_update(&u);
-+	xen_extend_mmu_update(&u);
- 
- 	xen_mc_issue(PARAVIRT_LAZY_MMU);
- }
-@@ -400,7 +400,7 @@
- 	/* ptr may be ioremapped for 64-bit pagetable setup */
- 	u.ptr = arbitrary_virt_to_machine(ptr).maddr;
- 	u.val = pud_val_ma(val);
--	extend_mmu_update(&u);
-+	xen_extend_mmu_update(&u);
- 
- 	xen_mc_issue(PARAVIRT_LAZY_MMU);
- 
-@@ -411,7 +411,7 @@
- {
- 	/* If page is not pinned, we can just update the entry
- 	   directly */
--	if (!page_pinned(ptr)) {
-+	if (!xen_page_pinned(ptr)) {
- 		*ptr = val;
- 		return;
- 	}
-@@ -490,7 +490,7 @@
- 
- 	u.ptr = virt_to_machine(ptr).maddr;
- 	u.val = pgd_val_ma(val);
--	extend_mmu_update(&u);
-+	xen_extend_mmu_update(&u);
- }
- 
- /*
-@@ -519,10 +519,10 @@
- 
- 	/* If page is not pinned, we can just update the entry
- 	   directly */
--	if (!page_pinned(ptr)) {
-+	if (!xen_page_pinned(ptr)) {
- 		*ptr = val;
- 		if (user_ptr) {
--			WARN_ON(page_pinned(user_ptr));
-+			WARN_ON(xen_page_pinned(user_ptr));
- 			*user_ptr = val;
- 		}
- 		return;
-@@ -555,8 +555,8 @@
-  * For 64-bit, we must skip the Xen hole in the middle of the address
-  * space, just after the big x86-64 virtual hole.
-  */
--static int pgd_walk(pgd_t *pgd, int (*func)(struct page *, enum pt_level),
--		    unsigned long limit)
-+static int xen_pgd_walk(pgd_t *pgd, int (*func)(struct page *, enum pt_level),
-+			unsigned long limit)
- {
- 	int flush = 0;
- 	unsigned hole_low, hole_high;
-@@ -644,7 +644,9 @@
- 	return flush;
- }
- 
--static spinlock_t *lock_pte(struct page *page)
-+/* If we're using split pte locks, then take the page's lock and
-+   return a pointer to it.  Otherwise return NULL. */
-+static spinlock_t *xen_pte_lock(struct page *page)
- {
- 	spinlock_t *ptl = NULL;
- 
-@@ -656,7 +658,7 @@
- 	return ptl;
- }
- 
--static void do_unlock(void *v)
-+static void xen_pte_unlock(void *v)
- {
- 	spinlock_t *ptl = v;
- 	spin_unlock(ptl);
-@@ -674,7 +676,7 @@
- 	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
- }
- 
--static int pin_page(struct page *page, enum pt_level level)
-+static int xen_pin_page(struct page *page, enum pt_level level)
- {
- 	unsigned pgfl = TestSetPagePinned(page);
- 	int flush;
-@@ -715,7 +717,7 @@
- 		 */
- 		ptl = NULL;
- 		if (level == PT_PTE)
--			ptl = lock_pte(page);
-+			ptl = xen_pte_lock(page);
- 
- 		MULTI_update_va_mapping(mcs.mc, (unsigned long)pt,
- 					pfn_pte(pfn, PAGE_KERNEL_RO),
-@@ -726,7 +728,7 @@
- 
- 			/* Queue a deferred unlock for when this batch
- 			   is completed. */
--			xen_mc_callback(do_unlock, ptl);
-+			xen_mc_callback(xen_pte_unlock, ptl);
- 		}
- 	}
- 
-@@ -740,7 +742,7 @@
- {
- 	xen_mc_batch();
- 
--	if (pgd_walk(pgd, pin_page, USER_LIMIT)) {
-+	if (xen_pgd_walk(pgd, xen_pin_page, USER_LIMIT)) {
- 		/* re-enable interrupts for kmap_flush_unused */
- 		xen_mc_issue(0);
- 		kmap_flush_unused();
-@@ -754,14 +756,14 @@
- 		xen_do_pin(MMUEXT_PIN_L4_TABLE, PFN_DOWN(__pa(pgd)));
- 
- 		if (user_pgd) {
--			pin_page(virt_to_page(user_pgd), PT_PGD);
-+			xen_pin_page(virt_to_page(user_pgd), PT_PGD);
- 			xen_do_pin(MMUEXT_PIN_L4_TABLE, PFN_DOWN(__pa(user_pgd)));
- 		}
- 	}
- #else /* CONFIG_X86_32 */
- #ifdef CONFIG_X86_PAE
- 	/* Need to make sure unshared kernel PMD is pinnable */
--	pin_page(virt_to_page(pgd_page(pgd[pgd_index(TASK_SIZE)])), PT_PMD);
-+	xen_pin_page(virt_to_page(pgd_page(pgd[pgd_index(TASK_SIZE)])), PT_PMD);
- #endif
- 	xen_do_pin(MMUEXT_PIN_L3_TABLE, PFN_DOWN(__pa(pgd)));
- #endif /* CONFIG_X86_64 */
-@@ -796,7 +798,7 @@
-  * that's before we have page structures to store the bits.  So do all
-  * the book-keeping now.
-  */
--static __init int mark_pinned(struct page *page, enum pt_level level)
-+static __init int xen_mark_pinned(struct page *page, enum pt_level level)
- {
- 	SetPagePinned(page);
- 	return 0;
-@@ -804,10 +806,10 @@
- 
- void __init xen_mark_init_mm_pinned(void)
- {
--	pgd_walk(init_mm.pgd, mark_pinned, FIXADDR_TOP);
-+	xen_pgd_walk(init_mm.pgd, xen_mark_pinned, FIXADDR_TOP);
- }
- 
--static int unpin_page(struct page *page, enum pt_level level)
-+static int xen_unpin_page(struct page *page, enum pt_level level)
- {
- 	unsigned pgfl = TestClearPagePinned(page);
- 
-@@ -825,7 +827,7 @@
- 		 * partially-pinned state.
- 		 */
- 		if (level == PT_PTE) {
--			ptl = lock_pte(page);
-+			ptl = xen_pte_lock(page);
- 
- 			if (ptl)
- 				xen_do_pin(MMUEXT_UNPIN_TABLE, pfn);
-@@ -839,7 +841,7 @@
- 
- 		if (ptl) {
- 			/* unlock when batch completed */
--			xen_mc_callback(do_unlock, ptl);
-+			xen_mc_callback(xen_pte_unlock, ptl);
- 		}
- 	}
- 
-@@ -859,17 +861,17 @@
- 
- 		if (user_pgd) {
- 			xen_do_pin(MMUEXT_UNPIN_TABLE, PFN_DOWN(__pa(user_pgd)));
--			unpin_page(virt_to_page(user_pgd), PT_PGD);
-+			xen_unpin_page(virt_to_page(user_pgd), PT_PGD);
- 		}
- 	}
- #endif
- 
- #ifdef CONFIG_X86_PAE
- 	/* Need to make sure unshared kernel PMD is unpinned */
--	unpin_page(virt_to_page(pgd_page(pgd[pgd_index(TASK_SIZE)])), PT_PMD);
-+	xen_unpin_page(virt_to_page(pgd_page(pgd[pgd_index(TASK_SIZE)])), PT_PMD);
- #endif
- 
--	pgd_walk(pgd, unpin_page, USER_LIMIT);
-+	xen_pgd_walk(pgd, xen_unpin_page, USER_LIMIT);
- 
- 	xen_mc_issue(0);
- }
-@@ -936,7 +938,7 @@
- 	}
- }
- 
--static void drop_mm_ref(struct mm_struct *mm)
-+static void xen_drop_mm_ref(struct mm_struct *mm)
- {
- 	cpumask_t mask;
- 	unsigned cpu;
-@@ -966,7 +968,7 @@
- 		smp_call_function_mask(mask, drop_other_mm_ref, mm, 1);
- }
- #else
--static void drop_mm_ref(struct mm_struct *mm)
-+static void xen_drop_mm_ref(struct mm_struct *mm)
- {
- 	if (current->active_mm == mm)
- 		load_cr3(swapper_pg_dir);
-@@ -990,13 +992,13 @@
- void xen_exit_mmap(struct mm_struct *mm)
- {
- 	get_cpu();		/* make sure we don't move around */
--	drop_mm_ref(mm);
-+	xen_drop_mm_ref(mm);
- 	put_cpu();
- 
- 	spin_lock(&mm->page_table_lock);
- 
- 	/* pgd may not be pinned in the error exit path of execve */
--	if (page_pinned(mm->pgd))
-+	if (xen_page_pinned(mm->pgd))
- 		xen_pgd_unpin(mm->pgd);
- 
- 	spin_unlock(&mm->page_table_lock);
+yes, I see the (indirect) logic.  But I wonder about whether there's a
+direct way of measuring the thing we really want to measure.
+
+Also, I'd be heaps less scared of the change if it did
+
+	commit_time = min(commit_time, one jiffy)
 
 
+> It would seem to be generically 
+> useful to be able to sleep for less than 1 jiffie, not just for file 
+> systems, but maybe also in some other contexts?
+
+Sure.
