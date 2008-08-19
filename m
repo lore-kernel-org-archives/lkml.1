@@ -1,106 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbYHSClm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbYHSCoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753283AbYHSClm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 22:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbYHSClb
+	id S1754597AbYHSCoR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 22:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbYHSCoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 22:41:31 -0400
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:3529 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752895AbYHSCla (ORCPT
+	Mon, 18 Aug 2008 22:44:04 -0400
+Received: from mail9.dslextreme.com ([66.51.199.94]:43616 "HELO
+	mail9.dslextreme.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752574AbYHSCoB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 22:41:30 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgUDAMvMqUh5LAMbiGdsb2JhbACSEAEBAQ8gox6BWA
-X-IronPort-AV: E=Sophos;i="4.32,232,1217773800"; 
-   d="scan'208";a="185128507"
-Date: Tue, 19 Aug 2008 12:41:25 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Kevin Diggs <kevdig@hypersurf.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Fwd: Corrections please ...]
-Message-ID: <20080819024125.GM19760@disturbed>
-Mail-Followup-To: Kevin Diggs <kevdig@hypersurf.com>,
-	linux-kernel@vger.kernel.org
-References: <48AA27AF.9070407@hypersurf.com>
+	Mon, 18 Aug 2008 22:44:01 -0400
+Message-ID: <48AA3369.900@gawab.com>
+Date: Mon, 18 Aug 2008 19:43:53 -0700
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48AA27AF.9070407@hypersurf.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: lkml <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+       Michal Januszewski <spock@gentoo.org>,
+       Antonino Daplas <adaplas@gmail.com>, Greg KH <gregkh@suse.de>,
+       Rafael Wysocki <rjw@sisk.pl>,
+       Romano Giannetti <romano.giannetti@gmail.com>,
+       Adrian Bunk <bunk@kernel.org>,
+       Jeremy Nickurak <kernel-bugs@atrus.rifetech.com>
+Subject: Re: Backport hr-tick fix into .25/.26
+References: <48A9BDC0.9070800@gawab.com> <20080819003110.GH9914@elte.hu>
+In-Reply-To: <20080819003110.GH9914@elte.hu>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 18, 2008 at 06:53:51PM -0700, Kevin Diggs wrote:
-> Could someone ... anyone take a look at these kernel doc additions?
-.....
+Ingo Molnar wrote:
+> hm, the backport of 31656519 is a bit intrusive.
 >
-> +/**
-> + * complete: - signals a single thread waiting on this completion
-> + * @x:  holds the state of this particular completion
-> + *
-> + * This will wake up a single thread waiting on this completion. If  
-> multiple
+> find below is an (untested!) version of it - i havent even build-tested 
+> it. Does it work for you? But this is Greg's call really.
+>   
 
-Your mailer appears to be wrapping lines.
+I tried to apply it onto 2.6.26.2, but got this build error:
 
-> + * threads are waiting ???
-> + */
->  void complete(struct completion *x)
->  {
->         unsigned long flags;
+CC arch/x86/kernel/i8253.o
+CC kernel/sched.o
+CC arch/x86/kernel/pci-nommu.o
+kernel/sched.c:537: error: field ‘hrtick_csd’ has incomplete type
+kernel/sched.c: In function ‘hrtick_start’:
+kernel/sched.c:1080: error: implicit declaration of function 
+‘__smp_call_function_single’
+CC arch/x86/kernel/tsc_32.o
+make[2]: *** [kernel/sched.o] Error 1
+make[1]: *** [kernel] Error 2
+make[1]: *** Waiting for unfinished jobs....
+CC arch/x86/kernel/io_delay.o
+CC arch/x86/kernel/rtc.o
+CC arch/x86/kernel/trampoline.o
 
-complete() will only wake one waiting thread. If there are multiple
-waiters, then further calls to complete() are required to wake them,
-or a single call to complete_all() could be used.
+Was I suppose to use a different kernel? (2.6.25[.x] or 2.6.26) I'll try 
+2.6.25.15
 
->  EXPORT_SYMBOL(wait_for_completion);
->
-> +/**
-> + * wait_for_completion_timeout: - waits for completion of a task  
-> (w/timeout)
-> + * @x:  holds the state of this particular completion
-> + * @timeout:  timeout value in jiffies
-> + *
-> + * This waits to be signaled for completion of a specific task. It is NOT
-> + * interruptible. But there is a timeout in jiffies.
+Anyways, I know it's Greg's call, and I'm just trying to inform him of a 
+bug that's been fixed upstream that should be backported.
+If he declines, that's ok. I've opened a bug report with Ubuntu. But, it 
+would help if I had a patch to show.
 
-Doesn't read very well.
-
-"This waits for either a completion of a specific task to be signalled
-or for a defined length of time. It is not interruptible."
-
-> +/**
-> + * wait_for_completion_interruptible_timeout: - waits for completion  
-> (w/(to,int
-> r))
-> + * @x:  holds the state of this particular completion
-> + * @timeout:  timeout value in jiffies
-> + *
-> + * This waits to be signaled for completion of a specific task. It is
-> + * interruptible. And there is a timeout in jiffies.
-> + */
-
-Same as for wait_for_completion_timeout().
-
-> +/**
-> + * wait_for_completion_killable: - waits for completion of a task  
-> (killable)
-> + * @x:  holds the state of this particular completion
-> + *
-> + * This waits to be signaled for completion of a specific task. It is
-> + * killable (???).
-> + */
-
-Killable means that a kill signal will interrupt the wait, but not
-all signals will. Typically used in places where you want a user
-ctrl-c or a kill command to succeed but don't want any other signal
-to interrupt the completion.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+Justin Madru
