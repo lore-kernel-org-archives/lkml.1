@@ -1,106 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbYHSSJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756478AbYHSSKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755932AbYHSSJA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 14:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbYHSSIs
+	id S1756478AbYHSSKq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 14:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYHSSKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 14:08:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34761 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752582AbYHSSIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 14:08:46 -0400
-Message-ID: <48AB0C1F.1040104@redhat.com>
-Date: Tue, 19 Aug 2008 14:08:31 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-Reply-To: rwheeler@redhat.com
-Organization: Red Hat
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 19 Aug 2008 14:10:37 -0400
+Received: from torres.zugschlus.de ([85.214.68.41]:38922 "EHLO
+	torres.zugschlus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751453AbYHSSKg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 14:10:36 -0400
+X-Greylist: delayed 3016 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Aug 2008 14:10:36 EDT
+Date: Tue, 19 Aug 2008 19:20:19 +0200
+From: Marc Haber <mh+linux-kernel@zugschlus.de>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.26/tg3 ping roundtrip times > 2000 ms on local network
+Message-ID: <20080819172019.GA5823@torres.zugschlus.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Andreas Dilger <adilger@sun.com>, Josef Bacik <jbacik@redhat.com>,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 2/2] improve ext3 fsync batching
-References: <20080806190819.GH27394@unused.rdu.redhat.com>	<20080806191536.GI27394@unused.rdu.redhat.com>	<20080818213128.3a76d1e8.akpm@linux-foundation.org>	<20080819054414.GM3392@webber.adilger.int>	<48AAA7F7.5090501@redhat.com> <20080819105638.aae4086f.akpm@linux-foundation.org>
-In-Reply-To: <20080819105638.aae4086f.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 19 Aug 2008 07:01:11 -0400 Ric Wheeler <rwheeler@redhat.com> wrote:
->
->   
->> It would be great to be able to use this batching technique for faster 
->> devices, but we currently sleep 3-4 times longer waiting to batch for an 
->> array than it takes to complete the transaction.
->>     
->
-> Obviously, tuning that delay down to the minimum necessary is a good
-> thing.  But doing it based on commit-time seems indirect at best.  What
-> happens on a slower disk when commit times are in the tens of
-> milliseconds?  When someone runs a concurrent `dd if=/dev/zero of=foo'
-> when commit times go up to seconds?
->   
+Hi,
 
-Transactions on that busier drive would take longer, we would sleep 
-longer which would allow us to batch up more into one transaction. That 
-should be a good result and it should reset when the drive gets less 
-busy (and transactions shorter) to a shorter sleep time.
+I have one HP DL 140 G1 running with Debian stable and a
+locally-built, vanilla kernel. With 2.6.25.11, everything is fine.
 
-> Perhaps a better scheme would be to tune it based on how many other
-> processes are joining that transaction.  If it's "zero" then decrease
-> the timeout.  But one would need to work out how to increase it, which
-> perhaps could be done by detecting the case where process A runs an
-> fsync when a commit is currently in progress, and that commit was
-> caused by process B's fsync.
->   
-This is really, really a property of the device's latency at any given 
-point in time. If there are no other processes running, we could do an 
-optimization and not wait.
+But, after updating to 2.6.26.2, I noticed that pinging the host on
+the local ethernet sometimes (e.g. several times a minute, but not
+always) results in a round-trip time of larger than two seconds. The
+packets are not lost though, they're only severly delayed. For an ssh
+session to the host, this feels like somebody rocking a bad network
+connector. The same behavior is visible with 2.6.26 and 2.6.26.1.
 
-> But before doing all that I would recommend/ask that the following be
-> investigated:
->
-> - How effective is the present code?
->   
+Going back to 2.6.25.11 immediately fixes the issue for me.
 
-It causes the most expensive storage (arrays) to run 3-4 times slower 
-than they should on a synchronous write workload (NFS server, mail 
-server?) with more than 1 thread. For example, against a small EMC 
-array, I saw single threaded write rates of 720 files/sec against ext3 
-with 1 thread, 225 (if I remember correctly) with 2 ;-)
+Syslog doesn't say anything conspicious, unfortunately. As I don't
+have local access to the box, I cannot say whether it's only the
+network that freezes or whether it's the entire box.
 
->   - What happens when it is simply removed?
->   
-If you remove the code, you will not see the throughput rise when you go 
-multithreaded on existing slow devices (S-ATA/ATA for example). Faster 
-devices will not see that 2 threaded drop.
+Does it make sense to test any later 2.6.25.x kernel, or is there any
+post-2.6.26 patch available that may fix the issue for me?
 
->   - Add instrumentation (a counter and a printk) to work out how
->     many other tasks are joining this task's transaction.
->
->     - If the answer is "zero" or "small", work out why.
->
->   - See if we can increase its effectiveness.
->
-> Because it could be that the code broke.  There might be issues with
-> higher-level locks which are preventing the batching.  For example, if
-> all the files which the test app is syncing are in the same directory,
-> perhaps all the tasks are piling up on that directory's i_mutex?
->   
+Strangely, another DL 140 from the same charge runs just fine with
+2.6.26.2.
 
-I have to admit that I don't see the down side here - we have shown a 
-huge increase for arrays (embarrassingly huge  increase for RAM disks) 
-and see no degradation for the S-ATA/ATA case.
+Here is the output of lspci -vvv for the network interface:
 
-The code is not broken (having been there and done the performance 
-tuning on the original code), it just did not account for the widely 
-varying average response times for different classes of storage ;-)
+02:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5704 Gigabit Ethernet (rev 02)
+        Subsystem: Broadcom Corporation NetXtreme BCM5704 Gigabit Ethernet
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 64 (16000ns min), Cache Line Size: 64 bytes
+        Interrupt: pin A routed to IRQ 19
+        Region 0: Memory at febc0000 (64-bit, non-prefetchable) [size=64K]
+        Region 2: Memory at febb0000 (64-bit, non-prefetchable) [size=64K]
+        Expansion ROM at <ignored> [disabled]
+        Capabilities: [40] PCI-X non-bridge device
+                Command: DPERE- ERO- RBC=2048 OST=1
+                Status: Dev=02:00.0 64bit+ 133MHz+ SCD- USC- DC=simple DMMRBC=2048 DMOST=1 DMCRS=16 RSCEM- 266MHz- 533MHz-
+        Capabilities: [48] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable+ DSel=0 DScale=1 PME-
+        Capabilities: [50] Vital Product Data
+        Capabilities: [58] Message Signalled Interrupts: Mask- 64bit+ Queue=0/3 Enable-
+                Address: 1502da2a94a95200  Data: 3ca4
 
-ric
+If there is any information that can help, please say so.
 
+Greetings
+Marc
 
+-- 
+-----------------------------------------------------------------------------
+Marc Haber         | "I don't trust Computers. They | Mailadresse im Header
+Mannheim, Germany  |  lose things."    Winona Ryder | Fon: *49 621 72739834
+Nordisch by Nature |  How to make an American Quilt | Fax: *49 3221 2323190
