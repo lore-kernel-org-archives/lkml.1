@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbYHST1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757252AbYHST2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756180AbYHST1j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 15:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbYHST1b
+	id S1757252AbYHST2V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 15:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbYHST2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 15:27:31 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:49839 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751943AbYHST1a (ORCPT
+	Tue, 19 Aug 2008 15:28:11 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:50563 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754306AbYHST2J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 15:27:30 -0400
-Message-ID: <48AB1DE2.30402@cs.helsinki.fi>
-Date: Tue, 19 Aug 2008 22:24:18 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Tue, 19 Aug 2008 15:28:09 -0400
+X-IronPort-AV: E=Sophos;i="4.32,236,1217808000"; 
+   d="scan'208";a="67351733"
+From: Roland Dreier <rdreier@cisco.com>
+To: Dmitry Torokhov <dtor@mail.ru>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Input: evdev - Fix printk() format warning
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 19 Aug 2008 12:27:14 -0700
+Message-ID: <aday72srejx.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rdunlap@xenotime.net,
-       mpm@selenic.com, tglx@linutronix.de, rostedt@goodmis.org,
-       cl@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       tzanussi@gmail.com
-Subject: Re: [PATCH 2/5] kmemtrace: Better alternative to "kmemtrace: fix
- printk format warnings".
-References: <1219167807-5407-1-git-send-email-eduard.munteanu@linux360.ro> <1219167807-5407-2-git-send-email-eduard.munteanu@linux360.ro>
-In-Reply-To: <1219167807-5407-2-git-send-email-eduard.munteanu@linux360.ro>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 19 Aug 2008 19:27:15.0695 (UTC) FILETIME=[9669F7F0:01C90231]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eduard - Gabriel Munteanu wrote:
-> Fix the problem "kmemtrace: fix printk format warnings" attempted to fix,
-> but resulted in marker-probe format mismatch warnings. Instead of carrying
-> size_t into probes, we get rid of it by casting to unsigned long, just as
-> we did with gfp_t.
-> 
-> This way, we don't need to change marker format strings and we don't have
-> to rely on other format specifiers like "%zu", making for consistent use
-> of more generic data types (since there are no format specifiers for
-> gfp_t, for example).
-> 
-> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+    drivers/input/evdev.c: In function 'handle_eviocgbit':
+    drivers/input/evdev.c:684: warning: format '%d' expects type 'int', but argument 3 has type 'long unsigned int'
 
-Applied, thanks!
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+ drivers/input/evdev.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/input/evdev.c b/drivers/input/evdev.c
+index a92d815..70854db 100644
+--- a/drivers/input/evdev.c
++++ b/drivers/input/evdev.c
+@@ -678,7 +678,7 @@ static int handle_eviocgbit(struct input_dev *dev, unsigned int cmd, void __user
+ 		if (printk_timed_ratelimit(&keymax_warn_time, 10 * 1000))
+ 			printk(KERN_WARNING
+ 				"evdev.c(EVIOCGBIT): Suspicious buffer size %d, "
+-				"limiting output to %d bytes. See "
++				"limiting output to %ld bytes. See "
+ 				"http://userweb.kernel.org/~dtor/eviocgbit-bug.html\n",
+ 				OLD_KEY_MAX,
+ 				BITS_TO_LONGS(OLD_KEY_MAX) * sizeof(long));
