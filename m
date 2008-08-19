@@ -1,92 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbYHSJ7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbYHSKBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756110AbYHSJ7i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 05:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbYHSJ7Q
+	id S1756038AbYHSKBS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 06:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbYHSKBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 05:59:16 -0400
-Received: from smtp1.extricom.com ([212.235.24.249]:57369 "HELO
-	smtp.extricom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1755964AbYHSJ7N (ORCPT
+	Tue, 19 Aug 2008 06:01:05 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:45275 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752370AbYHSKBD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 05:59:13 -0400
-Message-ID: <48AA98E4.6060606@extricom.com>
-Date: Tue, 19 Aug 2008 12:56:52 +0300
-From: Eran Liberty <liberty@extricom.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Tue, 19 Aug 2008 06:01:03 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=m7K1APmbEevhenfhmpl4ZSqy0FpamgHcCqE5+YxDfUJnNNPwPIFpcksvThLhhCzDYqcDzMMs+2QY4exSb0/UcZn10QHlsR+TYkMr4kIZBSXakjYJvT0je8Mdp74DRe2LdJ1PlQFy9nvl6x2qzSNIA+BWtKp0NUIBDJfYMyzPhZw=  ;
+X-YMail-OSG: qrMRXOMVM1lDoRIdkxkYCEJO.Kw_zZ45DhC7q1P98BQt5WUZxA.Jg4JH6Luaip4b2QQrUoMM6hdoKuui70XTOV0bPCEkhxKUKU_cBiPNlIeWLriM9UvPizsmUYKycqq8cGiAvj0eIlHHLbF9msGWJKY0
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "Dave Airlie" <airlied@gmail.com>
+Subject: Re: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM
+Date: Tue, 19 Aug 2008 20:00:46 +1000
+User-Agent: KMail/1.9.5
+Cc: "Keith Packard" <keithp@keithp.com>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Eric Anholt" <eric@anholt.net>, linux-kernel@vger.kernel.org
+References: <1217573919-7496-1-git-send-email-eric@anholt.net> <200808051443.11858.nickpiggin@yahoo.com.au> <21d7e9970808181817n1d67dc33s58b8d07f63e411a7@mail.gmail.com>
+In-Reply-To: <21d7e9970808181817n1d67dc33s58b8d07f63e411a7@mail.gmail.com>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Steven Rostedt <srostedt@redhat.com>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linuxppc-dev@ozlabs.org, rostedt@goodmis.org
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com> <48A9901B.1080900@redhat.com> <48A9BEA3.10906@extricom.com> <20080818184158.GA1798@Krystal>
-In-Reply-To: <20080818184158.GA1798@Krystal>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808192000.47070.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> Can you check if, at some point during the system execution (starting
-> from boot), 0xdd5b1d58 is an address where a module is loaded ? (the
-> module can be later unloaded, what I wonder is if this address would
-> appear to have had a loaded+unloaded module).
+On Tuesday 19 August 2008 11:17, Dave Airlie wrote:
+> On Tue, Aug 5, 2008 at 2:43 PM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > On Tuesday 05 August 2008 07:58, Keith Packard wrote:
+> >> On Mon, 2008-08-04 at 19:02 +1000, Nick Piggin wrote:
+> >> > > I suppose we could have user space allocate the shmem file (either
+> >> > > via tmpfs or sysv ipc). tmpfs suffers from the maxfd issue, while
+> >> > > sysv ipc runs up against the SHMMAX value.
+> >> >
+> >> > This is how I'd suggested it work as well. I think a little bit
+> >> > more effort should be spent looking at making this work.
+> >>
+> >> Well, I've spent a day thinking about using existing user-space APIs to
+> >> get at shmem files. While it's nice that we've discovered a
+> >> filesystem-independent mechanism to pin file pages, we haven't found
+> >> anything similar for creating the files. In particular, what I want is:
+> >>
+> >>  1) Anonymous files backed by swap
+> >>  2) Freed when the last process using them exits
+> >>  3) That never appear in the file system
+> >>  4) Do not consume a low FD (yeah, I know, rewrite the desktop)
+> >>
+> >> So, what I could do is
+> >>
+> >>       char    template[] = "/dev/shm/drm-XXXXXX";
+> >>       int     fd;
+> >>       fd = mkstemp (template);
+> >>       unlink (template);
+> >>       ftruncate (fd, size)
+> >>       object = drm_create_an_object_for_a_file (fd);
+> >>       close (fd);
+> >>
+> >> While I haven't written any code yet, this should work and will even be
+> >> compatible with my current user-space API. I have to create a DRM object
+> >> for the file in any case, and so I don't need to hold onto the fd.
+> >> Releasing the fd also eliminates any ulimit issues.
+> >>
+> >> The drm_create_an_object_for_a_file call could return another fd. But,
+> >> note that the original shmem fd has no real value to the application in
+> >> this case.
+> >>
+> >> I can imagine other cases where mapping non-shmem files would make sense
+> >> though, in particular it's fairly easy to envision mapping an image file
+> >> to the GTT and having the graphics process decode and display it without
+> >> any additional copies. I think this demonstrates the potential utility
+> >> of the general file mapping operation.
+> >>
+> >> But, I'd like to have you reconsider whether it makes sense for user
+> >> space to go through the above dance to create anonymous shared objects
+> >> when the kernel already supports precisely the desired semantics and
+> >> even exposes them to the ipc/shm implementation.
+> >
+> > In my opinion, doing this little song and dance (which is a few lines
+> > of quite well defined APIs, btw) in userspace is preferable to adding
+> > a single line or exporting a single function in kernel space. Unless
+> > there is a better reason than eliminating a few lines of userspace code.
 >
-> Actually, could you try to compile your kernel without "MODULE_UNLOAD" ?
+> Now I also have to do the same song and dance for in-kernel allocated
+> objects? still think this is acceptable... I'm not even sure what vfs calls
+> I really need in-kernel to do that.
 >
-> Mathieu
->   
-No modules...
+> If someone codes up the in-kernel path to do this using 4-5 API calls
+> instead of one exported
+> function that IPC/SHM already does then maybe we can gauge the uglyness vs
+> that.
 
-~ # uname -a
-Linux 2.6.27-rc2 #6 Tue Aug 19 12:33:34 IDT 2008 ppc unknown
-~ # gunzip /proc/config.gz -c | grep UNLOAD
-# CONFIG_MODULE_UNLOAD is not set
-~ # gunzip /proc/config.gz -c | grep FTRACE
-CONFIG_HAVE_FTRACE=y
-CONFIG_HAVE_DYNAMIC_FTRACE=y
-CONFIG_FTRACE=y
-CONFIG_DYNAMIC_FTRACE=y
-CONFIG_FTRACE_SELFTEST=y
-CONFIG_FTRACE_STARTUP_TEST=y
-~ # gunzip /proc/config.gz -c | grep MARKERS
-CONFIG_MARKERS=y
-~ # lsmod
-Module                  Size  Used by
-~ # while [ 1 ] ; do find / > /dev/null ; echo .  ; done
-.
-Oops: Exception in kernel mode, sig: 11 [#1]
-Exsw1600
-Modules linked in:
-NIP: c00bb724 LR: c00bb724 CTR: 00000000
-REGS: d8b59c50 TRAP: 0700   Not tainted  (2.6.27-rc2)
-MSR: 00029000 <EE,ME>  CR: 24082282  XER: 20000000
-TASK = dbc68de0[1712] 'find' THREAD: d8b58000
-GPR00: 00000000 d8b59d00 dbc68de0 dd801180 d8b59d68 d8b59d58 dd8019db 
-100234ec
-GPR08: c0800000 00019330 0000ffff d8b59d20 24000288 100ad874 100936f8 
-1008a1d0
-GPR16: 10083f80 d8b59e2c d8b59d68 fffffff4 c0380000 d8b59d60 d8b59d58 
-dd802084
-GPR24: ddc69500 dd802018 d8b59d68 c0380000 dd801180 d8b59d68 00000000 
-d8b59d00
-NIP [c00bb724] d_lookup+0x40/0x90
-LR [c00bb724] d_lookup+0x40/0x90
-Call Trace:
-[d8b59d00] [d8b59d58] 0xd8b59d58 (unreliable)
-[d8b59d20] [c00ae7c8] do_lookup+0xe8/0x220
-[d8b59d50] [c00b0684] __link_path_walk+0x5a4/0xd54
-[d8b59dc0] [c00b0e8c] path_walk+0x58/0xe0
-[d8b59df0] [c00b0ffc] do_path_lookup+0x78/0x13c
-[d8b59e20] [c00b1cf8] user_path_at+0x64/0xac
-[d8b59e90] [c00a8c98] vfs_lstat_fd+0x34/0x74
-[d8b59ec0] [c00a8d6c] vfs_lstat+0x30/0x48
-[d8b59ed0] [c00a8db4] sys_lstat64+0x30/0x5c
-[d8b59f40] [c0010554] ret_from_syscall+0x0/0x3c
-Instruction dump:
-7c0802a6 bf61000c 3f60c038 7c3f0b78 90010024 7c7c1b78 7c9d2378 83db32a0
-73c00001 7f83e378 7fa4eb78 4082002f <00000000> 2f830000 409e0030 801b32a0
----[ end trace 7766edd310cd3442 ]---
-
+Not exactly sure what you mean by this. But I would like to see an effort
+made to use existing userspace APIs in order to do this swappable object
+allocation over tmpfs scheme. As I said, I don't object to a nice kernel
+implementation, but we would be in a much better position to assess it if
+we had an existing userspace implementation to compare it with.
