@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYHSVFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbYHSVFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbYHSVFP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbYHSVE7
+	id S1757325AbYHSVFl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:05:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755809AbYHSVFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:04:59 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60546
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751102AbYHSVE6 (ORCPT
+	Tue, 19 Aug 2008 17:05:20 -0400
+Received: from mail5.dslextreme.com ([66.51.199.81]:51041 "HELO
+	mail5.dslextreme.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755160AbYHSVFS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:04:58 -0400
-Date: Tue, 19 Aug 2008 14:04:58 -0700 (PDT)
-Message-Id: <20080819.140458.236030589.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.1.10.0808191341150.3324@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0808190952000.3324@nehalem.linux-foundation.org>
-	<20080819.131454.223684377.davem@davemloft.net>
-	<alpine.LFD.1.10.0808191341150.3324@nehalem.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 17:05:18 -0400
+Message-ID: <1540a3930a2490a4d80a.20080819140516.whnafynlgba@webmail.dslextreme.com>
+In-Reply-To: <Pine.LNX.4.44L0.0808191603350.3391-100000@iolanthe.rowland.org>
+References: <681431.40736.qm@web82201.mail.mud.yahoo.com>
+    <Pine.LNX.4.44L0.0808191603350.3391-100000@iolanthe.rowland.org>
+Date: Tue, 19 Aug 2008 14:05:16 -0700 (PDT)
+Subject: Re: PROBLEM: USB keyboards works only 4 per PC host port
+From: juanslayton@dslextreme.com
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Cc: "David Brownell" <david-b@pacbell.net>, juanslayton@dslextreme.com,
+       "Aivils Stoss" <aivils@latnet.lv>, jkosina@suse.cz,
+       "lud" <linux-usb@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       "Randy Dunlap" <rdunlap@xenotime.net>,
+       linuxconsole-dev@lists.sourceforge.net, linux-input@vger.kernel.org
+User-Agent: DSL Extreme Webmail (www.dslextreme.com)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 19 Aug 2008 13:47:59 -0700 (PDT)
 
-> Same goes for all the loopback changes. They look like cleanups or feature 
-> enables.
 
-Those fix a performance regression reported by a real user.
 
-Sure I did a cleanup of dead code in one of those commits,
-but if you look at the commit beforehand from Herbert, the
-context, you can see that it made no sense to leave that
-in there any longer as half of what it was standing there
-as "documenting" was removed by Herbert's commit.
+Thanks for the clarification.
+
+John
+
