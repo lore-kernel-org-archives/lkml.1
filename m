@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbYHSNMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYHSNSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755482AbYHSNMr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 09:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbYHSNMg
+	id S1755249AbYHSNSl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 09:18:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYHSNSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 09:12:36 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39388 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753835AbYHSNMf (ORCPT
+	Tue, 19 Aug 2008 09:18:32 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41086 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753845AbYHSNSc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 09:12:35 -0400
-Subject: Re: [PATCH RT 2/2] ftrace: fix elevated preempt_count in
-	wakeup-tracer
-From: Peter Zijlstra <peterz@infradead.org>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-In-Reply-To: <20080819091923.21725.41087.stgit@dev.haskins.net>
-References: <20080819091817.21725.81831.stgit@dev.haskins.net>
-	 <20080819091923.21725.41087.stgit@dev.haskins.net>
-Content-Type: text/plain
-Date: Tue, 19 Aug 2008 15:12:36 +0200
-Message-Id: <1219151556.10800.383.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 09:18:32 -0400
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, Pavel Machek <pavel@suse.cz>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Robert Richter <robert.richter@amd.com>,
+       Philippe Elie <phil.el@wanadoo.fr>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: oprofile + hibernation = badness
+From: Andi Kleen <andi@firstfloor.org>
+References: <19f34abd0808181332k3c02496auabd04e927bb7cab5@mail.gmail.com>
+	<48AA1E42.6070802@linux.intel.com>
+	<19f34abd0808190012r4418cc4egf9bc25a52056af41@mail.gmail.com>
+	<20080819094905.GA20590@elte.hu> <48AAB8B6.3020802@linux.intel.com>
+	<87skt16u4a.fsf@skyscraper.fehenstaub.lan>
+Date: Tue, 19 Aug 2008 15:18:25 +0200
+In-Reply-To: <87skt16u4a.fsf@skyscraper.fehenstaub.lan> (Johannes Weiner's message of "Tue, 19 Aug 2008 14:56:37 +0200")
+Message-ID: <87pro5ywgu.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-19 at 05:19 -0400, Gregory Haskins wrote:
-> Suggested by Steve Rostedt to fix an observed "+1" in the preempt-count
-> 
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> ---
-> 
->  kernel/trace/trace_sched_wakeup.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
-> index c3a15bd..ae523fd 100644
-> --- a/kernel/trace/trace_sched_wakeup.c
-> +++ b/kernel/trace/trace_sched_wakeup.c
-> @@ -70,7 +70,9 @@ wakeup_tracer_call(unsigned long ip, unsigned long parent_ip)
->  	if (task_cpu(wakeup_task) != cpu)
->  		goto unlock;
->  
-> +	preempt_enable_no_resched_notrace();
->  	trace_function(tr, data, ip, parent_ip, flags);
-> +	preempt_disable_notrace();
+Johannes Weiner <hannes@saeurebad.de> writes:
+>
+> You probably misconfigured emacs then.  I ran checkpatch over your patch
+> and don't see how and why emacs would add trailing whitespace after a
+> opening brace.
 
-Is preempt_count > 1 at all times here?
+I don't know how, but it does. vim does too sometimes (I use both
+editors) 
 
-If not, it might drop to 0 and any interrupt might cause preemption -
-and its not obvious to me that that is actually correct.
+>
+> You can use this to be on the safe side:
+>
+> (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-Just asking, as neither the changelog nor the code fragment enlightens
-me on the subject.
+That drops it on all. This means when I edit something which already
+has trailing spaces then the diff is full of noise. That would
+be a cure far worse than the disease[1]
 
+Ideal would be if git-commit dropped them on all new lines, similar to 
+git-apply --whitespace=fix and quilt refresh, but it doesn't seem to know how.
+
+But normally maintainers just set these options (at least I do and Andrew
+does too) so it doesn't really matter if the submitted patch has trailing 
+spaces or not because they disappear on the way up. 
+
+And that said I refuse to write any more on this silly bike shed topic.
+
+-Andi
+
+[1] to be honest I'm not sure i are actually a disease since I don't
+know of any single problem they cause.
