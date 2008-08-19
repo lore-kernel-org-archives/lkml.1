@@ -1,93 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbYHSNIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbYHSNMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755230AbYHSNIx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 09:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbYHSNIn
+	id S1755341AbYHSNMV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 09:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbYHSNML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 09:08:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42298 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753373AbYHSNIm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 09:08:42 -0400
-Date: Tue, 19 Aug 2008 15:08:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Witbrodt <dawitbro@sbcglobal.net>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- connection between
-	HPET and lockups found
-Message-ID: <20080819130807.GB20210@elte.hu>
-References: <452065.84245.qm@web82105.mail.mud.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <452065.84245.qm@web82105.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 19 Aug 2008 09:12:11 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:41821 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753577AbYHSNMJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 09:12:09 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: jacliburn@bellsouth.net (Jay Cliburn)
+Subject: Re: [PATCH] atl1: disable TSO by default
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       link@miggy.org, ian@jeffray.co.uk, csnook@redhat.com,
+       jie.yang@atheros.com, m@fhloston.org, davem@davemloft.net
+Organization: Core
+In-Reply-To: <20080818192813.0d0dc1fd@osprey.hogchain.net>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1KVQyr-0001Ui-00@gondolin.me.apana.org.au>
+Date: Tue, 19 Aug 2008 23:10:37 +1000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* David Witbrodt <dawitbro@sbcglobal.net> wrote:
-
-> > Just to make sure: on a working kernel, do you get the HPET 
-> > messages? I.e. does the hpet truly work in that case?
+Jay Cliburn <jacliburn@bellsouth.net> wrote:
 > 
-> On the "fileserver", where 2.6.25 works but 2.6.26 locks up, the HPET 
-> _does_ work on a working kernel:
-> 
-> $ uname -r
-> 2.6.26.revert1
-> 
-> $ dmesg | grep -i hpet
-> ACPI: HPET 77FE80C0, 0038 (r1 RS690  AWRDACPI 42302E31 AWRD       98)
-> ACPI: HPET id: 0x10b9a201 base: 0xfed00000
-> hpet clockevent registered
-> hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0, 0
-> hpet0: 4 32-bit timers, 14318180 Hz
-> hpet_resources: 0xfed00000 is busy
+> diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
+> index e6a7bb7..e23ce77 100644
+> --- a/drivers/net/atlx/atl1.c
+> +++ b/drivers/net/atlx/atl1.c
+> @@ -3022,7 +3022,6 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
+>        netdev->features = NETIF_F_HW_CSUM;
+>        netdev->features |= NETIF_F_SG;
+>        netdev->features |= (NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX);
+> -       netdev->features |= NETIF_F_TSO;
+>        netdev->features |= NETIF_F_LLTX;
 
-btw., you might also want to look into drivers/char/hpet.c and 
-instrument that a bit. In particular the ioremap()s done there will show 
-exactly how the hpet is mapped.
+Another new driver using LLTX, this is not good when we're trying
+to get rid of it.
 
-In particular this bit:
+Perhaps we could just kill it by ignoring the LLTX flag and always
+grabbing the xmit lock.  That should be safe as long as none of these
+drivers grab the xmit lock within their private locks.
 
-                if (hpet_is_known(hdp)) {
-                        printk(KERN_DEBUG "%s: 0x%lx is busy\n",
-                                __func__, hdp->hd_phys_address);
-                        iounmap(hdp->hd_address);
-                        return AE_ALREADY_EXISTS;
-                }
+LLTX drivers will be a tad slower, but that should encourage them
+to stop using it :)
 
-
-suggests that you've got multiple hpets listed by the BIOS?
-
-> What I didn't realize is that the "desktop" machine, where 2.6.26 has 
-> always "worked", does NOT have a working HPET after all, even though I 
-> have enabled all HPET options in .config:
-
-that's OK - you've still got a regression.
-
-> (I don't know what is going on with "desktop": does the motherboard 
-> lack HPET, or does the Linux kernel not support the HPET hardware on 
-> the motherboard?)
-
-Whether the system has a hpet listed in the BIOS data structures can be 
-seen in acpidump [in the pmtools package]
-
-Even if the BIOS does not list it, the system might have hpet in the 
-chipset - hpet=force can be tried to force-enable it.
-
-	Ingo
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
