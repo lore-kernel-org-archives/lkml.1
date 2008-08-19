@@ -1,36 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759732AbYHSVs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759529AbYHSVub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759732AbYHSVs4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbYHSVsp
+	id S1759529AbYHSVub (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755424AbYHSVuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:48:45 -0400
-Received: from gate.crashing.org ([63.228.1.57]:49014 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758536AbYHSVso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:48:44 -0400
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Scott Wood <scottwood@freescale.com>,
-       Eran Liberty <liberty@extricom.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <20080819173453.GA28239@Krystal>
-References: <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
-	 <48A9AFA7.8080508@freescale.com>
-	 <alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>
-	 <1219110814.8062.2.camel@pasglop>
-	 <alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>
-	 <1219113549.8062.13.camel@pasglop>
-	 <alpine.DEB.1.10.0808182240330.13401@gandalf.stny.rr.com>
-	 <20080819024707.GA22659@Krystal>
-	 <alpine.DEB.1.10.0808191247001.28232@gandalf.stny.rr.com>
-	 <20080819173453.GA28239@Krystal>
+	Tue, 19 Aug 2008 17:50:20 -0400
+Received: from wr-out-0506.google.com ([64.233.184.232]:47797 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755284AbYHSVuS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 17:50:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=GlrzQ484ch6KmivrlwJjB8m1Qdru1nZ+W+zoO/v++woEhIzcpWZeveTUODoOpd35Sr
+         8iBAPWC2Rrv1cISV8e1GT1/lBaxAwZgZFYg1u5jdrE9zTQ9JCNk2qhe21oCC7V/kXgGW
+         mIVKQ6+Jk9INg+j2YYw0OvmnaFOU3yWH5QL/s=
+Subject: [PATCH] kernel: fix dynamic printk sparse warnings
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jason Baron <jbaron@redhat.com>, LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 20 Aug 2008 07:47:51 +1000
-Message-Id: <1219182471.7826.16.camel@pasglop>
+Date: Tue, 19 Aug 2008 14:50:18 -0700
+Message-Id: <1219182618.17033.92.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -38,19 +31,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ret is a common variable name and creates scads of shadowed variable
+warnings.  Change to using __ret inside the dynamic_debug_enabled
+macro.
 
-> 
-> Ok, there are two cases where it's ok :
-> 
-> 1 - in stop_machine, considering we are not touching code executed in
-> NMI handlers.
-> 2 - when using my replace_instruction_safe() which uses a temporary
-> breakpoint when doing the instruction replacement.
-> 
-> In those cases you could use text_poke_early().
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ include/linux/dynamic_printk.h |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Note that vmap/vunmap will be very slow.
+diff --git a/include/linux/dynamic_printk.h b/include/linux/dynamic_printk.h
+index c54cf84..2d528d0 100644
+--- a/include/linux/dynamic_printk.h
++++ b/include/linux/dynamic_printk.h
+@@ -37,12 +37,12 @@ extern int __dynamic_dbg_enabled_helper(char *modname, int type,
+ 					int value, int hash);
+ 
+ #define __dynamic_dbg_enabled(module, type, value, level, hash)  ({	     \
+-	int ret = 0;							     \
++	int __ret = 0;							     \
+ 	if (unlikely((dynamic_printk_enabled & (1LL << DEBUG_HASH)) &&	     \
+ 			(dynamic_printk_enabled2 & (1LL << DEBUG_HASH2))))   \
+-			ret = __dynamic_dbg_enabled_helper(module, type,     \
++			__ret = __dynamic_dbg_enabled_helper(module, type,   \
+ 								value, hash);\
+-	ret; })
++	__ret; })
+ 
+ #define dynamic_pr_debug(fmt, ...) do {					    \
+ 	static char mod_name[]						    \
+-- 
+1.6.0.274.g8aacc
 
-Ben.
 
 
