@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018AbYHSTZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbYHST1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755018AbYHSTZu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 15:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbYHSTZk
+	id S1756180AbYHST1j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 15:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbYHST1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 15:25:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49998 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751837AbYHSTZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 15:25:39 -0400
-Date: Tue, 19 Aug 2008 15:22:16 -0400
-From: Josef Bacik <jbacik@redhat.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Josef Bacik <jbacik@redhat.com>, linux-kernel@vger.kernel.org,
-       rwheeler@redhat.com, tglx@linutronix.de, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 1/2] add hrtimer_sleep_ns helper function
-Message-ID: <20080819192215.GB21749@unused.rdu.redhat.com>
-References: <20080806190819.GH27394@unused.rdu.redhat.com> <20080819191508.GD8318@parisc-linux.org>
+	Tue, 19 Aug 2008 15:27:31 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:49839 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751943AbYHST1a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 15:27:30 -0400
+Message-ID: <48AB1DE2.30402@cs.helsinki.fi>
+Date: Tue, 19 Aug 2008 22:24:18 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080819191508.GD8318@parisc-linux.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rdunlap@xenotime.net,
+       mpm@selenic.com, tglx@linutronix.de, rostedt@goodmis.org,
+       cl@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       tzanussi@gmail.com
+Subject: Re: [PATCH 2/5] kmemtrace: Better alternative to "kmemtrace: fix
+ printk format warnings".
+References: <1219167807-5407-1-git-send-email-eduard.munteanu@linux360.ro> <1219167807-5407-2-git-send-email-eduard.munteanu@linux360.ro>
+In-Reply-To: <1219167807-5407-2-git-send-email-eduard.munteanu@linux360.ro>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 19, 2008 at 01:15:08PM -0600, Matthew Wilcox wrote:
-> On Wed, Aug 06, 2008 at 03:08:19PM -0400, Josef Bacik wrote:
-> > -static int __sched do_nanosleep(struct hrtimer_sleeper *t, enum hrtimer_mode mode)
-> > +static int __sched do_nanosleep(struct hrtimer_sleeper *t, enum hrtimer_mode mode,
-> > +				int interruptible)
-> >  {
-> >  	hrtimer_init_sleeper(t, current);
-> >  
-> >  	do {
-> > -		set_current_state(TASK_INTERRUPTIBLE);
-> > +		set_current_state(interruptible ? TASK_INTERRUPTIBLE :
-> > +				  TASK_UNINTERRUPTIBLE);
+Eduard - Gabriel Munteanu wrote:
+> Fix the problem "kmemtrace: fix printk format warnings" attempted to fix,
+> but resulted in marker-probe format mismatch warnings. Instead of carrying
+> size_t into probes, we get rid of it by casting to unsigned long, just as
+> we did with gfp_t.
 > 
-> I don't see any users (in this patch or the next) of people wanting
-> uninterruptible nanosleeps.  We shouldn't be introducing new
-> TASK_UNINTERRUPTIBLE users, but instead using TASK_KILLABLE if the user
-> really can't cope with signals in a sensible manner.
->
+> This way, we don't need to change marker format strings and we don't have
+> to rely on other format specifiers like "%zu", making for consistent use
+> of more generic data types (since there are no format specifiers for
+> gfp_t, for example).
+> 
+> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 
-Hmm doh, sorry about that the 2/2 patch of this series should be passing 0 not 1
-since we need to be uninterruptible.  I figured this sort of thing would be used
-by fs's/device drivers where TASK_UNINTERRUPTIBLE is desired.  If that is not
-appropriate let me know and I can use TASK_KILLABLE or whatever else the
-preference is.  Thanks,
-
-Josef 
+Applied, thanks!
