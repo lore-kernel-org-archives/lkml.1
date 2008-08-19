@@ -1,108 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbYHSKBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbYHSKBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbYHSKBS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 06:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbYHSKBF
+	id S1756186AbYHSKBl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 06:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753732AbYHSKB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 06:01:05 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:45275 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752370AbYHSKBD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 06:01:03 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=m7K1APmbEevhenfhmpl4ZSqy0FpamgHcCqE5+YxDfUJnNNPwPIFpcksvThLhhCzDYqcDzMMs+2QY4exSb0/UcZn10QHlsR+TYkMr4kIZBSXakjYJvT0je8Mdp74DRe2LdJ1PlQFy9nvl6x2qzSNIA+BWtKp0NUIBDJfYMyzPhZw=  ;
-X-YMail-OSG: qrMRXOMVM1lDoRIdkxkYCEJO.Kw_zZ45DhC7q1P98BQt5WUZxA.Jg4JH6Luaip4b2QQrUoMM6hdoKuui70XTOV0bPCEkhxKUKU_cBiPNlIeWLriM9UvPizsmUYKycqq8cGiAvj0eIlHHLbF9msGWJKY0
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Dave Airlie" <airlied@gmail.com>
-Subject: Re: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM
-Date: Tue, 19 Aug 2008 20:00:46 +1000
-User-Agent: KMail/1.9.5
-Cc: "Keith Packard" <keithp@keithp.com>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Eric Anholt" <eric@anholt.net>, linux-kernel@vger.kernel.org
-References: <1217573919-7496-1-git-send-email-eric@anholt.net> <200808051443.11858.nickpiggin@yahoo.com.au> <21d7e9970808181817n1d67dc33s58b8d07f63e411a7@mail.gmail.com>
-In-Reply-To: <21d7e9970808181817n1d67dc33s58b8d07f63e411a7@mail.gmail.com>
+	Tue, 19 Aug 2008 06:01:29 -0400
+Received: from mail.gmx.net ([213.165.64.20]:52081 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752995AbYHSKB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 06:01:28 -0400
+X-Authenticated: #628067
+X-Provags-ID: V01U2FsdGVkX1/RfQBdzarRfQVQHmRbCahuZz3/0chQUwqHSexKCB
+	WgOqObvDotdJRc
+Message-ID: <48AA99F5.7040200@gmx.net>
+Date: Tue, 19 Aug 2008 12:01:25 +0200
+From: Thomas Volpini <tvolpini@gmx.net>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] scripts/checksyscalls.sh and non-gnu sed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808192000.47070.nickpiggin@yahoo.com.au>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.58
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 August 2008 11:17, Dave Airlie wrote:
-> On Tue, Aug 5, 2008 at 2:43 PM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > On Tuesday 05 August 2008 07:58, Keith Packard wrote:
-> >> On Mon, 2008-08-04 at 19:02 +1000, Nick Piggin wrote:
-> >> > > I suppose we could have user space allocate the shmem file (either
-> >> > > via tmpfs or sysv ipc). tmpfs suffers from the maxfd issue, while
-> >> > > sysv ipc runs up against the SHMMAX value.
-> >> >
-> >> > This is how I'd suggested it work as well. I think a little bit
-> >> > more effort should be spent looking at making this work.
-> >>
-> >> Well, I've spent a day thinking about using existing user-space APIs to
-> >> get at shmem files. While it's nice that we've discovered a
-> >> filesystem-independent mechanism to pin file pages, we haven't found
-> >> anything similar for creating the files. In particular, what I want is:
-> >>
-> >>  1) Anonymous files backed by swap
-> >>  2) Freed when the last process using them exits
-> >>  3) That never appear in the file system
-> >>  4) Do not consume a low FD (yeah, I know, rewrite the desktop)
-> >>
-> >> So, what I could do is
-> >>
-> >>       char    template[] = "/dev/shm/drm-XXXXXX";
-> >>       int     fd;
-> >>       fd = mkstemp (template);
-> >>       unlink (template);
-> >>       ftruncate (fd, size)
-> >>       object = drm_create_an_object_for_a_file (fd);
-> >>       close (fd);
-> >>
-> >> While I haven't written any code yet, this should work and will even be
-> >> compatible with my current user-space API. I have to create a DRM object
-> >> for the file in any case, and so I don't need to hold onto the fd.
-> >> Releasing the fd also eliminates any ulimit issues.
-> >>
-> >> The drm_create_an_object_for_a_file call could return another fd. But,
-> >> note that the original shmem fd has no real value to the application in
-> >> this case.
-> >>
-> >> I can imagine other cases where mapping non-shmem files would make sense
-> >> though, in particular it's fairly easy to envision mapping an image file
-> >> to the GTT and having the graphics process decode and display it without
-> >> any additional copies. I think this demonstrates the potential utility
-> >> of the general file mapping operation.
-> >>
-> >> But, I'd like to have you reconsider whether it makes sense for user
-> >> space to go through the above dance to create anonymous shared objects
-> >> when the kernel already supports precisely the desired semantics and
-> >> even exposes them to the ipc/shm implementation.
-> >
-> > In my opinion, doing this little song and dance (which is a few lines
-> > of quite well defined APIs, btw) in userspace is preferable to adding
-> > a single line or exporting a single function in kernel space. Unless
-> > there is a better reason than eliminating a few lines of userspace code.
->
-> Now I also have to do the same song and dance for in-kernel allocated
-> objects? still think this is acceptable... I'm not even sure what vfs calls
-> I really need in-kernel to do that.
->
-> If someone codes up the in-kernel path to do this using 4-5 API calls
-> instead of one exported
-> function that IPC/SHM already does then maybe we can gauge the uglyness vs
-> that.
+Hello,
 
-Not exactly sure what you mean by this. But I would like to see an effort
-made to use existing userspace APIs in order to do this swappable object
-allocation over tmpfs scheme. As I said, I don't object to a nice kernel
-implementation, but we would be in a much better position to assess it if
-we had an existing userspace implementation to compare it with.
+the following patch makes the checksyscalls script work even on systems 
+where sed is non-gnu.
+
+best regards,
+Thomas
+
+
+
+diff --git a/scripts/checksyscalls.sh b/scripts/checksyscalls.sh
+index 366f8c7..fdfb625 100755
+--- a/scripts/checksyscalls.sh
++++ b/scripts/checksyscalls.sh
+@@ -113,10 +113,10 @@ EOF
+  }
+
+  syscall_list() {
+-sed -n -e '/^\#define/ { s/[^_]*__NR_\([^[:space:]]*\).*/\
++sed -n -e '/^\#define/ s/[^_]*__NR_\([^[:space:]]*\).*/\
+  \#if !defined \(__NR_\1\) \&\& !defined \(__IGNORE_\1\)\
+  \#warning syscall \1 not implemented\
+-\#endif/p }' $1
++\#endif/p' $1
+  }
