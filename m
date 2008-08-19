@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbYHSWlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbYHSWtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754063AbYHSWlQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 18:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbYHSWk5
+	id S1753996AbYHSWtx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 18:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbYHSWto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 18:40:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43018 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751907AbYHSWk4 (ORCPT
+	Tue, 19 Aug 2008 18:49:44 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:58916 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751132AbYHSWtn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 18:40:56 -0400
-Date: Tue, 19 Aug 2008 15:40:35 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-In-Reply-To: <20080819222612.GA16766@2ka.mipt.ru>
-Message-ID: <alpine.LFD.1.10.0808191536100.3324@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0808191411390.3324@nehalem.linux-foundation.org> <20080819.142735.179034162.davem@davemloft.net> <alpine.LFD.1.10.0808191432040.3324@nehalem.linux-foundation.org> <20080819.144015.40311904.davem@davemloft.net>
- <alpine.LFD.1.10.0808191446560.3324@nehalem.linux-foundation.org> <20080819222612.GA16766@2ka.mipt.ru>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 19 Aug 2008 18:49:43 -0400
+Date: Wed, 20 Aug 2008 00:49:31 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Message-ID: <20080819224930.GI21330@tekkaman>
+References: <1219182612-13814-1-git-send-email-giometti@linux.it> <1219182612-13814-2-git-send-email-giometti@linux.it> <1219182612-13814-3-git-send-email-giometti@linux.it> <1219182612-13814-4-git-send-email-giometti@linux.it> <1219182612-13814-5-git-send-email-giometti@linux.it> <1219182612-13814-6-git-send-email-giometti@linux.it> <20080819225322.69f3215d@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080819225322.69f3215d@lxorguk.ukuu.org.uk>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 05/10] ldisc: new dcd_change() method for line
+	disciplines.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 20 Aug 2008, Evgeniy Polyakov wrote:
+On Tue, Aug 19, 2008 at 10:53:22PM +0100, Alan Cox wrote:
+> > + * void (*dcd_change)(struct uart_port *port, unsigned int status,
+> > + * 			struct timespec *ts)
+> > + *
+> > + *	Tells the discipline that the DCD pin has changed its status and
+> > + *	the relative timestamp. Pointer ts can be NULL.
+> >   */
 > 
-> I belive it was you who told that there is no black and white (another 
-> guy told that there is no spoon, I frequntly confuse).
+> uart_port is a specific property of a few random types of interface, pass
+> a tty struct up. Otherwise looks fine. Might one day expand it to a more
+> generic change type and pass info on what changed but thats a future
+> mystery.
 
-Yes.
+How can I get the struct uart_port pointer starting from struct
+tty_struct one? I need it in order to know which is the IRQ line of a
+single port.
 
-> Any changes made no matter when can not be 100% tested in laboratory 
-> environment, even fixes, which look obviously.
+Thanks,
 
-100% agreed.
+Rodolfo
 
-Please note that I'm not against these things slipping in occasionally. 
-The reason I brought this up in the first place really wasn't the loopback 
-driver issue at all. The reason I brought it up was simply the fact that 
-when I compare the size and frequency of changes, the networking pulls 
-tend to be the worst of the lot of the "core" kernel changes.
+-- 
 
-I say "core" kernel changes, because things are usually worse for the 
-outliers. As mentioned, networking is actually one of the _better_ guys if 
-you start comparing to the DVB people, or to some of the architectures 
-that often slip the merge window _entirely_, and *all* their changes come 
-in during -rc2 or something.
-
-So it's not that networking is especially bad on an absolute scale in this 
-regard. And it's not like it doesn't happen all the time for everybody 
-else too. But I think networking has ben a bit more cavalier about things 
-than many other core areas.
-
-So no, I'm not asking for black-and-white absolutes here. But I'm asking 
-for a "tightening of the belts". Please don't let it all hang out, ok?
-
-			Linus
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
