@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbYHSVQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbYHSVQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757476AbYHSVQP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYHSVP5
+	id S1758602AbYHSVQb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756567AbYHSVQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:15:57 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:49900 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751928AbYHSVP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:15:56 -0400
-Date: Wed, 20 Aug 2008 01:15:14 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-Message-ID: <20080819211514.GA28510@2ka.mipt.ru>
-References: <20080819.041706.261399060.davem@davemloft.net> <alpine.LFD.1.10.0808190952000.3324@nehalem.linux-foundation.org> <20080819.131454.223684377.davem@davemloft.net> <alpine.LFD.1.10.0808191341150.3324@nehalem.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0808191341150.3324@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+	Tue, 19 Aug 2008 17:16:14 -0400
+Received: from www17.your-server.de ([213.133.104.17]:37424 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756289AbYHSVQN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 17:16:13 -0400
+Message-ID: <1219180571.48ab381bd85e5@213.133.104.17>
+Date: Tue, 19 Aug 2008 23:16:11 +0200
+From: Thomas Meyer <thomas@m3y3r.de>
+To: linux-kernel@vger.kernel.org
+Subject: Fwd: 2.6.26.3: ACPI: Fix thermal shutdowns
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) 3.2.5
+X-Originating-IP: 79.220.116.228
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 19, 2008 at 01:47:59PM -0700, Linus Torvalds (torvalds@linux-foundation.org) wrote:
-> I really don't see the e1000 and netxen updates as being critical either. 
-> Sure, they look like driver improvement, but "improvement" is not what the 
-> -rc3+ series is about. 
 
-Netxen driver update contains bug fixes (leak and races) and hardware
-workaround. Well, it has driver version bump either, I agress, that
-one was an error. E1000 contains number of regression fixes and
-performance improvement via module parameter change.
+Hi.
 
-> Same goes for all the loopback changes. They look like cleanups or feature 
-> enables.
+This one should go in 2.6.26.3, too:
 
-It fixes performance regression.
+I didn't see it in Greg's list:
 
--- 
-	Evgeniy Polyakov
+ACPI: Fix thermal shutdowns
+
+Do not use unsigned int if there is test for negative number...
+
+See drivers/acpi/processor_perflib.c
+  static unsigned int ignore_ppc = -1;
+...
+  if (event == CPUFREQ_START && ignore_ppc <= 0) {
+       ignore_ppc = 0;
+...
+
+
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9f497bcc695fb828da023d74ad3c966b1e58ad21
+
+Greets
+thomas
+
