@@ -1,233 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbYHSId2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbYHSIc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754959AbYHSId2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 04:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbYHSIdS
+	id S1754764AbYHSIc5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 04:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYHSIcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 04:33:18 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56051 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752222AbYHSIdQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 04:33:16 -0400
-Date: Tue, 19 Aug 2008 17:39:35 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       ryov@valinux.co.jp
-Subject: [PATCH -mm][preview] memcg: a patch series for next [3/9]
-Message-Id: <20080819173935.dedae2b1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080819173721.750d489e.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080819173014.17358c17.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080819173721.750d489e.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 04:32:41 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:52026 "EHLO pmx1.sophos.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753116AbYHSIch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 04:32:37 -0400
+In-Reply-To: <alpine.DEB.1.10.0808180951470.15109@asgard.lang.hm>
+To: david@lang.hm
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@kernel.org>,
+       capibara@xs4all.nl, Casey Schaufler <casey@schaufler-ca.com>,
+       davecb@sun.com, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org, malware-list@lists.printk.net,
+       malware-list-bounces@dmesg.printk.net,
+       Mihai Don??u <mdontu@bitdefender.com>, Peter Dolding <oiaohm@gmail.com>,
+       Pavel Machek <pavel@suse.cz>, rmeijer@xs4all.nl
+Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro to a linux
+ interface for on access scanning
+MIME-Version: 1.0
+X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
+From: tvrtko.ursulin@sophos.com
+Date: Tue, 19 Aug 2008 09:31:37 +0100
+X-MIMETrack: S/MIME Sign by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
+ 26, 2006) at 19/08/2008 09:32:33,
+	Serialize by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
+ 26, 2006) at 19/08/2008 09:32:33,
+	Serialize complete at 19/08/2008 09:32:33,
+	S/MIME Sign failed at 19/08/2008 09:32:33: The cryptographic key was not
+ found,
+	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 19/08/2008 09:31:38,
+	Serialize complete at 19/08/2008 09:31:38
+Content-Type: text/plain; charset="US-ASCII"
+Message-Id: <20080819083240.E5E532FE82F@pmx1.sophos.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+david@lang.hm wrote on 18/08/2008 18:02:57:
 
-Maybe coding style of this patch is not good. (I should use enum..etc.)
-This will be rewritten.
+> On Mon, 18 Aug 2008, tvrtko.ursulin@sophos.com wrote:
+> 
+> > david@lang.hm wrote on 18/08/2008 13:07:47:
+> >
+> >>>> 3. have a kernel mechanism to say "set this namespace tag if this
+> > other
+> >>>> namespace tag is set" (this allows a scanner to set a 'scanning' 
+tag
+> >>> when it
+> >>>> starts and only set the 'blessed' tag if the file was not dirtied
+> >>>> while it was
+> >>>> being scanned. without this there is a race condition that could
+> > cause a
+> >>> file
+> >>>> to be marked as good incorrectly, the initial threat model ruled
+> >>> outworrying
+> >>>> about race conditions, but this seems like a fairly easy one to 
+close
+> >>>
+> >>> I don't think you can use xattrs as some atomic barriers, I suspect
+> > they
+> >>> are suspectible to same race conditions as open-write-read.
+> >>
+> >> this is why it would require kernel support to turn them into atomic
+> >> barriers (and the reason for this item). without kernel support there 
+is
+> > a
+> >> race (it's debatable if that race i significant enough to require the
+> >> implementation of kernel support to close it, but that's why I listed
+> >> this)
+> >
+> > Maybe not since there are races with database updates anyway. What 
+would
+> > be necessary is a method of clearing the whole xattr namespace on 
+fresh
+> > mount to avoid trusting stale data. That I so far don't see how it can 
+be
+> > done from userspace safely.
+> 
+> you don't need to clear the xattr space, you can get the same effect by 
+> having scanners that care increment their generation ID.
 
-This patch adds function to modify page_cgroup->flags with using
-set_bit/clear_bit/test_bit.
+Not the most efficient way since generation ID is global while we are 
+talking about a single mount/filesystem. So incrementing the generation ID 
+causes all filsystems to be rescanned. Also you need additional hooking in 
+mount, plus you have a race condition unless you block in mount while you 
+do your stuff. And you need to take care about deadlocks.
+ 
+> but this would require some way for them to learn of mounts.
+> 
+> > Also problem with read-only mounts comes to mind. Ups, yes, this is a 
+big
+> > problem with this scheme in general. We cannot trust xattr namespace 
+when
+> > we mount something fresh because it has been potentialy mounted on a
+> > different system, but if it gets mounted read-only we cannot purge 
+that
+> > data and we cannot store our scan results. Only option is not to do 
+any
+> > scanning.
+> >
+> > This may not be a common usage scenario so it may not be a problem 
+though.
+> 
+> this is also a policy question, you may _want_ to trust the scanning 
+done 
+> by a different machine, so it's not always the case that you need to 
+> invalidate the scan results when mounting things.
 
-set/clear/test_bit is an usual way to manipulate flags an will reduce
-ugly if sentenses. "atomic" set_bit may increase overhead but will
-allow us looser control of this flags. (flag modification without locks!)
-Of course, we don't have to use "atomic" ops where we can convice there
-is no race.
+Without additional filesystem/VFS support you won't be able to tell if 
+wherever the filesystem was previously mounted had any scanning done. It 
+may have been mounted on a kernel which does not support the whole scheme 
+so it didn't clear the namespace for modified files.
+ 
+> >> I don't think this tool should require the use of other tools to 
+exempt
+> >> programs from it, and going that way lies madness (there are too many
+> >> combinations of different tools, trying to define all of the possible
+> >> interactions can't work, and saying that you must use SELinux with 
+this
+> >> and not any of the other options is going to be a sure way to get a 
+lot
+> > of
+> >> people to not use your tools)
+> >
+> > Then there is still a question of who allows some binary to declare 
+itself
+> > exempt. If that decision was a mistake, or it gets compromised 
+security
+> > will be off. A very powerful mechanism which must not be easily
+> > accessible.  With a good cache your worries go away even without a 
+scheme
+> > like this.
+> 
+> I disagree. I think the number of binaries on the system that don't need 
 
-This is a base patch for adding new flags.
-(FLAG names are a bit modified....they are too long for 80 columns.)
+> the scanning is surprisingly large, many programs just treat files they 
+> access as blobs of data and don't try to interpret them. it's only when 
+> the file is interpreted or handed to another system that it needs to be 
+> scanned.
 
+In a way this is a slighlty different way of moving protection from core 
+to the border which means you must enumerate all possible entry/exit 
+points and you must not get it wrong.
+ 
+> >>> I think you overcomplicated it both in design and in presentation of
+> > this
+> >>> text. I was not able to follow and absorb all your postings so I am
+> > not
+> >>> sure what apart from single cache point and non-persistent cache you
+> >>> dislike in Eric's proposal?
+> >>
+> >> single cache point, non-persistant cache, inablility to support 
+scanners
+> >
+> >> that don't involve enforcement, inability to do preemptive scanning 
+of
+> >> changes, inability to have user policy define what priority to put on
+> >> checks, lack of thought of any use other then anti-virus functions.
+> >
+> > So you do have a whole new set of requirements which if agreed on 
+someone
+> > will need to implement.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+You skipped this bit where I almost asked you if you are willing to get 
+your hands dirty with implementing all this? :)
 
+> >> yes this is more complicated than a single bit in memory as the flag,
+> > but
+> >> it's also far more flexible.
+> >
+> > True. It would be nice though if we could think of a solution which 
+would
+> > not have a in-kernel tag parser. I am mostly worried about performance
+> > because tags would have to be checked on every open/read/whetever and
+> > compared against the policy set from userspace. If I understand 
+correctly
+> > how you imagined it. Or if you wanted to go to userspace for all these
+> > decisions then add even more cost for context switching. In later case 
+you
+> > would also have some kenrel code dealing with cleaning xattr tags 
+which
+> > would not be mentioned anywhere else in the kernel and that sounds a 
+bit
+> > like black magic.
+> 
+> I don't have an in-kernel tag parser. I have a in-kernel tag clearer, 
+but 
+> the tag parser is in the userspace library. this also avoids all the 
+> context switches that worry you as well.
 
+How is that? Context switches which worry me are the ones which happen 
+when for each access to a file we need to go to userspace just to see if 
+it has already been scanned. That is why I was more in favour completely 
+of in-kernel caching scheme.
+ 
+> >>>> are any of the features I list impossible to implement?
+> >>>
+> >>> Serialisation and race condition avoidance using extended attributes 
+I
+> >>> think.
+> >>
+> >> why could the kernel not have a command that locked the inode for the
+> >> read, check, write cycle of changing extended attributes? I agree 
+(and
+> >> document) that without such support there is a race condition.
+> >
+> > We could but I agree that we probably don't need to. Having this would 
+be
+> > very bad for performance.
+> 
+> why would this be bad for performance? the atomic version would be a 
+> different function that would only be used when marking a file clean, 
+and 
+> as this locking would only be contended if multiple scanners needed to 
+> mark a file clean at the same instance, it will be a very 
+low-contention, 
+> low-use lock.
 
----
- mm/memcontrol.c |   82 +++++++++++++++++++++++++++++++++++++-------------------
- 1 file changed, 55 insertions(+), 27 deletions(-)
+Maybe you would need to lock when checking if file is clean to avoid 
+races? Don't know, I didn't give this that much thought.
 
-Index: linux-2.6.27-rc1-mm1/mm/memcontrol.c
-===================================================================
---- linux-2.6.27-rc1-mm1.orig/mm/memcontrol.c
-+++ linux-2.6.27-rc1-mm1/mm/memcontrol.c
-@@ -166,12 +166,35 @@ struct page_cgroup {
- 	struct list_head lru;		/* per cgroup LRU list */
- 	struct page *page;
- 	struct mem_cgroup *mem_cgroup;
--	int flags;
-+	unsigned long flags;
- };
--#define PAGE_CGROUP_FLAG_CACHE	   (0x1)	/* charged as cache */
--#define PAGE_CGROUP_FLAG_ACTIVE    (0x2)	/* page is active in this cgroup */
--#define PAGE_CGROUP_FLAG_FILE	   (0x4)	/* page is file system backed */
--#define PAGE_CGROUP_FLAG_UNEVICTABLE (0x8)	/* page is unevictableable */
-+
-+/* These 2 flags are unchanged during being used. */
-+#define PAGE_CG_FLAG_CACHE	   (0)   /* charged as cache */
-+#define PAGE_CG_FLAG_FILE	   (1)   /* page is file system backed */
-+#define PAGE_CG_FLAG_ACTIVE    	   (2)       /* page is active in this cgroup */
-+#define PAGE_CG_FLAG_UNEVICTABLE   (3)     /* page is unevictableable */
-+
-+static inline void page_cgroup_set_bit(struct page_cgroup *pc, int flag)
-+{
-+	set_bit(flag, &pc->flags);
-+}
-+
-+static inline void __page_cgroup_set_bit(struct page_cgroup *pc, int flag)
-+{
-+	set_bit(flag, &pc->flags);
-+	__set_bit(flag, &pc->flags);
-+}
-+
-+static inline void page_cgroup_clear_bit(struct page_cgroup *pc, int flag)
-+{
-+	clear_bit(flag, &pc->flags);
-+}
-+
-+static inline int page_cgroup_test_bit(struct page_cgroup *pc, int flag)
-+{
-+	return test_bit(flag, &pc->flags);
-+}
+--
+Tvrtko A. Ursulin
+Senior Software Engineer, Sophos
+
+"Views and opinions expressed in this email are strictly those of the 
+author.
+ The contents has not been reviewed or approved by Sophos."
  
- static int page_cgroup_nid(struct page_cgroup *pc)
- {
-@@ -201,6 +224,9 @@ enum {
- 
- /*
-  * Always modified under lru lock. Then, not necessary to preempt_disable()
-+ * "flags" passed to this function is a copy of pc->flags but flags checked
-+ * in this function is permanent flags....means never being changed once
-+ * being set. So, this is sage.
-  */
- static void mem_cgroup_charge_statistics(struct mem_cgroup *mem, int flags,
- 					bool charge)
-@@ -209,7 +235,7 @@ static void mem_cgroup_charge_statistics
- 	struct mem_cgroup_stat *stat = &mem->stat;
- 
- 	VM_BUG_ON(!irqs_disabled());
--	if (flags & PAGE_CGROUP_FLAG_CACHE)
-+	if (flags & (1 << PAGE_CG_FLAG_CACHE))
- 		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_CACHE, val);
- 	else
- 		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_RSS, val);
-@@ -370,12 +396,12 @@ static void __mem_cgroup_remove_list(str
- {
- 	int lru = LRU_BASE;
- 
--	if (pc->flags & PAGE_CGROUP_FLAG_UNEVICTABLE)
-+	if (page_cgroup_test_bit(pc, PAGE_CG_FLAG_UNEVICTABLE))
- 		lru = LRU_UNEVICTABLE;
- 	else {
--		if (pc->flags & PAGE_CGROUP_FLAG_ACTIVE)
-+		if (page_cgroup_test_bit(pc, PAGE_CG_FLAG_ACTIVE))
- 			lru += LRU_ACTIVE;
--		if (pc->flags & PAGE_CGROUP_FLAG_FILE)
-+		if (page_cgroup_test_bit(pc, PAGE_CG_FLAG_FILE))
- 			lru += LRU_FILE;
- 	}
- 
-@@ -390,12 +416,12 @@ static void __mem_cgroup_add_list(struct
- {
- 	int lru = LRU_BASE;
- 
--	if (pc->flags & PAGE_CGROUP_FLAG_UNEVICTABLE)
-+	if (page_cgroup_test_bit(pc, PAGE_CG_FLAG_UNEVICTABLE))
- 		lru = LRU_UNEVICTABLE;
- 	else {
--		if (pc->flags & PAGE_CGROUP_FLAG_ACTIVE)
-+		if (page_cgroup_test_bit(pc, PAGE_CG_FLAG_ACTIVE))
- 			lru += LRU_ACTIVE;
--		if (pc->flags & PAGE_CGROUP_FLAG_FILE)
-+		if (page_cgroup_test_bit(pc, PAGE_CG_FLAG_FILE))
- 			lru += LRU_FILE;
- 	}
- 
-@@ -408,9 +434,9 @@ static void __mem_cgroup_add_list(struct
- static void __mem_cgroup_move_lists(struct page_cgroup *pc, enum lru_list lru)
- {
- 	struct mem_cgroup_per_zone *mz = page_cgroup_zoneinfo(pc);
--	int active    = pc->flags & PAGE_CGROUP_FLAG_ACTIVE;
--	int file      = pc->flags & PAGE_CGROUP_FLAG_FILE;
--	int unevictable = pc->flags & PAGE_CGROUP_FLAG_UNEVICTABLE;
-+	int active    = page_cgroup_test_bit(pc, PAGE_CG_FLAG_ACTIVE);
-+	int file      = page_cgroup_test_bit(pc, PAGE_CG_FLAG_FILE);
-+	int unevictable = page_cgroup_test_bit(pc, PAGE_CG_FLAG_UNEVICTABLE);
- 	enum lru_list from = unevictable ? LRU_UNEVICTABLE :
- 				(LRU_FILE * !!file + !!active);
- 
-@@ -420,14 +446,15 @@ static void __mem_cgroup_move_lists(stru
- 	MEM_CGROUP_ZSTAT(mz, from) -= 1;
- 
- 	if (is_unevictable_lru(lru)) {
--		pc->flags &= ~PAGE_CGROUP_FLAG_ACTIVE;
--		pc->flags |= PAGE_CGROUP_FLAG_UNEVICTABLE;
-+		page_cgroup_clear_bit(pc, PAGE_CG_FLAG_ACTIVE);
-+		page_cgroup_set_bit(pc, PAGE_CG_FLAG_UNEVICTABLE);
- 	} else {
- 		if (is_active_lru(lru))
--			pc->flags |= PAGE_CGROUP_FLAG_ACTIVE;
--		else
--			pc->flags &= ~PAGE_CGROUP_FLAG_ACTIVE;
--		pc->flags &= ~PAGE_CGROUP_FLAG_UNEVICTABLE;
-+			page_cgroup_set_bit(pc, PAGE_CG_FLAG_ACTIVE);
-+		else if (active)
-+			page_cgroup_clear_bit(pc, PAGE_CG_FLAG_ACTIVE);
-+		if (unevictable)
-+			page_cgroup_clear_bit(pc, PAGE_CG_FLAG_UNEVICTABLE);
- 	}
- 
- 	MEM_CGROUP_ZSTAT(mz, lru) += 1;
-@@ -655,18 +682,19 @@ static int mem_cgroup_charge_common(stru
- 
- 	pc->mem_cgroup = mem;
- 	pc->page = page;
-+	pc->flags = 0;
- 	/*
- 	 * If a page is accounted as a page cache, insert to inactive list.
- 	 * If anon, insert to active list.
- 	 */
- 	if (ctype == MEM_CGROUP_CHARGE_TYPE_CACHE) {
--		pc->flags = PAGE_CGROUP_FLAG_CACHE;
-+		__page_cgroup_set_bit(pc, PAGE_CG_FLAG_CACHE);
- 		if (page_is_file_cache(page))
--			pc->flags |= PAGE_CGROUP_FLAG_FILE;
-+			__page_cgroup_set_bit(pc, PAGE_CG_FLAG_FILE);
- 		else
--			pc->flags |= PAGE_CGROUP_FLAG_ACTIVE;
-+			__page_cgroup_set_bit(pc, PAGE_CG_FLAG_ACTIVE);
- 	} else
--		pc->flags = PAGE_CGROUP_FLAG_ACTIVE;
-+		__page_cgroup_set_bit(pc, PAGE_CG_FLAG_ACTIVE);
- 
- 	lock_page_cgroup(page);
- 	if (unlikely(page_get_page_cgroup(page))) {
-@@ -774,7 +802,7 @@ __mem_cgroup_uncharge_common(struct page
- 	VM_BUG_ON(pc->page != page);
- 
- 	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
--	    && ((pc->flags & PAGE_CGROUP_FLAG_CACHE)
-+	    && (page_cgroup_test_bit(pc, PAGE_CG_FLAG_CACHE)
- 		|| page_mapped(page)))
- 		goto unlock;
- 
-@@ -826,7 +854,7 @@ int mem_cgroup_prepare_migration(struct 
- 	if (pc) {
- 		mem = pc->mem_cgroup;
- 		css_get(&mem->css);
--		if (pc->flags & PAGE_CGROUP_FLAG_CACHE)
-+		if (page_cgroup_test_bit(pc, PAGE_CG_FLAG_CACHE))
- 			ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
- 	}
- 	unlock_page_cgroup(page);
+
+Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
+OX14 3YP, United Kingdom.
+
+Company Reg No 2096520. VAT Reg No GB 348 3873 20.
 
