@@ -1,49 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756440AbYHSBDH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbYHSBKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756440AbYHSBDH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 21:03:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbYHSBCv
+	id S1755491AbYHSBKk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 21:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbYHSBKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 21:02:51 -0400
-Received: from mga09.intel.com ([134.134.136.24]:24561 "EHLO mga09.intel.com"
+	Mon, 18 Aug 2008 21:10:32 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:53795 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751475AbYHSBCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 21:02:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,231,1217833200"; 
-   d="scan'208";a="430254085"
-Subject: Re: tbench regression on each kernel release from 2.6.22 -> 2.6.28
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <48A98228.9090006@linux-foundation.org>
-References: <48A086B6.2000901@linux-foundation.org>
-	 <20080811.141501.01468546.davem@davemloft.net>
-	 <Pine.LNX.4.64.0808121058550.4551@wrl-59.cs.helsinki.fi>
-	 <1219025114.25933.6.camel@ymzhang>  <48A98228.9090006@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 19 Aug 2008 09:01:46 +0800
-Message-Id: <1219107706.8781.6.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+	id S1751049AbYHSBKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 21:10:31 -0400
+Message-ID: <48AA1D5E.5050405@us.ibm.com>
+Date: Mon, 18 Aug 2008 20:09:50 -0500
+From: Anthony Liguori <aliguori@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Avi Kivity <avi@qumranet.com>,
+       virtualization@lists.linux-foundation.org,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH] virtio_balloon: fix towards_target when deflating balloon
+References: <1219097731-1224-1-git-send-email-aliguori@us.ibm.com> <alpine.LFD.1.10.0808181740500.3324@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0808181740500.3324@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds wrote:
+> What's wrong with just doing
+>
+> 	return (s64)v - vb->num_pages;
+>
+> instead?
+>   
 
-On Mon, 2008-08-18 at 09:07 -0500, Christoph Lameter wrote:
-> Zhang, Yanmin wrote:
-> 
-> > Other regressions on other machines are similar.
-> 
-> There are AIM7 regressions that are similar to tbench.
-> 
-> 2.6.22	28436
-> 2.6.26	23064
+Nothing.  It works just fine.  However, I implemented it more verbosely 
+because this is the second time we've "fixed" this problem.  See
 
-Mostly, AIM7 has about 4~5% regression on my machines. As AIM7 result is stable,
-so 4% is big. 
+commit bdc1681cdf1ab6a65fa935a2b3f8fc63b20c54ea
+Author: Rusty Russell <rusty@rustcorp.com.au>
+Date:   Mon Mar 17 22:58:15 2008 -0500
+
+    virtio: handle > 2 billion page balloon targets
+
+So I thought I'd rely a little less on the subtleties of promotion and 
+make things a bit more clear.  However, I don't feel that strongly about 
+it so here you go.
+
+
+Both v and vb->num_pages are u32 and unsigned int respectively.  If v is 
+less
+than vb->num_pages (and it is, when deflating the balloon), the result is a
+very large 32-bit number.  Since we're returning a s64, instead of 
+getting the
+small negative number we desire, we get a very large positive number.
+
+This patch explicitly casts v to a s64 in which will cause the whole 
+expression
+to be promoted resulting in the proper results.
+
+Rusty: please push this for 2.6.27-rc4.  It's probably appropriate for the
+stable tree too as it will cause an unexpected OOM when ballooning.
+
+Signed-off-by: Anthony Liguori <aliguori@us.ibm.com>
+
+diff --git a/drivers/virtio/virtio_balloon.c 
+b/drivers/virtio/virtio_balloon.c
+index bfef604..62eab43 100644
+--- a/drivers/virtio/virtio_balloon.c
++++ b/drivers/virtio/virtio_balloon.c
+@@ -158,7 +158,7 @@ static inline s64 towards_target(struct 
+virtio_balloon *vb)
+     vb->vdev->config->get(vb->vdev,
+                   offsetof(struct virtio_balloon_config, num_pages),
+                   &v, sizeof(v));
+-    return v - vb->num_pages;
++    return (s64)v - vb->num_pages;
+ }
+ 
+ static void update_balloon_size(struct virtio_balloon *vb)
 
