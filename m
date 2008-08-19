@@ -1,138 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbYHSUjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759045AbYHSUkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758873AbYHSUjU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 16:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753919AbYHSUjM
+	id S1759045AbYHSUkM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 16:40:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbYHSUj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 16:39:12 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:56739 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752888AbYHSUjK (ORCPT
+	Tue, 19 Aug 2008 16:39:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53843 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753478AbYHSUjz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 16:39:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YXPhI7z+T6InqEl80O5t2XwzJ6altzSNvR6wzOVJ9SICAuySJMcWIFuP2kPUHpYrML
-         KitPiJ/Q/IFqklCmgJhoBZR2vdMoS3R2q4xlk/R6plFfv9GyWkLgRde/dD2N0FGuxXW9
-         FjiCPOe6a31VDik0pKUhCe0+BPuK71k6ucBvg=
-Message-ID: <9e4733910808191339s28a05f90pef57961e8d24fbdb@mail.gmail.com>
-Date: Tue, 19 Aug 2008 16:39:09 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Anton Vorontsov" <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 1/2] rtc: rtc-ds1374: fix 'no irq' case handling
-Cc: "Alessandro Zummo" <a.zummo@towertech.it>,
-       "Andrew Morton" <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
-In-Reply-To: <20080812161733.GA32164@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 19 Aug 2008 16:39:55 -0400
+Date: Tue, 19 Aug 2008 13:37:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: jgarzik@redhat.com, davem@davemloft.net, yhlu.kernel@gmail.com,
+       mingo@elte.hu, ebiederm@xmission.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jbarnes@virtuousgeek.org, simon@fire.lp0.eu
+Subject: Re: [PATCH] forcedeth: Fix kexec regression
+Message-Id: <20080819133757.ce60f364.akpm@linux-foundation.org>
+In-Reply-To: <200808192045.54779.rjw@sisk.pl>
+References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com>
+	<200808190008.54743.rjw@sisk.pl>
+	<86802c440808181536j2c214cc3k47e73fd147b4fee1@mail.gmail.com>
+	<200808192045.54779.rjw@sisk.pl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080812161733.GA32164@oksana.dev.rtsoft.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/12/08, Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> On a PowerPC board with ds1374 RTC I'm getting this error while
->  RTC tries to probe:
->
->  rtc-ds1374 0-0068: unable to request IRQ
->
->  This happens because I2C probing code (drivers/of/of_i2c.c) is
->  specifying IRQ0 for 'no irq' case, which is correct.
+On Tue, 19 Aug 2008 20:45:53 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Shouldn't this be
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> forcedeth: Fix kexec regression
+> 
+> Fix regression tracked as
+> http://bugzilla.kernel.org/show_bug.cgi?id=11361 and
+> caused by commit f735a2a1a4f2a0f5cd823ce323e82675990469e2
+> ("[netdrvr] forcedeth: setup wake-on-lan before shutting down")
+> that makes network adapters integrated into the NVidia
+> MCP55 chipsets fail to work in kexeced kernels.  The problem appears
+> to be that if the adapter is put into D3_hot during ->shutdown(),
+> it cannot be brought back into D0 after kexec (ref.
+> http://marc.info/?l=linux-kernel&m=121900062814967&w=4).  Therefore,
+> only put forcedeth into D3 during ->shutdown() if the system is to be
+> powered off.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Tested-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> ---
+>  drivers/net/forcedeth.c |    8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6/drivers/net/forcedeth.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/net/forcedeth.c
+> +++ linux-2.6/drivers/net/forcedeth.c
+> @@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
+>  	if (netif_running(dev))
+>  		nv_close(dev);
+>  
+> -	pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+> -	pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+>  	pci_disable_device(pdev);
+> -	pci_set_power_state(pdev, PCI_D3hot);
+> +	if (system_state == SYSTEM_POWER_OFF) {
+> +		if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
+> +			pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+> +		pci_set_power_state(pdev, PCI_D3hot);
+> +	}
+>  }
+>  #else
+>  #define nv_suspend NULL
 
->  -       if (client->irq <= NO_IRQ)
-
-instead of
-
->  -       if (client->irq < 0)
->  +       if (client->irq <= 0)
-
-Since NO_IRQ can vary by platform (0 or -1)? Work is underway to get
-everyone onto NO_IRQ=0 but I don't know if it is finished yet. It is
-much cleaner to use the NO_IRQ define.
-
-In of_i2c.c shouldn't there be an error check?
-
-		info.irq = irq_of_parse_and_map(node, 0);
-
-if (info.irq < NO_IRQ) {report error; continue }
-
-
->
->  The driver handles this incorrectly, though. This patch fixes it.
->
->  Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->  ---
->   drivers/rtc/rtc-ds1374.c |   10 +++++-----
->   1 files changed, 5 insertions(+), 5 deletions(-)
->
->  diff --git a/drivers/rtc/rtc-ds1374.c b/drivers/rtc/rtc-ds1374.c
->  index 640acd2..a150418 100644
->  --- a/drivers/rtc/rtc-ds1374.c
->  +++ b/drivers/rtc/rtc-ds1374.c
->  @@ -173,7 +173,7 @@ static int ds1374_read_alarm(struct device *dev, struct rtc_wkalrm *alarm)
->         int cr, sr;
->         int ret = 0;
->
->  -       if (client->irq < 0)
->  +       if (client->irq <= 0)
->                 return -EINVAL;
->
->         mutex_lock(&ds1374->mutex);
->  @@ -212,7 +212,7 @@ static int ds1374_set_alarm(struct device *dev, struct rtc_wkalrm *alarm)
->         int cr;
->         int ret = 0;
->
->  -       if (client->irq < 0)
->  +       if (client->irq <= 0)
->                 return -EINVAL;
->
->         ret = ds1374_read_time(dev, &now);
->  @@ -381,7 +381,7 @@ static int ds1374_probe(struct i2c_client *client,
->         if (ret)
->                 goto out_free;
->
->  -       if (client->irq >= 0) {
->  +       if (client->irq > 0) {
->                 ret = request_irq(client->irq, ds1374_irq, 0,
->                                   "ds1374", client);
->                 if (ret) {
->  @@ -401,7 +401,7 @@ static int ds1374_probe(struct i2c_client *client,
->         return 0;
->
->   out_irq:
->  -       if (client->irq >= 0)
->  +       if (client->irq > 0)
->                 free_irq(client->irq, client);
->
->   out_free:
->  @@ -414,7 +414,7 @@ static int __devexit ds1374_remove(struct i2c_client *client)
->   {
->         struct ds1374 *ds1374 = i2c_get_clientdata(client);
->
->  -       if (client->irq >= 0) {
->  +       if (client->irq > 0) {
->                 mutex_lock(&ds1374->mutex);
->                 ds1374->exiting = 1;
->                 mutex_unlock(&ds1374->mutex);
->
-> --
->  1.5.6.3
->
->  _______________________________________________
->  Linuxppc-dev mailing list
->  Linuxppc-dev@ozlabs.org
->  https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+hm, I wonder if this has any relation to
+forcedeth-add-pci_enable_device-to-nv_resume.patch:
 
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+From: Simon Arlott <simon@fire.lp0.eu>
+
+My NIC stops working after resuming from standby, it's not receiving any
+interrupts.
+
+Commit 25d90810ff49d2a63475776f24c74c6bb49b045f ([netdrvr] forcedeth:
+reorder suspend/resume code) introduces pci_disable_device to nv_suspend,
+but there's no corresponding pci_enable_device in nv_resume - so I added
+one (copied from e1000).  This results in interrupts being re-enabled
+after suspend.
+
+However, the NIC (10de:0373) still doesn't work after resume.
+
+Cc: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Cc: Jeff Garzik <jgarzik@redhat.com>
+Cc: Ayaz Abdulla <aabdulla@nvidia.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/net/forcedeth.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff -puN drivers/net/forcedeth.c~forcedeth-add-pci_enable_device-to-nv_resume drivers/net/forcedeth.c
+--- a/drivers/net/forcedeth.c~forcedeth-add-pci_enable_device-to-nv_resume
++++ a/drivers/net/forcedeth.c
+@@ -5960,6 +5960,13 @@ static int nv_resume(struct pci_dev *pde
+ 
+ 	pci_set_power_state(pdev, PCI_D0);
+ 	pci_restore_state(pdev);
++	rc = pci_enable_device(pdev);
++	if (rc) {
++		printk(KERN_ERR "forcedeth: Cannot enable PCI device from suspend\n");
++		return rc;
++	}
++	pci_set_master(pdev);
++
+ 	/* ack any pending wake events, disable PME */
+ 	pci_enable_wake(pdev, PCI_D0, 0);
+ 
+_
+
+
