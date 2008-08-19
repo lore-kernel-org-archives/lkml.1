@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbYHSFqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbYHSGBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754631AbYHSFqy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 01:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbYHSFqq
+	id S1754140AbYHSGBZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 02:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbYHSGBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 01:46:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42067 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752098AbYHSFqp (ORCPT
+	Tue, 19 Aug 2008 02:01:16 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42370 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750924AbYHSGBQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 01:46:45 -0400
-Date: Mon, 18 Aug 2008 22:46:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Huang Ying <ying.huang@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATH -mm] Fix a race condtion of oops_in_progress
-Message-Id: <20080818224643.865da7a3.akpm@linux-foundation.org>
-In-Reply-To: <1219124280.5663.88.camel@yhuang-dev.sh.intel.com>
-References: <1219025007.5663.22.camel@yhuang-dev.sh.intel.com>
-	<20080818210657.c7f3cd87.akpm@linux-foundation.org>
-	<1219124280.5663.88.camel@yhuang-dev.sh.intel.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 02:01:16 -0400
+Date: Tue, 19 Aug 2008 09:01:14 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: wim@iguana.be
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] watchdog/at91: fix misleading indentation
+Message-ID: <Pine.LNX.4.64.0808190859320.4551@wrl-59.cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1486158005-1219125674=:4551"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Aug 2008 13:38:00 +0800 Huang Ying <ying.huang@intel.com> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> On Mon, 2008-08-18 at 21:06 -0700, Andrew Morton wrote:
-> > On Mon, 18 Aug 2008 10:03:27 +0800 Huang Ying <ying.huang@intel.com> wrote:
-> > 
-> > > This patch fix a race condition of oops_in_progress. Which may be
-> > > changed on multiple CPU simultaneously, but it is changed via
-> > > non-atomic operation ++/--. This patch changes the definition of
-> > > oops_in_process from int to atomic_t, and accessing method to atomic
-> > > operations.
-> > 
-> > 
-> > > extern atomic_t oops_in_progress;
-> > 
-> > In file included from include/asm/system.h:10,
-> >                  from include/asm/processor.h:17,
-> >                  from include/asm/atomic_32.h:5,
-> >                  from include/asm/atomic.h:2,
-> >                  from include/linux/crypto.h:20,
-> >                  from arch/x86/kernel/asm-offsets_32.c:7,
-> >                  from arch/x86/kernel/asm-offsets.c:2:
-> > include/linux/kernel.h:236: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'oops_in_progress'
-> > make[1]: *** [arch/x86/kernel/asm-offsets.s] Error 1
-> > make: *** [prepare0] Error 2
-> > 
-> > we can't inlude asm/atomic.h from linux/kernel.h because asm/atomic.h
-> > includes linux/kernel.h via the above route.
-> > 
-> > And we cannot forward-declare atomic_t by hand because it's a typedef.
-> > 
-> > Not sure what to do, really.  Find a different header file in which to
-> > declare oops_in_progress?
-> 
-> It seems that asm/atomic.h is used for both atomic_t declaration and
-> implementation, how about separate them? That it, add a new file
-> asm/atomic_def.h, put typedef there, and include asm/atomic_def.h in
-> kernel.h?
+---696208474-1486158005-1219125674=:4551
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-yup, that sounds sensible.
 
-Of course, it may be the case that we no longer need to include
-kernel.h from within asm-x86/system.h.  But that's the sort of thing
-which once done is awfully hard to undo.
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+---
+ drivers/watchdog/at91rm9200_wdt.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/watchdog/at91rm9200_wdt.c b/drivers/watchdog/at91rm9200_wdt.c
+index d061f0a..993e5f5 100644
+--- a/drivers/watchdog/at91rm9200_wdt.c
++++ b/drivers/watchdog/at91rm9200_wdt.c
+@@ -241,7 +241,7 @@ static int at91wdt_resume(struct platform_device *pdev)
+ {
+ 	if (at91wdt_busy)
+ 		at91_wdt_start();
+-		return 0;
++	return 0;
+ }
+ 
+ #else
+-- 
+1.5.2.2
+
+---696208474-1486158005-1219125674=:4551--
