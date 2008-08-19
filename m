@@ -1,49 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759588AbYHSVdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758004AbYHSVgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759588AbYHSVdW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 17:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757863AbYHSVdJ
+	id S1758004AbYHSVgP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 17:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbYHSVf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 17:33:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36047 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755302AbYHSVdI (ORCPT
+	Tue, 19 Aug 2008 17:35:57 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53832
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753087AbYHSVf4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 17:33:08 -0400
-Date: Tue, 19 Aug 2008 14:33:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
+	Tue, 19 Aug 2008 17:35:56 -0400
+Date: Tue, 19 Aug 2008 14:35:56 -0700 (PDT)
+Message-Id: <20080819.143556.245692295.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: rjw@sisk.pl, akpm@linux-foundation.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
 Subject: Re: [GIT]: Networking
-In-Reply-To: <20080819.142735.179034162.davem@davemloft.net>
-Message-ID: <alpine.LFD.1.10.0808191432040.3324@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0808191341150.3324@nehalem.linux-foundation.org> <20080819.140458.236030589.davem@davemloft.net> <alpine.LFD.1.10.0808191411390.3324@nehalem.linux-foundation.org> <20080819.142735.179034162.davem@davemloft.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.1.10.0808191425050.3324@nehalem.linux-foundation.org>
+References: <20080819.140458.236030589.davem@davemloft.net>
+	<200808192315.48718.rjw@sisk.pl>
+	<alpine.LFD.1.10.0808191425050.3324@nehalem.linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 19 Aug 2008 14:28:49 -0700 (PDT)
 
-
-On Tue, 19 Aug 2008, David Miller wrote:
+> Yeah, and the real cause was apparently another commit that *ALSO* 
+> happened after the merge window!
 > 
-> Check the regression list entry you were pointed to in another
-> reply.
+> Guys, you're making excuses for the problem.
+> 
+> The problem that triggered this bugus loopback change was commit 
+> e5a4a72d4f88f4389e9340d383ca67031d1b8536. Look at when that one was done. 
+> 
+> This is my whole _point_. The networking layer is doing development during 
+> the -rc window. And you guys are making excuses for it. Wake up, guys!
 
-I did. You apparently didn't do that yourself.
+That change was made under the pretext that it was tested heavily and
+that if we hit any problem whatsoever with it that we couldn't fix
+quickly it would be reverted.
 
-> We enabled GSO segmentation offload [ .. ]
+If you look at the pull request I sent you that contained that change,
+I pointed this change out as "highlight" and explained the situation,
+in detail.  Here it is:
 
-yeah. And look at when that happened.
+	4) Lennert Buytenhek did some really nice analysis on a network
+	   device that cannot do TSO offloading in hardware.  He checked
+	   out what happens if you enable the software TSO mechanism fallback
+	   we have in the kernel, and it improves CPU utilization tremendously.
 
-Dammit, all I ask is that you 
+	   It is safe to do this as long as the device in question can
+	   support scatter-gather.
 
- - admit that you have a problem
- - work on fixing it.
+	   Herbert and I are discussing a way to do this even more efficiently
+	   with some help from the device (currently the code has to allocate
+	   extra sk_buff objects as we split up the TSO frame, and then do
+	   a bunch of extra page ref counting, when all we need is some headers
+	   and some way to say where the data portion split points are).
 
-Stop the incessant excuses already.
+	   If this causes any problems whatsoever, it's trivial to revert this.
 
-		Linus
+Did you read it?  I write those for you specifically, so that you know
+what changes in there are "of note" and you may want to be aware of.
+
+But anyways, let's chalk this one up as inappropriate.
+
+Looking through the rest of the networking changes in this
+pull I see real bug fixes in all of the netxen and e1000
+changes that seemed to stand out.  All of the wireless stuff
+looks like real bug fixes for things reported by real users.
+
+And then there are 2 or 3 cleanups that probably could have
+waited.
+
+And then there is the Bluetooth SCO change which I agree was
+borderline and I should have pushed back on.
+
+There are simply a lot of people fixing a lot of bugs.  And I have to
+stay on top of it all.  And I also have to be able to trust John
+Linville, Jeff Garzik, Marcel, and others so that I don't have to be
+checking up on them every single time.  I look at what they send me,
+and I do push back when I see obviously bogus stuff, but there is a
+trust breakpoint.
