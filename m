@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbYHSAnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbYHSAqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756101AbYHSAnV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 20:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754013AbYHSAnN
+	id S1755846AbYHSAqP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 20:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbYHSAp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 20:43:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51941 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752314AbYHSAnM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 20:43:12 -0400
-Date: Mon, 18 Aug 2008 17:42:55 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Anthony Liguori <aliguori@us.ibm.com>
-cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Avi Kivity <avi@qumranet.com>,
-       virtualization@lists.linux-foundation.org,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] virtio_balloon: fix towards_target when deflating
- balloon
-In-Reply-To: <1219097731-1224-1-git-send-email-aliguori@us.ibm.com>
-Message-ID: <alpine.LFD.1.10.0808181740500.3324@nehalem.linux-foundation.org>
-References: <1219097731-1224-1-git-send-email-aliguori@us.ibm.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 18 Aug 2008 20:45:59 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34231 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753700AbYHSAp6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 20:45:58 -0400
+Date: Tue, 19 Aug 2008 02:45:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 0 of 9] x86/smp function calls: convert x86 tlb flushes
+	to use function calls [POST 2]
+Message-ID: <20080819004531.GI9914@elte.hu>
+References: <patchbomb.1219083817@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <patchbomb.1219083817@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-On Mon, 18 Aug 2008, Anthony Liguori wrote: <
+> This series:
+>  - adds a simple debugfs profiling entry for cross-cpu tlb flushes
+>  - converts them to using smp_call_function_mask
+>  - unifies 32 and 64-bit tlb flushes
+>  - converts smp_call_function to using multiple queues (using the now
+>    freed vectors)
+>  - allows config-time adjustment of the number of queues
+>  - adds a kernel parameter to disable multi-queue in case it causes
+>    problems
 > 
-> This handles the case where v < vb->num_pages and ensures we get a 
-> small, negative, s64 as the result.
+> The main concern is whether using smp_call_function adds an 
+> unacceptible performance hit to cross-cpu tlb flushes.  My limited 
+> measurements show a ~35% regression in latency for a particular flush; 
+> it would be interesting to try this on a wider range of hardware.  I 
+> gather the effect tlb flush performance is very application specific 
+> as well, but I'm not sure what benchmarks show what effects.
+> 
+> Trading off agains the latency of a given flush, the smp_function_call 
+> mechanism allows multiple requests to be queued, and so may improve 
+> throughput on a system-wide basis.
+> 
+> So, I'd like people to try this out and see what performance effects 
+> it has.
 
-That's just horrible code.
+nice stuff!
 
-Maybe the compiler notices that you're doing something stupid, but 
-basically, please don't do this.
+I suspect the extra cost might be worth it for two reasons: 1) we could 
+optimize the cross-call implementation further 2) on systems where TLB 
+flushes actually matter, the ability to overlap multiple TLB flushes to 
+the same single CPU might improve workloads.
 
-> -	return v - vb->num_pages;
-> +	if (v < vb->num_pages)
-> +		return -(s64)(vb->num_pages - v);
-> +	else
-> +		return v - vb->num_pages;
+FYI, i've created a new -tip topic for your patches, tip/x86/tlbflush. 
+It's based on tip/irq/sparseirq (there are a good deal of dependencies 
+with that topic).
 
-What's wrong with just doing
+It would be nice to see some numbers on sufficiently SMP systems, using 
+some mmap/munmap intense workload.
 
-	return (s64)v - vb->num_pages;
-
-instead?
-
-Casting 'v' to s64 guarantees that the subtraction will eb done in 64 
-bits, and the compiler can just generate the trivial non-conditional code.
-
-		Linus
+	Ingo
