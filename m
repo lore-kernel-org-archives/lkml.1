@@ -1,46 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbYHTU7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbYHTU7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756754AbYHTU7P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 16:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYHTU6z
+	id S1757468AbYHTU7c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 16:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756881AbYHTU7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 16:58:55 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33371 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752414AbYHTU6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 16:58:54 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: 2.6.27-rc2 USB suspend regression
-Date: Wed, 20 Aug 2008 23:02:01 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org, Oliver Neukum <oliver@neukum.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-References: <48AC8337.2070502@goop.org>
-In-Reply-To: <48AC8337.2070502@goop.org>
+	Wed, 20 Aug 2008 16:59:17 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48354 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756786AbYHTU7Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 16:59:16 -0400
+Date: Wed, 20 Aug 2008 13:41:13 -0700
+From: Greg KH <greg@kroah.com>
+To: Will Newton <will.newton@imgtec.com>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       leoli@freescale.com
+Subject: Re: [PATCH 05/11] fsl_usb2_udc: Clean up whitespace in /proc
+	debugging output.
+Message-ID: <20080820204113.GA11328@kroah.com>
+References: <1218551957-17091-1-git-send-email-will.newton@imgtec.com> <1218551957-17091-2-git-send-email-will.newton@imgtec.com> <1218551957-17091-3-git-send-email-will.newton@imgtec.com> <1218551957-17091-4-git-send-email-will.newton@imgtec.com> <1218551957-17091-5-git-send-email-will.newton@imgtec.com> <1218551957-17091-6-git-send-email-will.newton@imgtec.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808202302.02065.rjw@sisk.pl>
+In-Reply-To: <1218551957-17091-6-git-send-email-will.newton@imgtec.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 20 of August 2008, Jeremy Fitzhardinge wrote:
-> Using the Fedora Rawhide kernel RPM "2.6.27-0.238.rc2.fc10.i686"
-> (kernel-2.6.27-0.238.rc2.fc10.i686), I'm seeing suspend to ram
-> failures.  The suspend seems to go OK, but then I just get endless:
-> 
-> usb 5-1: uhci_result_common: failed with status 440000
-> 
-> messages, with occasional flickers of something else being printed
-> (perhaps).  The machine is otherwise unresponsive.
+On Tue, Aug 12, 2008 at 03:39:11PM +0100, Will Newton wrote:
+> Missing spaces were causing the /proc debugging output to be rather
+> unreadable.
 
-I haven't seen anything like this so far with 2.6.27-rc.  No idea what might
-have caused that to happen.
+Can you just move this file to debugfs please?
 
-Thanks,
-Rafael
+No driver should ever be putting anything into proc files anymore.
+
+thanks,
+
+greg k-h
