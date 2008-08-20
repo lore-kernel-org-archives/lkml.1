@@ -1,126 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbYHTJ5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754642AbYHTJ6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754001AbYHTJ5f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 05:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbYHTJ50
+	id S1754642AbYHTJ6P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 05:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbYHTJ55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 05:57:26 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37108 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbYHTJ5Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 05:57:25 -0400
-Date: Wed, 20 Aug 2008 19:03:24 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       ryov@valinux.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [RFC][PATCH -mm 3/7] memcg: freeing page_cgroup by rcu.patch
-Message-Id: <20080820190324.f723d222.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080819173014.17358c17.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 20 Aug 2008 05:57:57 -0400
+Received: from h155.mvista.com ([63.81.120.155]:29024 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750932AbYHTJ54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 05:57:56 -0400
+Message-ID: <48ABEA9D.8040804@ru.mvista.com>
+Date: Wed, 20 Aug 2008 13:57:49 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/9] ide: remove [ata_]select_t
+References: <20080817195336.13393.86030.sendpatchset@localhost.localdomain> <20080817195411.13393.22229.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080817195411.13393.22229.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-By delayed_batch_freeing_of_page_cgroup.patch, page_cgroup can be
-freed lazily. After this patch, page_cgroup is freed by RCU and
-page_cgroup is RCU safe. This is necessary for lockless page_cgroup patch
+Hello.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Bartlomiej Zolnierkiewicz wrote:
 
----
- mm/memcontrol.c |   44 ++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 36 insertions(+), 8 deletions(-)
+> * Use 'drive->dn & 1' in ide_init_disk().
+>
+> * remove [ata_]select_t.
+>
+> While at it:
+>
+> * Use ATA_DEVICE_OBS define in ide_port_init_devices_data().
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Index: mmtom-2.6.27-rc3+/mm/memcontrol.c
-===================================================================
---- mmtom-2.6.27-rc3+.orig/mm/memcontrol.c
-+++ mmtom-2.6.27-rc3+/mm/memcontrol.c
-@@ -577,19 +577,23 @@ unsigned long mem_cgroup_isolate_pages(u
-  * Free obsolete page_cgroups which is linked to per-cpu drop list.
-  */
- 
--static void __free_obsolete_page_cgroup(void)
-+struct page_cgroup_rcu_work {
-+	struct rcu_head head;
-+	struct page_cgroup *list;
-+};
-+
-+static void __free_obsolete_page_cgroup_cb(struct rcu_head *head)
- {
- 	struct mem_cgroup *memcg;
- 	struct page_cgroup *pc, *next;
- 	struct mem_cgroup_per_zone *mz, *page_mz;
--	struct mem_cgroup_sink_list *mcsl;
-+	struct page_cgroup_rcu_work *work;
- 	unsigned long flags;
- 
--	mcsl = &get_cpu_var(memcg_sink_list);
--	next = mcsl->next;
--	mcsl->next = NULL;
--	mcsl->count = 0;
--	put_cpu_var(memcg_sink_list);
-+
-+	work = container_of(head, struct page_cgroup_rcu_work, head);
-+	next = work->list;
-+	kfree(work);
- 
- 	mz = NULL;
- 
-@@ -616,6 +620,26 @@ static void __free_obsolete_page_cgroup(
- 	local_irq_restore(flags);
- }
- 
-+static int __free_obsolete_page_cgroup(void)
-+{
-+	struct page_cgroup_rcu_work *work;
-+	struct mem_cgroup_sink_list *mcsl;
-+
-+	work = kmalloc(sizeof(*work), GFP_ATOMIC);
-+	if (!work)
-+		return -ENOMEM;
-+	INIT_RCU_HEAD(&work->head);
-+
-+	mcsl = &get_cpu_var(memcg_sink_list);
-+	work->list = mcsl->next;
-+	mcsl->next = NULL;
-+	mcsl->count = 0;
-+	put_cpu_var(memcg_sink_list);
-+
-+	call_rcu(&work->head, __free_obsolete_page_cgroup_cb);
-+	return 0;
-+}
-+
- static void free_obsolete_page_cgroup(struct page_cgroup *pc)
- {
- 	int count;
-@@ -638,13 +662,17 @@ static DEFINE_MUTEX(memcg_force_drain_mu
- 
- static void mem_cgroup_local_force_drain(struct work_struct *work)
- {
--	__free_obsolete_page_cgroup();
-+	int ret;
-+	do {
-+		ret = __free_obsolete_page_cgroup();
-+	} while (ret);
- }
- 
- static void mem_cgroup_all_force_drain(void)
- {
- 	mutex_lock(&memcg_force_drain_mutex);
- 	schedule_on_each_cpu(mem_cgroup_local_force_drain);
-+	synchronize_rcu();
- 	mutex_unlock(&memcg_force_drain_mutex);
- }
- 
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+MBR, Sergei
+
 
