@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbYHTX2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757822AbYHTX3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757521AbYHTX2L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 19:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755112AbYHTX15
+	id S1757822AbYHTX3l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 19:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755112AbYHTX3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 19:27:57 -0400
-Received: from khc.piap.pl ([195.187.100.11]:51451 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754309AbYHTX14 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 19:27:56 -0400
-To: Grant Coady <gcoady.lk@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mikael Pettersson <mikpe@it.uu.se>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ATA Kconfig cleanup: sort the driver list and modify some text
-References: <qjoca411hv4hm25keq70ul5pnbi7747d13@4ax.com>
-	<18598.42334.73411.476062@harpo.it.uu.se>
-	<20080816113224.5562a9a6@lxorguk.ukuu.org.uk>
-	<5rkha4l846d0benss3hip3nvr0cmnfi1k4@4ax.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 21 Aug 2008 01:27:52 +0200
-In-Reply-To: <5rkha4l846d0benss3hip3nvr0cmnfi1k4@4ax.com> (Grant Coady's message of "Mon\, 18 Aug 2008 11\:47\:46 +1000")
-Message-ID: <m3vdxvqnbb.fsf@maximus.localdomain>
+	Wed, 20 Aug 2008 19:29:31 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:41805 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754839AbYHTX3a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 19:29:30 -0400
+X-Sasl-enc: k9iucxRLf27iyFzlwS4CuxFXPWPxeGFdSAWttYZY9sLX 1219274968
+Date: Wed, 20 Aug 2008 20:29:22 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Philip Langdale <philipl@overt.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       toshiba_acpi@memebeam.org, Ivo van Doorn <ivdoorn@gmail.com>,
+       linux-wireless@vger.kernel.org
+Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling
+	through rfkill (v6)
+Message-ID: <20080820232922.GA16392@khazad-dum.debian.net>
+References: <48AB8902.3010406@overt.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48AB8902.3010406@overt.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grant Coady <grant_lkml@dodo.com.au> writes:
+Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-> --- linux-2.6.27-rc3a/drivers/ata/Kconfig	2008-07-14 07:51:29.000000000 +1000
-> +++ linux-2.6.27-rc3c/drivers/ata/Kconfig	2008-08-18 11:29:20.871422237 +1000
-> @@ -3,7 +3,7 @@
->  #
->  
->  menuconfig ATA
-> -	tristate "Serial ATA (prod) and Parallel ATA (experimental) drivers"
-> +	tristate "Serial ATA and Parallel ATA (SATA/PATA) drivers"
-
-I don't think so. Maybe
-> +	tristate "Serial ATA (SATA) and Parallel ATA (PATA) drivers"
-
->  config ATA_SFF
->  	bool "ATA SFF support"
->  	default y
-> @@ -93,123 +93,15 @@
->  
->  if ATA_SFF
-
-How the user compiling the kernel knows what ATA_SFF stands for?
-Why not "select ATA_SFF" instead (when any driver using this is
-selected)?
 -- 
-Krzysztof Halasa
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
