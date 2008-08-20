@@ -1,79 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbYHTVBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbYHTVCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755439AbYHTVBu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbYHTVBm
+	id S1755586AbYHTVCW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbYHTVCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:01:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40323 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751389AbYHTVBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:01:41 -0400
-Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro
-	linux interface for  for access scanning
-From: Eric Paris <eparis@redhat.com>
-To: david@lang.hm
-Cc: Jan Harkes <jaharkes@cs.cmu.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       tvrtko.ursulin@sophos.com, Theodore Tso <tytso@mit.edu>, davecb@Sun.COM,
-       Adrian Bunk <bunk@kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       malware-list@lists.printk.net, Casey Schaufler <casey@schaufler-ca.com>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <alpine.DEB.1.10.0808201004200.20991@asgard.lang.hm>
-References: <20080818153212.6A6FD33687F@pmx1.sophos.com>
-	 <1219076143.15566.39.camel@localhost.localdomain>
-	 <20080818171500.78590801@lxorguk.ukuu.org.uk>
-	 <1219080504.15566.65.camel@localhost.localdomain>
-	 <20080818182556.13ced58f@lxorguk.ukuu.org.uk>
-	 <1219082097.15566.82.camel@localhost.localdomain>
-	 <20080818183540.GA5470@cs.cmu.edu>
-	 <1219085176.15566.100.camel@localhost.localdomain>
-	 <alpine.DEB.1.10.0808181159400.15109@asgard.lang.hm>
-	 <alpine.DEB.1.10.0808191906270.20991@asgard.lang.hm>
-	 <1219245321.3389.82.camel@localhost.localdomain>
-	 <alpine.DEB.1.10.0808201004200.20991@asgard.lang.hm>
-Content-Type: text/plain
-Date: Wed, 20 Aug 2008 15:26:07 -0400
-Message-Id: <1219260367.3389.125.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Wed, 20 Aug 2008 17:02:07 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:57620 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751520AbYHTVCE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 17:02:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xrkC79+ldZMZHibGvFLOWxgROG/up4CSCz3MDxmbWkPk+K11SZ9dnT8Vk4Ya63sGcI
+         aqthctofU70Km7S944BGgRZ8GssNgADy9KqGwIpwIvOfi3SvecGTZZ6mlLSIaSzjd591
+         yI0q5eYOAAEBwsyc4xoFaMbkhxueOx9ZzR1bM=
+Message-ID: <21d7e9970808201402n4d7f5f18waba0685636bb51bf@mail.gmail.com>
+Date: Thu, 21 Aug 2008 07:02:00 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Rene Herman" <rene.herman@keyaccess.nl>
+Subject: Re: AGP and PAT (induced?) problem (on AMD family 6)
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Venki Pallipadi" <venkatesh.pallipadi@intel.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>,
+       "Andreas Herrmann" <andreas.herrmann3@amd.com>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "dri-users@lists.sourceforge.net" <dri-users@lists.sourceforge.net>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Dave Jones" <davej@codemonkey.org.uk>
+In-Reply-To: <48ABF6DC.8070305@keyaccess.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48972EA8.8040001@keyaccess.nl> <20080815142218.GC12954@elte.hu>
+	 <48A59FAC.7050605@keyaccess.nl> <48AA9C3B.5030309@keyaccess.nl>
+	 <20080819102633.GE6722@elte.hu> <48AAD680.7020508@keyaccess.nl>
+	 <20080819190757.GA17470@linux-os.sc.intel.com>
+	 <20080820100440.GE28492@elte.hu> <48ABF6DC.8070305@keyaccess.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-08-20 at 10:33 -0700, david@lang.hm wrote:
+On Wed, Aug 20, 2008 at 8:50 PM, Rene Herman <rene.herman@keyaccess.nl> wrote:
+> On 20-08-08 12:04, Ingo Molnar wrote:
+>
+>> * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+>>
+>>>> I'd really like a reply from the AGP or PAT side right about now.
+>>>
+>>> Hmm. Looks like there are more than 16000 entries in the PAT list!
+>>
+>> hm, btw., why is that?
+>
+> Because 64M of AGP memory divided by 4K pages is 16K. That is, the
+> underlying problem seems to be AGP drivers using order 0 allocations. I'm
+> looking.
+>
+> Do note also that this means that Venki's change would not constitite a
+> correct/final fix. Sure, caching the last entry speeds up traversing a 16K
+> entry list but the issue is that there shouldn't be a 16K entry list.
+> Through AGP, or maybe even by coalescing entries in the PAT list if that's
+> at all possible (I guess it's not really).
+>
+> Even if such a more fundamental fix isn't (easily) available, the PAT code
+> already comments that the list, which is sorted by ->start value, is
+> expected to be short, and should be turned into an rbtree if it isn't which
+> might be slightly less of a bandaid.
+>
+> Dave Airlie (as the MAINTAINERS entry) can't be arsed to answer email it
+> seems so I've added Dave Jones for a possible comment from the AGP side.
+> If I'm reading this right upto now, still many AGP driver (among which my
+> amd-k7-agp) are affected.
 
-> if the system package manager says the syslogd binary doesn't match the 
-> checksum that it has recorded should it be prevented from running? (a 
-> strict policy would say no, but the sysadmin may have recompiled that one 
-> binary and just wants a warning to be logged somewhere, not preventing the 
-> process from running)
+I haven't anything to add, I'm the maintainer not the author, all the
+people who wrote the offending code were
+already involved.
 
-My belief is that if you choose to run a file scanner and that file
-scanner gets the answer wrong you need to look at the file scanner.
-There shouldn't be arbitrary overrides.  If you don't accept the results
-of the scanner what's the point?  Tell you package manager scanner that
-you changed it.
-
-> without the kernel support to clear the flags when the file is dirtied how 
-> can these programs trust the xattr flags that say they scanned the file 
-> before?
-
-I don't understand what you mean about trust.  This is an argument for
-kernel support now?  What is it that you say needs and what doesn't need
-it?  Can you explain exactly what your perfect solution from top down?
-
-> I'm not saying that xattr is the only way to store the info, it just seems 
-> like a convienient place to store them without having to create a 
-> completely new API or changing anything in on-disk formats.
-
-And I saying we don't actually need any of this and if it is actually
-needed by someone in the real world they can easily build their own
-solution on top of my generic interface.  I'm not making the assertion
-it is race free and don't think it is possible without making every
-sequential (hahahaha.)  But I claim in the face of normal operation it's
-fine.  My interface, as proposed, is very generic.  Much more so than
-what I think you are trying to describe.  I couldn't make mine more
-minimal or broad.
-
+Dave.
+>
+> In the short run and if I'm not just mistaken, the best fix might be to make
+> PAT dependent on not having a dumb AGP driver (but as said, still looking).
+>
+> Note that my chipset is capable of a 2G AGP aperture. That's 512K pages if
+> fully used, 256K for 1G, 128K for 512M, ...
+>
+> Rene.
+>
