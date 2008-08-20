@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755286AbYHTKri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbYHTKtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755286AbYHTKri (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 06:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYHTKr3
+	id S1755464AbYHTKtX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 06:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbYHTKtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 06:47:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40123 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751531AbYHTKr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 06:47:29 -0400
-Date: Wed, 20 Aug 2008 12:47:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] ftrace: update recordmount.pl arch changes
-Message-ID: <20080820104711.GG2816@elte.hu>
-References: <alpine.DEB.1.10.0808151136310.2188@gandalf.stny.rr.com> <20080815154234.GE27955@elte.hu> <alpine.DEB.1.10.0808191430010.28232@gandalf.stny.rr.com>
+	Wed, 20 Aug 2008 06:49:15 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:44729 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752384AbYHTKtO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 06:49:14 -0400
+Message-ID: <48ABF6DC.8070305@keyaccess.nl>
+Date: Wed, 20 Aug 2008 12:50:04 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0808191430010.28232@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dave Airlie <airlied@gmail.com>, "Li, Shaohua" <shaohua.li@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "dri-users@lists.sourceforge.net" <dri-users@lists.sourceforge.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: AGP and PAT (induced?) problem (on AMD family 6)
+References: <48972EA8.8040001@keyaccess.nl> <20080815142218.GC12954@elte.hu> <48A59FAC.7050605@keyaccess.nl> <48AA9C3B.5030309@keyaccess.nl> <20080819102633.GE6722@elte.hu> <48AAD680.7020508@keyaccess.nl> <20080819190757.GA17470@linux-os.sc.intel.com> <20080820100440.GE28492@elte.hu>
+In-Reply-To: <20080820100440.GE28492@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 20-08-08 12:04, Ingo Molnar wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+> * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+> 
+>>> I'd really like a reply from the AGP or PAT side right about now.
+>> Hmm. Looks like there are more than 16000 entries in the PAT list!
+> 
+> hm, btw., why is that?
 
-> On Fri, 15 Aug 2008, Ingo Molnar wrote:
-> 
-> > 
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> > > Ingo,
-> > > 
-> > > I'm trying to keep all the arch changes in recordmcount.pl in one 
-> > > place. I moved your code into that area, by adding the flags to the 
-> > > commands that were passed in.
-> > > 
-> > > Does this change still work for you when compiling i386 on a x86_64 
-> > > box?
-> > 
-> > actually, i thought of this as a quick hack to let -tip testing 
-> > continue. Dont we have all the proper information available in kbuild 
-> > and should just pass that to scripts/recordmcount.pl when called - like 
-> > we pass in things like OBJDUMP which might have cross-build overrides, 
-> > etc.
-> 
-> Ingo,
-> 
-> Could you use my updated patch. I know it is still just a work around, but 
-> your update broke my build.  I use distcc which passes in "distcc" as gcc. 
-> My distcc is self built and is not the same as the distribution gcc.
-> 
-> Ie, you have:
-> 
-> if ($arch eq "x86_64") {
->   $ld = "ld -m elf_x86_64";
->   $objdump = "objdump -M x86-64";
->   $objcopy = "objcopy -O elf64-x86-64";
->   $cc = "gcc -m64";
-> }
-> 
-> Where the $cc = "gcc" is not compatible on my system. I end up with a bad 
-> build that causes ftrace to fail on bootup.
+Because 64M of AGP memory divided by 4K pages is 16K. That is, the 
+underlying problem seems to be AGP drivers using order 0 allocations. 
+I'm looking.
 
-sure - applied to tip/tracing/ftrace.
+Do note also that this means that Venki's change would not constitite a 
+correct/final fix. Sure, caching the last entry speeds up traversing a 
+16K entry list but the issue is that there shouldn't be a 16K entry 
+list. Through AGP, or maybe even by coalescing entries in the PAT list 
+if that's at all possible (I guess it's not really).
 
-	Ingo
+Even if such a more fundamental fix isn't (easily) available, the PAT 
+code already comments that the list, which is sorted by ->start value, 
+is expected to be short, and should be turned into an rbtree if it isn't 
+which might be slightly less of a bandaid.
+
+Dave Airlie (as the MAINTAINERS entry) can't be arsed to answer email it 
+seems so I've added Dave Jones for a possible comment from the AGP side.
+If I'm reading this right upto now, still many AGP driver (among which 
+my amd-k7-agp) are affected.
+
+In the short run and if I'm not just mistaken, the best fix might be to 
+make PAT dependent on not having a dumb AGP driver (but as said, still 
+looking).
+
+Note that my chipset is capable of a 2G AGP aperture. That's 512K pages 
+if fully used, 256K for 1G, 128K for 512M, ...
+
+Rene.
