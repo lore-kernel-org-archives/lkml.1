@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbYHTQqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbYHTQuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025AbYHTQqv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 12:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbYHTQqj
+	id S1757228AbYHTQuZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 12:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYHTQuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 12:46:39 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:49792 "EHLO twin.jikos.cz"
+	Wed, 20 Aug 2008 12:50:12 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:33066 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752838AbYHTQqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 12:46:38 -0400
-Date: Wed, 20 Aug 2008 18:46:05 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Marcel Holtmann <marcel@holtmann.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT]: Networking
-In-Reply-To: <alpine.LFD.1.10.0808200853410.3324@nehalem.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0808201842350.18947@twin.jikos.cz>
-References: <20080819.041706.261399060.davem@davemloft.net> 
- <alpine.LFD.1.10.0808190952000.3324@nehalem.linux-foundation.org> 
- <1219170451.7591.175.camel@violet.holtmann.net> 
- <alpine.LFD.1.10.0808191348540.3324@nehalem.linux-foundation.org> 
- <1219203753.7591.205.camel@violet.holtmann.net>  <20080820143734.GB20632@tuxdriver.com>
-  <alpine.LFD.1.10.0808200826530.3324@nehalem.linux-foundation.org>
- <1219246813.7591.347.camel@violet.holtmann.net>
- <alpine.LFD.1.10.0808200853410.3324@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751911AbYHTQuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 12:50:11 -0400
+Date: Wed, 20 Aug 2008 20:54:42 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH, RESEND] posix-timers: simplify de_thread()->exit_itimers() path
+Message-ID: <20080820165442.GA1459@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008, Linus Torvalds wrote:
+(depends on posix-timers-always-do-get_task_structtimer-it_process.patch)
 
->  - but as a special case, we relax that for totally new drivers (and that 
->    includes things like just adding a new PCI or USB ID's to old drivers), 
->    because (a) it can't really regress 
+de_thread() postpones release_task(leader) until after exit_itimers().
+This was needed because !SIGEV_THREAD_ID timers could use ->group_leader
+without get_task_struct(). With the recent changes we can release the
+leader earlier and simplify the code.
 
-It in fact depends on your definition of regression really :)
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-If we merge a buggy driver that hangs the user's machine when loaded, well 
-... before the driver has been merged, the machine had been booting well, 
-just some hardware was not functioning at all. After this late driver 
-merge, the driver gets autoloaded upon boot and crashes the machine. Users 
-will probably see this as a regression.
-
-This doesn't mean that I am against merging new drivers as aggressively as 
-possible, I just wanted to point out that it might bring actual 
-regressions to users.
-
--- 
-Jiri Kosina
-SUSE Labs
+--- 26-rc2/fs/exec.c~3_DE_THREAD	2008-08-03 17:16:40.000000000 +0400
++++ 26-rc2/fs/exec.c	2008-08-03 21:35:33.000000000 +0400
+@@ -757,7 +757,6 @@ static int de_thread(struct task_struct 
+ 	struct signal_struct *sig = tsk->signal;
+ 	struct sighand_struct *oldsighand = tsk->sighand;
+ 	spinlock_t *lock = &oldsighand->siglock;
+-	struct task_struct *leader = NULL;
+ 	int count;
+ 
+ 	if (thread_group_empty(tsk))
+@@ -795,7 +794,7 @@ static int de_thread(struct task_struct 
+ 	 * and to assume its PID:
+ 	 */
+ 	if (!thread_group_leader(tsk)) {
+-		leader = tsk->group_leader;
++		struct task_struct *leader = tsk->group_leader;
+ 
+ 		sig->notify_count = -1;	/* for exit_notify() */
+ 		for (;;) {
+@@ -849,8 +848,9 @@ static int de_thread(struct task_struct 
+ 
+ 		BUG_ON(leader->exit_state != EXIT_ZOMBIE);
+ 		leader->exit_state = EXIT_DEAD;
+-
+ 		write_unlock_irq(&tasklist_lock);
++
++		release_task(leader);
+ 	}
+ 
+ 	sig->group_exit_task = NULL;
+@@ -859,8 +859,6 @@ static int de_thread(struct task_struct 
+ no_thread_group:
+ 	exit_itimers(sig);
+ 	flush_itimer_signals();
+-	if (leader)
+-		release_task(leader);
+ 
+ 	if (atomic_read(&oldsighand->count) != 1) {
+ 		struct sighand_struct *newsighand;
 
