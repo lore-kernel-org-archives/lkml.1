@@ -1,53 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbYHTNxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756655AbYHTN4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818AbYHTNxz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 09:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbYHTNxr
+	id S1756655AbYHTN4u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 09:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYHTN4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 09:53:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36118 "EHLO mx2.mail.elte.hu"
+	Wed, 20 Aug 2008 09:56:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39036 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751974AbYHTNxr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 09:53:47 -0400
-Date: Wed, 20 Aug 2008 15:53:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: claudio@evidence.eu.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] New documentation about CFS.
-Message-ID: <20080820135331.GA21339@elte.hu>
-References: <1219238325-23964-1-git-send-email-claudio@evidence.eu.com> <1219238652.8651.48.camel@twins>
+	id S1751034AbYHTN4k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 09:56:40 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] CRED: Further fix execve error handling
+To: jmorris@namei.org, a.beregalov@gmail.com
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Date: Wed, 20 Aug 2008 14:56:29 +0100
+Message-ID: <20080820135624.10583.99230.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1219238652.8651.48.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Further fix [compat_]do_execve() error handling.  free_bprm() will release the
+cred_exec_mutex, but only if bprm->cred is not NULL.
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-> On Wed, 2008-08-20 at 15:18 +0200, claudio@evidence.eu.com wrote:
-> > From: Claudio Scordino <claudio@evidence.eu.com>
-> 
-> A little changelog doesn't hurt..
-> 
-> Rewrite of the CFS documentation - because the old one was sorely
-> out-dated.
-> 
-> > Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+ fs/compat.c |    3 ++-
+ fs/exec.c   |    3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-applied to tip/sched/urgent, thanks Claudio! The updates should show up 
-in v2.6.27.
 
-	Ingo
+diff --git a/fs/compat.c b/fs/compat.c
+index af24b8a..918f0f2 100644
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -1373,7 +1373,7 @@ int compat_do_execve(char * filename,
+ 	file = open_exec(filename);
+ 	retval = PTR_ERR(file);
+ 	if (IS_ERR(file))
+-		goto out_unlock;
++		goto out_free;
+ 
+ 	sched_exec();
+ 
+@@ -1427,6 +1427,7 @@ out_file:
+ 		allow_write_access(bprm->file);
+ 		fput(bprm->file);
+ 	}
++	goto out_free;
+ 
+ out_unlock:
+ 	mutex_unlock(&current->cred_exec_mutex);
+diff --git a/fs/exec.c b/fs/exec.c
+index 4b31a72..7b71679 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1319,7 +1319,7 @@ int do_execve(char * filename,
+ 	file = open_exec(filename);
+ 	retval = PTR_ERR(file);
+ 	if (IS_ERR(file))
+-		goto out_unlock;
++		goto out_free;
+ 
+ 	sched_exec();
+ 
+@@ -1376,6 +1376,7 @@ out_file:
+ 		allow_write_access(bprm->file);
+ 		fput(bprm->file);
+ 	}
++	goto out_free;
+ 
+ out_unlock:
+ 	mutex_unlock(&current->cred_exec_mutex);
+
