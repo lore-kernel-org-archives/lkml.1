@@ -1,124 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbYHTPQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759561AbYHTPSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756547AbYHTPQQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 11:16:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449AbYHTPPt
+	id S1759561AbYHTPSr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 11:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbYHTPSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 11:15:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59322 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755058AbYHTPPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 11:15:47 -0400
-Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro
-	linux interface for  for access scanning
-From: Eric Paris <eparis@redhat.com>
-To: david@lang.hm
-Cc: Jan Harkes <jaharkes@cs.cmu.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       tvrtko.ursulin@sophos.com, Theodore Tso <tytso@mit.edu>, davecb@sun.com,
-       Adrian Bunk <bunk@kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       malware-list@lists.printk.net, Casey Schaufler <casey@schaufler-ca.com>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <alpine.DEB.1.10.0808191906270.20991@asgard.lang.hm>
-References: <20080818153212.6A6FD33687F@pmx1.sophos.com>
-	 <1219076143.15566.39.camel@localhost.localdomain>
-	 <20080818171500.78590801@lxorguk.ukuu.org.uk>
-	 <1219080504.15566.65.camel@localhost.localdomain>
-	 <20080818182556.13ced58f@lxorguk.ukuu.org.uk>
-	 <1219082097.15566.82.camel@localhost.localdomain>
-	 <20080818183540.GA5470@cs.cmu.edu>
-	 <1219085176.15566.100.camel@localhost.localdomain>
-	 <alpine.DEB.1.10.0808181159400.15109@asgard.lang.hm>
-	 <alpine.DEB.1.10.0808191906270.20991@asgard.lang.hm>
-Content-Type: text/plain
-Date: Wed, 20 Aug 2008 11:15:21 -0400
-Message-Id: <1219245321.3389.82.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Wed, 20 Aug 2008 11:18:38 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:32516 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753452AbYHTPSh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 11:18:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=uLVwR1UKIgTyOW7oc6GXzNiiDOZ/pJDtE6bxJYF4QzqeqB4IS0BpdsoTaYBT63PaR2
+         i7ZLcFPJzSaKlnGnpMq9z/lGePcQHnFXp9rg4d4Qg6OnBjFNOmpv5L2xWw/V8d076DEo
+         5RHaUOFg8SH63ZGr+pCi/DeVX0KYoj/PVs3Fk=
+Message-ID: <a4423d670808200818i46c4d582r9aac4060903c2d53@mail.gmail.com>
+Date: Wed, 20 Aug 2008 19:18:36 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: alan@redhat.com
+Subject: Re: linux-next: Tree for August 20: tty: possible recursive locking detected
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-19 at 19:44 -0700, david@lang.hm wrote:
+Hi
+I got this on sparc64 system.
 
-> please note that I am trying to state Erics position, I may be mistaken.
+[   91.266507] [ INFO: possible recursive locking detected ]
+[   91.266862] 2.6.27-rc3-next-20080820-dirty #3
+[   91.267170] ---------------------------------------------
+[   91.267522] sshd/1455 is trying to acquire lock:
+[   91.267840]  (&tty->termios_mutex){--..}, at: [<00000000005b8ca0>]
+tty_do_resize+0x44/0x128
+[   91.268405]
+[   91.268411] but task is already holding lock:
+[   91.268885]  (&tty->termios_mutex){--..}, at: [<00000000005b8c74>]
+tty_do_resize+0x18/0x128
+[   91.269436]
+[   91.269442] other info that might help us debug this:
+[   91.269944] 1 lock held by sshd/1455:
+[   91.270219]  #0:  (&tty->termios_mutex){--..}, at:
+[<00000000005b8c74>] tty_do_resize+0x18/0x128
+[   91.270812]
+[   91.270818] stack backtrace:
+[   91.271229] Call Trace:
+[   91.271474]  [000000000047757c] __lock_acquire+0xfcc/0x1900
+[   91.271839]  [0000000000477f0c] lock_acquire+0x5c/0x74
+[   91.272198]  [00000000006af2a8] mutex_lock_nested+0xf0/0x310
+[   91.272565]  [00000000005b8ca0] tty_do_resize+0x44/0x128
+[   91.272916]  [00000000005ba3cc] tty_ioctl+0x360/0x99c
+[   91.273266]  [00000000004c0050] vfs_ioctl+0x2c/0x94
+[   91.273600]  [00000000004c03b4] do_vfs_ioctl+0x2fc/0x31c
+[   91.273953]  [00000000004c0408] sys_ioctl+0x34/0x5c
+[   91.274296]  [00000000004e98f0] do_ioctl32_pointer+0x18/0x2c
+[   91.274666]  [00000000004ebb04] compat_sys_ioctl+0x3b8/0x40c
+[   91.275043]  [0000000000406154] linux_sparc_syscall32+0x34/0x40
 
-you did pretty well.
 
-> He expect AV signatures to change rapidly
->    so storing the results of scans is of very limited value
+It was dirtied by the following patch from David Howells
+[PATCH] CRED: Further fix execve error handling
 
-Not quite.  I believe it should be the responsibility of the scanner to
-determine how and if they want to store the results of the scan.  I'm
-willing (and want) to provide a simplistic kernel fast path if all of
-the scanners agree to use it.
+diff --git a/fs/compat.c b/fs/compat.c
+index af24b8a..918f0f2 100644
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -1373,7 +1373,7 @@ int compat_do_execve(char * filename,
+        file = open_exec(filename);
+        retval = PTR_ERR(file);
+        if (IS_ERR(file))
+-               goto out_unlock;
++               goto out_free;
 
-> He is expecting the scanning software to set the policy
->    so there is no reason to have a system/distro defined policy
+        sched_exec();
 
-I'm not sure of the definition of this 'policy' but, yes, I think all
-scanners should make their own decisions in their own little bubble.
+@@ -1427,6 +1427,7 @@ out_file:
+                allow_write_access(bprm->file);
+                fput(bprm->file);
+        }
++       goto out_free;
 
+ out_unlock:
+        mutex_unlock(&current->cred_exec_mutex);
+diff --git a/fs/exec.c b/fs/exec.c
+index 4b31a72..7b71679 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1319,7 +1319,7 @@ int do_execve(char * filename,
+        file = open_exec(filename);
+        retval = PTR_ERR(file);
+        if (IS_ERR(file))
+-               goto out_unlock;
++               goto out_free;
 
-> I am seeing things (I think) a bit more broadly (definantly differently).
-> 
-> I think that the availability of a general 'this file was written to' 
-> interface in the kernel combined with 'take action before opening' will 
-> lead to many uses beyond AV work.
+        sched_exec();
 
-At the moment I'm leaning towards a separate async notification system
-for open/mtime change/close which will be a fire and forget notification
-system with no access control mechanism.
+@@ -1376,6 +1376,7 @@ out_file:
+                allow_write_access(bprm->file);
+                fput(bprm->file);
+        }
++       goto out_free;
 
-A second, although very similar, mechanism will block on read/mmap
-(although I'm not so sure how to handle O_NONBLOCK without a kernel
-fastpath/inode marking that actually gets used, this is really a serious
-design issue with putting this at read/mmap.  I don't think we are ready
-to give up on O_NONBLOCK for S_ISREG altogether just yet are we?) and
-provide access control.  I also plan to include open() in the
-blocking/access control based on a /proc tunable.  If applications can't
-handle EPERM at read/mmap they can get it at open and suffer the
-perf/blocking hit needlessly on open/stat sequences.
-
-> I expect to see IDS type scanners, possibly multiple ones on a machine, 
-> each fairly simple and not trying to do a complete job, but authoritative 
-> within it's area.
->    this means that the interaction between approvals is more complex and 
-> not something that should be coded into the kernel, it should be 
-> configured in userspace.
-
-I don't understand how something can be 'authoritative within it's area'
-and still have a 'complex interaction policy.'  I see it as, either yes
-means yes and no means no, or it isn't authoritative.
-
-If two scanners need some complex interaction it certainly needs to be
-in userspace, no question there.  Sounds like a dispatcher daemon needs
-to get the notification from the kernel and send them to the scanners
-and then let it do all sorts of magic and sprinkling of pixie dust
-before the daemon return an answer to the kernel.  In the end that
-deamon is the authoritative thing.  I don't plan to write it since I
-don't see the need, but the possibility of writing a dispatcher daemon
-certainly exists if there is actually need.
-
-Everything says yes at read/mmap we allow.  Anything says no we deny.
-You need more than that write an intermediary daemon in userspace to
-govern that interaction.
-
-> becouse of things like indexers, backups, and IDS type I see great value 
-> in storing the fact that a file was scanned across reboots for some users 
-> (other users may not want to trust the system without re-scanning it after 
-> a reboot in case the files were changed)
-
-My answer is that if they want to store whatever it is they care about
-across boots so the scanner can write an xattr to help.  I believe that
-all scanners are going to need/want to have some for of userspace
-caching.  I plan to provide a fastpath in kernel scanners can make use
-of, but anything more complex should be a completely userspace solution
-and should be able to be built on what I provide at a later time.
-
-> Eric has one other significant advantage, he has produced code, and is 
-> presumably payed to work on this (based on his posts and @redhat address)
-
-Not paid much   :)
-
+ out_unlock:
+        mutex_unlock(&current->cred_exec_mutex);
