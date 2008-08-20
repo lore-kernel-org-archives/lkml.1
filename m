@@ -1,119 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755817AbYHTSnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755415AbYHTSpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755817AbYHTSnl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 14:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYHTSnb
+	id S1755415AbYHTSpy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 14:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbYHTSpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 14:43:31 -0400
-Received: from mail9.dslextreme.com ([66.51.199.94]:42755 "HELO
-	mail9.dslextreme.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751550AbYHTSnb (ORCPT
+	Wed, 20 Aug 2008 14:45:42 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:46079 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752495AbYHTSpl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 14:43:31 -0400
-Message-ID: <48AC65CD.9080108@gawab.com>
-Date: Wed, 20 Aug 2008 11:43:25 -0700
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Michal Januszewski <spock@gentoo.org>,
-       Antonino Daplas <adaplas@gmail.com>, Rafael Wysocki <rjw@sisk.pl>,
-       Romano Giannetti <romano.giannetti@gmail.com>,
-       Adrian Bunk <bunk@kernel.org>,
-       Jeremy Nickurak <kernel-bugs@atrus.rifetech.com>
-Subject: Re: [PATCH] sched: disable hrtick implementation
-References: <48A9BDC0.9070800@gawab.com> <20080819003110.GH9914@elte.hu>	 <1219127296.10800.357.camel@twins> <20080819092543.GD28713@elte.hu>	 <1219138380.10800.376.camel@twins> <20080819182222.GA25576@suse.de>	 <48AB1F49.6040207@gawab.com> <20080819194428.GA9997@suse.de>	 <48AB4F2B.9070405@gawab.com> <1219217091.10800.395.camel@twins>
-In-Reply-To: <1219217091.10800.395.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Aug 2008 14:45:41 -0400
+Subject: Re: CONFIG_KMOD breakage in next kernel
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       video4linux-list@redhat.com
+In-Reply-To: <1219252617.7591.350.camel@violet.holtmann.net>
+References: <s5h3akzwtki.wl%tiwai@suse.de>
+	 <1219252617.7591.350.camel@violet.holtmann.net>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-JUz9NAurQ+0t9jJ9Kemi"
+Date: Wed, 20 Aug 2008 20:44:49 +0200
+Message-Id: <1219257889.3502.13.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2008-08-19 at 15:54 -0700, Justin Madru wrote:
->> The hrtick implementation in 2.6.25 and .26 has been known to cause boot
->> problems with at least Intel GMA cards. see:
->>
->> https://bugs.freedesktop.org/show_bug.cgi?id=15602
->> http://bugzilla.kernel.org/show_bug.cgi?id=10892
->>
->> A full fix to hrtick went into 2.6.27
->> (31656519e132f6612584815f128c83976a9aaaef),
->> but that fix is too intrusive to backport. Henceforth, we default to
->> disable hrtick.
->
-> Thing is, I'm still not understanding how, or if, the old code is wrong.
->
-> That said, this will paper over the problem just fine, and as its old
-> kernels we're talking about I don't particularly care.
 
-Fair enough.
+--=-JUz9NAurQ+0t9jJ9Kemi
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-All I know is that right when I started testing .25-rc1 I kept getting a 
-garbled boot splash, blank screen, and even lock-ups during booting. It 
-seemed to be that if I disabled the boot splash and/or started x 
-manually the problem would rarely occur. So, maybe the first change to 
-hrtick just exposed a bug in the boot splash or the x server. If that's 
-true then, I don't get why right when .27-rc1 was out all the boot 
-problems were gone.
+On Wed, 2008-08-20 at 19:16 +0200, Marcel Holtmann wrote:
+> Hi guys,
+>=20
+> > I found that CONFIG_KMOD was already removed in linux-next tree.
+> > This seems to result in many breakages.  For example, I cannot mount a
+> > FAT device automatically because of failure of automatic loading of
+> > nls modules.
+> >=20
+> > My particular problem would be fixed by the patch below, but I found
+> > CONFIG_KMOD is still referred in many places.
+>=20
+> I am happy to fix the net/bluetooth/ part, you someone has to put out a
+> guideline how this should be fixed.
 
-Bisecting found both commits (introduce and fix) to be about hrtick. So 
-maybe the commit that introduced my bug wasn't completely wrong, but at 
-least it was not right enough because of the second commit was trying to 
-fix something -- right? And the kernel still boots with hrtick disabled, 
-I tested that.
+Bluetooth was already part of http://lkml.org/lkml/2008/7/9/144
 
+Basically, I got rid of CONFIG_KMOD, always enabling it when
+CONFIG_MODULES is defined and making it a dummy no-op inline when not.
 
-> Just occured to me that a Kconfig change that always makes
-> CONFIG_SCHED_HRTICK not set will also do.
->> Signed-off-by: Justin Madru <jdm64@gawab.com>
->> Tested-by: Justin Madru <jdm64@gawab.com>
->> Cc: Peter Zijlstra <peterz@infradead.org>
->> Cc: Ingo Molnar <mingo@elte.hu>
->>
->> --- a/kernel/sched_features.h
->> +++ b/kernel/sched_features.h
->> @@ -4,7 +4,7 @@
->> SCHED_FEAT(AFFINE_WAKEUPS, 1)
->> SCHED_FEAT(CACHE_HOT_BUDDY, 1)
->> SCHED_FEAT(SYNC_WAKEUPS, 1)
->> -SCHED_FEAT(HRTICK, 1)
->> +SCHED_FEAT(HRTICK, 0)
->> SCHED_FEAT(DOUBLE_TICK, 0)
->> SCHED_FEAT(NORMALIZED_SLEEPER, 1)
->> SCHED_FEAT(DEADLINE, 1)
->>
+johannes
 
-Wouldn't disabling CONFIG_HIGH_RES_TIMERS (in the menu) also disable 
-CONFIG_SCHED_HRTICK? In any case what about this patch below?
+--=-JUz9NAurQ+0t9jJ9Kemi
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-The hrtick implementation in 2.6.25 and .26 has been known to cause boot
-problems with at least Intel GMA cards. see:
+iQIcBAABAgAGBQJIrGYeAAoJEKVg1VMiehFYT5QP/1Q3lUrurxSO2lEmWPa8eCiU
+3WbXzKXQRrseZh2O1fJd/rrhxEjvmNntlTfXTra+3L0jox1uV12D2t+6LQMiuS4g
+2+mf0yJlEiTeCvEWb3ts8xA8/ryE/yuL/LdF3nvz1lLspju1S9h/4X9fnqT5lIVC
+p788yhXDRUOjJoIl4eEtuw/KIAxkPKnyp1Xo3WBGBAMw3vBvXwyHbFzvitWsaKdd
+KFGQGISY3l1dkazIKcfUApbZBegYtJEpTeLoHnZRzJH5bWGkIoe/iCjZylyBXTY+
+LvwLyoYRwHz2wT8wbJ4Vmz1eYanS4yIBDsE1ZSguuQUaYGyrGaHUtXCShMvTYYUP
+vo1cif1jt/66A3mgNWcnEu+ZmAMAmP4mz/O8ltUDsHwjVxIRk681zV/8UtO8Q/sW
+22fAlvPiFfRQhoCjfJLBJKZNfeQfNWGynPu5eVk5WvQlPIE9wvVcw5HYf8OoAsog
+82F+8Np9Fh2zHWxtzae6SsQhUrvQVJmUT1gasY3z7rOgFCF53Mo6pNiX1x574zQ4
+hUXnZWyguBDnXOMSc1PnXirpgfZ/GVo+E/fCnFJ8QRFsBbx7JNLLkNDt7K9QNRNc
+R+fMJUXik8cB4ERKY4uGOTMxbBsmAOwEvPk7XY9mdxDe0LCRDRHDdNS6ki+t8aat
+PxyoRvxb8pavE9Svj83V
+=1Fjh
+-----END PGP SIGNATURE-----
 
-https://bugs.freedesktop.org/show_bug.cgi?id=15602
-http://bugzilla.kernel.org/show_bug.cgi?id=10892
-
-A full fix to hrtick went into 2.6.27 
-(31656519e132f6612584815f128c83976a9aaaef),
-but that fix is too intrusive to backport. Henceforth, we default to 
-disable hrtick.
-
-Signed-off-by: Justin Madru <jdm64@gawab.com>
-Tested-by: Justin Madru <jdm64@gawab.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-
---- a/kernel/Kconfig.hz
-+++ b/kernel/Kconfig.hz
-@@ -55,4 +55,5 @@
-     default 1000 if HZ_1000
-
- config SCHED_HRTICK
--    def_bool HIGH_RES_TIMERS && X86
-+    bool
-+    default n
+--=-JUz9NAurQ+0t9jJ9Kemi--
 
