@@ -1,66 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbYHTNOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYHTNPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756719AbYHTNOU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 09:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYHTNOM
+	id S1756820AbYHTNPZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 09:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYHTNPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 09:14:12 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62199 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753164AbYHTNOL (ORCPT
+	Wed, 20 Aug 2008 09:15:14 -0400
+Received: from hs-out-0708.google.com ([64.233.178.251]:51854 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752793AbYHTNPM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 09:14:11 -0400
-Date: Wed, 20 Aug 2008 09:14:09 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Steven Rostedt <srostedt@redhat.com>,
-       Scott Wood <scottwood@freescale.com>,
-       Eran Liberty <liberty@extricom.com>, Alan Modra <amodra@au1.ibm.com>,
-       Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-In-Reply-To: <1219216705.21386.46.camel@pasglop>
-Message-ID: <alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com>
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>  <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>  <48A9AFA7.8080508@freescale.com>  <alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>  <1219110814.8062.2.camel@pasglop>
-  <alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>  <1219113549.8062.13.camel@pasglop> <1219114600.8062.15.camel@pasglop>  <alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>  <1219119431.8062.35.camel@pasglop>
- <1219216705.21386.46.camel@pasglop>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 20 Aug 2008 09:15:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=gBrot/LBQmqT4IVnYtwDrk/d+VAli1O4E9SeXHH5T4E+1NObvG7FootVLGzz1osQy3
+         AmiKlwHCRN1bw3KJjv1LYRItl47q9xOI+k73z7hYBB2BediVQUtRpWO5ksAaW1hsUu4i
+         vNmt2LLdNqnrLQavt/0oS/PMxqLSN8nvzikIE=
+Message-ID: <d4b6d3ea0808200615p1df9b41an6bf7d742c2e258dd@mail.gmail.com>
+Date: Wed, 20 Aug 2008 09:15:10 -0400
+From: "Michael Madore" <michael.madore@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: INFO: task blocked for more than 120 seconds
+In-Reply-To: <d4b6d3ea0808191100m17ab13cbnb9a1a8a06f2e22e0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <d4b6d3ea0808191100m17ab13cbnb9a1a8a06f2e22e0@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>> Committing a transaction would means writing rest of the meta-data in
+>>> the transaction. And that would imply forcing most of the buffer_heads
+>>> to disk in ordered mode. This can result a lot of seeks and make take
+>>> more thatn 120 seconds.
+>>
+>>
+>> Both Randy and Greg reported getting this for 2.6.27-rc but not
+>> for 2.6.26.
+>>
+>> Why are people getting such messages for 2.6.27-rc but not for 2.6.26?
+>
+> Hi,
+>
+> I have reported getting these messages on 2.6.26:
+>
+> http://marc.info/?l=linux-kernel&m=121796211813099&w=2
+>
+> In addition to the system mentioned in that posting, I have just
+> reproduced it by stress testing a system with 2 Opteron processors,
+> 2GB of RAM and 2 SATA disks.
+>
+> Backing out this patch seems to help:
+>
+> commit cc19747977824ece6aa1c56a29e974fef5ec2b32
+> Author: Jens Axboe <jens.axboe@oracle.com>
+> Date:   Fri Apr 20 20:45:39 2007 +0200
+>
+>    cfq-iosched: tighten queue request overlap condition
+>
+>    For tagged devices, allow overlap of requests if the idle window
+>    isn't enabled on the current active queue.
+>
+>    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+>
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index a8237be..e859b49 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -989,7 +989,8 @@ static struct cfq_queue *cfq_select_queue(struct
+> cfq_data *cfqd)
+> * flight or is idling for a new request, allow either of these
+> * conditions to happen (or time out) before selecting a new queue.
+> */
+> - if (cfqq->dispatched || timer_pending(&cfqd->idle_slice_timer)) {
+> + if (timer_pending(&cfqd->idle_slice_timer) ||
+> +     (cfqq->dispatched && cfq_cfqq_idle_window(cfqq))) {
+> cfqq = NULL;
+> goto keep_queue;
+> }
 
-On Wed, 20 Aug 2008, Benjamin Herrenschmidt wrote:
+Actually, I tested again with this commit reversed, and I'm still
+seeing the problem.  Sorry for any confusion.
 
-> Found the problem (or at least -a- problem), it's a gcc bug.
-> 
-> Well, first I must say the code generated by -pg is just plain
-> horrible :-)
-> 
-> Appart from that, look at the exit of, for example, __d_lookup, as
-> generated by gcc when ftrace is enabled:
-> 
-> c00c0498:       38 60 00 00     li      r3,0
-> c00c049c:       81 61 00 00     lwz     r11,0(r1)
-> c00c04a0:       80 0b 00 04     lwz     r0,4(r11)
-> c00c04a4:       7d 61 5b 78     mr      r1,r11
-> c00c04a8:       bb 0b ff e0     lmw     r24,-32(r11)
-> c00c04ac:       7c 08 03 a6     mtlr    r0
-> c00c04b0:       4e 80 00 20     blr
-> 
-> As you can see, it restores r1 -before- it pops r24..r31 off
-> the stack ! I let you imagine what happens if an interrupt happens
-> just in between those two instructions (mr and lmw). We don't do
-> redzones on our ABI, so basically, the registers end up corrupted
-> by the interrupt.
-
-Ouch!  You've disassembled this without -pg too, and it does not have this 
-bug? What version of gcc do you have?
-
--- Steve
-
+Mike
