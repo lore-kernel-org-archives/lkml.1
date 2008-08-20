@@ -1,133 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbYHTWJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYHTWMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754655AbYHTWJt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 18:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYHTWJh
+	id S1755401AbYHTWMN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 18:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYHTWL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 18:09:37 -0400
-Received: from gate.crashing.org ([63.228.1.57]:45708 "EHLO gate.crashing.org"
+	Wed, 20 Aug 2008 18:11:59 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:36898 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751160AbYHTWJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 18:09:36 -0400
-Subject: Re: [PATCH] ftrace: x86 use copy to and from user functions
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0808201742370.18551@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0808201253330.494@gandalf.stny.rr.com>
-	 <1219268378.21386.69.camel@pasglop>
-	 <alpine.DEB.1.10.0808201742370.18551@gandalf.stny.rr.com>
+	id S1750932AbYHTWL6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 18:11:58 -0400
+Subject: Re: checkpoint/restart ABI
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Theodore Tso <tytso@mit.edu>,
+       Daniel Lezcano <daniel.lezcano@fr.ibm.com>,
+       Arnd Bergmann <arnd@arndb.de>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, Peter Chubb <peterc@gelato.unsw.edu.au>
+In-Reply-To: <48AC929C.9030901@cs.columbia.edu>
+References: <20080807224033.FFB3A2C1@kernel>
+	 <200808090013.41999.arnd@arndb.de> <20080811152201.GB25930@us.ibm.com>
+	 <200808111853.13854.arnd@arndb.de> <1218484114.5598.43.camel@nimitz>
+	 <48A0CD86.6030704@goop.org> <1218553091.5598.76.camel@nimitz>
+	 <48A1BB39.3090108@goop.org> <1218559619.5598.97.camel@nimitz>
+	 <48AC929C.9030901@cs.columbia.edu>
 Content-Type: text/plain
-Date: Thu, 21 Aug 2008 08:08:58 +1000
-Message-Id: <1219270138.21386.73.camel@pasglop>
+Date: Wed, 20 Aug 2008 15:11:54 -0700
+Message-Id: <1219270314.8960.74.camel@nimitz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-08-20 at 17:43 -0400, Steven Rostedt wrote:
+On Wed, 2008-08-20 at 17:54 -0400, Oren Laadan wrote:
+> > Me, personally, I think I'd probably "re-link" the thing, mark it as
+> > such, ship it across like a normal file, then unlink it after the
+> > restore.  I don't know what we'd choose when actually implementing
+> it.  
 > 
-> 
-> On Thu, 21 Aug 2008, Benjamin Herrenschmidt wrote:
-> 
-> > On Wed, 2008-08-20 at 12:55 -0400, Steven Rostedt wrote:
-> > > The modification of code is performed either by kstop_machine, before
-> > > SMP starts, or on module code before the module is executed. There is
-> > > no reason to do the modifications from assembly. The copy to and from
-> > > user functions are sufficient and produces cleaner and easier to read
-> > > code.
-> > > 
-> > > Thanks to Benjamin Herrenschmidt for suggesting the idea.
-> > 
-> > Haven't we lost the dcache/icache synchronisation somewhere ?
-> 
-> This is the x86 version, sync_core should be fine.
+> Re-linking works well when the file system supports that - some do not
+> allow this, in which case you need to silently rename instead of really
+> un-linking (even with NFS), or copy the entire contents.
 
-Oh oops, I didn't look well enough :-)
+Yeah, it will certainly be fs-dependent.
 
-Ben.
+This might be a good application for splice.
 
-> -- Steve
-> 
-> > 
-> > > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> > > ---
-> > >  arch/x86/kernel/ftrace.c |   38 +++++++++++++-------------------------
-> > >  1 file changed, 13 insertions(+), 25 deletions(-)
-> > > 
-> > > Index: linux-tip.git/arch/x86/kernel/ftrace.c
-> > > ===================================================================
-> > > --- linux-tip.git.orig/arch/x86/kernel/ftrace.c	2008-08-20 12:39:41.000000000 -0400
-> > > +++ linux-tip.git/arch/x86/kernel/ftrace.c	2008-08-20 12:40:17.000000000 -0400
-> > > @@ -11,6 +11,7 @@
-> > >  
-> > >  #include <linux/spinlock.h>
-> > >  #include <linux/hardirq.h>
-> > > +#include <linux/uaccess.h>
-> > >  #include <linux/ftrace.h>
-> > >  #include <linux/percpu.h>
-> > >  #include <linux/init.h>
-> > > @@ -60,11 +61,7 @@ notrace int
-> > >  ftrace_modify_code(unsigned long ip, unsigned char *old_code,
-> > >  		   unsigned char *new_code)
-> > >  {
-> > > -	unsigned replaced;
-> > > -	unsigned old = *(unsigned *)old_code; /* 4 bytes */
-> > > -	unsigned new = *(unsigned *)new_code; /* 4 bytes */
-> > > -	unsigned char newch = new_code[4];
-> > > -	int faulted = 0;
-> > > +	unsigned char replaced[MCOUNT_INSN_SIZE];
-> > >  
-> > >  	/*
-> > >  	 * Note: Due to modules and __init, code can
-> > > @@ -72,29 +69,20 @@ ftrace_modify_code(unsigned long ip, uns
-> > >  	 *  as well as code changing.
-> > >  	 *
-> > >  	 * No real locking needed, this code is run through
-> > > -	 * kstop_machine.
-> > > +	 * kstop_machine, or before SMP starts.
-> > >  	 */
-> > > -	asm volatile (
-> > > -		"1: lock\n"
-> > > -		"   cmpxchg %3, (%2)\n"
-> > > -		"   jnz 2f\n"
-> > > -		"   movb %b4, 4(%2)\n"
-> > > -		"2:\n"
-> > > -		".section .fixup, \"ax\"\n"
-> > > -		"3:	movl $1, %0\n"
-> > > -		"	jmp 2b\n"
-> > > -		".previous\n"
-> > > -		_ASM_EXTABLE(1b, 3b)
-> > > -		: "=r"(faulted), "=a"(replaced)
-> > > -		: "r"(ip), "r"(new), "c"(newch),
-> > > -		  "0"(faulted), "a"(old)
-> > > -		: "memory");
-> > > -	sync_core();
-> > > +	if (__copy_from_user(replaced, (char __user *)ip, MCOUNT_INSN_SIZE))
-> > > +		return 1;
-> > >  
-> > > -	if (replaced != old && replaced != new)
-> > > -		faulted = 2;
-> > > +	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
-> > > +		return 2;
-> > >  
-> > > -	return faulted;
-> > > +	WARN_ON_ONCE(__copy_to_user((char __user *)ip, new_code,
-> > > +				    MCOUNT_INSN_SIZE));
-> > > +
-> > > +	sync_core();
-> > > +
-> > > +	return 0;
-> > >  }
-> > >  
-> > >  notrace int ftrace_update_ftrace_func(ftrace_func_t func)
-> > 
-> > 
+	open("/tmp/linked-newfile", O_RDONLY, perms);
+	splice(unlinked_fd, NULL, new_fd, NULL, MAX_INT, SPLICE_F_MOVE);
+
+I'm not sure if it can re-use the blocks on the fs for this, but it
+probably doesn't matter.  
+
+-- Dave
 
