@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbYHTK6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbYHTLAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755898AbYHTK6e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 06:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYHTK6Z
+	id S1755997AbYHTLAL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 07:00:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYHTK75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 06:58:25 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:34326 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752298AbYHTK6Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 06:58:25 -0400
-Message-ID: <48ABF880.5010605@s5r6.in-berlin.de>
-Date: Wed, 20 Aug 2008 12:57:04 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Wed, 20 Aug 2008 06:59:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59678 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752762AbYHTK74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 06:59:56 -0400
+Date: Wed, 20 Aug 2008 12:59:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] debug: fix BUILD_BUG_ON() for non-constant expressions
+Message-ID: <20080820105922.GC18524@elte.hu>
+References: <20080816100948.GB19926@martell.zuzino.mipt.ru> <alpine.LFD.1.10.0808170936260.3324@nehalem.linux-foundation.org> <20080817173319.GA2450@elte.hu> <200808181109.43203.rusty@rustcorp.com.au> <20080818075459.GH30694@elte.hu> <48A9472F.908@panasas.com> <20080819133422.GA24369@elte.hu> <48AAF5F7.6040709@panasas.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Kevin Diggs <kevdig@hypersurf.com>, linux-kernel@vger.kernel.org,
-       david@fromorbit.com, arnd@arndb.de,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: {NOT a PATCH} Corrections please ...
-References: <48AB73A3.9010404@hypersurf.com> <20080820095908.GC28492@elte.hu>
-In-Reply-To: <20080820095908.GC28492@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48AAF5F7.6040709@panasas.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> * Kevin Diggs <kevdig@hypersurf.com> wrote:
->> 	It was recommended that I use a completion in a driver I am 
->> working on.  While figuring out how to use one,
 
-Kevin, as a side note:  LDD3 chapter 5 pages 114 ff has some guidance.
-http://lwn.net/Kernel/LDD3/
-I'm only pointing to it for the unlikely case that you didn't come
-across LDD3 yet.  The dead tree version is affordable too, and more
-comfortable to read than the online version.
--- 
-Stefan Richter
--=====-==--- =--- =-=--
-http://arcgraph.de/sr/
+* Boaz Harrosh <bharrosh@panasas.com> wrote:
+
+> If the user of virtio_has_feature() must pass a compile-time constant 
+> then it must be converted to a MACRO, and then the BUILD_BUG_ON will 
+> work. Or it should be changed to a BUG_ON() if fbit is a runtime 
+> variable.
+
+well, that's the question i'm asking: that sort of proposed 
+BUILD_BUG_ON() variantcannot be used in inline functions like 
+virtio_has_feature() does. If we get forced back to macros that's not an 
+improvement.
+
+Maybe the link-time last-line-of-defense mechanism i posed is the most 
+flexible one perhaps after all? (it's ugly too but none of this is 
+particularly pretty)
+
+hm?
+
+	Ingo
