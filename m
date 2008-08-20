@@ -1,190 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757072AbYHTT1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbYHTT2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757072AbYHTT1n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 15:27:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbYHTT0M
+	id S1757262AbYHTT2f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 15:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755824AbYHTT0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 15:26:12 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:58056 "EHLO e1.ny.us.ibm.com"
+	Wed, 20 Aug 2008 15:26:13 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:48478 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754675AbYHTT0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 15:26:09 -0400
-Subject: [RFC v2][PATCH 6/9] Simplify filename handling for now
+	id S1755302AbYHTT0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 15:26:12 -0400
+Subject: [RFC v2][PATCH 9/9] remove ->cksum field
 To: arnd@arndb.de
 Cc: orenl@cs.columbia.edu, jeremy@goop.org,
        containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        Dave Hansen <dave@linux.vnet.ibm.com>
 From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Wed, 20 Aug 2008 12:26:04 -0700
+Date: Wed, 20 Aug 2008 12:26:08 -0700
 References: <20080820192557.98788FAB@nimitz>
 In-Reply-To: <20080820192557.98788FAB@nimitz>
-Message-Id: <20080820192604.79777FBA@nimitz>
+Message-Id: <20080820192608.CEBC256B@nimitz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The filename handling is a bit clunky, as one of the reviewers
-noted.  It can allocate memory in one of two places and that
-makes things look a bit weird.
-
-We don't *really* need the filename sitting around in its own
-buffer, so let's just combine the writing and the filename
-generation.
-
-It moves the order in which the things in the VMA are done,
-but it doens't change the order in which they are written
-to the checkpoint file.
-
-Note how much code this removes.
+This is unused so far.  We'll add it back later.
 
 ---
 
- oren-cr.git-dave/checkpoint/checkpoint.c |   48 ++++++++++++-------------------
- oren-cr.git-dave/checkpoint/ckpt.h       |    1 
- oren-cr.git-dave/checkpoint/ckpt_mem.c   |   36 ++++++-----------------
- 3 files changed, 30 insertions(+), 55 deletions(-)
+ oren-cr.git-dave/checkpoint/checkpoint.c |    2 --
+ oren-cr.git-dave/checkpoint/ckpt_hdr.h   |    1 -
+ oren-cr.git-dave/checkpoint/restart.c    |    3 +--
+ 3 files changed, 1 insertion(+), 5 deletions(-)
 
-diff -puN checkpoint/checkpoint.c~0007-fixup-filename-handling checkpoint/checkpoint.c
---- oren-cr.git/checkpoint/checkpoint.c~0007-fixup-filename-handling	2008-08-20 12:12:50.000000000 -0700
-+++ oren-cr.git-dave/checkpoint/checkpoint.c	2008-08-20 12:12:50.000000000 -0700
-@@ -23,43 +23,33 @@
- #include "ckpt_arch.h"
+diff -puN checkpoint/checkpoint.c~remove-unused-cksum checkpoint/checkpoint.c
+--- oren-cr.git/checkpoint/checkpoint.c~remove-unused-cksum	2008-08-20 12:12:51.000000000 -0700
++++ oren-cr.git-dave/checkpoint/checkpoint.c	2008-08-20 12:12:51.000000000 -0700
+@@ -125,8 +125,6 @@ static int cr_write_tail(struct cr_ctx *
+ 	h.id = 0;
  
- /**
-- * cr_get_fname - return pathname of a given file
-- * @file: file pointer
-- * @buf: buffer for pathname
-- * @n: buffer length (in) and pathname length (out)
-- *
-- * if the buffer provivded by the caller is too small, allocate a new
-- * buffer; caller should call cr_put_pathname() for cleanup
-+ * cr_write_fname - write a string record for a filename
-+ * @ctx: checkpoint context
-+ * @path: path name to write
-+ * @root: root from which to find the path
-  */
--char *cr_get_fname(struct path *path, struct path *root, char *buf, int *n)
-+int cr_write_fname(struct cr_ctx *ctx, struct path *path, struct path *root)
- {
-+	char *fname_buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
- 	char *fname;
-+	int ret;
-+	int len;
+ 	hh->magic = CR_HEADER_MAGIC;
+-	hh->cksum[0] = 1;
+-       	hh->cksum[1] = 1;	/* TBD ... */
  
--	fname = __d_path(path, root, buf, *n);
-+	if (!fname_buf)
-+		return -ENOMEM;
- 
--	if (IS_ERR(fname) && PTR_ERR(fname) == -ENAMETOOLONG) {
--		 if (!(buf = (char *) __get_free_pages(GFP_KERNEL, 0)))
--			 return ERR_PTR(-ENOMEM);
--		fname = __d_path(path, root, buf, PAGE_SIZE);
--		if (IS_ERR(fname))
--			free_pages((unsigned long) buf, 0);
-+	fname = __d_path(path, root, fname_buf, PAGE_SIZE);
-+	if (IS_ERR(fname)) {
-+		ret = PTR_ERR(fname);
-+		goto out_free;
- 	}
--	if (!IS_ERR(fname))
--		*n = (buf + *n - fname);
- 
--	return fname;
--}
-+	len = PAGE_SIZE + fname_buf - fname;
-+	ret = cr_write_str(ctx, fname, len);
- 
--/**
-- * cr_put_fname - (possibly) cleanup pathname buffer
-- * @buf: original buffer that was given to cr_get_pathname()
-- * @fname: resulting pathname from cr_get_pathname()
-- * @n: length of original buffer
-- */
--void cr_put_fname(char *buf, char *fname, int n)
--{
--	if (fname && (fname < buf || fname >= buf + n))
--		free_pages((unsigned long) buf, 0);
-+out_free:
-+	kfree(fname_buf);
-+	return ret;
- }
- 
- /**
-diff -puN checkpoint/ckpt.h~0007-fixup-filename-handling checkpoint/ckpt.h
---- oren-cr.git/checkpoint/ckpt.h~0007-fixup-filename-handling	2008-08-20 12:12:50.000000000 -0700
-+++ oren-cr.git-dave/checkpoint/ckpt.h	2008-08-20 12:12:50.000000000 -0700
-@@ -48,6 +48,7 @@ struct cr_ctx {
- 
- extern void cr_put_fname(char *buf, char *fname, int n);
- extern char *cr_get_fname(struct path *path, struct path *root, char *buf, int *n);
-+extern int cr_write_fname(struct cr_ctx *ctx, struct path *path, struct path *root);
- 
- extern int cr_uwrite(struct cr_ctx *ctx, void *buf, int count);
- extern int cr_kwrite(struct cr_ctx *ctx, void *buf, int count);
-diff -puN checkpoint/ckpt_mem.c~0007-fixup-filename-handling checkpoint/ckpt_mem.c
---- oren-cr.git/checkpoint/ckpt_mem.c~0007-fixup-filename-handling	2008-08-20 12:12:50.000000000 -0700
-+++ oren-cr.git-dave/checkpoint/ckpt_mem.c	2008-08-20 12:12:50.000000000 -0700
-@@ -262,8 +262,7 @@ static int cr_write_vma(struct cr_ctx *c
- {
- 	struct cr_hdr h;
- 	struct cr_hdr_vma *hh = ctx->tbuf;
--	char *fname = NULL;
--	int how, nr, ret;
-+	int nr, ret;
- 
- 	h.type = CR_HDR_VMA;
- 	h.len = sizeof(*hh);
-@@ -280,23 +279,10 @@ static int cr_write_vma(struct cr_ctx *c
- 		return -ETXTBSY;
- 	}
- 
--	/* by default assume anon memory */
--	how = CR_VMA_ANON;
--
--	/* if there is a backing file, assume private-mapped */
--	/* (NEED: check if the file is unlinked) */
--	if (vma->vm_file) {
--		nr = PAGE_SIZE;
--		fname = cr_get_fname(&vma->vm_file->f_path,
--				     ctx->vfsroot, ctx->tbuf, &nr);
--		if (IS_ERR(fname))
--			return PTR_ERR(fname);
--		hh->namelen = nr;
--		how = CR_VMA_FILE;
--	} else
--		hh->namelen = 0;
--
--	hh->how = how;
-+	hh->how = CR_VMA_ANON;
-+	hh->namelen = 0;
-+	if (vma->vm_file)
-+		hh->how = CR_VMA_FILE;
- 
- 	/*
- 	 * it seems redundant now, but we do it in 3 steps for because:
-@@ -310,18 +296,16 @@ static int cr_write_vma(struct cr_ctx *c
- 	 * pages to dump, and make those pages COW. keep the list of pages
- 	 * (and a reference to each page) on the checkpoint ctx */
- 	nr = cr_vma_scan_pages(ctx, vma);
--	if (nr < 0) {
--		cr_put_fname(ctx->tbuf, fname, PAGE_SIZE);
-+	if (nr < 0)
- 		return nr;
--	}
- 
- 	hh->npages = nr;
  	ret = cr_write_obj(ctx, &h, hh);
+ 	kfree(hh);
+diff -puN checkpoint/ckpt_hdr.h~remove-unused-cksum checkpoint/ckpt_hdr.h
+--- oren-cr.git/checkpoint/ckpt_hdr.h~remove-unused-cksum	2008-08-20 12:12:51.000000000 -0700
++++ oren-cr.git-dave/checkpoint/ckpt_hdr.h	2008-08-20 12:12:51.000000000 -0700
+@@ -43,7 +43,6 @@ struct cr_hdr_head {
  
--	if (!ret && hh->namelen)
--		ret = cr_write_str(ctx, fname, hh->namelen);
--
--	cr_put_fname(ctx->tbuf, fname, PAGE_SIZE);
-+	/* if there is a backing file, assume private-mapped */
-+	/* (NEED: check if the file is unlinked) */
-+	if (hh->how == CR_VMA_FILE)
-+		ret = cr_write_fname(ctx, &vma->vm_file->f_path, ctx->vfsroot);
+ struct cr_hdr_tail {
+ 	__u32 magic;
+-	__u32 cksum[2];
+ };
  
+ struct cr_hdr_task {
+diff -puN checkpoint/restart.c~remove-unused-cksum checkpoint/restart.c
+--- oren-cr.git/checkpoint/restart.c~remove-unused-cksum	2008-08-20 12:12:51.000000000 -0700
++++ oren-cr.git-dave/checkpoint/restart.c	2008-08-20 12:12:51.000000000 -0700
+@@ -113,8 +113,7 @@ static int cr_read_tail(struct cr_ctx *c
  	if (ret < 0)
  		return ret;
+ 
+-	if (hh->magic != CR_HEADER_MAGIC ||
+-	    hh->cksum[0] != 1 || hh->cksum[1] != 1)
++	if (hh->magic != CR_HEADER_MAGIC)
+ 		return -EINVAL;
+ 
+ 	kfree(hh);
 _
