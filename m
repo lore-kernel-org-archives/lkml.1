@@ -1,81 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbYHTLFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbYHTLG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756123AbYHTLFG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 07:05:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbYHTLEx
+	id S1756158AbYHTLG2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 07:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbYHTLGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 07:04:53 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:33607 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751648AbYHTLEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 07:04:53 -0400
-Date: Wed, 20 Aug 2008 13:04:41 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: David =?UTF-8?B?SMOkcmRlbWFu?= <david@hardeman.nu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: sdhci: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter -
- disabling IRQ
-Message-ID: <20080820130441.339bb459@mjolnir.drzeus.cx>
-In-Reply-To: <20080820064522.GA2501@hardeman.nu>
-References: <20080624181656.GB14243@hardeman.nu>
-	<20080710083457.7887d363@mjolnir.drzeus.cx>
-	<20080711164706.GA8943@hardeman.nu>
-	<20080719015531.6c8a1981@mjolnir.drzeus.cx>
-	<20080802224725.GA6574@hardeman.nu>
-	<20080805112234.759819fe@mjolnir.drzeus.cx>
-	<20080820064522.GA2501@hardeman.nu>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-6824-1219230291-0001-2"
+	Wed, 20 Aug 2008 07:06:20 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39286 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752138AbYHTLGT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 07:06:19 -0400
+Date: Wed, 20 Aug 2008 20:05:51 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: [RFC][PATCH 0/2] Quicklist is slighly problematic.
+Cc: kosaki.motohiro@jp.fujitsu.com, tokunaga.keiich@jp.fujitsu.com
+Message-Id: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Hi Cristoph,
 
---=_freyr.drzeus.cx-6824-1219230291-0001-2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Thank you for explain your quicklist plan at OLS.
 
-On Wed, 20 Aug 2008 08:45:22 +0200
-David H=C3=A4rdeman <david@hardeman.nu> wrote:
+So, I made summary to issue of quicklist.
+if you have a bit time, Could you please read this mail and patches?
+And, if possible, Could you please tell me your feeling?
 
->=20
-> In the end, it turns out that if the iwl4965 is disabled (e.g. via the=20
-> rfkill button) and stays disabled, no error message is generated (I=20
-> waited for > 30 minutes). If I later enable it and connect to my=20
-> wireless AP, I get the error message approx 10 minutes after I've=20
-> connected to the AP.
->=20
-> Does this mean I should contact the iwl4965 maintainers?
->=20
 
-Yes indeed. Since this is an issue that has been present previously, it
-hopefully isn't that hard to fix.
+--------------------------------------------------------------------
 
---=20
-     -- Pierre Ossman
+Now, Quicklist store some page in each CPU as cache.
+(Each CPU has node_free_pages/16 pages)
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+and it is used for page table cache.
+Then, exit() increase cache, the other hand fork() spent it.
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+So, if apache type (one parent and many child model) middleware run,
+One CPU process fork(), Other CPU process the middleware work and exit().
 
---=_freyr.drzeus.cx-6824-1219230291-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+At that time, One CPU don't have page table cache at all,
+Others have maximum caches.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+	QList_max = (#ofCPUs - 1) x Free / 16
+	=> QList_max / (Free + QList_max) = (#ofCPUs - 1) / (16 + #ofCPUs - 1)
 
-iEYEARECAAYFAkir+lAACgkQ7b8eESbyJLjguQCfTyXhvcuDTHOC0M6SK7W39DD6
-hYcAoJ5Mwt4Jfabm3KQYBrqdPsldeP0J
-=Wmsn
------END PGP SIGNATURE-----
+So, How much quicklist spent memory at maximum case?
+That is #CPUs proposional because it is per CPU cache but cache amount calculation doesn't use #ofCPUs.
 
---=_freyr.drzeus.cx-6824-1219230291-0001-2--
+	Above calculation mean
+
+	 Number of CPUs per node            2    4    8   16
+	 ==============================  ====================
+	 QList_max / (Free + QList_max)   5.8%  16%  30%  48%
+
+
+Wow! Quicklist can spent about 50% memory at worst case.
+More unfortunately, it doesn't have any cache shrinking mechanism.
+So it cause some wrong thing.
+
+1. End user misunderstand to memory leak happend.
+	=> /proc/meminfo should display amount quicklist
+
+2. It can cause OOM killer
+	=> Amount of quicklists shouldn't be proposional to #ofCPUs.
+
+
+
+
+
