@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756666AbYHTU1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbYHTU2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756666AbYHTU1Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 16:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbYHTU1O
+	id S1757084AbYHTU2R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 16:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYHTU2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 16:27:14 -0400
-Received: from cpsmtpo-eml06.kpnxchange.com ([213.75.38.155]:8963 "EHLO
-	cpsmtpo-eml06.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753020AbYHTU1N (ORCPT
+	Wed, 20 Aug 2008 16:28:00 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:48820 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751985AbYHTU16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 16:27:13 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.27-rc3: 'APIC error on CPU1: 00(40)', but only on resume!
-Date: Wed, 20 Aug 2008 22:26:45 +0200
-User-Agent: KMail/1.9.9
-References: <200808202106.41058.elendil@planet.nl> <200808202138.13302.rjw@sisk.pl>
-In-Reply-To: <200808202138.13302.rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org
+	Wed, 20 Aug 2008 16:27:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=cs5WWQRy3qFH77om2X7GxhKIj/42g642y7EQAE7xFNRGP0ImQUyaSFF3mYyWAAJO44
+         SJVagIFptJwnkbK0IIbVjgildznS0LDXld7d1dRWy4tKw3eXdOlBplj4AZ/MzNfq10dy
+         5w2rFmggBgX9+X2F4BZdzpbguEuIZDiKjCDW0=
+Message-ID: <b170af450808201327q48b5b2e0n319c89b0fc1759b6@mail.gmail.com>
+Date: Wed, 20 Aug 2008 22:27:57 +0200
+From: "=?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?=" <zajec5@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [Bug #11313] Plugging HDMI causes "unable to handle kernel paging request"
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <48AC3FA4.9080603@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200808202226.45655.elendil@planet.nl>
-X-OriginalArrivalTime: 20 Aug 2008 20:27:10.0968 (UTC) FILETIME=[1FC6D780:01C90303]
+References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>
+	 <sNRO-BDDjQL.A.DYF.sazpIB@albercik>
+	 <b170af450808171228i37951c6vd77071da7584669b@mail.gmail.com>
+	 <48AB5D17.5030600@goop.org>
+	 <b170af450808200410v3d7cd076h3e62546b48ddf507@mail.gmail.com>
+	 <48AC3FA4.9080603@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m7KKSLdq016659
 
-Thanks for the quick responses Rafael.
+2008/8/20 Jeremy Fitzhardinge <jeremy@goop.org>:> RafaÅ‚ MiÅ‚ecki wrote:>> Sure, as everything to help debugging this :)>> http://bugzilla.kernel.org/attachment.cgi?id=17330>>>> Thanks, but could you post the *full* dmesg output, including the added> lines?  I want to see the other things it prints around there.I added full dmesg 5 minutes after adding grepped:http://bugzilla.kernel.org/attachment.cgi?id=17331
+> That said, I don't see anything unexpected in here.  It would be> interested to compare to the E820 map.OK, I'll compare that tomorrow.
+> Also, what kind of machine is this?  Oh, Vaio. Hm.  Have you checked to> see whether there's an updated BIOS?  How much memory does it have> installed?It's Sony Vaio FW11 with 4GB of RAM. Will chec for BIOS update tomorrow.
 
-On Wednesday 20 August 2008, Rafael wrote:
-> On Wednesday, 20 of August 2008, Frans Pop wrote:
-> > <snip>
-> > CPU1 is up
-> > ACPI: Waking up from system sleep state S3
-> > APIC error on CPU1: 00(40)
-> > ACPI: EC: non-query interrupt received, switching to interrupt mode
-> > </snip>
->
-> Does the box work after that?
-
-Yes, it does. Both cores seem to be working fine.
-
-The only weirdness I can see (only spotted that just now) is that both 
-cores will always seem to be changing frequency together (using ondemand 
-governor), even when 'top' shows one as idle. On my other Core Duo system 
-(an older desktop) the cores react independently.
-This also happens immediately after boot (so not suspend related) and may 
-be "normal" or unrelated.
+-- RafaÅ‚ MiÅ‚eckiÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
