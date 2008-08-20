@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbYHTTYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbYHTTZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755599AbYHTTYj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 15:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbYHTTYb
+	id S1756229AbYHTTZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 15:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbYHTTZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 15:24:31 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47486 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752882AbYHTTYa (ORCPT
+	Wed, 20 Aug 2008 15:25:15 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:28063 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751982AbYHTTZN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 15:24:30 -0400
-Date: Wed, 20 Aug 2008 21:25:41 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Uros Bizjak <ubizjak@gmail.com>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] x86: Use X86_CR4_PGE in x86/power/hibernate_asm_32.S
-Message-ID: <20080820192541.GA2134@elf.ucw.cz>
-References: <5787cf470808200144ta2f28b4nd9b2922cbec73d78@mail.gmail.com> <20080820095353.GB28492@elte.hu>
+	Wed, 20 Aug 2008 15:25:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=x6yxs2CRDOpXQO8/NV02CkL5kBHAZsqaHdwqHU209VYT3ipBhOVG0pRNhIjp0DJ6R7
+         7ATZml9iLoKWA2GSZUqKNrvYGVtMz2yOml+2idY43IMEXhaLEcyjBF7kQnUcZvz9TdZr
+         zI5KecQY/cY9q0nbbBxjLDeDjUBF/3mDhWzM8=
+Message-ID: <f6ca9fed0808201225p73a4303di3f806e8843c87f0a@mail.gmail.com>
+Date: Wed, 20 Aug 2008 21:25:12 +0200
+From: drago01 <drago01@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: [PATCH] Use EXPORT_SYMBOL for pv_lock_ops
+Cc: "kernel list" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080820095353.GB28492@elte.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-08-20 11:53:53, Ingo Molnar wrote:
-> 
-> * Uros Bizjak <ubizjak@gmail.com> wrote:
-> 
-> > Signed-off-by: Uros Bizjak <ubizjak@gmail.com>
-> 
-> applied the commit below to tip/x86/cleanups - thanks Uros.
-> 
-> i did a small change: i moved the .text to after the include files. 
-> While include files are not supposed to change section attributes, it 
-> looks logically more consistent to have the .text right before the code.
-> 
-> 	Ingo
-> 
-> ----------------->
-> >From c171f465b7281f2d3b03e9145ec763d6a8bab176 Mon Sep 17 00:00:00 2001
-> From: Uros Bizjak <ubizjak@gmail.com>
-> Date: Wed, 20 Aug 2008 10:44:47 +0200
-> Subject: [PATCH] x86, cleanup: use X86_CR4_PGE in x86/power/hibernate_asm_32.S
-> 
-> Signed-off-by: Uros Bizjak <ubizjak@gmail.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+On Wed, Aug 20, 2008 at 7:06 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> drago01 wrote:
+>> Hi,
+>>
+>> It seems that in 2.6.27 pv_lock_ops is now GPL only which breaks
+>> binary drivers because they pick it up implicitly when CONFIG_PARAVIRT
+>> is enabled.
+>> (see http://www.nvnews.net/vbulletin/showpost.php?p=1750090&postcount=2)
+>> Is there a reason for doing this?
+>> As some other pv_* are exported to all modules can this be done for
+>> this too? (there should be no difference between CONFIG_PARAVIRT on or
+>> of for GPL'd symbols).
+>
+> Yeah, they're just GPL by default, but the lock code is not exported GPL
+> so there's no reason why lock_ops should be.
+>
+>    J
+>
+>
 
-ACK.
+Use EXPORT_SYMBOL for pv_lock_ops to preserve the behavior between
+CONFIG_PARAVIRT set and unset.
+Currently we only used _GPL when the non paravirt symbols are GPL only too.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Signed-off-by: Adel Gadllah <adel.gadllah@gmail.com>
+
+diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
+index 94da4d5..300da17 100644
+--- a/arch/x86/kernel/paravirt.c
++++ b/arch/x86/kernel/paravirt.c
+@@ -471,7 +471,7 @@ struct pv_lock_ops pv_lock_ops = {
+        .spin_unlock = __ticket_spin_unlock,
+ #endif
+ };
+-EXPORT_SYMBOL_GPL(pv_lock_ops);
++EXPORT_SYMBOL(pv_lock_ops);
+
+ EXPORT_SYMBOL_GPL(pv_time_ops);
+ EXPORT_SYMBOL    (pv_cpu_ops);
