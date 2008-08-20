@@ -1,75 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbYHTAKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbYHTAMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbYHTAKB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 20:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbYHTAJx
+	id S1755166AbYHTAMT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 20:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYHTAML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 20:09:53 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:1225 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752486AbYHTAJw (ORCPT
+	Tue, 19 Aug 2008 20:12:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46537 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752423AbYHTAMK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 20:09:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=tkJhZbxM0pN503TsqECnjZu2oYic7fqxb4hxXCUs6VBiC0viJ9BabAZKzb1kq5Ah9f
-         aAozFY1zW9V/r9NqMNnSzFej9l/wKvr/b+JieyxS60jUhf4BYK/7zhG6Cr7fcXhiy0pv
-         V9nPUvVVOJMWVKWlU73HWQBFHUfvI7/LbBoGA=
-Subject: [PATCH] pcmcia: ds.c conversion to dev_dbg fixes
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Dominik Brodowski <linux@brodo.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 19 Aug 2008 17:09:53 -0700
-Message-Id: <1219190994.17033.97.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 20:12:10 -0400
+Date: Tue, 19 Aug 2008 17:11:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bart Trojanowski <bart@jukie.net>
+cc: linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: vfat BKL/lock_super regression in v2.6.26-rc3-g8f59342
+In-Reply-To: <20080820000339.GB28029@jukie.net>
+Message-ID: <alpine.LFD.1.10.0808191709130.3324@nehalem.linux-foundation.org>
+References: <20080819220311.GA28029@jukie.net> <alpine.LFD.1.10.0808191505590.3324@nehalem.linux-foundation.org> <20080820000339.GB28029@jukie.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Noticed by sparse:
-drivers/pcmcia/ds.c:962:3: warning: incorrect type in argument 1 (different base types)
-drivers/pcmcia/ds.c:962:3:    expected struct device const *dev
-drivers/pcmcia/ds.c:962:3:    got struct pcmcia_device *dev
-drivers/pcmcia/ds.c:969:3: warning: incorrect type in argument 1 (different base types)
-drivers/pcmcia/ds.c:969:3:    expected struct device const *dev
-drivers/pcmcia/ds.c:969:3:    got struct pcmcia_device *dev
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Found in next-20080819
-
- drivers/pcmcia/ds.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/pcmcia/ds.c b/drivers/pcmcia/ds.c
-index ce2a7db..c848b88 100644
---- a/drivers/pcmcia/ds.c
-+++ b/drivers/pcmcia/ds.c
-@@ -959,14 +959,14 @@ static inline int pcmcia_devmatch(struct pcmcia_device *dev,
- 		 * after it has re-checked that there is no possible module
- 		 * with a prod_id/manf_id/card_id match.
- 		 */
--		ds_dev_dbg(0, dev, "skipping FUNC_ID match until userspace "
-+		ds_dev_dbg(0, &dev->dev, "skipping FUNC_ID match until userspace "
- 		       "interaction\n");
- 		if (!dev->allow_func_id_match)
- 			return 0;
- 	}
- 
- 	if (did->match_flags & PCMCIA_DEV_ID_MATCH_FAKE_CIS) {
--		ds_dev_dbg(0, dev, "device needs a fake CIS\n");
-+		ds_dev_dbg(0, &dev->dev, "device needs a fake CIS\n");
- 		if (!dev->socket->fake_cis)
- 			pcmcia_load_firmware(dev, did->cisfile);
- 
--- 
-1.6.0.274.g8aacc
 
 
+On Tue, 19 Aug 2008, Bart Trojanowski wrote:
+> 
+> Ok, I will test your patch and let you know in a few minutes.
 
+Btw, while you're at it, can you try doing some random writes to that 
+thing, since the whole sync mount is quite possibly going to find a few 
+other cases like this. 
+
+IOW, _maybe_ you hit the only case that is ever going to be an issue for 
+sync mounts, and maybe you didn't. In my eternal quest to never actually 
+test anything myself, I'm hoping you can try some writing (and 
+over-writing) of files, since writes to the filesystem is where the whole 
+"sync" thing is going to show up (both metadata ie file creation and 
+removal, and "real" data ie normal write/truncate calls).
+
+			Linus
