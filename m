@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbYHTCZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754355AbYHTC1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140AbYHTCZw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 22:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYHTCZm
+	id S1754355AbYHTC1Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 22:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYHTC1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 22:25:42 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:58679 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752214AbYHTCZl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 22:25:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=SqfpsbPeMLedaAvt1+5e9ETVX+EgkAtZY894mlO6NpLNhAhMiT2rzcAVLmBBQAB+o+
-         352WaNb5Crwrc7w90Yf9CJFSgfMZO0/sTINyA25a1wvCxvlV7WMT7atY69M4yb7l7JvT
-         3rSInNqprdMfj8L5U+Y9mX0deLWcclBjXazmU=
-Subject: Re: [GIT]: Networking
-From: Josh Boyer <jwboyer@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, marcel@holtmann.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080819.142150.129314008.davem@davemloft.net>
-References: <alpine.LFD.1.10.0808190952000.3324@nehalem.linux-foundation.org>
-	 <1219170451.7591.175.camel@violet.holtmann.net>
-	 <alpine.LFD.1.10.0808191348540.3324@nehalem.linux-foundation.org>
-	 <20080819.142150.129314008.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 19 Aug 2008 22:25:15 -0400
-Message-Id: <1219199116.26429.19.camel@jdub.homelinux.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 22:27:14 -0400
+Received: from tau.jukie.net ([216.239.93.128]:55940 "EHLO tau.jukie.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751958AbYHTC1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 22:27:14 -0400
+Date: Tue, 19 Aug 2008 22:27:12 -0400
+From: Bart Trojanowski <bart@jukie.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: vfat BKL/lock_super regression in v2.6.26-rc3-g8f59342
+Message-ID: <20080820022712.GF28029@jukie.net>
+References: <20080819220311.GA28029@jukie.net> <alpine.LFD.1.10.0808191505590.3324@nehalem.linux-foundation.org> <20080820001845.GC28029@jukie.net> <alpine.LFD.1.10.0808191729330.3324@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808191748040.3324@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0808191748040.3324@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-19 at 14:21 -0700, David Miller wrote:
-> But it doesn't fix the time delegation problem.
-> 
-> There is always this "oh crap, I just spent 3 months doing nothing
-> but fixing bugs" feeling a lot of us core folks get right before
-> the merge window opens up.
-> 
-> So instead of getting the best work from the best people we have,
-> we get this last minute flurry of development in the days leading
-> up to the merge window openning up.
+* Linus Torvalds <torvalds@linux-foundation.org> [080819 20:56]:
+> So one thing we could perhaps consider is to make FAT in particular 
+> consider "sync" mounts to be about open/close consistency, not about 
+> per-write-system-call consistency. So the "close()" wouldn't return until 
+> the file is on disk, but we wouldn't force a synchronous rewrite the inode 
+> or the file allocation table thousands of times just because the file was 
+> big.
 
-So, not to add fuel to a fire that seems to be calming down, but what is
-so wrong with having that feeling?  If the core people are spending 3
-months doing nothing but fixing bugs, the I consider that to _be_ the
-best work from the best people.
+I was reading the vfat code, and it turns out that vfat has a "flush"
+mount option.  Which is documented in the code (not in the manpage) as:
 
-Bugs happen and it's not really worth debating over how they got into
-the tree to begin with because it happens in a number of different ways.
-However, if it takes 3 months of bug fixing to get a tree in shape then
-I don't see how that's a problem at all.  Personally, I'd rather take a
-relatively bug free tree over new shiny features on top of a buggy as
-hell tree.
+    struct fat_mount_options {
+            ...
+            unsigned
+            ...
+                     flush:1,         /* write things quickly */
 
-Call me old fashioned.
+Since that was very informative I looked at the usage.  It's used
+in fat_file_release() to do almost what you describe.  But it seems to
+be a best effort thing.  If my data doesn't hit the disk (or flash) in
+HZ/10, then all bets are off.
 
-josh
+-Bart
 
+-- 
+				WebSig: http://www.jukie.net/~bart/sig/
