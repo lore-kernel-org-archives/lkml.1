@@ -1,160 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbYHTSZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbYHTS1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753562AbYHTSZw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 14:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbYHTSZn
+	id S1754118AbYHTS1Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 14:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbYHTS1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 14:25:43 -0400
-Received: from smtp1.extricom.com ([212.235.24.249]:46004 "HELO
-	smtp.extricom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751103AbYHTSZm (ORCPT
+	Wed, 20 Aug 2008 14:27:14 -0400
+Received: from casper.infradead.org ([85.118.1.10]:34080 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750880AbYHTS1M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 14:25:42 -0400
-Message-ID: <48AC6120.1080400@extricom.com>
-Date: Wed, 20 Aug 2008 21:23:28 +0300
-From: Eran Liberty <liberty@extricom.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Wed, 20 Aug 2008 14:27:12 -0400
+Date: Wed, 20 Aug 2008 11:22:45 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Linux 2.6.26.3
+Message-ID: <20080820182245.GA22189@kroah.com>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Steven Rostedt <srostedt@redhat.com>, Alan Modra <amodra@au1.ibm.com>,
-       Scott Wood <scottwood@freescale.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-References: <48591941.4070408@extricom.com> <1219114600.8062.15.camel@pasglop>	 <alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>	 <1219119431.8062.35.camel@pasglop> <1219216705.21386.46.camel@pasglop>	 <alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com>	 <alpine.DEB.1.10.0808200916090.13132@gandalf.stny.rr.com>	 <48AC1DD8.9080702@extricom.com>	 <alpine.DEB.1.10.0808200941560.13132@gandalf.stny.rr.com>	 <48AC23F4.80900@extricom.com> <9e4733910808200755y1128ae56p6a1235684bfbb3ec@mail.gmail.com>
-In-Reply-To: <9e4733910808200755y1128ae56p6a1235684bfbb3ec@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Smirl wrote:
-> Manually edit the broken binary to change the order of the restore and
-> see if the problem disappears. That will keep everything else
-> constant.
->
->   
-checked with objdump where __d_lookup()
+We (the -stable team) are announcing the release of the 2.6.26.3
+kernel.
 
- > powerpc-linux-gnu-objdump -dr --start-address=0xc0065790 vmlinux | 
-grep "<__d_lookup>:"
-c00b91d8 <__d_lookup>:
+It contains lots of bugfixes, all over the map.  Any users of the 2.6.26
+kernel series should upgrade to this version.  For details on the fixes,
+see the changelog entries and the diffstat below.
 
- > liberty@liberty:~/svn/exsw1600-2.6.27-rc2$ powerpc-linux-gnu-objdump 
--dr --start-address=0xc00b91d8 vmlinux| head -n 100
+I'll also be replying to this message with a copy of the patch between
+2.6.26.2 and 2.6.26.3
 
-vmlinux:     file format elf32-powerpc
+The updated 2.6.26.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.26.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.26.y.git;a=summary
 
-Disassembly of section .text:
+thanks,
 
-c00b91d8 <__d_lookup>:
-c00b91d8:       7c 08 02 a6     mflr    r0
-c00b91dc:       90 01 00 04     stw     r0,4(r1)
- ....
+greg k-h
 
-c00b92bc:       4e 80 04 21     bctrl
-c00b92c0:       2f 83 00 00     cmpwi   cr7,r3,0
-c00b92c4:       41 9e 00 50     beq-    cr7,c00b9314 <__d_lookup+0x13c>
-c00b92c8:       83 de 00 00     lwz     r30,0(r30)
-c00b92cc:       2f 9e 00 00     cmpwi   cr7,r30,0
-c00b92d0:       40 9e ff 98     bne+    cr7,c00b9268 <__d_lookup+0x90>
-c00b92d4:       38 60 00 00     li      r3,0
-c00b92d8:       81 61 00 00     lwz     r11,0(r1)
-c00b92dc:       80 0b 00 04     lwz     r0,4(r11)
-c00b92e0:       7d 61 5b 78     mr      r1,r11
-       <=== As explained by Steve, these two should be replaced ===>
-c00b92e4:       bb 0b ff e0     lmw     r24,-32(r11)
-c00b92e8:       7c 08 03 a6     mtlr    r0
-c00b92ec:       4e 80 00 20     blr
-c00b92f0:       80 04 00 04     lwz     r0,4(r4)
-  ....
-c00b9330:       7f a3 eb 78     mr      r3,r29
-c00b9334:       4b ff ff a4     b       c00b92d8 <__d_lookup+0x100>
+-------------
 
-c00b9338 <d_lookup>:
-c00b9338:       7c 08 02 a6     mflr    r0
+ Makefile                              |    2 
+ arch/ia64/kvm/kvm-ia64.c              |    5 
+ arch/sparc64/kernel/irq.c             |   52 +++++++
+ arch/sparc64/kernel/kstack.h          |   60 ++++++++
+ arch/sparc64/kernel/process.c         |   32 ++--
+ arch/sparc64/kernel/signal.c          |    6 
+ arch/sparc64/kernel/stacktrace.c      |   11 -
+ arch/sparc64/kernel/traps.c           |    7 
+ arch/sparc64/lib/mcount.S             |   39 +++++
+ arch/sparc64/mm/init.c                |   11 +
+ arch/sparc64/mm/ultra.S               |    7 
+ arch/x86/boot/boot.h                  |    8 +
+ arch/x86/boot/cpucheck.c              |    8 -
+ arch/x86/boot/main.c                  |    4 
+ arch/x86/kernel/cpu/mtrr/generic.c    |    2 
+ arch/x86/kvm/mmu.c                    |    1 
+ arch/x86/kvm/svm.c                    |    7 
+ arch/x86/kvm/vmx.c                    |    2 
+ arch/x86/kvm/x86.c                    |  109 ++++++---------
+ arch/x86/pci/k8-bus_64.c              |    4 
+ block/scsi_ioctl.c                    |    2 
+ drivers/char/hw_random/via-rng.c      |    8 +
+ drivers/crypto/padlock-aes.c          |   28 +++
+ drivers/crypto/padlock-sha.c          |    9 +
+ drivers/i2c/Kconfig                   |   14 +
+ drivers/i2c/algos/Kconfig             |   11 +
+ drivers/i2c/i2c-core.c                |    4 
+ drivers/ide/ide-cd.c                  |   18 +-
+ drivers/ide/pci/cs5520.c              |    1 
+ drivers/ide/pci/it821x.c              |    6 
+ drivers/misc/acer-wmi.c               |   19 ++
+ drivers/net/r8169.c                   |    6 
+ drivers/net/wireless/rtl8187.h        |    4 
+ drivers/net/wireless/rtl8187_dev.c    |    3 
+ drivers/pci/quirks.c                  |    7 
+ drivers/scsi/hptiop.c                 |    7 
+ drivers/scsi/qla2xxx/qla_attr.c       |   43 ++++--
+ drivers/scsi/qla2xxx/qla_def.h        |    1 
+ drivers/scsi/qla2xxx/qla_gbl.h        |    2 
+ drivers/scsi/qla2xxx/qla_init.c       |   16 --
+ drivers/scsi/qla2xxx/qla_os.c         |   55 +++++--
+ drivers/scsi/scsi_transport_spi.c     |    8 -
+ drivers/scsi/ses.c                    |   18 +-
+ drivers/usb/core/message.c            |    2 
+ drivers/usb/serial/ftdi_sio.c         |    5 
+ drivers/usb/serial/ftdi_sio.h         |    6 
+ drivers/usb/serial/pl2303.c           |    1 
+ drivers/usb/serial/pl2303.h           |    4 
+ drivers/usb/serial/usb-serial.c       |    7 
+ drivers/usb/storage/scsiglue.c        |   25 ++-
+ drivers/usb/storage/transport.c       |   17 ++
+ drivers/usb/storage/unusual_devs.h    |   18 ++
+ drivers/video/arkfb.c                 |   18 +-
+ drivers/video/aty/radeon_accel.c      |   12 +
+ drivers/video/matrox/matroxfb_maven.c |    2 
+ drivers/video/s3fb.c                  |   18 +-
+ drivers/video/vt8623fb.c              |   20 +-
+ fs/cifs/asn1.c                        |    2 
+ fs/cifs/cifs_spnego.c                 |   18 +-
+ fs/cifs/cifsfs.c                      |    2 
+ fs/cifs/inode.c                       |    1 
+ include/asm-sparc64/futex.h           |    2 
+ include/asm-sparc64/irq.h             |    4 
+ include/asm-sparc64/ptrace.h          |    8 -
+ include/asm-x86/i387.h                |   32 ++++
+ include/asm-x86/spinlock.h            |    4 
+ include/linux/usb/serial.h            |    3 
+ include/video/radeon.h                |    9 -
+ kernel/posix-timers.c                 |   19 +-
+ kernel/relay.c                        |   12 +
+ kernel/signal.c                       |    1 
+ lib/random32.c                        |   48 +++---
+ mm/memory.c                           |   16 +-
+ mm/mlock.c                            |    2 
+ net/dccp/proto.c                      |    5 
+ net/ipv4/ipvs/ip_vs_est.c             |    7 
+ net/ipv4/syncookies.c                 |    1 
+ net/ipv6/ip6_output.c                 |    4 
+ net/ipv6/syncookies.c                 |    1 
+ sound/soc/fsl/fsl_dma.c               |  242 ++++++++++++++++++----------------
+ sound/soc/fsl/fsl_ssi.c               |   74 ++++++++--
+ 81 files changed, 940 insertions(+), 399 deletions(-)
 
-on the target I fired up xmon and replaced them.
 
-~ # echo x > /proc/sysrq-trigger
-SysRq : Entering xmon
-Vector: 0  at [df51fdb8]
-    pc: c0025960: sysrq_handle_xmon+0x60/0x64
-    lr: c0025960: sysrq_handle_xmon+0x60/0x64
-    sp: df51fe80
-   msr: 21000
-  current = 0xdc22a9a0
-    pid   = 1698, comm = echo
-WARNING: exception is not recoverable, can't continue
-enter ? for help
-[df51fe90] c0193c38 __handle_sysrq+0xa8/0x178
-[df51fec0] c00ee818 write_sysrq_trigger+0x78/0x7c
-[df51fed0] c00e65e4 proc_reg_write+0x5c/0x84
-[df51fef0] c00a299c vfs_write+0xc8/0x180
-[df51ff10] c00a2f40 sys_write+0x5c/0xa4
-[df51ff40] c0010554 ret_from_syscall+0x0/0x3c
-SP (bffe87e0) is in userspace
+Alan Stern (5):
+      USB: fix interface unregistration logic
+      usb-storage: unusual_devs entries for iRiver T10 and Datafab CF+SM reader
+      usb-serial: don't release unregistered minors
+      usb-storage: revert DMA-alignment change for Wireless USB
+      usb-storage: automatically recognize bad residues
 
-mon> di c00b92d0
-c00b92d0  409eff98      bne     cr7,c00b9268    # __d_lookup+0x90/0x160
-c00b92d4  38600000      li      r3,0
-c00b92d8  81610000      lwz     r11,0(r1)
-c00b92dc  800b0004      lwz     r0,4(r11)
-c00b92e0  7d615b78      mr      r1,r11
-  <=== wrong order ===>
-c00b92e4  bb0bffe0      lmw     r24,-32(r11)
-c00b92e8  7c0803a6      mtlr    r0
-c00b92ec  4e800020      blr
-c00b92f0  80040004      lwz     r0,4(r4)
-c00b92f4  7f80c800      cmpw    cr7,r0,r25
-c00b92f8  409eff64      bne     cr7,c00b925c    # __d_lookup+0x84/0x160
-c00b92fc  80640008      lwz     r3,8(r4)
-c00b9300  7f25cb78      mr      r5,r25
-c00b9304  7f04c378      mr      r4,r24
-c00b9308  4bf5ccf1      bl      c0015ff8        # memcmp+0x0/0x30
-c00b930c  2f830000      cmpwi   cr7,r3,0
-mon> m c00b92e0
-c00b92e0  7d l
-c00b92e0  7d615b78 bb0bffe0
-c00b92e4  bb0bffe0 7d615b78
-c00b92e8  7c0803a6 x
-mon> di c00b92d0
-c00b92d0  409eff98      bne     cr7,c00b9268    # __d_lookup+0x90/0x160
-c00b92d4  38600000      li      r3,0
-c00b92d8  81610000      lwz     r11,0(r1)
-c00b92dc  800b0004      lwz     r0,4(r11)
-c00b92e0  bb0bffe0      lmw     r24,-32(r11)
-  <=== right order ===>
-c00b92e4  7d615b78      mr      r1,r11
-c00b92e8  7c0803a6      mtlr    r0
-c00b92ec  4e800020      blr
-c00b92f0  80040004      lwz     r0,4(r4)
-c00b92f4  7f80c800      cmpw    cr7,r0,r25
-c00b92f8  409eff64      bne     cr7,c00b925c    # __d_lookup+0x84/0x160
-c00b92fc  80640008      lwz     r3,8(r4)
-c00b9300  7f25cb78      mr      r5,r25
-c00b9304  7f04c378      mr      r4,r24
-c00b9308  4bf5ccf1      bl      c0015ff8        # memcmp+0x0/0x30
-c00b930c  2f830000      cmpwi   cr7,r3,0
-mon> X
-~ #
+Andre Schenk (1):
+      USB: ftdi_sio: Add USB Product Id for ELV HS485
 
-And took it for a test drive
-~# while [ 1 ] ; do find / > /dev/null ; echo .  ; done
-.
-.
-.
-[ 10 min later ]
-.
-.
-.
+Andrew Vasquez (1):
+      qla2xxx: Set an rport's dev_loss_tmo value in a consistent manner.
 
-Stable! Yeepee.
+Arnaldo Carvalho de Melo (1):
+      dccp: change L/R must have at least one byte in the dccpsf_val field
 
-So how do we get this to be right in the first place and everywhere?
+Avi Kivity (1):
+      KVM: Avoid instruction emulation when event delivery is pending
 
--- Liberty
+Bartlomiej Zolnierkiewicz (1):
+      cs5520: add enablebits checking
+
+Carlos Corbacho (1):
+      acer-wmi: Fix wireless and bluetooth on early AMW0 v2 laptops
+
+Dave Jones (1):
+      USB: usb-storage: quirk around v1.11 firmware on Nikon D4
+
+David Miller (2):
+      radeonfb: fix accel engine hangs
+      radeon: misc corrections
+
+David S. Miller (7):
+      sparc64: Fix global reg snapshotting on self-cpu.
+      sparc64: Do not clobber %g7 in setcontext() trap.
+      sparc64: Fix end-of-stack checking in save_stack_trace().
+      sparc64: Fix recursion in stack overflow detection handling.
+      sparc64: Make global reg dumping even more useful.
+      sparc64: Implement IRQ stacks.
+      sparc64: Handle stack trace attempts before irqstacks are setup.
+
+Dean Hildebrand (1):
+      PCI: Limit VPD length for Broadcom 5708S
+
+Dimitri Gorokhovik (1):
+      ide: it821x in pass-through mode segfaults in 2.6.26-stable
+
+Florian Westphal (1):
+      syncookies: Make sure ECN is disabled
+
+Frederik Kriewitz (1):
+      USB: ftdi_sio: add support for Luminance Stellaris Evaluation/Development Kits
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.26.3
+
+Hans Verkuil (1):
+      i2c: Fix NULL pointer dereference in i2c_new_probed_device
+
+HighPoint Linux Team (1):
+      SCSI: hptiop: add more PCI device IDs
+
+James Bottomley (2):
+      SCSI: ses: fix VPD inquiry overrun
+      SCSI: scsi_transport_spi: fix oops in revalidate
+
+Jan Beulich (2):
+      CIFS: Fix compiler warning on 64-bit
+      x86: fix spin_is_contended()
+
+Jean Delvare (2):
+      matrox maven: fix a broken error path
+      i2c: Let users select algorithm drivers manually again
+
+Jeff Layton (1):
+      CIFS: properly account for new user= field in SPNEGO upcall string allocation
+
+Joerg Roedel (1):
+      x86: fix setup code crashes on my old 486 box
+
+Julia Lawall (1):
+      KVM: ia64: Fix irq disabling leak in error handling code
+
+KOSAKI Motohiro (1):
+      mlock() fix return values
+
+Larry Finger (1):
+      rtl8187: Fix lockups due to concurrent access to config routine
+
+Marcelo Tosatti (3):
+      KVM: task switch: segment base is linear address
+      KVM: task switch: use seg regs provided by subarch instead of reading from GDT
+      KVM: task switch: translate guest segment limit to virt-extension byte granular field
+
+Marcus Sundberg (1):
+      r8169: avoid thrashing PCI conf space above RTL_GIGA_MAC_VER_06
+
+Mikael Pettersson (1):
+      sparc64: FUTEX_OP_ANDN fix
+
+Oleg Nesterov (2):
+      posix-timers: do_schedule_next_timer: fix the setting of ->si_overrun
+      posix-timers: fix posix_timer_event() vs dequeue_signal() race
+
+Ondrej Zajicek (1):
+      vt8623fb: fix kernel oops
+
+Petr Tesarik (1):
+      ide-cd: fix endianity for the error message in cdrom_read_capacity
+
+Seokmann Ju (1):
+      qla2xxx: Add dev_loss_tmo_callbk/terminate_rport_io callback support.
+
+Stephen Hemminger (1):
+      random32: seeding improvement
+
+Steve French (2):
+      CIFS: mount of IPC$ breaks with iget patch
+      CIFS: if get root inode fails during mount, cleanup tree connection
+
+Suresh Siddha (1):
+      crypto: padlock - fix VIA PadLock instruction usage with irq_ts_save/restore()
+
+Sven Wegener (1):
+      ipvs: Fix possible deadlock in estimator code
+
+Tim Wright (1):
+      SCSI: block: Fix miscalculation of sg_io timeout in CDROM_SEND_PACKET handler.
+
+Timur Tabi (2):
+      ALSA: asoc: restrict sample rate and size in Freescale MPC8610 sound drivers
+      ALSA: ASoC: fix SNDCTL_DSP_SYNC support in Freescale 8610 sound drivers
+
+Tollef Fog Heen (1):
+      USB: pl2023: Remove USB id (4348:5523) handled by ch341
+
+Tom Zanussi (1):
+      relay: fix "full buffer with exactly full last subbuffer" accounting problem
+
+Wei Yongjun (1):
+      ipv6: Fix ip6_xmit to send fragments if ipfragok is true
+
+Yinghai Lu (1):
+      x86: amd opteron TOM2 mask val fix
 
