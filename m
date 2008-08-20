@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755680AbYHTRhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbYHTRkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755680AbYHTRhy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 13:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbYHTRhp
+	id S1755940AbYHTRkf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 13:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbYHTRk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 13:37:45 -0400
-Received: from mga12.intel.com ([143.182.124.36]:18607 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751990AbYHTRho (ORCPT
+	Wed, 20 Aug 2008 13:40:26 -0400
+Received: from outbound-mail-130.bluehost.com ([67.222.38.30]:45473 "HELO
+	outbound-mail-130.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752299AbYHTRkZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 13:37:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,240,1217833200"; 
-   d="scan'208";a="35779401"
-Message-ID: <48AC5668.2030203@linux.intel.com>
-Date: Wed, 20 Aug 2008 19:37:44 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Wed, 20 Aug 2008 13:40:25 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=HPg2EXvmzDkEEMIMH++BKhiWILGa0vFRxDFCM6YYRJ3ztVB/0tI01IZBg/SmtjywFatz6EHYpmKMkJrMPBylWLtLJs+0bd9OEcgRNyBFxeIP/Duiv0JvGY+9fioVxEo7;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0/8] x86 dma_*_coherent rework patchset v2
+Date: Wed, 20 Aug 2008 10:39:56 -0700
+User-Agent: KMail/1.9.9
+Cc: Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, mingo@redhat.com,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, muli@il.ibm.com
+References: <1219156366-32498-1-git-send-email-joerg.roedel@amd.com> <20080820094612.GA28492@elte.hu>
+In-Reply-To: <20080820094612.GA28492@elte.hu>
 MIME-Version: 1.0
-To: Thomas Renninger <trenn@suse.de>
-CC: linux-kernel@vger.kernel.org, len.brown@intel.com, arjan@linux.intel.com,
-       bjorn.helgaas@hp.com, linux-acpi@vger.kernel.org,
-       Christian Kornacker <ckornacker@suse.de>
-Subject: Re: [PATCH 1/3] Introduce interface to report BIOS bugs
-References: <1219251726-24746-1-git-send-email-trenn@suse.de> <1219251726-24746-2-git-send-email-trenn@suse.de>
-In-Reply-To: <1219251726-24746-2-git-send-email-trenn@suse.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808201039.56887.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Renninger wrote:
+On Wednesday, August 20, 2008 2:46 am Ingo Molnar wrote:
+> * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > Hi,
+> >
+> > this patchset reworks the dma_*_coherent functions in the DMA layer
+> > for the x86 architecture. The patch series extends the existing DMA
+> > backends with missing *coherent callbacks and simplifies the generic
+> > function to basically only call the registered backend. This allows
+> > future optimizations in hardware specific IOMMU implementations. The
+> > code ist tested on AMD64 with AMD IOMMU, GART, SWIOTLB and NOMMU as
+> > well as on my old 486 box. Muli tested the Calgary specific patch.
+> >
+> > Joerg
+> >
+> > Changes since v1:
+> >
+> > - fixed wrong logic in the pci-nommu alloc_coherent code
+> > - moved dma_*_coherent to include/asm-x86/dma-mapping.h
+> >
+> > git diff --stat tip/master.. :
+> >
+> >  arch/x86/kernel/amd_iommu.c      |    2 -
+> >  arch/x86/kernel/pci-calgary_64.c |   14 ++++
+> >  arch/x86/kernel/pci-dma.c        |  146
+> > +------------------------------------- arch/x86/kernel/pci-gart_64.c    |
+> >   35 +++++++++-
+> >  arch/x86/kernel/pci-nommu.c      |   62 ++++++++++++++++
+> >  include/asm-x86/dma-mapping.h    |   47 ++++++++++---
+> >  6 files changed, 149 insertions(+), 157 deletions(-)
+>
+> applied to tip/x86/iommu - thanks Joerg!
+>
+> Jesse, Fujita-san, do these changes look fine to you?
 
-I approve of the basic idea. Some nits in the implementation.
+Yeah, I'll let you push this time. :)
 
-First shouted macros look ugly. Can you use something lower case
-similar to dev_printk()?
+Signed-off-by:  Jesse Barnes <jbarnes@virtuousgeek.org>
 
-> +
-> +#define 	FW_EMERG	KERN_EMERG  /* System cannot boot */
-> +#define 	FW_ALERT 	KERN_ALERT  /* Risk of HW or data damage, 
-> +					       e.g. overheating, dmraid */
-> +#define 	FW_CRIT 	KERN_CRIT   /* A major device is not functional
-> +					       e.g. hpet, lapic, network... */
-> +#define 	FW_ERR		KERN_ERR    /* A major device is not working
-> +					       as expected, e.g. cpufreq stuck
-> +					       to lowest freq, lowered
-> +					       performance, increased power
-> +					       consumption... */
-
-These should probably have another string after the KERN_* severities appended
-because KERN_* doesn't make it into the syslog log files or serial
-console logs and you would lose the severity then.
-
-
-> +config REPORT_FIRMWARE_BUGS
-> +	bool "Report Firmware Bugs"
-> +	default y
-> +	help
-> +	  This option will make the kernel print out all firmware bug messages
-> +	  it finds. This especially is very useful on ACPI systems where
-> +	  potentially a lot firmware bugs can happen and should be reported.
-> +	  
-> +	  Always say yes here unless memory really matters.
-
-I don't think this should be a CONFIG.  If someone really wants to save
-that much memory they can disable printk.
-
--Andi
+-- 
+Jesse Barnes, Intel Open Source Technology Center
