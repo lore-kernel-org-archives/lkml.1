@@ -1,97 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbYHTBbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756437AbYHTBcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754515AbYHTBbd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 21:31:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbYHTBbW
+	id S1756437AbYHTBcg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 21:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbYHTBcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 21:31:22 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:56794 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751174AbYHTBbV (ORCPT
+	Tue, 19 Aug 2008 21:32:25 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:38435 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751442AbYHTBcY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 21:31:21 -0400
-Subject: Re: [PATCH]lockd: fix handling of grace period after long periods
-	of inactivity
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: NAKANO Hiroaki <nakano.hiroaki@oss.ntt.co.jp>, Trond.Myklebust@netapp.com,
-       neilb@suse.de, linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080819221209.GF8331@fieldses.org>
-References: <48A41220.8030203@oss.ntt.co.jp>
-	 <20080814190652.GE23859@fieldses.org>
-	 <1218763945.5291.19.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20080819221209.GF8331@fieldses.org>
-Content-Type: text/plain; charset=UTF-8
-Organization: NTT Open Source Software Center
-Date: Wed, 20 Aug 2008 10:31:19 +0900
-Message-Id: <1219195879.17077.36.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 19 Aug 2008 21:32:24 -0400
+X-Sasl-enc: B6YLttBL4ccjUvsBZUHO40LwO6w5LRoGrfvuTu2C34H2 1219195942
+Date: Tue, 19 Aug 2008 22:32:14 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, corentincj@iksaif.net,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] eeepc-laptop: Use standard interfaces
+Message-ID: <20080820013214.GF29336@khazad-dum.debian.net>
+References: <20080804170833.GA9513@srcf.ucam.org> <20080806092352.GA17801@srcf.ucam.org> <20080806092523.GB17801@srcf.ucam.org> <20080819025815.b5ec1a4c.akpm@linux-foundation.org> <20080819111320.GA19223@srcf.ucam.org> <20080819230950.GC29336@khazad-dum.debian.net> <20080819232411.GA5421@srcf.ucam.org> <20080820011828.GD29336@khazad-dum.debian.net> <20080820012846.GA7467@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080820012846.GA7467@srcf.ucam.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-19 at 18:12 -0400, J. Bruce Fields wrote:
-> On Fri, Aug 15, 2008 at 10:32:25AM +0900, Fernando Luis Vázquez Cao wrote:
-> > Hi Bruce!
-> > 
-> > On Thu, 2008-08-14 at 15:06 -0400, J. Bruce Fields wrote:
-> > > On Thu, Aug 14, 2008 at 08:08:16PM +0900, NAKANO Hiroaki wrote:
-> > > > lockd uses time_before() to determine whether the grace period has
-> > > > expired. This would seem to be enough to avoid timer wrap-around issues,
-> > > > but, unfortunately, that is not the case. The time_* family of
-> > > > comparison functions can be safely used to compare jiffies relatively
-> > > > close in time, but they stop working after approximately LONG_MAX/2
-> > > > ticks. nfsd can suffer this problem because the time_before() comparison
-> > > > in lockd() is not performed until the first request comes in, which
-> > > > means that if there is no lockd traffic for more than LONG_MAX/2 ticks
-> > > > we are screwed.
-> > > > 
-> > > > The implication of this is that once time_before() starts misbehaving
-> > > > any attempt from a NFS client to execute fcntl() will be received with a
-> > > > NLM_LCK_DENIED_GRACE_PERIOD message for 25 days (assuming HZ=1000). In
-> > > > other words, the 50 seconds grace period could turn into a grace period
-> > > > of 50 days or more.
-> > > > 
-> > > > This patch corrects this behavior by implementing grace period with a
-> > > > (retriggerable) timer.
-> > > > 
-> > > > Note: This bug was analyzed independently by Oda-san <oda@valinux.co.jp>
-> > > > and myself.
-> > > 
-> > > Good catch!  Did you actually run across this in practice?  I would've
-> > > thought it relatively unusual to have a lockd that didn't receive its
-> > > first lock request until 25 days after startup.
-> > Yes, we did find this problem in production. More often than one would
-> > wish, installing new software in a system that has been running without
-> > a hiccup for weeks or months is the only thing you will need to bring
-> > mayhem.
-> > 
-> > > I still have a mild preference for a work struct just in case we end up
-> > > wanting to do something slightly more complicated to end the grace
-> > > period, but I don't really have anything in mind.
-> > For simplicity I think we could we get Nakano-san's patch merged first.
-> > If needed, moving to a work-based solution should be relatively easily.
+Hi Matthew!
+
+On Wed, 20 Aug 2008, Matthew Garrett wrote:
+
+> On Tue, Aug 19, 2008 at 10:18:29PM -0300, Henrique de Moraes Holschuh wrote:
 > 
-> There's no real difference; patches I've been planning on submitting for
-> 2.6.28 follow.
-Yes, both approaches are essentially the same.
+> > 1. If the event has no bearing on compulsory hardware state changes (i.e.
+> > the hardware won't change state by itself when the event happens, it is
+> > really just reporting a simple key press that will do nothing by itself),
+> > you just report the key as an event.
+> 
+> Yes. That's all I do.
+> 
+> > 2. If the hardware/firmware *ALSO* compulsory changes the rfkill state (i.e.
+> > the event also means the real rfkill controller state probably changed), you
+> > take the opportunity to do a forced immediate state poll and
+> > rfkill_force_state() the new state.
+> 
+> The firmware does not perform any compulsory change.
 
-> patches I've been planning on submitting for 2.6.28 follow.
-Thanks!
+Then, I have no futher comments.  Looks good to me.
 
-> (We could submit a patch for 2.6.27, since it's a bugfix, but this isn't
-> a new regression, so existing users at least won't be made any worse
-> off, and this doesn't crash the server, or anything similarly drastic.
-> It's still serious, just not quite serious enough to submit at this
-> point in the release cycle, as I understand the rules....)
-My only concern is that even though the server will not crash we may get
-seemingly hanged processes on the client side (the reason being that the
-client will be receiving only NLM_LCK_DENIED_GRACE_PERIOD messages
-during the whole "extended" grace period). It might be worth getting it
-merged before 2.6.27 comes out and distros start using it.
-
- - Fernando
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
