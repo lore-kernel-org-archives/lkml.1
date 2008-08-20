@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbYHTGxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbYHTHB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754966AbYHTGxo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 02:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbYHTGxX
+	id S1754552AbYHTHB2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 03:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbYHTHBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 02:53:23 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40288 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752233AbYHTGxV (ORCPT
+	Wed, 20 Aug 2008 03:01:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58946 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751288AbYHTHBR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 02:53:21 -0400
-Date: Wed, 20 Aug 2008 15:59:09 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] mm_owner: fix cgroup null dereference
-Message-Id: <20080820155909.cf3f73bc.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <48ABA9A8.1060806@cn.fujitsu.com>
-References: <1218745013-9537-1-git-send-email-jirislaby@gmail.com>
-	<20080819141344.GF25239@balbir.in.ibm.com>
-	<48ABA9A8.1060806@cn.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Wed, 20 Aug 2008 03:01:17 -0400
+Date: Wed, 20 Aug 2008 00:00:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Justin Mattock" <justinmattock@gmail.com>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-input@vger.kernel.org, Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: evdev.c(EVIOCGBIT): Suspicious buffer size 511,
+Message-Id: <20080820000040.55015b48.akpm@linux-foundation.org>
+In-Reply-To: <dd18b0c30808172310u7cf7836ai15e19485908ae0ce@mail.gmail.com>
+References: <dd18b0c30808172310u7cf7836ai15e19485908ae0ce@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,134 +27,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008 13:20:40 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
+On Sun, 17 Aug 2008 23:10:54 -0700 "Justin Mattock" <justinmattock@gmail.com> wrote:
 
-> Balbir Singh wote:
-> > * Jiri Slaby <jirislaby@gmail.com> [2008-08-14 22:16:53]:
-> > 
-> >> Hi,
-> >>
-> >> found this in mmotm, a fix for
-> >> mm-owner-fix-race-between-swap-and-exit.patch
-> >>
-> > 
-> > Does the patch below fix your problem, it's against mmotm 19th August
-> > 2008.
-> > 
-> 
-> I just triggered this bug. I think you also need the following change:
-> 
-> make memrlimit_cgroup_mm_owner_changed() aware that old_cgrp can be NULL,
-> and note we can't call memrlimit_cgroup_from_cgrp() with NULL argument.
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> I'm noticing:
+> evdev.c(EVIOCGBIT): Suspicious buffer size 511, limiting output to 64
+> bytes. See http://userweb.kernel.org/~dtor/eviocgbit-bug.html
+> with rc-3 not with rc2.
+> Did the patch to synaptics, seems
+> my xorg is not reading /usr/X11R6/lib/modules/input/synaptics_drv.o
+> only /usr/lib/xorg/modules/input/synaptics_drv.so
+> is there any easy fix, or do I have to recompile xorg?
+> regards;
 > 
 
-Thank you, it seems you fixed a problem which I met in my test.
-
-(*) When I migrate task under cpuset repeatedly, I can see Oops easily.
-
-Tested-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-
-
-
-
-> diff --git a/mm/memrlimitcgroup.c.orig b/mm/memrlimitcgroup.c
-> index f7536dc..6559470 100644
-> --- a/mm/memrlimitcgroup.c.orig
-> +++ b/mm/memrlimitcgroup.c
-> @@ -249,17 +249,23 @@ static void memrlimit_cgroup_mm_owner_changed(struct cgroup_subsys *ss,
->  	struct mm_struct *mm = get_task_mm(p);
->  
->  	BUG_ON(!mm);
-> -	memrcg = memrlimit_cgroup_from_cgrp(cgrp);
-> -	old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
->  
->  	/*
->  	 * If we don't have a new cgroup, we just uncharge from the old one.
->  	 * It means that the task is going away
->  	 */
-> -	if (memrcg &&
-> -	    res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
-> -		goto out;
-> -	res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
-> +	if (cgrp) {
-> +		memrcg = memrlimit_cgroup_from_cgrp(cgrp);
-> +		if (res_counter_charge(&memrcg->as_res,
-> +				       mm->total_vm << PAGE_SHIFT))
-> +			goto out;
-> +	}
-> +
-> +	if (old_cgrp) {
-> +		old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
-> +		res_counter_uncharge(&old_memrcg->as_res,
-> +				     mm->total_vm <<PAGE_SHIFT);
-> +	}
->  out:
->  	mmput(mm);
->  }
-> 
-> 
-> >  
-> > Reported-by: jirislaby@gmail.com
-> > 
-> > Jiri reported a problem and saw an oops when the memrlimit-fix-race-with-swap
-> > patch is applied. He sent his patch on top to fix the problem, but ran into
-> > another issue. The root cause of the problem is that we are not suppose
-> > to call task_cgroup on NULL tasks. This patch reverts Jiri's patch and
-> > does not call task_cgroup if the passed task_struct (old) is NULL.
-> > 
-> > 
-> > Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > ---
-> > 
-> >  kernel/cgroup.c |    5 +++--
-> >  kernel/exit.c   |    2 +-
-> >  2 files changed, 4 insertions(+), 3 deletions(-)
-> > 
-> > diff -puN kernel/exit.c~memrlimit-fix-race-with-swap-oops kernel/exit.c
-> > --- linux-2.6.27-rc3/kernel/exit.c~memrlimit-fix-race-with-swap-oops	2008-08-19 18:50:39.000000000 +0530
-> > +++ linux-2.6.27-rc3-balbir/kernel/exit.c	2008-08-19 18:51:05.000000000 +0530
-> > @@ -641,8 +641,8 @@ retry:
-> >  	 * the callback and take action
-> >  	 */
-> >  	down_write(&mm->mmap_sem);
-> > -	cgroup_mm_owner_callbacks(mm->owner, NULL);
-> >  	mm->owner = NULL;
-> > +	cgroup_mm_owner_callbacks(mm->owner, NULL);
-> >  	up_write(&mm->mmap_sem);
-> >  	return;
-> >  
-> > diff -puN kernel/cgroup.c~memrlimit-fix-race-with-swap-oops kernel/cgroup.c
-> > --- linux-2.6.27-rc3/kernel/cgroup.c~memrlimit-fix-race-with-swap-oops	2008-08-19 18:50:39.000000000 +0530
-> > +++ linux-2.6.27-rc3-balbir/kernel/cgroup.c	2008-08-19 18:55:38.000000000 +0530
-> > @@ -2743,13 +2743,14 @@ void cgroup_fork_callbacks(struct task_s
-> >   */
-> >  void cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new)
-> >  {
-> > -	struct cgroup *oldcgrp, *newcgrp = NULL;
-> > +	struct cgroup *oldcgrp = NULL, *newcgrp = NULL;
-> >  
-> >  	if (need_mm_owner_callback) {
-> >  		int i;
-> >  		for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-> >  			struct cgroup_subsys *ss = subsys[i];
-> > -			oldcgrp = task_cgroup(old, ss->subsys_id);
-> > +			if (old)
-> > +				oldcgrp = task_cgroup(old, ss->subsys_id);
-> >  			if (new)
-> >  				newcgrp = task_cgroup(new, ss->subsys_id);
-> >  			if (oldcgrp == newcgrp)
-> > diff -puN mm/memrlimitcgroup.c~memrlimit-fix-race-with-swap-oops mm/memrlimitcgroup.c
-> > _
-> > 
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
-
+(cc's added)
