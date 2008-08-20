@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758104AbYHTXXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbYHTXYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758104AbYHTXXT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 19:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbYHTXXK
+	id S1758164AbYHTXYK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 19:24:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbYHTXXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 19:23:10 -0400
-Received: from gw.goop.org ([64.81.55.164]:36469 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755034AbYHTXXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 19:23:09 -0400
-Message-ID: <48ACA75A.9070306@goop.org>
-Date: Wed, 20 Aug 2008 16:23:06 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 20 Aug 2008 19:23:55 -0400
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:53136 "EHLO
+	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754941AbYHTXXy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 19:23:54 -0400
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <48ACA785.6030607@citrix.com>
+Date: Thu, 21 Aug 2008 00:23:49 +0100
+From: Alex Nixon <alex.nixon@citrix.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-To: "Alex Nixon (Intern)" <Alex.Nixon@citrix.com>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] X86: Change the default value of nr_irqs from 32 to NR_IRQs
-References: <48AAFAE4.7070409@citrix.com> <86802c440808191044h74871ba1u62330dae18599436@mail.gmail.com> <0E902970173AF84089673FA54B7FE78A2CA11D@lonpexch01.citrite.net>
-In-Reply-To: <0E902970173AF84089673FA54B7FE78A2CA11D@lonpexch01.citrite.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+References: <48AAFAE4.7070409@citrix.com>	 <86802c440808191044h74871ba1u62330dae18599436@mail.gmail.com>	 <0E902970173AF84089673FA54B7FE78A2CA11D@lonpexch01.citrite.net>	 <86802c440808191124v39ce2aa9rb548d3bdd75ca25c@mail.gmail.com>	 <48AB11A3.4060102@citrix.com>	 <86802c440808191200u364ffd86h49af661e58d20ea3@mail.gmail.com>	 <48AB241A.4030706@citrix.com> <86802c440808191352g75c99737kcb8c9c20d59c8f7b@mail.gmail.com> <48AB551D.6010708@citrix.com>
+In-Reply-To: <48AB551D.6010708@citrix.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Nixon (Intern) wrote:
-> I'm not sure about the general case, but Xen does not (Jeremy correct
-> me if I'm wrong).
->
+Alex Nixon wrote:
+> Yinghai Lu wrote:
+>> when !CONFIG_HAVE_SPARSE_IRQ, with dyn_array, could allocate irq_desc
+>> and etc as less as possible.
+>> when CONFIG_HAVE_SPARESE_IRQ, no actually meaning for nr_irqs.
+>>
+>> YH
+> 
+> So I believe the only case this affects is !CONFIG_HAVE_SPARSE_IRQ
+> 
+> The worry is that with CONFIG_HAVE_DYN_ARRAY we may waste memory by 
+> pre-allocating more irq_descs than may be necessary (NR_IRQs vs 32)?
+> 
+> With !CONFIG_HAVE_DYN_ARRAY however, a static array of size NR_IRQS is 
+> allocated instead - so doesn't defaulting nr_irqs back to NR_IRQS just 
+> revert to the old behaviour (with the exception of the irq_descs being 
+> allocated in pre_alloc_dyn_array instead)?
+> 
+> - Alex
+> 
 
-No, no apics of any kind in the PV domU case.
+Sorry to pester you Yinghai, but I'd like to get a patch for this out 
+one way or another as Xen is _completely_ unusable with 5 or more VCPUs.
 
-> Unless I'm missing something (which I may well be; I'm new to this
-> area of code), it seems more logical anyway to default back to the
-> calculated system-specific value (NR_IRQS), instead of 32, which seems
-> rather arbitrary.
->
+Can you explain more clearly what the problem with the patch is?
 
-I think the patch looks fine for now.  But now that we seem to have
-unified the use of vectors (I haven't looked at the current code closely
-yet), I'd like to move Xen to mapping event channels -> vectors rather
-than IRQs, and have the per-cpu event channels share an irq.  That will
-dramatically decrease the irq requirements for a PV domU (to 6 irqs +
-devices, rather than 6/cpu + devices; a typical domain may only need 10
-irqs overall).
+I have a different patch set which solves the problem by adding in a pv 
+hook for probe_nr_irqs, but it's by far less clean.
 
-    J
+Or alternatively, we could revert your patch b2e5f326bb
 
+Cheers,
+- Alex
