@@ -1,59 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756415AbYHTBm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbYHTBnM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756415AbYHTBm0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 21:42:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbYHTBmR
+	id S1756829AbYHTBnM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 21:43:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYHTBm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 21:42:17 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:34668 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751034AbYHTBmQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 21:42:16 -0400
-Date: Wed, 20 Aug 2008 02:42:11 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Andrew Morton <akpm@linux-foundation.org>, corentincj@iksaif.net,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Awkward rfkill corner cases
-Message-ID: <20080820014211.GA7592@srcf.ucam.org>
-References: <20080804170833.GA9513@srcf.ucam.org> <20080806092352.GA17801@srcf.ucam.org> <20080806092523.GB17801@srcf.ucam.org> <20080819025815.b5ec1a4c.akpm@linux-foundation.org> <20080819111320.GA19223@srcf.ucam.org> <20080819230950.GC29336@khazad-dum.debian.net> <20080819232411.GA5421@srcf.ucam.org> <20080820011828.GD29336@khazad-dum.debian.net> <20080820012846.GA7467@srcf.ucam.org> <20080820013214.GF29336@khazad-dum.debian.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080820013214.GF29336@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Tue, 19 Aug 2008 21:42:57 -0400
+Received: from mga11.intel.com ([192.55.52.93]:23882 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751531AbYHTBm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 21:42:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,238,1217833200"; 
+   d="scan'208";a="372074355"
+Subject: Re: [PATH -mm] Fix a race condtion of oops_in_progress
+From: Huang Ying <ying.huang@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080819024129.e0c48ff8.akpm@linux-foundation.org>
+References: <1219025007.5663.22.camel@yhuang-dev.sh.intel.com>
+	 <20080818210657.c7f3cd87.akpm@linux-foundation.org>
+	 <1219124280.5663.88.camel@yhuang-dev.sh.intel.com>
+	 <20080818224643.865da7a3.akpm@linux-foundation.org>
+	 <20080819024129.e0c48ff8.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 20 Aug 2008 09:42:55 +0800
+Message-Id: <1219196575.5663.127.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 19, 2008 at 10:32:14PM -0300, Henrique de Moraes Holschuh wrote:
+On Tue, 2008-08-19 at 02:41 -0700, Andrew Morton wrote:
+[...]
+> > > It seems that asm/atomic.h is used for both atomic_t declaration and
+> > > implementation, how about separate them? That it, add a new file
+> > > asm/atomic_def.h, put typedef there, and include asm/atomic_def.h in
+> > > kernel.h?
+> > 
+> > yup, that sounds sensible.
+> 
+> otoh, it means altering every architectures's atomic.h.
 
-> Then, I have no futher comments.  Looks good to me.
+Yes. But the advantage is that we can use atomic_t in almost all header
+files. I already have a patch for this.
 
-Excellent, glad I've got that right.
+> Finding a different header file for the oops_in_progress declaration
+> might be more practical.
+> 
+> Or we could just do nothing.  How realistic is this race?
 
-One completely unrelated question. In the following situation (relevant 
-to Dells, not the Eee)
+The possibility of race is fairly low in real life. Multiple OOPS on
+difference CPU occur simultaneously? But its possibility increases
+significantly for kernel panic related regression testing. Recently, I
+am working on a kernel MCE regression testing suite, where panic may be
+triggered on multiple CPU simultaneously as the result of MCE. I can
+observe the race condition at quite high possibility.
 
-* The system has a key (not a switch) that in firmware disables the 
-hardware (HARD_BLOCKED)
-* That key generates an event through the keyboard controller, but not 
-through any other obviously detectable means
-* The radio control is also controllable through software (SOFT_BLOCKED)
+> umm, how about making it a function?
+> 
+> static atomic_t oops_in_progress = ATOMIC_INIT(0);
+> 
+> int oops_is_in_progress(void)
+> {
+> 	return atomic_read(&oops_in_progress);
+> }
+> 
+> int oops_in_progress_inc(void)
+> {
+> 	atomic_inc(&oops_in_progress);
+> }
+> 
+> then just open-code the atomic_inc and atomic_dec in
+> lib/bust_spinlocks.c and call oops_in_progress_inc() from
+> debug_locks_off().
 
-Should pressing the key generate a KEY_WLAN event?
+There is an issue of this solution, the oops_in_process is assigned
+directly on some architecture. Although we can add a function such as
+oops_in_progress_set(int val), it seems like a hack.
 
-I note that rfkill-input will, if the device is in HARD_BLOCKED state, 
-attempt to set it to UNBLOCKED. This sounds like generating the keycode 
-is the wrong thing to do, since it'll cause rfkill-input to try to undo 
-the change that's just been made. However, if the key isn't mapped 
-there's no obvious way for any of the stack to determine that a change 
-has been made and propagate that to userspace. What should we be doing 
-here?
+Best Regards,
+Huang Ying
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+
