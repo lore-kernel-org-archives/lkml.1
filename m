@@ -1,126 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbYHTVnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbYHTVoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757270AbYHTVnm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbYHTVne
+	id S1757786AbYHTVoV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbYHTVoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:43:34 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:36342 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751817AbYHTVnd (ORCPT
+	Wed, 20 Aug 2008 17:44:05 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:54017 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752856AbYHTVoE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:43:33 -0400
-Date: Wed, 20 Aug 2008 17:43:31 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] ftrace: x86 use copy to and from user functions
-In-Reply-To: <1219268378.21386.69.camel@pasglop>
-Message-ID: <alpine.DEB.1.10.0808201742370.18551@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0808201253330.494@gandalf.stny.rr.com> <1219268378.21386.69.camel@pasglop>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 20 Aug 2008 17:44:04 -0400
+Date: Wed, 20 Aug 2008 23:43:50 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Ilpo =?unknown-8bit?B?SsOkcnZpbmVu?= <ilpo.jarvinen@helsinki.fi>
+Cc: Timothy J Fontaine <tjfontaine@atxconsulting.com>,
+       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: r8169 MTU greater than 1500 causes corruption for other
+	controllers
+Message-ID: <20080820214350.GA18747@electric-eye.fr.zoreil.com>
+References: <20080820170951.GA1771@tophat.atxconsulting.com> <Pine.LNX.4.64.0808202053510.24321@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=unknown-8bit
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0808202053510.24321@wrl-59.cs.helsinki.fi>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> :
+[...]
+> Hmm, there was no explanation why the tp->rx_buf_sz to pkt_size change
+> was made in that commit (I have no idea whether those sizes have to match 
+> to other places that use tp->rx_buf_sz)...
 
+Because there is no need to sync data that has not been used ?
 
+Timothy, could you check if the patch below does the job too ? It should
+fix at least one pci_map / pci_unmap unbalance.
 
-On Thu, 21 Aug 2008, Benjamin Herrenschmidt wrote:
+@@ -2789,10 +2789,10 @@ static int rtl8169_rx_interrupt(struct net_device *dev,
+ 
+ 			if (rtl8169_try_rx_copy(&skb, tp, pkt_size, addr)) {
+ 				pci_dma_sync_single_for_device(pdev, addr,
+ 					pkt_size, PCI_DMA_FROMDEVICE);
+ 				rtl8169_mark_to_asic(desc, tp->rx_buf_sz);
+ 			} else {
+-				pci_unmap_single(pdev, addr, pkt_size,
++				pci_unmap_single(pdev, addr, tp->rx_buf_sz,
+ 						 PCI_DMA_FROMDEVICE);
+ 				tp->Rx_skbuff[entry] = NULL;
+ 			}
 
-> On Wed, 2008-08-20 at 12:55 -0400, Steven Rostedt wrote:
-> > The modification of code is performed either by kstop_machine, before
-> > SMP starts, or on module code before the module is executed. There is
-> > no reason to do the modifications from assembly. The copy to and from
-> > user functions are sufficient and produces cleaner and easier to read
-> > code.
-> > 
-> > Thanks to Benjamin Herrenschmidt for suggesting the idea.
-> 
-> Haven't we lost the dcache/icache synchronisation somewhere ?
-
-This is the x86 version, sync_core should be fine.
-
--- Steve
-
-> 
-> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> > ---
-> >  arch/x86/kernel/ftrace.c |   38 +++++++++++++-------------------------
-> >  1 file changed, 13 insertions(+), 25 deletions(-)
-> > 
-> > Index: linux-tip.git/arch/x86/kernel/ftrace.c
-> > ===================================================================
-> > --- linux-tip.git.orig/arch/x86/kernel/ftrace.c	2008-08-20 12:39:41.000000000 -0400
-> > +++ linux-tip.git/arch/x86/kernel/ftrace.c	2008-08-20 12:40:17.000000000 -0400
-> > @@ -11,6 +11,7 @@
-> >  
-> >  #include <linux/spinlock.h>
-> >  #include <linux/hardirq.h>
-> > +#include <linux/uaccess.h>
-> >  #include <linux/ftrace.h>
-> >  #include <linux/percpu.h>
-> >  #include <linux/init.h>
-> > @@ -60,11 +61,7 @@ notrace int
-> >  ftrace_modify_code(unsigned long ip, unsigned char *old_code,
-> >  		   unsigned char *new_code)
-> >  {
-> > -	unsigned replaced;
-> > -	unsigned old = *(unsigned *)old_code; /* 4 bytes */
-> > -	unsigned new = *(unsigned *)new_code; /* 4 bytes */
-> > -	unsigned char newch = new_code[4];
-> > -	int faulted = 0;
-> > +	unsigned char replaced[MCOUNT_INSN_SIZE];
-> >  
-> >  	/*
-> >  	 * Note: Due to modules and __init, code can
-> > @@ -72,29 +69,20 @@ ftrace_modify_code(unsigned long ip, uns
-> >  	 *  as well as code changing.
-> >  	 *
-> >  	 * No real locking needed, this code is run through
-> > -	 * kstop_machine.
-> > +	 * kstop_machine, or before SMP starts.
-> >  	 */
-> > -	asm volatile (
-> > -		"1: lock\n"
-> > -		"   cmpxchg %3, (%2)\n"
-> > -		"   jnz 2f\n"
-> > -		"   movb %b4, 4(%2)\n"
-> > -		"2:\n"
-> > -		".section .fixup, \"ax\"\n"
-> > -		"3:	movl $1, %0\n"
-> > -		"	jmp 2b\n"
-> > -		".previous\n"
-> > -		_ASM_EXTABLE(1b, 3b)
-> > -		: "=r"(faulted), "=a"(replaced)
-> > -		: "r"(ip), "r"(new), "c"(newch),
-> > -		  "0"(faulted), "a"(old)
-> > -		: "memory");
-> > -	sync_core();
-> > +	if (__copy_from_user(replaced, (char __user *)ip, MCOUNT_INSN_SIZE))
-> > +		return 1;
-> >  
-> > -	if (replaced != old && replaced != new)
-> > -		faulted = 2;
-> > +	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
-> > +		return 2;
-> >  
-> > -	return faulted;
-> > +	WARN_ON_ONCE(__copy_to_user((char __user *)ip, new_code,
-> > +				    MCOUNT_INSN_SIZE));
-> > +
-> > +	sync_core();
-> > +
-> > +	return 0;
-> >  }
-> >  
-> >  notrace int ftrace_update_ftrace_func(ftrace_func_t func)
-> 
-> 
+-- 
+Ueimor
