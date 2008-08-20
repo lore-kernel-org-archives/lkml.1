@@ -1,54 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbYHTThj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbYHTTlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757394AbYHTThj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 15:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756630AbYHTThW
+	id S1756576AbYHTTlU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 15:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbYHTTlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 15:37:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33046 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754941AbYHTThU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 15:37:20 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: 2.6.17-rc3: hci-usb related warnings and error on resume
-Date: Wed, 20 Aug 2008 21:41:00 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org,
-       marcel@holtmann.org, maxk@qualcomm.com, Greg KH <greg@kroah.com>
-References: <200808202055.46558.elendil@planet.nl>
-In-Reply-To: <200808202055.46558.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808202141.01169.rjw@sisk.pl>
+	Wed, 20 Aug 2008 15:41:09 -0400
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:12096 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752481AbYHTTlG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 15:41:06 -0400
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org, jayakumar.lkml@gmail.com, npiggin@suse.de,
+       a.p.zijlstra@chello.nl, hugh@veritas.com, hannes@saeurebad.de,
+       jeremy@goop.org, kel@otaku42.de, armbru@redhat.com
+In-Reply-To: <20080820123056.8f0c9d3f.akpm@linux-foundation.org>
+References: <1219125765-31833-1-git-send-email-ijc@hellion.org.uk>
+	 <20080818233824.5d219105.akpm@linux-foundation.org>
+	 <1219220003.3996.29.camel@localhost.localdomain>
+	 <20080820013736.ec64baae.akpm@linux-foundation.org>
+	 <1219258673.3996.46.camel@localhost.localdomain>
+	 <20080820123056.8f0c9d3f.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-F8KKW1rjWiG071Y8WgGV"
+Date: Wed, 20 Aug 2008 20:40:54 +0100
+Message-Id: <1219261254.3996.54.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+X-SA-Exim-Connect-IP: 192.168.1.5
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [PATCH] fbdefio: add set_page_dirty handler to deferred IO FB
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 20 of August 2008, Frans Pop wrote:
-> I recently got a new laptop (HP 2510p) and have been playing with 
-> suspend/resume. Initially the dmesg after resume was fairly clean, but 
-> that was with the bluetooth device disabled (I initially disabled it in 
-> Windows).
-> 
-> After enabling it I get repeated warnings on resume starting with:
-> <snip>
-> usb 1-1: reset full speed USB device using uhci_hcd and address 3
-> hci_usb 1-1:1.0: no reset_resume for driver hci_usb?
-> hci_usb 1-1:1.1: no reset_resume for driver hci_usb?
-> usb_endpoint usbdev1.3_ep83: parent 1-1:1.1 is sleeping, will not add
-> ------------[ cut here ]------------
-> WARNING: at drivers/base/power/main.c:82 device_pm_add+0x77/0xd3()
-> </snip>
 
-Yeah.
+--=-F8KKW1rjWiG071Y8WgGV
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-http://bugzilla.kernel.org/show_bug.cgi?id=11263#c11
+On Wed, 2008-08-20 at 12:30 -0700, Andrew Morton wrote:
+> On Wed, 20 Aug 2008 19:57:53 +0100 Ian Campbell <ijc@hellion.org.uk>
+> wrote:
+>  	}
+> > +#ifdef CONFIG_FB_DEFERRED_IO
+> > +	if (info->fbdefio)
+> > +		fb_deferred_io_open(info, inode, file);
+> > +#endif
+>=20
+> eww, hacky, but drivers/video/fbmem.c already got hacky:
+>=20
+> #ifdef CONFIG_FB_DEFERRED_IO
+>         .fsync =3D        fb_deferred_io_fsync,
+> #endif
+>=20
+> so it's not an original sin.
 
-The patch is in the Greg's tree, AFAICS.
+That's what I figured.
 
-Thanks,
-Rafael
+> Does it work?
+
+Yep.
+
+Ian.
+--=20
+Ian Campbell
+
+Nobody knows what goes between his cold toes and his warm ears.
+		-- Roy Harper
+
+--=-F8KKW1rjWiG071Y8WgGV
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkisc0YACgkQM0+0qS9rzVl13QCfYVR1yXFoQjHOPfvaUmJRn9RV
+ev8AoNyZhImYmVIINbZ8uFw226/8+5hC
+=v/nI
+-----END PGP SIGNATURE-----
+
+--=-F8KKW1rjWiG071Y8WgGV--
+
