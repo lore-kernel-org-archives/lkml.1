@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbYHTP5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758567AbYHTQAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758280AbYHTP5r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 11:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757025AbYHTP5L
+	id S1758567AbYHTQAt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 12:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbYHTQAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 11:57:11 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:51406 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756837AbYHTP5J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 11:57:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id:from;
-        b=TS/8R4ydNOqqSzFahta2OC0/IKOAp5EO4J1qbaiqqzeGoFP6+vRG2FamFpa6+g4O0s
-         jH77/fgMvF3fGxMcevs4jRywO0Qrn9F2fYLkwgT1GP32CYRUJqcUZMjFNYaU/bx4Yg0h
-         DnZbHXAB7Aj6TuH3+oYu8H2e/dF08BYyeNSs8=
-To: Philip Langdale <philipl@overt.org>
-Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling through rfkill (v6)
-Date: Wed, 20 Aug 2008 17:57:04 +0200
-User-Agent: KMail/1.9.9
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, toshiba_acpi@memebeam.org,
-       linux-wireless@vger.kernel.org
-References: <48AB8902.3010406@overt.org>
-In-Reply-To: <48AB8902.3010406@overt.org>
+	Wed, 20 Aug 2008 12:00:38 -0400
+Received: from gw.goop.org ([64.81.55.164]:52947 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753715AbYHTQAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 12:00:37 -0400
+Message-ID: <48AC3FA4.9080603@goop.org>
+Date: Wed, 20 Aug 2008 09:00:36 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808201757.04501.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+To: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #11313] Plugging HDMI causes "unable to handle kernel paging
+ request"
+References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>	 <sNRO-BDDjQL.A.DYF.sazpIB@albercik>	 <b170af450808171228i37951c6vd77071da7584669b@mail.gmail.com>	 <48AB5D17.5030600@goop.org> <b170af450808200410v3d7cd076h3e62546b48ddf507@mail.gmail.com>
+In-Reply-To: <b170af450808200410v3d7cd076h3e62546b48ddf507@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Rafał Miłecki wrote:
+> Sure, as everything to help debugging this :)
+> http://bugzilla.kernel.org/attachment.cgi?id=17330
+>   
 
-> +	if (unlikely(state_changed)) {
-> +		rfkill_force_state(dev->rfk_dev,
-> +				   new_rfk_state ?
-> +				   RFKILL_STATE_SOFT_BLOCKED :
-> +				   RFKILL_STATE_HARD_BLOCKED);
-> +		input_report_switch(poll_dev->input, SW_RFKILL_ALL, new_rfk_state);
-> +	}
-> +}
+Thanks, but could you post the *full* dmesg output, including the added
+lines?  I want to see the other things it prints around there.
 
-This looks very nice, but is the switch really toggling between
-soft and hard blocked only? ;)
+That said, I don't see anything unexpected in here.  It would be
+interested to compare to the E820 map.
 
-I mean shouldn't there be some unblock signal at some point?
+Also, what kind of machine is this?  Oh, Vaio. Hm.  Have you checked to
+see whether there's an updated BIOS?  How much memory does it have
+installed?
 
-Ivo
+    J
