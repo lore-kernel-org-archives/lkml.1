@@ -1,113 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbYHTFLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbYHTFV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754086AbYHTFLE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 01:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbYHTFKx
+	id S1754591AbYHTFV6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 01:21:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbYHTFVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 01:10:53 -0400
-Received: from xenotime.net ([66.160.160.81]:49985 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751471AbYHTFKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 01:10:52 -0400
-Date: Tue, 19 Aug 2008 22:10:46 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, sfr@canb.auug.org.au,
-       sam@ravnborg.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sameo@openedhand.com
-Subject: Re: linux-next: Tree for August 19 (mfd/ucb)
-In-Reply-To: <20080820112531.e50db074.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0808192207120.17511@shark.he.net>
-References: <20080819185454.d9c74915.sfr@canb.auug.org.au>
- <20080819170517.04d91de8.randy.dunlap@oracle.com>
- <20080819171658.4cdb8cd9.akpm@linux-foundation.org>
- <20080820112531.e50db074.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 20 Aug 2008 01:21:46 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:46243 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751638AbYHTFVp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 01:21:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=hv4qVpwljyYNPPctQdwCSv/IRM3tp9Ny3up2q+Vrkz0Y93PNsOXPWnJYx6u8TIIyEU
+         NYIvUedL+l713pwVSOk6detrfF7JNghe+AD5zqKmgSpDlX4ojCPZ1uWcYgxyvAYEOT0H
+         Iz1p19TOo3spKTEDG5xk+qkzGS9v27ndSaH1k=
+Message-ID: <86802c440808192221s3ada5443qc3b9d8e26f252d03@mail.gmail.com>
+Date: Tue, 19 Aug 2008 22:21:44 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "David Witbrodt" <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, netdev <netdev@vger.kernel.org>
+In-Reply-To: <109483.89278.qm@web82104.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <109483.89278.qm@web82104.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008, KAMEZAWA Hiroyuki wrote:
+On Tue, Aug 19, 2008 at 9:51 PM, David Witbrodt <dawitbro@sbcglobal.net> wrote:
+>
+>
+>> > $ dmesg | grep -i hpet
+>> > ACPI: HPET 77FE80C0, 0038 (r1 RS690  AWRDACPI 42302E31 AWRD       98)
+>> > ACPI: HPET id: 0x10b9a201 base: 0xfed00000
+>> > hpet clockevent registered
+>> > hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0, 0
+>> > hpet0: 4 32-bit timers, 14318180 Hz
+>> > hpet_resources: 0xfed00000 is busy
+>>
+>> btw., you might also want to look into drivers/char/hpet.c and
+>> instrument that a bit. In particular the ioremap()s done there will show
+>> exactly how the hpet is mapped.
+>
+> Well, I exhausted about 80% of the list of experiments I put together
+> on Saturday, but I still can't make a 2.6.2[67] kernel boot without
+> "hpet=disable" or reverting commits 3def3d6d... and 1e934dda...
+>
+> I spent so many hours on this today...  My head is spinning, and I'm
+> afraid springs and smoke will start emanating from my hard drive soon
+> from all the recompiling and rebooting!
+>
+> I need to warn you all:  I discovered today, for the first time, that
+> I am not the first user to report this bug.  This guy got bit by it
+> back in May, at version 2.6.26-rc2:
+>
+> [blog] http://ciaranm.wordpress.com/tag/f-i90hd/
+> [LKML] http://www.uwsg.indiana.edu/hypermail/linux/kernel/0805.2/0746.html
+>
+> He has different hardware from mine, so when 2.6.26 starts hitting the
+> distros you may see a flood of complaints -- and I came to LKML partly
+> with the purpose of providing a bug fix patch (or, less preferably, a
+> reversion patch) for Debian, my distro of choice.
+>
+> I am not giving up.  I _did_ look at drivers/char/hpet.c as requested,
+> but since this code did not change before and after 3def3d6d..., I
+> was not sure what to look for that would be harmful.  The same turned out
+> to be true about the "connection" I found between HPET and the calls
+> of insert_resource(), though this could actually be affected if my latest
+> hypothesis pans out.  (All of my ideas have failed so far, though, so it
+> will not surprise me if my new idea fails as well.)
+>
+> I found another item in arch/x86/kernel/acpi/boot.c -- which I suspect
+> _is_ a bug -- but which had no effect on my lockup issue when I "fixed"
+> it.  I will let a guru decide if I have found anything important:
+>
+> ===== BEGIN DIFF ==========================
+> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> index 2cdc9de..d5a9d9d 100644
+> --- a/arch/x86/kernel/acpi/boot.c
+> +++ b/arch/x86/kernel/acpi/boot.c
+> @@ -669,7 +669,7 @@ static int __init acpi_parse_hpet(struct acpi_table_header *table)
+>
+>     memset(hpet_res, 0, sizeof(*hpet_res));
+>     hpet_res->name = (void *)&hpet_res[1];
+> -    hpet_res->flags = IORESOURCE_MEM;
+> +    hpet_res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+>     snprintf((char *)hpet_res->name, HPET_RESOURCE_NAME_SIZE, "HPET %u",
+>          hpet_tbl->sequence);
+> ===== END DIFF ==========================
+>
+> The dynamically-allocated structure that hpet_res points to eventually gets
+> added to the resource tree by
+>
+> static __init int hpet_insert_resource(void);
+>
+> which calls insert_resource().  My thought is that we are supposed to be
+> marking the memory region as unavailable, so that nothing else will touch
+> it later, right?
+>
+>
+> Anyway, what happened in 3def3d6d to cause the regression?  I have a new
+> hypothesis to test, but I'm too tired to continue right now -- so I'll hit
+> it again tomorrow before I go to work:
+>
+> Up until now, I have focused on the fact that request_resource() was
+> replaced by insert_resource().  I did not pay attention to another aspect
+> of that commit -- the large change in the order of execution of where the
+> kernel memory regions are added to the resource list.
+>
+> The original (2.6.25) approach, which works on my machine, is to identify
+> RAM resources as they are added to the resource list, then tack on the
+> kernel memory regions to the (proper) resource as it is added to the tree:
+>
+>  for (...) {
+>    [...]
+>    if (e820.map[i].type == E820_RAM) {
+>        request_resource(res, code_resource);
+>        request_resource(res, data_resource);
+>        request_resource(res, bss_resource);
+>    [...]
+>    }
+>    insert_resource(&iomem_resource, res);
+>  }
+>
+> The problem commit moves those 3 request_resource() calls out of
+> e820_reserve_resources() [arch/x86/kernel/e820{,_64}.c] and into
+> setup_arch() [arch/x86/kernel/setup{,_64}.c].  The original code
+> would have this happen when setup_arch() directly callse
+> 820_reserve_resources(), but the commit moved those lines into
+> setup_arch() itself, and they run sooner now than before...
+> potentially affecting any resources added afterward.
+>
+> I don't see what effect this reordering could possibly have, since
+> insert_resource() ignores the IORESOURCE_BUSY flag.  But that
+> commit changed SOMETHING... and the two most obvious changes are
+> the {request,insert}_resource() switch, and the repositioning of
+> the request_resource() calls for {code,data,bss}_resource.
+>
+>
+> I did a LOT of testing of insert_resource() last weekend, and it
+> completely checked out:  it was only called about a dozen times,
+> and it always inserted the resource without returning errors or
+> accessing code paths for special cases.  That function is not
+> broken internally, though its proper functioning might have
+> unintended side effects I have not understood yet.
+>
+> I had the idea of setting up a side-by-side test -- taking the
+> two versions of e820_reserve_resources() from before and after
+> 3def3d6d, renaming them, and writing a tiny replacement of
+> e820_reserve_resources() which would call both versions... with
+> the idea that I could recurse the resulting trees and compare
+> their contents for differences.
+>
+> While reading drivers/char/hpet.c and looking at the functions
+> used there, I discovered request_region(), and realized that it
+> would be difficult to compare the entire iomem_resource tree to
+> a dummy tree only containing resources added by insert_resource()
+> and request_resource().  It might be simpler to have my tiny
+> e820_reserve_resources() replacement add each resource to 3 trees
+> -- the real iomem_resource tree, and 2 dummy trees -- which could
+> then be compared for differences just before the kernel locks up.
+>
 
-> On Tue, 19 Aug 2008 17:16:58 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Tue, 19 Aug 2008 17:05:17 -0700
-> > Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > 
-> > > drivers/mfd/ucb1400 is a sound (AC97) driver, so it should depend
-> > > on AC97_BUS, like in the patch below.  However, with that patch in
-> > > place, oldconfig goes belly up on me:
-> > > 
-> > > 
-> > > linux-next-20080819> make ARCH=x86_64  O=X64  V=1 oldconfig
-> > > make -C /local/linsrc/linux-next-20080819/X64 \
-> > > 	KBUILD_SRC=/local/linsrc/linux-next-20080819 \
-> > > 	KBUILD_EXTMOD="" -f /local/linsrc/linux-next-20080819/Makefile \
-> > > 	oldconfig
-> > > make -f /local/linsrc/linux-next-20080819/scripts/Makefile.build obj=scripts/basic
-> > > /bin/sh /local/linsrc/linux-next-20080819/scripts/mkmakefile \
-> > > 	    /local/linsrc/linux-next-20080819 /local/linsrc/linux-next-20080819/X64 2 6
-> > >   GEN     /local/linsrc/linux-next-20080819/X64/Makefile
-> > > mkdir -p include/linux include/config
-> > > make -f /local/linsrc/linux-next-20080819/scripts/Makefile.build obj=scripts/kconfig oldconfig
-> > > scripts/kconfig/conf -o arch/x86/Kconfig
-> > > make[2]: *** [oldconfig] Segmentation fault (core dumped)
-> > > make[1]: *** [oldconfig] Error 2
-> > > make: *** [sub-make] Error 2
-> > > 
-> > > 
-> > > 
-> > > ---
-> > > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > > 
-> > > mfd/ucb1400 sound driver uses/depends on AC97_BUS:
-> > > 
-> > > ERROR: "ac97_bus_type" [drivers/mfd/ucb1400_core.ko] undefined!
-> > > 
-> > > 
-> > > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> > > cc: Samuel Ortiz <sameo@openedhand.com>
-> > > 
-> > > ---
-> > >  drivers/mfd/Kconfig |    1 +
-> > >  1 file changed, 1 insertion(+)
-> > > 
-> > > --- linux-next-20080819.orig/drivers/mfd/Kconfig
-> > > +++ linux-next-20080819/drivers/mfd/Kconfig
-> > > @@ -52,6 +52,7 @@ config HTC_PASIC3
-> > >  
-> > >  config UCB1400_CORE
-> > >  	tristate "Philips UCB1400 Core driver"
-> > > +	depends on AC97_BUS
-> > >  	help
-> > >  	  This enables support for the Philips UCB1400 core functions.
-> > >  	  The UCB1400 is an AC97 audio codec.
-> > 
-> > And this:
-> > 
-> I still see SEGV in the latest mmtom (on x86-64)
-> 
-> drivers/input/touchscreen/Kconfig has this definition.
-> 
-> config TOUCHSCREEN_UCB1400
->         tristate "Philips UCB1400 touchscreen"
->         select AC97_BUS
->         depends on UCB1400_CORE
->         depends on GPIOLIB
-> 
-> "select" should be "depends on" ,here ?
+with reverting patch that change insert_resource to request_resource...
+2.6.26 or 2.6.27-rcX still hange somewhere.
 
-Thanks for pointing that out.  Yes, that should be depends on IMO.
-What is happening is that selecting AC97_BUS doesn't do anything
-useful since CONFIG_SOUND is not enabled.  Also, IMO we don't
-want to select SOUND since it is a non-trivial subsystem and
-should be enabled by user(s), not via select.
-
-And changing this will probably fix the SEGV in kconfig...
-
--- 
-~Randy
+YH
