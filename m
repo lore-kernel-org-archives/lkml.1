@@ -1,265 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755863AbYHTKDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbYHTKEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755863AbYHTKDa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 06:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbYHTKDI
+	id S1755472AbYHTKEf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 06:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbYHTKE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 06:03:08 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41972 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754647AbYHTKDH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 06:03:07 -0400
-Date: Wed, 20 Aug 2008 19:08:49 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       ryov@valinux.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [RFC][PATCH -mm 7/7] memcg: add page_cgroup.h header file
-Message-Id: <20080820190849.ca472102.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080819173014.17358c17.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 20 Aug 2008 06:04:26 -0400
+Received: from h155.mvista.com ([63.81.120.155]:29183 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751811AbYHTKEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 06:04:25 -0400
+Message-ID: <48ABEC23.6070401@ru.mvista.com>
+Date: Wed, 20 Aug 2008 14:04:19 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/9] ide-disk: add ide_do_setfeature() helper
+References: <20080817171454.27943.37234.sendpatchset@localhost.localdomain> <20080817171514.27943.66688.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080817171514.27943.66688.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Experimental...I wonder whether this is enough for potential users.
-==
+Bartlomiej Zolnierkiewicz wrote:
 
-page_cgroup is a struct for accounting each page under memory resource
-controller. Currently, it's only used under memcontrol.h but there 
-is possible user of this struct (now).
-(*) Because page_cgroup is an extended/on-demand mem_map by nature,
-    there are people who want to use this for recording information.
+> Add ide_do_setfeature() helper and convert set_{wcache,acoustic}()
+> to use it.
+>
+> There should be no functional changes caused by this patch.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>   
 
-If no users, this patch is not necessary.
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+MBR, Sergei
 
----
- include/linux/page_cgroup.h |  100 ++++++++++++++++++++++++++++++++++++++++++++
- mm/memcontrol.c             |   82 ------------------------------------
- 2 files changed, 101 insertions(+), 81 deletions(-)
-
-Index: mmtom-2.6.27-rc3+/include/linux/page_cgroup.h
-===================================================================
---- /dev/null
-+++ mmtom-2.6.27-rc3+/include/linux/page_cgroup.h
-@@ -0,0 +1,100 @@
-+#ifndef __LINUX_PAGE_CGROUP_H
-+#define __LINUX_PAGE_CGROUP_H
-+
-+/*
-+ * A page_cgroup page is associated with every page descriptor. The
-+ * page_cgroup helps us identify information about the cgroup.
-+ *
-+ * This is pointed from struct page by page->page_cgroup pointer.
-+ * This pointer is safe under RCU. If a page_cgroup is marked as
-+ * Obsolete, don't access it.
-+ *
-+ * Typical way to access page_cgroup is following.
-+ *
-+ * rcu_read_lock();
-+ * pc = page_get_page_cgroup(page);
-+ * if (pc && !PcgObsolete(pc)) {
-+ *         ......
-+ * }
-+ * rcu_read_unlock();
-+ *
-+ */
-+struct page_cgroup {
-+	struct list_head lru;		/* per zone/memcg LRU list */
-+	struct page *page;		/* the page this accounts for */
-+	struct mem_cgroup *mem_cgroup;  /* belongs to this mem_cgroup */
-+	unsigned long flags;
-+	struct page_cgroup *next;
-+};
-+
-+enum {
-+	/* flags for mem_cgroup */
-+	Pcg_CACHE, /* charged as cache */
-+	Pcg_OBSOLETE,	/* this page cgroup is invalid (unused) */
-+	/* flags for LRU placement */
-+	Pcg_ACTIVE, /* page is active in this cgroup */
-+	Pcg_FILE, /* page is file system backed */
-+	Pcg_UNEVICTABLE, /* page is unevictableable */
-+};
-+
-+#define TESTPCGFLAG(uname, lname)			\
-+static inline int Pcg##uname(struct page_cgroup *pc)	\
-+	{ return test_bit(Pcg_##lname, &pc->flags); }
-+
-+#define SETPCGFLAG(uname, lname)			\
-+static inline void SetPcg##uname(struct page_cgroup *pc)\
-+	{ set_bit(Pcg_##lname, &pc->flags);  }
-+
-+#define CLEARPCGFLAG(uname, lname)			\
-+static inline void ClearPcg##uname(struct page_cgroup *pc)	\
-+	{ clear_bit(Pcg_##lname, &pc->flags);  }
-+
-+#define __SETPCGFLAG(uname, lname)			\
-+static inline void __SetPcg##uname(struct page_cgroup *pc)\
-+	{ __set_bit(Pcg_##lname, &pc->flags);  }
-+
-+#define __CLEARPCGFLAG(uname, lname)			\
-+static inline void __ClearPcg##uname(struct page_cgroup *pc)	\
-+	{ __clear_bit(Pcg_##lname, &pc->flags);  }
-+
-+/* Cache flag is set only once (at allocation) */
-+TESTPCGFLAG(Cache, CACHE)
-+__SETPCGFLAG(Cache, CACHE)
-+
-+/* No "Clear" routine for OBSOLETE flag */
-+TESTPCGFLAG(Obsolete, OBSOLETE);
-+SETPCGFLAG(Obsolete, OBSOLETE);
-+
-+/* LRU management flags (from global-lru definition) */
-+TESTPCGFLAG(File, FILE)
-+SETPCGFLAG(File, FILE)
-+__SETPCGFLAG(File, FILE)
-+CLEARPCGFLAG(File, FILE)
-+
-+TESTPCGFLAG(Active, ACTIVE)
-+SETPCGFLAG(Active, ACTIVE)
-+__SETPCGFLAG(Active, ACTIVE)
-+CLEARPCGFLAG(Active, ACTIVE)
-+
-+TESTPCGFLAG(Unevictable, UNEVICTABLE)
-+SETPCGFLAG(Unevictable, UNEVICTABLE)
-+CLEARPCGFLAG(Unevictable, UNEVICTABLE)
-+
-+
-+static int page_cgroup_nid(struct page_cgroup *pc)
-+{
-+	return page_to_nid(pc->page);
-+}
-+
-+static enum zone_type page_cgroup_zid(struct page_cgroup *pc)
-+{
-+	return page_zonenum(pc->page);
-+}
-+
-+struct page_cgroup *page_get_page_cgroup(struct page *page)
-+{
-+	return rcu_dereference(page->page_cgroup);
-+}
-+
-+
-+#endif
-Index: mmtom-2.6.27-rc3+/mm/memcontrol.c
-===================================================================
---- mmtom-2.6.27-rc3+.orig/mm/memcontrol.c
-+++ mmtom-2.6.27-rc3+/mm/memcontrol.c
-@@ -33,7 +33,7 @@
- #include <linux/seq_file.h>
- #include <linux/vmalloc.h>
- #include <linux/mm_inline.h>
--
-+#include <linux/page_cgroup.h>
- #include <asm/uaccess.h>
- 
- struct cgroup_subsys mem_cgroup_subsys __read_mostly;
-@@ -136,81 +136,6 @@ struct mem_cgroup {
- };
- static struct mem_cgroup init_mem_cgroup;
- 
--/*
-- * A page_cgroup page is associated with every page descriptor. The
-- * page_cgroup helps us identify information about the cgroup
-- */
--struct page_cgroup {
--	struct list_head lru;		/* per cgroup LRU list */
--	struct page *page;
--	struct mem_cgroup *mem_cgroup;
--	unsigned long flags;
--	struct page_cgroup *next;
--};
--
--enum {
--	/* flags for mem_cgroup */
--	Pcg_CACHE, /* charged as cache */
--	Pcg_OBSOLETE,	/* this page cgroup is invalid (unused) */
--	/* flags for LRU placement */
--	Pcg_ACTIVE, /* page is active in this cgroup */
--	Pcg_FILE, /* page is file system backed */
--	Pcg_UNEVICTABLE, /* page is unevictableable */
--};
--
--#define TESTPCGFLAG(uname, lname)			\
--static inline int Pcg##uname(struct page_cgroup *pc)	\
--	{ return test_bit(Pcg_##lname, &pc->flags); }
--
--#define SETPCGFLAG(uname, lname)			\
--static inline void SetPcg##uname(struct page_cgroup *pc)\
--	{ set_bit(Pcg_##lname, &pc->flags);  }
--
--#define CLEARPCGFLAG(uname, lname)			\
--static inline void ClearPcg##uname(struct page_cgroup *pc)	\
--	{ clear_bit(Pcg_##lname, &pc->flags);  }
--
--#define __SETPCGFLAG(uname, lname)			\
--static inline void __SetPcg##uname(struct page_cgroup *pc)\
--	{ __set_bit(Pcg_##lname, &pc->flags);  }
--
--#define __CLEARPCGFLAG(uname, lname)			\
--static inline void __ClearPcg##uname(struct page_cgroup *pc)	\
--	{ __clear_bit(Pcg_##lname, &pc->flags);  }
--
--/* Cache flag is set only once (at allocation) */
--TESTPCGFLAG(Cache, CACHE)
--__SETPCGFLAG(Cache, CACHE)
--
--/* No "Clear" routine for OBSOLETE flag */
--TESTPCGFLAG(Obsolete, OBSOLETE);
--SETPCGFLAG(Obsolete, OBSOLETE);
--
--/* LRU management flags (from global-lru definition) */
--TESTPCGFLAG(File, FILE)
--SETPCGFLAG(File, FILE)
--__SETPCGFLAG(File, FILE)
--CLEARPCGFLAG(File, FILE)
--
--TESTPCGFLAG(Active, ACTIVE)
--SETPCGFLAG(Active, ACTIVE)
--__SETPCGFLAG(Active, ACTIVE)
--CLEARPCGFLAG(Active, ACTIVE)
--
--TESTPCGFLAG(Unevictable, UNEVICTABLE)
--SETPCGFLAG(Unevictable, UNEVICTABLE)
--CLEARPCGFLAG(Unevictable, UNEVICTABLE)
--
--
--static int page_cgroup_nid(struct page_cgroup *pc)
--{
--	return page_to_nid(pc->page);
--}
--
--static enum zone_type page_cgroup_zid(struct page_cgroup *pc)
--{
--	return page_zonenum(pc->page);
--}
- 
- /*
-  * per-cpu slot for freeing page_cgroup in lazy manner.
-@@ -303,11 +228,6 @@ static void page_assign_page_cgroup(stru
- 	rcu_assign_pointer(page->page_cgroup, pc);
- }
- 
--struct page_cgroup *page_get_page_cgroup(struct page *page)
--{
--	return rcu_dereference(page->page_cgroup);
--}
--
- static void __mem_cgroup_remove_list(struct mem_cgroup_per_zone *mz,
- 			struct page_cgroup *pc)
- {
 
