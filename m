@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYHTWMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbYHTWOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbYHTWMN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 18:12:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYHTWL7
+	id S1755953AbYHTWOW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 18:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbYHTWOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 18:11:59 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:36898 "EHLO e4.ny.us.ibm.com"
+	Wed, 20 Aug 2008 18:14:09 -0400
+Received: from lobo.ruivo.org ([66.92.68.119]:59306 "EHLO lobo.ruivo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750932AbYHTWL6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 18:11:58 -0400
-Subject: Re: checkpoint/restart ABI
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Theodore Tso <tytso@mit.edu>,
-       Daniel Lezcano <daniel.lezcano@fr.ibm.com>,
-       Arnd Bergmann <arnd@arndb.de>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Peter Chubb <peterc@gelato.unsw.edu.au>
-In-Reply-To: <48AC929C.9030901@cs.columbia.edu>
-References: <20080807224033.FFB3A2C1@kernel>
-	 <200808090013.41999.arnd@arndb.de> <20080811152201.GB25930@us.ibm.com>
-	 <200808111853.13854.arnd@arndb.de> <1218484114.5598.43.camel@nimitz>
-	 <48A0CD86.6030704@goop.org> <1218553091.5598.76.camel@nimitz>
-	 <48A1BB39.3090108@goop.org> <1218559619.5598.97.camel@nimitz>
-	 <48AC929C.9030901@cs.columbia.edu>
-Content-Type: text/plain
-Date: Wed, 20 Aug 2008 15:11:54 -0700
-Message-Id: <1219270314.8960.74.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	id S1751101AbYHTWOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 18:14:08 -0400
+X-Greylist: delayed 1820 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Aug 2008 18:14:08 EDT
+Date: Wed, 20 Aug 2008 17:43:36 -0400
+From: Aristeu Rozanski <aris@ruivo.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Tosoni <jp.tosoni@acksys.fr>,
+       "'Laurent Pinchart'" <laurentp@cse-semaphore.com>,
+       "'Aristeu Rozanski'" <arozansk@redhat.com>,
+       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1] 8250: add support for DTR/DSR hardware flow control
+Message-ID: <20080820214336.GN17926@cathedrallabs.org>
+References: <200808071032.16709.laurentp@cse-semaphore.com> <000f01c8f88c$ad29d950$2e01a8c0@acksys.local> <20080818162526.1975dace@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080818162526.1975dace@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-08-20 at 17:54 -0400, Oren Laadan wrote:
-> > Me, personally, I think I'd probably "re-link" the thing, mark it as
-> > such, ship it across like a normal file, then unlink it after the
-> > restore.  I don't know what we'd choose when actually implementing
-> it.  
+> > About a RS485 ioctl: could you consider the attached files which are already
+> > in the Linux kernel (in include/asm-cris).
+> > They define a TIOCSERSETRS485 (ioctl.h), and the data structure (rs485.h)
+> > with allows to specify timings. Sounds just like what we want ?
 > 
-> Re-linking works well when the file system supports that - some do not
-> allow this, in which case you need to silently rename instead of really
-> un-linking (even with NFS), or copy the entire contents.
+> I had a deeper look at this for RS485 and the answer is "sort of". I've
+> reworked the structure to keep it the same size irrespective of 32/64bit
+> systems, and to make stuff flags that can be, plus add some extra u32
+> words in case we need to (.. when we need to ;)) add stuff later.
+> 
+> Comments, thoughts - will this do what people in the RS485 world need ?
+as for DTR/DSR patch, will be used the same approach?
 
-Yeah, it will certainly be fs-dependent.
-
-This might be a good application for splice.
-
-	open("/tmp/linked-newfile", O_RDONLY, perms);
-	splice(unlinked_fd, NULL, new_fd, NULL, MAX_INT, SPLICE_F_MOVE);
-
-I'm not sure if it can re-use the blocks on the fs for this, but it
-probably doesn't matter.  
-
--- Dave
+-- 
+Aristeu
 
