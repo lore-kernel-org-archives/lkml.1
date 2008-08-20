@@ -1,98 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbYHTVrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757896AbYHTVr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757569AbYHTVrA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbYHTVqv
+	id S1757896AbYHTVr4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbYHTVrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:46:51 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:56848 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752903AbYHTVqv (ORCPT
+	Wed, 20 Aug 2008 17:47:48 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:54921 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751545AbYHTVrr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:46:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=nvmJFTAMyk8onSIU+kOnN3cR0ncWpjvx34FSzVxe6LA74gTy1slAFD5F5Dpw51VMOj
-         ZO7lon+Qw73AEjzLKaAGw1GdE/gTEx7KLy7/xX+A+0ZckKu4Zas1yfTWYgLJVxTBxwmC
-         A97WJ6NToHmwqnnHkDEY7xrV39aJKdrwb3VJo=
-Message-ID: <21d7e9970808201446k3c1a6bc1naf04568a8ad06ed4@mail.gmail.com>
-Date: Thu, 21 Aug 2008 07:46:49 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Rene Herman" <rene.herman@keyaccess.nl>
-Subject: Re: AGP and PAT (induced?) problem (on AMD family 6)
-Cc: "Venki Pallipadi" <venkatesh.pallipadi@intel.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Li, Shaohua" <shaohua.li@intel.com>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>,
-       "Andreas Herrmann" <andreas.herrmann3@amd.com>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Dave Jones" <davej@codemonkey.org.uk>
-In-Reply-To: <48AC8F69.4050201@keyaccess.nl>
+	Wed, 20 Aug 2008 17:47:47 -0400
+Message-ID: <48AC8F63.3050500@cs.columbia.edu>
+Date: Wed, 20 Aug 2008 17:40:51 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Pavel Machek <pavel@suse.cz>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>,
+       containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+       Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH 1/4] checkpoint-restart: general infrastructure
+References: <20080807224033.FFB3A2C1@kernel> <200808081146.54834.arnd@arndb.de>	<1218221451.19082.36.camel@nimitz>	<200808090013.41999.arnd@arndb.de>	<1218234411.19082.58.camel@nimitz>	<20080811150703.GA25930@us.ibm.com> <20080814055301.GH6995@ucw.cz>
+In-Reply-To: <20080814055301.GH6995@ucw.cz>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48972EA8.8040001@keyaccess.nl> <48AA9C3B.5030309@keyaccess.nl>
-	 <20080819102633.GE6722@elte.hu> <48AAD680.7020508@keyaccess.nl>
-	 <20080819190757.GA17470@linux-os.sc.intel.com>
-	 <20080820100440.GE28492@elte.hu> <48ABF6DC.8070305@keyaccess.nl>
-	 <48AC29CA.1060203@keyaccess.nl>
-	 <20080820194127.GA10887@linux-os.sc.intel.com>
-	 <48AC8F69.4050201@keyaccess.nl>
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 7:40 AM, Rene Herman <rene.herman@keyaccess.nl> wrote:
-> On 20-08-08 21:41, Venki Pallipadi wrote:
->
->> OK. I have reproduced this list size issue locally and this order 1
->> allocation and set_memory_uc on that allocation is actually coming
->> from agp_allocate_memory() -> agp_generic_alloc_page() ->
->> map_page_into_agp() agp_allocate_memory breaks higher order page
->> requests into order 1 allocs.
+
+
+Pavel Machek wrote:
+> Hi!
+> 
+>>>>> I have to wonder if this is just a symptom of us trying to do this the
+>>>>> wrong way.  We're trying to talk the kernel into writing internal gunk
+>>>>> into a FD.  You're right, it is like a splice where one end of the pipe
+>>>>> is in the kernel.
+>>>>>
+>>>>> Any thoughts on a better way to do this?  
+>>>> Maybe you can invert the logic and let the new syscalls create a file
+>>>> descriptor, and then have user space read or splice the checkpoint
+>>>> data from it, and restore it by writing to the file descriptor.
+>>>> It's probably easy to do using anon_inode_getfd() and would solve this
+>>>> problem, but at the same time make checkpointing the current thread
+>>>> hard if not impossible.
+>>> Yeah, it does seem kinda backwards.  But, instead of even having to
+>>> worry about the anon_inode stuff, why don't we just put it in a fs like
+>>> everything else?  checkpointfs!
+>> One reason is that I suspect that stops us from being able to send that
+>> data straight to a pipe to compress and/or send on the network, without
+>> hitting local disk.  Though if the checkpointfs was ram-based maybe not?
 >>
->> On my system I see multiple agp_allocate_memory requests for nrpages 8841,
->> 1020, 16, 2160, 2160, 8192. Together they end up resulting in more than 22K
->> entries in PAT pages.
->
-> Okay, thanks for the confirmation.
->
-> Now, how to fix...
->
-> Firstly, it seems we can conclude that any expectancy of a short PAT list is
-> simply destroyed by AGP. I believe the best thing migh be to look into
-> "fixing" AGP rather than PAT for now?
->
-> In a sense the entire purpose of the AGP GART is collecting non contiguous
-> pages but given that in practice it's generally still just one or at most a
-> few regions, going to multi-page allocs sounds most appetising to me.
->
-> All in tree AGP drivers except sgi-agp use agp_generic_alloc_page(), ali via
-> m1541_alloc_page and i460 via i460_alloc_page.
+>> As Oren has pointed out before, passing in an fd means we can pass a
+>> socket into the syscall.
+> 
+> If you do pass a socket, will it handle blocking correctly? Getting
+> deadlocked task would be bad. What happens if I try to snapshot into
+> /proc/self/fd/0 ? Or maybe restore from /proc/cmdline?
 
-In the future we will be getting more smaller AGP allocs, so the other
-problem needs a fix as well.
+Hmmm... these are good points.
 
-http://git.kernel.org/?p=linux/kernel/git/airlied/agp-2.6.git;a=shortlog;h=agp-pageattr2
+Keep in mind that our principal goal is to checkpoint a whole container,
+rather then a task to checkpoint itself (which is a by-product). Of course
+your comments apply to a whole container as well.
 
-contains some code I started on before that moves the interfaces
-around,  Shaohua has been looking at
-it as it needs the changes to the set_pages interface as well, which
-is where I ran out of time/steam last time.
+In both cases, I don't think that blocking on a socket is a problem; the
+checkpointer will enter a TASK_INTERRUPTIBLE state. Where is the deadlock ?
+Writing or reading to/from /proc/self/... likewise - the programmer must
+understand the implications, or the program won't work as expected. I don't
+see a possible deadlock here, though.
 
-However with alloc/free pages we could change to a higher order
-allocation function as long as it fell back to lower
-orders internally.
+For example - writing to /proc/self/fd/0 is ok; the state of fd[0] of that
+task will be captured at some point in the middle of the checkpoint, so
+after restart one cannot assume anything about the file position; the rest
+should work.
 
-Dave.
+Oren.
 
->
-> Rene.
->
