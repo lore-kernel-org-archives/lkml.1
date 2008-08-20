@@ -1,162 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbYHTRm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbYHTRsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753148AbYHTRm6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 13:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbYHTRmr
+	id S1753671AbYHTRsP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 13:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYHTRr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 13:42:47 -0400
-Received: from web82106.mail.mud.yahoo.com ([209.191.84.219]:33376 "HELO
-	web82106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751496AbYHTRmq (ORCPT
+	Wed, 20 Aug 2008 13:47:57 -0400
+Received: from torres.zugschlus.de ([85.214.68.41]:55513 "EHLO
+	torres.zugschlus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750882AbYHTRr4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 13:42:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=s5uakPQfmVnLIPebldjxdjj/gAibeoeDHVzLtIwlQ/FZ7AOxiMb1r5RmzDQ/9eDudXXM7htiAymI/92oIqmbsYurwOuPy0hSaNowwtga0vS922ESo3QYyVoiAWalxkMO02y7IOr5hVhYCGjj9wweJphLRew04fR1z9jCUL85YUA=;
-X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
-Date: Wed, 20 Aug 2008 10:42:45 -0700 (PDT)
-From: David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
-To: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Bill Fink <billfink@mindspring.com>,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
+	Wed, 20 Aug 2008 13:47:56 -0400
+Date: Wed, 20 Aug 2008 19:47:52 +0200
+From: Marc Haber <mh+linux-kernel@zugschlus.de>
+To: Matt Carlson <mcarlson@broadcom.com>
+Cc: Marc Haber <mh+linux-kernel@zugschlus.de>,
+       Michael Chan <mchan@broadcom.com>, David Miller <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.26/tg3 ping roundtrip times > 2000 ms on local network
+Message-ID: <20080820174752.GB18419@torres.zugschlus.de>
+References: <20080819172019.GA5823@torres.zugschlus.de> <20080819.132040.188336475.davem@davemloft.net> <1219166962.13090.12.camel@HP1> <20080819221439.GA19106@torres.zugschlus.de> <20080819223025.GA11221@xw6200.broadcom.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <324173.33114.qm@web82106.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080819223025.GA11221@xw6200.broadcom.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 19, 2008 at 03:30:25PM -0700, Matt Carlson wrote:
+> Can you try the attached patch?  The patch reduces the delay back to
+> what it should have been.  If this helps, then it means you are being
+> bitten by the same bug the upstream patch fixed.
 
-*** FINALLY FOUND THE EXACT PROBLEM ***
+It looks like the issue is fixed now. Thanks for your help.
 
-I woke up this morning with a new idea.  I wish I had thought of this
-TWO WEEKS AGO!
+Will this fix be in 2.6.26.3 and/or 2.6.27?
 
-Commit 3def3d6d essentially involves 2 different changes:
+Now I need to understand why the other, nearly[1] identical box didn't
+need the patch to function properly.
 
-1.  request_resource () is replaced by insert_resource()
+Greetings
+Marc
 
-2.  code to add {code,data,bss}_resource to the iomem_resource tree
-is moved out of e820_reserve_resources() and into setup_arch()
-directly.  [The actual call of e820_reserve_resources() is also
-located in setup_arch().]
+[1] only difference is that the working box has two e1000 interfaces
+on a PCI card in addition to the two tg3 interfaces on board (all four
+of them being in use)
 
-
-Since this is 2 separate changes, I went back to 700efc1b, just
-before the commit introducing the regression (3def3d6d).
-
-When I applied change #2 alone, and GOT A WORKING KERNEL!
-===== BEGIN DIFF ================
-diff --git a/arch/x86/kernel/e820_64.c b/arch/x86/kernel/e820_64.c
-index a8694a3..e452bea 100644
---- a/arch/x86/kernel/e820_64.c
-+++ b/arch/x86/kernel/e820_64.c
-@@ -229,8 +229,7 @@ unsigned long __init e820_end_of_ram(void)
- /*
-  * Mark e820 reserved areas as busy for the resource manager.
-  */
--void __init e820_reserve_resources(struct resource *code_resource,
--        struct resource *data_resource, struct resource *bss_resource)
-+void __init e820_reserve_resources(void)
- {
-     int i;
-     for (i = 0; i < e820.nr_map; i++) {
-@@ -246,20 +245,6 @@ void __init e820_reserve_resources(struct resource *code_resource,
-         res->end = res->start + e820.map[i].size - 1;
-         res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-         request_resource(&iomem_resource, res);
--        if (e820.map[i].type == E820_RAM) {
--            /*
--             * We don't know which RAM region contains kernel data,
--             * so we try it repeatedly and let the resource manager
--             * test it.
--             */
--            request_resource(res, code_resource);
--            request_resource(res, data_resource);
--            request_resource(res, bss_resource);
--#ifdef CONFIG_KEXEC
--            if (crashk_res.start != crashk_res.end)
--                request_resource(res, &crashk_res);
--#endif
--        }
-     }
- }
- 
-diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
-index 187f084..a0584ac 100644
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -322,6 +322,11 @@ void __init setup_arch(char **cmdline_p)
- 
-     finish_e820_parsing();
- 
-+    /* after parse_early_param, so could debug it */
-+    insert_resource(&iomem_resource, &code_resource);
-+    insert_resource(&iomem_resource, &data_resource);
-+    insert_resource(&iomem_resource, &bss_resource);
-+
-     early_gart_iommu_check();
- 
-     e820_register_active_regions(0, 0, -1UL);
-@@ -454,7 +459,7 @@ void __init setup_arch(char **cmdline_p)
-     /*
-      * We trust e820 completely. No explicit ROM probing in memory.
-      */
--    e820_reserve_resources(&code_resource, &data_resource, &bss_resource);
-+    e820_reserve_resources();
-     e820_mark_nosave_regions();
- 
-     /* request I/O space for devices used on all i[345]86 PCs */
-diff --git a/include/asm-x86/e820_64.h b/include/asm-x86/e820_64.h
-index 9e06c6e..ef653a4 100644
---- a/include/asm-x86/e820_64.h
-+++ b/include/asm-x86/e820_64.h
-@@ -23,8 +23,7 @@ extern void update_memory_range(u64 start, u64 size, unsigned old_type,
- extern void setup_memory_region(void);
- extern void contig_e820_setup(void); 
- extern unsigned long e820_end_of_ram(void);
--extern void e820_reserve_resources(struct resource *code_resource,
--        struct resource *data_resource, struct resource *bss_resource);
-+extern void e820_reserve_resources(void);
- extern void e820_mark_nosave_regions(void);
- extern int e820_any_mapped(unsigned long start, unsigned long end, unsigned type);
- extern int e820_all_mapped(unsigned long start, unsigned long end, unsigned type);
-===== END DIFF ================
-
-
-As a separate experiment, I started over with a clean version of
-700efc1b, then introduced the change from request_resource() to
-insert_resource():
-===== BEGIN DIFF ================
-diff --git a/arch/x86/kernel/e820_64.c b/arch/x86/kernel/e820_64.c
-index a8694a3..988195d 100644
---- a/arch/x86/kernel/e820_64.c
-+++ b/arch/x86/kernel/e820_64.c
-@@ -245,7 +245,7 @@ void __init e820_reserve_resources(struct resource *code_resource,
-         res->start = e820.map[i].addr;
-         res->end = res->start + e820.map[i].size - 1;
-         res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
--        request_resource(&iomem_resource, res);
-+        insert_resource(&iomem_resource, res);
-         if (e820.map[i].type == E820_RAM) {
-             /*
-              * We don't know which RAM region contains kernel data,
-===== END DIFF ================
-
-The kernel produced from the change HANGS!
-
-
-I am very late for work, but just couldn't leave home until I posted
-these results.  My conclusion is that, somehow, the reordering of
-adding {code,data,bss}_resource to the iomem_resource tree is doing
-funky things to certain people's machines!
-
-
-HTH!!!
-Dave W.
+-- 
+-----------------------------------------------------------------------------
+Marc Haber         | "I don't trust Computers. They | Mailadresse im Header
+Mannheim, Germany  |  lose things."    Winona Ryder | Fon: *49 621 72739834
+Nordisch by Nature |  How to make an American Quilt | Fax: *49 3221 2323190
