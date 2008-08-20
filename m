@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756993AbYHTVYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755813AbYHTV2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756993AbYHTVYU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYHTVYF
+	id S1755813AbYHTV2t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbYHTV2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:24:05 -0400
-Received: from gv-out-0910.google.com ([216.239.58.188]:4697 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752439AbYHTVYC convert rfc822-to-8bit (ORCPT
+	Wed, 20 Aug 2008 17:28:41 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:57758 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751375AbYHTV2k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:24:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=hHmOnQVM0B+5fSon36tIqzYGaMgKmXkVj4HoaRtikfMBhX6Uq1seGRNwVXsO1smNnT
-         api8dmL3KW2ipPox5Ioq0JIuvSzJJrSH4kDHyNuPSP6xRIK/VyhJnScBHo5gwA84SidT
-         aY4mfqIRtpJjbN2QFW3QczAeb4c/uBs4+7ueU=
-Date: Wed, 20 Aug 2008 23:23:41 +0200
-From: Diego Calleja <diegocalleja@gmail.com>
-To: Bart Trojanowski <bart@jukie.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: vfat BKL/lock_super regression in v2.6.26-rc3-g8f59342
-Message-ID: <20080820232341.2a845cb3@diego-desktop>
-In-Reply-To: <20080820022712.GF28029@jukie.net>
-References: <20080819220311.GA28029@jukie.net>
-	<alpine.LFD.1.10.0808191505590.3324@nehalem.linux-foundation.org>
-	<20080820001845.GC28029@jukie.net>
-	<alpine.LFD.1.10.0808191729330.3324@nehalem.linux-foundation.org>
-	<alpine.LFD.1.10.0808191748040.3324@nehalem.linux-foundation.org>
-	<20080820022712.GF28029@jukie.net>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 20 Aug 2008 17:28:40 -0400
+Date: Wed, 20 Aug 2008 17:28:39 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.27-rc2 USB suspend regression
+In-Reply-To: <48AC8337.2070502@goop.org>
+Message-ID: <Pine.LNX.4.44L0.0808201724380.14505-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Tue, 19 Aug 2008 22:27:12 -0400, Bart Trojanowski <bart@jukie.net> escribió:
+On Wed, 20 Aug 2008, Jeremy Fitzhardinge wrote:
 
-> I was reading the vfat code, and it turns out that vfat has a "flush"
-> mount option.  Which is documented in the code (not in the manpage) as:
+> Using the Fedora Rawhide kernel RPM "2.6.27-0.238.rc2.fc10.i686"
+> (kernel-2.6.27-0.238.rc2.fc10.i686), I'm seeing suspend to ram
+> failures.  The suspend seems to go OK, but then I just get endless:
+> 
+> usb 5-1: uhci_result_common: failed with status 440000
+> 
+> messages, with occasional flickers of something else being printed
+> (perhaps).  The machine is otherwise unresponsive.
 
-Yeah, probably the one place where it was documented was 
-http://kernelnewbies.org/Linux_2_6_19 (commit ae78bf9c4f5fde3c67e2829505f195d7347ce3e4).
+You could comment out that error message in order to see what else is 
+in the log.  It is located in drivers/usb/host/uhci-q.c in the 
+uhci_result_common() function.
 
-Apparently at least one person must have read it, because there's a lot
-of dmesgs in the interweb with this string in it:
+You could try running -rc3 instead of -rc2, although that probably 
+won't make much difference.
 
-"FAT: Unrecognized mount option "flush" or missing value"
+What USB devices do you have on the failing system?  In particular,
+what is 5-1?  If you unplug it before suspending, does the problem go
+away?  (It certainly should!)
 
-due to HAL trying to mount vfat filesystems with that option in kernels
-that don't support it. Which broke USB stick support for them, BTW, and
-generated a lot of posts in forums asking for help.
-
-IOW: not only this option exist, it's also being used by default in all
-the vfat mounts on the linux systems that use HAL, ie. almost all of them.
+Alan Stern
 
