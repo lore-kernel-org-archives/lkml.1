@@ -1,76 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbYHTMkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbYHTMmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756209AbYHTMkb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 08:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYHTMkW
+	id S1756003AbYHTMmm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 08:42:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbYHTMmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 08:40:22 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:63605 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753343AbYHTMkU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 08:40:20 -0400
-X-BigFish: VPS-34(zz1432R98dR936eQ62a3L1805Mzz10d3izzz32i6bh43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0K5WGIS-02-31X-01
-Date: Wed, 20 Aug 2008 14:39:45 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       oprofile-list@lists.sourceforge.net, Paul Mackerras <paulus@samba.org>,
-       cel <cel@linux.vnet.ibm.com>
-Subject: Re: powerpc/cell/oprofile: fix mutex locking for spu-oprofile
-Message-ID: <20080820123944.GQ13011@erda.amd.com>
-References: <1217620879.15667.145.camel@carll-linux-desktop> <18591.30474.127939.243247@cargo.ozlabs.ibm.com> <200808110918.57293.arnd@arndb.de> <200808110925.08485.arnd@arndb.de>
+	Wed, 20 Aug 2008 08:42:33 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:57198 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753901AbYHTMmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 08:42:32 -0400
+Date: Wed, 20 Aug 2008 14:40:55 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Ingo Molnar <mingo@elte.hu>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
+       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, rostedt@goodmis.org, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH] printk: robustify printk
+In-Reply-To: <20080811115109.GB23529@elte.hu>
+Message-ID: <Pine.LNX.4.64.0808201438490.18947@twin.jikos.cz>
+References: <1218215454.8625.133.camel@twins>
+ <alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org>
+ <1218217257.29098.2.camel@lappy.programming.kicks-ass.net>
+ <alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org>
+ <1218219269.29098.5.camel@lappy.programming.kicks-ass.net>
+ <20080808121428.646a8b3c.akpm@linux-foundation.org>
+ <1218223269.29098.12.camel@lappy.programming.kicks-ass.net>
+ <1218224829.29098.19.camel@lappy.programming.kicks-ass.net>
+ <20080811104526.GA15186@elte.hu> <1218452640.10800.58.camel@twins>
+ <20080811115109.GB23529@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <200808110925.08485.arnd@arndb.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 20 Aug 2008 12:40:05.0884 (UTC) FILETIME=[DF8663C0:01C902C1]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11.08.08 09:25:07, Arnd Bergmann wrote:
-> From: Carl Love <cel@us.ibm.com>
-> 
-> The issue is the SPU code is not holding the kernel mutex lock while
-> adding samples to the kernel buffer.
-> 
-> This patch creates per SPU buffers to hold the data.  Data
-> is added to the buffers from in interrupt context.  The data
-> is periodically pushed to the kernel buffer via a new Oprofile
-> function oprofile_put_buff(). The oprofile_put_buff() function
-> is called via a work queue enabling the funtion to acquire the
-> mutex lock.
-> 
-> The existing user controls for adjusting the per CPU buffer
-> size is used to control the size of the per SPU buffers.
-> Similarly, overflows of the SPU buffers are reported by
-> incrementing the per CPU buffer stats.  This eliminates the
-> need to have architecture specific controls for the per SPU
-> buffers which is not acceptable to the OProfile user tool
-> maintainer.
-> 
-> The export of the oprofile add_event_entry() is removed as it
-> is no longer needed given this patch.
-> 
-> Note, this patch has not addressed the issue of indexing arrays
-> by the spu number.  This still needs to be fixed as the spu
-> numbering is not guarenteed to be 0 to max_num_spus-1.
-> 
-> Signed-off-by: Carl Love <carll@us.ibm.com>
-> Signed-off-by: Maynard Johnson <maynardj@us.ibm.com>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+On Mon, 11 Aug 2008, Ingo Molnar wrote:
 
-Acked-by: Robert Richter <robert.richter@amd.com>
+> ----------------->
+> >From b845b517b5e3706a3729f6ea83b88ab85f0725b0 Mon Sep 17 00:00:00 2001
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date: Fri, 8 Aug 2008 21:47:09 +0200
+> Subject: [PATCH] printk: robustify printk
+> 
+> Avoid deadlocks against rq->lock and xtime_lock by deferring the klogd
+> wakeup by polling from the timer tick.
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
--Robert
+Then I think we also want the patch below on top of that, right?
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
 
+From: Jiri Kosina <jkosina@suse.cz>
+printk: robustify printk, fix #3
+
+Remove the comment describing the possibility of printk() deadlocking on 
+runqueue lock.
+
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+--- 
+
+ kernel/printk.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/printk.c b/kernel/printk.c
+index b51b156..9fbf391 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -577,9 +577,6 @@ static int have_callable_console(void)
+  * @fmt: format string
+  *
+  * This is printk().  It can be called from any context.  We want it to work.
+- * Be aware of the fact that if oops_in_progress is not set, we might try to
+- * wake klogd up which could deadlock on runqueue lock if printk() is called
+- * from scheduler code.
+  *
+  * We try to grab the console_sem.  If we succeed, it's easy - we log the output and
+  * call the console drivers.  If we fail to get the semaphore we place the output
