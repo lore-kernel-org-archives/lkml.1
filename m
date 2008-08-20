@@ -1,104 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbYHTGPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbYHTGXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752834AbYHTGPy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 02:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbYHTGPn
+	id S1753272AbYHTGXY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 02:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbYHTGXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 02:15:43 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:53322 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750801AbYHTGPm (ORCPT
+	Wed, 20 Aug 2008 02:23:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58372 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750819AbYHTGXO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 02:15:42 -0400
-Subject: Re: [GIT]: Networking
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0808191536100.3324@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0808191411390.3324@nehalem.linux-foundation.org>
-	 <20080819.142735.179034162.davem@davemloft.net>
-	 <alpine.LFD.1.10.0808191432040.3324@nehalem.linux-foundation.org>
-	 <20080819.144015.40311904.davem@davemloft.net>
-	 <alpine.LFD.1.10.0808191446560.3324@nehalem.linux-foundation.org>
-	 <20080819222612.GA16766@2ka.mipt.ru>
-	 <alpine.LFD.1.10.0808191536100.3324@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 20 Aug 2008 08:15:46 +0200
-Message-Id: <1219212946.7591.303.camel@violet.holtmann.net>
+	Wed, 20 Aug 2008 02:23:14 -0400
+Date: Tue, 19 Aug 2008 23:21:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christian Borntraeger <cborntra@de.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH RFC 1/3] Add a trigger API for efficient non-blocking
+ waiting
+Message-Id: <20080819232108.c03660fa.akpm@linux-foundation.org>
+In-Reply-To: <48A70185.2020600@goop.org>
+References: <48A70185.2020600@goop.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Sat, 16 Aug 2008 09:34:13 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> > I belive it was you who told that there is no black and white (another 
-> > guy told that there is no spoon, I frequntly confuse).
+> There are various places in the kernel which wish to wait for a
+> condition to come true while in a non-blocking context.  Existing
+> examples of this are stop_machine() and smp_call_function_mask().
+> (No doubt there are other instances of this pattern in the tree.)
 > 
-> Yes.
+> Thus far, the only way to achieve this is by spinning with a
+> cpu_relax() loop.  This is fine if the condition becomes true very
+> quickly, but it is not ideal:
 > 
-> > Any changes made no matter when can not be 100% tested in laboratory 
-> > environment, even fixes, which look obviously.
-> 
-> 100% agreed.
-> 
-> Please note that I'm not against these things slipping in occasionally. 
-> The reason I brought this up in the first place really wasn't the loopback 
-> driver issue at all. The reason I brought it up was simply the fact that 
-> when I compare the size and frequency of changes, the networking pulls 
-> tend to be the worst of the lot of the "core" kernel changes.
-> 
-> I say "core" kernel changes, because things are usually worse for the 
-> outliers. As mentioned, networking is actually one of the _better_ guys if 
-> you start comparing to the DVB people, or to some of the architectures 
-> that often slip the merge window _entirely_, and *all* their changes come 
-> in during -rc2 or something.
-> 
-> So it's not that networking is especially bad on an absolute scale in this 
-> regard. And it's not like it doesn't happen all the time for everybody 
-> else too. But I think networking has ben a bit more cavalier about things 
-> than many other core areas.
+>  - There's little opportunity to put the CPUs into a low-power state.
+>    cpu_relax() may do this to some extent, but if the wait is
+>    relatively long, then we can probably do better.
 
-I was always under the impression that Dave was quite strict when it
-comes to merging things after the merge window. Yes, some things should
-have better waiting for the next release, but we always had exceptions
-for various things that fall out of the merge window anyway.
+If this change saves a significant amount of power then we should fix
+the offending callsites.
 
-All the small "soldiers" like me make a call on what to pick to send to
-Dave and it is not that we try to sneak anything in. It just made sense
-to us and either he agrees or not. Some choices are better than others,
-no questions asked, but I think what you are seeing is that networking
-is getting huge. And this is mostly networking drivers. And I don't
-expect this to slow down or anything. The Linux WiFi support is just at
-the edge to really become competitive and show real leading across all
-other operating systems.
+>  - In a virtual environment, spinning virtual CPUs just waste CPU
+>    resources, and may steal CPU time from vCPUs which need it to make
+>    progress.  The trigger API allows the vCPUs to give up their CPU
+>    entirely.  The s390 people observed a problem with stop_machine
+>    taking a very long time (seconds) when there are more vcpus than
+>    available cpus.
 
-When looking at the actual split between net/ and drivers/, then the
-drivers part is the big one. And I don't expect this to go down any time
-soon. We are about to get Ultra-Wideband support merged. After that we
-will have plain networking over UWB, Wireless USB using UWB and soon
-Bluetooth over UWB. Also we will see Bluetooth over 802.11 and then
-another Ultra-Low-Power thing for sensor devices. And I forget WiMAX.
-That is just the short term wireless future. Every of these come with
-new networking drivers and then you have new Ethernet drivers and so on.
-It is just a lot of stuff.
-
-While looking at the actual diffstat, I realized that I really was the
-biggest offender:
-
-net/bluetooth/hci_sysfs.c                   |  376 ++++++++++++++-------------
-
-This is actually the regression fix. It is big, because thanks to sysfs,
-I had to move some code around in that file and rename things. I should
-have seen that earlier and gave Dave an extra comment why it is so big.
-That was my bad. Sorry for that.
-
-Regards
-
-Marcel
+If this change saves a significant amount of virtual-cpu-time then we
+should fix the offending callsites.
 
 
+Tell me I'm wrong...
