@@ -1,73 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbYHTXRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbYHTXVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757944AbYHTXRt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 19:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbYHTXRj
+	id S1758026AbYHTXVv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 19:21:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbYHTXVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 19:17:39 -0400
-Received: from relay03.mail-hub.dodo.com.au ([123.2.6.238]:45347 "EHLO
-	relay03.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751491AbYHTXRj (ORCPT
+	Wed, 20 Aug 2008 19:21:43 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:58310 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754808AbYHTXVm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 19:17:39 -0400
-From: Grant Coady <grant_lkml@dodo.com.au>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
-       neilb@suse.de, bfields@fieldses.org, linux-nfs@vger.kernel.org
-Subject: Re: NFS regression?  Odd delays and lockups accessing an NFS export.
-Date: Thu, 21 Aug 2008 09:17:07 +1000
-Organization: http://bugsplatter.id.au/
-Reply-To: Grant Coady <gcoady.lk@gmail.com>
-Message-ID: <mi8pa4hi3809h8nbm332k7ifjvc3idnkja@4ax.com>
-References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com> <1219087258.7192.19.camel@localhost>
-In-Reply-To: <1219087258.7192.19.camel@localhost>
-X-Mailer: Forte Agent 2.0/32.652
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 20 Aug 2008 19:21:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=references:message-id:from:to:in-reply-to:content-type
+         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
+        b=kqIDgfr4/vSJtSWoTdz5RbFyWB2IrAOfIg0UxPvUAqKHIQuH7zTjLpxer92Dj0+xLe
+         ax5c/8RD1ppFMdpYCU5jRfPT+8tR3j4zAXhTNWuzn8vIyp9SYcqNrW8vzZwAoErkZlWv
+         tt/UrtdmZL6h/hvUUoxeNS1yn9J7+GwEXp8uM=
+References: <200808210045.42693.rjw@sisk.pl> <alpine.LFD.1.10.0808201548300.3487@nehalem.linux-foundation.org> <200808210058.06515.rjw@sisk.pl> <alpine.LFD.1.10.0808201557430.3487@nehalem.linux-foundation.org>
+Message-Id: <43861540-892A-4C87-BDEB-1858E73D66E8@gmail.com>
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0808201557430.3487@nehalem.linux-foundation.org>
+Content-Type: text/plain;
+	charset=us-ascii;
+	format=flowed;
+	delsp=yes
 Content-Transfer-Encoding: 7bit
+X-Mailer: iPhone Mail (5C1)
+Mime-Version: 1.0 (iPhone Mail 5C1)
+Subject: Re: [OT] 'git pull' from Linus' tree doesn't work for me any more
+Date: Wed, 20 Aug 2008 16:21:38 -0700
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Aug 2008 15:20:58 -0400, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+Looks like I need to upgrade
+My git. At the moment using
+1.5.6.3.
 
->On Mon, 2008-08-18 at 12:02 +1000, Grant Coady wrote:
->> Hi there,
->> 
->> I've been using NFS here for years, lately there's something odd going on 
->> since about a month or so.  Previously reported last month:
->> http://www.gossamer-threads.com/lists/linux/kernel/951419?page=last
->> 
->> Now with 2.6.27-rc3 on one of the client boxes I get a complete stall 
->> at odd times when accessing the server's exported directory, cannot 
->> see a pattern to it.  Eventually recovers after a Ctrl-C.  Nothing in 
->> the server or client log files.  Not easy to reproduce either.
->> 
->> The server runs 2.6.26.2 at the moment.
->> 
->> Server config, etc: http://bugsplatter.id.au/kernel/boxen/deltree/
->> Client config, etc: http://bugsplatter.id.au/kernel/boxen/pooh/
+justin P. Mattock
+
+
+
+On Aug 20, 2008, at 4:07 PM, Linus Torvalds <torvalds@linux-foundation.org 
+ > wrote:
+
 >
->Please try to reproduce the hang, then do
 >
->	echo 0 >/proc/sys/sunrpc/rpc_debug
+> On Thu, 21 Aug 2008, Rafael J. Wysocki wrote:
+>>
+>> Well, it hasn't been working for a couple of hours now ...
 >
->and send the output from 'dmesg'...
-
-It's not NFS, I just had WinXP box stall completely (no KB NumLock 
-response) on a PuTTY (ssh) terminal to a linux box running 2.6.26.3 
-for about five or ten seconds, when it came back to operation the 
-PuTYY toolbar icon was flashing.  Dunno which terminal as I had four 
-open at the time, but they all to a server box running 2.6.26.3 with 
-multiple Intel pro/100 (e100) NICs.
-
-I think this may be to do with the e100 network driver instead, as a 
-few weeks ago I started compiling it in rather than as a module like 
-I've been doing for years (in response to the firmware (microcode) 
-being dropped on the floor last month issue).  This box is the server 
-(deltree) that all linux boxes mount a /home/common NFS export from.
-
-All machines have the Intel pro/100 NIC, going to recompile the lot 
-back to modules, see if that fixes the problem.
-
-Grant.
+> Hmm. I just tested it myself, and it worked fine for me to just update
+> another machine by pulling from git.kernel.org.
+>
+> What version of git do you have? One thing that changed recently is  
+> that
+> at least some kernel.org git binaries got updated to 1.6.0, and if you
+> have a really ancient version of git (Debian 'stable' aka 'rubbish'  
+> ships
+> with something two years old), you'd better upgrade.
+>
+> From the 1.6.0 announcement:
+>
+>  GIT v1.6.0 Release Notes
+>  ========================
+>
+>  User visible changes
+>  --------------------
+>
+>  With the default Makefile settings, most of the programs are now
+>  installed outside your $PATH, except for "git", "gitk" and
+>  some server side programs that need to be accessible for technical
+>  reasons.  Invoking a git subcommand as "git-xyzzy" from the command
+>  line has been deprecated since early 2006 (and officially announced  
+> in
+>  1.5.4 release notes); use of them from your scripts after adding
+>  output from "git --exec-path" to the $PATH is still supported in this
+>  release, but users are again strongly encouraged to adjust their
+>  scripts to use "git xyzzy" form, as we will stop installing
+>  "git-xyzzy" hardlinks for built-in commands in later releases.
+>
+>  An earlier change to page "git status" output was overwhelmingly  
+> unpopular
+>  and has been reverted.
+>
+>  Source changes needed for porting to MinGW environment are now all  
+> in the
+>  main git.git codebase.
+>
+>  By default, packfiles created with this version uses delta-base- 
+> offset
+>  encoding introduced in v1.4.4.  Pack idx files are using version 2  
+> that
+>  allows larger packs and added robustness thanks to its CRC checking,
+>  introduced in v1.5.2 and v1.4.4.5.  If you want to keep your  
+> repositories
+>  backwards compatible past these versions, set  
+> repack.useDeltaBaseOffset
+>  to false or pack.indexVersion to 1, respectively.
+>
+> and no, I am not at all interested in helping Debian continue to ship
+> git versions almost two years old, and much inferior to modern  
+> versions.
+> So I'm not going to set the flag that makes it work with old gits.
+>
+>          Linus
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux- 
+> kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
