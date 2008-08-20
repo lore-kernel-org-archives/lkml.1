@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757282AbYHTNRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757382AbYHTNRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757282AbYHTNRb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 09:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbYHTNQ1
+	id S1757382AbYHTNRs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 09:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756693AbYHTNQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 09:16:27 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:59208 "EHLO
+	Wed, 20 Aug 2008 09:16:28 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:59209 "EHLO
 	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754516AbYHTNQZ (ORCPT
+	with ESMTP id S1755217AbYHTNQ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 09:16:25 -0400
+	Wed, 20 Aug 2008 09:16:26 -0400
 From: Rodolfo Giometti <giometti@linux.it>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -17,90 +17,313 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
        Randy Dunlap <randy.dunlap@oracle.com>,
        Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
-Date: Wed, 20 Aug 2008 15:16:00 +0200
-Message-Id: <1219238170-5508-1-git-send-email-giometti@linux.it>
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Rodolfo Giometti <giometti@linux.it>
+Date: Wed, 20 Aug 2008 15:16:03 +0200
+Message-Id: <1219238170-5508-4-git-send-email-giometti@linux.it>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
+In-Reply-To: <1219238170-5508-3-git-send-email-giometti@linux.it>
 References: <>
+ <1219238170-5508-1-git-send-email-giometti@linux.it>
+ <1219238170-5508-2-git-send-email-giometti@linux.it>
+ <1219238170-5508-3-git-send-email-giometti@linux.it>
 X-SA-Exim-Connect-IP: 192.168.32.254
 X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: LinuxPPS (RESUBMIT 7): the PPS Linux implementation.
+Subject: [PATCH 03/10] PPS: documentation programs and examples.
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
 X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch set adds the PPS support into Linux.
+Here some utilities and examples about the PPS API and the LinuxPPS
+support.
 
-PPS means "pulse per second" and its API is specified by RFC 2783
-(Pulse-Per-Second API for UNIX-like Operating Systems, Version 1.0).
+* ppsldisc.c shows how to manage PPS line discipline;
 
-The code has been tested with the NTPD program
-(http://www.eecis.udel.edu/~mills/ntp/html/index.html) and several GPS
-antennae.
+* ppstest.c implements an useful testing program, while
 
-Changelog
+* ppsfind tries to help the user into finding a specific PPS source by
+  using its name or path.
 
-RESUBMIT 6 -> 7:
+Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+---
+ Documentation/pps/Makefile   |   28 ++++++++
+ Documentation/pps/ppsfind    |   17 +++++
+ Documentation/pps/ppsldisc.c |   46 +++++++++++++
+ Documentation/pps/ppstest.c  |  151 ++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 242 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/pps/Makefile
+ create mode 100644 Documentation/pps/ppsfind
+ create mode 100644 Documentation/pps/ppsldisc.c
+ create mode 100644 Documentation/pps/ppstest.c
 
-* A new line discipline has been added in order to leave untouched
-  the serial ports code (as suggested by Alan).
-
-* n_tty.c exports only GPL symbols.
-
-* ioctl numbers fixed in order to avoid any conflicts.
-
-* Last patch (0010-PPS-low-level-IRQ-timestamps-recording.patch) implements
-  low level IRQs timestamps recording which mproves PPS precision but can
-  be dropped for kernel inclusion! As suggested by Alan: "After that is
-  sorted/merged we can come back to working out the best way to improve
-  the IRQ and HARDPPS hacks."
-
-Rodolfo
-
---
-
- b/Documentation/ABI/testing/sysfs-pps |   73 +++++++
- b/Documentation/ioctl-number.txt      |    2 
- b/Documentation/pps/Makefile          |   28 ++
- b/Documentation/pps/pps.txt           |  172 +++++++++++++++++
- b/Documentation/pps/ppsfind           |   17 +
- b/Documentation/pps/ppsldisc.c        |   46 ++++
- b/Documentation/pps/ppstest.c         |  151 +++++++++++++++
- b/Documentation/pps/timepps.h         |  195 +++++++++++++++++++
- b/Documentation/tty.txt               |    4 
- b/MAINTAINERS                         |    7 
- b/arch/x86/kernel/irq_32.c            |   17 +
- b/arch/x86/kernel/irq_64.c            |   21 +-
- b/drivers/Kconfig                     |    2 
- b/drivers/Makefile                    |    1 
- b/drivers/char/lp.c                   |   61 ++++++
- b/drivers/char/n_tty.c                |   54 +++--
- b/drivers/pps/Kconfig                 |   33 +++
- b/drivers/pps/Makefile                |    8 
- b/drivers/pps/clients/Kconfig         |   18 +
- b/drivers/pps/clients/Makefile        |    9 
- b/drivers/pps/clients/ktimer.c        |  124 ++++++++++++
- b/drivers/pps/clients/pps-ldisc.c     |  154 +++++++++++++++
- b/drivers/pps/kapi.c                  |  322 ++++++++++++++++++++++++++++++++
- b/drivers/pps/pps.c                   |  335 ++++++++++++++++++++++++++++++++++
- b/drivers/pps/sysfs.c                 |  104 ++++++++++
- b/drivers/serial/8250.c               |   13 +
- b/include/linux/Kbuild                |    1 
- b/include/linux/parport.h             |   22 ++
- b/include/linux/pps.h                 |  202 ++++++++++++++++++++
- b/include/linux/serial_core.h         |   10 -
- b/include/linux/tty.h                 |   16 +
- b/include/linux/tty_ldisc.h           |    8 
- drivers/pps/Kconfig                   |   14 +
- drivers/pps/Makefile                  |    1 
- drivers/pps/clients/Kconfig           |   17 +
- drivers/pps/clients/Makefile          |    1 
- include/linux/pps.h                   |    1 
- include/linux/serial_core.h           |    7 
- include/linux/tty.h                   |    3 
- 39 files changed, 2247 insertions(+), 27 deletions(-)
-
+diff --git a/Documentation/pps/Makefile b/Documentation/pps/Makefile
+new file mode 100644
+index 0000000..9841e6b
+--- /dev/null
++++ b/Documentation/pps/Makefile
+@@ -0,0 +1,28 @@
++TARGETS = ppstest ppsldisc
++
++CFLAGS += -Wall -O2 -D_GNU_SOURCE
++CFLAGS += -I .
++CFLAGS += -ggdb
++CFLAGS += -D__N_PPS=$(shell awk '/N_PPS/ {print $$3}' ../../include/linux/tty.h)
++
++# -- Actions section --
++
++.PHONY : all depend dep
++
++all : .depend $(TARGETS)
++
++.depend depend dep :
++	$(CC) $(CFLAGS) -M $(TARGETS:=.c) > .depend
++
++ifeq (.depend,$(wildcard .depend))
++include .depend
++endif
++
++
++# -- Clean section --
++
++.PHONY : clean
++
++clean :
++	rm -f *.o *~ core .depend
++	rm -f ${TARGETS}
+diff --git a/Documentation/pps/ppsfind b/Documentation/pps/ppsfind
+new file mode 100644
+index 0000000..93c0e17
+--- /dev/null
++++ b/Documentation/pps/ppsfind
+@@ -0,0 +1,17 @@
++#!/bin/sh
++
++SYS="/sys/class/pps/"
++
++if [ $# -lt 1 ] ; then
++	echo "usage: ppsfind <name>" >&2
++	exit 1
++fi
++
++for d in $(ls $SYS) ; do
++	if grep $1 $SYS/$d/name >& /dev/null || \
++	   grep $1 $SYS/$d/path >& /dev/null ; then
++		echo "$d: name=$(cat $SYS/$d/name) path=$(cat $SYS/$d/path)"
++	fi
++done
++
++exit 0
+diff --git a/Documentation/pps/ppsldisc.c b/Documentation/pps/ppsldisc.c
+new file mode 100644
+index 0000000..036e13b
+--- /dev/null
++++ b/Documentation/pps/ppsldisc.c
+@@ -0,0 +1,46 @@
++#include <stdio.h>
++#include <unistd.h>
++#include <stdlib.h>
++#include <errno.h>
++#include <sys/ioctl.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <string.h>
++
++#ifndef N_PPS
++#define N_PPS __N_PPS
++#endif
++
++void usage(char *name)
++{
++	fprintf(stderr, "usage: %s <ttyS>\n", name);
++
++	exit(EXIT_FAILURE);
++}
++
++int main(int argc, char *argv[])
++{
++	int fd;
++	int ldisc = N_PPS;
++	int ret;
++
++	if (argc < 2)
++		usage(argv[0]);
++
++	fd = open(argv[1], O_RDWR);
++	if (fd < 0) {
++		perror("open");
++		exit(EXIT_FAILURE);
++	}
++
++	ret = ioctl(fd, TIOCSETD, &ldisc);
++	if (ret < 0) {
++		perror("ioctl(TIOCSETD)");
++		exit(EXIT_FAILURE);
++	}
++
++	pause();
++
++	return 0;
++}
+diff --git a/Documentation/pps/ppstest.c b/Documentation/pps/ppstest.c
+new file mode 100644
+index 0000000..d125ffa
+--- /dev/null
++++ b/Documentation/pps/ppstest.c
+@@ -0,0 +1,151 @@
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <errno.h>
++#include <string.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++
++#include <timepps.h>
++
++int find_source(char *path, pps_handle_t *handle, int *avail_mode)
++{
++	pps_params_t params;
++	int ret;
++
++	printf("trying PPS source \"%s\"\n", path);
++
++	/* Try to find the source by using the supplied "path" name */
++	ret = open(path, O_RDWR);
++	if (ret < 0) {
++		fprintf(stderr, "unable to open device \"%s\" (%m)\n", path);
++		return ret;
++	}
++
++	/* Open the PPS source (and check the file descriptor) */
++	ret = time_pps_create(ret, handle);
++	if (ret < 0) {
++		fprintf(stderr, "cannot create a PPS source from device "
++				"\"%s\" (%m)\n", path);
++		return -1;
++	}
++	printf("found PPS source \"%s\"\n", path);
++
++	/* Find out what features are supported */
++	ret = time_pps_getcap(*handle, avail_mode);
++	if (ret < 0) {
++		fprintf(stderr, "cannot get capabilities (%m)\n");
++		return -1;
++	}
++	if ((*avail_mode & PPS_CAPTUREASSERT) == 0) {
++		fprintf(stderr, "cannot CAPTUREASSERT\n");
++		return -1;
++	}
++	if ((*avail_mode & PPS_OFFSETASSERT) == 0) {
++		fprintf(stderr, "cannot OFFSETASSERT\n");
++		return -1;
++	}
++
++	/* Capture assert timestamps, and compensate for a 675 nsec
++	 * propagation delay */
++	ret = time_pps_getparams(*handle, &params);
++	if (ret < 0) {
++		fprintf(stderr, "cannot get parameters (%m)\n");
++		return -1;
++	}
++	params.assert_offset.tv_sec = 0;
++	params.assert_offset.tv_nsec = 675;
++	params.mode |= PPS_CAPTUREASSERT | PPS_OFFSETASSERT;
++	ret = time_pps_setparams(*handle, &params);
++	if (ret < 0) {
++		fprintf(stderr, "cannot set parameters (%m)\n");
++		return -1;
++	}
++
++	return 0;
++}
++
++int fetch_source(int i, pps_handle_t *handle, int *avail_mode)
++{
++	struct timespec timeout;
++	pps_info_t infobuf;
++	int ret;
++
++	/* create a zero-valued timeout */
++	timeout.tv_sec = 3;
++	timeout.tv_nsec = 0;
++
++retry:
++	if (*avail_mode & PPS_CANWAIT) /* waits for the next event */
++		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf,
++				   &timeout);
++	else {
++		sleep(1);
++		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf,
++				   &timeout);
++	}
++	if (ret < 0) {
++		if (ret == -EINTR) {
++			fprintf(stderr, "time_pps_fetch() got a signal!\n");
++			goto retry;
++		}
++
++		fprintf(stderr, "time_pps_fetch() error %d (%m)\n", ret);
++		return -1;
++	}
++
++	printf("source %d - "
++	       "assert %ld.%09ld, sequence: %ld - "
++	       "clear  %ld.%09ld, sequence: %ld\n",
++	       i,
++	       infobuf.assert_timestamp.tv_sec,
++	       infobuf.assert_timestamp.tv_nsec,
++	       infobuf.assert_sequence,
++	       infobuf.clear_timestamp.tv_sec,
++	       infobuf.clear_timestamp.tv_nsec, infobuf.clear_sequence);
++
++	return 0;
++}
++
++void usage(char *name)
++{
++	fprintf(stderr, "usage: %s <ppsdev> [<ppsdev> ...]\n", name);
++	exit(EXIT_FAILURE);
++}
++
++int main(int argc, char *argv[])
++{
++	int num;
++	pps_handle_t handle[4];
++	int avail_mode[4];
++	int i = 0;
++	int ret;
++
++	/* Check the command line */
++	if (argc < 2)
++		usage(argv[0]);
++
++	for (i = 1; i < argc && i <= 4; i++) {
++		ret = find_source(argv[i], &handle[i - 1], &avail_mode[i - 1]);
++		if (ret < 0)
++			exit(EXIT_FAILURE);
++	}
++
++	num = i - 1;
++	printf("ok, found %d source(s), now start fetching data...\n", num);
++
++	/* loop, printing the most recent timestamp every second or so */
++	while (1) {
++		for (i = 0; i < num; i++) {
++			ret = fetch_source(i, &handle[i], &avail_mode[i]);
++			if (ret < 0 && errno != ETIMEDOUT)
++				exit(EXIT_FAILURE);
++		}
++	}
++
++	for (; i >= 0; i--)
++		time_pps_destroy(handle[i]);
++
++	return 0;
++}
+-- 
+1.5.4.3
 
