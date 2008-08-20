@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754190AbYHTKqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755286AbYHTKri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754190AbYHTKqU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 06:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYHTKqM
+	id S1755286AbYHTKri (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 06:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYHTKr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 06:46:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42846 "EHLO mx2.mail.elte.hu"
+	Wed, 20 Aug 2008 06:47:29 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40123 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751606AbYHTKqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 06:46:11 -0400
-Date: Wed, 20 Aug 2008 12:45:38 +0200
+	id S1751531AbYHTKr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 06:47:29 -0400
+Date: Wed, 20 Aug 2008 12:47:11 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Juergen Beisert <jbe@pengutronix.de>
-Cc: Samuel Sieb <samuel@sieb.net>, linux-kernel@vger.kernel.org,
-       "Rafael C. de Almeida" <almeidaraf@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Magnus Damm <magnus@valinux.co.jp>, takada <takada@mbf.nifty.com>
-Subject: Re: kernel won't boot on a Cyrix MediaGXm (Geode )
-Message-ID: <20080820104538.GF2816@elte.hu>
-References: <48841A92.4020301@sieb.net> <489A82D5.6020903@sieb.net> <20080820093238.GA22511@elte.hu> <200808201144.02919.jbe@pengutronix.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] ftrace: update recordmount.pl arch changes
+Message-ID: <20080820104711.GG2816@elte.hu>
+References: <alpine.DEB.1.10.0808151136310.2188@gandalf.stny.rr.com> <20080815154234.GE27955@elte.hu> <alpine.DEB.1.10.0808191430010.28232@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200808201144.02919.jbe@pengutronix.de>
+In-Reply-To: <alpine.DEB.1.10.0808191430010.28232@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,31 +37,46 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Juergen Beisert <jbe@pengutronix.de> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> On Mittwoch, 20. August 2008, Ingo Molnar wrote:
-> > * Samuel Sieb <samuel@sieb.net> wrote:
-> > > Ingo Molnar wrote:
-> > >> any patch we should pick up to make your box boot?
-> > >
-> > > I've looked through various datasheets and found that the GXm and GXLV
-> > > Geode processors don't have an incrementor.  I attached two patches. One
-> > > only calls the incrementor setup for GX1 or better.  The other one
-> > > removes the incrementor setup entirely.  As the incrementor value
-> > > differs according to clock speed and we would hope that the BIOS
-> > > configures it correctly, it is probably the better one to choose.  But I
-> > > will leave that choice up to you.  Either one works for me. :-)
-> >
-> > i went for the commit below and queued it up in tip/x86/urgent - thanks
-> > Samuel.
-> >
-> > what happens if the incrementor is not set up correctly by the BIOS
+> On Fri, 15 Aug 2008, Ingo Molnar wrote:
 > 
-> The system can freeze. The clock the incrementor modifies is used for 
-> the external SDRAM (something like a delay line or jitter reduction). 
-> Thats why its setting depends on the core clock speed.
+> > 
+> > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > > Ingo,
+> > > 
+> > > I'm trying to keep all the arch changes in recordmcount.pl in one 
+> > > place. I moved your code into that area, by adding the flags to the 
+> > > commands that were passed in.
+> > > 
+> > > Does this change still work for you when compiling i386 on a x86_64 
+> > > box?
+> > 
+> > actually, i thought of this as a quick hack to let -tip testing 
+> > continue. Dont we have all the proper information available in kbuild 
+> > and should just pass that to scripts/recordmcount.pl when called - like 
+> > we pass in things like OBJDUMP which might have cross-build overrides, 
+> > etc.
+> 
+> Ingo,
+> 
+> Could you use my updated patch. I know it is still just a work around, but 
+> your update broke my build.  I use distcc which passes in "distcc" as gcc. 
+> My distcc is self built and is not the same as the distribution gcc.
+> 
+> Ie, you have:
+> 
+> if ($arch eq "x86_64") {
+>   $ld = "ld -m elf_x86_64";
+>   $objdump = "objdump -M x86-64";
+>   $objcopy = "objcopy -O elf64-x86-64";
+>   $cc = "gcc -m64";
+> }
+> 
+> Where the $cc = "gcc" is not compatible on my system. I end up with a bad 
+> build that causes ftrace to fail on bootup.
 
-so, what's the recommendation - is the patch fine? (which removes 
-incrementor setting, leaving it to the BIOS)
+sure - applied to tip/tracing/ftrace.
 
 	Ingo
