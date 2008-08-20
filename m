@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbYHTVoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757941AbYHTVoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757786AbYHTVoV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbYHTVoF
+	id S1757941AbYHTVoy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbYHTVoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:44:05 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:54017 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752856AbYHTVoE (ORCPT
+	Wed, 20 Aug 2008 17:44:44 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:61708 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754228AbYHTVoo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:44:04 -0400
-Date: Wed, 20 Aug 2008 23:43:50 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Ilpo =?unknown-8bit?B?SsOkcnZpbmVu?= <ilpo.jarvinen@helsinki.fi>
-Cc: Timothy J Fontaine <tjfontaine@atxconsulting.com>,
-       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: r8169 MTU greater than 1500 causes corruption for other
-	controllers
-Message-ID: <20080820214350.GA18747@electric-eye.fr.zoreil.com>
-References: <20080820170951.GA1771@tophat.atxconsulting.com> <Pine.LNX.4.64.0808202053510.24321@wrl-59.cs.helsinki.fi>
+	Wed, 20 Aug 2008 17:44:44 -0400
+Date: Wed, 20 Aug 2008 17:44:41 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Steven Rostedt <srostedt@redhat.com>,
+       Scott Wood <scottwood@freescale.com>,
+       Eran Liberty <liberty@extricom.com>, Alan Modra <amodra@au1.ibm.com>,
+       Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+In-Reply-To: <1219268189.21386.65.camel@pasglop>
+Message-ID: <alpine.DEB.1.10.0808201743560.18551@gandalf.stny.rr.com>
+References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>  <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>  <48A9AFA7.8080508@freescale.com>  <alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>  <1219110814.8062.2.camel@pasglop>
+  <alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>  <1219113549.8062.13.camel@pasglop> <1219114600.8062.15.camel@pasglop>  <alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>  <1219119431.8062.35.camel@pasglop> <1219216705.21386.46.camel@pasglop>
+  <alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com> <1219268189.21386.65.camel@pasglop>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0808202053510.24321@wrl-59.cs.helsinki.fi>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> :
-[...]
-> Hmm, there was no explanation why the tp->rx_buf_sz to pkt_size change
-> was made in that commit (I have no idea whether those sizes have to match 
-> to other places that use tp->rx_buf_sz)...
 
-Because there is no need to sync data that has not been used ?
+On Thu, 21 Aug 2008, Benjamin Herrenschmidt wrote:
 
-Timothy, could you check if the patch below does the job too ? It should
-fix at least one pci_map / pci_unmap unbalance.
+> 
+> > > As you can see, it restores r1 -before- it pops r24..r31 off
+> > > the stack ! I let you imagine what happens if an interrupt happens
+> > > just in between those two instructions (mr and lmw). We don't do
+> > > redzones on our ABI, so basically, the registers end up corrupted
+> > > by the interrupt.
+> > 
+> > Ouch!  You've disassembled this without -pg too, and it does not have this 
+> > bug? What version of gcc do you have?
+> 
+> Oops, should have mentioned it ;-)
+> 
+> 4.2.3 (Ubuntu 4.2.3-2ubuntu7)
 
-@@ -2789,10 +2789,10 @@ static int rtl8169_rx_interrupt(struct net_device *dev,
- 
- 			if (rtl8169_try_rx_copy(&skb, tp, pkt_size, addr)) {
- 				pci_dma_sync_single_for_device(pdev, addr,
- 					pkt_size, PCI_DMA_FROMDEVICE);
- 				rtl8169_mark_to_asic(desc, tp->rx_buf_sz);
- 			} else {
--				pci_unmap_single(pdev, addr, pkt_size,
-+				pci_unmap_single(pdev, addr, tp->rx_buf_sz,
- 						 PCI_DMA_FROMDEVICE);
- 				tp->Rx_skbuff[entry] = NULL;
- 			}
+I'm running a 4.3.1 (Debian 4.3.1-2) on my powerbook. Perhaps the issue is 
+already taken care of.
 
--- 
-Ueimor
+-- Steve
+
