@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757896AbYHTVr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757942AbYHTVtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757896AbYHTVr4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbYHTVrs
+	id S1757942AbYHTVtQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYHTVs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:47:48 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:54921 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751545AbYHTVrr (ORCPT
+	Wed, 20 Aug 2008 17:48:58 -0400
+Received: from tamago.serverit.net ([91.189.209.155]:52094 "EHLO
+	mail.hosting2.serverit.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752793AbYHTVs5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:47:47 -0400
-Message-ID: <48AC8F63.3050500@cs.columbia.edu>
-Date: Wed, 20 Aug 2008 17:40:51 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Wed, 20 Aug 2008 17:48:57 -0400
+Date: Thu, 21 Aug 2008 00:48:45 +0300 (EEST)
+From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
+X-X-Sender: szaka@tamago.serverit.net
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: konishi.ryusuke@lab.ntt.co.jp, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
+In-Reply-To: <20080820143916.1a7eddab.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.62.0808210044050.25448@tamago.serverit.net>
+References: <20080820004326.519405a2.akpm@linux-foundation.org>
+ <200808201613.AA00212@capsicum.lab.ntt.co.jp> <Pine.LNX.4.61.0808202352450.4532@dhcppc2>
+ <20080820143916.1a7eddab.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [RFC][PATCH 1/4] checkpoint-restart: general infrastructure
-References: <20080807224033.FFB3A2C1@kernel> <200808081146.54834.arnd@arndb.de>	<1218221451.19082.36.camel@nimitz>	<200808090013.41999.arnd@arndb.de>	<1218234411.19082.58.camel@nimitz>	<20080811150703.GA25930@us.ibm.com> <20080814055301.GH6995@ucw.cz>
-In-Reply-To: <20080814055301.GH6995@ucw.cz>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-Pavel Machek wrote:
-> Hi!
+On Wed, 20 Aug 2008, Andrew Morton wrote:
+> On Thu, 21 Aug 2008 00:25:55 +0300 (MET DST)
+> Szabolcs Szakacsits <szaka@ntfs-3g.org> wrote:
 > 
->>>>> I have to wonder if this is just a symptom of us trying to do this the
->>>>> wrong way.  We're trying to talk the kernel into writing internal gunk
->>>>> into a FD.  You're right, it is like a splice where one end of the pipe
->>>>> is in the kernel.
->>>>>
->>>>> Any thoughts on a better way to do this?  
->>>> Maybe you can invert the logic and let the new syscalls create a file
->>>> descriptor, and then have user space read or splice the checkpoint
->>>> data from it, and restore it by writing to the file descriptor.
->>>> It's probably easy to do using anon_inode_getfd() and would solve this
->>>> problem, but at the same time make checkpointing the current thread
->>>> hard if not impossible.
->>> Yeah, it does seem kinda backwards.  But, instead of even having to
->>> worry about the anon_inode stuff, why don't we just put it in a fs like
->>> everything else?  checkpointfs!
->> One reason is that I suspect that stops us from being able to send that
->> data straight to a pipe to compress and/or send on the network, without
->> hitting local disk.  Though if the checkpointfs was ram-based maybe not?
->>
->> As Oren has pointed out before, passing in an fd means we can pass a
->> socket into the syscall.
+> > 
+> > On Thu, 21 Aug 2008, Ryusuke Konishi wrote:
+> > > >> Some impressive benchmark results on SSD are shown in [3],
+> > > >
+> > > >heh.  It wipes the floor with everything, including btrfs.
+> > 
+> > It seems the benchmark was done over half year ago. It's questionable how 
+> > relevant today the performance comparison is with actively developed file 
+> > systems ...
+> > 
+> > > >But a log-based fs will do that, initially.  What will the performace
+> > > >look like after a month or two's usage?
+> > > 
+> > > I'm using NILFS2 for my home directory for serveral months, but so far
+> > > I don't feel notable performance degradation. 
+> > 
+> > I ran compilebench on kernel 2.6.26 with freshly formatted volumes. 
+> > The behavior of NILFS2 was interesting.
+> > 
+> > Its peformance rapidly degrades to the lowest ever measured level 
+> > (< 1 MB/s) but after a while it recovers and gives consistent numbers.
+> > However it's still very far from the current unstable btrfs performance. 
+> > The results are reproducible.
+> > 
+> >                     MB/s    Runtime (s)
+> >                    -----    -----------
+> >   btrfs unstable   17.09        572
+> >   ext3             13.24        877
+> >   btrfs 0.16       12.33        793
+> >   nilfs2 2nd+ runs 11.29        674
+> >   ntfs-3g           8.55        865
+> >   reiserfs          8.38        966
+> >   nilfs2 1st run    4.95       3800
+> >   xfs               1.88       3901
 > 
-> If you do pass a socket, will it handle blocking correctly? Getting
-> deadlocked task would be bad. What happens if I try to snapshot into
-> /proc/self/fd/0 ? Or maybe restore from /proc/cmdline?
+> err, what the heck happened to xfs?  Is this usual?
 
-Hmmm... these are good points.
+vmstat typically shows that xfs does ... "nothing". It uses no CPU time and 
+doesn't wait for I/O either. 
 
-Keep in mind that our principal goal is to checkpoint a whole container,
-rather then a task to checkpoint itself (which is a by-product). Of course
-your comments apply to a whole container as well.
+	Szaka
 
-In both cases, I don't think that blocking on a socket is a problem; the
-checkpointer will enter a TASK_INTERRUPTIBLE state. Where is the deadlock ?
-Writing or reading to/from /proc/self/... likewise - the programmer must
-understand the implications, or the program won't work as expected. I don't
-see a possible deadlock here, though.
-
-For example - writing to /proc/self/fd/0 is ok; the state of fd[0] of that
-task will be captured at some point in the middle of the checkpoint, so
-after restart one cannot assume anything about the file position; the rest
-should work.
-
-Oren.
+--
+NTFS-3G:  http://ntfs-3g.org
 
