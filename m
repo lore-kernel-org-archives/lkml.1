@@ -1,112 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbYHTKAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755885AbYHTKBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755841AbYHTKAy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 06:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbYHTKAj
+	id S1755885AbYHTKBU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 06:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbYHTKBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 06:00:39 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37250 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753513AbYHTKAi (ORCPT
+	Wed, 20 Aug 2008 06:01:04 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49245 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753798AbYHTKBB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 06:00:38 -0400
-Date: Wed, 20 Aug 2008 19:07:02 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       ryov@valinux.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [RFC][PATCH -mm 6/7] memcg:
- make-mapping-null-before-calling-uncharge.patch
-Message-Id: <20080820190702.616f4260.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080819173014.17358c17.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Aug 2008 06:01:01 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Greg Donald <gdonald@gmail.com>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: INFO: task reiserfs/0:1322 blocked for more than 120 seconds
+From: Andi Kleen <andi@firstfloor.org>
+References: <15e66e4e0808162136r2a439ee9wbb20f2b1f8fabc77@mail.gmail.com>
+	<20080819235258.fa775505.akpm@linux-foundation.org>
+	<20080820091918.GB23865@elte.hu>
+Date: Wed, 20 Aug 2008 12:00:59 +0200
+In-Reply-To: <20080820091918.GB23865@elte.hu> (Ingo Molnar's message of "Wed, 20 Aug 2008 11:19:18 +0200")
+Message-ID: <87abf8ypic.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch tries to make page->mapping to be NULL before
-mem_cgroup_uncharge_cache_page() is called.
+Ingo Molnar <mingo@elte.hu> writes:
+>
+> ok. How about quadrupling the timeout, as per the patch below?
+>
+> more than 8 minutes uninterruptible wait, is that a reasonable limit?
 
-"page->mapping == NULL" is a good check for "whether the page is still
-radix-tree or not".
+There should be a way to disable them for NFS and other network
+file systems at least. Having network issues is not that uncommon
+and flooding the log with backtraces every time they happen
+when a network fs is mounted is not very useful.
 
-This patch also adds VM_BUG_ON() to mem_cgroup_uncharge_cache_page();
-
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
----
- mm/filemap.c    |    2 +-
- mm/memcontrol.c |    1 +
- mm/migrate.c    |   11 +++++++++--
- 3 files changed, 11 insertions(+), 3 deletions(-)
-
-Index: mmtom-2.6.27-rc3+/mm/filemap.c
-===================================================================
---- mmtom-2.6.27-rc3+.orig/mm/filemap.c
-+++ mmtom-2.6.27-rc3+/mm/filemap.c
-@@ -116,12 +116,12 @@ void __remove_from_page_cache(struct pag
- {
- 	struct address_space *mapping = page->mapping;
- 
--	mem_cgroup_uncharge_cache_page(page);
- 	radix_tree_delete(&mapping->page_tree, page->index);
- 	page->mapping = NULL;
- 	mapping->nrpages--;
- 	__dec_zone_page_state(page, NR_FILE_PAGES);
- 	BUG_ON(page_mapped(page));
-+	mem_cgroup_uncharge_cache_page(page);
- 
- 	/*
- 	 * Some filesystems seem to re-dirty the page even after
-Index: mmtom-2.6.27-rc3+/mm/memcontrol.c
-===================================================================
---- mmtom-2.6.27-rc3+.orig/mm/memcontrol.c
-+++ mmtom-2.6.27-rc3+/mm/memcontrol.c
-@@ -854,6 +854,7 @@ void mem_cgroup_uncharge_page(struct pag
- void mem_cgroup_uncharge_cache_page(struct page *page)
- {
- 	VM_BUG_ON(page_mapped(page));
-+	VM_BUG_ON(page->mapping);
- 	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
- }
- 
-Index: mmtom-2.6.27-rc3+/mm/migrate.c
-===================================================================
---- mmtom-2.6.27-rc3+.orig/mm/migrate.c
-+++ mmtom-2.6.27-rc3+/mm/migrate.c
-@@ -330,8 +330,6 @@ static int migrate_page_move_mapping(str
- 	__inc_zone_page_state(newpage, NR_FILE_PAGES);
- 
- 	spin_unlock_irq(&mapping->tree_lock);
--	if (!PageSwapCache(newpage))
--		mem_cgroup_uncharge_cache_page(page);
- 
- 	return 0;
- }
-@@ -379,6 +377,15 @@ static void migrate_page_copy(struct pag
- 	ClearPagePrivate(page);
- 	set_page_private(page, 0);
- 	page->mapping = NULL;
-+	/* page->mapping contains a flag for PageAnon() */
-+	if (PageAnon(page)) {
-+		/* This page is uncharged at try_to_unmap(). */
-+		page->mapping = NULL;
-+	} else {
-+		/* Obsolete file cache should be uncharged */
-+		page->mapping = NULL;
-+		mem_cgroup_uncharge_cache_page(page);
-+	}
- 
- 	/*
- 	 * If any waiters have accumulated on the new page then
+-Andi
 
