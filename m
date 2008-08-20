@@ -1,40 +1,58 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755506AbYHSQVU (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 19 Aug 2008 12:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYHSQVJ
+	id S1756074AbYHTArX (ORCPT <rfc822;ralf@linux-mips.org>);
+	Tue, 19 Aug 2008 20:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbYHTArL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 12:21:09 -0400
-Received: from tomts24.bellnexxia.net ([209.226.175.187]:57040 "EHLO
-	tomts24-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752623AbYHSQVI convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 12:21:08 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgdJAK2PqkjR4q+H/2dsb2JhbACBQogzgTejMINegwSBVw
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [89.108.88.71]
-From: CLAIMS OFFICE <island.view@ns.sympatico.ca>
-Reply-To: claimsoffices@btinternet.com
-To: <info@uklottery.co.uk>
-Subject: Final Notification
-Date: Tue, 19 Aug 2008 12:21:03 -0400
+	Tue, 19 Aug 2008 20:47:11 -0400
+Received: from bataki.sotelma.ml ([217.64.98.42]:58837 "EHLO bataki.sotelma.ml"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753252AbYHTArK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 20:47:10 -0400
+Message-ID: <2165.41.205.160.157.1219193035.squirrel@webmail.sotelma.ml>
+Date: Wed, 20 Aug 2008 00:43:55 -0000 (UTC)
+From: "CHEAP LOAN SERVICES" <bobdavid@live.com>
+Reply-To: bob-david@live.com
+User-Agent: SquirrelMail/1.4.8-4.fc5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Message-Id: <20080819162104.TFN1580.tomts24-srv.bellnexxia.net@toip34-bus.srvr.bell.ca>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: apache@sotelma.ml
+Subject: CHEAP LOAN SERVICES
+X-SA-Exim-Version: 4.2.1 (built Thu, 19 Apr 2007 14:52:56 +0000)
+X-SA-Exim-Scanned: Yes (on bataki.sotelma.ml)
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755506AbYHSQVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756074AbYHTArX@vger.kernel.org>
 
-Contact: Mr.Pinkett Brown (claimsoffices@btinternet.com) for a lump sum=
- pay out of =A31,000,000.00 pounds.Provide him with the information  be=
-low: 1.Full Name: 2.Full Address:3.sex.4.Occupation.5.Phone/Fax:6.Age.7=
-.Country.8.Nationality.
+Have you been denied a loan by banks and other financial bodies? then
+contact us now as we provide unsecured loans at a minimized interest rate
+of 2% within 48 hours in order to meet the financial request of our
+numerous applicants.
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+To apply, send down the details below:
+
+1. Amount in request in dollas
+2. Purpose Of Loan
+3. Loan Duration
+4. Address and phone number
+5. Names in full
+6. Country
+7. Age
+8. Occupation
+9. Sex
+
+You will be contacted within 24 hours with the loan terms and
+conditions as soon as the details have been received.
+Season Greetings to you and your family
+Send the details to the email below:
+
+Email:  bob-david@live.com
+
+
+
+
