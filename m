@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbYHTO14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbYHTO2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758556AbYHTO14 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 10:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbYHTO1t
+	id S1758650AbYHTO2c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 10:28:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230AbYHTO2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 10:27:49 -0400
-Received: from mx2.suse.de ([195.135.220.15]:39833 "EHLO mx2.suse.de"
+	Wed, 20 Aug 2008 10:28:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33760 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753488AbYHTO1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 10:27:48 -0400
-Date: Wed, 20 Aug 2008 07:24:53 -0700
-From: Greg KH <gregkh@suse.de>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: jbaron@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kernel/module: fix warning when
-	!CONFIG_DYNAMIC_PRINTK_DEBUG
-Message-ID: <20080820142453.GA31886@suse.de>
-References: <20080820141329.GB7622@orion>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080820141329.GB7622@orion>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1755793AbYHTO2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 10:28:21 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080819134842.GJ8852@cs181140183.pp.htv.fi>
+References: <20080819134842.GJ8852@cs181140183.pp.htv.fi>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: dhowells@redhat.com, yasutake.koichi@jp.panasonic.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: mn10300: status of ASB2305 support?
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Wed, 20 Aug 2008 15:28:12 +0100
+Message-ID: <10981.1219242492@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 20, 2008 at 06:13:29PM +0400, Alexander Beregalov wrote:
-> From: Alexander Beregalov <a.beregalov@gmail.com>
-> 
-> kernel/module.c: In function 'load_module':
-> kernel/module.c:1839: warning: unused variable 'value'
-> kernel/module.c:1838: warning: unused variable 'iter'
-> 
-> 
-> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
-> ---
-> 
->  kernel/module.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/module.c b/kernel/module.c
-> index 1721320..5a1258e 100644
-> --- a/kernel/module.c
-> +++ b/kernel/module.c
-> @@ -1835,8 +1835,10 @@ static struct module *load_module(void __user *umod,
->  	unsigned int markersindex;
->  	unsigned int markersstringsindex;
->  	unsigned int verboseindex;
-> +#ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
->  	struct mod_debug *iter;
->  	unsigned long value;
-> +#endif
+Adrian Bunk <bunk@kernel.org> wrote:
 
-Hm, that's not very nice, we try to keep #ifdefs out of the .c file
-where ever possible, especially within a single function.  I'll split
-the section out of this function that has the #ifdef which should fix
-this problem.
+> I tried to build an ASB2305 kernel [1], and there are many compile 
+> errors due to references to nonexisting files like asm/cpu/timer-regs.h
+> 
+> What is the status of ASB2305 support?
+> Is it dead?
+> Or are there updates somewhere that should get merged into the kernel?
 
-thanks,
+I have patches, but they're dependent on some other patches that are currently
+awaiting MEI's sign-off.
 
-greg k-h
+Also, my ASB2305 board is broken.  The PCI-PCI bridge chip that allows access
+to stuff plugged into its PCI slots is malfunctioning.
+
+So feel free to mark it broken in Kconfig.  I'll ask MEI if I should retire
+the board or if I can get a replacement backplane.  The ASB2303 doesn't allow
+me to attach disk drives.
+
+David
