@@ -1,74 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757536AbYHTVmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbYHTVnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757536AbYHTVmX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYHTVmN
+	id S1757270AbYHTVnm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbYHTVne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:42:13 -0400
-Received: from gw.goop.org ([64.81.55.164]:59887 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752690AbYHTVmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:42:12 -0400
-Message-ID: <48AC8FB2.2040301@goop.org>
-Date: Wed, 20 Aug 2008 14:42:10 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 20 Aug 2008 17:43:34 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:36342 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751817AbYHTVnd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 17:43:33 -0400
+Date: Wed, 20 Aug 2008 17:43:31 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] ftrace: x86 use copy to and from user functions
+In-Reply-To: <1219268378.21386.69.camel@pasglop>
+Message-ID: <alpine.DEB.1.10.0808201742370.18551@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0808201253330.494@gandalf.stny.rr.com> <1219268378.21386.69.camel@pasglop>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.27-rc2 USB suspend regression
-References: <Pine.LNX.4.44L0.0808201724380.14505-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0808201724380.14505-100000@iolanthe.rowland.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> On Wed, 20 Aug 2008, Jeremy Fitzhardinge wrote:
->
->   
->> Using the Fedora Rawhide kernel RPM "2.6.27-0.238.rc2.fc10.i686"
->> (kernel-2.6.27-0.238.rc2.fc10.i686), I'm seeing suspend to ram
->> failures.  The suspend seems to go OK, but then I just get endless:
->>
->> usb 5-1: uhci_result_common: failed with status 440000
->>
->> messages, with occasional flickers of something else being printed
->> (perhaps).  The machine is otherwise unresponsive.
->>     
->
-> You could comment out that error message in order to see what else is 
-> in the log.  It is located in drivers/usb/host/uhci-q.c in the 
-> uhci_result_common() function.
->
-> You could try running -rc3 instead of -rc2, although that probably 
-> won't make much difference.
->
-> What USB devices do you have on the failing system?  In particular,
-> what is 5-1?  If you unplug it before suspending, does the problem go
-> away?  (It certainly should!)
->
->   
 
-No external usb devices.  There are three internal USB devices:
-Bluetooth, a Sierra CDMA modem thingy and a fingerprint reader.
 
-$ lsusb
-Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-Bus 005 Device 003: ID 0483:2016 SGS Thomson Microelectronics
-Fingerprint Reader
-Bus 005 Device 002: ID 0a5c:2110 Broadcom Corp. Bluetooth Controller
-Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-Bus 003 Device 003: ID 1199:0218 Sierra Wireless, Inc. MC5720 Wireless Modem
-Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
 
-The rfkill switch "unplugs" the two wireless devices, so I'll try that
-before suspending next time (if I remember).
+On Thu, 21 Aug 2008, Benjamin Herrenschmidt wrote:
 
-    J
+> On Wed, 2008-08-20 at 12:55 -0400, Steven Rostedt wrote:
+> > The modification of code is performed either by kstop_machine, before
+> > SMP starts, or on module code before the module is executed. There is
+> > no reason to do the modifications from assembly. The copy to and from
+> > user functions are sufficient and produces cleaner and easier to read
+> > code.
+> > 
+> > Thanks to Benjamin Herrenschmidt for suggesting the idea.
+> 
+> Haven't we lost the dcache/icache synchronisation somewhere ?
+
+This is the x86 version, sync_core should be fine.
+
+-- Steve
+
+> 
+> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> > ---
+> >  arch/x86/kernel/ftrace.c |   38 +++++++++++++-------------------------
+> >  1 file changed, 13 insertions(+), 25 deletions(-)
+> > 
+> > Index: linux-tip.git/arch/x86/kernel/ftrace.c
+> > ===================================================================
+> > --- linux-tip.git.orig/arch/x86/kernel/ftrace.c	2008-08-20 12:39:41.000000000 -0400
+> > +++ linux-tip.git/arch/x86/kernel/ftrace.c	2008-08-20 12:40:17.000000000 -0400
+> > @@ -11,6 +11,7 @@
+> >  
+> >  #include <linux/spinlock.h>
+> >  #include <linux/hardirq.h>
+> > +#include <linux/uaccess.h>
+> >  #include <linux/ftrace.h>
+> >  #include <linux/percpu.h>
+> >  #include <linux/init.h>
+> > @@ -60,11 +61,7 @@ notrace int
+> >  ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+> >  		   unsigned char *new_code)
+> >  {
+> > -	unsigned replaced;
+> > -	unsigned old = *(unsigned *)old_code; /* 4 bytes */
+> > -	unsigned new = *(unsigned *)new_code; /* 4 bytes */
+> > -	unsigned char newch = new_code[4];
+> > -	int faulted = 0;
+> > +	unsigned char replaced[MCOUNT_INSN_SIZE];
+> >  
+> >  	/*
+> >  	 * Note: Due to modules and __init, code can
+> > @@ -72,29 +69,20 @@ ftrace_modify_code(unsigned long ip, uns
+> >  	 *  as well as code changing.
+> >  	 *
+> >  	 * No real locking needed, this code is run through
+> > -	 * kstop_machine.
+> > +	 * kstop_machine, or before SMP starts.
+> >  	 */
+> > -	asm volatile (
+> > -		"1: lock\n"
+> > -		"   cmpxchg %3, (%2)\n"
+> > -		"   jnz 2f\n"
+> > -		"   movb %b4, 4(%2)\n"
+> > -		"2:\n"
+> > -		".section .fixup, \"ax\"\n"
+> > -		"3:	movl $1, %0\n"
+> > -		"	jmp 2b\n"
+> > -		".previous\n"
+> > -		_ASM_EXTABLE(1b, 3b)
+> > -		: "=r"(faulted), "=a"(replaced)
+> > -		: "r"(ip), "r"(new), "c"(newch),
+> > -		  "0"(faulted), "a"(old)
+> > -		: "memory");
+> > -	sync_core();
+> > +	if (__copy_from_user(replaced, (char __user *)ip, MCOUNT_INSN_SIZE))
+> > +		return 1;
+> >  
+> > -	if (replaced != old && replaced != new)
+> > -		faulted = 2;
+> > +	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
+> > +		return 2;
+> >  
+> > -	return faulted;
+> > +	WARN_ON_ONCE(__copy_to_user((char __user *)ip, new_code,
+> > +				    MCOUNT_INSN_SIZE));
+> > +
+> > +	sync_core();
+> > +
+> > +	return 0;
+> >  }
+> >  
+> >  notrace int ftrace_update_ftrace_func(ftrace_func_t func)
+> 
+> 
