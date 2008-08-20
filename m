@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbYHTTIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbYHTTLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754927AbYHTTIm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 15:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYHTTI2
+	id S1756018AbYHTTLA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 15:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbYHTTKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 15:08:28 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:10578 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756022AbYHTTI0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 15:08:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=aMiQWmI3CF0W+eDDm2FnryiB+SsrOH/KfUzjq3yzSXDkIMdUpQNK3dkp1ojvZOw2gi
-         KbrPvJ6uWi7utcYnvOU2l64THvC6fb/Hh7mYOuh/l4lCkQQHMjtL/uQUVzkWMZjr17F3
-         vthW+o5Kzfa4y7grDoHaWoIFeKSZzw3QgyICU=
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Jack Steiner <steiner@sgi.com>
-Subject: [PATCH] x86: silence section mismatch warning - uv_cpu_init
-Date: Wed, 20 Aug 2008 21:07:48 +0200
-Message-Id: <1219259268-5868-2-git-send-email-marcin.slusarz@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
+	Wed, 20 Aug 2008 15:10:51 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:33470 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751752AbYHTTKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 15:10:51 -0400
+Subject: Re: [Devel] [RFC][PATCH 1/4] checkpoint-restart: general
+	infrastructure
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org,
+       Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <48A94061.8040206@openvz.org>
+References: <20080807224033.FFB3A2C1@kernel>
+	 <20080807224034.735B1F84@kernel>  <48A94061.8040206@openvz.org>
+Content-Type: text/plain
+Date: Wed, 20 Aug 2008 12:10:45 -0700
+Message-Id: <1219259445.8960.45.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WARNING: vmlinux.o(.cpuinit.text+0x3cc4): Section mismatch in reference from the function uv_cpu_init() to the function .init.text:uv_system_init()
-The function __cpuinit uv_cpu_init() references
-a function __init uv_system_init().
-If uv_system_init is only used by uv_cpu_init then
-annotate uv_system_init with a matching annotation.
+On Mon, 2008-08-18 at 13:26 +0400, Pavel Emelyanov wrote: 
+> > diff -puN /dev/null ckpt/ckpt_hdr.h
+> > --- /dev/null	2007-04-11 11:48:27.000000000 -0700
+> > +++ linux-2.6.git-dave/ckpt/ckpt_hdr.h	2008-08-07 15:37:22.000000000 -0700
+> > @@ -0,0 +1,69 @@
+> > +/*
+> > + *  Generic container checkpoint-restart
+> > + *
+> > + *  Copyright (C) 2008 Oren Laadan
+> > + *
+> > + *  This file is subject to the terms and conditions of the GNU General Public
+> > + *  License.  See the file COPYING in the main directory of the Linux
+> > + *  distribution for more details.
+> > + */
+> > +
+> > +#include <linux/types.h>
+> > +
+> > +struct cr_hdr {
+> > +	__s16 type;
+> > +	__s16 len;
+> > +	__u32 id;
+> > +};
+> 
+> Sorry for probably being out-of-date again, but isn't it better to
+> put these headers in the include/linux and export them to the user
+> space?
+> 
+> Why? Because we'll need some image-dumping tool (let alone the
+> image converting one for compatibility purposes) and these tools
+> would require to know how the image looks like.
 
-uv_system_init was ment to be called only once, so make explicit
-by creating properly-named function and annotate it as __ref.
+What's the deal with headers being exported these days?  Don't we always
+have to sanitize them before we ship them over to userspace anyway?
 
-Old code relied on uv_node_to_blade being initialized to 0,
-but it'a not initialized from anywhere and it's not static either.
-
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jack Steiner <steiner@sgi.com>
----
- arch/x86/kernel/genx2apic_uv_x.c |   14 ++++++++++++--
- 1 files changed, 12 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/genx2apic_uv_x.c b/arch/x86/kernel/genx2apic_uv_x.c
-index 2d7e307..ecbfefa 100644
---- a/arch/x86/kernel/genx2apic_uv_x.c
-+++ b/arch/x86/kernel/genx2apic_uv_x.c
-@@ -385,14 +385,24 @@ static __init void uv_system_init(void)
- 	map_mmioh_high(max_pnode);
- }
- 
-+/* Wrapper for uv_system_init which calls it only once. */
-+static void __ref uv_system_init_once(void)
-+{
-+	static bool uv_system_inited = false;
-+
-+	if (!uv_system_inited) {
-+		uv_system_init();
-+		uv_system_inited = true;
-+	}
-+}
-+
- /*
-  * Called on each cpu to initialize the per_cpu UV data area.
-  * 	ZZZ hotplug not supported yet
-  */
- void __cpuinit uv_cpu_init(void)
- {
--	if (!uv_node_to_blade)
--		uv_system_init();
-+	uv_system_init_once();
- 
- 	uv_blade_info[uv_numa_blade_id()].nr_online_cpus++;
- 
--- 
-1.5.4.5
+-- Dave
 
