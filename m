@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbYHTEVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbYHTEWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754746AbYHTEVY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 00:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbYHTEVK
+	id S1755367AbYHTEWX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 00:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYHTEWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 00:21:10 -0400
-Received: from 1wt.eu ([62.212.114.60]:1100 "EHLO 1wt.eu"
+	Wed, 20 Aug 2008 00:22:11 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:20245 "EHLO smtpout3.tre.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750897AbYHTEVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 00:21:09 -0400
-Date: Wed, 20 Aug 2008 06:20:29 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: David Miller <davem@davemloft.net>
-Cc: jwboyer@gmail.com, torvalds@linux-foundation.org, marcel@holtmann.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-Message-ID: <20080820042029.GA31789@1wt.eu>
-References: <alpine.LFD.1.10.0808191348540.3324@nehalem.linux-foundation.org> <20080819.142150.129314008.davem@davemloft.net> <1219199116.26429.19.camel@jdub.homelinux.org> <20080819.195115.49989151.davem@davemloft.net>
+	id S1751136AbYHTEWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 00:22:10 -0400
+Date: Wed, 20 Aug 2008 06:21:59 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       sameo@openedhand.com
+Subject: Re: linux-next: Tree for August 19 (mfd/ucb)
+Message-ID: <20080820042159.GA10066@uranus.ravnborg.org>
+References: <20080819185454.d9c74915.sfr@canb.auug.org.au> <20080819170517.04d91de8.randy.dunlap@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080819.195115.49989151.davem@davemloft.net>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080819170517.04d91de8.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 19, 2008 at 07:51:15PM -0700, David Miller wrote:
-> From: Josh Boyer <jwboyer@gmail.com>
-> Date: Tue, 19 Aug 2008 22:25:15 -0400
+On Tue, Aug 19, 2008 at 05:05:17PM -0700, Randy Dunlap wrote:
+> drivers/mfd/ucb1400 is a sound (AC97) driver, so it should depend
+> on AC97_BUS, like in the patch below.  However, with that patch in
+> place, oldconfig goes belly up on me:
 > 
-> > So, not to add fuel to a fire that seems to be calming down, but what is
-> > so wrong with having that feeling?  If the core people are spending 3
-> > months doing nothing but fixing bugs, the I consider that to _be_ the
-> > best work from the best people.
 > 
-> All work and no play makes Dave a dull boy, that's the
-> problem. :-)
-> 
-> I don't care how much someone claims they enjoy bug fixing
-> and gathering up other people's patches, you will go out
-> of your mind or become bored to death if you don't get to
-> spend real time implementing something significant from
-> time to time.
+> linux-next-20080819> make ARCH=x86_64  O=X64  V=1 oldconfig
+> make -C /local/linsrc/linux-next-20080819/X64 \
+> 	KBUILD_SRC=/local/linsrc/linux-next-20080819 \
+> 	KBUILD_EXTMOD="" -f /local/linsrc/linux-next-20080819/Makefile \
+> 	oldconfig
+> make -f /local/linsrc/linux-next-20080819/scripts/Makefile.build obj=scripts/basic
+> /bin/sh /local/linsrc/linux-next-20080819/scripts/mkmakefile \
+> 	    /local/linsrc/linux-next-20080819 /local/linsrc/linux-next-20080819/X64 2 6
+>   GEN     /local/linsrc/linux-next-20080819/X64/Makefile
+> mkdir -p include/linux include/config
+> make -f /local/linsrc/linux-next-20080819/scripts/Makefile.build obj=scripts/kconfig oldconfig
+> scripts/kconfig/conf -o arch/x86/Kconfig
+> make[2]: *** [oldconfig] Segmentation fault (core dumped)
+> make[1]: *** [oldconfig] Error 2
+> make: *** [sub-make] Error 2
 
-That's true and I would also add that it's very common for bugs to
-be discovered and fixed while implementing new features. However,
-it's so convenient to manage several branches with git that it should
-not be a problem to "play" in one branch and push all the stuff during
-the merge window only. One of the problems with networking is that you
-need a lot of testers. I don't think it's too hard for them to pull
-from your development tree. And if it is, maybe you can incite them
-from time to time by releasing snapshots as plain patches.
+I have an outstanding bug in kconfig where it SEGV when it
+sees a circular dependency - and I think you hit it here :-(
 
-BTW, it also helps testers a lot to be able to play with topic trees
-provided as patches against last release, because they generally can
-apply them to stable kernels without the fear of losing their data.
-I'm sure that many people already run stable kernels with not-yet-merged
-patches on top of them and are happy that way.
-
-Regards,
-Willy
-
+	Sam
