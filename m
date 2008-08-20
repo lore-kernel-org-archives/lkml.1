@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbYHTU2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbYHTU3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757084AbYHTU2R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 16:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYHTU2A
+	id S1757239AbYHTU3j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 16:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbYHTU33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 16:28:00 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:48820 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751985AbYHTU16 (ORCPT
+	Wed, 20 Aug 2008 16:29:29 -0400
+Received: from cpsmtpo-eml03.kpnxchange.com ([213.75.38.152]:52197 "EHLO
+	cpsmtpo-eml03.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750926AbYHTU32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 16:27:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=cs5WWQRy3qFH77om2X7GxhKIj/42g642y7EQAE7xFNRGP0ImQUyaSFF3mYyWAAJO44
-         SJVagIFptJwnkbK0IIbVjgildznS0LDXld7d1dRWy4tKw3eXdOlBplj4AZ/MzNfq10dy
-         5w2rFmggBgX9+X2F4BZdzpbguEuIZDiKjCDW0=
-Message-ID: <b170af450808201327q48b5b2e0n319c89b0fc1759b6@mail.gmail.com>
-Date: Wed, 20 Aug 2008 22:27:57 +0200
-From: "=?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?=" <zajec5@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: [Bug #11313] Plugging HDMI causes "unable to handle kernel paging request"
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <48AC3FA4.9080603@goop.org>
+	Wed, 20 Aug 2008 16:29:28 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.17-rc3: hci-usb related warnings and error on resume
+Date: Wed, 20 Aug 2008 22:28:59 +0200
+User-Agent: KMail/1.9.9
+References: <200808202055.46558.elendil@planet.nl> <200808202141.01169.rjw@sisk.pl>
+In-Reply-To: <200808202141.01169.rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+       marcel@holtmann.org, maxk@qualcomm.com, Greg KH <greg@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>
-	 <sNRO-BDDjQL.A.DYF.sazpIB@albercik>
-	 <b170af450808171228i37951c6vd77071da7584669b@mail.gmail.com>
-	 <48AB5D17.5030600@goop.org>
-	 <b170af450808200410v3d7cd076h3e62546b48ddf507@mail.gmail.com>
-	 <48AC3FA4.9080603@goop.org>
+Message-Id: <200808202229.01199.elendil@planet.nl>
+X-OriginalArrivalTime: 20 Aug 2008 20:29:26.0576 (UTC) FILETIME=[709AFB00:01C90303]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m7KKSLdq016659
 
-2008/8/20 Jeremy Fitzhardinge <jeremy@goop.org>:> RafaÅ‚ MiÅ‚ecki wrote:>> Sure, as everything to help debugging this :)>> http://bugzilla.kernel.org/attachment.cgi?id=17330>>>> Thanks, but could you post the *full* dmesg output, including the added> lines?  I want to see the other things it prints around there.I added full dmesg 5 minutes after adding grepped:http://bugzilla.kernel.org/attachment.cgi?id=17331
-> That said, I don't see anything unexpected in here.  It would be> interested to compare to the E820 map.OK, I'll compare that tomorrow.
-> Also, what kind of machine is this?  Oh, Vaio. Hm.  Have you checked to> see whether there's an updated BIOS?  How much memory does it have> installed?It's Sony Vaio FW11 with 4GB of RAM. Will chec for BIOS update tomorrow.
+On Wednesday 20 August 2008, Rafael wrote:
+> On Wednesday, 20 of August 2008, Frans Pop wrote:
+> > I recently got a new laptop (HP 2510p) and have been playing with
+> > suspend/resume. Initially the dmesg after resume was fairly clean,
+> > but that was with the bluetooth device disabled (I initially disabled
+> > it in Windows).
+> >
+> > After enabling it I get repeated warnings on resume starting with:
+> > <snip>
+> > usb 1-1: reset full speed USB device using uhci_hcd and address 3
+> > hci_usb 1-1:1.0: no reset_resume for driver hci_usb?
+> > hci_usb 1-1:1.1: no reset_resume for driver hci_usb?
+> > usb_endpoint usbdev1.3_ep83: parent 1-1:1.1 is sleeping, will not add
+> > ------------[ cut here ]------------
+> > WARNING: at drivers/base/power/main.c:82 device_pm_add+0x77/0xd3()
+> > </snip>
+>
+> Yeah.
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=11263#c11
+>
+> The patch is in the Greg's tree, AFAICS.
 
--- RafaÅ‚ MiÅ‚eckiÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Thanks! I'll keep an eye on that and check if the IRQ problem is solved 
+too after that patch gets in. If not, I'll try to narrow that one down a 
+bit further.
