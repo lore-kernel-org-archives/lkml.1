@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbYHTQuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbYHTQvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757228AbYHTQuZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 12:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYHTQuM
+	id S1758185AbYHTQvn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 12:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754935AbYHTQve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 12:50:12 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:33066 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751911AbYHTQuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 12:50:11 -0400
-Date: Wed, 20 Aug 2008 20:54:42 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Wed, 20 Aug 2008 12:51:34 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53904 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752614AbYHTQve (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 12:51:34 -0400
+Date: Wed, 20 Aug 2008 17:33:20 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Alexander Beregalov" <a.beregalov@gmail.com>
+Cc: "David Howells" <dhowells@redhat.com>, jmorris@namei.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH, RESEND] posix-timers: simplify de_thread()->exit_itimers() path
-Message-ID: <20080820165442.GA1459@tv-sign.ru>
+Subject: Re: [PATCH] CRED: Further fix execve error handling
+Message-ID: <20080820173320.64ea3892@lxorguk.ukuu.org.uk>
+In-Reply-To: <a4423d670808200721i3e9add4cn216da7991f0616f3@mail.gmail.com>
+References: <20080820135624.10583.99230.stgit@warthog.procyon.org.uk>
+	<a4423d670808200721i3e9add4cn216da7991f0616f3@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(depends on posix-timers-always-do-get_task_structtimer-it_process.patch)
+On Wed, 20 Aug 2008 18:21:59 +0400
+"Alexander Beregalov" <a.beregalov@gmail.com> wrote:
 
-de_thread() postpones release_task(leader) until after exit_itimers().
-This was needed because !SIGEV_THREAD_ID timers could use ->group_leader
-without get_task_struct(). With the recent changes we can release the
-leader earlier and simplify the code.
+> 2008/8/20 David Howells <dhowells@redhat.com>:
+> > Further fix [compat_]do_execve() error handling.  free_bprm() will release the
+> > cred_exec_mutex, but only if bprm->cred is not NULL.
+> >
+> > Signed-off-by: David Howells <dhowells@redhat.com>
+> 
+> David, I applied this patch and got the following.
+> Is it a different problem?
+> I think it is. If yes I will create another topic.
+> 
+> [   91.266507] [ INFO: possible recursive locking detected ]
+> [   91.266862] 2.6.27-rc3-next-20080820-dirty #3
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+Looks like a false trip of the lock debugging code. I've seen the same
+and having dumped the values in tty_do_resize plus the entry/exit paths
+it seems to be bogus.
 
---- 26-rc2/fs/exec.c~3_DE_THREAD	2008-08-03 17:16:40.000000000 +0400
-+++ 26-rc2/fs/exec.c	2008-08-03 21:35:33.000000000 +0400
-@@ -757,7 +757,6 @@ static int de_thread(struct task_struct 
- 	struct signal_struct *sig = tsk->signal;
- 	struct sighand_struct *oldsighand = tsk->sighand;
- 	spinlock_t *lock = &oldsighand->siglock;
--	struct task_struct *leader = NULL;
- 	int count;
- 
- 	if (thread_group_empty(tsk))
-@@ -795,7 +794,7 @@ static int de_thread(struct task_struct 
- 	 * and to assume its PID:
- 	 */
- 	if (!thread_group_leader(tsk)) {
--		leader = tsk->group_leader;
-+		struct task_struct *leader = tsk->group_leader;
- 
- 		sig->notify_count = -1;	/* for exit_notify() */
- 		for (;;) {
-@@ -849,8 +848,9 @@ static int de_thread(struct task_struct 
- 
- 		BUG_ON(leader->exit_state != EXIT_ZOMBIE);
- 		leader->exit_state = EXIT_DEAD;
--
- 		write_unlock_irq(&tasklist_lock);
-+
-+		release_task(leader);
- 	}
- 
- 	sig->group_exit_task = NULL;
-@@ -859,8 +859,6 @@ static int de_thread(struct task_struct 
- no_thread_group:
- 	exit_itimers(sig);
- 	flush_itimer_signals();
--	if (leader)
--		release_task(leader);
- 
- 	if (atomic_read(&oldsighand->count) != 1) {
- 		struct sighand_struct *newsighand;
+> [   91.267170] ---------------------------------------------
+> [   91.267522] sshd/1455 is trying to acquire lock:
+> [   91.267840]  (&tty->termios_mutex){--..}, at: [<00000000005b8ca0>]
+> tty_do_resize+0x44/0x128
+> [   91.268405]
+> [   91.268411] but task is already holding lock:
+> [   91.268885]  (&tty->termios_mutex){--..}, at: [<00000000005b8c74>]
+> tty_do_resize+0x18/0x128
 
+Note that the lock is only acquired in one place in this code and that
+the second lock is only take if the two locks differ. Also the second
+lock take is not &tty->termios_mutex at all but real_tty.
+
+So I'd say either broken compiler or broken lock debug tools but hey I
+could be wrong ;)
+
+Alan
