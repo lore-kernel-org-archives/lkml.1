@@ -1,33 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbYHTRvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbYHTRwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754291AbYHTRvu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 13:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbYHTRv2
+	id S1754494AbYHTRwe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 13:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbYHTRwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 13:51:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47154 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752582AbYHTRv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 13:51:28 -0400
+	Wed, 20 Aug 2008 13:52:24 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:56634 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752188AbYHTRwY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 13:52:24 -0400
+Message-ID: <1749.69.2.248.210.1219253222.squirrel@webmail.wolfmountaingroup.com>
+Date: Wed, 20 Aug 2008 11:27:02 -0600 (MDT)
+Subject: 2.6.27-rc3-git6 busted-ass iwl3945 driver drops packets with WEP 
+     enabled
+From: jmerkey@wolfmountaingroup.com
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RESEND] posix-timers: simplify de_thread()->exit_itimers() path
-In-Reply-To: Oleg Nesterov's message of  Wednesday, 20 August 2008 20:54:42 +0400 <20080820165442.GA1459@tv-sign.ru>
-References: <20080820165442.GA1459@tv-sign.ru>
-Emacs: (setq software-quality (/ 1 number-of-authors))
-Message-Id: <20080820175119.E7877154218@magilla.localdomain>
-Date: Wed, 20 Aug 2008 10:51:19 -0700 (PDT)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-That looks fine to me.
 
-Thanks,
-Roland
+On an Acer 9410 laptop with dual core processors, the iwl3945 driver has
+intermittment receiver lockup problems (stops receiving packets) using the
+Linux iwl3945 drivers with WEP encryption enbaled.  The adapter works fine
+without WEP or WPA.   If the same system is booted to Windows Vista (which
+takes about 15 minutes to boot because Vista is a fat slow pig) the
+wireless drivers work fine with WEP under Vista on the same system.
+
+If the system copies the ndis .sys drivers and I build ndiswrapper (which
+has to be really hacked up to build on 2.6.27) and use the ndis drivers on
+2.6.27-rc3 with a modified ndiswrapper, they work fine.
+
+I suspect the firmware or an interaction with the firmware settings since
+when the system is booted to Vista after running 2.6.27-rc3 with the
+iwl3945 drivers, I have to power cycle the system periodically after
+running the iwl3945 driver to get the drivers under Vista to work again,
+but not always.
+
+Jeff
+
+
+
