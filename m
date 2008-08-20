@@ -1,62 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbYHTLdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbYHTLsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755753AbYHTLdl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 07:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYHTLdc
+	id S1755228AbYHTLsO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 07:48:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYHTLr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 07:33:32 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:47477 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750909AbYHTLdc (ORCPT
+	Wed, 20 Aug 2008 07:47:57 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52590 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113AbYHTLr4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 07:33:32 -0400
-Date: Wed, 20 Aug 2008 20:33:30 +0900 (JST)
-Message-Id: <20080820.203330.58805720.taka@valinux.co.jp>
-To: kamezawa.hiroyu@jp.fujitsu.com
-Cc: linux-kernel@vger.kernel.org, balbir@linux.vnet.ibm.com,
-       yamamoto@valinux.co.jp, nishimura@mxp.nes.nec.co.jp, ryov@valinux.co.jp,
-       linux-mm@kvack.org
-Subject: Re: [RFC][PATCH -mm 0/7] memcg: lockless page_cgroup v1
-From: Hirokazu Takahashi <taka@valinux.co.jp>
-In-Reply-To: <20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080819173014.17358c17.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 20 Aug 2008 07:47:56 -0400
+Date: Wed, 20 Aug 2008 20:46:07 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: No, really, stop trying to delete slab until you've finished making slub perform as well
+Cc: kosaki.motohiro@jp.fujitsu.com, Matthew Wilcox <matthew@wil.cx>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
+       Rik van Riel <riel@redhat.com>
+In-Reply-To: <48AACFDA.5090600@linux-foundation.org>
+References: <20080819192515.12C5.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48AACFDA.5090600@linux-foundation.org>
+Message-Id: <20080820204005.12F3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-> Hi, this is a patch set for lockless page_cgroup.
+> KOSAKI Motohiro wrote:
 > 
-> dropped patches related to mem+swap controller for easy review.
-> (I'm rewriting it, too.)
+> > IOW, My box didn't happend performance regression.
+> > but I think it isn't typical.
 > 
-> Changes from current -mm is.
->   - page_cgroup->flags operations is set to be atomic.
->   - lock_page_cgroup() is removed.
->   - page->page_cgroup is changed from unsigned long to struct page_cgroup*
->   - page_cgroup is freed by RCU.
->   - For avoiding race, charge/uncharge against mm/memory.c::insert_page() is
->     omitted. This is ususally used for mapping device's page. (I think...)
+> Well that is typical for small NUMA system. Maybe this patch will fix it for
+> now? Large systems can be tuned by setting the ratio lower.
 > 
-> In my quick test, perfomance is improved a little. But the benefit of this
-> patch is to allow access page_cgroup without lock. I think this is good 
-> for Yamamoto's Dirty page tracking for memcg.
-> For I/O tracking people, I added a header file for allowing access to
-> page_cgroup from out of memcontrol.c
-
-Thanks, Kame.
-It is a good news that the page tracking framework is open.
-I think I can send some feedback to you to make it more generic.
-
-> The base kernel is recent mmtom. Any comments are welcome.
-> This is still under test. I have to do long-run test before removing "RFC".
 > 
+> Subject: slub/NUMA: Disable remote node defragmentation by default
+> 
+> Switch remote node defragmentation off by default. The current settings can
+> cause excessive node local allocations with hackbench. (Note that this feature
+> is not related to slab defragmentation).
 
-Thanks,
-Hirokazu Takahashi.
+OK.
+I confirmed this patch works well.
+
+Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+
+> 
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> 
+> ---
+>  mm/slub.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/mm/slub.c
+> ===================================================================
+> --- linux-2.6.orig/mm/slub.c	2008-08-19 06:45:54.732348449 -0700
+> +++ linux-2.6/mm/slub.c	2008-08-19 06:46:12.442348249 -0700
+> @@ -2312,7 +2312,7 @@ static int kmem_cache_open(struct kmem_c
+> 
+>  	s->refcount = 1;
+>  #ifdef CONFIG_NUMA
+> -	s->remote_node_defrag_ratio = 100;
+> +	s->remote_node_defrag_ratio = 1000;
+>  #endif
+>  	if (!init_kmem_cache_nodes(s, gfpflags & ~SLUB_DMA))
+>  		goto error;
+> @@ -4058,7 +4058,7 @@ static ssize_t remote_node_defrag_ratio_
+>  	if (err)
+>  		return err;
+> 
+> -	if (ratio < 100)
+> +	if (ratio <= 100)
+>  		s->remote_node_defrag_ratio = ratio * 10;
+> 
+>  	return length;
+
+
+
