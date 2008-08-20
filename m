@@ -1,41 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751574AbYHTELB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752882AbYHTEU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751574AbYHTELB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 00:11:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbYHTEKw
+	id S1752882AbYHTEU2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 00:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbYHTEUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 00:10:52 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57018 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750837AbYHTEKv (ORCPT
+	Wed, 20 Aug 2008 00:20:12 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:35057 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750783AbYHTEUL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 00:10:51 -0400
-Date: Wed, 20 Aug 2008 06:12:42 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tracehook: fix SA_NOCLDWAIT
-Message-ID: <20080820041242.GS9807@one.firstfloor.org>
-References: <20080819155722.GA25695@basil.nowhere.org> <20080820034229.43C7215449D@magilla.localdomain>
+	Wed, 20 Aug 2008 00:20:11 -0400
+Subject: Re: [GIT]: Networking
+From: Marcel Holtmann <marcel@holtmann.org>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, rjw@sisk.pl, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080819.143556.245692295.davem@davemloft.net>
+References: <20080819.140458.236030589.davem@davemloft.net>
+	 <200808192315.48718.rjw@sisk.pl>
+	 <alpine.LFD.1.10.0808191425050.3324@nehalem.linux-foundation.org>
+	 <20080819.143556.245692295.davem@davemloft.net>
+Content-Type: text/plain
+Date: Wed, 20 Aug 2008 06:20:13 +0200
+Message-Id: <1219206013.7591.227.camel@violet.holtmann.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080820034229.43C7215449D@magilla.localdomain>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I outwitted myself again in commit 2b2a1ff64afbadac842bbc58c5166962cf4f7664,
-> and broke the SA_NOCLDWAIT behavior so it leaks zombies.  This fixes it.
-> 
-> Reported-by: Andi Kleen <andi@firstfloor.org>
+Hi guys,
 
-Confirmed -- this patch fixes the zombie problem on my box.
+> And then there is the Bluetooth SCO change which I agree was
+> borderline and I should have pushed back on.
 
-Tested-by: Andi Kleen <andi@firstfloor.org>
+so this is the statement, I sent Dave to explain why that change was in
+there:
 
--Andi
+---
+For the btusb driver this adds the promised SCO support. The btusb
+driver is a new driver and will eventually replace hci_usb. Adding SCO
+support was the last missing piece. All distributions are using the
+hci_usb driver at the moment and you can only select one of them. So
+this can't introduce any regression. With this change the distributions
+are now able to select the new driver if they really want to.
+---
+
+Was this absolutely needed after -rc3. Of course not. No questions asked
+about it. So why did it ended up in there?
+
+Almost everybody is using the hci_usb driver and that one has issues
+that are beyond fixable. So the btusb is its replacement and with this
+change it became a real alternate solution. For me this is a new driver
+that would allow people to use it in case hci_usb gives them a hard time
+and falls over again. And fixing hci_usb is not an option. A lot of
+people tried it and they failed. I think the last one was Pavel a month
+ago. This is why I re-wrote the whole beast from scratch.
+
+So that is my excuse why I thought this would be good choice to push it
+to Dave. No more excuses and no new drivers after the merge window. At
+least not from me.
+
+Regards
+
+Marcel
+
+
