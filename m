@@ -1,41 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbYHTJ7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbYHTKAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755243AbYHTJ7p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 05:59:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbYHTJ7g
+	id S1755507AbYHTKAA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 06:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbYHTJ7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 05:59:36 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49237 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751873AbYHTJ7f (ORCPT
+	Wed, 20 Aug 2008 05:59:44 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49270 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754530AbYHTJ7n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 05:59:35 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Greg Donald" <gdonald@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: INFO: task reiserfs/0:1322 blocked for more than 120 seconds
-From: Andi Kleen <andi@firstfloor.org>
-References: <15e66e4e0808162136r2a439ee9wbb20f2b1f8fabc77@mail.gmail.com>
-	<20080819235258.fa775505.akpm@linux-foundation.org>
-Date: Wed, 20 Aug 2008 11:59:32 +0200
-In-Reply-To: <20080819235258.fa775505.akpm@linux-foundation.org> (Andrew Morton's message of "Tue, 19 Aug 2008 23:52:58 -0700")
-Message-ID: <87ej4kypkr.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 20 Aug 2008 05:59:43 -0400
+Date: Wed, 20 Aug 2008 19:05:55 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       ryov@valinux.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: [RFC][PATCH -mm 5/7] memcg: prefetch mem cgroup per zone
+Message-Id: <20080820190555.438aad2b.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080819173014.17358c17.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
->
-> Seems that about 100% of the reports we get of this warning triggering
-> are sys_sync, transaction commit, etc.
+Address of "mz" can be calculated in early stage.
+prefetch it (we always do spin_lock later.)
 
-And NFS -- i just had the kernel log on one of my nfsroot test systems
-flooded recently with them when the ethernet cable was disconnected
-for some time and nfs blocked.  Scared me first, but then after
-analysis didn't seem very useful. I imagine it would scare normal
-users far more.
 
--Andi
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ mm/memcontrol.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: mmtom-2.6.27-rc3+/mm/memcontrol.c
+===================================================================
+--- mmtom-2.6.27-rc3+.orig/mm/memcontrol.c
++++ mmtom-2.6.27-rc3+/mm/memcontrol.c
+@@ -694,6 +694,8 @@ static int mem_cgroup_charge_common(stru
+ 		}
+ 	}
+ 
++	mz = mem_cgroup_zoneinfo(mem, page_to_nid(page), page_zonenum(page));
++	prefetchw(mz);
+ 	pc->mem_cgroup = mem;
+ 	pc->page = page;
+ 	pc->flags = 0;
+@@ -716,7 +718,6 @@ static int mem_cgroup_charge_common(stru
+ 
+ 	page_assign_page_cgroup(page, pc);
+ 
+-	mz = page_cgroup_zoneinfo(pc);
+ 	spin_lock_irqsave(&mz->lru_lock, flags);
+ 	__mem_cgroup_add_list(mz, pc);
+ 	spin_unlock_irqrestore(&mz->lru_lock, flags);
+
