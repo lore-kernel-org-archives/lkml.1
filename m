@@ -1,123 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbYHTHlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbYHTHnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754061AbYHTHlc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 03:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYHTHlW
+	id S1754717AbYHTHnw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 03:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYHTHnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 03:41:22 -0400
-Received: from viefep32-int.chello.at ([62.179.121.50]:36435 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752005AbYHTHlV (ORCPT
+	Wed, 20 Aug 2008 03:43:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55132 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752467AbYHTHnk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 03:41:21 -0400
-Subject: Re: VolanoMark regression with 2.6.27-rc1
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, Chris Friesen <cfriesen@nortel.com>
-In-Reply-To: <1219217089.8781.27.camel@ymzhang>
-References: <1217828278.25608.206.camel@ymzhang>
-	 <20080804055339.GB5444@linux.vnet.ibm.com> <1217831171.9016.42.camel@twins>
-	 <20080804070508.GA4028@linux.vnet.ibm.com> <1217833939.9016.47.camel@twins>
-	 <1912217169.25608.228.camel@ymzhang> <1218180605.8625.64.camel@twins>
-	 <20080811185008.GA29291@linux.vnet.ibm.com>
-	 <1912726331.25608.235.camel@ymzhang>
-	 <20080817115035.GA32223@linux.vnet.ibm.com>
-	 <20080818052155.GA5063@linux.vnet.ibm.com>
-	 <1219217089.8781.27.camel@ymzhang>
-Content-Type: text/plain
-Date: Wed, 20 Aug 2008 09:41:29 +0200
-Message-Id: <1219218089.10800.404.camel@twins>
+	Wed, 20 Aug 2008 03:43:40 -0400
+Date: Wed, 20 Aug 2008 00:43:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
+Message-Id: <20080820004326.519405a2.akpm@linux-foundation.org>
+In-Reply-To: <200808200245.AA00210@capsicum.lab.ntt.co.jp>
+References: <200808200245.AA00210@capsicum.lab.ntt.co.jp>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-08-20 at 15:24 +0800, Zhang, Yanmin wrote:
-> On Mon, 2008-08-18 at 10:51 +0530, Dhaval Giani wrote: 
-> > > > > > > So with kernel 2.6.27-rc1, the successful wakeup_affine is about
-> > > > > > > double of the one of 2.6.27-rc1
-> > > > > > > on domain 0, but about 10 times on domain 1. That means more tasks are
-> > > > > > > woken up on waker cpus.
-> > > > > > > 
-> > > > > > > Does that mean it doesn't follow cache-hot checking?
-> > > > > > 
-> > > > > > I'm a bit puzzled, but you're right - I too noticed that volanomark is
-> > > > > > _very_ sensitive to affine wakeups.
-> > > > > > 
-> > > > > > I'll try and find what changed in that code for GROUP=n.
-> > > > > 
-> > > > > hi Yanmin,
-> > > > > 
-> > > > > I was wondering if you could send me your config and what sysctls you
-> > > > > have set. I have not been able to reproduce the 2.6.26 -> 2.6.27-rc1
-> > > > > GROUP=n regression.
-> > > > Pls. see the attachment. As for sysctl, I just set /proc/sys/kernel/sched_compat_yield=1.
-> > > > 
-> > > > I am wondering if the load balance causes the regression when group=n. I manually delete
-> > > > all GROUP codes and do a diff against 26 and 27-rc1.
-> > > > 
-> > > 
-> > > You can disable load balancing by being in uniprocessor mode.
-> > > 
-> > 
-> > Hi,
-> > 
-> > I can see this regression only with sched_compat_yield=1. Some numbers
-> > though, I see a 5% regression with max_cpus=1 whereas close to 50% with
-> > SMP on a 8 way.
-> After reverting below patch, volanoMark regression becomes less than 2% with CONFIG_GROUP_SCHED=n
-> on my 8-core stoakely. The improvement on 16-core tigerton is about 44%, but there is still about
->  20% regression, comparing with 2.6.26_nogroup.
-> 
-> 
-> commit 93b75217df39e6d75889cc6f8050343286aff4a5
-> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date:   Fri Jun 27 13:41:33 2008 +0200
-> 
->     sched: disable source/target_load bias
->     
->     The bias given by source/target_load functions can be very large, disable
->     it by default to get faster convergence.
->     
->     Signed-off-by: Peter Zijlstra <peterz@infradead.org>
->     Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
->     Cc: Mike Galbraith <efault@gmx.de>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> 
-> 
-> This patch adds a new feature LB_BIAS, but uses it with a NOT, so I lost it when I tested
-> single sched feature one by one. That also explains why wake_affine and load_balance_newidle
-> have more successful task pulling with kernel 2.6.27-rc, because MC and CPU domain's wake_idx
-> is 1, so this patch has impact on them.
-> 
-> Dhaval, could you test it on your 8-way machine?
+On Wed, 20 Aug 2008 11:45:05 +0900 Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp> wrote:
 
-Ah - I assumed you already tried that knob since you mentioned fiddling
-with the various feature flags.
+> This is a kernel patch of NILFS2 file system which was previously
+> announced in [1].  Since the original code did not comply with the
+> Linux Coding Style, I've rewritten it a lot.
 
-And I must admit to having overlooked the effect on wake_affine..
+I expected this email two years ago :)
 
-Chris, could you see the effect of this on smp group fairness?
+> NILFS2 is a log-structured file system (LFS) supporting ``continuous
+> snapshotting''.  In addition to versioning capability of the entire
+> file system, users can even restore files and namespaces mistakenly
+> overwritten or destroyed just a few seconds ago.
+> 
+> NILFS2 creates a number of checkpoints every few seconds or per
+> synchronous write basis (unless there is no change).  Users can select
+> significant versions among continuously created checkpoints, and can
+> change them into snapshots which will be preserved until they are
+> changed back to checkpoints.
 
----
-diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-index 862b06b..9353ca7 100644
---- a/kernel/sched_features.h
-+++ b/kernel/sched_features.h
-@@ -8,6 +8,6 @@ SCHED_FEAT(SYNC_WAKEUPS, 1)
- SCHED_FEAT(HRTICK, 1)
- SCHED_FEAT(DOUBLE_TICK, 0)
- SCHED_FEAT(ASYM_GRAN, 1)
--SCHED_FEAT(LB_BIAS, 0)
-+SCHED_FEAT(LB_BIAS, 1)
- SCHED_FEAT(LB_WAKEUP_UPDATE, 1)
- SCHED_FEAT(ASYM_EFF_LOAD, 1)
+What approach does it take to garbage collection?
 
+> There is no limit on the number of snapshots until the volume gets
+> full.  Each snapshot is mountable as a read-only file system
+> concurrently with its writable mount, and this feature is convenient
+> for online backup.  It will be also favorable for time-machine like
+> user environment or appliances.
+> 
+> Please see [2] for details on the project.
+> 
+> Other features are:
+> 
+> - Quick crash recovery on-mount (like conventional LFS)
+> - B-tree based file, inode, and other meta data management including
+>   snapshots.
+> - 64-bit data structures; support many files, large files and disks.
+> - Online disk space reclamation by userland daemon, which can maintain
+>   multiple snapshots.
+> - Less use of barrier with keeping reliability. The barrier is enabled
+>   by default.
+> - Easy and quickly performable snapshot administration
+> 
+> Some impressive benchmark results on SSD are shown in [3],
+
+heh.  It wipes the floor with everything, including btrfs.
+
+But a log-based fs will do that, initially.  What will the performace
+look like after a month or two's usage?
+
+> however the
+> current NILFS2 performance is sensitive to machine environment due to
+> its immature implementation.
+> 
+> It has many TODO items:
+> 
+> - performance improvement (better block I/O submission)
+> - better integration of b-tree node cache with filemap and buffer code.
+> - cleanups, further simplification.
+> - atime support
+> - extendend attributes support
+> - POSIX ACL support
+> - Quota support
+> 
+> The patch against 2.6.27-rc3 (hopefully applicable to the next -mm
+> tree) is available at:
+> 
+> http://www.nilfs.org/pub/patch/nilfs2-continuous-snapshotting-file-system.patch
+
+Needs a few fixes for recent linux-next changes.
+
+I queued it up without looking at it, just for a bit of review and
+compile-coverage testing.
+
+> It is not yet divided into pieces (sorry).  Unlike original code
+> available at [4], many code lines to support past kernel versions and
+> peculiar debug code are removed in this patch.
+
+Yes, please do that splitup and let's get down to reviewing it.
+
+> The userland tools are included in nilfs-utils package, which is
+> available from [4].  Details on the tools are described in the man
+> pages included in the package.
+> 
+> Here is an example:
+> 
+> - To use nilfs2 as a local file system, simply:
+> 
+>  # mkfs -t nilfs2 /dev/block_device
+>  # mount -t nilfs2 /dev/block_device /dir
+> 
+>   This will also invoke the cleaner through the mount helper program
+>   (mount.nilfs2).
+> 
+> - Checkpoints and snapshots are managed by the following commands.
+>   Their manpages are included in the nilfs-utils package above.
+> 
+>    lscp     list checkpoints or snapshots.
+>    mkcp     make a checkpoint or a snapshot.
+>    chcp     change an existing checkpoint to a snapshot or vice versa.
+>    rmcp     invalidate specified checkpoint(s).
+> 
+>   For example,
+> 
+>  # chcp ss 2
+> 
+>   changes the checkpoint No. 2 into snapshot.
+> 
+> - To mount a snapshot,
+> 
+>  # mount -t nilfs2 -r -o cp=<cno> /dev/block_device /snap_dir
+> 
+>   where <cno> is the checkpoint number of the snapshot.
+> 
+> - More illustrative example is found in [5].
+> 
+> Thank you,
+> Ryusuke Konishi, NILFS Team, NTT.
+> 
+> 1. NILFS version2 now available
+> http://marc.info/?l=linux-fsdevel&m=118187597808509&w=2
+> 
+> 2. NILFS homepage
+> http://www.nilfs.org/en/index.html
+> 
+> 3. Dongjun Shin, About SSD
+> http://www.usenix.org/event/lsf08/tech/shin_SSD.pdf
+
+Interesting document, that.
+
+> 4. Source archive
+> http://www.nilfs.org/en/download.html
+> 
+> 5. Using NILFS
+> http://www.nilfs.org/en/about_nilfs.html
 
