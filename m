@@ -1,108 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755681AbYHTAkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYHTAoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755681AbYHTAkS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 20:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYHTAkE
+	id S1755180AbYHTAoN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 20:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbYHTAn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 20:40:04 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:37252 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752854AbYHTAkD (ORCPT
+	Tue, 19 Aug 2008 20:43:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40206 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752913AbYHTAn5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 20:40:03 -0400
-Message-ID: <48AB6628.8060409@oracle.com>
-Date: Tue, 19 Aug 2008 17:32:40 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 19 Aug 2008 20:43:57 -0400
+Date: Tue, 19 Aug 2008 17:43:25 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bart Trojanowski <bart@jukie.net>
+cc: linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: vfat BKL/lock_super regression in v2.6.26-rc3-g8f59342
+In-Reply-To: <20080820001845.GC28029@jukie.net>
+Message-ID: <alpine.LFD.1.10.0808191729330.3324@nehalem.linux-foundation.org>
+References: <20080819220311.GA28029@jukie.net> <alpine.LFD.1.10.0808191505590.3324@nehalem.linux-foundation.org> <20080820001845.GC28029@jukie.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com, ebiederm@xmission.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] merge io_apic_xx.c -- fix
-References: <1218881249-3028-1-git-send-email-yhlu.kernel@gmail.com>	<20080816133554.GB11063@elte.hu>	<20080819152156.c79f31e4.randy.dunlap@oracle.com>	<86802c440808191724j68f50b1fx7b2488963fcf96fd@mail.gmail.com> <20080819172757.63b16451.akpm@linux-foundation.org>
-In-Reply-To: <20080819172757.63b16451.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 19 Aug 2008 17:24:08 -0700
-> "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
-> 
->> On Tue, Aug 19, 2008 at 3:21 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->>> On Sat, 16 Aug 2008 15:35:54 +0200 Ingo Molnar wrote:
->>>
->>>> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->>>>
->>>>>     merge io_apic_xx.c
->>>>>
->>>>> Thanks
->>>> applied to tip/irq/sparseirq - thanks!
->>>
->>> Are there patches in the io_apic series to fix these warnings in linux-next?? ::
->>>
->>>
->>> linux-next-20080819/arch/x86/kernel/io_apic_32.c:1539: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64'
->>> linux-next-20080819/arch/x86/kernel/io_apic_32.c:1540: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64
->>>
->>>
->>> and
->>>
->>> linux-next-20080819/arch/x86/kernel/io_apic_32.c:1539: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64'
->>> linux-next-20080819/arch/x86/kernel/io_apic_32.c:1540: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64'
->>>
->> No
-> 
-> yes
-> 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> arch/x86/kernel/io_apic_32.c: In function 'print_local_APIC':
-> arch/x86/kernel/io_apic_32.c:1539: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64'
-> arch/x86/kernel/io_apic_32.c:1540: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64'
-> 
-> No need for casting here - we know what type u64 has.
-> 
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  arch/x86/kernel/io_apic_32.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff -puN arch/x86/kernel/io_apic_32.c~arch-x86-kernel-io_apic_32c-fix-printk-warnings arch/x86/kernel/io_apic_32.c
-> --- a/arch/x86/kernel/io_apic_32.c~arch-x86-kernel-io_apic_32c-fix-printk-warnings
-> +++ a/arch/x86/kernel/io_apic_32.c
-> @@ -1536,8 +1536,8 @@ __apicdebuginit(void) print_local_APIC(v
->  	}
->  
->  	icr = apic_icr_read();
-> -	printk(KERN_DEBUG "... APIC ICR: %08x\n", icr);
-> -	printk(KERN_DEBUG "... APIC ICR2: %08x\n", icr >> 32);
-> +	printk(KERN_DEBUG "... APIC ICR: %08Lx\n", icr);
-> +	printk(KERN_DEBUG "... APIC ICR2: %08Lx\n", icr >> 32);
->  
->  	v = apic_read(APIC_LVTT);
->  	printk(KERN_DEBUG "... APIC LVTT: %08x\n", v);
-> _
 
 
-Crud, I had a copy-paste error.  There are also printk format warnings
-in io_apic_64.c:
+On Tue, 19 Aug 2008, Bart Trojanowski wrote:
+> 
+> So, maybe it would be a good idea to have a 'delaysync=60' to force a
+> sync after 60 seconds of inactivity.  Unless, there is something else
+> that would do that for me already.
 
-linux-next-20080819/arch/x86/kernel/io_apic_64.c:1284: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'long unsigned int'
-linux-next-20080819/arch/x86/kernel/io_apic_64.c:1285: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'long unsigned int
+Oh, it could be even shorter.
 
+The problem with using 'sync' is that it easily ends up overwriting things 
+like the sector that contains a particular inode thousands of times for 
+even trivial operations. Or things like the file allocation table etc.
 
--- 
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+For example, something as trivial as copying a single big file, if the 
+copy program just copies it a few kB at a time, then a file that is a few 
+megabytes in size will actually end up rewriting the inode block (just 
+because the size grows) thousands of time. 
+
+With any kind of half-way decent wear leveling, this isn't a problem at 
+all, and most flash drives have that. But if they don't, then that means 
+that the file allocation table sectors and the inode sectors get rewritten 
+over and over and over again thousands of times.
+
+Just making it do the sync once per _second_ or something like that would 
+already make the "thousands of times" go away. The sectors would probably 
+be rewritten a few times per big file, and just once per couple of tens of 
+files for small files being written.
+
+So we don't even need anything like 60 seconds, we literally would just 
+need some trivial delays.
+
+But no, we don't have that kind of "half-sync" behavior. Right now, it's 
+pretty much all or nothing.  Either we're fully synchronous (and that 
+really is bad for crappy flash), or we end up depending on bdflush writing 
+things back in the background.
+
+Of course, pdflush already syncs within 60s (in fact, 30s by default, 
+iirc), but then things like "laptop_mode" will actually make that 
+potentially much less frequent (I think the default value for that is 5 
+minutes).
+
+I do think this is something we could do better, no question about it.
+
+But I don't know exactly what the timeout should be, though (although I 
+suspect that it should involve _ignoring_ non-data writes like the atime 
+updates, and trigger a timeout on data writes so that when you actually 
+write a file, you'll know that the sync will happen within five seconds of 
+you having finished the write or whatever).
+
+And no, no such mount option currently exists. And the pdflush things are 
+all global, not per-device, iirc.
+
+		Linus
