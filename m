@@ -1,83 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753056AbYHTSMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754102AbYHTSNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753056AbYHTSMN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 14:12:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYHTSL5
+	id S1754102AbYHTSNG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 14:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbYHTSMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 14:11:57 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:37671 "EHLO e4.ny.us.ibm.com"
+	Wed, 20 Aug 2008 14:12:51 -0400
+Received: from mms3.broadcom.com ([216.31.210.19]:3653 "EHLO MMS3.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750909AbYHTSL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 14:11:56 -0400
-Subject: Re: [BUG] Make setup_zone_migrate_reserve() aware of overlapping
-	nodes
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Adam Litke <agl@us.ibm.com>
-Cc: linux-mm <linux-mm@kvack.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       nacc <nacc@linux.vnet.ibm.com>, mel@csn.ul.ie, apw <apw@shadowen.org>,
-       agl <agl@linux.vnet.ibm.com>
-In-Reply-To: <1219252134.13885.25.camel@localhost.localdomain>
-References: <1218837685.12953.11.camel@localhost.localdomain>
-	 <1219252134.13885.25.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 20 Aug 2008 11:11:51 -0700
-Message-Id: <1219255911.8960.41.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 8bit
+	id S1751258AbYHTSMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 14:12:50 -0400
+X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
+Subject: Re: 2.6.26/tg3 ping roundtrip times > 2000 ms on local network
+From: "Michael Chan" <mchan@broadcom.com>
+To: "Marc Haber" <mh+linux-kernel@zugschlus.de>
+cc: "Matthew Carlson" <mcarlson@broadcom.com>,
+       "David Miller" <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080820174752.GB18419@torres.zugschlus.de>
+References: <20080819172019.GA5823@torres.zugschlus.de>
+ <20080819.132040.188336475.davem@davemloft.net>
+ <1219166962.13090.12.camel@HP1>
+ <20080819221439.GA19106@torres.zugschlus.de>
+ <20080819223025.GA11221@xw6200.broadcom.net>
+ <20080820174752.GB18419@torres.zugschlus.de>
+Date: Wed, 20 Aug 2008 07:11:50 -0700
+Message-ID: <1219241510.10902.12.camel@HP1>
+MIME-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5)
+X-WSS-ID: 64B281134YK8596204-01-01
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-08-20 at 12:08 -0500, Adam Litke wrote:
-> I have gotten to the root cause of the hugetlb badness I reported back
-> on August 15th.  My system has the following memory topology (note the
-> overlapping node):
+
+On Wed, 2008-08-20 at 10:47 -0700, Marc Haber wrote:
+> On Tue, Aug 19, 2008 at 03:30:25PM -0700, Matt Carlson wrote:
+> > Can you try the attached patch?  The patch reduces the delay back to
+> > what it should have been.  If this helps, then it means you are being
+> > bitten by the same bug the upstream patch fixed.
 > 
-> 	﻿Node 0 Memory: 0x8000000-0x44000000
-> 	﻿Node 1 Memory: 0x0-0x8000000 0x44000000-0x80000000
+> It looks like the issue is fixed now. Thanks for your help.
 > 
-> setup_zone_migrate_reserve() scans the address range 0x0-0x8000000
-> looking for a pageblock to move onto the MIGRATE_RESERVE list.  Finding
-> no candidates, it happily continues the scan into 0x8000000-0x44000000.
-> When a pageblock is found, the pages are moved to the MIGRATE_RESERVE
-> list on the wrong zone.  Oops.
+> Will this fix be in 2.6.26.3 and/or 2.6.27?
 
-This eventually gets down into move_freepages() via:
+It was just submitted to -stable so it should appear 2.6.26.3 or .4.
+And definitely it will be fixed in 2.6.27.
 
-	->setup_zone_migrate_reserve()
-	 ->move_freepages_block()
-	  ->move_freepages()
-right?
+> 
+> Now I need to understand why the other, nearly[1] identical box didn't
+> need the patch to function properly.
 
-It looks like there have been bugs in this area before in
-move_freepages().  Should there be a more stringent check in *there*?
-Maybe a warning?
-> ﻿
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -2512,6 +2512,10 @@ static void setup_zone_migrate_reserve(struct
-> zone *zone)
->                                                         pageblock_order;
->  
->         for (pfn = start_pfn; pfn < end_pfn; pfn += pageblock_nr_pages) {
-> +               /* Watch out for overlapping nodes */
-> +               if (!early_pfn_in_nid(pfn, zone->node))
-> +                       continue;
+It depends on whether you have ASF enabled or not and what version of
+ASF you have.  ASF is management firmware running inside the NIC.  When
+the tg3 driver loads, it will show ASF[1] in dmesg if ASF is enabled.
 
-zone->node doesn't exist on !CONFIG_NUMA. :(
+> 
+> Greetings
+> Marc
+> 
+> [1] only difference is that the working box has two e1000 interfaces
+> on a PCI card in addition to the two tg3 interfaces on board (all four
+> of them being in use)
+> 
+> --
+> -----------------------------------------------------------------------------
+> Marc Haber         | "I don't trust Computers. They | Mailadresse im Header
+> Mannheim, Germany  |  lose things."    Winona Ryder | Fon: *49 621 72739834
+> Nordisch by Nature |  How to make an American Quilt | Fax: *49 3221 2323190
+> 
 
-You probably want:
-
-	if (!early_pfn_in_nid(pfn, zone_to_nid(zone)))
-		continue;
-
-Are you sure you need the "early_" variant here?  We're not using
-early_pfn_valid() right below it.  I guess you could also use:
-
-	if (!page_to_nid(page) != zone_to_nid(zone))
-		continue;
-
--- Dave
 
