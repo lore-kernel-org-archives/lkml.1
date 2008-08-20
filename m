@@ -1,71 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760231AbYHTQzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760356AbYHTQzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760231AbYHTQzY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 12:55:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYHTQzI
+	id S1760356AbYHTQzh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 12:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758712AbYHTQzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 12:55:08 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:38067 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754867AbYHTQzG (ORCPT
+	Wed, 20 Aug 2008 12:55:10 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42755 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754867AbYHTQzI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 12:55:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type
-         :content-transfer-encoding:from;
-        b=ipWCzue77teCywToTQEx8SHoTiOyMh4z1eE2Qu1kZ/EXGxTHzjisVTe72GconBG2Zp
-         iMtkApgqu7oq+O8ZHZ9g2rsEVX2SE7+0CATfWDcat4pbHIebR4jCi7tb7Gz7icbU0AKQ
-         Ebiu5+iW8TVA94uS/6e2H682zZvm/teZtnPfo=
-Message-ID: <48AC4B6E.4040409@gmail.com>
-Date: Wed, 20 Aug 2008 18:50:54 +0200
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Ulrich Drepper <drepper@redhat.com>
-CC: Davide Libenzi <davidel@xmailserver.org>,
+	Wed, 20 Aug 2008 12:55:08 -0400
+Date: Wed, 20 Aug 2008 12:55:07 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: paccept() oddity
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] ftrace: x86 use copy to and from user functions
+Message-ID: <alpine.DEB.1.10.0808201253330.494@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich,
 
-[
-2.6.27-rc has paccept():
+The modification of code is performed either by kstop_machine, before
+SMP starts, or on module code before the module is executed. There is
+no reason to do the modifications from assembly. The copy to and from
+user functions are sufficient and produces cleaner and easier to read
+code.
 
-int paccept(int fd, struct sockaddr *sockaddr, socklen_t *addrlen,
-         const sigset_t *sigmask, int setsize, int flags)
-]
+Thanks to Benjamin Herrenschmidt for suggesting the idea.
 
-While considering the sigset argument for paccept() (see my previous
-message), and testing that system call, I realized that there is a certain
-oddness in the implementation of paccept().
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ arch/x86/kernel/ftrace.c |   38 +++++++++++++-------------------------
+ 1 file changed, 13 insertions(+), 25 deletions(-)
 
-Like accept(), paccept() automatically restarts if interrupted by a signal
-handler that was established with the SA_RESTART flag.
-
-On the other hand, pselect(), ppoll(), and epoll_pwait() are never restarted
-if interrupted by a handler, even if the handler was established with
-SA_RESTART.  (This is the same as with select(), poll(), and epoll_wait().)
-
-It seems to me that it makes little sense to restart paccept(), especially in
-the case where it is interrupted by a handler for one of the signals that is
-in sigmask, since the whole point of calling paccept() is to block until a
-connection is received, or until one of the signals in sigmask is caught().
-
-How about changing paccept() so that it is never automatically restarted if
-interrupted by a signal handler, regardless of the SA_RESTART flag.  (In
-other words, paccept() should be consistent with pselect(), ppoll(), and
-epoll_pwait(), rather than being consistent with accept().)  What are your
-thoughts?
-
-Cheers,
-
-Michael
+Index: linux-tip.git/arch/x86/kernel/ftrace.c
+===================================================================
+--- linux-tip.git.orig/arch/x86/kernel/ftrace.c	2008-08-20 12:39:41.000000000 -0400
++++ linux-tip.git/arch/x86/kernel/ftrace.c	2008-08-20 12:40:17.000000000 -0400
+@@ -11,6 +11,7 @@
+ 
+ #include <linux/spinlock.h>
+ #include <linux/hardirq.h>
++#include <linux/uaccess.h>
+ #include <linux/ftrace.h>
+ #include <linux/percpu.h>
+ #include <linux/init.h>
+@@ -60,11 +61,7 @@ notrace int
+ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+ 		   unsigned char *new_code)
+ {
+-	unsigned replaced;
+-	unsigned old = *(unsigned *)old_code; /* 4 bytes */
+-	unsigned new = *(unsigned *)new_code; /* 4 bytes */
+-	unsigned char newch = new_code[4];
+-	int faulted = 0;
++	unsigned char replaced[MCOUNT_INSN_SIZE];
+ 
+ 	/*
+ 	 * Note: Due to modules and __init, code can
+@@ -72,29 +69,20 @@ ftrace_modify_code(unsigned long ip, uns
+ 	 *  as well as code changing.
+ 	 *
+ 	 * No real locking needed, this code is run through
+-	 * kstop_machine.
++	 * kstop_machine, or before SMP starts.
+ 	 */
+-	asm volatile (
+-		"1: lock\n"
+-		"   cmpxchg %3, (%2)\n"
+-		"   jnz 2f\n"
+-		"   movb %b4, 4(%2)\n"
+-		"2:\n"
+-		".section .fixup, \"ax\"\n"
+-		"3:	movl $1, %0\n"
+-		"	jmp 2b\n"
+-		".previous\n"
+-		_ASM_EXTABLE(1b, 3b)
+-		: "=r"(faulted), "=a"(replaced)
+-		: "r"(ip), "r"(new), "c"(newch),
+-		  "0"(faulted), "a"(old)
+-		: "memory");
+-	sync_core();
++	if (__copy_from_user(replaced, (char __user *)ip, MCOUNT_INSN_SIZE))
++		return 1;
+ 
+-	if (replaced != old && replaced != new)
+-		faulted = 2;
++	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
++		return 2;
+ 
+-	return faulted;
++	WARN_ON_ONCE(__copy_to_user((char __user *)ip, new_code,
++				    MCOUNT_INSN_SIZE));
++
++	sync_core();
++
++	return 0;
+ }
+ 
+ notrace int ftrace_update_ftrace_func(ftrace_func_t func)
 
