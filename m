@@ -1,68 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753736AbYHTG03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243AbYHTG1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753736AbYHTG03 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 02:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYHTG0V
+	id S1754243AbYHTG1J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 02:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbYHTG0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 02:26:21 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:43063 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751715AbYHTG0U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 02:26:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=g/Ml/fPseC5xGV9lGHpMq0/Q4AyXIOCA2gWIqj2JdudDAULzcxktdf9o81GcYHQ27d
-         YVrJDNhUPVGfHulEiUhvZr2pNG9BuSbGsbBKk69Q/8WKsOyUwVw5IDCPNxTve4AoyeDH
-         rg2+eqYwShQHQ+JsdlZCNiUJGebuNL3ik/8o4=
-Message-ID: <19f34abd0808192326jc10e758m99e76bbd5714c5b8@mail.gmail.com>
-Date: Wed, 20 Aug 2008 08:26:19 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: latest -git: WARNING: at arch/x86/kernel/ipi.c:123 send_IPI_mask_bitmask+0xc3/0xe0()
-Cc: "the arch/x86 maintainers" <x86@kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080820013930.GN9807@one.firstfloor.org>
+	Wed, 20 Aug 2008 02:26:53 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:50555 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750788AbYHTG0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 02:26:52 -0400
+Message-ID: <48ABB8D7.3020808@cn.fujitsu.com>
+Date: Wed, 20 Aug 2008 14:25:27 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Subject: Re: [-mm] sysfs: duplicate filename 'acpi' can not be created
+References: <48ABACF2.4060503@cn.fujitsu.com> <20080819224732.5b1393c1.akpm@linux-foundation.org>
+In-Reply-To: <20080819224732.5b1393c1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0808191251x4eb61c50n13ecf7c90f0f3d9f@mail.gmail.com>
-	 <20080820013930.GN9807@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 20, 2008 at 3:39 AM, Andi Kleen <andi@firstfloor.org> wrote:
-> On Tue, Aug 19, 2008 at 09:51:44PM +0200, Vegard Nossum wrote:
->> Hi,
+Andrew Morton wrote:
+> On Wed, 20 Aug 2008 13:34:42 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
+> 
+>> When I compiled latest -mm and booted up:
 >>
->> With latest -git (1fca25427482387689fa27594c992a961d98768f), I got
->> this on reading from /dev/cpu/*/* while hot-unplugging cpu1.
->
-> It's generally known the oprofile doesn't support CPU hotplug well.
-> Someone needs to make a project out of fixing it properly. Right now
-> it's just a "don't do that when it hurts"
+>> ------------[ cut here ]------------
+>> WARNING: at fs/sysfs/dir.c:463 sysfs_add_one+0x27/0x2f()
+>> sysfs: duplicate filename 'acpi' can not be created
+>> Modules linked in:
+>> Pid: 1, comm: swapper Not tainted 2.6.27-rc3-mm1 #2
+>>  [<c0421173>] warn_slowpath+0x61/0x83
+>>  [<c043b422>] __lock_acquire+0x601/0x658
+>>  [<c047ea0d>] ifind+0x13/0x79
+>>  [<c05c2ce9>] _spin_unlock+0x14/0x1c
+>>  [<c047ea6d>] ifind+0x73/0x79
+>>  [<c04a5a32>] sysfs_find_dirent+0x13/0x23
+>>  [<c04a5ac5>] sysfs_add_one+0x27/0x2f
+>>  [<c04a5f83>] create_dir+0x3c/0x81
+>>  [<c04a5ff1>] sysfs_create_dir+0x29/0x3b
+>>  [<c05c2ce9>] _spin_unlock+0x14/0x1c
+>>  [<c04c466d>] kobject_add_internal+0xb1/0x14a
+>>  [<c04c490b>] kobject_init_and_add+0x29/0x2c
+>>  [<c06ea613>] kernel_param_sysfs_setup+0x4f/0x9f
+>>  [<c06ea753>] param_sysfs_init+0xf0/0x147
+>>  [<c0401122>] _stext+0x3a/0x12f
+>>  [<c06ea663>] param_sysfs_init+0x0/0x147
+>>  [<c041b3ee>] try_to_wake_up+0x146/0x14f
+>>  [<c042d9f5>] __create_workqueue_key+0xa0/0x13c
+>>  [<c06d9550>] kernel_init+0x18d/0x1f1
+>>  [<c06d93c3>] kernel_init+0x0/0x1f1
+>>  [<c04044ff>] kernel_thread_helper+0x7/0x10
+>>  =======================
+>> ---[ end trace 4eaa2a86a8e2da22 ]---
+>> kobject_add_internal failed for acpi with -EEXIST, don't try to register things with the same name in the same directory.
+>> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc3-mm1 #2
+>>  [<c04c46d0>] kobject_add_internal+0x114/0x14a
+>>  [<c04c490b>] kobject_init_and_add+0x29/0x2c
+>>  [<c06ea613>] kernel_param_sysfs_setup+0x4f/0x9f
+>>  [<c06ea753>] param_sysfs_init+0xf0/0x147
+>>  [<c0401122>] _stext+0x3a/0x12f
+>>  [<c06ea663>] param_sysfs_init+0x0/0x147
+>>  [<c041b3ee>] try_to_wake_up+0x146/0x14f
+>>  [<c042d9f5>] __create_workqueue_key+0xa0/0x13c
+>>  [<c06d9550>] kernel_init+0x18d/0x1f1
+>>  [<c06d93c3>] kernel_init+0x0/0x1f1
+>>  [<c04044ff>] kernel_thread_helper+0x7/0x10
+>>  =======================
+>> Module 'acpi' failed to be added to sysfs, error number -17
+>> The system will be unstable now.
+> 
+> The only acpi-specific patches in mm(otm) are
+> 
+> acpi-add-checking-for-null-early-param.patch
+> acpi-avoid-dropping-rapid-hotkey-events-or-other-gpes-on-asus-eeepc.patch
+> mm-only-enforce-acpi-resource-conflict-checks.patch
+> 
+> so I'd say you've hit a linux-next regression there.
+> 
 
-Hm. What you say is true, but this one in particular has nothing to do
-with oprofile! It has something to do with reading /dev/cpu/*/msr
-while hot-unplugging cpu1:
+You are right.
 
- [<c011733e>] msr_read+0x6e/0xa0
- [<c01a87b4>] vfs_read+0x94/0x130
+after 'quilt push linux-next.patch', I still saw the regression, and then
+it's ok after 'quilt pop 1'
 
-I wasn't using oprofile when this happened. So I think it should also
-be considered a separate issue. Though yes -- CPU hotplug in general
-tends to break a lot of things.
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+> Random-possible-feel-it-in-my-water-guess: do you have CONFIG_FASTBOOT
+> set and if so, does unsetting it fix things?
+> 
+> 
