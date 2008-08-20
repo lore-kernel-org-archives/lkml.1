@@ -1,80 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbYHTJhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbYHTJlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754061AbYHTJhl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 05:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbYHTJhS
+	id S1753355AbYHTJlR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 05:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbYHTJlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 05:37:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52116 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753200AbYHTJhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 05:37:16 -0400
-Date: Wed, 20 Aug 2008 11:36:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Bill Fink <billfink@mindspring.com>,
-       David Witbrodt <dawitbro@sbcglobal.net>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user
-	with the same regression
-Message-ID: <20080820093617.GA27681@elte.hu>
-References: <109483.89278.qm@web82104.mail.mud.yahoo.com> <86802c440808192221s3ada5443qc3b9d8e26f252d03@mail.gmail.com> <20080820035130.38426b00.billfink@mindspring.com> <86802c440808200102n6487ae17ud790991b8ea30d16@mail.gmail.com> <20080820091513.GA23865@elte.hu> <86802c440808200231h27ab9121ofe68c86c2a80535e@mail.gmail.com>
+	Wed, 20 Aug 2008 05:41:03 -0400
+Received: from smtp115.mail.mud.yahoo.com ([209.191.84.164]:42687 "HELO
+	smtp115.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750862AbYHTJlB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 05:41:01 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=OG3GiSUSNJbEfV2gwTFCrNkqAfGjmmRURSYPH2/Axm/8JAnudXLZ3FZpfJZf9JbFc6QLrROUbH+CNB6EC21l5YlLlk/yVFy/J2wnBw1l5y3U761Q8UMA/OtBWGR0rxyERmV9HPJvxL5Ci9C8d2zV5eypVNXC4fCxU2MeDWrsEjU=  ;
+X-YMail-OSG: w_9VMgkVM1lyyl51cDz_ibDCObwryQv51aywc5kyejyTA5gXgQ2cRR5OQREVeAZoM9jemIWcVa7odu8dCKkDiBlp0_fD6O3ifYYBgFYIsWr9HIWB0RmvowSoq6JBXys6HBsgB5kohFDQ76Z8GAxFr_pw
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+Date: Wed, 20 Aug 2008 19:40:51 +1000
+User-Agent: KMail/1.9.5
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Scott Wood <scottwood@freescale.com>,
+       Eran Liberty <liberty@extricom.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+References: <48A9901B.1080900@redhat.com> <20080819173453.GA28239@Krystal> <alpine.DEB.1.10.0808191705590.4957@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0808191705590.4957@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <86802c440808200231h27ab9121ofe68c86c2a80535e@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200808201940.51916.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-
-> On Wed, Aug 20, 2008 at 2:15 AM, Ingo Molnar <mingo@elte.hu> wrote:
+On Wednesday 20 August 2008 07:08, Steven Rostedt wrote:
+> On Tue, 19 Aug 2008, Mathieu Desnoyers wrote:
+> > Ok, there are two cases where it's ok :
 > >
-> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> > 1 - in stop_machine, considering we are not touching code executed in
+> > NMI handlers.
+> > 2 - when using my replace_instruction_safe() which uses a temporary
+> > breakpoint when doing the instruction replacement.
 > >
-> >> > This is true if he reverted just the 3def3d6d... commit, but if he
-> >> > also reverts the similar, and immediately following, 1e934dda...
-> >> > commit, then his 2.6.26 kernel runs fine.
-> >>
-> >> interesting,
-> >>
-> >> David, can you try only comment out
-> >>
-> >> late_initcall(lapic_insert_resource);
+> > In those cases you could use text_poke_early().
 > >
-> > i.e. the patch below?
+> > See
+> > http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=b
+> >lob;f=arch/x86/kernel/immediate.c;h=7789e2c75bf03e645f15759d5dff0c1698493f
+> >92;hb=HEAD
 > >
-> > what's your theory, what could be the reason for David's lockups?
-> 
-> could be insert_resource related.
-> 1. revert patch that change back insert_resource doesn't work
-> 2. insert_resource for lapic address moved to late after ....
-> 
-> need to add debug printout for insert_resource/request_resource to 
-> make sure thing going well
+> > For a use example. Basically it looks like :
+> >
+> >
+> > 360                 pages[0] = virt_to_page((void *)bypass_eip);
+> > 361                 vaddr = vmap(pages, 1, VM_MAP, PAGE_KERNEL);
+> > 362                 BUG_ON(!vaddr);
+> > 363                 text_poke_early(&vaddr[bypass_eip & ~PAGE_MASK],
+> > 364                         (void *)addr, size);
+> > 365                 /*
+> > 366                  * Fill the rest with nops.
+> > 367                  */
+> > 368                 len = NR_NOPS - size;
+> > 369                 add_nops((void *)
+> > 370                         &vaddr[(bypass_eip & ~PAGE_MASK) + size],
+> > 371                         len);
+> > 372                 print_dbg_bytes("inserted nops",
+> > 373                         &vaddr[(bypass_eip & ~PAGE_MASK) + size],
+> > len); 374                 vunmap(vaddr);
+>
+> vunmap can not be called with interrupts disabled, and this is exactly
+> what my code does.
 
-but what can happen if it does not "go well"? The resource list is 
-basically there to make sure we dont overlap resources. But is there a 
-real danger here for any overlap?
-
-And insert_resource() differs from request_resource() in that 
-insert_resource() allows "complete overlap". David has done printks of 
-all resources in this thread - can you see anything suspicious in there?
-
-and what's the connection to your e820 patches?
-
-	Ingo
+It could be after the vmap rewrite (with a few other small tweaks).
+But a) it would be less robust when called from interrupt context
+and this code looks broken as it is WRT error handling; and b) it
+still costs several thousand cycles to vmap+touch+vunmap...
