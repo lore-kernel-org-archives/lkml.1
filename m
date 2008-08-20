@@ -1,116 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752152AbYHTEKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751574AbYHTELB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752152AbYHTEKF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 00:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbYHTEJy
+	id S1751574AbYHTELB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 00:11:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbYHTEKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 00:09:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47968 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750834AbYHTEJx (ORCPT
+	Wed, 20 Aug 2008 00:10:52 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:57018 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750837AbYHTEKv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 00:09:53 -0400
-Date: Tue, 19 Aug 2008 21:09:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: PATCH] debug: add notifier chain debugging
-Message-Id: <20080819210932.9bb348b9.akpm@linux-foundation.org>
-In-Reply-To: <20080815152938.4bc9d48c@infradead.org>
-References: <20080815152938.4bc9d48c@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 20 Aug 2008 00:10:51 -0400
+Date: Wed, 20 Aug 2008 06:12:42 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tracehook: fix SA_NOCLDWAIT
+Message-ID: <20080820041242.GS9807@one.firstfloor.org>
+References: <20080819155722.GA25695@basil.nowhere.org> <20080820034229.43C7215449D@magilla.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080820034229.43C7215449D@magilla.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Aug 2008 15:29:38 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
-
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Subject: [PATCH] debug: add notifier chain debugging
+> I outwitted myself again in commit 2b2a1ff64afbadac842bbc58c5166962cf4f7664,
+> and broke the SA_NOCLDWAIT behavior so it leaks zombies.  This fixes it.
 > 
-> during some development we suspected a case where we left something
-> in a notifier chain that was from a module that was unloaded already...
-> and that sort of thing is rather hard to track down.
-> 
-> This patch adds a very simple sanity check (which isn't all that
-> expensive) to make sure the notifier we're about to call is
-> actually from either the kernel itself of from a still-loaded
-> module, avoiding a hard-to-chase-down crash.
-> 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> ---
->  kernel/notifier.c |   16 ++++++++++++++++
->  lib/Kconfig.debug |   10 ++++++++++
->  2 files changed, 26 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/notifier.c b/kernel/notifier.c
-> index 823be11..143fdd7 100644
-> --- a/kernel/notifier.c
-> +++ b/kernel/notifier.c
-> @@ -21,6 +21,10 @@ BLOCKING_NOTIFIER_HEAD(reboot_notifier_list);
->  static int notifier_chain_register(struct notifier_block **nl,
->  		struct notifier_block *n)
->  {
-> +	if (!kernel_text_address((unsigned long)n->notifier_call)) {
-> +		WARN(1, "Invalid notifier registered!");
-> +		return 0;
-> +	}
->  	while ((*nl) != NULL) {
->  		if (n->priority > (*nl)->priority)
->  			break;
-> @@ -34,6 +38,10 @@ static int notifier_chain_register(struct notifier_block **nl,
->  static int notifier_chain_cond_register(struct notifier_block **nl,
->  		struct notifier_block *n)
->  {
-> +	if (!kernel_text_address((unsigned long)n->notifier_call)) {
-> +		WARN(1, "Invalid notifier registered!");
-> +		return 0;
-> +	}
+> Reported-by: Andi Kleen <andi@firstfloor.org>
 
-Seems strange to add checks to the registration functions.  What could
-be that broken?
+Confirmed -- this patch fixes the zombie problem on my box.
 
->  	while ((*nl) != NULL) {
->  		if ((*nl) == n)
->  			return 0;
-> @@ -82,6 +90,14 @@ static int __kprobes notifier_call_chain(struct notifier_block **nl,
->  
->  	while (nb && nr_to_call) {
->  		next_nb = rcu_dereference(nb->next);
-> +
-> +#ifdef CONFIG_DEBUG_NOTIFIERS
-> +		if (!kernel_text_address((unsigned long)nb->notifier_call)) {
-> +			WARN(1, "Invalid notifier called!");
-> +			nb = next_nb;
-> +			continue;
-> +		}
-> +#endif
->  		ret = nb->notifier_call(nb, val, v);
->  
->  		if (nr_calls)
-> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> index 800ac84..f4bb36e 100644
-> --- a/lib/Kconfig.debug
-> +++ b/lib/Kconfig.debug
-> @@ -536,6 +536,16 @@ config DEBUG_SG
->  
->  	  If unsure, say N.
->  
-> +config DEBUG_NOTIFIERS
-> +	bool "Debug notifier call chains"
-> +	depends on DEBUG_KERNEL
-> +	help
-> +	  Enable this to turn on sanity checking for notifier call chains.
-> +	  This is most useful for kernel developers to make sure that
-> +	  modules properly unregister themselves from notifier chains.
-> +	  This is a relatively cheap check but if you care about maximum
-> +	  performance, say N.
-> +
+Tested-by: Andi Kleen <andi@firstfloor.org>
 
-If we remove the first two checks then surely we can afford to add the
-remaining check unconditionally and lose the new config option and its
-ifdef.
-
+-Andi
