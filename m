@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbYHTVhm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbYHTVkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756956AbYHTVhm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:37:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754108AbYHTVhM
+	id S1756267AbYHTVkG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbYHTVjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:37:12 -0400
-Received: from waste.org ([66.93.16.53]:39878 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754018AbYHTVhK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:37:10 -0400
-Subject: Re: [Tech-board-discuss] BOF Request for Linux Foundation
-	Technical Advisory Board Election
-From: Matt Mackall <mpm@selenic.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>
-In-Reply-To: <1219264622.3258.73.camel@localhost.localdomain>
-References: <1219264622.3258.73.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 20 Aug 2008 16:34:58 -0500
-Message-Id: <1219268098.7576.1138.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Wed, 20 Aug 2008 17:39:54 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:35698 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752086AbYHTVjx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 17:39:53 -0400
+Message-ID: <48AC8F69.4050201@keyaccess.nl>
+Date: Wed, 20 Aug 2008 23:40:57 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+MIME-Version: 1.0
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, Dave Airlie <airlied@gmail.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: AGP and PAT (induced?) problem (on AMD family 6)
+References: <48972EA8.8040001@keyaccess.nl> <20080815142218.GC12954@elte.hu> <48A59FAC.7050605@keyaccess.nl> <48AA9C3B.5030309@keyaccess.nl> <20080819102633.GE6722@elte.hu> <48AAD680.7020508@keyaccess.nl> <20080819190757.GA17470@linux-os.sc.intel.com> <20080820100440.GE28492@elte.hu> <48ABF6DC.8070305@keyaccess.nl> <48AC29CA.1060203@keyaccess.nl> <20080820194127.GA10887@linux-os.sc.intel.com>
+In-Reply-To: <20080820194127.GA10887@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 20-08-08 21:41, Venki Pallipadi wrote:
 
-On Wed, 2008-08-20 at 15:37 -0500, James Bottomley wrote:
-> The elections for five of the ten members of the Linux Foundation
-> Technical Advisory Board[TAB] are held every year, currently the
-> election will be at the 2008 Kernel Summit in a BOF session.  This year,
-> in order to allow for wider participation, we thought we'd try holding
-> the BFF last thing before the Plumbers Conf Aura Lounge event (say
-> around 5:30pm) and allow not only KS attendees but also Plumbers Conf
-> attendees to vote.
+> OK. I have reproduced this list size issue locally and this order 1 
+> allocation and set_memory_uc on that allocation is actually coming
+> from agp_allocate_memory() -> agp_generic_alloc_page() ->
+> map_page_into_agp() agp_allocate_memory breaks higher order page
+> requests into order 1 allocs.
 > 
-> Anyone is eligible to stand for election, simply send your nomination
-> to:
-> 
-> Tech-board-discuss@lists.linux-foundation.org
-> 
-> We currently have Five nominees:
-> 
-> Matt Mackall <mpm@selenic.com>
-> James Bottomley <James.Bottomley@HansenPartnership.com>
-> Theodore Tso <tytso@mit.edu>
-> Chris Wright <chrisw@sous-sol.org>
-> Randy Dunlap <rdunlap@xenotime.net>
-> 
-> The deadline for receiving nominations is up until the BOF where the
-> election is held (on the Evening of 16 September. Although, please
-> remember if you're not going to be present that things go wrong with
-> both networks and mailing lists, so get your nomination in
-> early).
+> On my system I see multiple agp_allocate_memory requests for nrpages 
+> 8841, 1020, 16, 2160, 2160, 8192. Together they end up resulting in 
+> more than 22K entries in PAT pages.
 
-James forgot a piece: if you can't make it to the election (ie you won't
-be at KS or Plumbers'), you can send a statement to be read on your
-behalf before the voting.
+Okay, thanks for the confirmation.
 
-Also, I'm pretty sure we're only accepting self-nominations.
+Now, how to fix...
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Firstly, it seems we can conclude that any expectancy of a short PAT 
+list is simply destroyed by AGP. I believe the best thing migh be to 
+look into "fixing" AGP rather than PAT for now?
 
+In a sense the entire purpose of the AGP GART is collecting non 
+contiguous pages but given that in practice it's generally still just 
+one or at most a few regions, going to multi-page allocs sounds most 
+appetising to me.
+
+All in tree AGP drivers except sgi-agp use agp_generic_alloc_page(), ali 
+via m1541_alloc_page and i460 via i460_alloc_page.
+
+Rene.
