@@ -1,62 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207AbYHTDoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbYHTDpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756207AbYHTDoI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 23:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbYHTDnu
+	id S1756353AbYHTDpu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 23:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391AbYHTDpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 23:43:50 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:42626 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753765AbYHTDnt (ORCPT
+	Tue, 19 Aug 2008 23:45:42 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51031 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753189AbYHTDpl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 23:43:49 -0400
-Subject: Re: [GIT]: Networking
-From: Marcel Holtmann <marcel@holtmann.org>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080819.131454.223684377.davem@davemloft.net>
-References: <20080819.041706.261399060.davem@davemloft.net>
-	 <alpine.LFD.1.10.0808190952000.3324@nehalem.linux-foundation.org>
-	 <20080819.131454.223684377.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 20 Aug 2008 05:43:52 +0200
-Message-Id: <1219203832.7591.207.camel@violet.holtmann.net>
+	Tue, 19 Aug 2008 23:45:41 -0400
+Date: Wed, 20 Aug 2008 12:51:52 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       ryov@valinux.co.jp
+Subject: Re: [PATCH -mm][preview] memcg: a patch series for next [0/9]
+Message-Id: <20080820125152.84f3409a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <48AB8FEA.8000006@linux.vnet.ibm.com>
+References: <20080819173014.17358c17.kamezawa.hiroyu@jp.fujitsu.com>
+	<48AB8FEA.8000006@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+On Wed, 20 Aug 2008 09:00:50 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> > For example, those BT updates looked in no way like regression fixes. So 
-> > what the f*ck were they doing there? And why do you think all those driver 
-> > updates cannot cause new regressions? 
+> KAMEZAWA Hiroyuki wrote:
+> > Hi, 
+> > 
+> > This post is for showing what I'm trying now.
+> > 
+> > This patch set is for memory resource controller.
+> > 4 purposes here.
+> >   - improve performance of memcg.
+> >   - remove lock_page_cgroup()
+> >   - making page_cgroup->flags to be atomic_ops.
+> >   - support mem+swap controller.
+> > 
+> > But this is still under test and the series is not well organised.
+> > and base tree is old. (2.6.27-rc1-mm1) I'll rebase this set to newer mmtom tree.
+> > 
+> > Maybe this set have some troubles/objections but I think the direction is not bad.
+> > 
+> > Patch description. (patch ordering is bad. I'll fix in the next post.)
+> > 
+> > [1/9] ... private_counter ...replace res_counter with my own counter.
+> >           This is for supporting mem+swap controller.
+> >           (And I think memcg has a bit different characteristics from other
+> >            users of res_counter....)
+> > 
+> > [2/9] ... change-order-uncharge ...
+> >           This patch is for making it easy to handle swap-cache.
+> > 
+> > [3/9] ... atomic_flags
+> >           This patch changes operations for page_cgroup->flags to be atomic_ops.
+> > 
+> > [4/9] ... delayed freeing.
+> >           delaying to free page_cgroup at uncharge.
+> > 
+> > [5/9] ... RCU freeing of page_cgroup
+> >           free page_cgroup by RCU.
+> > 
+> > [6/9] ... lockress page cgroup.
+> >           remove lock_page_cgroup() and use RCU semantics.
+> > 
+> > [7/9] ... add preftech
+> >           add prefetch() macro
+> > 
+> > [8/9] ... mem+swap controller base.
+> >           introduce mem+swap controller. A bit big patch....but have tons of TODO.
+> >           and have troubles. (it seems it's difficult to cause OOM killer.)
+> > 
+> > [9/9] ... mem+swap controller control files.
+> >           add mem+swap controller's control files.
+> > 
+> > I'd like to push patch [2,3,4,5,6,7] first.
+> > 
 > 
-> The BT bits were the only part I really considered borderline,
-> and I was going to push back on Marcel.
+> I took a quick look at the patches, patch 1 seemed not so clear, why can't we
+> enhance or fix resource counters? I'll review/test the patches tonight.
 > 
-> But to be honest, I haven't seen bluetooth updates from him
-> for such a long time I felt that being strict here would just
-> exacerbate the problem.
+patch 1 is for patch 8. (patch order is too bad.)
+please ignore this version. this is just a preview.(Sorry)
+
+I'm now writing easier-to-read one,
+
+thanks,
+-kame
+
+
+
+
+
+> -- 
+> 	Balbir
 > 
-> Guess I was wrong.
-
-as I explained to Linus, my current assumption was that documentation
-updates and new driver stuff should go in quickly. You will not get any
-of these from me anymore. Next time you only get the one regression fix
-and all my queued up stuff in the next merge window.
-
-Don't hold back if you think that a patch is not acceptable. Really, I
-am using GIT for everything. Merging is no problem for me. I also do
-backports in my -mh patch for the latest stable kernel. So there is no
-extra work for me. It is just sending you a new email with another tree
-to pull from :)
-
-Regards
-
-Marcel
-
 
