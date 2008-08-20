@@ -1,312 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756578AbYHTUCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbYHTUDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756578AbYHTUCK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 16:02:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYHTUBz
+	id S1757017AbYHTUDB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 16:03:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbYHTUCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 16:01:55 -0400
-Received: from vs251036.vserver.de ([62.75.251.36]:60980 "EHLO
-	vs251036.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754250AbYHTUBy (ORCPT
+	Wed, 20 Aug 2008 16:02:51 -0400
+Received: from smtpauth.hypersurf.com ([209.237.0.8]:49583 "EHLO
+	smtpauth.hypersurf.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753832AbYHTUCv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 16:01:54 -0400
-Message-ID: <48AC7829.8040709@claudio.ch>
-Date: Wed, 20 Aug 2008 22:01:45 +0200
-From: Claudio Nieder <private@claudio.ch>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Wed, 20 Aug 2008 16:02:51 -0400
+Message-ID: <48AC7790.8010207@hypersurf.com>
+Date: Wed, 20 Aug 2008 12:59:12 -0700
+From: Kevin Diggs <kevdig@hypersurf.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i486; en-US; rv:1.8b2) Gecko/20050724
 MIME-Version: 1.0
-To: Andrey Panin <pazke@pazke.donpac.ru>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Backlight driver for Tabletkiosk Sahara TouchIT-213	Tablet
- PC
-References: <488E0D2A.1000005@claudio.ch> <1217270428.6059.39.camel@dax.rpnet.com> <488E25F4.4020405@claudio.ch> <20080811134940.b3bcde83.akpm@linux-foundation.org> <48A1CA9A.4000007@claudio.ch> <48AB5099.7070904@claudio.ch> 
-In-Reply-To: <48AB5099.7070904@claudio.ch> 
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       david@fromorbit.com, arnd@arndb.de,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, kevdig@hypersurf.com
+Subject: Re: {NOT a PATCH} Corrections please ...
+References: <48AB73A3.9010404@hypersurf.com> <20080820095908.GC28492@elte.hu> <48ABF880.5010605@s5r6.in-berlin.de>
+In-Reply-To: <48ABF880.5010605@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-> These two empty initializers are not needed.
-
-Fixed.
-
-> Now let's add module alias to ensure driver autoloading.
-> IMHO the line below should do the trick:
+Stefan Richter wrote:
+>>* Kevin Diggs <kevdig@hypersurf.com> wrote:
+>>
+>>>	It was recommended that I use a completion in a driver I am 
+>>>working on.  While figuring out how to use one,
 > 
-> MODULE_ALIAS("dmi:*:svnSDV:pniTouchT201:*");
+> 
+> Kevin, as a side note:  LDD3 chapter 5 pages 114 ff has some guidance.
+> http://lwn.net/Kernel/LDD3/
+> I'm only pointing to it for the unlikely case that you didn't come
+> across LDD3 yet.  The dead tree version is affordable too, and more
+> comfortable to read than the online version.
 
-I usually built the kernel with my driver included. For once I tried to build as
-module first without that line added and then with. And by magic the module is
-loaded right at boot time. Thank you for your help.
+Oh! I have that! That is how I figured out that complete() is used to
+signal that the wait thingies don't have to wait anymore.
 
-Once again the patch in which all your suggestions are included. Furthermore I
-noticed that I had "default y" in Kconfig. Handy for me, but a tad selfish I
-think and so corrected that by setting it to "n".
+Here is the latest (maybe line wrap is set to 99 so it won't be goofed
+anymore?):
 
-Here the fixed patch:
+--- include/linux/completion.h.orig	2008-08-13 00:56:52.000000000 -0700
++++ include/linux/completion.h	2008-08-20 01:47:21.000000000 -0700
+@@ -10,6 +10,18 @@
 
-Signed-off-by: Claudio Nieder <private@claudio.ch>
+  #include <linux/wait.h>
 
-Backlight driver for Tabletkiosk Sahara TouchIT-213 Tablet PC
----
- drivers/video/backlight/Kconfig     |    7 +
- drivers/video/backlight/Makefile    |    1 +
- drivers/video/backlight/kb3886_bl.c |  213 +++++++++++++++++++++++++++++++++++
- 3 files changed, 221 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 452b770..7dd0ecd 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -164,3 +164,10 @@ config BACKLIGHT_MBP_NVIDIA
-          If you have an Apple Macbook Pro with Nvidia graphics hardware say Y
- 	 to enable a driver for its backlight
-
-+config BACKLIGHT_SAHARA
-+	tristate "Tabletkiosk Sahara Touch-iT Backlight Driver"
-+	depends on BACKLIGHT_CLASS_DEVICE && X86
-+	default n
-+	help
-+	  If you have a Tabletkiosk Sahara Touch-iT, say y to enable the
-+	  backlight driver.
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index b405aac..f4a1183 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -16,4 +16,5 @@ obj-$(CONFIG_BACKLIGHT_PROGEAR) += progear_bl.o
- obj-$(CONFIG_BACKLIGHT_CARILLO_RANCH) += cr_bllcd.o
- obj-$(CONFIG_BACKLIGHT_PWM)	+= pwm_bl.o
- obj-$(CONFIG_BACKLIGHT_MBP_NVIDIA) += mbp_nvidia_bl.o
-+obj-$(CONFIG_BACKLIGHT_SAHARA)	+= kb3886_bl.o
-
-diff --git a/drivers/video/backlight/kb3886_bl.c
-b/drivers/video/backlight/kb3886_bl.c
-new file mode 100644
-index 0000000..feb750a
---- /dev/null
-+++ b/drivers/video/backlight/kb3886_bl.c
-@@ -0,0 +1,213 @@
-+/*
-+ *  Backlight Driver for the KB3886 Backlight
++/**
++ * struct completion - structure used to maintain state for a "completion"
 + *
-+ *  Copyright (c) 2007-2008 Claudio Nieder
++ * This is the opaque structure used to maintain the state for a "completion".
++ * Completions currently use a FIFO to queue threads that have to wait for
++ * the "completion" event.
 + *
-+ *  Based on corgi_bl.c by Richard Purdie and kb3886 driver by Robert Woerle
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License version 2 as
-+ *  published by the Free Software Foundation.
-+ *
++ * See also:  complete(), wait_for_completion() (and friends _timeout,
++ * _interruptible, _interruptible_timeout, and _killable), init_completion(),
++ * and macros DECLARE_COMPLETION(), DECLARE_COMPLETION_ONSTACK(), and
++ * INIT_COMPLETION().
 + */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/mutex.h>
-+#include <linux/fb.h>
-+#include <linux/backlight.h>
-+#include <linux/delay.h>
-+#include <linux/dmi.h>
-+
-+/*
-+ * The following is what corgi has in arch/arm/mach-pxa/corgi.c and
-+ * corgi_lcd.c. On kernelnebwies it was suggested I put the platform_device
-+ * code in my driver.
-+ */
-+
-+#define KB3886_PARENT 0x64
-+#define KB3886_IO 0x60
-+#define KB3886_ADC_DAC_PWM 0xC4
-+#define KB3886_PWM0_WRITE 0x81
-+#define KB3886_PWM0_READ 0x41
-+
-+static DEFINE_MUTEX(bl_mutex);
-+
-+static void kb3886_bl_set_intensity(int intensity)
-+{
-+	mutex_lock(&bl_mutex);
-+	intensity = intensity&0xff;
-+	outb(KB3886_ADC_DAC_PWM, KB3886_PARENT);
-+	msleep(10);
-+	outb(KB3886_PWM0_WRITE, KB3886_IO);
-+	msleep(10);
-+	outb(intensity, KB3886_IO);
-+	mutex_unlock(&bl_mutex);
-+}
-+
-+struct kb3886bl_machinfo {
-+	int max_intensity;
-+	int default_intensity;
-+	int limit_mask;
-+	void (*set_bl_intensity)(int intensity);
-+};
-+
-+static struct kb3886bl_machinfo kb3886_bl_machinfo = {
-+	.max_intensity = 0xff,
-+	.default_intensity = 0xa0,
-+	.limit_mask = 0x7f,
-+	.set_bl_intensity = kb3886_bl_set_intensity,
-+};
-+
-+static struct platform_device kb3886bl_device = {
-+	.name		= "kb3886-bl",
-+	.dev		= {
-+		.platform_data	= &kb3886_bl_machinfo,
-+	},
-+	.id		= -1,
-+};
-+
-+static struct platform_device *devices[] __initdata = {
-+	&kb3886bl_device,
-+};
-+
-+/*
-+ * Back to driver
-+ */
-+
-+static int kb3886bl_intensity;
-+static struct backlight_device *kb3886_backlight_device;
-+static struct kb3886bl_machinfo *bl_machinfo;
-+
-+static unsigned long kb3886bl_flags;
-+#define KB3886BL_SUSPENDED     0x01
-+#define KB3886BL_BATTLOW       0x02
-+
-+static struct dmi_system_id __initdata kb3886bl_device_table[] = {
-+	{
-+		.ident = "Sahara Touch-iT",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "SDV"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "iTouch T201"),
-+		},
-+	},
-+	{ }
-+};
-+
-+static int kb3886bl_send_intensity(struct backlight_device *bd)
-+{
-+	int intensity = bd->props.brightness;
-+
-+	if (bd->props.power != FB_BLANK_UNBLANK)
-+		intensity = 0;
-+	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
-+		intensity = 0;
-+	if (kb3886bl_flags & KB3886BL_SUSPENDED)
-+		intensity = 0;
-+	if (kb3886bl_flags & KB3886BL_BATTLOW)
-+		intensity &= bl_machinfo->limit_mask;
-+
-+	bl_machinfo->set_bl_intensity(intensity);
-+
-+	kb3886bl_intensity = intensity;
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+static int kb3886bl_suspend(struct platform_device *pdev, pm_message_t state)
-+{
-+	struct backlight_device *bd = platform_get_drvdata(pdev);
-+
-+	kb3886bl_flags |= KB3886BL_SUSPENDED;
-+	backlight_update_status(bd);
-+	return 0;
-+}
-+
-+static int kb3886bl_resume(struct platform_device *pdev)
-+{
-+	struct backlight_device *bd = platform_get_drvdata(pdev);
-+
-+	kb3886bl_flags &= ~KB3886BL_SUSPENDED;
-+	backlight_update_status(bd);
-+	return 0;
-+}
-+#else
-+#define kb3886bl_suspend	NULL
-+#define kb3886bl_resume		NULL
-+#endif
-+
-+static int kb3886bl_get_intensity(struct backlight_device *bd)
-+{
-+	return kb3886bl_intensity;
-+}
-+
-+static struct backlight_ops kb3886bl_ops = {
-+	.get_brightness = kb3886bl_get_intensity,
-+	.update_status  = kb3886bl_send_intensity,
-+};
-+
-+static int kb3886bl_probe(struct platform_device *pdev)
-+{
-+	struct kb3886bl_machinfo *machinfo = pdev->dev.platform_data;
-+
-+	bl_machinfo = machinfo;
-+	if (!machinfo->limit_mask)
-+		machinfo->limit_mask = -1;
-+
-+	kb3886_backlight_device = backlight_device_register("kb3886-bl",
-+		&pdev->dev, NULL, &kb3886bl_ops);
-+	if (IS_ERR (kb3886_backlight_device))
-+		return PTR_ERR(kb3886_backlight_device);
-+
-+	platform_set_drvdata(pdev, kb3886_backlight_device);
-+
-+	kb3886_backlight_device->props.max_brightness = machinfo->max_intensity;
-+	kb3886_backlight_device->props.power = FB_BLANK_UNBLANK;
-+	kb3886_backlight_device->props.brightness = machinfo->default_intensity;
-+	backlight_update_status(kb3886_backlight_device);
-+
-+	return 0;
-+}
-+
-+static int kb3886bl_remove(struct platform_device *pdev)
-+{
-+	struct backlight_device *bd = platform_get_drvdata(pdev);
-+
-+	backlight_device_unregister(bd);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver kb3886bl_driver = {
-+	.probe		= kb3886bl_probe,
-+	.remove		= kb3886bl_remove,
-+	.suspend	= kb3886bl_suspend,
-+	.resume		= kb3886bl_resume,
-+	.driver		= {
-+		.name	= "kb3886-bl",
-+	},
-+};
-+
-+static int __init kb3886_init(void)
-+{
-+	if (!dmi_check_system(kb3886bl_device_table))
-+		return -ENODEV;
-+
-+	platform_add_devices(devices, ARRAY_SIZE(devices));
-+	return platform_driver_register(&kb3886bl_driver);
-+}
-+
-+static void __exit kb3886_exit(void)
-+{
-+	platform_driver_unregister(&kb3886bl_driver);
-+}
-+
-+module_init(kb3886_init);
-+module_exit(kb3886_exit);
-+
-+MODULE_AUTHOR("Claudio Nieder <private@claudio.ch>");
-+MODULE_DESCRIPTION("Tabletkiosk Sahara Touch-iT Backlight Driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("dmi:*:svnSDV:pniTouchT201:*");
--- 
-1.4.4.4
+  struct completion {
+  	unsigned int done;
+  	wait_queue_head_t wait;
+@@ -21,6 +33,14 @@
+  #define COMPLETION_INITIALIZER_ONSTACK(work) \
+  	({ init_completion(&work); work; })
 
-claudio
--- 
-Claudio Nieder, Talweg 6, CH-8610 Uster, Tel +4179 357 6743, www.claudio.ch
++/**
++ * DECLARE_COMPLETION: - declare and initialize a completion structure
++ * @work:  identifier for the completion structure
++ *
++ * This macro declares and initializes a completion structure. Generally used
++ * for static declarations. You should use the _ONSTACK variant for automatic
++ * variables.
++ */
+  #define DECLARE_COMPLETION(work) \
+  	struct completion work = COMPLETION_INITIALIZER(work)
+
+@@ -29,6 +49,13 @@
+   * completions - so we use the _ONSTACK() variant for those that
+   * are on the kernel stack:
+   */
++/**
++ * DECLARE_COMPLETION_ONSTACK: - declare and initialize a completion structure
++ * @work:  identifier for the completion structure
++ *
++ * This macro declares and initializes a completion structure on the kernel
++ * stack.
++ */
+  #ifdef CONFIG_LOCKDEP
+  # define DECLARE_COMPLETION_ONSTACK(work) \
+  	struct completion work = COMPLETION_INITIALIZER_ONSTACK(work)
+@@ -36,6 +63,13 @@
+  # define DECLARE_COMPLETION_ONSTACK(work) DECLARE_COMPLETION(work)
+  #endif
+
++/**
++ * init_completion: - Initialize a dynamically allocated completion
++ * @x:  completion structure that is to be initialized
++ *
++ * This inline function will initialize a dynamically created completion
++ * structure.
++ */
+  static inline void init_completion(struct completion *x)
+  {
+  	x->done = 0;
+@@ -53,6 +87,13 @@
+  extern void complete(struct completion *);
+  extern void complete_all(struct completion *);
+
++/**
++ * INIT_COMPLETION: - reinitialize a completion structure
++ * @x:  completion structure to be reinitialized
++ *
++ * This macro should be used to reinitialize a completion structure so it can
++ * be reused. This is especially important after complete_all() is used.
++ */
+  #define INIT_COMPLETION(x)	((x).done = 0)
+
+  #endif
+
+
+--- kernel/sched.c.orig	2008-08-13 02:22:42.000000000 -0700
++++ kernel/sched.c	2008-08-20 12:36:01.000000000 -0700
+@@ -4363,6 +4363,15 @@
+  }
+  EXPORT_SYMBOL_GPL(__wake_up_sync);	/* For internal use only */
+
++/**
++ * complete: - signals a single thread waiting on this completion
++ * @x:  holds the state of this particular completion
++ *
++ * This will wake up a single thread waiting on this completion. Threads will be
++ * awakened in the same order in which they were queued.
++ *
++ * See also complete_all(), wait_for_completion() and related routines.
++ */
+  void complete(struct completion *x)
+  {
+  	unsigned long flags;
+@@ -4374,6 +4383,12 @@
+  }
+  EXPORT_SYMBOL(complete);
+
++/**
++ * complete_all: - signals all threads waiting on this completion
++ * @x:  holds the state of this particular completion
++ *
++ * This will wake up all threads waiting on this particular completion event.
++ */
+  void complete_all(struct completion *x)
+  {
+  	unsigned long flags;
+@@ -4425,12 +4440,31 @@
+  	return timeout;
+  }
+
++/**
++ * wait_for_completion: - waits for completion of a task
++ * @x:  holds the state of this particular completion
++ *
++ * This waits to be signaled for completion of a specific task. It is NOT
++ * interruptible and there is no timeout.
++ *
++ * See also similar routines (i.e. wait_for_completion_timeout()) with timeout
++ * and interrupt capability. Also see complete().
++ */
+  void __sched wait_for_completion(struct completion *x)
+  {
+  	wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_UNINTERRUPTIBLE);
+  }
+  EXPORT_SYMBOL(wait_for_completion);
+
++/**
++ * wait_for_completion_timeout: - waits for completion of a task (w/timeout)
++ * @x:  holds the state of this particular completion
++ * @timeout:  timeout value in jiffies
++ *
++ * This waits for either a completion of a specific task to be signaled or for a
++ * specified timeout to expire. The timeout is in jiffies. It is not
++ * interruptible.
++ */
+  unsigned long __sched
+  wait_for_completion_timeout(struct completion *x, unsigned long timeout)
+  {
+@@ -4438,6 +4472,13 @@
+  }
+  EXPORT_SYMBOL(wait_for_completion_timeout);
+
++/**
++ * wait_for_completion_interruptible: - waits for completion of a task (w/intr)
++ * @x:  holds the state of this particular completion
++ *
++ * This waits for completion of a specific task to be signaled. It is
++ * interruptible.
++ */
+  int __sched wait_for_completion_interruptible(struct completion *x)
+  {
+  	long t = wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_INTERRUPTIBLE);
+@@ -4447,6 +4488,14 @@
+  }
+  EXPORT_SYMBOL(wait_for_completion_interruptible);
+
++/**
++ * wait_for_completion_interruptible_timeout: - waits for completion (w/(to,intr))
++ * @x:  holds the state of this particular completion
++ * @timeout:  timeout value in jiffies
++ *
++ * This waits for either a completion of a specific task to be signaled or for a
++ * specified timeout to expire. It is interruptible. The timeout is in jiffies.
++ */
+  unsigned long __sched
+  wait_for_completion_interruptible_timeout(struct completion *x,
+  					  unsigned long timeout)
+@@ -4455,6 +4504,13 @@
+  }
+  EXPORT_SYMBOL(wait_for_completion_interruptible_timeout);
+
++/**
++ * wait_for_completion_killable: - waits for completion of a task (killable)
++ * @x:  holds the state of this particular completion
++ *
++ * This waits to be signaled for completion of a specific task. It can be
++ * interrupted by a kill signal.
++ */
+  int __sched wait_for_completion_killable(struct completion *x)
+  {
+  	long t = wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_KILLABLE);
