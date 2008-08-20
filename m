@@ -1,90 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbYHTDnD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207AbYHTDoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753761AbYHTDnD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 23:43:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753845AbYHTDmj
+	id S1756207AbYHTDoI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 23:44:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbYHTDnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 23:42:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60088 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753641AbYHTDmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 23:42:38 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 19 Aug 2008 23:43:50 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:42626 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753765AbYHTDnt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 23:43:49 -0400
+Subject: Re: [GIT]: Networking
+From: Marcel Holtmann <marcel@holtmann.org>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080819.131454.223684377.davem@davemloft.net>
+References: <20080819.041706.261399060.davem@davemloft.net>
+	 <alpine.LFD.1.10.0808190952000.3324@nehalem.linux-foundation.org>
+	 <20080819.131454.223684377.davem@davemloft.net>
+Content-Type: text/plain
+Date: Wed, 20 Aug 2008 05:43:52 +0200
+Message-Id: <1219203832.7591.207.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: Andi Kleen <andi@firstfloor.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
-Subject: [PATCH] tracehook: fix SA_NOCLDWAIT
-In-Reply-To: Andi Kleen's message of  Tuesday, 19 August 2008 17:57:22 +0200 <20080819155722.GA25695@basil.nowhere.org>
-References: <20080819155722.GA25695@basil.nowhere.org>
-X-Zippy-Says: The fact that 47 PEOPLE are yelling and sweat is cascading down my
-    SPINAL COLUMN is fairly enjoyable!!
-Message-Id: <20080820034229.43C7215449D@magilla.localdomain>
-Date: Tue, 19 Aug 2008 20:42:29 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 1fca25427482387689fa27594c992a961d98768f:
-  Linus Torvalds (1):
-        Merge branch 'release' of git://git.kernel.org/.../aegl/linux-2.6
+Hi Dave,
 
-are available in the git repository at:
+> > For example, those BT updates looked in no way like regression fixes. So 
+> > what the f*ck were they doing there? And why do you think all those driver 
+> > updates cannot cause new regressions? 
+> 
+> The BT bits were the only part I really considered borderline,
+> and I was going to push back on Marcel.
+> 
+> But to be honest, I haven't seen bluetooth updates from him
+> for such a long time I felt that being strict here would just
+> exacerbate the problem.
+> 
+> Guess I was wrong.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git tracehook
+as I explained to Linus, my current assumption was that documentation
+updates and new driver stuff should go in quickly. You will not get any
+of these from me anymore. Next time you only get the one regression fix
+and all my queued up stuff in the next merge window.
 
-Roland McGrath (1):
-      tracehook: fix SA_NOCLDWAIT
+Don't hold back if you think that a patch is not acceptable. Really, I
+am using GIT for everything. Merging is no problem for me. I also do
+backports in my -mh patch for the latest stable kernel. So there is no
+extra work for me. It is just sending you a new email with another tree
+to pull from :)
 
- kernel/signal.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+Regards
+
+Marcel
 
 
-Thanks,
-Roland
----
-[PATCH] tracehook: fix SA_NOCLDWAIT
-
-I outwitted myself again in commit 2b2a1ff64afbadac842bbc58c5166962cf4f7664,
-and broke the SA_NOCLDWAIT behavior so it leaks zombies.  This fixes it.
-
-Reported-by: Andi Kleen <andi@firstfloor.org>
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- kernel/signal.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/signal.c b/kernel/signal.c
-index c539f60..e661b01 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -1338,6 +1338,7 @@ int do_notify_parent(struct task_struct *tsk, int sig)
- 	struct siginfo info;
- 	unsigned long flags;
- 	struct sighand_struct *psig;
-+	int ret = sig;
- 
- 	BUG_ON(sig == -1);
- 
-@@ -1402,7 +1403,7 @@ int do_notify_parent(struct task_struct *tsk, int sig)
- 		 * is implementation-defined: we do (if you don't want
- 		 * it, just use SIG_IGN instead).
- 		 */
--		tsk->exit_signal = -1;
-+		ret = tsk->exit_signal = -1;
- 		if (psig->action[SIGCHLD-1].sa.sa_handler == SIG_IGN)
- 			sig = -1;
- 	}
-@@ -1411,7 +1412,7 @@ int do_notify_parent(struct task_struct *tsk, int sig)
- 	__wake_up_parent(tsk, tsk->parent);
- 	spin_unlock_irqrestore(&psig->siglock, flags);
- 
--	return sig;
-+	return ret;
- }
- 
- static void do_notify_parent_cldstop(struct task_struct *tsk, int why)
