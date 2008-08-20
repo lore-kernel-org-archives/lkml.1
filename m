@@ -1,125 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbYHTTLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbYHTTOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756130AbYHTTLt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 15:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbYHTTLk
+	id S1756076AbYHTTOU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 15:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbYHTTOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 15:11:40 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:63251 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752809AbYHTTLj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 15:11:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:from;
-        b=W21haGHkdCC5oiDkINF/435rduKRO1YV4QCG2+SuF/I7mynizQcguYj6TZc2T/Kgq7
-         UX38TftUGeyFOCQCQyuqKypLWy1naZn2YD0se5Yjv6X50EC73UMWp0+ZPFTPs6vqYbWV
-         P/KemFsaVmXzQwJhjWQBrkvUeVahD0QTpqbXw=
-Date: Wed, 20 Aug 2008 23:12:57 +0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: peter_e@gmx.net, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org, Nadia Derbey <Nadia.Derbey@bull.net>,
-       Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Pierre Peiffer <peifferp@gmail.com>, containers@lists.osdl.org
-Subject: Re: [Bugme-new] [Bug 11381] New: default shmmax
-Message-ID: <20080820191257.GA22556@x200.localdomain>
-References: <bug-11381-10286@http.bugzilla.kernel.org/> <20080820120043.e6e7e436.akpm@linux-foundation.org>
+	Wed, 20 Aug 2008 15:14:08 -0400
+Received: from mga09.intel.com ([134.134.136.24]:20085 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753977AbYHTTOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 15:14:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,240,1217833200"; 
+   d="scan'208";a="430851959"
+Date: Wed, 20 Aug 2008 12:14:37 -0700
+From: mark gross <mgross@linux.intel.com>
+To: John Kacur <jkacur@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, arjan <arjan@infradead.org>
+Subject: Re: [PATCH RFC] pm_qos_requirement might sleep
+Message-ID: <20080820191437.GA12415@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <520f0cf10808041352h78bd4319x1802f018aeffe6dc@mail.gmail.com> <1217921101.3589.98.camel@twins> <20080805204901.GA31132@linux.intel.com> <1217970588.29415.36.camel@lappy.programming.kicks-ass.net> <520f0cf10808051518h1459d353r8de78e98f79ec57c@mail.gmail.com> <20080812224926.GA20652@linux.intel.com> <520f0cf10808130124o301b6691ra37ac9007120b9df@mail.gmail.com> <20080814155241.GA31050@linux.intel.com> <1218736137.10800.234.camel@twins> <520f0cf10808141551k283aecb8y647d0f5ae321b81f@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080820120043.e6e7e436.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: adobriyan@gmail.com
+In-Reply-To: <520f0cf10808141551k283aecb8y647d0f5ae321b81f@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 20, 2008 at 12:00:43PM -0700, Andrew Morton wrote:
+On Fri, Aug 15, 2008 at 12:51:11AM +0200, John Kacur wrote:
+> On Thu, Aug 14, 2008 at 7:48 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Thu, 2008-08-14 at 08:52 -0700, mark gross wrote:
+> >
+> >> Keeping a lock around the different "target_value"s may not be so
+> >> important.  Its just a 32bit scaler value, and perhaps we can make it an
+> >> atomic type?  That way we loose the raw_spinlock.
+> >
+> > My suggestion was to keep the locking for the write side - so as to
+> > avoid stuff stomping on one another, but drop the read side as:
+> >
+> >  spin_lock
+> >  foo = var;
+> >  spin_unlock
+> >  return foo;
+> >
+> > is kinda useless, it doesn't actually serialize against the usage of
+> > foo, that is, once it gets used, var might already have acquired a new
+> > value.
+> >
+> > The only thing it would protect is reading var, but since that is a
+> > machine sized read, its atomic anyway (assuming its naturally aligned).
+> >
+> > So no need for atomic_t (its read-side is just a read too), just drop
+> > the whole lock usage from pq_qos_requirement().
+> >
 > 
-> (switched to email.  Please respond via emailed reply-to-all, not via the
-> bugzilla web interface).
+> Thanks Peter.
 > 
-> On Wed, 20 Aug 2008 05:58:57 -0700 (PDT)
-> bugme-daemon@bugzilla.kernel.org wrote:
-> 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=11381
-> > 
-> >            Summary: default shmmax
-> >            Product: Other
-> >            Version: 2.5
-> >      KernelVersion: 2.6.26.2
-> >           Platform: All
-> >         OS/Version: Linux
-> >               Tree: Mainline
-> >             Status: NEW
-> >           Severity: enhancement
-> >           Priority: P1
-> >          Component: Other
-> >         AssignedTo: other_other@kernel-bugs.osdl.org
-> >         ReportedBy: peter_e@gmx.net
-> > 
-> > 
-> > I would like to request that the default shmmax setting be increased or the
-> > downsides of that be documented.  Allow me to explain.
-> > 
-> > I am with the PostgreSQL development team.  PostgreSQL is probably one of the
-> > few users of large amounts of SysV shared memory.  Users would usually want to
-> > configure anywhere between 10% and 50% of their physical RAM to be used as
-> > shared memory, which would translate to something on the order of gigabytes
-> > nowadays.  One of the uniformly annoying things about setting this up is that
-> > you need to reconfigure the Linux kernel to allow that.  sysctl is nice and
-> > all, but it still requires users to learn about operating system and kernel
-> > details, requires root access, and distros don't handle sysctl uniformly
-> > either.  Maybe there is even a good reason for that, but I couldn't find it,
-> > and at least I would like to learn it, so that we can pass that information on
-> > to our users.
-> > 
-> > I did some kernel version archeology and found out that up until kernels 2.2
-> > the shmmax setting appears to have been restricted by CPU-specific constraints,
-> > as indicated by the default setting being different across CPUs and being
-> > defined in an asm header.  The default setting on i386 was increased from 16 MB
-> > to 32 MB somewhere around 1998 in the kernel 2.0 line, and it remains at 32 MB
-> > in the latest kernel on all architectures.
-> > 
-> > Now one question is whether there is a space or time overhead involved with
-> > setting a high shmmax limit that isn't actually used.  If so, it would be
-> > interesting to know what that overhead is.  The feeling I get from browsing the
-> > kernel source code over time is that there was some management overhead and/or
-> > some restrictions about this in old kernels, but that nowadays it doesn't
-> > really seem to matter much anymore.  I suspect instead that this whole thing
-> > was just forgotten, because few applications use large amounts of shared
-> > memory.
-> > 
-> > So, if you want to do us a favor, could you please see about increasing the
-> > default shmmax setting to whatever the theoretical maximum is?
-> > 
-> 
-> I don't think anybody has even thought about the shmmax default in
-> years.  Sure, it might be time to reexamine that.
-> 
-> It would be useful to get distro input on this.  Do they override the
-> kernel default at boot time?  If so, what do they do?
-> 
-> 
-> Also, from a quick read it looks to me that shmmax is busted in the
-> non-init namespace.
-> 
-> clone_ipc_ns() calls shm_init_ns() which does
-> 
-> 	ns->shm_ctlmax = SHMMAX;
-> 
-> which a) fails to inherit the parent's setting and
+> Mark, is the following patch ok with you? This should be applied to
+> mainline, and then after that no special patches are necessary for
+> real-time.
 
-This is debatable if such behaviour should be default, this makes one ipc_ns
-more ipc_ns than others.
+It looks ok to me, do I need to add a compiler declaration to the
+structure to make sure the target_value is word aligned?
 
-> b) cannot be altered from SHMMAX via the sysctl?
+thanks,
 
-It can be altered. See kludge called get_ipc().
+--mgross
 
-(well, I haven't checked personally, but it's a bug if IPC sysctls
-aren't independently controllable after CLONE_NEWIPC, complain loudly).
+
+> 
+> Thanks
+> 
+> John Kacur
+
+> Subject: Remove unnecessary lock in pm_qos_requirement
+> 
+> Signed-off-by: John Kacur <jkacur at gmail dot com>
+> 
+> Index: linux-2.6/kernel/pm_qos_params.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/pm_qos_params.c
+> +++ linux-2.6/kernel/pm_qos_params.c
+> @@ -193,14 +193,7 @@ static int find_pm_qos_object_by_minor(i
+>   */
+>  int pm_qos_requirement(int pm_qos_class)
+>  {
+> -	int ret_val;
+> -	unsigned long flags;
+> -
+> -	spin_lock_irqsave(&pm_qos_lock, flags);
+> -	ret_val = pm_qos_array[pm_qos_class]->target_value;
+> -	spin_unlock_irqrestore(&pm_qos_lock, flags);
+> -
+> -	return ret_val;
+> +	return pm_qos_array[pm_qos_class]->target_value;
+>  }
+>  EXPORT_SYMBOL_GPL(pm_qos_requirement);
+>  
 
