@@ -1,84 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbYHTK5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbYHTK6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755549AbYHTK5U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 06:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbYHTK5L
+	id S1755898AbYHTK6e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 06:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYHTK6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 06:57:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56587 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752298AbYHTK5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 06:57:10 -0400
-Date: Wed, 20 Aug 2008 12:51:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, Chris Friesen <cfriesen@nortel.com>
-Subject: Re: VolanoMark regression with 2.6.27-rc1
-Message-ID: <20080820105141.GA18226@elte.hu>
-References: <20080804070508.GA4028@linux.vnet.ibm.com> <1217833939.9016.47.camel@twins> <1912217169.25608.228.camel@ymzhang> <1218180605.8625.64.camel@twins> <20080811185008.GA29291@linux.vnet.ibm.com> <1912726331.25608.235.camel@ymzhang> <20080817115035.GA32223@linux.vnet.ibm.com> <20080818052155.GA5063@linux.vnet.ibm.com> <1219217089.8781.27.camel@ymzhang> <1219218089.10800.404.camel@twins>
+	Wed, 20 Aug 2008 06:58:25 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:34326 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752298AbYHTK6Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 06:58:25 -0400
+Message-ID: <48ABF880.5010605@s5r6.in-berlin.de>
+Date: Wed, 20 Aug 2008 12:57:04 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1219218089.10800.404.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Kevin Diggs <kevdig@hypersurf.com>, linux-kernel@vger.kernel.org,
+       david@fromorbit.com, arnd@arndb.de,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: {NOT a PATCH} Corrections please ...
+References: <48AB73A3.9010404@hypersurf.com> <20080820095908.GC28492@elte.hu>
+In-Reply-To: <20080820095908.GC28492@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> * Kevin Diggs <kevdig@hypersurf.com> wrote:
+>> 	It was recommended that I use a completion in a driver I am 
+>> working on.  While figuring out how to use one,
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> And I must admit to having overlooked the effect on wake_affine..
-> 
-> Chris, could you see the effect of this on smp group fairness?
-
-applied your commit below to tip/sched/urgent, thanks.
-
-	Ingo
-
--------------->
->From 939387c3a6141ec6aefc7acd40f8b186781bb098 Mon Sep 17 00:00:00 2001
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Wed, 20 Aug 2008 12:44:55 +0200
-Subject: [PATCH] sched: enable LB_BIAS by default
-
-Yanmin reported a significant regression on his 16-core machine due to:
-
-  commit 93b75217df39e6d75889cc6f8050343286aff4a5
-  Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-  Date:   Fri Jun 27 13:41:33 2008 +0200
-
-Flip back to the old behaviour.
-
-Reported-by: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched_features.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-index 862b06b..9353ca7 100644
---- a/kernel/sched_features.h
-+++ b/kernel/sched_features.h
-@@ -8,6 +8,6 @@ SCHED_FEAT(SYNC_WAKEUPS, 1)
- SCHED_FEAT(HRTICK, 1)
- SCHED_FEAT(DOUBLE_TICK, 0)
- SCHED_FEAT(ASYM_GRAN, 1)
--SCHED_FEAT(LB_BIAS, 0)
-+SCHED_FEAT(LB_BIAS, 1)
- SCHED_FEAT(LB_WAKEUP_UPDATE, 1)
- SCHED_FEAT(ASYM_EFF_LOAD, 1)
+Kevin, as a side note:  LDD3 chapter 5 pages 114 ff has some guidance.
+http://lwn.net/Kernel/LDD3/
+I'm only pointing to it for the unlikely case that you didn't come
+across LDD3 yet.  The dead tree version is affordable too, and more
+comfortable to read than the online version.
+-- 
+Stefan Richter
+-=====-==--- =--- =-=--
+http://arcgraph.de/sr/
