@@ -1,41 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbYHTU7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbYHTVBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757468AbYHTU7c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 16:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756881AbYHTU7R
+	id S1755439AbYHTVBu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:01:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbYHTVBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 16:59:17 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48354 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756786AbYHTU7Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 16:59:16 -0400
-Date: Wed, 20 Aug 2008 13:41:13 -0700
-From: Greg KH <greg@kroah.com>
-To: Will Newton <will.newton@imgtec.com>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       leoli@freescale.com
-Subject: Re: [PATCH 05/11] fsl_usb2_udc: Clean up whitespace in /proc
-	debugging output.
-Message-ID: <20080820204113.GA11328@kroah.com>
-References: <1218551957-17091-1-git-send-email-will.newton@imgtec.com> <1218551957-17091-2-git-send-email-will.newton@imgtec.com> <1218551957-17091-3-git-send-email-will.newton@imgtec.com> <1218551957-17091-4-git-send-email-will.newton@imgtec.com> <1218551957-17091-5-git-send-email-will.newton@imgtec.com> <1218551957-17091-6-git-send-email-will.newton@imgtec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1218551957-17091-6-git-send-email-will.newton@imgtec.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 20 Aug 2008 17:01:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40323 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751389AbYHTVBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 17:01:41 -0400
+Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro
+	linux interface for  for access scanning
+From: Eric Paris <eparis@redhat.com>
+To: david@lang.hm
+Cc: Jan Harkes <jaharkes@cs.cmu.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       tvrtko.ursulin@sophos.com, Theodore Tso <tytso@mit.edu>, davecb@Sun.COM,
+       Adrian Bunk <bunk@kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       malware-list@lists.printk.net, Casey Schaufler <casey@schaufler-ca.com>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <alpine.DEB.1.10.0808201004200.20991@asgard.lang.hm>
+References: <20080818153212.6A6FD33687F@pmx1.sophos.com>
+	 <1219076143.15566.39.camel@localhost.localdomain>
+	 <20080818171500.78590801@lxorguk.ukuu.org.uk>
+	 <1219080504.15566.65.camel@localhost.localdomain>
+	 <20080818182556.13ced58f@lxorguk.ukuu.org.uk>
+	 <1219082097.15566.82.camel@localhost.localdomain>
+	 <20080818183540.GA5470@cs.cmu.edu>
+	 <1219085176.15566.100.camel@localhost.localdomain>
+	 <alpine.DEB.1.10.0808181159400.15109@asgard.lang.hm>
+	 <alpine.DEB.1.10.0808191906270.20991@asgard.lang.hm>
+	 <1219245321.3389.82.camel@localhost.localdomain>
+	 <alpine.DEB.1.10.0808201004200.20991@asgard.lang.hm>
+Content-Type: text/plain
+Date: Wed, 20 Aug 2008 15:26:07 -0400
+Message-Id: <1219260367.3389.125.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 03:39:11PM +0100, Will Newton wrote:
-> Missing spaces were causing the /proc debugging output to be rather
-> unreadable.
+On Wed, 2008-08-20 at 10:33 -0700, david@lang.hm wrote:
 
-Can you just move this file to debugfs please?
+> if the system package manager says the syslogd binary doesn't match the 
+> checksum that it has recorded should it be prevented from running? (a 
+> strict policy would say no, but the sysadmin may have recompiled that one 
+> binary and just wants a warning to be logged somewhere, not preventing the 
+> process from running)
 
-No driver should ever be putting anything into proc files anymore.
+My belief is that if you choose to run a file scanner and that file
+scanner gets the answer wrong you need to look at the file scanner.
+There shouldn't be arbitrary overrides.  If you don't accept the results
+of the scanner what's the point?  Tell you package manager scanner that
+you changed it.
 
-thanks,
+> without the kernel support to clear the flags when the file is dirtied how 
+> can these programs trust the xattr flags that say they scanned the file 
+> before?
 
-greg k-h
+I don't understand what you mean about trust.  This is an argument for
+kernel support now?  What is it that you say needs and what doesn't need
+it?  Can you explain exactly what your perfect solution from top down?
+
+> I'm not saying that xattr is the only way to store the info, it just seems 
+> like a convienient place to store them without having to create a 
+> completely new API or changing anything in on-disk formats.
+
+And I saying we don't actually need any of this and if it is actually
+needed by someone in the real world they can easily build their own
+solution on top of my generic interface.  I'm not making the assertion
+it is race free and don't think it is possible without making every
+sequential (hahahaha.)  But I claim in the face of normal operation it's
+fine.  My interface, as proposed, is very generic.  Much more so than
+what I think you are trying to describe.  I couldn't make mine more
+minimal or broad.
+
