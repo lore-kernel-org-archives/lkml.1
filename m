@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbYHTNkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbYHTNlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757233AbYHTNkX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 09:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYHTNkL
+	id S1757374AbYHTNlT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 09:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYHTNlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 09:40:11 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:31138 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750935AbYHTNkJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 09:40:09 -0400
-Message-ID: <48AC1EAF.9040906@colorfullife.com>
-Date: Wed, 20 Aug 2008 15:39:59 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 20 Aug 2008 09:41:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34365 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751029AbYHTNlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 09:41:09 -0400
+Date: Wed, 20 Aug 2008 15:40:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Jiri Kosina <jkosina@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
+       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, rostedt@goodmis.org, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH] printk: robustify printk
+Message-ID: <20080820134017.GA17754@elte.hu>
+References: <alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org> <1218219269.29098.5.camel@lappy.programming.kicks-ass.net> <20080808121428.646a8b3c.akpm@linux-foundation.org> <1218223269.29098.12.camel@lappy.programming.kicks-ass.net> <1218224829.29098.19.camel@lappy.programming.kicks-ass.net> <20080811104526.GA15186@elte.hu> <1218452640.10800.58.camel@twins> <20080811115109.GB23529@elte.hu> <Pine.LNX.4.64.0808201438490.18947@twin.jikos.cz> <1219236181.8651.46.camel@twins>
 MIME-Version: 1.0
-To: hskinnemoen@atmel.com
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: AVR32: nmi_enter() without nmi_exit()
-Content-Type: multipart/mixed;
- boundary="------------070508090609080401030406"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1219236181.8651.46.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070508090609080401030406
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Hi Haavard,
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-You are listed as the maintainer for AVR32. If someone else is doing 
-that now, could you forward the mail?
+> > Remove the comment describing the possibility of printk() deadlocking on 
+> > runqueue lock.
+> > 
+> > Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-While updating the rcu code, I noticed that do_nmi() for AVR32 is odd:
-There is an nmi_enter() call without an nmi_exit().
-This can't be correct, it breaks rcu (at least the preempt version) and 
-lockdep.
+applied to tip/core/printk, thanks.
 
-Attached is a patch, not tested at all.
-
---
-    Manfred
-
---------------070508090609080401030406
-Content-Type: text/plain;
- name="patch-avr32-nmi-exit"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch-avr32-nmi-exit"
-
-diff --git a/arch/avr32/kernel/traps.c b/arch/avr32/kernel/traps.c
-index b835c4c..c39cdfc 100644
---- a/arch/avr32/kernel/traps.c
-+++ b/arch/avr32/kernel/traps.c
-@@ -120,11 +120,11 @@ asmlinkage void do_nmi(unsigned long ecr, struct pt_regs *regs)
- 	case NOTIFY_BAD:
- 		die("Fatal Non-Maskable Interrupt", regs, SIGINT);
- 	default:
-+		printk(KERN_ALERT "Got NMI, but nobody cared. Disabling...\n");
-+		nmi_disable();
- 		break;
- 	}
--
--	printk(KERN_ALERT "Got NMI, but nobody cared. Disabling...\n");
--	nmi_disable();
-+	nmi_exit();
- }
- 
- asmlinkage void do_critical_exception(unsigned long ecr, struct pt_regs *regs)
-
---------------070508090609080401030406--
+	Ingo
