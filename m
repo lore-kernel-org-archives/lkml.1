@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbYHTVwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbYHTVx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755999AbYHTVwY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYHTVwQ
+	id S1754906AbYHTVx3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYHTVxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:52:16 -0400
-Received: from gate.crashing.org ([63.228.1.57]:55007 "EHLO gate.crashing.org"
+	Wed, 20 Aug 2008 17:53:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33588 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752138AbYHTVwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:52:15 -0400
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Steven Rostedt <srostedt@redhat.com>,
-       Scott Wood <scottwood@freescale.com>,
-       Eran Liberty <liberty@extricom.com>, Alan Modra <amodra@au1.ibm.com>,
-       Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com>
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
-	 <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
-	 <48A9AFA7.8080508@freescale.com>
-	 <alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>
-	 <1219110814.8062.2.camel@pasglop>
-	 <alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>
-	 <1219113549.8062.13.camel@pasglop> <1219114600.8062.15.camel@pasglop>
-	 <alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>
-	 <1219119431.8062.35.camel@pasglop> <1219216705.21386.46.camel@pasglop>
-	 <alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Thu, 21 Aug 2008 07:36:29 +1000
-Message-Id: <1219268189.21386.65.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1752146AbYHTVxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 17:53:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: 2.6.27-rc3: 'APIC error on CPU1: 00(40)', but only on resume!
+Date: Wed, 20 Aug 2008 23:56:32 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>
+References: <200808202106.41058.elendil@planet.nl> <200808202138.13302.rjw@sisk.pl> <200808202226.45655.elendil@planet.nl>
+In-Reply-To: <200808202226.45655.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808202356.33036.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > As you can see, it restores r1 -before- it pops r24..r31 off
-> > the stack ! I let you imagine what happens if an interrupt happens
-> > just in between those two instructions (mr and lmw). We don't do
-> > redzones on our ABI, so basically, the registers end up corrupted
-> > by the interrupt.
+On Wednesday, 20 of August 2008, Frans Pop wrote:
+> Thanks for the quick responses Rafael.
 > 
-> Ouch!  You've disassembled this without -pg too, and it does not have this 
-> bug? What version of gcc do you have?
+> On Wednesday 20 August 2008, Rafael wrote:
+> > On Wednesday, 20 of August 2008, Frans Pop wrote:
+> > > <snip>
+> > > CPU1 is up
+> > > ACPI: Waking up from system sleep state S3
+> > > APIC error on CPU1: 00(40)
+> > > ACPI: EC: non-query interrupt received, switching to interrupt mode
+> > > </snip>
+> >
+> > Does the box work after that?
+> 
+> Yes, it does. Both cores seem to be working fine.
+> 
+> The only weirdness I can see (only spotted that just now) is that both 
+> cores will always seem to be changing frequency together (using ondemand 
+> governor), even when 'top' shows one as idle. On my other Core Duo system 
+> (an older desktop) the cores react independently.
+> This also happens immediately after boot (so not suspend related) and may 
+> be "normal" or unrelated.
 
-Oops, should have mentioned it ;-)
+On my box I see many "APIC error on CPU1: 00(40)" messages that don't seem
+to be related to anything obviously bad and I've alwas been seeing them.
 
-4.2.3 (Ubuntu 4.2.3-2ubuntu7)
+Please monitor things for some time to check if you can find a connection
+between those messages and any erroneous behavior.
 
-Ben.
-
-
+Thanks,
+Rafael
