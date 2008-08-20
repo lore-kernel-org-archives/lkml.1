@@ -1,69 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbYHTNJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbYHTNNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756738AbYHTNJW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 09:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638AbYHTNJB
+	id S1755416AbYHTNNP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 09:13:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754350AbYHTNM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 09:09:01 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59179 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755067AbYHTNI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 09:08:58 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] forcedeth: Fix kexec regression
-Date: Wed, 20 Aug 2008 15:12:11 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Jeff Garzik" <jgarzik@redhat.com>, David Miller <davem@davemloft.net>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Simon Arlott" <simon@fire.lp0.eu>
-References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <200808192045.54779.rjw@sisk.pl> <m1od3ow4oi.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1od3ow4oi.fsf@frodo.ebiederm.org>
+	Wed, 20 Aug 2008 09:12:58 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:42358 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753243AbYHTNM5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 09:12:57 -0400
+Date: Wed, 20 Aug 2008 09:12:54 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Eran Liberty <liberty@extricom.com>
+cc: Steven Rostedt <srostedt@redhat.com>, linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+In-Reply-To: <48ABFD77.6030701@extricom.com>
+Message-ID: <alpine.DEB.1.10.0808200911100.13132@gandalf.stny.rr.com>
+References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com> <48A9901B.1080900@redhat.com> <48A9BEA3.10906@extricom.com> <alpine.DEB.1.10.0808181439480.796@gandalf.stny.rr.com> <48AAB7FF.4070502@extricom.com> <alpine.DEB.1.10.0808191614380.4957@gandalf.stny.rr.com>
+ <48ABFD77.6030701@extricom.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808201512.12583.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 20 of August 2008, Eric W. Biederman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+
+On Wed, 20 Aug 2008, Eran Liberty wrote:
+
+> Steven Rostedt wrote:
+> > On Tue, 19 Aug 2008, Eran Liberty wrote:
+> > 
+> >   
+> > > Steven Rostedt wrote:
+> > >     
+> > > >         
+> > > > > Testing tracer sched_switch: PASSED
+> > > > > Testing tracer ftrace: PASSED
+> > > > > Testing dynamic ftrace: PASSED
+> > > > >         
+> > 
+> > Do you have PREEMPT_TRACER enabled, or any other tracer for that matter?
+> > 
+> > -- Steve
+> >   
+> I can see stack trace & context trace, but they are derived from other choices
+> (I can not un select them)
+
+Yeah, those are not bad.
+
 > 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> >
-> > forcedeth: Fix kexec regression
-> >
-> > Fix regression tracked as
-> > http://bugzilla.kernel.org/show_bug.cgi?id=11361 and
-> > caused by commit f735a2a1a4f2a0f5cd823ce323e82675990469e2
-> > ("[netdrvr] forcedeth: setup wake-on-lan before shutting down")
-> > that makes network adapters integrated into the NVidia
-> > MCP55 chipsets fail to work in kexeced kernels.  The problem appears
-> > to be that if the adapter is put into D3_hot during ->shutdown(),
-> > it cannot be brought back into D0 after kexec (ref.
-> > http://marc.info/?l=linux-kernel&m=121900062814967&w=4).  Therefore,
-> > only put forcedeth into D3 during ->shutdown() if the system is to be
-> > powered off.
+> cat .config | grep TRACE
+> CONFIG_STACKTRACE_SUPPORT=y
+> CONFIG_HAVE_ARCH_TRACEHOOK=y
+> # CONFIG_BLK_DEV_IO_TRACE is not set
+> CONFIG_STACKTRACE=y
+> # CONFIG_BACKTRACE_SELF_TEST is not set
+> CONFIG_HAVE_FTRACE=y
+> CONFIG_HAVE_DYNAMIC_FTRACE=y
+> CONFIG_FTRACE=y
+> # CONFIG_SCHED_TRACER is not set
+> CONFIG_CONTEXT_SWITCH_TRACER=y
+> CONFIG_DYNAMIC_FTRACE=y
+> CONFIG_FTRACE_SELFTEST=y
+> CONFIG_FTRACE_STARTUP_TEST=y
+
+You must not have PREEMPT on, so the PREEMPT_TRACER will not show up.
+
+The reason I asked, is that my PowerBook runs fine without PREEMPT_TRACER 
+but is very unstable when I have PREEMPT_TRACER enabled.
+
+-- Steve
+
+
+> >   
+> > > > > Oops: Exception in kernel mode, sig: 11 [#1]
+> > > > > Exsw1600
+> > > > > Modules linked in:
+> > > > > NIP: c00bbb20 LR: c00bbb20 CTR: 00000000
+> > > > >             
+> > 
+> > 
+> >   
 > 
-> Any chance we can fix this by teaching the forcedeth driver to
-> bring a card out of PCI_D3hot?
-
-Maybe, but that's not what I'm able to do at the moment. :-)
-
-Yinghai Lu thinks that the hardware has a problem with that, though.
-
-> The kexec on panic guys are going to need that and it is just generally
-> more robust all of the way around than a special case in shutdown
-> based on system_state.
-
-Actually, system_state == SYSTEM_POWER_OFF is a special case already, since
-it is the only case in which ACPI gets involved.
-
-Thanks,
-Rafael
+> 
