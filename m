@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757149AbYHTPkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbYHTPuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757149AbYHTPkn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 11:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbYHTPkb
+	id S1756289AbYHTPuz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 11:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbYHTPur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 11:40:31 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:27332 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756257AbYHTPka (ORCPT
+	Wed, 20 Aug 2008 11:50:47 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:40423 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751624AbYHTPur (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 11:40:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Oz2p/15K6OxOTh6y13G1i9HbW/0TiLmMFFVrh3vZBA95AS4jugBK0W9+gQm5HDPZaG
-         dAzktZBrHPki1Q0NcAyY7tpsSDvVd9wMnHO9Rui8gyznENjYQjlIgrxsCm040aTF6rpS
-         zl54TPri5B5rL19i4tkBx1T+eYMfdnXbiYm/8=
-Message-ID: <19f34abd0808200840v17a8e5d4ge60c332f864abd81@mail.gmail.com>
-Date: Wed, 20 Aug 2008 17:40:29 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>,
-       "the arch/x86 maintainers" <x86@kernel.org>
-Subject: Re: latest -git: BUG: unable to handle kernel paging request (numaq_tsc_disable)
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <19f34abd0808200828o6496cbeap75b7242845e96ef3@mail.gmail.com>
+	Wed, 20 Aug 2008 11:50:47 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=N2cUqKm1YgXgaI6FbiDwvTfNGA3SKpAR8SZM2Z1HDEEvUrzn/I3uGWjvgnJFkASigjUgXWyznetS3n34q24tC4p5ki61qgrTw6OOg8nmQ02KLzJeja7Z7+ZRozD6ZkFZZD6vPlUlqLbVYzbRfiqq7Me9F7a64r+vrOobjpqFXV4=  ;
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH] Make gpiochip label const
+Date: Wed, 20 Aug 2008 08:50:41 -0700
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <1218573588-25528-1-git-send-email-dbaryshkov@gmail.com> <20080819112828.dcfed0eb.akpm@linux-foundation.org> <20080820083943.GA24244@doriath.ww600.siemens.net>
+In-Reply-To: <20080820083943.GA24244@doriath.ww600.siemens.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-References: <19f34abd0808200828o6496cbeap75b7242845e96ef3@mail.gmail.com>
+Message-Id: <200808200850.41758.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 20, 2008 at 5:28 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> Hi,
->
-> This actually hardlocked my machine and I had to add an extra patch to
-> get any output at all. Base version is latest git, commit
-> 1fca25427482387689fa27594c992a961d98768f.
->
+On Wednesday 20 August 2008, Dmitry Baryshkov wrote:
+> > I don't recall seeing such warnings and I cannot make them happen with
+> > drivers/gpio/gpiolib.c or with drivers/gpio/max732x.c or with
+> > drivers/gpio/pca953x.c.  So we still don't know what this patch
+> > does :(
+> 
+> Because both mentioned drivers set gpiochip->label to non-const string.
+> You can check arch/arm/common/scoop.c for example of driver showing
+> different behaviour:
 
-...
+You're doing it wrong -- in a small way, not a big one.  Instead of
 
-> Booting processor 1/1 ip 6000
-> <1>BUG: unable to handle kernel paging request at c08a45f0
-> <1>IP: [<c08a45f0>] numaq_tsc_disable+0x0/0x40
-> <0> [<c0678676>] ? init_intel+0x196/0x360
+	devptr->gpio.label = dev_name(&pdev->dev);
 
-Seems to be a section mismatch; init_intel() is __cpuinit while
-numaq_tsc_disable() is __init. Seems to be introduced in:
+do
 
-commit 64898a8bad8c94ad7a4bd5cc86b66edfbb081f4a
-Author: Yinghai Lu <yhlu.kernel@gmail.com>
-Date:   Sat Jul 19 18:01:16 2008 -0700
+	devptr->gpio.label = "scoop";
+	devptr->gpio.dev = &pdev->dev;
 
-    x86: extend and use x86_quirks to clean up NUMAQ code
+No warnings generated that way, and another field is set up...
 
+- Dave
 
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
