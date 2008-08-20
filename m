@@ -1,397 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbYHTF7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbYHTGPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754299AbYHTF7v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 01:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYHTF7m
+	id S1752834AbYHTGPy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 02:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbYHTGPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 01:59:42 -0400
-Received: from bokovka.donpac.ru ([80.254.111.46]:58441 "EHLO
-	bokovka.donpac.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751120AbYHTF7l (ORCPT
+	Wed, 20 Aug 2008 02:15:43 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:53322 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801AbYHTGPm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 01:59:41 -0400
-Date: Wed, 20 Aug 2008 09:55:34 +0400
-From: Andrey Panin <pazke@pazke.donpac.ru>
-To: Claudio Nieder <private@claudio.ch>
-Cc: Andrew Morton <akpm@linux-foundation.org>, rpurdie@rpsys.net,
+	Wed, 20 Aug 2008 02:15:42 -0400
+Subject: Re: [GIT]: Networking
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Backlight driver for Tabletkiosk Sahara TouchIT-213
-	Tablet PC
-Message-ID: <20080820055533.GB16358@pazke.donpac.ru>
-Mail-Followup-To: Claudio Nieder <private@claudio.ch>,
-	Andrew Morton <akpm@linux-foundation.org>, rpurdie@rpsys.net,
-	linux-kernel@vger.kernel.org
-References: <488E0D2A.1000005@claudio.ch> <1217270428.6059.39.camel@dax.rpnet.com> <488E25F4.4020405@claudio.ch> <20080811134940.b3bcde83.akpm@linux-foundation.org> <48A1CA9A.4000007@claudio.ch> <48AB5099.7070904@claudio.ch>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="9amGYk9869ThD9tj"
-Content-Disposition: inline
-In-Reply-To: <48AB5099.7070904@claudio.ch>
-X-Uname: Linux 2.6.23-rc3 x86_64
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.1.10.0808191536100.3324@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0808191411390.3324@nehalem.linux-foundation.org>
+	 <20080819.142735.179034162.davem@davemloft.net>
+	 <alpine.LFD.1.10.0808191432040.3324@nehalem.linux-foundation.org>
+	 <20080819.144015.40311904.davem@davemloft.net>
+	 <alpine.LFD.1.10.0808191446560.3324@nehalem.linux-foundation.org>
+	 <20080819222612.GA16766@2ka.mipt.ru>
+	 <alpine.LFD.1.10.0808191536100.3324@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 20 Aug 2008 08:15:46 +0200
+Message-Id: <1219212946.7591.303.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
---9amGYk9869ThD9tj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> > I belive it was you who told that there is no black and white (another 
+> > guy told that there is no spoon, I frequntly confuse).
+> 
+> Yes.
+> 
+> > Any changes made no matter when can not be 100% tested in laboratory 
+> > environment, even fixes, which look obviously.
+> 
+> 100% agreed.
+> 
+> Please note that I'm not against these things slipping in occasionally. 
+> The reason I brought this up in the first place really wasn't the loopback 
+> driver issue at all. The reason I brought it up was simply the fact that 
+> when I compare the size and frequency of changes, the networking pulls 
+> tend to be the worst of the lot of the "core" kernel changes.
+> 
+> I say "core" kernel changes, because things are usually worse for the 
+> outliers. As mentioned, networking is actually one of the _better_ guys if 
+> you start comparing to the DVB people, or to some of the architectures 
+> that often slip the merge window _entirely_, and *all* their changes come 
+> in during -rc2 or something.
+> 
+> So it's not that networking is especially bad on an absolute scale in this 
+> regard. And it's not like it doesn't happen all the time for everybody 
+> else too. But I think networking has ben a bit more cavalier about things 
+> than many other core areas.
 
-On 233, 08 20, 2008 at 01:00:41AM +0200, Claudio Nieder wrote:
-> Hi,
->=20
-> > Poking at random ports isn't very nice. Is it possible to autodetect
-> > this tablet PC ? Has it specific PCI ids or usefull DMI table ?
->=20
-> I didn't find anthing with lspci but can detect through DMI - if you are
-> interested you find the dmidecode output at the end of
-> http://claudio.ch/Bin/viewcvs.cgi/Config/sysinfo_touchIt213?rev=3D294 - a=
-nd do it
-> in a similar way as in mbp_nvidia_bl.c. Have done it in the included patc=
-h.
->=20
-> Looking at the macbook driver I see it is much simpler and shorter than m=
-ine
-> which I derived from corgi_bl.c. No platform driver, no probe, remove, su=
-spend
-> and resume.
->=20
-> Why is one much simpler than the other? Is functionality missing in the M=
-acBook
-> driver or is the corgi one just (historically) overblown? If I could safe=
-ly
-> reduce my driver to be as simple as the macbook one I would be more than =
-happy
-> to do it.
->
-> > static ?
->=20
-> Fixed.
->=20
-> > Why do you need this wrapper ?
->=20
-> When I studied the corgi_bl driver I noticed that some stuff is done in t=
-he
-> driver itself and then there is the "platform stuff". I didn't know how to
-> handle it and was given the suggestion to put the platform stuff also in =
-the
-> driver which I did but tried to keep that textually separate. Thus the se=
-parate
-> sahara_init. Yet I had to call it in kb3886_init otherwise nothing else w=
-ould
-> do. I surely didn't fully understand what I was doing when I wrote that. =
-Have
-> simplified it as suggested.
->=20
-> If all this can be simplified even more, like is done in macbook driver, =
-that
-> would be great.
->=20
-> > This function is unused. Looks like you copied it from corgi_bl.c where
-> > it is called from platform code.
->=20
-> Fixed, i.e. removed.
->=20
-> Below the fixed patch, correcting all mistakes reported by Andrey.
->=20
->=20
-> Signed-off-by: Claudio Nieder <private@claudio.ch>
->=20
-> ---
->  drivers/video/backlight/Kconfig     |    7 +
->  drivers/video/backlight/Makefile    |    1 +
->  drivers/video/backlight/kb3886_bl.c |  214 +++++++++++++++++++++++++++++=
-++++++
->  3 files changed, 222 insertions(+), 0 deletions(-)
->=20
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kc=
-onfig
-> index 452b770..bc65541 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -164,3 +164,10 @@ config BACKLIGHT_MBP_NVIDIA
->           If you have an Apple Macbook Pro with Nvidia graphics hardware =
-say Y
->  	 to enable a driver for its backlight
->=20
-> +config BACKLIGHT_SAHARA
-> +	tristate "Tabletkiosk Sahara Touch-iT Backlight Driver"
-> +	depends on BACKLIGHT_CLASS_DEVICE && X86
-> +	default y
-> +	help
-> +	  If you have a Tabletkiosk Sahara Touch-iT, say y to enable the
-> +	  backlight driver.
-> diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/M=
-akefile
-> index b405aac..f4a1183 100644
-> --- a/drivers/video/backlight/Makefile
-> +++ b/drivers/video/backlight/Makefile
-> @@ -16,4 +16,5 @@ obj-$(CONFIG_BACKLIGHT_PROGEAR) +=3D progear_bl.o
->  obj-$(CONFIG_BACKLIGHT_CARILLO_RANCH) +=3D cr_bllcd.o
->  obj-$(CONFIG_BACKLIGHT_PWM)	+=3D pwm_bl.o
->  obj-$(CONFIG_BACKLIGHT_MBP_NVIDIA) +=3D mbp_nvidia_bl.o
-> +obj-$(CONFIG_BACKLIGHT_SAHARA)	+=3D kb3886_bl.o
->=20
-> diff --git a/drivers/video/backlight/kb3886_bl.c
-> b/drivers/video/backlight/kb3886_bl.c
-> new file mode 100644
-> index 0000000..1a1d8aa
-> --- /dev/null
-> +++ b/drivers/video/backlight/kb3886_bl.c
-> @@ -0,0 +1,214 @@
-> +/*
-> + *  Backlight Driver for the KB3886 Backlight
-> + *
-> + *  Copyright (c) 2007-2008 Claudio Nieder
-> + *
-> + *  Based on corgi_bl.c by Richard Purdie and kb3886 driver by Robert Wo=
-erle
-> + *
-> + *  This program is free software; you can redistribute it and/or modify
-> + *  it under the terms of the GNU General Public License version 2 as
-> + *  published by the Free Software Foundation.
-> + *
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/mutex.h>
-> +#include <linux/fb.h>
-> +#include <linux/backlight.h>
-> +#include <linux/delay.h>
-> +#include <linux/dmi.h>
-> +
-> +/*
-> + * The following is what corgi has in arch/arm/mach-pxa/corgi.c and
-> + * corgi_lcd.c. On kernelnebwies it was suggested I put the platform_dev=
-ice
-> + * code in my driver.
-> + */
-> +
-> +#define KB3886_PARENT 0x64
-> +#define KB3886_IO 0x60
-> +#define KB3886_ADC_DAC_PWM 0xC4
-> +#define KB3886_PWM0_WRITE 0x81
-> +#define KB3886_PWM0_READ 0x41
-> +
-> +static DEFINE_MUTEX(bl_mutex);
-> +
-> +static void kb3886_bl_set_intensity(int intensity)
-> +{
-> +	mutex_lock(&bl_mutex);
-> +	intensity =3D intensity&0xff;
-> +	outb(KB3886_ADC_DAC_PWM, KB3886_PARENT);
-> +	msleep(10);
-> +	outb(KB3886_PWM0_WRITE, KB3886_IO);
-> +	msleep(10);
-> +	outb(intensity, KB3886_IO);
-> +	mutex_unlock(&bl_mutex);
-> +}
-> +
-> +struct kb3886bl_machinfo {
-> +	int max_intensity;
-> +	int default_intensity;
-> +	int limit_mask;
-> +	void (*set_bl_intensity)(int intensity);
-> +};
-> +
-> +static struct kb3886bl_machinfo kb3886_bl_machinfo =3D {
-> +	.max_intensity =3D 0xff,
-> +	.default_intensity =3D 0xa0,
-> +	.limit_mask =3D 0x7f,
-> +	.set_bl_intensity =3D kb3886_bl_set_intensity,
-> +};
-> +
-> +static struct platform_device kb3886bl_device =3D {
-> +	.name		=3D "kb3886-bl",
-> +	.dev		=3D {
-> +		.platform_data	=3D &kb3886_bl_machinfo,
-> +	},
-> +	.id		=3D -1,
-> +};
-> +
-> +static struct platform_device *devices[] __initdata =3D {
-> +	&kb3886bl_device,
-> +};
-> +
-> +/*
-> + * Back to driver
-> + */
-> +
-> +static int kb3886bl_intensity;
-> +static struct backlight_device *kb3886_backlight_device;
-> +static struct kb3886bl_machinfo *bl_machinfo;
-> +
-> +static unsigned long kb3886bl_flags;
-> +#define KB3886BL_SUSPENDED     0x01
-> +#define KB3886BL_BATTLOW       0x02
-> +
-> +static struct dmi_system_id __initdata kb3886bl_device_table[] =3D {
-> +	{
-> +		.ident =3D "Sahara Touch-iT",
-> +		.matches =3D {
-> +			DMI_MATCH(DMI_SYS_VENDOR, "SDV"),
-> +			DMI_MATCH(DMI_PRODUCT_NAME, "iTouch T201"),
-> +		},
-> +	},
-> +	{ },
-> +	{ },
+I was always under the impression that Dave was quite strict when it
+comes to merging things after the merge window. Yes, some things should
+have better waiting for the next release, but we always had exceptions
+for various things that fall out of the merge window anyway.
 
-These two empty initializers are not needed.
+All the small "soldiers" like me make a call on what to pick to send to
+Dave and it is not that we try to sneak anything in. It just made sense
+to us and either he agrees or not. Some choices are better than others,
+no questions asked, but I think what you are seeing is that networking
+is getting huge. And this is mostly networking drivers. And I don't
+expect this to slow down or anything. The Linux WiFi support is just at
+the edge to really become competitive and show real leading across all
+other operating systems.
 
-> +	{ }
-> +};
-> +
-> +static int kb3886bl_send_intensity(struct backlight_device *bd)
-> +{
-> +	int intensity =3D bd->props.brightness;
-> +
-> +	if (bd->props.power !=3D FB_BLANK_UNBLANK)
-> +		intensity =3D 0;
-> +	if (bd->props.fb_blank !=3D FB_BLANK_UNBLANK)
-> +		intensity =3D 0;
-> +	if (kb3886bl_flags & KB3886BL_SUSPENDED)
-> +		intensity =3D 0;
-> +	if (kb3886bl_flags & KB3886BL_BATTLOW)
-> +		intensity &=3D bl_machinfo->limit_mask;
-> +
-> +	bl_machinfo->set_bl_intensity(intensity);
-> +
-> +	kb3886bl_intensity =3D intensity;
-> +	return 0;
-> +}
-> +
-> +#ifdef CONFIG_PM
-> +static int kb3886bl_suspend(struct platform_device *pdev, pm_message_t s=
-tate)
-> +{
-> +	struct backlight_device *bd =3D platform_get_drvdata(pdev);
-> +
-> +	kb3886bl_flags |=3D KB3886BL_SUSPENDED;
-> +	backlight_update_status(bd);
-> +	return 0;
-> +}
-> +
-> +static int kb3886bl_resume(struct platform_device *pdev)
-> +{
-> +	struct backlight_device *bd =3D platform_get_drvdata(pdev);
-> +
-> +	kb3886bl_flags &=3D ~KB3886BL_SUSPENDED;
-> +	backlight_update_status(bd);
-> +	return 0;
-> +}
-> +#else
-> +#define kb3886bl_suspend	NULL
-> +#define kb3886bl_resume		NULL
-> +#endif
-> +
-> +static int kb3886bl_get_intensity(struct backlight_device *bd)
-> +{
-> +	return kb3886bl_intensity;
-> +}
-> +
-> +static struct backlight_ops kb3886bl_ops =3D {
-> +	.get_brightness =3D kb3886bl_get_intensity,
-> +	.update_status  =3D kb3886bl_send_intensity,
-> +};
-> +
-> +static int kb3886bl_probe(struct platform_device *pdev)
-> +{
-> +	struct kb3886bl_machinfo *machinfo =3D pdev->dev.platform_data;
-> +
-> +	bl_machinfo =3D machinfo;
-> +	if (!machinfo->limit_mask)
-> +		machinfo->limit_mask =3D -1;
-> +
-> +	kb3886_backlight_device =3D backlight_device_register("kb3886-bl",
-> +		&pdev->dev, NULL, &kb3886bl_ops);
-> +	if (IS_ERR (kb3886_backlight_device))
-> +		return PTR_ERR(kb3886_backlight_device);
-> +
-> +	platform_set_drvdata(pdev, kb3886_backlight_device);
-> +
-> +	kb3886_backlight_device->props.max_brightness =3D machinfo->max_intensi=
-ty;
-> +	kb3886_backlight_device->props.power =3D FB_BLANK_UNBLANK;
-> +	kb3886_backlight_device->props.brightness =3D machinfo->default_intensi=
-ty;
-> +	backlight_update_status(kb3886_backlight_device);
-> +
-> +	return 0;
-> +}
-> +
-> +static int kb3886bl_remove(struct platform_device *pdev)
-> +{
-> +	struct backlight_device *bd =3D platform_get_drvdata(pdev);
-> +
-> +	backlight_device_unregister(bd);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver kb3886bl_driver =3D {
-> +	.probe		=3D kb3886bl_probe,
-> +	.remove		=3D kb3886bl_remove,
-> +	.suspend	=3D kb3886bl_suspend,
-> +	.resume		=3D kb3886bl_resume,
-> +	.driver		=3D {
-> +		.name	=3D "kb3886-bl",
-> +	},
-> +};
-> +
-> +static int __init kb3886_init(void)
-> +{
-> +	if (!dmi_check_system(kb3886bl_device_table))
-> +		return -ENODEV;
-> +
-> +	platform_add_devices(devices, ARRAY_SIZE(devices));
-> +	return platform_driver_register(&kb3886bl_driver);
-> +}
-> +
-> +static void __exit kb3886_exit(void)
-> +{
-> +	platform_driver_unregister(&kb3886bl_driver);
-> +}
-> +
-> +module_init(kb3886_init);
-> +module_exit(kb3886_exit);
-> +
-> +MODULE_AUTHOR("Claudio Nieder <private@claudio.ch>");
-> +MODULE_DESCRIPTION("Tabletkiosk Sahara Touch-iT Backlight Driver");
-> +MODULE_LICENSE("GPL");
+When looking at the actual split between net/ and drivers/, then the
+drivers part is the big one. And I don't expect this to go down any time
+soon. We are about to get Ultra-Wideband support merged. After that we
+will have plain networking over UWB, Wireless USB using UWB and soon
+Bluetooth over UWB. Also we will see Bluetooth over 802.11 and then
+another Ultra-Low-Power thing for sensor devices. And I forget WiMAX.
+That is just the short term wireless future. Every of these come with
+new networking drivers and then you have new Ethernet drivers and so on.
+It is just a lot of stuff.
 
-Now let's add module alias to ensure driver autoloading.
-IMHO the line below should do the trick:
+While looking at the actual diffstat, I realized that I really was the
+biggest offender:
 
-MODULE_ALIAS("dmi:*:svnSDV:pniTouchT201:*");
+net/bluetooth/hci_sysfs.c                   |  376 ++++++++++++++-------------
 
-> --=20
-> 1.4.4.4
->=20
-> claudio
-> --=20
-> Claudio Nieder, Talweg 6, CH-8610 Uster, Tel +4179 357 6743, www.claudio.=
-ch
+This is actually the regression fix. It is big, because thanks to sysfs,
+I had to move some code around in that file and rename things. I should
+have seen that earlier and gave Dave an extra comment why it is so big.
+That was my bad. Sorry for that.
 
---=20
-Andrey Panin		| Linux and UNIX system administrator
-pazke@donpac.ru		| PGP key: wwwkeys.pgp.net
+Regards
 
---9amGYk9869ThD9tj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Marcel
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFIq7HVIWZCBzwS8mkRAhZ5AKCoV6FoaeXaRLXF5+76hQxFikhzWQCdFurP
-ig8tuXjl2obbU4b1Wp6ZAWg=
-=EWnW
------END PGP SIGNATURE-----
-
---9amGYk9869ThD9tj--
