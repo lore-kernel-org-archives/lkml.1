@@ -1,123 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758275AbYHTQG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758954AbYHTQH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758275AbYHTQG3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 12:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbYHTQGT
+	id S1758954AbYHTQH5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 12:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbYHTQHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 12:06:19 -0400
-Received: from qmta01.westchester.pa.mail.comcast.net ([76.96.62.16]:41588
-	"EHLO QMTA01.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754602AbYHTQGS (ORCPT
+	Wed, 20 Aug 2008 12:07:48 -0400
+Received: from tama500.ecl.ntt.co.jp ([129.60.39.148]:56731 "EHLO
+	tama500.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755330AbYHTQHr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 12:06:18 -0400
-X-Authority-Analysis: v=1.0 c=1 a=pHc7EGbUY0DHTS-X7LAA:9
- a=fRWjjG95jeRKMkx81DKMnU39r3UA:4 a=LmNr2P7SIc4A:10 a=ss8zFxJ8D50A:10
- a=LY0hPdMaydYA:10
-Date: Wed, 20 Aug 2008 12:06:11 -0400
-From: Frank Peters <frank.peters@comcast.net>
-To: linux-usb@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26 Breaks USB Fax Modem
-Message-Id: <20080820120611.a528bd3d.frank.peters@comcast.net>
-In-Reply-To: <200808200739.51486.oliver@neukum.org>
-References: <20080819211039.a273679f.frank.peters@comcast.net>
-	<200808200739.51486.oliver@neukum.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Aug 2008 12:07:47 -0400
+Message-Id: <200808201613.AA00212@capsicum.lab.ntt.co.jp>
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Date: Thu, 21 Aug 2008 01:13:45 +0900
+To: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
+In-Reply-To: <20080820004326.519405a2.akpm@linux-foundation.org>
+References: <20080820004326.519405a2.akpm@linux-foundation.org>
+MIME-Version: 1.0
+X-Mailer: AL-Mail32 Version 1.13
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008 07:39:51 +0200
-Oliver Neukum <oliver@neukum.org> wrote:
-
-> 
-> This is completely new. Please compile 2.6.26 with CONFIG_USB_DEBUG
-> and reexamine the log. It should be more verbose.
-> 
-
-In menuconfig, I enabled the USB_DEBUG option and then compiled
-kernel 2.6.26.2.  The kernel log during a fax transmission is,
-to my eyes, still not very revealing.
-
-Before the fax is transmitted, the cdc-acm module is first loaded
-with the commands:
-
-modprobe cdc-acm
-mount -t usbfs none /proc/bus/usb
-
-Then the fax is sent with HylaFAX software.  (The problem is not
-unique to  HylaFAX, however; it will occur with any fax software.)
-HylaFAX will initialize the USB modem and then send the fax.  Here
-is the kernel log:
-
-Aug 20 10:53:22 (none) kernel: cdc_acm 4-2:2.0: usb_probe_interface
-Aug 20 10:53:22 (none) kernel: cdc_acm 4-2:2.0: usb_probe_interface - got id
-Aug 20 10:53:22 (none) kernel: cdc_acm 4-2:2.0: ttyACM0: USB ACM device
-Aug 20 10:53:22 (none) kernel: usbcore: registered new interface driver cdc_acm
-Aug 20 10:53:22 (none) kernel: cdc_acm: v0.26:USB Abstract Control Model driver for USB modems and ISDN adapters
-Aug 20 10:53:42 (none) kernel: uhci_hcd 0000:00:1a.1: reserve dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 10:54:10 (none) kernel: uhci_hcd 0000:00:1a.1: release dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 11:01:30 (none) kernel: uhci_hcd 0000:00:1a.1: reserve dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 11:01:33 (none) kernel: uhci_hcd 0000:00:1a.1: release dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 11:01:33 (none) kernel: uhci_hcd 0000:00:1a.1: reserve dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 11:03:34 (none) kernel: uhci_hcd 0000:00:1a.1: release dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 11:03:34 (none) kernel: uhci_hcd 0000:00:1a.1: reserve dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 11:03:38 (none) kernel: uhci_hcd 0000:00:1a.1: release dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 11:03:38 (none) kernel: uhci_hcd 0000:00:1a.1: reserve dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 11:09:31 (none) kernel: uhci_hcd 0000:00:1a.1: release dev 2 ep84-INT, period 128, phase 0, 36 us
-
-Notice the long gap from 11:03:38 to 11:09:31.  During this time the modem
-is hung.  Nothing is happening.  The HylaFAX transmission log shows only an
-abrupt break in the data stream:
-
-Aug 20 11:04:18.04: [  717]: <-- data [2]
-Aug 20 11:04:18.11: [  717]: <-- data [261]
-Aug 20 11:04:18.19: [  717]: <-- data [2]
-Aug 20 11:04:18.26: [  717]: <-- data [260]
-Aug 20 11:04:18.33: [  717]: <-- data [2]
-Aug 20 11:04:18.33: [  717]: <-- data [262]
-Aug 20 11:05:18.33: [  717]: MODEM TIMEOUT: writing to modem
-Aug 20 11:05:18.33: [  717]: <-- data [2]
-Aug 20 11:06:18.33: [  717]: MODEM TIMEOUT: writing to modem
-
-The break occurs at 11:04:18.33.  After a minute a MODEM TIMEOUT
-is reported.
-
-To get to this point, however, requires a lot of prior communication
-with the modem to establish the parameters and protocol. Somehow,
-the modem becomes unresponsive only later in the transmission.
-
-HylaFAX will eventually recover but the modem remains unresponsive.
-A reboot is necessary to restore the modem functionality.
-
-The kernel log after this point shows only the same:
-
-Aug 20 11:09:34 (none) kernel: uhci_hcd 0000:00:1a.1: reserve dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 11:09:38 (none) kernel: uhci_hcd 0000:00:1a.1: release dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 11:09:38 (none) kernel: uhci_hcd 0000:00:1a.1: reserve dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 11:10:11 (none) kernel: uhci_hcd 0000:00:1a.1: release dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 11:10:11 (none) kernel: uhci_hcd 0000:00:1a.1: reserve dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 11:10:42 (none) kernel: uhci_hcd 0000:00:1a.1: release dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 11:12:56 (none) kernel: uhci_hcd 0000:00:1a.1: reserve dev 2 ep84-INT, period 128, phase 0, 36 us
-Aug 20 11:12:59 (none) kernel: uhci_hcd 0000:00:1a.1: release dev 2 ep84-INT, period 128, phase 0, 36 us
-
-If I immediately reboot the machine with kernel 2.6.25, the same fax
-can be sent to the same fax machine with no problem.
-
+>On Wed, 20 Aug 2008 11:45:05 +0900 Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp> wrote:
 >
-> Are any processes left hanging in `D' state afterwards?
+>> This is a kernel patch of NILFS2 file system which was previously
+>> announced in [1].  Since the original code did not comply with the
+>> Linux Coding Style, I've rewritten it a lot.
 >
+>I expected this email two years ago :)
 
-The command "ps ax" shows no process in the "D" state at any time.
+I'm sorry for that. Thank you to remember this file system :)
 
-I did not report this to the HylaFAX list because it does not
-appear to be a fault of HylaFAX or other fax software, but I think
-I should indicate this thread to the HylaFAX list.  They may
-be able to provide some additional insight about the point of
-failure.
+>What approach does it take to garbage collection?
 
-Frank Peters
+Lifetime information is maintained for each (virtualized) address of disk 
+block to judge whether a given disk block is eliminable or not.
 
+The garbage collector (GC) of NILFS2 works as follows:
+
+1. GC does not remove snapshots, which are the checkpoints marked as snapshot.
+   Plain checkpoints are not protected from GC except for the recent ones.
+
+2. Disk blocks that do not belong to any snapshots nor the recent checkpoints,
+   are eliminable.    For a given disk block, GC confirms state of every
+   checkpoints whose serial number is included in the lifetime.  It judges 
+   the block is not eliminable if at least one snapshot or a recent checkpoint
+   is included.
+
+3. GC reclaims disk space in units of segment. (where a segment is equally 
+   divided disk region.)
+
+   For a selected segment, removable blocks are just ignored, and 
+   unremovable blocks (live blocks) are copied to a new log appended in the
+   current segment for writing.
+
+   When all the live blocks are copied into the new log, the segment becomes
+   free and reusable.
+
+4. To make disk blocks relocatable, NILFS2 maintains a table file (called DAT)
+   which maps virtual disk blocks addresses to usual block addresses.
+   The lifetime information is recorded in the DAT per virtual block address.
+
+The current NILFS2 GC simply reclaims from the oldest segment, so the disk
+partition acts like a ring buffer. (this behaviour can be changed by 
+replacing userland daemon).
+
+>> Some impressive benchmark results on SSD are shown in [3],
+>
+>heh.  It wipes the floor with everything, including btrfs.
+>
+>But a log-based fs will do that, initially.  What will the performace
+>look like after a month or two's usage?
+
+I'm using NILFS2 for my home directory for serveral months, but so far
+I don't feel notable performance degradation.  Later, I'd like to try
+a benchmark for a server.
+Anyhow, I have many things to do for performance.
+
+>> however the
+>> current NILFS2 performance is sensitive to machine environment due to
+>> its immature implementation.
+>> .. 
+>> It is not yet divided into pieces (sorry).  Unlike original code
+>> available at [4], many code lines to support past kernel versions and
+>> peculiar debug code are removed in this patch.
+>
+>Yes, please do that splitup and let's get down to reviewing it.
+
+Sure, I will.
+
+With regards,
+Ryusuke Konishi
