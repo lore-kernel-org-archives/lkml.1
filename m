@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbYHTDpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbYHTDsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756353AbYHTDpu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 23:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391AbYHTDpm
+	id S1756353AbYHTDsY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 23:48:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864AbYHTDsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 23:45:42 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51031 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753189AbYHTDpl (ORCPT
+	Tue, 19 Aug 2008 23:48:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42254 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750824AbYHTDsO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 23:45:41 -0400
-Date: Wed, 20 Aug 2008 12:51:52 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       ryov@valinux.co.jp
-Subject: Re: [PATCH -mm][preview] memcg: a patch series for next [0/9]
-Message-Id: <20080820125152.84f3409a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <48AB8FEA.8000006@linux.vnet.ibm.com>
-References: <20080819173014.17358c17.kamezawa.hiroyu@jp.fujitsu.com>
-	<48AB8FEA.8000006@linux.vnet.ibm.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Tue, 19 Aug 2008 23:48:14 -0400
+Date: Tue, 19 Aug 2008 20:47:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Roman Zippel <zippel@linux-m68k.org>,
+       Martin Ziegler <ziegler@uni-freiburg.de>,
+       lkml <linux-kernel@vger.kernel.org>, stable@kernel.org
+Subject: Re: [PATCH] fix adjtimex() freq return error
+Message-Id: <20080819204752.d9540f15.akpm@linux-foundation.org>
+In-Reply-To: <1219199346.6276.5.camel@localhost>
+References: <1219199346.6276.5.camel@localhost>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,77 +28,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008 09:00:50 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Tue, 19 Aug 2008 19:29:06 -0700 john stultz <johnstul@us.ibm.com> wrote:
 
-> KAMEZAWA Hiroyuki wrote:
-> > Hi, 
-> > 
-> > This post is for showing what I'm trying now.
-> > 
-> > This patch set is for memory resource controller.
-> > 4 purposes here.
-> >   - improve performance of memcg.
-> >   - remove lock_page_cgroup()
-> >   - making page_cgroup->flags to be atomic_ops.
-> >   - support mem+swap controller.
-> > 
-> > But this is still under test and the series is not well organised.
-> > and base tree is old. (2.6.27-rc1-mm1) I'll rebase this set to newer mmtom tree.
-> > 
-> > Maybe this set have some troubles/objections but I think the direction is not bad.
-> > 
-> > Patch description. (patch ordering is bad. I'll fix in the next post.)
-> > 
-> > [1/9] ... private_counter ...replace res_counter with my own counter.
-> >           This is for supporting mem+swap controller.
-> >           (And I think memcg has a bit different characteristics from other
-> >            users of res_counter....)
-> > 
-> > [2/9] ... change-order-uncharge ...
-> >           This patch is for making it easy to handle swap-cache.
-> > 
-> > [3/9] ... atomic_flags
-> >           This patch changes operations for page_cgroup->flags to be atomic_ops.
-> > 
-> > [4/9] ... delayed freeing.
-> >           delaying to free page_cgroup at uncharge.
-> > 
-> > [5/9] ... RCU freeing of page_cgroup
-> >           free page_cgroup by RCU.
-> > 
-> > [6/9] ... lockress page cgroup.
-> >           remove lock_page_cgroup() and use RCU semantics.
-> > 
-> > [7/9] ... add preftech
-> >           add prefetch() macro
-> > 
-> > [8/9] ... mem+swap controller base.
-> >           introduce mem+swap controller. A bit big patch....but have tons of TODO.
-> >           and have troubles. (it seems it's difficult to cause OOM killer.)
-> > 
-> > [9/9] ... mem+swap controller control files.
-> >           add mem+swap controller's control files.
-> > 
-> > I'd like to push patch [2,3,4,5,6,7] first.
-> > 
+> Martin Ziegler reported a bug in adjtimex(), where odd positive 
+> frequencies are reduced by 1 while negative values are correct.
 > 
-> I took a quick look at the patches, patch 1 seemed not so clear, why can't we
-> enhance or fix resource counters? I'll review/test the patches tonight.
+> See http://bugzilla.kernel.org/show_bug.cgi?id=11370 for details
 > 
-patch 1 is for patch 8. (patch order is too bad.)
-please ignore this version. this is just a preview.(Sorry)
-
-I'm now writing easier-to-read one,
-
-thanks,
--kame
-
-
-
-
-
-> -- 
-> 	Balbir
+> The issue was introduced in the following commit that increased 
+> time_freq to a 64bit value and increased its resolution:
 > 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=074b3b87941c99bc0ce35385b5817924b1ed0c23;hp=eea83d896e318bda54be2d2770d2c5d6668d11db
+> 
+> The problem is how we convert from our internal high res value back to
+> userland. Instead of dividing, we shift, then mult, then shift again,
+> causing the slight error seen in the bug.
+> 
+> I don't think adjtimex() is a terribly hot path, so this patch simply
+> uses div_s64() to convert back to the external resolution and removes 
+> the unused shift defines to resolve the issue.
+> 
+> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> 
+> Index: 2.6-git/kernel/time/ntp.c
+> ===================================================================
+> --- 2.6-git.orig/kernel/time/ntp.c
+> +++ 2.6-git/kernel/time/ntp.c
+> @@ -402,9 +402,7 @@ int do_adjtimex(struct timex *txc)
+>  		if (!(time_status & STA_NANO))
+>  			txc->offset /= NSEC_PER_USEC;
+>  	}
+> -	txc->freq	   = shift_right((s32)(time_freq >> PPM_SCALE_INV_SHIFT) *
+> -					 (s64)PPM_SCALE_INV,
+> -					 NTP_SCALE_SHIFT);
+> +	txc->freq	   = div_s64(time_freq, PPM_SCALE);
+>  	txc->maxerror	   = time_maxerror;
+>  	txc->esterror	   = time_esterror;
+>  	txc->status	   = time_status;
+> Index: 2.6-git/include/linux/timex.h
+> ===================================================================
+> --- 2.6-git.orig/include/linux/timex.h
+> +++ 2.6-git/include/linux/timex.h
+> @@ -82,9 +82,6 @@
+>   */
+>  #define SHIFT_USEC 16		/* frequency offset scale (shift) */
+>  #define PPM_SCALE (NSEC_PER_USEC << (NTP_SCALE_SHIFT - SHIFT_USEC))
+> -#define PPM_SCALE_INV_SHIFT 20
+> -#define PPM_SCALE_INV ((1ll << (PPM_SCALE_INV_SHIFT + NTP_SCALE_SHIFT)) / \
+> -		       PPM_SCALE + 1)
+>  
+>  #define MAXPHASE 500000000l	/* max phase error (ns) */
+>  #define MAXFREQ 500000		/* max frequency error (ns/s) */
+> 
+
+Thanks, John.  And Martin for the perfect bug report.
+
+Based on Martin's observation that the bug has been there since 2.6.21
+I marked this as needed in 2.6.25.x and in 2.6.26.x.  However the patch
+doesn't apply at all to 2.6.25, so someone(tm) will have a bit of
+rework to do if we want to fix 2.6.25.x.
+
+This fix caused Roman's
+ntp-fix-adj_offset_ss_read-bug-and-do_adjtimex-cleanup.patch (which I
+have queued for when Thomas wakes up) to toss a reject, but fixing that
+seemed pretty simple.  I think.  The scripts/kconfig/conf segfaults are
+being a bit of a PITA at present.
 
