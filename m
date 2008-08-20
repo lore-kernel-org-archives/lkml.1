@@ -1,34 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbYHTRXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671AbYHTRdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203AbYHTRXn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 13:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbYHTRXf
+	id S1754671AbYHTRdd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 13:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYHTRdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 13:23:35 -0400
-Received: from viefep32-int.chello.at ([62.179.121.50]:45991 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750948AbYHTRXe (ORCPT
+	Wed, 20 Aug 2008 13:33:17 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:51027 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751160AbYHTRdP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 13:23:34 -0400
-Subject: Re: VolanoMark regression with 2.6.27-rc1
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, adobriyan@gmail.com,
-       Ingo Molnar <mingo@elte.hu>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, Chris Friesen <cfriesen@nortel.com>
-In-Reply-To: <2c0942db0808200929r640b3a1cj33efc56cfd6db9b3@mail.gmail.com>
-References: <1912217169.25608.228.camel@ymzhang>
-	 <20080820143209.GA32156@x200.localdomain> <1219242796.8651.54.camel@twins>
-	 <200808210110.37204.nickpiggin@yahoo.com.au>
-	 <2c0942db0808200929r640b3a1cj33efc56cfd6db9b3@mail.gmail.com>
+	Wed, 20 Aug 2008 13:33:15 -0400
+Subject: Re: [GIT]: Networking
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0808200853410.3324@nehalem.linux-foundation.org>
+References: <20080819.041706.261399060.davem@davemloft.net>
+	 <alpine.LFD.1.10.0808190952000.3324@nehalem.linux-foundation.org>
+	 <1219170451.7591.175.camel@violet.holtmann.net>
+	 <alpine.LFD.1.10.0808191348540.3324@nehalem.linux-foundation.org>
+	 <1219203753.7591.205.camel@violet.holtmann.net>
+	 <20080820143734.GB20632@tuxdriver.com>
+	 <alpine.LFD.1.10.0808200826530.3324@nehalem.linux-foundation.org>
+	 <1219246813.7591.347.camel@violet.holtmann.net>
+	 <alpine.LFD.1.10.0808200853410.3324@nehalem.linux-foundation.org>
 Content-Type: text/plain
-Date: Wed, 20 Aug 2008 19:21:41 +0200
-Message-Id: <1219252901.8651.63.camel@twins>
+Date: Wed, 20 Aug 2008 19:33:20 +0200
+Message-Id: <1219253600.7591.352.camel@violet.holtmann.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -36,79 +37,64 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, so one last time (I hope!)..
+Hi Linus,
 
-Everybody happy with this?
+> > John was just pointing out (like myself before) that a lot of people are
+> > under the impression that documentation updates and new drivers should
+> > not be queued up and merged as soon as possible.
+> 
+> I think (and hey, I'm flexible, and we can discuss this) that the rules 
+> should be:
+> 
+>  - by default, the answer should always be "don't push anything after the 
+>    merge window unless it fixes a regression or a nasty bug".
+> 
+>    Here "nasty bug" is something that is a problem in practice, and not 
+>    something theoretical that people haven't really reported.
+> 
+>  - but as a special case, we relax that for totally new drivers (and that 
+>    includes things like just adding a new PCI or USB ID's to old drivers), 
+>    because (a) it can't really regress and (b) support for a specific 
+>    piece of hardware can often be critical.
+> 
+> With regard to that second case, I'd like to note that obviously even a 
+> totally new driver _can_ regress, in the sense that it can cause build 
+> errors, or problems that simply wouldn't have happened without that 
+> driver. So the "cannot regress" obviously isn't strictly true, but I 
+> think everybody understands what I really mean.
+> 
+> It should also be noted that the "new driver" exception should only be an 
+> issue for things that _matter_.
+> 
+> For example, a machine without networking support (or without suppoort for 
+> a some other really core driver that provides basic functionality) is 
+> practically useless. But a machine without support for some particular 
+> webcam or support for some special keys on a particular keyboard? That 
+> really doesn't matter, and might as well wait for the next release.
+> 
+> So the "merge drivers early" is for drivers that reasonably _matter_ in 
+> the sense that it allows people to test Linux AT ALL on the platform. It 
+> shouldn't be "any possible random driver".
+> 
+> IOW, think about the drivers a bit like a distro would think about 
+> backporting drivers to a stable kernel. Which ones are really needed? 
+> 
+> Also, note that "new driver" really should be that. If it's an older 
+> driver, and you need to touch _any_ old code to add a new PCI ID or 
+> something, the whole argument about it not breaking falls away. Don't do 
+> it. I think, for example, that the SCSI people seem to be a bit too eager 
+> sometimes to update their drivers for new revisions of cards, and they do 
+> it to old drivers.
+> 
+> And finally - the rules should be guidelines. It really isn't always 
+> black-and-white, but most of the time the simple question of "could this 
+> _possibly_ be just queued for the next release without hurting anything" 
+> should be the basic one. If the answer is "yes", then wait.
 
----
-Subject: sched: load-balance bias fixes
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Wed Aug 20 15:28:51 CEST 2008
+I am perfectly fine with these rules. You only had to spell them out :)
 
-Yanmin spotted a regression with my patch that introduces LB_BIAS:
+Regards
 
-  commit 93b75217df39e6d75889cc6f8050343286aff4a5
-  Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-  Date:   Fri Jun 27 13:41:33 2008 +0200
-
-And I just spotted the brainfart - I should have replaced min/max with avg
-instead of removing it completely.
-
-[ray-lk@madrabbit.org: better avg implementation]
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/linux/kernel.h |    6 ++++++
- kernel/sched.c         |   10 ++++++++--
- 2 files changed, 14 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -2008,9 +2008,12 @@ static unsigned long source_load(int cpu
- 	struct rq *rq = cpu_rq(cpu);
- 	unsigned long total = weighted_cpuload(cpu);
- 
--	if (type == 0 || !sched_feat(LB_BIAS))
-+	if (type == 0)
- 		return total;
- 
-+	if (!sched_feat(LB_BIAS))
-+		return avg(rq->cpu_load[type-1], total);
-+
- 	return min(rq->cpu_load[type-1], total);
- }
- 
-@@ -2023,9 +2026,12 @@ static unsigned long target_load(int cpu
- 	struct rq *rq = cpu_rq(cpu);
- 	unsigned long total = weighted_cpuload(cpu);
- 
--	if (type == 0 || !sched_feat(LB_BIAS))
-+	if (type == 0)
- 		return total;
- 
-+	if (!sched_feat(LB_BIAS))
-+		return avg(rq->cpu_load[type-1], total);
-+
- 	return max(rq->cpu_load[type-1], total);
- }
- 
-Index: linux-2.6/include/linux/kernel.h
-===================================================================
---- linux-2.6.orig/include/linux/kernel.h
-+++ linux-2.6/include/linux/kernel.h
-@@ -367,6 +367,12 @@ static inline char *pack_hex_byte(char *
- 	(void) (&_max1 == &_max2);		\
- 	_max1 > _max2 ? _max1 : _max2; })
- 
-+#define avg(x, y) ({				\
-+	typeof(x) _avg1 = (x);			\
-+	typeof(y) _avg2 = (y);			\
-+	(void) (&_avg1 == &_avg2);		\
-+	_avg1 + (_avg2 - _avg1)/2; })
-+
- /**
-  * clamp - return a value clamped to a given range with strict typechecking
-  * @val: current value
+Marcel
 
 
