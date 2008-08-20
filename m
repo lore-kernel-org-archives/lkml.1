@@ -1,82 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbYHTVRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbYHTVSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202AbYHTVRi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbYHTVR1
+	id S1757395AbYHTVSX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbYHTVSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:17:27 -0400
-Received: from rrcs-70-62-214-221.central.biz.rr.com ([70.62.214.221]:34271
-	"EHLO tophat.atxconsulting.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752048AbYHTVR0 (ORCPT
+	Wed, 20 Aug 2008 17:18:15 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:48587 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753423AbYHTVSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:17:26 -0400
-Date: Wed, 20 Aug 2008 17:17:24 -0400
-From: Timothy J Fontaine <tjfontaine@atxconsulting.com>
-To: =?us-ascii?B?PT9JU08tODg1OS0xP1E/SWxwb19KPUU0cnZpbmVuXw==?= 
-	<ilpo.jarvinen@helsinki.fi>,
-       ?=@tophat.atxconsulting.com
-Cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: r8169 MTU greater than 1500 causes corruption for other
-	controllers
-Message-ID: <20080820211724.GA4100@tophat.atxconsulting.com>
-References: <20080820170951.GA1771@tophat.atxconsulting.com> <Pine.LNX.4.64.0808202053510.24321@wrl-59.cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="VS++wcV0S1rZb1Fb"
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0808202053510.24321@wrl-59.cs.helsinki.fi>
-X-PGP-Key: http://atxconsulting.com/tjfontaine.atxconsulting.asc
-X-PGP-Key-Fingerprint: 7937 DFD2 AB06 298B 2293  C318 7D33 FF9D 0246 406D
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 20 Aug 2008 17:18:14 -0400
+Subject: Re: new driver staged in linux1394-2.6.git
+From: David Moore <dcm@MIT.EDU>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Greg KH <greg@kroah.com>, v4l-dvb-maintainer@linuxtv.org,
+       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <48AC8167.1020302@s5r6.in-berlin.de>
+References: <tkrat.51b6249bb700fa85@s5r6.in-berlin.de>
+	 <20080820201106.GC10526@kroah.com>  <48AC8167.1020302@s5r6.in-berlin.de>
+Content-Type: text/plain
+Date: Wed, 20 Aug 2008 14:16:52 -0700
+Message-Id: <1219267012.26135.14.camel@dmoore.corp.google.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-08-20 at 22:41 +0200, Stefan Richter wrote:
+> Greg KH wrote:
+> > This assumes that it will not be dropped by you :)
+> 
+> I'll carry it until mainline merge, unless bigger subsystem changes 
+> happen on the v4l-dbv front that make it necessary to move it to their repo.
 
---VS++wcV0S1rZb1Fb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+If I understand correctly, this driver is based on the legacy ieee1394
+subsystem.  I'm curious, is there a plan to migrate it to juju, where
+presumably it could be a lot cleaner and might not even have to live in
+the kernel at all (except for the need for some sort of dvb loopback
+device which might not yet exist)?
 
-On Wed, Aug 20, 2008 at 10:21:11PM +0300, =3D?ISO-8859-1?Q?Ilpo_J=3DE4rvine=
-n_ wrote:
-> Hmm, there was no explanation why the tp->rx_buf_sz to pkt_size change
-> was made in that commit (I have no idea whether those sizes have to match=
-=20
-> to other places that use tp->rx_buf_sz)... Below is a patch to revert=20
-> that part of the change fully though it could be enough to change just=20
-> pci_unmap_single arg (but that would probably need also=20
-> rtl8169_mark_to_asic arg to be changed to match pkt_size).
->=20
+-David
 
-Excellent, with the patch applied transfers over NFS seem to be going
-smoothly.
-
-> > Below you'll find a list of files referenced from REPORTING-BUGS that
-> > are meant to be helpful, including the lspci and module information,
-> > they can all be reached from the toplevel directory index
->=20
-> Thanks for the detailed report btw... :-)
-
-Thanks :) I was more than just a little intimidated by my first post to
-LKML, and I wanted to make sure the first reply to my report wasn't that I
-didn't have enough info, or that I presented it in the wrong way, or
-hadn't done enough testing with it. I was also more than prepared to
-wait weeks for someone to reply, so thanks for the quick return! :D
-
-tjfontaine
-
---VS++wcV0S1rZb1Fb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkisieQACgkQfTP/nQJGQG0HsQCg0kuDXCRFL8B0dtk1+Y8T4U1V
-y8gAn2kM8/l3q8iyApo+EPCBRSm4VUhe
-=MZi0
------END PGP SIGNATURE-----
-
---VS++wcV0S1rZb1Fb--
