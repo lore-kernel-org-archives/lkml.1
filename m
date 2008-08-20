@@ -1,58 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbYHTO57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758973AbYHTO7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758283AbYHTO57 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 10:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYHTO5t
+	id S1758973AbYHTO7P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 10:59:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYHTO67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 10:57:49 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:25301 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbYHTO5s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 10:57:48 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 0/8] PNP debugging rework
-Date: Wed, 20 Aug 2008 08:57:42 -0600
-User-Agent: KMail/1.9.9
-Cc: Len Brown <lenb@kernel.org>, Adam M Belay <abelay@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Renninger <trenn@suse.de>, Dave Jones <davej@redhat.com>,
-       Ben Collins <bcollins@ubuntu.com>, Dann Frazier <dannf@debian.org>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080819225310.28206.1011.stgit@tigger.helgaas> <20080820025427.GQ9807@one.firstfloor.org>
-In-Reply-To: <20080820025427.GQ9807@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 20 Aug 2008 10:58:59 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:49486 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751907AbYHTO67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 10:58:59 -0400
+Subject: Re: powerpc/cell/oprofile: fix mutex locking for spu-oprofile
+From: Carl Love <cel@us.ibm.com>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       oprofile-list@lists.sourceforge.net, cel <cel@linux.vnet.ibm.com>,
+       cbe-oss-dev@ozlabs.org
+In-Reply-To: <20080820123907.GP13011@erda.amd.com>
+References: <1217620879.15667.145.camel@carll-linux-desktop>
+	 <200808110925.08485.arnd@arndb.de> <20080820115750.GO13011@erda.amd.com>
+	 <200808201405.32101.arnd@arndb.de>  <20080820123907.GP13011@erda.amd.com>
+Content-Type: text/plain
+Date: Wed, 20 Aug 2008 07:58:16 -0700
+Message-Id: <1219244296.6637.223.camel@carll-linux-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808200857.44056.bjorn.helgaas@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 August 2008 08:54:27 pm Andi Kleen wrote:
-> On Tue, Aug 19, 2008 at 04:53:10PM -0600, Bjorn Helgaas wrote:
-> > These patches add support for a boot-time switch to enable PNP debug
-> > messages.  Currently, users have to recompile with CONFIG_PNP_DEBUG=y
-> > to get PNP debug messages.
+
+On Wed, 2008-08-20 at 14:39 +0200, Robert Richter wrote:
+> On 20.08.08 14:05:31, Arnd Bergmann wrote:
+> > On Wednesday 20 August 2008, Robert Richter wrote:
+> > > I am fine with the changes with the exception of removing
+> > > add_event_entry() from include/linux/oprofile.h. Though there is no
+> > > usage of the function also in other architectures anymore, this change
+> > > in the API should be discussed on the oprofile mailing list. Please
+> > > separate the change in a different patch and submit it to the mailing
+> > > list. If there are no objections then, this change can go upstream as
+> > > well.
 > > 
-> > I copied the implementation strategy from Greg KH's USB patches:
-> >     http://lkml.org/lkml/2008/8/8/529
-> > 
-> > These patches don't fix any bugs, and I know it's pretty late to
-> > consider new stuff for 2.6.27.  The only reason to even consider them
-> > is that 2.6.27 includes a significant PNP rewrite, and if 2.6.27 ends
-> > up in a distro kernel, it will be much easier to work on problems if
-> > users can collect debug information without rebuilding the kernel.
+> > As an explanation, the removal of add_event_entry is the whole point
+> > of this patch. add_event_entry must only be called with buffer_mutex
+> > held, but buffer_mutex itself is not exported.
 > 
-> I would have pushed them up because they look harmless enough,
-> but after Linus' recent rant on merging windows on linux-kernel I've 
-> reconsidered.  Will queue them for .28 in test.
+> Thanks for pointing this out.
+> 
 
-Fair enough, thanks!
+We originally added add_event_entry() to include/linux/oprofile.h
+specifically because it was needed for the CELL SPU support.  As it
+turns out it the approach was not completely thought through.  We were
+using the function call without holding the mutex lock.  As we
+discovered later, this can result in corrupting the data put into the
+event buffer.  So exposing the function without a way to hold the mutex
+lock is actually a really bad idea as it would encourage others to fall
+into the same mistake that we made.  So, as Arnd said, the whole point
+of this patch is to come up with a correct approach to adding the data.
 
-Bjorn
+> > I'm pretty sure that no other user of add_event_entry exists, as it
+> > was exported specifically for the SPU support and that never worked.
+> > Any other (theoretical) code using it would be broken in the same way
+> > and need a corresponding fix.
+> > 
+> > We can easily leave the declaration in place, but I'd recommend removing
+> > it eventually. If you prefer to keep it, how about marking it as
+> > __deprecated?
+> 
+> No, since this is broken by design we remove it. The patch can go
+> upstream as it is.
+> 
+> Thanks,
+
+> -Robert
+> 
+
+It really is best to remove it.  Thank you for taking the time to review
+and comment on the patch.
+
+               Carl Love
+
