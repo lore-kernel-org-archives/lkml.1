@@ -1,375 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbYHTQmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbYHTQo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756261AbYHTQmP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 12:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbYHTQkn
+	id S1757551AbYHTQo5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 12:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbYHTQon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 12:40:43 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42551 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752738AbYHTQkk (ORCPT
+	Wed, 20 Aug 2008 12:44:43 -0400
+Received: from web82108.mail.mud.yahoo.com ([209.191.84.221]:29939 "HELO
+	web82108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752838AbYHTQol (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 12:40:40 -0400
-From: Andi Kleen <andi@firstfloor.org>
-To: linux-kernel@vger.kernel.org
-Cc: robert.richter@amd.com, oprofile-list@lists.sourceforge.net,
-       Andi Kleen <ak@linux.intel.com>
-Subject: [PATCH] oprofile: Implement Intel architectural perfmon support
-Date: Wed, 20 Aug 2008 18:40:31 +0200
-Message-Id: <1219250433-25516-3-git-send-email-andi@firstfloor.org>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1219250433-25516-2-git-send-email-andi@firstfloor.org>
-References: <1219250433-25516-1-git-send-email-andi@firstfloor.org>
- <1219250433-25516-2-git-send-email-andi@firstfloor.org>
+	Wed, 20 Aug 2008 12:44:41 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=LhCn0Vf18brNwEB5OgJBFdON3evWXdF94/QujhI3alQPkBTy6DcAXzRDnJXJsnUxQY1vkYQI/7nwsIFDmfXAYlgCyc8/PK6k5csXDtRZ1nAXS/0EkL7+U+tOek0jjfOWss3fcb4DuXIaY12YDqOBBYmr0FDIgWdbAhjQVgvWYG8=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Wed, 20 Aug 2008 09:44:40 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
+To: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Bill Fink <billfink@mindspring.com>,
+       linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       netdev <netdev@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <513656.76811.qm@web82108.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <ak@linux.intel.com>
 
-Newer Intel CPUs (Core1+) have support for architectural
-events described in CPUID 0xA. See the IA32 SDM Vol3b.18 for details.
 
-The advantage of this is that it can be done without knowing about
-the specific CPU, because the CPU describes by itself what
-performance events are supported. This is only a fallback
-because only a limited set of 6 events are supported.
-This allows to do profiling on Nehalem and on Atom systems
-(later not tested)
+> > >> > This is true if he reverted just the 3def3d6d... commit, but if he
+> > >> > also reverts the similar, and immediately following, 1e934dda...
+> > >> > commit, then his 2.6.26 kernel runs fine.
+> > >>
+> > >> interesting,
+> > >>
+> > >> David, can you try only comment out
+> > >>
+> > >> late_initcall(lapic_insert_resource);
+> > >
+> > > i.e. the patch below?
+> > >
+> > > what's your theory, what could be the reason for David's lockups?
+> > 
+> > could be insert_resource related.
+> > 1. revert patch that change back insert_resource doesn't work
+> > 2. insert_resource for lapic address moved to late after ....
+> > 
+> > need to add debug printout for insert_resource/request_resource to 
+> > make sure thing going well
+> 
+> but what can happen if it does not "go well"? The resource list is 
+> basically there to make sure we dont overlap resources. But is there a 
+> real danger here for any overlap?
+> 
+> And insert_resource() differs from request_resource() in that 
+> insert_resource() allows "complete overlap". David has done printks of 
+> all resources in this thread - can you see anything suspicious in there?
 
-This patch implements support for that in oprofile's Intel
-Family 6 profiling module. It also has the advantage of supporting
-an arbitary number of events now as reported by the CPU.
-Also allow arbitary counter widths >32bit while we're at it.
 
-Requires a patched oprofile userland to support the new
-architecture.
+Clarification:  the resource-related outputs I have posted here so far
+have been either from kernels without the regression (2.6.25 series, or
+the v2.6.26 kernel with 2 reverts) or kernels _with_ the regression but
+made to boot with "hpet=disable".  Those outputs were 'cat /proc/iomem'.
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
----
- Documentation/kernel-parameters.txt |    5 ++
- arch/x86/oprofile/nmi_int.c         |   32 +++++++++--
- arch/x86/oprofile/op_model_ppro.c   |  104 +++++++++++++++++++++++++++-------
- arch/x86/oprofile/op_x86_model.h    |    3 +
- 4 files changed, 116 insertions(+), 28 deletions(-)
+Any other output I have posted here, involving insertion of printk's to
+see diagnostic data just before the lockups, has not included resource-
+related information.  This is for two reasons:
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 056742c..10c8b1b 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1486,6 +1486,11 @@ and is between 256 and 4096 characters. It is defined in the file
- 	oprofile.timer=	[HW]
- 			Use timer interrupt instead of performance counters
- 
-+	oprofile.force_arch_perfmon=1 [X86]
-+			Force use of architectural perfmon performance counters
-+			in oprofile on Intel CPUs.  The kernel selects the
-+			correct default on its own.
-+
- 	osst=		[HW,SCSI] SCSI Tape Driver
- 			Format: <buffer_size>,<write_threshold>
- 			See also Documentation/scsi/st.txt.
-diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index 36d2f92..6438c32 100644
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -430,6 +430,19 @@ static int __init ppro_init(char **cpu_type)
- 	return 1;
- }
- 
-+static int force_arch_perfmon;
-+module_param(force_arch_perfmon, int, 0);
-+
-+static int __init arch_perfmon_init(char **cpu_type)
-+{
-+	if (!cpu_has_arch_perfmon)
-+		return 0;
-+	*cpu_type = "i386/arch_perfmon";
-+	model = &op_arch_perfmon_spec;
-+	arch_perfmon_setup_counters();
-+	return 1;
-+}
-+
- /* in order to get sysfs right */
- static int using_nmi;
- 
-@@ -437,7 +450,7 @@ int __init op_nmi_init(struct oprofile_operations *ops)
- {
- 	__u8 vendor = boot_cpu_data.x86_vendor;
- 	__u8 family = boot_cpu_data.x86;
--	char *cpu_type;
-+	char *cpu_type = NULL;
- 
- 	if (!cpu_has_apic)
- 		return -ENODEV;
-@@ -467,22 +480,29 @@ int __init op_nmi_init(struct oprofile_operations *ops)
- 		break;
- 
- 	case X86_VENDOR_INTEL:
-+		if (force_arch_perfmon) {
-+			if (!arch_perfmon_init(&cpu_type))
-+				return -ENODEV;
-+			break;
-+		}
-+
- 		switch (family) {
- 			/* Pentium IV */
- 		case 0xf:
--			if (!p4_init(&cpu_type))
--				return -ENODEV;
-+			p4_init(&cpu_type);
- 			break;
- 
- 			/* A P6-class processor */
- 		case 6:
--			if (!ppro_init(&cpu_type))
--				return -ENODEV;
-+			ppro_init(&cpu_type);
- 			break;
- 
- 		default:
--			return -ENODEV;
-+			break;
- 		}
-+
-+		if (!cpu_type && !arch_perfmon_init(&cpu_type))
-+			return -ENODEV;
- 		break;
- 
- 	default:
-diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
-index eff431f..12e207a 100644
---- a/arch/x86/oprofile/op_model_ppro.c
-+++ b/arch/x86/oprofile/op_model_ppro.c
-@@ -1,32 +1,34 @@
- /*
-  * @file op_model_ppro.h
-- * pentium pro / P6 model-specific MSR operations
-+ * Family 6 perfmon and architectural perfmon MSR operations
-  *
-  * @remark Copyright 2002 OProfile authors
-+ * @remark Copyright 2008 Intel Corporation
-  * @remark Read the file COPYING
-  *
-  * @author John Levon
-  * @author Philippe Elie
-  * @author Graydon Hoare
-+ * @author Andi Kleen
+1.  It is hard to fit the entire contents of the iomem_resource tree on
+the little 80x25 VGA screen!
+
+2.  The data I do get has to be hand-transcribed, decreasing the 
+reliability a lot.
+
+3.  It results mostly from my own personal experiments, trying to
+understand what the kernel code is doing and what it is supposed to be
+doing.  You folks already know those things, so I assumed that most of
+the data I produced would be irrelevant -- and when I asked if anyone
+wanted to see it, there were no replies.
+
+
+I fought on Monday with the idea of producing the equivalent of
+'cat /proc/iomem', but on a hanging kernel just before it hangs.  The
+output format suffered as I tried to squeeze it all on one 80x25
+screen, but I _did_ succeed:
+
+===== BEGIN OUTPUT ===================
+Number of resources handled by insert_resource(): 12
+       0-ffffffffffffffff       PCI mem        0-9f3ff               System RAM
+   9f400-9ffff                 reserved    f0000-fffff                 reserved
+  100000-77fdffff            System RAM   200000-56ff31             kernel code
+  56ff32-6d8fff             kernel data   76a000-7ac907              kernel bss
+77fe0000-77fe2fff          ACPI non-vol 77fe3000-77feffff           ACPI Tables
+77ff0000-77ffffff              reserved 78000000-7fffffff             pnp 00:0d
+80000000-800003ff          0000:00:14.0 d8000000-dfffffff          PCI Bus 0000
+d8000000-dfffffff          0000:01:05.0 e0000000-efffffff              reserved
+fdc00000-fdcfffff          PCI Bus 0000 fdcff000-fcdff0ff          0000:02:05.0
+fdd00000-fdefffff          PCI Bus 0000 fdd00000-fddfffff          0000:01:05.0
+fdee0000-fdeeffff          0000:01:05.0 fdefc000-fdefffff          0000:01:05.2
+fdf00000-fdffffff          PCI Bus 0000 fdf00000-fdf1ffff          0000:02:05.0
+fe020000-fe023fff          0000:00:14.2 fe029000-fe0290ff          0000:00:13.5
+fe02a000-fe02afff          0000:00:13.4 fe02b000-fe02bfff          0000:00:13.3
+fe02c000-fe02cfff          0000:00:13.2 fe02d000-fe02dfff          0000:00:13.1
+fe02e000-fe02efff          0000:00:13.0 fe02f000-fe02feff          0000:00:12.0
+fec00000-ffffffff              reserved
+===== END OUTPUT ===================
+
+Please beware that my recursion follows 'struct resource *' children first,
+then siblings only after the entire child subtree is exhausted.
+
+The only resource names that I see truncated are the "PCI Bus 0000" entries,
+but those can be matched with the 'cat /proc/iomem' data I posted earlier;
+the address ranges are similar to those of a working kernel:
+
+===== v2.6.25 NON-REGRESSION KERNEL OUTPUT =====
+$ cat /proc/iomem
+00000000-0009f3ff : System RAM
+0009f400-0009ffff : reserved
+000f0000-000fffff : reserved
+00100000-77fdffff : System RAM
+  00200000-0056ca21 : Kernel code
+  0056ca22-006ce3d7 : Kernel data
+  00753000-0079a3c7 : Kernel bss
+77fe0000-77fe2fff : ACPI Non-volatile Storage
+77fe3000-77feffff : ACPI Tables
+77ff0000-77ffffff : reserved
+78000000-7fffffff : pnp 00:0d
+d8000000-dfffffff : PCI Bus #01
+  d8000000-dfffffff : 0000:01:05.0
+    d8000000-d8ffffff : uvesafb
+e0000000-efffffff : PCI MMCONFIG 0
+  e0000000-efffffff : reserved
+fdc00000-fdcfffff : PCI Bus #02
+  fdcff000-fdcff0ff : 0000:02:05.0
+    fdcff000-fdcff0ff : r8169
+fdd00000-fdefffff : PCI Bus #01
+  fdd00000-fddfffff : 0000:01:05.0
+  fdee0000-fdeeffff : 0000:01:05.0
+  fdefc000-fdefffff : 0000:01:05.2
+    fdefc000-fdefffff : ICH HD audio
+fdf00000-fdffffff : PCI Bus #02
+fe020000-fe023fff : 0000:00:14.2
+  fe020000-fe023fff : ICH HD audio
+fe029000-fe0290ff : 0000:00:13.5
+  fe029000-fe0290ff : ehci_hcd
+fe02a000-fe02afff : 0000:00:13.4
+  fe02a000-fe02afff : ohci_hcd
+fe02b000-fe02bfff : 0000:00:13.3
+  fe02b000-fe02bfff : ohci_hcd
+fe02c000-fe02cfff : 0000:00:13.2
+  fe02c000-fe02cfff : ohci_hcd
+fe02d000-fe02dfff : 0000:00:13.1
+  fe02d000-fe02dfff : ohci_hcd
+fe02e000-fe02efff : 0000:00:13.0
+  fe02e000-fe02efff : ohci_hcd
+fe02f000-fe02f3ff : 0000:00:12.0
+  fe02f000-fe02f3ff : ahci
+fec00000-fec00fff : IOAPIC 0
+  fec00000-fec00fff : pnp 00:0d
+fed00000-fed003ff : HPET 0
+  fed00000-fed003ff : 0000:00:14.0
+fee00000-fee00fff : Local APIC
+fff80000-fffeffff : pnp 00:0d
+ffff0000-ffffffff : pnp 00:0d
+===============================================
+
+I see now that much is missing in the hanging kernel's output.  It may be
+hanging before all the resources are added.
+
+[I have a dual core CPU.  If the missing things are already supposed to be 
+there at this point, when inet_init() is running, could one core be hung 
+while the other core runs inet_init() until it hits synchronize_rcu()?  
+I'm sure my question is silly:  I don't even know whether a SMP kernel 
+boots in SMP mode, or when it switches to SMP if it doesn't start that 
+way!]
+
+
+The screenful of 80x25 output above was produced with the following code:
+=========================================================================
+diff --git a/kernel/resource.c b/kernel/resource.c
+index f5b518e..d2c62d6 100644
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -375,11 +375,16 @@ EXPORT_SYMBOL(allocate_resource);
+  * resource is inserted and the conflicting resources become children of
+  * the new resource.
   */
- 
- #include <linux/oprofile.h>
-+#include <linux/slab.h>
- #include <asm/ptrace.h>
- #include <asm/msr.h>
- #include <asm/apic.h>
- #include <asm/nmi.h>
-+#include <asm/intel_arch_perfmon.h>
- 
- #include "op_x86_model.h"
- #include "op_counter.h"
- 
--#define NUM_COUNTERS 2
--#define NUM_CONTROLS 2
-+static int num_counters = 2;
-+static int counter_width = 32;
- 
- #define CTR_IS_RESERVED(msrs, c) (msrs->counters[(c)].addr ? 1 : 0)
- #define CTR_READ(l, h, msrs, c) do {rdmsr(msrs->counters[(c)].addr, (l), (h)); } while (0)
--#define CTR_32BIT_WRITE(l, msrs, c)	\
--	do {wrmsr(msrs->counters[(c)].addr, -(u32)(l), 0); } while (0)
--#define CTR_OVERFLOWED(n) (!((n) & (1U<<31)))
-+#define CTR_OVERFLOWED(n) (!((n) & (1U<<(counter_width-1))))
- 
- #define CTRL_IS_RESERVED(msrs, c) (msrs->controls[(c)].addr ? 1 : 0)
- #define CTRL_READ(l, h, msrs, c) do {rdmsr((msrs->controls[(c)].addr), (l), (h)); } while (0)
-@@ -40,20 +42,20 @@
- #define CTRL_SET_UM(val, m) (val |= (m << 8))
- #define CTRL_SET_EVENT(val, e) (val |= e)
- 
--static unsigned long reset_value[NUM_COUNTERS];
-+static u64 *reset_value;
- 
- static void ppro_fill_in_addresses(struct op_msrs * const msrs)
- {
- 	int i;
- 
--	for (i = 0; i < NUM_COUNTERS; i++) {
-+	for (i = 0; i < num_counters; i++) {
- 		if (reserve_perfctr_nmi(MSR_P6_PERFCTR0 + i))
- 			msrs->counters[i].addr = MSR_P6_PERFCTR0 + i;
- 		else
- 			msrs->counters[i].addr = 0;
- 	}
- 
--	for (i = 0; i < NUM_CONTROLS; i++) {
-+	for (i = 0; i < num_counters; i++) {
- 		if (reserve_evntsel_nmi(MSR_P6_EVNTSEL0 + i))
- 			msrs->controls[i].addr = MSR_P6_EVNTSEL0 + i;
- 		else
-@@ -67,8 +69,22 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
- 	unsigned int low, high;
- 	int i;
- 
-+	if (!reset_value) {
-+		reset_value = kmalloc(sizeof(unsigned) * num_counters,
-+					GFP_ATOMIC);
-+		if (!reset_value)
-+			return;
-+	}
 +
-+	if (cpu_has_arch_perfmon) {
-+		union cpuid10_eax eax;
-+		eax.full = cpuid_eax(0xa);
-+		if (counter_width < eax.split.bit_width)
-+			counter_width = eax.split.bit_width;
-+	}
++extern unsigned dw_count;
 +
- 	/* clear all counters */
--	for (i = 0 ; i < NUM_CONTROLS; ++i) {
-+	for (i = 0 ; i < num_counters; ++i) {
- 		if (unlikely(!CTRL_IS_RESERVED(msrs, i)))
- 			continue;
- 		CTRL_READ(low, high, msrs, i);
-@@ -77,18 +93,18 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
- 	}
- 
- 	/* avoid a false detection of ctr overflows in NMI handler */
--	for (i = 0; i < NUM_COUNTERS; ++i) {
-+	for (i = 0; i < num_counters; ++i) {
- 		if (unlikely(!CTR_IS_RESERVED(msrs, i)))
- 			continue;
--		CTR_32BIT_WRITE(1, msrs, i);
-+		wrmsrl(msrs->counters[i].addr, -1LL);
- 	}
- 
- 	/* enable active counters */
--	for (i = 0; i < NUM_COUNTERS; ++i) {
-+	for (i = 0; i < num_counters; ++i) {
- 		if ((counter_config[i].enabled) && (CTR_IS_RESERVED(msrs, i))) {
- 			reset_value[i] = counter_config[i].count;
- 
--			CTR_32BIT_WRITE(counter_config[i].count, msrs, i);
-+			wrmsrl(msrs->counters[i].addr, -reset_value[i]);
- 
- 			CTRL_READ(low, high, msrs, i);
- 			CTRL_CLEAR(low);
-@@ -111,13 +127,13 @@ static int ppro_check_ctrs(struct pt_regs * const regs,
- 	unsigned int low, high;
- 	int i;
- 
--	for (i = 0 ; i < NUM_COUNTERS; ++i) {
-+	for (i = 0 ; i < num_counters; ++i) {
- 		if (!reset_value[i])
- 			continue;
- 		CTR_READ(low, high, msrs, i);
- 		if (CTR_OVERFLOWED(low)) {
- 			oprofile_add_sample(regs, i);
--			CTR_32BIT_WRITE(reset_value[i], msrs, i);
-+			wrmsrl(msrs->counters[i].addr, -reset_value[i]);
- 		}
- 	}
- 
-@@ -141,7 +157,7 @@ static void ppro_start(struct op_msrs const * const msrs)
- 	unsigned int low, high;
- 	int i;
- 
--	for (i = 0; i < NUM_COUNTERS; ++i) {
-+	for (i = 0; i < num_counters; ++i) {
- 		if (reset_value[i]) {
- 			CTRL_READ(low, high, msrs, i);
- 			CTRL_SET_ACTIVE(low);
-@@ -156,7 +172,7 @@ static void ppro_stop(struct op_msrs const * const msrs)
- 	unsigned int low, high;
- 	int i;
- 
--	for (i = 0; i < NUM_COUNTERS; ++i) {
-+	for (i = 0; i < num_counters; ++i) {
- 		if (!reset_value[i])
- 			continue;
- 		CTRL_READ(low, high, msrs, i);
-@@ -169,21 +185,65 @@ static void ppro_shutdown(struct op_msrs const * const msrs)
+ int insert_resource(struct resource *parent, struct resource *new)
  {
- 	int i;
+     int result;
+     struct resource *first, *next;
  
--	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
-+	for (i = 0 ; i < num_counters ; ++i) {
- 		if (CTR_IS_RESERVED(msrs, i))
- 			release_perfctr_nmi(MSR_P6_PERFCTR0 + i);
- 	}
--	for (i = 0 ; i < NUM_CONTROLS ; ++i) {
-+	for (i = 0 ; i < num_counters ; ++i) {
- 		if (CTRL_IS_RESERVED(msrs, i))
- 			release_evntsel_nmi(MSR_P6_EVNTSEL0 + i);
- 	}
-+	if (reset_value) {
-+		kfree(reset_value);
-+		reset_value = NULL;
-+	}
++    static unsigned int num_calls = 0;
++
+     write_lock(&resource_lock);
+ 
+     for (;; parent = first) {
+@@ -394,16 +399,19 @@ int insert_resource(struct resource *parent, struct resource *new)
+ 
+         if ((first->start > new->start) || (first->end < new->end))
+             break;
++
+         if ((first->start == new->start) && (first->end == new->end))
+             break;
+     }
+ 
+     for (next = first; ; next = next->sibling) {
+         /* Partial overlap? Bad, and unfixable */
+-        if (next->start < new->start || next->end > new->end)
++            if (next->start < new->start || next->end > new->end)
+             goto out;
++
+         if (!next->sibling)
+             break;
++
+         if (next->sibling->start > new->end)
+             break;
+     }
+@@ -429,6 +437,9 @@ int insert_resource(struct resource *parent, struct resource *new)
+ 
+  out:
+     write_unlock(&resource_lock);
++
++    dw_count = ++num_calls;
++
+     return result;
  }
  
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 600bb23..b6f57c2 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -127,6 +127,8 @@
+ #include <linux/jhash.h>
+ #include <linux/random.h>
  
- struct op_x86_model_spec const op_ppro_spec = {
--	.num_counters = NUM_COUNTERS,
--	.num_controls = NUM_CONTROLS,
-+	.num_counters = 2,
-+	.num_controls = 2,
-+	.fill_in_addresses = &ppro_fill_in_addresses,
-+	.setup_ctrs = &ppro_setup_ctrs,
-+	.check_ctrs = &ppro_check_ctrs,
-+	.start = &ppro_start,
-+	.stop = &ppro_stop,
-+	.shutdown = &ppro_shutdown
-+};
++#include <linux/ioport.h>
 +
-+/*
-+ * Architectural performance monitoring.
-+ *
-+ * Newer Intel CPUs (Core1+) have support for architectural
-+ * events described in CPUID 0xA. See the IA32 SDM Vol3b.18 for details.
-+ * The advantage of this is that it can be done without knowing about
-+ * the specific CPU.
-+ */
+ #include "net-sysfs.h"
+ 
+ /*
+@@ -4304,9 +4306,29 @@ void free_netdev(struct net_device *dev)
+     put_device(&dev->dev);
+ }
+ 
++unsigned dw_count;
 +
-+void arch_perfmon_setup_counters(void)
++void dw_print_res (struct resource *r)
 +{
-+	union cpuid10_eax eax;
-+
-+	eax.full = cpuid_eax(0xa);
-+
-+	/* Workaround for BIOS bugs in 6/15. Taken from perfmon2 */
-+	if (eax.split.version_id == 0 && current_cpu_data.x86 == 6 &&
-+		current_cpu_data.x86_model == 15) {
-+		eax.split.version_id = 2;
-+		eax.split.num_counters = 2;
-+		eax.split.bit_width = 40;
-+	}
-+
-+	num_counters = eax.split.num_counters;
-+
-+	op_arch_perfmon_spec.num_counters = num_counters;
-+	op_arch_perfmon_spec.num_controls = num_counters;
++        printk ("%9llx-%-16llx%14.12s", r->start, r->end, r->name);
 +}
 +
-+struct op_x86_model_spec op_arch_perfmon_spec = {
-+	/* num_counters/num_controls filled in at runtime */
- 	.fill_in_addresses = &ppro_fill_in_addresses,
-+	/* user space does the cpuid check for available events */
- 	.setup_ctrs = &ppro_setup_ctrs,
- 	.check_ctrs = &ppro_check_ctrs,
- 	.start = &ppro_start,
-diff --git a/arch/x86/oprofile/op_x86_model.h b/arch/x86/oprofile/op_x86_model.h
-index 575e08e..68c2bb9 100644
---- a/arch/x86/oprofile/op_x86_model.h
-+++ b/arch/x86/oprofile/op_x86_model.h
-@@ -47,5 +47,8 @@ extern struct op_x86_model_spec const op_ppro_spec;
- extern struct op_x86_model_spec const op_p4_spec;
- extern struct op_x86_model_spec const op_p4_ht2_spec;
- extern struct op_x86_model_spec const op_athlon_spec;
-+extern struct op_x86_model_spec op_arch_perfmon_spec;
++void dw_recurse_res (struct resource *r)
++{
++        if (!r) return;
 +
-+extern void arch_perfmon_setup_counters(void);
- 
- #endif /* OP_X86_MODEL_H */
--- 
-1.5.6
++    dw_print_res (r);
++    dw_recurse_res (r->child);
++    dw_recurse_res (r->sibling);
++}
++
+ /* Synchronize with packet receive processing. */
+ void synchronize_net(void)
+ {
+     might_sleep();
++
++    printk ("Number of resources handled by insert_resource(): %u\n", dw_count);
++    dw_recurse_res (&iomem_resource);
++
+     synchronize_rcu();
+ }
+=========================================================================
 
+
+HTH,
+Dave W.
