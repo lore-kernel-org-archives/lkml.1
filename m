@@ -1,138 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755502AbYHTFWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbYHTFXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755502AbYHTFWX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 01:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbYHTFWI
+	id S1755884AbYHTFXS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 01:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbYHTFWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 01:22:08 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:55325 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751638AbYHTFWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 01:22:06 -0400
-Message-ID: <48ABA9A8.1060806@cn.fujitsu.com>
-Date: Wed, 20 Aug 2008 13:20:40 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] mm_owner: fix cgroup null dereference
-References: <1218745013-9537-1-git-send-email-jirislaby@gmail.com> <20080819141344.GF25239@balbir.in.ibm.com>
-In-Reply-To: <20080819141344.GF25239@balbir.in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 20 Aug 2008 01:22:54 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:49620 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751574AbYHTFWx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 01:22:53 -0400
+Subject: Re: [GIT]: Networking
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, rjw@sisk.pl, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.10.0808191440440.3324@nehalem.linux-foundation.org>
+References: <20080819.140458.236030589.davem@davemloft.net>
+	 <200808192315.48718.rjw@sisk.pl>
+	 <alpine.LFD.1.10.0808191425050.3324@nehalem.linux-foundation.org>
+	 <20080819.143556.245692295.davem@davemloft.net>
+	 <alpine.LFD.1.10.0808191440440.3324@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 20 Aug 2008 07:22:56 +0200
+Message-Id: <1219209776.7591.265.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wote:
-> * Jiri Slaby <jirislaby@gmail.com> [2008-08-14 22:16:53]:
-> 
->> Hi,
->>
->> found this in mmotm, a fix for
->> mm-owner-fix-race-between-swap-and-exit.patch
->>
-> 
-> Does the patch below fix your problem, it's against mmotm 19th August
-> 2008.
-> 
+Hi Linus,
 
-I just triggered this bug. I think you also need the following change:
+> And btw, don't get me wrong - you're not the only problem spot. During the 
+> -rc's leading up to 2.6.26, drivers/merdia was actually a _bigger_ 
+> problem. I happen to care less about that (the same way I care less about 
+> some odd-ball architectures), but I have to admit that drivers/media was a 
+> total disaster last time around.
 
-make memrlimit_cgroup_mm_owner_changed() aware that old_cgrp can be NULL,
-and note we can't call memrlimit_cgroup_from_cgrp() with NULL argument.
+to be quite honest, don't you think this is a little bit unfair. So if
+it is drivers/media/ or arch/sh/ or whatever you don't care. Do you
+actually care what I do in drivers/bluetooth/?
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+I think that networking and USB are the two most biggest trees of the
+kernel and the number of changes they produce are big. And most things
+are drivers. I do think that we are doing pretty well in holding back
+architectural changes of a subsystem and testing them properly in -mm or
+-next before merging them.
 
-diff --git a/mm/memrlimitcgroup.c.orig b/mm/memrlimitcgroup.c
-index f7536dc..6559470 100644
---- a/mm/memrlimitcgroup.c.orig
-+++ b/mm/memrlimitcgroup.c
-@@ -249,17 +249,23 @@ static void memrlimit_cgroup_mm_owner_changed(struct cgroup_subsys *ss,
- 	struct mm_struct *mm = get_task_mm(p);
- 
- 	BUG_ON(!mm);
--	memrcg = memrlimit_cgroup_from_cgrp(cgrp);
--	old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
- 
- 	/*
- 	 * If we don't have a new cgroup, we just uncharge from the old one.
- 	 * It means that the task is going away
- 	 */
--	if (memrcg &&
--	    res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
--		goto out;
--	res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
-+	if (cgrp) {
-+		memrcg = memrlimit_cgroup_from_cgrp(cgrp);
-+		if (res_counter_charge(&memrcg->as_res,
-+				       mm->total_vm << PAGE_SHIFT))
-+			goto out;
-+	}
-+
-+	if (old_cgrp) {
-+		old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
-+		res_counter_uncharge(&old_memrcg->as_res,
-+				     mm->total_vm <<PAGE_SHIFT);
-+	}
- out:
- 	mmput(mm);
- }
+The actual drivers make a big portion of Linux and we need them and we
+want them. However drivers are the biggest problem for most subsystem
+maintainers since they don't own all hardware. And just face it. Most
+people that have certain hardware bits are not going to run -next or -mm
+kernels. If we get them to test -rc kernels we are lucky.
 
+So drivers/net/ alone is 41M in size. That is a quarter of all drivers/
+directory and to be fair the others also contain the actual subsystem in
+there while networking maintains it outside that directory.
 
->  
-> Reported-by: jirislaby@gmail.com
-> 
-> Jiri reported a problem and saw an oops when the memrlimit-fix-race-with-swap
-> patch is applied. He sent his patch on top to fix the problem, but ran into
-> another issue. The root cause of the problem is that we are not suppose
-> to call task_cgroup on NULL tasks. This patch reverts Jiri's patch and
-> does not call task_cgroup if the passed task_struct (old) is NULL.
-> 
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  kernel/cgroup.c |    5 +++--
->  kernel/exit.c   |    2 +-
->  2 files changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff -puN kernel/exit.c~memrlimit-fix-race-with-swap-oops kernel/exit.c
-> --- linux-2.6.27-rc3/kernel/exit.c~memrlimit-fix-race-with-swap-oops	2008-08-19 18:50:39.000000000 +0530
-> +++ linux-2.6.27-rc3-balbir/kernel/exit.c	2008-08-19 18:51:05.000000000 +0530
-> @@ -641,8 +641,8 @@ retry:
->  	 * the callback and take action
->  	 */
->  	down_write(&mm->mmap_sem);
-> -	cgroup_mm_owner_callbacks(mm->owner, NULL);
->  	mm->owner = NULL;
-> +	cgroup_mm_owner_callbacks(mm->owner, NULL);
->  	up_write(&mm->mmap_sem);
->  	return;
->  
-> diff -puN kernel/cgroup.c~memrlimit-fix-race-with-swap-oops kernel/cgroup.c
-> --- linux-2.6.27-rc3/kernel/cgroup.c~memrlimit-fix-race-with-swap-oops	2008-08-19 18:50:39.000000000 +0530
-> +++ linux-2.6.27-rc3-balbir/kernel/cgroup.c	2008-08-19 18:55:38.000000000 +0530
-> @@ -2743,13 +2743,14 @@ void cgroup_fork_callbacks(struct task_s
->   */
->  void cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new)
->  {
-> -	struct cgroup *oldcgrp, *newcgrp = NULL;
-> +	struct cgroup *oldcgrp = NULL, *newcgrp = NULL;
->  
->  	if (need_mm_owner_callback) {
->  		int i;
->  		for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
->  			struct cgroup_subsys *ss = subsys[i];
-> -			oldcgrp = task_cgroup(old, ss->subsys_id);
-> +			if (old)
-> +				oldcgrp = task_cgroup(old, ss->subsys_id);
->  			if (new)
->  				newcgrp = task_cgroup(new, ss->subsys_id);
->  			if (oldcgrp == newcgrp)
-> diff -puN mm/memrlimitcgroup.c~memrlimit-fix-race-with-swap-oops mm/memrlimitcgroup.c
-> _
-> 
+Just look at your EeePC. Booting a 2.6.26 kernel on it and you have no
+Ethernet and no WiFi drivers for the built-in hardware.
+
+I personally think that we need to be conservative for the actual
+subsystem changes and a little bit more open for driver changes.
+Especially when it comes to new drivers (not a tg3 or e100 driver) since
+we wanna ease the entry level to get Linux running. When it comes to
+networking, there are just a lot of drivers. Plain simple as that.
+
+And when it comes to architectural or subsystem changes, I think that
+the merge window rule is followed quite literal. With minor things
+during -rc1 because of merge conflicts, but eventually the -next tree
+will solve all of these.
+
+So what about the drivers? Should drivers for new hardware go in? Even
+if the maintainers don't think they are stable enough? The current
+approach is that even an almost stable driver is better than no driver.
+If this no longer applies, then please spell it out and I am more than
+happy to oblige.
+
+Regards
+
+Marcel
+
 
