@@ -1,95 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbYHTIx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbYHTIxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881AbYHTIx0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 04:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYHTIxQ
+	id S1755952AbYHTIxl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 04:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755370AbYHTIx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 04:53:16 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:55441 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753130AbYHTIxP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 04:53:15 -0400
-Date: Wed, 20 Aug 2008 10:53:03 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Message-ID: <20080820085303.GA17591@tekkaman>
-References: <1219182612-13814-1-git-send-email-giometti@linux.it> <1219182612-13814-2-git-send-email-giometti@linux.it> <1219182612-13814-3-git-send-email-giometti@linux.it> <1219182612-13814-4-git-send-email-giometti@linux.it> <1219182612-13814-5-git-send-email-giometti@linux.it> <1219182612-13814-6-git-send-email-giometti@linux.it> <20080819225322.69f3215d@lxorguk.ukuu.org.uk> <20080819224930.GI21330@tekkaman> <20080819233857.41b756cc@lxorguk.ukuu.org.uk> <20080819230523.GJ21330@tekkaman>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080819230523.GJ21330@tekkaman>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: 192.168.32.254
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 05/10] ldisc: new dcd_change() method for line
-	disciplines.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+	Wed, 20 Aug 2008 04:53:26 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:36469 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755236AbYHTIxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 04:53:25 -0400
+Date: Wed, 20 Aug 2008 18:53:14 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Takashi Iwai <tiwai@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, sam@ravnborg.org,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sameo@openedhand.com
+Subject: Re: linux-next: Tree for August 19 (mfd/ucb)
+Message-Id: <20080820185314.c242f790.sfr@canb.auug.org.au>
+In-Reply-To: <20080820075734.GA29002@flint.arm.linux.org.uk>
+References: <20080819185454.d9c74915.sfr@canb.auug.org.au>
+	<20080819170517.04d91de8.randy.dunlap@oracle.com>
+	<20080819171658.4cdb8cd9.akpm@linux-foundation.org>
+	<s5h7iacnn15.wl%tiwai@suse.de>
+	<20080820075734.GA29002@flint.arm.linux.org.uk>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__20_Aug_2008_18_53_14_+1000_gUtRl1/pvZC4qM4e"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 20, 2008 at 01:05:23AM +0200, Rodolfo Giometti wrote:
+--Signature=_Wed__20_Aug_2008_18_53_14_+1000_gUtRl1/pvZC4qM4e
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Maybe I can solve the problem defining dcd_change() as follow:
-> 
->    void (*dcd_change)(struct tty_struct *tty, unsigned int status,
->                         void *data)
-> 
-> and then passing the timestamp or struct uart_port pointer?
+On Wed, 20 Aug 2008 08:57:34 +0100 Russell King <rmk+lkml@arm.linux.org.uk>=
+ wrote:
+>
+> On Wed, Aug 20, 2008 at 09:49:58AM +0200, Takashi Iwai wrote:
+> >=20
+> > This one is because the superfluous inclusion of <asm-generic/gpio.h>.
+> > Should have been fixed in the latest Russell's tree.
+>=20
+> Haven't merged the two fixes discussed just yet - I only got a reply
+> from Stephen on his this morning.
 
-After sleeping this night :) I think is better defing the
-uart_handle_dcd_change() into serial_core.h as follow:
+I have added Takashi's patch to the end of linux-next for today and will
+remove it tomorrow.
 
-uart_handle_dcd_change(struct uart_port *port, unsigned int status)
-{
-        struct uart_info *info = port->info;
-        struct tty_ldisc *ld = tty_ldisc_ref(info->port.tty);
-        struct timespec ts;
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-        if (ld->ops->dcd_change)
-#ifdef CONFIG_PPS_IRQ_EVENTS
-                ts = pps_irq_ts[port->irq];
-#else
-                getnstimeofday(&ts);
-#endif
+--Signature=_Wed__20_Aug_2008_18_53_14_+1000_gUtRl1/pvZC4qM4e
+Content-Type: application/pgp-signature
 
-        port->icount.dcd++;
-#ifdef CONFIG_HARD_PPS
-        if ((port->flags & UPF_HARDPPS_CD) && status)
-                hardpps();
-#endif
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-        if (info->flags & UIF_CHECK_CD) {
-                if (status)
-                        wake_up_interruptible(&info->port.open_wait);
-                else if (info->port.tty)
-                        tty_hangup(info->port.tty);
-        }
+iEYEARECAAYFAkir23oACgkQjjKRsyhoI8yiZgCfdmAOW4GIO+DkdJupl50ar+AZ
+l2UAoJXA3Dok+1VgT6tTPaHRcKrl0Ls3
+=dMGX
+-----END PGP SIGNATURE-----
 
-        if (ld->ops->dcd_change)
-                ld->ops->dcd_change(info->port.tty, status, &ts);
-        tty_ldisc_deref(ld);
-}
-
-This completely hides the (dirty) trick to the PPS clients and allow
-using struct tty_struct as first parameter.
-
-Is that acceptable?
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail: giometti@enneenne.com
-Linux Device Driver                          giometti@linux.it
-Embedded Systems                     phone:  +39 349 2432127
-UNIX programming                     skype:  rodolfo.giometti
+--Signature=_Wed__20_Aug_2008_18_53_14_+1000_gUtRl1/pvZC4qM4e--
