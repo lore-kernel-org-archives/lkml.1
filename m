@@ -1,110 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759608AbYHTQSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbYHTQ3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759608AbYHTQSl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 12:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbYHTQSa
+	id S1756387AbYHTQ3k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 12:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbYHTQ3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 12:18:30 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:31022 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754367AbYHTQS2 (ORCPT
+	Wed, 20 Aug 2008 12:29:31 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:27119 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752044AbYHTQ3a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 12:18:28 -0400
+	Wed, 20 Aug 2008 12:29:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=PZhOnVSGzm+wkWvmjzOsvO/d9ZMEljENdMAUZm0sp+sGPZo2gTnxsynfJmcxa4dOTq
-         JNWkmXFT1mwEawNvMJjHfD2G6JoNDQJlfAKtqXzY3hgIV/AvBjTTGfMZQGtJHOQ6EB7p
-         AuWF4Y/8Rno/UARyPwtO9bGWwbi32utBbJSBg=
-Message-ID: <19f34abd0808200918n54aba154ta3c06dd7fbdf383f@mail.gmail.com>
-Date: Wed, 20 Aug 2008 18:18:26 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Yinghai Lu" <yhlu.kernel@gmail.com>,
-       "the arch/x86 maintainers" <x86@kernel.org>
-Subject: Re: latest -git: BUG: unable to handle kernel paging request (numaq_tsc_disable)
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <19f34abd0808200912y3f9cd132hee6cd7ea9852d112@mail.gmail.com>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=enbULzZrldmWdKa8D8BstAHX7WlJhadCnoQzKm0ms0+5Kt733+nmmbvQAfzSZpkdif
+         Hw3vbxpldPwAlkUt7toRvWLAX6oSgIQg9ShthWJYcjrP7dyb5e7yTeTplh7UU+wj2hnk
+         GzcJHDBwXV7lhFzbGdXw1Fv0UiW5fhuP+tR+s=
+Message-ID: <2c0942db0808200929r640b3a1cj33efc56cfd6db9b3@mail.gmail.com>
+Date: Wed, 20 Aug 2008 09:29:28 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: VolanoMark regression with 2.6.27-rc1
+Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, adobriyan@gmail.com,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Srivatsa Vaddagiri" <vatsa@linux.vnet.ibm.com>,
+       "Aneesh Kumar KV" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Balbir Singh" <balbir@in.ibm.com>,
+       "Chris Friesen" <cfriesen@nortel.com>
+In-Reply-To: <200808210110.37204.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_39421_4602885.1219249106908"
-References: <19f34abd0808200828o6496cbeap75b7242845e96ef3@mail.gmail.com>
-	 <19f34abd0808200840v17a8e5d4ge60c332f864abd81@mail.gmail.com>
-	 <19f34abd0808200912y3f9cd132hee6cd7ea9852d112@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1912217169.25608.228.camel@ymzhang>
+	 <20080820143209.GA32156@x200.localdomain>
+	 <1219242796.8651.54.camel@twins>
+	 <200808210110.37204.nickpiggin@yahoo.com.au>
+X-Google-Sender-Auth: c321899a3b62e6be
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_39421_4602885.1219249106908
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On Wed, Aug 20, 2008 at 6:12 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> On Wed, Aug 20, 2008 at 5:40 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
->> On Wed, Aug 20, 2008 at 5:28 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
->>> Hi,
->>>
->>> This actually hardlocked my machine and I had to add an extra patch to
->>> get any output at all. Base version is latest git, commit
->>> 1fca25427482387689fa27594c992a961d98768f.
->>>
->>
->> ...
->>
->>> Booting processor 1/1 ip 6000
->>> <1>BUG: unable to handle kernel paging request at c08a45f0
->>> <1>IP: [<c08a45f0>] numaq_tsc_disable+0x0/0x40
->>> <0> [<c0678676>] ? init_intel+0x196/0x360
->>
->> Seems to be a section mismatch; init_intel() is __cpuinit while
->> numaq_tsc_disable() is __init. Seems to be introduced in:
->>
->> commit 64898a8bad8c94ad7a4bd5cc86b66edfbb081f4a
->> Author: Yinghai Lu <yhlu.kernel@gmail.com>
->> Date:   Sat Jul 19 18:01:16 2008 -0700
->>
->>    x86: extend and use x86_quirks to clean up NUMAQ code
+On Wed, Aug 20, 2008 at 8:10 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> On Thursday 21 August 2008 00:33, Peter Zijlstra wrote:
+>> On Wed, 2008-08-20 at 18:32 +0400, adobriyan@gmail.com wrote:
+>> > On Wed, Aug 20, 2008 at 03:32:17PM +0200, Peter Zijlstra wrote:
 >
-> Oops, I am wrong about numaq_tsc_disable() being __init. Still, I
-> believe that Yinghai might be able to say what's really wrong :-)
+>> > > +#define avg(x, y) ({                             \
+>> > > + typeof(x) _avg1 = ((x)+1)/2;            \
+>> > > + typeof(x) _avg2 = ((y)+1)/2;            \
+>> >
+>> > ITYM, typeof(y)
+>>
+>> you thought right, I did mean that :-)
+>>
+>> > > + (void) (&_avg1 == &_avg2);              \
+>> > > + _avg1 + _avg2; })
+>
+> I don't think this implementation of avg should go in kernel.h?
+>
+> It gives an average of 1 and 1 to be 2, 3 and 3 is 4, 1 and 3 is
+> 3 etc.
+>
+> Maybe it is reasonable for very high numbers that would overflow
+> if added first, but it doesn't seem reasonable for a generic
+> averaging function.
 
-Err... No, I am confusing myself! I had already applied a patch to
-change it to __cpuinit :-/
+The usual way of averaging numbers that may be large is
 
-The good news is that the bug is now fixed. Patch attached.
+#define avg(x, y) ({            \
+       typeof(x) _x = (x);      \
+       typeof(x) _y = (y);      \
+       (void) (&_x == &_y);     \
+       _x + (_y - _x)/2; })
 
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
-
-------=_Part_39421_4602885.1219249106908
-Content-Type: application/octet-stream;
- name=0001-x86-numaq-fix-section-mismatch.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fk45e39i0
-Content-Disposition: attachment;
- filename=0001-x86-numaq-fix-section-mismatch.patch
-
-RnJvbSBkYzJkYTkzN2Q1ZmI4OTM0ZWRkOTVhNjIxODk1Mjk5YTYxODVlMWEyIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBWZWdhcmQgTm9zc3VtIDx2ZWdhcmRub0BiZW4uaWZpLnVpby5u
-bz4KRGF0ZTogV2VkLCAyMCBBdWcgMjAwOCAxODoxNToyMSArMDIwMApTdWJqZWN0OiBbUEFUQ0hd
-IHg4Ni9udW1hcTogZml4IHNlY3Rpb24gbWlzbWF0Y2gKClRoaXMgc2VjdGlvbiBtaXNtYXRjaCB3
-b3VsZCBsZWFkIHRvIHRoaXMgY3Jhc2g6CgpCVUc6IHVuYWJsZSB0byBoYW5kbGUga2VybmVsIHBh
-Z2luZyByZXF1ZXN0IGF0IGMwOGE0NWYwCklQOiBbPGMwOGE0NWYwPl0gbnVtYXFfdHNjX2Rpc2Fi
-bGUrMHgwLzB4NDAKCkNjOiBZaW5naGFpIEx1IDx5aGx1Lmtlcm5lbEBnbWFpbC5jb20+ClNpZ25l
-ZC1vZmYtYnk6IFZlZ2FyZCBOb3NzdW0gPHZlZ2FyZG5vQGlmaS51aW8ubm8+Ci0tLQogYXJjaC94
-ODYva2VybmVsL251bWFxXzMyLmMgfCAgICAyICstCiAxIGZpbGVzIGNoYW5nZWQsIDEgaW5zZXJ0
-aW9ucygrKSwgMSBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9hcmNoL3g4Ni9rZXJuZWwvbnVt
-YXFfMzIuYyBiL2FyY2gveDg2L2tlcm5lbC9udW1hcV8zMi5jCmluZGV4IGI4YzQ1NjEuLmVlY2M4
-YzEgMTAwNjQ0Ci0tLSBhL2FyY2gveDg2L2tlcm5lbC9udW1hcV8zMi5jCisrKyBiL2FyY2gveDg2
-L2tlcm5lbC9udW1hcV8zMi5jCkBAIC03Myw3ICs3Myw3IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBz
-bXBfZHVtcF9xY3Qodm9pZCkKIH0KIAogCi12b2lkIF9faW5pdCBudW1hcV90c2NfZGlzYWJsZSh2
-b2lkKQordm9pZCBfX2NwdWluaXQgbnVtYXFfdHNjX2Rpc2FibGUodm9pZCkKIHsKIAlpZiAoIWZv
-dW5kX251bWFxKQogCQlyZXR1cm47Ci0tIAoxLjUuNi40Cgo=
-------=_Part_39421_4602885.1219249106908--
+...which also works for small and negative numbers.
