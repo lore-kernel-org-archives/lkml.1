@@ -1,155 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbYHTKyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbYHTK5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756074AbYHTKyl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 06:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbYHTKyY
+	id S1755549AbYHTK5U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 06:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbYHTK5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 06:54:24 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43667 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755895AbYHTKyX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 06:54:23 -0400
-Date: Wed, 20 Aug 2008 20:00:06 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       ryov@valinux.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH -mm 0/7] memcg: lockless page_cgroup v1
-Message-Id: <20080820200006.a152c14c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080820194108.e76b20b3.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080819173014.17358c17.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080820194108.e76b20b3.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Aug 2008 06:57:11 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56587 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752298AbYHTK5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 06:57:10 -0400
+Date: Wed, 20 Aug 2008 12:51:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, Chris Friesen <cfriesen@nortel.com>
+Subject: Re: VolanoMark regression with 2.6.27-rc1
+Message-ID: <20080820105141.GA18226@elte.hu>
+References: <20080804070508.GA4028@linux.vnet.ibm.com> <1217833939.9016.47.camel@twins> <1912217169.25608.228.camel@ymzhang> <1218180605.8625.64.camel@twins> <20080811185008.GA29291@linux.vnet.ibm.com> <1912726331.25608.235.camel@ymzhang> <20080817115035.GA32223@linux.vnet.ibm.com> <20080818052155.GA5063@linux.vnet.ibm.com> <1219217089.8781.27.camel@ymzhang> <1219218089.10800.404.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1219218089.10800.404.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008 19:41:08 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-> On Wed, 20 Aug 2008 18:53:06 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> And I must admit to having overlooked the effect on wake_affine..
 > 
-> > Hi, this is a patch set for lockless page_cgroup.
-> > 
-> > dropped patches related to mem+swap controller for easy review.
-> > (I'm rewriting it, too.)
-> > 
-> > Changes from current -mm is.
-> >   - page_cgroup->flags operations is set to be atomic.
-> >   - lock_page_cgroup() is removed.
-> >   - page->page_cgroup is changed from unsigned long to struct page_cgroup*
-> >   - page_cgroup is freed by RCU.
-> >   - For avoiding race, charge/uncharge against mm/memory.c::insert_page() is
-> >     omitted. This is ususally used for mapping device's page. (I think...)
-> > 
-> > In my quick test, perfomance is improved a little. But the benefit of this
-> > patch is to allow access page_cgroup without lock. I think this is good 
-> > for Yamamoto's Dirty page tracking for memcg.
-> > For I/O tracking people, I added a header file for allowing access to
-> > page_cgroup from out of memcontrol.c
-> > 
-> > The base kernel is recent mmtom. Any comments are welcome.
-> > This is still under test. I have to do long-run test before removing "RFC".
-> > 
-> Known problem: force_emtpy is broken...so rmdir will struck into nightmare.
-> It's because of patch 2/7.
-> will be fixed in the next version.
-> 
+> Chris, could you see the effect of this on smp group fairness?
 
-This is a quick fix but I think I can find some better solution..
-==
-Because removal from LRU is delayed, mz->lru will never be empty until
-someone kick drain. This patch rotate LRU while force_empty and makes
-page_cgroup will be freed.
+applied your commit below to tip/sched/urgent, thanks.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	Ingo
 
+-------------->
+>From 939387c3a6141ec6aefc7acd40f8b186781bb098 Mon Sep 17 00:00:00 2001
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Wed, 20 Aug 2008 12:44:55 +0200
+Subject: [PATCH] sched: enable LB_BIAS by default
 
+Yanmin reported a significant regression on his 16-core machine due to:
+
+  commit 93b75217df39e6d75889cc6f8050343286aff4a5
+  Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+  Date:   Fri Jun 27 13:41:33 2008 +0200
+
+Flip back to the old behaviour.
+
+Reported-by: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- mm/memcontrol.c |   40 +++++++++++++++++++++++++---------------
- 1 file changed, 25 insertions(+), 15 deletions(-)
+ kernel/sched_features.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Index: mmtom-2.6.27-rc3+/mm/memcontrol.c
-===================================================================
---- mmtom-2.6.27-rc3+.orig/mm/memcontrol.c
-+++ mmtom-2.6.27-rc3+/mm/memcontrol.c
-@@ -893,34 +893,45 @@ static void mem_cgroup_force_empty_list(
- 			    struct mem_cgroup_per_zone *mz,
- 			    enum lru_list lru)
- {
--	struct page_cgroup *pc;
-+	struct page_cgroup *pc, *tmp;
- 	struct page *page;
- 	int count = FORCE_UNCHARGE_BATCH;
- 	unsigned long flags;
- 	struct list_head *list;
-+	int drain, rotate;
- 
- 	list = &mz->lists[lru];
- 
- 	spin_lock_irqsave(&mz->lru_lock, flags);
-+	rotate = 0;
- 	while (!list_empty(list)) {
- 		pc = list_entry(list->prev, struct page_cgroup, lru);
--		page = pc->page;
--		get_page(page);
--		spin_unlock_irqrestore(&mz->lru_lock, flags);
--		/*
--		 * Check if this page is on LRU. !LRU page can be found
--		 * if it's under page migration.
--		 */
--		if (PageLRU(page)) {
--			__mem_cgroup_uncharge_common(page,
--					MEM_CGROUP_CHARGE_TYPE_FORCE);
--			put_page(page);
-+		drain = PcgObsolete(pc);
-+		if (drain) {
-+			/* Skip this */
-+			list_move(&pc->lru);
-+			spin_unlock_irqrestore(&mz->lru_lock, flags);
-+			rotate++;
-+			if (rotate > MEMCG_LRU_THRESH/2)
-+				mem_cgroup_all_force_drain();
-+			cond_resched();
-+		} else {
-+			page = pc->page;
-+			get_page(page);
-+			spin_unlock_irqrestore(&mz->lru_lock, flags);
-+			/*
-+		 	* Check if this page is on LRU. !LRU page can be found
-+		 	* if it's under page migration.
-+		 	*/
-+			if (PageLRU(page)) {
-+				__mem_cgroup_uncharge_common(page,
-+						MEM_CGROUP_CHARGE_TYPE_FORCE);
-+			}
- 			if (--count <= 0) {
- 				count = FORCE_UNCHARGE_BATCH;
- 				cond_resched();
- 			}
--		} else
--			cond_resched();
-+		}
- 		spin_lock_irqsave(&mz->lru_lock, flags);
- 	}
- 	spin_unlock_irqrestore(&mz->lru_lock, flags);
-@@ -954,7 +965,6 @@ static int mem_cgroup_force_empty(struct
- 			}
- 	}
- 	ret = 0;
--	mem_cgroup_all_force_drain();
- out:
- 	css_put(&mem->css);
- 	return ret;
-
-
+diff --git a/kernel/sched_features.h b/kernel/sched_features.h
+index 862b06b..9353ca7 100644
+--- a/kernel/sched_features.h
++++ b/kernel/sched_features.h
+@@ -8,6 +8,6 @@ SCHED_FEAT(SYNC_WAKEUPS, 1)
+ SCHED_FEAT(HRTICK, 1)
+ SCHED_FEAT(DOUBLE_TICK, 0)
+ SCHED_FEAT(ASYM_GRAN, 1)
+-SCHED_FEAT(LB_BIAS, 0)
++SCHED_FEAT(LB_BIAS, 1)
+ SCHED_FEAT(LB_WAKEUP_UPDATE, 1)
+ SCHED_FEAT(ASYM_EFF_LOAD, 1)
