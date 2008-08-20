@@ -1,254 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbYHTJxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbYHTJyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754063AbYHTJxe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 05:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbYHTJxZ
+	id S1754742AbYHTJyU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 05:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbYHTJyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 05:53:25 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41539 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751258AbYHTJxY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 05:53:24 -0400
-Date: Wed, 20 Aug 2008 18:59:25 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       ryov@valinux.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [RFC][PATCH -mm 2/7] memcg:
- delayed_batch_freeing_of_page_cgroup.patch
-Message-Id: <20080820185925.83f74c8a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080819173014.17358c17.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Aug 2008 05:54:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56671 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751682AbYHTJyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 05:54:10 -0400
+Date: Wed, 20 Aug 2008 11:53:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Uros Bizjak <ubizjak@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] x86: Use X86_CR4_PGE in x86/power/hibernate_asm_32.S
+Message-ID: <20080820095353.GB28492@elte.hu>
+References: <5787cf470808200144ta2f28b4nd9b2922cbec73d78@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5787cf470808200144ta2f28b4nd9b2922cbec73d78@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Freeing page_cgroup at mem_cgroup_uncharge() in lazy way.
 
-In mem_cgroup_uncharge_common(), we don't free page_cgroup
-and just link it to per-cpu free queue.
-And remove it later by checking threshold.
+* Uros Bizjak <ubizjak@gmail.com> wrote:
 
-This patch is a base patch for freeing page_cgroup by RCU patch.
-This patch depends on page_cgroup_atomic_flags.patch.
+> Signed-off-by: Uros Bizjak <ubizjak@gmail.com>
 
-Changelog: (preview) -> (v1)
-  - Clean up.
-  - renamed functions
+applied the commit below to tip/x86/cleanups - thanks Uros.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+i did a small change: i moved the .text to after the include files. 
+While include files are not supposed to change section attributes, it 
+looks logically more consistent to have the .text right before the code.
 
+	Ingo
+
+----------------->
+>From c171f465b7281f2d3b03e9145ec763d6a8bab176 Mon Sep 17 00:00:00 2001
+From: Uros Bizjak <ubizjak@gmail.com>
+Date: Wed, 20 Aug 2008 10:44:47 +0200
+Subject: [PATCH] x86, cleanup: use X86_CR4_PGE in x86/power/hibernate_asm_32.S
+
+Signed-off-by: Uros Bizjak <ubizjak@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- mm/memcontrol.c |  115 ++++++++++++++++++++++++++++++++++++++++++++++++++------
- 1 file changed, 103 insertions(+), 12 deletions(-)
+ arch/x86/power/hibernate_asm_32.S |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-Index: mmtom-2.6.27-rc3+/mm/memcontrol.c
-===================================================================
---- mmtom-2.6.27-rc3+.orig/mm/memcontrol.c
-+++ mmtom-2.6.27-rc3+/mm/memcontrol.c
-@@ -159,11 +159,13 @@ struct page_cgroup {
- 	struct page *page;
- 	struct mem_cgroup *mem_cgroup;
- 	unsigned long flags;
-+	struct page_cgroup *next;
- };
- 
- enum {
- 	/* flags for mem_cgroup */
- 	Pcg_CACHE, /* charged as cache */
-+	Pcg_OBSOLETE,	/* this page cgroup is invalid (unused) */
- 	/* flags for LRU placement */
- 	Pcg_ACTIVE, /* page is active in this cgroup */
- 	Pcg_FILE, /* page is file system backed */
-@@ -194,6 +196,10 @@ static inline void __ClearPcg##uname(str
- TESTPCGFLAG(Cache, CACHE)
- __SETPCGFLAG(Cache, CACHE)
- 
-+/* No "Clear" routine for OBSOLETE flag */
-+TESTPCGFLAG(Obsolete, OBSOLETE);
-+SETPCGFLAG(Obsolete, OBSOLETE);
-+
- /* LRU management flags (from global-lru definition) */
- TESTPCGFLAG(File, FILE)
- SETPCGFLAG(File, FILE)
-@@ -220,6 +226,18 @@ static enum zone_type page_cgroup_zid(st
- 	return page_zonenum(pc->page);
- }
- 
-+/*
-+ * per-cpu slot for freeing page_cgroup in lazy manner.
-+ * All page_cgroup linked to this list is OBSOLETE.
-+ */
-+struct mem_cgroup_sink_list {
-+	int count;
-+	struct page_cgroup *next;
-+};
-+DEFINE_PER_CPU(struct mem_cgroup_sink_list, memcg_sink_list);
-+#define MEMCG_LRU_THRESH	(16)
-+
-+
- enum charge_type {
- 	MEM_CGROUP_CHARGE_TYPE_CACHE = 0,
- 	MEM_CGROUP_CHARGE_TYPE_MAPPED,
-@@ -427,7 +445,7 @@ void mem_cgroup_move_lists(struct page *
- 		return;
- 
- 	pc = page_get_page_cgroup(page);
--	if (pc) {
-+	if (pc && !PcgObsolete(pc)) {
- 		mz = page_cgroup_zoneinfo(pc);
- 		spin_lock_irqsave(&mz->lru_lock, flags);
- 		__mem_cgroup_move_lists(pc, lru);
-@@ -520,6 +538,10 @@ unsigned long mem_cgroup_isolate_pages(u
- 	list_for_each_entry_safe_reverse(pc, tmp, src, lru) {
- 		if (scan >= nr_to_scan)
- 			break;
-+
-+		if (PcgObsolete(pc))
-+			continue;
-+
- 		page = pc->page;
- 
- 		if (unlikely(!PageLRU(page)))
-@@ -552,6 +574,81 @@ unsigned long mem_cgroup_isolate_pages(u
- }
- 
+diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
+index 4fc7e87..d1e9b53 100644
+--- a/arch/x86/power/hibernate_asm_32.S
++++ b/arch/x86/power/hibernate_asm_32.S
+@@ -1,5 +1,3 @@
+-.text
+-
  /*
-+ * Free obsolete page_cgroups which is linked to per-cpu drop list.
-+ */
-+
-+static void __free_obsolete_page_cgroup(void)
-+{
-+	struct mem_cgroup *memcg;
-+	struct page_cgroup *pc, *next;
-+	struct mem_cgroup_per_zone *mz, *page_mz;
-+	struct mem_cgroup_sink_list *mcsl;
-+	unsigned long flags;
-+
-+	mcsl = &get_cpu_var(memcg_sink_list);
-+	next = mcsl->next;
-+	mcsl->next = NULL;
-+	mcsl->count = 0;
-+	put_cpu_var(memcg_sink_list);
-+
-+	mz = NULL;
-+
-+	local_irq_save(flags);
-+	while (next) {
-+		pc = next;
-+		VM_BUG_ON(!PcgObsolete(pc));
-+		next = pc->next;
-+		prefetch(next);
-+		page_mz = page_cgroup_zoneinfo(pc);
-+		memcg = pc->mem_cgroup;
-+		if (page_mz != mz) {
-+			if (mz)
-+				spin_unlock(&mz->lru_lock);
-+			mz = page_mz;
-+			spin_lock(&mz->lru_lock);
-+		}
-+		__mem_cgroup_remove_list(mz, pc);
-+		css_put(&memcg->css);
-+		kmem_cache_free(page_cgroup_cache, pc);
-+	}
-+	if (mz)
-+		spin_unlock(&mz->lru_lock);
-+	local_irq_restore(flags);
-+}
-+
-+static void free_obsolete_page_cgroup(struct page_cgroup *pc)
-+{
-+	int count;
-+	struct mem_cgroup_sink_list *mcsl;
-+
-+	mcsl = &get_cpu_var(memcg_sink_list);
-+	pc->next = mcsl->next;
-+	mcsl->next = pc;
-+	count = ++mcsl->count;
-+	put_cpu_var(memcg_sink_list);
-+	if (count >= MEMCG_LRU_THRESH)
-+		__free_obsolete_page_cgroup();
-+}
-+
-+/*
-+ * Used when freeing memory resource controller to remove all
-+ * page_cgroup (in obsolete list).
-+ */
-+static DEFINE_MUTEX(memcg_force_drain_mutex);
-+
-+static void mem_cgroup_local_force_drain(struct work_struct *work)
-+{
-+	__free_obsolete_page_cgroup();
-+}
-+
-+static void mem_cgroup_all_force_drain(void)
-+{
-+	mutex_lock(&memcg_force_drain_mutex);
-+	schedule_on_each_cpu(mem_cgroup_local_force_drain);
-+	mutex_unlock(&memcg_force_drain_mutex);
-+}
-+
-+/*
-  * Charge the memory controller for page usage.
-  * Return
-  * 0 if the charge was successful
-@@ -616,6 +713,7 @@ static int mem_cgroup_charge_common(stru
- 	pc->mem_cgroup = mem;
- 	pc->page = page;
- 	pc->flags = 0;
-+	pc->next = NULL;
- 	/*
- 	 * If a page is accounted as a page cache, insert to inactive list.
- 	 * If anon, insert to active list.
-@@ -718,8 +816,6 @@ __mem_cgroup_uncharge_common(struct page
- {
- 	struct page_cgroup *pc;
- 	struct mem_cgroup *mem;
--	struct mem_cgroup_per_zone *mz;
--	unsigned long flags;
+  * This may not use any stack, nor any variable that is not "NoSave":
+  *
+@@ -12,17 +10,18 @@
+ #include <asm/segment.h>
+ #include <asm/page.h>
+ #include <asm/asm-offsets.h>
++#include <asm/processor-flags.h>
  
- 	if (mem_cgroup_subsys.disabled)
- 		return;
-@@ -737,20 +833,14 @@ __mem_cgroup_uncharge_common(struct page
- 	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
- 	    && ((PcgCache(pc) || page_mapped(page))))
- 		goto unlock;
+-	.text
++.text
+ 
+ ENTRY(swsusp_arch_suspend)
 -
--	mz = page_cgroup_zoneinfo(pc);
--	spin_lock_irqsave(&mz->lru_lock, flags);
--	__mem_cgroup_remove_list(mz, pc);
--	spin_unlock_irqrestore(&mz->lru_lock, flags);
--
-+	mem = pc->mem_cgroup;
-+	SetPcgObsolete(pc);
- 	page_assign_page_cgroup(page, NULL);
- 	unlock_page_cgroup(page);
+ 	movl %esp, saved_context_esp
+ 	movl %ebx, saved_context_ebx
+ 	movl %ebp, saved_context_ebp
+ 	movl %esi, saved_context_esi
+ 	movl %edi, saved_context_edi
+-	pushfl ; popl saved_context_eflags
++	pushfl
++	popl saved_context_eflags
  
--	mem = pc->mem_cgroup;
- 	res_counter_uncharge(&mem->res, PAGE_SIZE);
--	css_put(&mem->css);
-+	free_obsolete_page_cgroup(pc);
+ 	call swsusp_save
+ 	ret
+@@ -59,7 +58,7 @@ done:
+ 	movl	mmu_cr4_features, %ecx
+ 	jecxz	1f	# cr4 Pentium and higher, skip if zero
+ 	movl	%ecx, %edx
+-	andl	$~(1<<7), %edx;  # PGE
++	andl	$~(X86_CR4_PGE), %edx
+ 	movl	%edx, %cr4;  # turn off PGE
+ 1:
+ 	movl	%cr3, %eax;  # flush TLB
+@@ -74,7 +73,8 @@ done:
+ 	movl saved_context_esi, %esi
+ 	movl saved_context_edi, %edi
  
--	kmem_cache_free(page_cgroup_cache, pc);
- 	return;
- unlock:
- 	unlock_page_cgroup(page);
-@@ -943,6 +1033,7 @@ static int mem_cgroup_force_empty(struct
- 			}
- 	}
- 	ret = 0;
-+	mem_cgroup_all_force_drain();
- out:
- 	css_put(&mem->css);
- 	return ret;
-
+-	pushl saved_context_eflags ; popfl
++	pushl saved_context_eflags
++	popfl
+ 
+ 	xorl	%eax, %eax
+ 
