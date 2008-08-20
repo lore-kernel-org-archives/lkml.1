@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbYHTVkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbYHTVkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756267AbYHTVkG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbYHTVjy
+	id S1754493AbYHTVkc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:40:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbYHTVkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:39:54 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:35698 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752086AbYHTVjx (ORCPT
+	Wed, 20 Aug 2008 17:40:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43620 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754815AbYHTVj7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:39:53 -0400
-Message-ID: <48AC8F69.4050201@keyaccess.nl>
-Date: Wed, 20 Aug 2008 23:40:57 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
-MIME-Version: 1.0
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, Dave Airlie <airlied@gmail.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: AGP and PAT (induced?) problem (on AMD family 6)
-References: <48972EA8.8040001@keyaccess.nl> <20080815142218.GC12954@elte.hu> <48A59FAC.7050605@keyaccess.nl> <48AA9C3B.5030309@keyaccess.nl> <20080819102633.GE6722@elte.hu> <48AAD680.7020508@keyaccess.nl> <20080819190757.GA17470@linux-os.sc.intel.com> <20080820100440.GE28492@elte.hu> <48ABF6DC.8070305@keyaccess.nl> <48AC29CA.1060203@keyaccess.nl> <20080820194127.GA10887@linux-os.sc.intel.com>
-In-Reply-To: <20080820194127.GA10887@linux-os.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Wed, 20 Aug 2008 17:39:59 -0400
+Date: Wed, 20 Aug 2008 14:39:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Szabolcs Szakacsits <szaka@ntfs-3g.org>
+Cc: konishi.ryusuke@lab.ntt.co.jp, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
+Message-Id: <20080820143916.1a7eddab.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.61.0808202352450.4532@dhcppc2>
+References: <20080820004326.519405a2.akpm@linux-foundation.org>
+	<200808201613.AA00212@capsicum.lab.ntt.co.jp>
+	<Pine.LNX.4.61.0808202352450.4532@dhcppc2>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20-08-08 21:41, Venki Pallipadi wrote:
+On Thu, 21 Aug 2008 00:25:55 +0300 (MET DST)
+Szabolcs Szakacsits <szaka@ntfs-3g.org> wrote:
 
-> OK. I have reproduced this list size issue locally and this order 1 
-> allocation and set_memory_uc on that allocation is actually coming
-> from agp_allocate_memory() -> agp_generic_alloc_page() ->
-> map_page_into_agp() agp_allocate_memory breaks higher order page
-> requests into order 1 allocs.
 > 
-> On my system I see multiple agp_allocate_memory requests for nrpages 
-> 8841, 1020, 16, 2160, 2160, 8192. Together they end up resulting in 
-> more than 22K entries in PAT pages.
+> On Thu, 21 Aug 2008, Ryusuke Konishi wrote:
+> > >> Some impressive benchmark results on SSD are shown in [3],
+> > >
+> > >heh.  It wipes the floor with everything, including btrfs.
+> 
+> It seems the benchmark was done over half year ago. It's questionable how 
+> relevant today the performance comparison is with actively developed file 
+> systems ...
+> 
+> > >But a log-based fs will do that, initially.  What will the performace
+> > >look like after a month or two's usage?
+> > 
+> > I'm using NILFS2 for my home directory for serveral months, but so far
+> > I don't feel notable performance degradation. 
+> 
+> I ran compilebench on kernel 2.6.26 with freshly formatted volumes. 
+> The behavior of NILFS2 was interesting.
+> 
+> Its peformance rapidly degrades to the lowest ever measured level 
+> (< 1 MB/s) but after a while it recovers and gives consistent numbers.
+> However it's still very far from the current unstable btrfs performance. 
+> The results are reproducible.
+> 
+>                     MB/s    Runtime (s)
+>                    -----    -----------
+>   btrfs unstable   17.09        572
+>   ext3             13.24        877
+>   btrfs 0.16       12.33        793
+>   nilfs2 2nd+ runs 11.29        674
+>   ntfs-3g           8.55        865
+>   reiserfs          8.38        966
+>   nilfs2 1st run    4.95       3800
+>   xfs               1.88       3901
 
-Okay, thanks for the confirmation.
-
-Now, how to fix...
-
-Firstly, it seems we can conclude that any expectancy of a short PAT 
-list is simply destroyed by AGP. I believe the best thing migh be to 
-look into "fixing" AGP rather than PAT for now?
-
-In a sense the entire purpose of the AGP GART is collecting non 
-contiguous pages but given that in practice it's generally still just 
-one or at most a few regions, going to multi-page allocs sounds most 
-appetising to me.
-
-All in tree AGP drivers except sgi-agp use agp_generic_alloc_page(), ali 
-via m1541_alloc_page and i460 via i460_alloc_page.
-
-Rene.
+err, what the heck happened to xfs?  Is this usual?
