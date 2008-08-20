@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbYHTXYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbYHTX2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758164AbYHTXYK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 19:24:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbYHTXXz
+	id S1757521AbYHTX2L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 19:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755112AbYHTX15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 19:23:55 -0400
-Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:53136 "EHLO
-	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754941AbYHTXXy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 19:23:54 -0400
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <48ACA785.6030607@citrix.com>
-Date: Thu, 21 Aug 2008 00:23:49 +0100
-From: Alex Nixon <alex.nixon@citrix.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Wed, 20 Aug 2008 19:27:57 -0400
+Received: from khc.piap.pl ([195.187.100.11]:51451 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754309AbYHTX14 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 19:27:56 -0400
+To: Grant Coady <gcoady.lk@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mikael Pettersson <mikpe@it.uu.se>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ATA Kconfig cleanup: sort the driver list and modify some text
+References: <qjoca411hv4hm25keq70ul5pnbi7747d13@4ax.com>
+	<18598.42334.73411.476062@harpo.it.uu.se>
+	<20080816113224.5562a9a6@lxorguk.ukuu.org.uk>
+	<5rkha4l846d0benss3hip3nvr0cmnfi1k4@4ax.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 21 Aug 2008 01:27:52 +0200
+In-Reply-To: <5rkha4l846d0benss3hip3nvr0cmnfi1k4@4ax.com> (Grant Coady's message of "Mon\, 18 Aug 2008 11\:47\:46 +1000")
+Message-ID: <m3vdxvqnbb.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] X86: Change the default value of nr_irqs from 32 to NR_IRQs
-References: <48AAFAE4.7070409@citrix.com>	 <86802c440808191044h74871ba1u62330dae18599436@mail.gmail.com>	 <0E902970173AF84089673FA54B7FE78A2CA11D@lonpexch01.citrite.net>	 <86802c440808191124v39ce2aa9rb548d3bdd75ca25c@mail.gmail.com>	 <48AB11A3.4060102@citrix.com>	 <86802c440808191200u364ffd86h49af661e58d20ea3@mail.gmail.com>	 <48AB241A.4030706@citrix.com> <86802c440808191352g75c99737kcb8c9c20d59c8f7b@mail.gmail.com> <48AB551D.6010708@citrix.com>
-In-Reply-To: <48AB551D.6010708@citrix.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Nixon wrote:
-> Yinghai Lu wrote:
->> when !CONFIG_HAVE_SPARSE_IRQ, with dyn_array, could allocate irq_desc
->> and etc as less as possible.
->> when CONFIG_HAVE_SPARESE_IRQ, no actually meaning for nr_irqs.
->>
->> YH
-> 
-> So I believe the only case this affects is !CONFIG_HAVE_SPARSE_IRQ
-> 
-> The worry is that with CONFIG_HAVE_DYN_ARRAY we may waste memory by 
-> pre-allocating more irq_descs than may be necessary (NR_IRQs vs 32)?
-> 
-> With !CONFIG_HAVE_DYN_ARRAY however, a static array of size NR_IRQS is 
-> allocated instead - so doesn't defaulting nr_irqs back to NR_IRQS just 
-> revert to the old behaviour (with the exception of the irq_descs being 
-> allocated in pre_alloc_dyn_array instead)?
-> 
-> - Alex
-> 
+Grant Coady <grant_lkml@dodo.com.au> writes:
 
-Sorry to pester you Yinghai, but I'd like to get a patch for this out 
-one way or another as Xen is _completely_ unusable with 5 or more VCPUs.
+> --- linux-2.6.27-rc3a/drivers/ata/Kconfig	2008-07-14 07:51:29.000000000 +1000
+> +++ linux-2.6.27-rc3c/drivers/ata/Kconfig	2008-08-18 11:29:20.871422237 +1000
+> @@ -3,7 +3,7 @@
+>  #
+>  
+>  menuconfig ATA
+> -	tristate "Serial ATA (prod) and Parallel ATA (experimental) drivers"
+> +	tristate "Serial ATA and Parallel ATA (SATA/PATA) drivers"
 
-Can you explain more clearly what the problem with the patch is?
+I don't think so. Maybe
+> +	tristate "Serial ATA (SATA) and Parallel ATA (PATA) drivers"
 
-I have a different patch set which solves the problem by adding in a pv 
-hook for probe_nr_irqs, but it's by far less clean.
+>  config ATA_SFF
+>  	bool "ATA SFF support"
+>  	default y
+> @@ -93,123 +93,15 @@
+>  
+>  if ATA_SFF
 
-Or alternatively, we could revert your patch b2e5f326bb
-
-Cheers,
-- Alex
+How the user compiling the kernel knows what ATA_SFF stands for?
+Why not "select ATA_SFF" instead (when any driver using this is
+selected)?
+-- 
+Krzysztof Halasa
