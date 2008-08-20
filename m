@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757964AbYHTVxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbYHTV4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757964AbYHTVxo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756203AbYHTVx2
+	id S1755859AbYHTV4O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYHTVz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:53:28 -0400
-Received: from saeurebad.de ([85.214.36.134]:36836 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755727AbYHTVx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:53:27 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Section mismatch contig_page_data and bootmem_node_data
-References: <20080820135551.74911cb3@lappy.seanm.ca>
-Date: Wed, 20 Aug 2008 23:53:06 +0200
-In-Reply-To: <20080820135551.74911cb3@lappy.seanm.ca> (Sean MacLennan's
-	message of "Wed, 20 Aug 2008 13:55:51 -0400")
-Message-ID: <87iqtv4am5.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 20 Aug 2008 17:55:57 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:54086 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751371AbYHTVz4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 17:55:56 -0400
+Date: Wed, 20 Aug 2008 17:55:55 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.27-rc2 USB suspend regression
+In-Reply-To: <48AC8FB2.2040301@goop.org>
+Message-ID: <Pine.LNX.4.44L0.0808201753400.16883-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 20 Aug 2008, Jeremy Fitzhardinge wrote:
 
-Sean MacLennan <smaclennan@pikatech.com> writes:
+> Alan Stern wrote:
+> > On Wed, 20 Aug 2008, Jeremy Fitzhardinge wrote:
+> >
+> >   
+> >> Using the Fedora Rawhide kernel RPM "2.6.27-0.238.rc2.fc10.i686"
+> >> (kernel-2.6.27-0.238.rc2.fc10.i686), I'm seeing suspend to ram
+> >> failures.  The suspend seems to go OK, but then I just get endless:
+> >>
+> >> usb 5-1: uhci_result_common: failed with status 440000
+> >>
+> >> messages, with occasional flickers of something else being printed
+> >> (perhaps).  The machine is otherwise unresponsive.
+> >>     
+> >
+> > You could comment out that error message in order to see what else is 
+> > in the log.  It is located in drivers/usb/host/uhci-q.c in the 
+> > uhci_result_common() function.
+> >
+> > You could try running -rc3 instead of -rc2, although that probably 
+> > won't make much difference.
+> >
+> > What USB devices do you have on the failing system?  In particular,
+> > what is 5-1?  If you unplug it before suspending, does the problem go
+> > away?  (It certainly should!)
+> >
+> >   
+> 
+> No external usb devices.  There are three internal USB devices:
+> Bluetooth, a Sierra CDMA modem thingy and a fingerprint reader.
+> 
+> $ lsusb
+> Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+> Bus 005 Device 003: ID 0483:2016 SGS Thomson Microelectronics
+> Fingerprint Reader
+> Bus 005 Device 002: ID 0a5c:2110 Broadcom Corp. Bluetooth Controller
+> Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+> Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+> Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+> Bus 003 Device 003: ID 1199:0218 Sierra Wireless, Inc. MC5720 Wireless Modem
+> Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+> 
+> The rfkill switch "unplugs" the two wireless devices, so I'll try that
+> before suspending next time (if I remember).
 
-> If CONFIG_NEED_MULTIPLE_NODES is *not* set, then you get a section
-> mismatch in reference from the variable contig_page_data to the
-> variable __initdata bootmem_node_data.
->
-> The simple solution is to just remove the __initdata from
-> bootmem_node_data. We could also put an ifdef around the __initdata.
->
-> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
-> ---
-> diff --git a/mm/bootmem.c b/mm/bootmem.c
-> index e023c68..a968ae2 100644
-> --- a/mm/bootmem.c
-> +++ b/mm/bootmem.c
-> @@ -31,7 +31,7 @@ unsigned long max_pfn;
->  unsigned long saved_max_pfn;
->  #endif
->  
-> -bootmem_data_t bootmem_node_data[MAX_NUMNODES] __initdata;
-> +bootmem_data_t bootmem_node_data[MAX_NUMNODES];
+Obviously 5-1 is either the Bluetooth controller or the fingerprint 
+reader.  It's understandable that either one of them might have 
+problems with a suspend/resume cycle, but the kernel ought to be able 
+to recover by itself.
 
-It is totally valid to be init data as it does not get referenced after
-bootup and should therefor be freed.
+It would help to see the USB debugging log (without all those useless
+uhci_result_common messages).
 
-The statically defined pointer from contig_page_data is the problem and
-the fix should be on this end rather than worsening code to suppress a
-warning.
+Alan Stern
 
-NAK,
-
-	Hannes
