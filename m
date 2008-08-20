@@ -1,575 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756092AbYHTL6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbYHTMAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756092AbYHTL6h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 07:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbYHTL63
+	id S1756171AbYHTMAn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 08:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbYHTMAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 07:58:29 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:6450 "EHLO
-	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753129AbYHTL61 (ORCPT
+	Wed, 20 Aug 2008 08:00:33 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:4465 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753302AbYHTMAc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 07:58:27 -0400
-X-BigFish: VPS-37(zz1432R98dR936eQef8K62a3L1805Mzz10d3izzz32i6bh43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0K5WEKY-01-517-01
-Date: Wed, 20 Aug 2008 13:57:50 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       oprofile-list@lists.sourceforge.net, Paul Mackerras <paulus@samba.org>,
-       cel <cel@linux.vnet.ibm.com>
-Subject: Re: powerpc/cell/oprofile: fix mutex locking for spu-oprofile
-Message-ID: <20080820115750.GO13011@erda.amd.com>
-References: <1217620879.15667.145.camel@carll-linux-desktop> <18591.30474.127939.243247@cargo.ozlabs.ibm.com> <200808110918.57293.arnd@arndb.de> <200808110925.08485.arnd@arndb.de>
+	Wed, 20 Aug 2008 08:00:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=kqdfyAI9w0pf6yiXDD37detc9PmzgInbxzDx8ZT7HwurZ4i/i9+aUggsJlf/Q4w61T
+         z9TycpFmV++SKI+rCGuG1yuPZ+m/Z09w0b7QcuOQQ8UNsN4jVWUHU/at/AWxP+d0GWlV
+         mQJjF9/gbGmIo7B7xdNBtEcgnjPhFTg2cNxKQ=
+Message-ID: <a4423d670808200500m2bba097fg1cab607b9271de20@mail.gmail.com>
+Date: Wed, 20 Aug 2008 16:00:31 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: "James Morris" <jmorris@namei.org>
+Subject: Re: [PATCH] CRED: Take cred_exec_mutex in compat_do_execve() and fix error handling in do_execve()
+Cc: "David Howells" <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org
+In-Reply-To: <alpine.LRH.1.10.0808200910020.317@tundra.namei.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200808110925.08485.arnd@arndb.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 20 Aug 2008 11:58:11.0665 (UTC) FILETIME=[04EF0410:01C902BC]
+References: <20080819151829.24589.30461.stgit@warthog.procyon.org.uk>
+	 <alpine.LRH.1.10.0808200910020.317@tundra.namei.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am fine with the changes with the exception of removing
-add_event_entry() from include/linux/oprofile.h. Though there is no
-usage of the function also in other architectures anymore, this change
-in the API should be discussed on the oprofile mailing list. Please
-separate the change in a different patch and submit it to the mailing
-list. If there are no objections then, this change can go upstream as
-well.
+> Applied to
+> git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next-creds
+>
+> Hopefully this will be in the next linux-next tree for testing.
+>
+> Alexander, please let us know if it fixes the problem you saw.
 
--Robert
+Yes, it seems fixed.
+David, there is one more problem.
 
-On 11.08.08 09:25:07, Arnd Bergmann wrote:
-> From: Carl Love <cel@us.ibm.com>
-> 
-> The issue is the SPU code is not holding the kernel mutex lock while
-> adding samples to the kernel buffer.
-> 
-> This patch creates per SPU buffers to hold the data.  Data
-> is added to the buffers from in interrupt context.  The data
-> is periodically pushed to the kernel buffer via a new Oprofile
-> function oprofile_put_buff(). The oprofile_put_buff() function
-> is called via a work queue enabling the funtion to acquire the
-> mutex lock.
-> 
-> The existing user controls for adjusting the per CPU buffer
-> size is used to control the size of the per SPU buffers.
-> Similarly, overflows of the SPU buffers are reported by
-> incrementing the per CPU buffer stats.  This eliminates the
-> need to have architecture specific controls for the per SPU
-> buffers which is not acceptable to the OProfile user tool
-> maintainer.
-> 
-> The export of the oprofile add_event_entry() is removed as it
-> is no longer needed given this patch.
-> 
-> Note, this patch has not addressed the issue of indexing arrays
-> by the spu number.  This still needs to be fixed as the spu
-> numbering is not guarenteed to be 0 to max_num_spus-1.
-> 
-> Signed-off-by: Carl Love <carll@us.ibm.com>
-> Signed-off-by: Maynard Johnson <maynardj@us.ibm.com>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  arch/powerpc/oprofile/cell/pr_util.h       |   13 ++
->  arch/powerpc/oprofile/cell/spu_profiler.c  |    4 +-
->  arch/powerpc/oprofile/cell/spu_task_sync.c |  236 +++++++++++++++++++++++++---
->  drivers/oprofile/buffer_sync.c             |   24 +++
->  drivers/oprofile/cpu_buffer.c              |   15 ++-
->  drivers/oprofile/event_buffer.h            |    7 +
->  include/linux/oprofile.h                   |   16 +-
->  7 files changed, 279 insertions(+), 36 deletions(-)
-> 
-> diff --git a/arch/powerpc/oprofile/cell/pr_util.h b/arch/powerpc/oprofile/cell/pr_util.h
-> index 22e4e8d..628009c 100644
-> --- a/arch/powerpc/oprofile/cell/pr_util.h
-> +++ b/arch/powerpc/oprofile/cell/pr_util.h
-> @@ -24,6 +24,11 @@
->  #define SKIP_GENERIC_SYNC 0
->  #define SYNC_START_ERROR -1
->  #define DO_GENERIC_SYNC 1
-> +#define SPUS_PER_NODE   8
-> +#define DEFAULT_TIMER_EXPIRE  (HZ / 10)
-> +
-> +extern struct delayed_work spu_work;
-> +extern int spu_prof_running;
->  
->  struct spu_overlay_info {	/* map of sections within an SPU overlay */
->  	unsigned int vma;	/* SPU virtual memory address from elf */
-> @@ -62,6 +67,14 @@ struct vma_to_fileoffset_map {	/* map of sections within an SPU program */
->  
->  };
->  
-> +struct spu_buffer {
-> +	int last_guard_val;
-> +	int ctx_sw_seen;
-> +	unsigned long *buff;
-> +	unsigned int head, tail;
-> +};
-> +
-> +
->  /* The three functions below are for maintaining and accessing
->   * the vma-to-fileoffset map.
->   */
-> diff --git a/arch/powerpc/oprofile/cell/spu_profiler.c b/arch/powerpc/oprofile/cell/spu_profiler.c
-> index 380d7e2..6edaebd 100644
-> --- a/arch/powerpc/oprofile/cell/spu_profiler.c
-> +++ b/arch/powerpc/oprofile/cell/spu_profiler.c
-> @@ -23,12 +23,11 @@
->  
->  static u32 *samples;
->  
-> -static int spu_prof_running;
-> +int spu_prof_running;
->  static unsigned int profiling_interval;
->  
->  #define NUM_SPU_BITS_TRBUF 16
->  #define SPUS_PER_TB_ENTRY   4
-> -#define SPUS_PER_NODE	     8
->  
->  #define SPU_PC_MASK	     0xFFFF
->  
-> @@ -208,6 +207,7 @@ int start_spu_profiling(unsigned int cycles_reset)
->  
->  	spu_prof_running = 1;
->  	hrtimer_start(&timer, kt, HRTIMER_MODE_REL);
-> +	schedule_delayed_work(&spu_work, DEFAULT_TIMER_EXPIRE);
->  
->  	return 0;
->  }
-> diff --git a/arch/powerpc/oprofile/cell/spu_task_sync.c b/arch/powerpc/oprofile/cell/spu_task_sync.c
-> index 2a9b4a0..2949126 100644
-> --- a/arch/powerpc/oprofile/cell/spu_task_sync.c
-> +++ b/arch/powerpc/oprofile/cell/spu_task_sync.c
-> @@ -35,7 +35,102 @@ static DEFINE_SPINLOCK(buffer_lock);
->  static DEFINE_SPINLOCK(cache_lock);
->  static int num_spu_nodes;
->  int spu_prof_num_nodes;
-> -int last_guard_val[MAX_NUMNODES * 8];
-> +
-> +struct spu_buffer spu_buff[MAX_NUMNODES * SPUS_PER_NODE];
-> +struct delayed_work spu_work;
-> +static unsigned max_spu_buff;
-> +
-> +static void spu_buff_add(unsigned long int value, int spu)
-> +{
-> +	/* spu buff is a circular buffer.  Add entries to the
-> +	 * head.  Head is the index to store the next value.
-> +	 * The buffer is full when there is one available entry
-> +	 * in the queue, i.e. head and tail can't be equal.
-> +	 * That way we can tell the difference between the
-> +	 * buffer being full versus empty.
-> +	 *
-> +	 *  ASSUPTION: the buffer_lock is held when this function
-> +	 *             is called to lock the buffer, head and tail.
-> +	 */
-> +	int full = 1;
-> +
-> +	if (spu_buff[spu].head >= spu_buff[spu].tail) {
-> +		if ((spu_buff[spu].head - spu_buff[spu].tail)
-> +		    <  (max_spu_buff - 1))
-> +			full = 0;
-> +
-> +	} else if (spu_buff[spu].tail > spu_buff[spu].head) {
-> +		if ((spu_buff[spu].tail - spu_buff[spu].head)
-> +		    > 1)
-> +			full = 0;
-> +	}
-> +
-> +	if (!full) {
-> +		spu_buff[spu].buff[spu_buff[spu].head] = value;
-> +		spu_buff[spu].head++;
-> +
-> +		if (spu_buff[spu].head >= max_spu_buff)
-> +			spu_buff[spu].head = 0;
-> +	} else {
-> +		/* From the user's perspective make the SPU buffer
-> +		 * size management/overflow look like we are using
-> +		 * per cpu buffers.  The user uses the same
-> +		 * per cpu parameter to adjust the SPU buffer size.
-> +		 * Increment the sample_lost_overflow to inform
-> +		 * the user the buffer size needs to be increased.
-> +		 */
-> +		oprofile_cpu_buffer_inc_smpl_lost();
-> +	}
-> +}
-> +
-> +/* This function copies the per SPU buffers to the
-> + * OProfile kernel buffer.
-> + */
-> +void sync_spu_buff(void)
-> +{
-> +	int spu;
-> +	unsigned long flags;
-> +	int curr_head;
-> +
-> +	for (spu = 0; spu < num_spu_nodes; spu++) {
-> +		/* In case there was an issue and the buffer didn't
-> +		 * get created skip it.
-> +		 */
-> +		if (spu_buff[spu].buff == NULL)
-> +			continue;
-> +
-> +		/* Hold the lock to make sure the head/tail
-> +		 * doesn't change while spu_buff_add() is
-> +		 * deciding if the buffer is full or not.
-> +		 * Being a little paranoid.
-> +		 */
-> +		spin_lock_irqsave(&buffer_lock, flags);
-> +		curr_head = spu_buff[spu].head;
-> +		spin_unlock_irqrestore(&buffer_lock, flags);
-> +
-> +		/* Transfer the current contents to the kernel buffer.
-> +		 * data can still be added to the head of the buffer.
-> +		 */
-> +		oprofile_put_buff(spu_buff[spu].buff,
-> +				  spu_buff[spu].tail,
-> +				  curr_head, max_spu_buff);
-> +
-> +		spin_lock_irqsave(&buffer_lock, flags);
-> +		spu_buff[spu].tail = curr_head;
-> +		spin_unlock_irqrestore(&buffer_lock, flags);
-> +	}
-> +
-> +}
-> +
-> +static void wq_sync_spu_buff(struct work_struct *work)
-> +{
-> +	/* move data from spu buffers to kernel buffer */
-> +	sync_spu_buff();
-> +
-> +	/* only reschedule if profiling is not done */
-> +	if (spu_prof_running)
-> +		schedule_delayed_work(&spu_work, DEFAULT_TIMER_EXPIRE);
-> +}
->  
->  /* Container for caching information about an active SPU task. */
->  struct cached_info {
-> @@ -305,14 +400,21 @@ static int process_context_switch(struct spu *spu, unsigned long objectId)
->  
->  	/* Record context info in event buffer */
->  	spin_lock_irqsave(&buffer_lock, flags);
-> -	add_event_entry(ESCAPE_CODE);
-> -	add_event_entry(SPU_CTX_SWITCH_CODE);
-> -	add_event_entry(spu->number);
-> -	add_event_entry(spu->pid);
-> -	add_event_entry(spu->tgid);
-> -	add_event_entry(app_dcookie);
-> -	add_event_entry(spu_cookie);
-> -	add_event_entry(offset);
-> +	spu_buff_add(ESCAPE_CODE, spu->number);
-> +	spu_buff_add(SPU_CTX_SWITCH_CODE, spu->number);
-> +	spu_buff_add(spu->number, spu->number);
-> +	spu_buff_add(spu->pid, spu->number);
-> +	spu_buff_add(spu->tgid, spu->number);
-> +	spu_buff_add(app_dcookie, spu->number);
-> +	spu_buff_add(spu_cookie, spu->number);
-> +	spu_buff_add(offset, spu->number);
-> +
-> +	/* Set flag to indicate SPU PC data can now be written out.  If
-> +	 * the SPU program counter data is seen before an SPU context
-> +	 * record is seen, the postprocessing will fail.
-> +	 */
-> +	spu_buff[spu->number].ctx_sw_seen = 1;
-> +
->  	spin_unlock_irqrestore(&buffer_lock, flags);
->  	smp_wmb();	/* insure spu event buffer updates are written */
->  			/* don't want entries intermingled... */
-> @@ -360,6 +462,47 @@ static int number_of_online_nodes(void)
->          return nodes;
->  }
->  
-> +static int oprofile_spu_buff_create(void)
-> +{
-> +	int spu;
-> +
-> +	max_spu_buff = oprofile_get_cpu_buffer_size();
-> +
-> +	for (spu = 0; spu < num_spu_nodes; spu++) {
-> +		/* create circular buffers to store the data in.
-> +		 * use locks to manage accessing the buffers
-> +		 */
-> +		spu_buff[spu].head = 0;
-> +		spu_buff[spu].tail = 0;
-> +
-> +		/*
-> +		 * Create a buffer for each SPU.  Can't reliably
-> +		 * create a single buffer for all spus due to not
-> +		 * enough contiguous kernel memory.
-> +		 */
-> +
-> +		spu_buff[spu].buff = kzalloc((max_spu_buff
-> +					      * sizeof(unsigned long)),
-> +					     GFP_KERNEL);
-> +
-> +		if (!spu_buff[spu].buff) {
-> +			printk(KERN_ERR "SPU_PROF: "
-> +			       "%s, line %d:  oprofile_spu_buff_create "
-> +		       "failed to allocate spu buffer %d.\n",
-> +			       __func__, __LINE__, spu);
-> +
-> +			/* release the spu buffers that have been allocated */
-> +			while (spu >= 0) {
-> +				kfree(spu_buff[spu].buff);
-> +				spu_buff[spu].buff = 0;
-> +				spu--;
-> +			}
-> +			return -ENOMEM;
-> +		}
-> +	}
-> +	return 0;
-> +}
-> +
->  /* The main purpose of this function is to synchronize
->   * OProfile with SPUFS by registering to be notified of
->   * SPU task switches.
-> @@ -372,20 +515,35 @@ static int number_of_online_nodes(void)
->   */
->  int spu_sync_start(void)
->  {
-> -	int k;
-> +	int spu;
->  	int ret = SKIP_GENERIC_SYNC;
->  	int register_ret;
->  	unsigned long flags = 0;
->  
->  	spu_prof_num_nodes = number_of_online_nodes();
->  	num_spu_nodes = spu_prof_num_nodes * 8;
-> +	INIT_DELAYED_WORK(&spu_work, wq_sync_spu_buff);
-> +
-> +	/* create buffer for storing the SPU data to put in
-> +	 * the kernel buffer.
-> +	 */
-> +	ret = oprofile_spu_buff_create();
-> +	if (ret)
-> +		goto out;
->  
->  	spin_lock_irqsave(&buffer_lock, flags);
-> -	add_event_entry(ESCAPE_CODE);
-> -	add_event_entry(SPU_PROFILING_CODE);
-> -	add_event_entry(num_spu_nodes);
-> +	for (spu = 0; spu < num_spu_nodes; spu++) {
-> +		spu_buff_add(ESCAPE_CODE, spu);
-> +		spu_buff_add(SPU_PROFILING_CODE, spu);
-> +		spu_buff_add(num_spu_nodes, spu);
-> +	}
->  	spin_unlock_irqrestore(&buffer_lock, flags);
->  
-> +	for (spu = 0; spu < num_spu_nodes; spu++) {
-> +		spu_buff[spu].ctx_sw_seen = 0;
-> +		spu_buff[spu].last_guard_val = 0;
-> +	}
-> +
->  	/* Register for SPU events  */
->  	register_ret = spu_switch_event_register(&spu_active);
->  	if (register_ret) {
-> @@ -393,8 +551,6 @@ int spu_sync_start(void)
->  		goto out;
->  	}
->  
-> -	for (k = 0; k < (MAX_NUMNODES * 8); k++)
-> -		last_guard_val[k] = 0;
->  	pr_debug("spu_sync_start -- running.\n");
->  out:
->  	return ret;
-> @@ -446,13 +602,20 @@ void spu_sync_buffer(int spu_num, unsigned int *samples,
->  		 * use.	 We need to discard samples taken during the time
->  		 * period which an overlay occurs (i.e., guard value changes).
->  		 */
-> -		if (grd_val && grd_val != last_guard_val[spu_num]) {
-> -			last_guard_val[spu_num] = grd_val;
-> +		if (grd_val && grd_val != spu_buff[spu_num].last_guard_val) {
-> +			spu_buff[spu_num].last_guard_val = grd_val;
->  			/* Drop the rest of the samples. */
->  			break;
->  		}
->  
-> -		add_event_entry(file_offset | spu_num_shifted);
-> +		/* We must ensure that the SPU context switch has been written
-> +		 * out before samples for the SPU.  Otherwise, the SPU context
-> +		 * information is not available and the postprocessing of the
-> +		 * SPU PC will fail with no available anonymous map information.
-> +		 */
-> +		if (spu_buff[spu_num].ctx_sw_seen)
-> +			spu_buff_add((file_offset | spu_num_shifted),
-> +					 spu_num);
->  	}
->  	spin_unlock(&buffer_lock);
->  out:
-> @@ -463,20 +626,41 @@ out:
->  int spu_sync_stop(void)
->  {
->  	unsigned long flags = 0;
-> -	int ret = spu_switch_event_unregister(&spu_active);
-> -	if (ret) {
-> +	int ret;
-> +	int k;
-> +
-> +	ret = spu_switch_event_unregister(&spu_active);
-> +
-> +	if (ret)
->  		printk(KERN_ERR "SPU_PROF: "
-> -			"%s, line %d: spu_switch_event_unregister returned %d\n",
-> -			__func__, __LINE__, ret);
-> -		goto out;
-> -	}
-> +		       "%s, line %d: spu_switch_event_unregister "	\
-> +		       "returned %d\n",
-> +		       __func__, __LINE__, ret);
-> +
-> +	/* flush any remaining data in the per SPU buffers */
-> +	sync_spu_buff();
->  
->  	spin_lock_irqsave(&cache_lock, flags);
->  	ret = release_cached_info(RELEASE_ALL);
->  	spin_unlock_irqrestore(&cache_lock, flags);
-> -out:
-> +
-> +	/* remove scheduled work queue item rather then waiting
-> +	 * for every queued entry to execute.  Then flush pending
-> +	 * system wide buffer to event buffer.
-> +	 */
-> +	cancel_delayed_work(&spu_work);
-> +
-> +	for (k = 0; k < num_spu_nodes; k++) {
-> +		spu_buff[k].ctx_sw_seen = 0;
-> +
-> +		/*
-> +		 * spu_sys_buff will be null if there was a problem
-> +		 * allocating the buffer.  Only delete if it exists.
-> +		 */
-> +		kfree(spu_buff[k].buff);
-> +		spu_buff[k].buff = 0;
-> +	}
->  	pr_debug("spu_sync_stop -- done.\n");
->  	return ret;
->  }
->  
-> -
-> diff --git a/drivers/oprofile/buffer_sync.c b/drivers/oprofile/buffer_sync.c
-> index 9304c45..4a70180 100644
-> --- a/drivers/oprofile/buffer_sync.c
-> +++ b/drivers/oprofile/buffer_sync.c
-> @@ -551,3 +551,27 @@ void sync_buffer(int cpu)
->  
->  	mutex_unlock(&buffer_mutex);
->  }
-> +
-> +/* The function can be used to add a buffer worth of data directly to
-> + * the kernel buffer. The buffer is assumed to be a circular buffer.
-> + * Take the entries from index start and end at index end, wrapping
-> + * at max_entries.
-> + */
-> +void oprofile_put_buff(unsigned long *buf, unsigned int start,
-> +		       unsigned int stop, unsigned int max)
-> +{
-> +	int i;
-> +
-> +	i = start;
-> +
-> +	mutex_lock(&buffer_mutex);
-> +	while (i != stop) {
-> +		add_event_entry(buf[i++]);
-> +
-> +		if (i >= max)
-> +			i = 0;
-> +	}
-> +
-> +	mutex_unlock(&buffer_mutex);
-> +}
-> +
-> diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
-> index 2450b3a..b8601dc 100644
-> --- a/drivers/oprofile/cpu_buffer.c
-> +++ b/drivers/oprofile/cpu_buffer.c
-> @@ -37,11 +37,24 @@ static int work_enabled;
->  void free_cpu_buffers(void)
->  {
->  	int i;
-> - 
-> +
->  	for_each_online_cpu(i)
->  		vfree(per_cpu(cpu_buffer, i).buffer);
->  }
->  
-> +unsigned long oprofile_get_cpu_buffer_size(void)
-> +{
-> +	return fs_cpu_buffer_size;
-> +}
-> +
-> +void oprofile_cpu_buffer_inc_smpl_lost(void)
-> +{
-> +	struct oprofile_cpu_buffer *cpu_buf
-> +		= &__get_cpu_var(cpu_buffer);
-> +
-> +	cpu_buf->sample_lost_overflow++;
-> +}
-> +
->  int alloc_cpu_buffers(void)
->  {
->  	int i;
-> diff --git a/drivers/oprofile/event_buffer.h b/drivers/oprofile/event_buffer.h
-> index 5076ed1..84bf324 100644
-> --- a/drivers/oprofile/event_buffer.h
-> +++ b/drivers/oprofile/event_buffer.h
-> @@ -17,6 +17,13 @@ int alloc_event_buffer(void);
->  
->  void free_event_buffer(void);
->   
-> +/**
-> + * Add data to the event buffer.
-> + * The data passed is free-form, but typically consists of
-> + * file offsets, dcookies, context information, and ESCAPE codes.
-> + */
-> +void add_event_entry(unsigned long data);
-> +
->  /* wake up the process sleeping on the event file */
->  void wake_up_buffer_waiter(void);
->  
-> diff --git a/include/linux/oprofile.h b/include/linux/oprofile.h
-> index 041bb31..1ef7fce 100644
-> --- a/include/linux/oprofile.h
-> +++ b/include/linux/oprofile.h
-> @@ -84,13 +84,6 @@ int oprofile_arch_init(struct oprofile_operations * ops);
->  void oprofile_arch_exit(void);
->  
->  /**
-> - * Add data to the event buffer.
-> - * The data passed is free-form, but typically consists of
-> - * file offsets, dcookies, context information, and ESCAPE codes.
-> - */
-> -void add_event_entry(unsigned long data);
-> -
-> -/**
->   * Add a sample. This may be called from any context. Pass
->   * smp_processor_id() as cpu.
->   */
-> @@ -160,5 +153,14 @@ int oprofilefs_ulong_from_user(unsigned long * val, char const __user * buf, siz
->  
->  /** lock for read/write safety */
->  extern spinlock_t oprofilefs_lock;
-> +
-> +/**
-> + * Add the contents of a circular buffer to the event buffer.
-> + */
-> +void oprofile_put_buff(unsigned long *buf, unsigned int start,
-> +			unsigned int stop, unsigned int max);
-> +
-> +unsigned long oprofile_get_cpu_buffer_size(void);
-> +void oprofile_cpu_buffer_inc_smpl_lost(void);
->   
->  #endif /* OPROFILE_H */
-> -- 
-> 1.5.4.3
-> 
-> 
+2.6.27-rc3-next-20080820:
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+[   22.266394] [ BUG: bad unlock balance detected! ]
+[   22.266495] -------------------------------------
+[   22.266594] khelper/8 is trying to release lock (&p->cred_exec_mutex) at:
+[   22.266775] [<00000000006af9f8>] mutex_unlock+0x10/0x20
+[   22.266881] but there are no more locks to release!
+[   22.266982]
+[   22.266987] other info that might help us debug this:
+[   22.267136] no locks held by khelper/8.
+[   22.267224]
+[   22.267229] stack backtrace:
+[   22.267343] Call Trace:
+[   22.267436]  [000000000047800c] print_unlock_inbalance_bug+0xe8/0xf8
+[   22.267569]  [0000000000478338] lock_release+0x98/0x1ac
+[   22.267685]  [00000000006af954] __mutex_unlock_slowpath+0xbc/0x150
+[   22.267816]  [00000000006af9f8] mutex_unlock+0x10/0x20
+[   22.267931]  [00000000004b81fc] free_bprm+0x1c/0x3c
+[   22.268043]  [00000000004b93d4] do_execve+0x230/0x254
+[   22.268158]  [00000000004273d8] sparc_execve+0x64/0xb0
+[   22.268284]  [0000000000406194] linux_sparc_syscall+0x34/0x44
+[   22.268407]  [0000000000432cf0] kernel_execve+0x20/0x34
+[   22.268535]  [0000000000462fa8] ____call_usermodehelper+0xf4/0x10c
+[   22.268661]  [0000000000427260] kernel_thread+0x3c/0x54
+[   22.268779]  [0000000000462e7c] __call_usermodehelper+0x7c/0xb4
