@@ -1,87 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753348AbYHTFrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752454AbYHTFsJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753348AbYHTFrs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 01:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbYHTFrh
+	id S1752454AbYHTFsJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 01:48:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbYHTFrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 01:47:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44606 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751258AbYHTFrg (ORCPT
+	Wed, 20 Aug 2008 01:47:39 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:44674 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751304AbYHTFri (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 01:47:36 -0400
-Date: Tue, 19 Aug 2008 22:47:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-Subject: Re: [-mm] sysfs: duplicate filename 'acpi' can not be created
-Message-Id: <20080819224732.5b1393c1.akpm@linux-foundation.org>
-In-Reply-To: <48ABACF2.4060503@cn.fujitsu.com>
-References: <48ABACF2.4060503@cn.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 20 Aug 2008 01:47:38 -0400
+Date: Wed, 20 Aug 2008 14:47:36 +0900 (JST)
+Message-Id: <20080820.144736.16128062.taka@valinux.co.jp>
+To: balbir@linux.vnet.ibm.com
+Cc: ryov@valinux.co.jp, kamezawa.hiroyu@jp.fujitsu.com,
+       xen-devel@lists.xensource.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       dm-devel@redhat.com, agk@sourceware.org, xemul@openvz.org,
+       fernando@oss.ntt.co.jp
+Subject: Re: [PATCH 4/7] bio-cgroup: Split the cgroup memory subsystem into
+ two parts
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <48AACF41.5090905@linux.vnet.ibm.com>
+References: <48AA4594.1000908@linux.vnet.ibm.com>
+	<20080819.214635.70071441.taka@valinux.co.jp>
+	<48AACF41.5090905@linux.vnet.ibm.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008 13:34:42 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
+Hi,
 
-> When I compiled latest -mm and booted up:
+> >>>> I'm now writing remove-lock-page-cgroup patches. it works well.
+> >>>> please wait for a while...
+> >>> I'm looking forward to those patches.
+> >>>
+> >>> By the way, I'm glad if memory-cgroup has a feature which can make a
+> >>> page_cgroup move between cgroups with small overhead. It makes
+> >>> bio-cgroup improve the accuracy of tracking down pages.
+> >> Page movement can be a very expensive operation and is proportional to the size
+> >> of the control group. I think movement should be an optional feature, if we ever
+> >> add it.
+> > 
+> > Yes, we should avoid moving pages as far as it is balanced fairly well
+> > between groups.
+> > 
+> > But I want to move pages between bio-cgoups in case it started charging
+> > quite a few I/O requests to a wrong bio-cgroup. I think it will be okay
+> > if pages moves between bio-cgroups, but they don't need to move between
+> > memory cgroups. I know the latter is really heavy and the effect seems
+> > to be so limited.
 > 
-> ------------[ cut here ]------------
-> WARNING: at fs/sysfs/dir.c:463 sysfs_add_one+0x27/0x2f()
-> sysfs: duplicate filename 'acpi' can not be created
-> Modules linked in:
-> Pid: 1, comm: swapper Not tainted 2.6.27-rc3-mm1 #2
->  [<c0421173>] warn_slowpath+0x61/0x83
->  [<c043b422>] __lock_acquire+0x601/0x658
->  [<c047ea0d>] ifind+0x13/0x79
->  [<c05c2ce9>] _spin_unlock+0x14/0x1c
->  [<c047ea6d>] ifind+0x73/0x79
->  [<c04a5a32>] sysfs_find_dirent+0x13/0x23
->  [<c04a5ac5>] sysfs_add_one+0x27/0x2f
->  [<c04a5f83>] create_dir+0x3c/0x81
->  [<c04a5ff1>] sysfs_create_dir+0x29/0x3b
->  [<c05c2ce9>] _spin_unlock+0x14/0x1c
->  [<c04c466d>] kobject_add_internal+0xb1/0x14a
->  [<c04c490b>] kobject_init_and_add+0x29/0x2c
->  [<c06ea613>] kernel_param_sysfs_setup+0x4f/0x9f
->  [<c06ea753>] param_sysfs_init+0xf0/0x147
->  [<c0401122>] _stext+0x3a/0x12f
->  [<c06ea663>] param_sysfs_init+0x0/0x147
->  [<c041b3ee>] try_to_wake_up+0x146/0x14f
->  [<c042d9f5>] __create_workqueue_key+0xa0/0x13c
->  [<c06d9550>] kernel_init+0x18d/0x1f1
->  [<c06d93c3>] kernel_init+0x0/0x1f1
->  [<c04044ff>] kernel_thread_helper+0x7/0x10
->  =======================
-> ---[ end trace 4eaa2a86a8e2da22 ]---
-> kobject_add_internal failed for acpi with -EEXIST, don't try to register things with the same name in the same directory.
-> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc3-mm1 #2
->  [<c04c46d0>] kobject_add_internal+0x114/0x14a
->  [<c04c490b>] kobject_init_and_add+0x29/0x2c
->  [<c06ea613>] kernel_param_sysfs_setup+0x4f/0x9f
->  [<c06ea753>] param_sysfs_init+0xf0/0x147
->  [<c0401122>] _stext+0x3a/0x12f
->  [<c06ea663>] param_sysfs_init+0x0/0x147
->  [<c041b3ee>] try_to_wake_up+0x146/0x14f
->  [<c042d9f5>] __create_workqueue_key+0xa0/0x13c
->  [<c06d9550>] kernel_init+0x18d/0x1f1
->  [<c06d93c3>] kernel_init+0x0/0x1f1
->  [<c04044ff>] kernel_thread_helper+0x7/0x10
->  =======================
-> Module 'acpi' failed to be added to sysfs, error number -17
-> The system will be unstable now.
+> I was under the impression that you wanted memory-cgroup to provide the page
+> movement feature. That is not on the TODO list for us now.
 
-The only acpi-specific patches in mm(otm) are
+I think it's practically enough to implement this feature only on
+bio-cgroup side and leave the memory controller untouched.
+This kind of requests will happen only when making pages dirty.
 
-acpi-add-checking-for-null-early-param.patch
-acpi-avoid-dropping-rapid-hotkey-events-or-other-gpes-on-asus-eeepc.patch
-mm-only-enforce-acpi-resource-conflict-checks.patch
+Of cousrse I'd be happier if you put it on your list to implement
+this as a generic feature.
 
-so I'd say you've hit a linux-next regression there.
-
-Random-possible-feel-it-in-my-water-guess: do you have CONFIG_FASTBOOT
-set and if so, does unsetting it fix things?
+Thanks,
+Hirokazu Takahsahi.
