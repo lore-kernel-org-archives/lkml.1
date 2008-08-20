@@ -1,89 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYHTNPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756762AbYHTNQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756820AbYHTNPZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 09:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYHTNPO
+	id S1756762AbYHTNQe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 09:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbYHTNQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 09:15:14 -0400
-Received: from hs-out-0708.google.com ([64.233.178.251]:51854 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752793AbYHTNPM (ORCPT
+	Wed, 20 Aug 2008 09:16:23 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:59187 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754501AbYHTNQW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 09:15:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gBrot/LBQmqT4IVnYtwDrk/d+VAli1O4E9SeXHH5T4E+1NObvG7FootVLGzz1osQy3
-         AmiKlwHCRN1bw3KJjv1LYRItl47q9xOI+k73z7hYBB2BediVQUtRpWO5ksAaW1hsUu4i
-         vNmt2LLdNqnrLQavt/0oS/PMxqLSN8nvzikIE=
-Message-ID: <d4b6d3ea0808200615p1df9b41an6bf7d742c2e258dd@mail.gmail.com>
-Date: Wed, 20 Aug 2008 09:15:10 -0400
-From: "Michael Madore" <michael.madore@gmail.com>
+	Wed, 20 Aug 2008 09:16:22 -0400
+From: Rodolfo Giometti <giometti@linux.it>
 To: linux-kernel@vger.kernel.org
-Subject: Re: INFO: task blocked for more than 120 seconds
-In-Reply-To: <d4b6d3ea0808191100m17ab13cbnb9a1a8a06f2e22e0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d4b6d3ea0808191100m17ab13cbnb9a1a8a06f2e22e0@mail.gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Rodolfo Giometti <giometti@linux.it>
+Date: Wed, 20 Aug 2008 15:16:07 +0200
+Message-Id: <1219238170-5508-8-git-send-email-giometti@linux.it>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1219238170-5508-7-git-send-email-giometti@linux.it>
+References: <>
+ <1219238170-5508-1-git-send-email-giometti@linux.it>
+ <1219238170-5508-2-git-send-email-giometti@linux.it>
+ <1219238170-5508-3-git-send-email-giometti@linux.it>
+ <1219238170-5508-4-git-send-email-giometti@linux.it>
+ <1219238170-5508-5-git-send-email-giometti@linux.it>
+ <1219238170-5508-6-git-send-email-giometti@linux.it>
+ <1219238170-5508-7-git-send-email-giometti@linux.it>
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: [PATCH 07/10] tty: new PPS line discipline.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Committing a transaction would means writing rest of the meta-data in
->>> the transaction. And that would imply forcing most of the buffer_heads
->>> to disk in ordered mode. This can result a lot of seeks and make take
->>> more thatn 120 seconds.
->>
->>
->> Both Randy and Greg reported getting this for 2.6.27-rc but not
->> for 2.6.26.
->>
->> Why are people getting such messages for 2.6.27-rc but not for 2.6.26?
->
-> Hi,
->
-> I have reported getting these messages on 2.6.26:
->
-> http://marc.info/?l=linux-kernel&m=121796211813099&w=2
->
-> In addition to the system mentioned in that posting, I have just
-> reproduced it by stress testing a system with 2 Opteron processors,
-> 2GB of RAM and 2 SATA disks.
->
-> Backing out this patch seems to help:
->
-> commit cc19747977824ece6aa1c56a29e974fef5ec2b32
-> Author: Jens Axboe <jens.axboe@oracle.com>
-> Date:   Fri Apr 20 20:45:39 2007 +0200
->
->    cfq-iosched: tighten queue request overlap condition
->
->    For tagged devices, allow overlap of requests if the idle window
->    isn't enabled on the current active queue.
->
->    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
->
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index a8237be..e859b49 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -989,7 +989,8 @@ static struct cfq_queue *cfq_select_queue(struct
-> cfq_data *cfqd)
-> * flight or is idling for a new request, allow either of these
-> * conditions to happen (or time out) before selecting a new queue.
-> */
-> - if (cfqq->dispatched || timer_pending(&cfqd->idle_slice_timer)) {
-> + if (timer_pending(&cfqd->idle_slice_timer) ||
-> +     (cfqq->dispatched && cfq_cfqq_idle_window(cfqq))) {
-> cfqq = NULL;
-> goto keep_queue;
-> }
+Add a new line discipline for "pulse per second" devices connected to
+a serial port.
 
-Actually, I tested again with this commit reversed, and I'm still
-seeing the problem.  Sorry for any confusion.
+Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+---
+ include/linux/tty.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Mike
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index 826d695..1857db2 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -24,7 +24,7 @@
+  */
+ #define NR_UNIX98_PTY_DEFAULT	4096      /* Default maximum for Unix98 ptys */
+ #define NR_UNIX98_PTY_MAX	(1 << MINORBITS) /* Absolute limit */
+-#define NR_LDISCS		18
++#define NR_LDISCS		19
+ 
+ /* line disciplines */
+ #define N_TTY		0
+@@ -46,6 +46,7 @@
+ #define N_HCI		15	/* Bluetooth HCI UART */
+ #define N_GIGASET_M101	16	/* Siemens Gigaset M101 serial DECT adapter */
+ #define N_SLCAN		17	/* Serial / USB serial CAN Adaptors */
++#define N_PPS		18	/* Pulse per Second */
+ 
+ /*
+  * This character is the same as _POSIX_VDISABLE: it cannot be used as
+-- 
+1.5.4.3
+
