@@ -1,79 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525AbYHTNIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbYHTNJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756525AbYHTNIy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 09:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbYHTNIp
+	id S1756738AbYHTNJW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 09:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638AbYHTNJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 09:08:45 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:15446 "EHLO
-	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754134AbYHTNIp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 09:08:45 -0400
-Message-ID: <48AC170A.2070702@panasas.com>
-Date: Wed, 20 Aug 2008 16:07:22 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 20 Aug 2008 09:09:01 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59179 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755067AbYHTNI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 09:08:58 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] forcedeth: Fix kexec regression
+Date: Wed, 20 Aug 2008 15:12:11 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Jeff Garzik" <jgarzik@redhat.com>, David Miller <davem@davemloft.net>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Simon Arlott" <simon@fire.lp0.eu>
+References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <200808192045.54779.rjw@sisk.pl> <m1od3ow4oi.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1od3ow4oi.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-To: adobriyan@gmail.com
-CC: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] debug: fix BUILD_BUG_ON() for non-constant expressions
-References: <20080816100948.GB19926@martell.zuzino.mipt.ru> <alpine.LFD.1.10.0808170936260.3324@nehalem.linux-foundation.org> <20080817173319.GA2450@elte.hu> <200808181109.43203.rusty@rustcorp.com.au> <20080818075459.GH30694@elte.hu> <48A9472F.908@panasas.com> <20080819133422.GA24369@elte.hu> <48AAF5F7.6040709@panasas.com> <20080820105922.GC18524@elte.hu> <48AC0EB9.3080708@panasas.com> <20080820123929.GA29972@x200.localdomain>
-In-Reply-To: <20080820123929.GA29972@x200.localdomain>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Aug 2008 13:06:40.0097 (UTC) FILETIME=[95BFFD10:01C902C5]
+Content-Disposition: inline
+Message-Id: <200808201512.12583.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-adobriyan@gmail.com wrote:
-> On Wed, Aug 20, 2008 at 03:31:53PM +0300, Boaz Harrosh wrote:
->> Ingo Molnar wrote:
->>> * Boaz Harrosh <bharrosh@panasas.com> wrote:
->>>
->>>> If the user of virtio_has_feature() must pass a compile-time constant 
->>>> then it must be converted to a MACRO, and then the BUILD_BUG_ON will 
->>>> work. Or it should be changed to a BUG_ON() if fbit is a runtime 
->>>> variable.
->> The use of __builtin_constant_p in inline functions is broken. This
->> is because it will give different results depending on the -O level
->> used. So I think that using it in the Kernel with inlines is plain
->> broken. And should be discouraged.
+On Wednesday, 20 of August 2008, Eric W. Biederman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> See how kmalloc() works.
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> >
+> > forcedeth: Fix kexec regression
+> >
+> > Fix regression tracked as
+> > http://bugzilla.kernel.org/show_bug.cgi?id=11361 and
+> > caused by commit f735a2a1a4f2a0f5cd823ce323e82675990469e2
+> > ("[netdrvr] forcedeth: setup wake-on-lan before shutting down")
+> > that makes network adapters integrated into the NVidia
+> > MCP55 chipsets fail to work in kexeced kernels.  The problem appears
+> > to be that if the adapter is put into D3_hot during ->shutdown(),
+> > it cannot be brought back into D0 after kexec (ref.
+> > http://marc.info/?l=linux-kernel&m=121900062814967&w=4).  Therefore,
+> > only put forcedeth into D3 during ->shutdown() if the system is to be
+> > powered off.
 > 
-Right:
+> Any chance we can fix this by teaching the forcedeth driver to
+> bring a card out of PCI_D3hot?
 
-static inline void *kmalloc(size_t size, gfp_t flags)
-{
-	if (__builtin_constant_p(size)) {
-	 	... do some stuff
-	else
-		return __kmalloc_xxx(..)
-}
+Maybe, but that's not what I'm able to do at the moment. :-)
 
-So if optimization is on we might gain some cycles
-but we must make sure we have the proper else clause.
+Yinghai Lu thinks that the hardware has a problem with that, though.
 
-In any way virtio_has_feature() is broken and no amount
-of optimization may ever fix it. Please look at it:
+> The kexec on panic guys are going to need that and it is just generally
+> more robust all of the way around than a special case in shutdown
+> based on system_state.
 
-static inline bool virtio_has_feature(const struct virtio_device *vdev,
-				      unsigned int fbit)
-{
-	/* Did you forget to fix assumptions on max features? */
-	if (__builtin_constant_p(fbit))
-		BUILD_BUG_ON(sizeof(fbit) >= 32);
+Actually, system_state == SYSTEM_POWER_OFF is a special case already, since
+it is the only case in which ACPI gets involved.
 
-
-the __builtin_constant_p(fbit) will never help.
-sizeof(fbit) is always sizeof(unsigned int) in any case. Only
-a macro can help here. Sorry
-
-Boaz
-
+Thanks,
+Rafael
