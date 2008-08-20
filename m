@@ -1,201 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbYHTS6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbYHTTCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755523AbYHTS6S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 14:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbYHTS6F
+	id S1754867AbYHTTCE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 15:02:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbYHTTBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 14:58:05 -0400
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:43599 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752112AbYHTS6E (ORCPT
+	Wed, 20 Aug 2008 15:01:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57133 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752885AbYHTTBu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 14:58:04 -0400
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Jaya Kumar <jayakumar.lkml@gmail.com>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh@veritas.com>, Johannes Weiner <hannes@saeurebad.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Kel Modderman <kel@otaku42.de>,
-       Markus Armbruster <armbru@redhat.com>
-In-Reply-To: <20080820013736.ec64baae.akpm@linux-foundation.org>
-References: <1219125765-31833-1-git-send-email-ijc@hellion.org.uk>
-	 <20080818233824.5d219105.akpm@linux-foundation.org>
-	 <1219220003.3996.29.camel@localhost.localdomain>
-	 <20080820013736.ec64baae.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-HxIQ85CZL77e76fq4EKB"
-Date: Wed, 20 Aug 2008 19:57:53 +0100
-Message-Id: <1219258673.3996.46.camel@localhost.localdomain>
+	Wed, 20 Aug 2008 15:01:50 -0400
+Date: Wed, 20 Aug 2008 12:00:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: peter_e@gmx.net
+Cc: bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       Nadia Derbey <Nadia.Derbey@bull.net>,
+       Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>,
+       Manfred Spraul <manfred@colorfullife.com>,
+       Pierre Peiffer <peifferp@gmail.com>, containers@lists.osdl.org
+Subject: Re: [Bugme-new] [Bug 11381] New: default shmmax
+Message-Id: <20080820120043.e6e7e436.akpm@linux-foundation.org>
+In-Reply-To: <bug-11381-10286@http.bugzilla.kernel.org/>
+References: <bug-11381-10286@http.bugzilla.kernel.org/>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-SA-Exim-Connect-IP: 192.168.1.5
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH] fbdefio: add set_page_dirty handler to deferred IO FB
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-HxIQ85CZL77e76fq4EKB
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+(switched to email.  Please respond via emailed reply-to-all, not via the
+bugzilla web interface).
 
-[correcting stable@]
+On Wed, 20 Aug 2008 05:58:57 -0700 (PDT)
+bugme-daemon@bugzilla.kernel.org wrote:
 
-On Wed, 2008-08-20 at 01:37 -0700, Andrew Morton wrote:
-> On Wed, 20 Aug 2008 09:13:23 +0100 Ian Campbell <ijc@hellion.org.uk> wrot=
-e:
->=20
-> > Perhaps applying the band-aid at open time instead would be preferred?
->=20
-> That would be less racy, I expect.
-[...]
-> <tries to write a patch>
->=20
-> OK, seems that fb_ops.fb_open() has no way of getting at the `struct
-> file *' which is being opened (wtf?).  Screwed.  Need to change
-> fb_ops.fb_open(), or add a new fb_ops.fb_open_sane().
+> http://bugzilla.kernel.org/show_bug.cgi?id=11381
+> 
+>            Summary: default shmmax
+>            Product: Other
+>            Version: 2.5
+>      KernelVersion: 2.6.26.2
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: enhancement
+>           Priority: P1
+>          Component: Other
+>         AssignedTo: other_other@kernel-bugs.osdl.org
+>         ReportedBy: peter_e@gmx.net
+> 
+> 
+> I would like to request that the default shmmax setting be increased or the
+> downsides of that be documented.  Allow me to explain.
+> 
+> I am with the PostgreSQL development team.  PostgreSQL is probably one of the
+> few users of large amounts of SysV shared memory.  Users would usually want to
+> configure anywhere between 10% and 50% of their physical RAM to be used as
+> shared memory, which would translate to something on the order of gigabytes
+> nowadays.  One of the uniformly annoying things about setting this up is that
+> you need to reconfigure the Linux kernel to allow that.  sysctl is nice and
+> all, but it still requires users to learn about operating system and kernel
+> details, requires root access, and distros don't handle sysctl uniformly
+> either.  Maybe there is even a good reason for that, but I couldn't find it,
+> and at least I would like to learn it, so that we can pass that information on
+> to our users.
+> 
+> I did some kernel version archeology and found out that up until kernels 2.2
+> the shmmax setting appears to have been restricted by CPU-specific constraints,
+> as indicated by the default setting being different across CPUs and being
+> defined in an asm header.  The default setting on i386 was increased from 16 MB
+> to 32 MB somewhere around 1998 in the kernel 2.0 line, and it remains at 32 MB
+> in the latest kernel on all architectures.
+> 
+> Now one question is whether there is a space or time overhead involved with
+> setting a high shmmax limit that isn't actually used.  If so, it would be
+> interesting to know what that overhead is.  The feeling I get from browsing the
+> kernel source code over time is that there was some management overhead and/or
+> some restrictions about this in old kernels, but that nowadays it doesn't
+> really seem to matter much anymore.  I suspect instead that this whole thing
+> was just forgotten, because few applications use large amounts of shared
+> memory.
+> 
+> So, if you want to do us a favor, could you please see about increasing the
+> default shmmax setting to whatever the theoretical maximum is?
+> 
 
-Ah yes, I remember why I did it in mmap() now...
+I don't think anybody has even thought about the shmmax default in
+years.  Sure, it might be time to reexamine that.
 
-How about this version? Not as clean as overriding fb_open() but
-involves less frobbing with unrelated drivers.
-
-=46rom ae2f7f118518fbfd4006c985b136a5d3d1a314af Mon Sep 17 00:00:00 2001
-From: Ian Campbell <ijc@hellion.org.uk>
-Date: Wed, 20 Aug 2008 19:54:50 +0100
-Subject: [PATCH] fbdefio: add set_page_dirty handler to deferred IO FB
-
-Fixes kernel BUG at lib/radix-tree.c:473.
-
-Previously the handler was incidentally provided by tmpfs but this was
-removed with:
-
-  commit 14fcc23fdc78e9d32372553ccf21758a9bd56fa1
-  Author: Hugh Dickins <hugh@veritas.com>
-  Date:   Mon Jul 28 15:46:19 2008 -0700
-
-    tmpfs: fix kernel BUG in shmem_delete_inode
-
-relying on this behaviour was incorrect in any case and the BUG
-also appeared when the device node was on an ext3 filesystem.
-
-v2: override a_ops at open() time rather than mmap() time to minimise
-races per AKPM's concerns.
-
-Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
-Acked-by: Jaya Kumar <jayakumar.lkml@gmail.com>
-Acked-by: Nick Piggin <npiggin@suse.de>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Hugh Dickins <hugh@veritas.com>
-Cc: Johannes Weiner <hannes@saeurebad.de>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Kel Modderman <kel@otaku42.de>
-Cc: Markus Armbruster <armbru@redhat.com>
-Cc: stable@kernel.org [14fcc23fd is in 2.6.25.14 and 2.6.26.1]
----
- drivers/video/fb_defio.c |   19 +++++++++++++++++++
- drivers/video/fbmem.c    |    4 ++++
- include/linux/fb.h       |    3 +++
- 3 files changed, 26 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
-index 59df132..4835bdc 100644
---- a/drivers/video/fb_defio.c
-+++ b/drivers/video/fb_defio.c
-@@ -114,6 +114,17 @@ static struct vm_operations_struct fb_deferred_io_vm_o=
-ps =3D {
- 	.page_mkwrite	=3D fb_deferred_io_mkwrite,
- };
-=20
-+static int fb_deferred_io_set_page_dirty(struct page *page)
-+{
-+	if (!PageDirty(page))
-+		SetPageDirty(page);
-+	return 0;
-+}
-+
-+static const struct address_space_operations fb_deferred_io_aops =3D {
-+	.set_page_dirty =3D fb_deferred_io_set_page_dirty,
-+};
-+
- static int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct=
- *vma)
- {
- 	vma->vm_ops =3D &fb_deferred_io_vm_ops;
-@@ -163,6 +174,14 @@ void fb_deferred_io_init(struct fb_info *info)
- }
- EXPORT_SYMBOL_GPL(fb_deferred_io_init);
-=20
-+void fb_deferred_io_open(struct fb_info *info,
-+			 struct inode *inode,
-+			 struct file *file)
-+{
-+	file->f_mapping->a_ops =3D &fb_deferred_io_aops;
-+}
-+EXPORT_SYMBOL_GPL(fb_deferred_io_open);
-+
- void fb_deferred_io_cleanup(struct fb_info *info)
- {
- 	void *screen_base =3D (void __force *) info->screen_base;
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 6b48780..98843c2 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1344,6 +1344,10 @@ fb_open(struct inode *inode, struct file *file)
- 		if (res)
- 			module_put(info->fbops->owner);
- 	}
-+#ifdef CONFIG_FB_DEFERRED_IO
-+	if (info->fbdefio)
-+		fb_deferred_io_open(info, inode, file);
-+#endif
- out:
- 	unlock_kernel();
- 	return res;
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 3b8870e..531ccd5 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -976,6 +976,9 @@ static inline void __fb_pad_aligned_buffer(u8 *dst, u32=
- d_pitch,
-=20
- /* drivers/video/fb_defio.c */
- extern void fb_deferred_io_init(struct fb_info *info);
-+extern void fb_deferred_io_open(struct fb_info *info,
-+				struct inode *inode,
-+				struct file *file);
- extern void fb_deferred_io_cleanup(struct fb_info *info);
- extern int fb_deferred_io_fsync(struct file *file, struct dentry *dentry,
- 				int datasync);
---=20
-1.5.6.3
+It would be useful to get distro input on this.  Do they override the
+kernel default at boot time?  If so, what do they do?
 
 
+Also, from a quick read it looks to me that shmmax is busted in the
+non-init namespace.
 
+clone_ipc_ns() calls shm_init_ns() which does
 
---=20
-Ian Campbell
+	ns->shm_ctlmax = SHMMAX;
 
-Hope that the day after you die is a nice day.
-
---=-HxIQ85CZL77e76fq4EKB
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkisaTAACgkQM0+0qS9rzVmWEQCgsya+jPMH9kERCHGZczRsJxjS
-KO4AoKiSf1ugeh+x55QjKysJicopWEjM
-=4l8B
------END PGP SIGNATURE-----
-
---=-HxIQ85CZL77e76fq4EKB--
+which a) fails to inherit the parent's setting and b) cannot be altered
+from SHMMAX via the sysctl?
 
