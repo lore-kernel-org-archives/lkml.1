@@ -1,108 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbYHTTCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYHTTGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867AbYHTTCE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 15:02:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbYHTTBw
+	id S1755401AbYHTTGX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 15:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYHTTGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 15:01:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57133 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752885AbYHTTBu (ORCPT
+	Wed, 20 Aug 2008 15:06:15 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:11270 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751270AbYHTTGP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 15:01:50 -0400
-Date: Wed, 20 Aug 2008 12:00:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: peter_e@gmx.net
-Cc: bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
-       Nadia Derbey <Nadia.Derbey@bull.net>,
-       Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Pierre Peiffer <peifferp@gmail.com>, containers@lists.osdl.org
-Subject: Re: [Bugme-new] [Bug 11381] New: default shmmax
-Message-Id: <20080820120043.e6e7e436.akpm@linux-foundation.org>
-In-Reply-To: <bug-11381-10286@http.bugzilla.kernel.org/>
-References: <bug-11381-10286@http.bugzilla.kernel.org/>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Aug 2008 15:06:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DAkbYfslFjm3OpEqNBdB6WBKeWjZBdshrthNB2N/XhGjRt1pK7FXNtQauoMK/iatQT
+         VVLaSsmmB1XobK46oQv8eeMPG56g6bS8wHTQ9Kx+/rOg/NSTcyZ/QjXpYRZOLTquhiBw
+         TZWCtPGIpwT+xMwTmfDZmEHGp8KTM9mvKb1pE=
+Date: Wed, 20 Aug 2008 21:05:41 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Cc: linux-kernel@vger.kernel.org, Johannes Weiner <hannes@saeurebad.de>
+Subject: Re: [PATCH] Section mismatch contig_page_data and bootmem_node_data
+Message-ID: <20080820190436.GA5388@joi>
+References: <20080820135551.74911cb3@lappy.seanm.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080820135551.74911cb3@lappy.seanm.ca>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-(switched to email.  Please respond via emailed reply-to-all, not via the
-bugzilla web interface).
-
-On Wed, 20 Aug 2008 05:58:57 -0700 (PDT)
-bugme-daemon@bugzilla.kernel.org wrote:
-
-> http://bugzilla.kernel.org/show_bug.cgi?id=11381
+On Wed, Aug 20, 2008 at 01:55:51PM -0400, Sean MacLennan wrote:
+> If CONFIG_NEED_MULTIPLE_NODES is *not* set, then you get a section
+> mismatch in reference from the variable contig_page_data to the
+> variable __initdata bootmem_node_data.
 > 
->            Summary: default shmmax
->            Product: Other
->            Version: 2.5
->      KernelVersion: 2.6.26.2
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: enhancement
->           Priority: P1
->          Component: Other
->         AssignedTo: other_other@kernel-bugs.osdl.org
->         ReportedBy: peter_e@gmx.net
+> The simple solution is to just remove the __initdata from
+> bootmem_node_data. We could also put an ifdef around the __initdata.
 > 
-> 
-> I would like to request that the default shmmax setting be increased or the
-> downsides of that be documented.  Allow me to explain.
-> 
-> I am with the PostgreSQL development team.  PostgreSQL is probably one of the
-> few users of large amounts of SysV shared memory.  Users would usually want to
-> configure anywhere between 10% and 50% of their physical RAM to be used as
-> shared memory, which would translate to something on the order of gigabytes
-> nowadays.  One of the uniformly annoying things about setting this up is that
-> you need to reconfigure the Linux kernel to allow that.  sysctl is nice and
-> all, but it still requires users to learn about operating system and kernel
-> details, requires root access, and distros don't handle sysctl uniformly
-> either.  Maybe there is even a good reason for that, but I couldn't find it,
-> and at least I would like to learn it, so that we can pass that information on
-> to our users.
-> 
-> I did some kernel version archeology and found out that up until kernels 2.2
-> the shmmax setting appears to have been restricted by CPU-specific constraints,
-> as indicated by the default setting being different across CPUs and being
-> defined in an asm header.  The default setting on i386 was increased from 16 MB
-> to 32 MB somewhere around 1998 in the kernel 2.0 line, and it remains at 32 MB
-> in the latest kernel on all architectures.
-> 
-> Now one question is whether there is a space or time overhead involved with
-> setting a high shmmax limit that isn't actually used.  If so, it would be
-> interesting to know what that overhead is.  The feeling I get from browsing the
-> kernel source code over time is that there was some management overhead and/or
-> some restrictions about this in old kernels, but that nowadays it doesn't
-> really seem to matter much anymore.  I suspect instead that this whole thing
-> was just forgotten, because few applications use large amounts of shared
-> memory.
-> 
-> So, if you want to do us a favor, could you please see about increasing the
-> default shmmax setting to whatever the theoretical maximum is?
-> 
+> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+> ---
+> diff --git a/mm/bootmem.c b/mm/bootmem.c
+> index e023c68..a968ae2 100644
+> --- a/mm/bootmem.c
+> +++ b/mm/bootmem.c
+> @@ -31,7 +31,7 @@ unsigned long max_pfn;
+>  unsigned long saved_max_pfn;
+>  #endif
+>  
+> -bootmem_data_t bootmem_node_data[MAX_NUMNODES] __initdata;
+> +bootmem_data_t bootmem_node_data[MAX_NUMNODES];
+>  
+>  static struct list_head bdata_list __initdata = LIST_HEAD_INIT(bdata_list);
+>  
+> --
 
-I don't think anybody has even thought about the shmmax default in
-years.  Sure, it might be time to reexamine that.
+I thought about this warning today and found 2 other solutions:
+1) Mark contig_page_data as __ref (but it might hide real bugs).
+2) Remove bdata from struct pglist_data and access it directly through
+   bootmem_node_data. It requires passing node number to all functions
+   which use bdata, but unfortunately arch/ia64/mm/discontig.c handles
+   node numbering its own way. I'm still investigating it.
 
-It would be useful to get distro input on this.  Do they override the
-kernel default at boot time?  If so, what do they do?
-
-
-Also, from a quick read it looks to me that shmmax is busted in the
-non-init namespace.
-
-clone_ipc_ns() calls shm_init_ns() which does
-
-	ns->shm_ctlmax = SHMMAX;
-
-which a) fails to inherit the parent's setting and b) cannot be altered
-from SHMMAX via the sysctl?
-
+Marcin
