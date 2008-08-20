@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757839AbYHTVlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757536AbYHTVmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757839AbYHTVlW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754035AbYHTVk7
+	id S1757536AbYHTVmX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYHTVmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:40:59 -0400
-Received: from gate.crashing.org ([63.228.1.57]:45647 "EHLO gate.crashing.org"
+	Wed, 20 Aug 2008 17:42:13 -0400
+Received: from gw.goop.org ([64.81.55.164]:59887 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753965AbYHTVk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:40:58 -0400
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Eran Liberty <liberty@extricom.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Steven Rostedt <srostedt@redhat.com>,
-       Scott Wood <scottwood@freescale.com>, Alan Modra <amodra@au1.ibm.com>,
-       Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <48AC23F4.80900@extricom.com>
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
-	 <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
-	 <48A9AFA7.8080508@freescale.com>
-	 <alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>
-	 <1219110814.8062.2.camel@pasglop>
-	 <alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>
-	 <1219113549.8062.13.camel@pasglop> <1219114600.8062.15.camel@pasglop>
-	 <alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>
-	 <1219119431.8062.35.camel@pasglop> <1219216705.21386.46.camel@pasglop>
-	 <alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com>
-	 <alpine.DEB.1.10.0808200916090.13132@gandalf.stny.rr.com>
-	 <48AC1DD8.9080702@extricom.com>
-	 <alpine.DEB.1.10.0808200941560.13132@gandalf.stny.rr.com>
-	 <48AC23F4.80900@extricom.com>
-Content-Type: text/plain
-Date: Thu, 21 Aug 2008 07:37:51 +1000
-Message-Id: <1219268271.21386.67.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1752690AbYHTVmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 17:42:12 -0400
+Message-ID: <48AC8FB2.2040301@goop.org>
+Date: Wed, 20 Aug 2008 14:42:10 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.27-rc2 USB suspend regression
+References: <Pine.LNX.4.44L0.0808201724380.14505-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808201724380.14505-100000@iolanthe.rowland.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Stern wrote:
+> On Wed, 20 Aug 2008, Jeremy Fitzhardinge wrote:
+>
+>   
+>> Using the Fedora Rawhide kernel RPM "2.6.27-0.238.rc2.fc10.i686"
+>> (kernel-2.6.27-0.238.rc2.fc10.i686), I'm seeing suspend to ram
+>> failures.  The suspend seems to go OK, but then I just get endless:
+>>
+>> usb 5-1: uhci_result_common: failed with status 440000
+>>
+>> messages, with occasional flickers of something else being printed
+>> (perhaps).  The machine is otherwise unresponsive.
+>>     
+>
+> You could comment out that error message in order to see what else is 
+> in the log.  It is located in drivers/usb/host/uhci-q.c in the 
+> uhci_result_common() function.
+>
+> You could try running -rc3 instead of -rc2, although that probably 
+> won't make much difference.
+>
+> What USB devices do you have on the failing system?  In particular,
+> what is 5-1?  If you unplug it before suspending, does the problem go
+> away?  (It certainly should!)
+>
+>   
 
-> Hmm... so whats now?
-> 
-> Is there a way to prove this scenario is indeed the one that caused the 
-> opps?
+No external usb devices.  There are three internal USB devices:
+Bluetooth, a Sierra CDMA modem thingy and a fingerprint reader.
 
-I've verified in sim that the crash in do_lookup() I was seeing (similar
-backtrace) was indeed caused by an interrupt coming between those two
-instructions and clobbering the saved GPRs.
+$ lsusb
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 005 Device 003: ID 0483:2016 SGS Thomson Microelectronics
+Fingerprint Reader
+Bus 005 Device 002: ID 0a5c:2110 Broadcom Corp. Bluetooth Controller
+Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 003 Device 003: ID 1199:0218 Sierra Wireless, Inc. MC5720 Wireless Modem
+Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
 
-So I think it's very likely our problem.
+The rfkill switch "unplugs" the two wireless devices, so I'll try that
+before suspending next time (if I remember).
 
-Ben.
-
-
+    J
