@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756151AbYHTVXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756993AbYHTVYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756151AbYHTVXg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbYHTVX0
+	id S1756993AbYHTVYU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYHTVYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:23:26 -0400
-Received: from emh05.mail.saunalahti.fi ([62.142.5.111]:55096 "EHLO
-	emh05.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753581AbYHTVXZ (ORCPT
+	Wed, 20 Aug 2008 17:24:05 -0400
+Received: from gv-out-0910.google.com ([216.239.58.188]:4697 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752439AbYHTVYC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:23:25 -0400
-Date: Thu, 21 Aug 2008 00:25:55 +0300 (MET DST)
-From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
-X-X-Sender: szaka@dhcppc2
-To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
-In-Reply-To: <200808201613.AA00212@capsicum.lab.ntt.co.jp>
-Message-ID: <Pine.LNX.4.61.0808202352450.4532@dhcppc2>
-References: <20080820004326.519405a2.akpm@linux-foundation.org>
- <200808201613.AA00212@capsicum.lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Antivirus: VAMS
+	Wed, 20 Aug 2008 17:24:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=hHmOnQVM0B+5fSon36tIqzYGaMgKmXkVj4HoaRtikfMBhX6Uq1seGRNwVXsO1smNnT
+         api8dmL3KW2ipPox5Ioq0JIuvSzJJrSH4kDHyNuPSP6xRIK/VyhJnScBHo5gwA84SidT
+         aY4mfqIRtpJjbN2QFW3QczAeb4c/uBs4+7ueU=
+Date: Wed, 20 Aug 2008 23:23:41 +0200
+From: Diego Calleja <diegocalleja@gmail.com>
+To: Bart Trojanowski <bart@jukie.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: vfat BKL/lock_super regression in v2.6.26-rc3-g8f59342
+Message-ID: <20080820232341.2a845cb3@diego-desktop>
+In-Reply-To: <20080820022712.GF28029@jukie.net>
+References: <20080819220311.GA28029@jukie.net>
+	<alpine.LFD.1.10.0808191505590.3324@nehalem.linux-foundation.org>
+	<20080820001845.GC28029@jukie.net>
+	<alpine.LFD.1.10.0808191729330.3324@nehalem.linux-foundation.org>
+	<alpine.LFD.1.10.0808191748040.3324@nehalem.linux-foundation.org>
+	<20080820022712.GF28029@jukie.net>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+El Tue, 19 Aug 2008 22:27:12 -0400, Bart Trojanowski <bart@jukie.net> escribió:
 
-On Thu, 21 Aug 2008, Ryusuke Konishi wrote:
-> >> Some impressive benchmark results on SSD are shown in [3],
-> >
-> >heh.  It wipes the floor with everything, including btrfs.
+> I was reading the vfat code, and it turns out that vfat has a "flush"
+> mount option.  Which is documented in the code (not in the manpage) as:
 
-It seems the benchmark was done over half year ago. It's questionable how 
-relevant today the performance comparison is with actively developed file 
-systems ...
+Yeah, probably the one place where it was documented was 
+http://kernelnewbies.org/Linux_2_6_19 (commit ae78bf9c4f5fde3c67e2829505f195d7347ce3e4).
 
-> >But a log-based fs will do that, initially.  What will the performace
-> >look like after a month or two's usage?
-> 
-> I'm using NILFS2 for my home directory for serveral months, but so far
-> I don't feel notable performance degradation. 
+Apparently at least one person must have read it, because there's a lot
+of dmesgs in the interweb with this string in it:
 
-I ran compilebench on kernel 2.6.26 with freshly formatted volumes. 
-The behavior of NILFS2 was interesting.
+"FAT: Unrecognized mount option "flush" or missing value"
 
-Its peformance rapidly degrades to the lowest ever measured level 
-(< 1 MB/s) but after a while it recovers and gives consistent numbers.
-However it's still very far from the current unstable btrfs performance. 
-The results are reproducible.
+due to HAL trying to mount vfat filesystems with that option in kernels
+that don't support it. Which broke USB stick support for them, BTW, and
+generated a lot of posts in forums asking for help.
 
-                    MB/s    Runtime (s)
-                   -----    -----------
-  btrfs unstable   17.09        572
-  ext3             13.24        877
-  btrfs 0.16       12.33        793
-  nilfs2 2nd+ runs 11.29        674
-  ntfs-3g           8.55        865
-  reiserfs          8.38        966
-  nilfs2 1st run    4.95       3800
-  xfs               1.88       3901
-
-	Szaka
-
--- 
-NTFS-3G:  http://ntfs-3g.org
+IOW: not only this option exist, it's also being used by default in all
+the vfat mounts on the linux systems that use HAL, ie. almost all of them.
 
