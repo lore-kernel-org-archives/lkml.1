@@ -1,220 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755946AbYHTF1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbYHTFcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755946AbYHTF1a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 01:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbYHTF1T
+	id S1754907AbYHTFcR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 01:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbYHTFcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 01:27:19 -0400
-Received: from gate.crashing.org ([63.228.1.57]:56063 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751842AbYHTF1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 01:27:18 -0400
-Subject: Re: [PATCH 2/2] powerpc - Make the irq reverse mapping radix tree
-	lockless
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Sebastien Dugue <sebastien.dugue@bull.net>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, paulus@samba.org,
-       michael@ellerman.id.au, jean-pierre.dion@bull.net,
-       gilles.carry@ext.bull.net, tinytim@us.ibm.com, tglx@linutronix.de,
-       rostedt@goodmis.org, dwalker@mvista.com
-In-Reply-To: <1218029429-21114-3-git-send-email-sebastien.dugue@bull.net>
-References: <1218029429-21114-1-git-send-email-sebastien.dugue@bull.net>
-	 <1218029429-21114-3-git-send-email-sebastien.dugue@bull.net>
-Content-Type: text/plain
-Date: Wed, 20 Aug 2008 15:22:06 +1000
-Message-Id: <1219209726.21386.23.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Aug 2008 01:32:00 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:39309 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750766AbYHTFb7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 01:31:59 -0400
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: New ext4 patchset: 2.6.27-rc3-ext4-1 and 2.6.26-ext4-7
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1KVgIW-0002ZM-Tm@closure.thunk.org>
+Date: Wed, 20 Aug 2008 01:31:56 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-08-06 at 15:30 +0200, Sebastien Dugue wrote:
-> The radix trees used by interrupt controllers for their irq reverse mapping
-> (currently only the XICS found on pSeries) have a complex locking scheme
-> dating back to before the advent of the lockless radix tree.
-> 
->   Take advantage of this and of the fact that the items of the tree are
-> pointers to a static array (irq_map) elements which can never go under us
-> to simplify the locking.
-> 
->   Concurrency between readers and writers is handled by the intrinsic
-> properties of the lockless radix tree. Concurrency between writers is handled
-> with a spinlock added to the irq_host structure.
 
-No need for a spinlock in the irq_host. Make it one global lock, it's
-not like scalability of irq_create_mapping() was a big deal and there's
-usually only one of those type of hosts anyway.
+I've released a new ext4 patchset against the 2.6.27-rc3 kernel.  This
+has more bug fixes that have been reported by benchmarkers and early
+users of ext4.
 
-> 
-> Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Michael Ellerman <michael@ellerman.id.au>
-> ---
->  arch/powerpc/include/asm/irq.h |    1 +
->  arch/powerpc/kernel/irq.c      |   74 ++++++----------------------------------
->  2 files changed, 12 insertions(+), 63 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-> index 0a51376..72fd036 100644
-> --- a/arch/powerpc/include/asm/irq.h
-> +++ b/arch/powerpc/include/asm/irq.h
-> @@ -119,6 +119,7 @@ struct irq_host {
->  		} linear;
->  		struct radix_tree_root tree;
->  	} revmap_data;
-> +	spinlock_t		tree_lock;
->  	struct irq_host_ops	*ops;
->  	void			*host_data;
->  	irq_hw_number_t		inval_irq;
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index dc8663a..7a19103 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -439,8 +439,6 @@ void do_softirq(void)
->  
->  static LIST_HEAD(irq_hosts);
->  static DEFINE_SPINLOCK(irq_big_lock);
-> -static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
-> -static unsigned int irq_radix_writer;
->  static atomic_t revmap_trees_allocated = ATOMIC_INIT(0);
->  struct irq_map_entry irq_map[NR_IRQS];
->  static unsigned int irq_virq_count = NR_IRQS;
-> @@ -584,57 +582,6 @@ void irq_set_virq_count(unsigned int count)
->  		irq_virq_count = count;
->  }
->  
-> -/* radix tree not lockless safe ! we use a brlock-type mecanism
-> - * for now, until we can use a lockless radix tree
-> - */
-> -static void irq_radix_wrlock(unsigned long *flags)
-> -{
-> -	unsigned int cpu, ok;
-> -
-> -	spin_lock_irqsave(&irq_big_lock, *flags);
-> -	irq_radix_writer = 1;
-> -	smp_mb();
-> -	do {
-> -		barrier();
-> -		ok = 1;
-> -		for_each_possible_cpu(cpu) {
-> -			if (per_cpu(irq_radix_reader, cpu)) {
-> -				ok = 0;
-> -				break;
-> -			}
-> -		}
-> -		if (!ok)
-> -			cpu_relax();
-> -	} while(!ok);
-> -}
-> -
-> -static void irq_radix_wrunlock(unsigned long flags)
-> -{
-> -	smp_wmb();
-> -	irq_radix_writer = 0;
-> -	spin_unlock_irqrestore(&irq_big_lock, flags);
-> -}
-> -
-> -static void irq_radix_rdlock(unsigned long *flags)
-> -{
-> -	local_irq_save(*flags);
-> -	__get_cpu_var(irq_radix_reader) = 1;
-> -	smp_mb();
-> -	if (likely(irq_radix_writer == 0))
-> -		return;
-> -	__get_cpu_var(irq_radix_reader) = 0;
-> -	smp_wmb();
-> -	spin_lock(&irq_big_lock);
-> -	__get_cpu_var(irq_radix_reader) = 1;
-> -	spin_unlock(&irq_big_lock);
-> -}
-> -
-> -static void irq_radix_rdunlock(unsigned long flags)
-> -{
-> -	__get_cpu_var(irq_radix_reader) = 0;
-> -	local_irq_restore(flags);
-> -}
-> -
->  static int irq_setup_virq(struct irq_host *host, unsigned int virq,
->  			    irq_hw_number_t hwirq)
->  {
-> @@ -789,7 +736,6 @@ void irq_dispose_mapping(unsigned int virq)
->  {
->  	struct irq_host *host;
->  	irq_hw_number_t hwirq;
-> -	unsigned long flags;
->  
->  	if (virq == NO_IRQ)
->  		return;
-> @@ -825,9 +771,9 @@ void irq_dispose_mapping(unsigned int virq)
->  		/* Check if radix tree allocated yet */
->  		if (atomic_read(&revmap_trees_allocated) == 0)
->  			break;
-> -		irq_radix_wrlock(&flags);
-> +		spin_lock(&host->tree_lock);
->  		radix_tree_delete(&host->revmap_data.tree, hwirq);
-> -		irq_radix_wrunlock(flags);
-> +		spin_unlock(&host->tree_lock);
->  		break;
->  	}
->  
-> @@ -881,7 +827,6 @@ unsigned int irq_radix_revmap_lookup(struct irq_host *host,
->  {
->  	struct irq_map_entry *ptr;
->  	unsigned int virq = NO_IRQ;
-> -	unsigned long flags;
->  
->  	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
->  
-> @@ -893,9 +838,11 @@ unsigned int irq_radix_revmap_lookup(struct irq_host *host,
->  		return irq_find_mapping(host, hwirq);
->  
->  	/* Now try to resolve */
-> -	irq_radix_rdlock(&flags);
-> +	/*
-> +	 * No rcu_read_lock(ing) needed, the ptr returned can't go under us
-> +	 * as it's referencing an entry in the static irq_map table.
-> +	 */
->  	ptr = radix_tree_lookup(&host->revmap_data.tree, hwirq);
-> -	irq_radix_rdunlock(flags);
->  
->  	/* Found it, return */
->  	if (ptr)
-> @@ -907,7 +854,6 @@ unsigned int irq_radix_revmap_lookup(struct irq_host *host,
->  void irq_radix_revmap_insert(struct irq_host *host, unsigned int virq,
->  			     irq_hw_number_t hwirq)
->  {
-> -	unsigned long flags;
->  
->  	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
->  
-> @@ -920,10 +866,10 @@ void irq_radix_revmap_insert(struct irq_host *host, unsigned int virq,
->  		return;
->  
->  	if (virq != NO_IRQ) {
-> -		irq_radix_wrlock(&flags);
-> +		spin_lock(&host->tree_lock);
->  		radix_tree_insert(&host->revmap_data.tree, hwirq,
->  				  &irq_map[virq]);
-> -		irq_radix_wrunlock(flags);
-> +		spin_unlock(&host->tree_lock);
->  	}
->  }
->  
-> @@ -1041,8 +987,10 @@ static int irq_late_init(void)
->  	 * revmap_trees_allocated.
->  	 */
->  	list_for_each_entry(h, &irq_hosts, link) {
-> -		if (h->revmap_type == IRQ_HOST_MAP_TREE)
-> +		if (h->revmap_type == IRQ_HOST_MAP_TREE) {
->  			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_ATOMIC);
-> +			spin_lock_init(&h->tree_lock);
-> +		}
->  	}
->  
->  	/*
+As before I've also released updated the patch set vs. the 2.6.26 stock
+kernel, for those people who don't want to play with development kernels
+but who still want to test out ext4.  The 2.6.26-ext4-7 patchset
+contains only the stable patches of ext4.
+
+As a git tree:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 2.6.27-rc3-ext4-1
+http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=shortlog;h=2.6.27-rc3-ext4-1
+
+As a patchset:
+
+ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-rc3-ext4-1
+
+The patch vs. 2.6.26:
+
+ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-ext4-7
+
+                                                - Ted
+
+Patches marked with '*' are in the stable queue and will be pushed to
+Linus shortly.
+
+Akira Fujita (7):
+      ext4: online defrag-- Main function of defrag and ioctl implementation
+      ext4: online defrag-- Allocate new contiguous blocks with mballoc
+      ext4: online defrag-- Read and write file data with memory page
+      ext4: online defrag-- Exchange the blocks between two inodes
+      ext4: online defrag-- Defragmentation for the relevant files (-r mode)
+      ext4: online defrag-- Check the free space fragmentation (-f mode)
+      ext4: online defrag-- Move victim files for the target file (-f mode)
+
+Aneesh Kumar K.V (7):
+    * ext4: Handle unwritten extent properly with delayed allocation
+    * ext4: Rework the ext4_da_writepages() function
+    * ext4: make sure ext4_has_free_blocks returns 0 for ENOSPC
+    * ext4: Initialize writeback_index to 0 when allocating a new inode
+    * ext4: Fix small file fragmentation
+      ext4: undo the stable boundary patch changes
+      ext4: invalidate pages if delalloc block allocation fails.
+
+Eric Sandeen (3):
+    * ext4: Fix bug where we return ENOSPC even though we have plenty of inodes
+      ext4: use percpu data structures for lg_prealloc_list
+      Hook ext4 to the vfs fiemap interface.
+
+Josef Bacik (2):
+    * ext4: don't try to resize if there are no reserved gdt blocks left
+      Any block based fs (this patch includes ext3) just has to declare its own
+
+Mingming Cao (5):
+    * ext4: Fix delalloc release block reservation for truncate
+    * ext4: journal credits calulation cleanup and fix for non-extent writepage
+    * ext4: journal credits reservation fixes for extent file writepage
+    * ext4: journal credits reservation fixes for DIO, fallocate
+    * ext4: journal credit fix for the delayed allocation's writepages() function
+
+Theodore Ts'o (9):
+    * ext4: Fix potential truncate BUG due to i_prealloc_list being non-empty
+    * ext4: Fix ext4_dx_readdir hash collision handling
+    * ext4: Use ext4_discard_reservations instead of mballoc-specific call
+    * ext4: Update documentation to remind users to update mke2fs.conf
+      ext4: Stable/Unstable boundary
+      This patch should be merged with ext4-online-defrag-alloc-contiguous-blks.patch
+      Basic vfs-level fiemap infrastructure, which sets up a new ->fiemap
+      Plug ocfs2 into ->fiemap. Some portions of ocfs2_get_clusters() had to be
+      patch ext4_fix_printk_checkpatch_issues
 
