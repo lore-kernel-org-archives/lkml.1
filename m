@@ -1,62 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbYHTSeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792AbYHTSfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818AbYHTSeQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 14:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbYHTSeA
+	id S1754792AbYHTSfe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 14:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbYHTSfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 14:34:00 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53795 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752112AbYHTSd7 (ORCPT
+	Wed, 20 Aug 2008 14:35:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48233 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751530AbYHTSfY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 14:33:59 -0400
-Date: Wed, 20 Aug 2008 14:33:57 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Eran Liberty <liberty@extricom.com>
-cc: Jon Smirl <jonsmirl@gmail.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Steven Rostedt <srostedt@redhat.com>, Alan Modra <amodra@au1.ibm.com>,
-       Scott Wood <scottwood@freescale.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-In-Reply-To: <48AC6120.1080400@extricom.com>
-Message-ID: <alpine.DEB.1.10.0808201431140.3035@gandalf.stny.rr.com>
-References: <48591941.4070408@extricom.com> <1219114600.8062.15.camel@pasglop>  <alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>  <1219119431.8062.35.camel@pasglop> <1219216705.21386.46.camel@pasglop>  <alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com>
-  <alpine.DEB.1.10.0808200916090.13132@gandalf.stny.rr.com>  <48AC1DD8.9080702@extricom.com>  <alpine.DEB.1.10.0808200941560.13132@gandalf.stny.rr.com>  <48AC23F4.80900@extricom.com> <9e4733910808200755y1128ae56p6a1235684bfbb3ec@mail.gmail.com>
- <48AC6120.1080400@extricom.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 20 Aug 2008 14:35:24 -0400
+Date: Wed, 20 Aug 2008 11:31:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, cl@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, tokunaga.keiich@jp.fujitsu.com,
+       stable@kernel.org
+Subject: Re: [RFC][PATCH 0/2] Quicklist is slighly problematic.
+Message-Id: <20080820113131.f032c8a2.akpm@linux-foundation.org>
+In-Reply-To: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 20 Aug 2008 20:05:51 +0900
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-On Wed, 20 Aug 2008, Eran Liberty wrote:
-> mon> X
-> ~ #
+> Hi Cristoph,
 > 
-> And took it for a test drive
-> ~# while [ 1 ] ; do find / > /dev/null ; echo .  ; done
-> .
-> .
-> .
-> [ 10 min later ]
-> .
-> .
-> .
+> Thank you for explain your quicklist plan at OLS.
 > 
-> Stable! Yeepee.
-
-Eran, thanks a lot for testing this!
-
+> So, I made summary to issue of quicklist.
+> if you have a bit time, Could you please read this mail and patches?
+> And, if possible, Could you please tell me your feeling?
 > 
-> So how do we get this to be right in the first place and everywhere?
+> 
+> --------------------------------------------------------------------
+> 
+> Now, Quicklist store some page in each CPU as cache.
+> (Each CPU has node_free_pages/16 pages)
+> 
+> and it is used for page table cache.
+> Then, exit() increase cache, the other hand fork() spent it.
+> 
+> So, if apache type (one parent and many child model) middleware run,
+> One CPU process fork(), Other CPU process the middleware work and exit().
+> 
+> At that time, One CPU don't have page table cache at all,
+> Others have maximum caches.
+> 
+> 	QList_max = (#ofCPUs - 1) x Free / 16
+> 	=> QList_max / (Free + QList_max) = (#ofCPUs - 1) / (16 + #ofCPUs - 1)
+> 
+> So, How much quicklist spent memory at maximum case?
+> That is #CPUs proposional because it is per CPU cache but cache amount calculation doesn't use #ofCPUs.
+> 
+> 	Above calculation mean
+> 
+> 	 Number of CPUs per node            2    4    8   16
+> 	 ==============================  ====================
+> 	 QList_max / (Free + QList_max)   5.8%  16%  30%  48%
+> 
+> 
+> Wow! Quicklist can spent about 50% memory at worst case.
+> More unfortunately, it doesn't have any cache shrinking mechanism.
+> So it cause some wrong thing.
+> 
+> 1. End user misunderstand to memory leak happend.
+> 	=> /proc/meminfo should display amount quicklist
+> 
+> 2. It can cause OOM killer
+> 	=> Amount of quicklists shouldn't be proposional to #ofCPUs.
 > 
 
-This is a bug in gcc, and should be mentioned to the gcc maintainers.
+OK, that's a fatal bug and it's present in 2.6.25.x and 2.6.26.x.  A
+serious issue.
 
--- Steve
+The patches do apply to both stable kernels and I have tagged them for
+backporting into them.  They're nice and small, but I didn't get a
+really solid yes-this-is-what-we-should-do from Christoph?
 
+
+This (from [patch 2/2]): "(Although its patch applied, quicklist can
+waste 64GB on 1TB server (= 1TB / 16), it is still too much??)" is a
+bit of a worry.  Yes, 64GB is too much!  But at least this is now only
+a performance issue rather than a stability issue, yes?
