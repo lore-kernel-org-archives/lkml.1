@@ -1,227 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbYHTT4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756578AbYHTUCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757184AbYHTT4a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 15:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756531AbYHTT4I
+	id S1756578AbYHTUCK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 16:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYHTUBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 15:56:08 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:48474 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756091AbYHTT4F (ORCPT
+	Wed, 20 Aug 2008 16:01:55 -0400
+Received: from vs251036.vserver.de ([62.75.251.36]:60980 "EHLO
+	vs251036.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754250AbYHTUBy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 15:56:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=WSPUu2t2m3qDCP3/2CFVjdskmVR3WsNfvavBHBSVNFR3tgMibojccKndNMb+6/jd1Y
-         pxZ8qb0IdEY9QSgdEPBZpLGHNlD10kN83ZJ5xezciaNhpuKpEg7925IcpamSnjkO0H3P
-         9coeGtL+XNerFJbCaRuJk1/YgK0cbUng2g2ck=
-Message-ID: <19f34abd0808201256v563c81f6x79518d6e32b188d6@mail.gmail.com>
-Date: Wed, 20 Aug 2008 21:56:03 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Pekka J Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [RFC][PATCH] netconsole: avoid deadlock on printk from driver code
-Cc: "David Miller" <davem@davemloft.net>, vegardno@ifi.uio.no,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       adobriyan@gmail.com
-In-Reply-To: <Pine.LNX.4.64.0808202051550.3501@melkki.cs.Helsinki.FI>
+	Wed, 20 Aug 2008 16:01:54 -0400
+Message-ID: <48AC7829.8040709@claudio.ch>
+Date: Wed, 20 Aug 2008 22:01:45 +0200
+From: Claudio Nieder <private@claudio.ch>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Andrey Panin <pazke@pazke.donpac.ru>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Backlight driver for Tabletkiosk Sahara TouchIT-213	Tablet
+ PC
+References: <488E0D2A.1000005@claudio.ch> <1217270428.6059.39.camel@dax.rpnet.com> <488E25F4.4020405@claudio.ch> <20080811134940.b3bcde83.akpm@linux-foundation.org> <48A1CA9A.4000007@claudio.ch> <48AB5099.7070904@claudio.ch> 
+In-Reply-To: <48AB5099.7070904@claudio.ch> 
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080813.033749.165504341.davem@davemloft.net>
-	 <84144f020808140628m31d6d099t1fecdb1701c0bbdc@mail.gmail.com>
-	 <Pine.LNX.4.64.0808141643200.3164@sbz-30.cs.Helsinki.FI>
-	 <20080814.151502.251134900.davem@davemloft.net>
-	 <Pine.LNX.4.64.0808202051550.3501@melkki.cs.Helsinki.FI>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 20, 2008 at 7:54 PM, Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
-> Subject: [PATCH] 8139too: avoid deadlock with netconsole
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
->
-> As explained by Vegard Nossum, the 8139too driver can deadlock with netconsole:
->
->  I encountered a hard-to-debug deadlock when I pulled out the plug of my
->  RealTek 8139 which was also running netconsole: The driver wants to print a
->  "link down" message. However, this triggers netconsole, which wants to print
->  the message using the same device. Here is a backtrace:
->
->     [<c05916b6>] _spin_lock_irqsave+0x76/0x90
->     [<c035b255>] rtl8139_start_xmit+0x65/0x130 <-- spin_lock(&tp->lock)
->     [<c04c5e28>] netpoll_send_skb+0x158/0x1a0
->     [<c04c62fb>] netpoll_send_udp+0x1db/0x1f0
->     [<c037c70c>] write_msg+0x8c/0xc0
->     [<c0135883>] __call_console_drivers+0x53/0x60
->     [<c01358db>] _call_console_drivers+0x4b/0x90
->     [<c0135a25>] release_console_sem+0xc5/0x1f0
->     [<c0135f0b>] vprintk+0x1ab/0x3e0
->     [<c013615b>] printk+0x1b/0x20
->     [<c0349736>] mii_check_media+0x196/0x1e0
->     [<c03597f4>] rtl_check_media+0x24/0x30
->     [<c035a0ea>] rtl8139_interrupt+0x42a/0x4a0 <-- spin_lock(&tp->lock)
->     [<c01716d8>] handle_IRQ_event+0x28/0x70
->     [<c0172d9b>] handle_fasteoi_irq+0x6b/0xe0
->     [<c0107128>] do_IRQ+0x48/0xa0
->
-> To avoid the deadlock, use netif_tx_lock() for the TX paths and make sure we
-> never call printk() while holding that lock as suggested by David Miller.
->
-> Cc: Alexey Dobriyan <adobriyan@gmail.com>
-> Cc: David Miller <davem@davemloft.net>
-> Cc: Jeff Garzik <jgarzik@pobox.com>
-> Reported-by: Vegard Nossum <vegard.nossum@gmail.com>
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
+Hi,
 
-I'm sorry, but it doesn't help :-)
+> These two empty initializers are not needed.
 
-console [netcon0] enabled
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.27-rc3-00468-g86f91c5 #19
----------------------------------------------
-swapper/1 is trying to acquire lock:
- (_xmit_ETHER#2){....}, at: [<c0449210>] rtl8139_start_xmit+0xc0/0x230
-but task is already holding lock:
- (_xmit_ETHER#2){....}, at: [<c05b515b>] netpoll_send_skb+0x13b/0x1a0
-other info that might help us debug this:
-3 locks held by swapper/1:
- #0:  (target_list_lock){....}, at: [<c046ab5d>] write_msg+0x2d/0xc0
- #1:  (_xmit_ETHER#2){....}, at: [<c05b515b>] netpoll_send_skb+0x13b/0x1a0
- #2:  (&dev->tx_global_lock){....}, at: [<c04491e1>] rtl8139_start_xmit+0x91/0x2
-30
-stack backtrace:
-Pid: 1, comm: swapper Not tainted 2.6.27-rc3-00468-g86f91c5 #19
- [<c015fccb>] validate_chain+0xbbb/0xe90
- [<c010e45b>] ? save_stack_trace+0x2b/0x50
- [<c01601f9>] __lock_acquire+0x259/0xa00
- [<c0160a29>] lock_acquire+0x89/0xc0
- [<c0449210>] ? rtl8139_start_xmit+0xc0/0x230
- [<c0681720>] _spin_lock+0x40/0x70
- [<c0449210>] ? rtl8139_start_xmit+0xc0/0x230
- [<c0449210>] rtl8139_start_xmit+0xc0/0x230
- [<c05b515b>] ? netpoll_send_skb+0x13b/0x1a0
- [<c05b5178>] netpoll_send_skb+0x158/0x1a0
- [<c05b564b>] netpoll_send_udp+0x1db/0x1f0
- [<c046abbc>] write_msg+0x8c/0xc0
- [<c013ad13>] __call_console_drivers+0x53/0x60
- [<c013ad6b>] _call_console_drivers+0x4b/0x90
- [<c013aeb5>] release_console_sem+0xc5/0x1f0
- [<c013b698>] register_console+0x138/0x2c0
- [<c08bb860>] init_netconsole+0x1a0/0x1c0
- [<c01520b9>] ? ktime_get+0x19/0x40
- [<c0101120>] do_one_initcall+0x30/0x170
- [<c08bb6c0>] ? init_netconsole+0x0/0x1c0
- [<c017b583>] ? register_irq_proc+0xb3/0xd0
- [<c08916aa>] kernel_init+0x11a/0x180
- [<c0891590>] ? kernel_init+0x0/0x180
- [<c0105cf3>] kernel_thread_helper+0x7/0x14
- =======================
+Fixed.
 
-After that, I also got lots of kgdbts errors, don't know exactly how
-it relates to your patch...
+> Now let's add module alias to ensure driver autoloading.
+> IMHO the line below should do the trick:
+> 
+> MODULE_ALIAS("dmi:*:svnSDV:pniTouchT201:*");
 
-<3>kgdbts: BP mismatch c03763a0 expected c0139b80
-<4>------------[ cut here ]------------
-<4>WARNING: at /uio/arkimedes/s29/vegardno/git-working/linux-2.6/drivers/misc/kg
-dbts.c:302 check_and_rewind_pc+0xb2/0xe0()
-Pid: 1, comm: swapper Not tainted 2.6.27-rc3-00468-g86f91c5 #19
- [<c013a9cf>] warn_on_slowpath+0x4f/0x80
- [<c01670a2>] ? sprint_symbol+0x92/0xc0
- [<c013b25d>] ? vprintk+0x6d/0x350
- [<c013b25d>] ? vprintk+0x6d/0x350
- [<c01248e3>] ? __change_page_attr_set_clr+0x693/0xc30
- [<c0376917>] ? __copy_to_user_ll+0x57/0x60
- [<c0184e1a>] ? probe_kernel_write+0x4a/0x90
- [<c0139b80>] ? do_fork+0x0/0x2b0
- [<c013b55b>] ? printk+0x1b/0x20
- [<c0139b80>] ? do_fork+0x0/0x2b0
- [<c03fee62>] check_and_rewind_pc+0xb2/0xe0
- [<c03763a0>] ? delay_tsc+0x20/0xb8
- [<c0139b80>] ? do_fork+0x0/0x2b0
- [<c03fdc52>] validate_simple_test+0x22/0xa0
- [<c03fe407>] run_simple_test+0x107/0x260
- [<c0184eaa>] ? probe_kernel_read+0x4a/0x90
- [<c03fdd34>] kgdbts_put_char+0x14/0x20
- [<c0177476>] put_packet+0x86/0xe0
- [<c0178376>] kgdb_handle_exception+0x446/0xe40
- [<c013b25d>] ? vprintk+0x6d/0x350
- [<c011dd61>] kgdb_notify+0xa1/0x1d0
- [<c0153037>] notifier_call_chain+0x37/0x70
- [<c0153435>] __atomic_notifier_call_chain+0x35/0x50
- [<c015346a>] atomic_notifier_call_chain+0x1a/0x20
- [<c015349d>] notify_die+0x2d/0x30
- [<c0106d5a>] die_nmi+0x3a/0x100
- [<c011add5>] nmi_watchdog_tick+0x1d5/0x1e0
- [<c0107227>] do_nmi+0x97/0x2d0
- [<c06823f3>] nmi_stack_correct+0x26/0x2b
- [<c03763a0>] ? delay_tsc+0x20/0xb8
- [<c03762c9>] __delay+0x9/0x10
- [<c03857ec>] _raw_spin_lock+0xbc/0x150
- [<c015b73e>] ? get_lock_stats+0x1e/0x50
- [<c015b77d>] ? put_lock_stats+0xd/0x30
- [<c068173c>] _spin_lock+0x5c/0x70
- [<c0449210>] ? rtl8139_start_xmit+0xc0/0x230
- [<c0449210>] rtl8139_start_xmit+0xc0/0x230
- [<c05b515b>] ? netpoll_send_skb+0x13b/0x1a0
- [<c05b5178>] netpoll_send_skb+0x158/0x1a0
- [<c05b564b>] netpoll_send_udp+0x1db/0x1f0
- [<c046abbc>] write_msg+0x8c/0xc0
- [<c013ad13>] __call_console_drivers+0x53/0x60
- [<c013ad6b>] _call_console_drivers+0x4b/0x90
- [<c013aeb5>] release_console_sem+0xc5/0x1f0
- [<c013b698>] register_console+0x138/0x2c0
- [<c08bb860>] init_netconsole+0x1a0/0x1c0
- [<c01520b9>] ? ktime_get+0x19/0x40
- [<c0101120>] do_one_initcall+0x30/0x170
- [<c08bb6c0>] ? init_netconsole+0x0/0x1c0
- [<c017b583>] ? register_irq_proc+0xb3/0xd0
- [<c08916aa>] kernel_init+0x11a/0x180
- [<c0891590>] ? kernel_init+0x0/0x180
- [<c0105cf3>] kernel_thread_helper+0x7/0x14
- =======================
-<4>---[ end trace 3a158aadebbe6259 ]---
+I usually built the kernel with my driver included. For once I tried to build as
+module first without that line added and then with. And by magic the module is
+loaded right at boot time. Thank you for your help.
 
-(This repeats every few seconds.)
+Once again the patch in which all your suggestions are included. Furthermore I
+noticed that I had "default y" in Kconfig. Handy for me, but a tad selfish I
+think and so corrected that by setting it to "n".
 
-When pulling the cable, I get this:
+Here the fixed patch:
 
-<0>BUG: spinlock lockup on CPU#1, swapper/1, f58599ac
-Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc3-00468-g86f91c5 #19
- [<c0385840>] _raw_spin_lock+0x110/0x150
- [<c068173c>] _spin_lock+0x5c/0x70
- [<c0449210>] ? rtl8139_start_xmit+0xc0/0x230
- [<c0449210>] rtl8139_start_xmit+0xc0/0x230
- [<c05b515b>] ? netpoll_send_skb+0x13b/0x1a0
- [<c05b5178>] netpoll_send_skb+0x158/0x1a0
- [<c05b564b>] netpoll_send_udp+0x1db/0x1f0
- [<c046abbc>] write_msg+0x8c/0xc0
- [<c013ad13>] __call_console_drivers+0x53/0x60
- [<c013ad6b>] _call_console_drivers+0x4b/0x90
- [<c013aeb5>] release_console_sem+0xc5/0x1f0
- [<c013b698>] register_console+0x138/0x2c0
- [<c08bb860>] init_netconsole+0x1a0/0x1c0
- [<c01520b9>] ? ktime_get+0x19/0x40
- [<c0101120>] do_one_initcall+0x30/0x170
- [<c08bb6c0>] ? init_netconsole+0x0/0x1c0
- [<c017b583>] ? register_irq_proc+0xb3/0xd0
- [<c08916aa>] kernel_init+0x11a/0x180
- [<c0891590>] ? kernel_init+0x0/0x180
- [<c0105cf3>] kernel_thread_helper+0x7/0x14
- =======================
+Signed-off-by: Claudio Nieder <private@claudio.ch>
 
-...and machine is unusable. Thanks for trying! :-D
+Backlight driver for Tabletkiosk Sahara TouchIT-213 Tablet PC
+---
+ drivers/video/backlight/Kconfig     |    7 +
+ drivers/video/backlight/Makefile    |    1 +
+ drivers/video/backlight/kb3886_bl.c |  213 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 221 insertions(+), 0 deletions(-)
 
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 452b770..7dd0ecd 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -164,3 +164,10 @@ config BACKLIGHT_MBP_NVIDIA
+          If you have an Apple Macbook Pro with Nvidia graphics hardware say Y
+ 	 to enable a driver for its backlight
 
-Vegard
++config BACKLIGHT_SAHARA
++	tristate "Tabletkiosk Sahara Touch-iT Backlight Driver"
++	depends on BACKLIGHT_CLASS_DEVICE && X86
++	default n
++	help
++	  If you have a Tabletkiosk Sahara Touch-iT, say y to enable the
++	  backlight driver.
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index b405aac..f4a1183 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -16,4 +16,5 @@ obj-$(CONFIG_BACKLIGHT_PROGEAR) += progear_bl.o
+ obj-$(CONFIG_BACKLIGHT_CARILLO_RANCH) += cr_bllcd.o
+ obj-$(CONFIG_BACKLIGHT_PWM)	+= pwm_bl.o
+ obj-$(CONFIG_BACKLIGHT_MBP_NVIDIA) += mbp_nvidia_bl.o
++obj-$(CONFIG_BACKLIGHT_SAHARA)	+= kb3886_bl.o
 
+diff --git a/drivers/video/backlight/kb3886_bl.c
+b/drivers/video/backlight/kb3886_bl.c
+new file mode 100644
+index 0000000..feb750a
+--- /dev/null
++++ b/drivers/video/backlight/kb3886_bl.c
+@@ -0,0 +1,213 @@
++/*
++ *  Backlight Driver for the KB3886 Backlight
++ *
++ *  Copyright (c) 2007-2008 Claudio Nieder
++ *
++ *  Based on corgi_bl.c by Richard Purdie and kb3886 driver by Robert Woerle
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2 as
++ *  published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/mutex.h>
++#include <linux/fb.h>
++#include <linux/backlight.h>
++#include <linux/delay.h>
++#include <linux/dmi.h>
++
++/*
++ * The following is what corgi has in arch/arm/mach-pxa/corgi.c and
++ * corgi_lcd.c. On kernelnebwies it was suggested I put the platform_device
++ * code in my driver.
++ */
++
++#define KB3886_PARENT 0x64
++#define KB3886_IO 0x60
++#define KB3886_ADC_DAC_PWM 0xC4
++#define KB3886_PWM0_WRITE 0x81
++#define KB3886_PWM0_READ 0x41
++
++static DEFINE_MUTEX(bl_mutex);
++
++static void kb3886_bl_set_intensity(int intensity)
++{
++	mutex_lock(&bl_mutex);
++	intensity = intensity&0xff;
++	outb(KB3886_ADC_DAC_PWM, KB3886_PARENT);
++	msleep(10);
++	outb(KB3886_PWM0_WRITE, KB3886_IO);
++	msleep(10);
++	outb(intensity, KB3886_IO);
++	mutex_unlock(&bl_mutex);
++}
++
++struct kb3886bl_machinfo {
++	int max_intensity;
++	int default_intensity;
++	int limit_mask;
++	void (*set_bl_intensity)(int intensity);
++};
++
++static struct kb3886bl_machinfo kb3886_bl_machinfo = {
++	.max_intensity = 0xff,
++	.default_intensity = 0xa0,
++	.limit_mask = 0x7f,
++	.set_bl_intensity = kb3886_bl_set_intensity,
++};
++
++static struct platform_device kb3886bl_device = {
++	.name		= "kb3886-bl",
++	.dev		= {
++		.platform_data	= &kb3886_bl_machinfo,
++	},
++	.id		= -1,
++};
++
++static struct platform_device *devices[] __initdata = {
++	&kb3886bl_device,
++};
++
++/*
++ * Back to driver
++ */
++
++static int kb3886bl_intensity;
++static struct backlight_device *kb3886_backlight_device;
++static struct kb3886bl_machinfo *bl_machinfo;
++
++static unsigned long kb3886bl_flags;
++#define KB3886BL_SUSPENDED     0x01
++#define KB3886BL_BATTLOW       0x02
++
++static struct dmi_system_id __initdata kb3886bl_device_table[] = {
++	{
++		.ident = "Sahara Touch-iT",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "SDV"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "iTouch T201"),
++		},
++	},
++	{ }
++};
++
++static int kb3886bl_send_intensity(struct backlight_device *bd)
++{
++	int intensity = bd->props.brightness;
++
++	if (bd->props.power != FB_BLANK_UNBLANK)
++		intensity = 0;
++	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
++		intensity = 0;
++	if (kb3886bl_flags & KB3886BL_SUSPENDED)
++		intensity = 0;
++	if (kb3886bl_flags & KB3886BL_BATTLOW)
++		intensity &= bl_machinfo->limit_mask;
++
++	bl_machinfo->set_bl_intensity(intensity);
++
++	kb3886bl_intensity = intensity;
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int kb3886bl_suspend(struct platform_device *pdev, pm_message_t state)
++{
++	struct backlight_device *bd = platform_get_drvdata(pdev);
++
++	kb3886bl_flags |= KB3886BL_SUSPENDED;
++	backlight_update_status(bd);
++	return 0;
++}
++
++static int kb3886bl_resume(struct platform_device *pdev)
++{
++	struct backlight_device *bd = platform_get_drvdata(pdev);
++
++	kb3886bl_flags &= ~KB3886BL_SUSPENDED;
++	backlight_update_status(bd);
++	return 0;
++}
++#else
++#define kb3886bl_suspend	NULL
++#define kb3886bl_resume		NULL
++#endif
++
++static int kb3886bl_get_intensity(struct backlight_device *bd)
++{
++	return kb3886bl_intensity;
++}
++
++static struct backlight_ops kb3886bl_ops = {
++	.get_brightness = kb3886bl_get_intensity,
++	.update_status  = kb3886bl_send_intensity,
++};
++
++static int kb3886bl_probe(struct platform_device *pdev)
++{
++	struct kb3886bl_machinfo *machinfo = pdev->dev.platform_data;
++
++	bl_machinfo = machinfo;
++	if (!machinfo->limit_mask)
++		machinfo->limit_mask = -1;
++
++	kb3886_backlight_device = backlight_device_register("kb3886-bl",
++		&pdev->dev, NULL, &kb3886bl_ops);
++	if (IS_ERR (kb3886_backlight_device))
++		return PTR_ERR(kb3886_backlight_device);
++
++	platform_set_drvdata(pdev, kb3886_backlight_device);
++
++	kb3886_backlight_device->props.max_brightness = machinfo->max_intensity;
++	kb3886_backlight_device->props.power = FB_BLANK_UNBLANK;
++	kb3886_backlight_device->props.brightness = machinfo->default_intensity;
++	backlight_update_status(kb3886_backlight_device);
++
++	return 0;
++}
++
++static int kb3886bl_remove(struct platform_device *pdev)
++{
++	struct backlight_device *bd = platform_get_drvdata(pdev);
++
++	backlight_device_unregister(bd);
++
++	return 0;
++}
++
++static struct platform_driver kb3886bl_driver = {
++	.probe		= kb3886bl_probe,
++	.remove		= kb3886bl_remove,
++	.suspend	= kb3886bl_suspend,
++	.resume		= kb3886bl_resume,
++	.driver		= {
++		.name	= "kb3886-bl",
++	},
++};
++
++static int __init kb3886_init(void)
++{
++	if (!dmi_check_system(kb3886bl_device_table))
++		return -ENODEV;
++
++	platform_add_devices(devices, ARRAY_SIZE(devices));
++	return platform_driver_register(&kb3886bl_driver);
++}
++
++static void __exit kb3886_exit(void)
++{
++	platform_driver_unregister(&kb3886bl_driver);
++}
++
++module_init(kb3886_init);
++module_exit(kb3886_exit);
++
++MODULE_AUTHOR("Claudio Nieder <private@claudio.ch>");
++MODULE_DESCRIPTION("Tabletkiosk Sahara Touch-iT Backlight Driver");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("dmi:*:svnSDV:pniTouchT201:*");
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+1.4.4.4
+
+claudio
+-- 
+Claudio Nieder, Talweg 6, CH-8610 Uster, Tel +4179 357 6743, www.claudio.ch
