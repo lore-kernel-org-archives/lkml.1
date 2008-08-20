@@ -1,123 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756980AbYHTXpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbYHTXra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756980AbYHTXpS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 19:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbYHTXpE
+	id S1757876AbYHTXra (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 19:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbYHTXrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 19:45:04 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:55260 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750788AbYHTXpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 19:45:03 -0400
-Subject: [PATCH] clean up percpu_counter_sum_and_set() interface
-From: Mingming Cao <cmm@us.ibm.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4 <linux-ext4@vger.kernel.org>
-Cc: tytso@mit.edu
-Content-Type: text/plain
-Organization: IBM
-Date: Wed, 20 Aug 2008 16:44:59 -0700
-Message-Id: <1219275899.7895.58.camel@mingming-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Wed, 20 Aug 2008 19:47:20 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:62146 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754680AbYHTXrT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 19:47:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=uk7MiONZsz5MpBYm0HXV36A3SCPRHdVyPm8lzlKZOfoD966mmyvZuEc0L4svoerzWa
+         +PMQVh2W1BiL1F/LKzX0Z32SmNO7RSABoENQ2TQNIlCMv1YO0owMMfDba9w3HuKIiZ5o
+         97WojOC+oK3NEdppXv6gq16foWWjfyfZN8x+s=
+Message-ID: <86802c440808201647w70cbc286u7b02ae5da5806f49@mail.gmail.com>
+Date: Wed, 20 Aug 2008 16:47:19 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Alex Nixon" <alex.nixon@citrix.com>
+Subject: Re: [PATCH] X86: Change the default value of nr_irqs from 32 to NR_IRQs
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Jeremy Fitzhardinge" <Jeremy.Fitzhardinge@citrix.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <48ACA785.6030607@citrix.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48AAFAE4.7070409@citrix.com>
+	 <86802c440808191044h74871ba1u62330dae18599436@mail.gmail.com>
+	 <0E902970173AF84089673FA54B7FE78A2CA11D@lonpexch01.citrite.net>
+	 <86802c440808191124v39ce2aa9rb548d3bdd75ca25c@mail.gmail.com>
+	 <48AB11A3.4060102@citrix.com>
+	 <86802c440808191200u364ffd86h49af661e58d20ea3@mail.gmail.com>
+	 <48AB241A.4030706@citrix.com>
+	 <86802c440808191352g75c99737kcb8c9c20d59c8f7b@mail.gmail.com>
+	 <48AB551D.6010708@citrix.com> <48ACA785.6030607@citrix.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-percpu counter: clean up percpu_counter_sum_and_set() interface
+On Wed, Aug 20, 2008 at 4:23 PM, Alex Nixon <alex.nixon@citrix.com> wrote:
+> Alex Nixon wrote:
+>>
+>> Yinghai Lu wrote:
+>>>
+>>> when !CONFIG_HAVE_SPARSE_IRQ, with dyn_array, could allocate irq_desc
+>>> and etc as less as possible.
+>>> when CONFIG_HAVE_SPARESE_IRQ, no actually meaning for nr_irqs.
+>>>
+>>> YH
+>>
+>> So I believe the only case this affects is !CONFIG_HAVE_SPARSE_IRQ
+>>
+>> The worry is that with CONFIG_HAVE_DYN_ARRAY we may waste memory by
+>> pre-allocating more irq_descs than may be necessary (NR_IRQs vs 32)?
+>>
+>> With !CONFIG_HAVE_DYN_ARRAY however, a static array of size NR_IRQS is
+>> allocated instead - so doesn't defaulting nr_irqs back to NR_IRQS just
+>> revert to the old behaviour (with the exception of the irq_descs being
+>> allocated in pre_alloc_dyn_array instead)?
+>>
+>> - Alex
+>>
+>
+> Sorry to pester you Yinghai, but I'd like to get a patch for this out one
+> way or another as Xen is _completely_ unusable with 5 or more VCPUs.
+>
+> Can you explain more clearly what the problem with the patch is?
 
-From: Mingming Cao <cmm@us.ibm.com>
+small real system doesn't have MSI ioapic will have nr_irqs == 32.
+your patch will increase that to 224 again.
 
-percpu_counter_sum_and_set() and percpu_counter_sum() is the same except
-the former update the global counter after accounting.  Since we are
-taking the fbc->lock to calculate the precise value of the
-counter in percpu_counter_sum() anyway, it should simply set fbc->count
-too, as the percpu_counter_sum_and_set() dose.
+sth like ?
 
-This patch merge these two interfaces into one.
- 
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
----
- fs/ext4/balloc.c               |    2 +-
- include/linux/percpu_counter.h |   12 +++---------
- lib/percpu_counter.c           |    8 +++-----
- 3 files changed, 7 insertions(+), 15 deletions(-)
+#ifdef CONFIG_XEN
+int __init probe_nr_irqs(void)
+{
+        int idx;
+        int nr = 0;
 
-Index: linux-2.6.27-rc3/fs/ext4/balloc.c
-===================================================================
---- linux-2.6.27-rc3.orig/fs/ext4/balloc.c	2008-08-20 16:23:26.000000000 -0700
-+++ linux-2.6.27-rc3/fs/ext4/balloc.c	2008-08-20 16:25:21.000000000 -0700
-@@ -1624,7 +1624,7 @@
- #ifdef CONFIG_SMP
- 	if (free_blocks - root_blocks < FBC_BATCH)
- 		free_blocks =
--			percpu_counter_sum_and_set(&sbi->s_freeblocks_counter);
-+			percpu_counter_sum(&sbi->s_freeblocks_counter);
- #endif
- 	if (free_blocks <= root_blocks)
- 		/* we don't have free space */
-Index: linux-2.6.27-rc3/include/linux/percpu_counter.h
-===================================================================
---- linux-2.6.27-rc3.orig/include/linux/percpu_counter.h	2008-08-20 16:23:51.000000000 -0700
-+++ linux-2.6.27-rc3/include/linux/percpu_counter.h	2008-08-20 16:29:17.000000000 -0700
-@@ -35,7 +35,7 @@
- void percpu_counter_destroy(struct percpu_counter *fbc);
- void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
- void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
--s64 __percpu_counter_sum(struct percpu_counter *fbc, int set);
-+s64 __percpu_counter_sum(struct percpu_counter *fbc);
- 
- static inline void percpu_counter_add(struct percpu_counter *fbc, s64 amount)
- {
-@@ -44,19 +44,13 @@
- 
- static inline s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
- {
--	s64 ret = __percpu_counter_sum(fbc, 0);
-+	s64 ret = __percpu_counter_sum(fbc);
- 	return ret < 0 ? 0 : ret;
- }
- 
--static inline s64 percpu_counter_sum_and_set(struct percpu_counter *fbc)
--{
--	return __percpu_counter_sum(fbc, 1);
--}
--
--
- static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
- {
--	return __percpu_counter_sum(fbc, 0);
-+	return __percpu_counter_sum(fbc);
- }
- 
- static inline s64 percpu_counter_read(struct percpu_counter *fbc)
-Index: linux-2.6.27-rc3/lib/percpu_counter.c
-===================================================================
---- linux-2.6.27-rc3.orig/lib/percpu_counter.c	2008-08-20 16:24:50.000000000 -0700
-+++ linux-2.6.27-rc3/lib/percpu_counter.c	2008-08-20 16:26:55.000000000 -0700
-@@ -52,7 +52,7 @@
-  * Add up all the per-cpu counts, return the result.  This is a more accurate
-  * but much slower version of percpu_counter_read_positive()
-  */
--s64 __percpu_counter_sum(struct percpu_counter *fbc, int set)
-+s64 __percpu_counter_sum(struct percpu_counter *fbc)
- {
- 	s64 ret;
- 	int cpu;
-@@ -62,11 +62,9 @@
- 	for_each_online_cpu(cpu) {
- 		s32 *pcount = per_cpu_ptr(fbc->counters, cpu);
- 		ret += *pcount;
--		if (set)
--			*pcount = 0;
-+		*pcount = 0;
- 	}
--	if (set)
--		fbc->count = ret;
-+	fbc->count = ret;
- 
- 	spin_unlock(&fbc->lock);
- 	return ret;
+        for (idx = 0; idx < nr_ioapics; idx++)
+                nr += io_apic_get_redir_entries(idx);
 
+        /* double it for hotplug and msi and nmi */
+        nr <<= 1;
 
+        /* something wrong ? */
+        if (nr < 32)
+                nr = 32;
+
+        return nr;
+}
+#else
+int __init probe_nr_irqs(void)
+{
+       return NR_IRQS;
+}
+#endif
