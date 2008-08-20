@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbYHTBLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757103AbYHTBMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756656AbYHTBLb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 21:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbYHTBKg
+	id S1757103AbYHTBMO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 21:12:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbYHTBKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 21:10:36 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48487 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754067AbYHTBKd (ORCPT
+	Tue, 19 Aug 2008 21:10:45 -0400
+Received: from qmta10.westchester.pa.mail.comcast.net ([76.96.62.17]:47850
+	"EHLO QMTA10.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755013AbYHTBKn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 21:10:33 -0400
-Date: Tue, 19 Aug 2008 18:07:55 -0700
-From: greg@kroah.com
-To: Jeff Garzik <jgarzik@pobox.com>,
-       Linux USB kernel mailing list <linux-usb@vger.kernel.org>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Denis Joseph Barrow <D.Barow@option.com>
-Subject: [patch 02/02] hso: dev_kfree_skb crash fix
-Message-ID: <20080820010755.GC3365@kroah.com>
-References: <20080820010353.593820280@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hso-dev_kfree_skb-crash-fix.patch"
-In-Reply-To: <20080820010738.GA3365@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	Tue, 19 Aug 2008 21:10:43 -0400
+X-Authority-Analysis: v=1.0 c=1 a=XrLxHPN_-4yA0B6r870A:9
+ a=SpDqq92kgi6fDmPuyrwKJAGQrMMA:4 a=b8hG5vVbyAkA:10
+Date: Tue, 19 Aug 2008 21:10:39 -0400
+From: Frank Peters <frank.peters@comcast.net>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.26 Breaks USB Fax Modem
+Message-Id: <20080819211039.a273679f.frank.peters@comcast.net>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Denis Joseph Barrow <D.Barow@option.com>
+Hello,
 
-Fixes dev_kfree_skb happening too many times when hso_start_net_device
-is called from hso_resume.
+After updating the kernel from 2.6.25 to 2.6.26, I now experience
+severe problems when trying to send a fax using an external USB
+modem.  Using either HylaFAX or efax facsimile software, the fax
+transmission will just suddenly hang at some point before completion.
+Neither the fax log or the kernel log will show any error or other
+anomaly.  Rebooting the system with kernel 2.6.25 will allow me
+to send faxes without problem.
 
-Signed-off-by: Denis Joseph Barrow <D.Barow@option.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Nothing on my machine has changed between 2.6.25 and 2.6.26 and
+the same configuration was used to compile both versions. 
 
----
- drivers/net/usb/hso.c |    1 +
- 1 file changed, 1 insertion(+)
+The cdc-acm module is responsible for communicating with the USB
+modem and I suspect that it is at fault.
 
---- a/drivers/net/usb/hso.c
-+++ b/drivers/net/usb/hso.c
-@@ -2613,6 +2613,7 @@ static int hso_resume(struct usb_interfa
- 					"Transmitting lingering data\n");
- 				hso_net_start_xmit(hso_net->skb_tx_buf,
- 						   hso_net->net);
-+				hso_net->skb_tx_buf = NULL;
- 			}
- 			result = hso_start_net_device(network_table[i]);
- 			if (result)
+Has this problem been reported by anyone else?  How can I further
+debug this problem?  As I mentioned, no log shows any error message
+of any kind.  The logs from the fax software may indicate an
+"unspecified error" but will usually just show that the data
+stream has been abruptly halted.
 
--- 
+Please cc to me directly since I am not subscribed to the list.
+
+Frank Peters
+
