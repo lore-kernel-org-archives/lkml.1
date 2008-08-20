@@ -1,93 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776AbYHTIqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbYHTIx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755776AbYHTIqV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 04:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYHTIqN
+	id S1754881AbYHTIx0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 04:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYHTIxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 04:46:13 -0400
-Received: from ik-out-1112.google.com ([66.249.90.177]:24558 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752925AbYHTIqL (ORCPT
+	Wed, 20 Aug 2008 04:53:16 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:55441 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753130AbYHTIxP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 04:46:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=jOsmU85C18hx24oQ0rjxZ9ekmwRpHYskNtOrUIf/o7ZoeJzqoErD8mAN6JgY+koRlD
-         rzUT4z6BBjBl6cuImHaQoj0sl9Q8HoRTm1DuNy8eOuTg423C+6jgczxp2UMA1tIwp+sg
-         4uyjkefN1sVpRLf9s8nNZo9Yj0EUcy2Ca1YdY=
-Message-ID: <45a44e480808200146m1167b8e6o74d68324ad138dc5@mail.gmail.com>
-Date: Wed, 20 Aug 2008 04:46:08 -0400
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fbdefio: add set_page_dirty handler to deferred IO FB
-Cc: "Ian Campbell" <ijc@hellion.org.uk>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       stable@vger.kernel.org, "Nick Piggin" <npiggin@suse.de>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Hugh Dickins" <hugh@veritas.com>,
-       "Johannes Weiner" <hannes@saeurebad.de>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Kel Modderman" <kel@otaku42.de>,
-       "Markus Armbruster" <armbru@redhat.com>
-In-Reply-To: <20080818233824.5d219105.akpm@linux-foundation.org>
+	Wed, 20 Aug 2008 04:53:15 -0400
+Date: Wed, 20 Aug 2008 10:53:03 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Message-ID: <20080820085303.GA17591@tekkaman>
+References: <1219182612-13814-1-git-send-email-giometti@linux.it> <1219182612-13814-2-git-send-email-giometti@linux.it> <1219182612-13814-3-git-send-email-giometti@linux.it> <1219182612-13814-4-git-send-email-giometti@linux.it> <1219182612-13814-5-git-send-email-giometti@linux.it> <1219182612-13814-6-git-send-email-giometti@linux.it> <20080819225322.69f3215d@lxorguk.ukuu.org.uk> <20080819224930.GI21330@tekkaman> <20080819233857.41b756cc@lxorguk.ukuu.org.uk> <20080819230523.GJ21330@tekkaman>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1219125765-31833-1-git-send-email-ijc@hellion.org.uk>
-	 <20080818233824.5d219105.akpm@linux-foundation.org>
+In-Reply-To: <20080819230523.GJ21330@tekkaman>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 05/10] ldisc: new dcd_change() method for line
+	disciplines.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 19, 2008 at 2:38 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Tue, 19 Aug 2008 07:02:45 +0100 Ian Campbell <ijc@hellion.org.uk> wrote:
->
->> +static int fb_deferred_io_set_page_dirty(struct page *page)
->> +{
->> +     if (!PageDirty(page))
->> +             SetPageDirty(page);
->> +     return 0;
->> +}
->
-> <searches, finds the thread.  "kernel BUG at lib/radix-tree.c:473!">
->
-> Is there actually any benefit in setting these pages dirty?  Or should
-> this be an empty function?  I see claims in the above thread that this
-> driver uses PG_dirty for optimising writeback but I can't immediately
-> locate any code which actually does that.
+On Wed, Aug 20, 2008 at 01:05:23AM +0200, Rodolfo Giometti wrote:
 
-Hi Andrew,
+> Maybe I can solve the problem defining dcd_change() as follow:
+> 
+>    void (*dcd_change)(struct tty_struct *tty, unsigned int status,
+>                         void *data)
+> 
+> and then passing the timestamp or struct uart_port pointer?
 
-I hope I have understood your question. You are right that PG_dirty
-isn't used directly in defio. The defio portion does use each
-page_mkwrite callback to build a list of the pages of the framebuffer
-that were written to and then passes that list to pvfb (in this case).
-pvfb then optimizes writeback by interpreting that list according to
-its framebuffer and sending it to its actual destination. I think
-Markus's code in xenfb_deferred_io() and xenfb_send* is doing the
-latter.
+After sleeping this night :) I think is better defing the
+uart_handle_dcd_change() into serial_core.h as follow:
 
->
-> I suspect that we just shouldn't be pretending that this is a regular
-> anon/pagecache page to this extent.  Maybe a suitable fix would be to
-> teach fb_deferred_io_fault() to instantiate the pte itself
-> (vm_insert_page()) and then return VM_FAULT_NOPAGE?
->
+uart_handle_dcd_change(struct uart_port *port, unsigned int status)
+{
+        struct uart_info *info = port->info;
+        struct tty_ldisc *ld = tty_ldisc_ref(info->port.tty);
+        struct timespec ts;
 
-Ok, I haven't understood all the details of vm_insert_page() yet. I
-noticed Peter's message that this won't work with page_mkclean (which
-I need to do so that we can re-receive fault notification after the
-driver has done writeback). I see your remark and Ian's that it would
-be better to try to do the mapping and a_ops setup at open time. I
-think I have some ideas of how to do this without breaking fb code
-much. I will try to work on this issue this weekend. I'm sorry that
-I'm so slow.
+        if (ld->ops->dcd_change)
+#ifdef CONFIG_PPS_IRQ_EVENTS
+                ts = pps_irq_ts[port->irq];
+#else
+                getnstimeofday(&ts);
+#endif
 
-Thanks,
-jaya
+        port->icount.dcd++;
+#ifdef CONFIG_HARD_PPS
+        if ((port->flags & UPF_HARDPPS_CD) && status)
+                hardpps();
+#endif
+
+        if (info->flags & UIF_CHECK_CD) {
+                if (status)
+                        wake_up_interruptible(&info->port.open_wait);
+                else if (info->port.tty)
+                        tty_hangup(info->port.tty);
+        }
+
+        if (ld->ops->dcd_change)
+                ld->ops->dcd_change(info->port.tty, status, &ts);
+        tty_ldisc_deref(ld);
+}
+
+This completely hides the (dirty) trick to the PPS clients and allow
+using struct tty_struct as first parameter.
+
+Is that acceptable?
+
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
