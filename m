@@ -1,160 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759690AbYHTPQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbYHTPQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759690AbYHTPQc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 11:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759676AbYHTPQS
+	id S1756547AbYHTPQQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 11:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449AbYHTPPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 11:16:18 -0400
-Received: from mx1.suse.de ([195.135.220.2]:38239 "EHLO mx1.suse.de"
+	Wed, 20 Aug 2008 11:15:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59322 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759552AbYHTPQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 11:16:17 -0400
-Date: Wed, 20 Aug 2008 08:13:03 -0700
-From: Greg KH <gregkh@suse.de>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: jbaron@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kernel/module: fix warning when
-	!CONFIG_DYNAMIC_PRINTK_DEBUG
-Message-ID: <20080820151303.GA1754@suse.de>
-References: <20080820141329.GB7622@orion> <20080820142453.GA31886@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080820142453.GA31886@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1755058AbYHTPPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 11:15:47 -0400
+Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro
+	linux interface for  for access scanning
+From: Eric Paris <eparis@redhat.com>
+To: david@lang.hm
+Cc: Jan Harkes <jaharkes@cs.cmu.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       tvrtko.ursulin@sophos.com, Theodore Tso <tytso@mit.edu>, davecb@sun.com,
+       Adrian Bunk <bunk@kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       malware-list@lists.printk.net, Casey Schaufler <casey@schaufler-ca.com>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <alpine.DEB.1.10.0808191906270.20991@asgard.lang.hm>
+References: <20080818153212.6A6FD33687F@pmx1.sophos.com>
+	 <1219076143.15566.39.camel@localhost.localdomain>
+	 <20080818171500.78590801@lxorguk.ukuu.org.uk>
+	 <1219080504.15566.65.camel@localhost.localdomain>
+	 <20080818182556.13ced58f@lxorguk.ukuu.org.uk>
+	 <1219082097.15566.82.camel@localhost.localdomain>
+	 <20080818183540.GA5470@cs.cmu.edu>
+	 <1219085176.15566.100.camel@localhost.localdomain>
+	 <alpine.DEB.1.10.0808181159400.15109@asgard.lang.hm>
+	 <alpine.DEB.1.10.0808191906270.20991@asgard.lang.hm>
+Content-Type: text/plain
+Date: Wed, 20 Aug 2008 11:15:21 -0400
+Message-Id: <1219245321.3389.82.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 20, 2008 at 07:24:53AM -0700, Greg KH wrote:
-> On Wed, Aug 20, 2008 at 06:13:29PM +0400, Alexander Beregalov wrote:
-> > From: Alexander Beregalov <a.beregalov@gmail.com>
-> > 
-> > kernel/module.c: In function 'load_module':
-> > kernel/module.c:1839: warning: unused variable 'value'
-> > kernel/module.c:1838: warning: unused variable 'iter'
-> > 
-> > 
-> > Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
-> > ---
-> > 
-> >  kernel/module.c |    2 ++
-> >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/kernel/module.c b/kernel/module.c
-> > index 1721320..5a1258e 100644
-> > --- a/kernel/module.c
-> > +++ b/kernel/module.c
-> > @@ -1835,8 +1835,10 @@ static struct module *load_module(void __user *umod,
-> >  	unsigned int markersindex;
-> >  	unsigned int markersstringsindex;
-> >  	unsigned int verboseindex;
-> > +#ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
-> >  	struct mod_debug *iter;
-> >  	unsigned long value;
-> > +#endif
+On Tue, 2008-08-19 at 19:44 -0700, david@lang.hm wrote:
+
+> please note that I am trying to state Erics position, I may be mistaken.
+
+you did pretty well.
+
+> He expect AV signatures to change rapidly
+>    so storing the results of scans is of very limited value
+
+Not quite.  I believe it should be the responsibility of the scanner to
+determine how and if they want to store the results of the scan.  I'm
+willing (and want) to provide a simplistic kernel fast path if all of
+the scanners agree to use it.
+
+> He is expecting the scanning software to set the policy
+>    so there is no reason to have a system/distro defined policy
+
+I'm not sure of the definition of this 'policy' but, yes, I think all
+scanners should make their own decisions in their own little bubble.
+
+
+> I am seeing things (I think) a bit more broadly (definantly differently).
 > 
-> Hm, that's not very nice, we try to keep #ifdefs out of the .c file
-> where ever possible, especially within a single function.  I'll split
-> the section out of this function that has the #ifdef which should fix
-> this problem.
+> I think that the availability of a general 'this file was written to' 
+> interface in the kernel combined with 'take action before opening' will 
+> lead to many uses beyond AV work.
 
-I'll merge in this patch below, unless someone objects.
+At the moment I'm leaning towards a separate async notification system
+for open/mtime change/close which will be a fire and forget notification
+system with no access control mechanism.
 
-thanks,
+A second, although very similar, mechanism will block on read/mmap
+(although I'm not so sure how to handle O_NONBLOCK without a kernel
+fastpath/inode marking that actually gets used, this is really a serious
+design issue with putting this at read/mmap.  I don't think we are ready
+to give up on O_NONBLOCK for S_ISREG altogether just yet are we?) and
+provide access control.  I also plan to include open() in the
+blocking/access control based on a /proc tunable.  If applications can't
+handle EPERM at read/mmap they can get it at open and suffer the
+perf/blocking hit needlessly on open/stat sequences.
 
-greg k-h
+> I expect to see IDS type scanners, possibly multiple ones on a machine, 
+> each fairly simple and not trying to do a complete job, but authoritative 
+> within it's area.
+>    this means that the interaction between approvals is more complex and 
+> not something that should be coded into the kernel, it should be 
+> configured in userspace.
 
----
- kernel/module.c |   54 ++++++++++++++++++++++++++++++++++--------------------
- 1 file changed, 34 insertions(+), 20 deletions(-)
+I don't understand how something can be 'authoritative within it's area'
+and still have a 'complex interaction policy.'  I see it as, either yes
+means yes and no means no, or it isn't authoritative.
 
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -1778,12 +1778,44 @@ static void add_kallsyms(struct module *
- static inline void add_kallsyms(struct module *mod,
- 				Elf_Shdr *sechdrs,
- 				unsigned int symindex,
--				unsigned int strindex,
- 				const char *secstrings)
- {
- }
- #endif /* CONFIG_KALLSYMS */
- 
-+#ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
-+static void dynamic_printk_setup(struct module *mod,
-+				 Elf_Shdr *sechdrs,
-+				 unsigned int verboseindex,
-+				 const char *secstrings)
-+{
-+	struct mod_debug *iter;
-+	unsigned long value;
-+
-+	mod->start_verbose = (void *)sechdrs[verboseindex].sh_addr;
-+	mod->num_verbose = sechdrs[verboseindex].sh_size /
-+				sizeof(*mod->start_verbose);
-+
-+	for (value = (unsigned long)mod->start_verbose;
-+		value < (unsigned long)mod->start_verbose +
-+		(unsigned long)(mod->num_verbose * sizeof(struct mod_debug));
-+		value += sizeof(struct mod_debug)) {
-+			iter = (struct mod_debug *)value;
-+			register_dynamic_debug_module(iter->modname,
-+				iter->type,
-+				iter->logical_modname,
-+				iter->flag_names, iter->hash, iter->hash2);
-+	}
-+}
-+#else
-+static inline void dynamic_printk_setup(struct module *mod,
-+					Elf_Shdr *sechdrs,
-+					unsigned int symindex,
-+					const char *secstrings)
-+{
-+}
-+#endif /* CONFIG_DYNAMIC_PRINTK_DEBUG */
-+
- static void *module_alloc_update_bounds(unsigned long size)
- {
- 	void *ret = module_alloc(size);
-@@ -1833,8 +1865,6 @@ static struct module *load_module(void _
- 	unsigned int markersindex;
- 	unsigned int markersstringsindex;
- 	unsigned int verboseindex;
--	struct mod_debug *iter;
--	unsigned long value;
- 	struct module *mod;
- 	long err = 0;
- 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
-@@ -2149,11 +2179,6 @@ static struct module *load_module(void _
- 	mod->num_markers =
- 		sechdrs[markersindex].sh_size / sizeof(*mod->markers);
- #endif
--#ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
--	mod->start_verbose = (void *)sechdrs[verboseindex].sh_addr;
--	mod->num_verbose = sechdrs[verboseindex].sh_size /
--				sizeof(*mod->start_verbose);
--#endif
- 
-         /* Find duplicate symbols */
- 	err = verify_export_symbols(mod);
-@@ -2177,18 +2202,7 @@ static struct module *load_module(void _
- 		marker_update_probe_range(mod->markers,
- 			mod->markers + mod->num_markers);
- #endif
--#ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
--	for (value = (unsigned long)mod->start_verbose;
--		value < (unsigned long)mod->start_verbose +
--		(unsigned long)(mod->num_verbose * sizeof(struct mod_debug));
--		value += sizeof(struct mod_debug)) {
--			iter = (struct mod_debug *)value;
--			register_dynamic_debug_module(iter->modname,
--				iter->type,
--				iter->logical_modname,
--				iter->flag_names, iter->hash, iter->hash2);
--	}
--#endif
-+	dynamic_printk_setup(mod, sechdrs, verboseindex, secstrings);
- 	err = module_finalize(hdr, sechdrs, mod);
- 	if (err < 0)
- 		goto cleanup;
+If two scanners need some complex interaction it certainly needs to be
+in userspace, no question there.  Sounds like a dispatcher daemon needs
+to get the notification from the kernel and send them to the scanners
+and then let it do all sorts of magic and sprinkling of pixie dust
+before the daemon return an answer to the kernel.  In the end that
+deamon is the authoritative thing.  I don't plan to write it since I
+don't see the need, but the possibility of writing a dispatcher daemon
+certainly exists if there is actually need.
+
+Everything says yes at read/mmap we allow.  Anything says no we deny.
+You need more than that write an intermediary daemon in userspace to
+govern that interaction.
+
+> becouse of things like indexers, backups, and IDS type I see great value 
+> in storing the fact that a file was scanned across reboots for some users 
+> (other users may not want to trust the system without re-scanning it after 
+> a reboot in case the files were changed)
+
+My answer is that if they want to store whatever it is they care about
+across boots so the scanner can write an xattr to help.  I believe that
+all scanners are going to need/want to have some for of userspace
+caching.  I plan to provide a fastpath in kernel scanners can make use
+of, but anything more complex should be a completely userspace solution
+and should be able to be built on what I provide at a later time.
+
+> Eric has one other significant advantage, he has produced code, and is 
+> presumably payed to work on this (based on his posts and @redhat address)
+
+Not paid much   :)
+
