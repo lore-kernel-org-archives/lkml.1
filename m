@@ -1,67 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbYHTTLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbYHTTLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756018AbYHTTLA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 15:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbYHTTKv
+	id S1756130AbYHTTLt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 15:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbYHTTLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 15:10:51 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:33470 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751752AbYHTTKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 15:10:51 -0400
-Subject: Re: [Devel] [RFC][PATCH 1/4] checkpoint-restart: general
-	infrastructure
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org,
-       Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-       Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <48A94061.8040206@openvz.org>
-References: <20080807224033.FFB3A2C1@kernel>
-	 <20080807224034.735B1F84@kernel>  <48A94061.8040206@openvz.org>
-Content-Type: text/plain
-Date: Wed, 20 Aug 2008 12:10:45 -0700
-Message-Id: <1219259445.8960.45.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Aug 2008 15:11:40 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:63251 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752809AbYHTTLj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 15:11:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent:from;
+        b=W21haGHkdCC5oiDkINF/435rduKRO1YV4QCG2+SuF/I7mynizQcguYj6TZc2T/Kgq7
+         UX38TftUGeyFOCQCQyuqKypLWy1naZn2YD0se5Yjv6X50EC73UMWp0+ZPFTPs6vqYbWV
+         P/KemFsaVmXzQwJhjWQBrkvUeVahD0QTpqbXw=
+Date: Wed, 20 Aug 2008 23:12:57 +0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: peter_e@gmx.net, bugme-daemon@bugzilla.kernel.org,
+       linux-kernel@vger.kernel.org, Nadia Derbey <Nadia.Derbey@bull.net>,
+       Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>,
+       Manfred Spraul <manfred@colorfullife.com>,
+       Pierre Peiffer <peifferp@gmail.com>, containers@lists.osdl.org
+Subject: Re: [Bugme-new] [Bug 11381] New: default shmmax
+Message-ID: <20080820191257.GA22556@x200.localdomain>
+References: <bug-11381-10286@http.bugzilla.kernel.org/> <20080820120043.e6e7e436.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080820120043.e6e7e436.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: adobriyan@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-18 at 13:26 +0400, Pavel Emelyanov wrote: 
-> > diff -puN /dev/null ckpt/ckpt_hdr.h
-> > --- /dev/null	2007-04-11 11:48:27.000000000 -0700
-> > +++ linux-2.6.git-dave/ckpt/ckpt_hdr.h	2008-08-07 15:37:22.000000000 -0700
-> > @@ -0,0 +1,69 @@
-> > +/*
-> > + *  Generic container checkpoint-restart
-> > + *
-> > + *  Copyright (C) 2008 Oren Laadan
-> > + *
-> > + *  This file is subject to the terms and conditions of the GNU General Public
-> > + *  License.  See the file COPYING in the main directory of the Linux
-> > + *  distribution for more details.
-> > + */
-> > +
-> > +#include <linux/types.h>
-> > +
-> > +struct cr_hdr {
-> > +	__s16 type;
-> > +	__s16 len;
-> > +	__u32 id;
-> > +};
+On Wed, Aug 20, 2008 at 12:00:43PM -0700, Andrew Morton wrote:
 > 
-> Sorry for probably being out-of-date again, but isn't it better to
-> put these headers in the include/linux and export them to the user
-> space?
+> (switched to email.  Please respond via emailed reply-to-all, not via the
+> bugzilla web interface).
 > 
-> Why? Because we'll need some image-dumping tool (let alone the
-> image converting one for compatibility purposes) and these tools
-> would require to know how the image looks like.
+> On Wed, 20 Aug 2008 05:58:57 -0700 (PDT)
+> bugme-daemon@bugzilla.kernel.org wrote:
+> 
+> > http://bugzilla.kernel.org/show_bug.cgi?id=11381
+> > 
+> >            Summary: default shmmax
+> >            Product: Other
+> >            Version: 2.5
+> >      KernelVersion: 2.6.26.2
+> >           Platform: All
+> >         OS/Version: Linux
+> >               Tree: Mainline
+> >             Status: NEW
+> >           Severity: enhancement
+> >           Priority: P1
+> >          Component: Other
+> >         AssignedTo: other_other@kernel-bugs.osdl.org
+> >         ReportedBy: peter_e@gmx.net
+> > 
+> > 
+> > I would like to request that the default shmmax setting be increased or the
+> > downsides of that be documented.  Allow me to explain.
+> > 
+> > I am with the PostgreSQL development team.  PostgreSQL is probably one of the
+> > few users of large amounts of SysV shared memory.  Users would usually want to
+> > configure anywhere between 10% and 50% of their physical RAM to be used as
+> > shared memory, which would translate to something on the order of gigabytes
+> > nowadays.  One of the uniformly annoying things about setting this up is that
+> > you need to reconfigure the Linux kernel to allow that.  sysctl is nice and
+> > all, but it still requires users to learn about operating system and kernel
+> > details, requires root access, and distros don't handle sysctl uniformly
+> > either.  Maybe there is even a good reason for that, but I couldn't find it,
+> > and at least I would like to learn it, so that we can pass that information on
+> > to our users.
+> > 
+> > I did some kernel version archeology and found out that up until kernels 2.2
+> > the shmmax setting appears to have been restricted by CPU-specific constraints,
+> > as indicated by the default setting being different across CPUs and being
+> > defined in an asm header.  The default setting on i386 was increased from 16 MB
+> > to 32 MB somewhere around 1998 in the kernel 2.0 line, and it remains at 32 MB
+> > in the latest kernel on all architectures.
+> > 
+> > Now one question is whether there is a space or time overhead involved with
+> > setting a high shmmax limit that isn't actually used.  If so, it would be
+> > interesting to know what that overhead is.  The feeling I get from browsing the
+> > kernel source code over time is that there was some management overhead and/or
+> > some restrictions about this in old kernels, but that nowadays it doesn't
+> > really seem to matter much anymore.  I suspect instead that this whole thing
+> > was just forgotten, because few applications use large amounts of shared
+> > memory.
+> > 
+> > So, if you want to do us a favor, could you please see about increasing the
+> > default shmmax setting to whatever the theoretical maximum is?
+> > 
+> 
+> I don't think anybody has even thought about the shmmax default in
+> years.  Sure, it might be time to reexamine that.
+> 
+> It would be useful to get distro input on this.  Do they override the
+> kernel default at boot time?  If so, what do they do?
+> 
+> 
+> Also, from a quick read it looks to me that shmmax is busted in the
+> non-init namespace.
+> 
+> clone_ipc_ns() calls shm_init_ns() which does
+> 
+> 	ns->shm_ctlmax = SHMMAX;
+> 
+> which a) fails to inherit the parent's setting and
 
-What's the deal with headers being exported these days?  Don't we always
-have to sanitize them before we ship them over to userspace anyway?
+This is debatable if such behaviour should be default, this makes one ipc_ns
+more ipc_ns than others.
 
--- Dave
+> b) cannot be altered from SHMMAX via the sysctl?
+
+It can be altered. See kludge called get_ipc().
+
+(well, I haven't checked personally, but it's a bug if IPC sysctls
+aren't independently controllable after CLONE_NEWIPC, complain loudly).
 
