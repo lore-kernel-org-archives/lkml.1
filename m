@@ -1,72 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbYHTRJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbYHTRKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754313AbYHTRJJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 13:09:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbYHTRI4
+	id S1755308AbYHTRKF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 13:10:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750882AbYHTRJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 13:08:56 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:56668 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750766AbYHTRIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 13:08:55 -0400
-Subject: [BUG] Make setup_zone_migrate_reserve() aware of overlapping nodes
-From: Adam Litke <agl@us.ibm.com>
-To: linux-mm <linux-mm@kvack.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       nacc <nacc@linux.vnet.ibm.com>, mel@csn.ul.ie, apw <apw@shadowen.org>,
-       agl <agl@linux.vnet.ibm.com>
-In-Reply-To: <1218837685.12953.11.camel@localhost.localdomain>
-References: <1218837685.12953.11.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Organization: IBM
-Date: Wed, 20 Aug 2008 12:08:54 -0500
-Message-Id: <1219252134.13885.25.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 20 Aug 2008 13:09:54 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:53701 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1749667AbYHTRJw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 13:09:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=FTCTGZXfL9l0DdXlVTRLvvkiIE1T0i9UjWXeINHULU8TPdwxkMLwMD4ixXHphc06JS
+         +/bzhEulCWjStmUsJY1aZyl6Mnf6/kM4zWaoerDppuxfLBXuCGfvbdUoqAsJjO4t92NB
+         yvpx5X3wualp3+OvG3YRcIEccV9H7s/rqLOQE=
+Message-ID: <86802c440808201009s3c8f9431veae6c5014afeab7e@mail.gmail.com>
+Date: Wed, 20 Aug 2008 10:09:50 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: ioremap panic
+Cc: "Ingo Molnar" <mingo@elte.hu>, "the arch/x86 maintainers" <x86@kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080819235106.d6776abc.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <86802c440808162049u12fc92c4teae43c9b6f4a72b8@mail.gmail.com>
+	 <20080819235106.d6776abc.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have gotten to the root cause of the hugetlb badness I reported back
-on August 15th.  My system has the following memory topology (note the
-overlapping node):
+On Tue, Aug 19, 2008 at 11:51 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Sat, 16 Aug 2008 20:49:29 -0700 "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+>
+>> qla2xxx 0000:83:00.1: PCI INT B -> Link[LE3C] -> GSI 42 (level, low) -> IRQ 42
+>> ------------[ cut here ]------------
+>> kernel BUG at lib/ioremap.c:26!
+>
+> static int ioremap_pte_range(pmd_t *pmd, unsigned long addr,
+>                unsigned long end, unsigned long phys_addr, pgprot_t prot)
+> {
+>        pte_t *pte;
+>        unsigned long pfn;
+>
+>        pfn = phys_addr >> PAGE_SHIFT;
+>        pte = pte_alloc_kernel(pmd, addr);
+>        if (!pte)
+>                return -ENOMEM;
+>        do {
+> -->             BUG_ON(!pte_none(*pte));
+>
+>> invalid opcode: 0000 [1] SMP
+>> Dumping ftrace buffer:
+>>    (ftrace buffer empty)
+>> CPU 4
+>> Modules linked in:
+>> Pid: 1, comm: swapper Not tainted 2.6.27-rc3-tip-00452-g60e3132-dirty #58
+>> RIP: 0010:[<ffffffff804b8aa2>]  [<ffffffff804b8aa2>]
+>> ioremap_page_range+0x1b2/0x228
+>> RSP: 0018:ffff881824c97a50  EFLAGS: 00010206
+>> RAX: 00003e00beed2000 RBX: ffffc2001f126000 RCX: 00000000000ddff8
+>> RDX: ffff8810224de930 RSI: ffffc2001f127000 RDI: ffffc2001f126000
+>> RBP: ffff881824c97ac0 R08: ffff880844223890 R09: ffffffff80ea99a0
+>> R10: 0000000080000000 R11: 000000000000000a R12: ffffc2001f127000
+>> R13: ffffc2001f127000 R14: ffffffff80201c20 R15: ffff881827c017c0
+>> FS:  0000000000000000(0000) GS:ffff881024c83400(0000) knlGS:0000000000000000
+>> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+>> CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
+>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>> Process swapper (pid: 1, threadinfo ffff881824c96000, task ffff881024ca0000)
+>> Stack:  ffff881824c97aa0 ffffc2001f126fff ffffc2001f126fff ffffc2001f126fff
+>>  ffffc2001f127000 ffffc2001f127000 ffff881027c01000 8000000000000173
+>>  00003e00beed2000 8000000000000173 0000000000000010 ffffc2001f126000
+>> Call Trace:
+>>  [<ffffffff8024211e>] __ioremap_caller+0x246/0x2cd
+>>  [<ffffffff8093ac5d>] ? qla2x00_probe_one+0x436/0xf96
+>>  [<ffffffff8024228e>] ioremap_nocache+0x17/0x19
+>>  [<ffffffff8093ac5d>] qla2x00_probe_one+0x436/0xf96
+>>  [<ffffffff804c0626>] ? __bitmap_weight+0x3e/0x89
+>>  [<ffffffff802566f1>] ? set_cpus_allowed_ptr+0x113/0x120
+>>  [<ffffffff804b8dcc>] ? kobject_get+0x1a/0x22
+>>  [<ffffffff804ca903>] pci_device_probe+0xd1/0x131
+>>  [<ffffffff8053f7e8>] driver_probe_device+0xc5/0x173
+>>  [<ffffffff8053f8ea>] __driver_attach+0x54/0x7e
+>>  [<ffffffff8053f896>] ? __driver_attach+0x0/0x7e
+>>  [<ffffffff8053f03e>] bus_for_each_dev+0x54/0x8e
+>>  [<ffffffff804b8dcc>] ? kobject_get+0x1a/0x22
+>>  [<ffffffff8053f624>] driver_attach+0x21/0x23
+>>  [<ffffffff8053e92c>] bus_add_driver+0xbc/0x206
+>>  [<ffffffff8053fafc>] driver_register+0xad/0x12d
+>>  [<ffffffff804cabd5>] __pci_register_driver+0x6b/0xa6
+>>  [<ffffffff80efcb01>] ? qla2x00_module_init+0x0/0x12c
+>>  [<ffffffff80efcbfd>] qla2x00_module_init+0xfc/0x12c
+>>  [<ffffffff8020904c>] _stext+0x4c/0x144
+>>  [<ffffffff802695e7>] ? start_workqueue_thread+0x2b/0x2f
+>>  [<ffffffff80269a09>] ? __create_workqueue_key+0x112/0x22c
+>>  [<ffffffff80ed378f>] kernel_init+0x228/0x29d
+>>  [<ffffffff80227ff9>] child_rip+0xa/0x11
+>>  [<ffffffff80ed3567>] ? kernel_init+0x0/0x29d
+>>  [<ffffffff80227fef>] ? child_rip+0x0/0x11
+>> Code: 00 00 00 00 88 ff ff 48 01 c2 48 89 d8 48 c1 e8 09 25 f8 0f 00
+>> 00 48 01 c2 48 8b 45 d0 48 8d 0c 03 48 c1 e9 0c 48 83 3a 00 74 04 <0f>
+>> 0b eb fe 48 89 c8 48 81 c3 00 10 00 00 48 c1 e0 0c 48 0b 45
+>> RIP  [<ffffffff804b8aa2>] ioremap_page_range+0x1b2/0x228
+>>  RSP <ffff881824c97a50>
+>
+> Please work out what address qla2x00_probe_one() passed into ioremap(),
+> then see if you can work out what was already at that virtual address
+> (/proc/iomem, dmesg output, etc).
+>
 
-	﻿Node 0 Memory: 0x8000000-0x44000000
-	﻿Node 1 Memory: 0x0-0x8000000 0x44000000-0x80000000
+did not happen again after that day's tip/master
 
-setup_zone_migrate_reserve() scans the address range 0x0-0x8000000
-looking for a pageblock to move onto the MIGRATE_RESERVE list.  Finding
-no candidates, it happily continues the scan into 0x8000000-0x44000000.
-When a pageblock is found, the pages are moved to the MIGRATE_RESERVE
-list on the wrong zone.  Oops.
-
-(Andrew: once the proper fix is agreed upon, this should also be a
-candidate for -stable.)
-
-setup_zone_migrate_reserve() should skip pageblocks in overlapping
-nodes.
-
-Signed-off-by: Adam Litke <agl@us.ibm.com>
-
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index af982f7..f297a9b 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2512,6 +2512,10 @@ static void setup_zone_migrate_reserve(struct zone *zone)
- 							pageblock_order;
- 
- 	for (pfn = start_pfn; pfn < end_pfn; pfn += pageblock_nr_pages) {
-+		/* Watch out for overlapping nodes */
-+		if (!early_pfn_in_nid(pfn, zone->node))
-+			continue;
-+
- 		if (!pfn_valid(pfn))
- 			continue;
- 		page = pfn_to_page(pfn);
-
--- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
-
+YH
