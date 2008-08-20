@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757942AbYHTVtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbYHTVwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757942AbYHTVtQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYHTVs6
+	id S1755999AbYHTVwY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYHTVwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:48:58 -0400
-Received: from tamago.serverit.net ([91.189.209.155]:52094 "EHLO
-	mail.hosting2.serverit.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752793AbYHTVs5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:48:57 -0400
-Date: Thu, 21 Aug 2008 00:48:45 +0300 (EEST)
-From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
-X-X-Sender: szaka@tamago.serverit.net
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: konishi.ryusuke@lab.ntt.co.jp, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
-In-Reply-To: <20080820143916.1a7eddab.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.62.0808210044050.25448@tamago.serverit.net>
-References: <20080820004326.519405a2.akpm@linux-foundation.org>
- <200808201613.AA00212@capsicum.lab.ntt.co.jp> <Pine.LNX.4.61.0808202352450.4532@dhcppc2>
- <20080820143916.1a7eddab.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 20 Aug 2008 17:52:16 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55007 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752138AbYHTVwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 17:52:15 -0400
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Steven Rostedt <srostedt@redhat.com>,
+       Scott Wood <scottwood@freescale.com>,
+       Eran Liberty <liberty@extricom.com>, Alan Modra <amodra@au1.ibm.com>,
+       Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com>
+References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
+	 <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
+	 <48A9AFA7.8080508@freescale.com>
+	 <alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>
+	 <1219110814.8062.2.camel@pasglop>
+	 <alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>
+	 <1219113549.8062.13.camel@pasglop> <1219114600.8062.15.camel@pasglop>
+	 <alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>
+	 <1219119431.8062.35.camel@pasglop> <1219216705.21386.46.camel@pasglop>
+	 <alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Thu, 21 Aug 2008 07:36:29 +1000
+Message-Id: <1219268189.21386.65.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 20 Aug 2008, Andrew Morton wrote:
-> On Thu, 21 Aug 2008 00:25:55 +0300 (MET DST)
-> Szabolcs Szakacsits <szaka@ntfs-3g.org> wrote:
+> > As you can see, it restores r1 -before- it pops r24..r31 off
+> > the stack ! I let you imagine what happens if an interrupt happens
+> > just in between those two instructions (mr and lmw). We don't do
+> > redzones on our ABI, so basically, the registers end up corrupted
+> > by the interrupt.
 > 
-> > 
-> > On Thu, 21 Aug 2008, Ryusuke Konishi wrote:
-> > > >> Some impressive benchmark results on SSD are shown in [3],
-> > > >
-> > > >heh.  It wipes the floor with everything, including btrfs.
-> > 
-> > It seems the benchmark was done over half year ago. It's questionable how 
-> > relevant today the performance comparison is with actively developed file 
-> > systems ...
-> > 
-> > > >But a log-based fs will do that, initially.  What will the performace
-> > > >look like after a month or two's usage?
-> > > 
-> > > I'm using NILFS2 for my home directory for serveral months, but so far
-> > > I don't feel notable performance degradation. 
-> > 
-> > I ran compilebench on kernel 2.6.26 with freshly formatted volumes. 
-> > The behavior of NILFS2 was interesting.
-> > 
-> > Its peformance rapidly degrades to the lowest ever measured level 
-> > (< 1 MB/s) but after a while it recovers and gives consistent numbers.
-> > However it's still very far from the current unstable btrfs performance. 
-> > The results are reproducible.
-> > 
-> >                     MB/s    Runtime (s)
-> >                    -----    -----------
-> >   btrfs unstable   17.09        572
-> >   ext3             13.24        877
-> >   btrfs 0.16       12.33        793
-> >   nilfs2 2nd+ runs 11.29        674
-> >   ntfs-3g           8.55        865
-> >   reiserfs          8.38        966
-> >   nilfs2 1st run    4.95       3800
-> >   xfs               1.88       3901
-> 
-> err, what the heck happened to xfs?  Is this usual?
+> Ouch!  You've disassembled this without -pg too, and it does not have this 
+> bug? What version of gcc do you have?
 
-vmstat typically shows that xfs does ... "nothing". It uses no CPU time and 
-doesn't wait for I/O either. 
+Oops, should have mentioned it ;-)
 
-	Szaka
+4.2.3 (Ubuntu 4.2.3-2ubuntu7)
 
---
-NTFS-3G:  http://ntfs-3g.org
+Ben.
+
 
