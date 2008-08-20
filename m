@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbYHTFgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbYHTFib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755305AbYHTFgi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 01:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbYHTFgN
+	id S1756127AbYHTFib (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 01:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbYHTFiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 01:36:13 -0400
-Received: from gate.crashing.org ([63.228.1.57]:53452 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752087AbYHTFgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 01:36:12 -0400
-Subject: Re: [PATCH 2/2] powerpc - Make the irq reverse mapping radix tree
-	lockless
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Sebastien Dugue <sebastien.dugue@bull.net>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, paulus@samba.org,
-       michael@ellerman.id.au, jean-pierre.dion@bull.net,
-       gilles.carry@ext.bull.net, tinytim@us.ibm.com, tglx@linutronix.de,
-       rostedt@goodmis.org, dwalker@mvista.com
-In-Reply-To: <1218029429-21114-3-git-send-email-sebastien.dugue@bull.net>
-References: <1218029429-21114-1-git-send-email-sebastien.dugue@bull.net>
-	 <1218029429-21114-3-git-send-email-sebastien.dugue@bull.net>
+	Wed, 20 Aug 2008 01:38:21 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:44531 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751759AbYHTFiT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 01:38:19 -0400
+Subject: Re: [GIT]: Networking
+From: Marcel Holtmann <marcel@holtmann.org>
+To: david@lang.hm
+Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       rjw@sisk.pl, akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.1.10.0808192138260.12859@asgard.lang.hm>
+References: <20080819.140458.236030589.davem@davemloft.net>
+	 <200808192315.48718.rjw@sisk.pl>
+	 <alpine.LFD.1.10.0808191425050.3324@nehalem.linux-foundation.org>
+	 <20080819.143556.245692295.davem@davemloft.net>
+	 <1219206013.7591.227.camel@violet.holtmann.net>
+	 <alpine.DEB.1.10.0808192138260.12859@asgard.lang.hm>
 Content-Type: text/plain
-Date: Wed, 20 Aug 2008 15:23:01 +1000
-Message-Id: <1219209781.21386.25.camel@pasglop>
+Date: Wed, 20 Aug 2008 07:38:22 +0200
+Message-Id: <1219210702.7591.280.camel@violet.holtmann.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -32,12 +33,75 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BTW. It would be good to try to turn the GFP_ATOMIC into GFP_KERNEL,
-maybe using a semaphore instead of a lock to protect insertion vs.
-initialisation. The old scheme was fine because if the atomic allocation
-failed, it could fallback to the linear search and try again on the next
-interrupt. Not anymore.
+Hi David,
 
-Ben.
+> >> And then there is the Bluetooth SCO change which I agree was
+> >> borderline and I should have pushed back on.
+> >
+> > so this is the statement, I sent Dave to explain why that change was in
+> > there:
+> >
+> > ---
+> > For the btusb driver this adds the promised SCO support. The btusb
+> > driver is a new driver and will eventually replace hci_usb. Adding SCO
+> > support was the last missing piece. All distributions are using the
+> > hci_usb driver at the moment and you can only select one of them. So
+> > this can't introduce any regression. With this change the distributions
+> > are now able to select the new driver if they really want to.
+> > ---
+> >
+> > Was this absolutely needed after -rc3. Of course not. No questions asked
+> > about it. So why did it ended up in there?
+> >
+> > Almost everybody is using the hci_usb driver and that one has issues
+> > that are beyond fixable. So the btusb is its replacement and with this
+> > change it became a real alternate solution. For me this is a new driver
+> > that would allow people to use it in case hci_usb gives them a hard time
+> > and falls over again. And fixing hci_usb is not an option. A lot of
+> > people tried it and they failed. I think the last one was Pavel a month
+> > ago. This is why I re-wrote the whole beast from scratch.
+> >
+> > So that is my excuse why I thought this would be good choice to push it
+> > to Dave. No more excuses and no new drivers after the merge window. At
+> > least not from me.
+> 
+> one of thr goals of the new release approach was to make releases 
+> frequently enough that it's not a big deal to miss a merge window, you 
+> only have to wait a couple of months (rather then a couple of years under 
+> the old model).
+> 
+> while I don't see a bit problem with drivers going in for previously 
+> unsupported hardware (at least since I custom compile my kernels with all 
+> unnessasary drivers disabled, so I wouldn't even try to compile them ;-) 
+> it doesn't hurt much, either as a user, or for you as a developer (as you 
+> note above) to go ahead and delay till the next merge window.
+
+the downside is that users wanna use this hardware have to wait for the
+next kernel release. The -next and -mm trees are simply not for
+everybody. Even some of the -rc kernels are a pain if you happen to use
+a non-x86 system. The kernel developers can fix them easily or know who
+to ask for a fix. So decision to include certain driver updates or new
+drivers are made from the perspective of the end users.
+
+>From a developer perspective if you work on a well separated subsystem
+or an individual driver, I can go for many kernel releases without
+running into major merge conflicts.
+
+We do have the fast moving targets like wireless. And it is not always
+the developers fault. The hardware manufactures are putting out new
+chips so fast nowadays that keeping up with the drivers is a hard job.
+Also laptop/desktop manufactures are a lot quicker in integrating these
+chips and bringing them to market.
+
+I made the EeePC 901 example. A 2.6.26 kernel has no support for the
+Ethernet card in it. This happened that last time with a 2.2 kernel
+where I bought an Ethernet card that was not supported.
+
+So when it comes to new driver support, it is a judgment call. Some
+times we make the wrong one.
+
+Regards
+
+Marcel
 
 
