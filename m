@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbYHSX66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbYHTADt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754854AbYHSX66 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 19:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYHSX6t
+	id S1755057AbYHTADt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 20:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbYHTADl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 19:58:49 -0400
-Received: from gw.goop.org ([64.81.55.164]:49619 "EHLO mail.goop.org"
+	Tue, 19 Aug 2008 20:03:41 -0400
+Received: from tau.jukie.net ([216.239.93.128]:40290 "EHLO tau.jukie.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753292AbYHSX6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 19:58:49 -0400
-Message-ID: <48AB5E36.8030400@goop.org>
-Date: Tue, 19 Aug 2008 16:58:46 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1753421AbYHTADk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 20:03:40 -0400
+Date: Tue, 19 Aug 2008 20:03:39 -0400
+From: Bart Trojanowski <bart@jukie.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: vfat BKL/lock_super regression in v2.6.26-rc3-g8f59342
+Message-ID: <20080820000339.GB28029@jukie.net>
+References: <20080819220311.GA28029@jukie.net> <alpine.LFD.1.10.0808191505590.3324@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Scott Wood <scottwood@freescale.com>,
-       Eran Liberty <liberty@extricom.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-References: <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>	 <48A9AFA7.8080508@freescale.com>	 <alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>	 <1219110814.8062.2.camel@pasglop>	 <alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>	 <1219113549.8062.13.camel@pasglop>	 <alpine.DEB.1.10.0808182240330.13401@gandalf.stny.rr.com>	 <20080819024707.GA22659@Krystal>	 <alpine.DEB.1.10.0808191247001.28232@gandalf.stny.rr.com>	 <20080819173453.GA28239@Krystal> <1219182471.7826.16.camel@pasglop>
-In-Reply-To: <1219182471.7826.16.camel@pasglop>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0808191505590.3324@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
->> Ok, there are two cases where it's ok :
->>
->> 1 - in stop_machine, considering we are not touching code executed in
->> NMI handlers.
->> 2 - when using my replace_instruction_safe() which uses a temporary
->> breakpoint when doing the instruction replacement.
->>
->> In those cases you could use text_poke_early().
->>     
->
-> Note that vmap/vunmap will be very slow.
->   
+* Linus Torvalds <torvalds@linux-foundation.org> [080819 18:19]:
+> And I think you hit this issue because you probably mounted the USB stick 
+> as a "sync" (or dirsync) mount - which is what some distros do by default, 
+> even if it is known to cause problems for some flash cards that don't do a 
+> good job at wear levelling.
 
-Don't we have Nick's speedups now?
+You're right.  I turned on sync a while back so I could just pull the
+stick out w/o the need to do a manual sync... probably not a good idea
+on my part with respect to the wear of the media.
 
-    J
+> But it's good that you did that, because all _my_ testing (which was 
+> admittedly very deficient) had been done with a default mount without that 
+> thing.
+
+My ignorance paid off!
+
+> Btw, quite often, the right solution may be to remove one of the locks 
+> entirely. FAT should actually have been largely BKL free, and my 
+> conversion of BKL to super-lock was "overly eager" exactly because it's 
+> easier to find deadlocks (and debug things carefully and handle them as 
+> they pop up) than it is to find races (which are almost impossible to 
+> debug and pinpoint).
+
+I totally agree.  After spending a couple of hours (while doing other
+things) bisecting the tree, I found the commit that introduced the
+regression.  In contrast, I was able to find the double-lock in 5
+minutes.
+
+> In particular, I think fat_write_inode() really is safe.
+
+I wasn't sure there.
+
+> So I'm pretty sure the right fix is to just remove [un]lock_super() 
+> entirely from fat_write_inode(). 
+
+Ok, I will test your patch and let you know in a few minutes.
+
+-Bart
+
+-- 
+				WebSig: http://www.jukie.net/~bart/sig/
