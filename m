@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbYHTE0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753523AbYHTErb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754261AbYHTE0f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 00:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751020AbYHTE01
+	id S1753523AbYHTErb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 00:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbYHTErT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 00:26:27 -0400
-Received: from ozlabs.org ([203.10.76.45]:38607 "EHLO ozlabs.org"
+	Wed, 20 Aug 2008 00:47:19 -0400
+Received: from mail.lang.hm ([64.81.33.126]:50865 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750897AbYHTE00 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 00:26:26 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <18603.37996.974247.668984@cargo.ozlabs.ibm.com>
-Date: Wed, 20 Aug 2008 13:50:04 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	id S1751143AbYHTErT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 00:47:19 -0400
+Date: Tue, 19 Aug 2008 21:47:25 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Marcel Holtmann <marcel@holtmann.org>
+cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       rjw@sisk.pl, akpm@linux-foundation.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [git pull] Please pull powerpc.git merge branch
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Subject: Re: [GIT]: Networking
+In-Reply-To: <1219206013.7591.227.camel@violet.holtmann.net>
+Message-ID: <alpine.DEB.1.10.0808192138260.12859@asgard.lang.hm>
+References: <20080819.140458.236030589.davem@davemloft.net>  <200808192315.48718.rjw@sisk.pl>  <alpine.LFD.1.10.0808191425050.3324@nehalem.linux-foundation.org>  <20080819.143556.245692295.davem@davemloft.net>
+ <1219206013.7591.227.camel@violet.holtmann.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Wed, 20 Aug 2008, Marcel Holtmann wrote:
 
-Please pull from the 'merge' branch of
+>> And then there is the Bluetooth SCO change which I agree was
+>> borderline and I should have pushed back on.
+>
+> so this is the statement, I sent Dave to explain why that change was in
+> there:
+>
+> ---
+> For the btusb driver this adds the promised SCO support. The btusb
+> driver is a new driver and will eventually replace hci_usb. Adding SCO
+> support was the last missing piece. All distributions are using the
+> hci_usb driver at the moment and you can only select one of them. So
+> this can't introduce any regression. With this change the distributions
+> are now able to select the new driver if they really want to.
+> ---
+>
+> Was this absolutely needed after -rc3. Of course not. No questions asked
+> about it. So why did it ended up in there?
+>
+> Almost everybody is using the hci_usb driver and that one has issues
+> that are beyond fixable. So the btusb is its replacement and with this
+> change it became a real alternate solution. For me this is a new driver
+> that would allow people to use it in case hci_usb gives them a hard time
+> and falls over again. And fixing hci_usb is not an option. A lot of
+> people tried it and they failed. I think the last one was Pavel a month
+> ago. This is why I re-wrote the whole beast from scratch.
+>
+> So that is my excuse why I thought this would be good choice to push it
+> to Dave. No more excuses and no new drivers after the merge window. At
+> least not from me.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+one of thr goals of the new release approach was to make releases 
+frequently enough that it's not a big deal to miss a merge window, you 
+only have to wait a couple of months (rather then a couple of years under 
+the old model).
 
-to get some more bug-fixes for powerpc.
+while I don't see a bit problem with drivers going in for previously 
+unsupported hardware (at least since I custom compile my kernels with all 
+unnessasary drivers disabled, so I wouldn't even try to compile them ;-) 
+it doesn't hurt much, either as a user, or for you as a developer (as you 
+note above) to go ahead and delay till the next merge window.
 
-Paul.
+the benifits of delaying are that the changes in the -rc cycle are clearer 
+and smaller. this should make the progress towards the release more 
+obvious, and avoid distractions like the one that started this thread. 
+yes, this will make the -rc1/-rc2 even bigger as there is more stuff going 
+in, but it looks like that is being handled well (in part thanks to the 
+preview that -next is providing)
 
- arch/powerpc/kernel/crash_dump.c          |   31 +++++++++++++++++++++--------
- arch/powerpc/kernel/ibmebus.c             |   12 -----------
- arch/powerpc/kernel/vio.c                 |    2 +-
- arch/powerpc/platforms/cell/spufs/run.c   |   15 +++++++-------
- arch/powerpc/platforms/cell/spufs/sched.c |   11 ++++++++--
- drivers/of/device.c                       |   10 +++++++++
- 6 files changed, 50 insertions(+), 31 deletions(-)
+so as a user/tester I want to thank you for being so willing to delay new 
+stuff for the next merge window, may others learn to follow your example.
 
-Brian King (1):
-      powerpc: Fix vio_bus_probe oops on probe error
-
-Ilpo Järvinen (1):
-      powerpc/spufs: Remove invalid semicolon after if statement
-
-Jeremy Kerr (2):
-      powerpc/spufs: fix npc setting for NOSCHED contexts
-      powerpc/spufs: reference context while dropping state mutex in scheduler
-
-Joachim Fenkes (1):
-      powerpc/ibmebus: Restore "name" sysfs attribute on ibmebus devices
-
-Michael Ellerman (1):
-      powerpc: Fix /dev/oldmem interface for kdump
-
+David Lang
