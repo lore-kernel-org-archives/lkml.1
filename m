@@ -1,121 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbYHTT35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbYHTTaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755408AbYHTT35 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 15:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756724AbYHTT1X
+	id S1757940AbYHTTaz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 15:30:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbYHTTam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 15:27:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59694 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756894AbYHTT1U (ORCPT
+	Wed, 20 Aug 2008 15:30:42 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:22408 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757331AbYHTTal (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 15:27:20 -0400
-Date: Wed, 20 Aug 2008 12:25:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: mingo@elte.hu, jens.axboe@oracle.com, a.p.zijlstra@chello.nl,
-       cborntra@de.ibm.com, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org, arjan@infradead.org
-Subject: Re: [PATCH RFC 1/3] Add a trigger API for efficient non-blocking
- waiting
-Message-Id: <20080820122546.6022d91d.akpm@linux-foundation.org>
-In-Reply-To: <48AC6593.80505@goop.org>
-References: <48A70185.2020600@goop.org>
-	<20080819232108.c03660fa.akpm@linux-foundation.org>
-	<48AC6593.80505@goop.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Aug 2008 15:30:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=cwOzCkXxS0Iyf7QyoUfG4fyfwAsKZpNomGOmuNjBsT5IFUnEFraSKf2fmfHONL2o2Z
+         rlNqcU8XvXbZmCGrTFo4f+UCED0A86GHfiocHVGQg4V256foc6JjUhTmKGql5RoEV8Rt
+         NBfFkLbelKUfNsqtb/ts5R3SD5KVcbe5IgbhU=
+Date: Wed, 20 Aug 2008 21:28:57 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>, Bruce Duncan <bwduncan@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH v2 0/6] ftrace: to kill a daemon (small updates)
+Message-ID: <20080820192849.GA5888@joi>
+References: <20080814194506.233473381@goodmis.org> <20080815123624.GC5285@joi> <alpine.DEB.1.10.0808150840410.1065@gandalf.stny.rr.com> <20080815133517.GA5292@joi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080815133517.GA5292@joi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008 11:42:27 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> Andrew Morton wrote:
-> > On Sat, 16 Aug 2008 09:34:13 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> >
-> >   
-> >> There are various places in the kernel which wish to wait for a
-> >> condition to come true while in a non-blocking context.  Existing
-> >> examples of this are stop_machine() and smp_call_function_mask().
-> >> (No doubt there are other instances of this pattern in the tree.)
-> >>
-> >> Thus far, the only way to achieve this is by spinning with a
-> >> cpu_relax() loop.  This is fine if the condition becomes true very
-> >> quickly, but it is not ideal:
-> >>
-> >>  - There's little opportunity to put the CPUs into a low-power state.
-> >>    cpu_relax() may do this to some extent, but if the wait is
-> >>    relatively long, then we can probably do better.
-> >>     
-> >
-> > If this change saves a significant amount of power then we should fix
-> > the offending callsites.
-> >   
+On Fri, Aug 15, 2008 at 03:35:22PM +0200, Marcin Slusarz wrote:
+> On Fri, Aug 15, 2008 at 08:50:57AM -0400, Steven Rostedt wrote:
+> > 
+> > On Fri, 15 Aug 2008, Marcin Slusarz wrote:
+> > 
+> > > On Thu, Aug 14, 2008 at 03:45:06PM -0400, Steven Rostedt wrote:
+> > > >   Note 2: I have found that the changes here are more stable than
+> > > >     the current daemon method, and these patches should be used.
+> > > >     It also solves the resume from suspend to ram bug that was
+> > > >     reported:
+> > > > 
+> > > >       http://lkml.org/lkml/2008/8/12/234
+> > > >        and
+> > > >       http://lkml.org/lkml/2008/8/12/451
+> > > 
+> > > I don't remember testing any patch for my bug... ;)
+> > > 
+> > > For which tree this patchset is?
+> > > I tried to apply it on rc3, rc3+tip/tip and rc3+tip/master and all failed.
+> > > 
+> > 
+> > Ah, Bruce reported the same error, and said this patch series fixed it. 
+> > I assumed that this would fix your bug too. But if it does not, then I
+> > need to look deeper into what you are reporting.
+> > 
+> > Could you recheck-out the latest tip/master and see if it works for you.
 > 
-> Fix them how?  In general we're talking about contexts where we can't
-> block, and where the wait time is limited by some property of the
-> platform, such as IPI time or interrupt latency (though doing a
-> cross-cpu call of a long-running function would be something we could fix).
+> Ok, I tried tip/master and resume from suspend to ram works again.
+> Thanks!
 
-ah, OK, I'd failed to note that you had identified two specific culprits.
+I assume this patchset won't go into .27. So is there any plan to fix
+it in .27?
 
-Are either of these operations executed frequently enough for there to
-be significant energy savings here?
-
-> >>  - In a virtual environment, spinning virtual CPUs just waste CPU
-> >>    resources, and may steal CPU time from vCPUs which need it to make
-> >>    progress.  The trigger API allows the vCPUs to give up their CPU
-> >>    entirely.  The s390 people observed a problem with stop_machine
-> >>    taking a very long time (seconds) when there are more vcpus than
-> >>    available cpus.
-> >>     
-> >
-> > If this change saves a significant amount of virtual-cpu-time then we
-> > should fix the offending callsites.
-> >   
-> 
-> This case isn't particularly about saving vcpu time, but making timely
-> progress.  stop_machine() gets all the cpus into a spinloop, where they
-> spin waiting for an event to tell them to go to their next state-machine
-> state.  By definition this can't be a blocking operation (since the
-> whole point is that they're high priority threads that prevent anything
-> else from running).  But in the virtual case, the fact that they're all
-> spinning means that the underlying hypervisor has no idea who's just
-> spinning, and who's trying to do some work needed to make overall
-> progress, so the whole thing gets bogged down.
-
-hm.  I'm surprised that stop_machine() is executed frequently enough
-for you to care.  What's causing it?
-
-> Now perhaps we could solve stop_machine by modifying the scheduler in
-> some way, where you can block the run queue so that you sit in the idle
-> loop even though there's runnable processes waiting.  But even then,
-> stop_machine requires that interrupts be disabled, which means the we're
-> pretty much limited to spinning.
-
-If stop_machine() is the _only_ problematic callsite and we reasonably
-expect that no new ones will pop up then sure, a
-stop_machine()-specific fix might be appropriate.
-
-Otherwise, sure, we'd need to loko at something more general.
-
-> So my proposal is to add a non-scheduler-blocking operation which is
-> semantically equivalent to spinning, but gives the underlying platform
-> more information about what's going on.
-> 
-> Arjan suggested that since this is more or less equivalent to a
-> completion, we should just implement "spinpletions" - a spinning
-> completion.  This should be more familiar to kernel programmers, and
-> should be just as useful as triggers.
-> 
-> I've run out of time to work on this now, but Rusty has hinted he'll
-> pick up the baton...
-> 
-> (I'd also like to hear from other architecture folks, particularly s390,
-> to make sure this is going to be useful to them too.)
-> 
->     J
+Marcin
