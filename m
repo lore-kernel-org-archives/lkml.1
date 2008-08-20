@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758230AbYHTOLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758294AbYHTONp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758230AbYHTOLr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 10:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbYHTOLG
+	id S1758294AbYHTONp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 10:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbYHTONg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 10:11:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35823 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752975AbYHTOLE (ORCPT
+	Wed, 20 Aug 2008 10:13:36 -0400
+Received: from hs-out-0708.google.com ([64.233.178.242]:52931 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754881AbYHTONf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 10:11:04 -0400
-Message-ID: <48AC25E7.4090005@linux-foundation.org>
-Date: Wed, 20 Aug 2008 09:10:47 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Wed, 20 Aug 2008 10:13:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=IreBa1DHaBK/9qBKyEFhrb+TJW8HgVTP4B6PRtHGj77zNdR2cEcihkUxhKt9Uikg0F
+         tyd5u7N/L8RnV916MvrZALPfpxoh/q/MI6kH2FT8QcVMOEGZZLRCOAGKZgURgulWEf0D
+         rseoAzijM0doDGCVP6Vzq5IFZl3o/UiESFQDA=
+Date: Wed, 20 Aug 2008 18:13:29 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: jbaron@redhat.com, gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: [PATCH] kernel/module: fix warning when
+	!CONFIG_DYNAMIC_PRINTK_DEBUG
+Message-ID: <20080820141329.GB7622@orion>
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       tokunaga.keiich@jp.fujitsu.com
-Subject: Re: [RFC][PATCH 0/2] Quicklist is slighly problematic.
-References: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-In-Reply-To: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
-> Hi Cristoph,
-> 
-> Thank you for explain your quicklist plan at OLS.
-> 
-> So, I made summary to issue of quicklist.
-> if you have a bit time, Could you please read this mail and patches?
-> And, if possible, Could you please tell me your feeling?
+From: Alexander Beregalov <a.beregalov@gmail.com>
 
-I believe what I said at the OLS was that quicklists are fundamentally crappy
-and should be replaced by something that works (Guess that is what you meant
-by "plan"?). Quicklists were generalized from the IA64 arch code.
-
-Good fixup but I would think that some more radical rework is needed.
-
-Maybe some of this needs to vanish into the TLB handling logic?
-
-Then I have thought for awhile that the main reason that quicklists exist are
-the performance problems in the page allocator. If you can make the single
-page alloc / free pass competitive in performance with quicklists then we
-could get rid of all uses.
+kernel/module.c: In function 'load_module':
+kernel/module.c:1839: warning: unused variable 'value'
+kernel/module.c:1838: warning: unused variable 'iter'
 
 
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
+ kernel/module.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-
+diff --git a/kernel/module.c b/kernel/module.c
+index 1721320..5a1258e 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1835,8 +1835,10 @@ static struct module *load_module(void __user *umod,
+ 	unsigned int markersindex;
+ 	unsigned int markersstringsindex;
+ 	unsigned int verboseindex;
++#ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
+ 	struct mod_debug *iter;
+ 	unsigned long value;
++#endif
+ 	unsigned int tracepointsindex;
+ 	unsigned int tracepointsstringsindex;
+ 	struct module *mod;
