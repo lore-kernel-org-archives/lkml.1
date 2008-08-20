@@ -1,49 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758468AbYHTOXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757469AbYHTO0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758468AbYHTOXB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 10:23:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755406AbYHTOWx
+	id S1757469AbYHTO0q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 10:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbYHTO0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 10:22:53 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48323 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752113AbYHTOWw (ORCPT
+	Wed, 20 Aug 2008 10:26:38 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:43902 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753348AbYHTO0h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 10:22:52 -0400
-Date: Wed, 20 Aug 2008 10:22:49 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Eran Liberty <liberty@extricom.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Steven Rostedt <srostedt@redhat.com>, Alan Modra <amodra@au1.ibm.com>,
-       Scott Wood <scottwood@freescale.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       segher@kernel.crashing.org
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-In-Reply-To: <1219241819.26429.24.camel@jdub.homelinux.org>
-Message-ID: <alpine.DEB.1.10.0808201022080.23571@gandalf.stny.rr.com>
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>  <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>  <48A9AFA7.8080508@freescale.com>  <alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>  <1219110814.8062.2.camel@pasglop>
-  <alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>  <1219113549.8062.13.camel@pasglop> <1219114600.8062.15.camel@pasglop>  <alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>  <1219119431.8062.35.camel@pasglop> <1219216705.21386.46.camel@pasglop>
-  <alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com> <1219241819.26429.24.camel@jdub.homelinux.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 20 Aug 2008 10:26:37 -0400
+Message-ID: <48AC29CA.1060203@keyaccess.nl>
+Date: Wed, 20 Aug 2008 16:27:22 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dave Airlie <airlied@gmail.com>, "Li, Shaohua" <shaohua.li@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "dri-users@lists.sourceforge.net" <dri-users@lists.sourceforge.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: AGP and PAT (induced?) problem (on AMD family 6)
+References: <48972EA8.8040001@keyaccess.nl> <20080815142218.GC12954@elte.hu> <48A59FAC.7050605@keyaccess.nl> <48AA9C3B.5030309@keyaccess.nl> <20080819102633.GE6722@elte.hu> <48AAD680.7020508@keyaccess.nl> <20080819190757.GA17470@linux-os.sc.intel.com> <20080820100440.GE28492@elte.hu> <48ABF6DC.8070305@keyaccess.nl>
+In-Reply-To: <48ABF6DC.8070305@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 20-08-08 12:50, Rene Herman wrote:
 
-On Wed, 20 Aug 2008, Josh Boyer wrote:
+> On 20-08-08 12:04, Ingo Molnar wrote:
 > 
-> Segher was looking at this a bit this morning.  He thinks it's really
-> -fno-omit-frame-pointer that is causing this.  That really shouldn't
-> even be set on PowerPC, but FTRACE uses select which overrides the
-> depends on stuff in Kconfig.
+>> * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+>>
+>>>> I'd really like a reply from the AGP or PAT side right about now.
+>>> Hmm. Looks like there are more than 16000 entries in the PAT list!
+>>
+>> hm, btw., why is that?
+> 
+> Because 64M of AGP memory divided by 4K pages is 16K. That is, the 
+> underlying problem seems to be AGP drivers using order 0 allocations. 
+> I'm looking.
+> 
+> Do note also that this means that Venki's change would not constitite a 
+> correct/final fix. Sure, caching the last entry speeds up traversing a 
+> 16K entry list but the issue is that there shouldn't be a 16K entry 
+> list. Through AGP, or maybe even by coalescing entries in the PAT list 
+> if that's at all possible (I guess it's not really).
+> 
+> Even if such a more fundamental fix isn't (easily) available, the PAT 
+> code already comments that the list, which is sorted by ->start value, 
+> is expected to be short, and should be turned into an rbtree if it isn't 
+> which might be slightly less of a bandaid.
+> 
+> Dave Airlie (as the MAINTAINERS entry) can't be arsed to answer email it 
+> seems so I've added Dave Jones for a possible comment from the AGP side.
+> If I'm reading this right upto now, still many AGP driver (among which 
+> my amd-k7-agp) are affected.
 
-I can easily make a patch that makes that select an x86 only.
+This was based on a wrong reading; I was looking at the GATT allocation.
 
--- Steve
+I'm giving up looking until someone can tell me whether or not those 16K 
+entries are expected though. I have just one AGP card in a PAT capable 
+machine.
 
+How many entries in /debug/x86/pat_memtype_list are there on other AGP 
+systems with Option "AGPSize" "64" in their xorg.conf:"Device" section 
+(and their AGP aperture set to 64M or bigger in the BIOS)?
+
+Rene.
