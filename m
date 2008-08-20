@@ -1,78 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756998AbYHTT3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbYHTT35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756998AbYHTT3R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 15:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756601AbYHTT03
+	id S1755408AbYHTT35 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 15:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756724AbYHTT1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 15:26:29 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:60220 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756586AbYHTT02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 15:26:28 -0400
-Subject: [RFC v2][PATCH 5/9] Create trivial sys_checkpoint and sys_restore system calls
-To: arnd@arndb.de
-Cc: orenl@cs.columbia.edu, jeremy@goop.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Wed, 20 Aug 2008 12:26:03 -0700
-References: <20080820192557.98788FAB@nimitz>
-In-Reply-To: <20080820192557.98788FAB@nimitz>
-Message-Id: <20080820192603.AE9E8048@nimitz>
+	Wed, 20 Aug 2008 15:27:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59694 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756894AbYHTT1U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 15:27:20 -0400
+Date: Wed, 20 Aug 2008 12:25:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: mingo@elte.hu, jens.axboe@oracle.com, a.p.zijlstra@chello.nl,
+       cborntra@de.ibm.com, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org, arjan@infradead.org
+Subject: Re: [PATCH RFC 1/3] Add a trigger API for efficient non-blocking
+ waiting
+Message-Id: <20080820122546.6022d91d.akpm@linux-foundation.org>
+In-Reply-To: <48AC6593.80505@goop.org>
+References: <48A70185.2020600@goop.org>
+	<20080819232108.c03660fa.akpm@linux-foundation.org>
+	<48AC6593.80505@goop.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 20 Aug 2008 11:42:27 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-From: Oren Laadan <orenl@cs.columbia.edu>
+> Andrew Morton wrote:
+> > On Sat, 16 Aug 2008 09:34:13 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> >
+> >   
+> >> There are various places in the kernel which wish to wait for a
+> >> condition to come true while in a non-blocking context.  Existing
+> >> examples of this are stop_machine() and smp_call_function_mask().
+> >> (No doubt there are other instances of this pattern in the tree.)
+> >>
+> >> Thus far, the only way to achieve this is by spinning with a
+> >> cpu_relax() loop.  This is fine if the condition becomes true very
+> >> quickly, but it is not ideal:
+> >>
+> >>  - There's little opportunity to put the CPUs into a low-power state.
+> >>    cpu_relax() may do this to some extent, but if the wait is
+> >>    relatively long, then we can probably do better.
+> >>     
+> >
+> > If this change saves a significant amount of power then we should fix
+> > the offending callsites.
+> >   
+> 
+> Fix them how?  In general we're talking about contexts where we can't
+> block, and where the wait time is limited by some property of the
+> platform, such as IPI time or interrupt latency (though doing a
+> cross-cpu call of a long-running function would be something we could fix).
 
-Create trivial sys_checkpoint and sys_restore system calls. They will
-enable to checkpoint and restart an entire container, to and from a
-checkpoint image file.
+ah, OK, I'd failed to note that you had identified two specific culprits.
 
-First create a template for both syscalls: they take a file descriptor
-(for the image file) and flags as arguments. For sys_checkpoint the
-first argument identifies the target container; for sys_restart it will
-identify the checkpoint image.
+Are either of these operations executed frequently enough for there to
+be significant energy savings here?
 
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
----
+> >>  - In a virtual environment, spinning virtual CPUs just waste CPU
+> >>    resources, and may steal CPU time from vCPUs which need it to make
+> >>    progress.  The trigger API allows the vCPUs to give up their CPU
+> >>    entirely.  The s390 people observed a problem with stop_machine
+> >>    taking a very long time (seconds) when there are more vcpus than
+> >>    available cpus.
+> >>     
+> >
+> > If this change saves a significant amount of virtual-cpu-time then we
+> > should fix the offending callsites.
+> >   
+> 
+> This case isn't particularly about saving vcpu time, but making timely
+> progress.  stop_machine() gets all the cpus into a spinloop, where they
+> spin waiting for an event to tell them to go to their next state-machine
+> state.  By definition this can't be a blocking operation (since the
+> whole point is that they're high priority threads that prevent anything
+> else from running).  But in the virtual case, the fact that they're all
+> spinning means that the underlying hypervisor has no idea who's just
+> spinning, and who's trying to do some work needed to make overall
+> progress, so the whole thing gets bogged down.
 
- oren-cr.git-dave/arch/x86/kernel/syscall_table_32.S |    2 ++
- oren-cr.git-dave/include/asm-x86/unistd_32.h        |    2 ++
- oren-cr.git-dave/include/linux/syscalls.h           |    3 +++
- 3 files changed, 7 insertions(+)
+hm.  I'm surprised that stop_machine() is executed frequently enough
+for you to care.  What's causing it?
 
-diff -puN arch/x86/kernel/syscall_table_32.S~0006-Create-trivial-sys_checkpoint-and-sys_restore-system arch/x86/kernel/syscall_table_32.S
---- oren-cr.git/arch/x86/kernel/syscall_table_32.S~0006-Create-trivial-sys_checkpoint-and-sys_restore-system	2008-08-20 12:12:50.000000000 -0700
-+++ oren-cr.git-dave/arch/x86/kernel/syscall_table_32.S	2008-08-20 12:12:50.000000000 -0700
-@@ -332,3 +332,5 @@ ENTRY(sys_call_table)
- 	.long sys_dup3			/* 330 */
- 	.long sys_pipe2
- 	.long sys_inotify_init1
-+ 	.long sys_checkpoint
-+ 	.long sys_restart
-diff -puN include/asm-x86/unistd_32.h~0006-Create-trivial-sys_checkpoint-and-sys_restore-system include/asm-x86/unistd_32.h
---- oren-cr.git/include/asm-x86/unistd_32.h~0006-Create-trivial-sys_checkpoint-and-sys_restore-system	2008-08-20 12:12:50.000000000 -0700
-+++ oren-cr.git-dave/include/asm-x86/unistd_32.h	2008-08-20 12:12:50.000000000 -0700
-@@ -338,6 +338,8 @@
- #define __NR_dup3		330
- #define __NR_pipe2		331
- #define __NR_inotify_init1	332
-+#define __NR_checkpoint		333
-+#define __NR_restart		334
- 
- #ifdef __KERNEL__
- 
-diff -puN include/linux/syscalls.h~0006-Create-trivial-sys_checkpoint-and-sys_restore-system include/linux/syscalls.h
---- oren-cr.git/include/linux/syscalls.h~0006-Create-trivial-sys_checkpoint-and-sys_restore-system	2008-08-20 12:12:50.000000000 -0700
-+++ oren-cr.git-dave/include/linux/syscalls.h	2008-08-20 12:12:50.000000000 -0700
-@@ -625,4 +625,7 @@ asmlinkage long sys_fallocate(int fd, in
- 
- int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
- 
-+asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags);
-+asmlinkage long sys_restart(int crid, int fd, unsigned long flags);
-+
- #endif
-_
+> Now perhaps we could solve stop_machine by modifying the scheduler in
+> some way, where you can block the run queue so that you sit in the idle
+> loop even though there's runnable processes waiting.  But even then,
+> stop_machine requires that interrupts be disabled, which means the we're
+> pretty much limited to spinning.
+
+If stop_machine() is the _only_ problematic callsite and we reasonably
+expect that no new ones will pop up then sure, a
+stop_machine()-specific fix might be appropriate.
+
+Otherwise, sure, we'd need to loko at something more general.
+
+> So my proposal is to add a non-scheduler-blocking operation which is
+> semantically equivalent to spinning, but gives the underlying platform
+> more information about what's going on.
+> 
+> Arjan suggested that since this is more or less equivalent to a
+> completion, we should just implement "spinpletions" - a spinning
+> completion.  This should be more familiar to kernel programmers, and
+> should be just as useful as triggers.
+> 
+> I've run out of time to work on this now, but Rusty has hinted he'll
+> pick up the baton...
+> 
+> (I'd also like to hear from other architecture folks, particularly s390,
+> to make sure this is going to be useful to them too.)
+> 
+>     J
