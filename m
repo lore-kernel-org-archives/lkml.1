@@ -1,53 +1,375 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759185AbYHTQlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbYHTQmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759185AbYHTQlb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 12:41:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbYHTQkl
+	id S1756261AbYHTQmP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 12:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbYHTQkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 12:40:41 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42534 "EHLO
+	Wed, 20 Aug 2008 12:40:43 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42551 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751940AbYHTQkj (ORCPT
+	with ESMTP id S1752738AbYHTQkk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 12:40:39 -0400
+	Wed, 20 Aug 2008 12:40:40 -0400
 From: Andi Kleen <andi@firstfloor.org>
 To: linux-kernel@vger.kernel.org
 Cc: robert.richter@amd.com, oprofile-list@lists.sourceforge.net,
        Andi Kleen <ak@linux.intel.com>
-Subject: [PATCH] oprofile: drop const in num counters field
-Date: Wed, 20 Aug 2008 18:40:30 +0200
-Message-Id: <1219250433-25516-2-git-send-email-andi@firstfloor.org>
+Subject: [PATCH] oprofile: Implement Intel architectural perfmon support
+Date: Wed, 20 Aug 2008 18:40:31 +0200
+Message-Id: <1219250433-25516-3-git-send-email-andi@firstfloor.org>
 X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1219250433-25516-1-git-send-email-andi@firstfloor.org>
+In-Reply-To: <1219250433-25516-2-git-send-email-andi@firstfloor.org>
 References: <1219250433-25516-1-git-send-email-andi@firstfloor.org>
+ <1219250433-25516-2-git-send-email-andi@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Andi Kleen <ak@linux.intel.com>
 
-allow to modify it at runtime
+Newer Intel CPUs (Core1+) have support for architectural
+events described in CPUID 0xA. See the IA32 SDM Vol3b.18 for details.
+
+The advantage of this is that it can be done without knowing about
+the specific CPU, because the CPU describes by itself what
+performance events are supported. This is only a fallback
+because only a limited set of 6 events are supported.
+This allows to do profiling on Nehalem and on Atom systems
+(later not tested)
+
+This patch implements support for that in oprofile's Intel
+Family 6 profiling module. It also has the advantage of supporting
+an arbitary number of events now as reported by the CPU.
+Also allow arbitary counter widths >32bit while we're at it.
+
+Requires a patched oprofile userland to support the new
+architecture.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 ---
- arch/x86/oprofile/op_x86_model.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ Documentation/kernel-parameters.txt |    5 ++
+ arch/x86/oprofile/nmi_int.c         |   32 +++++++++--
+ arch/x86/oprofile/op_model_ppro.c   |  104 +++++++++++++++++++++++++++-------
+ arch/x86/oprofile/op_x86_model.h    |    3 +
+ 4 files changed, 116 insertions(+), 28 deletions(-)
 
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 056742c..10c8b1b 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1486,6 +1486,11 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	oprofile.timer=	[HW]
+ 			Use timer interrupt instead of performance counters
+ 
++	oprofile.force_arch_perfmon=1 [X86]
++			Force use of architectural perfmon performance counters
++			in oprofile on Intel CPUs.  The kernel selects the
++			correct default on its own.
++
+ 	osst=		[HW,SCSI] SCSI Tape Driver
+ 			Format: <buffer_size>,<write_threshold>
+ 			See also Documentation/scsi/st.txt.
+diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
+index 36d2f92..6438c32 100644
+--- a/arch/x86/oprofile/nmi_int.c
++++ b/arch/x86/oprofile/nmi_int.c
+@@ -430,6 +430,19 @@ static int __init ppro_init(char **cpu_type)
+ 	return 1;
+ }
+ 
++static int force_arch_perfmon;
++module_param(force_arch_perfmon, int, 0);
++
++static int __init arch_perfmon_init(char **cpu_type)
++{
++	if (!cpu_has_arch_perfmon)
++		return 0;
++	*cpu_type = "i386/arch_perfmon";
++	model = &op_arch_perfmon_spec;
++	arch_perfmon_setup_counters();
++	return 1;
++}
++
+ /* in order to get sysfs right */
+ static int using_nmi;
+ 
+@@ -437,7 +450,7 @@ int __init op_nmi_init(struct oprofile_operations *ops)
+ {
+ 	__u8 vendor = boot_cpu_data.x86_vendor;
+ 	__u8 family = boot_cpu_data.x86;
+-	char *cpu_type;
++	char *cpu_type = NULL;
+ 
+ 	if (!cpu_has_apic)
+ 		return -ENODEV;
+@@ -467,22 +480,29 @@ int __init op_nmi_init(struct oprofile_operations *ops)
+ 		break;
+ 
+ 	case X86_VENDOR_INTEL:
++		if (force_arch_perfmon) {
++			if (!arch_perfmon_init(&cpu_type))
++				return -ENODEV;
++			break;
++		}
++
+ 		switch (family) {
+ 			/* Pentium IV */
+ 		case 0xf:
+-			if (!p4_init(&cpu_type))
+-				return -ENODEV;
++			p4_init(&cpu_type);
+ 			break;
+ 
+ 			/* A P6-class processor */
+ 		case 6:
+-			if (!ppro_init(&cpu_type))
+-				return -ENODEV;
++			ppro_init(&cpu_type);
+ 			break;
+ 
+ 		default:
+-			return -ENODEV;
++			break;
+ 		}
++
++		if (!cpu_type && !arch_perfmon_init(&cpu_type))
++			return -ENODEV;
+ 		break;
+ 
+ 	default:
+diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
+index eff431f..12e207a 100644
+--- a/arch/x86/oprofile/op_model_ppro.c
++++ b/arch/x86/oprofile/op_model_ppro.c
+@@ -1,32 +1,34 @@
+ /*
+  * @file op_model_ppro.h
+- * pentium pro / P6 model-specific MSR operations
++ * Family 6 perfmon and architectural perfmon MSR operations
+  *
+  * @remark Copyright 2002 OProfile authors
++ * @remark Copyright 2008 Intel Corporation
+  * @remark Read the file COPYING
+  *
+  * @author John Levon
+  * @author Philippe Elie
+  * @author Graydon Hoare
++ * @author Andi Kleen
+  */
+ 
+ #include <linux/oprofile.h>
++#include <linux/slab.h>
+ #include <asm/ptrace.h>
+ #include <asm/msr.h>
+ #include <asm/apic.h>
+ #include <asm/nmi.h>
++#include <asm/intel_arch_perfmon.h>
+ 
+ #include "op_x86_model.h"
+ #include "op_counter.h"
+ 
+-#define NUM_COUNTERS 2
+-#define NUM_CONTROLS 2
++static int num_counters = 2;
++static int counter_width = 32;
+ 
+ #define CTR_IS_RESERVED(msrs, c) (msrs->counters[(c)].addr ? 1 : 0)
+ #define CTR_READ(l, h, msrs, c) do {rdmsr(msrs->counters[(c)].addr, (l), (h)); } while (0)
+-#define CTR_32BIT_WRITE(l, msrs, c)	\
+-	do {wrmsr(msrs->counters[(c)].addr, -(u32)(l), 0); } while (0)
+-#define CTR_OVERFLOWED(n) (!((n) & (1U<<31)))
++#define CTR_OVERFLOWED(n) (!((n) & (1U<<(counter_width-1))))
+ 
+ #define CTRL_IS_RESERVED(msrs, c) (msrs->controls[(c)].addr ? 1 : 0)
+ #define CTRL_READ(l, h, msrs, c) do {rdmsr((msrs->controls[(c)].addr), (l), (h)); } while (0)
+@@ -40,20 +42,20 @@
+ #define CTRL_SET_UM(val, m) (val |= (m << 8))
+ #define CTRL_SET_EVENT(val, e) (val |= e)
+ 
+-static unsigned long reset_value[NUM_COUNTERS];
++static u64 *reset_value;
+ 
+ static void ppro_fill_in_addresses(struct op_msrs * const msrs)
+ {
+ 	int i;
+ 
+-	for (i = 0; i < NUM_COUNTERS; i++) {
++	for (i = 0; i < num_counters; i++) {
+ 		if (reserve_perfctr_nmi(MSR_P6_PERFCTR0 + i))
+ 			msrs->counters[i].addr = MSR_P6_PERFCTR0 + i;
+ 		else
+ 			msrs->counters[i].addr = 0;
+ 	}
+ 
+-	for (i = 0; i < NUM_CONTROLS; i++) {
++	for (i = 0; i < num_counters; i++) {
+ 		if (reserve_evntsel_nmi(MSR_P6_EVNTSEL0 + i))
+ 			msrs->controls[i].addr = MSR_P6_EVNTSEL0 + i;
+ 		else
+@@ -67,8 +69,22 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
+ 	unsigned int low, high;
+ 	int i;
+ 
++	if (!reset_value) {
++		reset_value = kmalloc(sizeof(unsigned) * num_counters,
++					GFP_ATOMIC);
++		if (!reset_value)
++			return;
++	}
++
++	if (cpu_has_arch_perfmon) {
++		union cpuid10_eax eax;
++		eax.full = cpuid_eax(0xa);
++		if (counter_width < eax.split.bit_width)
++			counter_width = eax.split.bit_width;
++	}
++
+ 	/* clear all counters */
+-	for (i = 0 ; i < NUM_CONTROLS; ++i) {
++	for (i = 0 ; i < num_counters; ++i) {
+ 		if (unlikely(!CTRL_IS_RESERVED(msrs, i)))
+ 			continue;
+ 		CTRL_READ(low, high, msrs, i);
+@@ -77,18 +93,18 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
+ 	}
+ 
+ 	/* avoid a false detection of ctr overflows in NMI handler */
+-	for (i = 0; i < NUM_COUNTERS; ++i) {
++	for (i = 0; i < num_counters; ++i) {
+ 		if (unlikely(!CTR_IS_RESERVED(msrs, i)))
+ 			continue;
+-		CTR_32BIT_WRITE(1, msrs, i);
++		wrmsrl(msrs->counters[i].addr, -1LL);
+ 	}
+ 
+ 	/* enable active counters */
+-	for (i = 0; i < NUM_COUNTERS; ++i) {
++	for (i = 0; i < num_counters; ++i) {
+ 		if ((counter_config[i].enabled) && (CTR_IS_RESERVED(msrs, i))) {
+ 			reset_value[i] = counter_config[i].count;
+ 
+-			CTR_32BIT_WRITE(counter_config[i].count, msrs, i);
++			wrmsrl(msrs->counters[i].addr, -reset_value[i]);
+ 
+ 			CTRL_READ(low, high, msrs, i);
+ 			CTRL_CLEAR(low);
+@@ -111,13 +127,13 @@ static int ppro_check_ctrs(struct pt_regs * const regs,
+ 	unsigned int low, high;
+ 	int i;
+ 
+-	for (i = 0 ; i < NUM_COUNTERS; ++i) {
++	for (i = 0 ; i < num_counters; ++i) {
+ 		if (!reset_value[i])
+ 			continue;
+ 		CTR_READ(low, high, msrs, i);
+ 		if (CTR_OVERFLOWED(low)) {
+ 			oprofile_add_sample(regs, i);
+-			CTR_32BIT_WRITE(reset_value[i], msrs, i);
++			wrmsrl(msrs->counters[i].addr, -reset_value[i]);
+ 		}
+ 	}
+ 
+@@ -141,7 +157,7 @@ static void ppro_start(struct op_msrs const * const msrs)
+ 	unsigned int low, high;
+ 	int i;
+ 
+-	for (i = 0; i < NUM_COUNTERS; ++i) {
++	for (i = 0; i < num_counters; ++i) {
+ 		if (reset_value[i]) {
+ 			CTRL_READ(low, high, msrs, i);
+ 			CTRL_SET_ACTIVE(low);
+@@ -156,7 +172,7 @@ static void ppro_stop(struct op_msrs const * const msrs)
+ 	unsigned int low, high;
+ 	int i;
+ 
+-	for (i = 0; i < NUM_COUNTERS; ++i) {
++	for (i = 0; i < num_counters; ++i) {
+ 		if (!reset_value[i])
+ 			continue;
+ 		CTRL_READ(low, high, msrs, i);
+@@ -169,21 +185,65 @@ static void ppro_shutdown(struct op_msrs const * const msrs)
+ {
+ 	int i;
+ 
+-	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
++	for (i = 0 ; i < num_counters ; ++i) {
+ 		if (CTR_IS_RESERVED(msrs, i))
+ 			release_perfctr_nmi(MSR_P6_PERFCTR0 + i);
+ 	}
+-	for (i = 0 ; i < NUM_CONTROLS ; ++i) {
++	for (i = 0 ; i < num_counters ; ++i) {
+ 		if (CTRL_IS_RESERVED(msrs, i))
+ 			release_evntsel_nmi(MSR_P6_EVNTSEL0 + i);
+ 	}
++	if (reset_value) {
++		kfree(reset_value);
++		reset_value = NULL;
++	}
+ }
+ 
+ 
+ struct op_x86_model_spec const op_ppro_spec = {
+-	.num_counters = NUM_COUNTERS,
+-	.num_controls = NUM_CONTROLS,
++	.num_counters = 2,
++	.num_controls = 2,
++	.fill_in_addresses = &ppro_fill_in_addresses,
++	.setup_ctrs = &ppro_setup_ctrs,
++	.check_ctrs = &ppro_check_ctrs,
++	.start = &ppro_start,
++	.stop = &ppro_stop,
++	.shutdown = &ppro_shutdown
++};
++
++/*
++ * Architectural performance monitoring.
++ *
++ * Newer Intel CPUs (Core1+) have support for architectural
++ * events described in CPUID 0xA. See the IA32 SDM Vol3b.18 for details.
++ * The advantage of this is that it can be done without knowing about
++ * the specific CPU.
++ */
++
++void arch_perfmon_setup_counters(void)
++{
++	union cpuid10_eax eax;
++
++	eax.full = cpuid_eax(0xa);
++
++	/* Workaround for BIOS bugs in 6/15. Taken from perfmon2 */
++	if (eax.split.version_id == 0 && current_cpu_data.x86 == 6 &&
++		current_cpu_data.x86_model == 15) {
++		eax.split.version_id = 2;
++		eax.split.num_counters = 2;
++		eax.split.bit_width = 40;
++	}
++
++	num_counters = eax.split.num_counters;
++
++	op_arch_perfmon_spec.num_counters = num_counters;
++	op_arch_perfmon_spec.num_controls = num_counters;
++}
++
++struct op_x86_model_spec op_arch_perfmon_spec = {
++	/* num_counters/num_controls filled in at runtime */
+ 	.fill_in_addresses = &ppro_fill_in_addresses,
++	/* user space does the cpuid check for available events */
+ 	.setup_ctrs = &ppro_setup_ctrs,
+ 	.check_ctrs = &ppro_check_ctrs,
+ 	.start = &ppro_start,
 diff --git a/arch/x86/oprofile/op_x86_model.h b/arch/x86/oprofile/op_x86_model.h
-index 45b605f..575e08e 100644
+index 575e08e..68c2bb9 100644
 --- a/arch/x86/oprofile/op_x86_model.h
 +++ b/arch/x86/oprofile/op_x86_model.h
-@@ -32,8 +32,8 @@ struct pt_regs;
-  * various x86 CPU models' perfctr support.
-  */
- struct op_x86_model_spec {
--	unsigned int const num_counters;
--	unsigned int const num_controls;
-+	unsigned int num_counters;
-+	unsigned int num_controls;
- 	void (*fill_in_addresses)(struct op_msrs * const msrs);
- 	void (*setup_ctrs)(struct op_msrs const * const msrs);
- 	int (*check_ctrs)(struct pt_regs * const regs,
+@@ -47,5 +47,8 @@ extern struct op_x86_model_spec const op_ppro_spec;
+ extern struct op_x86_model_spec const op_p4_spec;
+ extern struct op_x86_model_spec const op_p4_ht2_spec;
+ extern struct op_x86_model_spec const op_athlon_spec;
++extern struct op_x86_model_spec op_arch_perfmon_spec;
++
++extern void arch_perfmon_setup_counters(void);
+ 
+ #endif /* OP_X86_MODEL_H */
 -- 
 1.5.6
 
