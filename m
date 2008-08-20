@@ -1,84 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753523AbYHTErb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbYHTEv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753523AbYHTErb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 00:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbYHTErT
+	id S1754286AbYHTEv5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 00:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYHTEvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 00:47:19 -0400
-Received: from mail.lang.hm ([64.81.33.126]:50865 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751143AbYHTErT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 00:47:19 -0400
-Date: Tue, 19 Aug 2008 21:47:25 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Marcel Holtmann <marcel@holtmann.org>
-cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       rjw@sisk.pl, akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-In-Reply-To: <1219206013.7591.227.camel@violet.holtmann.net>
-Message-ID: <alpine.DEB.1.10.0808192138260.12859@asgard.lang.hm>
-References: <20080819.140458.236030589.davem@davemloft.net>  <200808192315.48718.rjw@sisk.pl>  <alpine.LFD.1.10.0808191425050.3324@nehalem.linux-foundation.org>  <20080819.143556.245692295.davem@davemloft.net>
- <1219206013.7591.227.camel@violet.holtmann.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 20 Aug 2008 00:51:46 -0400
+Received: from web82104.mail.mud.yahoo.com ([209.191.84.217]:42711 "HELO
+	web82104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751172AbYHTEvo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 00:51:44 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=jdgSAKzFg5OymaHNxV/Yz/rLZS3vWTkSBt5arZhGPHx8eDN/AQMLmNJo5Gpa+eaPtFI1UCbL8zHy3Ls07Mb+HdjPMy8KcDzvKmsgACKoPAhNrK2kpuh9gqyl5gm1dqxx8rxzywHPjQXVuPe1rqI3deeVIrZWbuatAMe0cdANc3E=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Tue, 19 Aug 2008 21:51:43 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       netdev <netdev@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <109483.89278.qm@web82104.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008, Marcel Holtmann wrote:
 
->> And then there is the Bluetooth SCO change which I agree was
->> borderline and I should have pushed back on.
->
-> so this is the statement, I sent Dave to explain why that change was in
-> there:
->
-> ---
-> For the btusb driver this adds the promised SCO support. The btusb
-> driver is a new driver and will eventually replace hci_usb. Adding SCO
-> support was the last missing piece. All distributions are using the
-> hci_usb driver at the moment and you can only select one of them. So
-> this can't introduce any regression. With this change the distributions
-> are now able to select the new driver if they really want to.
-> ---
->
-> Was this absolutely needed after -rc3. Of course not. No questions asked
-> about it. So why did it ended up in there?
->
-> Almost everybody is using the hci_usb driver and that one has issues
-> that are beyond fixable. So the btusb is its replacement and with this
-> change it became a real alternate solution. For me this is a new driver
-> that would allow people to use it in case hci_usb gives them a hard time
-> and falls over again. And fixing hci_usb is not an option. A lot of
-> people tried it and they failed. I think the last one was Pavel a month
-> ago. This is why I re-wrote the whole beast from scratch.
->
-> So that is my excuse why I thought this would be good choice to push it
-> to Dave. No more excuses and no new drivers after the merge window. At
-> least not from me.
 
-one of thr goals of the new release approach was to make releases 
-frequently enough that it's not a big deal to miss a merge window, you 
-only have to wait a couple of months (rather then a couple of years under 
-the old model).
+> > $ dmesg | grep -i hpet
+> > ACPI: HPET 77FE80C0, 0038 (r1 RS690  AWRDACPI 42302E31 AWRD       98)
+> > ACPI: HPET id: 0x10b9a201 base: 0xfed00000
+> > hpet clockevent registered
+> > hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0, 0
+> > hpet0: 4 32-bit timers, 14318180 Hz
+> > hpet_resources: 0xfed00000 is busy
+> 
+> btw., you might also want to look into drivers/char/hpet.c and 
+> instrument that a bit. In particular the ioremap()s done there will show 
+> exactly how the hpet is mapped.
 
-while I don't see a bit problem with drivers going in for previously 
-unsupported hardware (at least since I custom compile my kernels with all 
-unnessasary drivers disabled, so I wouldn't even try to compile them ;-) 
-it doesn't hurt much, either as a user, or for you as a developer (as you 
-note above) to go ahead and delay till the next merge window.
+Well, I exhausted about 80% of the list of experiments I put together
+on Saturday, but I still can't make a 2.6.2[67] kernel boot without
+"hpet=disable" or reverting commits 3def3d6d... and 1e934dda...
 
-the benifits of delaying are that the changes in the -rc cycle are clearer 
-and smaller. this should make the progress towards the release more 
-obvious, and avoid distractions like the one that started this thread. 
-yes, this will make the -rc1/-rc2 even bigger as there is more stuff going 
-in, but it looks like that is being handled well (in part thanks to the 
-preview that -next is providing)
+I spent so many hours on this today...  My head is spinning, and I'm
+afraid springs and smoke will start emanating from my hard drive soon
+from all the recompiling and rebooting!
 
-so as a user/tester I want to thank you for being so willing to delay new 
-stuff for the next merge window, may others learn to follow your example.
+I need to warn you all:  I discovered today, for the first time, that
+I am not the first user to report this bug.  This guy got bit by it
+back in May, at version 2.6.26-rc2:
 
-David Lang
+[blog] http://ciaranm.wordpress.com/tag/f-i90hd/
+[LKML] http://www.uwsg.indiana.edu/hypermail/linux/kernel/0805.2/0746.html
+
+He has different hardware from mine, so when 2.6.26 starts hitting the 
+distros you may see a flood of complaints -- and I came to LKML partly
+with the purpose of providing a bug fix patch (or, less preferably, a
+reversion patch) for Debian, my distro of choice.
+
+I am not giving up.  I _did_ look at drivers/char/hpet.c as requested,
+but since this code did not change before and after 3def3d6d..., I
+was not sure what to look for that would be harmful.  The same turned out
+to be true about the "connection" I found between HPET and the calls
+of insert_resource(), though this could actually be affected if my latest
+hypothesis pans out.  (All of my ideas have failed so far, though, so it
+will not surprise me if my new idea fails as well.)
+
+I found another item in arch/x86/kernel/acpi/boot.c -- which I suspect
+_is_ a bug -- but which had no effect on my lockup issue when I "fixed" 
+it.  I will let a guru decide if I have found anything important:
+
+===== BEGIN DIFF ==========================
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 2cdc9de..d5a9d9d 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -669,7 +669,7 @@ static int __init acpi_parse_hpet(struct acpi_table_header *table)
+ 
+     memset(hpet_res, 0, sizeof(*hpet_res));
+     hpet_res->name = (void *)&hpet_res[1];
+-    hpet_res->flags = IORESOURCE_MEM;
++    hpet_res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+     snprintf((char *)hpet_res->name, HPET_RESOURCE_NAME_SIZE, "HPET %u",
+          hpet_tbl->sequence);
+===== END DIFF ==========================
+
+The dynamically-allocated structure that hpet_res points to eventually gets
+added to the resource tree by 
+
+static __init int hpet_insert_resource(void);
+
+which calls insert_resource().  My thought is that we are supposed to be 
+marking the memory region as unavailable, so that nothing else will touch 
+it later, right?
+
+
+Anyway, what happened in 3def3d6d to cause the regression?  I have a new 
+hypothesis to test, but I'm too tired to continue right now -- so I'll hit 
+it again tomorrow before I go to work:
+
+Up until now, I have focused on the fact that request_resource() was 
+replaced by insert_resource().  I did not pay attention to another aspect 
+of that commit -- the large change in the order of execution of where the
+kernel memory regions are added to the resource list.
+
+The original (2.6.25) approach, which works on my machine, is to identify 
+RAM resources as they are added to the resource list, then tack on the 
+kernel memory regions to the (proper) resource as it is added to the tree:
+
+  for (...) {
+    [...]
+    if (e820.map[i].type == E820_RAM) {
+        request_resource(res, code_resource);
+        request_resource(res, data_resource);
+        request_resource(res, bss_resource);
+    [...]
+    }
+    insert_resource(&iomem_resource, res);
+  }
+
+The problem commit moves those 3 request_resource() calls out of
+e820_reserve_resources() [arch/x86/kernel/e820{,_64}.c] and into
+setup_arch() [arch/x86/kernel/setup{,_64}.c].  The original code
+would have this happen when setup_arch() directly callse
+820_reserve_resources(), but the commit moved those lines into 
+setup_arch() itself, and they run sooner now than before...
+potentially affecting any resources added afterward.
+
+I don't see what effect this reordering could possibly have, since
+insert_resource() ignores the IORESOURCE_BUSY flag.  But that
+commit changed SOMETHING... and the two most obvious changes are 
+the {request,insert}_resource() switch, and the repositioning of 
+the request_resource() calls for {code,data,bss}_resource.
+
+
+I did a LOT of testing of insert_resource() last weekend, and it
+completely checked out:  it was only called about a dozen times,
+and it always inserted the resource without returning errors or
+accessing code paths for special cases.  That function is not
+broken internally, though its proper functioning might have
+unintended side effects I have not understood yet.
+
+I had the idea of setting up a side-by-side test -- taking the
+two versions of e820_reserve_resources() from before and after
+3def3d6d, renaming them, and writing a tiny replacement of
+e820_reserve_resources() which would call both versions... with
+the idea that I could recurse the resulting trees and compare 
+their contents for differences.
+
+While reading drivers/char/hpet.c and looking at the functions
+used there, I discovered request_region(), and realized that it
+would be difficult to compare the entire iomem_resource tree to
+a dummy tree only containing resources added by insert_resource()
+and request_resource().  It might be simpler to have my tiny
+e820_reserve_resources() replacement add each resource to 3 trees
+-- the real iomem_resource tree, and 2 dummy trees -- which could
+then be compared for differences just before the kernel locks up.
+
+
+Thanks,
+Dave W.
+
+/* head hits pillow */
