@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759611AbYHTQKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759990AbYHTQLF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759611AbYHTQKq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 12:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759101AbYHTQJg
+	id S1759990AbYHTQLF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 12:11:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759455AbYHTQKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 12:09:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57224 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759067AbYHTQJf (ORCPT
+	Wed, 20 Aug 2008 12:10:18 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42054 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759425AbYHTQKP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 12:09:35 -0400
-Date: Wed, 20 Aug 2008 09:09:11 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Marcel Holtmann <marcel@holtmann.org>
-cc: "John W. Linville" <linville@tuxdriver.com>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT]: Networking
-In-Reply-To: <1219246813.7591.347.camel@violet.holtmann.net>
-Message-ID: <alpine.LFD.1.10.0808200853410.3324@nehalem.linux-foundation.org>
-References: <20080819.041706.261399060.davem@davemloft.net>  <alpine.LFD.1.10.0808190952000.3324@nehalem.linux-foundation.org>  <1219170451.7591.175.camel@violet.holtmann.net>  <alpine.LFD.1.10.0808191348540.3324@nehalem.linux-foundation.org> 
- <1219203753.7591.205.camel@violet.holtmann.net>  <20080820143734.GB20632@tuxdriver.com>  <alpine.LFD.1.10.0808200826530.3324@nehalem.linux-foundation.org> <1219246813.7591.347.camel@violet.holtmann.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 20 Aug 2008 12:10:15 -0400
+Date: Wed, 20 Aug 2008 12:10:13 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: John Kacur <jkacur@gmail.com>
+cc: rt-users <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rt Kconfig.preempt fixes
+In-Reply-To: <520f0cf10808010639y4c1a19a7kff429827d26dc8e9@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0808201207470.27481@gandalf.stny.rr.com>
+References: <520f0cf10808010639y4c1a19a7kff429827d26dc8e9@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,58 +29,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Wed, 20 Aug 2008, Marcel Holtmann wrote:
+On Fri, 1 Aug 2008, John Kacur wrote:
+
+> This is a non-critical patch, that makes configuring an rt kernel a
+> little nicer.
+> Comments are welcome of course.
 > 
-> John was just pointing out (like myself before) that a lot of people are
-> under the impression that documentation updates and new drivers should
-> not be queued up and merged as soon as possible.
+> Signed-off-by: John Kacur <jkacur at gmail dot com>
+> 
+> This patch makes the following changes.
+> 1. Hides the visibility of PREEMPT_SOFTIRQS and PREEMPT_HARDIRQS if PREEMPT_RT
+> (Complete Preemption) is choosen, since these values are then set (selected) to
+> be "y".
+> 
+> 2. Changes the PREEMPT_HARDIRQS to depend on PREEMPT_SOFTIRQS instead of
+> forcing PREEMPT_SOFTIRQS to y if PREEMPT_HARDIRQS is choosen. (this is somewhat
+> an abuse of select)
+> 
+> 3. Minor spelling fix. (tat to that)
+> 
 
-I think (and hey, I'm flexible, and we can discuss this) that the rules 
-should be:
 
- - by default, the answer should always be "don't push anything after the 
-   merge window unless it fixes a regression or a nasty bug".
+Hi John,
 
-   Here "nasty bug" is something that is a problem in practice, and not 
-   something theoretical that people haven't really reported.
+Thanks, but instead of this:
 
- - but as a special case, we relax that for totally new drivers (and that 
-   includes things like just adding a new PCI or USB ID's to old drivers), 
-   because (a) it can't really regress and (b) support for a specific 
-   piece of hardware can often be critical.
+ depends on PREEMPT_RT != y
 
-With regard to that second case, I'd like to note that obviously even a 
-totally new driver _can_ regress, in the sense that it can cause build 
-errors, or problems that simply wouldn't have happened without that 
-driver. So the "cannot regress" obviously isn't strictly true, but I 
-think everybody understands what I really mean.
+could you do:
 
-It should also be noted that the "new driver" exception should only be an 
-issue for things that _matter_.
+ depends on !PREEMPT_RT
 
-For example, a machine without networking support (or without suppoort for 
-a some other really core driver that provides basic functionality) is 
-practically useless. But a machine without support for some particular 
-webcam or support for some special keys on a particular keyboard? That 
-really doesn't matter, and might as well wait for the next release.
 
-So the "merge drivers early" is for drivers that reasonably _matter_ in 
-the sense that it allows people to test Linux AT ALL on the platform. It 
-shouldn't be "any possible random driver".
+-- Steve
 
-IOW, think about the drivers a bit like a distro would think about 
-backporting drivers to a stable kernel. Which ones are really needed? 
-
-Also, note that "new driver" really should be that. If it's an older 
-driver, and you need to touch _any_ old code to add a new PCI ID or 
-something, the whole argument about it not breaking falls away. Don't do 
-it. I think, for example, that the SCSI people seem to be a bit too eager 
-sometimes to update their drivers for new revisions of cards, and they do 
-it to old drivers.
-
-And finally - the rules should be guidelines. It really isn't always 
-black-and-white, but most of the time the simple question of "could this 
-_possibly_ be just queued for the next release without hurting anything" 
-should be the basic one. If the answer is "yes", then wait.
-
-			Linus
