@@ -1,116 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755696AbYHTASG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbYHTASz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755696AbYHTASG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Aug 2008 20:18:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbYHTARw
+	id S1755961AbYHTASz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Aug 2008 20:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbYHTASr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Aug 2008 20:17:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53233 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753448AbYHTARv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Aug 2008 20:17:51 -0400
-Date: Tue, 19 Aug 2008 17:16:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: sfr@canb.auug.org.au, sam@ravnborg.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sameo@openedhand.com
-Subject: Re: linux-next: Tree for August 19 (mfd/ucb)
-Message-Id: <20080819171658.4cdb8cd9.akpm@linux-foundation.org>
-In-Reply-To: <20080819170517.04d91de8.randy.dunlap@oracle.com>
-References: <20080819185454.d9c74915.sfr@canb.auug.org.au>
-	<20080819170517.04d91de8.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Aug 2008 20:18:47 -0400
+Received: from tau.jukie.net ([216.239.93.128]:44159 "EHLO tau.jukie.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753290AbYHTASr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Aug 2008 20:18:47 -0400
+Date: Tue, 19 Aug 2008 20:18:45 -0400
+From: Bart Trojanowski <bart@jukie.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: vfat BKL/lock_super regression in v2.6.26-rc3-g8f59342
+Message-ID: <20080820001845.GC28029@jukie.net>
+References: <20080819220311.GA28029@jukie.net> <alpine.LFD.1.10.0808191505590.3324@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0808191505590.3324@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Aug 2008 17:05:17 -0700
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+* Linus Torvalds <torvalds@linux-foundation.org> [080819 18:19]:
+> And I think you hit this issue because you probably mounted the USB stick 
+> as a "sync" (or dirsync) mount - which is what some distros do by default, 
+> even if it is known to cause problems for some flash cards that don't do a 
+> good job at wear levelling.
 
-> drivers/mfd/ucb1400 is a sound (AC97) driver, so it should depend
-> on AC97_BUS, like in the patch below.  However, with that patch in
-> place, oldconfig goes belly up on me:
-> 
-> 
-> linux-next-20080819> make ARCH=x86_64  O=X64  V=1 oldconfig
-> make -C /local/linsrc/linux-next-20080819/X64 \
-> 	KBUILD_SRC=/local/linsrc/linux-next-20080819 \
-> 	KBUILD_EXTMOD="" -f /local/linsrc/linux-next-20080819/Makefile \
-> 	oldconfig
-> make -f /local/linsrc/linux-next-20080819/scripts/Makefile.build obj=scripts/basic
-> /bin/sh /local/linsrc/linux-next-20080819/scripts/mkmakefile \
-> 	    /local/linsrc/linux-next-20080819 /local/linsrc/linux-next-20080819/X64 2 6
->   GEN     /local/linsrc/linux-next-20080819/X64/Makefile
-> mkdir -p include/linux include/config
-> make -f /local/linsrc/linux-next-20080819/scripts/Makefile.build obj=scripts/kconfig oldconfig
-> scripts/kconfig/conf -o arch/x86/Kconfig
-> make[2]: *** [oldconfig] Segmentation fault (core dumped)
-> make[1]: *** [oldconfig] Error 2
-> make: *** [sub-make] Error 2
-> 
-> 
-> 
-> ---
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> mfd/ucb1400 sound driver uses/depends on AC97_BUS:
-> 
-> ERROR: "ac97_bus_type" [drivers/mfd/ucb1400_core.ko] undefined!
-> 
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> cc: Samuel Ortiz <sameo@openedhand.com>
-> 
-> ---
->  drivers/mfd/Kconfig |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> --- linux-next-20080819.orig/drivers/mfd/Kconfig
-> +++ linux-next-20080819/drivers/mfd/Kconfig
-> @@ -52,6 +52,7 @@ config HTC_PASIC3
->  
->  config UCB1400_CORE
->  	tristate "Philips UCB1400 Core driver"
-> +	depends on AC97_BUS
->  	help
->  	  This enables support for the Philips UCB1400 core functions.
->  	  The UCB1400 is an AC97 audio codec.
+Hmm... I was considering the costs and benefits of sync mounts.  I don't
+care about the performance hit, as I don't move that much data around.
+Primarily, I like the fact that I can pull the media out w/o any special
+action (which sometimes requires that I unlock my screensaver first).
+But, on the other hand, it's nice to have the media last longer.
 
-And this:
+So, maybe it would be a good idea to have a 'delaysync=60' to force a
+sync after 60 seconds of inactivity.  Unless, there is something else
+that would do that for me already.
 
-From: Andrew Morton <akpm@linux-foundation.org>
+Thoughts?
 
-ia64 allmodconfig:
+-Bart
 
-In file included from include/linux/ucb1400.h:27,
-                 from drivers/mfd/ucb1400_core.c:24:
-include/asm-generic/gpio.h: In function `gpio_get_value_cansleep':
-include/asm-generic/gpio.h:147: error: implicit declaration of function `gpio_get_value'
-include/asm-generic/gpio.h: In function `gpio_set_value_cansleep':
-include/asm-generic/gpio.h:153: error: implicit declaration of function `gpio_set_value'
-drivers/mfd/ucb1400_core.c: At top level:
-
-Cc: Samuel Ortiz <sameo@openedhand.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- drivers/mfd/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
-diff -puN drivers/mfd/Kconfig~drivers-mfd-ucb1400_corec-needs-gpio drivers/mfd/Kconfig
---- a/drivers/mfd/Kconfig~drivers-mfd-ucb1400_corec-needs-gpio
-+++ a/drivers/mfd/Kconfig
-@@ -53,6 +53,7 @@ config HTC_PASIC3
- config UCB1400_CORE
- 	tristate "Philips UCB1400 Core driver"
- 	depends on AC97_BUS
-+	depends on GPIOLIB
- 	help
- 	  This enables support for the Philips UCB1400 core functions.
- 	  The UCB1400 is an AC97 audio codec.
-_
-
+-- 
+				WebSig: http://www.jukie.net/~bart/sig/
