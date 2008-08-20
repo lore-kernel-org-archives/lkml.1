@@ -1,52 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbYHTSrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYHTSu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755392AbYHTSrq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 14:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbYHTSri
+	id S1754865AbYHTSu6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 14:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYHTSup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 14:47:38 -0400
-Received: from gw.goop.org ([64.81.55.164]:35765 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751020AbYHTSrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 14:47:37 -0400
-Message-ID: <48AC66C6.1080406@goop.org>
-Date: Wed, 20 Aug 2008 11:47:34 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 20 Aug 2008 14:50:45 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:34696 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752426AbYHTSuo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 14:50:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bcv3FZl5ee6RQcOge+PP111m1snmHv4nwJcts4p6IoFTiC9oUoZ+Khb9VUskznpTmX
+         dGR6NBGc8dRl5+ctviUYrvjiGfIe8I0xAEOgrKthqkbarHtabS9BdiLtbruyM4tDQpOu
+         86d7YFTxJSyJS3odXpV+zNwUywuLBw7DBFyts=
+Message-ID: <4d8e3fd30808201150j75a7d72bme81551305d3a68b9@mail.gmail.com>
+Date: Wed, 20 Aug 2008 20:50:42 +0200
+From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [GIT]: Networking
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       "David Miller" <davem@davemloft.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Marcel Holtmann" <marcel@holtmann.org>
+In-Reply-To: <1219253600.7591.352.camel@violet.holtmann.net>
 MIME-Version: 1.0
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Ian Campbell <ijc@hellion.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh@veritas.com>, Johannes Weiner <hannes@saeurebad.de>,
-       Kel Modderman <kel@otaku42.de>, Markus Armbruster <armbru@redhat.com>
-Subject: Re: [PATCH] fbdefio: add set_page_dirty handler to deferred IO FB
-References: <1219125765-31833-1-git-send-email-ijc@hellion.org.uk>	 <20080818233824.5d219105.akpm@linux-foundation.org> <45a44e480808200146m1167b8e6o74d68324ad138dc5@mail.gmail.com>
-In-Reply-To: <45a44e480808200146m1167b8e6o74d68324ad138dc5@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080819.041706.261399060.davem@davemloft.net>
+	 <alpine.LFD.1.10.0808190952000.3324@nehalem.linux-foundation.org>
+	 <1219170451.7591.175.camel@violet.holtmann.net>
+	 <alpine.LFD.1.10.0808191348540.3324@nehalem.linux-foundation.org>
+	 <1219203753.7591.205.camel@violet.holtmann.net>
+	 <20080820143734.GB20632@tuxdriver.com>
+	 <alpine.LFD.1.10.0808200826530.3324@nehalem.linux-foundation.org>
+	 <1219246813.7591.347.camel@violet.holtmann.net>
+	 <alpine.LFD.1.10.0808200853410.3324@nehalem.linux-foundation.org>
+	 <1219253600.7591.352.camel@violet.holtmann.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaya Kumar wrote:
-> I hope I have understood your question. You are right that PG_dirty
-> isn't used directly in defio. The defio portion does use each
-> page_mkwrite callback to build a list of the pages of the framebuffer
-> that were written to and then passes that list to pvfb (in this case).
-> pvfb then optimizes writeback by interpreting that list according to
-> its framebuffer and sending it to its actual destination. I think
-> Markus's code in xenfb_deferred_io() and xenfb_send* is doing the
-> latter.
->   
+On Wed, Aug 20, 2008 at 7:33 PM, Marcel Holtmann <marcel@holtmann.org> wrote:
+> Hi Linus,
+>
+>> > John was just pointing out (like myself before) that a lot of people are
+>> > under the impression that documentation updates and new drivers should
+>> > not be queued up and merged as soon as possible.
+>>
+>> I think (and hey, I'm flexible, and we can discuss this) that the rules
+>> should be:
+>>
+>>  - by default, the answer should always be "don't push anything after the
+>>    merge window unless it fixes a regression or a nasty bug".
+>>
+>>    Here "nasty bug" is something that is a problem in practice, and not
+>>    something theoretical that people haven't really reported.
+>>
+>>  - but as a special case, we relax that for totally new drivers (and that
+>>    includes things like just adding a new PCI or USB ID's to old drivers),
+>>    because (a) it can't really regress and (b) support for a specific
+>>    piece of hardware can often be critical.
+>>
+>> With regard to that second case, I'd like to note that obviously even a
+>> totally new driver _can_ regress, in the sense that it can cause build
+>> errors, or problems that simply wouldn't have happened without that
+>> driver. So the "cannot regress" obviously isn't strictly true, but I
+>> think everybody understands what I really mean.
+>>
+>> It should also be noted that the "new driver" exception should only be an
+>> issue for things that _matter_.
+>>
+>> For example, a machine without networking support (or without suppoort for
+>> a some other really core driver that provides basic functionality) is
+>> practically useless. But a machine without support for some particular
+>> webcam or support for some special keys on a particular keyboard? That
+>> really doesn't matter, and might as well wait for the next release.
+>>
+>> So the "merge drivers early" is for drivers that reasonably _matter_ in
+>> the sense that it allows people to test Linux AT ALL on the platform. It
+>> shouldn't be "any possible random driver".
+>>
+>> IOW, think about the drivers a bit like a distro would think about
+>> backporting drivers to a stable kernel. Which ones are really needed?
+>>
+>> Also, note that "new driver" really should be that. If it's an older
+>> driver, and you need to touch _any_ old code to add a new PCI ID or
+>> something, the whole argument about it not breaking falls away. Don't do
+>> it. I think, for example, that the SCSI people seem to be a bit too eager
+>> sometimes to update their drivers for new revisions of cards, and they do
+>> it to old drivers.
+>>
+>> And finally - the rules should be guidelines. It really isn't always
+>> black-and-white, but most of the time the simple question of "could this
+>> _possibly_ be just queued for the next release without hurting anything"
+>> should be the basic one. If the answer is "yes", then wait.
+>
+> I am perfectly fine with these rules. You only had to spell them out :)
 
-The original Xen-specific implementation of this did use PG_dirty, which
-has the nice property of using the hardware feature without invoking any
-pagefaults.  It would be nice if defio could be extended to allow this
-on platforms where it makes sense.
+I wonder whether if it would be a good idea to periodically send out an email
+with the basic rules to be followed in each phase of the project.
 
-    J
+
+regards,
+-- 
+Paolo
+http://paolo.ciarrocchi.googlepages.com/
