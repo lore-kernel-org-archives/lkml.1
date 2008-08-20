@@ -1,105 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYHTSmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755817AbYHTSnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbYHTSmj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 14:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbYHTSmb
+	id S1755817AbYHTSnl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 14:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYHTSnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 14:42:31 -0400
-Received: from gw.goop.org ([64.81.55.164]:57647 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752018AbYHTSma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 14:42:30 -0400
-Message-ID: <48AC6593.80505@goop.org>
-Date: Wed, 20 Aug 2008 11:42:27 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 20 Aug 2008 14:43:31 -0400
+Received: from mail9.dslextreme.com ([66.51.199.94]:42755 "HELO
+	mail9.dslextreme.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751550AbYHTSnb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 14:43:31 -0400
+Message-ID: <48AC65CD.9080108@gawab.com>
+Date: Wed, 20 Aug 2008 11:43:25 -0700
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christian Borntraeger <cborntra@de.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH RFC 1/3] Add a trigger API for efficient non-blocking
- waiting
-References: <48A70185.2020600@goop.org> <20080819232108.c03660fa.akpm@linux-foundation.org>
-In-Reply-To: <20080819232108.c03660fa.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Michal Januszewski <spock@gentoo.org>,
+       Antonino Daplas <adaplas@gmail.com>, Rafael Wysocki <rjw@sisk.pl>,
+       Romano Giannetti <romano.giannetti@gmail.com>,
+       Adrian Bunk <bunk@kernel.org>,
+       Jeremy Nickurak <kernel-bugs@atrus.rifetech.com>
+Subject: Re: [PATCH] sched: disable hrtick implementation
+References: <48A9BDC0.9070800@gawab.com> <20080819003110.GH9914@elte.hu>	 <1219127296.10800.357.camel@twins> <20080819092543.GD28713@elte.hu>	 <1219138380.10800.376.camel@twins> <20080819182222.GA25576@suse.de>	 <48AB1F49.6040207@gawab.com> <20080819194428.GA9997@suse.de>	 <48AB4F2B.9070405@gawab.com> <1219217091.10800.395.camel@twins>
+In-Reply-To: <1219217091.10800.395.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 16 Aug 2008 09:34:13 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->   
->> There are various places in the kernel which wish to wait for a
->> condition to come true while in a non-blocking context.  Existing
->> examples of this are stop_machine() and smp_call_function_mask().
->> (No doubt there are other instances of this pattern in the tree.)
+Peter Zijlstra wrote:
+> On Tue, 2008-08-19 at 15:54 -0700, Justin Madru wrote:
+>> The hrtick implementation in 2.6.25 and .26 has been known to cause boot
+>> problems with at least Intel GMA cards. see:
 >>
->> Thus far, the only way to achieve this is by spinning with a
->> cpu_relax() loop.  This is fine if the condition becomes true very
->> quickly, but it is not ideal:
+>> https://bugs.freedesktop.org/show_bug.cgi?id=15602
+>> http://bugzilla.kernel.org/show_bug.cgi?id=10892
 >>
->>  - There's little opportunity to put the CPUs into a low-power state.
->>    cpu_relax() may do this to some extent, but if the wait is
->>    relatively long, then we can probably do better.
->>     
+>> A full fix to hrtick went into 2.6.27
+>> (31656519e132f6612584815f128c83976a9aaaef),
+>> but that fix is too intrusive to backport. Henceforth, we default to
+>> disable hrtick.
 >
-> If this change saves a significant amount of power then we should fix
-> the offending callsites.
->   
-
-Fix them how?  In general we're talking about contexts where we can't
-block, and where the wait time is limited by some property of the
-platform, such as IPI time or interrupt latency (though doing a
-cross-cpu call of a long-running function would be something we could fix).
-
->>  - In a virtual environment, spinning virtual CPUs just waste CPU
->>    resources, and may steal CPU time from vCPUs which need it to make
->>    progress.  The trigger API allows the vCPUs to give up their CPU
->>    entirely.  The s390 people observed a problem with stop_machine
->>    taking a very long time (seconds) when there are more vcpus than
->>    available cpus.
->>     
+> Thing is, I'm still not understanding how, or if, the old code is wrong.
 >
-> If this change saves a significant amount of virtual-cpu-time then we
-> should fix the offending callsites.
->   
+> That said, this will paper over the problem just fine, and as its old
+> kernels we're talking about I don't particularly care.
 
-This case isn't particularly about saving vcpu time, but making timely
-progress.  stop_machine() gets all the cpus into a spinloop, where they
-spin waiting for an event to tell them to go to their next state-machine
-state.  By definition this can't be a blocking operation (since the
-whole point is that they're high priority threads that prevent anything
-else from running).  But in the virtual case, the fact that they're all
-spinning means that the underlying hypervisor has no idea who's just
-spinning, and who's trying to do some work needed to make overall
-progress, so the whole thing gets bogged down.
+Fair enough.
 
-Now perhaps we could solve stop_machine by modifying the scheduler in
-some way, where you can block the run queue so that you sit in the idle
-loop even though there's runnable processes waiting.  But even then,
-stop_machine requires that interrupts be disabled, which means the we're
-pretty much limited to spinning.
+All I know is that right when I started testing .25-rc1 I kept getting a 
+garbled boot splash, blank screen, and even lock-ups during booting. It 
+seemed to be that if I disabled the boot splash and/or started x 
+manually the problem would rarely occur. So, maybe the first change to 
+hrtick just exposed a bug in the boot splash or the x server. If that's 
+true then, I don't get why right when .27-rc1 was out all the boot 
+problems were gone.
 
-So my proposal is to add a non-scheduler-blocking operation which is
-semantically equivalent to spinning, but gives the underlying platform
-more information about what's going on.
+Bisecting found both commits (introduce and fix) to be about hrtick. So 
+maybe the commit that introduced my bug wasn't completely wrong, but at 
+least it was not right enough because of the second commit was trying to 
+fix something -- right? And the kernel still boots with hrtick disabled, 
+I tested that.
 
-Arjan suggested that since this is more or less equivalent to a
-completion, we should just implement "spinpletions" - a spinning
-completion.  This should be more familiar to kernel programmers, and
-should be just as useful as triggers.
 
-I've run out of time to work on this now, but Rusty has hinted he'll
-pick up the baton...
+> Just occured to me that a Kconfig change that always makes
+> CONFIG_SCHED_HRTICK not set will also do.
+>> Signed-off-by: Justin Madru <jdm64@gawab.com>
+>> Tested-by: Justin Madru <jdm64@gawab.com>
+>> Cc: Peter Zijlstra <peterz@infradead.org>
+>> Cc: Ingo Molnar <mingo@elte.hu>
+>>
+>> --- a/kernel/sched_features.h
+>> +++ b/kernel/sched_features.h
+>> @@ -4,7 +4,7 @@
+>> SCHED_FEAT(AFFINE_WAKEUPS, 1)
+>> SCHED_FEAT(CACHE_HOT_BUDDY, 1)
+>> SCHED_FEAT(SYNC_WAKEUPS, 1)
+>> -SCHED_FEAT(HRTICK, 1)
+>> +SCHED_FEAT(HRTICK, 0)
+>> SCHED_FEAT(DOUBLE_TICK, 0)
+>> SCHED_FEAT(NORMALIZED_SLEEPER, 1)
+>> SCHED_FEAT(DEADLINE, 1)
+>>
 
-(I'd also like to hear from other architecture folks, particularly s390,
-to make sure this is going to be useful to them too.)
+Wouldn't disabling CONFIG_HIGH_RES_TIMERS (in the menu) also disable 
+CONFIG_SCHED_HRTICK? In any case what about this patch below?
 
-    J
+
+The hrtick implementation in 2.6.25 and .26 has been known to cause boot
+problems with at least Intel GMA cards. see:
+
+https://bugs.freedesktop.org/show_bug.cgi?id=15602
+http://bugzilla.kernel.org/show_bug.cgi?id=10892
+
+A full fix to hrtick went into 2.6.27 
+(31656519e132f6612584815f128c83976a9aaaef),
+but that fix is too intrusive to backport. Henceforth, we default to 
+disable hrtick.
+
+Signed-off-by: Justin Madru <jdm64@gawab.com>
+Tested-by: Justin Madru <jdm64@gawab.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+
+--- a/kernel/Kconfig.hz
++++ b/kernel/Kconfig.hz
+@@ -55,4 +55,5 @@
+     default 1000 if HZ_1000
+
+ config SCHED_HRTICK
+-    def_bool HIGH_RES_TIMERS && X86
++    bool
++    default n
+
