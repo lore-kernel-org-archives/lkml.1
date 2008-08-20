@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYHTVQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbYHTVRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755323AbYHTVQR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbYHTVQE
+	id S1756202AbYHTVRi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbYHTVR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:16:04 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:60774 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752005AbYHTVQD (ORCPT
+	Wed, 20 Aug 2008 17:17:27 -0400
+Received: from rrcs-70-62-214-221.central.biz.rr.com ([70.62.214.221]:34271
+	"EHLO tophat.atxconsulting.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752048AbYHTVR0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:16:03 -0400
-Message-ID: <48AC89C8.1040804@keyaccess.nl>
-Date: Wed, 20 Aug 2008 23:16:56 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Wed, 20 Aug 2008 17:17:26 -0400
+Date: Wed, 20 Aug 2008 17:17:24 -0400
+From: Timothy J Fontaine <tjfontaine@atxconsulting.com>
+To: =?us-ascii?B?PT9JU08tODg1OS0xP1E/SWxwb19KPUU0cnZpbmVuXw==?= 
+	<ilpo.jarvinen@helsinki.fi>,
+       ?=@tophat.atxconsulting.com
+Cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: r8169 MTU greater than 1500 causes corruption for other
+	controllers
+Message-ID: <20080820211724.GA4100@tophat.atxconsulting.com>
+References: <20080820170951.GA1771@tophat.atxconsulting.com> <Pine.LNX.4.64.0808202053510.24321@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-To: Dave Airlie <airlied@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "dri-users@lists.sourceforge.net" <dri-users@lists.sourceforge.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: AGP and PAT (induced?) problem (on AMD family 6)
-References: <48972EA8.8040001@keyaccess.nl> <20080815142218.GC12954@elte.hu>	 <48A59FAC.7050605@keyaccess.nl> <48AA9C3B.5030309@keyaccess.nl>	 <20080819102633.GE6722@elte.hu> <48AAD680.7020508@keyaccess.nl>	 <20080819190757.GA17470@linux-os.sc.intel.com>	 <20080820100440.GE28492@elte.hu> <48ABF6DC.8070305@keyaccess.nl> <21d7e9970808201402n4d7f5f18waba0685636bb51bf@mail.gmail.com>
-In-Reply-To: <21d7e9970808201402n4d7f5f18waba0685636bb51bf@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="VS++wcV0S1rZb1Fb"
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0808202053510.24321@wrl-59.cs.helsinki.fi>
+X-PGP-Key: http://atxconsulting.com/tjfontaine.atxconsulting.asc
+X-PGP-Key-Fingerprint: 7937 DFD2 AB06 298B 2293  C318 7D33 FF9D 0246 406D
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20-08-08 23:02, Dave Airlie wrote:
 
-> On Wed, Aug 20, 2008 at 8:50 PM, Rene Herman
-> <rene.herman@keyaccess.nl> wrote:
->> On 20-08-08 12:04, Ingo Molnar wrote:
->> 
->>> * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
->>> 
->>>>> I'd really like a reply from the AGP or PAT side right about
->>>>> now.
->>>> Hmm. Looks like there are more than 16000 entries in the PAT
->>>> list!
->>> hm, btw., why is that?
->> Because 64M of AGP memory divided by 4K pages is 16K. That is, the 
->> underlying problem seems to be AGP drivers using order 0
->> allocations. I'm looking.
+--VS++wcV0S1rZb1Fb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-[ ... ]
+On Wed, Aug 20, 2008 at 10:21:11PM +0300, =3D?ISO-8859-1?Q?Ilpo_J=3DE4rvine=
+n_ wrote:
+> Hmm, there was no explanation why the tp->rx_buf_sz to pkt_size change
+> was made in that commit (I have no idea whether those sizes have to match=
+=20
+> to other places that use tp->rx_buf_sz)... Below is a patch to revert=20
+> that part of the change fully though it could be enough to change just=20
+> pci_unmap_single arg (but that would probably need also=20
+> rtl8169_mark_to_asic arg to be changed to match pkt_size).
+>=20
 
-> I haven't anything to add, I'm the maintainer not the author, all the
-> people who wrote the offending code were already involved.
+Excellent, with the patch applied transfers over NFS seem to be going
+smoothly.
 
-The underlying problem is the order 0 allocations (agp_allocate_memory 
---> agp_generic_allocate_page) where each single page is set uncached 
-individually, creating a PAT entry.
+> > Below you'll find a list of files referenced from REPORTING-BUGS that
+> > are meant to be helpful, including the lspci and module information,
+> > they can all be reached from the toplevel directory index
+>=20
+> Thanks for the detailed report btw... :-)
 
-Non order 0 allocations generally would ofcourse help. That's very much 
-AGP internal -- do you feel that's the way to go?
+Thanks :) I was more than just a little intimidated by my first post to
+LKML, and I wanted to make sure the first reply to my report wasn't that I
+didn't have enough info, or that I presented it in the wrong way, or
+hadn't done enough testing with it. I was also more than prepared to
+wait weeks for someone to reply, so thanks for the quick return! :D
 
-All the current AGP drivers except sgi-agp use agp_generic_alloc_page().
+tjfontaine
 
-Doing a quick local hack to collect pages in agp_allocate_memory() into 
-regions and set the regions (generally 1) UC in one fell swoop, but I 
-don't know if that's safe (and it feels like a rather poor hack anyway).
+--VS++wcV0S1rZb1Fb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-(not to mention that it's time for bed again).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Rene.
+iEYEARECAAYFAkisieQACgkQfTP/nQJGQG0HsQCg0kuDXCRFL8B0dtk1+Y8T4U1V
+y8gAn2kM8/l3q8iyApo+EPCBRSm4VUhe
+=MZi0
+-----END PGP SIGNATURE-----
+
+--VS++wcV0S1rZb1Fb--
