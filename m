@@ -1,83 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbYHTV4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757622AbYHTV4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755859AbYHTV4O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:56:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYHTVz5
+	id S1757622AbYHTV4c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbYHTV4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:55:57 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:54086 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751371AbYHTVz4 (ORCPT
+	Wed, 20 Aug 2008 17:56:10 -0400
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:34009 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754784AbYHTV4J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:55:56 -0400
-Date: Wed, 20 Aug 2008 17:55:55 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.27-rc2 USB suspend regression
-In-Reply-To: <48AC8FB2.2040301@goop.org>
-Message-ID: <Pine.LNX.4.44L0.0808201753400.16883-100000@iolanthe.rowland.org>
+	Wed, 20 Aug 2008 17:56:09 -0400
+Message-ID: <48AC921D.7050201@cs.columbia.edu>
+Date: Wed, 20 Aug 2008 17:52:29 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Dave Hansen <dave@linux.vnet.ibm.com>, Theodore Tso <tytso@mit.edu>,
+       Daniel Lezcano <daniel.lezcano@fr.ibm.com>,
+       Arnd Bergmann <arnd@arndb.de>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, Peter Chubb <peterc@gelato.unsw.edu.au>
+Subject: Re: checkpoint/restart ABI
+References: <20080807224033.FFB3A2C1@kernel>		<200808090013.41999.arnd@arndb.de>	<20080811152201.GB25930@us.ibm.com>		<200808111853.13854.arnd@arndb.de>	<1218484114.5598.43.camel@nimitz>	 <48A0CD86.6030704@goop.org>	<1218553091.5598.76.camel@nimitz>	 <48A1BB39.3090108@goop.org>	<1218559619.5598.97.camel@nimitz> <48A1C2B9.9070107@goop.org>
+In-Reply-To: <48A1C2B9.9070107@goop.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008, Jeremy Fitzhardinge wrote:
 
-> Alan Stern wrote:
-> > On Wed, 20 Aug 2008, Jeremy Fitzhardinge wrote:
-> >
-> >   
-> >> Using the Fedora Rawhide kernel RPM "2.6.27-0.238.rc2.fc10.i686"
-> >> (kernel-2.6.27-0.238.rc2.fc10.i686), I'm seeing suspend to ram
-> >> failures.  The suspend seems to go OK, but then I just get endless:
-> >>
-> >> usb 5-1: uhci_result_common: failed with status 440000
-> >>
-> >> messages, with occasional flickers of something else being printed
-> >> (perhaps).  The machine is otherwise unresponsive.
-> >>     
-> >
-> > You could comment out that error message in order to see what else is 
-> > in the log.  It is located in drivers/usb/host/uhci-q.c in the 
-> > uhci_result_common() function.
-> >
-> > You could try running -rc3 instead of -rc2, although that probably 
-> > won't make much difference.
-> >
-> > What USB devices do you have on the failing system?  In particular,
-> > what is 5-1?  If you unplug it before suspending, does the problem go
-> > away?  (It certainly should!)
-> >
-> >   
+
+Jeremy Fitzhardinge wrote:
+> Dave Hansen wrote:
+>>>> I'm not sure what you mean by "closed files".  Either the app has a fd,
+>>>> it doesn't, or it is in sys_open() somewhere.  We have to get the app
+>>>> into a quiescent state before we can checkpoint, so we basically just
+>>>> say that we won't checkpoint things that are *in* the kernel.
+>>>>       
+>>> It's common for an app to write a tmp file, close it, and then open it a 
+>>> bit later expecting to find the content it just wrote.  If you 
+>>> checkpoint-kill it in the interim, reboot (clearing out /tmp) and then 
+>>> resume, then it will lose its tmp file.  There's no explicit connection 
+>>> between the process and its potential working set of files.
+>>>     
+>> I respectfully disagree.  The number one prerequisite for
+>> checkpoint/restart is isolation.  Xen just happens to get this for free.
+>>   
 > 
-> No external usb devices.  There are three internal USB devices:
-> Bluetooth, a Sierra CDMA modem thingy and a fingerprint reader.
+> (I don't have my Xen hat on at all for this thread.)
 > 
-> $ lsusb
-> Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-> Bus 005 Device 003: ID 0483:2016 SGS Thomson Microelectronics
-> Fingerprint Reader
-> Bus 005 Device 002: ID 0a5c:2110 Broadcom Corp. Bluetooth Controller
-> Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> Bus 003 Device 003: ID 1199:0218 Sierra Wireless, Inc. MC5720 Wireless Modem
-> Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+>> So, instead of saying that there's no explicit connection between the
+>> process and its working set, ask yourself how we make a connection.
+>>
+>> In this case, we can do it with a filesystem (mount) namespace.  Each
+>> container that we might want to checkpoint must have its writable
+>> filesystems contained to a private set that are not shared with other
+>> containers.  Things like union mounts would help here, but aren't
+>> necessarily required.  They just make it more efficient.
+>>   
 > 
-> The rfkill switch "unplugs" the two wireless devices, so I'll try that
-> before suspending next time (if I remember).
+> We were dealing with checkpointing random sets of processes, and that 
+> posed all sorts of problems.  Filesystem namespace was one, the pid 
+> namespace was another.  Doing checkpointing at the container-level 
+> granularity definitely solves a lot of problems.
+> 
+>>>> Is there anything specific you are thinking of that particularly worries
+>>>> you?  I could write pages on the list you have there.
+>>>>       
+>>> No, that's the problem; it all worries me.  It's a big problem space.
+>>>     
+>> It's almost as big of a problem as trying to virtualize entire machines
+>> and expecting them to run as fast as native. :)
+>>   
+> 
+> No, it's much harder.  Hardware is relatively simple and immutable 
+> compared to kernel and process state ;)
+> 
+>> Cool!  I didn't know you guys did the IRIX implementation.  I'm sure you
+>> guys got a lot farther than any of us are.  Did you guys ever write any
+>> papers or anything on it?  I'd be interested in more information.
+>>   
+> 
+> Yeah, there was a paper, but it looks like the internet has lost it.  It 
+> was at 
+> http://www.csu.edu.au/special/conference/apwww95/.papers95/cmaltby/cmaltby.ps
+> http://www.csu.edu.au/special/conference/apwww95/sept-all.html has 
+> mention of the paper.
+> 
 
-Obviously 5-1 is either the Bluetooth controller or the fingerprint 
-reader.  It's understandable that either one of them might have 
-problems with a suspend/resume cycle, but the kernel ought to be able 
-to recover by itself.
+you can find it here:
 
-It would help to see the USB debugging log (without all those useless
-uhci_result_common messages).
+http://ertos.nicta.com.au/publications/papers/Maltby_Chubb_95.pdf
 
-Alan Stern
+Oren.
 
