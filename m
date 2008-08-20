@@ -1,240 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756013AbYHTLJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbYHTLK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756013AbYHTLJL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 07:09:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbYHTLI6
+	id S1756053AbYHTLK4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 07:10:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbYHTLKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 07:08:58 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44098 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752414AbYHTLI5 (ORCPT
+	Wed, 20 Aug 2008 07:10:47 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:30542 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751952AbYHTLKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 07:08:57 -0400
-Date: Wed, 20 Aug 2008 20:08:13 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       tokunaga.keiich@jp.fujitsu.com
-Subject: [RFC][PATCH 2/2] quicklist shouldn't be proportional to # of CPUs
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20080820200709.12F0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 20 Aug 2008 07:10:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xzuJzWI/JEocuwvZCcYMQ8QdfO+4Gwxqs6uC9yoJw25sgYrHWM1g+8rRfaPUGNxL2n
+         26ClBBANLPGi9YBT8S3m46zXL2M42bIhY3ijrDsZyqOaw+w3syyLRDqNQ+7sKqo/qS8r
+         wsCij9DAeN3NQfmLOJpruY2NkssOWTw5wKSpM=
+Message-ID: <b170af450808200410v3d7cd076h3e62546b48ddf507@mail.gmail.com>
+Date: Wed, 20 Aug 2008 13:10:44 +0200
+From: "=?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?=" <zajec5@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [Bug #11313] Plugging HDMI causes "unable to handle kernel paging request"
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <48AB5D17.5030600@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>
+	 <sNRO-BDDjQL.A.DYF.sazpIB@albercik>
+	 <b170af450808171228i37951c6vd77071da7584669b@mail.gmail.com>
+	 <48AB5D17.5030600@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m7KBB0dq007530
 
-When a test program which does task migration runs, my 8GB box spends 800MB of memory
-for quicklist. This is not memory leak but doesn't seem good.
+2008/8/19, Jeremy Fitzhardinge <jeremy@goop.org>:> What's your .config on this kernel, BTW?
+I mostly used openSUSE's kernel configuration. I just disabled paravirt.http://bugzilla.kernel.org/attachment.cgi?id=17329
 
-% cat /proc/meminfo
-
-MemTotal:        7701568 kB
-MemFree:         4724672 kB
-(snip)
-Quicklists:       844800 kB
-
-
-because
-
-- My machine spec is 
-	number of numa node: 2
-	number of cpus:      8 (4CPU x2 node)
-        total mem:           8GB (4GB x2 node)
-        free mem:            about 5GB
-
-- Maximum quicklist usage is here
-
-	 Number of CPUs per node            2    4    8   16
-	 ==============================  ====================
-	 QList_max / (Free + QList_max)   5.8%  16%  30%  48%
-
-
-- Then, 4.7GB x 16% ~= 880MB.
-  So, Quicklist can use 800MB.
-
-
-
-So, if following spec machine run that program
-
-   CPUs: 64 (8cpu x 8node)
-   Mem:  1TB (128GB x8node)
-
-Then, quicklist can waste 300GB (= 1TB x 30%).
-it is fairly too large.
-
-So, I don't like cache policies which is proportional to # of cpus.
-
-My patch changes the number of caches 
-from:
-   per-cpu-cache-amount = memory_on_node / 16
-to
-   per-cpu-cache-amount = memory_on_node / 16 / numder_of_cpus_on_node.
-
-I think this is reasonable. but even if this patch is applied, quicklist
-can cache tons of memory on big machine.
-
-(Although its patch applied, quicklist can waste 64GB on 1TB server (= 1TB / 16),
- it is still too much??)
-
-
-test program is below.
---------------------------------------------------------------------------------
-#define _GNU_SOURCE
-
-#include <stdio.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sched.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <sys/wait.h>
-
-#define BUFFSIZE 512
-
-int max_cpu(void)	/* get max number of logical cpus from /proc/cpuinfo */
-{
-  FILE *fd;
-  char *ret, buffer[BUFFSIZE];
-  int cpu = 1;
-
-  fd = fopen("/proc/cpuinfo", "r");
-  if (fd == NULL) {
-    perror("fopen(/proc/cpuinfo)");
-    exit(EXIT_FAILURE);
-  }
-  while (1) {
-    ret = fgets(buffer, BUFFSIZE, fd);
-    if (ret == NULL)
-      break;
-    if (!strncmp(buffer, "processor", 9))
-      cpu = atoi(strchr(buffer, ':') + 2);
-  }
-  fclose(fd);
-  return cpu;
-}
-
-void cpu_bind(int cpu)	/* bind current process to one cpu */
-{
-  cpu_set_t mask;
-  int ret;
-
-  CPU_ZERO(&mask);
-  CPU_SET(cpu, &mask);
-  ret = sched_setaffinity(0, sizeof(mask), &mask);
-  if (ret == -1) {
-    perror("sched_setaffinity()");
-    exit(EXIT_FAILURE);
-  }
-  sched_yield();	/* not necessary */
-}
-
-#define MMAP_SIZE (10 * 1024 * 1024)	/* 10 MB */
-#define FORK_INTERVAL 1	/* 1 second */
-
-main(int argc, char *argv[])
-{
-  int cpu_max, nextcpu;
-  long pagesize;
-  pid_t pid;
-
-  /* set max number of logical cpu */
-  if (argc > 1)
-    cpu_max = atoi(argv[1]) - 1;
-  else
-    cpu_max = max_cpu();
-
-  /* get the page size */
-  pagesize = sysconf(_SC_PAGESIZE);
-  if (pagesize == -1) {
-    perror("sysconf(_SC_PAGESIZE)");
-    exit(EXIT_FAILURE);
-  }
-
-  /* prepare parent process */
-  cpu_bind(0);
-  nextcpu = cpu_max;
-
-loop:
-
-  /* select destination cpu for child process by round-robin rule */
-  if (++nextcpu > cpu_max)
-    nextcpu = 1;
-
-  pid = fork();
-
-  if (pid == 0) { /* child action */
-
-    char *p;
-    int i;
-
-    /* consume page tables */
-    p = mmap(0, MMAP_SIZE, PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
-    i = MMAP_SIZE / pagesize;
-    while (i-- > 0) {
-      *p = 1;
-      p += pagesize;
-    }
-
-    /* move to other cpu */
-    cpu_bind(nextcpu);
-/*
-    printf("a child moved to cpu%d after mmap().\n", nextcpu);
-    fflush(stdout);
- */
-  
-    /* back page tables to pgtable_quicklist */
-    exit(0);
-
-  } else if (pid > 0) { /* parent action */
-
-    sleep(FORK_INTERVAL);
-    waitpid(pid, NULL, WNOHANG);
-
-  }
-
-  goto loop;
-}
------------------------------------------------------------------------------
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-
----
- mm/quicklist.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-Index: b/mm/quicklist.c
-===================================================================
---- a/mm/quicklist.c
-+++ b/mm/quicklist.c
-@@ -26,7 +26,9 @@ DEFINE_PER_CPU(struct quicklist, quickli
- static unsigned long max_pages(unsigned long min_pages)
- {
- 	unsigned long node_free_pages, max;
--	struct zone *zones = NODE_DATA(numa_node_id())->node_zones;
-+	int node = numa_node_id();
-+	struct zone *zones = NODE_DATA(node)->node_zones;
-+	int num_cpus_per_node;
- 
- 	node_free_pages =
- #ifdef CONFIG_ZONE_DMA
-@@ -38,6 +40,10 @@ static unsigned long max_pages(unsigned 
- 		zone_page_state(&zones[ZONE_NORMAL], NR_FREE_PAGES);
- 
- 	max = node_free_pages / FRACTION_OF_NODE_MEM;
-+
-+	num_cpus_per_node = cpus_weight_nr(node_to_cpumask(node));
-+	max /= num_cpus_per_node;
-+
- 	return max(max, min_pages);
- }
- 
-
-
+2008/8/20, Jeremy Fitzhardinge <jeremy@goop.org>:> Rafa≈Ç Mi≈Çecki wrote:>> Bug still exists in current git (tested 15 minutes ago).>>>> Could you apply this patch and post the output of dmesg from booting (no> need to crash it again).
+Sure, as everything to help debugging this :)http://bugzilla.kernel.org/attachment.cgi?id=17330
+-- Rafa≈Ç Mi≈ÇeckiˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
