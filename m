@@ -1,90 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbYHTHoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbYHTHri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752771AbYHTHoX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 03:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbYHTHnw
+	id S1754891AbYHTHri (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 03:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbYHTHr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 03:43:52 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58318 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754559AbYHTHnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 03:43:50 -0400
-Message-ID: <48ABCAFE.3030508@kernel.org>
-Date: Wed, 20 Aug 2008 16:42:54 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Wed, 20 Aug 2008 03:47:29 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:55276 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752629AbYHTHr2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 03:47:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=d74RoLzo5vIeRn660Gr1FI2T4zhsJssgwsha8PBwTRSblYA8Ao4oT7GKhT/sl938kz
+         7+8ku+9tu1SEdnQp5u18amchzOrIQUWUZGq8qE5/oHbaWDVbWfHMgwNa9iuY34SCHQpA
+         PM75OADcS2ZHlnTONqIB5FgbW0pWHPZ8sEe+E=
+Message-ID: <48ABCC0B.40607@gmail.com>
+Date: Wed, 20 Aug 2008 00:47:23 -0700
+From: Zev Weiss <zevweiss@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Manny Maxwell <mannymax@mannymax.net>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: SATA Cold Boot Problems with 2.6.27-rc[23] on nVidia 680i
-References: <6b2d1a5d2475e6be79d9ad459579f040.squirrel@www.mannymax.net>
-In-Reply-To: <6b2d1a5d2475e6be79d9ad459579f040.squirrel@www.mannymax.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/mixed;
- boundary="------------060306060304010006000004"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 20 Aug 2008 07:43:30 +0000 (UTC)
+To: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [MTD] mtdchar.c: Fix regression in MEMGETREGIONINFO ioctl()
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060306060304010006000004
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Zev Weiss <zevweiss@gmail.com>
 
-Does the attached patch fix your problem?
+The MEMGETREGIONINFO ioctl() in mtdchar.c was clobbering user memory by
+overwriting more than intended, due to the size of struct
+mtd_erase_region_info changing in commit
+0ecbc81adfcb9f15f86b05ff576b342ce81bbef8.
 
--- 
-tejun
+Fix uses a member-by-member copy into a local struct region_info_user,
+which is then copy_to_user()'d (and matches the size correctly by being
+of the same type as the pointer passed in the ioctl() call).
 
---------------060306060304010006000004
-Content-Type: text/x-patch;
- name="nv-nohrst.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="nv-nohrst.patch"
+Signed-off-by: Zev Weiss <zevweiss@gmail.com>
+Tested-by: Zev Weiss <zevweiss@gmail.com>
+---
+I had been having some problems with userspace memory corruption, and traced
+them to a MEMGETREGIONINFO ioctl() on an MTD device.  I applied this patch and
+it seems to fix the problem, though I am not an expert and there may be a more
+correct way to go about doing this.  I'm also new at submitting patches, so
+hopefully I haven't screwed up the patch-submission etiquette too
+horrifically.
 
---- a/drivers/ata/sata_nv.c
-+++ b/drivers/ata/sata_nv.c
-@@ -309,8 +309,6 @@ static void nv_nf2_freeze(struct ata_port *ap);
- static void nv_nf2_thaw(struct ata_port *ap);
- static void nv_ck804_freeze(struct ata_port *ap);
- static void nv_ck804_thaw(struct ata_port *ap);
--static int nv_hardreset(struct ata_link *link, unsigned int *class,
--			unsigned long deadline);
- static int nv_adma_slave_config(struct scsi_device *sdev);
- static int nv_adma_check_atapi_dma(struct ata_queued_cmd *qc);
- static void nv_adma_qc_prep(struct ata_queued_cmd *qc);
-@@ -407,7 +405,7 @@ static struct scsi_host_template nv_swncq_sht = {
- 
- static struct ata_port_operations nv_generic_ops = {
- 	.inherits		= &ata_bmdma_port_ops,
--	.hardreset		= nv_hardreset,
-+	.hardreset		= ATA_OP_NULL,
- 	.scr_read		= nv_scr_read,
- 	.scr_write		= nv_scr_write,
- };
-@@ -1588,21 +1586,6 @@ static void nv_mcp55_thaw(struct ata_port *ap)
- 	ata_sff_thaw(ap);
- }
- 
--static int nv_hardreset(struct ata_link *link, unsigned int *class,
--			unsigned long deadline)
--{
--	int rc;
--
--	/* SATA hardreset fails to retrieve proper device signature on
--	 * some controllers.  Request follow up SRST.  For more info,
--	 * see http://bugzilla.kernel.org/show_bug.cgi?id=3352
--	 */
--	rc = sata_sff_hardreset(link, class, deadline);
--	if (rc)
--		return rc;
--	return -EAGAIN;
--}
--
- static void nv_adma_error_handler(struct ata_port *ap)
- {
- 	struct nv_adma_port_priv *pp = ap->private_data;
+  drivers/mtd/mtdchar.c |   11 +++++++++--
+  1 files changed, 9 insertions(+), 2 deletions(-)
 
---------------060306060304010006000004--
+diff --git a/drivers/mtd/mtdchar.c b/drivers/mtd/mtdchar.c
+index 13cc67a..0acb135 100644
+--- a/drivers/mtd/mtdchar.c
++++ b/drivers/mtd/mtdchar.c
+@@ -411,14 +411,21 @@ static int mtd_ioctl(struct inode *inode, struct file *file,
+  	case MEMGETREGIONINFO:
+  	{
+  		struct region_info_user ur;
++		struct mtd_erase_region_info *kr;
+
+  		if (copy_from_user(&ur, argp, sizeof(struct region_info_user)))
+  			return -EFAULT;
+
+  		if (ur.regionindex >= mtd->numeraseregions)
+  			return -EINVAL;
+-		if (copy_to_user(argp, &(mtd->eraseregions[ur.regionindex]),
+-				sizeof(struct mtd_erase_region_info)))
++
++		kr = &(mtd->eraseregions[ur.regionindex]);
++
++		ur.offset = kr->offset;
++		ur.erasesize = kr->erasesize;
++		ur.numblocks = kr->numblocks;
++
++		if (copy_to_user(argp, &ur, sizeof(struct region_info_user)))
+  			return -EFAULT;
+  		break;
+  	}
