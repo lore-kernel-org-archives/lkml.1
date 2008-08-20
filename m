@@ -1,121 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbYHTTPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755738AbYHTTV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756523AbYHTTPw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 15:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbYHTTPm
+	id S1755738AbYHTTV0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 15:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbYHTTVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 15:15:42 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:65370 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754826AbYHTTPk (ORCPT
+	Wed, 20 Aug 2008 15:21:15 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:39321 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752857AbYHTTVO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 15:15:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:from;
-        b=ANIQR6DrGueAKdxepMnvmDPB9h7x8zkWCzm3YOcQP1FMl9pQQ8axH/J0HtwvJHT0J0
-         C5pIFWHgBeW3Vvk7za9L75gN7kiIZbdFGkOcSsHf6sySqcGtDZcbxKIGQFhjvnkpdEl3
-         MwJasHDnWq6gfD2PiNEpn1RKHh/Ohoq+e5TlU=
-Date: Wed, 20 Aug 2008 23:16:59 +0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: peter_e@gmx.net, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org, Nadia Derbey <Nadia.Derbey@bull.net>,
-       Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Pierre Peiffer <peifferp@gmail.com>, containers@lists.osdl.org
-Subject: Re: [Bugme-new] [Bug 11381] New: default shmmax
-Message-ID: <20080820191659.GA22591@x200.localdomain>
-References: <bug-11381-10286@http.bugzilla.kernel.org/> <20080820120043.e6e7e436.akpm@linux-foundation.org> <20080820191257.GA22556@x200.localdomain>
-MIME-Version: 1.0
+	Wed, 20 Aug 2008 15:21:14 -0400
+Date: Wed, 20 Aug 2008 22:21:11 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Timothy J Fontaine <tjfontaine@atxconsulting.com>
+cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: r8169 MTU greater than 1500 causes corruption for other controllers
+In-Reply-To: <20080820170951.GA1771@tophat.atxconsulting.com>
+Message-ID: <Pine.LNX.4.64.0808202053510.24321@wrl-59.cs.helsinki.fi>
+References: <20080820170951.GA1771@tophat.atxconsulting.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080820191257.GA22556@x200.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: adobriyan@gmail.com
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 20, 2008 at 11:12:57PM +0400,  wrote:
-> On Wed, Aug 20, 2008 at 12:00:43PM -0700, Andrew Morton wrote:
-> > 
-> > (switched to email.  Please respond via emailed reply-to-all, not via the
-> > bugzilla web interface).
-> > 
-> > On Wed, 20 Aug 2008 05:58:57 -0700 (PDT)
-> > bugme-daemon@bugzilla.kernel.org wrote:
-> > 
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=11381
-> > > 
-> > >            Summary: default shmmax
-> > >            Product: Other
-> > >            Version: 2.5
-> > >      KernelVersion: 2.6.26.2
-> > >           Platform: All
-> > >         OS/Version: Linux
-> > >               Tree: Mainline
-> > >             Status: NEW
-> > >           Severity: enhancement
-> > >           Priority: P1
-> > >          Component: Other
-> > >         AssignedTo: other_other@kernel-bugs.osdl.org
-> > >         ReportedBy: peter_e@gmx.net
-> > > 
-> > > 
-> > > I would like to request that the default shmmax setting be increased or the
-> > > downsides of that be documented.  Allow me to explain.
-> > > 
-> > > I am with the PostgreSQL development team.  PostgreSQL is probably one of the
-> > > few users of large amounts of SysV shared memory.  Users would usually want to
-> > > configure anywhere between 10% and 50% of their physical RAM to be used as
-> > > shared memory, which would translate to something on the order of gigabytes
-> > > nowadays.  One of the uniformly annoying things about setting this up is that
-> > > you need to reconfigure the Linux kernel to allow that.  sysctl is nice and
-> > > all, but it still requires users to learn about operating system and kernel
-> > > details, requires root access, and distros don't handle sysctl uniformly
-> > > either.  Maybe there is even a good reason for that, but I couldn't find it,
-> > > and at least I would like to learn it, so that we can pass that information on
-> > > to our users.
-> > > 
-> > > I did some kernel version archeology and found out that up until kernels 2.2
-> > > the shmmax setting appears to have been restricted by CPU-specific constraints,
-> > > as indicated by the default setting being different across CPUs and being
-> > > defined in an asm header.  The default setting on i386 was increased from 16 MB
-> > > to 32 MB somewhere around 1998 in the kernel 2.0 line, and it remains at 32 MB
-> > > in the latest kernel on all architectures.
-> > > 
-> > > Now one question is whether there is a space or time overhead involved with
-> > > setting a high shmmax limit that isn't actually used.  If so, it would be
-> > > interesting to know what that overhead is.  The feeling I get from browsing the
-> > > kernel source code over time is that there was some management overhead and/or
-> > > some restrictions about this in old kernels, but that nowadays it doesn't
-> > > really seem to matter much anymore.  I suspect instead that this whole thing
-> > > was just forgotten, because few applications use large amounts of shared
-> > > memory.
-> > > 
-> > > So, if you want to do us a favor, could you please see about increasing the
-> > > default shmmax setting to whatever the theoretical maximum is?
-> > > 
-> > 
-> > I don't think anybody has even thought about the shmmax default in
-> > years.  Sure, it might be time to reexamine that.
-> > 
-> > It would be useful to get distro input on this.  Do they override the
-> > kernel default at boot time?  If so, what do they do?
-> > 
-> > 
-> > Also, from a quick read it looks to me that shmmax is busted in the
-> > non-init namespace.
-> > 
-> > clone_ipc_ns() calls shm_init_ns() which does
-> > 
-> > 	ns->shm_ctlmax = SHMMAX;
-> > 
-> > which a) fails to inherit the parent's setting and
+On Wed, 20 Aug 2008, Timothy J Fontaine wrote:
+
+> Setting the MTU to greater than 1500 causes the host system to run out
+> of SW-IOMMU space for the transfer. This results in corruption for other
+> controllers like my AAR-2410SA or IDE controller.
 > 
-> This is debatable if such behaviour should be default, this makes one ipc_ns
-> more ipc_ns than others.
+> Host system:
+>  ASUS P5M2 w/ Intel Core 2 Duo 6320
+>  Linux version 2.6.24-19-server (buildd@king) (gcc version 4.2.3 (Ubuntu 4.2.3-2ubuntu7)) #1 SMP Fri Jul 11 21:50:43 UTC 2008
+>  r8169 chipset pci card
+> 
+> Connected via Cross-Over cable to:
+>  SuperMicro 6014Hi
+>  Onboard Intel 82546GB e1000 chipset
+>  Running latest VMware ESXi or Vanilla 2.6.26
+> 
+> Initially I presumed the issue was with my aacraid because of the
+> trace[1], so I built a vanilla 2.6.26.2 and hit the same bug. I have
+> another system running 2.6.20 and the same card working so I tried
+> 2.6.22 and had no problem. However, 2.6.23 failed. I sifted through the
+> ChangeLog for 2.6.23 and narrowed the field to some potential problem
+> commits regarding aacraid. I then proceeded to do a git bisect and found
+> commit b449655ff52ff8a29c66c5fc3fc03617e61182ee[2] which had nothing to
+> do with aacraid. Instead, the commit deals with large packets so I reset
+> the MTU to 1500 and retried on 2.6.24 and found that there was no
+> corruption, I then proceeded to try with various different size MTU only
+> to find that an MTU greater than 1500 triggers the corruption.
 
-Oh, I forgot for a moment, that mainline has hierarchical ipc_ns.
+Hmm, there was no explanation why the tp->rx_buf_sz to pkt_size change
+was made in that commit (I have no idea whether those sizes have to match 
+to other places that use tp->rx_buf_sz)... Below is a patch to revert 
+that part of the change fully though it could be enough to change just 
+pci_unmap_single arg (but that would probably need also 
+rtl8169_mark_to_asic arg to be changed to match pkt_size).
 
+> Below you'll find a list of files referenced from REPORTING-BUGS that
+> are meant to be helpful, including the lspci and module information,
+> they can all be reached from the toplevel directory index
+
+Thanks for the detailed report btw... :-)
+
+-- 
+ i.
+
+----
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index a3e3895..44961ef 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -2720,7 +2720,7 @@ static inline bool rtl8169_try_rx_copy(struct sk_buff **sk_buff,
+ 	if (!skb)
+ 		goto out;
+ 
+-	pci_dma_sync_single_for_cpu(tp->pci_dev, addr, pkt_size,
++	pci_dma_sync_single_for_cpu(tp->pci_dev, addr, tp->rx_buf_sz,
+ 				    PCI_DMA_FROMDEVICE);
+ 	skb_reserve(skb, NET_IP_ALIGN);
+ 	skb_copy_from_linear_data(*sk_buff, skb->data, pkt_size);
+@@ -2789,10 +2789,10 @@ static int rtl8169_rx_interrupt(struct net_device *dev,
+ 
+ 			if (rtl8169_try_rx_copy(&skb, tp, pkt_size, addr)) {
+ 				pci_dma_sync_single_for_device(pdev, addr,
+-					pkt_size, PCI_DMA_FROMDEVICE);
++					tp->rx_buf_sz, PCI_DMA_FROMDEVICE);
+ 				rtl8169_mark_to_asic(desc, tp->rx_buf_sz);
+ 			} else {
+-				pci_unmap_single(pdev, addr, pkt_size,
++				pci_unmap_single(pdev, addr, tp->rx_buf_sz,
+ 						 PCI_DMA_FROMDEVICE);
+ 				tp->Rx_skbuff[entry] = NULL;
+ 			}
