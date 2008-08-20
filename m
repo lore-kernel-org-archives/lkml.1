@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbYHTVSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756151AbYHTVXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757395AbYHTVSX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 17:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbYHTVSP
+	id S1756151AbYHTVXg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 17:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbYHTVX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 17:18:15 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:48587 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753423AbYHTVSO (ORCPT
+	Wed, 20 Aug 2008 17:23:26 -0400
+Received: from emh05.mail.saunalahti.fi ([62.142.5.111]:55096 "EHLO
+	emh05.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753581AbYHTVXZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 17:18:14 -0400
-Subject: Re: new driver staged in linux1394-2.6.git
-From: David Moore <dcm@MIT.EDU>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Greg KH <greg@kroah.com>, v4l-dvb-maintainer@linuxtv.org,
-       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <48AC8167.1020302@s5r6.in-berlin.de>
-References: <tkrat.51b6249bb700fa85@s5r6.in-berlin.de>
-	 <20080820201106.GC10526@kroah.com>  <48AC8167.1020302@s5r6.in-berlin.de>
-Content-Type: text/plain
-Date: Wed, 20 Aug 2008 14:16:52 -0700
-Message-Id: <1219267012.26135.14.camel@dmoore.corp.google.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Wed, 20 Aug 2008 17:23:25 -0400
+Date: Thu, 21 Aug 2008 00:25:55 +0300 (MET DST)
+From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
+X-X-Sender: szaka@dhcppc2
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
+In-Reply-To: <200808201613.AA00212@capsicum.lab.ntt.co.jp>
+Message-ID: <Pine.LNX.4.61.0808202352450.4532@dhcppc2>
+References: <20080820004326.519405a2.akpm@linux-foundation.org>
+ <200808201613.AA00212@capsicum.lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Antivirus: VAMS
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-08-20 at 22:41 +0200, Stefan Richter wrote:
-> Greg KH wrote:
-> > This assumes that it will not be dropped by you :)
+
+On Thu, 21 Aug 2008, Ryusuke Konishi wrote:
+> >> Some impressive benchmark results on SSD are shown in [3],
+> >
+> >heh.  It wipes the floor with everything, including btrfs.
+
+It seems the benchmark was done over half year ago. It's questionable how 
+relevant today the performance comparison is with actively developed file 
+systems ...
+
+> >But a log-based fs will do that, initially.  What will the performace
+> >look like after a month or two's usage?
 > 
-> I'll carry it until mainline merge, unless bigger subsystem changes 
-> happen on the v4l-dbv front that make it necessary to move it to their repo.
+> I'm using NILFS2 for my home directory for serveral months, but so far
+> I don't feel notable performance degradation. 
 
-If I understand correctly, this driver is based on the legacy ieee1394
-subsystem.  I'm curious, is there a plan to migrate it to juju, where
-presumably it could be a lot cleaner and might not even have to live in
-the kernel at all (except for the need for some sort of dvb loopback
-device which might not yet exist)?
+I ran compilebench on kernel 2.6.26 with freshly formatted volumes. 
+The behavior of NILFS2 was interesting.
 
--David
+Its peformance rapidly degrades to the lowest ever measured level 
+(< 1 MB/s) but after a while it recovers and gives consistent numbers.
+However it's still very far from the current unstable btrfs performance. 
+The results are reproducible.
+
+                    MB/s    Runtime (s)
+                   -----    -----------
+  btrfs unstable   17.09        572
+  ext3             13.24        877
+  btrfs 0.16       12.33        793
+  nilfs2 2nd+ runs 11.29        674
+  ntfs-3g           8.55        865
+  reiserfs          8.38        966
+  nilfs2 1st run    4.95       3800
+  xfs               1.88       3901
+
+	Szaka
+
+-- 
+NTFS-3G:  http://ntfs-3g.org
 
