@@ -1,82 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760502AbYHUS4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760670AbYHUS6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760502AbYHUS4o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 14:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbYHUS4e
+	id S1760670AbYHUS6m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 14:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYHUS6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 14:56:34 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:41400 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752726AbYHUS4d (ORCPT
+	Thu, 21 Aug 2008 14:58:31 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:34073 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753156AbYHUS6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 14:56:33 -0400
-Date: Thu, 21 Aug 2008 19:56:24 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Jack Steiner <steiner@sgi.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: [Bug #11313] Plugging HDMI causes "unable to handle kernel paging
- request"
-In-Reply-To: <48ADB041.9040806@goop.org>
-Message-ID: <Pine.LNX.4.64.0808211946300.28535@blonde.site>
-References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>  <sNRO-BDDjQL.A.DYF.sazpIB@albercik>
-  <b170af450808171228i37951c6vd77071da7584669b@mail.gmail.com> 
- <48AB5D17.5030600@goop.org>  <b170af450808200410v3d7cd076h3e62546b48ddf507@mail.gmail.com>
-  <48AC3FA4.9080603@goop.org> <b170af450808201327q48b5b2e0n319c89b0fc1759b6@mail.gmail.com>
- <48ADB041.9040806@goop.org>
+	Thu, 21 Aug 2008 14:58:30 -0400
+Date: Thu, 21 Aug 2008 22:58:28 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linux-kernel@vger.kernel.org
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] genirq: fix irq_desc->depth handling with DEBUG_SHIRQ
+Message-ID: <20080821185828.GA14070@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=windows-1251
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Aug 2008, Jeremy Fitzhardinge wrote:
-> 
-> >>>>
-> Some notes as I pick through all the evidence so far:
-> 
-> - the crash is specifically because there are reserved bits set in the pmd
-> - the pmd is b02a00043a6001a3 in both cases
+When DEBUG_SHIRQ is selected, a spurious IRQ is issued before
+the setup_irq() initializes the desc->depth. An IRQ handler may
+call disable_irq_nosync(), but then setup_irq() will overwrite
+desc->depth, and upon enable_irq() we'll catch this WARN:
 
-Yes, it's corrupt, it should be
-               800000013a6001a3
+------------[ cut here ]------------
+Badness at kernel/irq/manage.c:180
+NIP: c0061ab8 LR: c0061f10 CTR: 00000000
+REGS: cf83be50 TRAP: 0700   Not tainted  (2.6.27-rc3-23450-g74919b0)
+MSR: 00021032 <ME,IR,DR>  CR: 22042022  XER: 20000000
+TASK = cf829100[5] 'events/0' THREAD: cf83a000
+GPR00: c0061f10 cf83bf00 cf829100 c038e674 00000016 00000000 cf83bef8 00000038
+GPR08: c0298910 00000000 c0310d28 cf83a000 00000c9c 1001a1a8 0fffe000 00800000
+GPR16: ffffffff 00000000 007fff00 00000000 007ffeb0 c03320a0 c031095c c0310924
+GPR24: cf8292ec cf807190 cf83a000 00009032 c038e6a4 c038e674 cf99b1cc c038e674
+NIP [c0061ab8] __enable_irq+0x20/0x80
+LR [c0061f10] enable_irq+0x50/0x70
+Call Trace:
+[cf83bf00] [c038e674] irq_desc+0x630/0x9000 (unreliable)
+[cf83bf10] [c0061f10] enable_irq+0x50/0x70
+[cf83bf30] [c01abe94] phy_change+0x68/0x108
+[cf83bf50] [c0046394] run_workqueue+0xc4/0x16c
+[cf83bf90] [c0046834] worker_thread+0x74/0xd4
+[cf83bfd0] [c004ab7c] kthread+0x48/0x84
+[cf83bff0] [c00135e0] kernel_thread+0x44/0x60
+Instruction dump:
+4e800020 3d20c031 38a94214 4bffffcc 9421fff0 7c0802a6 93e1000c 7c7f1b78
+90010014 8123001c 2f890000 409e001c <0fe00000> 80010014 83e1000c 38210010
 
-> - the vaddr is ffff88013a600000 in the first crash, and
->                ffff81013a6d1c00 in the second
->   corresponding to the same large-page pmd mapping of phys page 0x13a600000
-> - this maps to e820 entry
->  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
-> - the corresponding boot-time mapping is
-> 
-> init_memory_mapping
->  0100000000 - 0140000000 page 2M
-> kernel direct mapping tables up to 140000000 @ b000-11000
->                                                ^^^^^^^^^^
-> addr 100000000 reusing pgd 201880 0000000000202063
-> last_map_addr: 140000000 end: 140000000
-> 
-> !!! and the memory allocated for this pagetable is:
->   #5 [0000008000 - 000000b000]          PGTABLE ==> [0000008000 - 000000b000]
->   #6 [000000b000 - 000000c000]          PGTABLE ==> [000000b000 - 000000c000]
->                                                      ^^^^^^^^^^^^^^^^^^^^^^^
-> 
-> IOW, it's mapping using b000-11000, but it has only reserved b000 - c000
-> 
-> Also, this is right in the middle of the ISA area, which seems risky.
-> <<<<
-> 
-> Bug #11237 shows the same symptom, so I'm pretty confident they're dups now.
+That trace corresponds to this line:
+WARN(1, KERN_WARNING "Unbalanced enable for IRQ %d\n", irq);
 
-[ Sorry, I'm replying to #11313 even though we think it's dup of #11237. ]
+The patch fixes the problem by moving the SHIRQ code below the
+setup_irq().
 
-Haven't you got that backwards?
+Unfortunately we can't easily move the SHIRQ code inside the
+setup_irq(), since it grabs a spinlock, so to prvent a 'real'
+IRQ from interfere us we should disable that IRQ.
 
-My reading is that find_early_table_space set aside b000-11000 for the
-worst case possible, but actually only b000-c000 was needed (because
-most of the tables were already there): no problem.
+p.s. The driver in question is drivers/net/phy/phy.c.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ kernel/irq/manage.c |   17 ++++++++++-------
+ 1 files changed, 10 insertions(+), 7 deletions(-)
+
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 0314074..ba03259 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -629,26 +629,29 @@ int request_irq(unsigned int irq, irq_handler_t handler,
+ 	action->next = NULL;
+ 	action->dev_id = dev_id;
+ 
++	retval = setup_irq(irq, action);
++	if (retval)
++		kfree(action);
++
+ #ifdef CONFIG_DEBUG_SHIRQ
+ 	if (irqflags & IRQF_SHARED) {
+ 		/*
+ 		 * It's a shared IRQ -- the driver ought to be prepared for it
+ 		 * to happen immediately, so let's make sure....
+-		 * We do this before actually registering it, to make sure that
+-		 * a 'real' IRQ doesn't run in parallel with our fake
++		 * We disable the irq to make sure that a 'real' IRQ doesn't
++		 * run in parallel with our fake.
+ 		 */
+ 		unsigned long flags;
+ 
++		disable_irq(irq);
+ 		local_irq_save(flags);
++
+ 		handler(irq, dev_id);
++
+ 		local_irq_restore(flags);
++		enable_irq(irq);
+ 	}
+ #endif
+-
+-	retval = setup_irq(irq, action);
+-	if (retval)
+-		kfree(action);
+-
+ 	return retval;
+ }
+ EXPORT_SYMBOL(request_irq);
+-- 
+1.5.6.3
