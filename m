@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbYHUGSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbYHUGUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756628AbYHUGSv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 02:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbYHUGSl
+	id S1756875AbYHUGUl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 02:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbYHUGUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 02:18:41 -0400
-Received: from n5.bullet.mail.ac4.yahoo.com ([76.13.13.27]:23346 "HELO
-	n5.bullet.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753733AbYHUGSk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 02:18:40 -0400
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 368273.45197.bm@omp106.mail.ac4.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=p6zaBIWXN6M1wF/CPhLvgCpx5/mIgbqByk7s0ytjSoM3WNggLJ/0Xt2jY0aL7YkEmiv3DbJvyrqdw+MGzjBXt9QU176xT3tX064n3P9ErwFCA8DY7fz4cfgiSPhLDw3/y88MKzLEpfSNyWTvbqgjulSs6Z5Rsn0WRtAoySHf8ss=;
-X-Mailer: YahooMailWebService/0.7.218
-Date: Wed, 20 Aug 2008 23:18:38 -0700 (PDT)
-From: amruth <amruth_pv@yahoo.com>
-Reply-To: amruth_pv@yahoo.com
-Subject: USB Serial device disconnect causes IRQ disable
-To: Oliver Neukum <oliver@neukum.org>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <200808210809.01517.oliver@neukum.org>
+	Thu, 21 Aug 2008 02:20:32 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43510 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753336AbYHUGUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 02:20:32 -0400
+Date: Thu, 21 Aug 2008 08:15:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       adobriyan@gmail.com, "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, Chris Friesen <cfriesen@nortel.com>
+Subject: Re: VolanoMark regression with 2.6.27-rc1
+Message-ID: <20080821061512.GB14572@elte.hu>
+References: <1912217169.25608.228.camel@ymzhang> <2c0942db0808200929r640b3a1cj33efc56cfd6db9b3@mail.gmail.com> <1219252901.8651.63.camel@twins> <200808210355.55597.nickpiggin@yahoo.com.au> <2c0942db0808201115v3025e5f6r6c882783fa9e29f3@mail.gmail.com> <1219264236.8651.76.camel@twins> <1219265798.8651.84.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <599889.19115.qm@web45210.mail.sp1.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <1219265798.8651.84.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> OK, do you have any other USB device on the same bus as
-> your serial
-> converter?
-I have one USB storage flash key device nothing else.
-The problem is coming from serial convertor and my driver did not handle interrupts.
 
-Thanks
-Amruth p.v
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-
---- On Thu, 8/21/08, Oliver Neukum <oliver@neukum.org> wrote:
-
-> From: Oliver Neukum <oliver@neukum.org>
-> Subject: Re: USB Serial device disconnect causes IRQ disable
-> To: amruth_pv@yahoo.com
-> Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-> Date: Thursday, August 21, 2008, 1:09 AM
-> Am Donnerstag 21 August 2008 08:03:57 schrieb amruth:
-> > > What happens when you never plug in the device?
-> > Everything works fine without plugging the device. I
-> have memory stick 
-> > which never creates any problem.
+> Ok, people pointed out I got my promotion rules mixed up, I casted the 
+> result of the division to signed, instead of ending up with a signed 
+> division.
 > 
-> OK, do you have any other USB device on the same bus as
-> your serial
-> converter?
-> 
-> 	Regards
-> 		Oliver
-> 
-> --
-> To unsubscribe from this list: send the line
-> "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at 
-> http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> #define avg(x, y) ({                            \
+>         typeof(x) _avg1 = (x);                  \
+>         typeof(y) _avg2 = (y);                  \
+>         (void) (&_avg1 == &_avg2);              \
+>         (typeof(x))(_avg1 + ((long long)_avg2 - _avg1)/2); })
 
+ok, could you please just send a patch that is local to sched.c and then 
+we can let this kernel.h change play out independently? There's too many 
+iterations of this and it's better to decouple the two.
 
-      
-
+	Ingo
