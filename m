@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759224AbYHUL03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759249AbYHUL2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759224AbYHUL03 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 07:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757123AbYHUL0R
+	id S1759249AbYHUL2f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 07:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755134AbYHUL2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 07:26:17 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:62911 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756704AbYHUL0Q (ORCPT
+	Thu, 21 Aug 2008 07:28:25 -0400
+Received: from smtp1.stealer.net ([88.198.224.204]:38303 "EHLO
+	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754961AbYHUL2Y (ORCPT
 	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 07:26:16 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: jaredeh@gmail.com
-Subject: Re: [PATCH 02/10] AXFS: Kconfig and Makefiles
-Date: Thu, 21 Aug 2008 13:24:22 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+	Thu, 21 Aug 2008 07:28:24 -0400
+Date: Thu, 21 Aug 2008 13:27:57 +0200 (CEST)
+From: Sven Wegener <sven.wegener@stealer.net>
+To: Jared Hulbert <jaredeh@gmail.com>
+cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
        linux-mtd <linux-mtd@lists.infradead.org>,
-       =?iso-8859-1?q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@am.sony.com,
+       =?ISO-8859-15?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@AM.SONY.COM,
        cotte@de.ibm.com, nickpiggin@yahoo.com.au
-References: <48AD00DF.9080207@gmail.com>
-In-Reply-To: <48AD00DF.9080207@gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+Subject: Re: [PATCH 06/10] AXFS: axfs_super.c
+In-Reply-To: <48AD0101.4020505@gmail.com>
+Message-ID: <alpine.LNX.1.10.0808211325530.12259@titan.stealer.net>
+References: <48AD0101.4020505@gmail.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+Organization: STEALER.net
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808211324.22989.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+qamNVRorEuaY1FkSS33kElhflPiL/PFX9pZH
- kP8WppNWH2F+K5c/QaIjZOE7MaGJx9XqINvlFbXJb0BYAKg/JC
- 0m85cdxhuVaiuSjPeGdoQ==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -0.6
+X-Spam-Bar: /
+X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Thu, 21 Aug 2008 11:28:12 +0000
+	Bayes: 0.1282 Tokens: new, 169; hammy, 2; neutral, 2; spammy, 0.
+	AutoLearn: no
+	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.1282]
+X-Spam-Signature: 43b94d45c10a28de0585dc6ff8c813383d60a42f
+X-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 August 2008, Jared Hulbert wrote:
-> The Kconfig edits and Makefiles required for AXFS.
+On Wed, 20 Aug 2008, Jared Hulbert wrote:
+
+> The many different devices AXFS can mount to and the various
+> dual device mounting schemes are supported here.
 > 
 > Signed-off-by: Jared Hulbert <jaredeh@gmail.com>
+> ---
+> +static int __init init_axfs_fs(void)
+> +{
+> +	axfs_uncompress_init();
 
-If you split out this patch separate from the files, please make it the
-*last* patch so that you cannot get build errors during a later git-bisect
-through the middle of your series.
+one more thing, axfs_uncompress_init() can fail
 
-	Arnd <><
+> +	return register_filesystem(&axfs_fs_type);
+> +}
+> +
+> +static void __exit exit_axfs_fs(void)
+> +{
+> +	axfs_uncompress_exit();
+> +	unregister_filesystem(&axfs_fs_type);
+> +}
+> +
+> +module_init(init_axfs_fs);
+> +module_exit(exit_axfs_fs);
+> +MODULE_LICENSE("GPL");
