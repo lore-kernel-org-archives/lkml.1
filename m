@@ -1,46 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756997AbYHUDJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbYHUDKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756997AbYHUDJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 23:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756622AbYHUDI4
+	id S1756694AbYHUDKc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 23:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757020AbYHUDKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 23:08:56 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57069
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756599AbYHUDIx (ORCPT
+	Wed, 20 Aug 2008 23:10:03 -0400
+Received: from smtp-vbr10.xs4all.nl ([194.109.24.30]:2438 "EHLO
+	smtp-vbr10.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756019AbYHUDKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 23:08:53 -0400
-Date: Wed, 20 Aug 2008 20:08:52 -0700 (PDT)
-Message-Id: <20080820.200852.193706487.davem@davemloft.net>
-To: holt@sgi.com
-Cc: cl@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org, tokunaga.keiich@jp.fujitsu.com
-Subject: Re: [RFC][PATCH 0/2] Quicklist is slighly problematic.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080821021332.GA23397@sgi.com>
-References: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<48AC25E7.4090005@linux-foundation.org>
-	<20080821021332.GA23397@sgi.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Aug 2008 23:10:00 -0400
+Date: Thu, 21 Aug 2008 05:09:44 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@localhost.localdomain
+To: Mike Frysinger <vapier@gentoo.org>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] linux/timex.h: cleanup for userspace
+In-Reply-To: <1219200383-19556-1-git-send-email-vapier@gentoo.org>
+Message-ID: <Pine.LNX.4.64.0808210507410.2507@localhost.localdomain>
+References: <1219200383-19556-1-git-send-email-vapier@gentoo.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Robin Holt <holt@sgi.com>
-Date: Wed, 20 Aug 2008 21:13:32 -0500
+Hi,
 
-> One problem I see is somebody got rid of the node awareness.  We used
-> to not put pages onto a quicklist when they were being released from a
-> different node than the cpu is on.  Not sure where that went.  It was
-> done because of the trap page problem described here.
+On Tue, 19 Aug 2008, Mike Frysinger wrote:
 
-NUMA awareness is one of the reasons I keep thinking about dropping
-quicklist usage on sparc64.
+> MAXFREQ_SCALED was tweaked recently to contain a (s64) cast.  Assuming this
+> is meant for userspace, change it to (__s64) and pull in linux/types.h.
 
-Using SLAB/SLUB for the page table bits with appropriate constructor
-and destructor bits ought to be able to approximate the gains
-from avoiding the initialization for cached objects.
+No, it's irrelevant for user space.
+Most of it can be moved down into the __KERNEL__ block.
+Look at the glibc timex.h for what is currently exported.
+
+bye, Roman
