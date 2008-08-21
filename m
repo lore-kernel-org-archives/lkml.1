@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759956AbYHULxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbYHULx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759956AbYHULxB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 07:53:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758869AbYHULwx
+	id S1760057AbYHULx1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 07:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759974AbYHULxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 07:52:53 -0400
-Received: from msr35.hinet.net ([168.95.4.135]:56926 "EHLO msr35.hinet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759213AbYHULww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 07:52:52 -0400
-From: "Chen Pei Chao" <jackie73@ms2.hinet.net>
-To: "'David Newall'" <davidn@davidnewall.com>
-Cc: <linux-kernel@vger.kernel.org>, <jackie.chen@foxconn.com>
-References: <01c301c9033c$5e881ef0$4901a8c0@tc.nsbg.efoxconn.com> <48ACE990.6000500@davidnewall.com>
-Subject: =?windows-1255?Q?RE:_Is_there_linux_RAM_filesystem_with_a_fixed_amount_of?=
-	=?windows-1255?Q?_memory=3F=FE?=
-Date: Thu, 21 Aug 2008 19:51:05 +0800
-Message-ID: <00a701c90384$43cbdcd0$4901a8c0@tc.nsbg.efoxconn.com>
+	Thu, 21 Aug 2008 07:53:13 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:40302 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758869AbYHULxM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 07:53:12 -0400
+Date: Thu, 21 Aug 2008 05:53:10 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Szabolcs Szakacsits <szaka@ntfs-3g.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: XFS vs Elevators (was Re: [PATCH RFC] nilfs2: continuous snapshotting file system)
+Message-ID: <20080821115310.GP8318@parisc-linux.org>
+References: <20080820004326.519405a2.akpm@linux-foundation.org> <200808201613.AA00212@capsicum.lab.ntt.co.jp> <Pine.LNX.4.61.0808202352450.4532@dhcppc2> <20080820143916.1a7eddab.akpm@linux-foundation.org> <20080821021259.GA5706@disturbed> <Pine.LNX.4.62.0808210535450.25448@tamago.serverit.net> <20080821051508.GB5706@disturbed> <20080821060418.GC5706@disturbed>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="windows-1255"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <48ACE990.6000500@davidnewall.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Thread-Index: AckDQ1RfKGwK3i0wR+iN1l3vrPaKUQAP+6MA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080821060418.GC5706@disturbed>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Thu, Aug 21, 2008 at 04:04:18PM +1000, Dave Chinner wrote:
+> One thing I just found out - my old *laptop* is 4-5x faster than the
+> 10krpm scsi disk behind an old cciss raid controller.  I'm wondering
+> if the long delays in dispatch is caused by an interaction with CTQ
+> but I can't change it on the cciss raid controllers. Are you using
+> ctq/ncq on your machine?  If so, can you reduce the depth to
+> something less than 4 and see what difference that makes?
 
-> 
-> Chen Pei Chao wrote:
-> > I mounted a ramfs filesystem with 10M size, and have a check of
-/proc/meminfo.
-> > I find the ramfs also did not have the memory preallocation.
-> >   
-> Apparently I misunderstood what ramfs does.  Sorry for misdirecting you.
+I don't think that's going to make a difference when using CFQ.  I did
+some tests that showed that CFQ would never issue more than one IO at a
+time to a drive.  This was using sixteen userspace threads, each doing a
+4k direct I/O to the same location.  When using noop, I would get 70k
+IOPS and when using CFQ I'd get around 40k IOPS.
 
-Never mind of this, and I use the kernel startup parameter "mem=10M" to
-reserved the 
-Memory that I don't want to use. Thanks.
-
-Jackie
---
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in the body of a message to 
-> majordomo@vger.kernel.org More majordomo info at  
-> http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
