@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbYHUC72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbYHUDDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755173AbYHUC72 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 22:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYHUC7S
+	id S1755176AbYHUDDy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 23:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbYHUDDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 22:59:18 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:43937 "EHLO
+	Wed, 20 Aug 2008 23:03:46 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:44819 "EHLO
 	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753130AbYHUC7R (ORCPT
+	with ESMTP id S1751844AbYHUDDp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 22:59:17 -0400
-Date: Wed, 20 Aug 2008 22:58:21 -0400 (EDT)
+	Wed, 20 Aug 2008 23:03:45 -0400
+Date: Wed, 20 Aug 2008 23:03:37 -0400 (EDT)
 From: Oren Laadan <orenl@cs.columbia.edu>
 X-X-Sender: orenl@takamine.ncl.cs.columbia.edu
 To: dave@linux.vnet.ibm.com
 cc: arnd@arndb.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v2][PATCH 1/9] kernel based checkpoint-restart
-Message-ID: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>
+       containers@lists.linux-foundation.org
+Subject: [RFC v2][PATCH 1/9] Create trivial sys_checkpoint/sys_restart syscalls
+In-Reply-To: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>
+Message-ID: <Pine.LNX.4.64.0808202302510.17436@takamine.ncl.cs.columbia.edu>
+References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 X-No-Spam-Score: Local
@@ -27,221 +28,58 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-These patches implement checkpoint-restart [CR v2]. This version adds
-save and restore of open files state (regular files and directories)
-which makes it more usable. Other changes address the feedback given
-for the previous version. It is also refactored (along Dave's posting)
-for easier reviewing.
+Create trivial sys_checkpoint and sys_restore system calls. They will
+enable to checkpoint and restart an entire container, to and from a
+checkpoint image file.
 
-Todo:
-- Add support for x86-64 and improve ABI
-- Refine or change syscall interface
-- Extend to handle (multiple) tasks in a container
-- Security (without CAPS_SYS_ADMIN files restore may fail)
+First create a template for both syscalls: they take a file descriptor
+(for the image file) and flags as arguments. For sys_checkpoint the
+first argument identifies the target container; for sys_restart it will
+identify the checkpoint image.
 
-Changelog:
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+---
+  arch/x86/kernel/syscall_table_32.S |    2 ++
+  include/asm-x86/unistd_32.h        |    2 ++
+  include/linux/syscalls.h           |    2 ++
+  3 files changed, 6 insertions(+), 0 deletions(-)
 
-[2008-Aug-20] v2:
-   - Added dump and restore of open files (regular and directories);
-     see the changes in the test program (ckpt.c)
-   - Added basic handling of shared objects, and use 'parent tag'
-   - Added documentation
-   - Improved ABI, add 64bit padding for image data
-   - Improved locking when saving/restoring memory
-   - Added UTS information to header (release, version, machine)
-   - Cleanup extraction of filename from a file pointer
-   - Refactor to allow easier reviewing
-   - Remove requirement for CAPS_SYS_ADMIN until we come up with a
-     security policy (this means that file restore may fail)
-   - Other cleanup in response to comments for v1
+diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
+index d44395f..5543136 100644
+--- a/arch/x86/kernel/syscall_table_32.S
++++ b/arch/x86/kernel/syscall_table_32.S
+@@ -332,3 +332,5 @@ ENTRY(sys_call_table)
+  	.long sys_dup3			/* 330 */
+  	.long sys_pipe2
+  	.long sys_inotify_init1
++	.long sys_checkpoint
++	.long sys_restart
+diff --git a/include/asm-x86/unistd_32.h b/include/asm-x86/unistd_32.h
+index d739467..88bdec4 100644
+--- a/include/asm-x86/unistd_32.h
++++ b/include/asm-x86/unistd_32.h
+@@ -338,6 +338,8 @@
+  #define __NR_dup3		330
+  #define __NR_pipe2		331
+  #define __NR_inotify_init1	332
++#define __NR_checkpoint		333
++#define __NR_restart		334
 
-[2008-Jul-29] v1:
-   - Initial version: support a single task with address space of only
-     private anonymous or file-mapped VMAs; syscalls ignore pid/crid
-     argument and act on current process.
+  #ifdef __KERNEL__
 
---
-(Dave Hansen's announcement)
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index d6ff145..edc218b 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -622,6 +622,8 @@ asmlinkage long sys_timerfd_gettime(int ufd, struct itimerspec __user *otmr);
+  asmlinkage long sys_eventfd(unsigned int count);
+  asmlinkage long sys_eventfd2(unsigned int count, int flags);
+  asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
++asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags);
++asmlinkage long sys_restart(int crid, int fd, unsigned long flags);
 
-At the containers mini-conference before OLS, the consensus among
-all the stakeholders was that doing checkpoint/restart in the kernel
-as much as possible was the best approach.  With this approach, the
-kernel will export a relatively opaque 'blob' of data to userspace
-which can then be handed to the new kernel at restore time.
+  int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
 
-This is different than what had been proposed before, which was
-that a userspace application would be responsible for collecting
-all of this data.  We were also planning on adding lots of new,
-little kernel interfaces for all of the things that needed
-checkpointing.  This unites those into a single, grand interface.
+-- 
+1.5.4.3
 
-The 'blob' will contain copies of select portions of kernel
-structures such as vmas and mm_structs.  It will also contain
-copies of the actual memory that the process uses.  Any changes
-in this blob's format between kernel revisions can be handled by
-an in-userspace conversion program.
-
-This is a similar approach to virtually all of the commercial
-checkpoint/restart products out there, as well as the research
-project Zap.
-
-These patches basically serialize internel kernel state and write
-it out to a file descriptor.  The checkpoint and restore are done
-with two new system calls: sys_checkpoint and sys_restart.
-
-In this incarnation, they can only work checkpoint and restore a
-single task. The task's address space may consist of only private,
-simple vma's - anonymous or file-mapped. The open files may consist
-of only simple files and directories.
-
---
-(Original announcement)
-
-In the recent mini-summit at OLS 2008 and the following days it was
-agreed to tackle the checkpoint/restart (CR) by beginning with a very
-simple case: save and restore a single task, with simple memory
-layout, disregarding other task state such as files, signals etc.
-
-Following these discussions I coded a prototype that can do exactly
-that, as a starter. This code adds two system calls - sys_checkpoint
-and sys_restart - that a task can call to save and restore its state
-respectively. It also demonstrates how the checkpoint image file can
-be formatted, as well as show its nested nature (e.g. cr_write_mm()
--> cr_write_vma() nesting).
-
-The state that is saved/restored is the following:
-* some of the task_struct
-* some of the thread_struct and thread_info
-* the cpu state (including FPU)
-* the memory address space
-
-In the current code, sys_checkpoint will checkpoint the current task,
-although the logic exists to checkpoint other tasks (not in the
-checkpointee's execution context). A simple loop will extend this to
-handle multiple processes. sys_restart restarts the current tasks, and
-with multiple tasks each task will call the syscall independently.
-(Actually, to checkpoint outside the context of a task, it is also
-necessary to also handle restart-block logic when saving/restoring the
-thread data).
-
-It takes longer to describe what isn't implemented or supported by
-this prototype ... basically everything that isn't as simple as the
-above.
-
-As for containers - since we still don't have a representation for a
-container, this patch has no notion of a container. The tests for
-consistent namespaces (and isolation) are also omitted.
-
-Below are two example programs: one uses checkpoint (called ckpt) and
-one uses restart (called rstr). Execute like this (as a superuser):
-
-orenl:~/test$ ./ckpt > out.1
- 				<-- ctrl-c
-orenl:~/test$ cat /tmp/cr-rest.out
-hello, world!
-world, hello!
-(ret = 1)
-
-orenl:~/test$ ./ckpt > out.1
- 				<-- ctrl-c
-orenl:~/test$ cat /tmp/cr-rest.out
-hello, world!
-world, hello!
-(ret = 2)
-
- 				<-- now change the contents of the file
-orenl:~/test$ sed -i 's/world, hello!/xxxx/' /tmp/cr-rest.out
-orenl:~/test$ cat /tmp/cr-rest.out
-hello, world!
-xxxx
-(ret = 2)
-
- 				<-- and do the restart
-orenl:~/test$ ./rstr < out.1
- 				<-- ctrl-c
-orenl:~/test$ cat /tmp/cr-rest.out
-hello, world!
-world, hello!
-(ret = 0)
-
-(if you check the output of ps, you'll see that "rstr" changed its
-name to "ckpt", as expected).
-
-Oren.
-
-
-============================== ckpt.c ================================
-
-#define _GNU_SOURCE        /* or _BSD_SOURCE or _SVID_SOURCE */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <asm/unistd.h>
-#include <sys/syscall.h>
-
-#define OUTFILE "/tmp/cr-test.out"
-
-int main(int argc, char *argv[])
-{
- 	pid_t pid = getpid();
- 	FILE *file;
- 	int ret;
-
- 	close(0);
- 	close(2);
-
- 	unlink(OUTFILE);
- 	file = fopen(OUTFILE, "w+");
- 	if (!file) {
- 		perror("open");
- 		exit(1);
- 	}
-
- 	fprintf(file, "hello, world!\n");
- 	fflush(file);
-
- 	ret = syscall(__NR_checkpoint, pid, STDOUT_FILENO, 0);
- 	if (ret < 0) {
- 		perror("checkpoint");
- 		exit(2);
- 	}
-
- 	fprintf(file, "world, hello!\n");
- 	fprintf(file, "(ret = %d)\n", ret);
- 	fflush(file);
-
- 	while (1)
- 		;
-
- 	return 0;
-}
-
-============================== rstr.c ================================
-
-#define _GNU_SOURCE        /* or _BSD_SOURCE or _SVID_SOURCE */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <asm/unistd.h>
-#include <sys/syscall.h>
-
-int main(int argc, char *argv[])
-{
- 	pid_t pid = getpid();
- 	int ret;
-
- 	ret = syscall(__NR_restart, pid, STDIN_FILENO, 0);
- 	if (ret < 0)
- 		perror("restart");
-
- 	printf("should not reach here !\n");
-
- 	return 0;
-}
