@@ -1,77 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbYHURQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758878AbYHURST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754259AbYHURQQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 13:16:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYHURP7
+	id S1758878AbYHURST (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 13:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYHURSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 13:15:59 -0400
-Received: from h155.mvista.com ([63.81.120.155]:61730 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751792AbYHURP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 13:15:57 -0400
-Message-ID: <48ADA2DB.3060306@ru.mvista.com>
-Date: Thu, 21 Aug 2008 21:16:11 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 04/18] ide: remove ide_setup_dma()
-References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <20080620213350.13202.73557.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080620213350.13202.73557.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+	Thu, 21 Aug 2008 13:18:06 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:33694 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753503AbYHURSF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 13:18:05 -0400
+Subject: 2.6.26.3-rt2
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain
+Date: Thu, 21 Aug 2008 13:18:02 -0400
+Message-Id: <1219339082.22710.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+We are pleased to announce the 2.6.26.3-rt2 tree, which can be
+downloaded from the location:
 
-Bartlomiej Zolnierkiewicz wrote:
+  http://rt.et.redhat.com/download/
 
-> Export sff_dma_ops and then remove ide_setup_dma().
+Information on the RT patch can be found at:
 
-> There should be no functional changes caused by this patch.
+  http://rt.wiki.kernel.org/index.php/Main_Page
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Changes since 2.6.26-rt1
 
-> Index: b/drivers/ide/arm/palm_bk3710.c
-> ===================================================================
-> --- a/drivers/ide/arm/palm_bk3710.c
-> +++ b/drivers/ide/arm/palm_bk3710.c
-> @@ -318,15 +318,14 @@ static u8 __devinit palm_bk3710_cable_de
->  static int __devinit palm_bk3710_init_dma(ide_hwif_t *hwif,
->  					  const struct ide_port_info *d)
->  {
-> -	unsigned long base =
-> -		hwif->io_ports.data_addr - IDE_PALM_ATA_PRI_REG_OFFSET;
-> -
->  	printk(KERN_INFO "    %s: MMIO-DMA\n", hwif->name);
->  
->  	if (ide_allocate_dma_engine(hwif))
->  		return -1;
->  
-> -	ide_setup_dma(hwif, base);
-> +	hwif->dma_base = hwif->io_ports.data_addr - IDE_PALM_ATA_PRI_REG_OFFSET;
-> +
-> +	hwif->dma_ops = &sff_dma_ops;
->  
->  	return 0;
->  }
+  - ported to 2.6.26.3
 
-    Unfortunately, this patch broke this driver:
+  - basic compile fixes (Steven Rostedt)
 
-drivers/ide/arm/palm_bk3710.c:327: error: ‘sff_dma_ops’ undeclared (first use 
-in this function). The declatation of sff_dma_ops should've been surrounded by:
+  - basic raw lock conversions (Steven Rostedt)
 
-#ifdef CONFIG_BLK_DEV_IDEDMA_SFF
+  - powerpc: irq radix tree updates (Sebastien Dugue)
 
-not by:
+  - call_rcu_sched (Paul E. McKenney)
 
-#ifdef CONFIG_BLK_DEV_IDEDMA_PCI
+  - rcu trace preemption fixes (Paul E. Mckenney)
 
-the same as its definition is in ide-dma.c...
+  - remove lock in pm_qos_requirement (John Kacur)
 
-MBR, Sergei
+  - rcu_process_callbacks (Paul E. McKenney)
+
+  - rcu memory barriers update (Paul E. McKenney)
+
+  - shorten posix_cpu_timers thread names (Arnaldo Carvalho de Melo)
+
+  - account IRQ and RT load in SCHED_OTHER (Peter Zijlstra)
+
+  - seq_lock updates/fixes (Gregory Haskins)
+
+to build a 2.6.26.3-rt2 tree, the following patches should be applied:
+
+  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.26.tar.bz2
+  http://kernel.org/pub/linux/kernel/v2.6/patch-2.6.26.3.bz2
+  http://rt.et.redhat.com/download/patch-2.6.26.3-rt2.bz2
+
+
+
+And like always, my RT version of Matt Mackall's ketchup will get this
+for you nicely:
+
+  http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt3
+
+
+The broken out patches are also available.
+
+
+-- Steve
+
+
