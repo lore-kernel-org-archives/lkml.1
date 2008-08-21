@@ -1,107 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbYHUG3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbYHUGcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756872AbYHUG3v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 02:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbYHUG3m
+	id S1757177AbYHUGcX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 02:32:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbYHUGcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 02:29:42 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:44216 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754012AbYHUG3l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 02:29:41 -0400
-Subject: Re: [PATCH 1/1] IPC - Do not use a negative value to re-enable
-	msgmni automatic recomputing
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: matthltc@us.ibm.com, linux-kernel@vger.kernel.org,
-       Solofo.Ramangalahy@bull.net
-In-Reply-To: <20080722033404.c46aab44.akpm@linux-foundation.org>
-References: <20080704063715.300337000@bull.net>
-	 <20080704063729.600339000@bull.net>
-	 <20080722033404.c46aab44.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 21 Aug 2008 08:27:29 +0200
-Message-Id: <1219300049.18976.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Thu, 21 Aug 2008 02:32:12 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:14066 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751811AbYHUGcJ (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 02:32:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=F5EHJ/FW7zzVcRcfQVlJ7BkD4j/YwfoI5xJtD3ZMf7hbU+658zbAdnBoRX0Mv6NXUf
+         UQEGNuOTbzl8gMz6G6lQzrvIU4evdbxoL8Iou0bQVpglwejus+K8ktWPAp8yPTsEftep
+         Do5QzA+Ms9VUlgHfBr+Bs2llbcDQv2SHz666Q=
+Message-ID: <ac9c93b10808202332n2654884eh877848df2da59f20@mail.gmail.com>
+Date: Thu, 21 Aug 2008 08:32:08 +0200
+From: "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>
+To: jaredeh@gmail.com
+Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
+Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>, tim.bird@am.sony.com,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+In-Reply-To: <48AD00C4.6060302@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48AD00C4.6060302@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-22 at 03:34 -0700, Andrew Morton wrote:
-> On Fri, 04 Jul 2008 08:37:16 +0200 Nadia.Derbey@bull.net wrote:
-> 
-> > Resending after fixing the issues pointed out by Matt.
-> > Now applies to 2.6.26-rc8-mm1.
-> > 
-> > [PATCH 01/01]
-> > 
-> > This patch proposes an alternative to the "magical positive-versus-negative
-> > number trick" Andrew complained about last week in
-> > http://lkml.org/lkml/2008/6/24/418.
-> > 
-> > This had been introduced with the patches that scale msgmni to the amount of
-> > lowmem. With these patches, msgmni has a registered notification routine
-> > that recomputes msgmni value upon memory add/remove or ipc namespace creation/
-> > removal.
-> > 
-> > When msgmni is changed from user space (i.e. value written to the proc file),
-> > that notification routine is unregistered, and the way to make it registered
-> > back is to write a negative value into the proc file. This is the "magical
-> > positive-versus-negative number trick".
-> > 
-> > To fix this, a new proc file is introduced: /proc/sys/kernel/auto_msgmni.
-> > This file acts as ON/OFF for msgmni automatic recomputing.
-> > 
-> > With this patch, the process is the following:
-> > 1) kernel boots in "automatic recomputing mode"
-> >    /proc/sys/kernel/msgmni contains the value that has been computed (depends
-> >                            on lowmem)
-> >    /proc/sys/kernel/automatic_msgmni contains "1"
-> > 
-> > 2) echo <val> > /proc/sys/kernel/msgmni
-> >    . sets msg_ctlmni to <val>
-> >    . de-activates automatic recomputing (i.e. if, say, some memory is added
-> >      msgmni won't be recomputed anymore)
-> >    . /proc/sys/kernel/automatic_msgmni now contains "0"
-> > 
-> > 3) echo "0" > /proc/sys/kernel/automatic_msgmni
-> >    . de-activates msgmni automatic recomputing
-> >      this has the same effect as 2) except that msg_ctlmni's value stays
-> >      blocked at its current value)
-> > 
-> > 3) echo "1" > /proc/sys/kernel/automatic_msgmni
-> >    . recomputes msgmni's value based on the current available memory size
-> >      and number of ipc namespaces
-> >    . re-activates automatic recomputing for msgmni.
-> > 
-> 
-> Sigh.  I suppose it's a bit better.
-> 
-> > ---
-> >  include/linux/ipc_namespace.h |    3 +
-> >  ipc/ipc_sysctl.c              |   72 ++++++++++++++++++++++++++++++++++--------
-> >  ipc/ipcns_notifier.c          |   20 ++++++++---
-> 
-> Could we get this all documented for our poor users please?
-> 
-> Documentation/filesystems/proc.txt is probably the most appropriate
-> place.
-> 
-> 
+Jared, nice work!
 
-Sorry for answering so late, but I just came back from a looooong
-vacation.
-Actually, I first thought of documenting this new file in proc.txt, but
-didn't find anything related to the ipc tunables there, that's why I
-finally gave up with the idea. 
-I'll send an update of the proc.txt as soon as possible.
+I've also read your paper from the linux symposium
+(http://ols.fedoraproject.org/OLS/Reprints-2008/hulbert-reprint.pdf)
 
-Regards,
-Nadia
+A few questions:
+- how does this benchmark compared to cramfs and squashfs in a NAND-only system
+  (or is it just not a good plan to use this with NAND-only (of course
+I won't get XIP with NAND, I understand that)
+- would axfs be suitable as a filesystem on a ram disk?
 
--- 
-Nadia Derbey <Nadia.Derbey@bull.net>
+Background for the last question is that if you do not have the memory
+to retain all pages uncompressed (as you would with ramfs), this could
+be a nice intermediate format.
+Furthermore compared to ramfs, a filesystem on a ramdisk does not need
+the initialisation during startup (decompressing the cpio file,
+creating the files, copying the data), so when it comes to boot times
+a filesystem on a ramdisk (e.g. axfs) could be a better choice.
 
+Appreciate your feedback.
+
+Frans.
