@@ -1,120 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbYHUMb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbYHUMgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754945AbYHUMb1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 08:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbYHUMbS
+	id S1753854AbYHUMgw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 08:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbYHUMgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 08:31:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37110 "EHLO ogre.sisk.pl"
+	Thu, 21 Aug 2008 08:36:45 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37149 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752370AbYHUMbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 08:31:17 -0400
+	id S1751143AbYHUMgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 08:36:44 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Simon Arlott <simon@fire.lp0.eu>
-Subject: Re: [linux-pm] forcedeth 10de:0373 doesn't work on resume
-Date: Thu, 21 Aug 2008 14:34:34 +0200
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>, Frans Pop <elendil@planet.nl>
+Subject: Re: char/tpm: tpm_infineon no longer loaded for HP 2510p laptop
+Date: Thu, 21 Aug 2008 14:40:26 +0200
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>, jgarzik@redhat.com,
-       netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, ranma+kernel@tdiedrich.de
-References: <4898AA28.8000507@simon.arlott.org.uk> <200808182313.10235.rjw@sisk.pl> <48A9E8B3.4040800@simon.arlott.org.uk>
-In-Reply-To: <48A9E8B3.4040800@simon.arlott.org.uk>
+Cc: linux-kernel@vger.kernel.org, Marcel Selhorst <tpm@selhorst.net>,
+       Kay Sievers <kay.sievers@vrfy.org>, Thomas Renninger <trenn@suse.de>,
+       Adam Belay <ambx1@neo.rr.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200808181540.25286.elendil@planet.nl> <200808200956.52883.bjorn.helgaas@hp.com>
+In-Reply-To: <200808200956.52883.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808211434.35673.rjw@sisk.pl>
+Message-Id: <200808211440.27577.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 18 of August 2008, Simon Arlott wrote:
-> On 18/08/08 22:13, Rafael J. Wysocki wrote:
-> > On Monday, 18 of August 2008, Andrew Morton wrote:
-> >> On Tue, 05 Aug 2008 20:29:44 +0100
-> >> Simon Arlott <simon@fire.lp0.eu> wrote:
-> >> >
-> >> 
-> >> [two weeks pass...]
+On Wednesday, 20 of August 2008, Bjorn Helgaas wrote:
+> On Monday 18 August 2008 07:40:24 am Frans Pop wrote:
+> > While comparing the loaded modules for 2.6.26 and 2.6.27-rc3 for my HP 
+> > 2510p, I noticed that the tpm_infineon module and related modules no 
+> > longer get loaded automatically.
 > > 
-> > [Must have missed this message.]
+> > The difference seems to be that 2.6.26 listed:
+> > /lib/modules/2.6.26.2/modules.alias:alias pnp:dIFX0102* tpm_infineon
+> > /lib/modules/2.6.26.2/modules.alias:alias pnp:dIFX0101* tpm_infineon
 > > 
-> > I have a box with forcedeth that evidently works after a resume from
-> > hibernation.  Unfortunately, so far I haven't been able to make the box
-> 
-> With hibernation would it re-initialise the devices differently?
-> 
-> > resume from suspend to RAM.  I'll do my best to try again tomorrow, but there's
-> > a little hope. :-(
-> 
-> Mine doesn't either, try standby?
-> 
-> >> > My NIC stops working after resuming from standby, it's not receiving any interrupts:
-> >> > Commit 25d90810ff49d2a63475776f24c74c6bb49b045f ([netdrvr] forcedeth: reorder suspend/resume code) 
-> >> > introduces pci_disable_device to nv_suspend, but there's no corresponding pci_enable_device in 
-> >> > nv_resume - so I added one (copied from e1000):
-> >> > 
-> >> > diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
-> >> > index 01b38b0..db4f875 100644
-> >> > --- a/drivers/net/forcedeth.c
-> >> > +++ b/drivers/net/forcedeth.c
-> >> > @@ -5922,6 +5922,13 @@ static int nv_resume(struct pci_dev *pdev)
-> >> >  
-> >> >  	pci_set_power_state(pdev, PCI_D0);
-> >> >  	pci_restore_state(pdev);
-> >> > +	rc = pci_enable_device(pdev);
-> >> > +	if (rc) {
-> >> > +		printk(KERN_ERR "forcedeth: Cannot enable PCI device from suspend\n");
-> >> > +		return rc;
-> >> > +	}
-> >> > +	pci_set_master(pdev);
-> >> > +
-> >> >  	/* ack any pending wake events, disable PME */
-> >> >  	pci_enable_wake(pdev, PCI_D0, 0);
-> >> >  
-> >> 
-> >> That seems like a sensible change.
-> >> 
-> 
-> With this applied, I can resume from standby *without MSI* and the 
-> NIC still works. I haven't tested it without MSI and without the 
-> patch... mostly because I got a BUG when I tried to recompile.
-> 
-> >> > This results in interrupts being re-enabled after suspend:
-> >> > However, the NIC still doesn't work after resume.
+> > while 2.6.27 has:
+> > /lib/modules/2.6.27-rc3/modules.alias:alias acpi*:IFX0101:* tpm_infineon
+> > /lib/modules/2.6.27-rc3/modules.alias:alias pnp:dIFX0101* tpm_infineon
 > > 
-> > Simon, I'd prefer the full dmesg to the grepped forcedeth messages.
-> > 
+> > My system has:
+> > $ grep IFX /sys/bus/pnp/devices/*/id
+> > /sys/bus/pnp/devices/00:02/id:IFX0102
 > 
-> Attached. (The previous email has all the standby/resume log output.)
-> 
-> > I guess this was resume from suspend to RAM?
-> 
-> Standby - resume from RAM is completely broken for my system.
-> 
-> >> Is it still broken in current kernels?
-> > 
-> > It probably is.
-> 
-> If I have MSI enabled, it still doesn't work.
+> drivers/char/tpm/tpm_infineon.c hasn't changed since v2.6.26.  I think
+> the problem is more likely related to commit 22454cb99fc39f2629a:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=22454cb99fc39f2629ad06a7eccb3df312f8830e
 
-I cannot reproduce the problem locally, at least not with 2.6.27-rc4.
-
-I was able to make my box resume from suspend to RAM by using
-
-# s2ram --force --vbe_mode --vbe_post
-
-(s2ram as shipped in openSUSE 11.0) and forcedeth works correctly
-after the resume.  However, I had to add 'acpi_sleep=old_ordering' to the
-kernel command line.
-
-My box is a desktop with an Asus A8N-SLI motherboard and an Athlon 64 X2 CPU.
-
-I have created a Bugzilla entry for this issue at
-http://bugzilla.kernel.org/show_bug.cgi?id=11390
-Please put a boot log from dmesg and the output of 'lspci -vvv' in there, as
-text attachments.
+Frans, could you verify if reverting commit 22454cb99fc39f2629a fixes the
+problem for you?
 
 Thanks,
 Rafael
