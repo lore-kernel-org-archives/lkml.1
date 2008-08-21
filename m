@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbYHUQba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbYHUQce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755795AbYHUQba (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 12:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYHUQbW
+	id S1757436AbYHUQce (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 12:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbYHUQcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 12:31:22 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:30617 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618AbYHUQbV (ORCPT
+	Thu, 21 Aug 2008 12:32:25 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:44841 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750921AbYHUQcY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 12:31:21 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: char/tpm: tpm_infineon no longer loaded for HP 2510p laptop
-Date: Thu, 21 Aug 2008 10:31:15 -0600
-User-Agent: KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Frans Pop <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org, Marcel Selhorst <tpm@selhorst.net>,
-       Thomas Renninger <trenn@suse.de>, Adam Belay <ambx1@neo.rr.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
-References: <200808181540.25286.elendil@planet.nl> <200808210914.27516.bjorn.helgaas@hp.com> <1219333105.20723.45.camel@lgn.site>
-In-Reply-To: <1219333105.20723.45.camel@lgn.site>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Aug 2008 12:32:24 -0400
+Date: Thu, 21 Aug 2008 18:32:16 +0200
+From: Stefan Weinhuber <wein@linux.vnet.ibm.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: Ivan Warren <ivan@vmfacility.fr>, schwidefsky@de.ibm.com,
+       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] S390 : Set SLI on PSF/PRSSD on Dasd ECKD initialisation
+Message-ID: <20080821163215.GA4444@BL3VMDRG>
+References: <1218726426.25578.0.camel@localhost> <48A58F9A.8070301@linux.vnet.ibm.com> <48A9AC82.5060505@vmfacility.fr> <200808181956.50108.elendil@planet.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808211031.16248.bjorn.helgaas@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+In-Reply-To: <200808181956.50108.elendil@planet.nl>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 August 2008 09:38:25 am Kay Sievers wrote:
-> On Thu, 2008-08-21 at 09:14 -0600, Bjorn Helgaas wrote:
-> > Can somebody elaborate on why we need to add "acpi*" aliases for all
-> > PNP devices?  That broadens the kernel/user interface, so I'd like
-> > to understand why we need it.
+On Mon, Aug 18, 2008 at 07:56:49PM +0200, Frans Pop wrote:
+> On Monday 18 August 2008, Ivan Warren wrote:
+> > > The following patch works fine on current hardware. Can you please
+> > > verify that it indeed fixes your problem as well?
+> > >
+> > > Signed-off-by: Stefan Weinhuber <wein@de.ibm.com>
+> 
+> [...]
+> 
+> > Sorry for taking such a long time to respond..
+> >
+> > I like the patch. You are right, it's probably better to set the right
+> > length then hide it ! My initial rationale to SLI instead of altering
+> > the length was that I couldn't know if there was any obscure reason for
+> > setting the length to 16 instead of 12 (I thought it could have been
+> > related to DS8K PAV/HyperPAV support)..
+> >
+> > I also tried it on my rig, and it does seem to take care of the problem
+> >
+> >     Reviewed-by: Ivan Warren <ivan@vmfacility.fr>
+> >     Tested-by: Ivan Warren <ivan@vmfacility.fr>
+> 
+> Could this patch please also be pushed for the next stable update (2.6.26 
+> and maybe even 2.6.25) by adding:
+>       CC: stable <stable@kernel.org>
 
-Sorry, I should have prefaced my question with "I'm completely ignorant
-of this modalias stuff."  Is there a "complete idiot's guide to modules
-and udev"?  There's precious little in Documentation/ other than a bunch
-of sample rules for various subsystems.
+Ivan,
+  thanks for reporting the problem and reviewing the patch.
+  I've submitted the patch to our local repository, so it can
+  be picked up by Martin, our maintainer, for further processing.
 
-> We already do ACPI module autoloading by MODALIAS for other things than
-> pnp. ACPI exports the pnp devices with modalias, but the modules do not
-> have a matching alias, this add them.
+Frans,
+  thanks for your suggestion. I've added a respective CC: stable
+  line as well.
 
-I'm guessing this has something to do with acpi_device_uevent().
-
-> PNP has no MODALIAS support at all, and the current pnp-aliases would
-> not work for the standard modalias method, they would need to change
-> their format.
-
-pnp_bus_type has no .uevent method.  What if I added one?  Would that
-help this situation?
-
-It seems wrong for file2alias.c to take every PNP device (even if it's
-an ISAPNP or PNPBIOS device) and add "acpi*" aliases for it.
-
-> The plan is to replace the current pnp modprobe shell script hack in
-> udev, when ACPI devices load the right modules without any special
-> userspace mangling.
-
-Is this the shell hack you mean (from etc/udev/rules.d/80-drivers.rules
-in udev-117)?
-
-  SUBSYSTEM=="pnp", DRIVER!="?*", ENV{MODALIAS}!="?*", \
-    RUN{ignore_error}+="/bin/sh -c '/sbin/modprobe -a $$(while read id; do echo pnp:d$$id; done < /sys$devpath/id)'"
-
-I agree that's gross.  Could I fix this by implementing pnp_device_uevent()?
-
-Bjorn
