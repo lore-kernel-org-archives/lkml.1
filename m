@@ -1,88 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbYHUFas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYHUFl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbYHUFas (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 01:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbYHUFak
+	id S1753884AbYHUFl4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 01:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYHUFlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 01:30:40 -0400
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:45065 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752020AbYHUFaj (ORCPT
+	Thu, 21 Aug 2008 01:41:47 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:35127 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbYHUFlr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 01:30:39 -0400
-Message-ID: <48ACFA69.7070300@cs.columbia.edu>
-Date: Thu, 21 Aug 2008 01:17:29 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Thu, 21 Aug 2008 01:41:47 -0400
+Message-ID: <48ACFF0B.6090008@zytor.com>
+Date: Wed, 20 Aug 2008 22:37:15 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: dave@linux.vnet.ibm.com
-CC: containers@lists.linux-foundation.org, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, arnd@arndb.de
-Subject: Re: [RFC v2][PATCH 1/9] Create trivial sys_checkpoint/sys_restart
- syscalls
-References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu> <Pine.LNX.4.64.0808202302510.17436@takamine.ncl.cs.columbia.edu>
-In-Reply-To: <Pine.LNX.4.64.0808202302510.17436@takamine.ncl.cs.columbia.edu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: David Fries <david@fries.net>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] i486 CR4 oops, no_console_suspend
+References: <20080818040340.GB17528@spacedout.fries.net> <20080818064120.GA28941@elte.hu> <20080819033710.GD17528@spacedout.fries.net> <20080819093454.GG28713@elte.hu> <48AAEFBE.5060406@zytor.com> <20080821041721.GE17528@spacedout.fries.net>
+In-Reply-To: <20080821041721.GE17528@spacedout.fries.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Fries wrote:
+> On Tue, Aug 19, 2008 at 09:07:26AM -0700, H. Peter Anvin wrote:
+>> Ingo Molnar wrote:
+>>> i've had trouble no end with getting even kernel messages out to the 
+>>> serial console during critical phases of suspend/resume. (especially in 
+>>> combination with earlyprintk=ttyS0 - not surprisingly)
+>>>
+>>> Especially during resume the UART is initialized back to something 
+>>> really slow - 300 bauds or 9600 bauds. (depends on the chipset i guess) 
+>>> So even though it works, it will only worked reliably when i 
+>>> standardized all my baud settings to that very low setting.
+>>>
+>> Probably depends on the BIOS, actually; I suspect you end up with the 
+>> standard BIOS setting, which is *usually* 9600 bps.
+> 
+> I have grub, the kernel, and a getty all set to 115200, for suspend,
+> resume, or reboot it's always 115200.  With grub there's no BIOS
+> guessing, it sets it to a configured state.
+> 
 
-this, of course, should be the last patch, not the first.
+Most likely it never gets reinitialized during resume.  This is a bug, 
+obviously.
 
-Oren Laadan wrote:
-> Create trivial sys_checkpoint and sys_restore system calls. They will
-> enable to checkpoint and restart an entire container, to and from a
-> checkpoint image file.
-> 
-> First create a template for both syscalls: they take a file descriptor
-> (for the image file) and flags as arguments. For sys_checkpoint the
-> first argument identifies the target container; for sys_restart it will
-> identify the checkpoint image.
-> 
-> Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
-> ---
->   arch/x86/kernel/syscall_table_32.S |    2 ++
->   include/asm-x86/unistd_32.h        |    2 ++
->   include/linux/syscalls.h           |    2 ++
->   3 files changed, 6 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
-> index d44395f..5543136 100644
-> --- a/arch/x86/kernel/syscall_table_32.S
-> +++ b/arch/x86/kernel/syscall_table_32.S
-> @@ -332,3 +332,5 @@ ENTRY(sys_call_table)
->   	.long sys_dup3			/* 330 */
->   	.long sys_pipe2
->   	.long sys_inotify_init1
-> +	.long sys_checkpoint
-> +	.long sys_restart
-> diff --git a/include/asm-x86/unistd_32.h b/include/asm-x86/unistd_32.h
-> index d739467..88bdec4 100644
-> --- a/include/asm-x86/unistd_32.h
-> +++ b/include/asm-x86/unistd_32.h
-> @@ -338,6 +338,8 @@
->   #define __NR_dup3		330
->   #define __NR_pipe2		331
->   #define __NR_inotify_init1	332
-> +#define __NR_checkpoint		333
-> +#define __NR_restart		334
-> 
->   #ifdef __KERNEL__
-> 
-> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-> index d6ff145..edc218b 100644
-> --- a/include/linux/syscalls.h
-> +++ b/include/linux/syscalls.h
-> @@ -622,6 +622,8 @@ asmlinkage long sys_timerfd_gettime(int ufd, struct itimerspec __user *otmr);
->   asmlinkage long sys_eventfd(unsigned int count);
->   asmlinkage long sys_eventfd2(unsigned int count, int flags);
->   asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
-> +asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags);
-> +asmlinkage long sys_restart(int crid, int fd, unsigned long flags);
-> 
->   int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
-> 
+	-hpa
