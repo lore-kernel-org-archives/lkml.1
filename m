@@ -1,65 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759891AbYHUOb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759986AbYHUOcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759891AbYHUOb5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 10:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYHUObr
+	id S1759986AbYHUOcW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 10:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759881AbYHUOb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 10:31:47 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:25346 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753503AbYHUObp (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 10:31:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YDiYHLMzoh0cNxZzgkuuGoLgDsia47v7MiOmse8Rc+BgHA7fuyV2wFjFMSi1ot1s8R
-         /2Je7nwjsjcxVllHXC7R4PJXqHPaM3grkqW/1hR5othsSAECsTZ9XVX1Fmg5HRmpsyWF
-         9a5TcesC9JlNoFz0WQBydHDTRrruSK1TZz7gw=
-Message-ID: <c384c5ea0808210731k17ccc836u60c4803c3abfea31@mail.gmail.com>
-Date: Thu, 21 Aug 2008 16:31:44 +0200
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: "Jared Hulbert" <jaredeh@gmail.com>
-Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
-Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>, tim.bird@am.sony.com,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-In-Reply-To: <6934efce0808210719s6458dc77w2c0755a4bf90bf8a@mail.gmail.com>
+	Thu, 21 Aug 2008 10:31:57 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:54336 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759828AbYHUObz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 10:31:55 -0400
+Date: Thu, 21 Aug 2008 10:31:53 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH v2] ftrace: warn on failure to disable mcount callers
+In-Reply-To: <20080821084418.GJ28386@elte.hu>
+Message-ID: <alpine.DEB.1.10.0808211030300.20825@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0808201237210.27481@gandalf.stny.rr.com> <20080821084418.GJ28386@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48AD00C4.6060302@gmail.com> <20080821083916.GF5706@disturbed>
-	 <6934efce0808210719s6458dc77w2c0755a4bf90bf8a@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Jared,
 
-On Thu, Aug 21, 2008 at 4:19 PM, Jared Hulbert <jaredeh@gmail.com> wrote:
->> FWIW, I'm not sure it's a good idea to name this new filesystem AXFS.
->> People are almost certainly going to confuse it with XFS despite
->
-People that care about their filesystem choice know their choices.
-People that don't
-care, well they don't care.
+On Thu, 21 Aug 2008, Ingo Molnar wrote:
 
-Maybe AXIPFS would be the close alternative.
+> 
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > +			pr_info("WARNING: ftrace faulted on modifying ");
+> > +			print_ip_sym(ip);
+> 
+> please use the WARN() API, so that it gets picked up by automation.
+> 
+> 	Ingo
+> 
 
-One question on the use-case profiling and subsequent image rebuild:
+[
+  Added WARN_ON as requested above.
+]
 
-What if the use-case did not cover all cases of XIP use?
 
-If a compressed page is attempted to be executed, will the filesystem
-fall back to decompression to RAM and execution from RAM, or will this
-result in a faulty system?
+With the recent updates to ftrace, there should not be any failures when
+modifying the code. If there is, then we need to warn about it.
 
-The design choices look real good. Congrats on the achievement.
+This patch has a cleaned up version of the code that I used to discover
+that the weak symbols were causing failures. 
 
-Regards,
--- 
-Leon
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/ftrace.c |   27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+Index: linux-tip.git/kernel/trace/ftrace.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/ftrace.c	2008-08-20 21:58:19.000000000 -0400
++++ linux-tip.git/kernel/trace/ftrace.c	2008-08-21 10:19:09.000000000 -0400
+@@ -574,6 +574,16 @@ static void ftrace_shutdown_replenish(vo
+ 	ftrace_pages->next = (void *)get_zeroed_page(GFP_KERNEL);
+ }
+ 
++static void print_ip_ins(const char *fmt, unsigned char *p)
++{
++	int i;
++
++	printk(KERN_CONT "%s", fmt);
++
++	for (i = 0; i < MCOUNT_INSN_SIZE; i++)
++		printk(KERN_CONT "%s%02x", i ? ":" : "", p[i]);
++}
++
+ static int
+ ftrace_code_disable(struct dyn_ftrace *rec)
+ {
+@@ -588,6 +598,23 @@ ftrace_code_disable(struct dyn_ftrace *r
+ 
+ 	failed = ftrace_modify_code(ip, call, nop);
+ 	if (failed) {
++		switch (failed) {
++		case 1:
++			WARN_ON_ONCE(1);
++			pr_info("ftrace faulted on modifying ");
++			print_ip_sym(ip);
++			break;
++		case 2:
++			WARN_ON_ONCE(1);
++			pr_info("ftrace failed to modify ");
++			print_ip_sym(ip);
++			print_ip_ins(" expected: ", call);
++			print_ip_ins(" actual: ", (unsigned char *)ip);
++			print_ip_ins(" replace: ", nop);
++			printk(KERN_CONT "\n");
++			break;
++		}
++
+ 		rec->flags |= FTRACE_FL_FAILED;
+ 		return 0;
+ 	}
