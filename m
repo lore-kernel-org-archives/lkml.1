@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760750AbYHUV6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760669AbYHUWAJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760750AbYHUV6q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 17:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760149AbYHUV63
+	id S1760669AbYHUWAJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 18:00:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649AbYHUV7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 17:58:29 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:46307 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760087AbYHUV61 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 17:58:27 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: char/tpm: tpm_infineon no longer loaded for HP 2510p laptop
-Date: Thu, 21 Aug 2008 15:58:23 -0600
-User-Agent: KMail/1.9.9
-Cc: ambx1@neo.rr.com, elendil@planet.nl, trenn@suse.de,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       tpm@selhorst.net, rjw@sisk.pl, greg@kroah.com
-References: <24565067.73831219353513508.JavaMail.servlet@kundenserver>
-In-Reply-To: <24565067.73831219353513508.JavaMail.servlet@kundenserver>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Thu, 21 Aug 2008 17:59:54 -0400
+Received: from gate.crashing.org ([63.228.1.57]:35376 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756253AbYHUV7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 17:59:54 -0400
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Message-Id: <C7EDF44A-277E-4157-B2D6-0DEDCF65AED7@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20080821.140346.236252915.davem@davemloft.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808211558.23725.bjorn.helgaas@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH] math-emu: Fix compiler warnings
+Date: Thu, 21 Aug 2008 16:59:44 -0500
+References: <1219323021-7273-1-git-send-email-galak@kernel.crashing.org> <20080821.140346.236252915.davem@davemloft.net>
+X-Mailer: Apple Mail (2.926)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 August 2008 03:18:33 pm Kay Sievers wrote:
-> Bjorn Helgaas wrote:
-> >Is there a "complete idiot's guide to modules
-> >and udev"?  There's precious little in Documentation/ other than a bunch
-> >of sample rules for various subsystems.
-> 
-> I don't know of any specific documentation, but it's pretty easy:
-> ...
 
-Thanks for the tutorial.
+On Aug 21, 2008, at 4:03 PM, David Miller wrote:
 
-> >Could I fix this by implementing pnp_device_uevent()?
-> 
-> Only if we change the format of the current pnp device aliases
-> to something like:
->   pnp*:XYZ2324:*
->   pnp*:ABC1234:*
-> 
-> and create a "modalias" file at every pnp device, and add MODALIAS to
-> the uevent. The modalias must contains all ID's which belong to that
-> device in one single string, separated and terminated by a special
-> character, something like:
->   pnp:ABC1234:XYZ2324:RST3445:
+> From: Kumar Gala <galak@kernel.crashing.org>
+> Date: Thu, 21 Aug 2008 07:50:20 -0500
+>
+>> Fix warnings of the form:
+>> arch/powerpc/math-emu/fsubs.c:15: warning: 'R_f1' may be used  
+>> uninitialized in this function
+>> arch/powerpc/math-emu/fsubs.c:15: warning: 'R_f0' may be used  
+>> uninitialized in this function
+>>
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>
+> You should look at the compiler options we use on sparc to build this
+> stuff :-)
+>
+> EXTRA_CFLAGS = -Iinclude/math-emu -w
 
-This all sounds like good stuff that I'd like PNP to have.  Is there
-any reason I shouldn't implement pnp_device_uevent()?  Any backwards-
-compatibility issues?
+Yeah, I plan on doing that on PPC once I move over the global include/ 
+math-emu files.
 
-I think that sounds like a better solution than doing this PNP ID
-mangling.
-
-Bjorn
+- k
