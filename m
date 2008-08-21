@@ -1,45 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbYHUIqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbYHUIy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728AbYHUIqR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 04:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbYHUIp7
+	id S1756233AbYHUIy0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 04:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbYHUIyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 04:45:59 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:33805 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751246AbYHUIp6 (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 04:45:58 -0400
-Message-ID: <48AD2AFF.5060609@de.ibm.com>
-Date: Thu, 21 Aug 2008 10:44:47 +0200
-From: Carsten Otte <cotte@de.ibm.com>
-Reply-To: carsteno@de.ibm.com
-Organization: =?ISO-8859-1?Q?BM_Deutschland_Research_=26_Developm?=
- =?ISO-8859-1?Q?ent_GmbH_/_Vorsitzender_des_Aufsichtsrats=3A_?=
- =?ISO-8859-1?Q?Martin_Jetter=2CGesch=E4ftsf=FChrung=3A_Herbert_Kir?=
- =?ISO-8859-1?Q?cher=2CSitz_der_Gesellschaft=3A_B=F6blingen_/_R?=
- =?ISO-8859-1?Q?egistergericht=3A_Amtsgericht_Stuttgart=2C_HRB_24?=
- =?ISO-8859-1?Q?3294?=
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Thu, 21 Aug 2008 04:54:14 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:31164 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752671AbYHUIyM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 04:54:12 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEALDHrEh5LD0w/2dsb2JhbAC1WoFm
+X-IronPort-AV: E=Sophos;i="4.32,244,1217773800"; 
+   d="scan'208";a="176333807"
+Date: Thu, 21 Aug 2008 18:53:32 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: gus3 <musicman529@yahoo.com>, Szabolcs Szakacsits <szaka@ntfs-3g.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: XFS vs Elevators (was Re: [PATCH RFC] nilfs2: continuous
+	snapshotting file system)
+Message-ID: <20080821085332.GG5706@disturbed>
+Mail-Followup-To: Nick Piggin <nickpiggin@yahoo.com.au>,
+	gus3 <musicman529@yahoo.com>,
+	Szabolcs Szakacsits <szaka@ntfs-3g.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	xfs@oss.sgi.com
+References: <20080821051508.GB5706@disturbed> <684252.68814.qm@web34508.mail.mud.yahoo.com> <20080821061443.GD5706@disturbed> <200808211700.39584.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-To: jaredeh@gmail.com
-CC: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@AM.SONY.COM,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 05/10] AXFS: axfs_profiling.c
-References: <48AD00F8.1030004@gmail.com>
-In-Reply-To: <48AD00F8.1030004@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808211700.39584.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jared Hulbert wrote:
-> Profiling is a fault instrumentation and /proc formating system.
-> This is used to get an accurate picture of what the pages are actually used.
-> Using this info the image can be optimized for XIP
-Exporting profiling data for a file system in another file system 
-(/proc) seems not very straigtforward to me. I think it is worth 
-considering to export this information via the same mount point.
+On Thu, Aug 21, 2008 at 05:00:39PM +1000, Nick Piggin wrote:
+> On Thursday 21 August 2008 16:14, Dave Chinner wrote:
+> 
+> > I think that we need to issue explicit unplugs to get the log I/O
+> > dispatched the way we want on all elevators and stop trying to
+> > give elevators implicit hints by abusing the bio types and hoping
+> > they do the right thing....
+> 
+> FWIW, my explicit plugging idea is still hanging around in one of
+> Jens' block trees (actually he refreshed it a couple of months ago).
+> 
+> It provides an API for VM or filesystems to plug and unplug
+> requests coming out of the current process, and it can reduce the
+> need to idle the queue. Needs more performance analysis and tuning
+> though.
+
+We've already got plenty of explicit unplugs in XFS to get stuff
+moving quickly - I'll just have to add another....
+
+> But existing plugging is below the level of the elevators, and should
+> only kick in for at most tens of ms at queue idle events, so it sounds
+> like it may not be your problem. Elevators will need some hint to give
+> priority to specific requests -- either via the current threads's io
+> priority, or information attached to bios.
+
+It's getting too bloody complex, IMO. What is right for one elevator
+is wrong for another, so as a filesystem developer I have to pick
+one to target. With the way the elevators have been regressing,
+improving and changing behaviour, I am starting to think that I
+should be picking the noop scheduler. Any 'advanced' scheduler that
+is slower than the same test on the noop scheduler needs fixing...
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
