@@ -1,64 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761348AbYHUXZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756256AbYHUXcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761348AbYHUXZZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 19:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbYHUXZM
+	id S1756256AbYHUXcy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 19:32:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYHUXch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 19:25:12 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:59107 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752172AbYHUXZL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 19:25:11 -0400
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: writable packet CD mounting in 2.6.26.x?
-References: <87ej52vtxq.fsf@hades.wkstn.nix>
-	<20080808031437.GA14249@martell.zuzino.mipt.ru>
-	<20080808053735.GA5274@martell.zuzino.mipt.ru>
-From: Nix <nix@esperi.org.uk>
-Emacs: an inspiring example of form following function... to Hell.
-Date: Fri, 22 Aug 2008 00:25:02 +0100
-In-Reply-To: <20080808053735.GA5274@martell.zuzino.mipt.ru> (Alexey Dobriyan's message of "Fri, 8 Aug 2008 09:37:35 +0400")
-Message-ID: <874p5eq7ch.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
+	Thu, 21 Aug 2008 19:32:37 -0400
+Received: from tundra.namei.org ([65.99.196.166]:60577 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752078AbYHUXcg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 19:32:36 -0400
+Date: Fri, 22 Aug 2008 09:32:15 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: David Howells <dhowells@redhat.com>
+cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] CRED: Move the exec mutex release out of bprm_free()
+In-Reply-To: <20080821123907.4731.54839.stgit@warthog.procyon.org.uk>
+Message-ID: <alpine.LRH.1.10.0808220932010.17708@tundra.namei.org>
+References: <20080821123907.4731.54839.stgit@warthog.procyon.org.uk>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-INFN-TO-Metrics: hades 1233; Body=2 Fuz1=2 Fuz2=2
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Back now, sorry for the delay, but I didn't even have mobile phone access
- in my tent, let alone an Internet connection. I had lots of running water,
- though, lots and lots and lots: I'm not sure it stopped raining for more
- than ten minutes in that whole week.]
+On Thu, 21 Aug 2008, David Howells wrote:
 
-On 8 Aug 2008, Alexey Dobriyan uttered the following:
-> On Fri, Aug 08, 2008 at 07:14:37AM +0400, Alexey Dobriyan wrote:
->> > Anyone got any ideas? There are no suspicious-looking changes in
->> > pktcdvd.c itself, so maybe this lies deeper in the block layer. Or
->> > perhaps I'm mounting it wrong in some obscure way.
->
-> Ho-hum, I get ->mmc3_profile = 9 here in both .25 anf .26 kernel, so I
-> can't meaningfully debug it here. :-(
->
-> Does it -EROFS because of pkt_writable_disc()? If yes, apply this patch
-> too.
+> Move the exec mutex release out of free_bprm() and into the error handling
+> paths of do_execve() and compat_do_execve().  install_exec_creds() already
+> takes care of the success path.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-Too? Was there another patch?
+This patch does not apply to my tree:
 
-I see
+Applying CRED: Move the exec mutex release out of bprm_free()
+error: patch failed: fs/compat.c:1373
+error: fs/compat.c: patch does not apply
+error: patch failed: fs/exec.c:1319
+error: fs/exec.c: patch does not apply
+Patch failed at 0001.
 
-pkt_probe_settings: 00 00 00 ac 00 00 00 00 00 00 00 00
-pkt_probe_settings: pd = edd80ee0, ->mmc3_profile = 0
-pkt_writable_disc: pd = edd80ee0, ->mmc3_profile = 0
 
-Thus we get 0 back from pkt_writable_disc(). (This drive is a Yamaha
-CRW3200E, at least five years old, but it's a CD-RW so should definitely
-support MMC3, I'd have thought.)
+> ---
+> 
+>  fs/compat.c |    3 +--
+>  fs/exec.c   |    7 ++-----
+>  2 files changed, 3 insertions(+), 7 deletions(-)
+> 
+> 
+> diff --git a/fs/compat.c b/fs/compat.c
+> index 918f0f2..af24b8a 100644
+> --- a/fs/compat.c
+> +++ b/fs/compat.c
+> @@ -1373,7 +1373,7 @@ int compat_do_execve(char * filename,
+>  	file = open_exec(filename);
+>  	retval = PTR_ERR(file);
+>  	if (IS_ERR(file))
+> -		goto out_free;
+> +		goto out_unlock;
+>  
+>  	sched_exec();
+>  
+> @@ -1427,7 +1427,6 @@ out_file:
+>  		allow_write_access(bprm->file);
+>  		fput(bprm->file);
+>  	}
+> -	goto out_free;
+>  
+>  out_unlock:
+>  	mutex_unlock(&current->cred_exec_mutex);
+> diff --git a/fs/exec.c b/fs/exec.c
+> index 7b71679..9fa9a2d 100644
+> --- a/fs/exec.c
+> +++ b/fs/exec.c
+> @@ -1277,10 +1277,8 @@ EXPORT_SYMBOL(search_binary_handler);
+>  void free_bprm(struct linux_binprm *bprm)
+>  {
+>  	free_arg_pages(bprm);
+> -	if (bprm->cred) {
+> -		mutex_unlock(&current->cred_exec_mutex);
+> +	if (bprm->cred)
+>  		abort_creds(bprm->cred);
+> -	}
+>  	kfree(bprm);
+>  }
+>  
+> @@ -1319,7 +1317,7 @@ int do_execve(char * filename,
+>  	file = open_exec(filename);
+>  	retval = PTR_ERR(file);
+>  	if (IS_ERR(file))
+> -		goto out_free;
+> +		goto out_unlock;
+>  
+>  	sched_exec();
+>  
+> @@ -1376,7 +1374,6 @@ out_file:
+>  		allow_write_access(bprm->file);
+>  		fput(bprm->file);
+>  	}
+> -	goto out_free;
+>  
+>  out_unlock:
+>  	mutex_unlock(&current->cred_exec_mutex);
+> 
 
-That probe result looks really odd. Maybe something's wrong with sg?
-
-(This is an ATAPI device, and I'm using the old IDE layer, not
-libata. Maybe I should switch and see if libata works better...)
+-- 
+James Morris
+<jmorris@namei.org>
