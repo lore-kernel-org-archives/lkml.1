@@ -1,125 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757746AbYHUMuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757232AbYHUMwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757746AbYHUMuy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 08:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbYHUMub
+	id S1757232AbYHUMwV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 08:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbYHUMwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 08:50:31 -0400
-Received: from gate.crashing.org ([63.228.1.57]:46362 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753848AbYHUMua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 08:50:30 -0400
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linux-kernel@vger.kernel.org
-Cc: davem@davemloft.net, linuxppc-dev@ozlabs.org
-Subject: [PATCH] math-emu: Add support for reporting exact invalid exception
-Date: Thu, 21 Aug 2008 07:50:21 -0500
-Message-Id: <1219323021-7273-2-git-send-email-galak@kernel.crashing.org>
-X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1219323021-7273-1-git-send-email-galak@kernel.crashing.org>
-References: <1219323021-7273-1-git-send-email-galak@kernel.crashing.org>
+	Thu, 21 Aug 2008 08:52:13 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:58634 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753352AbYHUMwM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 08:52:12 -0400
+Message-ID: <43593.166.70.238.46.1219321595.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <48AD5A21.7020801@s5r6.in-berlin.de>
+References: <200808210250.m7L2obNX028353@wolfmountaingroup.com>
+    <1219313231.8651.101.camel@twins> <48AD4A0B.8020805@s5r6.in-berlin.de>
+    <1219316568.8651.107.camel@twins>
+    <20080821114745.GD21089@linux.vnet.ibm.com>
+    <48AD5A21.7020801@s5r6.in-berlin.de>
+Date: Thu, 21 Aug 2008 06:26:35 -0600 (MDT)
+Subject: Re: [ANNOUNCE] mdb: Merkey's Linux Kernel Debugger 
+     2.6.27-rc4	released
+From: jmerkey@wolfmountaingroup.com
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Cc: paulmck@linux.vnet.ibm.com, "Peter Zijlstra" <peterz@infradead.org>,
+       jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "David Howells" <dhowells@redhat.com>
+User-Agent: SquirrelMail/1.4.6
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some architectures (like powerpc) provide status information on the exact
-type of invalid exception.  This is pretty straight forward as we already
-report invalid exceptions via FP_SET_EXCEPTION.
+> Paul E. McKenney wrote:
+>> On Thu, Aug 21, 2008 at 01:02:48PM +0200, Peter Zijlstra wrote:
+>>> On Thu, 2008-08-21 at 12:57 +0200, Stefan Richter wrote:
+>>>> Peter Zijlstra wrote:
+>>>>> On Wed, 2008-08-20 at 20:50 -0600, jmerkey@wolfmountaingroup.com
+>>>>> wrote:
+>>>>>
+>>>>>>  volatiles left in the code due to the previously stated
+>>>>>>  (and still present) severe breakage of the GNU compiler with SMP
+>>>>>>  shared data.  most of the barrier() functions are just plain broken
+>>>>>>  and do not result in proper compiler behavior in this tree.
+>>>>> Can you provide explicit detail?
+>>>>>
+>>>>> By using barrier() the compiler should clobber all its memory and
+>>>>> registers therefore forcing a write/reload of the variable.
+>>>> I hope Jeff didn't try mere barrier()s only.  smp_wmb() and smp_rmb()
+>>>> are the more relevant barrier variants for mdb, from what I remember
+>>>> when I last looked at it.
+>>> Sure, but volatile isn't a replacement for memory barriers.
+>>
+>> Let's face it, the C standard does not support concurrency, so we are
+>> all in a state of sin in any case, forced to rely on combinations of
+>> gcc-specific non-standard language extensions and assembly language.
+>>
+>> Could be worse!!!
+>
+> Nevertheless, an analysis of which particular parts of code generation
+> are insufficient if one particular volatile qualification is removed is
+> IMO likely to turn up places in mdb where a clearer or/and more
+> efficient implementation is possible.  (Based on what I saw a few
+> revisions ago; I haven't looked at the current one yet.)
+> --
+> Stefan Richter
+> -=====-==--- =--- =-=-=
+> http://arcgraph.de/sr/
+>
 
-We add new flags (FP_EX_INVALID_*) the architecture code can define if it
-wants the exact invalid exception reported.
+I used the smp_wmb() functions.  I noted a couple of things.  a) some of
+these macros just emit __asm__ __volatile__ into the code so why not just
+say "volatile" to begin with b) smp_wmb() in some cases worked and in
+other cases jut optimized away the global reference. c) I can go back and
+break the code again by inserting them and building broken assembler d) I
+ave been doing hardware and software design since the early 1980;s, I
+invented SMP affinity scheduling, and yes, I understand barriers and this
+concept of instruction score-boarding and optimization very well -- its
+not an excuse for a busted C compiler.
 
-We had to split out the INF/INF and 0/0 cases for divide to allow reporting
-the two invalid forms properly.
+It did not break all the places in the code, but broke enough for SMP to
+lock up and fail,  It turned global variables into local variables.  If
+you want me to reproduce this I can but it will have to wait til this
+evening
+because I have some product releases to get out the door at Omega 8 today.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-I intend these patches to go via the powerpc.git tree if no one has issues.
+It's simple to reproduce.  Take away the volatile declaration for the
+rlock_t structure in mdb-ia32.c (rlock_t debug_lock) in all code
+references and watch the thing lock up in SMP with multiple processors in
+the debugger each stuck with their own local copy of debug_lock.
 
-- k
+The barrier functions do not appear to work in all cases.
 
- include/math-emu/op-common.h |   12 ++++++++----
- include/math-emu/soft-fp.h   |   19 +++++++++++++++++++
- 2 files changed, 27 insertions(+), 4 deletions(-)
-
-diff --git a/include/math-emu/op-common.h b/include/math-emu/op-common.h
-index bb46e76..cc1ec39 100644
---- a/include/math-emu/op-common.h
-+++ b/include/math-emu/op-common.h
-@@ -73,7 +73,7 @@ do {									\
- 	X##_c = FP_CLS_NAN;						\
- 	/* Check for signaling NaN */					\
- 	if (!(_FP_FRAC_HIGH_RAW_##fs(X) & _FP_QNANBIT_##fs))		\
--	  FP_SET_EXCEPTION(FP_EX_INVALID);				\
-+	  FP_SET_EXCEPTION(FP_EX_INVALID | FP_EX_INVALID_SNAN);		\
-       }									\
-     break;								\
-   }									\
-@@ -324,7 +324,7 @@ do {									     \
- 	_FP_FRAC_SET_##wc(R, _FP_NANFRAC_##fs);				     \
- 	R##_s = _FP_NANSIGN_##fs;					     \
- 	R##_c = FP_CLS_NAN;						     \
--	FP_SET_EXCEPTION(FP_EX_INVALID);				     \
-+	FP_SET_EXCEPTION(FP_EX_INVALID | FP_EX_INVALID_ISI);		     \
- 	break;								     \
-       }									     \
-     /* FALLTHRU */							     \
-@@ -431,7 +431,7 @@ do {							\
-     R##_s = _FP_NANSIGN_##fs;				\
-     R##_c = FP_CLS_NAN;					\
-     _FP_FRAC_SET_##wc(R, _FP_NANFRAC_##fs);		\
--    FP_SET_EXCEPTION(FP_EX_INVALID);			\
-+    FP_SET_EXCEPTION(FP_EX_INVALID | FP_EX_INVALID_IMZ);\
-     break;						\
- 							\
-   default:						\
-@@ -490,11 +490,15 @@ do {							\
-     break;						\
- 							\
-   case _FP_CLS_COMBINE(FP_CLS_INF,FP_CLS_INF):		\
-+    R##_s = _FP_NANSIGN_##fs;				\
-+    R##_c = FP_CLS_NAN;					\
-+    _FP_FRAC_SET_##wc(R, _FP_NANFRAC_##fs);		\
-+    FP_SET_EXCEPTION(FP_EX_INVALID | FP_EX_INVALID_IDI);\
-   case _FP_CLS_COMBINE(FP_CLS_ZERO,FP_CLS_ZERO):	\
-     R##_s = _FP_NANSIGN_##fs;				\
-     R##_c = FP_CLS_NAN;					\
-     _FP_FRAC_SET_##wc(R, _FP_NANFRAC_##fs);		\
--    FP_SET_EXCEPTION(FP_EX_INVALID);			\
-+    FP_SET_EXCEPTION(FP_EX_INVALID | FP_EX_INVALID_ZDZ);\
-     break;						\
- 							\
-   default:						\
-diff --git a/include/math-emu/soft-fp.h b/include/math-emu/soft-fp.h
-index a6f873b..3f284bc 100644
---- a/include/math-emu/soft-fp.h
-+++ b/include/math-emu/soft-fp.h
-@@ -51,6 +51,25 @@
- #ifndef FP_EX_INVALID
- #define FP_EX_INVALID		0
- #endif
-+#ifndef FP_EX_INVALID_SNAN
-+#define FP_EX_INVALID_SNAN	0
-+#endif
-+/* inf - inf */
-+#ifndef FP_EX_INVALID_ISI
-+#define FP_EX_INVALID_ISI	0
-+#endif
-+/* inf / inf */
-+#ifndef FP_EX_INVALID_IDI
-+#define FP_EX_INVALID_IDI	0
-+#endif
-+/* 0 / 0 */
-+#ifndef FP_EX_INVALID_ZDZ
-+#define FP_EX_INVALID_ZDZ	0
-+#endif
-+/* inf * 0 */
-+#ifndef FP_EX_INVALID_IMZ
-+#define FP_EX_INVALID_IMZ	0
-+#endif
- #ifndef FP_EX_OVERFLOW
- #define FP_EX_OVERFLOW		0
- #endif
--- 
-1.5.5.1
+Jeff
 
