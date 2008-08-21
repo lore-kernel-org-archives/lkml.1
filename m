@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYHUTtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbYHUTvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbYHUTtb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 15:49:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYHUTtW
+	id S1755257AbYHUTvK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 15:51:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYHUTu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 15:49:22 -0400
-Received: from smtpauth.hypersurf.com ([209.237.0.8]:57879 "EHLO
-	smtpauth.hypersurf.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbYHUTtW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 15:49:22 -0400
-Message-ID: <48ADC65F.6000705@hypersurf.com>
-Date: Thu, 21 Aug 2008 12:47:43 -0700
-From: Kevin Diggs <kevdig@hypersurf.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i486; en-US; rv:1.8b2) Gecko/20050724
+	Thu, 21 Aug 2008 15:50:57 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39829 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751174AbYHUTu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 15:50:56 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>
+Subject: Re: latest -git: hibernate: possible circular locking dependency detected
+Date: Thu, 21 Aug 2008 21:54:23 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
+       "Max Krasnyanskiy" <maxk@qualcomm.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Pavel Machek" <pavel@ucw.cz>
+References: <19f34abd0808210804y7ee91d1fy12da5ad6f82d2451@mail.gmail.com> <200808212131.29906.rjw@sisk.pl> <19f34abd0808211241l54863821n8e978682c9d43dc7@mail.gmail.com>
+In-Reply-To: <19f34abd0808211241l54863821n8e978682c9d43dc7@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org,
-       david@fromorbit.com, arnd@arndb.de,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: {NOT a PATCH} Corrections please ...
-References: <48AB73A3.9010404@hypersurf.com> <20080820095908.GC28492@elte.hu> <48ABF880.5010605@s5r6.in-berlin.de> <48AC7790.8010207@hypersurf.com> <20080821103000.GA19452@elte.hu>
-In-Reply-To: <20080821103000.GA19452@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808212154.24600.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Kevin Diggs <kevdig@hypersurf.com> wrote:
+On Thursday, 21 of August 2008, Vegard Nossum wrote:
+> On Thu, Aug 21, 2008 at 9:31 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > Now, what is the source of the "SysRq : Power Off" in the dmesg you posted?
 > 
+> The only suggestion I can make is that SysRq can be triggered remotely
+> with serial console (COM1/ttyS0), because I know that the serial line
+> is producing junk in the other direction (i.e. reading from /dev/ttyS0
+> on the kernel which has been booted with console=ttyS0 reads junk,
+> sometimes things that look like pieces of dmesg). Other than that, I
+> have no idea. The SysRq thing seems to only happen after I've entered
+> "echo disk > /sys/power/state" too.
 > 
->>Here is the latest (maybe line wrap is set to 99 so it won't be goofed 
->>anymore?):
+> (Also see my email at http://lkml.org/lkml/2008/8/21/409)
 > 
+> >
+> > Also, have you tried to hibernate with the "platform" setting selected in
+> > "cat /sys/power/disk" and if you have, does the lockdep warning appear in this
+> > case?
 > 
-> the patch wont apply as it has whitespace corruption (double spaces). 
-> Please check Documentation/email-clients.txt.
-> 
-> 	Ingo
-> 
-> 
-The double spacing between the diffs? That will prevent it from applying?
+> Yes, I have tried it. In fact, I believe the lockdep warning in the
+> boot-log comes with such a setting (ACPI was enabled; isn't platform
+> the default in that case?). At least it looked to be selected when
+> acpi is enabled:
 
-I'm still just trying to get the content correct.
+Yes, it is the default in that case.
 
-Who should this patch be sent to when it is ready? Also, I think I remember
-reading in submitting patches that patches should be cced to the general
-linux-kernel list. This correct?
+> > # cat /sys/power/disk
+> > [platform] test testproc shutdown reboot
 
-kevin
+The problem is, in the case of the "platform" hibernation, kernel_power_off()
+is not called at all (ACPI mechanism to enter the S4 sleep state is used
+instead).  Apart from this, there should be lines like:
+
+"ACPI: Preparing to enter system sleep state S4"
+
+in the dmesg log in that case and they are not present in your dmesg.
+
+Your dmesg looks like a mixture of hibernation in the "shutdown" mode with
+"emergency" shutdown caused by "SysRq : Power Off".
+
+Thanks,
+Rafael
