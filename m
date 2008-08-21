@@ -1,141 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759441AbYHUSok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760389AbYHUSqB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759441AbYHUSok (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 14:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYHUSoc
+	id S1760389AbYHUSqB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 14:46:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754635AbYHUSpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 14:44:32 -0400
-Received: from mx06.lb01.inode.at ([62.99.145.6]:15942 "EHLO mx.inode.at"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752689AbYHUSob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 14:44:31 -0400
-Message-ID: <48ADB77F.9060301@sbg.ac.at>
-Date: Thu, 21 Aug 2008 20:44:15 +0200
-From: Alexander Huemer <alexander.huemer@sbg.ac.at>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080729)
+	Thu, 21 Aug 2008 14:45:54 -0400
+Received: from qb-out-0506.google.com ([72.14.204.224]:13088 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754490AbYHUSpw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 14:45:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Rap4MMiNPFE3hYCcZ/Hp8TslBr0wT54gJ7oSh5G4F6AR+PfCXMgQEITb0SCp8KjCOo
+         zA7ayRRw+Sa0IdoclqoKDAgWR5zNIXrWERvV0SW3CWI3/FO2/bwh/nHwSMbdqoFbzkll
+         MM3nPXCgERmzqkkEbeKDaOW9h3Sgm0ML5lRIw=
+Message-ID: <19f34abd0808211145y1c3d5aedwf8e918afeba9cc98@mail.gmail.com>
+Date: Thu, 21 Aug 2008 20:45:51 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: latest -git: suspend: unable to handle kernel paging request (was Re: no_console_suspend doesn't work?)
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <19f34abd0808211121l25e6b187p93db789607c2af30@mail.gmail.com>
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: 2.6.27 mtrr fixes do not work
-References: <4899AF8E.20105@sbg.ac.at>	 <86802c440808071326m21cff146s3fb5e6118a58a2ca@mail.gmail.com>	 <489B73B7.4090705@sbg.ac.at>	 <86802c440808071616o23dde07atd694b45375f9d6ac@mail.gmail.com>	 <86802c440808071617i1344e595wb9cc7c2bf75a5b3f@mail.gmail.com>	 <489B85A3.7030500@sbg.ac.at>	 <86802c440808071658yd120d04y370859dcf5a7b759@mail.gmail.com>	 <48A43CB5.8010709@sbg.ac.at>	 <86802c440808141031p2712976cqe2c34d3b986ad810@mail.gmail.com>	 <48AD8125.7050104@sbg.ac.at> <86802c440808210827y72bb1ec0ndcb97b00d6af3a9c@mail.gmail.com>
-In-Reply-To: <86802c440808210827y72bb1ec0ndcb97b00d6af3a9c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0808211028w7889587fke523ff244339e7c5@mail.gmail.com>
+	 <200808212010.06043.rjw@sisk.pl>
+	 <19f34abd0808211121l25e6b187p93db789607c2af30@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On Thu, Aug 21, 2008 at 7:52 AM, Alexander Huemer
-> <alexander.huemer@sbg.ac.at> wrote:
->   
->> Yinghai Lu wrote:
->>     
->>> On Thu, Aug 14, 2008 at 7:09 AM, Alexander Huemer
->>> <alexander.huemer@sbg.ac.at> wrote:
->>>
->>>       
->>>> Yinghai Lu wrote:
->>>>
->>>>         
->>>>> On Thu, Aug 7, 2008 at 4:30 PM, Alexander Huemer
->>>>> <alexander.huemer@sbg.ac.at> wrote:
->>>>>
->>>>>
->>>>>           
->>>>>> Yinghai Lu wrote:
->>>>>>
->>>>>>
->>>>>>             
->>>>>           
->>>>>>>> can you put "debug" in command line too?
->>>>>>>>
->>>>>>>>
->>>>>>>>
->>>>>>>>                 
->>>>>>> without mtrr_chunk_size etc in command line...please
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>>               
->>>>>> http://xx.vu/~ahuemer/dmesg_3.txt
->>>>>>
->>>>>>
->>>>>>
->>>>>>             
->>>>> do you have
->>>>> CONFIG_MTRR=y
->>>>> CONFIG_MTRR_SANITIZER=y
->>>>> CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
->>>>> CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
->>>>>
->>>>> in your .config?
->>>>>
->>>>> YH
->>>>>
->>>>>
->>>>>           
->>>> 2.6.27_rc3 does not solve the problem either.
->>>> what can i do to help?
->>>>
->>>>         
->>> please send out you config
->>>
->>> YH
->>>
->>>       
->> yinghai,
->>
->> i just tried out 2.6.27-rc4, unfortunately without success.
->>
->> here are my settings again,
->> if you need more info, just tell me.
->>
->> as you can see, the mtrr size values are complete nonsense.
->> the framebuffer should be at d8000000.
->> i am unsure if this is the fault of the kernel or the bios.
->> or should the MTRR_SANITIZER resolv all broken bios issues?
->>
->>   # uname -a
->>   Linux seaburg 2.6.27-rc4-blackbit #1 SMP Thu Aug 21 15:53:38 CEST
->>   2008 x86_64 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz GenuineIntel GNU/Linux
->>   # grep -E "(^\(WW\)|^\(EE\)|^\(NI\)|^\(??\))" /var/log/Xorg.0.log
->>   (WW) VESA(0): Failed to set up write-combining range
->>   (0xd8000000,0x2000000)
->>   # dmesg|grep mtrr                                                 Command
->> line: root=/dev/sda1
->>   video=uvesafb:1280x1024-24@97,mtrr:3,ywrap mtrr_chunk_size=512m
->>   Kernel command line: root=/dev/sda1
->>   video=uvesafb:1280x1024-24@97,mtrr:3,ywrap mtrr_chunk_size=512m
->>     
+On Thu, Aug 21, 2008 at 8:21 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> I got a "proper" oops this time (brace yourself, it's long ;-)), and
+> it does not have serial on the stack:
 >
-> please boot without mtrr_chunk_size=512m
-> and put debug in your command line
->
->
->   
->>   # cat /proc/mtrr
->>   reg00: base=0x00000000 (   0MB), size=198656MB: write-back, count=1
->>   reg01: base=0x80000000 (2048MB), size=197632MB: write-back, count=1
->>   reg02: base=0x100000000 (4096MB), size=197632MB: write-back, count=1
->>     
->
-> another case of crazy size in /proc/mtrr
->
-> it is E5420, maybe mtrr code has problem to handle that cpu?
->
-> YH
->   
-yinghai,
+> BUG: unable to handle kernel paging request at 00100104
+> IP: [<c038ad65>] __list_add+0x15/0x90
+> *pdpt = 00000000325bb001 *pde = 0000000000000000
+> Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+> Pid: 3597, comm: bash Not tainted (2.6.27-rc4-00003-ga798564-dirty #30)
+> EIP: 0060:[<c038ad65>] EFLAGS: 00210082 CPU: 0
+> EIP is at __list_add+0x15/0x90
 
-i booted as you suggested. i cannot see any difference.
-here is the dmesg output: http://xx.vu/~ahuemer/dmesg_4.txt
+This one is slightly different:
 
-what else can i do?
+WARNING: at lib/list_debug.c:26 __list_add+0x61/0x90()
+list_add corruption. next->prev should be prev (c088e34c), but was
+00200200. (next=f7814774).
+Pid: 3572, comm: bash Not tainted 2.6.27-rc4-00003-ga798564-dirty #30
+ [<c013a56e>] warn_slowpath+0x5e/0x80
+ [<c015f7bf>] ? validate_chain+0x7df/0xe90
+ [<c014c4e8>] ? __kernel_text_address+0x8/0x20
+ [<c01600ea>] ? __lock_acquire+0x27a/0xa00
+ [<c015b60e>] ? get_lock_stats+0x1e/0x50
+ [<c015b64d>] ? put_lock_stats+0xd/0x30
+ [<c038adb1>] __list_add+0x61/0x90
+ [<c01b3208>] deactivate_slab+0x158/0x1b0
+ [<c01b3ea5>] __slab_alloc+0x105/0x4e0
+ [<c015b60e>] ? get_lock_stats+0x1e/0x50
+ [<c01b4424>] kmem_cache_alloc+0xb4/0xe0
+ [<c052a51b>] ? serio_queue_event+0x6b/0xe0
+ [<c052a51b>] ? serio_queue_event+0x6b/0xe0
+ [<c052a51b>] serio_queue_event+0x6b/0xe0
+ [<c015e91b>] ? trace_hardirqs_on+0xb/0x10
+ [<c052a5b8>] serio_resume+0x28/0x30
+ [<c03f8bde>] device_resume+0x32e/0x380
+ [<c0168791>] hibernation_snapshot+0xa1/0x220
+ [<c013b55b>] ? printk+0x1b/0x20
+ [<c01689f0>] hibernate+0xe0/0x180
+ [<c01674a0>] ? state_store+0x0/0xd0
+ [<c016755f>] state_store+0xbf/0xd0
+ [<c01674a0>] ? state_store+0x0/0xd0
+ [<c0375ef4>] kobj_attr_store+0x24/0x30
+ [<c01fa432>] sysfs_write_file+0xa2/0x100
+ [<c01bbf06>] vfs_write+0x96/0x130
+ [<c01fa390>] ? sysfs_write_file+0x0/0x100
+ [<c01bc44d>] sys_write+0x3d/0x70
+ [<c0104f3b>] sysenter_do_call+0x12/0x3f
+ =======================
+---[ end trace 0bc52e2837e4b8b8 ]---
+
+...followed by the "unable to handle kernel paging request" as in
+previous e-mail. The numbers 00100104 and 00200200 seem to appear all
+the time.
+
+At least it is 100% reproducible now and with nice oopses too :-)
+
+
+Vegard
 
 -- 
-thanks
-alex
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
