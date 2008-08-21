@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbYHUQra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759130AbYHUQs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756851AbYHUQra (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 12:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYHUQrW
+	id S1759130AbYHUQs1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 12:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYHUQsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 12:47:22 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:50991 "EHLO
-	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751464AbYHUQrV (ORCPT
+	Thu, 21 Aug 2008 12:48:19 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:53660 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751464AbYHUQsS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 12:47:21 -0400
-X-BigFish: VPS-50(zz1432R98dR936eQ62a3L1805M936fQ9371Pzz10d3izz2f39iz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K5YMMI-01-XUD-01
-Date: Thu, 21 Aug 2008 18:46:49 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: patch "x86: MOVE PCI IO ECS code to x86/pci" breaks CPU hotplug
-Message-ID: <20080821164649.GC2453@erda.amd.com>
-References: <48AD82D5.76E4.0078.0@novell.com> <20080821132952.GD13011@erda.amd.com> <86802c440808210925g401d62e4td84a43c223571327@mail.gmail.com>
+	Thu, 21 Aug 2008 12:48:18 -0400
+Date: Thu, 21 Aug 2008 09:48:09 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [ANNOUNCE] mdb: Merkey's Linux Kernel Debugger 2.6.27-rc4
+	released
+Message-ID: <20080821164809.GL6690@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <200808210250.m7L2obNX028353@wolfmountaingroup.com> <1219313231.8651.101.camel@twins> <48AD4A0B.8020805@s5r6.in-berlin.de> <1219316568.8651.107.camel@twins> <20080821114745.GD21089@linux.vnet.ibm.com> <alpine.LFD.1.10.0808210845280.3487@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808210915590.3487@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86802c440808210925g401d62e4td84a43c223571327@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 21 Aug 2008 16:47:11.0124 (UTC) FILETIME=[8E783D40:01C903AD]
+In-Reply-To: <alpine.LFD.1.10.0808210915590.3487@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21.08.08 09:25:37, Yinghai Lu wrote:
-> On Thu, Aug 21, 2008 at 6:29 AM, Robert Richter <robert.richter@amd.com> wrote:
-> > On 21.08.08 13:59:33, Jan Beulich wrote:
-> >> Even worse - this would even try to access the MSR on non-AMD CPUs
-> >> (currently probably prevented just by the fact that only AMD ones use
-> >> family values of 0x10 or higher).
-> >
-> > Ups, really worse. Code was AMD specific before and became
-> > generic. Will fix this.
-> >
+On Thu, Aug 21, 2008 at 09:18:29AM -0700, Linus Torvalds wrote:
 > 
-> it seems you didn't address the concern about hotplug as you promised
 > 
-> http://lkml.org/lkml/2008/6/13/151
+> On Thu, 21 Aug 2008, Linus Torvalds wrote:
+> > 
+> > No, I haven't seen the drafts
+> 
+> Ok, I have looked at the draft now, and I don't think I was overly 
+> pessimistic.
+> 
+> If I read it right, all the memory ordering operations are defined for 
+> _single_ objects. So if you want to do the kernel kind of memory ordering 
+> where you specify ordering requirements independently of the actual 
+> accesses (perhaps because the accesses are in some helper function that 
+> doesn't care, but then you want to "finalize" the thing by stating a 
+> sequence point), it seems to be impossible with current drafts.
 
-Yinghai, I know. You made a comment on this in reply to the patch and
-this is still an open issue. Really, will fix this. :-)
+You are looking for atomic_fence() on page 1168 (1154 virtual) of the
+most recent draft.  The current semantics are not correct, but this is
+being worked.  And yes, it does currently have a variable associated with
+it, but it acts as a bare fence nevertheless.  There is a proposal to
+drop the variable.  As you said in a previous email, design by committee.
 
--Robert
+> Oh, well. Nothing lost. I didn't expect the thing to work.
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+;-)
 
+							Thanx, Paul
