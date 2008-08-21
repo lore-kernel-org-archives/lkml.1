@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757684AbYHUARb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756693AbYHUAVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757684AbYHUARb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 20:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbYHUARX
+	id S1756693AbYHUAVh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 20:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbYHUAV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 20:17:23 -0400
-Received: from relay04.mail-hub.dodo.com.au ([123.2.6.239]:55401 "EHLO
-	relay04.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753417AbYHUARW (ORCPT
+	Wed, 20 Aug 2008 20:21:28 -0400
+Received: from n5.bullet.mail.ac4.yahoo.com ([76.13.13.27]:43746 "HELO
+	n5.bullet.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751638AbYHUAV1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 20:17:22 -0400
-From: Grant Coady <grant_lkml@dodo.com.au>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Grant Coady <gcoady.lk@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ATA Kconfig cleanup: sort the driver list and modify some text
-Date: Thu, 21 Aug 2008 10:16:49 +1000
-Organization: http://bugsplatter.id.au/
-Reply-To: Grant Coady <gcoady.lk@gmail.com>
-Message-ID: <tecpa4928hh8kahc53p019sr7nclg8kbjr@4ax.com>
-References: <qjoca411hv4hm25keq70ul5pnbi7747d13@4ax.com> <18598.42334.73411.476062@harpo.it.uu.se> <20080816113224.5562a9a6@lxorguk.ukuu.org.uk> <5rkha4l846d0benss3hip3nvr0cmnfi1k4@4ax.com> <m3vdxvqnbb.fsf@maximus.localdomain>
-In-Reply-To: <m3vdxvqnbb.fsf@maximus.localdomain>
-X-Mailer: Forte Agent 2.0/32.652
+	Wed, 20 Aug 2008 20:21:27 -0400
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 503056.86745.bm@omp124.mail.ac4.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=ui0jaqqPPFv/a3cj5DwzO7sFir14F0VmGKh9iB+Kx4/NK3FShNsNSaMKtr9srxnfCx73cflmMGUNsig0yBseWzkKqkSkCOkm18AfYrsDwQJ5iaGW4pm08XXAHwz72LiAEO25vBtDcj12sWNTkZ9KkaMkzMSiNt/M9e71ODRLdRQ=;
+X-Mailer: YahooMailWebService/0.7.218
+Date: Wed, 20 Aug 2008 17:18:37 -0700 (PDT)
+From: amruth <amruth_pv@yahoo.com>
+Reply-To: amruth_pv@yahoo.com
+Subject: USB Serial device disconnect causes IRQ disable
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200808202223.57842.oliver@neukum.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Message-ID: <681979.61508.qm@web45205.mail.sp1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Aug 2008 01:27:52 +0200, Krzysztof Halasa <khc@pm.waw.pl> wrote:
+Hi
+I don't have any driver modules. I have everything built into kernel.
+When can this kind of IRQ disable happen, what causes this. The issue happened because of hotplugging my device but the device works fine.
+usb_register(driver) might have caused the issue. How do we debug this problem.
+Thanks
+Amruth p.v
 
->Grant Coady <grant_lkml@dodo.com.au> writes:
->
->> --- linux-2.6.27-rc3a/drivers/ata/Kconfig	2008-07-14 07:51:29.000000000 +1000
->> +++ linux-2.6.27-rc3c/drivers/ata/Kconfig	2008-08-18 11:29:20.871422237 +1000
->> @@ -3,7 +3,7 @@
->>  #
->>  
->>  menuconfig ATA
->> -	tristate "Serial ATA (prod) and Parallel ATA (experimental) drivers"
->> +	tristate "Serial ATA and Parallel ATA (SATA/PATA) drivers"
->
->I don't think so. Maybe
->> +	tristate "Serial ATA (SATA) and Parallel ATA (PATA) drivers"
 
-Yes, I think that's what I had before.
->
->>  config ATA_SFF
->>  	bool "ATA SFF support"
->>  	default y
->> @@ -93,123 +93,15 @@
->>  
->>  if ATA_SFF
->
->How the user compiling the kernel knows what ATA_SFF stands for?
+--- On Wed, 8/20/08, Oliver Neukum <oliver@neukum.org> wrote:
 
-They read the help text :)  
+> From: Oliver Neukum <oliver@neukum.org>
+> Subject: Re: USB Serial device disconnect causes IRQ disable
+> To: amruth_pv@yahoo.com
+> Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+> Date: Wednesday, August 20, 2008, 3:23 PM
+> Am Mittwoch 20 August 2008 21:34:51 schrieb amruth:
+> > Hi
+> > I again encountered the same issue IRQ23 disabled.
+> > Here is my /proc/interrupts
+> 
+> There is some unknown interrupt on 23. Try unloading
+> drivers until it works. You can sort of bisect it if you
+> divide
+> your loaded modules in groups.
+> 
+> 	Regards
+> 		Oliver
+> --
+> To unsubscribe from this list: send the line
+> "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at 
+> http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Perhaps add (legacy drivers) to the SFF menu item?  But that's not 
-quite true either.  
 
->Why not "select ATA_SFF" instead (when any driver using this is
->selected)?
+      
 
-Because then the driver list is always visible?  I'll try it next time 
-I look at the patch (when -rc4 is out), I think cleanups wait for next 
-merge window anyway.  Perhaps I'll offer both alternatives and see which 
-gets picked up.
-
-Besides, I don't like the way select locks in stuff at the moment, means 
-you have to turn off every option to get rid of the forced select option 
- -- I'd rather see turning off a 'select'ed item drop all of its 
-dependencies.  
-
-Cheers,
-Grant.
