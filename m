@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbYHURdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759360AbYHUReQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757400AbYHURdo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 13:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYHURdf
+	id S1759360AbYHUReQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 13:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758222AbYHURd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 13:33:35 -0400
-Received: from mail.suse.de ([195.135.220.2]:47433 "EHLO mx1.suse.de"
+	Thu, 21 Aug 2008 13:33:58 -0400
+Received: from ns1.suse.de ([195.135.220.2]:47455 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753093AbYHURde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 13:33:34 -0400
-Date: Thu, 21 Aug 2008 10:30:27 -0700
+	id S1753399AbYHURd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 13:33:57 -0400
+Date: Thu, 21 Aug 2008 10:30:36 -0700
 From: Greg KH <gregkh@suse.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [GIT PATCH] USB patches for 2.6.27-rc4
-Message-ID: <20080821173027.GA7974@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PATCH] driver core patches against 2.6.26-rc4
+Message-ID: <20080821173036.GB7974@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some USB patches for your 2.6.26-git tree.
+Here are some fixes and updates for driver core related things against
+your 2.6.26-git tree.
 
-The majority of this patch is removing a file from the recently added
-musb driver, as we shouldn't be adding new proc files for drivers,
-debugfs is much better for that.
+The biggest patches here are:
+	- ja_JP documentation updates
+	- new UIO driver (self contained)
 
-Other than that, the rest are:
-	- usb suspend bugfixes
-	- add back a patch you reverted at the very end of 2.6.26
-	- usb driver bugfixes
-	- device id updates
+The rest are all bugfixes and build fixes and one adds a new field to
+struct device to make the linux-next tree merges a lot happier.
+
+All of these, with the exception of one documentation update, have been
+in the -next trees and the -mm releases for a while now.
 
 Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-core-2.6.git/
 
-All of these patches have been in the -next and -mm trees.
-
-The full patches will be sent to the linux-usb mailing list, if anyone
-wants to see them.
+The patches will be sent as a follow-on to this message to lkml for people
+to see.
 
 thanks,
 
@@ -50,82 +50,63 @@ greg k-h
 
 ------------
 
- drivers/usb/class/cdc-acm.c         |    5 +-
- drivers/usb/core/driver.c           |   96 ++--
- drivers/usb/core/hcd.c              |    9 -
- drivers/usb/core/hcd.h              |    4 -
- drivers/usb/core/hub.c              |    9 -
- drivers/usb/core/urb.c              |    9 +-
- drivers/usb/core/usb.c              |   73 +++-
- drivers/usb/core/usb.h              |    3 +
- drivers/usb/gadget/pxa27x_udc.c     |    2 +-
- drivers/usb/host/isp1760-hcd.c      |    2 +-
- drivers/usb/host/ohci-at91.c        |    1 -
- drivers/usb/host/ohci-au1xxx.c      |    1 -
- drivers/usb/host/ohci-ep93xx.c      |    1 -
- drivers/usb/host/ohci-hub.c         |   53 ++-
- drivers/usb/host/ohci-lh7a404.c     |    1 -
- drivers/usb/host/ohci-omap.c        |    1 -
- drivers/usb/host/ohci-pci.c         |    1 -
- drivers/usb/host/ohci-pnx4008.c     |    1 -
- drivers/usb/host/ohci-pnx8550.c     |    1 -
- drivers/usb/host/ohci-ppc-of.c      |    1 -
- drivers/usb/host/ohci-ppc-soc.c     |    1 -
- drivers/usb/host/ohci-ps3.c         |    1 -
- drivers/usb/host/ohci-pxa27x.c      |    1 -
- drivers/usb/host/ohci-s3c2410.c     |    1 -
- drivers/usb/host/ohci-sa1111.c      |    1 -
- drivers/usb/host/ohci-sh.c          |    1 -
- drivers/usb/host/ohci-sm501.c       |    1 -
- drivers/usb/host/ohci-ssb.c         |    1 -
- drivers/usb/host/u132-hcd.c         |   11 -
- drivers/usb/misc/sisusbvga/sisusb.c |    1 +
- drivers/usb/musb/Kconfig            |   13 +-
- drivers/usb/musb/Makefile           |   21 +-
- drivers/usb/musb/musb_core.c        |   38 +-
- drivers/usb/musb/musb_core.h        |   19 -
- drivers/usb/musb/musb_debug.h       |    4 -
- drivers/usb/musb/musb_gadget_ep0.c  |    2 +
- drivers/usb/musb/musb_procfs.c      |  830 -----------------------------------
- drivers/usb/serial/option.c         |    2 +
- include/linux/usb.h                 |    3 +
- 39 files changed, 194 insertions(+), 1032 deletions(-)
- delete mode 100644 drivers/usb/musb/musb_procfs.c
+ Documentation/ja_JP/HOWTO           |   67 +++++++++----
+ Documentation/ja_JP/SubmitChecklist |  111 +++++++++++++++++++++
+ block/genhd.c                       |   36 +++++---
+ drivers/base/class.c                |   11 ++
+ drivers/base/core.c                 |   31 ++++--
+ drivers/base/driver.c               |    3 -
+ drivers/base/power/main.c           |   19 +---
+ drivers/base/power/power.h          |    9 ++-
+ drivers/uio/Kconfig                 |   13 +++
+ drivers/uio/Makefile                |    1 +
+ drivers/uio/uio_pdrv.c              |    4 +-
+ drivers/uio/uio_pdrv_genirq.c       |  188 +++++++++++++++++++++++++++++++++++
+ include/linux/device.h              |    5 +-
+ lib/kobject.c                       |    3 +-
+ scripts/mod/file2alias.c            |   16 ++-
+ 15 files changed, 445 insertions(+), 72 deletions(-)
+ create mode 100644 Documentation/ja_JP/SubmitChecklist
+ create mode 100644 drivers/uio/uio_pdrv_genirq.c
 
 ---------------
 
-Alan Stern (5):
-      USB: Add udev argument to interface suspend/resume functions
-      USB: Defer Set-Interface for suspended devices
-      USB: Add new PM callback methods for USB
-      USB: Don't rebind before "complete" callback
-      USB: automatically enable RHSC interrupts
+Alan Stern (1):
+      PM: don't skip device PM init when CONFIG_PM_SLEEP isn't set and CONFIG_PM is set
 
-Alexey Dobriyan (1):
-      USB: cdc-acm: don't unlock acm->mutex on error path
+David Brownell (1):
+      driver model: anti-oopsing medicine
 
-Anand Gadiyar (1):
-      MUSB: Fix index register corruption seen with g_ether and Windows host
+Greg Kroah-Hartman (1):
+      driver core: add init_name to struct device
 
-Enrico Scholz (1):
-      USB: ISP1760: fixed trivial math in comment
+Ingo Oeser (1):
+      kobject: Replace ALL occurrences of '/' with '!' instead of only the first one.
 
-Eric Sandeen (1):
-      USB: cdc-acm: quirk for Conexant CX93010 USB modem
+Jean Delvare (1):
+      dev_printk(): constify the `dev' argument
 
-Felipe Balbi (2):
-      usb: musb: get rid of procfs entry
-      usb: musb: get rid of MUSB_LOGLEVEL and use parameter
+Joe Perches (1):
+      drivers/base/driver.c: remove unused to_dev() macro
 
-Hiroshi Miura (1):
-      usb-serial: option support HSDPA modem A2502
+Kay Sievers (3):
+      block: fix partial read() of /proc/{partitions,diskstats}
+      block: drop references taken by class_find_device()
+      pnp: fix "add acpi:* modalias entries"
 
-Oliver Neukum (1):
-      USB: fix bug in usb_unlink_anchored_urbs()
+Magnus Damm (1):
+      UIO: generic irq handling for some uio platform devices
 
-Robert Jarzmik (1):
-      USB: Fix pxa27x_udc usb speed handling.
+Rafael J. Wysocki (1):
+      PM: Remove WARN_ON from device_pm_add
 
-Stefan Lippers-Hollmann (1):
-      USB: sisusbvga: add USB ID for 0711:0918 Magic Control Technology Corp.
+Takenori Nagano (1):
+      Japanese translation of Documentation/SubmitChecklist
+
+Tsugikazu Shibata (1):
+      Documentation: HOWTO-ja_JP-sync patch
+
+Uwe Kleine-König (2):
+      UIO: uio_pdrv: fix memory leak
+      UIO: uio_pdrv: fix license specification
 
