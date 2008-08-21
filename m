@@ -1,32 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757807AbYHUDWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbYHUDWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757807AbYHUDWG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 23:22:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbYHUDQi
+	id S1757967AbYHUDWg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 23:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbYHUDQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 23:16:38 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:50115 "EHLO
+	Wed, 20 Aug 2008 23:16:39 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:50103 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755360AbYHUDQH (ORCPT
+	with ESMTP id S1755463AbYHUDQH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 20 Aug 2008 23:16:07 -0400
 Date: Wed, 20 Aug 2008 20:50:36 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808210250.m7L2oaPq028338@wolfmountaingroup.com>
+Message-Id: <200808210250.m7L2oaOJ028340@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc4 16/27] mdb: add mdb-os.c operating system specific functions
+Subject: [PATCH 2.6.27-rc4 18/27] mdb: add mdb-proc.h function prototype includes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add mdb-os.c operating system specific functions
+add mdb-proc.h function prototype includes
 
 
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/debug/mdb/mdb-os.c	1969-12-31 17:00:00.000000000 -0700
-+++ b/debug/mdb/mdb-os.c	2008-08-18 23:40:26.000000000 -0600
-@@ -0,0 +1,1125 @@
+--- a/debug/mdb/mdb-proc.h	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/mdb/mdb-proc.h	2008-08-19 16:41:53.000000000 -0600
+@@ -0,0 +1,147 @@
 +
 +/***************************************************************************
 +*
@@ -61,1094 +61,116 @@ Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 +*
 +***************************************************************************/
 +
-+#include <linux/version.h>
-+#include <linux/types.h>
-+#include <linux/sched.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/string.h>
-+#include <linux/stat.h>
-+#include <linux/errno.h>
-+#include <linux/fcntl.h>
-+#include <linux/slab.h>
-+#include <linux/vmalloc.h>
-+#include <linux/genhd.h>
-+#include <linux/hdreg.h>
-+#include <linux/fs.h>
-+#include <linux/major.h>
-+#include <linux/mm.h>
-+#include <linux/cdrom.h>
-+#include <linux/pagemap.h>
-+#include <linux/swap.h>
-+#include <linux/smp.h>
-+#include <linux/smp_lock.h>
-+#include <linux/ctype.h>
-+#include <linux/keyboard.h>
-+#include <linux/console.h>
-+#include <linux/serial_reg.h>
-+#include <linux/uaccess.h>
-+#include <asm/system.h>
-+#include <asm/segment.h>
-+#include <asm/atomic.h>
-+#include <asm/msr.h>
-+#include <linux/io.h>
++#ifndef _MDB_PROC_H
++#define _MDB_PROC_H
 +
-+#ifdef CONFIG_SMP
-+#include <mach_apic.h>
-+#include <mach_ipi.h>
++#define MAX_PROCESSORS           NR_CPUS
++#define SYMBOL_DEBUG             0
++
++/* mdb-base.c */
++extern volatile unsigned long needs_proceed;
++extern volatile unsigned long jmp_active;
++extern unsigned long general_toggle;
++extern unsigned long line_info_toggle;
++extern unsigned long control_toggle;
++extern unsigned long segment_toggle;
++extern unsigned long numeric_toggle;
++extern unsigned long reason_toggle;
++
++extern unsigned long MajorVersion;
++extern unsigned long MinorVersion;
++extern unsigned long BuildVersion;
++extern unsigned char *IA32Flags[];
++extern unsigned char *BreakDescription[];
++extern unsigned char *BreakLengthDescription[];
++extern unsigned char *ExceptionDescription[];
++extern NUMERIC_FRAME npx[MAX_PROCESSORS];
++extern StackFrame ReferenceFrame[MAX_PROCESSORS];
++
++extern atomic_t focusActive;
++extern atomic_t debuggerActive;
++extern atomic_t debuggerProcessors[MAX_PROCESSORS];
++extern atomic_t nmiProcessors[MAX_PROCESSORS];
++extern atomic_t traceProcessors[MAX_PROCESSORS];
++extern volatile unsigned long ProcessorHold[MAX_PROCESSORS];
++extern volatile unsigned long ProcessorState[MAX_PROCESSORS];
++extern unsigned char *procState[];
++
++// mdb-ia32.c
++extern volatile unsigned char *lastDumpAddress;
++extern volatile unsigned char *lastLinkAddress;
++extern volatile unsigned long lastUnasmAddress;
++extern volatile unsigned long displayLength;
++extern volatile unsigned long lastCommand;
++extern volatile unsigned long lastCommandEntry;
++extern volatile unsigned char lastDebugCommand[100];
++extern volatile unsigned long lastDisplayLength;
++extern volatile unsigned char debugCommand[100];
++extern volatile unsigned long nextUnasmAddress;
++extern volatile unsigned long pic1Value;
++extern volatile unsigned long pic2Value;
++extern volatile unsigned long BreakReserved[4];
++extern volatile unsigned long BreakPoints[4];
++extern volatile unsigned long BreakType[4];
++extern volatile unsigned long BreakLength[4];
++extern volatile unsigned long BreakTemp[4];
++extern volatile unsigned long BreakGo[4];
++extern volatile unsigned long BreakProceed[4];
++extern volatile unsigned long BreakMask[MAX_PROCESSORS];
++extern volatile StackFrame *CurrentFrame[MAX_PROCESSORS];
++extern volatile unsigned long NestedInterrupts[MAX_PROCESSORS];
++extern volatile unsigned long ConditionalBreakpoint[4];
++extern volatile unsigned char BreakCondition[4][256];
++extern volatile StackFrame lastStackFrame;
++extern volatile unsigned long lastCR0;
++extern volatile unsigned long lastCR2;
++extern volatile unsigned long lastCR4;
++extern volatile unsigned long CurrentDR7;
++extern volatile unsigned long CurrentDR6[MAX_PROCESSORS];
++extern volatile unsigned long repeatCommand;
++extern volatile unsigned long totalLines;
++extern volatile unsigned long debuggerInitialized;
++//extern volatile unsigned long ssbmode[MAX_PROCESSORS];
++extern volatile unsigned long ssbmode;
++extern volatile int nextline;
++
++extern unsigned long disassemble(StackFrame *stackFrame, unsigned long p, unsigned long count,
++                         unsigned long use);
++extern void ClearDebuggerState(void);
++extern void displayMTRRRegisters(void);
++extern void DisplayGDT(unsigned char *GDT_ADDRESS);
++extern void DisplayIDT(unsigned char *IDT_ADDRESS);
++extern void SetDebugRegisters(void);
++extern void LoadDebugRegisters(void);
++extern void ClearTempBreakpoints(void);
++extern unsigned long ValidBreakpoint(unsigned long address);
++extern unsigned char *dump(unsigned char *p, unsigned long count);
++extern unsigned char *dumpWord(unsigned char *p, unsigned long count);
++extern unsigned char *dumpDouble(unsigned char *p, unsigned long count);
++extern unsigned char *dumpLinkedList(unsigned char *p, unsigned long count, unsigned long offset);
++extern unsigned char *dumpDoubleStack(StackFrame *stackFrame, unsigned char *p, unsigned long count);
++extern unsigned char *dumpStack(StackFrame *stackFrame, unsigned char *p, unsigned long count);
++extern unsigned long debugger_setup(unsigned long processor, unsigned long Exception, StackFrame *stackFrame, unsigned char *panicMsg);
++extern unsigned long debugger_entry(unsigned long Exception, StackFrame *stackFrame, unsigned long processor);
++extern unsigned long debugger_command_entry(unsigned long processor, unsigned long Exception, StackFrame *stackFrame);
++extern unsigned long ConsoleDisplayBreakReason(StackFrame *stackFrame,
++			       unsigned long reason, unsigned long processor,
++			       unsigned long lastCommand);
++extern unsigned long EvaluateExpression(StackFrame *stackFrame, unsigned char **p, unsigned long *type);
++extern unsigned long EvaluateNumericExpression(StackFrame *stackFrame, unsigned char **p,
++                                       unsigned long *type);
++extern unsigned long unassemble(StackFrame *stackFrame, unsigned long ip, unsigned long use,
++                        unsigned long *ret);
++extern void DisplayASCIITable(void);
++extern unsigned char *UpcaseString(unsigned char *);
++extern unsigned long validate_address(unsigned long addr);
++extern unsigned long ScreenInputFromKeyboard(unsigned char *buffer, unsigned long Start, unsigned long Length);
++
++extern unsigned long GetIP(StackFrame *);
++extern unsigned long GetStackAddress(StackFrame *);
++extern unsigned long GetStackSegment(StackFrame *);
++extern unsigned short read_memory(void *, void *, unsigned);
++extern unsigned long SSBUpdate(StackFrame *stackFrame, unsigned long processor);
++extern void mdb_breakpoint(void);
++
 +#endif
-+
-+#define __KERNEL_SYSCALLS__
-+#include <linux/unistd.h>
-+#include <linux/kallsyms.h>
-+
-+#include "mdb.h"
-+#include "mdb-ia32.h"
-+#include "mdb-list.h"
-+#include "mdb-ia32-proc.h"
-+#include "mdb-base.h"
-+#include "mdb-proc.h"
-+#include "mdb-os.h"
-+#include "mdb-keyboard.h"
-+
-+/* module symbol workspace */
-+unsigned char symbuf[MAX_PROCESSORS][MAX_SYMBOL_LEN];
-+unsigned char modbuf[MAX_PROCESSORS][MAX_SYMBOL_LEN];
-+unsigned char workbuf[MAX_PROCESSORS][MAX_SYMBOL_LEN];
-+unsigned char traceBuf[MAX_SYMBOL_LEN];
-+
-+extern void touch_nmi_watchdog(void);
-+
-+int valid_stack_ptr(struct thread_info *tinfo, void *p)
-+{
-+    return ((p > (void *)tinfo) && (p < (void *)(tinfo + THREAD_SIZE - 3)));
-+}
-+
-+unsigned long print_context_stack(struct thread_info *tinfo,
-+			  unsigned long *stack, unsigned long ebp,
-+                          unsigned long *rebp)
-+{
-+    register unsigned char *symbol;
-+    unsigned long addr, offset;
-+    unsigned char *modname;
-+
-+#ifdef	CONFIG_FRAME_POINTER
-+    while (valid_stack_ptr(tinfo, (void *)ebp))
-+    {
-+	addr = mdb_getword((ebp + 4), 4);
-+
-+        if (DBGPrint("[<%08lx>] ", addr))
-+           return 1;
-+
-+        symbol = GetSymbolFromValueOffsetModule(addr, &offset, &modname,
-+                                                traceBuf, MAX_SYMBOL_LEN);
-+        if (symbol)
-+        {
-+           if (modname)
-+           {
-+              if (offset)
-+              {
-+                 if (DBGPrint("%s|%s+0x%X", modname, symbol, offset))
-+                    return 1;
-+              }
-+              else
-+              {
-+                 if (DBGPrint("%s|%s", modname, symbol))
-+                    return 1;
-+              }
-+           }
-+           else
-+           {
-+              if (offset)
-+              {
-+                 if (DBGPrint("%s+0x%X", symbol, offset))
-+                    return 1;
-+              }
-+              else
-+              {
-+                 if (DBGPrint("%s", symbol))
-+                    return 1;
-+              }
-+           }
-+        }
-+        if (DBGPrint("\n"))
-+           return 1;
-+
-+	if (ebp == mdb_getword(ebp, 4))
-+	   break;
-+
-+	ebp = mdb_getword(ebp, 4);
-+    }
-+#else
-+    while (valid_stack_ptr(tinfo, stack))
-+    {
-+       addr = mdb_getword((unsigned long)stack, 4);
-+       stack++;
-+
-+       if (__kernel_text_address(addr))
-+       {
-+          if (DBGPrint("[<%08lx>] ", addr))
-+             return 1;
-+
-+          symbol = GetSymbolFromValueOffsetModule(addr, &offset, &modname,
-+                                                traceBuf, MAX_SYMBOL_LEN);
-+          if (symbol)
-+          {
-+             if (modname)
-+             {
-+                if (offset)
-+                {
-+                   if (DBGPrint("%s|%s+0x%X", modname, symbol, offset))
-+                      return 1;
-+                }
-+                else
-+                {
-+                   if (DBGPrint("%s|%s", modname, symbol))
-+                      return 1;
-+                }
-+             }
-+             else
-+             {
-+                if (offset)
-+                {
-+                   if (DBGPrint("%s+0x%X", symbol, offset))
-+                      return 1;
-+                }
-+                else
-+                {
-+                   if (DBGPrint("%s", symbol))
-+                      return 1;
-+                }
-+             }
-+          }
-+          if (DBGPrint("\n"))
-+             return 1;
-+       }
-+    }
-+#endif
-+    if (rebp)
-+       *rebp = ebp;
-+
-+    return 0;
-+}
-+
-+int bt_stack(struct task_struct *task, struct pt_regs *regs,
-+             unsigned long *stack)
-+{
-+    unsigned long ebp = 0;
-+
-+    if (!task)
-+       task = current;
-+
-+    if (!stack)
-+    {
-+       unsigned long dummy;
-+
-+       stack = &dummy;
-+       if (task && task != current)
-+       {
-+          if (mdb_verify_rw((void *)&task->thread.sp, 4))
-+             return 0;
-+
-+          stack = (unsigned long *)
-+                  mdb_getword((unsigned long)&task->thread.sp, 4);
-+       }
-+    }
-+
-+#ifdef CONFIG_FRAME_POINTER
-+    if (!ebp)
-+    {
-+       if (task == current)
-+          asm ("movl %%ebp, %0" : "=r" (ebp) : );
-+       else
-+       {
-+          if (mdb_verify_rw((void *)task->thread.sp, 4))
-+             return 0;
-+
-+          ebp = (unsigned long)mdb_getword(task->thread.sp, 4);
-+       }
-+    }
-+#endif
-+
-+    while (1)
-+    {
-+       struct thread_info *context;
-+
-+       context = (struct thread_info *)
-+                 ((unsigned long)stack & (~(THREAD_SIZE - 1)));
-+
-+       if (mdb_verify_rw(context, 4))
-+          return 0;
-+
-+       if (print_context_stack(context, stack, ebp, &ebp))
-+          return 1;
-+
-+       if (mdb_verify_rw(&context->previous_esp, 4))
-+          return 0;
-+
-+       stack = (unsigned long *)
-+               mdb_getword((unsigned long)&context->previous_esp, 4);
-+       if (!stack)
-+          break;
-+
-+       touch_nmi_watchdog();
-+    }
-+    return 0;
-+}
-+
-+unsigned char *mdbprompt = "--- More (Q to Quit) ---";
-+volatile int nextline;
-+volatile int pause_mode = 1;
-+spinlock_t mdb_lock = SPIN_LOCK_UNLOCKED;
-+unsigned long mdb_flags;
-+
-+int mdb_printf(char *fmt, ...)
-+{
-+	char buffer[256];
-+	char keystroke[16];
-+	va_list	ap;
-+	int linecount;
-+	struct console *con;
-+
-+        linecount = 23;
-+	va_start(ap, fmt);
-+	vsprintf(buffer, fmt, ap);
-+	va_end(ap);
-+
-+	for (con = console_drivers; con; con = con->next)
-+        {
-+	   if ((con->flags & CON_ENABLED) && con->write &&
-+	        (cpu_online(smp_processor_id()) ||
-+		(con->flags & CON_ANYTIME)))
-+	      con->write(con, buffer, strlen(buffer));
-+	}
-+
-+	if (strchr(buffer, '\n') != NULL)
-+	   nextline++;
-+
-+	if (pause_mode && (nextline == linecount))
-+        {
-+	   nextline = 0;
-+
-+	   for (con = console_drivers; con; con = con->next)
-+           {
-+	      if ((con->flags & CON_ENABLED) && con->write &&
-+	           (cpu_online(smp_processor_id()) ||
-+	           (con->flags & CON_ANYTIME)))
-+	         con->write(con, mdbprompt, strlen(mdbprompt));
-+	   }
-+
-+	   keystroke[0] = (char)mdb_getkey();
-+	   nextline = 1;
-+	   if ((keystroke[0] == 'q') || (keystroke[0] == 'Q'))
-+           {
-+	      for (con = console_drivers; con; con = con->next)
-+              {
-+		 if ((con->flags & CON_ENABLED) && con->write &&
-+		     (cpu_online(smp_processor_id()) ||
-+		     (con->flags & CON_ANYTIME)))
-+		    con->write(con, "\n", 1);
-+	      }
-+              return 1;
-+           }
-+	}
-+        return 0;
-+}
-+
-+
-+int mdb_serial_port;
-+
-+int get_modem_char(void)
-+{
-+    unsigned char ch;
-+    int status;
-+
-+    if (mdb_serial_port == 0)
-+       return -1;
-+
-+    if ((status = inb(mdb_serial_port + UART_LSR)) & UART_LSR_DR)
-+    {
-+       ch = inb(mdb_serial_port + UART_RX);
-+       switch (ch)
-+       {
-+	   case 0x7f:
-+	      ch = 8;
-+              break;
-+
-+           case '\t':
-+	      ch = ' ';
-+              break;
-+
-+           case 8:  /* backspace */
-+              break;
-+
-+	   case 13: /* enter */
-+	      DBGPrint("\n");
-+              break;
-+
-+           default:
-+	      if (!isprint(ch))
-+	         return(-1);
-+	      DBGPrint("%c", ch);
-+              break;
-+	}
-+	return ch;
-+    }
-+    return -1;
-+}
-+
-+#if defined(CONFIG_MDB_MODULE)
-+u_short plain_map[NR_KEYS] = {
-+	0xf200,	0xf01b,	0xf031,	0xf032,	0xf033,	0xf034,	0xf035,	0xf036,
-+	0xf037,	0xf038,	0xf039,	0xf030,	0xf02d,	0xf03d,	0xf07f,	0xf009,
-+	0xfb71,	0xfb77,	0xfb65,	0xfb72,	0xfb74,	0xfb79,	0xfb75,	0xfb69,
-+	0xfb6f,	0xfb70,	0xf05b,	0xf05d,	0xf201,	0xf702,	0xfb61,	0xfb73,
-+	0xfb64,	0xfb66,	0xfb67,	0xfb68,	0xfb6a,	0xfb6b,	0xfb6c,	0xf03b,
-+	0xf027,	0xf060,	0xf700,	0xf05c,	0xfb7a,	0xfb78,	0xfb63,	0xfb76,
-+	0xfb62,	0xfb6e,	0xfb6d,	0xf02c,	0xf02e,	0xf02f,	0xf700,	0xf30c,
-+	0xf703,	0xf020,	0xf207,	0xf100,	0xf101,	0xf102,	0xf103,	0xf104,
-+	0xf105,	0xf106,	0xf107,	0xf108,	0xf109,	0xf208,	0xf209,	0xf307,
-+	0xf308,	0xf309,	0xf30b,	0xf304,	0xf305,	0xf306,	0xf30a,	0xf301,
-+	0xf302,	0xf303,	0xf300,	0xf310,	0xf206,	0xf200,	0xf03c,	0xf10a,
-+	0xf10b,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,
-+	0xf30e,	0xf702,	0xf30d,	0xf01c,	0xf701,	0xf205,	0xf114,	0xf603,
-+	0xf118,	0xf601,	0xf602,	0xf117,	0xf600,	0xf119,	0xf115,	0xf116,
-+	0xf11a,	0xf10c,	0xf10d,	0xf11b,	0xf11c,	0xf110,	0xf311,	0xf11d,
-+	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,
-+};
-+
-+u_short shift_map[NR_KEYS] = {
-+	0xf200,	0xf01b,	0xf021,	0xf040,	0xf023,	0xf024,	0xf025,	0xf05e,
-+	0xf026,	0xf02a,	0xf028,	0xf029,	0xf05f,	0xf02b,	0xf07f,	0xf009,
-+	0xfb51,	0xfb57,	0xfb45,	0xfb52,	0xfb54,	0xfb59,	0xfb55,	0xfb49,
-+	0xfb4f,	0xfb50,	0xf07b,	0xf07d,	0xf201,	0xf702,	0xfb41,	0xfb53,
-+	0xfb44,	0xfb46,	0xfb47,	0xfb48,	0xfb4a,	0xfb4b,	0xfb4c,	0xf03a,
-+	0xf022,	0xf07e,	0xf700,	0xf07c,	0xfb5a,	0xfb58,	0xfb43,	0xfb56,
-+	0xfb42,	0xfb4e,	0xfb4d,	0xf03c,	0xf03e,	0xf03f,	0xf700,	0xf30c,
-+	0xf703,	0xf020,	0xf207,	0xf10a,	0xf10b,	0xf10c,	0xf10d,	0xf10e,
-+	0xf10f,	0xf110,	0xf111,	0xf112,	0xf113,	0xf213,	0xf203,	0xf307,
-+	0xf308,	0xf309,	0xf30b,	0xf304,	0xf305,	0xf306,	0xf30a,	0xf301,
-+	0xf302,	0xf303,	0xf300,	0xf310,	0xf206,	0xf200,	0xf03e,	0xf10a,
-+	0xf10b,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,
-+	0xf30e,	0xf702,	0xf30d,	0xf200,	0xf701,	0xf205,	0xf114,	0xf603,
-+	0xf20b,	0xf601,	0xf602,	0xf117,	0xf600,	0xf20a,	0xf115,	0xf116,
-+	0xf11a,	0xf10c,	0xf10d,	0xf11b,	0xf11c,	0xf110,	0xf311,	0xf11d,
-+	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,
-+};
-+
-+u_short ctrl_map[NR_KEYS] = {
-+	0xf200,	0xf200,	0xf200,	0xf000,	0xf01b,	0xf01c,	0xf01d,	0xf01e,
-+	0xf01f,	0xf07f,	0xf200,	0xf200,	0xf01f,	0xf200,	0xf008,	0xf200,
-+	0xf011,	0xf017,	0xf005,	0xf012,	0xf014,	0xf019,	0xf015,	0xf009,
-+	0xf00f,	0xf010,	0xf01b,	0xf01d,	0xf201,	0xf702,	0xf001,	0xf013,
-+	0xf004,	0xf006,	0xf007,	0xf008,	0xf00a,	0xf00b,	0xf00c,	0xf200,
-+	0xf007,	0xf000,	0xf700,	0xf01c,	0xf01a,	0xf018,	0xf003,	0xf016,
-+	0xf002,	0xf00e,	0xf00d,	0xf200,	0xf20e,	0xf07f,	0xf700,	0xf30c,
-+	0xf703,	0xf000,	0xf207,	0xf100,	0xf101,	0xf102,	0xf103,	0xf104,
-+	0xf105,	0xf106,	0xf107,	0xf108,	0xf109,	0xf208,	0xf204,	0xf307,
-+	0xf308,	0xf309,	0xf30b,	0xf304,	0xf305,	0xf306,	0xf30a,	0xf301,
-+	0xf302,	0xf303,	0xf300,	0xf310,	0xf206,	0xf200,	0xf200,	0xf10a,
-+	0xf10b,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,
-+	0xf30e,	0xf702,	0xf30d,	0xf01c,	0xf701,	0xf205,	0xf114,	0xf603,
-+	0xf118,	0xf601,	0xf602,	0xf117,	0xf600,	0xf119,	0xf115,	0xf116,
-+	0xf11a,	0xf10c,	0xf10d,	0xf11b,	0xf11c,	0xf110,	0xf311,	0xf11d,
-+	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,
-+};
-+#endif
-+
-+int mdb_suppress_crlf;
-+static int get_kbd_char(void)
-+{
-+	int	scancode, scanstatus;
-+	static int shift_lock;	/* CAPS LOCK state (0-off, 1-on) */
-+	static int shift_key;	/* Shift next keypress */
-+	static int ctrl_key;
-+	u_short keychar;
-+#if !defined(CONFIG_MDB_MODULE)
-+        extern u_short plain_map[], shift_map[], ctrl_map[];
-+#endif
-+
-+	if ((inb(KBD_STATUS_REG) & KBD_STAT_OBF) == 0)
-+		return -1;
-+
-+	/*
-+	 * Fetch the scancode
-+	 */
-+	scancode = inb(KBD_DATA_REG);
-+	scanstatus = inb(KBD_STATUS_REG);
-+
-+	/*
-+	 * Ignore mouse events.
-+	 */
-+	if (scanstatus & KBD_STAT_MOUSE_OBF)
-+		return -1;
-+
-+	/*
-+	 * Ignore release, trigger on make
-+	 * (except for shift keys, where we want to
-+	 *  keep the shift state so long as the key is
-+	 *  held down).
-+	 */
-+
-+	if (((scancode & 0x7f) == 0x2a) ||
-+            ((scancode & 0x7f) == 0x36))
-+        {
-+		/*
-+		 * Next key may use shift table
-+		 */
-+		if ((scancode & 0x80) == 0) {
-+			shift_key=1;
-+		} else {
-+			shift_key=0;
-+		}
-+		return -1;
-+	}
-+
-+	if ((scancode & 0x7f) == 0x1d) {
-+		/*
-+		 * Left ctrl key
-+		 */
-+		if ((scancode & 0x80) == 0) {
-+			ctrl_key = 1;
-+		} else {
-+			ctrl_key = 0;
-+		}
-+		return -1;
-+	}
-+
-+	if ((scancode & 0x80) != 0)
-+		return -1;
-+
-+	scancode &= 0x7f;
-+
-+	/*
-+	 * Translate scancode
-+	 */
-+
-+	if (scancode == 0x3a) {
-+		/*
-+		 * Toggle caps lock
-+		 */
-+		shift_lock ^= 1;
-+		return -1;
-+	}
-+
-+	if (scancode == 0x0e) {
-+		/*
-+		 * Backspace
-+		 */
-+		return 8;
-+	}
-+
-+	if (scancode == 0xe0) {
-+		return -1;
-+	}
-+
-+	/*
-+	 * For Japanese 86/106 keyboards
-+	 *	See comment in drivers/char/pc_keyb.c.
-+	 *	- Masahiro Adegawa
-+	 */
-+	if (scancode == 0x73) {
-+		scancode = 0x59;
-+	} else if (scancode == 0x7d) {
-+		scancode = 0x7c;
-+	}
-+
-+	if (!shift_lock && !shift_key && !ctrl_key) {
-+		keychar = plain_map[scancode];
-+	} else if (shift_lock || shift_key) {
-+		keychar = shift_map[scancode];
-+	} else if (ctrl_key) {
-+		keychar = ctrl_map[scancode];
-+	} else {
-+		keychar = 0x0020;
-+		DBGPrint("Unknown state/scancode (%d)\n", scancode);
-+	}
-+
-+	keychar &= 0x0fff;
-+	if (keychar == '\t')
-+		keychar = ' ';
-+
-+        switch (keychar)
-+        {
-+           case K_F1:
-+           case K_F2:
-+           case K_F3:
-+           case K_F4:
-+           case K_F5:
-+           case K_F6:
-+           case K_F7:
-+           case K_F8:
-+           case K_F9:
-+           case K_F10:
-+           case K_F11:
-+           case K_F12:
-+	      return keychar;
-+           default:
-+              break;
-+        }
-+
-+	switch (KTYP(keychar))
-+        {
-+	   case KT_LETTER:
-+	   case KT_LATIN:
-+		if (isprint(keychar))
-+			break;		/* printable characters */
-+		/* drop through */
-+	   case KT_SPEC:
-+		if (keychar == K_ENTER)
-+			break;
-+		/* drop through */
-+           case KT_PAD:
-+                switch (keychar)
-+                {
-+                   case K_P0:
-+                   case K_P1:
-+                   case K_P2:
-+                   case K_P4:
-+                   case K_P6:
-+                   case K_P7:
-+                   case K_P8:
-+                   case K_PDOT:
-+                      return keychar;
-+                }
-+                return -1;
-+
-+           case KT_CUR:
-+                switch (keychar)
-+                {
-+                   case K_DOWN:
-+                   case K_LEFT:
-+                   case K_RIGHT:
-+                   case K_UP:
-+                      return keychar;
-+                }
-+                return -1;
-+
-+	   default:
-+		return(-1);	/* ignore unprintables */
-+	}
-+
-+	if ((scancode & 0x7f) == 0x1c) {
-+		/*
-+		 * enter key.  All done.  Absorb the release scancode.
-+		 */
-+		while ((inb(KBD_STATUS_REG) & KBD_STAT_OBF) == 0)
-+			;
-+
-+		/*
-+		 * Fetch the scancode
-+		 */
-+		scancode = inb(KBD_DATA_REG);
-+		scanstatus = inb(KBD_STATUS_REG);
-+
-+		while (scanstatus & KBD_STAT_MOUSE_OBF)
-+                {
-+		   scancode = inb(KBD_DATA_REG);
-+		   scanstatus = inb(KBD_STATUS_REG);
-+		}
-+
-+                /* enter-release error */
-+		if (scancode != 0x9c) {} ;
-+
-+                if (!mdb_suppress_crlf)
-+		   DBGPrint("\n");
-+		return 13;
-+	}
-+
-+	/*
-+	 * echo the character.
-+	 */
-+	DBGPrint("%c", keychar & 0xff);
-+	return keychar & 0xff;
-+}
-+
-+int mdb_getkey(void)
-+{
-+   int key = -1;
-+
-+   for (;;)
-+   {
-+      key = get_kbd_char();
-+      if (key != -1)
-+	 break;
-+
-+      touch_nmi_watchdog();
-+   }
-+   return key;
-+}
-+
-+int mdb_copy(void *to, void *from, size_t size)
-+{
-+    return __copy_to_user_inatomic(to, from, size);
-+}
-+
-+int mdb_verify_rw(void *addr, size_t size)
-+{
-+    unsigned char data[size];
-+    return (mdb_copy(data, addr, size));
-+}
-+
-+int mdb_getlword(unsigned long *word, unsigned long addr, size_t size)
-+{
-+	int err;
-+
-+	__u8  w1;
-+	__u16 w2;
-+	__u32 w4;
-+	__u64 w8;
-+
-+	*word = 0;	/* Default value if addr or size is invalid */
-+	switch (size) {
-+	case 1:
-+		if (!(err = mdb_copy(&w1, (void *)addr, size)))
-+			*word = w1;
-+		break;
-+	case 2:
-+		if (!(err = mdb_copy(&w2, (void *)addr, size)))
-+			*word = w2;
-+		break;
-+	case 4:
-+		if (!(err = mdb_copy(&w4, (void *)addr, size)))
-+			*word = w4;
-+		break;
-+	case 8:
-+		if (size <= sizeof(*word))
-+                {
-+			if (!(err = mdb_copy(&w8, (void *)addr, size)))
-+				*word = w8;
-+			break;
-+		}
-+	default:
-+		err = -EFAULT;
-+	}
-+	return (err);
-+}
-+
-+int mdb_putword(unsigned long addr, unsigned long word, size_t size)
-+{
-+	int err;
-+	__u8  w1;
-+	__u16 w2;
-+	__u32 w4;
-+	__u64 w8;
-+
-+	switch (size) {
-+	case 1:
-+		w1 = word;
-+		err = mdb_copy((void *)addr, &w1, size);
-+		break;
-+	case 2:
-+		w2 = word;
-+		err = mdb_copy((void *)addr, &w2, size);
-+		break;
-+	case 4:
-+		w4 = word;
-+		err = mdb_copy((void *)addr, &w4, size);
-+		break;
-+	case 8:
-+		if (size <= sizeof(word))
-+                {
-+		   w8 = word;
-+		   err = mdb_copy((void *)addr, &w8, size);
-+		   break;
-+		}
-+	default:
-+		err = -EFAULT;
-+	}
-+	return (err);
-+}
-+
-+unsigned long mdb_getword(unsigned long addr, size_t size)
-+{
-+   unsigned long data = 0;
-+   register int ret;
-+
-+   ret = mdb_getlword(&data, addr, size);
-+   if (ret)
-+      return 0;
-+
-+   return data;
-+}
-+
-+int DisplayClosestSymbol(unsigned long address)
-+{
-+    char *modname;
-+    const char *name;
-+    unsigned long offset = 0, size;
-+    char namebuf[KSYM_NAME_LEN+1];
-+
-+    name = kallsyms_lookup(address, &size, &offset, &modname, namebuf);
-+    if (!name)
-+       return -1;
-+
-+    if (modname)
-+    {
-+       if (offset)
-+          DBGPrint("%s|%s+0x%X\n", modname, name, offset);
-+       else
-+          DBGPrint("%s|%s\n", modname, name);
-+    }
-+    else
-+    {
-+       if (offset)
-+          DBGPrint("%s+0x%X\n", name, offset);
-+       else
-+          DBGPrint("%s\n", name);
-+    }
-+    return 0;
-+}
-+
-+void DumpOSSymbolTableMatch(unsigned char *symbol)
-+{
-+    mdb_kallsyms(symbol, DBGPrint);
-+    return;
-+}
-+
-+unsigned long GetValueFromSymbol(unsigned char *symbol)
-+{
-+   return ((unsigned long)kallsyms_lookup_name(symbol));
-+}
-+
-+
-+unsigned char *GetModuleInfoFromSymbolValue(unsigned long value, unsigned char *buf, unsigned long len)
-+{
-+    char *modname;
-+    const char *name;
-+    unsigned long offset, size;
-+    char namebuf[KSYM_NAME_LEN+1];
-+
-+    name = kallsyms_lookup(value, &size, &offset, &modname, namebuf);
-+    if (modname && buf)
-+    {
-+       strncpy(buf, modname, len);
-+       return (unsigned char *)buf;
-+    }
-+    return NULL;
-+}
-+
-+unsigned char *GetSymbolFromValue(unsigned long value, unsigned char *buf, unsigned long len)
-+{
-+    char *modname;
-+    const char *name;
-+    unsigned long offset, size;
-+    char namebuf[KSYM_NAME_LEN+1];
-+
-+    name = kallsyms_lookup(value, &size, &offset, &modname, namebuf);
-+    if (!name)
-+       return NULL;
-+
-+    if (!offset && buf)
-+    {
-+       strncpy(buf, namebuf, len);
-+       return (unsigned char *)buf;
-+    }
-+
-+    return NULL;
-+}
-+
-+unsigned char *GetSymbolFromValueWithOffset(unsigned long value, unsigned long *sym_offset,
-+                                   unsigned char *buf, unsigned long len)
-+{
-+    char *modname;
-+    const char *name;
-+    unsigned long offset, size;
-+    char namebuf[KSYM_NAME_LEN+1];
-+
-+    name = kallsyms_lookup(value, &size, &offset, &modname, namebuf);
-+    if (!name || !buf)
-+       return NULL;
-+
-+    if (sym_offset)
-+      *sym_offset = offset;
-+
-+    strncpy(buf, namebuf, len);
-+    return (unsigned char *)buf;
-+}
-+
-+unsigned char *GetSymbolFromValueOffsetModule(unsigned long value, unsigned long *sym_offset,
-+                                     unsigned char **module, unsigned char *buf, unsigned long len)
-+{
-+    char *modname;
-+    const char *name;
-+    unsigned long offset, size;
-+    char namebuf[KSYM_NAME_LEN+1];
-+
-+    name = kallsyms_lookup(value, &size, &offset, &modname, namebuf);
-+    if (!name || !buf)
-+       return NULL;
-+
-+    if (sym_offset)
-+      *sym_offset = offset;
-+
-+    if (module)
-+       *module = modname;
-+
-+    strncpy(buf, namebuf, len);
-+    return (unsigned char *)buf;
-+}
-+
-+unsigned long get_processor_id(void)
-+{
-+#if defined(CONFIG_SMP)
-+   return smp_processor_id();
-+#else
-+   return 0;
-+#endif
-+}
-+
-+unsigned long get_physical_processor(void)
-+{
-+#if defined(CONFIG_SMP)
-+   return smp_processor_id();
-+#else
-+   return 0;
-+#endif
-+}
-+
-+unsigned long fpu_present(void)
-+{
-+   if (boot_cpu_has(X86_FEATURE_FPU))
-+       return 1;
-+    return 0;
-+}
-+
-+extern unsigned long cpu_mttr_on(void)
-+{
-+   if (boot_cpu_has(X86_FEATURE_MTRR))
-+       return 1;
-+    return 0;
-+}
-+
-+unsigned char *UpcaseString(unsigned char *s)
-+{
-+   register int i;
-+
-+   for (i=0; i < strlen(s); i++)
-+      s[i] = toupper(s[i]);
-+   return s;
-+
-+}
-+void ClearScreen(void)
-+{
-+    return;
-+}
-+
-+unsigned short ReadFS(void)
-+{
-+    unsigned short contents = 0;
-+
-+    __asm__ ("mov %%fs,%0\n\t":"=r"(contents));
-+    return contents;
-+}
-+
-+unsigned short ReadGS(void)
-+{
-+    unsigned short contents = 0;
-+
-+    __asm__ ("mov %%gs,%0\n\t":"=r"(contents));
-+    return contents;
-+}
-+
-+unsigned long ReadDR(unsigned long regnum)
-+{
-+	unsigned long contents = 0;
-+
-+	switch(regnum)
-+        {
-+	   case 0:
-+		__asm__ ("movl %%db0,%0\n\t":"=r"(contents));
-+		break;
-+	   case 1:
-+		__asm__ ("movl %%db1,%0\n\t":"=r"(contents));
-+		break;
-+	   case 2:
-+		__asm__ ("movl %%db2,%0\n\t":"=r"(contents));
-+		break;
-+	   case 3:
-+		__asm__ ("movl %%db3,%0\n\t":"=r"(contents));
-+		break;
-+	   case 4:
-+	   case 5:
-+		break;
-+	   case 6:
-+		__asm__ ("movl %%db6,%0\n\t":"=r"(contents));
-+		break;
-+	   case 7:
-+		__asm__ ("movl %%db7,%0\n\t":"=r"(contents));
-+		break;
-+	   default:
-+		break;
-+	}
-+
-+	return contents;
-+}
-+
-+void WriteDR(int regnum, unsigned long contents)
-+{
-+	switch(regnum)
-+        {
-+	   case 0:
-+		__asm__ ("movl %0,%%db0\n\t"::"r"(contents));
-+		break;
-+	   case 1:
-+		__asm__ ("movl %0,%%db1\n\t"::"r"(contents));
-+		break;
-+	   case 2:
-+		__asm__ ("movl %0,%%db2\n\t"::"r"(contents));
-+		break;
-+	   case 3:
-+		__asm__ ("movl %0,%%db3\n\t"::"r"(contents));
-+		break;
-+	   case 4:
-+	   case 5:
-+		break;
-+	   case 6:
-+		__asm__ ("movl %0,%%db6\n\t"::"r"(contents));
-+		break;
-+	   case 7:
-+		__asm__ ("movl %0,%%db7\n\t"::"r"(contents));
-+		break;
-+	   default:
-+		break;
-+	}
-+}
-+
-+unsigned long ReadCR(int regnum)
-+{
-+	unsigned long contents = 0;
-+
-+	switch(regnum)
-+        {
-+	   case 0:
-+		__asm__ ("movl %%cr0,%0\n\t":"=r"(contents));
-+		break;
-+	   case 1:
-+		break;
-+	   case 2:
-+		__asm__ ("movl %%cr2,%0\n\t":"=r"(contents));
-+		break;
-+	   case 3:
-+		__asm__ ("movl %%cr3,%0\n\t":"=r"(contents));
-+		break;
-+	   case 4:
-+		__asm__ ("movl %%cr4,%0\n\t":"=r"(contents));
-+		break;
-+	   default:
-+		break;
-+	}
-+	return contents;
-+}
-+
-+void WriteCR(int regnum, unsigned long contents)
-+{
-+	switch(regnum)
-+        {
-+	   case 0:
-+		__asm__ ("movl %0,%%cr0\n\t"::"r"(contents));
-+		break;
-+	   case 1:
-+		break;
-+	   case 2:
-+		__asm__ ("movl %0,%%cr2\n\t"::"r"(contents));
-+		break;
-+	   case 3:
-+		__asm__ ("movl %0,%%cr3\n\t"::"r"(contents));
-+		break;
-+	   case 4:
-+		__asm__ ("movl %0,%%cr4\n\t"::"r"(contents));
-+		break;
-+	   default:
-+		break;
-+	}
-+	return;
-+}
-+
-+unsigned long ReadTR(void)
-+{
-+   unsigned short tr;
-+
-+   __asm__ __volatile__("str %0":"=a"(tr));
-+
-+   return (unsigned long) tr;
-+}
-+
-+unsigned long ReadLDTR(void)
-+{
-+   unsigned short ldt;
-+
-+   __asm__ __volatile__("sldt %0":"=a"(ldt));
-+
-+   return (unsigned long) ldt;
-+}
-+
-+void ReadGDTR(unsigned long *v)
-+{
-+   __asm__ __volatile__("sgdt %0":"=m"(*v));
-+}
-+
-+void ReadIDTR(unsigned long *v)
-+{
-+    __asm__ __volatile__("sidt %0":"=m"(*v));
-+}
-+
-+void save_npx(NUMERIC_FRAME *v)
-+{
-+    __asm__ __volatile__("fsave %0":"=m"(*v));
-+}
-+
-+void load_npx(NUMERIC_FRAME *v)
-+{
-+    __asm__ __volatile__("frstor %0":"=m"(*v));
-+}
-+
-+unsigned long ReadDR0(void)  {  return (ReadDR(0)); }
-+unsigned long ReadDR1(void)  {  return (ReadDR(1)); }
-+unsigned long ReadDR2(void)  {  return (ReadDR(2)); }
-+unsigned long ReadDR3(void)  {  return (ReadDR(3)); }
-+unsigned long ReadDR6(void)  {  return (ReadDR(6)); }
-+unsigned long ReadDR7(void)  {  return (ReadDR(7)); }
-+
-+void WriteDR0(unsigned long v) { WriteDR(0, v); }
-+void WriteDR1(unsigned long v) { WriteDR(1, v); }
-+void WriteDR2(unsigned long v) { WriteDR(2, v); }
-+void WriteDR3(unsigned long v) { WriteDR(3, v); }
-+void WriteDR6(unsigned long v) { WriteDR(6, v); }
-+void WriteDR7(unsigned long v) { WriteDR(7, v); }
-+
-+unsigned long ReadCR0(void) {  return (ReadCR(0)); }
-+unsigned long ReadCR2(void) {  return (ReadCR(2)); }
-+unsigned long ReadCR3(void) {  return (ReadCR(3)); }
-+unsigned long ReadCR4(void) {  return (ReadCR(4)); }
-+
-+void WriteCR0(unsigned long v) { WriteCR(0, v); }
-+void WriteCR2(unsigned long v) { WriteCR(2, v); }
-+void WriteCR3(unsigned long v) { WriteCR(3, v); }
-+void WriteCR4(unsigned long v) { WriteCR(4, v); }
-+
-+void ReadMSR(unsigned long r, unsigned long *v1, unsigned long *v2)
-+{
-+    unsigned long vv1, vv2;
-+
-+    rdmsr(r, vv1, vv2);
-+
-+    if (v1)
-+       *v1 = vv1;
-+    if (v2)
-+       *v2 = vv2;
-+}
-+
-+void WriteMSR(unsigned long r, unsigned long *v1, unsigned long *v2)
-+{
-+    unsigned long vv1 = 0, vv2 = 0;
-+
-+    if (v1)
-+       vv1 = *v1;
-+    if (v2)
-+       vv2 = *v2;
-+
-+    wrmsr(r, vv1, vv2);
-+}
