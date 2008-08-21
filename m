@@ -1,78 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753032AbYHUBoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbYHUBtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753032AbYHUBoD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 21:44:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbYHUBnw
+	id S1753436AbYHUBtZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 21:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbYHUBtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 21:43:52 -0400
-Received: from mail.cyberdogtech.com ([64.22.125.39]:59331 "EHLO
-	mail.cyberdogtech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751286AbYHUBnu (ORCPT
+	Wed, 20 Aug 2008 21:49:13 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:48633 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750819AbYHUBtM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 21:43:50 -0400
-X-Greylist: delayed 657 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Aug 2008 21:43:50 EDT
-Date: Wed, 20 Aug 2008 20:32:45 -0500
-From: Matt LaPlante <kernel1@cyberdogtech.com>
-To: linux-kernel@vger.kernel.org
-Subject: Oops in authenc: 2.6.26.3
-Message-Id: <20080820203245.ea01ff39.kernel1@cyberdogtech.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 20 Aug 2008 21:49:12 -0400
+Subject: Re: CONFIG_KMOD breakage in next kernel
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       video4linux-list@redhat.com
+In-Reply-To: <1219257889.3502.13.camel@johannes.berg>
+References: <s5h3akzwtki.wl%tiwai@suse.de>
+	 <1219252617.7591.350.camel@violet.holtmann.net>
+	 <1219257889.3502.13.camel@johannes.berg>
+Content-Type: text/plain
+Date: Thu, 21 Aug 2008 03:49:17 +0200
+Message-Id: <1219283357.7591.370.camel@violet.holtmann.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After upgrading one of my IPSec connected boxes from 2.6.25.x to 2.6.26.x I began to experience the following oopses.  I haven't identified what exactly causes it to trigger, but it has occurred repeatedly, anywhere from 5 to 15 minutes of the box booting the new kernel and running.  I'm not sure what other details are relevant for debugging, so I'll wait for feedback on what specific data is needed.
+Hi Johannes,
 
-Ubuntu 8.04
-racoon 1:0.6.7-1.1ubuntu1
-ipsec-tools 1:0.6.7-1.1ubuntu1
+> > > I found that CONFIG_KMOD was already removed in linux-next tree.
+> > > This seems to result in many breakages.  For example, I cannot mount a
+> > > FAT device automatically because of failure of automatic loading of
+> > > nls modules.
+> > > 
+> > > My particular problem would be fixed by the patch below, but I found
+> > > CONFIG_KMOD is still referred in many places.
+> > 
+> > I am happy to fix the net/bluetooth/ part, you someone has to put out a
+> > guideline how this should be fixed.
+> 
+> Bluetooth was already part of http://lkml.org/lkml/2008/7/9/144
+> 
+> Basically, I got rid of CONFIG_KMOD, always enabling it when
+> CONFIG_MODULES is defined and making it a dummy no-op inline when not.
 
-BUG: unable to handle kernel paging request at 5684c077
-IP: [<cc96856b>] :authenc:crypto_authenc_givencrypt_done+0x1b/0x20
-Oops: 0000 [#1]
-Modules linked in: authenc esp4 aead xfrm4_mode_tunnel tun iptable_raw xt_policy
- xt_multiport ipt_ULOG ipt_TTL ipt_REJECT ipt_REDIRECT ipt_recent ipt_NETMAP ipt
-_MASQUERADE ipt_LOG ipt_ECN ipt_ah ipt_addrtype xt_tcpmss xt_pkttype xt_NFQUEUE
-xt_MARK xt_mark xt_mac xt_limit xt_length xt_helper xt_conntrack xt_CONNMARK xt_
-connmark xt_CLASSIFY iptable_nat nf_nat nf_conntrack_ipv4 iptable_mangle nfnetli
-nk iptable_filter ip_tables ip6t_LOG nf_conntrack_ipv6 xt_state nf_conntrack xt_
-tcpudp ip6table_filter ip6_tables x_tables sit tunnel4 deflate zlib_deflate zlib
-_inflate ctr twofish_i586 twofish_common serpent blowfish des_generic cbc aes_i5
-86 aes_generic xcbc sha256_generic sha1_generic md5 crypto_null crypto_blkcipher
- af_key psmouse af_packet ipv6 evdev pcspkr sd_mod sg via_rhine ata_piix ata_gen
-eric
+I missed the patches, but that happens from time to time. Just looked at
+them and they look pretty nice. I like it this way.
 
-Pid: 4, comm: events/0 Not tainted (2.6.26.3-Gateway.v11 #2)
-EIP: 0060:[<cc96856b>] EFLAGS: 00010296 CPU: 0
-EIP is at crypto_authenc_givencrypt_done+0x1b/0x20 [authenc]
-EAX: 5684c06f EBX: cbaef540 ECX: 5684c06f EDX: 00000000
-ESI: cbaef540 EDI: cbaef530 EBP: cb1a3170 ESP: cb825f74
- DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-Process events/0 (pid: 4, ti=cb824000 task=cb81d120 task.ti=cb824000)
-Stack: 00000000 cc84f6c0 cb1a318c cb8029c0 cc84f670 cb8029c0 c01267fb cb1d8760
-       cb81007b c011007b c0350000 cb8029c0 cb8029c8 c0126ef0 00000000 c0126f49
-       00000000 cb81d120 c0129880 cb825fc0 cb825fc0 fffffffc cb8029c0 c0126ef0
-Call Trace:
-[<cc84f6c0>] async_chainiv_do_postponed+0x50/0x80 [crypto_blkcipher]
-[<cc84f670>] async_chainiv_do_postponed_0x0/0x80 [crypto_blkcipher]
-[<c01267fb>] run_workqueue+0x8b/0x110
-[<c011007b>] handle_vm86_fault+0x5b/0x7c0
-[<c0126ef0>] worker_thread+0x0/0x90
-[<c0126f49>] worker_thread+0x59/0x90
-[<c0129880>] autoremove_wake_function+0x0/0x40
-[<c0126ef0>] worker_thread+0x0/0x90
-[<c0129502>] kthread+0x42/0x70
-[<c01294c0>] kthread+0x0/0x70
-[<c0103953>] kernel_thread_helper+0x7/0x14
-Code: 09 03 e9 3f ff ff ff 89 f6 8d bc 27 00 00 00 00 85 d2 53 89 c3 75 0f 8b 40 
-0c 31 c9 8b 50 38 e8 fc fb ff ff 89 c2 8b 4b 0c 89 c8 <ff> 51 08 5b c3 85 d2 53
-89 c3 75 18 8b 40 0c 8b 48 10 8d 50 58
-EIP: [<cc96856b>] crypto_authenc_givencrypt_done+0x1b/0x20 [authenc] SS:ESP 0068:cb825f74
-Kernel panic - not syncing: Fatal exception in interrupt
+Acked-by: Marcel Holtmann <marcel@holtmann.org>
 
--- 
-Matt LaPlante
+Regards
+
+Marcel
+
 
