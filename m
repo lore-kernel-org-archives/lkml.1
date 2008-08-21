@@ -1,114 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbYHUIgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbYHUIhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728AbYHUIgw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 04:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYHUIg3
+	id S1754548AbYHUIhU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 04:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbYHUIgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 04:36:29 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:41476 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750933AbYHUIg1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 04:36:27 -0400
-Date: Thu, 21 Aug 2008 18:36:15 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Sascha Biberhofer <biberhofer@inode.at>
-Cc: Matt LaPlante <kernel1@cyberdogtech.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: Oops in authenc: 2.6.26.3
-Message-ID: <20080821083615.GA1971@gondor.apana.org.au>
-References: <20080820203245.ea01ff39.kernel1@cyberdogtech.com> <20080821070225.GA31894@aeris>
+	Thu, 21 Aug 2008 04:36:38 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:56125 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752783AbYHUIga (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 04:36:30 -0400
+Message-ID: <48AD28DD.6090109@de.ibm.com>
+Date: Thu, 21 Aug 2008 10:35:41 +0200
+From: Carsten Otte <cotte@de.ibm.com>
+Reply-To: carsteno@de.ibm.com
+Organization: =?ISO-8859-1?Q?BM_Deutschland_Research_=26_Developm?=
+ =?ISO-8859-1?Q?ent_GmbH_/_Vorsitzender_des_Aufsichtsrats=3A_?=
+ =?ISO-8859-1?Q?Martin_Jetter=2CGesch=E4ftsf=FChrung=3A_Herbert_Kir?=
+ =?ISO-8859-1?Q?cher=2CSitz_der_Gesellschaft=3A_B=F6blingen_/_R?=
+ =?ISO-8859-1?Q?egistergericht=3A_Amtsgericht_Stuttgart=2C_HRB_24?=
+ =?ISO-8859-1?Q?3294?=
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080821070225.GA31894@aeris>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: jaredeh@gmail.com
+CC: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@AM.SONY.COM,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 04/10] AXFS: axfs_inode.c
+References: <48AD00F0.5030403@gmail.com>
+In-Reply-To: <48AD00F0.5030403@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 07:02:25AM +0000, Sascha Biberhofer wrote:
-> I have the same problem on my system, starting with the release of
-> 2.6.26. Shortly afterwards I've had the same problem with the 2.6.25
-> series starting with 2.6.25.12. I've looked up the changes between
-> 2.6.25.11 and .12 and found commit
-> c2bd04d8040a91fe2ee2e9fee1a6562ca9792249 (it's commit
-> 872ac8743cb400192a9fce4ba2d3ffd7bb309685 in the 2.6.26 series).
-> Reverting the commit seems to solve the problem here, I've been running
-> a 2.6.25.12 kernel without this commit for some weeks now.
-> In case it's important: I'm using an IPSec ESP transport with AES-256
-> and sha-256 auth. 
+Jared Hulbert wrote:
+> +/***************** functions in other axfs files ******************************/
+> +int axfs_get_sb(struct file_system_type *, int, const char *, void *,
+> +		struct vfsmount *);
+This is neither implemented nor used in axfs_inode.c - why define it here?
 
-Sorry, I was skimping on memory and ended up calling a clobbered
-function pointer.
+> +void axfs_kill_super(struct super_block *);
+Same for this one.
 
-This patch should fix it.
 
-crypto: authenc - Avoid using clobbered request pointer
+> +void axfs_profiling_add(struct axfs_super *, unsigned long, unsigned int);
+> +int axfs_copy_mtd(struct super_block *, void *, u64, u64);
+> +int axfs_copy_block(struct super_block *, void *, u64, u64);
+These are used, but not implemented here. Please consider putting them 
+in a header file
 
-Authenc works in two stages for encryption, it first encrypts and
-then computes an ICV.  The context memory of the request is used
-by both operations.  The problem is that when an asynchronous
-encryption completes, we will compute the ICV and then reread the
-context memory of the encryption to get the original request.
 
-It just happens that we have a buffer of 16 bytes in front of the
-request pointer, so ICVs of 16 bytes (such as SHA1) do not trigger
-the bug.  However, any attempt to uses a larger ICV instantly kills
-the machine when the first asynchronous encryption is completed.
+> +static int axfs_copy_data(struct super_block *sb, void *dst,
+> +			  struct axfs_region_desc *region, u64 offset, u64 len)
+> +{
+> +	u64 mmapped = 0;
+> +	u64 end = region->fsoffset + offset + len;
+> +	u64 begin = region->fsoffset + offset;
+> +	u64 left;
+> +	void *addr;
+> +	void *newdst;
+> +	struct axfs_super *sbi = AXFS_SB(sb);
+> +
+> +	if (len == 0)
+> +		return 0;
+> +
+> +	if (region->virt_addr) {
+> +		if (sbi->mmap_size >= end) {
+> +			mmapped = len;
+> +		} else if (sbi->mmap_size > begin) {
+> +			mmapped = sbi->mmap_size - begin;
+> +		}
+> +	}
+You can save braces and make the code more readable here:
+=> if (sbi->mmap_size >= end)
+	mmapped = len;
+    else if (sbi->mmap_size > begin)
+	mmapped = si->mmap_size - begin;
 
-This patch fixes this by saving the request pointer before we start
-the ICV computation.
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> +struct inode *axfs_create_vfs_inode(struct super_block *sb, int ino)
+> +{
+> +	struct axfs_super *sbi = AXFS_SB(sb);
+> +	struct inode *inode;
+> +	u64 size;
+[SNIP]
+> +	size = AXFS_GET_INODE_FILE_SIZE(sbi, ino);
+> +	inode->i_size = size;
+The variable size is not needed. Do
+	inode->i_size = AXFS_GET_INODE_FILE_SIZE(sbi, ino);
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/crypto/authenc.c b/crypto/authenc.c
-index 4b22676..fd9f06c 100644
---- a/crypto/authenc.c
-+++ b/crypto/authenc.c
-@@ -174,8 +174,9 @@ static int crypto_authenc_genicv(struct aead_request *req, u8 *iv,
- static void crypto_authenc_encrypt_done(struct crypto_async_request *req,
- 					int err)
- {
-+	struct aead_request *areq = req->data;
-+
- 	if (!err) {
--		struct aead_request *areq = req->data;
- 		struct crypto_aead *authenc = crypto_aead_reqtfm(areq);
- 		struct crypto_authenc_ctx *ctx = crypto_aead_ctx(authenc);
- 		struct ablkcipher_request *abreq = aead_request_ctx(areq);
-@@ -185,7 +186,7 @@ static void crypto_authenc_encrypt_done(struct crypto_async_request *req,
- 		err = crypto_authenc_genicv(areq, iv, 0);
- 	}
- 
--	aead_request_complete(req->data, err);
-+	aead_request_complete(areq, err);
- }
- 
- static int crypto_authenc_encrypt(struct aead_request *req)
-@@ -216,14 +217,15 @@ static int crypto_authenc_encrypt(struct aead_request *req)
- static void crypto_authenc_givencrypt_done(struct crypto_async_request *req,
- 					   int err)
- {
-+	struct aead_request *areq = req->data;
-+
- 	if (!err) {
--		struct aead_request *areq = req->data;
- 		struct skcipher_givcrypt_request *greq = aead_request_ctx(areq);
- 
- 		err = crypto_authenc_genicv(areq, greq->giv, 0);
- 	}
- 
--	aead_request_complete(req->data, err);
-+	aead_request_complete(areq, err);
- }
- 
- static int crypto_authenc_givencrypt(struct aead_givcrypt_request *req)
+
+> +static struct dentry *axfs_lookup(struct inode *dir, struct dentry *dentry,
+> +				  struct nameidata *nd)
+> +{
+> +	struct super_block *sb = dir->i_sb;
+> +	struct axfs_super *sbi = AXFS_SB(sb);
+> +	u64 ino_number = dir->i_ino;
+> +	u64 dir_index = 0;
+> +	u64 entry;
+> +	char *name;
+> +	int namelen, err;
+> +
+> +	while (dir_index < AXFS_GET_INODE_NUM_ENTRIES(sbi, ino_number)) {
+> +		entry = AXFS_GET_INODE_ARRAY_INDEX(sbi, ino_number);
+> +		entry += dir_index;
+> +
+> +		name = AXFS_GET_INODE_NAME(sbi, entry);
+> +		namelen = strlen(name);
+> +
+> +		/* fast test, the entries are sorted alphabetically and the
+> +		 * first letter is smaller than the first letter in the search
+> +		 * name then it isn't in this directory.  Keeps this loop from
+> +		 * needing to scan through always.
+> +		 */
+> +		if (dentry->d_name.name[0] < name[0])
+> +			break;
+> +
+> +		dir_index++;
+> +
+> +		/* Quick check that the name is roughly the right length */
+> +		if (dentry->d_name.len != namelen)
+> +			continue;
+> +
+> +		err = memcmp(dentry->d_name.name, name, namelen);
+> +		if (err > 0)
+> +			continue;
+> +
+> +		/* The file name isn't present in the directory. */
+> +		if (err < 0)
+> +			break;
+Very ingenious way to compare strings. strncmp also stops after the 
+first character if it does'nt fit. I doubt this has a measurable 
+performance advantage over using strncmp, please consider to replace 
+this logic to make the code smaller and more readable. See lib/string.c.
+
+> +static int axfs_readdir(struct file *filp, void *dirent, filldir_t filldir)
+> +{
+> +	struct inode *inode = filp->f_dentry->d_inode;
+> +	struct super_block *sb = inode->i_sb;
+> +	struct axfs_super *sbi = AXFS_SB(sb);
+> +	u64 ino_number = inode->i_ino;
+> +	u64 entry;
+> +	loff_t dir_index;
+> +	char *name;
+> +	int namelen, mode;
+> +	int err = 0;
+> +
+> +	/* Get the current index into the directory and verify it is not beyond
+> +	   the end of the list */
+> +	dir_index = filp->f_pos;
+> +	if (dir_index >= AXFS_GET_INODE_NUM_ENTRIES(sbi, ino_number))
+> +		goto out;
+> +
+> +	/* Verify the inode is for a directory */
+> +	if (!(S_ISDIR(inode->i_mode))) {
+> +		err = -EINVAL;
+> +		goto out;
+> +	}
+Well, -ENOTDIR would be the correct return code. You can remove that 
+sanity check alltogether, vfs_readdir makes sure this is the right 
+file type. If you really want to check, make it 
+BUG_ON(!S_ISDIR(inode->i_mode));
+
+> +static int axfs_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+> +{
+> +	struct file *file = vma->vm_file;
+> +	struct inode *inode = file->f_dentry->d_inode;
+> +	struct super_block *sb = inode->i_sb;
+> +	struct axfs_super *sbi = AXFS_SB(sb);
+> +	u64 ino_number = inode->i_ino;
+> +	u64 array_index;
+> +
+> +	array_index = AXFS_GET_INODE_ARRAY_INDEX(sbi, ino_number) + vmf->pgoff;
+> +
+> +	/* if that pages are marked for write they will probably end up in RAM
+> +	   therefore we don't want their counts for being XIP'd */
+> +	if (!(vma->vm_flags & VM_WRITE))
+> +		axfs_profiling_add(sbi, array_index, ino_number);
+Thats very inacurate profiling, it does never count MAP_PRIVATE 
+mappings which is the regular case for executables and libraries. When 
+booting an enterprise distro, my sniff test shows that only about 5% 
+of the MAP_PRIVATE mappings get COW'ed. To get correct statistics, it 
+might be a good idea to find a way to add here and substract during 
+cow. Or to scan these mappings when the profiling information is being 
+retrieved - the readonly bit in the pte gives the right indication for 
+MIXEDMAP mappings.
+
