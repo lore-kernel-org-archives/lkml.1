@@ -1,67 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbYHUSb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761127AbYHUSch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbYHUSb7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 14:31:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbYHUSbs
+	id S1761127AbYHUSch (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 14:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbYHUSc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 14:31:48 -0400
-Received: from mail-gx0-f29.google.com ([209.85.217.29]:53305 "EHLO
-	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755339AbYHUSbr (ORCPT
+	Thu, 21 Aug 2008 14:32:27 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:34130 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754080AbYHUSc0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 14:31:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=K0XkNgCd07IY3ajjf6yJ4hMRrs+g8wqfQDc3wD05oFrdh10QCJSDlx3y/eKFns7jEn
-         Q5qKgSxLiSQOmsCzKladt6JwnEcWCkc8EH6I1w2eMrfKWgDNH2KLy1iqjV4KBwJ9Omh7
-         7fFxlfMzWfk0Cxl4BMo+TzkOL8rofHcwgnCJ8=
-Message-ID: <19f34abd0808211131h7c4b4fcfo99f858218aad8027@mail.gmail.com>
-Date: Thu, 21 Aug 2008 20:31:46 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: latest -git: hibernate: possible circular locking dependency detected
-Cc: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
-       "Max Krasnyanskiy" <maxk@qualcomm.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200808212022.18598.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 21 Aug 2008 14:32:26 -0400
+Subject: x86: Fix VMI for early params...for mainline
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>
+Cc: Zachary Amsden <zach@vmware.com>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Thu, 21 Aug 2008 11:32:26 -0700
+Message-Id: <1219343546.18349.45.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0808210804y7ee91d1fy12da5ad6f82d2451@mail.gmail.com>
-	 <200808212022.18598.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 8:22 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday, 21 of August 2008, Vegard Nossum wrote:
->> Hi,
->>
->> I just got this on v2.6.27-rc4 (+ unrelated fix):
->>
->> ACPI: Preparing to enter system sleep state S5
->
-> This looks fishy.
->
-> Please check what's there in /sys/power/disk .
->
-> Also, can you please post the full dmesg containing those traces?
+While fixing a recent breakage in VMI on the recent x86 tree, I noticed
+that vmi specific kernel commandline parameters were broken. Below is
+the fix.
 
-Yep, here is:
+Please note this needs to go into the mainline tree. 
 
-http://userweb.kernel.org/~vegard/bugs/20080821-acpi/dmesg.txt
+--
+x86: Fix VMI for early params
 
-There seems to be a few different ACPI errors scattered throughout the log.
+From: Alok N Kataria <akataria@vmware.com>
+
+In a recent commit 31343d8a5079cda57ffd539fcf4f00cea344fe98,
+while fixing a different bug, I moved the call to vmi_init before
+early params could be parsed.
+This broke the vmi specific commandline parameters.
+Fix that, by moving vmi initialization after kernel has got a chance to
+parse early parameters.
+
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
+Cc: Zachary Amsden <zach@vmware.com>
+
+---
+
+ arch/x86/kernel/setup.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
 
-Vegard
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index d2019ef..7c34c2b 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -607,14 +607,6 @@ void __init setup_arch(char **cmdline_p)
+ 	early_cpu_init();
+ 	early_ioremap_init();
+ 
+-#if defined(CONFIG_VMI) && defined(CONFIG_X86_32)
+-	/*
+-	 * Must be before kernel pagetables are setup
+-	 * or fixmap area is touched.
+-	 */
+-	vmi_init();
+-#endif
+-
+ 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
+ 	screen_info = boot_params.screen_info;
+ 	edid_info = boot_params.edid_info;
+@@ -694,6 +686,14 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	parse_early_param();
+ 
++#if defined(CONFIG_VMI) && defined(CONFIG_X86_32)
++	/*
++	 * Must be before kernel pagetables are setup
++	 * or fixmap area is touched.
++	 */
++	vmi_init();
++#endif
++
+ 	/* after early param, so could get panic from serial */
+ 	reserve_early_setup_data();
+ 
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+
