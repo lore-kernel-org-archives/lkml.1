@@ -1,36 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759090AbYHUDYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbYHUDZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759090AbYHUDYo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 23:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756907AbYHUDQn
+	id S1758758AbYHUDZF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 23:25:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755984AbYHUDQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 20 Aug 2008 23:16:43 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:50120 "EHLO
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:50119 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755892AbYHUDQK (ORCPT
+	with ESMTP id S1755618AbYHUDQI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 23:16:10 -0400
-Date: Wed, 20 Aug 2008 20:50:37 -0600
+	Wed, 20 Aug 2008 23:16:08 -0400
+Date: Wed, 20 Aug 2008 20:50:36 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808210250.m7L2obPK028350@wolfmountaingroup.com>
+Message-Id: <200808210250.m7L2oaE6028345@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc4 25/27] mdb: export clocksource watchdog function
+Subject: [PATCH 2.6.27-rc4 23/27] mdb: add mdb_modules function 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-export clocksource watchdog function
+add mdb_modules function 
 
 
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/kernel/time/clocksource.c	2008-08-18 23:39:34.000000000 -0600
-+++ b/kernel/time/clocksource.c	2008-08-18 23:40:26.000000000 -0600
-@@ -242,6 +242,7 @@
- {
- 	clocksource_resume_watchdog();
+--- a/kernel/module.c	2008-08-18 23:39:34.000000000 -0600
++++ b/kernel/module.c	2008-08-18 23:40:26.000000000 -0600
+@@ -2503,6 +2503,39 @@
+ 	return 0;
  }
-+EXPORT_SYMBOL_GPL(clocksource_touch_watchdog);
  
- /**
-  * clocksource_get_next - Returns the selected clocksource
++#if defined(CONFIG_MDB) || defined(CONFIG_MDB_MODULE)
++int mdb_modules(char *str, int (*print)(char *s, ...))
++{
++	struct module *mod;
++	struct module_use *use;
++
++        if (!print)
++           return 0;
++
++	list_for_each_entry(mod, &modules, list)
++        {
++           if (str && *str && !strstr(mod->name, str))
++              continue;
++
++	   print(" 0x%08p ", mod->module_core);
++	   print("%s", mod->name);
++	   print(" %lu %02u ", mod->init_size + mod->core_size,
++                 module_refcount(mod));
++	   list_for_each_entry(use, &mod->modules_which_use_me, list)
++		print("%s,", use->module_which_uses->name);
++	   if (mod->init != NULL && mod->exit == NULL)
++	      print("[permanent],");
++	   print(" %s ", mod->state == MODULE_STATE_GOING ? "Unloading":
++	                mod->state == MODULE_STATE_COMING ? "Loading":
++		        "Live");
++	   if (print("\n"))
++              return 1;
++	}
++        return 0;
++}
++EXPORT_SYMBOL_GPL(mdb_modules);
++#endif
++
+ /* Look for this name: can be of form module:name. */
+ unsigned long module_kallsyms_lookup_name(const char *name)
+ {
