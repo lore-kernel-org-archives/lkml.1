@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbYHULlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759652AbYHULlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759493AbYHULlR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 07:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756275AbYHULlB
+	id S1759652AbYHULlz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 07:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758810AbYHULls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 07:41:01 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48390 "EHLO mx2.mail.elte.hu"
+	Thu, 21 Aug 2008 07:41:48 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44778 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750828AbYHULlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 07:41:00 -0400
-Date: Thu, 21 Aug 2008 13:40:40 +0200
+	id S1756289AbYHULlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 07:41:47 -0400
+Date: Thu, 21 Aug 2008 13:41:26 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Gregory Haskins <ghaskins@novell.com>, vatsa <vatsa@in.ibm.com>,
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, vatsa <vatsa@in.ibm.com>,
        linux-kernel <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] sched: properly account IRQ and RT load in SCHED_OTHER
 	load balancing
-Message-ID: <20080821114040.GA30667@elte.hu>
-References: <1219310330.8651.93.camel@twins> <20080821104718.GA28331@elte.hu> <20080821111713.GA15680@elte.hu> <1219317766.8651.110.camel@twins>
+Message-ID: <20080821114126.GB30667@elte.hu>
+References: <1219310330.8651.93.camel@twins> <48AD534A.9080807@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1219317766.8651.110.camel@twins>
+In-Reply-To: <48AD534A.9080807@novell.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,29 +37,13 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+* Gregory Haskins <ghaskins@novell.com> wrote:
 
-> On Thu, 2008-08-21 at 13:17 +0200, Ingo Molnar wrote:
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > > This patch tries to solve this issue by accounting the time spend on 
-> > > > both Real-Time tasks and IRQ handling, and using that to 
-> > > > proportionally inflate the SCHED_OTHER load.
-> > > 
-> > > applied it to tip/sched/devel for more testing.
-> > 
-> > -tip testing found that it wouldnt build on UP in sched_debug.c - made 
-> > that bit dependent on CONFIG_SMP. sched_scale_load() does not seem to be 
-> > too meaningful on UP.
-> 
-> Thanks - just prior to posting I removed the empty stub for 
-> sched_scale_load() because it didn't make sense for UP code to use 
-> it...
-> 
-> So much for double checking myself.
+> I haven't had a chance to review the code thoroughly yet, but I had 
+> been working on a similar fix and know that this is sorely needed.  
+> So...
 
-hm, the empty stub might be useful still and would remove the #ifdef 
-from sched_debug.c. Could you please send a delta patch against 
-tip/master?
+btw., why exactly does this patch speed up certain workloads? I'm not 
+quite sure about the exact reasons of that.
 
 	Ingo
