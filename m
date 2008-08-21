@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbYHUVnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758817AbYHUVvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758156AbYHUVnQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 17:43:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbYHUVm7
+	id S1758817AbYHUVvx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 17:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929AbYHUVvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 17:42:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52262 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752840AbYHUVm7 (ORCPT
+	Thu, 21 Aug 2008 17:51:45 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:31509 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754624AbYHUVvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 17:42:59 -0400
-Date: Thu, 21 Aug 2008 14:41:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC PATCH] Writer-biased low-latency rwlock v8
-In-Reply-To: <48ADDD6D.6000504@zytor.com>
-Message-ID: <alpine.LFD.1.10.0808211433091.3487@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0808161014300.3324@nehalem.linux-foundation.org> <20080816211954.GB7358@Krystal> <alpine.LFD.1.10.0808161422290.3324@nehalem.linux-foundation.org> <20080817075335.GA25019@Krystal> <alpine.LFD.1.10.0808170909420.3324@nehalem.linux-foundation.org>
- <20080817191034.GA5258@Krystal> <20080818232500.GF6732@linux.vnet.ibm.com> <20080819060417.GB24085@Krystal> <20080819073345.GA30285@Krystal> <alpine.LFD.1.10.0808190946560.3324@nehalem.linux-foundation.org> <20080821205045.GA24909@Krystal>
- <alpine.LFD.1.10.0808211356360.3487@nehalem.linux-foundation.org> <48ADDD6D.6000504@zytor.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 21 Aug 2008 17:51:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=HbzD3bt2kPNTUEtV+zPWJzPnwJMkidJyaslqSJhJ4VvHIuBlLlwJ0PWAEfWItaA0/+
+         BN8s2iRRMV9JHegk66IIGj53mFCkiwNUdZm4YEf2gvm3RDBwHJY7BPDPD8obyntz2Gg4
+         bSoVUqrv9tWnUiBMbgnou9ENHI45ZCZlXHdLk=
+Message-ID: <86802c440808211451u4483f88ft845cd20c3f23c53a@mail.gmail.com>
+Date: Thu, 21 Aug 2008 14:51:43 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Joshua Hoblitt" <josh@hoblitt.com>
+Subject: Re: [Bug 11388] New: 2.6.27-rc3 warns about MTRR range; only 3 of 16gb of memory is usable
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       j_kernel@hoblitt.com
+In-Reply-To: <20080821205558.GC23377@hoblitt.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <bug-11388-27@http.bugzilla.kernel.org/>
+	 <20080820180405.7f164450.akpm@linux-foundation.org>
+	 <86802c440808201820w6c684a10y2f1d0f70a344a14a@mail.gmail.com>
+	 <86802c440808201849k6665c395x5a5b871eca55addd@mail.gmail.com>
+	 <20080821205558.GC23377@hoblitt.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 21 Aug 2008, H. Peter Anvin wrote:
+On Thu, Aug 21, 2008 at 1:55 PM, Joshua Hoblitt <josh@hoblitt.com> wrote:
+> Both hunks in the patch applied with an offset of -36 but the show_msr
+> flag doesn't seem to have any effect.  The dmesg is still the same
+> number of lines accord to wc.
 >
-> First of all, let me say I don't pretend to understand formally how you deal
-> with overflow-after-the-fact, as unlikely as it is.
+> I'm attaching the new dmesg anyways.
+>
+> $ cat /proc/cmdline
+> root=/dev/ram0 real_root=/dev/sda3 init=/linuxrc show_msr=1 console=tty0
+> console=ttyS0,115200n8
 
-Just make sure it can't overflow. With spinlocks, you are guaranteed that 
-you won't have more than NR_CPU's thing, so 20 bits is pretty safe. 30 
-bits is ridiculously safe.
+can you check that with tip/master?
 
-> However, it seems to me to be an easy way to avoid it.  Simply by changing the
-> read-test mask to $0x80000003, you will kick the code down the slow path once
-> the read counter reaches $0x80000004 (2^29+1 readers), where you can do any
-> necessary fixup -- or BUG() -- at leisure.
+http://people.redhat.com/mingo/tip.git/readme.txt
 
-Sure, you could do things like that, but that sounds like a separate 
-"debugging" version, not the main one.
-
-> This fastpath ends up being identical in size and performance to the one you
-> posted, although yours could be reduced by changing the test to a testb
-> instruction -- at the almost certainly unacceptable expense of taking a
-> partial-register stall on the CPUs that have those.
-
-Well, you could just change the "testl $3,%eax" into an "andl $3,%eax", 
-and it will be two bytes shorter with no partial register stall.
-
-I forgot that "testl" doesn't have the byte immediate version.
-
-		Linus
+YH
