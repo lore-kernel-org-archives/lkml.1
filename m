@@ -1,80 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbYHUIy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbYHUIym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756233AbYHUIy0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 04:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbYHUIyO
+	id S1754958AbYHUIym (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 04:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbYHUIyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 04:54:14 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:31164 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752671AbYHUIyM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 04:54:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEALDHrEh5LD0w/2dsb2JhbAC1WoFm
-X-IronPort-AV: E=Sophos;i="4.32,244,1217773800"; 
-   d="scan'208";a="176333807"
-Date: Thu, 21 Aug 2008 18:53:32 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: gus3 <musicman529@yahoo.com>, Szabolcs Szakacsits <szaka@ntfs-3g.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Subject: Re: XFS vs Elevators (was Re: [PATCH RFC] nilfs2: continuous
-	snapshotting file system)
-Message-ID: <20080821085332.GG5706@disturbed>
-Mail-Followup-To: Nick Piggin <nickpiggin@yahoo.com.au>,
-	gus3 <musicman529@yahoo.com>,
-	Szabolcs Szakacsits <szaka@ntfs-3g.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	xfs@oss.sgi.com
-References: <20080821051508.GB5706@disturbed> <684252.68814.qm@web34508.mail.mud.yahoo.com> <20080821061443.GD5706@disturbed> <200808211700.39584.nickpiggin@yahoo.com.au>
+	Thu, 21 Aug 2008 04:54:25 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53448 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755460AbYHUIyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 04:54:22 -0400
+Date: Thu, 21 Aug 2008 10:54:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: apic version warning.
+Message-ID: <20080821085402.GA29541@elte.hu>
+References: <86802c440808210101u1101b480p74ee387082ebdcb6@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200808211700.39584.nickpiggin@yahoo.com.au>
+In-Reply-To: <86802c440808210101u1101b480p74ee387082ebdcb6@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 05:00:39PM +1000, Nick Piggin wrote:
-> On Thursday 21 August 2008 16:14, Dave Chinner wrote:
+
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+
+> after following patch,
 > 
-> > I think that we need to issue explicit unplugs to get the log I/O
-> > dispatched the way we want on all elevators and stop trying to
-> > give elevators implicit hints by abusing the bio types and hoping
-> > they do the right thing....
+> commit 1b313f4a6d7bee7b2c034b3f1e203bc360a71cca
+> Author: Cyrill Gorcunov <gorcunov@gmail.com>
+> Date:   Mon Aug 18 20:45:57 2008 +0400
 > 
-> FWIW, my explicit plugging idea is still hanging around in one of
-> Jens' block trees (actually he refreshed it a couple of months ago).
+>     x86: apic - generic_processor_info
 > 
-> It provides an API for VM or filesystems to plug and unplug
-> requests coming out of the current process, and it can reduce the
-> need to idle the queue. Needs more performance analysis and tuning
-> though.
+>     - use physid_set instead of phys_cpu and physids_or
+>     - set phys_cpu_present_map bit AFTER check for allowed
+>       number of processors
+>     - add checking for APIC valid version in 64bit mode
+>       (mostly not needed but added for merging purpose)
+>     - add apic_version definition for 64bit mode which
+>       is used now
+> 
+> we are getting warning for acpi path on 64 bit system
+> 
+> please add #ifdef for that.
+> actually, 64 bit doesn't use that apic_version[]
+> 
+> 
+> or using following patch?
 
-We've already got plenty of explicit unplugs in XFS to get stuff
-moving quickly - I'll just have to add another....
+yeah, i like that patch better - the more symmetry the better. Applied 
+to tip/x86/apic.
 
-> But existing plugging is below the level of the elevators, and should
-> only kick in for at most tens of ms at queue idle events, so it sounds
-> like it may not be your problem. Elevators will need some hint to give
-> priority to specific requests -- either via the current threads's io
-> priority, or information attached to bios.
+	Ingo
 
-It's getting too bloody complex, IMO. What is right for one elevator
-is wrong for another, so as a filesystem developer I have to pick
-one to target. With the way the elevators have been regressing,
-improving and changing behaviour, I am starting to think that I
-should be picking the noop scheduler. Any 'advanced' scheduler that
-is slower than the same test on the noop scheduler needs fixing...
+--------------->
+>From dd242cfc89fa7acdcaadcffbca61fca37a2f2c83 Mon Sep 17 00:00:00 2001
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Date: Thu, 21 Aug 2008 01:01:19 -0700
+Subject: [PATCH] x86: fix apic version warning
 
-Cheers,
+after following patch,
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+commit 1b313f4a6d7bee7b2c034b3f1e203bc360a71cca
+Author: Cyrill Gorcunov <gorcunov@gmail.com>
+Date:   Mon Aug 18 20:45:57 2008 +0400
+
+    x86: apic - generic_processor_info
+
+    - use physid_set instead of phys_cpu and physids_or
+    - set phys_cpu_present_map bit AFTER check for allowed
+      number of processors
+    - add checking for APIC valid version in 64bit mode
+      (mostly not needed but added for merging purpose)
+    - add apic_version definition for 64bit mode which
+      is used now
+
+we are getting warning for acpi path on 64 bit system.
+
+make the 64-bit side fill in apic_version[] as well.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/acpi/boot.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 12e260e..d9770a5 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -239,10 +239,8 @@ static void __cpuinit acpi_register_lapic(int id, u8 enabled)
+ 		return;
+ 	}
+ 
+-#ifdef CONFIG_X86_32
+ 	if (boot_cpu_physical_apicid != -1U)
+ 		ver = apic_version[boot_cpu_physical_apicid];
+-#endif
+ 
+ 	generic_processor_info(id, ver);
+ }
+@@ -762,10 +760,8 @@ static void __init acpi_register_lapic_address(unsigned long address)
+ 	set_fixmap_nocache(FIX_APIC_BASE, address);
+ 	if (boot_cpu_physical_apicid == -1U) {
+ 		boot_cpu_physical_apicid  = read_apic_id();
+-#ifdef CONFIG_X86_32
+ 		apic_version[boot_cpu_physical_apicid] =
+ 			 GET_APIC_VERSION(apic_read(APIC_LVR));
+-#endif
+ 	}
+ }
+ 
