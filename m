@@ -1,121 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759135AbYHUWYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761344AbYHUWZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759135AbYHUWYx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 18:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758829AbYHUWYm
+	id S1761344AbYHUWZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 18:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757887AbYHUWZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 18:24:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41746 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758961AbYHUWYl (ORCPT
+	Thu, 21 Aug 2008 18:25:50 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:56731 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752386AbYHUWZt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 18:24:41 -0400
-Date: Thu, 21 Aug 2008 15:22:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC PATCH] Writer-biased low-latency rwlock v8
-In-Reply-To: <alpine.LFD.1.10.0808211402370.3487@nehalem.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0808211500530.3487@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0808161014300.3324@nehalem.linux-foundation.org> <20080816211954.GB7358@Krystal> <alpine.LFD.1.10.0808161422290.3324@nehalem.linux-foundation.org> <20080817075335.GA25019@Krystal> <alpine.LFD.1.10.0808170909420.3324@nehalem.linux-foundation.org>
- <20080817191034.GA5258@Krystal> <20080818232500.GF6732@linux.vnet.ibm.com> <20080819060417.GB24085@Krystal> <20080819073345.GA30285@Krystal> <alpine.LFD.1.10.0808190946560.3324@nehalem.linux-foundation.org> <20080821205045.GA24909@Krystal>
- <alpine.LFD.1.10.0808211356360.3487@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808211402370.3487@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 21 Aug 2008 18:25:49 -0400
+Message-ID: <48ADEBB1.1070203@keyaccess.nl>
+Date: Fri, 22 Aug 2008 00:26:57 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, "Li, Shaohua" <shaohua.li@intel.com>,
+       Dave Airlie <airlied@gmail.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: [PATCH] x86: {reverve,free}_memtype() take a physical address
+References: <20080819102633.GE6722@elte.hu> <48AAD680.7020508@keyaccess.nl> <20080819190757.GA17470@linux-os.sc.intel.com> <20080820100440.GE28492@elte.hu> <48ABF6DC.8070305@keyaccess.nl> <48AC29CA.1060203@keyaccess.nl> <20080820194127.GA10887@linux-os.sc.intel.com> <48AC8F69.4050201@keyaccess.nl> <21d7e9970808201446k3c1a6bc1naf04568a8ad06ed4@mail.gmail.com> <20080820221630.GA3598@linux-os.sc.intel.com> <20080821120626.GG5615@elte.hu> <48ADA2C2.8090905@keyaccess.nl> <48ADE7C5.9030802@keyaccess.nl> <7E82351C108FA840AB1866AC776AEC460B4B033E@orsmsx505.amr.corp.intel.com>
+In-Reply-To: <7E82351C108FA840AB1866AC776AEC460B4B033E@orsmsx505.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: 1.0 (+)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 22-08-08 00:16, Pallipadi, Venkatesh wrote:
 
-
-On Thu, 21 Aug 2008, Linus Torvalds wrote:
+> Yes. Noticed that too and sent a patch here for x86/tip.
 > 
->  rdlock:
-> 	movl $4,%eax
-> 	lock ; xaddl %eax,(%rdi)
-> 	testl $3,%eax
-> 	jne __rdlock_slowpath
-> 	ret
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0808.2/2270.html
+> 
+> It is not very critical as it sounds as only set_memory_uc sets PAT
+> bits for RAM pages. Most other users (devmem mmap, ioramep, pci)
+> set PAT bits on the reserved memory. And there will not be conflicts
+> across RAM and reserveed regions. Regardless, this was a stupid
+> bug that we had missed earlier.
 
+And unfortunately I don't think the above fully fixes it for AGP. __pa() 
+gets the real physical address and the memtypes should be on the GART 
+remapped physical addresses it seems.
 
-Ok, so change that "testl" to "andl" to shave two bytes, and then make the 
-whole lock structure look something like this:
-
-	struct rwlock {
-		u32 fastpath;
-		u32 pending_readers;
-		u32 pending_writers;
-	};
-
-and then the slowpath would look something like this:
-
-	void __rdlock_slowpath(struct rwlock *lock)
-	{
-		/* Move the read count to the pending path and undo our xadd */
-		atomic_add(1, &lock->pending_readers);
-		atomic_sub(4, &lock->fastpath);
-
-		for (;;) {
-			unsigned fastpath;
-			while (lock->pending_writers)
-				cpu_relax();
-			while ((fastpath = lock->fastpath) & 1)
-				cpu_relax();
-			/* This will also undo the contention bit */
-			if (atomic_cmpxchg(&lock->fastpath, fastpath, (fastpath & ~2)+4)) == fastpath);
-				break;
-		}
-		atomic_sub(1, &lock->pending_readers);
-	}
-
-and yes, there are more atomic accesses in there than would be necessary, 
-in that if you can cram the whole thing into a single 64-bit word you can 
-do both the initial pending fixup and the final cmpxchg/pending_readers 
-thing as a single locked 64-bit op, but hey, the above is fairly simple.
-
-You could also just use a spinlock to protect all the other data, of 
-course.
-
-There are fairness issues here too - do you really want to wait for 
-pending writes every time, or just the first time through the loop? It 
-depends on just how much you want to prefer writers.
-
-The slow-paths for writers is similar, and has similar issues for the 
-fairness issue. For example, instead of a simple "pending_writers" count, 
-maybe you want to use a ticket lock there, to make writers be fair among 
-themselves? Of course, the hope would be that there would never be that 
-kind of contention by pure writers, so that sounds like overdesign, but 
-the thing I'm trying to point out here is that this is all a separate 
-decision from the actual fast-path, and having fair writers doesn't 
-necessarily mean that the fastpath has to even know/care.
-
-The placement of the counts is also something that can be optimized. For 
-example, on teh assumption that readers are much more common than writers, 
-I put the "pending_readers" next to the "fastpath" lock, exactly so that 
-you -can- do the update of both with a single 64-bit locked access, even 
-if the fastpath just used a 32-bit one. But then you should at least add a 
-"__attribute__((aligned(8)))" to the structure definition.
-
-And maybe you want to share the slowpath between all the irq-off etc 
-versions, in which case you need to make the "irq enable while waiting" 
-thing be conditional. 
-
-And if the write path wants to wait for pending readers, and you want to 
-make _that_ fair too, then you want to have that punch through if the 
-writer is in an interrupt, to avoid deadlocks. And again, you might want 
-to make the reader thing be some kind of ticket-based system, so that 
-writers can wait for the readers that came in _before_ that writer, but 
-not to later ones.
-
-But again - none of that has anything to do with the fast-path. The 
-fast-path remains exactly the same for all these issues.
-
-And finally: NONE of the code is at all tested. It's all just written in 
-my MUA. Caveat emptor.
-
-			Linus
+Rene.
