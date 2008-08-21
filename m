@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752454AbYHUFsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757281AbYHUFso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752454AbYHUFsX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 01:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbYHUFpv
+	id S1757281AbYHUFso (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 01:48:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbYHUFqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 01:45:51 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:28175 "EHLO
+	Thu, 21 Aug 2008 01:46:04 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:23291 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753370AbYHUFpt (ORCPT
+	with ESMTP id S1755962AbYHUFqB (ORCPT
 	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 01:45:49 -0400
+	Thu, 21 Aug 2008 01:46:01 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:reply-to:user-agent:mime-version:to:subject
          :content-type:content-transfer-encoding;
-        b=FfZCWfNzv7r+fGo32FeUUDzm5OG7Jcz4BCellyL3W4ZysM6A2iBObPaLivgUpTBRlW
-         87ercoLJ/KrbL8F+pRwuslhxVMGvF9KUVP68CbnrCjZ3y7L7uvsnERUAuLte9piP8aXd
-         1vOGGuPpbJ5LBZIaYFpx0Fw7yKQBvQOEBhPxs=
-Message-ID: <48AD011A.30505@gmail.com>
-Date: Wed, 20 Aug 2008 22:46:02 -0700
+        b=hURqR6+Ih4vp1morYfWPFwyfXa7PEDUHnPDB/thb4+/gpM7/Ek6vTvmLuZ65aSMRES
+         KT9S0ls+wfspqiPs6Shj9KNS4B3+dI38PxEvoeuCBgDlaVmTiTmcnhH5Z2u+tuhERxUy
+         A9rdx+vVyddO/QRMoKItJWFDwnfUbcxSyfiqw=
+Message-ID: <48AD0126.1050609@gmail.com>
+Date: Wed, 20 Aug 2008 22:46:14 -0700
 From: Jared Hulbert <jaredeh@gmail.com>
 Reply-To: jaredeh@gmail.com
 User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
@@ -27,69 +27,119 @@ To: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
        linux-mtd <linux-mtd@lists.infradead.org>,
        =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@AM.SONY.COM,
        cotte@de.ibm.com, nickpiggin@yahoo.com.au
-Subject: [PATCH 09/10] AXFS: axfs_uml.c
+Subject: [PATCH 10/10] AXFS: axfs_uncompress.c
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-UML specific code for working with iomem 'devices'.  UML is handy for testing.
+Handles the decompression for axfs, modeled after fs/cramfs/uncompress.c.
 
 Signed-off-by: Jared Hulbert <jaredeh@gmail.com>
 ---
-diff --git a/fs/axfs/axfs_uml.c b/fs/axfs/axfs_uml.c
+diff --git a/fs/axfs/axfs_uncompress.c b/fs/axfs/axfs_uncompress.c
 new file mode 100644
-index 0000000..7d479a0
+index 0000000..b7a2060
 --- /dev/null
-+++ b/fs/axfs/axfs_uml.c
-@@ -0,0 +1,47 @@
++++ b/fs/axfs/axfs_uncompress.c
+@@ -0,0 +1,97 @@
 +/*
 + * Advanced XIP File System for Linux - AXFS
 + *   Readonly, compressed, and XIP filesystem for Linux systems big and small
 + *
-+ * Copyright(c) 2008 Numonyx
++ *   Modified in 2006 by Eric Anderson
++ *     from the cramfs sources fs/cramfs/uncompress.c
 + *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
++ * (C) Copyright 1999 Linus Torvalds
 + *
-+ * Authors:
-+ *  Jared Hulbert <jaredeh@gmail.com>
++ * axfs_uncompress.c -
++ *  axfs interfaces to the uncompression library. There's really just
++ * three entrypoints:
 + *
-+ * Project url: http://axfs.sourceforge.net
++ *  - axfs_uncompress_init() - called to initialize the thing.
++ *  - axfs_uncompress_exit() - tell me when you're done
++ *  - axfs_uncompress_block() - uncompress a block.
 + *
-+ * axfs_uml.c -
-+ *   Allows axfs to a UML kernels find_iomem() interface as an XIP device or
-+ *   dummy functions if this is not a UML build.
++ * NOTE NOTE NOTE! The uncompression is entirely single-threaded. We
++ * only have one stream, and we'll initialize it only once even if it
++ * then is used by multiple filesystems.
++ *
 + */
 +
-+#include <linux/axfs.h>
-+#ifdef CONFIG_UML
-+#include <mem_user.h>
-+int axfs_get_uml_address(char *iomem, unsigned long *address,
-+			 unsigned long *length)
++#include <linux/errno.h>
++#include <linux/vmalloc.h>
++#include <linux/zlib.h>
++#include <linux/mutex.h>
++
++static z_stream stream;
++static int initialized;
++static struct mutex axfs_uncmp_mutex;
++
++int axfs_uncompress_block(void *dst, int dstlen, void *src, int srclen)
 +{
-+	*address = find_iomem(iomem, length);
-+	if (!(*address)) {
-+		printk(KERN_DEBUG "axfs: find_iomem() failed\n");
-+		return -EINVAL;
++	int err;
++	int out;
++
++	mutex_lock(&axfs_uncmp_mutex);
++
++	stream.next_in = src;
++	stream.avail_in = srclen;
++
++	stream.next_out = dst;
++	stream.avail_out = dstlen;
++
++	err = zlib_inflateReset(&stream);
++	if (err != Z_OK) {
++		printk(KERN_ERR "zlib_inflateReset error %d\n", err);
++		zlib_inflateEnd(&stream);
++		zlib_inflateInit(&stream);
 +	}
 +
-+	if (*length < PAGE_SIZE) {
-+		printk(KERN_DEBUG
-+		       "axfs: iomem() too small, must be at least %li Bytes\n",
-+		       PAGE_SIZE);
-+		return -EINVAL;
++	err = zlib_inflate(&stream, Z_FINISH);
++	if (err != Z_STREAM_END)
++		goto err;
++
++	out = stream.total_out;
++
++	mutex_unlock(&axfs_uncmp_mutex);
++
++	return out;
++
++err:
++
++	mutex_unlock(&axfs_uncmp_mutex);
++
++	printk(KERN_ERR "Error %d while decompressing!\n", err);
++	printk(KERN_ERR "%p(%d)->%p(%d)\n", src, srclen, dst, dstlen);
++	return 0;
++}
++
++int axfs_uncompress_init(void)
++{
++	if (!initialized++) {
++
++		mutex_init(&axfs_uncmp_mutex);
++
++		stream.workspace = vmalloc(zlib_inflate_workspacesize());
++		if (!stream.workspace) {
++			initialized = 0;
++			return -ENOMEM;
++		}
++		stream.next_in = NULL;
++		stream.avail_in = 0;
++		zlib_inflateInit(&stream);
 +	}
 +	return 0;
 +}
-+#else
-+int axfs_get_uml_address(char *iomem, unsigned long *address,
-+			 unsigned long *length)
++
++int axfs_uncompress_exit(void)
 +{
++	if (!--initialized) {
++		zlib_inflateEnd(&stream);
++		vfree(stream.workspace);
++	}
 +	return 0;
 +}
-+#endif /* CONFIG_UML */
 
 
