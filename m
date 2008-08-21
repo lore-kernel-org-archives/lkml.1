@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYHUFl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbYHUFog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753884AbYHUFl4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 01:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYHUFlr
+	id S1754414AbYHUFog (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 01:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbYHUFoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 01:41:47 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35127 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750948AbYHUFlr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 01:41:47 -0400
-Message-ID: <48ACFF0B.6090008@zytor.com>
-Date: Wed, 20 Aug 2008 22:37:15 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 21 Aug 2008 01:44:25 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:25301 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752732AbYHUFoY (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 01:44:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=c04uUvbgEbybhrqz2T3QyTxf1eDWJS8gM+UTQpzF4ygz54aiInZkhK8nO58JzR/8q5
+         d0pJvJY1aNH8YrFxlemIECxsyImkBYFeconC4p7mI8ED3eshMsjpytkVZ6A1zO+S4qTg
+         neojqk4kEGfZ07h5B+POO8eQ6raXqqEqB3jk0=
+Message-ID: <48AD00C4.6060302@gmail.com>
+Date: Wed, 20 Aug 2008 22:44:36 -0700
+From: Jared Hulbert <jaredeh@gmail.com>
+Reply-To: jaredeh@gmail.com
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
 MIME-Version: 1.0
-To: David Fries <david@fries.net>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] i486 CR4 oops, no_console_suspend
-References: <20080818040340.GB17528@spacedout.fries.net> <20080818064120.GA28941@elte.hu> <20080819033710.GD17528@spacedout.fries.net> <20080819093454.GG28713@elte.hu> <48AAEFBE.5060406@zytor.com> <20080821041721.GE17528@spacedout.fries.net>
-In-Reply-To: <20080821041721.GE17528@spacedout.fries.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@AM.SONY.COM,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+Subject: [PATCH 00/10] AXFS: Advanced XIP filesystem
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Fries wrote:
-> On Tue, Aug 19, 2008 at 09:07:26AM -0700, H. Peter Anvin wrote:
->> Ingo Molnar wrote:
->>> i've had trouble no end with getting even kernel messages out to the 
->>> serial console during critical phases of suspend/resume. (especially in 
->>> combination with earlyprintk=ttyS0 - not surprisingly)
->>>
->>> Especially during resume the UART is initialized back to something 
->>> really slow - 300 bauds or 9600 bauds. (depends on the chipset i guess) 
->>> So even though it works, it will only worked reliably when i 
->>> standardized all my baud settings to that very low setting.
->>>
->> Probably depends on the BIOS, actually; I suspect you end up with the 
->> standard BIOS setting, which is *usually* 9600 bps.
-> 
-> I have grub, the kernel, and a getty all set to 115200, for suspend,
-> resume, or reboot it's always 115200.  With grub there's no BIOS
-> guessing, it sets it to a configured state.
-> 
+I'd like to get a first round of review on my AXFS filesystem.  This is a simple
+read only compressed filesystem like Squashfs and cramfs.  AXFS is special
+because it also allows for execute-in-place of your applications.  It is a major
+improvement over the cramfs XIP patches that have been floating around for ages.
+The biggest improvement is in the way AXFS allows for each page to be XIP or
+not.  First, a user collects information about which pages are accessed on a
+compressed image for each mmap()ed region from /proc/axfs/volume0.  That
+'profile' is used as an input to the image builder.  The resulting image has
+only the relevant pages uncompressed and XIP.  The result is smaller memory
+sizes and faster launches.
+                            
 
-Most likely it never gets reinitialized during resume.  This is a bug, 
-obviously.
+See http://axfs.sourceforge.net for more info.
 
-	-hpa
+
+fs/Kconfig                |   21 +
+fs/Makefile               |    1 
+fs/axfs/Makefile          |    7 
+fs/axfs/axfs_bdev.c       |  158 ++++++++
+fs/axfs/axfs_inode.c      |  490 ++++++++++++++++++++++++++
+fs/axfs/axfs_mtd.c        |  233 ++++++++++++
+fs/axfs/axfs_profiling.c  |  594 +++++++++++++++++++++++++++++++
+fs/axfs/axfs_super.c      |  866 ++++++++++++++++++++++++++++++++++++++++++++++
+fs/axfs/axfs_uml.c        |   47 ++
+fs/axfs/axfs_uncompress.c |   97 +++++
+include/linux/axfs.h      |  358 +++++++++++++++++++
+11 files changed, 2872 insertions(+)
+
+
