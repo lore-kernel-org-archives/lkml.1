@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759084AbYHULtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759888AbYHULuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759084AbYHULtd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 07:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755800AbYHULtZ
+	id S1759888AbYHULuW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 07:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757150AbYHULuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 07:49:25 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46975 "EHLO mx2.mail.elte.hu"
+	Thu, 21 Aug 2008 07:50:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53472 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755555AbYHULtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 07:49:24 -0400
-Date: Thu, 21 Aug 2008 13:48:56 +0200
+	id S1756242AbYHULuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 07:50:06 -0400
+Date: Thu, 21 Aug 2008 13:49:52 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 0/4]array interface pageattr APIs for AGP
-Message-ID: <20080821114856.GD30667@elte.hu>
-References: <1219286763.18007.38.camel@sli10-desk.sh.intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@gmail.com>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [3/4] add agp_generic_destroy_pages()
+Message-ID: <20080821114952.GE30667@elte.hu>
+References: <1219286777.18007.41.camel@sli10-desk.sh.intel.com> <20080820200807.324aa671.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1219286763.18007.38.camel@sli10-desk.sh.intel.com>
+In-Reply-To: <20080820200807.324aa671.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,16 +35,34 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Shaohua Li <shaohua.li@intel.com> wrote:
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> These are Dave Airlie's array interface patches for pageattr. I
-> refreshed them and did bug fixing. The purpose of the patches is to
-> reduce tlb/cache flush in agp gart memory allocation.
+> stylistic nit:
 > 
-> the patches apply to tip tree, but please remove my two patches first
-> 1ac2f7d55b7ee1613c90631e87fea22ec06781e5
-> 466ae837424dcc538b1af2a0eaf53be32edcdbe7
+> > +
+> > +			for (i = 0; i < curr->page_count; i++) {
+> > +				curr->memory[i] = (unsigned long)gart_to_virt(
+> > +					curr->memory[i]);
+> > +				curr->bridge->driver->agp_destroy_page(
+> > +					(void *)curr->memory[i],
+> > +					AGP_PAGE_DESTROY_UNMAP);
+> > +			}
+> > +			for (i = 0; i < curr->page_count; i++) {
+> > +				curr->bridge->driver->agp_destroy_page(
+> > +					(void *)curr->memory[i],
+> > +					AGP_PAGE_DESTROY_FREE);
+> > +			}
+> 
+> Make the above code a standalone function and call it here.
+> 
+> Then convert all drivers over so their .agp_destroy_pages points at
+> that new function.
+> 
+> Then remove the `if'.
 
-applied to tip/x86/pat, thanks Shaohua!
+good point.
+
+[ Shaohua, when you fix this, please do it as a delta patch against your 
+  current patchset (or against tip/master). Thanks. ]
 
 	Ingo
