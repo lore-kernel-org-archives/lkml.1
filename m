@@ -1,67 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757006AbYHURb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbYHURdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757006AbYHURb2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 13:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbYHURbT
+	id S1757400AbYHURdo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 13:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYHURdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 13:31:19 -0400
-Received: from emh01.mail.saunalahti.fi ([62.142.5.107]:56517 "EHLO
-	emh01.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbYHURbS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 13:31:18 -0400
-Date: Thu, 21 Aug 2008 20:33:50 +0300 (MET DST)
-From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
-X-X-Sender: szaka@dhcppc2
-To: Dave Chinner <david@fromorbit.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: XFS vs Elevators (was Re: [PATCH RFC] nilfs2: continuous
- snapshotting file system)
-In-Reply-To: <Pine.LNX.4.61.0808211447060.4532@dhcppc2>
-Message-ID: <Pine.LNX.4.61.0808212031050.4532@dhcppc2>
-References: <20080820004326.519405a2.akpm@linux-foundation.org>
- <200808201613.AA00212@capsicum.lab.ntt.co.jp> <Pine.LNX.4.61.0808202352450.4532@dhcppc2>
- <20080820143916.1a7eddab.akpm@linux-foundation.org> <20080821021259.GA5706@disturbed>
- <Pine.LNX.4.62.0808210535450.25448@tamago.serverit.net> <20080821051508.GB5706@disturbed>
- <20080821060418.GC5706@disturbed> <20080821082532.GE5706@disturbed>
- <Pine.LNX.4.61.0808211447060.4532@dhcppc2>
+	Thu, 21 Aug 2008 13:33:35 -0400
+Received: from mail.suse.de ([195.135.220.2]:47433 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753093AbYHURde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 13:33:34 -0400
+Date: Thu, 21 Aug 2008 10:30:27 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB patches for 2.6.27-rc4
+Message-ID: <20080821173027.GA7974@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Antivirus: VAMS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here are some USB patches for your 2.6.26-git tree.
 
-On Thu, 21 Aug 2008, Szabolcs Szakacsits wrote:
-> On Thu, 21 Aug 2008, Dave Chinner wrote:
-> > On Thu, Aug 21, 2008 at 04:04:18PM +1000, Dave Chinner wrote:
-> > > 
-> > > One thing I just found out - my old *laptop* is 4-5x faster than the
-> > > 10krpm scsi disk behind an old cciss raid controller.  I'm wondering
-> > > if the long delays in dispatch is caused by an interaction with CTQ
-> > > but I can't change it on the cciss raid controllers. Are you using
-> > > ctq/ncq on your machine?  
-> 
-> It's a laptop and has NCQ. It makes no difference if NCQ is enabled or 
-> disabled. The problem seems to be XFS only.
+The majority of this patch is removing a file from the recently added
+musb driver, as we shouldn't be adding new proc files for drivers,
+debugfs is much better for that.
 
-The 'nobarrier' mount option made a big improvement:
+Other than that, the rest are:
+	- usb suspend bugfixes
+	- add back a patch you reverted at the very end of 2.6.26
+	- usb driver bugfixes
+	- device id updates
 
-                    MB/s    Runtime (s)
-                   -----    -----------
-  btrfs unstable   17.09        572
-  ext3             13.24        877
-  btrfs 0.16       12.33        793
-  nilfs2 2nd+ runs 11.29        674
-  ntfs-3g           8.55        865
-  reiserfs          8.38        966
-  xfs nobarrier     7.89        949
-  nilfs2 1st run    4.95       3800
-  xfs               1.88       3901
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-	Szaka
- 
--- 
-NTFS-3G:  http://ntfs-3g.org
+All of these patches have been in the -next and -mm trees.
+
+The full patches will be sent to the linux-usb mailing list, if anyone
+wants to see them.
+
+thanks,
+
+greg k-h
+
+------------
+
+ drivers/usb/class/cdc-acm.c         |    5 +-
+ drivers/usb/core/driver.c           |   96 ++--
+ drivers/usb/core/hcd.c              |    9 -
+ drivers/usb/core/hcd.h              |    4 -
+ drivers/usb/core/hub.c              |    9 -
+ drivers/usb/core/urb.c              |    9 +-
+ drivers/usb/core/usb.c              |   73 +++-
+ drivers/usb/core/usb.h              |    3 +
+ drivers/usb/gadget/pxa27x_udc.c     |    2 +-
+ drivers/usb/host/isp1760-hcd.c      |    2 +-
+ drivers/usb/host/ohci-at91.c        |    1 -
+ drivers/usb/host/ohci-au1xxx.c      |    1 -
+ drivers/usb/host/ohci-ep93xx.c      |    1 -
+ drivers/usb/host/ohci-hub.c         |   53 ++-
+ drivers/usb/host/ohci-lh7a404.c     |    1 -
+ drivers/usb/host/ohci-omap.c        |    1 -
+ drivers/usb/host/ohci-pci.c         |    1 -
+ drivers/usb/host/ohci-pnx4008.c     |    1 -
+ drivers/usb/host/ohci-pnx8550.c     |    1 -
+ drivers/usb/host/ohci-ppc-of.c      |    1 -
+ drivers/usb/host/ohci-ppc-soc.c     |    1 -
+ drivers/usb/host/ohci-ps3.c         |    1 -
+ drivers/usb/host/ohci-pxa27x.c      |    1 -
+ drivers/usb/host/ohci-s3c2410.c     |    1 -
+ drivers/usb/host/ohci-sa1111.c      |    1 -
+ drivers/usb/host/ohci-sh.c          |    1 -
+ drivers/usb/host/ohci-sm501.c       |    1 -
+ drivers/usb/host/ohci-ssb.c         |    1 -
+ drivers/usb/host/u132-hcd.c         |   11 -
+ drivers/usb/misc/sisusbvga/sisusb.c |    1 +
+ drivers/usb/musb/Kconfig            |   13 +-
+ drivers/usb/musb/Makefile           |   21 +-
+ drivers/usb/musb/musb_core.c        |   38 +-
+ drivers/usb/musb/musb_core.h        |   19 -
+ drivers/usb/musb/musb_debug.h       |    4 -
+ drivers/usb/musb/musb_gadget_ep0.c  |    2 +
+ drivers/usb/musb/musb_procfs.c      |  830 -----------------------------------
+ drivers/usb/serial/option.c         |    2 +
+ include/linux/usb.h                 |    3 +
+ 39 files changed, 194 insertions(+), 1032 deletions(-)
+ delete mode 100644 drivers/usb/musb/musb_procfs.c
+
+---------------
+
+Alan Stern (5):
+      USB: Add udev argument to interface suspend/resume functions
+      USB: Defer Set-Interface for suspended devices
+      USB: Add new PM callback methods for USB
+      USB: Don't rebind before "complete" callback
+      USB: automatically enable RHSC interrupts
+
+Alexey Dobriyan (1):
+      USB: cdc-acm: don't unlock acm->mutex on error path
+
+Anand Gadiyar (1):
+      MUSB: Fix index register corruption seen with g_ether and Windows host
+
+Enrico Scholz (1):
+      USB: ISP1760: fixed trivial math in comment
+
+Eric Sandeen (1):
+      USB: cdc-acm: quirk for Conexant CX93010 USB modem
+
+Felipe Balbi (2):
+      usb: musb: get rid of procfs entry
+      usb: musb: get rid of MUSB_LOGLEVEL and use parameter
+
+Hiroshi Miura (1):
+      usb-serial: option support HSDPA modem A2502
+
+Oliver Neukum (1):
+      USB: fix bug in usb_unlink_anchored_urbs()
+
+Robert Jarzmik (1):
+      USB: Fix pxa27x_udc usb speed handling.
+
+Stefan Lippers-Hollmann (1):
+      USB: sisusbvga: add USB ID for 0711:0918 Magic Control Technology Corp.
+
