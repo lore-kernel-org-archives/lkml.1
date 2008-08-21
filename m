@@ -1,67 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbYHUM6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbYHUM6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757538AbYHUM6R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 08:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbYHUM6D
+	id S1755650AbYHUM6l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 08:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbYHUM6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 08:58:03 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:64567 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753190AbYHUM6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 08:58:01 -0400
-Date: Thu, 21 Aug 2008 13:57:24 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Frans Pop <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.27-rc3: 'APIC error on CPU1: 00(40)', but only on resume!
-In-Reply-To: <19f34abd0808210520q60357776xbfcf288018e04161@mail.gmail.com>
-Message-ID: <Pine.LNX.4.55.0808211340100.22938@cliff.in.clinika.pl>
-References: <200808202106.41058.elendil@planet.nl>  <200808202138.13302.rjw@sisk.pl>
-  <200808202226.45655.elendil@planet.nl>  <200808202356.33036.rjw@sisk.pl> 
- <Pine.LNX.4.55.0808211023020.22938@cliff.in.clinika.pl> 
- <19f34abd0808210418w39341d05p43712356b352cdc9@mail.gmail.com> 
- <Pine.LNX.4.55.0808211240090.22938@cliff.in.clinika.pl>
- <19f34abd0808210520q60357776xbfcf288018e04161@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 21 Aug 2008 08:58:32 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:36322 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754867AbYHUM6c convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 08:58:32 -0400
+Message-Id: <48AD82D5.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Thu, 21 Aug 2008 13:59:33 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <robert.richter@amd.com>, "Ingo Molnar" <mingo@elte.hu>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: patch "x86: MOVE PCI IO ECS code to x86/pci" breaks CPU
+	hotplug
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Aug 2008, Vegard Nossum wrote:
+>Converting __cpuinit functions called out of init_amd() (and similar others)
+>to __init (and making them subject of xxx_initcall() handling isn't valid, as
+>they would no longer be called for hot plugged CPUs.
+>
+>Further, since it's likely that in virtualized environments the MSR write
+>would at best be ignored, I'd also recommend using the fault-safe
+>accessors here *and* check that the bit actually got set before setting
+>PCI_HAS_IO_ECS (one would obviously have to BUG() when hot-plugged
+>CPUs fail to set the bit when those available at boot successfully did so).
 
-> Ah, right. Here is a dump of the LVT registers:
-> 
-> [00000320] = 000100ef
-> [00000330] = 00000200
-> [00000340] = 00010000
-> [00000350] = 00010700
-> [00000360] = 00000400
-> [00000370] = 000000fe
-> 
-> Maybe I've misunderstood something (again), but should those vectors
-> really be 0 for 330-360? (At least 330 + 360, which are not masked.)
+Even worse - this would even try to access the MSR on non-AMD CPUs
+(currently probably prevented just by the fact that only AMD ones use
+family values of 0x10 or higher).
 
- Masked entries should be fine long-term, although I have a vague
-recollection at least some implementations do send a vector error when an
-LVT register is written with a masked entry implying an invalid vector,
-e.g. a value like 0x00010000.
+Jan
 
- Overall the issue of the validity of the vector exists for interrupts
-using the native APIC priority model only, that is ones using the Fixed
-and LoPri delivery modes.  All the others either ignore the vector 
-altogether, such as the ExtINTA delivery mode, or assign a special meaning 
-to it, such as the StartUp mode.
-
- In this case the thermal entry at 0x330 uses the SMI delivery mode and
-the LINT1 entry at 0x360 uses the NMI mode, so the vector is ignored for
-both.
-
- Thus this LVT is entirely valid and if you receive invalid vector
-interrupts, then the reason must be elsewhere.  Of course you cannot
-exclude a possibility where at some intermediate stage the LVT of your
-system has not been correctly initialised.
-
-  Maciej
