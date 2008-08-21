@@ -1,77 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671AbYHUMYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbYHUM2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754671AbYHUMYp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 08:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYHUMYf
+	id S1755045AbYHUM2e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 08:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbYHUM21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 08:24:35 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:59871 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752613AbYHUMYf convert rfc822-to-8bit (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 08:24:35 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: jaredeh@gmail.com
-Subject: Re: [PATCH 03/10] AXFS: axfs.h
-Date: Thu, 21 Aug 2008 14:24:31 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       =?iso-8859-1?q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@am.sony.com,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-References: <48AD00E6.2070505@gmail.com>
-In-Reply-To: <48AD00E6.2070505@gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 21 Aug 2008 08:28:27 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:55406 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751837AbYHUM20 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 08:28:26 -0400
+Message-ID: <48AD5EE0.8070407@novell.com>
+Date: Thu, 21 Aug 2008 08:26:08 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200808211424.31966.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/xhmE907W48AafEeO7mfSPQ2rrN4hrVY7mzmT
- GkTQyUb9fxE9NZeDNHAG95pz6F39/cvUQD2H7TQal4oGcOylqj
- FOddOYMGd/R2GAaMAc0Tg==
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, vatsa <vatsa@in.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "D. Bahi" <dbahi@novell.com>
+Subject: Re: [PATCH] sched: properly account IRQ and RT load in SCHED_OTHER
+ load balancing
+References: <1219310330.8651.93.camel@twins> <48AD534A.9080807@novell.com> <20080821114126.GB30667@elte.hu>
+In-Reply-To: <20080821114126.GB30667@elte.hu>
+X-Enigmail-Version: 0.95.6
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig43CABFB192A22E95E7E195D3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 August 2008, Jared Hulbert wrote:
-> +static inline u64 axfs_bytetable_stitch(u8 depth, u8 *table, u64 index)
-> +{
-> +       u64 i;
-> +       u64 output = 0;
-> +       u64 byte = 0;
-> +       u64 j;
-> +       u64 bits;
-> +
-> +       for (i = 0; i < depth; i++) {
-> +               j = index * depth + i;
-> +               bits = 8 * (depth - i - 1);
-> +               byte = table[j];
-> +               output += byte << bits;
-> +       }
-> +       return output;
-> +}
-> +
-> +#define AXFS_GET_BYTETABLE_VAL(desc,index) \
-> +  axfs_bytetable_stitch(((struct axfs_region_desc)(desc)).table_byte_depth,\
-> +  (u8 *)((struct axfs_region_desc)(desc)).virt_addr, index)
-> +
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig43CABFB192A22E95E7E195D3
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-This bytetable stuff looks overly complicated, both the data structure and
-the access method. It seems like you are implementing your own custom Huffman
-compression with this.
+Ingo Molnar wrote:
+> * Gregory Haskins <ghaskins@novell.com> wrote:
+>
+>  =20
+>> I haven't had a chance to review the code thoroughly yet, but I had=20
+>> been working on a similar fix and know that this is sorely needed. =20
+>> So...
+>>    =20
+>
+> btw., why exactly does this patch speed up certain workloads? I'm not=20
+> quite sure about the exact reasons of that.
+>
+> 	Ingo
+>  =20
 
-Is the reasonn for the bytetable just to pack numbers efficiently, or do you
-have a different intention?
+I used to have a great demo for the prototype I was working on, but id=20
+have to dig it up.  The gist of it is that the pre-patched scheduler=20
+basically gets thrown for a completely loop in the presence of a mixed=20
+CFS/RT environment.  This isn't a PREEMPT_RT specific problem per se,=20
+though PREEMPT_RT does bring the problem to the forefront since it has=20
+so many active RT tasks by default (for the IRQs, etc) which make it=20
+more evident.
 
-Did you see a significant size benefit over simply storing all metadata as
-uncompressed data structures like in cramfs?
+Since an RT tasks previous usage of declaring "load" did not actually=20
+express the true nature of the RQ load, CFS tasks would have a few=20
+really nasty things happen to them while trying to run on the system=20
+simultaneously.  One of them was that you could starve out CFS tasks=20
+from certain cores (even though there was plenty of CPU bandwidth=20
+available elsewhere) and the load-balancer would think everything is=20
+fine and thus fail to make adjustments.
 
-Have you considered storing simple dentry/inode data in node_type==Compressed
-nodes?
+Say you have a 4 core system.  You could, for instance, get into a=20
+situation where the softirq-net-rx thread was consuming 80% of core 0,=20
+yet the load balancer would still spread, say, a 40 thread CFS load=20
+evenly across all cores (approximately 10 per core, though you would=20
+account for the "load" that the softirq thread contributed too).  The=20
+threads on the other cores would of course enjoy 100% bandwidth, while=20
+the ~10 threads on core 0 would only see 1/5th of that bandwidth.
 
-	Arnd <><
+What it comes down to is that the CFS load should have been evenly=20
+distributed across the available bandwidth of 3*100% + 1*20%, not 4*100% =
+
+as it does today.  The net result is that the application performs in a=20
+very lopsided manner, with some threads getting significantly less (or=20
+sometimes zero!) cpu time compared to their peers.  You can make this=20
+more obvious by nice'ing the CFS load up as high as it will go, which=20
+will approximate 1/2 of the load of the softirq (since RT tasks=20
+previously enjoyed a 2*MAX_SCHED_OTHER_LOAD rating.
+
+I have observed this phenomenon (and its fix) while looking at things=20
+like network intensive workloads.  I'm sure there are plenty of others=20
+that could cause similar ripples.
+
+The fact is, the scheduler treats "load" to mean certain things which=20
+simply did not apply to RT tasks.  As you know very well im sure ;),=20
+"load" is a metric which expresses the share of the cpu that will be=20
+consumed and this is used by the load balancer to make its decisions. =20
+However, you can put whatever rating you want on an RT task and it would =
+
+always be irrelevant.  RT tasks run as frequently and as long as they=20
+want (w.r.t. SCHED_OTHER) independent of what their load rating implies=20
+to the balancer, so you cannot make an accurate assessment of the true=20
+"available shares".  This is why the load-balancer would become confused =
+
+and fail to see true imbalance in a mixed environment.  Fixing this, as=20
+Peter has attempted to do, will result in a much better distribution of=20
+SCHED_OTHER tasks across the true available bandwidth, and thus improve=20
+overall performance.
+
+In previous discussions with people, I had always used a metaphor of a=20
+stream.  A system running SCHED_OTHER tasks is like a smooth running=20
+stream, but  dispatching an RT task (or an IRQ, even) is like throwing a =
+
+boulder into the water.  It makes a big disruptive splash and causes=20
+turbulent white water behind it.  And the stream has no influence over=20
+the size of the boulder, its placement in the stream, nor how long it=20
+will be staying.
+
+This fix (at least in concept) allows it to become more like gently=20
+slipping a streamlined aerodynamic object into the water.  The stream=20
+still cannot do anything about the size or placement of the object, but=20
+it can at least flow around it and smoothly adapt to the reduced volume=20
+of water that the stream can carry. :)
+
+HTH
+-Greg
+
+
+--------------enig43CABFB192A22E95E7E195D3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkitXuAACgkQlOSOBdgZUxmx/wCfQ98iNzwq94VxxVSwXyFXtanB
+Z00AnjfHWBQXi1Ge48PgpIGcCovh9b3P
+=JxzU
+-----END PGP SIGNATURE-----
+
+--------------enig43CABFB192A22E95E7E195D3--
