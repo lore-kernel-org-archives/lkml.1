@@ -1,181 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbYHUTwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbYHUT4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755944AbYHUTwS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 15:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbYHUTwE
+	id S1756169AbYHUT4E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 15:56:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbYHUTzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 15:52:04 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:30503 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751293AbYHUTwB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 15:52:01 -0400
-Date: Thu, 21 Aug 2008 12:51:01 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Keith Wansbrough <keith@lochan.org>, axboe@kernel.dk, alain@linux.lu,
-       linux-kernel@vger.kernel.org, gene.heskett@gmail.com,
-       Michael Kerrisk <mtk.manpages@googlemail.com>
-Subject: Re: [PATCH] floppy: support arbitrary first-sector numbers
-Message-Id: <20080821125101.e8a8f256.randy.dunlap@oracle.com>
-In-Reply-To: <20080821123949.fc1af4ba.akpm@linux-foundation.org>
-References: <20080809184214.GA13495@ayla.home.lochan.org>
-	<20080821123949.fc1af4ba.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 21 Aug 2008 15:55:54 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39867 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751063AbYHUTzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 15:55:53 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: ftraced and suspend to ram
+Date: Thu, 21 Aug 2008 21:59:36 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <alpine.DEB.1.10.0808211139420.3947@gandalf.stny.rr.com> <alpine.DEB.1.10.0808211423410.678@gandalf.stny.rr.com> <200808212037.11775.rjw@sisk.pl>
+In-Reply-To: <200808212037.11775.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200808212159.37678.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Aug 2008 12:39:49 -0700 Andrew Morton wrote:
-
-> On Sat, 9 Aug 2008 19:42:14 +0100
-> Keith Wansbrough <keith@lochan.org> wrote:
+On Thursday, 21 of August 2008, Rafael J. Wysocki wrote:
+> On Thursday, 21 of August 2008, Steven Rostedt wrote:
+> > 
+> > On Thu, 21 Aug 2008, Rafael J. Wysocki wrote:
+> > 
+> > > On Thursday, 21 of August 2008, Steven Rostedt wrote:
+> > > > 
+> > > > In latest 2.6.27(git) enabling dynamic ftrace makes resume from a suspend 
+> > > > to ram reboot instead of resuming. Queued for 2.6.28 is a new method of 
+> > > > recording mcount callers at compile time that does not have this issue.
+> > > > 
+> > > > But the new method is still too "green" to be pulled into 27, so the old 
+> > > > ftraced (daemon method) needs to be fixed for 27.
+> > > > 
+> > > > The way dynamic ftrace works with the daemon method is this. On boot up 
+> > > > the mcount function simply returns. When ftrace is initialized, it calls 
+> > > > kstop_machine to modify the mcount function to call another function 
+> > > > called "ftrace_record_ip". This new function will record in a preallocated 
+> > > > hash (allocated by the ftrace initializer) all the callers of mcount. A 
+> > > > check is made to see if the caller has already been put into the hash, and 
+> > > > if so, it is not recorded again.
+> > > > 
+> > > > Later on a kernel thread ftraced is created. This kernel thread wakes up 
+> > > > once a second and checks to see if any new functions were added to the 
+> > > > hash. If so, it then calls kstop_machine and modifies those callers to 
+> > > > mcount into nops.
+> > > > 
+> > > > Again, this daemon method makes resume from suspend to ram reboot instead 
+> > > > of resuming. Now, I'm asking the s2r gurus, what did I miss? Do I need to 
+> > > > add a "NO_FREEZE" flag or something to the "ftraced" kernel thread?
+> > > > 
+> > > > Just asking for some advice.
+> > > 
+> > > If I'm not mistaken, it'll probably suffice to make it freezable, so that it
+> > > doesn't run while the system is suspending and resuming.  Would that be
+> > > acceptable?
+> > 
+> > Does it not freeze by default.
 > 
-> > The current floppy_struct allows floppies to number sectors starting
-> > from 0 or 1.  This patch allows arbitrary first-sector numbers - for
-> > example, 0xC1 for Amstrad CPC disks.
-> > 
-> > This extends the existing 1-bit field (FD_ZEROBASED, bit 2 of stretch) 
-> > to 8 bits (FD_SECTMASK, bits 2 to 9).
-> > 
-> > Currently 0x00 denotes a first sector number of 1, and 0x01 denotes a
-> > first sector number of 0.  We extend this by interpreting FD_SECTMASK
-> > as the first sector number with the LSB flipped.
-> > 
-> > Signed-off-by: Keith Wansbrough <keith@lochan.org>
-> > ---
-> > 
-> > I've tested formatting, writing, and reading disks with a variety of
-> > first sector numbers (including 0 and 1), and all works as expected.
-> > 
-> > I have made corresponding changes to fdutils, which I will submit
-> > separately to the fdutils maintainer.
-> > 
-> > There's no floppy maintainer listed in MAINTAINERS, so this is sent to
-> > the block subsystem maintainer and to the fdutils maintainer.  I'm cc:ing
-> > Gene because I know he's been working in this area recently.
-> > 
-> > --KW 8-)
-> > 
-> > Index: linux-2.6.27-rc1-git4/drivers/block/floppy.c
-> > ===================================================================
-> > --- linux-2.6.27-rc1-git4.orig/drivers/block/floppy.c	2008-08-02 23:36:32.000000000 +0100
-> > +++ linux-2.6.27-rc1-git4/drivers/block/floppy.c	2008-08-02 23:36:37.000000000 +0100
-> > @@ -423,8 +423,15 @@ static struct floppy_raw_cmd *raw_cmd, d
-> >   * 1581's logical side 0 is on physical side 1, whereas the Sharp's logical
-> >   * side 0 is on physical side 0 (but with the misnamed sector IDs).
-> >   * 'stretch' should probably be renamed to something more general, like
-> > - * 'options'.  Other parameters should be self-explanatory (see also
-> > - * setfdprm(8)).
-> > + * 'options'.
-> > + *
-> > + * Bits 2 through 9 of 'stretch' tell the number of the first sector.
-> > + * The LSB (bit 2) is flipped. For most disks, the first sector
-> > + * is 1 (represented by 0x00<<2).  For some CP/M and music sampler
-> > + * disks (such as Ensoniq EPS 16plus) it is 0 (represented as 0x01<<2).
-> > + * For Amstrad CPC disks it is 0xC1 (represented as 0xC0<<2).
-> > + *
-> > + * Other parameters should be self-explanatory (see also setfdprm(8)).
-> >   */
-> >  /*
-> >  	    Size
-> > @@ -2236,9 +2243,9 @@ static void setup_format_params(int trac
-> >  			}
-> >  		}
-> >  	}
-> > -	if (_floppy->stretch & FD_ZEROBASED) {
-> > +	if (_floppy->stretch & FD_SECTBASEMASK) {
-> >  		for (count = 0; count < F_SECT_PER_TRACK; count++)
-> > -			here[count].sect--;
-> > +			here[count].sect += FD_SECTBASE(_floppy) - 1;
-> >  	}
-> >  }
-> >  
-> > @@ -2649,7 +2656,7 @@ static int make_raw_rw_request(void)
-> >  	}
-> >  	HEAD = fsector_t / _floppy->sect;
-> >  
-> > -	if (((_floppy->stretch & (FD_SWAPSIDES | FD_ZEROBASED)) ||
-> > +	if (((_floppy->stretch & (FD_SWAPSIDES | FD_SECTBASEMASK)) ||
-> >  	     TESTF(FD_NEED_TWADDLE)) && fsector_t < _floppy->sect)
-> >  		max_sector = _floppy->sect;
-> >  
-> > @@ -2679,7 +2686,7 @@ static int make_raw_rw_request(void)
-> >  	CODE2SIZE;
-> >  	SECT_PER_TRACK = _floppy->sect << 2 >> SIZECODE;
-> >  	SECTOR = ((fsector_t % _floppy->sect) << 2 >> SIZECODE) +
-> > -	    ((_floppy->stretch & FD_ZEROBASED) ? 0 : 1);
-> > +	    FD_SECTBASE(_floppy);
-> >  
-> >  	/* tracksize describes the size which can be filled up with sectors
-> >  	 * of size ssize.
-> > @@ -3311,7 +3318,7 @@ static inline int set_geometry(unsigned 
-> >  	    g->head <= 0 ||
-> >  	    g->track <= 0 || g->track > UDP->tracks >> STRETCH(g) ||
-> >  	    /* check if reserved bits are set */
-> > -	    (g->stretch & ~(FD_STRETCH | FD_SWAPSIDES | FD_ZEROBASED)) != 0)
-> > +	    (g->stretch & ~(FD_STRETCH | FD_SWAPSIDES | FD_SECTBASEMASK)) != 0)
-> >  		return -EINVAL;
-> >  	if (type) {
-> >  		if (!capable(CAP_SYS_ADMIN))
-> > @@ -3356,7 +3363,7 @@ static inline int set_geometry(unsigned 
-> >  		if (DRS->maxblock > user_params[drive].sect ||
-> >  		    DRS->maxtrack ||
-> >  		    ((user_params[drive].sect ^ oldStretch) &
-> > -		     (FD_SWAPSIDES | FD_ZEROBASED)))
-> > +		     (FD_SWAPSIDES | FD_SECTBASEMASK)))
-> >  			invalidate_drive(bdev);
-> >  		else
-> >  			process_fd_request();
-> > Index: linux-2.6.27-rc1-git4/include/linux/fd.h
-> > ===================================================================
-> > --- linux-2.6.27-rc1-git4.orig/include/linux/fd.h	2008-08-02 23:36:32.000000000 +0100
-> > +++ linux-2.6.27-rc1-git4/include/linux/fd.h	2008-08-02 23:36:37.000000000 +0100
-> > @@ -15,10 +15,16 @@ struct floppy_struct {
-> >  			sect,		/* sectors per track */
-> >  			head,		/* nr of heads */
-> >  			track,		/* nr of tracks */
-> > -			stretch;	/* !=0 means double track steps */
-> > +			stretch;	/* bit 0 !=0 means double track steps */
-> > +					/* bit 1 != 0 means swap sides */
-> > +					/* bits 2..9 give the first sector */
-> > +					/*  number (the LSB is flipped) */
-> >  #define FD_STRETCH 1
-> >  #define FD_SWAPSIDES 2
-> >  #define FD_ZEROBASED 4
-> > +#define FD_SECTBASEMASK 0x3FC
-> > +#define FD_MKSECTBASE(s) (((s) ^ 1) << 2)
-> > +#define FD_SECTBASE(floppy) ((((floppy)->stretch & FD_SECTBASEMASK) >> 2) ^ 1)
-> >  
-> >  	unsigned char	gap,		/* gap1 size */
-> >  
+> No, it doesn't.  Kernel threads are not freezable by default
 > 
-> So this is a backward-compatible enhancement to the floppy FDSETPRM and
-> FDDEFPRM ioctl.  If some userspace wasn't setting those bits to zero,
-> it loses, and probably deserved to.
+> > > Please tell me where exactly the ftraced source code is located.
+> > 
+> > It's in Linus's latest git tree.
+> > 
+> > The code in question is the ftraced() function in kernel/trace/ftrace.c
 > 
-> I'd suggest an update to the FDDEFPRM documentation, only it isn't
-> documented.
-> 
-> Who is the fdutils maintainer?
+> Thanks, I'll have a look in a while.
 
-man fdformat says:
+Can you try the appended patch, please?
 
-AVAILABILITY
-       The  fdformat command is part of the util-linux-ng package and is avail-
-       able from ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/.
-
-so the maintainer is   Karel Zak <kzak@redhat.com>
+Thanks,
+Rafael
 
 ---
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+ kernel/trace/ftrace.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+Index: linux-2.6/kernel/trace/ftrace.c
+===================================================================
+--- linux-2.6.orig/kernel/trace/ftrace.c
++++ linux-2.6/kernel/trace/ftrace.c
+@@ -796,8 +796,13 @@ static int ftraced(void *ignore)
+ {
+ 	unsigned long usecs;
+ 
++	set_freezable();
++
+ 	while (!kthread_should_stop()) {
+ 
++		if (try_to_freeze())
++			continue;
++
+ 		set_current_state(TASK_INTERRUPTIBLE);
+ 
+ 		/* check once a second */
