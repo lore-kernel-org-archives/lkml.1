@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbYHUP7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbYHUQBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757699AbYHUP7m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 11:59:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbYHUP73
+	id S1754356AbYHUQBv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 12:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbYHUQBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 11:59:29 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:6746 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751355AbYHUP72 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 11:59:28 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAKMtrUh5LD0w/2dsb2JhbAC2MYFm
-X-IronPort-AV: E=Sophos;i="4.32,246,1217773800"; 
-   d="scan'208";a="176604568"
-Date: Fri, 22 Aug 2008 01:59:25 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Martin Knoblauch <knobi@knobisoft.de>
-Cc: Szabolcs Szakacsits <szaka@ntfs-3g.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Subject: Re: XFS vs Elevators (was Re: [PATCH RFC] nilfs2: continuous
-	snapshotting file system)
-Message-ID: <20080821155925.GI5706@disturbed>
-Mail-Followup-To: Martin Knoblauch <knobi@knobisoft.de>,
-	Szabolcs Szakacsits <szaka@ntfs-3g.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	xfs@oss.sgi.com
-References: <293210.50030.qm@web32606.mail.mud.yahoo.com>
+	Thu, 21 Aug 2008 12:01:42 -0400
+Received: from mx1.suse.de ([195.135.220.2]:37033 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751826AbYHUQBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 12:01:40 -0400
+Date: Thu, 21 Aug 2008 08:58:45 -0700
+From: Greg KH <gregkh@suse.de>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix possible kobject reference counter leak in
+	kobject_rename()
+Message-ID: <20080821155845.GA2424@suse.de>
+References: <48AD4414.6080604@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <293210.50030.qm@web32606.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <48AD4414.6080604@jp.fujitsu.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 04:05:21AM -0700, Martin Knoblauch wrote:
->  just curious - which CCISS controller and and what kind of disk configuration are you using.
+On Thu, Aug 21, 2008 at 07:31:48PM +0900, Kenji Kaneshige wrote:
+> Hi,
+> 
+> I found a possible kobject reference counter leak problem in
+> kobject_rename(). The following patch will fix it.
+> 
+> Thanks,
+> Kenji Kaneshige
+> 
+> 
+> Fix possible kobject reference counter leak in kobject_rename().
+> 
+> If kobject_rename() failed because of name collision, we must call
+> kobject_put() for specified kobject before return.
+> 
+> Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+> 
+> ---
+>  lib/kobject.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> Index: linux-2.6.27-rc4/lib/kobject.c
+> ===================================================================
+> --- linux-2.6.27-rc4.orig/lib/kobject.c
+> +++ linux-2.6.27-rc4/lib/kobject.c
+> @@ -411,6 +411,7 @@ int kobject_rename(struct kobject *kobj,
+>  			       "to '%s' as '%s' is already in existence.\n",
+>  			       kobject_name(kobj), new_name, new_name);
+>  			kobject_put(temp_kobj);
+> +			kobject_put(kobj);
+>  			return -EINVAL;
+>  		}
+>  	}
 
-Smart Array 5300, using a single 36GB 10krpm U3SCSI disk.
+Thanks, but this is already fixed up with a patch from Eric in my tree
+in a different way.
 
-Looks like most of the problems were caused by the firmware,
-and are not driver related. An upgrade to a newer (2002!) firmware
-appears to have fixed the worst of the problems.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+greg k-h
