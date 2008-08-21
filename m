@@ -1,95 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbYHUCLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbYHUCNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753983AbYHUCLg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 22:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbYHUCL0
+	id S1754341AbYHUCNU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 22:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbYHUCNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 22:11:26 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41526 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750801AbYHUCLZ (ORCPT
+	Wed, 20 Aug 2008 22:13:06 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:22988 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751143AbYHUCNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 22:11:25 -0400
-Date: Thu, 21 Aug 2008 11:17:40 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       ryov@valinux.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH -mm 0/7] memcg: lockless page_cgroup v1
-Message-Id: <20080821111740.49f99038.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080820200006.a152c14c.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080819173014.17358c17.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080820194108.e76b20b3.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080820200006.a152c14c.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Aug 2008 22:13:05 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAAxsrEh5LD0w/2dsb2JhbAC1ZIFZ
+X-IronPort-AV: E=Sophos;i="4.32,243,1217773800"; 
+   d="scan'208";a="175981629"
+Date: Thu, 21 Aug 2008 12:12:59 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Szabolcs Szakacsits <szaka@ntfs-3g.org>, konishi.ryusuke@lab.ntt.co.jp,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
+Message-ID: <20080821021259.GA5706@disturbed>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Szabolcs Szakacsits <szaka@ntfs-3g.org>,
+	konishi.ryusuke@lab.ntt.co.jp, linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20080820004326.519405a2.akpm@linux-foundation.org> <200808201613.AA00212@capsicum.lab.ntt.co.jp> <Pine.LNX.4.61.0808202352450.4532@dhcppc2> <20080820143916.1a7eddab.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080820143916.1a7eddab.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008 20:00:06 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-
-> On Wed, 20 Aug 2008 19:41:08 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
-> > On Wed, 20 Aug 2008 18:53:06 +0900
-> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On Wed, Aug 20, 2008 at 02:39:16PM -0700, Andrew Morton wrote:
+> On Thu, 21 Aug 2008 00:25:55 +0300 (MET DST)
+> Szabolcs Szakacsits <szaka@ntfs-3g.org> wrote:
+> > I ran compilebench on kernel 2.6.26 with freshly formatted volumes. 
+> > The behavior of NILFS2 was interesting.
 > > 
-> > > Hi, this is a patch set for lockless page_cgroup.
-> > > 
-> > > dropped patches related to mem+swap controller for easy review.
-> > > (I'm rewriting it, too.)
-> > > 
-> > > Changes from current -mm is.
-> > >   - page_cgroup->flags operations is set to be atomic.
-> > >   - lock_page_cgroup() is removed.
-> > >   - page->page_cgroup is changed from unsigned long to struct page_cgroup*
-> > >   - page_cgroup is freed by RCU.
-> > >   - For avoiding race, charge/uncharge against mm/memory.c::insert_page() is
-> > >     omitted. This is ususally used for mapping device's page. (I think...)
-> > > 
-> > > In my quick test, perfomance is improved a little. But the benefit of this
-> > > patch is to allow access page_cgroup without lock. I think this is good 
-> > > for Yamamoto's Dirty page tracking for memcg.
-> > > For I/O tracking people, I added a header file for allowing access to
-> > > page_cgroup from out of memcontrol.c
-> > > 
-> > > The base kernel is recent mmtom. Any comments are welcome.
-> > > This is still under test. I have to do long-run test before removing "RFC".
-> > > 
-> > Known problem: force_emtpy is broken...so rmdir will struck into nightmare.
-> > It's because of patch 2/7.
-> > will be fixed in the next version.
+> > Its peformance rapidly degrades to the lowest ever measured level 
+> > (< 1 MB/s) but after a while it recovers and gives consistent numbers.
+> > However it's still very far from the current unstable btrfs performance. 
+> > The results are reproducible.
 > > 
+> >                     MB/s    Runtime (s)
+> >                    -----    -----------
+> >   btrfs unstable   17.09        572
+> >   ext3             13.24        877
+> >   btrfs 0.16       12.33        793
+> >   nilfs2 2nd+ runs 11.29        674
+> >   ntfs-3g           8.55        865
+> >   reiserfs          8.38        966
+> >   nilfs2 1st run    4.95       3800
+> >   xfs               1.88       3901
 > 
-> This is a quick fix but I think I can find some better solution..
-> ==
-> Because removal from LRU is delayed, mz->lru will never be empty until
-> someone kick drain. This patch rotate LRU while force_empty and makes
-> page_cgroup will be freed.
-> 
+> err, what the heck happened to xfs?  Is this usual?
 
-I'd like to rewrite force_empty to move all usage to "default" cgroup.
-There are some reasons.
+No, definitely not usual. I suspect it's from an old mkfs and
+barriers being used.  What is the output of the xfs.mkfs when
+you make the filesystem and what mount options being used?
 
-1. current force_empty creates an alive page which has no page_cgroup.
-   This is bad for routine which want to access page_cgroup from page.
-   And this behavior will be an issue of race condition in future.    
-2. We can see amount of out-of-control usage in default cgroup.
+Cheers,
 
-But to do this, I'll have to avoid "hitting limit" in default cgroup.
-I'm now wondering to make it impossible to set limit to default cgroup.
-(will show as a patch in the next version of series.) 
-Does anyone have an idea ?
-
-Thanks,
--Kame
-
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
