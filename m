@@ -1,97 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759068AbYHUTOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760924AbYHUTRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759068AbYHUTOS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 15:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYHUTOG
+	id S1760924AbYHUTRA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 15:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbYHUTQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 15:14:06 -0400
-Received: from mail-gx0-f29.google.com ([209.85.217.29]:43011 "EHLO
-	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751020AbYHUTOE (ORCPT
+	Thu, 21 Aug 2008 15:16:52 -0400
+Received: from qb-out-0506.google.com ([72.14.204.225]:19369 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754631AbYHUTQv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 15:14:04 -0400
+	Thu, 21 Aug 2008 15:16:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=Ugc6j2EKRztzGloe6kwkUbKWxfiDvpRy+JJLXPgiuTyKqeSJUXOLRtYnZSr5pUKZHh
-         hVzIbCMjo6jT2MdrJE0I7VjgA4Swwd/mIi3JqS0tDrcVvN7voR4CIiIIKEfB4JI487f2
-         rVX3yFEywtHk8cdSiOdPtFAE2WlaO2R5lczsc=
-Message-ID: <19f34abd0808211214x24af9351tcc077307fd1f2be5@mail.gmail.com>
-Date: Thu, 21 Aug 2008 21:14:03 +0200
+        b=lpKUJlvarsdamnASfXmdWOUSfK9nX3x3f4Um3qklmpdRkjb2Xqb1FIncYeZv9b3mh3
+         UMBdc+hEFc8I4n9GBvjvS5UBXplr8CG+Nb0g0pRqjcoasKmhBsQR5nXdmEBQGBNwNbmu
+         3Pex6VHnZz9/diR/Vu3C+JOz41RFiKO8FoKTU=
+Message-ID: <19f34abd0808211216q319e4fbclc41b362d8dbdcbc0@mail.gmail.com>
+Date: Thu, 21 Aug 2008 21:16:50 +0200
 From: "Vegard Nossum" <vegard.nossum@gmail.com>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: latest -git: hibernate: possible circular locking dependency detected
-Cc: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
-       "Max Krasnyanskiy" <maxk@qualcomm.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Pavel Machek" <pavel@ucw.cz>
-In-Reply-To: <200808212107.42356.rjw@sisk.pl>
+Subject: Re: latest -git: suspend: unable to handle kernel paging request (was Re: no_console_suspend doesn't work?)
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <200808212113.53411.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <19f34abd0808210804y7ee91d1fy12da5ad6f82d2451@mail.gmail.com>
-	 <19f34abd0808211131h7c4b4fcfo99f858218aad8027@mail.gmail.com>
-	 <19f34abd0808211139s24f0d57bq7fbd6d2963594919@mail.gmail.com>
-	 <200808212107.42356.rjw@sisk.pl>
+References: <19f34abd0808211028w7889587fke523ff244339e7c5@mail.gmail.com>
+	 <19f34abd0808211121l25e6b187p93db789607c2af30@mail.gmail.com>
+	 <19f34abd0808211145y1c3d5aedwf8e918afeba9cc98@mail.gmail.com>
+	 <200808212113.53411.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 9:07 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday, 21 of August 2008, Vegard Nossum wrote:
->> On Thu, Aug 21, 2008 at 8:31 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
->> > On Thu, Aug 21, 2008 at 8:22 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> On Thursday, 21 of August 2008, Vegard Nossum wrote:
->> >>>
->> >>> I just got this on v2.6.27-rc4 (+ unrelated fix):
->> >>>
->> >>> ACPI: Preparing to enter system sleep state S5
->> >>
->> >> This looks fishy.
->> >>
->> >> Please check what's there in /sys/power/disk .
->> >>
+On Thu, Aug 21, 2008 at 9:13 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> ...followed by the "unable to handle kernel paging request" as in
+>> previous e-mail. The numbers 00100104 and 00200200 seem to appear all
+>> the time.
 >>
->> Sorry, forgot this one:
->>
->> # cat /sys/power/disk
->> test testproc [shutdown] reboot
+>> At least it is 100% reproducible now and with nice oopses too :-)
 >
-> Hm, I wonder why 'platform' isn't there.
+> Hm, slab corruption, it seems.
 >
-> Perhaps the dmesg log will tell.
->
-> [/me looks]
->
-> No, it doesn't.  The BIOS evidently supports S4.
->
-> [/me looks into the source code]
->
-> I have no idea whatsoever how it is possible to have
->
-> "ACPI: (supports S0 S1 S3 S4 S5)"
->
-> in the log and not to have "platform" in the output of "cat /sys/power/disk".
+> Do you use SLAB or SLUB?
 
-I'm sorry, I made a stupid mistake: That file was taken from the
-system when it was booted with acpi=off. The boot log had acpi
-enabled, of course. Here is the same file (now booted without
-acpi=off):
+SLUB, with all possible debugging:
 
-# cat /sys/power/disk
-[platform] test testproc shutdown reboot
+CONFIG_SLUB_DEBUG=y
+# CONFIG_SLAB is not set
+CONFIG_SLUB=y
+# CONFIG_SLOB is not set
+CONFIG_SLABINFO=y
+CONFIG_SLUB_DEBUG_ON=y
+CONFIG_SLUB_STATS=y
 
-> Can you please add
->
-> printk(KERN_CRIT "PM: hibernation_ops = %p\n", hibernation_ops);
->
-> at the end of kernel/power/disk.c:hibernation_set_ops() and see if it gets
-> printed during boot?
-
-I guess this is now not necessary anymore?
+(Thanks for helping out.)
 
 
 Vegard
