@@ -1,39 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbYHUNKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758277AbYHUNLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757531AbYHUNKe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 09:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbYHUNK0
+	id S1758277AbYHUNLV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 09:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbYHUNLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 09:10:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35280 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754035AbYHUNKZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 09:10:25 -0400
-Message-ID: <48AD692F.8030908@linux-foundation.org>
-Date: Thu, 21 Aug 2008 08:10:07 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: holt@sgi.com, kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, akpm@linux-foundation.org,
-       tokunaga.keiich@jp.fujitsu.com
-Subject: Re: [RFC][PATCH 0/2] Quicklist is slighly problematic.
-References: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>	<48AC25E7.4090005@linux-foundation.org>	<20080821021332.GA23397@sgi.com> <20080820.200852.193706487.davem@davemloft.net>
-In-Reply-To: <20080820.200852.193706487.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 21 Aug 2008 09:11:07 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:37729 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753722AbYHUNLG (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 09:11:06 -0400
+Subject: Re: [PATCH 03/10] AXFS: axfs.h
+From: Daniel Walker <dwalker@mvista.com>
+To: jaredeh@gmail.com
+Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>, tim.bird@AM.SONY.COM,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+In-Reply-To: <48AD00E6.2070505@gmail.com>
+References: <48AD00E6.2070505@gmail.com>
+Content-Type: text/plain
+Date: Thu, 21 Aug 2008 06:10:58 -0700
+Message-Id: <1219324258.23311.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
+On Wed, 2008-08-20 at 22:45 -0700, Jared Hulbert wrote:
+> +#define AXFS_GET_BYTETABLE_VAL(desc,index) \
+> +  axfs_bytetable_stitch(((struct
+> axfs_region_desc)(desc)).table_byte_depth,\
+> +  (u8 *)((struct axfs_region_desc)(desc)).virt_addr, index)
+> +
+> +#define AXFS_GET_NODE_TYPE(sbi,node_index) \
+> +  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->node_type,\
+> +   (node_index))
+> +
+> +#define AXFS_GET_NODE_INDEX(sbi,node__index) \
+> +  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->node_index,\
+> +   (node__index))
+> +
 
-> Using SLAB/SLUB for the page table bits with appropriate constructor
-> and destructor bits ought to be able to approximate the gains
-> from avoiding the initialization for cached objects.
+I think it would be much cleaner to do all these similar macro's as
+static inline functions.
 
-Its a bit strange to use the small object allocator for page sized
-allocations. Plus there is this tie in with the tlb flushing logic. So I think
-this would be more clean if it would be moved into the asm-generic/tlb.h or so.
+Daniel
+
