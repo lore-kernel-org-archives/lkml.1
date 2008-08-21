@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbYHUMmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbYHUMnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbYHUMmi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 08:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbYHUMm2
+	id S1756091AbYHUMnl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 08:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbYHUMnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 08:42:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37215 "EHLO ogre.sisk.pl"
+	Thu, 21 Aug 2008 08:43:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60875 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751793AbYHUMm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 08:42:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Maciej Rutecki" <maciej.rutecki@gmail.com>
-Subject: Re: [2.6.26.*] boot problem (ahci/irq related?)
-Date: Thu, 21 Aug 2008 14:45:45 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, "Jeff Garzik" <jgarzik@pobox.com>,
-       tj@kernel.org, andi@firstfloor.org,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>
-References: <8db1092f0808111312x3baf819bxbb05030c05693065@mail.gmail.com> <8db1092f0808160236o63c42de4k3c455c349d3e9da6@mail.gmail.com> <8db1092f0808201136y15a67647i95fd00fb5d2476fc@mail.gmail.com>
-In-Reply-To: <8db1092f0808201136y15a67647i95fd00fb5d2476fc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808211445.46467.rjw@sisk.pl>
+	id S1752818AbYHUMnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 08:43:31 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <alpine.LRH.1.10.0808210833080.8202@tundra.namei.org>
+References: <alpine.LRH.1.10.0808210833080.8202@tundra.namei.org> <20080820135624.10583.99230.stgit@warthog.procyon.org.uk>
+To: James Morris <jmorris@namei.org>
+Cc: dhowells@redhat.com, a.beregalov@gmail.com, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] CRED: Further fix execve error handling
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Thu, 21 Aug 2008 13:43:23 +0100
+Message-ID: <4783.1219322603@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 20 of August 2008, Maciej Rutecki wrote:
-> 2008/8/16 Maciej Rutecki <maciej.rutecki@gmail.com>:
-> > I test few versions of linux kernel and 2.6.26-rc3 hangs during boot,
-> > 2.6.26-rc2 (propably) is good. I wrote "propably" because bug is not
-> > 100% reproducible and must have more time to be sure. After I will try
-> > bisect. Any suggestions?
-> >
-> > --
-> > Maciej Rutecki
-> > http://www.maciek.unixy.pl
-> >
-> 
-> I try bisect (no results), and one time I boot kernel with
-> initcall_debug option. Kernel stops on this:
-> http://unixy.pl/maciek/download/kernel/dupa/initcall_debug.jpg
+James Morris <jmorris@namei.org> wrote:
 
-Do you have a log where it doesn't hang?
+> How about moving the mutex_unlock() out of free_bprm() and into the 
+> calling code ?
 
-Rafael
+Okay, I've sent you a patch to do this.  Note that it only affects the error
+handling case.  In the case of a successful execution, install_exec_creds()
+will release the mutex when it is safe to do so.  This then permits
+PTRACE_ATTACH to take place from that point.  I could shift the unlock so that
+it always happens in [compat_]do_execve() - do you think it's worth it?  It
+would mean that ptrace wouldn't be able to attach to a process that's still
+under construction by the binfmt, which is probably reasonable.
+
+David
