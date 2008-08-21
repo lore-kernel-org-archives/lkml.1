@@ -1,100 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbYHULch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759441AbYHULdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759427AbYHULch (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 07:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757631AbYHULcY
+	id S1759441AbYHULdx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 07:33:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbYHULdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 07:32:24 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:49885 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbYHULcX (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 07:32:23 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: jaredeh@gmail.com
-Subject: Re: [PATCH 03/10] AXFS: axfs.h
-Date: Thu, 21 Aug 2008 13:31:35 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       =?iso-8859-1?q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@am.sony.com,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-References: <48AD00E6.2070505@gmail.com>
-In-Reply-To: <48AD00E6.2070505@gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 21 Aug 2008 07:33:45 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:33029 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750828AbYHULdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 07:33:44 -0400
+Date: Thu, 21 Aug 2008 12:33:39 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Adam Litke <agl@us.ibm.com>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm <linux-mm@kvack.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       nacc <nacc@linux.vnet.ibm.com>, apw <apw@shadowen.org>,
+       agl <agl@linux.vnet.ibm.com>
+Subject: Re: [BUG] [PATCH v2] Make setup_zone_migrate_reserve() aware of overlapping nodes
+Message-ID: <20080821113338.GA29950@csn.ul.ie>
+References: <1218837685.12953.11.camel@localhost.localdomain> <1219252134.13885.25.camel@localhost.localdomain> <1219255911.8960.41.camel@nimitz> <1219262152.13885.27.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Message-Id: <200808211331.36346.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/8ulayxtIkZ2utIrgHV6+xTUryGr1kIXhvUNk
- hfG400oeX4l9B/+fDij5L1jpmcvzIukb1mtuZxGRRhMuC2g7In
- NuNa5staJQzmcg600QtCw==
+In-Reply-To: <1219262152.13885.27.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 August 2008, Jared Hulbert wrote:
->
-> +#ifndef __AXFS_H
-> +#define __AXFS_H
+On (20/08/08 14:55), Adam Litke didst pronounce:
+>     Changes since V1
+>      - Fix build for !NUMA
+>      - Add VM_BUG_ON() to catch this problem at the source
+>     
+>     I have gotten to the root cause of the hugetlb badness I reported back on
+>     August 15th.  My system has the following memory topology (note the
+>     overlapping node):
+>     
+>             Node 0 Memory: 0x8000000-0x44000000
+>             Node 1 Memory: 0x0-0x8000000 0x44000000-0x80000000
+>     
+>     setup_zone_migrate_reserve() scans the address range 0x0-0x8000000 looking
+>     for a pageblock to move onto the MIGRATE_RESERVE list.  Finding no
+>     candidates, it happily continues the scan into 0x8000000-0x44000000.  When
+>     a pageblock is found, the pages are moved to the MIGRATE_RESERVE list on
+>     the wrong zone.  Oops.
+>     
+>     (Andrew: once the proper fix is agreed upon, this should also be a
+>     candidate for -stable.)
+>     
+>     setup_zone_migrate_reserve() should skip pageblocks in overlapping nodes.
+>     
+>     Signed-off-by: Adam Litke <agl@us.ibm.com>
+> 
+
+zone_to_nid(zone) is called every time in the loop even though it will never
+change. This is less than optimal but setup_zone_migrate_reserve() is only
+called during init and when min_free_kbytes is adjusted so it's not worth
+worrying about. Otherwise it looks good.
+
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index af982f7..feb7916 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -694,6 +694,9 @@ static int move_freepages(struct zone *zone,
+>  #endif
+>  
+>  	for (page = start_page; page <= end_page;) {
+> +		/* Make sure we are not inadvertently changing nodes */
+> +		VM_BUG_ON(page_to_nid(page) != zone_to_nid(zone));
 > +
+>  		if (!pfn_valid_within(page_to_pfn(page))) {
+>  			page++;
+>  			continue;
+> @@ -2516,6 +2519,10 @@ static void setup_zone_migrate_reserve(struct zone *zone)
+>  			continue;
+>  		page = pfn_to_page(pfn);
+>  
+> +		/* Watch out for overlapping nodes */
+> +		if (page_to_nid(page) != zone_to_nid(zone))
+> +			continue;
 > +
-> +#ifdef __KERNEL__
-> +#include <linux/rwsem.h>
-> +#endif
-> +#include <linux/errno.h>
-> +#include <linux/time.h>
-> +
-> +#define AXFS_MAGIC	0x48A0E4CD	/* some random number */
-> +#define AXFS_SIGNATURE	"Advanced XIP FS"
-> +#define AXFS_MAXPATHLEN 255
-> +
-> +/* Uncompression interfaces to the underlying zlib */
-> +int axfs_uncompress_block(void *, int, void *, int);
-> +int axfs_uncompress_init(void);
-> +int axfs_uncompress_exit(void);
+>  		/* Blocks with reserved pages will never free, skip them. */
+>  		if (PageReserved(page))
+>  			continue;
+> 
+> -- 
+> Adam Litke - (agl at us.ibm.com)
+> IBM Linux Technology Center
+> 
 
-You already have both __KERNEL__ and user space parts in your header.
-Function declarations clearly don't belong in the user visible parts.
-I suggest you only leave on-disk data structure definitions and user
-interfaces in the user-visible include/linux/axfs.h file, and move
-all internal interfaces to fs/axfs/axfs.h.
-
-> +/*
-> + *  on media struct describing a data region
-> + */
-> +struct axfs_region_desc_onmedia {
-> +	u64 fsoffset;
-> +	u64 size;
-> +	u64 compressed_size;
-> +	u64 max_index;
-> +	u8 table_byte_depth;
-> +	u8 incore;
-> +};
-
-For on-disk data structures, I would use __be64 or __le64 types,
-preferrably the opposite of your native CPU byte order on the system
-you are developing most code on, to make sure that you get endianess
-right.
-
-> +#define AXFS_PAGE_SIZE 4096
-
-What happens on systems where AXFS_PAGE_SIZE != PAGE_SIZE?
-
-> +#ifndef TRUE
-> +#define TRUE 1
-> +#endif
-> +#ifndef FALSE
-> +#define FALSE 0
-> +#endif
-> +
-
-These are already defined in <linux/kernel.h>, so please use the
-existing definitions.
-
-	Arnd <><
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
