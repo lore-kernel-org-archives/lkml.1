@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbYHUKsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbYHUKsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756811AbYHUKsP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 06:48:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757384AbYHUKrv
+	id S1758814AbYHUKsz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 06:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755788AbYHUKsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 06:47:51 -0400
-Received: from smtp4.tech.numericable.fr ([82.216.111.40]:49891 "EHLO
-	smtp4.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757008AbYHUKru (ORCPT
+	Thu, 21 Aug 2008 06:48:47 -0400
+Received: from casper.infradead.org ([85.118.1.10]:32867 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755696AbYHUKsq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 06:47:50 -0400
-Message-ID: <48AD47D3.8070209@numericable.fr>
-Date: Thu, 21 Aug 2008 12:47:47 +0200
-From: Rufus & Azrael <rufus-azrael@numericable.fr>
-User-Agent: Thunderbird/3.0a2 (X11; 2008081609)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Marcin Slusarz <marcin.slusarz@gmail.com>,
-       akpm@osdl.org
-Subject: Re: [2.6.27-rc4] compilation warnings and section mismatches
-References: <48AD2701.2000304@numericable.fr> <20080821104307.346cbcb7@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080821104307.346cbcb7@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 21 Aug 2008 06:48:46 -0400
+Subject: Re: BUG in free_block (tainted)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <84144f020808181449i546349b9n248b5cf5399e4b0f@mail.gmail.com>
+References: <48A9E97B.6060601@simon.arlott.org.uk>
+	 <84144f020808181437n34f3a339j3392ccccfdfd60f9@mail.gmail.com>
+	 <48A9ECD2.8030801@simon.arlott.org.uk>
+	 <84144f020808181449i546349b9n248b5cf5399e4b0f@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 21 Aug 2008 12:48:43 +0200
+Message-Id: <1219315723.8651.106.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Thu, 21 Aug 2008 10:27:45 +0200
-> Rufus&  Azrael<rufus-azrael@numericable.fr>  wrote:
->
->    
->> Hi all,
->>
->> Here are my compilation warnings and section mismatches when building
->> the fresh rc4 kernel version.
->>
->> Hope it could help you to fix.
->>      
->
-> All harmless
->
-> And patches to the skfp one have been posted repeatedly so I've no idea
-> why they are still not in 2.6.27-rc - has Mr Garzik disappeared because
-> some of the ATA ones are missing too like the LBA48 off by one fix ?
->
-> Alan
->
->    
-Ok my fault, I found this patch on Marc ML :
+On Tue, 2008-08-19 at 00:49 +0300, Pekka Enberg wrote:
 
-http://marc.info/?l=linux-kernel&m=121752336626725&w=2
+> Aww, apparently the fglrx driver creates tons of SLAB caches with
+> really funky names for no good reason... Oh well, one more reason to
+> stay away from that crap and help out the nouveau folks instead ;-).
 
-It works fine on my box, hope it could be merged for next 2.6.27-rc.
+fglrx is the AMD/ATI binary evilness - the open source efforts are the
+radeon and radeonhd drivers. AMD/ATI are actually providing
+documentation and paying developers to work on the drivers.
 
-Regards.
+I'm not sure what the nvidia binary wonkyness is called, but its
+respective open source effort is the nouveau - who must solely reply on
+reverse engineering as nvidia isn't providing anything.
+
+Anyway - your point still stands - binary stuff should not be used.
 
