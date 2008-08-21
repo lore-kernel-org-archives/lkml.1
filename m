@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbYHUQze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbYHUQ5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756760AbYHUQze (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 12:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYHUQzZ
+	id S1756474AbYHUQ5o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 12:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbYHUQ5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 12:55:25 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:4620 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751827AbYHUQzY (ORCPT
+	Thu, 21 Aug 2008 12:57:36 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:50844 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751847AbYHUQ5g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 12:55:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:from;
-        b=dRVHDD1slQ4rEQqYkJtkMbylXfbebfbvPtw+pba2U/ly1KC254uMQlPAp9pJqIKAlg
-         6HL+NBU/5y9TQ4G0+fwIgCP6SUtZvCs9254ElxaA9wQQLM4m9kZbju9zkzwFniIhsHSe
-         bmQM3TP9VI7w6p6lWyy69NugYVqajJ8F4oFBk=
-Date: Thu, 21 Aug 2008 20:56:48 +0400
-To: Norbert Preining <preining@logic.at>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: hwclock problems still present in 2.6.27-rc4
-Message-ID: <20080821165648.GA2732@x200.localdomain>
-References: <20080821163920.GA19140@gamma.logic.tuwien.ac.at>
-MIME-Version: 1.0
+	Thu, 21 Aug 2008 12:57:36 -0400
+Date: Thu, 21 Aug 2008 17:56:48 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mel Gorman <mel@csn.ul.ie>, hsweeten@visionengravers.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Skip memory holes in FLATMEM when reading /proc/pagetypeinfo (resend)
+Message-ID: <20080821165648.GF22837@flint.arm.linux.org.uk>
+References: <20080821132804.GA6206@csn.ul.ie> <20080821093400.fe02a76f.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080821163920.GA19140@gamma.logic.tuwien.ac.at>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: adobriyan@gmail.com
+In-Reply-To: <20080821093400.fe02a76f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 06:39:20PM +0200, Norbert Preining wrote:
-> I have read through quite some threads on lkml and bug reports regarding
-> the hangs/freezes of the kernel when hwclock is called.
+On Thu, Aug 21, 2008 at 09:34:00AM -0700, Andrew Morton wrote:
+> On Thu, 21 Aug 2008 14:28:05 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
+> > This patch lets architectures say when FLATMEM can have holes in the
+> > memmap. Rather than an expensive check for valid memory, /proc/pagetypeinfo
+> > will confirm that the page linkages are still valid by checking page->zone
+> > is still the expected zone. The lookup of page_zone is safe as there is a
+> > limited range of memory that is accessed when calling page_zone.  Even if
+> > page_zone happens to return the correct zone, the impact is that the counters
+> > in /proc/pagetypeinfo are slightly off but fragmentation monitoring is
+> > unlikely to be relevant on an embedded system.
 > 
-> I still see that behaviour on 2.6.27-rc4 with
-> CONFIG_HPET_TIMER=y
-> CONFIG_HPET_EMULATE_RTC=y
-> CONFIG_HPET=y
-> CONFIG_HPET_MMAP=y
-> CONFIG_RTC_LIB=y
-> CONFIG_RTC_CLASS=y
-> CONFIG_RTC_HCTOSYS=y
-> CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
-> CONFIG_RTC_INTF_SYSFS=y
-> CONFIG_RTC_INTF_PROC=y
-> CONFIG_RTC_INTF_DEV=y
-> CONFIG_RTC_DRV_CMOS=y
-> (all rtc and hpet related config vars).
+> Sounds like this might fix an oops.  Does it?
+> 
+> The patch applies to 2.6.25 and to 2.6.26.  Should it be backported?
 
-> What is the recommended way to fix that, or do you need some more
-> information?
+The only concern there is with this patch is that we're still walking
+over the memory, which could contain anything.  We could be unlucky
+and end up with page_zone(page) == zone.
 
-Remove CONFIG_RTC_* options for start. Unless you knowingly selected
-them, of course.
-
+It'll do as a stop gap, but I think the real solution is to switch over
+to using sparsemem, and get rid of ARMs private version (which even
+pre-dates discontigmem.)  That first assumes that we have sparsemem
+working on ARM - however folk seem to prefer discontigmem over
+sparsemem so I don't know what state sparsemem on ARM is in. :(
