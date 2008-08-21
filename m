@@ -1,51 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbYHUBCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754438AbYHUBEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753973AbYHUBCP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 21:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYHUBB7
+	id S1754438AbYHUBEg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 21:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbYHUBE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 21:01:59 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:38277 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750889AbYHUBB7 (ORCPT
+	Wed, 20 Aug 2008 21:04:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39836 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750972AbYHUBE1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 21:01:59 -0400
-Date: Wed, 20 Aug 2008 21:01:56 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       ego@in.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com
-Subject: Re: [PATCH -tip/core/rcu] fixes to include/linux/rcupreempt.h
-In-Reply-To: <20080820223359.GL6758@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.1.10.0808202101200.27236@gandalf.stny.rr.com>
-References: <20080801211002.GM14851@linux.vnet.ibm.com> <alpine.DEB.1.10.0808201215330.27481@gandalf.stny.rr.com> <20080820223359.GL6758@linux.vnet.ibm.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 20 Aug 2008 21:04:27 -0400
+Date: Wed, 20 Aug 2008 18:04:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       j_kernel@hoblitt.com
+Subject: Re: [Bug 11388] New: 2.6.27-rc3 warns about MTRR range; only 3 of
+ 16gb of memory is usable
+Message-Id: <20080820180405.7f164450.akpm@linux-foundation.org>
+In-Reply-To: <bug-11388-27@http.bugzilla.kernel.org/>
+References: <bug-11388-27@http.bugzilla.kernel.org/>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 20 Aug 2008, Paul E. McKenney wrote:
-> > > -DECLARE_PER_CPU(struct rcu_dyntick_sched, rcu_dyntick_sched);
-> > 
-> > In -rt we deleted the first declaration. Is rcu_dyntick_sched defined on
-> > !CONFIG_NO_HZ?
-> 
-> It builds for me in current tip/core/rcu without the above
-> DECLARE_PER_CPU().  And the reason is the call_rcu_sched() function, which
-> requires rcu_dyntick_sched.sched_qs and rcu_dyntick_sched.sched_qs_snap
-> be defined even if !CONFIG_NO_HZ.
-> 
-> I suppose I could remove the other elements from the rcu_dyntick_sched
-> structure if !CONFIG_NO_HZ.  Worthwhile?
-> 
+(switched to email.  Please respond via emailed reply-to-all, not via the
+bugzilla web interface).
 
-Nah, forget about it. I've got a few different versions I'm dealing with.
+On Wed, 20 Aug 2008 17:38:59 -0700 (PDT)
+bugme-daemon@bugzilla.kernel.org wrote:
 
-Thanks,
+> http://bugzilla.kernel.org/show_bug.cgi?id=11388
+> 
+>            Summary: 2.6.27-rc3 warns about MTRR range; only 3 of 16gb of
+>                     memory is usable
+>            Product: Memory Management
+>            Version: 2.5
+>      KernelVersion: 2.6.27-rc3
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: MTTR
+>         AssignedTo: akpm@osdl.org
+>         ReportedBy: j_kernel@hoblitt.com
+> 
+> 
+> Latest working kernel version: 2.4.24.2 (possibly later)
+> Earliest failing kernel version: 2.6.27-rc3-21328-ga7f5aaf (from netdev-2.6)
+> Distribution: Gentoo
+> Hardware Environment: 2x Intel X5482
+> Software Environment:
+> Problem Description:
+> 
+> [    0.000000] WARNING: BIOS bug: CPU MTRRs don't cover all of memory, losing
+> 13056MB of RAM.
+> [    0.000000] ------------[ cut here ]------------
+> [    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/main.c:1561
+> mtrr_trim_uncached_memory+0x508/0x550()
+> [    0.000000] Modules linked in:
+> [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.27-rc3-21328-ga7f5aaf #8
+> [    0.000000] 
+> [    0.000000] Call Trace:
+> [    0.000000]  [<ffffffff80234c3e>] warn_on_slowpath+0x51/0x77
+> [    0.000000]  [<ffffffff8023570a>] printk+0x4e/0x56
+> [    0.000000]  [<ffffffff803add02>] sort+0xfa/0x18c
+> [    0.000000]  [<ffffffff808283d3>] cmp_range+0x0/0x6
+> [    0.000000]  [<ffffffff80828a47>] mtrr_trim_uncached_memory+0x508/0x550
+> [    0.000000]  [<ffffffff802178e1>] post_set+0x20/0x3d
+> [    0.000000]  [<ffffffff80824f99>] setup_arch+0x39d/0x6be
+> [    0.000000]  [<ffffffff8081e962>] start_kernel+0x74/0x341
+> [    0.000000]  [<ffffffff8081e394>] x86_64_start_kernel+0xe3/0xe7
+> [    0.000000] 
+> [    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
+> 
+> 
+> Steps to reproduce:
+> 
+> This warning isn't present under 2.6.24.2 and the full range of physical memory
+> is usable.
 
--- Steve
+Looks like a post-2.6.26 regression caused by
+12031a624af7816ec7660b82be648aa3703b4ebe.
 
