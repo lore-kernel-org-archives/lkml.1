@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbYHULgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758899AbYHULhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759329AbYHULgw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 07:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757701AbYHULgn
+	id S1758899AbYHULhQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 07:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757701AbYHULg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 07:36:43 -0400
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:52420 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757673AbYHULgm (ORCPT
+	Thu, 21 Aug 2008 07:36:57 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:50798 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759198AbYHULg4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 07:36:42 -0400
-X-Greylist: delayed 2038 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Aug 2008 07:36:41 EDT
-From: Martin Steigerwald <Martin@lichtvoll.de>
-To: Szabolcs Szakacsits <szaka@ntfs-3g.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Subject: Re: XFS vs Elevators (was Re: [PATCH RFC] nilfs2: continuous snapshotting file system)
-Date: Thu, 21 Aug 2008 13:02:50 +0200
-User-Agent: KMail/1.9.9
-References: <20080820004326.519405a2.akpm@linux-foundation.org> <20080821060418.GC5706@disturbed> <20080821082532.GE5706@disturbed> (sfid-20080821_113328_880260_8C88CA66)
-In-Reply-To: <20080821082532.GE5706@disturbed>
+	Thu, 21 Aug 2008 07:36:56 -0400
+X-IronPort-AV: E=Sophos;i="4.32,245,1217822400"; 
+   d="scan'208";a="16778564"
+Message-ID: <48AD5373.201@citrix.com>
+Date: Thu, 21 Aug 2008 12:37:23 +0100
+From: Alex Nixon <alex.nixon@citrix.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Xen: Fix warning when hot-unplugging virtual block devices
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808211302.51633.Martin@lichtvoll.de>
+X-OriginalArrivalTime: 21 Aug 2008 11:36:50.0513 (UTC) FILETIME=[33B87C10:01C90382]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 21 August 2008 schrieb Dave Chinner:
-> On Thu, Aug 21, 2008 at 04:04:18PM +1000, Dave Chinner wrote:
-> > On Thu, Aug 21, 2008 at 03:15:08PM +1000, Dave Chinner wrote:
-> > > On Thu, Aug 21, 2008 at 05:46:00AM +0300, Szabolcs Szakacsits wrote:
-> > > > On Thu, 21 Aug 2008, Dave Chinner wrote:
-> > > > Everything is default.
-> > > >
-> > > >   % rpm -qf =mkfs.xfs
-> > > >   xfsprogs-2.9.8-7.1
-> > > >
-> > > > which, according to ftp://oss.sgi.com/projects/xfs/cmd_tars, is
-> > > > the latest stable mkfs.xfs. Its output is
-> > > >
-> > > > meta-data=/dev/sda8              isize=256    agcount=4,
-> > > > agsize=1221440 blks =                       sectsz=512   attr=2
-> > > > data     =                       bsize=4096   blocks=4885760,
-> > > > imaxpct=25 =                       sunit=0      swidth=0 blks
-> > > > naming   =version 2              bsize=4096
-> > > > log      =internal log           bsize=4096   blocks=2560,
-> > > > version=2 =                       sectsz=512   sunit=0 blks,
-> > > > lazy-count=0 realtime =none                   extsz=4096  
-> > > > blocks=0, rtextents=0
-> > >
-> > > Ok, I thought it might be the tiny log, but it didn't improve
-> > > anything here when increased the log size, or the log buffer size.
-> >
-> > One thing I just found out - my old *laptop* is 4-5x faster than the
-> > 10krpm scsi disk behind an old cciss raid controller.  I'm wondering
-> > if the long delays in dispatch is caused by an interaction with CTQ
-> > but I can't change it on the cciss raid controllers. Are you using
-> > ctq/ncq on your machine?  If so, can you reduce the depth to
-> > something less than 4 and see what difference that makes?
->
-> Just to point out - this is not a new problem - I can reproduce
-> it on 2.6.24 as well as 2.6.26. Likewise, my laptop shows XFS
-> being faster than ext3 on both 2.6.24 and 2.6.26. So the difference
-> is something related to the disk subsystem on the server....
+From: Alex Nixon <alex.nixon@citrix.com>
+Date: Thu, 21 Aug 2008 12:30:54 +0100
+Subject: [PATCH] Xen: Fix warning when hot-unplugging virtual block devices
 
-Interesting. I switched from cfq to deadline some time ago, due to abysmal 
-XFS performance on parallel IO - aptitude upgrade and doing desktop 
-stuff. Just my subjective perception, but I have seen it crawl, even 
-stall for 5-10 seconds easily at times. I found deadline to be way faster 
-initially, but then it rarely happened that IO for desktop tasks is 
-basically stalled for even longer, say 15 seconds or more, on parallel 
-IO. However I can't remember having this problem with the last kernel 
-2.6.26.2.
+WARNING: at kernel/softirq.c:136 local_bh_enable+0x3f/0x8a()
 
-I am now testing with cfq again. On a ThinkPad T42 internal 160 GB 
-harddisk with barriers enabled. But you tell, it only happens on certain 
-servers, so I might have seen something different.
+del_gendisk needs IRQs enabled, as the code path eventually reaches local_bh_enable.
+blk_stop_queue needs them disabled - so do so temporarily.
 
-Thus I had the rough feeling that something is wrong with at least CFQ and 
-XFS together, but I couldn't prove it back then. I have no idea how to 
-easily do a reproducable test case. Maybe having a script that unpacks 
-kernel source archives while I try to use the desktop...
+It shouldn't matter if an interrupt comes in whilst blkif_io_lock is held, as it will block on the lock.  Upon acquisition, it'll realise the device is down and exit cleanly.
 
+Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
+---
+ drivers/block/xen-blkfront.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
+index d5e7532..95cee2c 100644
+--- a/drivers/block/xen-blkfront.c
++++ b/drivers/block/xen-blkfront.c
+@@ -899,16 +899,18 @@ static void blkfront_closing(struct xenbus_device *dev)
+ 	if (info->rq == NULL)
+ 		goto out;
+ 
+-	spin_lock_irqsave(&blkif_io_lock, flags);
++	spin_lock(&blkif_io_lock);
+ 
+ 	del_gendisk(info->gd);
+ 
++	local_irq_save(flags);
+ 	/* No more blkif_request(). */
+ 	blk_stop_queue(info->rq);
++	local_irq_restore(flags);
+ 
+ 	/* No more gnttab callback work. */
+ 	gnttab_cancel_free_callback(&info->callback);
+-	spin_unlock_irqrestore(&blkif_io_lock, flags);
++	spin_unlock(&blkif_io_lock);
+ 
+ 	/* Flush gnttab callback work. Must be done with no locks held. */
+ 	flush_scheduled_work();
 -- 
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+1.5.4.3
+
