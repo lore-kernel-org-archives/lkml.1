@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbYHURhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760345AbYHURiK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758672AbYHURhq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 13:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758914AbYHURha
+	id S1760345AbYHURiK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 13:38:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbYHURhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 13:37:30 -0400
-Received: from mx1.suse.de ([195.135.220.2]:47778 "EHLO mx1.suse.de"
+	Thu, 21 Aug 2008 13:37:52 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34324 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760058AbYHURh2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 13:37:28 -0400
+	id S1759585AbYHURhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 13:37:51 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Jean Delvare <khali@linux-fr.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 05/15] dev_printk(): constify the `dev' argument
-Date: Thu, 21 Aug 2008 10:32:53 -0700
-Message-Id: <1219339983-9634-5-git-send-email-gregkh@suse.de>
+Subject: [PATCH 06/15] driver model: anti-oopsing medicine
+Date: Thu, 21 Aug 2008 10:32:54 -0700
+Message-Id: <1219339983-9634-6-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <20080821173036.GB7974@suse.de>
 References: <20080821173036.GB7974@suse.de>
@@ -24,57 +23,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jean Delvare <khali@linux-fr.org>
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-Add const markings to dev_name and dev_driver_string to make it clear that
-dev_printk doesn't modify dev.  This is a prerequisite to adding more
-const markings to other functions make it clearer, which functions can
-modify dev and which can't.
+Anti-oops medicine for the class iterators ... the oops was
+observed when a class was implicitly referenced before it
+was initialized.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+[Modified by Greg to spit a warning back so someone knows to fix their code]
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/core.c    |    2 +-
- include/linux/device.h |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/base/class.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 068aa1c..44bad73 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -53,7 +53,7 @@ static inline int device_is_not_partition(struct device *dev)
-  * it is attached to.  If it is not attached to a bus either, an empty
-  * string will be returned.
-  */
--const char *dev_driver_string(struct device *dev)
-+const char *dev_driver_string(const struct device *dev)
- {
- 	return dev->driver ? dev->driver->name :
- 			(dev->bus ? dev->bus->name :
-diff --git a/include/linux/device.h b/include/linux/device.h
-index d24a47f..a701c1b 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -406,7 +406,7 @@ struct device {
- /* Get the wakeup routines, which depend on struct device */
- #include <linux/pm_wakeup.h>
+diff --git a/drivers/base/class.c b/drivers/base/class.c
+index 5667c2f..cc5e28c 100644
+--- a/drivers/base/class.c
++++ b/drivers/base/class.c
+@@ -295,6 +295,12 @@ int class_for_each_device(struct class *class, struct device *start,
  
--static inline const char *dev_name(struct device *dev)
-+static inline const char *dev_name(const struct device *dev)
- {
- 	/* will be changed into kobject_name(&dev->kobj) in the near future */
- 	return dev->bus_id;
-@@ -518,7 +518,7 @@ extern void device_shutdown(void);
- extern void sysdev_shutdown(void);
+ 	if (!class)
+ 		return -EINVAL;
++	if (!class->p) {
++		WARN(1, "%s called for class '%s' before it was initialized",
++		     __func__, class->name);
++		return -EINVAL;
++	}
++
+ 	mutex_lock(&class->p->class_mutex);
+ 	list_for_each_entry(dev, &class->p->class_devices, node) {
+ 		if (start) {
+@@ -344,6 +350,11 @@ struct device *class_find_device(struct class *class, struct device *start,
  
- /* debugging and troubleshooting/diagnostic helpers. */
--extern const char *dev_driver_string(struct device *dev);
-+extern const char *dev_driver_string(const struct device *dev);
- #define dev_printk(level, dev, format, arg...)	\
- 	printk(level "%s %s: " format , dev_driver_string(dev) , \
- 	       dev_name(dev) , ## arg)
+ 	if (!class)
+ 		return NULL;
++	if (!class->p) {
++		WARN(1, "%s called for class '%s' before it was initialized",
++		     __func__, class->name);
++		return NULL;
++	}
+ 
+ 	mutex_lock(&class->p->class_mutex);
+ 	list_for_each_entry(dev, &class->p->class_devices, node) {
 -- 
 1.5.6.5
 
