@@ -1,85 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759631AbYHUUda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757182AbYHUUgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759631AbYHUUda (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 16:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbYHUUdX
+	id S1757182AbYHUUgI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 16:36:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbYHUUfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 16:33:23 -0400
-Received: from outbound-mail-124.bluehost.com ([67.222.38.24]:36958 "HELO
-	outbound-mail-124.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753009AbYHUUdW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 16:33:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=D6xj1VC2nq/dNU7ph5bx7KvdKdJvkmPoiHHyxsnT33k8M3j/z8OlUymVv7SQBDds9a9nV+pWi5KNL/exThk4Rl8mZceK3dhhfiG98El1JuaAP9EBX2EwGF4bTY2c7Gnd;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] pci: change msi-x vector to 32bit
-Date: Thu, 21 Aug 2008 13:33:00 -0700
-User-Agent: KMail/1.9.9
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>
-References: <1218854205-2375-1-git-send-email-yhlu.kernel@gmail.com>
-In-Reply-To: <1218854205-2375-1-git-send-email-yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Aug 2008 16:35:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56422 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751475AbYHUUfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 16:35:54 -0400
+Date: Thu, 21 Aug 2008 16:35:39 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kernel/module: fix warning when !CONFIG_DYNAMIC_PRINTK_DEBUG
+Message-ID: <20080821203539.GB6273@redhat.com>
+References: <20080820141329.GB7622@orion> <20080820142453.GA31886@suse.de> <20080820151303.GA1754@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808211333.00887.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <20080820151303.GA1754@suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, August 15, 2008 7:36 pm Yinghai Lu wrote:
-> we are using 28bit pci (bus/dev/fn + 12 bits) as irq number, so the
-> cache for irq number should be 32 bit too.
->
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>
->
+On Wed, Aug 20, 2008 at 08:13:03AM -0700, Greg KH wrote:
+> I'll merge in this patch below, unless someone objects.
+> 
+> thanks,
+> 
+> greg k-h
+> 
 > ---
->  drivers/scsi/qla2xxx/qla_def.h |    2 +-
->  include/linux/pci.h            |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
->
-> Index: linux-2.6/drivers/scsi/qla2xxx/qla_def.h
-> ===================================================================
-> --- linux-2.6.orig/drivers/scsi/qla2xxx/qla_def.h
-> +++ linux-2.6/drivers/scsi/qla2xxx/qla_def.h
-> @@ -2109,7 +2109,7 @@ struct scsi_qla_host;
->
->  struct qla_msix_entry {
->  	int have_irq;
-> -	uint16_t msix_vector;
-> +	uint32_t msix_vector;
->  	uint16_t msix_entry;
->  };
->
-> Index: linux-2.6/include/linux/pci.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/pci.h
-> +++ linux-2.6/include/linux/pci.h
-> @@ -730,7 +730,7 @@ enum pci_dma_burst_strategy {
->  };
->
->  struct msix_entry {
-> -	u16 	vector;	/* kernel uses to write allocated vector */
-> +	u32	vector;	/* kernel uses to write allocated vector */
->  	u16	entry;	/* driver uses to specify entry, OS writes */
->  };
+>  kernel/module.c |   54 ++++++++++++++++++++++++++++++++++--------------------
+>  1 file changed, 34 insertions(+), 20 deletions(-)
+> 
+> --- a/kernel/module.c
+> +++ b/kernel/module.c
+> @@ -1778,12 +1778,44 @@ static void add_kallsyms(struct module *
+>  static inline void add_kallsyms(struct module *mod,
+>  				Elf_Shdr *sechdrs,
+>  				unsigned int symindex,
+> -				unsigned int strindex,
+>  				const char *secstrings)
+>  {
+>  }
+>  #endif /* CONFIG_KALLSYMS */
+>  
+> +#ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
+> +static void dynamic_printk_setup(struct module *mod,
+> +				 Elf_Shdr *sechdrs,
+> +				 unsigned int verboseindex,
+> +				 const char *secstrings)
+> +{
+> +	struct mod_debug *iter;
+> +	unsigned long value;
+> +
+> +	mod->start_verbose = (void *)sechdrs[verboseindex].sh_addr;
+> +	mod->num_verbose = sechdrs[verboseindex].sh_size /
+> +				sizeof(*mod->start_verbose);
+> +
+> +	for (value = (unsigned long)mod->start_verbose;
+> +		value < (unsigned long)mod->start_verbose +
+> +		(unsigned long)(mod->num_verbose * sizeof(struct mod_debug));
+> +		value += sizeof(struct mod_debug)) {
+> +			iter = (struct mod_debug *)value;
+> +			register_dynamic_debug_module(iter->modname,
+> +				iter->type,
+> +				iter->logical_modname,
+> +				iter->flag_names, iter->hash, iter->hash2);
+> +	}
+> +}
+> +#else
+> +static inline void dynamic_printk_setup(struct module *mod,
+> +					Elf_Shdr *sechdrs,
+> +					unsigned int symindex,
+> +					const char *secstrings)
+> +{
+> +}
+> +#endif /* CONFIG_DYNAMIC_PRINTK_DEBUG */
+> +
+>  static void *module_alloc_update_bounds(unsigned long size)
+>  {
+>  	void *ret = module_alloc(size);
+> @@ -1833,8 +1865,6 @@ static struct module *load_module(void _
+>  	unsigned int markersindex;
+>  	unsigned int markersstringsindex;
+>  	unsigned int verboseindex;
+> -	struct mod_debug *iter;
+> -	unsigned long value;
+>  	struct module *mod;
+>  	long err = 0;
+>  	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
+> @@ -2149,11 +2179,6 @@ static struct module *load_module(void _
+>  	mod->num_markers =
+>  		sechdrs[markersindex].sh_size / sizeof(*mod->markers);
+>  #endif
+> -#ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
+> -	mod->start_verbose = (void *)sechdrs[verboseindex].sh_addr;
+> -	mod->num_verbose = sechdrs[verboseindex].sh_size /
+> -				sizeof(*mod->start_verbose);
+> -#endif
+>  
+>          /* Find duplicate symbols */
+>  	err = verify_export_symbols(mod);
+> @@ -2177,18 +2202,7 @@ static struct module *load_module(void _
+>  		marker_update_probe_range(mod->markers,
+>  			mod->markers + mod->num_markers);
+>  #endif
+> -#ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
+> -	for (value = (unsigned long)mod->start_verbose;
+> -		value < (unsigned long)mod->start_verbose +
+> -		(unsigned long)(mod->num_verbose * sizeof(struct mod_debug));
+> -		value += sizeof(struct mod_debug)) {
+> -			iter = (struct mod_debug *)value;
+> -			register_dynamic_debug_module(iter->modname,
+> -				iter->type,
+> -				iter->logical_modname,
+> -				iter->flag_names, iter->hash, iter->hash2);
+> -	}
+> -#endif
+> +	dynamic_printk_setup(mod, sechdrs, verboseindex, secstrings);
+>  	err = module_finalize(hdr, sechdrs, mod);
+>  	if (err < 0)
+>  		goto cleanup;
 
-I see a lot of smoke about this, but not a clear consensus.  It sounds like no 
-one objects to making the MSI vector field 32 bits, but there were a lot of 
-concerns about IRQ vector naming/numbering in general?  And I assume this 
-particular patch isn't 2.6.27 material...
 
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+looks much cleaner. thanks.
+
+we can simplify this module code a bit more...how about the following on top of
+what you did? 
+
+thanks,
+
+-Jason
+
+Signed-off-by: Jason Baron <jbaron@redhat.com>
+
+---
+
+ include/linux/module.h |    5 -----
+ kernel/module.c        |   40 +++++++++++++++++-----------------------
+ 2 files changed, 17 insertions(+), 28 deletions(-)
+
+
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 3336bd3..5d2970c 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -350,11 +350,6 @@ struct module
+ 	/* Reference counts */
+ 	struct module_ref ref[NR_CPUS];
+ #endif
+-
+-#ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
+-	struct mod_debug *start_verbose;
+-	unsigned int num_verbose;
+-#endif
+ };
+ #ifndef MODULE_ARCH_INIT
+ #define MODULE_ARCH_INIT {}
+diff --git a/kernel/module.c b/kernel/module.c
+index b227ca4..dc5fa65 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1787,34 +1787,28 @@ static inline void add_kallsyms(struct module *mod,
+ #endif /* CONFIG_KALLSYMS */
+ 
+ #ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
+-static void dynamic_printk_setup(struct module *mod,
+-				 Elf_Shdr *sechdrs,
+-				 unsigned int verboseindex,
+-				 const char *secstrings)
++static void dynamic_printk_setup(Elf_Shdr *sechdrs, unsigned int verboseindex)
+ {
+-	struct mod_debug *iter;
+-	unsigned long value;
++	struct mod_debug *debug_info;
++	unsigned long pos, end;
++	unsigned int num_verbose;
+ 
+-	mod->start_verbose = (void *)sechdrs[verboseindex].sh_addr;
+-	mod->num_verbose = sechdrs[verboseindex].sh_size /
+-				sizeof(*mod->start_verbose);
++	pos = sechdrs[verboseindex].sh_addr;
++	num_verbose = sechdrs[verboseindex].sh_size /
++				sizeof(struct mod_debug);
++	end = pos + (num_verbose * sizeof(struct mod_debug));
+ 
+-	for (value = (unsigned long)mod->start_verbose;
+-		value < (unsigned long)mod->start_verbose +
+-		(unsigned long)(mod->num_verbose * sizeof(struct mod_debug));
+-		value += sizeof(struct mod_debug)) {
+-			iter = (struct mod_debug *)value;
+-			register_dynamic_debug_module(iter->modname,
+-				iter->type,
+-				iter->logical_modname,
+-				iter->flag_names, iter->hash, iter->hash2);
++	for (; pos < end; pos += sizeof(struct mod_debug)) {
++		debug_info = (struct mod_debug *)pos;
++		register_dynamic_debug_module(debug_info->modname,
++			debug_info->type, debug_info->logical_modname,
++			debug_info->flag_names, debug_info->hash, 
++			debug_info->hash2);
+ 	}
+ }
+ #else
+-static inline void dynamic_printk_setup(struct module *mod,
+-					Elf_Shdr *sechdrs,
+-					unsigned int symindex,
+-					const char *secstrings)
++static inline void dynamic_printk_setup(Elf_Shdr *sechdrs, 
++					unsigned int verboseindex)
+ {
+ }
+ #endif /* CONFIG_DYNAMIC_PRINTK_DEBUG */
+@@ -2221,7 +2215,7 @@ static struct module *load_module(void __user *umod,
+ 			mod->tracepoints + mod->num_tracepoints);
+ #endif
+ 	}
+-	dynamic_printk_setup(mod, sechdrs, verboseindex, secstrings);
++	dynamic_printk_setup(sechdrs, verboseindex);
+ 	err = module_finalize(hdr, sechdrs, mod);
+ 	if (err < 0)
+ 		goto cleanup;
