@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756506AbYHUNdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbYHUNhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756506AbYHUNdV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 09:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYHUNdK
+	id S1756028AbYHUNhO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 09:37:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbYHUNhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 09:33:10 -0400
-Received: from web82108.mail.mud.yahoo.com ([209.191.84.221]:43577 "HELO
-	web82108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753884AbYHUNdI convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 09:33:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=Yn0IYOVZkNISKBLTSq70XHhqZrLO83DKGR7xjUKSKCNXiRLCks9HQjoYKo8hxVmQ2rkL2LMQRp3wddAdVGXvsS112Cx0riwahW3gSnTHANPB2bI/ouvylf0DOGT/TJ68VEVv9UtAacBJ8NnO34ZwT/+SCHyfhJki7FWm69eURRw=;
-X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
-Date: Thu, 21 Aug 2008 06:33:06 -0700 (PDT)
-From: David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
-To: =?iso-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Vivek Goyal <vgoyal@redhat.com>, Bill Fink <billfink@mindspring.com>,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
+	Thu, 21 Aug 2008 09:37:00 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:51195 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752272AbYHUNg7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 09:36:59 -0400
+Date: Thu, 21 Aug 2008 09:36:55 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Eric Lacombe <tuxiko@free.fr>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: EXT3-fs error
+Message-ID: <20080821133655.GG16634@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Eric Lacombe <tuxiko@free.fr>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <200808211106.39574.tuxiko@free.fr> <20080821104626.0a10f40c@lxorguk.ukuu.org.uk> <200808211302.55530.tuxiko@free.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <32413.7552.qm@web82108.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808211302.55530.tuxiko@free.fr>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-> > Please advise me on how you would like me to handle 2.6.27 kernels.
-> > If I use your patch on 2.6.27-rc3, the message scroll off the 80x25 
-> > screen before I can see them... 
+On Thu, Aug 21, 2008 at 01:02:55PM +0200, Eric Lacombe wrote:
+> > Might be worth running memtest86 on the box overnight and seeing if its
+> > memory or other problems. smartmontools will give you info on the disk
+> > status (as the disk sees it) which can sometimes give clues.
 > 
-> Couldn't you play with CONFIG_BOOT_PRINTK_DELAY?
+> I will run memtest86 very soon. But in the meantime my computer just crashed.
+> The logs are presented below (I know that the module nvidia is loaded, but I 
+> never have problem with it before.).
+> I remark that a general protection fault occur, and I saw a lot of them 
+> recently (see also the second log trail for another error 2 hours earlier). 
 
-Thanks for this!  I am not a developer, so I am not familiar with all
-of the little tweaks available in the kernel configs -- I've probably
-seen this dozens of times, but ignored it because I wasn't debugging.
+I would definitely run memtest86 very soon, and if that doesn't work,
+I'd try running for a little while without the nvidia driver.  I know
+you say it hasn't given you any trouble, but it's always good to rule
+out problems.  The sort of errors which you are reporting do make me
+very suspicious about some kind of memory fault, though.  (Either
+hardware induced or wild pointer induced, perhaps by some evil
+binary-only module.  :-)
 
-Now that I _am_ debugging, I wish I had paid more attention.
-
-When I tried it, my kernel hung much earlier in the boot process.  The
-help text for CONFIG_BOOT_PRINTK_DELAY even mentions that this can be
-a problems on SMP systems, and that is exactly what I have.
-
-Bummer.
-
-
-Thanks though,
-Dave W.
+						- Ted
