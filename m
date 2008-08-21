@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbYHUQfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbYHUQht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756908AbYHUQfR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 12:35:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbYHUQfF
+	id S1756908AbYHUQht (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 12:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbYHUQhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 12:35:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33183 "EHLO
+	Thu, 21 Aug 2008 12:37:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41989 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751801AbYHUQfE (ORCPT
+	by vger.kernel.org with ESMTP id S1752025AbYHUQhl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 12:35:04 -0400
-Date: Thu, 21 Aug 2008 09:34:00 -0700
+	Thu, 21 Aug 2008 12:37:41 -0400
+Date: Thu, 21 Aug 2008 09:36:54 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       hsweeten@visionengravers.com
-Subject: Re: [PATCH] Skip memory holes in FLATMEM when reading
- /proc/pagetypeinfo (resend)
-Message-Id: <20080821093400.fe02a76f.akpm@linux-foundation.org>
-In-Reply-To: <20080821132804.GA6206@csn.ul.ie>
-References: <20080821132804.GA6206@csn.ul.ie>
+To: <JosephChan@via.com.tw>
+Cc: <linux-fbdev-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>,
+       <geert@linux-m68k.org>
+Subject: Re: [PATCH 3/13 v2] viafb: accel.c, accel.h
+Message-Id: <20080821093654.4947f140.akpm@linux-foundation.org>
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8285FDD@exchtp03.taipei.via.com.tw>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698F@exchtp03.taipei.via.com.tw>
+	<20080819162303.5fc89c63.akpm@linux-foundation.org>
+	<C80EF34A3D2E494DBAF9AC29C7AE4EB8285FDD@exchtp03.taipei.via.com.tw>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,32 +29,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Aug 2008 14:28:05 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
+On Thu, 21 Aug 2008 22:30:57 +0800 <JosephChan@via.com.tw> wrote:
 
-> This is a resend. The last patch went to Russell King with lkml cc'd as I
-> wasn't subscribed to the linux-arm list. However, I haven't heard it being
-> picked up so trying linux-arm this time.
+> Hi Andrew,
+>  
+> It's our carelessness to check with x86_64 version. And thanks for reminding this.
+> The 
+>  
+>  
+> >due to things like this:
+> >
+> >        MMIO_OUT32(VIA_REG_DSTBASE,
+> >                   ((u32) (info->screen_base) - (u32) viafb_FB_MM) >> 3);
+> >
+> >now, we could just shut the warnings up by casting to (long) instead.
 > 
-> ===
+> >But I wonder what's going on in there.  ->screen_base came from
+> >ioremap_nocache() and AFAIK there's no guarantee that this virtual
+> >address will be less than 4G on 64-bit machines?
 > 
-> Ordinarily, memory holes in flatmem still have a valid memmap and is safe
-> to use. However, an architecture (ARM) frees up the memmap backing memory
-> holes on the assumption it is never used. /proc/pagetypeinfo reads the
-> whole range of pages in a zone believing that the memmap is valid and that
-> pfn_valid will return false if it is not. On ARM, freeing the memmap breaks
-> the page->zone linkages even though pfn_valid() returns true and the kernel
-> can oops shortly afterwards due to accessing a bogus struct zone *.
 > 
-> This patch lets architectures say when FLATMEM can have holes in the
-> memmap. Rather than an expensive check for valid memory, /proc/pagetypeinfo
-> will confirm that the page linkages are still valid by checking page->zone
-> is still the expected zone. The lookup of page_zone is safe as there is a
-> limited range of memory that is accessed when calling page_zone.  Even if
-> page_zone happens to return the correct zone, the impact is that the counters
-> in /proc/pagetypeinfo are slightly off but fragmentation monitoring is
-> unlikely to be relevant on an embedded system.
+> >If the !VIA_MMIO code has no valid use then please just remove it.
+> >
+> >The VIA_MMIO!=0 macros inplicitly reference a local variable which is
+> >the kind of dopey programming trick which should not be performed in
+> >new code.  It would be much better to do
+> >
+> >static inline void via_writel(struct viafb_par *viaparinfo, int reg, u32 val)
+> >{
+> >        writel(val, viaparinfo->io_virt + reg);
+> >}
+> >
+> >and use that everywhere.
+> >
+> >It would also be quite acceptable to simply open-code the
+> >
+> >        writel(val, viaparinfo->io_virt + reg);
+> >
+> >at all callsites.
+> >
+> >Those macros may have made it easier to _write_ the code, but they make
+> >it harder to _read_ it.  That's a wrong tradeoff.
+> 
+> Yes, the code seems to be cleaner after removing the macro. 
+> We define this macro for convenient debugging originally 
+> (MMIO couldn't work due to some wired reason, we can 
+> transfer to PORT easily by changing VIA_MMIO=0). 
+> It is a real tradeoff.
 
-Sounds like this might fix an oops.  Does it?
+ok.
 
-The patch applies to 2.6.25 and to 2.6.26.  Should it be backported?
+> If necessary, we could modify this patch by following your
+> suggestions. 
+> Should we do that? or they're already done by you?
 
+An incremental patch against the previous patches would be best, please.
