@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760604AbYHUWXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758303AbYHUWYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760604AbYHUWXv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 18:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757602AbYHUWXn
+	id S1758303AbYHUWYV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 18:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760983AbYHUWX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 18:23:43 -0400
-Received: from outbound-mail-116.bluehost.com ([69.89.22.16]:53902 "HELO
-	outbound-mail-116.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756787AbYHUWXm (ORCPT
+	Thu, 21 Aug 2008 18:23:57 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:53905 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757602AbYHUWX4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 18:23:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=coJCXAKHBKl6bky+c8VKil8NWs4XY35499r+8Pm8YHE9o0Hy4OUI2IUm+UVNpIwoYSRMW/9salq8Qc3CN6XvNWfAxwYsU2NvVVThG5JCUmnk2RwHEW1ZyobFW6lZIbdd;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: refcount leak in pci_get_device()?
-Date: Thu, 21 Aug 2008 15:23:35 -0700
-User-Agent: KMail/1.9.9
-Cc: Matthew Wilcox <matthew@wil.cx>, Alex Chiang <achiang@hp.com>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080821201918.GA24411@ldl.fc.hp.com> <20080821202504.GU8318@parisc-linux.org> <20080821204758.GB31543@suse.de>
-In-Reply-To: <20080821204758.GB31543@suse.de>
+	Thu, 21 Aug 2008 18:23:56 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Eric Sandeen <sandeen@sandeen.net>
+Cc: Milan Broz <mbroz@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Ric Wheeler <rwheeler@redhat.com>,
+       "MASON\,CHRISTOPHER" <CHRIS.MASON@oracle.com>
+Subject: Re: Mount ext3 with barrier=1 doesn't send real barrier bio?
+References: <48A5F5C6.2090204@redhat.com> <48ACAADD.2010104@sandeen.net>
+Date: Fri, 22 Aug 2008 07:23:50 +0900
+In-Reply-To: <48ACAADD.2010104@sandeen.net> (Eric Sandeen's message of "Wed,
+	20 Aug 2008 18:38:05 -0500")
+Message-ID: <874p5eqa6h.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808211523.35556.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, August 21, 2008 1:47 pm Greg KH wrote:
-> Subject: PCI: fix reference leak in pci_get_dev_by_id()
->
-> From: Greg Kroah-Hartman <gregkh@suse.de>
->
-> Alex Chiang and Matthew Wilcox pointed out that pci_get_dev_by_id() does
-> not properly decrement the reference on the from pointer if it is
-> present, like the documentation for the function states it will.
->
-> Cc: Matthew Wilcox <matthew@wil.cx>
-> Cc: Alex Chiang <achiang@hp.com>
-> Cc: stable <stable@kernel.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
->
->
-> diff --git a/drivers/pci/search.c b/drivers/pci/search.c
-> index 217814f..3b3b5f1 100644
-> --- a/drivers/pci/search.c
-> +++ b/drivers/pci/search.c
-> @@ -280,6 +280,8 @@ static struct pci_dev *pci_get_dev_by_id(const struct
-> pci_device_id *id, match_pci_dev_by_id);
->  	if (dev)
->  		pdev = to_pci_dev(dev);
-> +	if (from)
-> +		pci_dev_put(from);
->  	return pdev;
->  }
+Eric Sandeen <sandeen@sandeen.net> writes:
 
-Wow, thanks Greg, that was fast.  I applied this to my for-linus branch; I'll 
-ask Linus to pull it for 2.6.27.
+>> --- a/fs/buffer.c
+>> +++ b/fs/buffer.c
+>> @@ -2926,16 +2926,16 @@ int submit_bh(int rw, struct buffer_head * bh)
+>>  	BUG_ON(!buffer_mapped(bh));
+>>  	BUG_ON(!bh->b_end_io);
+>>  
+>> -	if (buffer_ordered(bh) && (rw == WRITE))
+>> -		rw = WRITE_BARRIER;
+>> -
+>>  	/*
+>>  	 * Only clear out a write error when rewriting, should this
+>>  	 * include WRITE_SYNC as well?
+>>  	 */
+>> -	if (test_set_buffer_req(bh) && (rw == WRITE || rw == WRITE_BARRIER))
+>> +	if (test_set_buffer_req(bh) && rw == WRITE)
+>>  		clear_buffer_write_io_error(bh);
 
-Thanks,
---
-Jesse Barnes, Intel Open Source Technology Center
+This should be ((rw & RW_MASK) == WRITE) too?  Anyway, this seems change
+behavior of submit_bh(WRITE_BARRIER) (maybe reiserfs only), it wouldn't
+be your intent...
+
+>> +	if (buffer_ordered(bh) && ((rw & RW_MASK) == WRITE))
+>> +		rw |= (1 << BIO_RW_BARRIER);
+>> +
+>>  	/*
+>>  	 * from here on down, it's all bio -- do the initial mapping,
+>>  	 * submit_bio -> generic_make_request may further map this bio around
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
