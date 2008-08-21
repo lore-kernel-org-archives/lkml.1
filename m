@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757066AbYHUNty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757850AbYHUNu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757066AbYHUNty (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 09:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbYHUNto
+	id S1757850AbYHUNu5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 09:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYHUNut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 09:49:44 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:46482 "EHLO smtps.tip.net.au"
+	Thu, 21 Aug 2008 09:50:49 -0400
+Received: from il.qumranet.com ([212.179.150.194]:42027 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752683AbYHUNtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 09:49:43 -0400
-Date: Thu, 21 Aug 2008 23:49:35 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, davem@davemloft.net
-Subject: Re: [PATCH] math-emu: Fix compiler warnings
-Message-Id: <20080821234935.33de917e.sfr@canb.auug.org.au>
-In-Reply-To: <1219323021-7273-1-git-send-email-galak@kernel.crashing.org>
-References: <1219323021-7273-1-git-send-email-galak@kernel.crashing.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__21_Aug_2008_23_49_35_+1000_oVgyvhHdt3dMfydk"
+	id S1751722AbYHUNut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 09:50:49 -0400
+Message-ID: <48AD72B7.3090608@qumranet.com>
+Date: Thu, 21 Aug 2008 16:50:47 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Eduardo Habkost <ehabkost@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] KVM_GUEST: use the right parameter type on	kvm_release_pt()
+ (was Re: i386 allmodconfig in linux-next)
+References: <20080819024549.5f2c43cf.akpm@linux-foundation.org> <48AACD95.8050207@qumranet.com> <20080819191607.GQ6342@blackpad>
+In-Reply-To: <20080819191607.GQ6342@blackpad>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__21_Aug_2008_23_49_35_+1000_oVgyvhHdt3dMfydk
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Kumar,
-
-On Thu, 21 Aug 2008 07:50:20 -0500 Kumar Gala <galak@kernel.crashing.org> w=
-rote:
+Eduardo Habkost wrote:
+> From: Eduardo Habkost <ehabkost@redhat.com>
+> Subject: [PATCH] KVM_GUEST: Use the right parameter type on kvm_release_pt()
 >
-> Fix warnings of the form:
-> arch/powerpc/math-emu/fsubs.c:15: warning: 'R_f1' may be used uninitializ=
-ed in this function
-> arch/powerpc/math-emu/fsubs.c:15: warning: 'R_f0' may be used uninitializ=
-ed in this function
->=20
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> This fixes the following compiler warnings, that were introduced by me
+> on commit fa24f8e67c189b8b904c8a34f12e6dae9c14dbba.
+>
+> arch/x86/kernel/kvm.c: In function 'paravirt_ops_setup':
+> arch/x86/kernel/kvm.c:233: warning: assignment from incompatible pointer type
+> arch/x86/kernel/kvm.c:234: warning: assignment from incompatible pointer type
+> arch/x86/kernel/kvm.c:235: warning: assignment from incompatible pointer type
+>   
+
+Ingo?  Can you queue/fold this into the original patch?
+
+> Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
 > ---
->=20
-> I intend these patches to go via the powerpc.git tree if no one has issue=
-s.
->=20
-> - k
->=20
->  include/math-emu/op-2.h |    2 +-
+>  arch/x86/kernel/kvm.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c
+> index 8b7a3cf..478bca9 100644
+> --- a/arch/x86/kernel/kvm.c
+> +++ b/arch/x86/kernel/kvm.c
+> @@ -178,7 +178,7 @@ static void kvm_flush_tlb(void)
+>  	kvm_deferred_mmu_op(&ftlb, sizeof ftlb);
+>  }
+>  
+> -static void kvm_release_pt(u32 pfn)
+> +static void kvm_release_pt(unsigned long pfn)
+>  {
+>  	struct kvm_mmu_op_release_pt rpt = {
+>  		.header.op = KVM_MMU_OP_RELEASE_PT,
+>   
 
-Are you modifying the right file here?  There is also
-arch/powerpc/math-emu/op-2.h which contains the same construct.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-- 
+error compiling committee.c: too many arguments to function
 
---Signature=_Thu__21_Aug_2008_23_49_35_+1000_oVgyvhHdt3dMfydk
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkitcm8ACgkQjjKRsyhoI8y5IACgnNw4T0S5wpOPBdfFoRi6ns/P
-iosAnjxE1tXJ99ADfsi+ySaYpGOOVpNx
-=aTmr
------END PGP SIGNATURE-----
-
---Signature=_Thu__21_Aug_2008_23_49_35_+1000_oVgyvhHdt3dMfydk--
