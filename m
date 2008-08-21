@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYHUP7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbYHUP7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756732AbYHUP7E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 11:59:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYHUP6y
+	id S1757699AbYHUP7m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 11:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbYHUP73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 11:58:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42030 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751583AbYHUP6x (ORCPT
+	Thu, 21 Aug 2008 11:59:29 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:6746 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751355AbYHUP72 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 11:58:53 -0400
-Date: Thu, 21 Aug 2008 08:57:31 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Peter Zijlstra <peterz@infradead.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [ANNOUNCE] mdb: Merkey's Linux Kernel Debugger 2.6.27-rc4
- released
-In-Reply-To: <20080821114745.GD21089@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.1.10.0808210845280.3487@nehalem.linux-foundation.org>
-References: <200808210250.m7L2obNX028353@wolfmountaingroup.com> <1219313231.8651.101.camel@twins> <48AD4A0B.8020805@s5r6.in-berlin.de> <1219316568.8651.107.camel@twins> <20080821114745.GD21089@linux.vnet.ibm.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 21 Aug 2008 11:59:28 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAKMtrUh5LD0w/2dsb2JhbAC2MYFm
+X-IronPort-AV: E=Sophos;i="4.32,246,1217773800"; 
+   d="scan'208";a="176604568"
+Date: Fri, 22 Aug 2008 01:59:25 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Martin Knoblauch <knobi@knobisoft.de>
+Cc: Szabolcs Szakacsits <szaka@ntfs-3g.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: XFS vs Elevators (was Re: [PATCH RFC] nilfs2: continuous
+	snapshotting file system)
+Message-ID: <20080821155925.GI5706@disturbed>
+Mail-Followup-To: Martin Knoblauch <knobi@knobisoft.de>,
+	Szabolcs Szakacsits <szaka@ntfs-3g.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	xfs@oss.sgi.com
+References: <293210.50030.qm@web32606.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <293210.50030.qm@web32606.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Aug 21, 2008 at 04:05:21AM -0700, Martin Knoblauch wrote:
+>  just curious - which CCISS controller and and what kind of disk configuration are you using.
 
+Smart Array 5300, using a single 36GB 10krpm U3SCSI disk.
 
-On Thu, 21 Aug 2008, Paul E. McKenney wrote:
-> 
-> Let's face it, the C standard does not support concurrency, so we are
-> all in a state of sin in any case, forced to rely on combinations of
-> gcc-specific non-standard language extensions and assembly language.
-> 
-> Could be worse!!!
+Looks like most of the problems were caused by the firmware,
+and are not driver related. An upgrade to a newer (2002!) firmware
+appears to have fixed the worst of the problems.
 
-It _will_ be worse.
+Cheers,
 
-The C standard will eventually support concurrency (they are working on 
-it), and it will almost inevitably be a horrible pile of stinking sh*t, 
-and we'll continue to use the gcc inline asms instead, but then the gcc 
-people will ignore our complaints when they break the compiler, and say 
-that we should use the stinking-pile-of-sh*t ones that are built in.
-
-No, I haven't seen the drafts, and maybe I'm overly pessimistic, but I'm 
-pretty sure that this is an area where (a) the kernel needs more support 
-than most normal pthread-like models and (b) any design-by-committee thing 
-simply won't be very good, because they'll have to try to make everybody 
-happy.
-
-Oh, well.
-
-		Linus
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
