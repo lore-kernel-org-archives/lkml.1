@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760803AbYHUTEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759758AbYHUTHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760803AbYHUTEa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 15:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754851AbYHUTEX
+	id S1759758AbYHUTHa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 15:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbYHUTHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 15:04:23 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39558 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754387AbYHUTEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 15:04:22 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: latest -git: hibernate: possible circular locking dependency detected
-Date: Thu, 21 Aug 2008 21:07:41 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
-       "Max Krasnyanskiy" <maxk@qualcomm.com>,
+	Thu, 21 Aug 2008 15:07:20 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:16853 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752011AbYHUTHT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 15:07:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=cLEjtDP16OsY3UkMRVM3FImN7xWALwPxY7l75K15J2d7RzCgPt9msvLwRZZeEHDuth
+         oX1HvMEEZdXSL2dCFhTepBfhv2+BsiB5XdQ8PJr/2YSgQbO6JxMfpVQBgI/WcnPRJ+px
+         NJG+uAzK5gE6iCRR0hOQaWIxEZ47X1MhpQ1+I=
+Message-ID: <86802c440808211207q28c567e6t995ac3fdac082abc@mail.gmail.com>
+Date: Thu, 21 Aug 2008 12:07:18 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [Bug #11313] Plugging HDMI causes "unable to handle kernel paging request"
+Cc: "=?ISO-8859-2?Q?Rafa=B3_Mi=B3ecki?=" <zajec5@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
        "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>
-References: <19f34abd0808210804y7ee91d1fy12da5ad6f82d2451@mail.gmail.com> <19f34abd0808211131h7c4b4fcfo99f858218aad8027@mail.gmail.com> <19f34abd0808211139s24f0d57bq7fbd6d2963594919@mail.gmail.com>
-In-Reply-To: <19f34abd0808211139s24f0d57bq7fbd6d2963594919@mail.gmail.com>
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Jack Steiner" <steiner@sgi.com>,
+       "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>,
+       "Hugh Dickens" <hugh@veritas.com>
+In-Reply-To: <48ADB041.9040806@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Disposition: inline
-Message-Id: <200808212107.42356.rjw@sisk.pl>
+References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>
+	 <sNRO-BDDjQL.A.DYF.sazpIB@albercik>
+	 <b170af450808171228i37951c6vd77071da7584669b@mail.gmail.com>
+	 <48AB5D17.5030600@goop.org>
+	 <b170af450808200410v3d7cd076h3e62546b48ddf507@mail.gmail.com>
+	 <48AC3FA4.9080603@goop.org>
+	 <b170af450808201327q48b5b2e0n319c89b0fc1759b6@mail.gmail.com>
+	 <48ADB041.9040806@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m7LJ7Ydq005567
 
-On Thursday, 21 of August 2008, Vegard Nossum wrote:
-> On Thu, Aug 21, 2008 at 8:31 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> > On Thu, Aug 21, 2008 at 8:22 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> On Thursday, 21 of August 2008, Vegard Nossum wrote:
-> >>>
-> >>> I just got this on v2.6.27-rc4 (+ unrelated fix):
-> >>>
-> >>> ACPI: Preparing to enter system sleep state S5
-> >>
-> >> This looks fishy.
-> >>
-> >> Please check what's there in /sys/power/disk .
-> >>
-> 
-> Sorry, forgot this one:
-> 
-> # cat /sys/power/disk
-> test testproc [shutdown] reboot
-
-Hm, I wonder why 'platform' isn't there.
-
-Perhaps the dmesg log will tell.
-
-[/me looks]
-
-No, it doesn't.  The BIOS evidently supports S4.
-
-[/me looks into the source code]
-
-I have no idea whatsoever how it is possible to have
-
-"ACPI: (supports S0 S1 S3 S4 S5)"
-
-in the log and not to have "platform" in the output of "cat /sys/power/disk".
-
-Can you please add
-
-printk(KERN_CRIT "PM: hibernation_ops = %p\n", hibernation_ops);
-
-at the end of kernel/power/disk.c:hibernation_set_ops() and see if it gets
-printed during boot?
-
-Thanks,
-Rafael
+On Thu, Aug 21, 2008 at 11:13 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:> Rafa³ Mi³ecki wrote:>> I added full dmesg 5 minutes after adding grepped:>> http://bugzilla.kernel.org/attachment.cgi?id=17331>>>> OK, I think I see the problem (pasted from bugzilla comment):>>>>>>> Some notes as I pick through all the evidence so far:>> - the crash is specifically because there are reserved bits set in the pmd> - the pmd is b02a00043a6001a3 in both cases> - the vaddr is ffff88013a600000 in the first crash, and>               ffff81013a6d1c00 in the second>  corresponding to the same large-page pmd mapping of phys page 0x13a600000> - this maps to e820 entry>  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)> - the corresponding boot-time mapping is>> init_memory_mapping>  0100000000 - 0140000000 page 2M> kernel direct mapping tables up to 140000000 @ b000-11000>                                               ^^^^^^^^^^
+this is just estimated. and worst case.
+> addr 100000000 reusing pgd 201880 0000000000202063> last_map_addr: 140000000 end: 140000000>> !!! and the memory allocated for this pagetable is:>  #5 [0000008000 - 000000b000]          PGTABLE ==> [0000008000 - 000000b000]>  #6 [000000b000 - 000000c000]          PGTABLE ==> [000000b000 - 000000c000]>                                                     ^^^^^^^^^^^^^^^^^^^^^^^this is correct value used finally.>> IOW, it's mapping using b000-11000, but it has only reserved b000 - c000>> Also, this is right in the middle of the ISA area, which seems risky.> <<<<
+YHÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
