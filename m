@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbYHUOKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbYHUOLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758117AbYHUOKj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 10:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbYHUOKb
+	id S1756366AbYHUOLW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 10:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbYHUOLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 10:10:31 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:36985 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752087AbYHUOKb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 10:10:31 -0400
-Message-ID: <48AD7705.2000404@s5r6.in-berlin.de>
-Date: Thu, 21 Aug 2008 16:09:09 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Thu, 21 Aug 2008 10:11:12 -0400
+Received: from rn-out-0910.google.com ([64.233.170.189]:20432 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754107AbYHUOLK (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 10:11:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xfMkFXGvJUm+W2E6mA1Hr9hMP8wRzAYj+KUip0js9kZfmKSpJQ0hfEE0Vp01+Rs9P+
+         mEp6ibYUEB8603+QmLBmBZKkrx3crvatEgJMtiKo446gLrDM5RlVn9FkZ3aWGUEohlWo
+         TfLPsjeDhf0diVupqpWHfLR0F5gjZM2TZuDeo=
+Message-ID: <6934efce0808210711t686a88eci6eb294dbb54d68fe@mail.gmail.com>
+Date: Thu, 21 Aug 2008 07:11:08 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: "Jamie Lokier" <jamie@shareable.org>
+Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
+Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       "=?UTF-8?Q?J=C3=B6rn_Engel?=" <joern@logfs.org>, tim.bird@am.sony.com,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+In-Reply-To: <20080821110749.GA1926@shareable.org>
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: jmerkey@wolfmountaingroup.com, paulmck@linux.vnet.ibm.com,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [ANNOUNCE] mdb: Merkey's Linux Kernel Debugger  2.6.27-rc4 released
-References: <200808210250.m7L2obNX028353@wolfmountaingroup.com> <48AD5A21.7020801@s5r6.in-berlin.de> <43593.166.70.238.46.1219321595.squirrel@webmail.wolfmountaingroup.com> <200808212337.38626.nickpiggin@yahoo.com.au>
-In-Reply-To: <200808212337.38626.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48AD00C4.6060302@gmail.com> <20080821110749.GA1926@shareable.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Thursday 21 August 2008 22:26, jmerkey@wolfmountaingroup.com wrote:
->> It's simple to reproduce.  Take away the volatile declaration for the
->> rlock_t structure in mdb-ia32.c (rlock_t debug_lock) in all code
->> references and watch the thing lock up in SMP with multiple processors in
->> the debugger each stuck with their own local copy of debug_lock.
-> 
-> You should disable preempt before getting the processor id. Can't see any
-> other possible bugs, but you should be able to see from the disassembly
-> pretty easily.
+> How does it fare with no MMU?  Can the profiler and image builder lay
+> out the XIP pages in such a way that no-MMU mmaps can map those regions?
+>
+> No complaint if not, it would be a nice bonus though.
 
-debug_lock() is AFAICS only called from contexts which have preemption
-disabled.  Last time around I recommended to Jeff to document this
-requirement on the calling context.
+Sorry.  I don't believe it will work on no-MMU as is.  That said you
+_could_ tweak the mkfs tool to lay mmap()'ed regions down contiguously
+but then if you mmap() an unprofiled region, well that would be bad.
+I suppose you could make axfs_mmap smart enough to handle that.  I
+guess the cleanest way would be to just make files lay down
+contiguously, you lose some of the space saving but it would work.
 
-But even though preemption is disabled, debug_lock() is still incorrect
-as I mentioned in my other post a minute ago.  It corrupts its .flags
-and .count members.  (Or maybe it coincidentally doesn't as long as
-volatile is around.)
--- 
-Stefan Richter
--=====-==--- =--- =-=-=
-http://arcgraph.de/sr/
+I'm not plannin to get to this anytime soon.  But I'd be willing merge
+patches.  Can anybody convince me offline that working on no-MMU this
+makes financial sense for my employer?  This is getting to be a common
+question.  How many noMMU users are out there and why are you so
+interested?
