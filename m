@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbYHUChQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755010AbYHUChk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbYHUChQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 22:37:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbYHUCgq
+	id S1755010AbYHUChk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 22:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbYHUCgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 22:36:46 -0400
-Received: from mga11.intel.com ([192.55.52.93]:29276 "EHLO mga11.intel.com"
+	Wed, 20 Aug 2008 22:36:51 -0400
+Received: from mga02.intel.com ([134.134.136.20]:23041 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752810AbYHUCgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 22:36:44 -0400
+	id S1753667AbYHUCgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 22:36:50 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.32,243,1217833200"; 
-   d="scan'208";a="372421788"
-Subject: [patch 1/4]pageattr: introduce APIs to change pageattr of a page
-	array
+   d="scan'208";a="327901257"
+Subject: [2/4]add agp_generic_alloc_pages()
 From: Shaohua Li <shaohua.li@intel.com>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: Dave Airlie <airlied@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Arjan van de Ven <arjan@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Thu, 21 Aug 2008 10:46:06 +0800
-Message-Id: <1219286766.18007.39.camel@sli10-desk.sh.intel.com>
+Date: Thu, 21 Aug 2008 10:46:11 +0800
+Message-Id: <1219286771.18007.40.camel@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -29,481 +28,212 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add array interface APIs of pageattr. page based cache flush is quite
-slow for a lot of pages. If pages are more than 1024 (4M), the patch
-will use a wbinvd(). We have a simple test here (run a 3d game - open
-arena), nearly all agp memory allocation are small (< 1M), so suppose
-this will not impact runtime performance.
+Add agp_generic_alloc_pages(), it uses new pageattr array interface API.
 
 Signed-off-by: Dave Airlie <airlied@gmail.com>
 Signed-off-by: Shaohua Li <shaohua.li@intel.com>
 ---
- arch/x86/mm/pageattr.c       |  216 +++++++++++++++++++++++++++++++++----------
- include/asm-x86/cacheflush.h |    3 
- 2 files changed, 169 insertions(+), 50 deletions(-)
+ drivers/char/agp/agp.h       |    3 +++
+ drivers/char/agp/generic.c   |   42 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/char/agp/intel-agp.c |   14 ++++++++++++++
+ 3 files changed, 59 insertions(+)
 
-Index: linux/arch/x86/mm/pageattr.c
+Index: linux/drivers/char/agp/agp.h
 ===================================================================
---- linux.orig/arch/x86/mm/pageattr.c	2008-08-20 15:34:46.000000000 +0800
-+++ linux/arch/x86/mm/pageattr.c	2008-08-21 10:14:47.000000000 +0800
-@@ -25,15 +25,19 @@
-  * The current flushing context - we pass it instead of 5 arguments:
+--- linux.orig/drivers/char/agp/agp.h	2008-08-20 17:21:28.000000000 +0800
++++ linux/drivers/char/agp/agp.h	2008-08-21 10:07:39.000000000 +0800
+@@ -116,6 +116,7 @@ struct agp_bridge_driver {
+ 	struct agp_memory *(*alloc_by_type) (size_t, int);
+ 	void (*free_by_type)(struct agp_memory *);
+ 	void *(*agp_alloc_page)(struct agp_bridge_data *);
++	int (*agp_alloc_pages)(struct agp_bridge_data *, struct agp_memory *, size_t);
+ 	void (*agp_destroy_page)(void *, int flags);
+ 	int (*agp_type_to_mask_type) (struct agp_bridge_data *, int);
+ 	void (*chipset_flush)(struct agp_bridge_data *);
+@@ -277,6 +278,8 @@ int agp_generic_remove_memory(struct agp
+ struct agp_memory *agp_generic_alloc_by_type(size_t page_count, int type);
+ void agp_generic_free_by_type(struct agp_memory *curr);
+ void *agp_generic_alloc_page(struct agp_bridge_data *bridge);
++int agp_generic_alloc_pages(struct agp_bridge_data *agp_bridge,
++			    struct agp_memory *memory, size_t page_count);
+ void agp_generic_destroy_page(void *addr, int flags);
+ void agp_free_key(int key);
+ int agp_num_entries(void);
+Index: linux/drivers/char/agp/generic.c
+===================================================================
+--- linux.orig/drivers/char/agp/generic.c	2008-08-20 17:21:28.000000000 +0800
++++ linux/drivers/char/agp/generic.c	2008-08-21 10:07:39.000000000 +0800
+@@ -264,6 +264,15 @@ struct agp_memory *agp_allocate_memory(s
+ 	if (new == NULL)
+ 		return NULL;
+ 
++	if (bridge->driver->agp_alloc_pages) {
++		if (bridge->driver->agp_alloc_pages(bridge, new, page_count)) {
++			agp_free_memory(new);
++			return NULL;
++		}
++		new->bridge = bridge;
++		return new;
++	}
++
+ 	for (i = 0; i < page_count; i++) {
+ 		void *addr = bridge->driver->agp_alloc_page(bridge);
+ 
+@@ -1203,6 +1212,39 @@ EXPORT_SYMBOL(agp_generic_alloc_user);
+  * against a maximum value.
   */
- struct cpa_data {
--	unsigned long	vaddr;
-+	unsigned long	*vaddr;
- 	pgprot_t	mask_set;
- 	pgprot_t	mask_clr;
- 	int		numpages;
--	int		flushtlb;
-+	int		flags;
- 	unsigned long	pfn;
- 	unsigned	force_split : 1;
-+	int		curpage;
- };
  
-+#define CPA_FLUSHTLB 1
-+#define CPA_ARRAY 2
-+
- #ifdef CONFIG_PROC_FS
- static unsigned long direct_pages_count[PG_LEVEL_NUM];
- 
-@@ -190,6 +194,41 @@ static void cpa_flush_range(unsigned lon
- 	}
- }
- 
-+static void cpa_flush_array(unsigned long *start, int numpages, int cache)
++int agp_generic_alloc_pages(struct agp_bridge_data *bridge, struct agp_memory *mem, size_t num_pages)
 +{
-+	unsigned int i, level;
-+	unsigned long *addr;
++	struct page * page;
++	int i, ret = -ENOMEM;
 +
-+	BUG_ON(irqs_disabled());
-+
-+	on_each_cpu(__cpa_flush_range, NULL, 1);
-+
-+	if (!cache)
-+		return;
-+
-+	/* 4M threshold */
-+	if (numpages >= 1024) {
-+		if (boot_cpu_data.x86_model >= 4)
-+			wbinvd();
-+		return;
-+	}
-+	/*
-+	 * We only need to flush on one CPU,
-+	 * clflush is a MESI-coherent instruction that
-+	 * will cause all other CPUs to flush the same
-+	 * cachelines:
-+	 */
-+	for (i = 0, addr = start; i < numpages; i++, addr++) {
-+		pte_t *pte = lookup_address(*addr, &level);
-+
-+		/*
-+		 * Only flush present addresses:
-+		 */
-+		if (pte && (pte_val(*pte) & _PAGE_PRESENT))
-+			clflush_cache_range((void *) *addr, PAGE_SIZE);
-+	}
-+}
-+
- /*
-  * Certain areas of memory on x86 require very specific protection flags,
-  * for example the BIOS area or kernel text. Callers don't always get this
-@@ -398,7 +437,7 @@ try_preserve_large_page(pte_t *kpte, uns
- 		 */
- 		new_pte = pfn_pte(pte_pfn(old_pte), canon_pgprot(new_prot));
- 		__set_pmd_pte(kpte, address, new_pte);
--		cpa->flushtlb = 1;
-+		cpa->flags |= CPA_FLUSHTLB;
- 		do_split = 0;
- 	}
- 
-@@ -584,11 +623,16 @@ out_unlock:
- 
- static int __change_page_attr(struct cpa_data *cpa, int primary)
- {
--	unsigned long address = cpa->vaddr;
-+	unsigned long address;
- 	int do_split, err;
- 	unsigned int level;
- 	pte_t *kpte, old_pte;
- 
-+	if (cpa->flags & CPA_ARRAY)
-+		address = cpa->vaddr[cpa->curpage];
-+	else
-+		address = *cpa->vaddr;
-+
- repeat:
- 	kpte = lookup_address(address, &level);
- 	if (!kpte)
-@@ -600,7 +644,7 @@ repeat:
- 			return 0;
- 		WARN(1, KERN_WARNING "CPA: called for zero pte. "
- 		       "vaddr = %lx cpa->vaddr = %lx\n", address,
--		       cpa->vaddr);
-+		       *cpa->vaddr);
- 		return -EINVAL;
- 	}
- 
-@@ -626,7 +670,7 @@ repeat:
- 		 */
- 		if (pte_val(old_pte) != pte_val(new_pte)) {
- 			set_pte_atomic(kpte, new_pte);
--			cpa->flushtlb = 1;
-+			cpa->flags |= CPA_FLUSHTLB;
- 		}
- 		cpa->numpages = 1;
- 		return 0;
-@@ -650,7 +694,7 @@ repeat:
- 	 */
- 	err = split_large_page(kpte, address);
- 	if (!err) {
--		cpa->flushtlb = 1;
-+		cpa->flags |= CPA_FLUSHTLB;
- 		goto repeat;
- 	}
- 
-@@ -663,6 +707,7 @@ static int cpa_process_alias(struct cpa_
- {
- 	struct cpa_data alias_cpa;
- 	int ret = 0;
-+	unsigned long temp_cpa_vaddr, vaddr;
- 
- 	if (cpa->pfn >= max_pfn_mapped)
- 		return 0;
-@@ -675,16 +720,24 @@ static int cpa_process_alias(struct cpa_
- 	 * No need to redo, when the primary call touched the direct
- 	 * mapping already:
- 	 */
--	if (!(within(cpa->vaddr, PAGE_OFFSET,
-+	if (cpa->flags & CPA_ARRAY)
-+		vaddr = cpa->vaddr[cpa->curpage];
-+	else
-+		vaddr = *cpa->vaddr;
-+
-+	if (!(within(vaddr, PAGE_OFFSET,
- 		    PAGE_OFFSET + (max_low_pfn_mapped << PAGE_SHIFT))
- #ifdef CONFIG_X86_64
--		|| within(cpa->vaddr, PAGE_OFFSET + (1UL<<32),
-+		|| within(vaddr, PAGE_OFFSET + (1UL<<32),
- 		    PAGE_OFFSET + (max_pfn_mapped << PAGE_SHIFT))
- #endif
- 	)) {
- 
- 		alias_cpa = *cpa;
--		alias_cpa.vaddr = (unsigned long) __va(cpa->pfn << PAGE_SHIFT);
-+		temp_cpa_vaddr = (unsigned long) __va(cpa->pfn << PAGE_SHIFT);
-+		alias_cpa.vaddr = &temp_cpa_vaddr;
-+		alias_cpa.flags &= ~CPA_ARRAY;
-+
- 
- 		ret = __change_page_attr_set_clr(&alias_cpa, 0);
- 	}
-@@ -696,7 +749,7 @@ static int cpa_process_alias(struct cpa_
- 	 * No need to redo, when the primary call touched the high
- 	 * mapping already:
- 	 */
--	if (within(cpa->vaddr, (unsigned long) _text, (unsigned long) _end))
-+	if (within(vaddr, (unsigned long) _text, (unsigned long) _end))
- 		return 0;
- 
- 	/*
-@@ -707,8 +760,9 @@ static int cpa_process_alias(struct cpa_
- 		return 0;
- 
- 	alias_cpa = *cpa;
--	alias_cpa.vaddr =
--		(cpa->pfn << PAGE_SHIFT) + __START_KERNEL_map - phys_base;
-+	temp_cpa_vaddr = (cpa->pfn << PAGE_SHIFT) + __START_KERNEL_map - phys_base;
-+	alias_cpa.vaddr = &temp_cpa_vaddr;
-+	alias_cpa.flags &= ~CPA_ARRAY;
- 
- 	/*
- 	 * The high mapping range is imprecise, so ignore the return value.
-@@ -728,6 +782,9 @@ static int __change_page_attr_set_clr(st
- 		 * preservation check.
- 		 */
- 		cpa->numpages = numpages;
-+		/* for array changes, we can't use large page */
-+		if (cpa->flags & CPA_ARRAY)
-+			cpa->numpages = 1;
- 
- 		ret = __change_page_attr(cpa, checkalias);
- 		if (ret)
-@@ -746,7 +803,11 @@ static int __change_page_attr_set_clr(st
- 		 */
- 		BUG_ON(cpa->numpages > numpages);
- 		numpages -= cpa->numpages;
--		cpa->vaddr += cpa->numpages * PAGE_SIZE;
-+		if (cpa->flags & CPA_ARRAY)
-+			cpa->curpage++;
-+		else
-+			*cpa->vaddr += cpa->numpages * PAGE_SIZE;
-+
- 	}
- 	return 0;
- }
-@@ -757,9 +818,9 @@ static inline int cache_attr(pgprot_t at
- 		(_PAGE_PAT | _PAGE_PAT_LARGE | _PAGE_PWT | _PAGE_PCD);
- }
- 
--static int change_page_attr_set_clr(unsigned long addr, int numpages,
-+static int change_page_attr_set_clr(unsigned long *addr, int numpages,
- 				    pgprot_t mask_set, pgprot_t mask_clr,
--				    int force_split)
-+				    int force_split, int array)
- {
- 	struct cpa_data cpa;
- 	int ret, cache, checkalias;
-@@ -774,12 +835,22 @@ static int change_page_attr_set_clr(unsi
- 		return 0;
- 
- 	/* Ensure we are PAGE_SIZE aligned */
--	if (addr & ~PAGE_MASK) {
--		addr &= PAGE_MASK;
--		/*
--		 * People should not be passing in unaligned addresses:
--		 */
--		WARN_ON_ONCE(1);
-+	if (!array) {
-+		if (*addr & ~PAGE_MASK) {
-+			*addr &= PAGE_MASK;
-+			/*
-+			 * People should not be passing in unaligned addresses:
-+			 */
-+			WARN_ON_ONCE(1);
-+		}
-+	} else {
-+		int i;
-+		for (i = 0; i < numpages; i++) {
-+			if (addr[i] & ~PAGE_MASK) {
-+				addr[i] &= PAGE_MASK;
-+				WARN_ON_ONCE(1);
-+			}
-+		}
- 	}
- 
- 	/* Must avoid aliasing mappings in the highmem code */
-@@ -789,9 +860,13 @@ static int change_page_attr_set_clr(unsi
- 	cpa.numpages = numpages;
- 	cpa.mask_set = mask_set;
- 	cpa.mask_clr = mask_clr;
--	cpa.flushtlb = 0;
-+	cpa.flags = 0;
-+	cpa.curpage = 0;
- 	cpa.force_split = force_split;
- 
-+	if (array)
-+		cpa.flags |= CPA_ARRAY;
-+
- 	/* No alias checking for _NX bit modifications */
- 	checkalias = (pgprot_val(mask_set) | pgprot_val(mask_clr)) != _PAGE_NX;
- 
-@@ -800,7 +875,7 @@ static int change_page_attr_set_clr(unsi
- 	/*
- 	 * Check whether we really changed something:
- 	 */
--	if (!cpa.flushtlb)
-+	if (!(cpa.flags & CPA_FLUSHTLB))
- 		goto out;
- 
- 	/*
-@@ -815,9 +890,12 @@ static int change_page_attr_set_clr(unsi
- 	 * error case we fall back to cpa_flush_all (which uses
- 	 * wbindv):
- 	 */
--	if (!ret && cpu_has_clflush)
--		cpa_flush_range(addr, numpages, cache);
--	else
-+	if (!ret && cpu_has_clflush) {
-+		if (cpa.flags & CPA_ARRAY)
-+			cpa_flush_array(addr, numpages, cache);
-+		else
-+			cpa_flush_range(*addr, numpages, cache);
-+	} else
- 		cpa_flush_all(cache);
- 
- out:
-@@ -826,16 +904,18 @@ out:
- 	return ret;
- }
- 
--static inline int change_page_attr_set(unsigned long addr, int numpages,
--				       pgprot_t mask)
-+static inline int change_page_attr_set(unsigned long *addr, int numpages,
-+				       pgprot_t mask, int array)
- {
--	return change_page_attr_set_clr(addr, numpages, mask, __pgprot(0), 0);
-+	return change_page_attr_set_clr(addr, numpages, mask, __pgprot(0), 0,
-+		array);
- }
- 
--static inline int change_page_attr_clear(unsigned long addr, int numpages,
--					 pgprot_t mask)
-+static inline int change_page_attr_clear(unsigned long *addr, int numpages,
-+					 pgprot_t mask, int array)
- {
--	return change_page_attr_set_clr(addr, numpages, __pgprot(0), mask, 0);
-+	return change_page_attr_set_clr(addr, numpages, __pgprot(0), mask, 0,
-+		array);
- }
- 
- int _set_memory_uc(unsigned long addr, int numpages)
-@@ -843,8 +923,8 @@ int _set_memory_uc(unsigned long addr, i
- 	/*
- 	 * for now UC MINUS. see comments in ioremap_nocache()
- 	 */
--	return change_page_attr_set(addr, numpages,
--				    __pgprot(_PAGE_CACHE_UC_MINUS));
-+	return change_page_attr_set(&addr, numpages,
-+				    __pgprot(_PAGE_CACHE_UC_MINUS), 0);
- }
- 
- int set_memory_uc(unsigned long addr, int numpages)
-@@ -860,10 +940,31 @@ int set_memory_uc(unsigned long addr, in
- }
- EXPORT_SYMBOL(set_memory_uc);
- 
-+int set_memory_array_uc(unsigned long *addr, int addrinarray)
-+{
-+	int i;
-+	/*
-+	 * for now UC MINUS. see comments in ioremap_nocache()
-+	 */
-+	for (i = 0; i < addrinarray; i++) {
-+		if (reserve_memtype(addr[i], addr[i] + PAGE_SIZE,
-+			    _PAGE_CACHE_UC_MINUS, NULL))
++	for (i = 0; i < num_pages; i++) {
++		page = alloc_page(GFP_KERNEL | GFP_DMA32);
++		/* agp_free_memory() needs gart address */
++		if (page == NULL)
 +			goto out;
++
++#ifndef CONFIG_X86
++		map_page_into_agp(page);
++#endif
++		get_page(page);
++		atomic_inc(&agp_bridge->current_memory_agp);
++
++		/* set_memory_array_uc() needs virtual address */
++		mem->memory[i] = (unsigned long)page_address(page);
++		mem->page_count++;
 +	}
 +
-+	return change_page_attr_set(addr, addrinarray,
-+				    __pgprot(_PAGE_CACHE_UC_MINUS), 1);
++#ifdef CONFIG_X86
++	set_memory_array_uc(mem->memory, num_pages);
++#endif
++	ret = 0;
 +out:
-+	while (--i >= 0)
-+		free_memtype(addr[i], addr[i] + PAGE_SIZE);
-+	return -EINVAL;
++	for (i = 0; i < mem->page_count; i++)
++		mem->memory[i] = virt_to_gart((void *)mem->memory[i]);
++	return ret;
 +}
-+EXPORT_SYMBOL(set_memory_array_uc);
++EXPORT_SYMBOL(agp_generic_alloc_pages);
 +
- int _set_memory_wc(unsigned long addr, int numpages)
+ void *agp_generic_alloc_page(struct agp_bridge_data *bridge)
  {
--	return change_page_attr_set(addr, numpages,
--				    __pgprot(_PAGE_CACHE_WC));
-+	return change_page_attr_set(&addr, numpages,
-+				    __pgprot(_PAGE_CACHE_WC), 0);
- }
- 
- int set_memory_wc(unsigned long addr, int numpages)
-@@ -881,8 +982,8 @@ EXPORT_SYMBOL(set_memory_wc);
- 
- int _set_memory_wb(unsigned long addr, int numpages)
- {
--	return change_page_attr_clear(addr, numpages,
--				      __pgprot(_PAGE_CACHE_MASK));
-+	return change_page_attr_clear(&addr, numpages,
-+				      __pgprot(_PAGE_CACHE_MASK), 0);
- }
- 
- int set_memory_wb(unsigned long addr, int numpages)
-@@ -893,37 +994,48 @@ int set_memory_wb(unsigned long addr, in
- }
- EXPORT_SYMBOL(set_memory_wb);
- 
-+int set_memory_array_wb(unsigned long *addr, int addrinarray)
-+{
-+	int i;
-+	for (i = 0; i < addrinarray; i++)
-+		free_memtype(addr[i], addr[i] + PAGE_SIZE);
-+
-+	return change_page_attr_clear(addr, addrinarray,
-+				      __pgprot(_PAGE_CACHE_MASK), 1);
-+}
-+EXPORT_SYMBOL(set_memory_array_wb);
-+
- int set_memory_x(unsigned long addr, int numpages)
- {
--	return change_page_attr_clear(addr, numpages, __pgprot(_PAGE_NX));
-+	return change_page_attr_clear(&addr, numpages, __pgprot(_PAGE_NX), 0);
- }
- EXPORT_SYMBOL(set_memory_x);
- 
- int set_memory_nx(unsigned long addr, int numpages)
- {
--	return change_page_attr_set(addr, numpages, __pgprot(_PAGE_NX));
-+	return change_page_attr_set(&addr, numpages, __pgprot(_PAGE_NX), 0);
- }
- EXPORT_SYMBOL(set_memory_nx);
- 
- int set_memory_ro(unsigned long addr, int numpages)
- {
--	return change_page_attr_clear(addr, numpages, __pgprot(_PAGE_RW));
-+	return change_page_attr_clear(&addr, numpages, __pgprot(_PAGE_RW), 0);
- }
- 
- int set_memory_rw(unsigned long addr, int numpages)
- {
--	return change_page_attr_set(addr, numpages, __pgprot(_PAGE_RW));
-+	return change_page_attr_set(&addr, numpages, __pgprot(_PAGE_RW), 0);
- }
- 
- int set_memory_np(unsigned long addr, int numpages)
- {
--	return change_page_attr_clear(addr, numpages, __pgprot(_PAGE_PRESENT));
-+	return change_page_attr_clear(&addr, numpages, __pgprot(_PAGE_PRESENT), 0);
- }
- 
- int set_memory_4k(unsigned long addr, int numpages)
- {
--	return change_page_attr_set_clr(addr, numpages, __pgprot(0),
--					__pgprot(0), 1);
-+	return change_page_attr_set_clr(&addr, numpages, __pgprot(0),
-+					__pgprot(0), 1, 0);
- }
- 
- int set_pages_uc(struct page *page, int numpages)
-@@ -976,20 +1088,24 @@ int set_pages_rw(struct page *page, int 
- 
- static int __set_pages_p(struct page *page, int numpages)
- {
--	struct cpa_data cpa = { .vaddr = (unsigned long) page_address(page),
-+	unsigned long tempaddr = (unsigned long) page_address(page);
-+	struct cpa_data cpa = { .vaddr = &tempaddr,
- 				.numpages = numpages,
- 				.mask_set = __pgprot(_PAGE_PRESENT | _PAGE_RW),
--				.mask_clr = __pgprot(0)};
-+				.mask_clr = __pgprot(0),
-+				.flags = 0};
- 
- 	return __change_page_attr_set_clr(&cpa, 1);
- }
- 
- static int __set_pages_np(struct page *page, int numpages)
- {
--	struct cpa_data cpa = { .vaddr = (unsigned long) page_address(page),
-+	unsigned long tempaddr = (unsigned long) page_address(page);
-+	struct cpa_data cpa = { .vaddr = &tempaddr,
- 				.numpages = numpages,
- 				.mask_set = __pgprot(0),
--				.mask_clr = __pgprot(_PAGE_PRESENT | _PAGE_RW)};
-+				.mask_clr = __pgprot(_PAGE_PRESENT | _PAGE_RW),
-+				.flags = 0};
- 
- 	return __change_page_attr_set_clr(&cpa, 1);
- }
-Index: linux/include/asm-x86/cacheflush.h
+ 	struct page * page;
+Index: linux/drivers/char/agp/intel-agp.c
 ===================================================================
---- linux.orig/include/asm-x86/cacheflush.h	2008-08-20 15:34:46.000000000 +0800
-+++ linux/include/asm-x86/cacheflush.h	2008-08-20 15:58:40.000000000 +0800
-@@ -66,6 +66,9 @@ int set_memory_rw(unsigned long addr, in
- int set_memory_np(unsigned long addr, int numpages);
- int set_memory_4k(unsigned long addr, int numpages);
- 
-+int set_memory_array_uc(unsigned long *addr, int addrinarray);
-+int set_memory_array_wb(unsigned long *addr, int addrinarray);
-+
- /*
-  * For legacy compatibility with the old APIs, a few functions
-  * are provided that work on a "struct page".
+--- linux.orig/drivers/char/agp/intel-agp.c	2008-08-20 17:21:28.000000000 +0800
++++ linux/drivers/char/agp/intel-agp.c	2008-08-21 10:07:39.000000000 +0800
+@@ -1711,6 +1711,7 @@ static const struct agp_bridge_driver in
+ 	.alloc_by_type		= agp_generic_alloc_by_type,
+ 	.free_by_type		= agp_generic_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
++	.agp_alloc_pages        = agp_generic_alloc_pages,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
+ };
+@@ -1736,6 +1737,7 @@ static const struct agp_bridge_driver in
+ 	.alloc_by_type		= intel_i810_alloc_by_type,
+ 	.free_by_type		= intel_i810_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
++	.agp_alloc_pages        = agp_generic_alloc_pages,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
+ };
+@@ -1760,6 +1762,7 @@ static const struct agp_bridge_driver in
+ 	.alloc_by_type		= agp_generic_alloc_by_type,
+ 	.free_by_type		= agp_generic_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
++	.agp_alloc_pages        = agp_generic_alloc_pages,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type	= agp_generic_type_to_mask_type,
+ };
+@@ -1785,6 +1788,7 @@ static const struct agp_bridge_driver in
+ 	.alloc_by_type		= intel_i830_alloc_by_type,
+ 	.free_by_type		= intel_i810_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
++	.agp_alloc_pages        = agp_generic_alloc_pages,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = intel_i830_type_to_mask_type,
+ 	.chipset_flush		= intel_i830_chipset_flush,
+@@ -1810,6 +1814,7 @@ static const struct agp_bridge_driver in
+ 	.alloc_by_type		= agp_generic_alloc_by_type,
+ 	.free_by_type		= agp_generic_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
++	.agp_alloc_pages        = agp_generic_alloc_pages,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
+ };
+@@ -1834,6 +1839,7 @@ static const struct agp_bridge_driver in
+ 	.alloc_by_type		= agp_generic_alloc_by_type,
+ 	.free_by_type		= agp_generic_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
++	.agp_alloc_pages        = agp_generic_alloc_pages,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
+ };
+@@ -1858,6 +1864,7 @@ static const struct agp_bridge_driver in
+ 	.alloc_by_type		= agp_generic_alloc_by_type,
+ 	.free_by_type		= agp_generic_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
++	.agp_alloc_pages        = agp_generic_alloc_pages,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
+ };
+@@ -1882,6 +1889,7 @@ static const struct agp_bridge_driver in
+ 	.alloc_by_type		= agp_generic_alloc_by_type,
+ 	.free_by_type		= agp_generic_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
++	.agp_alloc_pages        = agp_generic_alloc_pages,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
+ 	.chipset_flush		= intel_i830_chipset_flush,
+@@ -1907,6 +1915,7 @@ static const struct agp_bridge_driver in
+ 	.alloc_by_type		= agp_generic_alloc_by_type,
+ 	.free_by_type		= agp_generic_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
++	.agp_alloc_pages        = agp_generic_alloc_pages,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
+ };
+@@ -1931,6 +1940,7 @@ static const struct agp_bridge_driver in
+ 	.alloc_by_type		= agp_generic_alloc_by_type,
+ 	.free_by_type		= agp_generic_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
++	.agp_alloc_pages        = agp_generic_alloc_pages,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
+ };
+@@ -1956,6 +1966,7 @@ static const struct agp_bridge_driver in
+ 	.alloc_by_type		= intel_i830_alloc_by_type,
+ 	.free_by_type		= intel_i810_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
++	.agp_alloc_pages        = agp_generic_alloc_pages,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = intel_i830_type_to_mask_type,
+ 	.chipset_flush		= intel_i915_chipset_flush,
+@@ -1982,6 +1993,7 @@ static const struct agp_bridge_driver in
+ 	.alloc_by_type		= intel_i830_alloc_by_type,
+ 	.free_by_type		= intel_i810_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
++	.agp_alloc_pages        = agp_generic_alloc_pages,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type	= intel_i830_type_to_mask_type,
+ 	.chipset_flush		= intel_i915_chipset_flush,
+@@ -2007,6 +2019,7 @@ static const struct agp_bridge_driver in
+ 	.alloc_by_type		= agp_generic_alloc_by_type,
+ 	.free_by_type		= agp_generic_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
++	.agp_alloc_pages        = agp_generic_alloc_pages,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
+ };
+@@ -2032,6 +2045,7 @@ static const struct agp_bridge_driver in
+ 	.alloc_by_type		= intel_i830_alloc_by_type,
+ 	.free_by_type		= intel_i810_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
++	.agp_alloc_pages        = agp_generic_alloc_pages,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type	= intel_i830_type_to_mask_type,
+ 	.chipset_flush		= intel_i915_chipset_flush,
 
 
