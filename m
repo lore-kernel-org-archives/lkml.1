@@ -1,105 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759408AbYHUO1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759453AbYHUOaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759408AbYHUO1D (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 10:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbYHUO0v
+	id S1759453AbYHUOaV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 10:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbYHUOaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 10:26:51 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:25357 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754499AbYHUO0u convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 10:26:50 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: rdunlap <randy.dunlap@oracle.com>, lkml <linux-kernel@vger.kernel.org>,
-       scsi <linux-scsi@vger.kernel.org>
-Date: Thu, 21 Aug 2008 14:26:06 +0000
-Subject: RE: in 2.6.23-rc3-git7 in do_cciss_intr
-Thread-Topic: in 2.6.23-rc3-git7 in do_cciss_intr
-Thread-Index: AckDUo7M2VAZolPfRBaBPTpMMvPM1gARt9Wg
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A778835116209D3@GVW0547EXC.americas.hpqcorp.net>
-References: <48AD02B2.7020004@oracle.com>
-In-Reply-To: <48AD02B2.7020004@oracle.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 21 Aug 2008 10:30:06 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:25959 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754045AbYHUOaF (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 10:30:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=oiHffXM66l5pcIBA+eNcwzFI4hKio3aMutqGYYTK6irWTnxGBRW0OZoJyEKM0n4Ws3
+         huZ61ptjU3s8A175zguZWkSxDtRKdcL6iFoCd27zn9obIr5NLhBwl7EVLparu6RZi5vz
+         NUbAqzJ7Xj0OMt8kgLQEALUF9kU7RNXObJajk=
+Message-ID: <6934efce0808210730y77db925cg263c957abb056fea@mail.gmail.com>
+Date: Thu, 21 Aug 2008 07:30:03 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: carsteno@de.ibm.com
+Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
+Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       "=?UTF-8?Q?J=C3=B6rn_Engel?=" <joern@logfs.org>, tim.bird@am.sony.com,
+       nickpiggin@yahoo.com.au
+In-Reply-To: <48AD42AE.4030107@de.ibm.com>
 MIME-Version: 1.0
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48AD00C4.6060302@gmail.com> <48AD42AE.4030107@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I like the general approach of it. It's much more flexible than the ext2
+> extension I've done, and the possibility to select XIP vs. compression per
+> page is really really neat. I can imagine that people will prefer this over
+> the ext2 implementation on s390. It is unclear to me how the "secondary
+> block device" thing is supposed to work. Could you elaborate a bit on that?
 
+First off we don't yet support direct_access(), but I am planning on that soon.
 
-> -----Original Message-----
-> From: rdunlap [mailto:randy.dunlap@oracle.com]
-> Sent: Thursday, August 21, 2008 12:53 AM
-> To: lkml; scsi; Miller, Mike (OS Dev)
-> Subject: BUG: in 2.6.23-rc3-git7 in do_cciss_intr
->
-> on x86_64, 4 proc, 8 GB RAM:
->
-> calling  cciss_init+0x0/0x2e [cciss]
-> HP CISS Driver (v 3.6.20)
-> ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 54 cciss
-> 0000:42:08.0: PCI INT A -> Link[LNKA] -> GSI 54 (level, high)
-> -> IRQ 54
-> cciss0: <0x3238> at PCI 0000:42:08.0 IRQ 503 using DAC
-> BUG: unable to handle kernel NULL pointer dereference at
-> 0000000000000248
-> IP: [<ffffffffa001bb68>] do_cciss_intr+0x627/0xa6c [cciss]
-> PGD 17e422067 PUD 17e423067 PMD 0
-> Oops: 0002 [1] SMP
-> CPU 2
-> Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
-> Pid: 0, comm: swapper Not tainted 2.6.27-rc3-git7 #1
-> RIP: 0010:[<ffffffffa001bb68>]  [<ffffffffa001bb68>]
-> do_cciss_intr+0x627/0xa6c [cciss]
-> RSP: 0018:ffff88027f66fee8  EFLAGS: 00010007
-> RAX: 0000000000000000 RBX: ffff88007f840270 RCX: 000000000000000c
-> RDX: 0000000000000000 RSI: ffff88027e5c0000 RDI: ffff88027e5c0000
-> RBP: ffff88027f66ff18 R08: 0000000000000000 R09: ffff88017fa95e88
-> R10: 0000000000000000 R11: ffff88027f66ff48 R12: ffff88027e5c0000
-> R13: 0000000000000000 R14: 00000000000001f7 R15: 0000000000000086
-> FS:  0000000000680850(0000) GS:ffff88017fc02c80(0000)
-> knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 0000000000000248 CR3: 000000017e425000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7:
-> 0000000000000400 Process swapper (pid: 0, threadinfo
-> ffff88017fa94000, task ffff88027f63d340)
-> Stack:  ffff88027f66fee0 ffff88017e9b4800 0000000000000000
-> 0000000000000000
->  00000000000001f7 0000000000000000 ffff88027f66ff48
-> ffffffff8026757e  ffffffff80719000 00000000000001f7
-> ffff88017e9b4800 ffffffff80719050 Call Trace:
->  <IRQ>  [<ffffffff8026757e>] handle_IRQ_event+0x27/0x57
-> [<ffffffff80268d08>] handle_edge_irq+0xed/0x12e
-> [<ffffffff8020eaab>] do_IRQ+0xf6/0x167  [<ffffffff8020c471>]
-> ret_from_intr+0x0/0xa  <EOI>  [<ffffffff802122b1>] ?
-> default_idle+0x2b/0x40  [<ffffffff802124bf>] ?
-> c1e_idle+0xd4/0xdb  [<ffffffff8055677d>] ?
-> atomic_notifier_call_chain+0xf/0x11
->  [<ffffffff8020ac6c>] ? cpu_idle+0x71/0x8f
-> [<ffffffff8054e752>] ? start_secondary+0x157/0x15c
->
->
-> Code: 8b 83 48 02 00 00 48 39 d8 74 37 49 39 9c 24 c0 00 01
-> 00 75 08 49 89 84 24 c0 00 01 00 48 8b 83 40 02 00 00 48 8b
-> 93 48 02 00 00 <48> 89 90 48 02 00 00 48 8b 93 48 02 00 00 48
-> 89 82 40 02 00 00 RIP  [<ffffffffa001bb68>]
-> do_cciss_intr+0x627/0xa6c [cciss]  RSP <ffff88027f66fee8>
-> CR2: 0000000000000248
-> ---[ end trace 902dc79a9e72d3ed ]---
->
+Sure.  For a system that has say a NOR Flash and a NAND or a embedded
+MMC, one can split a filesystem image such that only the XIP parts of
+the image are on the NOR while the compressed bits are on the NAND /
+eMMC.  The NOR part is accessed as directly addressable memory, while
+the NAND would use mtd->read() and the eMMC would use block device
+access API's.  In this case I would call this NAND or eMMC the
+"secondary device" because the primary device is the NOR.
 
-Randy,
-Sorry I haven't replied sooner. I saw your earlier mail, just been busy breaking stuff internally. Did this happen during driver init or runtime?
+Assuming my NOR was at /dev//mtd2 and my NAND at /dev/mtd5.  I would
+call the following to mount such a system:
 
--- mikem
+mount -t axfs -o second_dev=/dev/mtd5 /dev/mtd2 /mnt/axfs
