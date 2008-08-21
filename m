@@ -1,108 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbYHUT4E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbYHUUAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756169AbYHUT4E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 15:56:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbYHUTzy
+	id S1756784AbYHUUAH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 16:00:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYHUT7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 15:55:54 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39867 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751063AbYHUTzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 15:55:53 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: ftraced and suspend to ram
-Date: Thu, 21 Aug 2008 21:59:36 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <alpine.DEB.1.10.0808211139420.3947@gandalf.stny.rr.com> <alpine.DEB.1.10.0808211423410.678@gandalf.stny.rr.com> <200808212037.11775.rjw@sisk.pl>
-In-Reply-To: <200808212037.11775.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 21 Aug 2008 15:59:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56677 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751375AbYHUT7v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 15:59:51 -0400
+Date: Thu, 21 Aug 2008 12:58:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Takashi Sato <t-sato@yk.jp.nec.com>
+Cc: linux-fsdevel@vger.kernel.org, dm-devel@redhat.com,
+       viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
+       hch@infradead.org, axboe@kernel.dk, mtk.manpages@googlemail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Implement generic freeze feature
+Message-Id: <20080821125841.a04a706f.akpm@linux-foundation.org>
+In-Reply-To: <20080818212819t-sato@mail.jp.nec.com>
+References: <20080818212819t-sato@mail.jp.nec.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808212159.37678.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 21 of August 2008, Rafael J. Wysocki wrote:
-> On Thursday, 21 of August 2008, Steven Rostedt wrote:
-> > 
-> > On Thu, 21 Aug 2008, Rafael J. Wysocki wrote:
-> > 
-> > > On Thursday, 21 of August 2008, Steven Rostedt wrote:
-> > > > 
-> > > > In latest 2.6.27(git) enabling dynamic ftrace makes resume from a suspend 
-> > > > to ram reboot instead of resuming. Queued for 2.6.28 is a new method of 
-> > > > recording mcount callers at compile time that does not have this issue.
-> > > > 
-> > > > But the new method is still too "green" to be pulled into 27, so the old 
-> > > > ftraced (daemon method) needs to be fixed for 27.
-> > > > 
-> > > > The way dynamic ftrace works with the daemon method is this. On boot up 
-> > > > the mcount function simply returns. When ftrace is initialized, it calls 
-> > > > kstop_machine to modify the mcount function to call another function 
-> > > > called "ftrace_record_ip". This new function will record in a preallocated 
-> > > > hash (allocated by the ftrace initializer) all the callers of mcount. A 
-> > > > check is made to see if the caller has already been put into the hash, and 
-> > > > if so, it is not recorded again.
-> > > > 
-> > > > Later on a kernel thread ftraced is created. This kernel thread wakes up 
-> > > > once a second and checks to see if any new functions were added to the 
-> > > > hash. If so, it then calls kstop_machine and modifies those callers to 
-> > > > mcount into nops.
-> > > > 
-> > > > Again, this daemon method makes resume from suspend to ram reboot instead 
-> > > > of resuming. Now, I'm asking the s2r gurus, what did I miss? Do I need to 
-> > > > add a "NO_FREEZE" flag or something to the "ftraced" kernel thread?
-> > > > 
-> > > > Just asking for some advice.
-> > > 
-> > > If I'm not mistaken, it'll probably suffice to make it freezable, so that it
-> > > doesn't run while the system is suspending and resuming.  Would that be
-> > > acceptable?
-> > 
-> > Does it not freeze by default.
+On Mon, 18 Aug 2008 21:28:19 +0900
+Takashi Sato <t-sato@yk.jp.nec.com> wrote:
+
+> The ioctls for the generic freeze feature are below.
+> o Freeze the filesystem
+>   int ioctl(int fd, int FIFREEZE, arg)
+>     fd: The file descriptor of the mountpoint
+>     FIFREEZE: request code for the freeze
+>     arg: Ignored
+>     Return value: 0 if the operation succeeds. Otherwise, -1
 > 
-> No, it doesn't.  Kernel threads are not freezable by default
+> o Unfreeze the filesystem
+>   int ioctl(int fd, int FITHAW, arg)
+>     fd: The file descriptor of the mountpoint
+>     FITHAW: request code for unfreeze
+>     arg: Ignored
+>     Return value: 0 if the operation succeeds. Otherwise, -1
 > 
-> > > Please tell me where exactly the ftraced source code is located.
-> > 
-> > It's in Linus's latest git tree.
-> > 
-> > The code in question is the ftraced() function in kernel/trace/ftrace.c
-> 
-> Thanks, I'll have a look in a while.
+>
+> ...
+>
+> --- linux-2.6.27-rc2.org/include/linux/fs.h	2008-08-06 13:49:54.000000000 +0900
+> +++ linux-2.6.27-rc2-freeze/include/linux/fs.h	2008-08-07 08:59:54.000000000 +0900
+> @@ -226,6 +226,8 @@ extern int dir_notify_enable;
+>  #define BMAP_IOCTL 1		/* obsolete - kept for compatibility */
+>  #define FIBMAP	   _IO(0x00,1)	/* bmap access */
+>  #define FIGETBSZ   _IO(0x00,2)	/* get the block size used for bmap */
+> +#define FIFREEZE	_IOWR('X', 119, int)	/* Freeze */
+> +#define FITHAW		_IOWR('X', 120, int)	/* Thaw */
 
-Can you try the appended patch, please?
+FIFREEZE is 119, but a few lines above we have
 
-Thanks,
-Rafael
+#define BLKDISCARD _IO(0x12,119)
 
----
- kernel/trace/ftrace.c |    5 +++++
- 1 file changed, 5 insertions(+)
+Should we be using 120 and 121 here?
 
-Index: linux-2.6/kernel/trace/ftrace.c
-===================================================================
---- linux-2.6.orig/kernel/trace/ftrace.c
-+++ linux-2.6/kernel/trace/ftrace.c
-@@ -796,8 +796,13 @@ static int ftraced(void *ignore)
- {
- 	unsigned long usecs;
- 
-+	set_freezable();
-+
- 	while (!kthread_should_stop()) {
- 
-+		if (try_to_freeze())
-+			continue;
-+
- 		set_current_state(TASK_INTERRUPTIBLE);
- 
- 		/* check once a second */
+>  #define	FS_IOC_GETFLAGS			_IOR('f', 1, long)
+>  #define	FS_IOC_SETFLAGS			_IOW('f', 2, long)
+> @@ -574,6 +576,10 @@ struct block_device {
+>  	 * care to not mess up bd_private for that case.
+>  	 */
+>  	unsigned long		bd_private;
+> +	/* The counter of freeze processes */
+> +	int			bd_freeze_count;
+> +	/* Semaphore for freeze */
+> +	struct semaphore	bd_freeze_sem;
+
+"freeze" is not an adequate description of what this protects.  I think
+it's only the modification and testing of bd_freeze_count, isn't it?
+
+If so, all this could be done more neatly by removing the lock,
+switching to atomic_t and using our (rich) atomic_t operations.
+
+otoh, perhaps it protects more than this, in which case the lock
+can/should be switched to a `struct mutex'?
+
+
