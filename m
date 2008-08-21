@@ -1,68 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759888AbYHULuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759842AbYHULvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759888AbYHULuW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 07:50:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757150AbYHULuI
+	id S1759842AbYHULvp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 07:51:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756016AbYHULvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 07:50:08 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53472 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756242AbYHULuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 07:50:06 -0400
-Date: Thu, 21 Aug 2008 13:49:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@gmail.com>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [3/4] add agp_generic_destroy_pages()
-Message-ID: <20080821114952.GE30667@elte.hu>
-References: <1219286777.18007.41.camel@sli10-desk.sh.intel.com> <20080820200807.324aa671.akpm@linux-foundation.org>
+	Thu, 21 Aug 2008 07:51:36 -0400
+Received: from styx.suse.cz ([82.119.242.94]:33173 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755363AbYHULvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 07:51:35 -0400
+Date: Thu, 21 Aug 2008 13:51:33 +0200
+From: Jan Kara <jack@suse.cz>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: akpm@linux-foundation.org, jack@suse.cz, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
+       tytso@mit.edu, sct@redhat.com, adilger@clusterfs.com,
+       mm-commits@vger.kernel.org, yumiko.sugita.yf@hitachi.com,
+       satoshi.oshima.fk@hitachi.com
+Subject: Re: + jbd-fix-error-handling-for-checkpoint-io.patch added to -mm
+	tree
+Message-ID: <20080821115133.GC5428@duck.suse.cz>
+References: <48AD3ED7.6050903@hitachi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080820200807.324aa671.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <48AD3ED7.6050903@hitachi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  Hello,
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> stylistic nit:
+On Thu 21-08-08 19:09:27, Hidehiro Kawai wrote:
+> > The patch titled
+> >      jbd: fix error handling for checkpoint io
+> > has been added to the -mm tree.  Its filename is
+> >      jbd-fix-error-handling-for-checkpoint-io.patch
 > 
-> > +
-> > +			for (i = 0; i < curr->page_count; i++) {
-> > +				curr->memory[i] = (unsigned long)gart_to_virt(
-> > +					curr->memory[i]);
-> > +				curr->bridge->driver->agp_destroy_page(
-> > +					(void *)curr->memory[i],
-> > +					AGP_PAGE_DESTROY_UNMAP);
-> > +			}
-> > +			for (i = 0; i < curr->page_count; i++) {
-> > +				curr->bridge->driver->agp_destroy_page(
-> > +					(void *)curr->memory[i],
-> > +					AGP_PAGE_DESTROY_FREE);
-> > +			}
+> [snip]
 > 
-> Make the above code a standalone function and call it here.
+> > Subject: jbd: fix error handling for checkpoint io
+> > From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> > 
+> > When a checkpointing IO fails, current JBD code doesn't check the error
+> > and continue journaling.  This means latest metadata can be lost from both
+> > the journal and filesystem.
+> > 
+> > This patch leaves the failed metadata blocks in the journal space and
+> > aborts journaling in the case of log_do_checkpoint().  To achieve this, we
+> > need to do:
+> > 
+> > 1. don't remove the failed buffer from the checkpoint list where in
+> >    the case of __try_to_free_cp_buf() because it may be released or
+> >    overwritten by a later transaction
+> > 2. log_do_checkpoint() is the last chance, remove the failed buffer
+> >    from the checkpoint list and abort the journal
+> > 3. when checkpointing fails, don't update the journal super block to
+> >    prevent the journaled contents from being cleaned.  For safety,
+> >    don't update j_tail and j_tail_sequence either
+> > 4. when checkpointing fails, notify this error to the ext3 layer so
+> >    that ext3 don't clear the needs_recovery flag, otherwise the
+> >    journaled contents are ignored and cleaned in the recovery phase
+> > 5. if the recovery fails, keep the needs_recovery flag
 > 
-> Then convert all drivers over so their .agp_destroy_pages points at
-> that new function.
+> > 6. prevent cleanup_journal_tail() from being called between
+> >    __journal_drop_transaction() and journal_abort() (a race issue
+> >    between journal_flush() and __log_wait_for_space()
 > 
-> Then remove the `if'.
+> When I read the source code again, I noticed the race condition described
+> in 6 doesn't happen.  I've thought journal_flush() can invoke
+> log_do_checkpoint() while __log_wait_for_space() is invoking
+> log_do_checkpoint(), but it would be wrong.
+> 
+> First journal_flush() invokes __log_start_commit() and log_wait_commit()
+> pair.  After this, there is no running transaction and no starting handle.
+> New handles are also not created because j_barrier_count blocks it.
+> Thus, when journal_flush() invokes log_do_checkpoint(), there is
+> no other process which invokes __log_wait_for_space() and
+> log_do_checkpoint() to get free log space.  So invocations of
+> log_do_checkpoint() are always isolated, the race condition doesn't
+> happen.
+  I'm not quite following you. j_barrier_count is increased only in
+journal_lock_updates(). Noone is forced to first call
+journal_lock_updates() and only after that journal_flush() (although
+usually it is done that way). So I think taking the j_checkpoint_mutex in
+journal_flush() is really a good thing to do.
 
-good point.
+> If my understanding is correct, adding mutex_lock() around
+> log_do_checkpoint() (see bellow) is unneeded.
+> 
+> What do you think about this?
+> 
+> [snip]
+> > @@ -1359,10 +1369,16 @@ int journal_flush(journal_t *journal)
+> >  	spin_lock(&journal->j_list_lock);
+> >  	while (!err && journal->j_checkpoint_transactions != NULL) {
+> >  		spin_unlock(&journal->j_list_lock);
+> > +		mutex_lock(&journal->j_checkpoint_mutex);
+> >  		err = log_do_checkpoint(journal);
+> > +		mutex_unlock(&journal->j_checkpoint_mutex);
+> >  		spin_lock(&journal->j_list_lock);
 
-[ Shaohua, when you fix this, please do it as a delta patch against your 
-  current patchset (or against tip/master). Thanks. ]
-
-	Ingo
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
