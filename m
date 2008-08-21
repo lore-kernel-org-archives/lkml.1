@@ -1,39 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbYHUKJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758015AbYHUKJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731AbYHUKJn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 06:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbYHUKJd
+	id S1758015AbYHUKJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 06:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756578AbYHUKJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 06:09:33 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49250
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752427AbYHUKJd (ORCPT
+	Thu, 21 Aug 2008 06:09:41 -0400
+Received: from mail4.hitachi.co.jp ([133.145.228.5]:44995 "EHLO
+	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755335AbYHUKJj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 06:09:33 -0400
-Date: Thu, 21 Aug 2008 03:09:32 -0700 (PDT)
-Message-Id: <20080821.030932.75221247.davem@davemloft.net>
-To: kosaki.motohiro@jp.fujitsu.com
-Cc: peterz@infradead.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       cl@linux-foundation.org, tokunaga.keiich@jp.fujitsu.com, travis@sgi.com
-Subject: Re: [RFC][PATCH 2/2] quicklist shouldn't be proportional to # of
- CPUs
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080821183648.22AF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080821002757.b7c807ad.akpm@linux-foundation.org>
-	<1219311154.8651.96.camel@twins>
-	<20080821183648.22AF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 21 Aug 2008 06:09:39 -0400
+X-AuditID: 0ac90650-ad2cdba000006fc9-0a-48ad3ee196b4
+Message-ID: <48AD3ED7.6050903@hitachi.com>
+Date: Thu, 21 Aug 2008 19:09:27 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
+MIME-Version: 1.0
+To: akpm@linux-foundation.org, jack@suse.cz
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu, sct@redhat.com,
+       adilger@clusterfs.com, mm-commits@vger.kernel.org,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+Subject: Re: + jbd-fix-error-handling-for-checkpoint-io.patch added to -mm
+    tree
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Date: Thu, 21 Aug 2008 19:04:28 +0900
+Hi Andrew and Jan,
 
-> but I worry about it works on sparc64...
+> The patch titled
+>      jbd: fix error handling for checkpoint io
+> has been added to the -mm tree.  Its filename is
+>      jbd-fix-error-handling-for-checkpoint-io.patch
 
-It should.
+[snip]
+
+> Subject: jbd: fix error handling for checkpoint io
+> From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> 
+> When a checkpointing IO fails, current JBD code doesn't check the error
+> and continue journaling.  This means latest metadata can be lost from both
+> the journal and filesystem.
+> 
+> This patch leaves the failed metadata blocks in the journal space and
+> aborts journaling in the case of log_do_checkpoint().  To achieve this, we
+> need to do:
+> 
+> 1. don't remove the failed buffer from the checkpoint list where in
+>    the case of __try_to_free_cp_buf() because it may be released or
+>    overwritten by a later transaction
+> 2. log_do_checkpoint() is the last chance, remove the failed buffer
+>    from the checkpoint list and abort the journal
+> 3. when checkpointing fails, don't update the journal super block to
+>    prevent the journaled contents from being cleaned.  For safety,
+>    don't update j_tail and j_tail_sequence either
+> 4. when checkpointing fails, notify this error to the ext3 layer so
+>    that ext3 don't clear the needs_recovery flag, otherwise the
+>    journaled contents are ignored and cleaned in the recovery phase
+> 5. if the recovery fails, keep the needs_recovery flag
+
+> 6. prevent cleanup_journal_tail() from being called between
+>    __journal_drop_transaction() and journal_abort() (a race issue
+>    between journal_flush() and __log_wait_for_space()
+
+When I read the source code again, I noticed the race condition described
+in 6 doesn't happen.  I've thought journal_flush() can invoke
+log_do_checkpoint() while __log_wait_for_space() is invoking
+log_do_checkpoint(), but it would be wrong.
+
+First journal_flush() invokes __log_start_commit() and log_wait_commit()
+pair.  After this, there is no running transaction and no starting handle.
+New handles are also not created because j_barrier_count blocks it.
+Thus, when journal_flush() invokes log_do_checkpoint(), there is
+no other process which invokes __log_wait_for_space() and
+log_do_checkpoint() to get free log space.  So invocations of
+log_do_checkpoint() are always isolated, the race condition doesn't
+happen.
+
+If my understanding is correct, adding mutex_lock() around
+log_do_checkpoint() (see bellow) is unneeded.
+
+What do you think about this?
+
+[snip]
+> @@ -1359,10 +1369,16 @@ int journal_flush(journal_t *journal)
+>  	spin_lock(&journal->j_list_lock);
+>  	while (!err && journal->j_checkpoint_transactions != NULL) {
+>  		spin_unlock(&journal->j_list_lock);
+> +		mutex_lock(&journal->j_checkpoint_mutex);
+>  		err = log_do_checkpoint(journal);
+> +		mutex_unlock(&journal->j_checkpoint_mutex);
+>  		spin_lock(&journal->j_list_lock);
+
+Best regards,
+-- 
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
+
+
