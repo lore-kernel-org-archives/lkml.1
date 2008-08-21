@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756610AbYHUPjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759462AbYHUPkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756610AbYHUPjV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 11:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYHUPjN
+	id S1759462AbYHUPkQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 11:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbYHUPkC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 11:39:13 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:56873 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbYHUPjM (ORCPT
+	Thu, 21 Aug 2008 11:40:02 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:65034 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750925AbYHUPkA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 11:39:12 -0400
-Subject: Re: char/tpm: tpm_infineon no longer loaded for HP 2510p laptop
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Frans Pop <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org, Marcel Selhorst <tpm@selhorst.net>,
-       Thomas Renninger <trenn@suse.de>, Adam Belay <ambx1@neo.rr.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
-In-Reply-To: <200808210914.27516.bjorn.helgaas@hp.com>
-References: <200808181540.25286.elendil@planet.nl>
-	 <200808211440.27577.rjw@sisk.pl> <1219325336.20723.32.camel@lgn.site>
-	 <200808210914.27516.bjorn.helgaas@hp.com>
-Content-Type: text/plain
-Date: Thu, 21 Aug 2008 17:38:25 +0200
-Message-Id: <1219333105.20723.45.camel@lgn.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Thu, 21 Aug 2008 11:40:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Dzr2YxvfluWeMDEaV4JC47zrDqZJKxu43v+d9bthU9teZI8mPn9zb9uB7VWmF7YPKU
+         CBSWhU2hdu5oxwL1osYZ3eCpLG6MVXq8wKYsGO6Wk75L0zOfvUw1KJV+3qJNj5ERUKP3
+         /F+VxiWdv7CHdnCcCviTEUS6mn3PE/uJEQmKE=
+Message-ID: <86802c440808210839u452d9440kd7d12694db515411@mail.gmail.com>
+Date: Thu, 21 Aug 2008 08:39:59 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [Bug 11388] New: 2.6.27-rc3 warns about MTRR range; only 3 of 16gb of memory is usable
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       j_kernel@hoblitt.com
+In-Reply-To: <20080821115642.GA2270@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX184cJJKx1UejwPuOLDSJ+P2yml7sTPQ2PiV1FT
- sqQVfGCwCK7olRyRNYniTp5P6T4JBC6MwLGVVFtGcn28p7lNFU
- UeIPX5A3PCGe+t89qs4/17Er88CAfRv
+Content-Disposition: inline
+References: <bug-11388-27@http.bugzilla.kernel.org/>
+	 <20080820180405.7f164450.akpm@linux-foundation.org>
+	 <86802c440808201820w6c684a10y2f1d0f70a344a14a@mail.gmail.com>
+	 <86802c440808201849k6665c395x5a5b871eca55addd@mail.gmail.com>
+	 <20080821114430.GC30667@elte.hu> <20080821115642.GA2270@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-21 at 09:14 -0600, Bjorn Helgaas wrote:
-> On Thursday 21 August 2008 07:28:56 am Kay Sievers wrote:
-> > Yeah, we miss to loop over the list. This should fix it. Thanks!
-> 
-> Thanks for the patch.
-> 
-> Can somebody elaborate on why we need to add "acpi*" aliases for all
-> PNP devices?  That broadens the kernel/user interface, so I'd like
-> to understand why we need it.
+On Thu, Aug 21, 2008 at 4:56 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Ingo Molnar <mingo@elte.hu> wrote:
+>
+>>
+>> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>>
+>> > [PATCH] x86_64: printout msr
+>>
+>> looks rather useful - added it to tip/x86/debug.
+>
+> fails to build with the attached config:
+>
+> arch/x86/kernel/cpu/common_64.c: In function 'print_cpu_msr':
+> arch/x86/kernel/cpu/common_64.c:456: error: implicit declaration of function 'rdmsrl_amd_safe'
+> arch/x86/kernel/cpu/common_64.c: In function 'print_cpu_info':
+> arch/x86/kernel/cpu/common_64.c:486: error: 'struct cpuinfo_x86' has no member named 'cpu_index'
+>
+> i realize that this wasnt sent for inclusion, but i think it would make
+> sense to tidy it up and integrate it.
 
-We already do ACPI module autoloading by MODALIAS for other things than
-pnp. ACPI exports the pnp devices with modalias, but the modules do not
-have a matching alias, this add them.
+that was one tool to verify if BIOS does right thing about some special bits.
 
-PNP has no MODALIAS support at all, and the current pnp-aliases would
-not work for the standard modalias method, they would need to change
-their format.
+it seems it doesn't compile when xen etc is enable in config.
 
-The plan is to replace the current pnp modprobe shell script hack in
-udev, when ACPI devices load the right modules without any special
-userspace mangling.
-
-Thanks,
-Kay
-
+YH
