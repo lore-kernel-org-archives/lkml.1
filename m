@@ -1,99 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbYHUDi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYHUDmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756080AbYHUDi1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 23:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYHUDiR
+	id S1756056AbYHUDmd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 23:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbYHUDmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 23:38:17 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:40625 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754507AbYHUDiQ (ORCPT
+	Wed, 20 Aug 2008 23:42:24 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:37627 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753279AbYHUDmX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 23:38:16 -0400
-Message-ID: <48ACE2D5.8090106@linux.vnet.ibm.com>
-Date: Thu, 21 Aug 2008 09:06:53 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Wed, 20 Aug 2008 23:42:23 -0400
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Dave Airlie <airlied@gmail.com>, Rene Herman <rene.herman@keyaccess.nl>,
+       Ingo Molnar <mingo@elte.hu>, "Li, Shaohua" <shaohua.li@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: AGP and PAT (induced?) problem (on AMD family 6)
+From: Andi Kleen <andi@firstfloor.org>
+References: <48AA9C3B.5030309@keyaccess.nl> <20080819102633.GE6722@elte.hu>
+	<48AAD680.7020508@keyaccess.nl>
+	<20080819190757.GA17470@linux-os.sc.intel.com>
+	<20080820100440.GE28492@elte.hu> <48ABF6DC.8070305@keyaccess.nl>
+	<48AC29CA.1060203@keyaccess.nl>
+	<20080820194127.GA10887@linux-os.sc.intel.com>
+	<48AC8F69.4050201@keyaccess.nl>
+	<21d7e9970808201446k3c1a6bc1naf04568a8ad06ed4@mail.gmail.com>
+	<20080820221630.GA3598@linux-os.sc.intel.com>
+Date: Thu, 21 Aug 2008 05:42:18 +0200
+In-Reply-To: <20080820221630.GA3598@linux-os.sc.intel.com> (Venki Pallipadi's message of "Wed, 20 Aug 2008 15:16:30 -0700")
+Message-ID: <87wsibxcdh.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       ryov@valinux.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH -mm 0/7] memcg: lockless page_cgroup v1
-References: <20080819173014.17358c17.kamezawa.hiroyu@jp.fujitsu.com> <20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com> <20080820194108.e76b20b3.kamezawa.hiroyu@jp.fujitsu.com> <20080820200006.a152c14c.kamezawa.hiroyu@jp.fujitsu.com> <20080821111740.49f99038.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080821111740.49f99038.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Wed, 20 Aug 2008 20:00:06 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
->> On Wed, 20 Aug 2008 19:41:08 +0900
->> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->>
->>> On Wed, 20 Aug 2008 18:53:06 +0900
->>> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->>>
->>>> Hi, this is a patch set for lockless page_cgroup.
->>>>
->>>> dropped patches related to mem+swap controller for easy review.
->>>> (I'm rewriting it, too.)
->>>>
->>>> Changes from current -mm is.
->>>>   - page_cgroup->flags operations is set to be atomic.
->>>>   - lock_page_cgroup() is removed.
->>>>   - page->page_cgroup is changed from unsigned long to struct page_cgroup*
->>>>   - page_cgroup is freed by RCU.
->>>>   - For avoiding race, charge/uncharge against mm/memory.c::insert_page() is
->>>>     omitted. This is ususally used for mapping device's page. (I think...)
->>>>
->>>> In my quick test, perfomance is improved a little. But the benefit of this
->>>> patch is to allow access page_cgroup without lock. I think this is good 
->>>> for Yamamoto's Dirty page tracking for memcg.
->>>> For I/O tracking people, I added a header file for allowing access to
->>>> page_cgroup from out of memcontrol.c
->>>>
->>>> The base kernel is recent mmtom. Any comments are welcome.
->>>> This is still under test. I have to do long-run test before removing "RFC".
->>>>
->>> Known problem: force_emtpy is broken...so rmdir will struck into nightmare.
->>> It's because of patch 2/7.
->>> will be fixed in the next version.
->>>
->> This is a quick fix but I think I can find some better solution..
->> ==
->> Because removal from LRU is delayed, mz->lru will never be empty until
->> someone kick drain. This patch rotate LRU while force_empty and makes
->> page_cgroup will be freed.
->>
-> 
-> I'd like to rewrite force_empty to move all usage to "default" cgroup.
-> There are some reasons.
-> 
-> 1. current force_empty creates an alive page which has no page_cgroup.
->    This is bad for routine which want to access page_cgroup from page.
->    And this behavior will be an issue of race condition in future.    
-> 2. We can see amount of out-of-control usage in default cgroup.
-> 
-> But to do this, I'll have to avoid "hitting limit" in default cgroup.
-> I'm now wondering to make it impossible to set limit to default cgroup.
-> (will show as a patch in the next version of series.) 
-> Does anyone have an idea ?
-> 
+Venki Pallipadi <venkatesh.pallipadi@intel.com> writes:
+>
+> We are also looking at changing the reserve_memtype in PAT, not to use linked
+> list for RAM backed pages and track them in page struct.
 
-Hi, Kamezawa-San,
+Back when I hacked on this I explicitely chose to not do this because
+it would make it impossible to put any normal anonymous pages into
+the PAT list. While that's not done today there's no reason it couldn't
+be done in the future.
 
-The definition of default-cgroup would be root cgroup right? I would like to
-implement hierarchies correctly in order to define the default-cgroup (it could
-be a parent of the child cgroup for example).
+Also it doesn't fix the scalability of the data structure anyways
+(a list is a list),  just saves some memory.
 
-
--- 
-	Balbir
+-Andi
