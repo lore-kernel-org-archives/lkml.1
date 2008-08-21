@@ -1,115 +1,353 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760901AbYHUWJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760965AbYHUWM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760901AbYHUWJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 18:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759464AbYHUWJL
+	id S1760965AbYHUWM7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 18:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754695AbYHUWMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 18:09:11 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:48001 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760168AbYHUWJJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 18:09:09 -0400
-Message-ID: <48ADE7C5.9030802@keyaccess.nl>
-Date: Fri, 22 Aug 2008 00:10:13 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Thu, 21 Aug 2008 18:12:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40532 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753458AbYHUWMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 18:12:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Vegard Nossum" <vegard.nossum@gmail.com>
+Subject: Re: latest -git: suspend: unable to handle kernel paging request (was Re: no_console_suspend doesn't work?)
+Date: Fri, 22 Aug 2008 00:16:33 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jens Axboe" <jens.axboe@oracle.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+References: <19f34abd0808211028w7889587fke523ff244339e7c5@mail.gmail.com> <19f34abd0808211121l25e6b187p93db789607c2af30@mail.gmail.com> <84144f020808211427j7e046f1dya07ecca18787dfbd@mail.gmail.com>
+In-Reply-To: <84144f020808211427j7e046f1dya07ecca18787dfbd@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, "Li, Shaohua" <shaohua.li@intel.com>
-CC: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Dave Airlie <airlied@gmail.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dave Jones <davej@codemonkey.org.uk>
-Subject: [PATCH] x86: {reverve,free}_memtype() take a physical address
-References: <20080819102633.GE6722@elte.hu> <48AAD680.7020508@keyaccess.nl> <20080819190757.GA17470@linux-os.sc.intel.com> <20080820100440.GE28492@elte.hu> <48ABF6DC.8070305@keyaccess.nl> <48AC29CA.1060203@keyaccess.nl> <20080820194127.GA10887@linux-os.sc.intel.com> <48AC8F69.4050201@keyaccess.nl> <21d7e9970808201446k3c1a6bc1naf04568a8ad06ed4@mail.gmail.com> <20080820221630.GA3598@linux-os.sc.intel.com> <20080821120626.GG5615@elte.hu> <48ADA2C2.8090905@keyaccess.nl>
-In-Reply-To: <48ADA2C2.8090905@keyaccess.nl>
-Content-Type: multipart/mixed;
- boundary="------------050906010100090700040906"
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808220016.34494.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050906010100090700040906
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-
-On 21-08-08 19:15, Rene Herman wrote:
-
-> On 21-08-08 14:06, Ingo Molnar wrote:
-
->> Would be nice to test tip/master - it has both that patch included and 
->> the latest pageattr-array API (with enablement in AGP drivers) 
->> patchset, done by Shaohua Li, based on Dave's original patch.
+On Thursday, 21 of August 2008, Pekka Enberg wrote:
+> On Thu, Aug 21, 2008 at 9:21 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> > I got a "proper" oops this time (brace yourself, it's long ;-)), and
+> > it does not have serial on the stack:
+> >
+> > BUG: unable to handle kernel paging request at 00100104
+> > IP: [<c038ad65>] __list_add+0x15/0x90
+> > *pdpt = 00000000325bb001 *pde = 0000000000000000
+> > Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+> > Pid: 3597, comm: bash Not tainted (2.6.27-rc4-00003-ga798564-dirty #30)
+> > EIP: 0060:[<c038ad65>] EFLAGS: 00210082 CPU: 0
+> > EIP is at __list_add+0x15/0x90
+> > EAX: f7455764 EBX: 00100100 ECX: 00100100 EDX: f7455764
+> > ESI: f7455764 EDI: f7455764 EBP: f25e7c18 ESP: f25e7bf4
+> >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> > Process bash (pid: 3597, ti=f25e6000 task=f25aa700 task.ti=f25e6000)
+> > Stack: f68120bc f6c00400 c0687133 00000000 00000002 00000000 f7455734 f7455764
+> >       f7455764 f25e7c40 c018b954 0000001f 00000000 f6c00400 f6c00444 00000001
+> >       f68120bc f68120b0 00200002 f25e7cb4 c018d317 f68120bc 00000000 f25aac0c
+> > Call Trace:
+> >  [<c0687133>] ? _spin_lock+0x63/0x70
 > 
-> That patch by itself doesn't help any -- the new set_memory_array_uc() 
-> still calls reserve_memtype() for each single page in the array.
+> Corruption in the page allocator freelists.
+> 
+> >  [<c018b954>] ? rmqueue_bulk+0x54/0x80
+> >  [<c018d317>] ? get_page_from_freelist+0x5a7/0x720
+> >  [<c01600ea>] ? __lock_acquire+0x27a/0xa00
+> >  [<c018dd50>] ? __alloc_pages_internal+0xa0/0x450
+> >  [<c01acd4b>] ? alloc_pages_current+0x7b/0xc0
+> >  [<c01b37fb>] ? new_slab+0x1bb/0x2d0
+> >  [<c0687877>] ? _spin_unlock+0x27/0x50
+> >  [<c01b40ca>] ? __slab_alloc+0x32a/0x4e0
+> >  [<c010b335>] ? native_sched_clock+0xb5/0x110
+> >  [<c01b4424>] ? kmem_cache_alloc+0xb4/0xe0
+> >  [<c018969e>] ? mempool_alloc_slab+0xe/0x10
+> >  [<c018969e>] ? mempool_alloc_slab+0xe/0x10
+> >  [<c018969e>] ? mempool_alloc_slab+0xe/0x10
+> >  [<c01897a1>] ? mempool_alloc+0x31/0xf0
+> >  [<c015e884>] ? trace_hardirqs_on_caller+0xd4/0x160
+> >  [<c015e91b>] ? trace_hardirqs_on+0xb/0x10
+> >  [<c0368c7e>] ? get_request+0xae/0x2c0
+> >  [<c036935c>] ? get_request_wait+0x1c/0xd0
+> >  [<c0687462>] ? _spin_lock_irq+0x72/0x80
+> >  [<c0369442>] ? blk_get_request+0x32/0x70
+> >  [<c0471c1c>] ? generic_ide_resume+0x5c/0xf0
+> >  [<c03f8bde>] ? device_resume+0x32e/0x380
+> >  [<c0168791>] ? hibernation_snapshot+0xa1/0x220
+> >  [<c013b55b>] ? printk+0x1b/0x20
+> >  [<c01689f0>] ? hibernate+0xe0/0x180
+> >  [<c01674a0>] ? state_store+0x0/0xd0
+> >  [<c016755f>] ? state_store+0xbf/0xd0
+> >  [<c01674a0>] ? state_store+0x0/0xd0
+> >  [<c0375ef4>] ? kobj_attr_store+0x24/0x30
+> >  [<c01fa432>] ? sysfs_write_file+0xa2/0x100
+> >  [<c01bbf06>] ? vfs_write+0x96/0x130
+> >  [<c01fa390>] ? sysfs_write_file+0x0/0x100
+> >  [<c01bc44d>] ? sys_write+0x3d/0x70
+> >  [<c0104f3b>] ? sysenter_do_call+0x12/0x3f
+> >  =======================
+> > Code: c0 e8 d0 f7 da ff 8b 13 eb 97 8d b6 00 00 00 00 8d bf 00 00 00
+> > 00 55 89 e5 83 ec 24 89 5d f4 89 cb 89 75 f8 89 d6 89 7d fc 89 c7 <8b>
+> > 41 04 39 d0 75 1d 8b 06 39 d8 75 41 89 7b 04 89 1f 8b 5d f4
+> > EIP: [<c038ad65>] __list_add+0x15/0x90 SS:ESP 0068:f25e7bf4
+> > ---[ end trace e3ed674f2f20c5d3 ]---
+> > note: bash[3597] exited with preempt_count 2
+> > Eeek! page_mapcount(page) went negative! (-1)
+> >  page pfn = 3e74f
+> >  page->flags = 210007c
+> >  page->count = 1
+> >  page->mapping = f6439028
+> >  vma->vm_ops = generic_file_vm_ops+0x0/0x20
+> >  vma->vm_ops->fault = filemap_fault+0x0/0x480
+> >  vma->vm_file->f_op->mmap = generic_file_mmap+0x0/0x50
+> > ------------[ cut here ]------------
+> > kernel BUG at /uio/arkimedes/s29/vegardno/git-working/linux-2.6/mm/rmap.c:662!
+> > invalid opcode: 0000 [#2] PREEMPT SMP DEBUG_PAGEALLOC
+> > Pid: 3597, comm: bash Tainted: G      D   (2.6.27-rc4-00003-ga798564-dirty #30)
+> > EIP: 0060:[<c01a0f39>] EFLAGS: 00210286 CPU: 0
+> > EIP is at page_remove_rmap+0x109/0x120
+> > EAX: 0000003b EBX: f7aa5684 ECX: f25e6000 EDX: 00000005
+> > ESI: f25b94c8 EDI: 3e74f025 EBP: f25e7990 ESP: f25e7980
+> >  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> > Process bash (pid: 3597, ti=f25e6000 task=f25aa700 task.ti=f25e6000)
+> > Stack: c077ed7c f6439028 00000000 00000025 f25e7a38 c0198721 3e74f025 00000000
+> >       f25e79c0 c015c5ea 00000025 00000000 325a3067 00000000 00000000 f25b94c8
+> >       f25e7a50 00000000 00000000 3e74f025 00000000 00007000 0097a000 00000000
+> > Call Trace:
+> 
+> No idea what happened here but it looks bad :-)
+> 
+> >  [<c0198721>] ? unmap_vmas+0x4b1/0x8b0
+> >  [<c015c5ea>] ? print_lock_contention_bug+0x1a/0xe0
+> >  [<c019d504>] ? exit_mmap+0x84/0x120
+> >  [<c0138538>] ? mmput+0x48/0xa0
+> >  [<c013c3d7>] ? exit_mm+0xe7/0x110
+> >  [<c013d7a4>] ? do_exit+0x184/0x890
+> >  [<c013b55b>] ? printk+0x1b/0x20
+> >  [<c013a50a>] ? print_oops_end_marker+0x2a/0x30
+> >  [<c01060f1>] ? oops_end+0xb1/0xc0
+> >  [<c01067c0>] ? die+0x50/0x70
+> >  [<c0122b4f>] ? do_page_fault+0x1ef/0xa20
+> >  [<c010b335>] ? native_sched_clock+0xb5/0x110
+> >  [<c01600ea>] ? __lock_acquire+0x27a/0xa00
+> >  [<c0122960>] ? do_page_fault+0x0/0xa20
+> >  [<c0687d3a>] ? error_code+0x72/0x78
+> >  [<c038ad65>] ? __list_add+0x15/0x90
+> >  [<c0687133>] ? _spin_lock+0x63/0x70
+> >  [<c018b954>] ? rmqueue_bulk+0x54/0x80
+> >  [<c018d317>] ? get_page_from_freelist+0x5a7/0x720
+> >  [<c01600ea>] ? __lock_acquire+0x27a/0xa00
+> >  [<c018dd50>] ? __alloc_pages_internal+0xa0/0x450
+> >  [<c01acd4b>] ? alloc_pages_current+0x7b/0xc0
+> >  [<c01b37fb>] ? new_slab+0x1bb/0x2d0
+> >  [<c0687877>] ? _spin_unlock+0x27/0x50
+> >  [<c01b40ca>] ? __slab_alloc+0x32a/0x4e0
+> >  [<c010b335>] ? native_sched_clock+0xb5/0x110
+> >  [<c01b4424>] ? kmem_cache_alloc+0xb4/0xe0
+> >  [<c018969e>] ? mempool_alloc_slab+0xe/0x10
+> >  [<c018969e>] ? mempool_alloc_slab+0xe/0x10
+> >  [<c018969e>] ? mempool_alloc_slab+0xe/0x10
+> >  [<c01897a1>] ? mempool_alloc+0x31/0xf0
+> >  [<c015e884>] ? trace_hardirqs_on_caller+0xd4/0x160
+> >  [<c015e91b>] ? trace_hardirqs_on+0xb/0x10
+> >  [<c0368c7e>] ? get_request+0xae/0x2c0
+> >  [<c036935c>] ? get_request_wait+0x1c/0xd0
+> >  [<c0687462>] ? _spin_lock_irq+0x72/0x80
+> >  [<c0369442>] ? blk_get_request+0x32/0x70
+> >  [<c0471c1c>] ? generic_ide_resume+0x5c/0xf0
+> >  [<c03f8bde>] ? device_resume+0x32e/0x380
+> >  [<c0168791>] ? hibernation_snapshot+0xa1/0x220
+> >  [<c013b55b>] ? printk+0x1b/0x20
+> >  [<c01689f0>] ? hibernate+0xe0/0x180
+> >  [<c01674a0>] ? state_store+0x0/0xd0
+> >  [<c016755f>] ? state_store+0xbf/0xd0
+> >  [<c01674a0>] ? state_store+0x0/0xd0
+> >  [<c0375ef4>] ? kobj_attr_store+0x24/0x30
+> >  [<c01fa432>] ? sysfs_write_file+0xa2/0x100
+> >  [<c01bbf06>] ? vfs_write+0x96/0x130
+> >  [<c01fa390>] ? sysfs_write_file+0x0/0x100
+> >  [<c01bc44d>] ? sys_write+0x3d/0x70
+> >  [<c0104f3b>] ? sysenter_do_call+0x12/0x3f
+> >  =======================
+> > Code: c0 74 0d 8b 50 08 b8 ac ed 77 c0 e8 82 60 fc ff 8b 46 4c 85 c0
+> > 74 14 8b 40 10 85 c0 74 0d 8b 50 2c b8 d8 d1 77 c0 e8 67 60 fc ff <0f>
+> > 0b eb fe 8b 53 0c eb 95 8d b4 26 00 00 00 00 8d bc 27 00 00
+> > EIP: [<c01a0f39>] page_remove_rmap+0x109/0x120 SS:ESP 0068:f25e7980
+> > ---[ end trace e3ed674f2f20c5d3 ]---
+> > Fixing recursive fault but reboot is needed!
+> > =============================================================================
+> > BUG blkdev_ioc: Invalid object pointer 0xf5cdaca8
+> > -----------------------------------------------------------------------------
+> 
+> Ok, here we have the block layer passing a bad pointer to SLUB this
+> time. And it's also from the suspend code (although it's the resume
+> path this time). As we never see an oops from the block layer first,
+> it's possible that someone else corrupted everything and it just shows
+> up in the block layer. Maybe something worth investigating, though.
+> 
+> > INFO: Slab 0xf789e318 objects=14 used=14 fp=0x00000000 flags=0x2082083
+> > Pid: 3597, comm: bash Tainted: G      D   2.6.27-rc4-00003-ga798564-dirty #30
+> >  [<c01b2576>] slab_err+0x46/0x50
+> >  [<c01b2766>] ? check_slab+0xd6/0xf0
+> >  [<c0181aef>] ? call_rcu+0x6f/0x80
+> >  [<c015e91b>] ? trace_hardirqs_on+0xb/0x10
+> >  [<c01b3c78>] __slab_free+0x238/0x360
+> >  [<c01b4749>] kmem_cache_free+0xa9/0x120
+> >  [<c036b773>] ? put_io_context+0x53/0x70
+> >  [<c036b773>] ? put_io_context+0x53/0x70
+> >  [<c036b773>] put_io_context+0x53/0x70
+> >  [<c036b82e>] exit_io_context+0x6e/0x80
+> >  [<c013de6e>] do_exit+0x84e/0x890
+> >  [<c037b794>] ? trace_hardirqs_on_thunk+0xc/0x10
+> >  [<c013b55b>] ? printk+0x1b/0x20
+> >  [<c013a50a>] ? print_oops_end_marker+0x2a/0x30
+> >  [<c01060f1>] oops_end+0xb1/0xc0
+> >  [<c01067c0>] die+0x50/0x70
+> >  [<c0106871>] do_trap+0x91/0xc0
+> >  [<c0106940>] ? do_invalid_op+0x0/0xa0
+> >  [<c01069c8>] do_invalid_op+0x88/0xa0
+> >  [<c01a0f39>] ? page_remove_rmap+0x109/0x120
+> >  [<c013b2d1>] ? vprintk+0x151/0x3c0
+> >  [<c013b45b>] ? vprintk+0x2db/0x3c0
+> >  [<c015c5ea>] ? print_lock_contention_bug+0x1a/0xe0
+> >  [<c015c5ea>] ? print_lock_contention_bug+0x1a/0xe0
+> >  [<c0687d3a>] error_code+0x72/0x78
+> >  [<c013007b>] ? sched_rt_period_timer+0x21b/0x270
+> >  [<c01a0f39>] ? page_remove_rmap+0x109/0x120
+> >  [<c0198721>] unmap_vmas+0x4b1/0x8b0
+> >  [<c015c5ea>] ? print_lock_contention_bug+0x1a/0xe0
+> >  [<c019d504>] exit_mmap+0x84/0x120
+> >  [<c0138538>] mmput+0x48/0xa0
+> >  [<c013c3d7>] exit_mm+0xe7/0x110
+> >  [<c013d7a4>] do_exit+0x184/0x890
+> >  [<c013b55b>] ? printk+0x1b/0x20
+> >  [<c013a50a>] ? print_oops_end_marker+0x2a/0x30
+> >  [<c01060f1>] oops_end+0xb1/0xc0
+> >  [<c01067c0>] die+0x50/0x70
+> >  [<c0122b4f>] do_page_fault+0x1ef/0xa20
+> >  [<c010b335>] ? native_sched_clock+0xb5/0x110
+> >  [<c01600ea>] ? __lock_acquire+0x27a/0xa00
+> >  [<c0122960>] ? do_page_fault+0x0/0xa20
+> >  [<c0687d3a>] error_code+0x72/0x78
+> >  [<c038ad65>] ? __list_add+0x15/0x90
+> >  [<c0687133>] ? _spin_lock+0x63/0x70
+> >  [<c018b954>] rmqueue_bulk+0x54/0x80
+> >  [<c018d317>] get_page_from_freelist+0x5a7/0x720
+> >  [<c01600ea>] ? __lock_acquire+0x27a/0xa00
+> >  [<c018dd50>] __alloc_pages_internal+0xa0/0x450
+> >  [<c01acd4b>] alloc_pages_current+0x7b/0xc0
+> >  [<c01b37fb>] new_slab+0x1bb/0x2d0
+> >  [<c0687877>] ? _spin_unlock+0x27/0x50
+> >  [<c01b40ca>] __slab_alloc+0x32a/0x4e0
+> >  [<c010b335>] ? native_sched_clock+0xb5/0x110
+> >  [<c01b4424>] kmem_cache_alloc+0xb4/0xe0
+> >  [<c018969e>] ? mempool_alloc_slab+0xe/0x10
+> >  [<c018969e>] ? mempool_alloc_slab+0xe/0x10
+> >  [<c018969e>] mempool_alloc_slab+0xe/0x10
+> >  [<c01897a1>] mempool_alloc+0x31/0xf0
+> >  [<c015e884>] ? trace_hardirqs_on_caller+0xd4/0x160
+> >  [<c015e91b>] ? trace_hardirqs_on+0xb/0x10
+> >  [<c0368c7e>] get_request+0xae/0x2c0
+> >  [<c036935c>] get_request_wait+0x1c/0xd0
+> >  [<c0687462>] ? _spin_lock_irq+0x72/0x80
+> >  [<c0369442>] blk_get_request+0x32/0x70
+> >  [<c0471c1c>] generic_ide_resume+0x5c/0xf0
 
-Worse yet, it appears to be broken. {reserve,free}_memtype() expect phys 
-addresses but it's being passed virtual ones...
+IDE again?
 
-Rene.
+Vegard, this is piix, isn't it?
 
-
-
---------------050906010100090700040906
-Content-Type: text/plain;
- name="0001-x86-reverve-free-_memtype-take-a-physical-addres.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-x86-reverve-free-_memtype-take-a-physical-addres.patch"
-
->From 48b9d479e149dffac24f98f9491174fdfc19d26b Mon Sep 17 00:00:00 2001
-From: Rene Herman <rene.herman@gmail.com>
-Date: Thu, 21 Aug 2008 23:32:25 +0200
-Subject: [PATCH] x86: {reverve,free}_memtype() take a physical address
-
-The new set_memory_array_{uc,wb}() pass virtual addresses to
-{reserve,free}_memtype() it seems.
-
-Signed-off-by: Rene Herman <rene.herman@gmail.com>
----
- arch/x86/mm/pageattr.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index b351c4f..d49e4db 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -947,7 +947,7 @@ int set_memory_array_uc(unsigned long *addr, int addrinarray)
- 	 * for now UC MINUS. see comments in ioremap_nocache()
- 	 */
- 	for (i = 0; i < addrinarray; i++) {
--		if (reserve_memtype(addr[i], addr[i] + PAGE_SIZE,
-+		if (reserve_memtype(__pa(addr[i]), __pa(addr[i]) + PAGE_SIZE,
- 			    _PAGE_CACHE_UC_MINUS, NULL))
- 			goto out;
- 	}
-@@ -956,7 +956,7 @@ int set_memory_array_uc(unsigned long *addr, int addrinarray)
- 				    __pgprot(_PAGE_CACHE_UC_MINUS), 1);
- out:
- 	while (--i >= 0)
--		free_memtype(addr[i], addr[i] + PAGE_SIZE);
-+		free_memtype(__pa(addr[i]), __pa(addr[i]) + PAGE_SIZE);
- 	return -EINVAL;
- }
- EXPORT_SYMBOL(set_memory_array_uc);
-@@ -998,7 +998,7 @@ int set_memory_array_wb(unsigned long *addr, int addrinarray)
- {
- 	int i;
- 	for (i = 0; i < addrinarray; i++)
--		free_memtype(addr[i], addr[i] + PAGE_SIZE);
-+		free_memtype(__pa(addr[i]), __pa(addr[i]) + PAGE_SIZE);
- 
- 	return change_page_attr_clear(addr, addrinarray,
- 				      __pgprot(_PAGE_CACHE_MASK), 1);
--- 
-1.5.5
-
-
---------------050906010100090700040906--
+> >  [<c03f8bde>] device_resume+0x32e/0x380
+> >  [<c0168791>] hibernation_snapshot+0xa1/0x220
+> >  [<c013b55b>] ? printk+0x1b/0x20
+> >  [<c01689f0>] hibernate+0xe0/0x180
+> >  [<c01674a0>] ? state_store+0x0/0xd0
+> >  [<c016755f>] state_store+0xbf/0xd0
+> >  [<c01674a0>] ? state_store+0x0/0xd0
+> >  [<c0375ef4>] kobj_attr_store+0x24/0x30
+> >  [<c01fa432>] sysfs_write_file+0xa2/0x100
+> >  [<c01bbf06>] vfs_write+0x96/0x130
+> >  [<c01fa390>] ? sysfs_write_file+0x0/0x100
+> >  [<c01bc44d>] sys_write+0x3d/0x70
+> >  [<c0104f3b>] sysenter_do_call+0x12/0x3f
+> >  =======================
+> > FIX blkdev_ioc: Object at 0xf5cdaca8 not freed
+> > BUG: scheduling while atomic: bash/3597/0x00000006
+> > INFO: lockdep is turned off.
+> > Pid: 3597, comm: bash Tainted: G      D   2.6.27-rc4-00003-ga798564-dirty #30
+> >  [<c0135467>] __schedule_bug+0x77/0x80
+> >  [<c0684ce2>] schedule+0x852/0x8f0
+> >  [<c010509e>] ? restore_nocheck_notrace+0x0/0xe
+> >  [<c01b4779>] ? kmem_cache_free+0xd9/0x120
+> >  [<c036b773>] ? put_io_context+0x53/0x70
+> >  [<c036b773>] ? put_io_context+0x53/0x70
+> >  [<c013de81>] do_exit+0x861/0x890
+> >  [<c037b794>] ? trace_hardirqs_on_thunk+0xc/0x10
+> >  [<c013b55b>] ? printk+0x1b/0x20
+> >  [<c013a50a>] ? print_oops_end_marker+0x2a/0x30
+> >  [<c01060f1>] oops_end+0xb1/0xc0
+> >  [<c01067c0>] die+0x50/0x70
+> >  [<c0106871>] do_trap+0x91/0xc0
+> >  [<c0106940>] ? do_invalid_op+0x0/0xa0
+> >  [<c01069c8>] do_invalid_op+0x88/0xa0
+> >  [<c01a0f39>] ? page_remove_rmap+0x109/0x120
+> >  [<c013b2d1>] ? vprintk+0x151/0x3c0
+> >  [<c013b45b>] ? vprintk+0x2db/0x3c0
+> >  [<c015c5ea>] ? print_lock_contention_bug+0x1a/0xe0
+> >  [<c015c5ea>] ? print_lock_contention_bug+0x1a/0xe0
+> >  [<c0687d3a>] error_code+0x72/0x78
+> >  [<c013007b>] ? sched_rt_period_timer+0x21b/0x270
+> >  [<c01a0f39>] ? page_remove_rmap+0x109/0x120
+> >  [<c0198721>] unmap_vmas+0x4b1/0x8b0
+> >  [<c015c5ea>] ? print_lock_contention_bug+0x1a/0xe0
+> >  [<c019d504>] exit_mmap+0x84/0x120
+> >  [<c0138538>] mmput+0x48/0xa0
+> >  [<c013c3d7>] exit_mm+0xe7/0x110
+> >  [<c013d7a4>] do_exit+0x184/0x890
+> >  [<c013b55b>] ? printk+0x1b/0x20
+> >  [<c013a50a>] ? print_oops_end_marker+0x2a/0x30
+> >  [<c01060f1>] oops_end+0xb1/0xc0
+> >  [<c01067c0>] die+0x50/0x70
+> >  [<c0122b4f>] do_page_fault+0x1ef/0xa20
+> >  [<c010b335>] ? native_sched_clock+0xb5/0x110
+> >  [<c01600ea>] ? __lock_acquire+0x27a/0xa00
+> >  [<c0122960>] ? do_page_fault+0x0/0xa20
+> >  [<c0687d3a>] error_code+0x72/0x78
+> >  [<c038ad65>] ? __list_add+0x15/0x90
+> >  [<c0687133>] ? _spin_lock+0x63/0x70
+> >  [<c018b954>] rmqueue_bulk+0x54/0x80
+> >  [<c018d317>] get_page_from_freelist+0x5a7/0x720
+> >  [<c01600ea>] ? __lock_acquire+0x27a/0xa00
+> >  [<c018dd50>] __alloc_pages_internal+0xa0/0x450
+> >  [<c01acd4b>] alloc_pages_current+0x7b/0xc0
+> >  [<c01b37fb>] new_slab+0x1bb/0x2d0
+> >  [<c0687877>] ? _spin_unlock+0x27/0x50
+> >  [<c01b40ca>] __slab_alloc+0x32a/0x4e0
+> >  [<c010b335>] ? native_sched_clock+0xb5/0x110
+> >  [<c01b4424>] kmem_cache_alloc+0xb4/0xe0
+> >  [<c018969e>] ? mempool_alloc_slab+0xe/0x10
+> >  [<c018969e>] ? mempool_alloc_slab+0xe/0x10
+> >  [<c018969e>] mempool_alloc_slab+0xe/0x10
+> >  [<c01897a1>] mempool_alloc+0x31/0xf0
+> >  [<c015e884>] ? trace_hardirqs_on_caller+0xd4/0x160
+> >  [<c015e91b>] ? trace_hardirqs_on+0xb/0x10
+> >  [<c0368c7e>] get_request+0xae/0x2c0
+> >  [<c036935c>] get_request_wait+0x1c/0xd0
+> >  [<c0687462>] ? _spin_lock_irq+0x72/0x80
+> >  [<c0369442>] blk_get_request+0x32/0x70
+> >  [<c0471c1c>] generic_ide_resume+0x5c/0xf0
+> >  [<c03f8bde>] device_resume+0x32e/0x380
+> >  [<c0168791>] hibernation_snapshot+0xa1/0x220
+> >  [<c013b55b>] ? printk+0x1b/0x20
+> >  [<c01689f0>] hibernate+0xe0/0x180
+> >  [<c01674a0>] ? state_store+0x0/0xd0
+> >  [<c016755f>] state_store+0xbf/0xd0
+> >  [<c01674a0>] ? state_store+0x0/0xd0
+> >  [<c0375ef4>] kobj_attr_store+0x24/0x30
+> >  [<c01fa432>] sysfs_write_file+0xa2/0x100
+> >
+> > I can look up addresses in the vmlinux for accurate line numbers if needed.
