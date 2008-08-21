@@ -1,47 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760704AbYHUPTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760826AbYHUPUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760704AbYHUPTq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 11:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932081AbYHUPTF
+	id S1760826AbYHUPUq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 11:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753808AbYHUPUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 11:19:05 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:34360 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932080AbYHUPTD (ORCPT
+	Thu, 21 Aug 2008 11:20:35 -0400
+Received: from rrcs-70-62-214-221.central.biz.rr.com ([70.62.214.221]:44284
+	"EHLO tophat.atxconsulting.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757589AbYHUPUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 11:19:03 -0400
-To: linux-kernel@vger.kernel.org
-Cc: Jeff Dike <jdike@addtoit.com>
-Subject: UML build failure in 2.6.27-rc3
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Message-Id: <E1KWBwC-0002dN-KE@closure.thunk.org>
-Date: Thu, 21 Aug 2008 11:19:00 -0400
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Thu, 21 Aug 2008 11:20:34 -0400
+Date: Thu, 21 Aug 2008 11:20:27 -0400
+From: Timothy J Fontaine <tjfontaine@atxconsulting.com>
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: r8169 MTU greater than 1500 causes corruption for other
+	controllers
+Message-ID: <20080821152025.GA29610@tophat.atxconsulting.com>
+References: <20080820170951.GA1771@tophat.atxconsulting.com> <Pine.LNX.4.64.0808202053510.24321@wrl-59.cs.helsinki.fi> <20080820214350.GA18747@electric-eye.fr.zoreil.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="IS0zKkzwUGydFO0o"
+Content-Disposition: inline
+In-Reply-To: <20080820214350.GA18747@electric-eye.fr.zoreil.com>
+X-PGP-Key: http://atxconsulting.com/tjfontaine.atxconsulting.asc
+X-PGP-Key-Fingerprint: 7937 DFD2 AB06 298B 2293  C318 7D33 FF9D 0246 406D
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is this a known problem?
 
-  SYMLINK arch/um/include/kern_constants.h
-  SYMLINK arch/um/include/sysdep
-make[2]: `arch/um/sys-i386/user-offsets.s' is up to date.
-  CHK     arch/um/include/user_constants.h
-  Using /usr/projects/linux/ext4 as source for kernel
-  GEN     /usr/projects/linux/uml/Makefile
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL    /usr/projects/linux/ext4/scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  CC      arch/um/kernel/ptrace.o
-/usr/projects/linux/ext4/arch/um/kernel/ptrace.c:230: error: static declaration of ‘send_sigtrap’ follows non-static declaration
-include2/asm/ptrace-generic.h:51: error: previous declaration of ‘send_sigtrap’ was here
-make[2]: *** [arch/um/kernel/ptrace.o] Error 1
-make[1]: *** [arch/um/kernel] Error 2
-make: *** [sub-make] Error 2
+--IS0zKkzwUGydFO0o
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Aug 20, 2008 at 11:43:50PM +0200, Francois Romieu wrote:
+> Ilpo J=E4rvinen <ilpo.jarvinen@helsinki.fi> :
+> [...]
+> > Hmm, there was no explanation why the tp->rx_buf_sz to pkt_size change
+> > was made in that commit (I have no idea whether those sizes have to mat=
+ch=20
+> > to other places that use tp->rx_buf_sz)...
+>=20
+> Because there is no need to sync data that has not been used ?
+>=20
+> Timothy, could you check if the patch below does the job too ? It should
+> fix at least one pci_map / pci_unmap unbalance.
+>=20
+> @@ -2789,10 +2789,10 @@ static int rtl8169_rx_interrupt(struct net_device=
+ *dev,
+> =20
+>  			if (rtl8169_try_rx_copy(&skb, tp, pkt_size, addr)) {
+>  				pci_dma_sync_single_for_device(pdev, addr,
+>  					pkt_size, PCI_DMA_FROMDEVICE);
+>  				rtl8169_mark_to_asic(desc, tp->rx_buf_sz);
+>  			} else {
+> -				pci_unmap_single(pdev, addr, pkt_size,
+> +				pci_unmap_single(pdev, addr, tp->rx_buf_sz,
+>  						 PCI_DMA_FROMDEVICE);
+>  				tp->Rx_skbuff[entry] =3D NULL;
+>  			}
+>=20
+> --=20
+> Ueimor
+
+Yup, this patch also works.
+
+tjfontaine
+
+--IS0zKkzwUGydFO0o
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkith7cACgkQfTP/nQJGQG368gCfThk2/AYxy4eokxL2waGMVdOh
+V28AnRo7+OavSHWbK6ZzK6TIT0ujABkK
+=laHS
+-----END PGP SIGNATURE-----
+
+--IS0zKkzwUGydFO0o--
