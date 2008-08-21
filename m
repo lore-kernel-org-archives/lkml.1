@@ -1,75 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbYHUHbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758262AbYHUHcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758159AbYHUHbq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 03:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbYHUHbe
+	id S1758262AbYHUHcZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 03:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754986AbYHUHcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 03:31:34 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:24565 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755060AbYHUHbc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 03:31:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=d7gWsa1vZ29ZOJ9JyMHb8iUf8KcxpJnKjDFl6qp8RSKBUxa1u9oPhHOR4TVxU6vfPd
-         IVCqFGqif6NDu6cKTtwvAhcC/HRv1Da2fK0Av1OT/9SqWU4c7y2EZLAzWw9MBL7xuWb+
-         5Cqx/ne5RUZKWifBY2U0lSSDJjDdTIIqJQMBI=
-Message-ID: <2f11576a0808210031r372c12bau7c94d86f2c9120d4@mail.gmail.com>
-Date: Thu, 21 Aug 2008 16:31:31 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH 2/2] quicklist shouldn't be proportional to # of CPUs
-Cc: "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, cl@linux-foundation.org,
-       tokunaga.keiich@jp.fujitsu.com
-In-Reply-To: <20080821002757.b7c807ad.akpm@linux-foundation.org>
+	Thu, 21 Aug 2008 03:32:15 -0400
+Received: from 81-7-68-229.static.zebra.lt ([81.7.68.229]:58742 "EHLO
+	teltonika.lt" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755037AbYHUHcN (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 03:32:13 -0400
+X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Aug 2008 03:32:13 EDT
+Message-ID: <48AD1860.4040001@teltonika.lt>
+Date: Thu, 21 Aug 2008 10:25:20 +0300
+From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: jaredeh@gmail.com
+CC: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@AM.SONY.COM
+Subject: Re: [PATCH 01/10] AXFS: exporting xip_file_fault() for use with AXFS
+References: <48AD00D5.5010904@gmail.com>
+In-Reply-To: <48AD00D5.5010904@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080820200709.12F0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080820234615.258a9c04.akpm@linux-foundation.org>
-	 <20080821.001322.236658980.davem@davemloft.net>
-	 <20080821002757.b7c807ad.akpm@linux-foundation.org>
-X-Google-Sender-Auth: f746a273651d08d4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> IA64 seems to be one of the few platforms to define this as a macro
->> evaluating to the node-to-cpumask array entry, so it's clear what
->> platform Motohiro-san did build testing on :-)
->
-> Seems to compile OK on x86_32, x86_64, ia64 and powerpc for some reason.
->
-> This seems to fix things on sparc64:
->
-> --- a/mm/quicklist.c~mm-quicklist-shouldnt-be-proportional-to-number-of-cpus-fix
-> +++ a/mm/quicklist.c
-> @@ -28,7 +28,7 @@ static unsigned long max_pages(unsigned
->        unsigned long node_free_pages, max;
->        int node = numa_node_id();
->        struct zone *zones = NODE_DATA(node)->node_zones;
-> -       int num_cpus_per_node;
-> +       cpumask_t node_cpumask;
->
->        node_free_pages =
->  #ifdef CONFIG_ZONE_DMA
-> @@ -41,8 +41,8 @@ static unsigned long max_pages(unsigned
->
->        max = node_free_pages / FRACTION_OF_NODE_MEM;
->
-> -       num_cpus_per_node = cpus_weight_nr(node_to_cpumask(node));
-> -       max /= num_cpus_per_node;
-> +       node_cpumask = node_to_cpumask(node);
-> +       max /= cpus_weight_nr(node_cpumask);
->
->        return max(max, min_pages);
->  }
+Jared Hulbert wrote:
+> We'll need this for AXFS.  The equivalent function in filemap.c is exported.
+> 
+> Signed-off-by: Jared Hulbert <jaredeh@gmail.com>
+> ---
+>  include/linux/mm.h |    4 ++++
+>  mm/filemap_xip.c   |    3 ++-
+>  2 files changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 72a15dc..2be5c22 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -161,6 +161,10 @@ struct vm_fault {
+>  					 */
+>  };
+>  
+> +#ifdef CONFIG_FS_XIP
+> +extern int xip_file_fault(struct vm_area_struct *vma, struct vm_fault *vmf);
+> +#endif
+> +
 
-Thank you!!
+No need for #ifdef here as this function is compiled and exported in .c
+regardless of CONFIG_FS_XIP
+
+>  /*
+>   * These are the virtual MM functions - opening of an area, closing and
+>   * unmapping it (needed to keep files on disk up-to-date etc), pointer
+> diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
+> index 380ab40..ab2f174 100644
+> --- a/mm/filemap_xip.c
+> +++ b/mm/filemap_xip.c
+> @@ -206,7 +206,7 @@ __xip_unmap (struct address_space * mapping,
+>   *
+>   * This function is derived from filemap_fault, but used for execute in place
+>   */
+> -static int xip_file_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+> +int xip_file_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+>  {
+>  	struct file *file = vma->vm_file;
+>  	struct address_space *mapping = file->f_mapping;
+> @@ -262,6 +262,7 @@ found:
+>  		return 0;
+>  	}
+>  }
+> +EXPORT_SYMBOL_GPL(xip_file_fault);
+>  
+>  static struct vm_operations_struct xip_file_vm_ops = {
+>  	.fault	= xip_file_fault,
+> 
