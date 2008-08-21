@@ -1,130 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbYHUGAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbYHUGD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756596AbYHUGAs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 02:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbYHUGAi
+	id S1755812AbYHUGD6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 02:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbYHUGDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 02:00:38 -0400
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:53521 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751526AbYHUGAg (ORCPT
+	Thu, 21 Aug 2008 02:03:48 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:51516 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751477AbYHUGDr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 02:00:36 -0400
-Message-ID: <48AD0379.9030705@cs.columbia.edu>
-Date: Thu, 21 Aug 2008 01:56:09 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Thu, 21 Aug 2008 02:03:47 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>,
-       containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: checkpoint/restart ABI
-References: <20080807224033.FFB3A2C1@kernel> <200808111853.13854.arnd@arndb.de>	<1218484114.5598.43.camel@nimitz> <200808112347.50245.arnd@arndb.de>
-In-Reply-To: <200808112347.50245.arnd@arndb.de>
-Content-Type: text/plain; charset=iso-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: Serial of guest kernel complain "too much work" in kvm/qemu
+Date: Thu, 21 Aug 2008 14:03:56 +0800
+Message-ID: <C6FABC699EA2354EB260110329F4B35506A4A3@zch01exm26.fsl.freescale.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Serial of guest kernel complain "too much work" in kvm/qemu
+Thread-Index: AckDU7J/HvRMarWYTA+3GrWdHsuICw==
+From: "Liu Yu" <Yu.Liu@freescale.com>
+To: <linux-kernel@vger.kernel.org>, <kvm@vger.kernel.org>,
+       <kvm-ppc@vger.kernel.org>, <qemu-devel@nongnu.org>
+Cc: "Hollis Blanchard" <hollisb@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m7L642dq024492
 
 
+Hi all,
 
-Arnd Bergmann wrote:
-> On Monday 11 August 2008, Dave Hansen wrote:
->> Thanks for all of the very interesting comments about the ABI.  
->>
->> Considering that we're still *really* early in getting this concept
->> merged up into mainline, what do you all think we should do now?
-> 
-> I think the two most important aspects here need to be security and
-> simplicity. If you have to choose between the two, it probably makes
-> sense to put security first, because loading untrusted data into
-> the kernel puts you at a significant risk to start with. If you
-> can show a restart interface that lets regular users restart their
-> tasks in a way anyone can verify to be secure, that will be a
-> good indication that you're on the right track.
-> 
-> The other problem that you really need to solve is interface
-> stability. What you are creating is a binary representation
-> of many kernel internal data structures, so in our common
-> rules, you have to make sure that you remain forward and
-> backward compatible. Simply saying that you need to run
-> an identical kernel when restarting from a checkpoint is not
-> enough IMHO.
-> 
+How is this going?
+http://www.archivum.info/qemu-devel@nongnu.org/2008-02/msg00169.html
 
-quoting:
+I use serial as guest's default stdio on powerpc platform.
+When displaying a number of characters, e.g. cat a big ascii file,
+the serial always hangs as it encounters overwhelming interrupts,
+and then complains "serial8250: too much work for irq 42".
 
- > There could be a case for viewing sys_restore() as being a lot like
- > sys_init_module() - a view into kernel internals that goes beyond the
- > normal user-space ABI, and beyond the stability guarantee.  It might be
- > possible to create a certain amount of version portability with a
- > modversions-like mechanism, but it sure seems hard to do better than
- > that.
- >
- > jon
+The problem is that:
+serial in qemu generate an interrupt on every output character,
+while Linux driver reads serial data in a loop but gives up after a fixed number (256) of iterations.
+So if serial output more than 256 characters in a short time, the serial die.
 
-Extending this view in the context of security - we can require sysadmin
-privilege to restart, and then sysadmin is responsible for the contents
-of the file. The kernel will ensure the the data isn't corrupted. Much
-like with loading a kenrel module - the admin may load any sort of crap.
-Then, sysadmin may, for instance, add a signature on a checkpointed file
-to verify it's integrity.
+I had to use the patch below to get it worked around.
 
-(Well, one problem with this scheme in the context of self-checkpoint
-would be - who can be trusted to generate the signature in that case).
+So what is the best way to solve it?
 
-> Some more words on specific interfaces that we have discussed:
-> 
-> The single-file-descriptor approach has the big advantage of
-> keeping the complexity in one place (the kernel). To be consistent
-> with other kernel interfaces, I would make the kernel hand out a
-> file descriptor, not let the user open a file and pass that into
-> the kernel as you do now.
-> 
-> A new file system is a good idea for many complex interfaces that
-> make their way into the kernel, but I don't think it will help
-> in this case.
-> 
-> For checkpointing a single task, or even a task with its children,
-> a different interface I could imagine would be to have a new
-> file in procfs per pid that you can read as a pipe giving our
-> the same data that you currently save in the checkpoint file
-> descriptor. It does mean that you won't be able to pass flags
-> down easily (you could write to the pipe before you start reading,
-> but that's not too nice).
-
-Using a single handle (crid or a special file descriptor) to identify
-the whole checkpoint is very useful - to be able to stream it (eg. over
-the network, or through filters). It is also very important for future
-features and optimizations. For example, to reduce downtime of the
-application during checkpoint, one can use COW for dirty pages, and
-only write-back the entire data after the application resumes execution.
-Or imagine a use-case where one would like to keep the entire checkpoint
-in memory. These are pretty hard to do if you split the handling between
-multiple files or handles.
-
-> 
-> On the restart side, I think the most consistent interface would
-> be a new binfmt_chkpt implementation that you can use to execve
-> a checkpoint, just like you execute an ELF file today. The binfmt
-> can be a module (unlike a syscall), so an administrator that is
-> afraid of the security implications can just disable it by not
-> loading the module. In an execve model, the parent process can
-> set up anything related to credentials as good as it's allowed
-> to and then let the kernel do the rest.
-
-This is an interesting idea but not without its problems. In particular,
-a successful execve() by one thread destroys all the others. Also, it
-isn't clear how this can work with pre-copying and live-migration; And
-finally, I'm not sure how to handle shared objects in this manner.
-
-As for kernel module - it is easy to implement most of the checkpoint
-restart functionality in a kernel module, leaving only the syscall stubs
-in the kernel.
-
-Oren.
-
+---
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c index be95e55..af3e569 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -70,7 +70,7 @@ static unsigned int nr_uarts = CONFIG_SERIAL_8250_RUNTIME_UARTS;
+ #define DEBUG_INTR(fmt...)	do { } while (0)
+ #endif
+ 
+-#define PASS_LIMIT	256
++#define PASS_LIMIT	65536
+ 
+ /*
+  * We default to IRQ0 for the "no irq" hack.   Some
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
