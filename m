@@ -1,41 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759275AbYHULaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759396AbYHULa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759275AbYHULaq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 07:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756239AbYHULaj
+	id S1759396AbYHULa7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 07:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759277AbYHULar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 07:30:39 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53169 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755134AbYHULai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 07:30:38 -0400
-Date: Thu, 21 Aug 2008 13:30:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: venkatesh.pallipadi@intel.com
-Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       suresh.b.siddha@intel.com
-Subject: Re: [patch 0/4] PAT Misc updates
-Message-ID: <20080821113023.GG28331@elte.hu>
-References: <20080820234550.923970000@intel.com>
+	Thu, 21 Aug 2008 07:30:47 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:36545 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759145AbYHULaq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 07:30:46 -0400
+Date: Thu, 21 Aug 2008 12:30:42 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.27-rc3: 'APIC error on CPU1: 00(40)', but only on resume!
+Message-ID: <20080821113042.GA3796@srcf.ucam.org>
+References: <200808202106.41058.elendil@planet.nl> <200808202138.13302.rjw@sisk.pl> <200808202226.45655.elendil@planet.nl> <200808202356.33036.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080820234550.923970000@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200808202356.33036.rjw@sisk.pl>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Aug 20, 2008 at 11:56:32PM +0200, Rafael J. Wysocki wrote:
 
-applied the first 3 patches to tip/x86/urgent and the last patch to 
-tip/x86/doc. Thanks Venki,
+> On my box I see many "APIC error on CPU1: 00(40)" messages that don't seem
+> to be related to anything obviously bad and I've alwas been seeing them.
 
-	Ingo
+This is on the 6325? I'd always assumed they were due to the broken 
+timer setup.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
