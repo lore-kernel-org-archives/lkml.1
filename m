@@ -1,78 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761285AbYHUXFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761377AbYHUXHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761285AbYHUXFi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 19:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757817AbYHUXFa
+	id S1761377AbYHUXHh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 19:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759669AbYHUXH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 19:05:30 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:45362 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753573AbYHUXF3 (ORCPT
+	Thu, 21 Aug 2008 19:07:29 -0400
+Received: from outbound-mail-125.bluehost.com ([67.222.38.25]:53030 "HELO
+	outbound-mail-125.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759258AbYHUXH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 19:05:29 -0400
-Message-ID: <48ADF4FF.3000008@keyaccess.nl>
-Date: Fri, 22 Aug 2008 01:06:39 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Thu, 21 Aug 2008 19:07:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=Pt838IdqGD1aA/nGyyHgjeJisTdsk1jzarvbJCX47J2umRRFFwDOw3oqW8B2rBEo76D2WkkEqkVu8cVRAJoKFJqhJyde4usaa5r5UCJ5a0m00WThP+xRzZs1CzfCvcDu;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] pci: change msi-x vector to 32bit
+Date: Thu, 21 Aug 2008 16:07:05 -0700
+User-Agent: KMail/1.9.9
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>
+References: <1218854205-2375-1-git-send-email-yhlu.kernel@gmail.com> <200808211333.00887.jbarnes@virtuousgeek.org> <m13akyqenn.fsf@frodo.ebiederm.org>
+In-Reply-To: <m13akyqenn.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, "Li, Shaohua" <shaohua.li@intel.com>,
-       Dave Airlie <airlied@gmail.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: [PATCH] x86: {reverve,free}_memtype() take a physical address
-References: <20080819102633.GE6722@elte.hu> <48AAD680.7020508@keyaccess.nl> <20080819190757.GA17470@linux-os.sc.intel.com> <20080820100440.GE28492@elte.hu> <48ABF6DC.8070305@keyaccess.nl> <48AC29CA.1060203@keyaccess.nl> <20080820194127.GA10887@linux-os.sc.intel.com> <48AC8F69.4050201@keyaccess.nl> <21d7e9970808201446k3c1a6bc1naf04568a8ad06ed4@mail.gmail.com> <20080820221630.GA3598@linux-os.sc.intel.com> <20080821120626.GG5615@elte.hu> <48ADA2C2.8090905@keyaccess.nl> <48ADE7C5.9030802@keyaccess.nl> <7E82351C108FA840AB1866AC776AEC460B4B033E@orsmsx505.amr.corp.intel.com> <48ADEBB1.1070203@keyaccess.nl> <7E82351C108FA840AB1866AC776AEC460B4B047D@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <7E82351C108FA840AB1866AC776AEC460B4B047D@orsmsx505.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+Message-Id: <200808211607.05811.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22-08-08 00:57, Pallipadi, Venkatesh wrote:
-> 
->> -----Original Message-----
->> From: Rene Herman [mailto:rene.herman@keyaccess.nl]
->> Sent: Thursday, August 21, 2008 3:27 PM
->> To: Pallipadi, Venkatesh
->> Cc: Ingo Molnar; Li, Shaohua; Dave Airlie; Yinghai Lu; Andreas
->> Herrmann; Arjan van de Ven; Linux Kernel; Siddha, Suresh B;
->> Thomas Gleixner; H. Peter Anvin; Dave Jones
->> Subject: Re: [PATCH] x86: {reverve,free}_memtype() take a
->> physical address
->>
->> On 22-08-08 00:16, Pallipadi, Venkatesh wrote:
->>
->>> Yes. Noticed that too and sent a patch here for x86/tip.
->>>
->>> http://www.ussg.iu.edu/hypermail/linux/kernel/0808.2/2270.html
->>>
->>> It is not very critical as it sounds as only set_memory_uc sets PAT
->>> bits for RAM pages. Most other users (devmem mmap, ioramep, pci)
->>> set PAT bits on the reserved memory. And there will not be conflicts
->>> across RAM and reserveed regions. Regardless, this was a stupid
->>> bug that we had missed earlier.
->> And unfortunately I don't think the above fully fixes it for
->> AGP. __pa()
->> gets the real physical address and the memtypes should be on the GART
->> remapped physical addresses it seems.
->>
-> 
-> Page being marked here as uncached is the page got from alloc_page().
-> We are not really marking GART physical address as uncacheable. And
-> that page returned from alloc_page is what we are tracking with
-> reserve and free.
-> IOW, the tracking is only to keep CPU accesses consistent across
-> different va->pa and va across different CPUs and has nothing to do
-> with GART physical address here.
+On Thursday, August 21, 2008 1:47 pm Eric W. Biederman wrote:
+> Jesse Barnes <jbarnes@virtuousgeek.org> writes:
+> > On Friday, August 15, 2008 7:36 pm Yinghai Lu wrote:
+> >> we are using 28bit pci (bus/dev/fn + 12 bits) as irq number, so the
+> >> cache for irq number should be 32 bit too.
+> >>
+> >> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> >> Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>
+> >>
+> >> ---
+> >>  drivers/scsi/qla2xxx/qla_def.h |    2 +-
+> >>  include/linux/pci.h            |    2 +-
+> >>  2 files changed, 2 insertions(+), 2 deletions(-)
+> >>
+> >> Index: linux-2.6/drivers/scsi/qla2xxx/qla_def.h
+> >> ===================================================================
+> >> --- linux-2.6.orig/drivers/scsi/qla2xxx/qla_def.h
+> >> +++ linux-2.6/drivers/scsi/qla2xxx/qla_def.h
+> >> @@ -2109,7 +2109,7 @@ struct scsi_qla_host;
+> >>
+> >>  struct qla_msix_entry {
+> >>  	int have_irq;
+> >> -	uint16_t msix_vector;
+> >> +	uint32_t msix_vector;
+> >>  	uint16_t msix_entry;
+> >>  };
+> >>
+> >> Index: linux-2.6/include/linux/pci.h
+> >> ===================================================================
+> >> --- linux-2.6.orig/include/linux/pci.h
+> >> +++ linux-2.6/include/linux/pci.h
+> >> @@ -730,7 +730,7 @@ enum pci_dma_burst_strategy {
+> >>  };
+> >>
+> >>  struct msix_entry {
+> >> -	u16 	vector;	/* kernel uses to write allocated vector */
+> >> +	u32	vector;	/* kernel uses to write allocated vector */
+> >>  	u16	entry;	/* driver uses to specify entry, OS writes */
+> >>  };
+> >
+> > I see a lot of smoke about this, but not a clear consensus.  It sounds
+> > like no one objects to making the MSI vector field 32 bits, but there
+> > were a lot of concerns about IRQ vector naming/numbering in general?  And
+> > I assume this particular patch isn't 2.6.27 material...
+>
+> There is no need for this particular patch in 2.6.27.
+> It is a trivial bug fix so it can go in whenever.
+>
+> Mostly this is a discussion about code that should land in the 2.6.28
+> timeframe assuming all is well.
 
-Okay, if you say so... it _used_ to be before this array change to AGP 
-that the GART addresses were in the memtype list, but I'll take your 
-word for that being okay.
+Ok, thanks Eric.  I'll queue it up for linux-next after the next 2.6.27 pull.
 
-Rene
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
