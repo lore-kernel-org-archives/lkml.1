@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756915AbYHURgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759510AbYHURg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756915AbYHURgA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 13:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYHURfw
+	id S1759510AbYHURg2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 13:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbYHURgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 13:35:52 -0400
-Received: from mx2.suse.de ([195.135.220.15]:34160 "EHLO mx2.suse.de"
+	Thu, 21 Aug 2008 13:36:18 -0400
+Received: from ns.suse.de ([195.135.220.2]:47665 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750861AbYHURfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 13:35:52 -0400
+	id S1752339AbYHURgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 13:36:17 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Ingo Oeser <ioe-lkml@rameria.de>, Kay Sievers <kay.sievers@vrfy.org>,
+Cc: Takenori Nagano <t-nagano@ah.jp.nec.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 01/15] kobject: Replace ALL occurrences of '/' with '!' instead of only the first one.
-Date: Thu, 21 Aug 2008 10:32:49 -0700
-Message-Id: <1219339983-9634-1-git-send-email-gregkh@suse.de>
+Subject: [PATCH 02/15] Japanese translation of Documentation/SubmitChecklist
+Date: Thu, 21 Aug 2008 10:32:50 -0700
+Message-Id: <1219339983-9634-2-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <20080821173036.GB7974@suse.de>
 References: <20080821173036.GB7974@suse.de>
@@ -23,35 +23,141 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Oeser <ioe-lkml@rameria.de>
+From: Takenori Nagano <t-nagano@ah.jp.nec.com>
 
-A recent patch from Kay Sievers <kay.sievers@vrfy.org>
-replaced the first occurrence of '/' with '!' as needed for block devices.
+Hi,
 
-Now do some cheap defensive coding and replace all of them to avoid future
-issues in this area.
+This patch adds SubmitChecklist translated into Japanese to
+Documentation/ja_JP directory.
+The translated SubmitChecklist has already been reviewed by JF project.
 
-Signed-off-by: Ingo Oeser <ioe-lkml@rameria.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
+SubmitChecklist is one of the important policy documents.
+So, I would like to merge into 2.6.27.
+
+Signed-off-by: Takenori Nagano <t-nagano@ah.jp.nec.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- lib/kobject.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ Documentation/ja_JP/SubmitChecklist |  111 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 111 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/ja_JP/SubmitChecklist
 
-diff --git a/lib/kobject.c b/lib/kobject.c
-index bd732ff..fbf0ae2 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -223,8 +223,7 @@ static int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
- 		return -ENOMEM;
- 
- 	/* ewww... some of these buggers have '/' in the name ... */
--	s = strchr(kobj->name, '/');
--	if (s)
-+	while ((s = strchr(kobj->name, '/')))
- 		s[0] = '!';
- 
- 	kfree(old_name);
+diff --git a/Documentation/ja_JP/SubmitChecklist b/Documentation/ja_JP/SubmitChecklist
+new file mode 100644
+index 0000000..6c42e07
+--- /dev/null
++++ b/Documentation/ja_JP/SubmitChecklist
+@@ -0,0 +1,111 @@
++NOTE:
++This is a version of Documentation/SubmitChecklist into Japanese.
++This document is maintained by Takenori Nagano <t-nagano@ah.jp.nec.com>
++and the JF Project team <http://www.linux.or.jp/JF/>.
++If you find any difference between this document and the original file
++or a problem with the translation,
++please contact the maintainer of this file or JF project.
++
++Please also note that the purpose of this file is to be easier to read
++for non English (read: Japanese) speakers and is not intended as a
++fork. So if you have any comments or updates of this file, please try
++to update the original English file first.
++
++Last Updated: 2008/07/14
++==================================
++これは、
++linux-2.6.26/Documentation/SubmitChecklist の和訳です。
++
++翻訳団体： JF プロジェクト < http://www.linux.or.jp/JF/ >
++翻訳日： 2008/07/14
++翻訳者： Takenori Nagano <t-nagano at ah dot jp dot nec dot com>
++校正者： Masanori Kobayashi さん <zap03216 at nifty dot ne dot jp>
++==================================
++
++
++Linux カーネルパッチ投稿者向けチェックリスト
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++
++本書では、パッチをより素早く取り込んでもらいたい開発者が実践すべき基本的な事柄
++をいくつか紹介します。ここにある全ての事柄は、Documentation/SubmittingPatches
++などのLinuxカーネルパッチ投稿に際しての心得を補足するものです。
++
++ 1: 妥当なCONFIGオプションや変更されたCONFIGオプション、つまり =y, =m, =n
++    全てで正しくビルドできることを確認してください。その際、gcc及びリンカが
++    warningやerrorを出していないことも確認してください。
++
++ 2: allnoconfig, allmodconfig オプションを用いて正しくビルドできることを
++    確認してください。
++
++ 3: 手許のクロスコンパイルツールやOSDLのPLMのようなものを用いて、複数の
++    アーキテクチャにおいても正しくビルドできることを確認してください。
++
++ 4: 64bit長の'unsigned long'を使用しているppc64は、クロスコンパイルでの
++    チェックに適当なアーキテクチャです。
++
++ 5: カーネルコーディングスタイルに準拠しているかどうか確認してください(!)
++
++ 6: CONFIGオプションの追加・変更をした場合には、CONFIGメニューが壊れていない
++    ことを確認してください。
++
++ 7: 新しくKconfigのオプションを追加する際には、必ずそのhelpも記述してください。
++
++ 8: 適切なKconfigの依存関係を考えながら慎重にチェックしてください。
++    ただし、この作業はマシンを使ったテストできちんと行うのがとても困難です。
++    うまくやるには、自分の頭で考えることです。
++
++ 9: sparseを利用してちゃんとしたコードチェックをしてください。
++
++10: 'make checkstack' と 'make namespacecheck' を利用し、問題が発見されたら
++    修正してください。'make checkstack' は明示的に問題を示しませんが、どれか
++    １つの関数が512バイトより大きいスタックを使っていれば、修正すべき候補と
++    なります。
++
++11: グローバルなkernel API を説明する kernel-doc をソースの中に含めてください。
++    ( staticな関数においては必須ではありませんが、含めてもらっても結構です )
++    そして、'make htmldocs' もしくは 'make mandocs' を利用して追記した
++    ドキュメントのチェックを行い、問題が見つかった場合には修正を行ってください。
++
++12: CONFIG_PREEMPT, CONFIG_DEBUG_PREEMPT, CONFIG_DEBUG_SLAB,
++    CONFIG_DEBUG_PAGEALLOC, CONFIG_DEBUG_MUTEXES, CONFIG_DEBUG_SPINLOCK,
++    CONFIG_DEBUG_SPINLOCK_SLEEP これら全てを同時に有効にして動作確認を
++    行ってください。
++
++13: CONFIG_SMP, CONFIG_PREEMPT を有効にした場合と無効にした場合の両方で
++    ビルドした上、動作確認を行ってください。
++
++14: もしパッチがディスクのI/O性能などに影響を与えるようであれば、
++    'CONFIG_LBD'オプションを有効にした場合と無効にした場合の両方で
++    テストを実施してみてください。
++
++15: lockdepの機能を全て有効にした上で、全てのコードパスを評価してください。
++
++16: /proc に新しいエントリを追加した場合には、Documentation/ 配下に
++    必ずドキュメントを追加してください。
++
++17: 新しいブートパラメータを追加した場合には、
++    必ずDocumentation/kernel-parameters.txt に説明を追加してください。
++
++18: 新しくmoduleにパラメータを追加した場合には、MODULE_PARM_DESC()を
++    利用して必ずその説明を記述してください。
++
++19: 新しいuserspaceインタフェースを作成した場合には、Documentation/ABI/ に
++    Documentation/ABI/README を参考にして必ずドキュメントを追加してください。
++
++20: 'make headers_check'を実行して全く問題がないことを確認してください。
++
++21: 少なくともslabアロケーションとpageアロケーションに失敗した場合の
++    挙動について、fault-injectionを利用して確認してください。
++    Documentation/fault-injection/ を参照してください。
++
++    追加したコードがかなりの量であったならば、サブシステム特有の
++    fault-injectionを追加したほうが良いかもしれません。
++
++22: 新たに追加したコードは、`gcc -W'でコンパイルしてください。
++    このオプションは大量の不要なメッセージを出力しますが、
++    "warning: comparison between signed and unsigned" のようなメッセージは、
++    バグを見つけるのに役に立ちます。
++
++23: 投稿したパッチが -mm パッチセットにマージされた後、全ての既存のパッチや
++    VM, VFS およびその他のサブシステムに関する様々な変更と、現時点でも共存
++    できることを確認するテストを行ってください。
 -- 
 1.5.6.5
 
