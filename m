@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754170AbYHUAvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbYHUBCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754170AbYHUAvN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 20:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbYHUAu5
+	id S1753973AbYHUBCP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 21:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYHUBB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 20:50:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48565 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751708AbYHUAu4 (ORCPT
+	Wed, 20 Aug 2008 21:01:59 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:38277 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750889AbYHUBB7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 20:50:56 -0400
-Date: Wed, 20 Aug 2008 17:50:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: jmerkey@wolfmountaingroup.com
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: 2.6.27-rc3-git6 busted-ass iwl3945 driver drops packets with
- WEP  enabled
-Message-Id: <20080820175054.0795eecb.akpm@linux-foundation.org>
-In-Reply-To: <1749.69.2.248.210.1219253222.squirrel@webmail.wolfmountaingroup.com>
-References: <1749.69.2.248.210.1219253222.squirrel@webmail.wolfmountaingroup.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Aug 2008 21:01:59 -0400
+Date: Wed, 20 Aug 2008 21:01:56 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
+       ego@in.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com
+Subject: Re: [PATCH -tip/core/rcu] fixes to include/linux/rcupreempt.h
+In-Reply-To: <20080820223359.GL6758@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.1.10.0808202101200.27236@gandalf.stny.rr.com>
+References: <20080801211002.GM14851@linux.vnet.ibm.com> <alpine.DEB.1.10.0808201215330.27481@gandalf.stny.rr.com> <20080820223359.GL6758@linux.vnet.ibm.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008 11:27:02 -0600 (MDT)
-jmerkey@wolfmountaingroup.com wrote:
 
+On Wed, 20 Aug 2008, Paul E. McKenney wrote:
+> > > -DECLARE_PER_CPU(struct rcu_dyntick_sched, rcu_dyntick_sched);
+> > 
+> > In -rt we deleted the first declaration. Is rcu_dyntick_sched defined on
+> > !CONFIG_NO_HZ?
 > 
-> On an Acer 9410 laptop with dual core processors, the iwl3945 driver has
-> intermittment receiver lockup problems (stops receiving packets) using the
-> Linux iwl3945 drivers with WEP encryption enbaled.  The adapter works fine
-> without WEP or WPA.   If the same system is booted to Windows Vista (which
-> takes about 15 minutes to boot because Vista is a fat slow pig) the
-> wireless drivers work fine with WEP under Vista on the same system.
+> It builds for me in current tip/core/rcu without the above
+> DECLARE_PER_CPU().  And the reason is the call_rcu_sched() function, which
+> requires rcu_dyntick_sched.sched_qs and rcu_dyntick_sched.sched_qs_snap
+> be defined even if !CONFIG_NO_HZ.
 > 
-> If the system copies the ndis .sys drivers and I build ndiswrapper (which
-> has to be really hacked up to build on 2.6.27) and use the ndis drivers on
-> 2.6.27-rc3 with a modified ndiswrapper, they work fine.
-> 
-> I suspect the firmware or an interaction with the firmware settings since
-> when the system is booted to Vista after running 2.6.27-rc3 with the
-> iwl3945 drivers, I have to power cycle the system periodically after
-> running the iwl3945 driver to get the drivers under Vista to work again,
-> but not always.
+> I suppose I could remove the other elements from the rcu_dyntick_sched
+> structure if !CONFIG_NO_HZ.  Worthwhile?
 > 
 
-(cc linux-wireless)
+Nah, forget about it. I've got a few different versions I'm dealing with.
 
-Was 2.6.26 OK?
+Thanks,
+
+-- Steve
+
