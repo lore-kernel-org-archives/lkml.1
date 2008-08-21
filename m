@@ -1,80 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755760AbYHUM3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbYHUMb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755760AbYHUM3I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 08:29:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYHUM2y
+	id S1754945AbYHUMb1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 08:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbYHUMbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 08:28:54 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:58639 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751837AbYHUM2x (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 08:28:53 -0400
-Date: Thu, 21 Aug 2008 14:28:52 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Artem Bityutskiy <dedekind@infradead.org>
-cc: jaredeh@gmail.com, Linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>, tim.bird@AM.SONY.COM,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 10/10] AXFS: axfs_uncompress.c
-In-Reply-To: <1219318838.18027.68.camel@sauron>
-Message-ID: <Pine.LNX.4.64.0808211423360.20704@vixen.sonytel.be>
-References: <48AD0126.1050609@gmail.com> <1219318838.18027.68.camel@sauron>
+	Thu, 21 Aug 2008 08:31:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37110 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752370AbYHUMbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 08:31:17 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Simon Arlott <simon@fire.lp0.eu>
+Subject: Re: [linux-pm] forcedeth 10de:0373 doesn't work on resume
+Date: Thu, 21 Aug 2008 14:34:34 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>, jgarzik@redhat.com,
+       netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, ranma+kernel@tdiedrich.de
+References: <4898AA28.8000507@simon.arlott.org.uk> <200808182313.10235.rjw@sisk.pl> <48A9E8B3.4040800@simon.arlott.org.uk>
+In-Reply-To: <48A9E8B3.4040800@simon.arlott.org.uk>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-461250853-1219321732=:20704"
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808211434.35673.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----584349381-461250853-1219321732=:20704
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Thu, 21 Aug 2008, Artem Bityutskiy wrote:
-> On Wed, 2008-08-20 at 22:46 -0700, Jared Hulbert wrote:
-> > +	err = zlib_inflateReset(&stream);
-> > +	if (err != Z_OK) {
-> > +		printk(KERN_ERR "zlib_inflateReset error %d\n", err);
-> > +		zlib_inflateEnd(&stream);
-> > +		zlib_inflateInit(&stream);
-> > +	}
+On Monday, 18 of August 2008, Simon Arlott wrote:
+> On 18/08/08 22:13, Rafael J. Wysocki wrote:
+> > On Monday, 18 of August 2008, Andrew Morton wrote:
+> >> On Tue, 05 Aug 2008 20:29:44 +0100
+> >> Simon Arlott <simon@fire.lp0.eu> wrote:
+> >> >
+> >> 
+> >> [two weeks pass...]
+> > 
+> > [Must have missed this message.]
+> > 
+> > I have a box with forcedeth that evidently works after a resume from
+> > hibernation.  Unfortunately, so far I haven't been able to make the box
 > 
-> just FYI, are you aware that LZO which is also present in the kernel is
-> much faster on decompress than zlib, while its compression is only
-> slightly worse?
+> With hibernation would it re-initialise the devices differently?
+> 
+> > resume from suspend to RAM.  I'll do my best to try again tomorrow, but there's
+> > a little hope. :-(
+> 
+> Mine doesn't either, try standby?
+> 
+> >> > My NIC stops working after resuming from standby, it's not receiving any interrupts:
+> >> > Commit 25d90810ff49d2a63475776f24c74c6bb49b045f ([netdrvr] forcedeth: reorder suspend/resume code) 
+> >> > introduces pci_disable_device to nv_suspend, but there's no corresponding pci_enable_device in 
+> >> > nv_resume - so I added one (copied from e1000):
+> >> > 
+> >> > diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
+> >> > index 01b38b0..db4f875 100644
+> >> > --- a/drivers/net/forcedeth.c
+> >> > +++ b/drivers/net/forcedeth.c
+> >> > @@ -5922,6 +5922,13 @@ static int nv_resume(struct pci_dev *pdev)
+> >> >  
+> >> >  	pci_set_power_state(pdev, PCI_D0);
+> >> >  	pci_restore_state(pdev);
+> >> > +	rc = pci_enable_device(pdev);
+> >> > +	if (rc) {
+> >> > +		printk(KERN_ERR "forcedeth: Cannot enable PCI device from suspend\n");
+> >> > +		return rc;
+> >> > +	}
+> >> > +	pci_set_master(pdev);
+> >> > +
+> >> >  	/* ack any pending wake events, disable PME */
+> >> >  	pci_enable_wake(pdev, PCI_D0, 0);
+> >> >  
+> >> 
+> >> That seems like a sensible change.
+> >> 
+> 
+> With this applied, I can resume from standby *without MSI* and the 
+> NIC still works. I haven't tested it without MSI and without the 
+> patch... mostly because I got a BUG when I tried to recompile.
+> 
+> >> > This results in interrupts being re-enabled after suspend:
+> >> > However, the NIC still doesn't work after resume.
+> > 
+> > Simon, I'd prefer the full dmesg to the grepped forcedeth messages.
+> > 
+> 
+> Attached. (The previous email has all the standby/resume log output.)
+> 
+> > I guess this was resume from suspend to RAM?
+> 
+> Standby - resume from RAM is completely broken for my system.
+> 
+> >> Is it still broken in current kernels?
+> > 
+> > It probably is.
+> 
+> If I have MSI enabled, it still doesn't work.
 
-If you want support for multiple decompression algorithms, you can switch
-from using zlib_inflate*() directly to calling zlib through the crypto API.
-Then you can call crypto_alloc_comp() with the correct decompression algorithm
-name.
+I cannot reproduce the problem locally, at least not with 2.6.27-rc4.
 
-For squashfs, I had to modify only ca. 40 lines of code.
+I was able to make my box resume from suspend to RAM by using
 
-You do need a new zlib crypto module, as the existing deflate crypto module
-uses the raw deflate format instead of the zlib format, and has some parameters
-tuned for its use in IPSec.
+# s2ram --force --vbe_mode --vbe_post
 
-I hope to have some patches ready next week...
+(s2ram as shipped in openSUSE 11.0) and forcedeth works correctly
+after the resume.  However, I had to add 'acpi_sleep=old_ordering' to the
+kernel command line.
 
-With kind regards,
+My box is a desktop with an Asus A8N-SLI motherboard and an Athlon 64 X2 CPU.
 
-Geert Uytterhoeven
-Software Architect
+I have created a Bugzilla entry for this issue at
+http://bugzilla.kernel.org/show_bug.cgi?id=11390
+Please put a boot log from dmesg and the output of 'lspci -vvv' in there, as
+text attachments.
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-461250853-1219321732=:20704--
+Thanks,
+Rafael
