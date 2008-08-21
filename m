@@ -1,144 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760738AbYHUP20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760255AbYHUP2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760738AbYHUP20 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 11:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757285AbYHUP1w
+	id S1760255AbYHUP2o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 11:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760759AbYHUP2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 11:27:52 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:4659 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754259AbYHUP1v (ORCPT
+	Thu, 21 Aug 2008 11:28:32 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:41212 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759969AbYHUP2b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 11:27:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=paea6qVlacLvD7y1h1EyFXHcWGAeg0Z68Nu1/Z2kgYk2kpwO+TA5r58nBwPmnTA8p/
-         XY3V48IKhALYALwYcDyHD6cdOtomlqlHU3YSCvRlRol4GUwHkCOgcleYStfzEp96i47Y
-         E6nSWVrK5vgAbWldwTTZCmZNq5qReVwVm2src=
-Message-ID: <86802c440808210827y72bb1ec0ndcb97b00d6af3a9c@mail.gmail.com>
-Date: Thu, 21 Aug 2008 08:27:49 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Alexander Huemer" <alexander.huemer@sbg.ac.at>
-Subject: Re: 2.6.27 mtrr fixes do not work
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Andi Kleen" <andi@firstfloor.org>
-In-Reply-To: <48AD8125.7050104@sbg.ac.at>
+	Thu, 21 Aug 2008 11:28:31 -0400
+Message-ID: <2265.69.2.248.210.1219330973.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <48AD8835.2050208@s5r6.in-berlin.de>
+References: <200808210250.m7L2obNX028353@wolfmountaingroup.com>      
+    <1219313231.8651.101.camel@twins> <48AD4A0B.8020805@s5r6.in-berlin.de> 
+         <1219316568.8651.107.camel@twins>      
+    <20080821114745.GD21089@linux.vnet.ibm.com>      
+    <48AD5A21.7020801@s5r6.in-berlin.de>   
+    <43593.166.70.238.46.1219321595.squirrel@webmail.wolfmountaingroup.com>
+       <48AD757A.8000608@s5r6.in-berlin.de>
+    <2820.69.2.248.210.1219327738.squirrel@webmail.wolfmountaingroup.com>
+    <48AD8835.2050208@s5r6.in-berlin.de>
+Date: Thu, 21 Aug 2008 09:02:53 -0600 (MDT)
+Subject: Re: [ANNOUNCE] mdb: Merkey's Linux Kernel Debugger      2.6.27-rc4 
+          released
+From: jmerkey@wolfmountaingroup.com
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Cc: jmerkey@wolfmountaingroup.com, paulmck@linux.vnet.ibm.com,
+       "Peter Zijlstra" <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "David Howells" <dhowells@redhat.com>
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4899AF8E.20105@sbg.ac.at>
-	 <86802c440808071326m21cff146s3fb5e6118a58a2ca@mail.gmail.com>
-	 <489B73B7.4090705@sbg.ac.at>
-	 <86802c440808071616o23dde07atd694b45375f9d6ac@mail.gmail.com>
-	 <86802c440808071617i1344e595wb9cc7c2bf75a5b3f@mail.gmail.com>
-	 <489B85A3.7030500@sbg.ac.at>
-	 <86802c440808071658yd120d04y370859dcf5a7b759@mail.gmail.com>
-	 <48A43CB5.8010709@sbg.ac.at>
-	 <86802c440808141031p2712976cqe2c34d3b986ad810@mail.gmail.com>
-	 <48AD8125.7050104@sbg.ac.at>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 7:52 AM, Alexander Huemer
-<alexander.huemer@sbg.ac.at> wrote:
-> Yinghai Lu wrote:
->>
->> On Thu, Aug 14, 2008 at 7:09 AM, Alexander Huemer
->> <alexander.huemer@sbg.ac.at> wrote:
->>
+> jmerkey@wolfmountaingroup.com wrote:
+> [Stefan Richter wrote]
+>>> I'm having a quick look at mdb-2.6.27-rc4-ia32-08-20-08.patch at the
+>>> moment.  Speaking of debug_lock()...:
+> ...
+>>> Major problem:  rlock->flags is wrong in this call.  Use an on-stack
+>>> flags variable for the initial spin_trylock_irqsave.  Ditto in the
+>>> following call of spin_trylock_irqsave.
 >>>
->>> Yinghai Lu wrote:
->>>
->>>>
->>>> On Thu, Aug 7, 2008 at 4:30 PM, Alexander Huemer
->>>> <alexander.huemer@sbg.ac.at> wrote:
->>>>
->>>>
->>>>>
->>>>> Yinghai Lu wrote:
->>>>>
->>>>>
->>>>
->>>>
->>>>>>>
->>>>>>> can you put "debug" in command line too?
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>
->>>>>> without mtrr_chunk_size etc in command line...please
->>>>>>
->>>>>>
->>>>>>
->>>>>
->>>>> http://xx.vu/~ahuemer/dmesg_3.txt
->>>>>
->>>>>
->>>>>
->>>>
->>>> do you have
->>>> CONFIG_MTRR=y
->>>> CONFIG_MTRR_SANITIZER=y
->>>> CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
->>>> CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
->>>>
->>>> in your .config?
->>>>
->>>> YH
->>>>
->>>>
->>>
->>> 2.6.27_rc3 does not solve the problem either.
->>> what can i do to help?
->>>
+>>> Next major problem with debug_lock() and debug_unlock():  The reference
+>>> counting doesn't work.  You need an atomic_t counter.  Have a look at
+>>> the struct kref accessors for example, or even make use of the kref
+>>> API.
+>>> Or if it isn't feasible to fix with atomic_t, add a second spinlock to
+>>> rlock_t to ensure integrity of .count (and of the .processor if
+>>> necessary).
+> ...
+>> The code works in debug lock provided this memory location is actually
+>> SHARED between the processors.  The various race conditions you describe
+>> are valid cases, but he only modifier of .count and .lock is the
+>> processor
+>> that obtains the spinlock -- the rest are readers.  This code works
+>> well,
+>> of course, when this memory location is actually SHARED between the
+>> processors and the read/write operations serialized.
 >>
->> please send out you config
->>
->> YH
->>
+>> Even in SMP, at various times it is necessary for the processors to
+>> perform serializing operations.  You cannot in checker-scoreboard land
+>> for
+>> everything.
 >
-> yinghai,
+> Regarding rlock->count, I stand corrected:  It works correctly if the
+> debug_lock()...debug_unlock() region can be entered by up to two
+> contexts and if the second one to enter cannot be preempted by the first
+> one.
 >
-> i just tried out 2.6.27-rc4, unfortunately without success.
+> However, since these regions are enclosed in preempt_disable/enable and
+> since the first one to grab the rlock->lock keeps local interrupts
+> disabled until debug_unlock() or even longer, there is always only a
+> single context in the debug_lock()...debug_unlock() region --- which
+> defeats the whole purpose of the rlock_t.  Or what am I missing /now/?
 >
-> here are my settings again,
-> if you need more info, just tell me.
+> Independently of this, you cannot use rlock->flags like you currently
+> do.  spin_trylock_irqsave would overwrite the flags of CPU A by the
+> flags of CPU B, making the results of spin_unlock_irqrestore in
+> debug_unlock unpredictable.
+
+
+Hmmm....
+
+Yep, that may be correct.  I'll fix that one since it is outside of the
+lock.    At this point, the flags in the processors are all going to be
+identical at this point in the code so it would not cause any problems
+(local debugger state would not care), so the debugger would work with
+this and does.  But I will change that and repost the patch this evening.
+
+You have good eyes by friend.
+
+Jeff
+> --
+> Stefan Richter
+> -=====-==--- =--- =-=-=
+> http://arcgraph.de/sr/
 >
-> as you can see, the mtrr size values are complete nonsense.
-> the framebuffer should be at d8000000.
-> i am unsure if this is the fault of the kernel or the bios.
-> or should the MTRR_SANITIZER resolv all broken bios issues?
->
->   # uname -a
->   Linux seaburg 2.6.27-rc4-blackbit #1 SMP Thu Aug 21 15:53:38 CEST
->   2008 x86_64 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz GenuineIntel GNU/Linux
->   # grep -E "(^\(WW\)|^\(EE\)|^\(NI\)|^\(??\))" /var/log/Xorg.0.log
->   (WW) VESA(0): Failed to set up write-combining range
->   (0xd8000000,0x2000000)
->   # dmesg|grep mtrr                                                 Command
-> line: root=/dev/sda1
->   video=uvesafb:1280x1024-24@97,mtrr:3,ywrap mtrr_chunk_size=512m
->   Kernel command line: root=/dev/sda1
->   video=uvesafb:1280x1024-24@97,mtrr:3,ywrap mtrr_chunk_size=512m
-
-please boot without mtrr_chunk_size=512m
-and put debug in your command line
 
 
->   # cat /proc/mtrr
->   reg00: base=0x00000000 (   0MB), size=198656MB: write-back, count=1
->   reg01: base=0x80000000 (2048MB), size=197632MB: write-back, count=1
->   reg02: base=0x100000000 (4096MB), size=197632MB: write-back, count=1
-
-another case of crazy size in /proc/mtrr
-
-it is E5420, maybe mtrr code has problem to handle that cpu?
-
-YH
