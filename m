@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759652AbYHULlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759416AbYHULow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759652AbYHULlz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 07:41:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758810AbYHULls
+	id S1759416AbYHULow (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 07:44:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbYHULoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 07:41:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44778 "EHLO mx3.mail.elte.hu"
+	Thu, 21 Aug 2008 07:44:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49151 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756289AbYHULlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 07:41:47 -0400
-Date: Thu, 21 Aug 2008 13:41:26 +0200
+	id S1754273AbYHULon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 07:44:43 -0400
+Date: Thu, 21 Aug 2008 13:44:30 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, vatsa <vatsa@in.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sched: properly account IRQ and RT load in SCHED_OTHER
-	load balancing
-Message-ID: <20080821114126.GB30667@elte.hu>
-References: <1219310330.8651.93.camel@twins> <48AD534A.9080807@novell.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       j_kernel@hoblitt.com
+Subject: Re: [Bug 11388] New: 2.6.27-rc3 warns about MTRR range; only 3 of
+	16gb of memory is usable
+Message-ID: <20080821114430.GC30667@elte.hu>
+References: <bug-11388-27@http.bugzilla.kernel.org/> <20080820180405.7f164450.akpm@linux-foundation.org> <86802c440808201820w6c684a10y2f1d0f70a344a14a@mail.gmail.com> <86802c440808201849k6665c395x5a5b871eca55addd@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48AD534A.9080807@novell.com>
+In-Reply-To: <86802c440808201849k6665c395x5a5b871eca55addd@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,13 +37,10 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Gregory Haskins <ghaskins@novell.com> wrote:
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> I haven't had a chance to review the code thoroughly yet, but I had 
-> been working on a similar fix and know that this is sorely needed.  
-> So...
+> [PATCH] x86_64: printout msr
 
-btw., why exactly does this patch speed up certain workloads? I'm not 
-quite sure about the exact reasons of that.
+looks rather useful - added it to tip/x86/debug.
 
 	Ingo
