@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbYHUK2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758413AbYHUKaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756104AbYHUK2i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 06:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758236AbYHUK2U
+	id S1758413AbYHUKaS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 06:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbYHUKaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 06:28:20 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:51651 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757631AbYHUK2T (ORCPT
+	Thu, 21 Aug 2008 06:30:05 -0400
+Received: from smtp2.tech.numericable.fr ([82.216.111.38]:54507 "EHLO
+	smtp2.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752582AbYHUKaE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 06:28:19 -0400
-Message-ID: <48AD433E.7010905@linux.vnet.ibm.com>
-Date: Thu, 21 Aug 2008 15:58:14 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Thu, 21 Aug 2008 06:30:04 -0400
+Message-ID: <48AD43A6.8090606@numericable.fr>
+Date: Thu, 21 Aug 2008 12:29:58 +0200
+From: Rufus & Azrael <rufus-azrael@numericable.fr>
+User-Agent: Thunderbird/3.0a2 (X11; 2008081609)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org,
-       jeremy@goop.org, linux-kernel@vger.kernel.org, arnd@arndb.de,
-       dave@linux.vnet.ibm.com
-Subject: Re: [RFC v2][PATCH 4/9] Memory management - dump state
-References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu> <Pine.LNX.4.64.0808202304490.17436@takamine.ncl.cs.columbia.edu> <20080821073020.GA28386@elte.hu>
-In-Reply-To: <20080821073020.GA28386@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Marcin Slusarz <marcin.slusarz@gmail.com>,
+       akpm@osdl.org
+Subject: Re: [2.6.27-rc4] compilation warnings and section mismatches
+References: <48AD2701.2000304@numericable.fr> <20080821104307.346cbcb7@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080821104307.346cbcb7@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Oren Laadan <orenl@cs.columbia.edu> wrote:
-> 
->>  checkpoint/ckpt_x86.c   |   28 ++++
->>  checkpoint/rstr_x86.c   |    2 +
-> 
-> please move these into arch/x86/mm/checkpoint.c and 
-> arch/x86/mm/restore.c. (also, please dont try to abbreviate too much in 
-> filenames, makes it harder to follow changes later on, etc.)
-> 
-> Cool stuff btw! Any ETA on when more complex apps can be 
-> checkpointed/restored? Also, shouldnt at least part of this effort be 
-> joined with the live migration efforts of openvz? (or do you see 
-> fundamental, unsolvable differences?)
+Alan Cox wrote:
+> On Thu, 21 Aug 2008 10:27:45 +0200
+> Rufus&  Azrael<rufus-azrael@numericable.fr>  wrote:
+>
+>    
+>> Hi all,
+>>
+>> Here are my compilation warnings and section mismatches when building
+>> the fresh rc4 kernel version.
+>>
+>> Hope it could help you to fix.
+>>      
+>
+> All harmless
+>
+> And patches to the skfp one have been posted repeatedly so I've no idea
+> why they are still not in 2.6.27-rc - has Mr Garzik disappeared because
+> some of the ATA ones are missing too like the LBA48 off by one fix ?
+>
+> Alan
+>
+>    
+Thanks for your explanation Alan, but for the skfp warning I just find 
+this post on lkml without patch attached :
 
-My understanding is that this is a result of the joint discussion (with the
-OpenVZ folks present) that happened during the containers min-summit prior to
-OLS this year.
+http://lkml.org/lkml/2008/7/31/145
 
--- 
-	Balbir
+Do you know if this patch was merged in a git tree and wich one ?
+
+Regards.
