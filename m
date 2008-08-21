@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbYHUKnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbYHUKoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758257AbYHUKnU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 06:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbYHUKnL
+	id S1758582AbYHUKoR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 06:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbYHUKoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 06:43:11 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40469 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753283AbYHUKnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 06:43:10 -0400
-Date: Thu, 21 Aug 2008 12:42:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: export pv_lock_ops non-GPL
-Message-ID: <20080821104252.GA26516@elte.hu>
-References: <48AC62EB.6060804@goop.org> <20080821091051.GA1683@elte.hu>
+	Thu, 21 Aug 2008 06:44:00 -0400
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:25119 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754382AbYHUKn7 (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 06:43:59 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=lX+Vth1QXqT3tva+QjMW49lcw7fhkLad1KmK8MIw8sh5zw/1UVyJOZbKOPK8IGeBb2BrZL408aBAqs1EFHJQoLZF/7PH+6MVYIfkC69BEqSy6n3tQ6aBRXCqo9IjvneFSZxIjB8HHHB4kvvEn5uzvkFJcvC6m1zObqI9AE3h7AQ=  ;
+X-YMail-OSG: 47szqIIVM1krGP3Hc_9R5Il909OWluR7jRbjzzGUfSHxoorxEhd4ZDisGs0CVYHCJP2rl3XLDAiHlkLrd0lsbL_qYcID.hwpavfcL6NWVshEdFjqN57zeeOgJkEJc41kdak-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: carsteno@de.ibm.com
+Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
+Date: Thu, 21 Aug 2008 20:43:50 +1000
+User-Agent: KMail/1.9.5
+Cc: jaredeh@gmail.com, Linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       =?iso-8859-1?q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@am.sony.com
+References: <48AD00C4.6060302@gmail.com> <48AD42AE.4030107@de.ibm.com>
+In-Reply-To: <48AD42AE.4030107@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080821091051.GA1683@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200808212043.51209.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 21 August 2008 20:25, Carsten Otte wrote:
+> Jared Hulbert wrote:
+> > I'd like to get a first round of review on my AXFS filesystem.
+>
+> I like the general approach of it. It's much more flexible than the
+> ext2 extension I've done, and the possibility to select XIP vs.
+> compression per page is really really neat. I can imagine that people
+> will prefer this over the ext2 implementation on s390. It is unclear
+> to me how the "secondary block device" thing is supposed to work.
+> Could you elaborate a bit on that?
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> 
-> > None of the spinlock API is exported GPL, so there's no reason for 
-> > pv_lock_ops to be.
-> 
-> uhm, why is this even a question? All of this stuff is so deep inside 
-> the guts of the kernel ... so nope - if then we want to change the 
-> others to _GPL exports as well, just to make sure nobody gets funny 
-> ideas.
-
-i've nevertheless applied it to tip/x86/urgent - but it would be nice to 
-clean all of this up and only export the minimally necessary (ex include 
-file inline functions) APIs and none of the paravirt stuff.
-
-	Ingo
+Agreed. I haven't had a good look through it yet, but at a glance it
+looks pretty neat. The VM side of things looks pretty reasonable
+(I fear XIP faulting might have another race or two, but that's a
+core mm issue rather than filesystem specific).
