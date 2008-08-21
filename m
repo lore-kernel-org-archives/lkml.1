@@ -1,86 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbYHUMUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671AbYHUMYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbYHUMUg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 08:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbYHUMU2
+	id S1754671AbYHUMYp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 08:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYHUMYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 08:20:28 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:21015 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752240AbYHUMU1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 08:20:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=nYkbaaFSxDa/3pNro9c9E/garOWgBW7Mfr9reSQNtW8lV1ZB3FN/XH4Sy1cAoY/QjT
-         a9o2RkkhuaAEbNgmDgWGK9EWHIxU4uGwWfu+DJsATtq/E+1DdHUmY4wEIYiTjCuFiQvB
-         wVN5uM9zTaETFIRG2ASrXg1OHjQT5lyqNtDsc=
-Message-ID: <19f34abd0808210520q60357776xbfcf288018e04161@mail.gmail.com>
-Date: Thu, 21 Aug 2008 14:20:26 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: 2.6.27-rc3: 'APIC error on CPU1: 00(40)', but only on resume!
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Frans Pop" <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org, "Andi Kleen" <andi@firstfloor.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <Pine.LNX.4.55.0808211240090.22938@cliff.in.clinika.pl>
+	Thu, 21 Aug 2008 08:24:35 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:59871 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752613AbYHUMYf convert rfc822-to-8bit (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 08:24:35 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: jaredeh@gmail.com
+Subject: Re: [PATCH 03/10] AXFS: axfs.h
+Date: Thu, 21 Aug 2008 14:24:31 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       =?iso-8859-1?q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@am.sony.com,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+References: <48AD00E6.2070505@gmail.com>
+In-Reply-To: <48AD00E6.2070505@gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <200808202106.41058.elendil@planet.nl>
-	 <200808202138.13302.rjw@sisk.pl>
-	 <200808202226.45655.elendil@planet.nl>
-	 <200808202356.33036.rjw@sisk.pl>
-	 <Pine.LNX.4.55.0808211023020.22938@cliff.in.clinika.pl>
-	 <19f34abd0808210418w39341d05p43712356b352cdc9@mail.gmail.com>
-	 <Pine.LNX.4.55.0808211240090.22938@cliff.in.clinika.pl>
+Message-Id: <200808211424.31966.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/xhmE907W48AafEeO7mfSPQ2rrN4hrVY7mzmT
+ GkTQyUb9fxE9NZeDNHAG95pz6F39/cvUQD2H7TQal4oGcOylqj
+ FOddOYMGd/R2GAaMAc0Tg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 1:51 PM, Maciej W. Rozycki <macro@linux-mips.org> wrote:
->  Otherwise there is no correlation between the sequence of APIC writes and
-> an error triggering -- a bad vector in a LVT or interrupt redirection
-> entry will be reported whenever its associated interrupt line gets active
-> even though the entry might have been initialised long ago.  Depending on
-> the device signalling hardware interrupts may quite often be ignored for a
-> long time without affecting the stability of the rest of the system.
+On Thursday 21 August 2008, Jared Hulbert wrote:
+> +static inline u64 axfs_bytetable_stitch(u8 depth, u8 *table, u64 index)
+> +{
+> +       u64 i;
+> +       u64 output = 0;
+> +       u64 byte = 0;
+> +       u64 j;
+> +       u64 bits;
+> +
+> +       for (i = 0; i < depth; i++) {
+> +               j = index * depth + i;
+> +               bits = 8 * (depth - i - 1);
+> +               byte = table[j];
+> +               output += byte << bits;
+> +       }
+> +       return output;
+> +}
+> +
+> +#define AXFS_GET_BYTETABLE_VAL(desc,index) \
+> +  axfs_bytetable_stitch(((struct axfs_region_desc)(desc)).table_byte_depth,\
+> +  (u8 *)((struct axfs_region_desc)(desc)).virt_addr, index)
+> +
 
-Ah, right. Here is a dump of the LVT registers:
+This bytetable stuff looks overly complicated, both the data structure and
+the access method. It seems like you are implementing your own custom Huffman
+compression with this.
 
-[00000320] = 000100ef
-[00000330] = 00000200
-[00000340] = 00010000
-[00000350] = 00010700
-[00000360] = 00000400
-[00000370] = 000000fe
+Is the reasonn for the bytetable just to pack numbers efficiently, or do you
+have a different intention?
 
-Maybe I've misunderstood something (again), but should those vectors
-really be 0 for 330-360? (At least 330 + 360, which are not masked.)
+Did you see a significant size benefit over simply storing all metadata as
+uncompressed data structures like in cramfs?
 
-Intel manual says: "Receive Illegal Vector : Set when the local APIC
-detects an illegal vector in the message it received, including an
-illegal vector code in the local vector table interrupts or in a
-self-interrupt."
+Have you considered storing simple dentry/inode data in node_type==Compressed
+nodes?
 
-And 0 is clearly an illegal value for the vector code: "When an
-interrupt vector in the range 0 to 15 is sent or received through the
-local APIC, the APIC indicates an illegal vector in its Error Status
-Register [...]".
-
-But I still find the whole thing slightly confusing. Will play a bit
-with the LVT, maybe I can learn something more :-) Thanks for the
-help!
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+	Arnd <><
