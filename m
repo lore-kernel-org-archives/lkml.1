@@ -1,83 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758832AbYHUXd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbYHUXdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758832AbYHUXd3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 19:33:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbYHUXdL
+	id S1754503AbYHUXdr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 19:33:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbYHUXdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 19:33:11 -0400
-Received: from gw.goop.org ([64.81.55.164]:52889 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753331AbYHUXdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 19:33:10 -0400
-Message-ID: <48ADFB33.8010204@goop.org>
-Date: Thu, 21 Aug 2008 16:33:07 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
+	Thu, 21 Aug 2008 19:33:21 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:63487 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757366AbYHUXdU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 19:33:20 -0400
+X-Greylist: delayed 9436 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Aug 2008 19:33:20 EDT
+Date: Thu, 21 Aug 2008 13:33:17 -1000
+From: Joshua Hoblitt <josh@hoblitt.com>
 To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alex Nixon <alex.nixon@citrix.com>
-Subject: Re: [PATCH] x86: fix probe_nr_irqs for xen
-References: <1219349409-15698-1-git-send-email-yhlu.kernel@gmail.com>
-In-Reply-To: <1219349409-15698-1-git-send-email-yhlu.kernel@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       j_kernel@hoblitt.com
+Subject: Re: [Bug 11388] New: 2.6.27-rc3 warns about MTRR range; only 3 of
+	16gb of memory is usable
+Message-ID: <20080821233317.GE23377@hoblitt.com>
+References: <bug-11388-27@http.bugzilla.kernel.org/> <20080820180405.7f164450.akpm@linux-foundation.org> <86802c440808201820w6c684a10y2f1d0f70a344a14a@mail.gmail.com> <86802c440808201849k6665c395x5a5b871eca55addd@mail.gmail.com> <20080821205558.GC23377@hoblitt.com> <86802c440808211451u4483f88ft845cd20c3f23c53a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440808211451u4483f88ft845cd20c3f23c53a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> otherwise Xen is _completely_ unusable with 5 or more VCPUs.
-> ( when !CONFIG_HAVE_SPARSE_IRQ)
->
-> based on Alex's patch
->
-> also add +1 offset after redir_entries
->
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> Cc: Alex Nixon <alex.nixon@citrix.com>
->   
+On Thu, Aug 21, 2008 at 02:51:43PM -0700, Yinghai Lu wrote:
+> can you check that with tip/master?
+> 
+> http://people.redhat.com/mingo/tip.git/readme.txt
 
-Looks good to me.  We can fix this in a better way later.
+I'm doing that now.  Note that I was pulling from netdev-2.6 before.
 
-Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+-J
 
-> Index: linux-2.6/arch/x86/kernel/io_apic.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/io_apic.c
-> +++ linux-2.6/arch/x86/kernel/io_apic.c
-> @@ -3625,16 +3625,21 @@ int __init probe_nr_irqs(void)
->  {
->  	int idx;
->  	int nr = 0;
-> +#ifndef CONFIG_XEN
-> +	int nr_min = 32;
-> +#else
-> +	int nr_min = NR_IRQS;
-> +#endif
->  
->  	for (idx = 0; idx < nr_ioapics; idx++)
-> -		nr += io_apic_get_redir_entries(idx);
-> +		nr += io_apic_get_redir_entries(idx) + 1;
->  
->  	/* double it for hotplug and msi and nmi */
->  	nr <<= 1;
->  
->  	/* something wrong ? */
-> -	if (nr < 32)
-> -		nr = 32;
-> +	if (nr < nr_min)
-> +		nr = nr_min;
->  
->  	return nr;
->  }
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->   
-
+--
