@@ -1,214 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbYHUFPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754935AbYHUFPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753861AbYHUFPd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 01:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbYHUFPT
+	id S1754935AbYHUFPt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 01:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYHUFP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 01:15:19 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:31007 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751985AbYHUFPQ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 01:15:16 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAHiWrEh5LD0w/2dsb2JhbAC1OYFZ
-X-IronPort-AV: E=Sophos;i="4.32,243,1217773800"; 
-   d="scan'208";a="176169646"
-Date: Thu, 21 Aug 2008 15:15:08 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Szabolcs Szakacsits <szaka@ntfs-3g.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: XFS vs Elevators (was Re: [PATCH RFC] nilfs2: continuous
-	snapshotting file system)
-Message-ID: <20080821051508.GB5706@disturbed>
-Mail-Followup-To: Szabolcs Szakacsits <szaka@ntfs-3g.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	xfs@oss.sgi.com
-References: <20080820004326.519405a2.akpm@linux-foundation.org> <200808201613.AA00212@capsicum.lab.ntt.co.jp> <Pine.LNX.4.61.0808202352450.4532@dhcppc2> <20080820143916.1a7eddab.akpm@linux-foundation.org> <20080821021259.GA5706@disturbed> <Pine.LNX.4.62.0808210535450.25448@tamago.serverit.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <Pine.LNX.4.62.0808210535450.25448@tamago.serverit.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 21 Aug 2008 01:15:27 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:45348 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753130AbYHUFP0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 01:15:26 -0400
+Date: Thu, 21 Aug 2008 12:54:18 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, LKML <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>, ryov@valinux.co.jp,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH -mm 0/7] memcg: lockless page_cgroup v1
+Message-Id: <20080821125418.741b826b.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20080821111740.49f99038.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080819173014.17358c17.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080820185306.e897c512.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080820194108.e76b20b3.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080820200006.a152c14c.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080821111740.49f99038.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 05:46:00AM +0300, Szabolcs Szakacsits wrote:
-> On Thu, 21 Aug 2008, Dave Chinner wrote:
-> > On Wed, Aug 20, 2008 at 02:39:16PM -0700, Andrew Morton wrote:
-> > > On Thu, 21 Aug 2008 00:25:55 +0300 (MET DST)
-> > > Szabolcs Szakacsits <szaka@ntfs-3g.org> wrote:
-> > > > I ran compilebench on kernel 2.6.26 with freshly formatted volumes. 
-> > > > The behavior of NILFS2 was interesting.
-> > > > 
-> > > > Its peformance rapidly degrades to the lowest ever measured level 
-> > > > (< 1 MB/s) but after a while it recovers and gives consistent numbers.
-> > > > However it's still very far from the current unstable btrfs performance. 
-> > > > The results are reproducible.
-> > > > 
-> > > >                     MB/s    Runtime (s)
-> > > >                    -----    -----------
-> > > >   btrfs unstable   17.09        572
-> > > >   ext3             13.24        877
-> > > >   btrfs 0.16       12.33        793
-> > > >   nilfs2 2nd+ runs 11.29        674
-> > > >   ntfs-3g           8.55        865
-> > > >   reiserfs          8.38        966
-> > > >   nilfs2 1st run    4.95       3800
-> > > >   xfs               1.88       3901
-> > > 
-> > > err, what the heck happened to xfs?  Is this usual?
+On Thu, 21 Aug 2008 11:17:40 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Wed, 20 Aug 2008 20:00:06 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > On Wed, 20 Aug 2008 19:41:08 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > > 
-> > No, definitely not usual. I suspect it's from an old mkfs and
-> > barriers being used.  What is the output of the xfs.mkfs when
-> > you make the filesystem and what mount options being used?
+> > > On Wed, 20 Aug 2008 18:53:06 +0900
+> > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > 
+> > > > Hi, this is a patch set for lockless page_cgroup.
+> > > > 
+> > > > dropped patches related to mem+swap controller for easy review.
+> > > > (I'm rewriting it, too.)
+> > > > 
+> > > > Changes from current -mm is.
+> > > >   - page_cgroup->flags operations is set to be atomic.
+> > > >   - lock_page_cgroup() is removed.
+> > > >   - page->page_cgroup is changed from unsigned long to struct page_cgroup*
+> > > >   - page_cgroup is freed by RCU.
+> > > >   - For avoiding race, charge/uncharge against mm/memory.c::insert_page() is
+> > > >     omitted. This is ususally used for mapping device's page. (I think...)
+> > > > 
+> > > > In my quick test, perfomance is improved a little. But the benefit of this
+> > > > patch is to allow access page_cgroup without lock. I think this is good 
+> > > > for Yamamoto's Dirty page tracking for memcg.
+> > > > For I/O tracking people, I added a header file for allowing access to
+> > > > page_cgroup from out of memcontrol.c
+> > > > 
+> > > > The base kernel is recent mmtom. Any comments are welcome.
+> > > > This is still under test. I have to do long-run test before removing "RFC".
+> > > > 
+> > > Known problem: force_emtpy is broken...so rmdir will struck into nightmare.
+> > > It's because of patch 2/7.
+> > > will be fixed in the next version.
+> > > 
+> > 
+> > This is a quick fix but I think I can find some better solution..
+> > ==
+> > Because removal from LRU is delayed, mz->lru will never be empty until
+> > someone kick drain. This patch rotate LRU while force_empty and makes
+> > page_cgroup will be freed.
+> > 
 > 
-> Everything is default.
+> I'd like to rewrite force_empty to move all usage to "default" cgroup.
+> There are some reasons.
 > 
->   % rpm -qf =mkfs.xfs
->   xfsprogs-2.9.8-7.1 
+> 1. current force_empty creates an alive page which has no page_cgroup.
+>    This is bad for routine which want to access page_cgroup from page.
+>    And this behavior will be an issue of race condition in future.    
+I agree that current force_empty is not good in this point.
+
+> 2. We can see amount of out-of-control usage in default cgroup.
 > 
-> which, according to ftp://oss.sgi.com/projects/xfs/cmd_tars, is the 
-> latest stable mkfs.xfs. Its output is
+> But to do this, I'll have to avoid "hitting limit" in default cgroup.
+> I'm now wondering to make it impossible to set limit to default cgroup.
+> (will show as a patch in the next version of series.) 
+> Does anyone have an idea ?
 > 
-> meta-data=/dev/sda8              isize=256    agcount=4, agsize=1221440 blks
->          =                       sectsz=512   attr=2
-> data     =                       bsize=4096   blocks=4885760, imaxpct=25
->          =                       sunit=0      swidth=0 blks
-> naming   =version 2              bsize=4096  
-> log      =internal log           bsize=4096   blocks=2560, version=2
->          =                       sectsz=512   sunit=0 blks, lazy-count=0
-> realtime =none                   extsz=4096   blocks=0, rtextents=0
+I don't have a strong objection about setting default cgroup unlimited
+and moving usages to default cgroup.
 
-Ok, I thought it might be the tiny log, but it didn't improve anything
-here when increased the log size, or the log buffer size.
+But I think this is related to hierarchy support as Balbir-san says.
+And, setting default cgroup unlimited would not be so strange if
+hierarchy is supported.
 
-Looking at the block trace, I think elevator merging is somewhat busted. I'm
-seeing adjacent I/Os being dispatched without having been merged.  e.g:
 
-104,48   1     2139     4.803090086  4175  Q   W 18540712 + 8 [pdflush]
-104,48   1     2140     4.803092492  4175  G   W 18540712 + 8 [pdflush]
-104,48   1     2141     4.803094875  4175  P   N [pdflush]
-104,48   1     2142     4.803096205  4175  I   W 18540712 + 8 [pdflush]
-104,48   1     2143     4.803160324  4175  Q   W 18540720 + 40 [pdflush]
-104,48   1     2144     4.803162724  4175  M   W 18540720 + 40 [pdflush]
-104,48   1     2145     4.803231701  4175  Q   W 18540760 + 48 [pdflush]
-104,48   1     2146     4.803234223  4175  M   W 18540760 + 48 [pdflush]
-.....
-104,48   1     2163     4.803844214  4175  Q   W 18541032 + 56 [pdflush]
-104,48   1     2164     4.803846694  4175  M   W 18541032 + 56 [pdflush]
-104,48   1     2165     4.803932321  4175  Q   W 18541088 + 48 [pdflush]
-104,48   1     2166     4.803937177  4175  G   W 18541088 + 48 [pdflush]
-104,48   1     2167     4.803940416  4175  I   W 18541088 + 48 [pdflush]
-104,48   1     2168     4.804005265  4175  Q   W 18541136 + 24 [pdflush]
-104,48   1     2169     4.804007664  4175  M   W 18541136 + 24 [pdflush]
-.....
-104,48   1     2183     4.804518129  4175  D   W 18540712 + 376 [pdflush]
-104,48   1     2184     4.804537981  4175  D   W 18541088 + 248 [pdflush]
-
-In entry 2165, a new request is made rather than merging the
-existing, adjacent request that is already open. The result is we
-then dispatch two I/Os instead of one.
-
-Also, CFQ appears to not be merging WRITE_SYNC bios or issuing them
-with any urgency.  The result of this is that it stalls the XFS
-transaction subsystem by capturing all the log buffers in the
-elevator and not issuing them. e.g.:
-
-104,48   0      149     0.107856547  4160  Q  WS 35624860 + 128 [pdflush]
-104,48   0      150     0.107861855  4160  G  WS 35624860 + 128 [pdflush]
-104,48   0      151     0.107865332  4160  I   W 35624860 + 128 [pdflush]
-...
-104,48   0      162     0.120791581  4159  Q  WS 35624988 + 128 [python]
-104,48   0      163     0.120805714  4159  G  WS 35624988 + 128 [python]
-104,48   0      164     0.120813427  4159  I   W 35624988 + 128 [python]
-104,48   0      165     0.132109889  4159  Q  WS 35625116 + 128 [python]
-104,48   0      166     0.132128642  4159  G  WS 35625116 + 128 [python]
-104,48   0      167     0.132132988  4159  I   W 35625116 + 128 [python]
-104,48   0      168     0.143612843  4159  Q  WS 35625244 + 128 [python]
-104,48   0      169     0.143640248  4159  G  WS 35625244 + 128 [python]
-104,48   0      170     0.143644697  4159  I   W 35625244 + 128 [python]
-104,48   0      171     0.158243553  4159  Q  WS 35625372 + 128 [python]
-104,48   0      172     0.158261652  4159  G  WS 35625372 + 128 [python]
-104,48   0      173     0.158266233  4159  I   W 35625372 + 128 [python]
-104,48   0      174     0.171342555  4159  Q  WS 35625500 + 128 [python]
-104,48   0      175     0.171360707  4159  G  WS 35625500 + 128 [python]
-104,48   0      176     0.171365036  4159  I   W 35625500 + 128 [python]
-104,48   0      177     0.183936429  4159  Q  WS 35625628 + 128 [python]
-104,48   0      178     0.183955172  4159  G  WS 35625628 + 128 [python]
-104,48   0      179     0.183959726  4159  I   W 35625628 + 128 [python]
-...
-104,48   0      180     0.194008953  4159  Q  WS 35625756 + 128 [python]
-104,48   0      181     0.194027120  4159  G  WS 35625756 + 128 [python]
-104,48   0      182     0.194031311  4159  I   W 35625756 + 128 [python]
-...
-104,48   0      191     0.699915104     0  D   W 35624860 + 128 [swapper]
-...
-104,48   0      196     0.700513279     0  C   W 35624860 + 128 [0]
-...
-104,48   0      198     0.711808579  4159  Q  WS 35625884 + 128 [python]
-104,48   0      199     0.711826259  4159  G  WS 35625884 + 128 [python]
-104,48   0      200     0.711830589  4159  I   W 35625884 + 128 [python]
-104,48   0      201     0.711848493  4159  D   W 35624988 + 128 [python]
-104,48   0      202     0.711861868  4159  D   W 35625116 + 128 [python]
-104,48   0      203     0.711868531  4159  D   W 35625244 + 128 [python]
-104,48   0      204     0.711874967  4159  D   W 35625372 + 128 [python]
-....
-104,48   1       72     0.900288147     0  D   W 35625500 + 128 [swapper]
-104,48   1       73     0.900296058     0  D   W 35625628 + 128 [swapper]
-104,48   1       74     0.900302401     0  D   W 35625756 + 128 [swapper]
-104,48   1       75     0.900308516     0  D   W 35625884 + 128 [swapper]
-.....
-
-here we see all 8 log buffers written and queued in ~95ms. At this point
-(0.194s into the trace) the log stalls because we've used all the log
-buffers and have to wait for I/O to complete. The filesystem effectively
-sits idle now for half a second waiting for I/O to be dispatched.
-
-At 0.699s, we have a single buffer issued and it completes in 500
-*microseconds* (NVRAM on raid controller). We do completion
-processing, fill and dispatch that buffer in under 10ms (on a 1GHz
-P3) at which point we dispatch the 4 oldest remaining buffers. 200ms
-later, we dispatch the remainder.
-
-Effectively, the elevator has stalled all transactions in the
-filesystem for close to 700ms by not dispatching the SYNC_WRITE
-buffers, and all the bios could have been merged into a single 512k
-I/O when they were to be dispatched. I guess the only way to prevent
-this really is to issue explicit unplugs....
-
-On 2.6.24:
-
-104,48   0      975     1.707253442  2761  Q  WS 35753545 + 128 [python]
-104,48   0      976     1.707268811  2761  G  WS 35753545 + 128 [python]
-104,48   0      977     1.707275455  2761  I   W 35753545 + 128 [python]
-104,48   0      978     1.728703316  2761  Q  WS 35753673 + 128 [python]
-104,48   0      979     1.728714289  2761  M  WS 35753673 + 128 [python]
-104,48   0      980     1.761603632  2761  Q  WS 35753801 + 128 [python]
-104,48   0      981     1.761614498  2761  M  WS 35753801 + 128 [python]
-104,48   0      982     1.784522988  2761  Q  WS 35753929 + 128 [python]
-104,48   0      983     1.784533351  2761  M  WS 35753929 + 128 [python]
-....
-104,48   0     1125     2.475132431     0  D   W 35753545 + 512 [swapper]
-
-The I/Os are merged, but there's still that 700ms delay before dispatch.
-i was looking at this a while back but didn't get to finishing it off.
-i.e.:
-
-http://oss.sgi.com/archives/xfs/2008-01/msg00151.html
-http://oss.sgi.com/archives/xfs/2008-01/msg00152.html
-
-I'll have a bit more of a look at this w.r.t to compilebench performance,
-because it seems like a similar set of problems that I was seeing back
-then...
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+Thanks,
+Daisuke Nishimura.
