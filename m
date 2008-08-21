@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760266AbYHUPdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756610AbYHUPjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760266AbYHUPdq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 11:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbYHUPdf
+	id S1756610AbYHUPjV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 11:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYHUPjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 11:33:35 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:1984 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751646AbYHUPde (ORCPT
+	Thu, 21 Aug 2008 11:39:13 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:56873 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbYHUPjM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 11:33:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=dHr4TRW4gzadCll078k0YCkPaUHIGFgVm+uqOMbtfEkXWk7KVH3UyFXVe2WcBVOoUA
-         u5HdqGDRxRVlt4UAkEJQ93gxTU2jWJntAYWTFqMwD9WW76DT/C9L1p3AeqvNJZkisUSw
-         kWviuVD4LcHqxxQZ2iA0+8aaMtmzhTHnhMk6g=
-Message-ID: <86802c440808210833wc3c76b5vc3a7f0d6208bf07f@mail.gmail.com>
-Date: Thu, 21 Aug 2008 08:33:34 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "David Witbrodt" <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Vivek Goyal" <vgoyal@redhat.com>,
-       "Bill Fink" <billfink@mindspring.com>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, netdev <netdev@vger.kernel.org>
-In-Reply-To: <654003.23282.qm@web82104.mail.mud.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 21 Aug 2008 11:39:12 -0400
+Subject: Re: char/tpm: tpm_infineon no longer loaded for HP 2510p laptop
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, Marcel Selhorst <tpm@selhorst.net>,
+       Thomas Renninger <trenn@suse.de>, Adam Belay <ambx1@neo.rr.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
+In-Reply-To: <200808210914.27516.bjorn.helgaas@hp.com>
+References: <200808181540.25286.elendil@planet.nl>
+	 <200808211440.27577.rjw@sisk.pl> <1219325336.20723.32.camel@lgn.site>
+	 <200808210914.27516.bjorn.helgaas@hp.com>
+Content-Type: text/plain
+Date: Thu, 21 Aug 2008 17:38:25 +0200
+Message-Id: <1219333105.20723.45.camel@lgn.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <654003.23282.qm@web82104.mail.mud.yahoo.com>
+X-Provags-ID: V01U2FsdGVkX184cJJKx1UejwPuOLDSJ+P2yml7sTPQ2PiV1FT
+ sqQVfGCwCK7olRyRNYniTp5P6T4JBC6MwLGVVFtGcn28p7lNFU
+ UeIPX5A3PCGe+t89qs4/17Er88CAfRv
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 7:09 AM, David Witbrodt <dawitbro@sbcglobal.net> wrote:
+On Thu, 2008-08-21 at 09:14 -0600, Bjorn Helgaas wrote:
+> On Thursday 21 August 2008 07:28:56 am Kay Sievers wrote:
+> > Yeah, we miss to loop over the list. This should fix it. Thanks!
+> 
+> Thanks for the patch.
+> 
+> Can somebody elaborate on why we need to add "acpi*" aliases for all
+> PNP devices?  That broadens the kernel/user interface, so I'd like
+> to understand why we need it.
 
->
-> I will try to provide the entire output tonight or tomorrow.  It will be
-> difficult, though:  it looks like I have to try to fit the info from about
-> 60 of the printk's in your patch onto the 80x25 VGA screen, and still
-> make it understandable enough to be useful.
->
+We already do ACPI module autoloading by MODALIAS for other things than
+pnp. ACPI exports the pnp devices with modalias, but the modules do not
+have a matching alias, this add them.
 
-with hpet=disable?
+PNP has no MODALIAS support at all, and the current pnp-aliases would
+not work for the standard modalias method, they would need to change
+their format.
 
-YH
+The plan is to replace the current pnp modprobe shell script hack in
+udev, when ACPI devices load the right modules without any special
+userspace mangling.
+
+Thanks,
+Kay
+
