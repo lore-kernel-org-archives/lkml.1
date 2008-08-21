@@ -1,108 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbYHUR7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbYHUR7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757255AbYHUR7W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 13:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYHUR7M
+	id S1753149AbYHUR7j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 13:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756747AbYHUR7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 13:59:12 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:33784 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750861AbYHUR7L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 13:59:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=oNerCkmvMWsN+przu5SwA7nfciRun2yukV29M88WWh8DTB/idAKusNJJYXP2vnCB3c
-         MWU7vVlADxxxrV4KYyJ3VPuEqHdqo/zmmW3K6J5GsvZmVctAuUpaUY86HhOWeReQCR7F
-         hR/b75zBNzUkEHZ60PEkOp1jjvOXm/naGp1fM=
-Message-ID: <19f34abd0808211059m451f5f7au949217aeecccccaf@mail.gmail.com>
-Date: Thu, 21 Aug 2008 19:59:10 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+	Thu, 21 Aug 2008 13:59:21 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:48552 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755172AbYHUR7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 13:59:20 -0400
+Date: Thu, 21 Aug 2008 22:03:43 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Max Krasnyanskiy <maxk@qualcomm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: latest -git: hibernate: possible circular locking dependency detected
-Cc: "Oleg Nesterov" <oleg@tv-sign.ru>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Max Krasnyanskiy" <maxk@qualcomm.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <b647ffbd0808211038h686f9df3ud335efbc46242952@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Message-ID: <20080821180343.GA14139@tv-sign.ru>
+References: <19f34abd0808210804y7ee91d1fy12da5ad6f82d2451@mail.gmail.com> <b647ffbd0808211038h686f9df3ud335efbc46242952@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <19f34abd0808210804y7ee91d1fy12da5ad6f82d2451@mail.gmail.com>
-	 <b647ffbd0808211038h686f9df3ud335efbc46242952@mail.gmail.com>
+In-Reply-To: <b647ffbd0808211038h686f9df3ud335efbc46242952@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 7:38 PM, Dmitry Adamushko
-<dmitry.adamushko@gmail.com> wrote:
->> [ INFO: possible circular locking dependency detected ]
->> 2.6.27-rc4-00003-ga798564 #28
+On 08/21, Dmitry Adamushko wrote:
+> 
+> however, I think there are 2 problems with handle_poweroff()
+> [ kernel/power/poweroff.c ]
+> 
+> (1) it doesn't ensure that the 'cpu' it gets via
+> first_cpu(cpu_online_map) can't disappear (race with cpu_down()) on
+> the way to schedule_work_on()
+> 
+> [ I pressume, neither generic sysrq nor console layer takes care of
+> it. They shoudn't of course ]
+> 
+> (2) run_workqueue() [ which in the end calls do_poweroff() ] takes the
+> "cwq->lock" (which is lock-2 in our terminology)
+> 
+> well, actually it release it before calling "work->fun()" but is the
+> 'lockdep' annotation right here? Peter?
+> 
+> (I admit, I never looked at lockdep and do make assumptions on its syntax here).
+> 
+> The lock-1 will be taken as a result of
+> 
+> then, do_poweroff() -> kernel_power_off() -> disable_nonboot_cpus()
+> 
+> which calls cpu_maps_update_begin() and takes "cpu_add_remove_lock"
+> 
+> and this looks dangerous. Due to the same reason as was before with
+> the use of get_online_cpus() by workqueue handlers before
+> CPU_POST_DEAD introduction
+> (http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=3da1c84c00c7e5fa8348336bd8c342f9128b0f14)
+> 
+> I guess, it may deadlock as the lock-1 has been already taken before
+> calling cleanup_workqueue_thread() -> flush_cpu_workqueue() and
+> completion of the former chain depends in turn on being able to
+> acquire the very same lock.
 
-[...]
+I apologize in advance if I missed something else in your message,
+but I think you are very right. Please look at
 
-> this path is triggered as a result of "echo disk > /sys/power/state"
+	http://marc.info/?t=121580236300019
 
-Yes. That is what I typed.
+Oleg.
 
->
-> disable_nonboot_cpus() calls cpu_maps_update_being() which takes
-> "cpu_add_remove_lock" (lock-1).
->
-> If we go down the road cleanup_workqueue_thread() ->
-> flush_cpu_workqueue() will take "cwq->lock" (lock-2).
-> So this should be the second lock.
->
->
-[...]
-
-> hmm, did you somehow hit "Sysrq + o"?
->
-> 'cause I don't see any other places (say, with handle_sysrq(k,...)
-> where "k" migth be 'o') from where do_power_off() might have been
-> triggered...
->
-
-No. But in my logs I often saw SysRq triggered, even though I didn't
-do it any of these times:
-
-log-20080821-104053.txt:SysRq : SysRq : Show State
-log-20080821-105541.txt:SysRq : Emergency Sync
-log-20080821-105541.txt:SysRq : Emergency Sync
-log-20080821-105541.txt:SysRq : Power Off
-log-20080821-110514.txt:SysRq : Terminate All Tasks
-log-20080821-111650.txt:SysRq : HELP : loglevel0-8 <6>serial 00:0d: activated
-log-20080821-111650.txt:SysRq : Power Off
-log-20080821-111650.txt:SysRq : Terminate All Tasks
-log-20080821-111650.txt:SysRq : SysRq : <6>serial 00:0d: activated
-log-20080821-120628.txt:SysRq : SysRq : HELP : HELP : <6>serial 00:0d: activated
-log-20080821-120628.txt:SysRq : SysRq : HELP : HELP : <6>serial 00:0d: activated
-
-(And it seems to pick a random letter too. It even showed the "HELP:"
-line at one point!)
-
-I have no idea why this happens. Is it possible to trigger SysRq by
-writing data on the other end of the serial console? (Maybe my cable
-is bad or something, but data seems to be going in both directions
-over my serial console.)
-
-The rest I will not comment on. It also seems unlikely that I will be
-able to test any patches reliably, simply because I see a few
-different kinds of issues on resume :-(
-
-Thanks!
-
-
-Vegard
-
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
