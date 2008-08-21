@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755804AbYHUQH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757691AbYHUQH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755804AbYHUQH1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 12:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYHUQHQ
+	id S1757691AbYHUQH5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 12:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbYHUQHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 12:07:16 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:64687 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751712AbYHUQHP (ORCPT
+	Thu, 21 Aug 2008 12:07:48 -0400
+Received: from torres.zugschlus.de ([85.214.68.41]:46352 "EHLO
+	torres.zugschlus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752776AbYHUQHr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 12:07:15 -0400
-Date: Thu, 21 Aug 2008 08:59:48 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, jgarzik <jgarzik@pobox.com>
-Cc: Rufus & Azrael <rufus-azrael@numericable.fr>,
-       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Marcin Slusarz <marcin.slusarz@gmail.com>,
-       akpm@osdl.org
-Subject: Re: [2.6.27-rc4] compilation warnings and section mismatches
-Message-Id: <20080821085948.b19fb94b.randy.dunlap@oracle.com>
-In-Reply-To: <20080821104307.346cbcb7@lxorguk.ukuu.org.uk>
-References: <48AD2701.2000304@numericable.fr>
-	<20080821104307.346cbcb7@lxorguk.ukuu.org.uk>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 21 Aug 2008 12:07:47 -0400
+Date: Thu, 21 Aug 2008 18:07:46 +0200
+From: Marc Haber <mh+linux-kernel@zugschlus.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Boot failures on Qemu due to P6_NOPS
+Message-ID: <20080821160746.GA21967@torres.zugschlus.de>
+References: <20080707172334.GH1009@lisa.in-ulm.de> <48725A16.6010307@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <48725A16.6010307@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Aug 2008 10:43:07 +0100 Alan Cox wrote:
-
-> On Thu, 21 Aug 2008 10:27:45 +0200
-> Rufus & Azrael <rufus-azrael@numericable.fr> wrote:
+On Mon, Jul 07, 2008 at 11:01:58AM -0700, H. Peter Anvin wrote:
+> It is a Qemu bug.  Microsoft Virtual Server 2005 have it too.
 > 
-> > Hi all,
-> > 
-> > Here are my compilation warnings and section mismatches when building 
-> > the fresh rc4 kernel version.
-> > 
-> > Hope it could help you to fix.
-> 
-> All harmless
-> 
-> And patches to the skfp one have been posted repeatedly so I've no idea
-> why they are still not in 2.6.27-rc - has Mr Garzik disappeared because
-> some of the ATA ones are missing too like the LBA48 off by one fix ?
+> One *major* problems with virtualizers is that they uniformly use an 
+> existing CPU identifier, even though they might have their own sets of 
+> bugs.  This makes it much harder to work around bugs in them.
 
-drivers/net/wd still has this problem also:  :(
+But it would be possible to have kernel command line options to enable
+the workarounds. Having this would be great to enhance Linux'
+compatibility.
 
-wd.c:(.init.text+0x3cd8): undefined reference to `NS8390p_init'
+For people who are uniformly using Microsoft, Linux not running on
+Virtual Server is a Linux problem, and they're going to ditch Linux if
+it doesn't run there.
 
+Greetings
+Marc
 
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+-- 
+-----------------------------------------------------------------------------
+Marc Haber         | "I don't trust Computers. They | Mailadresse im Header
+Mannheim, Germany  |  lose things."    Winona Ryder | Fon: *49 621 72739834
+Nordisch by Nature |  How to make an American Quilt | Fax: *49 3221 2323190
