@@ -1,54 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbYHUEVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753158AbYHUErT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755532AbYHUEVp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 00:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYHUEVg
+	id S1753158AbYHUErT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 00:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYHUErF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 00:21:36 -0400
-Received: from ozlabs.org ([203.10.76.45]:34367 "EHLO ozlabs.org"
+	Thu, 21 Aug 2008 00:47:05 -0400
+Received: from gate.crashing.org ([63.228.1.57]:60651 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751618AbYHUEVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 00:21:35 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18604.60738.523963.886786@drongo.ozlabs.ibm.com>
-Date: Thu, 21 Aug 2008 14:21:22 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Robert Richter <robert.richter@amd.com>, linuxppc-dev@ozlabs.org,
-       cbe-oss-dev@ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       oprofile-list@lists.sourceforge.net, cel <cel@linux.vnet.ibm.com>
-Subject: Re: powerpc/cell/oprofile: fix mutex locking for spu-oprofile
-In-Reply-To: <200808201519.19453.arnd@arndb.de>
-References: <1217620879.15667.145.camel@carll-linux-desktop>
-	<200808110925.08485.arnd@arndb.de>
-	<20080820123944.GQ13011@erda.amd.com>
-	<200808201519.19453.arnd@arndb.de>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (powerpc-unknown-linux-gnu)
+	id S1751125AbYHUErF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 00:47:05 -0400
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+Subject: [PATCH 00/08] powerpc: Remove use of CONFIG_PPC_MERGE
+Date: Wed, 20 Aug 2008 23:46:49 -0500
+Message-Id: <1219294018-12557-1-git-send-email-galak@kernel.crashing.org>
+X-Mailer: git-send-email 1.5.5.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann writes:
+This set of patches remove Kconfig and code related to CONFIG_PPC_MERGE
+and !CONFIG_PPC_MERGE.  There is some discussion about that one last
+use of !PPC_MERGE with respect to the 4xx MTD_NAND_NDFC driver.
 
-> Paul, any chance we can still get this into 2.6.27?
+Subsystem maintainers how do you want to handle this, via the powerpc
+tree of will you guys pick these up?
 
-Possibly.  We'll need a really good explanation for Linus as to why
-this is needed (what regression or serious bug this fixes) and why it
-is late.  Can you send me something explaining that?
-
-> I've added the Ack and uploaded it again for you to
-> pull from
-> 
->  master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git merge
-
-Are you sure you actually managed to update that?
-
-$ git ls-remote master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git merge
-f90a87b5f5fa46dc6c556e9267a6f25a95fbef14        refs/heads/merge
-
-and f90a87b5f5fa46dc6c556e9267a6f25a95fbef14 is the same commit from
-2008-08-09 that you asked me to pull previously.
-
-Paul.
+- k
