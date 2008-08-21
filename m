@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbYHUFqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbYHUFqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756188AbYHUFqd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 01:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755488AbYHUFpO
+	id S1756547AbYHUFqt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 01:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbYHUFpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 01:45:14 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:6219 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755483AbYHUFpJ (ORCPT
+	Thu, 21 Aug 2008 01:45:22 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:25301 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755525AbYHUFpS (ORCPT
 	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 01:45:09 -0400
+	Thu, 21 Aug 2008 01:45:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:reply-to:user-agent:mime-version:to:subject
          :content-type:content-transfer-encoding;
-        b=v+iIAkdutuFG0LNJDVnC2aGDiSGYc1mCtT6I0+erNiguwQF9ZNpy7NGxPEp/IKz3AQ
-         TGZ5rgVKdrfkxL+id266378+94zlkOiSnVx5Cm2wPqTT4fUkoEkdPepbGiBD+z0qF7l9
-         LwQdIWXBR4yNuj74Ng62ktSpjLbD4W0FuUA3c=
-Message-ID: <48AD00F0.5030403@gmail.com>
-Date: Wed, 20 Aug 2008 22:45:20 -0700
+        b=BMzdp8kJ5XI4O1dMEPSScgFS5FZkHHbqxWlF3tuvgVETvNDzDZ0dXLg/Gck5DbVooW
+         B1I4qlv/s+B4KQ9vpH7Es+r/phmiDIIkFSzQLkPZTlvkLFR1lkV0/EoPjsYfvLL7BCka
+         zZT555gmLBFfW+qfNcU6GUEuBKjaZxR3AGCgI=
+Message-ID: <48AD00F8.1030004@gmail.com>
+Date: Wed, 20 Aug 2008 22:45:28 -0700
 From: Jared Hulbert <jaredeh@gmail.com>
 Reply-To: jaredeh@gmail.com
 User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
@@ -27,23 +27,25 @@ To: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
        linux-mtd <linux-mtd@lists.infradead.org>,
        =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@AM.SONY.COM,
        cotte@de.ibm.com, nickpiggin@yahoo.com.au
-Subject: [PATCH 04/10] AXFS: axfs_inode.c
+Subject: [PATCH 05/10] AXFS: axfs_profiling.c
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the main filesystem logic.
+Profiling is a fault instrumentation and /proc formating system.
+This is used to get an accurate picture of what the pages are actually used.
+Using this info the image can be optimized for XIP
 
 Signed-off-by: Jared Hulbert <jaredeh@gmail.com>
 ---
-diff --git a/fs/axfs/axfs_inode.c b/fs/axfs/axfs_inode.c
+diff --git a/fs/axfs/axfs_profiling.c b/fs/axfs/axfs_profiling.c
 new file mode 100644
-index 0000000..cbf3dd1
+index 0000000..30d881c
 --- /dev/null
-+++ b/fs/axfs/axfs_inode.c
-@@ -0,0 +1,488 @@
++++ b/fs/axfs/axfs_profiling.c
+@@ -0,0 +1,594 @@
 +/*
 + * Advanced XIP File System for Linux - AXFS
 + *   Readonly, compressed, and XIP filesystem for Linux systems big and small
@@ -60,477 +62,583 @@ index 0000000..cbf3dd1
 + *  Sujaya Srinivasan
 + *  Justin Treon
 + *
-+ * Project url: http://axfs.sourceforge.net
++ * More info and current contacts at http://axfs.sourceforge.net
 + *
-+ * Borrowed heavily from fs/cramfs/inode.c by Linus Torvalds
-+ *
-+ * axfs_inode.c -
-+ *   Contains the most of the filesystem logic with the major exception of the
-+ *   mounting infrastructure.
-+ *
++ * axfs_profiling.c -
++ *   Tracks pages of files that enter the page cache.  Outputs through a proc
++ *   file which generates a comma separated data file with path, page offset,
++ *   count of times entered page cache.
 + */
 +
 +#include <linux/axfs.h>
-+#include <linux/pagemap.h>
++#ifdef CONFIG_AXFS_PROFILING
++#include <linux/module.h>
++#include <linux/vmalloc.h>
++#include <linux/proc_fs.h>
 +
-+/***************** functions in other axfs files ******************************/
-+int axfs_get_sb(struct file_system_type *, int, const char *, void *,
-+		struct vfsmount *);
-+void axfs_kill_super(struct super_block *);
-+void axfs_profiling_add(struct axfs_super *, unsigned long, unsigned int);
-+int axfs_copy_mtd(struct super_block *, void *, u64, u64);
-+int axfs_copy_block(struct super_block *, void *, u64, u64);
-+/******************************************************************************/
-+static int axfs_readdir(struct file *, void *, filldir_t);
-+static int axfs_mmap(struct file *, struct vm_area_struct *);
-+static ssize_t axfs_file_read(struct file *, char __user *, size_t, loff_t *);
-+static int axfs_readpage(struct file *, struct page *);
-+static int axfs_fault(struct vm_area_struct *, struct vm_fault *);
-+static struct dentry *axfs_lookup(struct inode *, struct dentry *,
-+				  struct nameidata *);
-+static int axfs_get_xip_mem(struct address_space *, pgoff_t, int, void **,
-+			    unsigned long *);
++#define AXFS_PROC_DIR_NAME "axfs"
 +
-+/******************************************************************************/
-+
-+static struct file_operations axfs_directory_operations = {
-+	.llseek = generic_file_llseek,
-+	.read = generic_read_dir,
-+	.readdir = axfs_readdir,
++struct axfs_profiling_manager {
++	struct axfs_profiling_data *profiling_data;
++	struct axfs_super *sbi;
++	u32 *dir_structure;
++	u32 size;
 +};
 +
-+static struct file_operations axfs_fops = {
-+	.read = axfs_file_read,
-+	.aio_read = generic_file_aio_read,
-+	.mmap = axfs_mmap,
-+};
++#define MAX_STRING_LEN 1024
 +
-+static struct address_space_operations axfs_aops = {
-+	.readpage = axfs_readpage,
-+	.get_xip_mem = axfs_get_xip_mem,
-+};
++/* Handles for our Directory and File */
++static struct proc_dir_entry *axfs_proc_dir;
++static u32 proc_name_inc;
 +
-+static struct inode_operations axfs_dir_inode_operations = {
-+	.lookup = axfs_lookup,
-+};
-+
-+static struct vm_operations_struct axfs_vm_ops = {
-+	.fault = axfs_fault,
-+};
-+
-+static int axfs_copy_data(struct super_block *sb, void *dst,
-+			  struct axfs_region_desc *region, u64 offset, u64 len)
++/******************************************************************************
++ *
++ * axfs_init_profile_dir_structure
++ *
++ * Description:
++ *   Creates the structures for tracking the page usage data and creates the
++ *   proc file that will be used to get the data.
++ *
++ * Parameters:
++ *    (IN) manager - pointer to the profile manager for the filing system
++ *
++ *    (IN) num_inodes - number of files in the system
++ *
++ * Returns:
++ *    0
++ *
++ *****************************************************************************/
++static int axfs_init_profile_dir_structure(struct axfs_profiling_manager
++					   *manager, u32 num_inodes)
 +{
-+	u64 mmapped = 0;
-+	u64 end = region->fsoffset + offset + len;
-+	u64 begin = region->fsoffset + offset;
-+	u64 left;
-+	void *addr;
-+	void *newdst;
-+	struct axfs_super *sbi = AXFS_SB(sb);
 +
-+	if (len == 0)
-+		return 0;
++	struct axfs_super *sbi = (struct axfs_super *)manager->sbi;
++	u32 child_index = 0, i, j;
++	u32 *dir_structure = manager->dir_structure;
 +
-+	if (region->virt_addr) {
-+		if (sbi->mmap_size >= end) {
-+			mmapped = len;
-+		} else if (sbi->mmap_size > begin) {
-+			mmapped = sbi->mmap_size - begin;
++	/* loop through each inode in the image and find all
++	   of the directories and mark their children */
++	for (i = 0; i < num_inodes; i++) {
++		/* determine if the entry is a directory */
++		if (!S_ISDIR(AXFS_GET_MODE(sbi, i)))
++			continue;
++
++		/* get the index number for this directory */
++		child_index = AXFS_GET_INODE_ARRAY_INDEX(sbi, i);
++
++		/* get the offset to its children */
++		for (j = 0; j < AXFS_GET_INODE_NUM_ENTRIES(sbi, i); j++) {
++			if (dir_structure[child_index + j] != 0) {
++				printk(KERN_ERR
++				       "axfs: ERROR inode was already set old "
++				       "%lu new %lu\n", (unsigned long)
++				       dir_structure[child_index + j],
++				       (unsigned long)i);
++			}
++			dir_structure[child_index + j] = i;
 +		}
 +	}
 +
-+	if (mmapped) {
-+		addr = (void *)(region->virt_addr + offset);
-+		memcpy(dst, addr, mmapped);
-+	}
-+
-+	newdst = (void *)(dst + mmapped);
-+	left = len - mmapped;
-+
-+	if (left == 0)
-+		return len;
-+
-+	if (AXFS_HAS_BDEV(sb)) {
-+		return axfs_copy_block(sb, newdst, begin + mmapped, left);
-+	} else if (AXFS_HAS_MTD(sb)) {
-+		return axfs_copy_mtd(sb, newdst, begin + mmapped, left);
-+	} else {
-+		return 0;
-+	}
-+}
-+
-+static int axfs_iget5_test(struct inode *inode, void *opaque)
-+{
-+	u64 *inode_number = (u64 *) opaque;
-+
-+	if (inode->i_sb == NULL) {
-+		printk(KERN_ERR "axfs_iget5_test:"
-+		       " the super block is set to null\n");
-+	}
-+	if (inode->i_ino == *inode_number)
-+		return 1;	/* matches */
-+	else
-+		return 0;	/* does not match */
-+}
-+
-+static int axfs_iget5_set(struct inode *inode, void *opaque)
-+{
-+	u64 *inode_number = (u64 *) opaque;
-+
-+	if (inode->i_sb == NULL) {
-+		printk(KERN_ERR "axfs_iget5_set:"
-+		       " the super block is set to null \n");
-+	}
-+	inode->i_ino = *inode_number;
-+	return 0;
-+}
-+
-+struct inode *axfs_create_vfs_inode(struct super_block *sb, int ino)
-+{
-+	struct axfs_super *sbi = AXFS_SB(sb);
-+	struct inode *inode;
-+	u64 size;
-+
-+	inode = iget5_locked(sb, ino, axfs_iget5_test, axfs_iget5_set, &ino);
-+
-+	if (!(inode && (inode->i_state & I_NEW)))
-+		return inode;
-+
-+	inode->i_mode = AXFS_GET_MODE(sbi, ino);
-+	inode->i_uid = AXFS_GET_UID(sbi, ino);
-+	size = AXFS_GET_INODE_FILE_SIZE(sbi, ino);
-+	inode->i_size = size;
-+	inode->i_blocks = AXFS_GET_INODE_NUM_ENTRIES(sbi, ino);
-+	inode->i_blkbits = PAGE_CACHE_SIZE * 8;
-+	inode->i_gid = AXFS_GET_GID(sbi, ino);
-+
-+	inode->i_mtime = inode->i_atime = inode->i_ctime = sbi->timestamp;
-+	inode->i_ino = ino;
-+
-+	if (S_ISREG(inode->i_mode)) {
-+		inode->i_fop = &axfs_fops;
-+		inode->i_data.a_ops = &axfs_aops;
-+		inode->i_mapping->a_ops = &axfs_aops;
-+	} else if (S_ISDIR(inode->i_mode)) {
-+		inode->i_op = &axfs_dir_inode_operations;
-+		inode->i_fop = &axfs_directory_operations;
-+	} else if (S_ISLNK(inode->i_mode)) {
-+		inode->i_op = &page_symlink_inode_operations;
-+		inode->i_data.a_ops = &axfs_aops;
-+	} else {
-+		inode->i_size = 0;
-+		inode->i_blocks = 0;
-+		init_special_inode(inode, inode->i_mode, old_decode_dev(size));
-+	}
-+	unlock_new_inode(inode);
-+
-+	return inode;
-+}
-+
-+
-+static int axfs_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+
-+	file_accessed(file);
-+
-+	vma->vm_ops = &axfs_vm_ops;
-+
-+	vma->vm_flags |= VM_CAN_NONLINEAR | VM_MIXEDMAP;
-+
-+	return 0;
-+}
-+
-+static struct dentry *axfs_lookup(struct inode *dir, struct dentry *dentry,
-+				  struct nameidata *nd)
-+{
-+	struct super_block *sb = dir->i_sb;
-+	struct axfs_super *sbi = AXFS_SB(sb);
-+	u64 ino_number = dir->i_ino;
-+	u64 dir_index = 0;
-+	u64 entry;
-+	char *name;
-+	int namelen, err;
-+
-+	while (dir_index < AXFS_GET_INODE_NUM_ENTRIES(sbi, ino_number)) {
-+		entry = AXFS_GET_INODE_ARRAY_INDEX(sbi, ino_number);
-+		entry += dir_index;
-+
-+		name = AXFS_GET_INODE_NAME(sbi, entry);
-+		namelen = strlen(name);
-+
-+		/* fast test, the entries are sorted alphabetically and the
-+		 * first letter is smaller than the first letter in the search
-+		 * name then it isn't in this directory.  Keeps this loop from
-+		 * needing to scan through always.
-+		 */
-+		if (dentry->d_name.name[0] < name[0])
-+			break;
-+
-+		dir_index++;
-+
-+		/* Quick check that the name is roughly the right length */
-+		if (dentry->d_name.len != namelen)
-+			continue;
-+
-+		err = memcmp(dentry->d_name.name, name, namelen);
-+		if (err > 0)
-+			continue;
-+
-+		/* The file name isn't present in the directory. */
-+		if (err < 0)
-+			break;
-+
-+		d_add(dentry, axfs_create_vfs_inode(dir->i_sb, entry));
-+		goto out;
-+
-+	}
-+	d_add(dentry, NULL);
-+
-+out:
-+	return NULL;
-+}
-+
-+static int axfs_readdir(struct file *filp, void *dirent, filldir_t filldir)
-+{
-+	struct inode *inode = filp->f_dentry->d_inode;
-+	struct super_block *sb = inode->i_sb;
-+	struct axfs_super *sbi = AXFS_SB(sb);
-+	u64 ino_number = inode->i_ino;
-+	u64 entry;
-+	loff_t dir_index;
-+	char *name;
-+	int namelen, mode;
-+	int err = 0;
-+
-+	/* Get the current index into the directory and verify it is not beyond
-+	   the end of the list */
-+	dir_index = filp->f_pos;
-+	if (dir_index >= AXFS_GET_INODE_NUM_ENTRIES(sbi, ino_number))
-+		goto out;
-+
-+	/* Verify the inode is for a directory */
-+	if (!(S_ISDIR(inode->i_mode))) {
-+		err = -EINVAL;
-+		goto out;
-+	}
-+
-+	while (dir_index < AXFS_GET_INODE_NUM_ENTRIES(sbi, ino_number)) {
-+		entry = AXFS_GET_INODE_ARRAY_INDEX(sbi, ino_number) + dir_index;
-+
-+		name = (char *)AXFS_GET_INODE_NAME(sbi, entry);
-+		namelen = strlen(name);
-+
-+		mode = (int)AXFS_GET_MODE(sbi, entry);
-+		err = filldir(dirent, name, namelen, dir_index, entry, mode);
-+
-+		if (err)
-+			break;
-+
-+		dir_index++;
-+		filp->f_pos = dir_index;
-+	}
-+
-+out:
 +	return 0;
 +}
 +
 +/******************************************************************************
 + *
-+ * axfs_fault
++ * axfs_get_directory_path
 + *
-+ * Description: This function is mapped into the VMA operations vector, and
-+ *              gets called on a page fault. Depending on whether the page
-+ *              is XIP or compressed, xip_file_fault or filemap_fault is
-+ *              called.  This function also logs when a fault occurs when
-+ *              profiling is on.
++ * Description:
++ *   Determines the directory path of every file for printing the spreadsheet.
 + *
 + * Parameters:
-+ *    (IN) vma  - The virtual memory area corresponding to a file
++ *    (IN) manager - Pointer to axfs profile manager
 + *
-+ *    (IN) vmf  - The fault info pass in by the fault handler
++ *    (OUT) buffer - Pointer to the printable directory path for each file
++ *
++ *    (IN) inode_number - Inode number of file to look up
++ *
++ * Returns:
++ *    Size of the path to the file
++ *
++ *
++ **************************************************************************/
++static int axfs_get_directory_path(struct axfs_profiling_manager *manager,
++				   char *buffer, u32 inode_number)
++{
++	u32 path_depth = 0;
++	u32 path_size = 0;
++	u32 string_len = 0;
++	u32 index = inode_number;
++	u32 dir_number;
++	u8 **path_array = NULL;
++	struct axfs_super *sbi = (struct axfs_super *)manager->sbi;
++	int i;
++
++	/* determine how deep the directory path is and how big the name
++	   string will be walk back until the root directory index is found
++	   (index 0 is root) */
++	while (manager->dir_structure[index] != 0) {
++		path_depth++;
++		/* set the index to the index of the parent directory */
++		index = manager->dir_structure[index];
++	}
++
++	if (path_depth != 0) {
++		/* create an array that will hold a pointer for each of the
++		   directories names */
++		path_array = vmalloc(path_depth * sizeof(*path_array));
++		if (path_array == NULL) {
++			printk(KERN_DEBUG
++			       "axfs: directory_path vmalloc failed.\n");
++			goto out;
++		}
++	}
++
++	index = manager->dir_structure[inode_number];
++	for (i = path_depth; i > 0; i--) {
++		/* get the array_index for the directory corresponding to
++		   index */
++		dir_number = AXFS_GET_INODE_ARRAY_INDEX(sbi, index);
++
++		/* store a pointer to the name in the array */
++		path_array[(i - 1)] = (u8 *) AXFS_GET_INODE_NAME(sbi, index);
++
++		index = manager->dir_structure[index];
++	}
++
++	/* now print out the directory structure from the begining */
++	string_len = sprintf(buffer, "./");
++	path_size += string_len;
++	for (i = 0; i < path_depth; i++) {
++		buffer = buffer + string_len;
++		string_len = sprintf(buffer, "%s/", (char *)path_array[i]);
++		path_size += string_len;
++	}
++
++	if (path_array != NULL)
++		vfree(path_array);
++
++out:
++	return path_size;
++
++}
++
++static ssize_t axfs_procfile_read(char *buffer,
++				  char **buffer_location,
++				  off_t offset, int buffer_length, int *eof,
++				  void *data)
++{
++	struct axfs_profiling_manager *man;
++	struct axfs_profiling_data *profile;
++	struct axfs_super *sbi;
++	u64 array_index;
++	u64 loop_size, inode_page_offset, node_offset, inode_number;
++	u64 print_len = 0;
++	unsigned long addr;
++	int len = 0;
++	int i;
++	char *buff, *name = NULL;
++
++	man = (struct axfs_profiling_manager *)data;
++	sbi = man->sbi;
++
++	loop_size = man->size / sizeof(*profile);
++
++	/* If all data has been returned set EOF */
++	if (offset >= loop_size) {
++		*eof = 1;
++		return 0;
++	}
++
++	buff = buffer;
++	/* print as much as the buffer can take */
++	for (i = offset; i < loop_size; i++) {
++
++		if ((print_len + MAX_STRING_LEN) > buffer_length)
++			break;
++		/* get the first profile data structure */
++		profile = &(man->profiling_data[i]);
++
++		if (profile->count == 0)
++			continue;
++
++		inode_number = profile->inode_number;
++
++		/* file names can be duplicated so we must print out the path */
++		len = axfs_get_directory_path(man, buff, inode_number);
++
++		print_len += len;
++		buff += len;
++
++		/* get a pointer to the inode name */
++		array_index = AXFS_GET_INODE_ARRAY_INDEX(sbi, inode_number);
++		name = (char *)AXFS_GET_INODE_NAME(sbi, inode_number);
++
++		/* need to convert the page number in the node area to
++		   the page number within the file */
++		node_offset = i;
++		/* gives the offset of the node in the node list area
++		   then substract that from the */
++		inode_page_offset = node_offset - array_index;
++
++		/* set everything up to print out */
++		addr = (unsigned long)(inode_page_offset * PAGE_SIZE);
++		len = sprintf(buff, "%s,%lu,%lu\n", name, addr, profile->count);
++
++		print_len += len;
++		buff += len;
++	}
++
++	/* return the number of items printed.
++	   This will be added to offset and passed back to us */
++	*buffer_location = (char *)(i - offset);
++
++	return print_len;
++}
++
++static ssize_t axfs_procfile_write(struct file *file,
++				   const char *buffer, unsigned long count,
++				   void *data)
++{
++	struct axfs_profiling_manager *man_ptr =
++	    (struct axfs_profiling_manager *)data;
++
++	if ((count >= 2) && (0 == memcmp(buffer, "on", 2))) {
++		man_ptr->sbi->profiling_on = TRUE;
++	} else if ((count >= 3) && (0 == memcmp(buffer, "off", 3))) {
++		man_ptr->sbi->profiling_on = FALSE;
++	} else if ((count >= 5) && (0 == memcmp(buffer, "clear", 5))) {
++		memset(man_ptr->profiling_data, 0, man_ptr->size);
++	} else {
++		printk(KERN_INFO
++		       "axfs: Unknown command.  Supported options are:\n");
++		printk(KERN_INFO "\t\"on\"\tTurn on profiling\n");
++		printk(KERN_INFO "\t\"off\"\tTurn off profiling\n");
++		printk(KERN_INFO "\t\"clear\"\tClear profiling buffer\n");
++	}
++
++	return count;
++}
++
++static int axfs_create_proc_directory(void)
++{
++	if (axfs_proc_dir == NULL) {
++		axfs_proc_dir = proc_mkdir(AXFS_PROC_DIR_NAME, NULL);
++		if (!axfs_proc_dir) {
++			printk(KERN_WARNING
++			       "axfs: Failed to create directory\n");
++			return FALSE;
++		}
++	}
++	return TRUE;
++}
++
++static void axfs_delete_proc_directory(void)
++{
++	/* Determine if there are any directory elements
++	   and remove if all of the proc files are removed. */
++	if (axfs_proc_dir != NULL) {
++		if (axfs_proc_dir->subdir == NULL) {
++			remove_proc_entry(AXFS_PROC_DIR_NAME, NULL);
++			axfs_proc_dir = NULL;
++		}
++	}
++}
++
++/******************************************************************************
++ *
++ * axfs_delete_proc_file
++ *
++ * Description:
++ *   Will search through the proc directory for the correct proc file,
++ *   then delete it
++ *
++ * Parameters:
++ *    (IN) sbi- axfs superblock pointer to determine which proc file to remove
++ *
++ * Returns:
++ *    The profiling manager pointer for the proc file.
++ *
++ *****************************************************************************/
++static struct axfs_profiling_manager *axfs_delete_proc_file(struct axfs_super
++							    *sbi)
++{
++	struct proc_dir_entry *current_proc_file;
++	struct axfs_profiling_manager *manager;
++	void *rv = NULL;
++
++	if (!axfs_proc_dir)
++		return NULL;
++
++	/* Walk through the proc file entries to find the matching sbi */
++	current_proc_file = axfs_proc_dir->subdir;
++
++	while (current_proc_file != NULL) {
++		manager = current_proc_file->data;
++		if (manager == NULL) {
++			printk(KERN_WARNING
++			       "axfs: Error removing proc file private "
++			       "data was NULL.\n");
++			rv = NULL;
++			break;
++		}
++		if (manager->sbi == sbi) {
++			/* we found the match */
++			remove_proc_entry(current_proc_file->name,
++					  axfs_proc_dir);
++			rv = (void *)manager;
++			break;
++		}
++		current_proc_file = axfs_proc_dir->next;
++	}
++	return (struct axfs_profiling_manager *)rv;
++}
++
++/******************************************************************************
++ *
++ * axfs_register_profiling_proc
++ *
++ * Description:
++ *   Will register the instance of the proc file for a given volume.
++ *
++ * Parameters:
++ *    (IN) manager - Pointer to the profiling manager for the axfs volume
 + *
 + * Returns:
 + *    0 or error number
 + *
 + *****************************************************************************/
-+static int axfs_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
++static int axfs_register_profiling_proc(struct axfs_profiling_manager *manager)
 +{
-+	struct file *file = vma->vm_file;
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct super_block *sb = inode->i_sb;
-+	struct axfs_super *sbi = AXFS_SB(sb);
-+	u64 ino_number = inode->i_ino;
-+	u64 array_index;
++	int rv = 0;
++	struct proc_dir_entry *proc_file;
++	char file_name[20];
 +
-+	array_index = AXFS_GET_INODE_ARRAY_INDEX(sbi, ino_number) + vmf->pgoff;
++	if (!axfs_create_proc_directory()) {
++		rv = -ENOMEM;
++		goto out;
++	}
 +
-+	/* if that pages are marked for write they will probably end up in RAM
-+	   therefore we don't want their counts for being XIP'd */
-+	if (!(vma->vm_flags & VM_WRITE))
-+		axfs_profiling_add(sbi, array_index, ino_number);
++	sprintf(file_name, "volume%d", proc_name_inc);
++	proc_file = create_proc_entry(file_name, (mode_t) 0644, axfs_proc_dir);
++	if (proc_file == NULL) {
++		remove_proc_entry(file_name, axfs_proc_dir);
++		axfs_delete_proc_directory();
++		rv = -ENOMEM;
++		goto out;
++	}
 +
-+	/* figure out if the node is XIP or compressed and call the
-+	   appropriate function
-+	 */
-+	if (AXFS_IS_NODE_XIP(sbi, array_index))
-+		return xip_file_fault(vma, vmf);
-+	return filemap_fault(vma, vmf);
++	proc_name_inc++;
++	proc_file->read_proc = axfs_procfile_read;
++	proc_file->write_proc = axfs_procfile_write;
++	proc_file->owner = THIS_MODULE;
++	proc_file->mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
++	proc_file->uid = 0;
++	proc_file->gid = 0;
++	proc_file->data = manager;
 +
++	printk(KERN_DEBUG "axfs: Proc entry created\n");
++
++out:
++	return rv;
 +}
-+
 +
 +/******************************************************************************
 + *
-+ * axfs_file_read
++ * axfs_unregister_profiling_proc
 + *
-+ * Description: axfs_file_read is mapped into the file_operations vector for
-+ *              all axfs files. It loops through the pages to be read and calls
-+ *              either do_sync_read (if the page is a compressed one) or
-+ *              xip_file_read (if the page is XIP).
++ * Description:
++ *   Will unregister the instance of the proc file for the volume that was
++ *   mounted.  If this is the last volume mounted then the proc directory
++ *   will also be removed.
 + *
 + * Parameters:
-+ *    (IN) filp -  file to be read
-+ *
-+ *    (OUT) buf - user buffer that is filled with the data that we read.
-+ *
-+ *    (IN) len - length of file to be read
-+ *
-+ *    (IN) ppos - offset within the file to read from
++ *    (IN) sbi- axfs superblock pointer to determine which proc file to remove
 + *
 + * Returns:
-+ *    actual size of data read.
++ *    The profiling manager pointer for the proc file.
 + *
 + *****************************************************************************/
-+static ssize_t axfs_file_read(struct file *filp, char __user *buf, size_t len,
-+			      loff_t *ppos)
++static struct axfs_profiling_manager *axfs_unregister_profiling_proc(struct
++								     axfs_super
++								     *sbi)
 +{
-+	struct inode *inode = filp->f_dentry->d_inode;
-+	struct super_block *sb = inode->i_sb;
-+	struct axfs_super *sbi = AXFS_SB(sb);
-+	size_t read = 0, total_read = 0;
-+	size_t readlength, actual_size, file_size, remaining;
-+	u64 ino_number = inode->i_ino;
-+	u64 size, array_index;
-+
-+	file_size = AXFS_GET_INODE_FILE_SIZE(sbi, ino_number);
-+	remaining = file_size - *ppos;
-+	actual_size = len > remaining ? remaining : len;
-+	readlength = actual_size < PAGE_SIZE ? actual_size : PAGE_SIZE;
-+
-+	for (size = actual_size; size > 0; size -= read) {
-+		array_index = AXFS_GET_INODE_ARRAY_INDEX(sbi, ino_number);
-+		array_index += *ppos >> PAGE_SHIFT;
-+
-+		if (AXFS_IS_NODE_XIP(sbi, array_index)) {
-+			read = xip_file_read(filp, buf, readlength, ppos);
-+		} else {
-+			read = do_sync_read(filp, buf, readlength, ppos);
-+		}
-+		buf += read;
-+		total_read += read;
-+
-+		if ((len - total_read < PAGE_SIZE) && (total_read != len))
-+			readlength = len - total_read;
-+	}
-+
-+	return total_read;
++	struct axfs_profiling_manager *manager;
++	manager = axfs_delete_proc_file(sbi);
++	axfs_delete_proc_directory();
++	return manager;
 +}
 +
-+static int axfs_readpage(struct file *file, struct page *page)
++/******************************************************************************
++ *
++ * axfs_init_profiling
++ *
++ * Description:
++ *   Creates the structures for tracking the page usage data and creates the
++ *   proc file that will be used to get the data.
++ *
++ * Parameters:
++ *    (IN) sbi- axfs superblock pointer
++ *
++ * Returns:
++ *    TRUE or FALSE
++ *
++ *****************************************************************************/
++int axfs_init_profiling(struct axfs_super *sbi)
 +{
-+	struct inode *inode = page->mapping->host;
-+	struct super_block *sb = inode->i_sb;
-+	struct axfs_super *sbi = AXFS_SB(sb);
-+	u64 array_index, node_index, cnode_index, maxblock, ofs;
-+	u64 ino_number = inode->i_ino;
-+	u32 max_len, cnode_offset;
-+	u32 cblk_size = sbi->cblock_size;
-+	u32 len = 0;
-+	u8 node_type;
-+	void *pgdata;
-+	void *src;
-+	void *cblk0 = sbi->cblock_buffer[0];
-+	void *cblk1 = sbi->cblock_buffer[1];
 +
-+	maxblock = (inode->i_size + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-+	pgdata = kmap(page);
++	u32 num_nodes, num_inodes;
++	struct axfs_profiling_manager *manager = NULL;
++	struct axfs_profiling_data *profile_data = NULL;
++	int err = -ENOMEM;
 +
-+	if (page->index >= maxblock)
++	/* determine the max number of pages in the FS */
++	num_nodes = sbi->blocks;
++	if (!num_nodes)
++		return 0;
++
++	manager = vmalloc(sizeof(*manager));
++	if (!manager)
 +		goto out;
 +
-+	array_index = AXFS_GET_INODE_ARRAY_INDEX(sbi, ino_number);
-+	array_index += page->index;
++	profile_data = vmalloc(num_nodes * sizeof(*profile_data));
++	if (!profile_data)
++		goto out;
 +
-+	node_index = AXFS_GET_NODE_INDEX(sbi, array_index);
-+	node_type = AXFS_GET_NODE_TYPE(sbi, array_index);
++	memset(profile_data, 0, num_nodes * sizeof(*profile_data));
 +
-+	if (node_type == Compressed) {
-+		/* node is in compessed region */
-+		cnode_offset = AXFS_GET_CNODE_OFFSET(sbi, node_index);
-+		cnode_index = AXFS_GET_CNODE_INDEX(sbi, node_index);
-+		down_write(&sbi->lock);
-+		if (cnode_index != sbi->current_cnode_index) {
-+			/* uncompress only necessary if different cblock */
-+			ofs = AXFS_GET_CBLOCK_OFFSET(sbi, cnode_index);
-+			len = AXFS_GET_CBLOCK_OFFSET(sbi, cnode_index + 1);
-+			len -= ofs;
-+			axfs_copy_data(sb, cblk1, &(sbi->compressed), ofs, len);
-+			axfs_uncompress_block(cblk0, cblk_size, cblk1, len);
-+			sbi->current_cnode_index = cnode_index;
-+		}
-+		downgrade_write(&sbi->lock);
-+		max_len = cblk_size - cnode_offset;
-+		len = max_len > PAGE_CACHE_SIZE ? PAGE_CACHE_SIZE : max_len;
-+		src = (void *)((unsigned long)cblk0 + cnode_offset);
-+		memcpy(pgdata, src, len);
-+		up_read(&sbi->lock);
-+	} else if (node_type == Byte_Aligned) {
-+		/* node is in BA region */
-+		ofs = AXFS_GET_BANODE_OFFSET(sbi, node_index);
-+		max_len = sbi->byte_aligned.size - ofs;
-+		len = max_len > PAGE_CACHE_SIZE ? PAGE_CACHE_SIZE : max_len;
-+		axfs_copy_data(sb, pgdata, &(sbi->byte_aligned), ofs, len);
-+	} else {
-+		/* node is XIP */
-+		ofs = node_index << PAGE_SHIFT;
-+		len = PAGE_CACHE_SIZE;
-+		axfs_copy_data(sb, pgdata, &(sbi->xip), ofs, len);
-+	}
++	/* determine the max number of inodes in the FS */
++	num_inodes = sbi->files;
++
++	manager->dir_structure = vmalloc(num_inodes * sizeof(u32 *));
++	if (!manager->dir_structure)
++		goto out;
++
++	memset(manager->dir_structure, 0, (num_inodes * sizeof(u32 *)));
++
++	manager->profiling_data = profile_data;
++	manager->size = num_nodes * sizeof(*profile_data);
++	manager->sbi = sbi;
++	sbi->profiling_on = TRUE;	/* Turn on profiling by default */
++	sbi->profile_data_ptr = profile_data;
++
++	err = axfs_init_profile_dir_structure(manager, num_inodes);
++	if (err)
++		goto out;
++
++	err = axfs_register_profiling_proc(manager);
++	if (err)
++		goto out;
++
++	return 0;
 +
 +out:
-+	memset(pgdata + len, 0, PAGE_CACHE_SIZE - len);
-+	kunmap(page);
-+	flush_dcache_page(page);
-+	SetPageUptodate(page);
-+	unlock_page(page);
-+	return 0;
++	if (manager->dir_structure)
++		vfree(manager->dir_structure);
++	if (profile_data)
++		vfree(profile_data);
++	if (manager)
++		vfree(manager);
++	return err;
 +}
 +
-+static int axfs_get_xip_mem(struct address_space *mapping, pgoff_t offset,
-+			    int create, void **kaddr, unsigned long *pfn)
++/******************************************************************************
++ *
++ * axfs_shutdown_profiling
++ *
++ * Description:
++ *   Remove the proc file for this volume and release the memory in the
++ *   profiling manager
++ *
++ * Parameters:
++ *    (IN) sbi- axfs superblock pointer
++ *
++ * Returns:
++ *    TRUE or FALSE
++ *
++ *****************************************************************************/
++int axfs_shutdown_profiling(struct axfs_super *sbi)
 +{
-+	struct inode *inode = mapping->host;
-+	struct super_block *sb = inode->i_sb;
-+	struct axfs_super *sbi = AXFS_SB(sb);
-+	u64 ino_number = inode->i_ino;
-+	u64 ino_index, node_index;
++	struct axfs_profiling_manager *manager;
++	/* remove the proc file for this volume and release the memory in the
++	   profiling manager */
 +
-+	ino_index = AXFS_GET_INODE_ARRAY_INDEX(sbi, ino_number);
-+	ino_index += offset;
++	if (!sbi)
++		return TRUE;
 +
-+	node_index = AXFS_GET_NODE_INDEX(sbi, ino_index);
++	if (!sbi->profile_data_ptr)
++		return TRUE;
 +
-+	*kaddr = (void *)(sbi->xip.virt_addr + (node_index << PAGE_SHIFT));
-+	if (AXFS_PHYSADDR_IS_VALID(sbi)) {
-+		*pfn = (AXFS_GET_XIP_REGION_PHYSADDR(sbi) >> PAGE_SHIFT);
-+		*pfn += node_index;
-+	} else {
-+		*pfn = page_to_pfn(virt_to_page((unsigned long)*kaddr));
-+	}
++	manager = axfs_unregister_profiling_proc(sbi);
 +
++	if (manager == NULL)
++		return FALSE;
++
++	if (manager->dir_structure)
++		vfree(manager->dir_structure);
++	if (manager->profiling_data)
++		vfree(manager->profiling_data);
++	if (manager)
++		vfree(manager);
++	return TRUE;
++}
++
++/******************************************************************************
++ *
++ * axfs_profiling_add
++ *
++ * Description:
++ *    Log when a node is paged into memory by incrementing the count in the
++ *    array profile data structure.
++ *
++ * Parameters:
++ *    (IN) sbi- axfs superblock pointer
++ *
++ *    (IN) array_index - The offset into the nodes table of file (node number)
++ *
++ *    (IN) axfs_inode_number - Inode of the node to determine file name later
++ *
++ * Returns:
++ *    none
++ *
++ *****************************************************************************/
++void axfs_profiling_add(struct axfs_super *sbi, unsigned long array_index,
++			unsigned int axfs_inode_number)
++{
++	unsigned long addr;
++	struct axfs_profiling_data *profile_data;
++
++	if (sbi->profiling_on != TRUE)
++		return;
++
++	addr = (unsigned long)sbi->profile_data_ptr;
++	addr += array_index * sizeof(*profile_data);
++
++	profile_data = (struct axfs_profiling_data *)addr;
++
++	/* Record the inode number to determine the file name later. */
++	profile_data->inode_number = axfs_inode_number;
++
++	/* Increment the number of times the node has been paged in */
++	profile_data->count++;
++}
++
++#else
++
++int axfs_init_profiling(struct axfs_super *sbi)
++{
 +	return 0;
 +}
 +
++int axfs_shutdown_profiling(struct axfs_super *sbi)
++{
++	return 0;
++}
++
++void axfs_profiling_add(struct axfs_super *sbi, unsigned long array_index,
++			unsigned int axfs_inode_number)
++{
++}
++
++#endif /* CONFIG_AXFS_PROFILING */
 
 
