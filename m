@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758675AbYHUGss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbYHUGs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758675AbYHUGss (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 02:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757919AbYHUGrY
+	id S1758585AbYHUGs1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 02:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758244AbYHUGrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 02:47:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53766 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757799AbYHUGrQ (ORCPT
+	Thu, 21 Aug 2008 02:47:22 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54274
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758234AbYHUGrU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 02:47:16 -0400
-Date: Wed, 20 Aug 2008 23:46:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       tokunaga.keiich@jp.fujitsu.com
-Subject: Re: [RFC][PATCH 2/2] quicklist shouldn't be proportional to # of
- CPUs
-Message-Id: <20080820234615.258a9c04.akpm@linux-foundation.org>
-In-Reply-To: <20080820200709.12F0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080820200709.12F0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 21 Aug 2008 02:47:20 -0400
+Date: Wed, 20 Aug 2008 23:47:19 -0700 (PDT)
+Message-Id: <20080820.234719.243864265.davem@davemloft.net>
+To: ebiederm@xmission.com
+Cc: greg@kroah.com, gregkh@suse.de, akpm@linux-foundation.org,
+       htejun@gmail.com, dlezcano@fr.ibm.com, linux-kernel@vger.kernel.org,
+       viro@ftp.linux.org.uk, containers@lists.osdl.org,
+       benjamin.thery@bull.net, netdev@vger.kernel.org
+Subject: Re: [PATCH 7/8] netns: Enable tagging for net_class directories in
+ sysfs
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <m1r68izxbi.fsf_-_@frodo.ebiederm.org>
+References: <m14p5e27tb.fsf_-_@frodo.ebiederm.org>
+	<m1vdxuzxco.fsf_-_@frodo.ebiederm.org>
+	<m1r68izxbi.fsf_-_@frodo.ebiederm.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008 20:08:13 +0900 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 20 Aug 2008 23:39:13 -0700
 
-> +	num_cpus_per_node = cpus_weight_nr(node_to_cpumask(node));
+> 
+> The problem.  Network devices show up in sysfs and with the network
+> namespace active multiple devices with the same name can show up in
+> the same directory, ouch!
+> 
+> To avoid that problem and allow existing applications in network namespaces
+> to see the same interface that is currently presented in sysfs, this
+> patch enables the tagging directory support in sysfs.
+> 
+> By using the network namespace pointers as tags to separate out the
+> the sysfs directory entries we ensure that we don't have conflicts
+> in the directories and applications only see a limited set of
+> the network devices.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 
-sparc64 allmodconfig:
-
-mm/quicklist.c: In function `max_pages':
-mm/quicklist.c:44: error: invalid lvalue in unary `&'
-
-we seem to have a made a spectacular mess of cpumasks lately.
+Acked-by: David S. Miller <davem@davemloft.net>
