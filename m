@@ -1,107 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759771AbYHUOay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759891AbYHUOb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759771AbYHUOay (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 10:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYHUOal
+	id S1759891AbYHUOb5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 10:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYHUObr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 10:30:41 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:55932 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754689AbYHUOak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 10:30:40 -0400
-Date: Thu, 21 Aug 2008 07:30:24 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, jmerkey@wolfmountaingroup.com,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [ANNOUNCE] mdb: Merkey's Linux Kernel Debugger 2.6.27-rc4
-	released
-Message-ID: <20080821143024.GD6690@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <200808210250.m7L2obNX028353@wolfmountaingroup.com> <48AD5A21.7020801@s5r6.in-berlin.de> <43593.166.70.238.46.1219321595.squirrel@webmail.wolfmountaingroup.com> <200808212337.38626.nickpiggin@yahoo.com.au> <1219327799.8651.134.camel@twins>
+	Thu, 21 Aug 2008 10:31:47 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:25346 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753503AbYHUObp (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 10:31:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=YDiYHLMzoh0cNxZzgkuuGoLgDsia47v7MiOmse8Rc+BgHA7fuyV2wFjFMSi1ot1s8R
+         /2Je7nwjsjcxVllHXC7R4PJXqHPaM3grkqW/1hR5othsSAECsTZ9XVX1Fmg5HRmpsyWF
+         9a5TcesC9JlNoFz0WQBydHDTRrruSK1TZz7gw=
+Message-ID: <c384c5ea0808210731k17ccc836u60c4803c3abfea31@mail.gmail.com>
+Date: Thu, 21 Aug 2008 16:31:44 +0200
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "Jared Hulbert" <jaredeh@gmail.com>
+Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
+Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>, tim.bird@am.sony.com,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+In-Reply-To: <6934efce0808210719s6458dc77w2c0755a4bf90bf8a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1219327799.8651.134.camel@twins>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <48AD00C4.6060302@gmail.com> <20080821083916.GF5706@disturbed>
+	 <6934efce0808210719s6458dc77w2c0755a4bf90bf8a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 04:09:59PM +0200, Peter Zijlstra wrote:
-> On Thu, 2008-08-21 at 23:37 +1000, Nick Piggin wrote:
-> > On Thursday 21 August 2008 22:26, jmerkey@wolfmountaingroup.com wrote:
-> > 
-> > > I used the smp_wmb() functions.  I noted a couple of things.  a) some of
-> > > these macros just emit __asm__ __volatile__ into the code so why not just
-> > > say "volatile" to begin with
-> > 
-> > It is not the same as volatile type. What it does is tell the compiler
-> > to clobber all registers or temporaries. This something pretty well
-> > defined and hard to get wrong compared to volatile type.
-> 
-> Right, asm volatile () means that the asm may not be discarted. Very
-> different from the volatile type qualifier.
-> 
-> > > b) smp_wmb() in some cases worked and in 
-> > > other cases jut optimized away the global reference.
-> > 
-> > Linux barriers aren't going to force a load to be emitted, if it can be
-> > optimized away. If it optimized away a store, then I'd like to see a
-> > test case.
-> 
-> Not sure - I think all barrier clobber the full register and memory set.
-> So if you access a variable after a barrier it will have to issue a
-> load.
+Hello Jared,
 
-Here is one example (which might or might not be what Nick had in mind):
+On Thu, Aug 21, 2008 at 4:19 PM, Jared Hulbert <jaredeh@gmail.com> wrote:
+>> FWIW, I'm not sure it's a good idea to name this new filesystem AXFS.
+>> People are almost certainly going to confuse it with XFS despite
+>
+People that care about their filesystem choice know their choices.
+People that don't
+care, well they don't care.
 
-	extern int v;
+Maybe AXIPFS would be the close alternative.
 
-	void foo(void)
-	{
-		do_something_with(v);
-		barrier();
-		do_something_else_with(v - v);
-	}
+One question on the use-case profiling and subsequent image rebuild:
 
-The second set of loads from v can be optimized away unless v is
-declared volatile.  In contrast:
+What if the use-case did not cover all cases of XIP use?
 
-	void bar(void)
-	{
-		do_something_with(v);
-		barrier();
-		do_something_else_with(v);
-	}
+If a compressed page is attempted to be executed, will the filesystem
+fall back to decompression to RAM and execution from RAM, or will this
+result in a faulty system?
 
-Here the compiler must refetch v after the barrier.
+The design choices look real good. Congrats on the achievement.
 
-> Are we talking about different things?
-> 
-> > > c) I can go back and 
-> > > break the code again by inserting them and building broken assembler d) I
-> > > ave been doing hardware and software design since the early 1980;s, I
-> > > invented SMP affinity scheduling, and yes, I understand barriers and this
-> > > concept of instruction score-boarding and optimization very well -- its
-> > > not an excuse for a busted C compiler.
-> > 
-> > The point is not whether it is possible to work with volatile types, but
-> > that we tend not to use them in Linux to deal with concurrency.
-> > 
-> > Also, barriers seem to work fine for everybody else, so I think it is
-> > likely you either aren't using them correctly, or have other bugs in the
-> > code.
-> 
-> Well, there is of course the third option, which is what Jeff claims,
-> that gcc is broken. But in that case we should have more problems
-> elsewhere too.
-
-Given the amount of code in gcc, we can reasonably assume that some
-aspects of it are broken.  Whether that presumed breakage is affecting
-Jeff is another question altogether.  ;-)
-
-							Thanx, Paul
+Regards,
+-- 
+Leon
