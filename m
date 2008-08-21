@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757839AbYHUGpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757491AbYHUGpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757839AbYHUGpa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 02:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbYHUGoJ
+	id S1757491AbYHUGpt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 02:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757176AbYHUGoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 02:44:09 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:60860 "EHLO
+	Thu, 21 Aug 2008 02:44:18 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:60883 "EHLO
 	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753896AbYHUGoA (ORCPT
+	with ESMTP id S1755174AbYHUGoG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 02:44:00 -0400
+	Thu, 21 Aug 2008 02:44:06 -0400
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: Greg KH <greg@kroah.com>
 Cc: Greg Kroah-Hartman <gregkh@suse.de>,
@@ -34,122 +34,166 @@ References: <m1y74iiidz.fsf_-_@frodo.ebiederm.org>
 	<m1d4k227wg.fsf_-_@frodo.ebiederm.org>
 	<m18wuq27uj.fsf_-_@frodo.ebiederm.org>
 	<m14p5e27tb.fsf_-_@frodo.ebiederm.org>
-Date: Wed, 20 Aug 2008 23:38:31 -0700
-In-Reply-To: <m14p5e27tb.fsf_-_@frodo.ebiederm.org> (Eric W. Biederman's
-	message of "Wed, 20 Aug 2008 23:36:32 -0700")
-Message-ID: <m1vdxuzxco.fsf_-_@frodo.ebiederm.org>
+	<m1vdxuzxco.fsf_-_@frodo.ebiederm.org>
+	<m1r68izxbi.fsf_-_@frodo.ebiederm.org>
+Date: Wed, 20 Aug 2008 23:40:11 -0700
+In-Reply-To: <m1r68izxbi.fsf_-_@frodo.ebiederm.org> (Eric W. Biederman's
+	message of "Wed, 20 Aug 2008 23:39:13 -0700")
+Message-ID: <m1myj6zx9w.fsf_-_@frodo.ebiederm.org>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 X-SA-Exim-Connect-IP: 24.130.11.59
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
 X-Spam-Combo: ;Greg KH <greg@kroah.com>
 X-Spam-Relay-Country: 
 X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0433]
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
 	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
 	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: [PATCH 6/8] Revert "netns: Fix device renaming for sysfs"
+Subject: [PATCH 8/8] sysfs: user namespaces: fix bug with clone(CLONE_NEWUSER) with fairsched
 X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
 X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Serge Hallyn <serge@us.ibm.com>
 
-This reverts commit aaf8cdc34ddba08122f02217d9d684e2f9f5d575.
+Mark the /sys/kernel/uids directory to be tagged so that processes in
+different user namespaces can remount /sys and see their own uid
+listings.
 
-Drivers like the ipw2100 call device_create_group when they
-are initialized and device_remove_group when they are shutdown.
-Moving them between namespaces deletes their sysfs groups early.
+Without this patch, having CONFIG_FAIR_SCHED=y makes user namespaces
+unusable, because when you
+  clone(CLONE_NEWUSER)
+it will auto-create the root userid and try to create
+/sys/kernel/uids/0.  Since that already exists from the parent user
+namespace, the create fails, and the clone misleadingly ends up
+returning -ENOMEM.
 
-In particular the following call chain results.
-netdev_unregister_kobject -> device_del -> kobject_del -> sysfs_remove_dir
-With sysfs_remove_dir recursively deleting all of it's subdirectories,
-and nothing adding them back.
+This patch fixes the issue by allowing each user namespace to remount
+/sys, and having /sys filter the /sys/kernel/uid/ entries by user
+namespace.
 
-Ouch!
+Changelong:
+v2 - Reworked for the updated sysfs api
 
-Therefore we need to call something that ultimate calls sysfs_mv_dir
-as that sysfs function can move sysfs directories between namespaces
-without deleting their subdirectories or their contents.   Allowing
-us to avoid placing extra boiler plate into every driver that does
-something interesting with sysfs.
-
-Currently the function that provides that capability is device_rename.
-That is the code works without nasty side effects as originally written.
-
-So remove the misguided fix for moving devices between namespaces.  The
-bug in the kobject layer that inspired it has now been recognized and
-fixed.
-
+Signed-off-by: Serge Hallyn <serue@us.ibm.com>
+Signed-off-by: Benjamin Thery <benjamin.thery@bull.net>
+Signed-off-by: Daniel Lezcano <dlezcano@fr.ibm.com>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- net/core/dev.c       |    4 +---
- net/core/net-sysfs.c |    7 +------
- net/core/net-sysfs.h |    1 -
- 3 files changed, 2 insertions(+), 10 deletions(-)
+ include/linux/sched.h   |    1 +
+ include/linux/sysfs.h   |    1 +
+ kernel/user.c           |   22 ++++++++++++++++++++++
+ kernel/user_namespace.c |    1 +
+ 4 files changed, 25 insertions(+), 0 deletions(-)
 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 600bb23..a7e236c 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -3989,7 +3989,6 @@ int register_netdevice(struct net_device *dev)
- 	if (dev->features & NETIF_F_SG)
- 		dev->features |= NETIF_F_GSO;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 5850bfb..b0fe15a 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -600,6 +600,7 @@ struct user_struct {
+ 	/* Hash table maintenance information */
+ 	struct hlist_node uidhash_node;
+ 	uid_t uid;
++	struct user_namespace *user_ns;
  
--	netdev_initialize_kobject(dev);
- 	ret = netdev_register_kobject(dev);
- 	if (ret)
- 		goto err_uninit;
-@@ -4451,8 +4450,7 @@ int dev_change_net_namespace(struct net_device *dev, struct net *net, const char
- 	}
+ #ifdef CONFIG_USER_SCHED
+ 	struct task_group *tg;
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 6d7eb50..ac88374 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -83,6 +83,7 @@ struct sysfs_dirent;
+ enum sysfs_tag_type {
+ 	SYSFS_TAG_TYPE_NONE = 0,
+ 	SYSFS_TAG_TYPE_NETNS,
++	SYSFS_TAG_TYPE_USERNS,
+ 	SYSFS_TAG_TYPES
+ };
  
- 	/* Fixup kobjects */
--	netdev_unregister_kobject(dev);
--	err = netdev_register_kobject(dev);
-+	err = device_rename(&dev->dev, dev->name);
- 	WARN_ON(err);
- 
- 	/* Add the device back in the hashes */
-diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index c1f4e0d..c9968f1 100644
---- a/net/core/net-sysfs.c
-+++ b/net/core/net-sysfs.c
-@@ -449,6 +449,7 @@ int netdev_register_kobject(struct net_device *net)
- 	struct device *dev = &(net->dev);
- 	struct attribute_group **groups = net->sysfs_groups;
- 
-+	device_initialize(dev);
- 	dev->class = &net_class;
- 	dev->platform_data = net;
- 	dev->groups = groups;
-@@ -481,12 +482,6 @@ void netdev_class_remove_file(struct class_attribute *class_attr)
- EXPORT_SYMBOL(netdev_class_create_file);
- EXPORT_SYMBOL(netdev_class_remove_file);
- 
--void netdev_initialize_kobject(struct net_device *net)
--{
--	struct device *device = &(net->dev);
--	device_initialize(device);
--}
--
- int netdev_kobject_init(void)
- {
- 	return class_register(&net_class);
-diff --git a/net/core/net-sysfs.h b/net/core/net-sysfs.h
-index 14e7524..805555e 100644
---- a/net/core/net-sysfs.h
-+++ b/net/core/net-sysfs.h
-@@ -4,5 +4,4 @@
- int netdev_kobject_init(void);
- int netdev_register_kobject(struct net_device *);
- void netdev_unregister_kobject(struct net_device *);
--void netdev_initialize_kobject(struct net_device *);
+diff --git a/kernel/user.c b/kernel/user.c
+index 865ecf5..ca29fbc 100644
+--- a/kernel/user.c
++++ b/kernel/user.c
+@@ -53,6 +53,7 @@ struct user_struct root_user = {
+ 	.files		= ATOMIC_INIT(0),
+ 	.sigpending	= ATOMIC_INIT(0),
+ 	.locked_shm     = 0,
++	.user_ns	= &init_user_ns,
+ #ifdef CONFIG_USER_SCHED
+ 	.tg		= &init_task_group,
  #endif
+@@ -230,16 +231,33 @@ static struct attribute *uids_attributes[] = {
+ 	NULL
+ };
+ 
++static const void *uids_mount_tag(void)
++{
++	return current->nsproxy->user_ns;
++}
++
++static struct sysfs_tag_type_operations uids_tag_type_operations = {
++	.mount_tag = uids_mount_tag,
++};
++
+ /* the lifetime of user_struct is not managed by the core (now) */
+ static void uids_release(struct kobject *kobj)
+ {
+ 	return;
+ }
+ 
++static const void *uids_sysfs_tag(struct kobject *kobj)
++{
++	struct user_struct *up;
++	up = container_of(kobj, struct user_struct, kobj);
++	return up->user_ns;
++}
++
+ static struct kobj_type uids_ktype = {
+ 	.sysfs_ops = &kobj_sysfs_ops,
+ 	.default_attrs = uids_attributes,
+ 	.release = uids_release,
++	.sysfs_tag = uids_sysfs_tag,
+ };
+ 
+ /* create /sys/kernel/uids/<uid>/cpu_share file for this user */
+@@ -272,6 +290,9 @@ int __init uids_sysfs_init(void)
+ 	if (!uids_kset)
+ 		return -ENOMEM;
+ 
++	sysfs_register_tag_type(SYSFS_TAG_TYPE_USERNS, &uids_tag_type_operations);
++	sysfs_make_tagged_dir(&uids_kset->kobj, SYSFS_TAG_TYPE_USERNS);
++
+ 	return uids_user_create(&root_user);
+ }
+ 
+@@ -405,6 +426,7 @@ struct user_struct *alloc_uid(struct user_namespace *ns, uid_t uid)
+ 
+ 		new->uid = uid;
+ 		atomic_set(&new->__count, 1);
++		new->user_ns = ns;
+ 
+ 		if (sched_create_user(new) < 0)
+ 			goto out_free_user;
+diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
+index a9ab059..f67bbe0 100644
+--- a/kernel/user_namespace.c
++++ b/kernel/user_namespace.c
+@@ -71,6 +71,7 @@ void free_user_ns(struct kref *kref)
+ 	struct user_namespace *ns;
+ 
+ 	ns = container_of(kref, struct user_namespace, kref);
++	sysfs_exit_tag(SYSFS_TAG_TYPE_USERNS, ns);
+ 	release_uids(ns);
+ 	kfree(ns);
+ }
 -- 
 1.5.3.rc6.17.g1911
 
