@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758215AbYHUK0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbYHUK1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758215AbYHUK0n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 06:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbYHUK0f
+	id S1755069AbYHUK1A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 06:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758262AbYHUK0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 06:26:35 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51321
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753508AbYHUK0e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 06:26:34 -0400
-Date: Thu, 21 Aug 2008 03:26:34 -0700 (PDT)
-Message-Id: <20080821.032634.14561915.davem@davemloft.net>
-To: kosaki.motohiro@jp.fujitsu.com
-Cc: peterz@infradead.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       cl@linux-foundation.org, tokunaga.keiich@jp.fujitsu.com, travis@sgi.com
-Subject: Re: [RFC][PATCH 2/2] quicklist shouldn't be proportional to # of
- CPUs
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080821191330.22B2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080821183648.22AF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080821.030932.75221247.davem@davemloft.net>
-	<20080821191330.22B2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 21 Aug 2008 06:26:46 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:40415 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758231AbYHUK0o (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 06:26:44 -0400
+Message-ID: <48AD42AE.4030107@de.ibm.com>
+Date: Thu, 21 Aug 2008 12:25:50 +0200
+From: Carsten Otte <cotte@de.ibm.com>
+Reply-To: carsteno@de.ibm.com
+Organization: =?ISO-8859-1?Q?BM_Deutschland_Research_=26_Developm?=
+ =?ISO-8859-1?Q?ent_GmbH_/_Vorsitzender_des_Aufsichtsrats=3A_?=
+ =?ISO-8859-1?Q?Martin_Jetter=2CGesch=E4ftsf=FChrung=3A_Herbert_Kir?=
+ =?ISO-8859-1?Q?cher=2CSitz_der_Gesellschaft=3A_B=F6blingen_/_R?=
+ =?ISO-8859-1?Q?egistergericht=3A_Amtsgericht_Stuttgart=2C_HRB_24?=
+ =?ISO-8859-1?Q?3294?=
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: jaredeh@gmail.com
+CC: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@AM.SONY.COM,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
+References: <48AD00C4.6060302@gmail.com>
+In-Reply-To: <48AD00C4.6060302@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Date: Thu, 21 Aug 2008 19:13:55 +0900
+Jared Hulbert wrote:
+> I'd like to get a first round of review on my AXFS filesystem.
+I like the general approach of it. It's much more flexible than the 
+ext2 extension I've done, and the possibility to select XIP vs. 
+compression per page is really really neat. I can imagine that people 
+will prefer this over the ext2 implementation on s390. It is unclear 
+to me how the "secondary block device" thing is supposed to work. 
+Could you elaborate a bit on that?
 
-> > From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > Date: Thu, 21 Aug 2008 19:04:28 +0900
-> > 
-> > > but I worry about it works on sparc64...
-> > 
-> > It should.
-> 
-> Could you please confirm it?
-
-davem@sunset:~/src/GIT/net-2.6$ patch -p1 <diff
-patching file mm/quicklist.c
-davem@sunset:~/src/GIT/net-2.6$ make mm/quicklist.o
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-  CC      mm/quicklist.o
-davem@sunset:~/src/GIT/net-2.6$ 
