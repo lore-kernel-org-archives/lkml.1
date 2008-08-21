@@ -1,34 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759180AbYHUNUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbYHUNV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759180AbYHUNUa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 09:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbYHUNUR
+	id S1759493AbYHUNV3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 09:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755944AbYHUNVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 09:20:17 -0400
-Received: from cluster-g.mailcontrol.com ([208.87.233.190]:37569 "EHLO
+	Thu, 21 Aug 2008 09:21:19 -0400
+Received: from cluster-g.mailcontrol.com ([208.87.233.190]:34111 "EHLO
 	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752931AbYHUNUP (ORCPT
+	with ESMTP id S1754150AbYHUNVS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 09:20:15 -0400
-Message-ID: <48AD6B4A.1020803@csr.com>
-Date: Thu, 21 Aug 2008 14:19:06 +0100
+	Thu, 21 Aug 2008 09:21:18 -0400
+Message-ID: <48AD6B93.7020702@csr.com>
+Date: Thu, 21 Aug 2008 14:20:19 +0100
 From: David Vrabel <david.vrabel@csr.com>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
 To: Kernel development list <linux-kernel@vger.kernel.org>
 CC: linux-usb <linux-usb@vger.kernel.org>, torvalds@linux-foundation.org
-Subject: [patch] bitmap: add bitmap_copy_le()
+Subject: [patch] Add helper macros for little-endian bitfields
 References: <48AD6AF0.3050504@csr.com>
 In-Reply-To: <48AD6AF0.3050504@csr.com>
 Content-Type: multipart/mixed;
- boundary="------------090104030106020003020508"
-X-OriginalArrivalTime: 21 Aug 2008 13:19:06.0421 (UTC) FILETIME=[7D01BE50:01C90390]
+ boundary="------------010508050907080502090104"
+X-OriginalArrivalTime: 21 Aug 2008 13:20:19.0528 (UTC) FILETIME=[A894FC80:01C90390]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------090104030106020003020508
+--------------010508050907080502090104
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
@@ -37,73 +37,143 @@ David Vrabel, Senior Software Engineer, Drivers
 CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
 Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
 
---------------090104030106020003020508
+--------------010508050907080502090104
 Content-Type: text/x-diff;
- name="bitmap-add-bitmap_copy_le.patch"
+ name="add-linux-byteorder-bitfields.h.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="bitmap-add-bitmap_copy_le.patch"
+ filename="add-linux-byteorder-bitfields.h.patch"
 
-bitmap: add bitmap_copy_le()
+Add helper macros for little-endian bitfields
 
-From: David Vrabel <david.vrabel@csr.com>
+From: Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>
 
-bitmap_copy_le() copies a bitmap, putting the bits into little-endian
-order (i.e., each unsigned long word in the bitmap is put into
-little-endian order).
-
-The UWB stack used bitmaps to manage Medium Access Slot availability,
-and these bitmaps need to be written to the hardware in LE order.
+This adds some macros to help in defining structures with little-endian
+values with bitfields.  Useful when defining hardware interfaces.
 
 Signed-off-by: David Vrabel <david.vrabel@csr.com>
-Cc: Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- include/linux/bitmap.h |    1 +
- lib/bitmap.c           |   22 ++++++++++++++++++++++
- 2 files changed, 23 insertions(+)
+ include/linux/byteorder/bitfields.h |  114 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 114 insertions(+)
 
-Index: linux-git/include/linux/bitmap.h
+Index: linux-2.6/include/linux/byteorder/bitfields.h
 ===================================================================
---- linux-git.orig/include/linux/bitmap.h	2008-08-12 14:51:02.000000000 +0100
-+++ linux-git/include/linux/bitmap.h	2008-08-12 14:51:07.000000000 +0100
-@@ -129,6 +129,7 @@
- extern int bitmap_find_free_region(unsigned long *bitmap, int bits, int order);
- extern void bitmap_release_region(unsigned long *bitmap, int pos, int order);
- extern int bitmap_allocate_region(unsigned long *bitmap, int pos, int order);
-+extern void bitmap_copy_le(void *dst, const unsigned long *src, int nbits);
- 
- #define BITMAP_LAST_WORD_MASK(nbits)					\
- (									\
-Index: linux-git/lib/bitmap.c
-===================================================================
---- linux-git.orig/lib/bitmap.c	2008-08-12 14:51:02.000000000 +0100
-+++ linux-git/lib/bitmap.c	2008-08-12 14:51:07.000000000 +0100
-@@ -996,3 +996,25 @@
- 	return 0;
- }
- EXPORT_SYMBOL(bitmap_allocate_region);
-+
-+/**
-+ * bitmap_copy_le - copy a bitmap, putting the bits into little-endian order.
-+ * @dst:   destination buffer
-+ * @src:   bitmap to copy
-+ * @nbits: number of bits in the bitmap
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/include/linux/byteorder/bitfields.h	2008-05-13 09:44:16.000000000 +0100
+@@ -0,0 +1,114 @@
++/*
++ * Helpers for defining little-endian bitfields
 + *
-+ * Require nbits % BITS_PER_LONG == 0.
++ * Copyright (C) 2007 Intel Corporation
++ * Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version
++ * 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ * 02110-1301, USA.
 + */
-+void bitmap_copy_le(void *dst, const unsigned long *src, int nbits)
-+{
-+	unsigned long *d = dst;
-+	int i;
 +
-+	for (i = 0; i < nbits/BITS_PER_LONG; i++) {
-+		if (BITS_PER_LONG == 64)
-+			d[i] = cpu_to_le64(src[i]);
-+		else
-+			d[i] = cpu_to_le32(src[i]);
-+	}
-+}
-+EXPORT_SYMBOL(bitmap_copy_le);
++#ifndef __LINUX__BYTEORDER__BITFIELDS_H__
++#define __LINUX__BYTEORDER__BITFIELDS_H__
++
++#include <asm/byteorder.h>
++
++/*
++ * Declare Little Endian bitfields
++ *
++ * These macros are used to switch the order of the bitfields when
++ * packing with Little Endian in mind (ie: for mapping to a hw type
++ * that you have to send or read from a device).
++ *
++ * NOTE: When using multibyte bitfields, you need to convert the data
++ *       from Little Endian to CPU before you can access the bitfield
++ *       (to make it simpler):
++ *
++ *       union something {
++ *               le16 value;
++ *               DECL_BF_LE3(
++ *                       u16  bf0:3,
++ *                       u16  bf1:10,
++ *                       u16  bf2:3
++ *               ) __attribute__((packed));
++ *       };
++ *
++ *       ...
++ *
++ *       union something s;
++ *
++ *       s.value = le16_to_cpu(something LE read from hw);
++ *       frame_count = s.bf1;
++ *
++ */
++#ifdef __LITTLE_ENDIAN_BITFIELD
++#define DECL_BF_LE2(a, b)                   struct { a; b; }
++#define DECL_BF_LE3(a, b, c)                struct { a; b; c; }
++#define DECL_BF_LE4(a, b, c, d)             struct { a; b; c; d ; }
++#define DECL_BF_LE5(a, b, c, d, e)          struct { a; b; c; d; e; }
++#define DECL_BF_LE6(a, b, c, d, e, f)       struct { a; b; c; d; e; f; }
++#define DECL_BF_LE7(a, b, c, d, e, f, g)    struct { a; b; c; d; e; f; g; }
++#define DECL_BF_LE8(a, b, c, d, e, f, g, h) struct { a; b; c; d; e; f; g; h; }
++#define DECL_BF_LE9(a, b, c, d, e, f, g, h, i) \
++	struct { a; b; c; d; e; f; g; h; i; }
++#define DECL_BF_LE10(a, b, c, d, e, f, g, h, i, j) \
++	struct { a; b; c; d; e; f; g; h; i; j; }
++#define DECL_BF_LE11(a, b, c, d, e, f, g, h, i, j, k) \
++	struct { a; b; c; d; e; f; g; h; i; j; k; }
++#define DECL_BF_LE12(a, b, c, d, e, f, g, h, i, j, k, l) \
++	struct { a; b; c; d; e; f; g; h; i; j; k; l; }
++#define DECL_BF_LE13(a, b, c, d, e, f, g, h, i, j, k, l, m) \
++	struct { a; b; c; d; e; f; g; h; i; j; k; l; m; }
++#define DECL_BF_LE14(a, b, c, d, e, f, g, h, i, j, k, l, m, n) \
++	struct { a; b; c; d; e; f; g; h; i; j; k; l; m; n; }
++#define DECL_BF_LE15(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o) \
++	struct { a; b; c; d; e; f; g; h; i; j; k; l; m; n; o; }
++#define DECL_BF_LE16(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) \
++	struct { a; b; c; d; e; f; g; h; i; j; k; l; m; n; o; p; }
++
++#else
++#ifdef __BIG_ENDIAN_BITFIELD
++
++#define DECL_BF_LE2(a, b)                   struct { b; a; }
++#define DECL_BF_LE3(a, b, c)                struct { c; b; a; }
++#define DECL_BF_LE4(a, b, c, d)             struct { d; c; b; a; }
++#define DECL_BF_LE5(a, b, c, d, e)          struct { e; d; c; b; a; }
++#define DECL_BF_LE6(a, b, c, d, e, f)       struct { f; e; d; c; b; a; }
++#define DECL_BF_LE7(a, b, c, d, e, f, g)    struct { g; f; e; d; c; b; a; }
++#define DECL_BF_LE8(a, b, c, d, e, f, g, h) struct { h; g; f; e; d; c; b; a; }
++#define DECL_BF_LE9(a, b, c, d, e, f, g, h, i) \
++	struct { i; h; g; f; e; d; c; b; a; }
++#define DECL_BF_LE10(a, b, c, d, e, f, g, h, i, j) \
++	struct { j; i; h; g; f; e; d; c; b; a; }
++#define DECL_BF_LE11(a, b, c, d, e, f, g, h, i, j, k) \
++	struct { k; j; i; h; g; f; e; d; c; b; a; }
++#define DECL_BF_LE12(a, b, c, d, e, f, g, h, i, j, k, l) \
++	struct { l; k; j; i; h; g; f; e; d; c; b; a; }
++#define DECL_BF_LE13(a, b, c, d, e, f, g, h, i, j, k, l, m) \
++	struct { m; l; k; j; i; h; g; f; e; d; c; b; a; }
++#define DECL_BF_LE14(a, b, c, d, e, f, g, h, i, j, k, l, m, n) \
++	struct { n; m; l; k; j; i; h; g; f; e; d; c; b; a; }
++#define DECL_BF_LE15(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o) \
++	struct { o; n; m; l; k; j; i; h; g; f; e; d; c; b; a; }
++#define DECL_BF_LE16(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) \
++	struct { p; o; n; m; l; k; j; i; h; g; f; e; d; c; b; a; }
++
++#else
++
++#error Unknown endianess for Little Endian bitfield definition
++
++#endif
++#endif
++
++#endif /* #ifndef __LINUX__BYTEORDER__BITFIELDS_H__ */
 
---------------090104030106020003020508--
+--------------010508050907080502090104--
