@@ -1,395 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYHUDK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbYHUDNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756079AbYHUDK6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 23:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbYHUDKT
+	id S1756193AbYHUDNN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 23:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbYHUDM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 23:10:19 -0400
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:45379 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756330AbYHUDKR (ORCPT
+	Wed, 20 Aug 2008 23:12:57 -0400
+Received: from smtp-vbr15.xs4all.nl ([194.109.24.35]:3039 "EHLO
+	smtp-vbr15.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752590AbYHUDM4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 23:10:17 -0400
-Date: Wed, 20 Aug 2008 23:07:16 -0400 (EDT)
-From: Oren Laadan <orenl@cs.columbia.edu>
-X-X-Sender: orenl@takamine.ncl.cs.columbia.edu
-To: dave@linux.vnet.ibm.com
-cc: arnd@arndb.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org
-Subject: [RFC v2][PATCH 8/9] File descriprtors - dump state
-In-Reply-To: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>
-Message-ID: <Pine.LNX.4.64.0808202306530.17436@takamine.ncl.cs.columbia.edu>
-References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>
+	Wed, 20 Aug 2008 23:12:56 -0400
+Date: Thu, 21 Aug 2008 05:07:05 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: john stultz <johnstul@us.ibm.com>,
+       Martin Ziegler <ziegler@uni-freiburg.de>,
+       lkml <linux-kernel@vger.kernel.org>, stable@kernel.org
+Subject: Re: [PATCH] fix adjtimex() freq return error
+In-Reply-To: <20080819204752.d9540f15.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0808210503100.2507@localhost.localdomain>
+References: <1219199346.6276.5.camel@localhost> <20080819204752.d9540f15.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-No-Spam-Score: Local
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Dump the files_struct of a task with 'struct cr_hdr_files', followed by
-all open file descriptors. Since FDs can be shared, they are assigned a
-tag and registered in the object hash.
+On Tue, 19 Aug 2008, Andrew Morton wrote:
 
-For each open FD there is a 'struct cr_hdr_fd_ent' with the FD, its tag
-and its close-on-exec property. If the FD is to be saved (first time)
-then this is followed by a 'struct cr_hdr_fd_data' with the FD state.
-Then will come the next FD and so on.
+> This fix caused Roman's
+> ntp-fix-adj_offset_ss_read-bug-and-do_adjtimex-cleanup.patch (which I
+> have queued for when Thomas wakes up) to toss a reject, but fixing that
+> seemed pretty simple.  I think.  The scripts/kconfig/conf segfaults are
+> being a bit of a PITA at present.
 
-This patch only handles basic FDs - regular files, directories and also
-symbolic links.
+Below is a better patch on top of the above patch, note that this not a 
+bug fix and thus not an issue for stable.
 
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+bye, Roman
+
+
+[PATCH] improve adjtimex frequency rounding
+
+Change PPM_SCALE_INV_SHIFT so that it doesn't throw away any input bits
+(19 is the amount of the factor 2 in PPM_SCALE), the output frequency
+can then be calculated back to its input value, as the inverse divide
+produce a slightly larger value, which is then correctly rounded by the
+final shift.
+
+Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
+
 ---
-  checkpoint/Makefile    |    3 +-
-  checkpoint/ckpt.h      |    2 +-
-  checkpoint/ckpt_file.c |  234 ++++++++++++++++++++++++++++++++++++++++++++++++
-  checkpoint/ckpt_file.h |   17 ++++
-  checkpoint/ckpt_hdr.h  |   31 +++++++
-  5 files changed, 285 insertions(+), 2 deletions(-)
-  create mode 100644 checkpoint/ckpt_file.c
-  create mode 100644 checkpoint/ckpt_file.h
+ include/linux/timex.h |    2 +-
+ kernel/time/ntp.c     |    5 ++---
+ 2 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/checkpoint/Makefile b/checkpoint/Makefile
-index cd57d9d..179175b 100644
---- a/checkpoint/Makefile
-+++ b/checkpoint/Makefile
-@@ -1,2 +1,3 @@
--obj-y += sys.o checkpoint.o restart.o objhash.o ckpt_mem.o rstr_mem.o
-+obj-y += sys.o checkpoint.o restart.o objhash.o \
-+	ckpt_mem.o rstr_mem.o ckpt_file.o
-  obj-$(CONFIG_X86) += ckpt_x86.o rstr_x86.o
-diff --git a/checkpoint/ckpt.h b/checkpoint/ckpt.h
-index 8b02c4c..ef2f74d 100644
---- a/checkpoint/ckpt.h
-+++ b/checkpoint/ckpt.h
-@@ -13,7 +13,7 @@
-  #include <linux/path.h>
-  #include <linux/fs.h>
-
--#define CR_VERSION  1
-+#define CR_VERSION  2
-
-  struct cr_ctx {
-  	pid_t pid;		/* container identifier */
-diff --git a/checkpoint/ckpt_file.c b/checkpoint/ckpt_file.c
-new file mode 100644
-index 0000000..18faaf1
---- /dev/null
-+++ b/checkpoint/ckpt_file.c
-@@ -0,0 +1,234 @@
-+/*
-+ *  Checkpoint file descriptors
-+ *
-+ *  Copyright (C) 2008 Oren Laadan
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of the Linux
-+ *  distribution for more details.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/file.h>
-+#include <linux/fdtable.h>
-+
-+#include "ckpt.h"
-+#include "ckpt_hdr.h"
-+#include "ckpt_file.h"
-+
-+#define CR_DEFAULT_FDTABLE  128
-+
-+/**
-+ * cr_scan_fds - scan file table and construct array of open fds
-+ * @files: files_struct pointer
-+ * @fdtable: (output) array of open fds
-+ * @return: the number of open fds found
-+ *
-+ * Allocates the file descriptors array (*fdtable), caller should free
-+ */
-+int cr_scan_fds(struct files_struct *files, int **fdtable)
-+{
-+	int i, j, n, max;
-+	struct fdtable *fdt;
-+	int *fdlist;
-+
-+	max = CR_DEFAULT_FDTABLE;
-+
-+ repeat:
-+	fdlist = kmalloc(max * sizeof(*fdlist), GFP_KERNEL);
-+	if (!fdlist)
-+		return -ENOMEM;
-+
-+	j = 0;
-+	n = 0;
-+
-+	spin_lock(&files->file_lock);
-+	fdt = files_fdtable(files);
-+	for (;;) {
-+		unsigned long set;
-+		i = j * __NFDBITS;
-+		if (i >= fdt->max_fds)
-+			break;
-+		set = fdt->open_fds->fds_bits[j++];
-+		while (set) {
-+			if (set & 1) {
-+				if (unlikely(n == max)) {
-+					spin_unlock(&files->file_lock);
-+					kfree(fdlist);
-+					max *= 2;
-+					if (max < 0)	/* overflow ? */
-+						return -EMFILE;
-+					goto repeat;
-+				}
-+				fdlist[n++] = i;
-+			}
-+			i++;
-+			set >>= 1;
-+		}
-+	}
-+	spin_unlock(&files->file_lock);
-+
-+	*fdtable = fdlist;
-+	return n;
-+}
-+
-+/* cr_write_fd_data - dump the state of a given file pointer */
-+static int cr_write_fd_data(struct cr_ctx *ctx, struct file *file, int ptag)
-+{
-+	struct cr_hdr h;
-+	struct cr_hdr_fd_data *hh = ctx->hbuf;
-+	struct dentry *dent = file->f_dentry;
-+	struct inode *inode = dent->d_inode;
-+	char *fname;
-+	int flen, how, ret;
-+
-+	h.type = CR_HDR_FD_DATA;
-+	h.len = sizeof(*hh);
-+	h.ptag = ptag;
-+
-+	BUG_ON(!inode);
-+
-+	flen = PAGE_SIZE;
-+	fname = cr_fill_fname(&file->f_path, ctx->vfsroot, ctx->tbuf, &flen);
-+	if (IS_ERR(fname))
-+		return PTR_ERR(fname);
-+
-+	hh->f_flags = file->f_flags;
-+	hh->f_mode = file->f_mode;
-+	hh->f_pos = file->f_pos;
-+	hh->f_uid = file->f_uid;
-+	hh->f_gid = file->f_gid;
-+	hh->f_version = file->f_version;
-+	/* FIX: need also file->f_owner */
-+
-+	switch(inode->i_mode & S_IFMT) {
-+	case S_IFREG:
-+		how = CR_FD_FILE;
-+		break;
-+	case S_IFDIR:
-+		how = CR_FD_DIR;
-+		break;
-+	case S_IFLNK:
-+		how = CR_FD_LINK;
-+		break;
-+	default:
-+		return -EBADF;
-+	}
-+
-+	/* FIX: check if the file/dir/link is unlinked */
-+
-+	BUG_ON(!flen);
-+
-+	ret = cr_write_obj(ctx, &h, hh);
-+	if (!ret && flen)
-+		ret = cr_write_str(ctx, fname, flen);
-+
-+	return ret;
-+}
-+
-+/**
-+ * cr_write_fd_ent - dump the state of a given file descriptor
-+ * @ctx: checkpoint context
-+ * @files: files_struct pointer
-+ * @fd: file descriptor
-+ * 
-+ * Save the state of the file descriptor; look up the actual file pointer
-+ * in the hash table, and if found save the matching tag, otherwise call
-+ * cr_write_fd_data to dump the file pointer too.
-+ */
-+static int
-+cr_write_fd_ent(struct cr_ctx *ctx, struct files_struct *files, int fd)
-+{
-+	struct cr_hdr h;
-+	struct cr_hdr_fd_ent *hh = ctx->hbuf;
-+	struct file *file = NULL;
-+	struct fdtable *fdt;
-+	int coe, tag, ret;
-+
-+	/* make sure hh->fd (that is of type __u16) doesn't overflow */
-+	if (fd > USHORT_MAX) {
-+		pr_warning("CR: open files table too big (%d)\n", USHORT_MAX);
-+		return -EMFILE;
-+	}
-+
-+	rcu_read_lock();
-+	fdt = files_fdtable(files);
-+	if (fd < fdt->max_fds)
-+		file = rcu_dereference(fdt->fd[fd]);
-+	if (file) {
-+		coe = FD_ISSET(fd, fdt->close_on_exec);
-+		get_file(file);
-+	}
-+	rcu_read_unlock();
-+
-+	/* sanity check (although this shouldn't happen) */
-+	if (unlikely(!file))
-+		return -EBADF;
-+
-+	ret = cr_obj_add_ptr(ctx, (void *) file, &tag, CR_OBJ_FILE, 0);
-+	cr_debug("fd %d tag %d file %p c-o-e %d)\n", fd, tag, file, coe);
-+
-+	if (ret >= 0) {
-+		int new = ret;
-+
-+		h.type = CR_HDR_FD_ENT;
-+		h.len = sizeof(*hh);
-+		h.ptag = 0;
-+ 
-+		hh->tag = tag;
-+		hh->fd = fd;
-+		hh->close_on_exec = coe;
-+
-+		ret = cr_write_obj(ctx, &h, hh);
-+
-+		/* new==1 if-and-only-if file was new and added to hash */
-+		if (!ret && new)
-+			ret = cr_write_fd_data(ctx, file, tag);
-+	}
-+
-+	fput(file);
-+	return ret;
-+}
-+
-+int cr_write_files(struct cr_ctx *ctx, struct task_struct *t)
-+{
-+	struct cr_hdr h;
-+	struct cr_hdr_files *hh = ctx->hbuf;
-+	struct files_struct *files;
-+	int *fdtable;
-+	int nfds, n, ret;
-+
-+	h.type = CR_HDR_FILES;
-+	h.len = sizeof(*hh);
-+	h.ptag = task_pid_vnr(t);
-+
-+	files = get_files_struct(t);
-+
-+	nfds = cr_scan_fds(files, &fdtable);
-+	if (nfds < 0) {
-+		ret = nfds;
-+		goto out;
-+	}
-+ 
-+	hh->tag = 0;
-+	hh->nfds = nfds;
-+
-+	ret = cr_write_obj(ctx, &h, hh);
-+	if (ret < 0)
-+		goto clean;
-+
-+	cr_debug("nfds %d\n", nfds);
-+	for (n = 0; n < nfds; n++) {
-+		ret = cr_write_fd_ent(ctx, files, n);
-+		if (ret < 0)
-+			break;
-+	}
-+
-+ clean:
-+	kfree(fdtable);
-+ out:
-+	put_files_struct(files);
-+
-+	return ret;
-+}
-diff --git a/checkpoint/ckpt_file.h b/checkpoint/ckpt_file.h
-new file mode 100644
-index 0000000..9dc3eba
---- /dev/null
-+++ b/checkpoint/ckpt_file.h
-@@ -0,0 +1,17 @@
-+#ifndef _CHECKPOINT_CKPT_FILE_H_
-+#define _CHECKPOINT_CKPT_FILE_H_
-+/*
-+ *  Checkpoint file descriptors
-+ *
-+ *  Copyright (C) 2008 Oren Laadan
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of the Linux
-+ *  distribution for more details.
-+ */
-+
-+#include <linux/fdtable.h>
-+
-+int cr_scan_fds(struct files_struct *files, int **fdtable);
-+
-+#endif /* _CHECKPOINT_CKPT_FILE_H_ */
-diff --git a/checkpoint/ckpt_hdr.h b/checkpoint/ckpt_hdr.h
-index a3919cf..a8a37db 100644
---- a/checkpoint/ckpt_hdr.h
-+++ b/checkpoint/ckpt_hdr.h
-@@ -43,6 +43,10 @@ enum {
-  	CR_HDR_VMA,
-  	CR_HDR_MM_CONTEXT,
-
-+	CR_HDR_FILES = 301,
-+	CR_HDR_FD_ENT,
-+	CR_HDR_FD_DATA,
-+
-  	CR_HDR_TAIL = 5001
-  };
-
-@@ -52,6 +56,13 @@ enum {
-  	CR_VMA_FILE
-  };
-
-+/* fd subtypes */
-+enum {
-+	CR_FD_FILE = 1,
-+	CR_FD_DIR,
-+	CR_FD_LINK
-+};
-+
-  struct cr_hdr_head {
-  	__u64 magic;
-
-@@ -114,4 +125,24 @@ struct cr_hdr_vma {
-
-  } __attribute__ ((aligned (8)));
-
-+struct cr_hdr_files {
-+	__u32 tag;	/* sharing identifier */
-+	__u32 nfds;
-+} __attribute__ ((aligned (8)));
-+
-+struct cr_hdr_fd_ent {
-+	__u32 tag;
-+	__u16 fd;
-+	__u16 close_on_exec;
-+} __attribute__ ((aligned (8)));
-+
-+struct cr_hdr_fd_data {
-+	__u16 how;
-+	__u16 f_mode;
-+	__u32 f_flags;
-+	__u32 f_uid, f_gid;
-+	__u64 f_pos;
-+	__u64 f_version;
-+} __attribute__ ((aligned (8)));
-+
-  #endif /* _CHECKPOINT_CKPT_HDR_H_ */
--- 
-1.5.4.3
-
+Index: linux-2.6-mm/include/linux/timex.h
+===================================================================
+--- linux-2.6-mm.orig/include/linux/timex.h
++++ linux-2.6-mm/include/linux/timex.h
+@@ -82,7 +82,7 @@
+  */
+ #define SHIFT_USEC 16		/* frequency offset scale (shift) */
+ #define PPM_SCALE (NSEC_PER_USEC << (NTP_SCALE_SHIFT - SHIFT_USEC))
+-#define PPM_SCALE_INV_SHIFT 20
++#define PPM_SCALE_INV_SHIFT 19
+ #define PPM_SCALE_INV ((1ll << (PPM_SCALE_INV_SHIFT + NTP_SCALE_SHIFT)) / \
+ 		       PPM_SCALE + 1)
+ 
+Index: linux-2.6-mm/kernel/time/ntp.c
+===================================================================
+--- linux-2.6-mm.orig/kernel/time/ntp.c
++++ linux-2.6-mm/kernel/time/ntp.c
+@@ -402,9 +402,8 @@ int do_adjtimex(struct timex *txc)
+ 		if (!(time_status & STA_NANO))
+ 			txc->offset /= NSEC_PER_USEC;
+ 	}
+-	txc->freq	   = shift_right((s32)(time_freq >> PPM_SCALE_INV_SHIFT) *
+-					 (s64)PPM_SCALE_INV,
+-					 NTP_SCALE_SHIFT);
++	txc->freq	   = shift_right((time_freq >> PPM_SCALE_INV_SHIFT) *
++					 (s64)PPM_SCALE_INV, NTP_SCALE_SHIFT);
+ 	txc->maxerror	   = time_maxerror;
+ 	txc->esterror	   = time_esterror;
+ 	txc->status	   = time_status;
