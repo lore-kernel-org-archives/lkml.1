@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbYHUGUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756338AbYHUGYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756875AbYHUGUl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 02:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbYHUGUc
+	id S1756338AbYHUGYP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 02:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbYHUGX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 02:20:32 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43510 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753336AbYHUGUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 02:20:32 -0400
-Date: Thu, 21 Aug 2008 08:15:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ray Lee <ray-lk@madrabbit.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       adobriyan@gmail.com, "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, Chris Friesen <cfriesen@nortel.com>
-Subject: Re: VolanoMark regression with 2.6.27-rc1
-Message-ID: <20080821061512.GB14572@elte.hu>
-References: <1912217169.25608.228.camel@ymzhang> <2c0942db0808200929r640b3a1cj33efc56cfd6db9b3@mail.gmail.com> <1219252901.8651.63.camel@twins> <200808210355.55597.nickpiggin@yahoo.com.au> <2c0942db0808201115v3025e5f6r6c882783fa9e29f3@mail.gmail.com> <1219264236.8651.76.camel@twins> <1219265798.8651.84.camel@twins>
+	Thu, 21 Aug 2008 02:23:59 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:39263 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753332AbYHUGX7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 02:23:59 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Andi Kleen" <andi@firstfloor.org>
+Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@linux.intel.com>
+References: <1218865985-23403-1-git-send-email-andi@firstfloor.org>
+Date: Wed, 20 Aug 2008 23:14:36 -0700
+In-Reply-To: <1218865985-23403-1-git-send-email-andi@firstfloor.org> (Andi
+	Kleen's message of "Sat, 16 Aug 2008 07:53:05 +0200")
+Message-ID: <m1myj63neb.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1219265798.8651.84.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"Andi Kleen" <andi@firstfloor.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] Move sysctl check into debugging section and don't make it default y
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Andi Kleen" <andi@firstfloor.org> writes:
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+> From: Andi Kleen <ak@linux.intel.com>
+>
+> I noticed that sysctl_check.o was the largest object file in
+> a allnoconfig build in kernel/*.
+>
+>   36243       0       0   36243    8d93 kernel/sysctl_check.o
+>
+> This is because it was default y and && EMBEDDED. But I don't
+> really see a need for a non kernel developer to have their
+> sysctls checked all the time.
 
-> Ok, people pointed out I got my promotion rules mixed up, I casted the 
-> result of the division to signed, instead of ending up with a signed 
-> division.
-> 
-> #define avg(x, y) ({                            \
->         typeof(x) _avg1 = (x);                  \
->         typeof(y) _avg2 = (y);                  \
->         (void) (&_avg1 == &_avg2);              \
->         (typeof(x))(_avg1 + ((long long)_avg2 - _avg1)/2); })
+What is a feature change like this doing coming in after the
+merge window?
 
-ok, could you please just send a patch that is local to sched.c and then 
-we can let this kernel.h change play out independently? There's too many 
-iterations of this and it's better to decouple the two.
+Why doesn't an allnoconfig disable sysctl all together?
 
-	Ingo
+> So move the Kconfig into the kernel debugging section and
+> also drop the default y and the EMBEDDED check.
+
+Which is an idiotic thing to do.
+
+These are the only checks we have against someone doing something
+nasty in the sysctl hierarchy.   We have proven that we don't
+have the discipline to do the right thing with code in the
+core kernel.  I expect out of tree code will be much worse.
+
+Eric
