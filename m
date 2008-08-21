@@ -1,64 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbYHUIfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbYHUIgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756045AbYHUIfJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 04:35:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbYHUIew
+	id S1756728AbYHUIgw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 04:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYHUIg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 04:34:52 -0400
-Received: from eisentraut.org ([85.214.91.16]:60760 "EHLO gattler.pezone.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750972AbYHUIev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 04:34:51 -0400
-From: Peter Eisentraut <peter_e@gmx.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [Bugme-new] [Bug 11381] New: default shmmax
-Date: Thu, 21 Aug 2008 11:08:43 +0300
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
-       Nadia Derbey <Nadia.Derbey@bull.net>,
-       Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Pierre Peiffer <peifferp@gmail.com>, containers@lists.osdl.org
-References: <bug-11381-10286@http.bugzilla.kernel.org/> <20080820120043.e6e7e436.akpm@linux-foundation.org> <20080820195509.00994d51@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080820195509.00994d51@lxorguk.ukuu.org.uk>
+	Thu, 21 Aug 2008 04:36:29 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:41476 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750933AbYHUIg1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 04:36:27 -0400
+Date: Thu, 21 Aug 2008 18:36:15 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Sascha Biberhofer <biberhofer@inode.at>
+Cc: Matt LaPlante <kernel1@cyberdogtech.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: Oops in authenc: 2.6.26.3
+Message-ID: <20080821083615.GA1971@gondor.apana.org.au>
+References: <20080820203245.ea01ff39.kernel1@cyberdogtech.com> <20080821070225.GA31894@aeris>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808211108.46443.peter_e@gmx.net>
+In-Reply-To: <20080821070225.GA31894@aeris>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> > It would be useful to get distro input on this.  Do they override the
-> > kernel default at boot time?  If so, what do they do?
->
-> Red Hat provide a sysctl tuning config file and I believe things like the
-> Oracle install docs cover this.
->
-> There is btw no earthly reason why a postgres package can't include a
-> tool to do this or postgres can't check and update it as part of its
-> own set up and config file options
+On Thu, Aug 21, 2008 at 07:02:25AM +0000, Sascha Biberhofer wrote:
+> I have the same problem on my system, starting with the release of
+> 2.6.26. Shortly afterwards I've had the same problem with the 2.6.25
+> series starting with 2.6.25.12. I've looked up the changes between
+> 2.6.25.11 and .12 and found commit
+> c2bd04d8040a91fe2ee2e9fee1a6562ca9792249 (it's commit
+> 872ac8743cb400192a9fce4ba2d3ffd7bb309685 in the 2.6.26 series).
+> Reverting the commit seems to solve the problem here, I've been running
+> a 2.6.25.12 kernel without this commit for some weeks now.
+> In case it's important: I'm using an IPSec ESP transport with AES-256
+> and sha-256 auth. 
 
-I have explored this, it would be possible, but it would be a pain in the 
-neck.  You'd need to add an option to postgres to print out how much shared 
-memory you would need for a given configuration (because there are multiple 
-factors in this), run this across all postgres instances on the machine, sum 
-it up, then arrange for this to be fed back to sysctl or pasted back into 
-sysctl.conf, being careful not to override or lower an existing setting that 
-might have wanted to reserve space for other things.  Note that to make this 
-robust you would have to rerun this after every configuration change + 
-restart cycle across all postgres instances on the machine, race conditions 
-included.  And you'd probably violate a few packaging guidelines on the way.  
-Plus, this would have to be distro-specific (not Linux-specific, but 
-distro-specific), doesn't help managed hosting with no root access, and 
-doesn't help people building from source.  So altogether it is very 
-complicated.
+Sorry, I was skimping on memory and ended up calling a clobbered
+function pointer.
 
-In the meantime I am trying to explore why the shmmax default is what it is.  
-Or why it has to exist at all.  If we can figure that out, maybe we can solve 
-a lot of users a lot of trouble with much less effort (including Oracle 
-users, why not).
+This patch should fix it.
+
+crypto: authenc - Avoid using clobbered request pointer
+
+Authenc works in two stages for encryption, it first encrypts and
+then computes an ICV.  The context memory of the request is used
+by both operations.  The problem is that when an asynchronous
+encryption completes, we will compute the ICV and then reread the
+context memory of the encryption to get the original request.
+
+It just happens that we have a buffer of 16 bytes in front of the
+request pointer, so ICVs of 16 bytes (such as SHA1) do not trigger
+the bug.  However, any attempt to uses a larger ICV instantly kills
+the machine when the first asynchronous encryption is completed.
+
+This patch fixes this by saving the request pointer before we start
+the ICV computation.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/crypto/authenc.c b/crypto/authenc.c
+index 4b22676..fd9f06c 100644
+--- a/crypto/authenc.c
++++ b/crypto/authenc.c
+@@ -174,8 +174,9 @@ static int crypto_authenc_genicv(struct aead_request *req, u8 *iv,
+ static void crypto_authenc_encrypt_done(struct crypto_async_request *req,
+ 					int err)
+ {
++	struct aead_request *areq = req->data;
++
+ 	if (!err) {
+-		struct aead_request *areq = req->data;
+ 		struct crypto_aead *authenc = crypto_aead_reqtfm(areq);
+ 		struct crypto_authenc_ctx *ctx = crypto_aead_ctx(authenc);
+ 		struct ablkcipher_request *abreq = aead_request_ctx(areq);
+@@ -185,7 +186,7 @@ static void crypto_authenc_encrypt_done(struct crypto_async_request *req,
+ 		err = crypto_authenc_genicv(areq, iv, 0);
+ 	}
+ 
+-	aead_request_complete(req->data, err);
++	aead_request_complete(areq, err);
+ }
+ 
+ static int crypto_authenc_encrypt(struct aead_request *req)
+@@ -216,14 +217,15 @@ static int crypto_authenc_encrypt(struct aead_request *req)
+ static void crypto_authenc_givencrypt_done(struct crypto_async_request *req,
+ 					   int err)
+ {
++	struct aead_request *areq = req->data;
++
+ 	if (!err) {
+-		struct aead_request *areq = req->data;
+ 		struct skcipher_givcrypt_request *greq = aead_request_ctx(areq);
+ 
+ 		err = crypto_authenc_genicv(areq, greq->giv, 0);
+ 	}
+ 
+-	aead_request_complete(req->data, err);
++	aead_request_complete(areq, err);
+ }
+ 
+ static int crypto_authenc_givencrypt(struct aead_givcrypt_request *req)
