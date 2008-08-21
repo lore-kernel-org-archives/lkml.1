@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759416AbYHULow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759726AbYHULpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759416AbYHULow (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 07:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbYHULoo
+	id S1759726AbYHULpN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 07:45:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbYHULoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 07:44:44 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49151 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754273AbYHULon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 07:44:43 -0400
-Date: Thu, 21 Aug 2008 13:44:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
-       j_kernel@hoblitt.com
-Subject: Re: [Bug 11388] New: 2.6.27-rc3 warns about MTRR range; only 3 of
-	16gb of memory is usable
-Message-ID: <20080821114430.GC30667@elte.hu>
-References: <bug-11388-27@http.bugzilla.kernel.org/> <20080820180405.7f164450.akpm@linux-foundation.org> <86802c440808201820w6c684a10y2f1d0f70a344a14a@mail.gmail.com> <86802c440808201849k6665c395x5a5b871eca55addd@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440808201849k6665c395x5a5b871eca55addd@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 21 Aug 2008 07:44:55 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:53638 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759496AbYHULoy convert rfc822-to-8bit (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 07:44:54 -0400
+Subject: Re: [PATCH 10/10] AXFS: axfs_uncompress.c
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: jaredeh@gmail.com
+Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>, tim.bird@AM.SONY.COM,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+In-Reply-To: <48AD0126.1050609@gmail.com>
+References: <48AD0126.1050609@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 21 Aug 2008 14:40:38 +0300
+Message-Id: <1219318838.18027.68.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 21 Aug 2008 11:42:17.0926 (UTC) FILETIME=[F6DFBE60:01C90382]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-08-20 at 22:46 -0700, Jared Hulbert wrote:
+> +	err = zlib_inflateReset(&stream);
+> +	if (err != Z_OK) {
+> +		printk(KERN_ERR "zlib_inflateReset error %d\n", err);
+> +		zlib_inflateEnd(&stream);
+> +		zlib_inflateInit(&stream);
+> +	}
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+Jared,
 
-> [PATCH] x86_64: printout msr
+just FYI, are you aware that LZO which is also present in the kernel is
+much faster on decompress than zlib, while its compression is only
+slightly worse?
 
-looks rather useful - added it to tip/x86/debug.
+I do not remember the digits, but last time I tested UBIFS, LZO
+decompression was about 3 times faster than zlib on OMAP3. This depends
+on architecture, etc of course. This may matter a lot if one is fighting
+for faster system boot-up. So you might consider supporting LZO as well.
 
-	Ingo
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
