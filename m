@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbYHUFog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbYHUFpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754414AbYHUFog (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 01:44:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbYHUFoZ
+	id S1755422AbYHUFpA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 01:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbYHUFoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 01:44:25 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:25301 "EHLO
+	Thu, 21 Aug 2008 01:44:44 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:24080 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752732AbYHUFoY (ORCPT
+	with ESMTP id S1754800AbYHUFon (ORCPT
 	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 01:44:24 -0400
+	Thu, 21 Aug 2008 01:44:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:reply-to:user-agent:mime-version:to:subject
          :content-type:content-transfer-encoding;
-        b=c04uUvbgEbybhrqz2T3QyTxf1eDWJS8gM+UTQpzF4ygz54aiInZkhK8nO58JzR/8q5
-         d0pJvJY1aNH8YrFxlemIECxsyImkBYFeconC4p7mI8ED3eshMsjpytkVZ6A1zO+S4qTg
-         neojqk4kEGfZ07h5B+POO8eQ6raXqqEqB3jk0=
-Message-ID: <48AD00C4.6060302@gmail.com>
-Date: Wed, 20 Aug 2008 22:44:36 -0700
+        b=hpyvqA3Aij67c9TgWXG+VZApYJLT9VL6HMZFaysJMar6w/pin9kvyyIXr+EAVVIgYN
+         z1+WWJiudatK8HfDLQphpUwKtx7pApZg2sIYn/Q91TOfwsT7COTdBMIVdDLudaDbDR9e
+         Ff0Mn4ZLRXeIDvKaMKXHYqbvYePsyP0m4H8nQ=
+Message-ID: <48AD00D5.5010904@gmail.com>
+Date: Wed, 20 Aug 2008 22:44:53 -0700
 From: Jared Hulbert <jaredeh@gmail.com>
 Reply-To: jaredeh@gmail.com
 User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
@@ -27,39 +27,55 @@ To: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
        linux-mtd <linux-mtd@lists.infradead.org>,
        =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@AM.SONY.COM,
        cotte@de.ibm.com, nickpiggin@yahoo.com.au
-Subject: [PATCH 00/10] AXFS: Advanced XIP filesystem
+Subject: [PATCH 01/10] AXFS: exporting xip_file_fault() for use with AXFS
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'd like to get a first round of review on my AXFS filesystem.  This is a simple
-read only compressed filesystem like Squashfs and cramfs.  AXFS is special
-because it also allows for execute-in-place of your applications.  It is a major
-improvement over the cramfs XIP patches that have been floating around for ages.
-The biggest improvement is in the way AXFS allows for each page to be XIP or
-not.  First, a user collects information about which pages are accessed on a
-compressed image for each mmap()ed region from /proc/axfs/volume0.  That
-'profile' is used as an input to the image builder.  The resulting image has
-only the relevant pages uncompressed and XIP.  The result is smaller memory
-sizes and faster launches.
-                            
+We'll need this for AXFS.  The equivalent function in filemap.c is exported.
 
-See http://axfs.sourceforge.net for more info.
+Signed-off-by: Jared Hulbert <jaredeh@gmail.com>
+---
+ include/linux/mm.h |    4 ++++
+ mm/filemap_xip.c   |    3 ++-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
-
-fs/Kconfig                |   21 +
-fs/Makefile               |    1 
-fs/axfs/Makefile          |    7 
-fs/axfs/axfs_bdev.c       |  158 ++++++++
-fs/axfs/axfs_inode.c      |  490 ++++++++++++++++++++++++++
-fs/axfs/axfs_mtd.c        |  233 ++++++++++++
-fs/axfs/axfs_profiling.c  |  594 +++++++++++++++++++++++++++++++
-fs/axfs/axfs_super.c      |  866 ++++++++++++++++++++++++++++++++++++++++++++++
-fs/axfs/axfs_uml.c        |   47 ++
-fs/axfs/axfs_uncompress.c |   97 +++++
-include/linux/axfs.h      |  358 +++++++++++++++++++
-11 files changed, 2872 insertions(+)
-
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 72a15dc..2be5c22 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -161,6 +161,10 @@ struct vm_fault {
+ 					 */
+ };
+ 
++#ifdef CONFIG_FS_XIP
++extern int xip_file_fault(struct vm_area_struct *vma, struct vm_fault *vmf);
++#endif
++
+ /*
+  * These are the virtual MM functions - opening of an area, closing and
+  * unmapping it (needed to keep files on disk up-to-date etc), pointer
+diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
+index 380ab40..ab2f174 100644
+--- a/mm/filemap_xip.c
++++ b/mm/filemap_xip.c
+@@ -206,7 +206,7 @@ __xip_unmap (struct address_space * mapping,
+  *
+  * This function is derived from filemap_fault, but used for execute in place
+  */
+-static int xip_file_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
++int xip_file_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+ {
+ 	struct file *file = vma->vm_file;
+ 	struct address_space *mapping = file->f_mapping;
+@@ -262,6 +262,7 @@ found:
+ 		return 0;
+ 	}
+ }
++EXPORT_SYMBOL_GPL(xip_file_fault);
+ 
+ static struct vm_operations_struct xip_file_vm_ops = {
+ 	.fault	= xip_file_fault,
 
