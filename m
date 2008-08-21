@@ -1,211 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbYHUHY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbYHUH2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757325AbYHUHY3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 03:24:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753760AbYHUHYU
+	id S1757325AbYHUH2S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 03:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYHUH2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 03:24:20 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:22272 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752787AbYHUHYT convert rfc822-to-8bit (ORCPT
+	Thu, 21 Aug 2008 03:28:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54293 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751485AbYHUH2D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 03:24:19 -0400
-Message-Id: <48AD347E.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Thu, 21 Aug 2008 08:25:18 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Jeremy Fitzhardinge" <jeremy@goop.org>
-Cc: <xen-devel@lists.xensource.com>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1 of 4] xen: save previous spinlock when blocking
-References: <patchbomb.1219276937@localhost>
- <2d82a7e950670974ce47.1219276938@localhost>
-In-Reply-To: <2d82a7e950670974ce47.1219276938@localhost>
+	Thu, 21 Aug 2008 03:28:03 -0400
+Date: Thu, 21 Aug 2008 00:27:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, cl@linux-foundation.org,
+       tokunaga.keiich@jp.fujitsu.com
+Subject: Re: [RFC][PATCH 2/2] quicklist shouldn't be proportional to # of
+ CPUs
+Message-Id: <20080821002757.b7c807ad.akpm@linux-foundation.org>
+In-Reply-To: <20080821.001322.236658980.davem@davemloft.net>
+References: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080820200709.12F0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080820234615.258a9c04.akpm@linux-foundation.org>
+	<20080821.001322.236658980.davem@davemloft.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Jan Beulich <jbeulich@novell.com>
+On Thu, 21 Aug 2008 00:13:22 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
 
->>> Jeremy Fitzhardinge <jeremy@goop.org> 21.08.08 02:02 >>>
-A spinlock can be interrupted while spinning, so make sure we preserve
-the previous lock of interest if we're taking a lock from within an
-interrupt handler.
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Wed, 20 Aug 2008 23:46:15 -0700
+> 
+> > On Wed, 20 Aug 2008 20:08:13 +0900 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > 
+> > > +	num_cpus_per_node = cpus_weight_nr(node_to_cpumask(node));
+> > 
+> > sparc64 allmodconfig:
+> > 
+> > mm/quicklist.c: In function `max_pages':
+> > mm/quicklist.c:44: error: invalid lvalue in unary `&'
+> > 
+> > we seem to have a made a spectacular mess of cpumasks lately.
+> 
+> It should explode similarly on x86, since it also defines node_to_cpumask()
+> as an inline function.
+> 
+> IA64 seems to be one of the few platforms to define this as a macro
+> evaluating to the node-to-cpumask array entry, so it's clear what
+> platform Motohiro-san did build testing on :-)
 
-We also need to deal with the case where the blocking path gets
-interrupted between testing to see if the lock is free and actually
-blocking.  If we get interrupted there and end up in the state where
-the lock is free but the irq isn't pending, then we'll block
-indefinitely in the hypervisor.  This fix is to make sure that any
-nested lock-takers will always leave the irq pending if there's any
-chance the outer lock became free.
+Seems to compile OK on x86_32, x86_64, ia64 and powerpc for some reason.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/xen/spinlock.c |   65 ++++++++++++++++++++++++++++++++++++-----------
- drivers/xen/events.c    |   25 ++++++++++++++++++
- include/xen/events.h    |    2 +
- 3 files changed, 77 insertions(+), 15 deletions(-)
+This seems to fix things on sparc64:
 
-diff --git a/arch/x86/xen/spinlock.c b/arch/x86/xen/spinlock.c
---- a/arch/x86/xen/spinlock.c
-+++ b/arch/x86/xen/spinlock.c
-@@ -47,25 +47,41 @@
- static DEFINE_PER_CPU(int, lock_kicker_irq) = -1;
- static DEFINE_PER_CPU(struct xen_spinlock *, lock_spinners);
+--- a/mm/quicklist.c~mm-quicklist-shouldnt-be-proportional-to-number-of-cpus-fix
++++ a/mm/quicklist.c
+@@ -28,7 +28,7 @@ static unsigned long max_pages(unsigned 
+ 	unsigned long node_free_pages, max;
+ 	int node = numa_node_id();
+ 	struct zone *zones = NODE_DATA(node)->node_zones;
+-	int num_cpus_per_node;
++	cpumask_t node_cpumask;
  
--static inline void spinning_lock(struct xen_spinlock *xl)
-+/*
-+ * Mark a cpu as interested in a lock.  Returns the CPU's previous
-+ * lock of interest, in case we got preempted by an interrupt.
-+ */
-+static inline struct xen_spinlock *spinning_lock(struct xen_spinlock *xl)
- {
-+	struct xen_spinlock *prev;
-+
-+	prev = __get_cpu_var(lock_spinners);
- 	__get_cpu_var(lock_spinners) = xl;
-+
- 	wmb();			/* set lock of interest before count */
-+
- 	asm(LOCK_PREFIX " incw %0"
- 	    : "+m" (xl->spinners) : : "memory");
-+
-+	return prev;
+ 	node_free_pages =
+ #ifdef CONFIG_ZONE_DMA
+@@ -41,8 +41,8 @@ static unsigned long max_pages(unsigned 
+ 
+ 	max = node_free_pages / FRACTION_OF_NODE_MEM;
+ 
+-	num_cpus_per_node = cpus_weight_nr(node_to_cpumask(node));
+-	max /= num_cpus_per_node;
++	node_cpumask = node_to_cpumask(node);
++	max /= cpus_weight_nr(node_cpumask);
+ 
+ 	return max(max, min_pages);
  }
- 
--static inline void unspinning_lock(struct xen_spinlock *xl)
-+/*
-+ * Mark a cpu as no longer interested in a lock.  Restores previous
-+ * lock of interest (NULL for none).
-+ */
-+static inline void unspinning_lock(struct xen_spinlock *xl, struct xen_spinlock *prev)
- {
- 	asm(LOCK_PREFIX " decw %0"
- 	    : "+m" (xl->spinners) : : "memory");
--	wmb();			/* decrement count before clearing lock */
--	__get_cpu_var(lock_spinners) = NULL;
-+	wmb();			/* decrement count before restoring lock */
-+	__get_cpu_var(lock_spinners) = prev;
- }
- 
- static noinline int xen_spin_lock_slow(struct raw_spinlock *lock)
- {
- 	struct xen_spinlock *xl = (struct xen_spinlock *)lock;
-+	struct xen_spinlock *prev;
- 	int irq = __get_cpu_var(lock_kicker_irq);
- 	int ret;
- 
-@@ -74,23 +90,42 @@
- 		return 0;
- 
- 	/* announce we're spinning */
--	spinning_lock(xl);
-+	prev = spinning_lock(xl);
- 
--	/* clear pending */
--	xen_clear_irq_pending(irq);
-+	do {
-+		/* clear pending */
-+		xen_clear_irq_pending(irq);
- 
--	/* check again make sure it didn't become free while
--	   we weren't looking  */
--	ret = xen_spin_trylock(lock);
--	if (ret)
--		goto out;
-+		/* check again make sure it didn't become free while
-+		   we weren't looking  */
-+		ret = xen_spin_trylock(lock);
-+		if (ret) {
-+			/*
-+			 * If we interrupted another spinlock while it
-+			 * was blocking, make sure it doesn't block
-+			 * without rechecking the lock.
-+			 */
-+			if (prev != NULL)
-+				xen_set_irq_pending(irq);
-+			goto out;
-+		}
- 
--	/* block until irq becomes pending */
--	xen_poll_irq(irq);
-+		/*
-+		 * Block until irq becomes pending.  If we're
-+		 * interrupted at this point (after the trylock but
-+		 * before entering the block), then the nested lock
-+		 * handler guarantees that the irq will be left
-+		 * pending if there's any chance the lock became free;
-+		 * xen_poll_irq() returns immediately if the irq is
-+		 * pending.
-+		 */
-+		xen_poll_irq(irq);
-+	} while (!xen_test_irq_pending(irq)); /* check for spurious wakeups */
-+
- 	kstat_irqs_this_cpu(irq_to_desc(irq))++;
- 
- out:
--	unspinning_lock(xl);
-+	unspinning_lock(xl, prev);
- 	return ret;
- }
- 
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -166,6 +166,12 @@
- {
- 	struct shared_info *s = HYPERVISOR_shared_info;
- 	sync_set_bit(port, &s->evtchn_pending[0]);
-+}
-+
-+static inline int test_evtchn(int port)
-+{
-+	struct shared_info *s = HYPERVISOR_shared_info;
-+	return sync_test_bit(port, &s->evtchn_pending[0]);
- }
- 
- 
-@@ -736,6 +742,25 @@
- 		clear_evtchn(evtchn);
- }
- 
-+void xen_set_irq_pending(int irq)
-+{
-+	int evtchn = evtchn_from_irq(irq);
-+
-+	if (VALID_EVTCHN(evtchn))
-+		set_evtchn(evtchn);
-+}
-+
-+bool xen_test_irq_pending(int irq)
-+{
-+	int evtchn = evtchn_from_irq(irq);
-+	bool ret = false;
-+
-+	if (VALID_EVTCHN(evtchn))
-+		ret = test_evtchn(evtchn);
-+
-+	return ret;
-+}
-+
- /* Poll waiting for an irq to become pending.  In the usual case, the
-    irq will be disabled so it won't deliver an interrupt. */
- void xen_poll_irq(int irq)
-diff --git a/include/xen/events.h b/include/xen/events.h
---- a/include/xen/events.h
-+++ b/include/xen/events.h
-@@ -46,6 +46,8 @@
- 
- /* Clear an irq's pending state, in preparation for polling on it */
- void xen_clear_irq_pending(int irq);
-+void xen_set_irq_pending(int irq);
-+bool xen_test_irq_pending(int irq);
- 
- /* Poll waiting for an irq to become pending.  In the usual case, the
-    irq will be disabled so it won't deliver an interrupt. */
-
+_
 
