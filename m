@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759409AbYHUQ0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbYHUQba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759409AbYHUQ0f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 12:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759301AbYHUQ0G
+	id S1755795AbYHUQba (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 12:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYHUQbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 12:26:06 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:22835 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753486AbYHUQ0D convert rfc822-to-8bit (ORCPT
+	Thu, 21 Aug 2008 12:31:22 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:30617 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751618AbYHUQbV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 12:26:03 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>
-Date: Thu, 21 Aug 2008 16:25:24 +0000
-Subject: RE: in 2.6.23-rc3-git7 in do_cciss_intr
-Thread-Topic: in 2.6.23-rc3-git7 in do_cciss_intr
-Thread-Index: AckDqQhHCkK2XzDFTfO9KofuGSrSTQAASAGQ
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net>
-References: <48AD02B2.7020004@oracle.com>
-	<0F5B06BAB751E047AB5C87D1F77A778835116209D3@GVW0547EXC.americas.hpqcorp.net>
-	<20080821084333.c471b439.randy.dunlap@oracle.com>
-	<0F5B06BAB751E047AB5C87D1F77A7788351181004C@GVW0547EXC.americas.hpqcorp.net>
- <20080821091514.8f56e2d5.randy.dunlap@oracle.com>
-In-Reply-To: <20080821091514.8f56e2d5.randy.dunlap@oracle.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 21 Aug 2008 12:31:21 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: char/tpm: tpm_infineon no longer loaded for HP 2510p laptop
+Date: Thu, 21 Aug 2008 10:31:15 -0600
+User-Agent: KMail/1.9.9
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, Marcel Selhorst <tpm@selhorst.net>,
+       Thomas Renninger <trenn@suse.de>, Adam Belay <ambx1@neo.rr.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
+References: <200808181540.25286.elendil@planet.nl> <200808210914.27516.bjorn.helgaas@hp.com> <1219333105.20723.45.camel@lgn.site>
+In-Reply-To: <1219333105.20723.45.camel@lgn.site>
 MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808211031.16248.bjorn.helgaas@hp.com>
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >
-> > Randy,
-> > We know of a race condition in cciss_init_one. It's fixed
-> in 2.6.26 I believe. Here's the patch:
-> >
-> >
-> http://groups.google.com/group/linux.kernel/browse_thread/thread/7b39f
-> > 2b77622ab03/4f5f45c008655ca1?hl=en&lnk=gst&q=cciss#4f5f45c008655ca1
->
->
-> Mike,
-> Sorry, but my fingers have typoed the $subject.  My bad.
-> Kernel is 2.6.27-rc3-git7 (from above):
->
-> > > > > Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
-> > > > > Pid: 0, comm: swapper Not tainted 2.6.27-rc3-git7 #1
-> > > > > RIP: 0010:[<ffffffffa001bb68>]  [<ffffffffa001bb68>]
-> > > > > do_cciss_intr+0x627/0xa6c [cciss]
->
-Hmmmmm, let me know what happens from your retest. I'll look at this as soon as I finish what I'm doing now. We trying to spin for our test teams but I have something hopelessly broken. :(
+On Thursday 21 August 2008 09:38:25 am Kay Sievers wrote:
+> On Thu, 2008-08-21 at 09:14 -0600, Bjorn Helgaas wrote:
+> > Can somebody elaborate on why we need to add "acpi*" aliases for all
+> > PNP devices?  That broadens the kernel/user interface, so I'd like
+> > to understand why we need it.
 
--- mikem
+Sorry, I should have prefaced my question with "I'm completely ignorant
+of this modalias stuff."  Is there a "complete idiot's guide to modules
+and udev"?  There's precious little in Documentation/ other than a bunch
+of sample rules for various subsystems.
+
+> We already do ACPI module autoloading by MODALIAS for other things than
+> pnp. ACPI exports the pnp devices with modalias, but the modules do not
+> have a matching alias, this add them.
+
+I'm guessing this has something to do with acpi_device_uevent().
+
+> PNP has no MODALIAS support at all, and the current pnp-aliases would
+> not work for the standard modalias method, they would need to change
+> their format.
+
+pnp_bus_type has no .uevent method.  What if I added one?  Would that
+help this situation?
+
+It seems wrong for file2alias.c to take every PNP device (even if it's
+an ISAPNP or PNPBIOS device) and add "acpi*" aliases for it.
+
+> The plan is to replace the current pnp modprobe shell script hack in
+> udev, when ACPI devices load the right modules without any special
+> userspace mangling.
+
+Is this the shell hack you mean (from etc/udev/rules.d/80-drivers.rules
+in udev-117)?
+
+  SUBSYSTEM=="pnp", DRIVER!="?*", ENV{MODALIAS}!="?*", \
+    RUN{ignore_error}+="/bin/sh -c '/sbin/modprobe -a $$(while read id; do echo pnp:d$$id; done < /sys$devpath/id)'"
+
+I agree that's gross.  Could I fix this by implementing pnp_device_uevent()?
+
+Bjorn
