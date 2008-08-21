@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760727AbYHURjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760858AbYHURj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760727AbYHURjT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 13:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760609AbYHURik
+	id S1760858AbYHURj7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 13:39:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbYHURj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 13:38:40 -0400
-Received: from mx1.suse.de ([195.135.220.2]:47911 "EHLO mx1.suse.de"
+	Thu, 21 Aug 2008 13:39:28 -0400
+Received: from ns.suse.de ([195.135.220.2]:48003 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760608AbYHURij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 13:38:39 -0400
+	id S1760732AbYHURj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 13:39:26 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 08/15] driver core: add init_name to struct device
-Date: Thu, 21 Aug 2008 10:32:56 -0700
-Message-Id: <1219339983-9634-8-git-send-email-gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 10/15] block: fix partial read() of /proc/{partitions,diskstats}
+Date: Thu, 21 Aug 2008 10:32:58 -0700
+Message-Id: <1219339983-9634-10-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <20080821173036.GB7974@suse.de>
 References: <20080821173036.GB7974@suse.de>
@@ -22,75 +22,67 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This gives us a way to handle both the bus_id and init_name values being
-used for a while during the transition period.
+From: Kay Sievers <kay.sievers@vrfy.org>
 
-Cc: Kay Sievers <kay.sievers@vrfy.org>
+The proc files get truncated if they do not fit into the buffer with
+a single read(). We need to move the seq_file index from the callback
+of class_find_device() to the caller of class_find_device(), to keep
+its value across multiple invocations of the callback.
+
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/core.c    |   20 +++++++++++++-------
- include/linux/device.h |    1 +
- 2 files changed, 14 insertions(+), 7 deletions(-)
+ block/genhd.c |   14 ++++++++------
+ 1 files changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 4004131..d021c98 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -844,13 +844,19 @@ int device_add(struct device *dev)
+diff --git a/block/genhd.c b/block/genhd.c
+index c13cc77..f34befc 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -293,25 +293,26 @@ void __init printk_all_partitions(void)
+ /* iterator */
+ static int find_start(struct device *dev, void *data)
  {
- 	struct device *parent = NULL;
- 	struct class_interface *class_intf;
--	int error;
-+	int error = -EINVAL;
+-	loff_t k = *(loff_t *)data;
++	loff_t *k = data;
  
- 	dev = get_device(dev);
--	if (!dev || !strlen(dev->bus_id)) {
--		error = -EINVAL;
--		goto Done;
--	}
-+	if (!dev)
-+		goto done;
-+
-+	/* Temporarily support init_name if it is set.
-+	 * It will override bus_id for now */
-+	if (dev->init_name)
-+		dev_set_name(dev, "%s", dev->init_name);
-+
-+	if (!strlen(dev->bus_id))
-+		goto done;
- 
- 	pr_debug("device: '%s': %s\n", dev->bus_id, __func__);
- 
-@@ -919,7 +925,7 @@ int device_add(struct device *dev)
- 				class_intf->add_dev(dev, class_intf);
- 		mutex_unlock(&dev->class->p->class_mutex);
- 	}
-- Done:
-+done:
- 	put_device(dev);
- 	return error;
-  DPMError:
-@@ -946,7 +952,7 @@ int device_add(struct device *dev)
- 	cleanup_device_parent(dev);
- 	if (parent)
- 		put_device(parent);
--	goto Done;
-+	goto done;
+ 	if (dev->type != &disk_type)
+ 		return 0;
+-	if (!k--)
++	if (!*k)
+ 		return 1;
++	(*k)--;
+ 	return 0;
  }
  
- /**
-diff --git a/include/linux/device.h b/include/linux/device.h
-index a701c1b..4d8372d 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -358,6 +358,7 @@ struct device {
+ static void *part_start(struct seq_file *part, loff_t *pos)
+ {
+ 	struct device *dev;
+-	loff_t n = *pos;
++	loff_t k = *pos;
  
- 	struct kobject kobj;
- 	char	bus_id[BUS_ID_SIZE];	/* position on parent bus */
-+	const char		*init_name; /* initial name of the device */
- 	struct device_type	*type;
- 	unsigned		uevent_suppress:1;
+-	if (!n)
++	if (!k)
+ 		seq_puts(part, "major minor  #blocks  name\n\n");
  
+ 	mutex_lock(&block_class_lock);
+-	dev = class_find_device(&block_class, NULL, (void *)pos, find_start);
++	dev = class_find_device(&block_class, NULL, &k, find_start);
+ 	if (dev)
+ 		return dev_to_disk(dev);
+ 	return NULL;
+@@ -568,9 +569,10 @@ static struct device_type disk_type = {
+ static void *diskstats_start(struct seq_file *part, loff_t *pos)
+ {
+ 	struct device *dev;
++	loff_t k = *pos;
+ 
+ 	mutex_lock(&block_class_lock);
+-	dev = class_find_device(&block_class, NULL, (void *)pos, find_start);
++	dev = class_find_device(&block_class, NULL, &k, find_start);
+ 	if (dev)
+ 		return dev_to_disk(dev);
+ 	return NULL;
 -- 
 1.5.6.5
 
