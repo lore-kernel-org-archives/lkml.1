@@ -1,87 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760826AbYHUPUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760536AbYHUPVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760826AbYHUPUq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 11:20:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753808AbYHUPUf
+	id S1760536AbYHUPVt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 11:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755862AbYHUPVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 11:20:35 -0400
-Received: from rrcs-70-62-214-221.central.biz.rr.com ([70.62.214.221]:44284
-	"EHLO tophat.atxconsulting.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757589AbYHUPUe (ORCPT
+	Thu, 21 Aug 2008 11:21:40 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:59018 "EHLO
+	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753808AbYHUPVj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 11:20:34 -0400
-Date: Thu, 21 Aug 2008 11:20:27 -0400
-From: Timothy J Fontaine <tjfontaine@atxconsulting.com>
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: r8169 MTU greater than 1500 causes corruption for other
-	controllers
-Message-ID: <20080821152025.GA29610@tophat.atxconsulting.com>
-References: <20080820170951.GA1771@tophat.atxconsulting.com> <Pine.LNX.4.64.0808202053510.24321@wrl-59.cs.helsinki.fi> <20080820214350.GA18747@electric-eye.fr.zoreil.com>
+	Thu, 21 Aug 2008 11:21:39 -0400
+X-BigFish: VPS-42(zz1432R98dR936eQ1805M936fQ9371P10d1I873fnzz10d3izzz32i6bh43j64h)
+X-Spam-TCS-SCL: 3:0
+X-FB-SS: 5,
+X-WSS-ID: 0K5YINE-04-2JV-01
+Date: Thu, 21 Aug 2008 17:20:57 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: mingo@elte.hu, jbarnes@virtuousgeek.org, mingo@redhat.com,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, muli@il.ibm.com
+Subject: Re: [PATCH 0/8] x86 dma_*_coherent rework patchset v2
+Message-ID: <20080821152056.GC3189@amd.com>
+References: <20080820094612.GA28492@elte.hu> <200808201039.56887.jbarnes@virtuousgeek.org> <20080821120011.GD5615@elte.hu> <20080821231720S.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="IS0zKkzwUGydFO0o"
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20080820214350.GA18747@electric-eye.fr.zoreil.com>
-X-PGP-Key: http://atxconsulting.com/tjfontaine.atxconsulting.asc
-X-PGP-Key-Fingerprint: 7937 DFD2 AB06 298B 2293  C318 7D33 FF9D 0246 406D
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080821231720S.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 21 Aug 2008 15:20:57.0149 (UTC) FILETIME=[828A4ED0:01C903A1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Aug 21, 2008 at 11:16:50PM +0900, FUJITA Tomonori wrote:
+> On Thu, 21 Aug 2008 14:00:11 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> > 
+> > > On Wednesday, August 20, 2008 2:46 am Ingo Molnar wrote:
+> > > > * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > > > > Hi,
+> > > > >
+> > > > > this patchset reworks the dma_*_coherent functions in the DMA layer
+> > > > > for the x86 architecture. The patch series extends the existing DMA
+> > > > > backends with missing *coherent callbacks and simplifies the generic
+> > > > > function to basically only call the registered backend. This allows
+> > > > > future optimizations in hardware specific IOMMU implementations. The
+> > > > > code ist tested on AMD64 with AMD IOMMU, GART, SWIOTLB and NOMMU as
+> > > > > well as on my old 486 box. Muli tested the Calgary specific patch.
+> > > > >
+> > > > > Joerg
+> > > > >
+> > > > > Changes since v1:
+> > > > >
+> > > > > - fixed wrong logic in the pci-nommu alloc_coherent code
+> > > > > - moved dma_*_coherent to include/asm-x86/dma-mapping.h
+> > > > >
+> > > > > git diff --stat tip/master.. :
+> > > > >
+> > > > >  arch/x86/kernel/amd_iommu.c      |    2 -
+> > > > >  arch/x86/kernel/pci-calgary_64.c |   14 ++++
+> > > > >  arch/x86/kernel/pci-dma.c        |  146
+> > > > > +------------------------------------- arch/x86/kernel/pci-gart_64.c    |
+> > > > >   35 +++++++++-
+> > > > >  arch/x86/kernel/pci-nommu.c      |   62 ++++++++++++++++
+> > > > >  include/asm-x86/dma-mapping.h    |   47 ++++++++++---
+> > > > >  6 files changed, 149 insertions(+), 157 deletions(-)
+> > > >
+> > > > applied to tip/x86/iommu - thanks Joerg!
+> > > >
+> > > > Jesse, Fujita-san, do these changes look fine to you?
+> > > 
+> > > Yeah, I'll let you push this time. :)
+> > > 
+> > > Signed-off-by:  Jesse Barnes <jbarnes@virtuousgeek.org>
+> > 
+> > with a v2.6.28 ETA, right?
+> 
+> Surely, this patchset should be for 2.6.28.
+> 
+> Can you send this via the x86 tree instead of pci?
+> 
+> - IOMMU code is arch stuff rather than pci.
+> - We can avoid a mistake such as the previous one.
 
---IS0zKkzwUGydFO0o
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, this is definitly 2.6.28 stuff.
 
-On Wed, Aug 20, 2008 at 11:43:50PM +0200, Francois Romieu wrote:
-> Ilpo J=E4rvinen <ilpo.jarvinen@helsinki.fi> :
-> [...]
-> > Hmm, there was no explanation why the tp->rx_buf_sz to pkt_size change
-> > was made in that commit (I have no idea whether those sizes have to mat=
-ch=20
-> > to other places that use tp->rx_buf_sz)...
->=20
-> Because there is no need to sync data that has not been used ?
->=20
-> Timothy, could you check if the patch below does the job too ? It should
-> fix at least one pci_map / pci_unmap unbalance.
->=20
-> @@ -2789,10 +2789,10 @@ static int rtl8169_rx_interrupt(struct net_device=
- *dev,
-> =20
->  			if (rtl8169_try_rx_copy(&skb, tp, pkt_size, addr)) {
->  				pci_dma_sync_single_for_device(pdev, addr,
->  					pkt_size, PCI_DMA_FROMDEVICE);
->  				rtl8169_mark_to_asic(desc, tp->rx_buf_sz);
->  			} else {
-> -				pci_unmap_single(pdev, addr, pkt_size,
-> +				pci_unmap_single(pdev, addr, tp->rx_buf_sz,
->  						 PCI_DMA_FROMDEVICE);
->  				tp->Rx_skbuff[entry] =3D NULL;
->  			}
->=20
-> --=20
-> Ueimor
+Joerg
 
-Yup, this patch also works.
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
-tjfontaine
-
---IS0zKkzwUGydFO0o
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkith7cACgkQfTP/nQJGQG368gCfThk2/AYxy4eokxL2waGMVdOh
-V28AnRo7+OavSHWbK6ZzK6TIT0ujABkK
-=laHS
------END PGP SIGNATURE-----
-
---IS0zKkzwUGydFO0o--
