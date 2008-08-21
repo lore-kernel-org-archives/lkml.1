@@ -1,373 +1,295 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760728AbYHUSVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760405AbYHUSWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760728AbYHUSVd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 14:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYHUSVZ
+	id S1760405AbYHUSWq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 14:22:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYHUSWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 14:21:25 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:54313 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754031AbYHUSVX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 14:21:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=KdFCvSsCr+o7oqb6a3M1ZJDbmZ6+BosSdwTpJbtJgvqh0ETL/fHr5WbW2Tumd4JjwS
-         6yCNIPd8QvNro+qvYvb293RPtjV1vcXSisoVJqIZbyaVJaLg7O27cOgPU3/ejGip20i2
-         fw1sSpFXpfkMK1SeIC5Cmj4Qo3xZHKLUdIekg=
-Message-ID: <19f34abd0808211121l25e6b187p93db789607c2af30@mail.gmail.com>
-Date: Thu, 21 Aug 2008 20:21:21 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: latest -git: suspend: unable to handle kernel paging request (was Re: no_console_suspend doesn't work?)
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200808212010.06043.rjw@sisk.pl>
+	Thu, 21 Aug 2008 14:22:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39239 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754002AbYHUSWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 14:22:35 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Greaves <david@dgreaves.com>
+Subject: Re: Regression? 2.6.27-rc3 segfault on cold boot; not on warm boot.
+Date: Thu, 21 Aug 2008 20:26:16 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, linux-fsdevel@vger.kernel.org,
+       Dave Chinner <david@fromorbit.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <48AD3921.5090709@dgreaves.com>
+In-Reply-To: <48AD3921.5090709@dgreaves.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <19f34abd0808211028w7889587fke523ff244339e7c5@mail.gmail.com>
-	 <200808212010.06043.rjw@sisk.pl>
+Message-Id: <200808212026.17590.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 8:10 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday, 21 of August 2008, Vegard Nossum wrote:
->> On Thu, Aug 21, 2008 at 6:49 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
->> > But I think it would be a lot more useful to see _everything_. Why
->> > doesn't output to ttyS0 work? It works with tty0... I have tried
->> > various combinations (leaving out console=tty0, leaving out
->> > earlyprintk, using netconsole, kexec crashdump), but nothing seems to
->> > be able to help. Do you have any suggestions?
->>
->> I did it!
->>
->> With a little debug patch, I got the oops to ttyS0,
->
-> What exactly did you do to achieve that?
+[Adding CCs]
 
-Actually, it was not my patch that did it. I appended acpi=off to the
-command line. I get similar oopses now, but they make it to the ttyS0.
-Don't ask me why this makes a difference.
+[The issue is probably present in 2.6.26 too]
 
->> I actually have one theory: Data arrives on the serial port at the
->> wrong moment, so interrupt happens before everything is
->> restored/resumed. You can see the interrupt in the stack trace. Does
->> this seem possible?
->
-> To me, it does, but the question is if that's not caused by the serial console
-> itself ...
-
-I got a "proper" oops this time (brace yourself, it's long ;-)), and
-it does not have serial on the stack:
-
-BUG: unable to handle kernel paging request at 00100104
-IP: [<c038ad65>] __list_add+0x15/0x90
-*pdpt = 00000000325bb001 *pde = 0000000000000000
-Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-Pid: 3597, comm: bash Not tainted (2.6.27-rc4-00003-ga798564-dirty #30)
-EIP: 0060:[<c038ad65>] EFLAGS: 00210082 CPU: 0
-EIP is at __list_add+0x15/0x90
-EAX: f7455764 EBX: 00100100 ECX: 00100100 EDX: f7455764
-ESI: f7455764 EDI: f7455764 EBP: f25e7c18 ESP: f25e7bf4
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process bash (pid: 3597, ti=f25e6000 task=f25aa700 task.ti=f25e6000)
-Stack: f68120bc f6c00400 c0687133 00000000 00000002 00000000 f7455734 f7455764
-       f7455764 f25e7c40 c018b954 0000001f 00000000 f6c00400 f6c00444 00000001
-       f68120bc f68120b0 00200002 f25e7cb4 c018d317 f68120bc 00000000 f25aac0c
-Call Trace:
- [<c0687133>] ? _spin_lock+0x63/0x70
- [<c018b954>] ? rmqueue_bulk+0x54/0x80
- [<c018d317>] ? get_page_from_freelist+0x5a7/0x720
- [<c01600ea>] ? __lock_acquire+0x27a/0xa00
- [<c018dd50>] ? __alloc_pages_internal+0xa0/0x450
- [<c01acd4b>] ? alloc_pages_current+0x7b/0xc0
- [<c01b37fb>] ? new_slab+0x1bb/0x2d0
- [<c0687877>] ? _spin_unlock+0x27/0x50
- [<c01b40ca>] ? __slab_alloc+0x32a/0x4e0
- [<c010b335>] ? native_sched_clock+0xb5/0x110
- [<c01b4424>] ? kmem_cache_alloc+0xb4/0xe0
- [<c018969e>] ? mempool_alloc_slab+0xe/0x10
- [<c018969e>] ? mempool_alloc_slab+0xe/0x10
- [<c018969e>] ? mempool_alloc_slab+0xe/0x10
- [<c01897a1>] ? mempool_alloc+0x31/0xf0
- [<c015e884>] ? trace_hardirqs_on_caller+0xd4/0x160
- [<c015e91b>] ? trace_hardirqs_on+0xb/0x10
- [<c0368c7e>] ? get_request+0xae/0x2c0
- [<c036935c>] ? get_request_wait+0x1c/0xd0
- [<c0687462>] ? _spin_lock_irq+0x72/0x80
- [<c0369442>] ? blk_get_request+0x32/0x70
- [<c0471c1c>] ? generic_ide_resume+0x5c/0xf0
- [<c03f8bde>] ? device_resume+0x32e/0x380
- [<c0168791>] ? hibernation_snapshot+0xa1/0x220
- [<c013b55b>] ? printk+0x1b/0x20
- [<c01689f0>] ? hibernate+0xe0/0x180
- [<c01674a0>] ? state_store+0x0/0xd0
- [<c016755f>] ? state_store+0xbf/0xd0
- [<c01674a0>] ? state_store+0x0/0xd0
- [<c0375ef4>] ? kobj_attr_store+0x24/0x30
- [<c01fa432>] ? sysfs_write_file+0xa2/0x100
- [<c01bbf06>] ? vfs_write+0x96/0x130
- [<c01fa390>] ? sysfs_write_file+0x0/0x100
- [<c01bc44d>] ? sys_write+0x3d/0x70
- [<c0104f3b>] ? sysenter_do_call+0x12/0x3f
- =======================
-Code: c0 e8 d0 f7 da ff 8b 13 eb 97 8d b6 00 00 00 00 8d bf 00 00 00
-00 55 89 e5 83 ec 24 89 5d f4 89 cb 89 75 f8 89 d6 89 7d fc 89 c7 <8b>
-41 04 39 d0 75 1d 8b 06 39 d8 75 41 89 7b 04 89 1f 8b 5d f4
-EIP: [<c038ad65>] __list_add+0x15/0x90 SS:ESP 0068:f25e7bf4
----[ end trace e3ed674f2f20c5d3 ]---
-note: bash[3597] exited with preempt_count 2
-Eeek! page_mapcount(page) went negative! (-1)
-  page pfn = 3e74f
-  page->flags = 210007c
-  page->count = 1
-  page->mapping = f6439028
-  vma->vm_ops = generic_file_vm_ops+0x0/0x20
-  vma->vm_ops->fault = filemap_fault+0x0/0x480
-  vma->vm_file->f_op->mmap = generic_file_mmap+0x0/0x50
-------------[ cut here ]------------
-kernel BUG at /uio/arkimedes/s29/vegardno/git-working/linux-2.6/mm/rmap.c:662!
-invalid opcode: 0000 [#2] PREEMPT SMP DEBUG_PAGEALLOC
-Pid: 3597, comm: bash Tainted: G      D   (2.6.27-rc4-00003-ga798564-dirty #30)
-EIP: 0060:[<c01a0f39>] EFLAGS: 00210286 CPU: 0
-EIP is at page_remove_rmap+0x109/0x120
-EAX: 0000003b EBX: f7aa5684 ECX: f25e6000 EDX: 00000005
-ESI: f25b94c8 EDI: 3e74f025 EBP: f25e7990 ESP: f25e7980
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-Process bash (pid: 3597, ti=f25e6000 task=f25aa700 task.ti=f25e6000)
-Stack: c077ed7c f6439028 00000000 00000025 f25e7a38 c0198721 3e74f025 00000000
-       f25e79c0 c015c5ea 00000025 00000000 325a3067 00000000 00000000 f25b94c8
-       f25e7a50 00000000 00000000 3e74f025 00000000 00007000 0097a000 00000000
-Call Trace:
- [<c0198721>] ? unmap_vmas+0x4b1/0x8b0
- [<c015c5ea>] ? print_lock_contention_bug+0x1a/0xe0
- [<c019d504>] ? exit_mmap+0x84/0x120
- [<c0138538>] ? mmput+0x48/0xa0
- [<c013c3d7>] ? exit_mm+0xe7/0x110
- [<c013d7a4>] ? do_exit+0x184/0x890
- [<c013b55b>] ? printk+0x1b/0x20
- [<c013a50a>] ? print_oops_end_marker+0x2a/0x30
- [<c01060f1>] ? oops_end+0xb1/0xc0
- [<c01067c0>] ? die+0x50/0x70
- [<c0122b4f>] ? do_page_fault+0x1ef/0xa20
- [<c010b335>] ? native_sched_clock+0xb5/0x110
- [<c01600ea>] ? __lock_acquire+0x27a/0xa00
- [<c0122960>] ? do_page_fault+0x0/0xa20
- [<c0687d3a>] ? error_code+0x72/0x78
- [<c038ad65>] ? __list_add+0x15/0x90
- [<c0687133>] ? _spin_lock+0x63/0x70
- [<c018b954>] ? rmqueue_bulk+0x54/0x80
- [<c018d317>] ? get_page_from_freelist+0x5a7/0x720
- [<c01600ea>] ? __lock_acquire+0x27a/0xa00
- [<c018dd50>] ? __alloc_pages_internal+0xa0/0x450
- [<c01acd4b>] ? alloc_pages_current+0x7b/0xc0
- [<c01b37fb>] ? new_slab+0x1bb/0x2d0
- [<c0687877>] ? _spin_unlock+0x27/0x50
- [<c01b40ca>] ? __slab_alloc+0x32a/0x4e0
- [<c010b335>] ? native_sched_clock+0xb5/0x110
- [<c01b4424>] ? kmem_cache_alloc+0xb4/0xe0
- [<c018969e>] ? mempool_alloc_slab+0xe/0x10
- [<c018969e>] ? mempool_alloc_slab+0xe/0x10
- [<c018969e>] ? mempool_alloc_slab+0xe/0x10
- [<c01897a1>] ? mempool_alloc+0x31/0xf0
- [<c015e884>] ? trace_hardirqs_on_caller+0xd4/0x160
- [<c015e91b>] ? trace_hardirqs_on+0xb/0x10
- [<c0368c7e>] ? get_request+0xae/0x2c0
- [<c036935c>] ? get_request_wait+0x1c/0xd0
- [<c0687462>] ? _spin_lock_irq+0x72/0x80
- [<c0369442>] ? blk_get_request+0x32/0x70
- [<c0471c1c>] ? generic_ide_resume+0x5c/0xf0
- [<c03f8bde>] ? device_resume+0x32e/0x380
- [<c0168791>] ? hibernation_snapshot+0xa1/0x220
- [<c013b55b>] ? printk+0x1b/0x20
- [<c01689f0>] ? hibernate+0xe0/0x180
- [<c01674a0>] ? state_store+0x0/0xd0
- [<c016755f>] ? state_store+0xbf/0xd0
- [<c01674a0>] ? state_store+0x0/0xd0
- [<c0375ef4>] ? kobj_attr_store+0x24/0x30
- [<c01fa432>] ? sysfs_write_file+0xa2/0x100
- [<c01bbf06>] ? vfs_write+0x96/0x130
- [<c01fa390>] ? sysfs_write_file+0x0/0x100
- [<c01bc44d>] ? sys_write+0x3d/0x70
- [<c0104f3b>] ? sysenter_do_call+0x12/0x3f
- =======================
-Code: c0 74 0d 8b 50 08 b8 ac ed 77 c0 e8 82 60 fc ff 8b 46 4c 85 c0
-74 14 8b 40 10 85 c0 74 0d 8b 50 2c b8 d8 d1 77 c0 e8 67 60 fc ff <0f>
-0b eb fe 8b 53 0c eb 95 8d b4 26 00 00 00 00 8d bc 27 00 00
-EIP: [<c01a0f39>] page_remove_rmap+0x109/0x120 SS:ESP 0068:f25e7980
----[ end trace e3ed674f2f20c5d3 ]---
-Fixing recursive fault but reboot is needed!
-=============================================================================
-BUG blkdev_ioc: Invalid object pointer 0xf5cdaca8
------------------------------------------------------------------------------
-INFO: Slab 0xf789e318 objects=14 used=14 fp=0x00000000 flags=0x2082083
-Pid: 3597, comm: bash Tainted: G      D   2.6.27-rc4-00003-ga798564-dirty #30
- [<c01b2576>] slab_err+0x46/0x50
- [<c01b2766>] ? check_slab+0xd6/0xf0
- [<c0181aef>] ? call_rcu+0x6f/0x80
- [<c015e91b>] ? trace_hardirqs_on+0xb/0x10
- [<c01b3c78>] __slab_free+0x238/0x360
- [<c01b4749>] kmem_cache_free+0xa9/0x120
- [<c036b773>] ? put_io_context+0x53/0x70
- [<c036b773>] ? put_io_context+0x53/0x70
- [<c036b773>] put_io_context+0x53/0x70
- [<c036b82e>] exit_io_context+0x6e/0x80
- [<c013de6e>] do_exit+0x84e/0x890
- [<c037b794>] ? trace_hardirqs_on_thunk+0xc/0x10
- [<c013b55b>] ? printk+0x1b/0x20
- [<c013a50a>] ? print_oops_end_marker+0x2a/0x30
- [<c01060f1>] oops_end+0xb1/0xc0
- [<c01067c0>] die+0x50/0x70
- [<c0106871>] do_trap+0x91/0xc0
- [<c0106940>] ? do_invalid_op+0x0/0xa0
- [<c01069c8>] do_invalid_op+0x88/0xa0
- [<c01a0f39>] ? page_remove_rmap+0x109/0x120
- [<c013b2d1>] ? vprintk+0x151/0x3c0
- [<c013b45b>] ? vprintk+0x2db/0x3c0
- [<c015c5ea>] ? print_lock_contention_bug+0x1a/0xe0
- [<c015c5ea>] ? print_lock_contention_bug+0x1a/0xe0
- [<c0687d3a>] error_code+0x72/0x78
- [<c013007b>] ? sched_rt_period_timer+0x21b/0x270
- [<c01a0f39>] ? page_remove_rmap+0x109/0x120
- [<c0198721>] unmap_vmas+0x4b1/0x8b0
- [<c015c5ea>] ? print_lock_contention_bug+0x1a/0xe0
- [<c019d504>] exit_mmap+0x84/0x120
- [<c0138538>] mmput+0x48/0xa0
- [<c013c3d7>] exit_mm+0xe7/0x110
- [<c013d7a4>] do_exit+0x184/0x890
- [<c013b55b>] ? printk+0x1b/0x20
- [<c013a50a>] ? print_oops_end_marker+0x2a/0x30
- [<c01060f1>] oops_end+0xb1/0xc0
- [<c01067c0>] die+0x50/0x70
- [<c0122b4f>] do_page_fault+0x1ef/0xa20
- [<c010b335>] ? native_sched_clock+0xb5/0x110
- [<c01600ea>] ? __lock_acquire+0x27a/0xa00
- [<c0122960>] ? do_page_fault+0x0/0xa20
- [<c0687d3a>] error_code+0x72/0x78
- [<c038ad65>] ? __list_add+0x15/0x90
- [<c0687133>] ? _spin_lock+0x63/0x70
- [<c018b954>] rmqueue_bulk+0x54/0x80
- [<c018d317>] get_page_from_freelist+0x5a7/0x720
- [<c01600ea>] ? __lock_acquire+0x27a/0xa00
- [<c018dd50>] __alloc_pages_internal+0xa0/0x450
- [<c01acd4b>] alloc_pages_current+0x7b/0xc0
- [<c01b37fb>] new_slab+0x1bb/0x2d0
- [<c0687877>] ? _spin_unlock+0x27/0x50
- [<c01b40ca>] __slab_alloc+0x32a/0x4e0
- [<c010b335>] ? native_sched_clock+0xb5/0x110
- [<c01b4424>] kmem_cache_alloc+0xb4/0xe0
- [<c018969e>] ? mempool_alloc_slab+0xe/0x10
- [<c018969e>] ? mempool_alloc_slab+0xe/0x10
- [<c018969e>] mempool_alloc_slab+0xe/0x10
- [<c01897a1>] mempool_alloc+0x31/0xf0
- [<c015e884>] ? trace_hardirqs_on_caller+0xd4/0x160
- [<c015e91b>] ? trace_hardirqs_on+0xb/0x10
- [<c0368c7e>] get_request+0xae/0x2c0
- [<c036935c>] get_request_wait+0x1c/0xd0
- [<c0687462>] ? _spin_lock_irq+0x72/0x80
- [<c0369442>] blk_get_request+0x32/0x70
- [<c0471c1c>] generic_ide_resume+0x5c/0xf0
- [<c03f8bde>] device_resume+0x32e/0x380
- [<c0168791>] hibernation_snapshot+0xa1/0x220
- [<c013b55b>] ? printk+0x1b/0x20
- [<c01689f0>] hibernate+0xe0/0x180
- [<c01674a0>] ? state_store+0x0/0xd0
- [<c016755f>] state_store+0xbf/0xd0
- [<c01674a0>] ? state_store+0x0/0xd0
- [<c0375ef4>] kobj_attr_store+0x24/0x30
- [<c01fa432>] sysfs_write_file+0xa2/0x100
- [<c01bbf06>] vfs_write+0x96/0x130
- [<c01fa390>] ? sysfs_write_file+0x0/0x100
- [<c01bc44d>] sys_write+0x3d/0x70
- [<c0104f3b>] sysenter_do_call+0x12/0x3f
- =======================
-FIX blkdev_ioc: Object at 0xf5cdaca8 not freed
-BUG: scheduling while atomic: bash/3597/0x00000006
-INFO: lockdep is turned off.
-Pid: 3597, comm: bash Tainted: G      D   2.6.27-rc4-00003-ga798564-dirty #30
- [<c0135467>] __schedule_bug+0x77/0x80
- [<c0684ce2>] schedule+0x852/0x8f0
- [<c010509e>] ? restore_nocheck_notrace+0x0/0xe
- [<c01b4779>] ? kmem_cache_free+0xd9/0x120
- [<c036b773>] ? put_io_context+0x53/0x70
- [<c036b773>] ? put_io_context+0x53/0x70
- [<c013de81>] do_exit+0x861/0x890
- [<c037b794>] ? trace_hardirqs_on_thunk+0xc/0x10
- [<c013b55b>] ? printk+0x1b/0x20
- [<c013a50a>] ? print_oops_end_marker+0x2a/0x30
- [<c01060f1>] oops_end+0xb1/0xc0
- [<c01067c0>] die+0x50/0x70
- [<c0106871>] do_trap+0x91/0xc0
- [<c0106940>] ? do_invalid_op+0x0/0xa0
- [<c01069c8>] do_invalid_op+0x88/0xa0
- [<c01a0f39>] ? page_remove_rmap+0x109/0x120
- [<c013b2d1>] ? vprintk+0x151/0x3c0
- [<c013b45b>] ? vprintk+0x2db/0x3c0
- [<c015c5ea>] ? print_lock_contention_bug+0x1a/0xe0
- [<c015c5ea>] ? print_lock_contention_bug+0x1a/0xe0
- [<c0687d3a>] error_code+0x72/0x78
- [<c013007b>] ? sched_rt_period_timer+0x21b/0x270
- [<c01a0f39>] ? page_remove_rmap+0x109/0x120
- [<c0198721>] unmap_vmas+0x4b1/0x8b0
- [<c015c5ea>] ? print_lock_contention_bug+0x1a/0xe0
- [<c019d504>] exit_mmap+0x84/0x120
- [<c0138538>] mmput+0x48/0xa0
- [<c013c3d7>] exit_mm+0xe7/0x110
- [<c013d7a4>] do_exit+0x184/0x890
- [<c013b55b>] ? printk+0x1b/0x20
- [<c013a50a>] ? print_oops_end_marker+0x2a/0x30
- [<c01060f1>] oops_end+0xb1/0xc0
- [<c01067c0>] die+0x50/0x70
- [<c0122b4f>] do_page_fault+0x1ef/0xa20
- [<c010b335>] ? native_sched_clock+0xb5/0x110
- [<c01600ea>] ? __lock_acquire+0x27a/0xa00
- [<c0122960>] ? do_page_fault+0x0/0xa20
- [<c0687d3a>] error_code+0x72/0x78
- [<c038ad65>] ? __list_add+0x15/0x90
- [<c0687133>] ? _spin_lock+0x63/0x70
- [<c018b954>] rmqueue_bulk+0x54/0x80
- [<c018d317>] get_page_from_freelist+0x5a7/0x720
- [<c01600ea>] ? __lock_acquire+0x27a/0xa00
- [<c018dd50>] __alloc_pages_internal+0xa0/0x450
- [<c01acd4b>] alloc_pages_current+0x7b/0xc0
- [<c01b37fb>] new_slab+0x1bb/0x2d0
- [<c0687877>] ? _spin_unlock+0x27/0x50
- [<c01b40ca>] __slab_alloc+0x32a/0x4e0
- [<c010b335>] ? native_sched_clock+0xb5/0x110
- [<c01b4424>] kmem_cache_alloc+0xb4/0xe0
- [<c018969e>] ? mempool_alloc_slab+0xe/0x10
- [<c018969e>] ? mempool_alloc_slab+0xe/0x10
- [<c018969e>] mempool_alloc_slab+0xe/0x10
- [<c01897a1>] mempool_alloc+0x31/0xf0
- [<c015e884>] ? trace_hardirqs_on_caller+0xd4/0x160
- [<c015e91b>] ? trace_hardirqs_on+0xb/0x10
- [<c0368c7e>] get_request+0xae/0x2c0
- [<c036935c>] get_request_wait+0x1c/0xd0
- [<c0687462>] ? _spin_lock_irq+0x72/0x80
- [<c0369442>] blk_get_request+0x32/0x70
- [<c0471c1c>] generic_ide_resume+0x5c/0xf0
- [<c03f8bde>] device_resume+0x32e/0x380
- [<c0168791>] hibernation_snapshot+0xa1/0x220
- [<c013b55b>] ? printk+0x1b/0x20
- [<c01689f0>] hibernate+0xe0/0x180
- [<c01674a0>] ? state_store+0x0/0xd0
- [<c016755f>] state_store+0xbf/0xd0
- [<c01674a0>] ? state_store+0x0/0xd0
- [<c0375ef4>] kobj_attr_store+0x24/0x30
- [<c01fa432>] sysfs_write_file+0xa2/0x100
-
-I can look up addresses in the vmlinux for accurate line numbers if needed.
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+On Thursday, 21 of August 2008, David Greaves wrote:
+> I have a desktop system that has started having problems booting up in the morning.
+> 
+> It appears to just happen on more recent kernels.
+> I was having unrelated CDROM problems with a driver in an old kernel and decided
+> to test 2.6.27-rcX
+> The CDROM problem is fine now.
+> 
+> However I started having problems on -rc1. I found that the machine was hanging
+> soon after booting and needed a reboot. After a reboot it would work fine for
+> the rest of the day.
+> When -rc3 came out I tried that and the problem still appears to be there.
+> 
+> The normal process is now to boot to single-user, ctrl-alt-sysreq-SUB and then
+> reboot to multi-user. This isn't ideal.
+> 
+> 
+> If I cold boot 2.6.25.3 the problem doesn't occur.
+> I will try different versions over the next few days.
+> 
+> Sample log from a few days back. (2.6.27-rc1 I think)
+> 
+> The problem does cause filesystem crashes so I'm cautious about messing around
+> unguided.
+> 
+> Happy to try any suggestions.
+> 
+> David
+> PS I've run memtest and it's fine.
+> 
+> 
+> Aug 12 09:49:10 (none) syslogd 1.5.0#5: restart.
+> Aug 12 09:49:10 (none) kernel: klogd 1.5.0#5, log source = /proc/kmsg started.
+> Aug 12 09:49:10 (none) kernel: ddr 00:04:e2:cd:ac:db
+> Aug 12 09:49:10 (none) kernel: via-rhine.c:v1.10-LK1.4.3 2007-03-06 Written by
+> Donald Becker
+> Aug 12 09:49:10 (none) kernel: via-rhine 0000:00:12.0: PCI INT A -> GSI 23
+> (level, low) -> IRQ 23
+> Aug 12 09:49:10 (none) kernel: eth1: VIA Rhine II at 0xdd000000,
+> 00:11:2f:cd:d0:b6, IRQ 23.
+> Aug 12 09:49:10 (none) kernel: eth1: MII PHY found at address 1, status 0x7849
+> advertising 01e1 Link 0000.
+> Aug 12 09:49:10 (none) kernel: netconsole: local port 6665
+> Aug 12 09:49:10 (none) kernel: netconsole: local IP 10.0.0.74
+> Aug 12 09:49:10 (none) kernel: netconsole: interface eth0
+> Aug 12 09:49:10 (none) kernel: netconsole: remote port 6666
+> Aug 12 09:49:10 (none) kernel: netconsole: remote IP 10.0.0.7
+> Aug 12 09:49:10 (none) kernel: netconsole: remote ethernet address 00:13:20:55:b6:60
+> Aug 12 09:49:10 (none) kernel: netconsole: device eth0 not up yet, forcing it
+> Aug 12 09:49:10 (none) kernel: skge eth0: enabling interface
+> Aug 12 09:49:10 (none) kernel: skge eth0: Link is up at 1000 Mbps, full duplex,
+> flow control both
+> Aug 12 09:49:10 (none) kernel: console [netcon0] enabled
+> Aug 12 09:49:10 (none) kernel: netconsole: network logging started
+> Aug 12 09:49:10 (none) kernel: Driver 'sd' needs updating - please use bus_type
+> methods
+> Aug 12 09:49:10 (none) kernel: Driver 'sr' needs updating - please use bus_type
+> methods
+> Aug 12 09:49:10 (none) kernel: sata_sil 0000:00:0a.0: version 2.3
+> Aug 12 09:49:10 (none) kernel: sata_sil 0000:00:0a.0: PCI INT A -> GSI 16
+> (level, low) -> IRQ 16
+> Aug 12 09:49:10 (none) kernel: scsi0 : sata_sil
+> Aug 12 09:49:10 (none) kernel: scsi1 : sata_sil
+> Aug 12 09:49:10 (none) kernel: ata1: SATA max UDMA/100 mmio m512@0xde800000 tf
+> 0xde800080 irq 16
+> Aug 12 09:49:10 (none) kernel: ata2: SATA max UDMA/100 mmio m512@0xde800000 tf
+> 0xde8000c0 irq 16
+> Aug 12 09:49:10 (none) kernel: ata1: SATA link up 1.5 Gbps (SStatus 113 SControl
+> 310)
+> Aug 12 09:49:10 (none) kernel: ata1.00: ATA-7: ST3320620AS, 3.AAJ, max UDMA/133
+> Aug 12 09:49:10 (none) kernel: ata1.00: 625142448 sectors, multi 0: LBA48 NCQ
+> (depth 0/32)
+> Aug 12 09:49:10 (none) kernel: ata1.00: configured for UDMA/100
+> Aug 12 09:49:10 (none) kernel: ata2: SATA link up 1.5 Gbps (SStatus 113 SControl
+> 310)
+> Aug 12 09:49:10 (none) kernel: ata2.00: ATA-7: ST3320620AS, 3.AAE, max UDMA/133
+> Aug 12 09:49:10 (none) kernel: ata2.00: 625142448 sectors, multi 0: LBA48 NCQ
+> (depth 0/32)
+> Aug 12 09:49:10 (none) kernel: ata2.00: configured for UDMA/100
+> Aug 12 09:49:10 (none) kernel: scsi 0:0:0:0: Direct-Access     ATA
+> ST3320620AS      3.AA PQ: 0 ANSI: 5
+> Aug 12 09:49:10 (none) kernel: sd 0:0:0:0: [sda] 625142448 512-byte hardware
+> sectors (320073 MB)
+> Aug 12 09:49:10 (none) kernel: sd 0:0:0:0: [sda] Write Protect is off
+> Aug 12 09:49:10 (none) kernel: sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> Aug 12 09:49:10 (none) kernel: sd 0:0:0:0: [sda] Write cache: enabled, read
+> cache: enabled, doesn't support DPO or FUA
+> Aug 12 09:49:10 (none) kernel: sd 0:0:0:0: [sda] 625142448 512-byte hardware
+> sectors (320073 MB)
+> Aug 12 09:49:10 (none) kernel: sd 0:0:0:0: [sda] Write Protect is off
+> Aug 12 09:49:10 (none) kernel: sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> Aug 12 09:49:10 (none) kernel: sd 0:0:0:0: [sda] Write cache: enabled, read
+> cache: enabled, doesn't support DPO or FUA
+> Aug 12 09:49:10 (none) kernel:  sda: sda1
+> Aug 12 09:49:10 (none) kernel: sd 0:0:0:0: [sda] Attached SCSI disk
+> Aug 12 09:49:10 (none) kernel: sd 0:0:0:0: Attached scsi generic sg0 type 0
+> Aug 12 09:49:10 (none) kernel: scsi 1:0:0:0: Direct-Access     ATA
+> ST3320620AS      3.AA PQ: 0 ANSI: 5
+> Aug 12 09:49:10 (none) kernel: sd 1:0:0:0: [sdb] 625142448 512-byte hardware
+> sectors (320073 MB)
+> Aug 12 09:49:10 (none) kernel: sd 1:0:0:0: [sdb] Write Protect is off
+> Aug 12 09:49:10 (none) kernel: sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+> Aug 12 09:49:10 (none) kernel: sd 0:0:0:0: [sda] Write cache: enabled, read
+> cache: enabled, doesn't support DPO or FUA
+> Aug 12 09:49:10 (none) kernel:  sda: sda1
+> Aug 12 09:49:10 (none) kernel: sd 0:0:0:0: [sda] Attached SCSI disk
+> Aug 12 09:49:10 (none) kernel: sd 0:0:0:0: Attached scsi generic sg0 type 0
+> Aug 12 09:49:10 (none) kernel: scsi 1:0:0:0: Direct-Access     ATA
+> ST3320620AS      3.AA PQ: 0 ANSI: 5
+> Aug 12 09:49:10 (none) kernel: sd 1:0:0:0: [sdb] 625142448 512-byte hardware
+> sectors (320073 MB)
+> Aug 12 09:49:10 (none) kernel: sd 1:0:0:0: [sdb] Write Protect is off
+> Aug 12 09:49:10 (none) kernel: sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+> Aug 12 09:49:10 (none) kernel: sd 1:0:0:0: [sdb] Write cache: enabled, read
+> cache: enabled, doesn't support DPO or FUA
+> Aug 12 09:49:10 (none) kernel: sd 1:0:0:0: [sdb] 625142448 512-byte hardware
+> sectors (320073 MB)
+> Aug 12 09:49:10 (none) kernel: sd 1:0:0:0: [sdb] Write Protect is off
+> Aug 12 09:49:10 (none) kernel: sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+> Aug 12 09:49:10 (none) kernel: sd 1:0:0:0: [sdb] Write cache: enabled, read
+> cache: enabled, doesn't support DPO or FUA
+> Aug 12 09:49:10 (none) kernel:  sdb: sdb1 sdb2
+> Aug 12 09:49:10 (none) kernel: sd 1:0:0:0: [sdb] Attached SCSI disk
+> Aug 12 09:49:10 (none) kernel: sd 1:0:0:0: Attached scsi generic sg1 type 0
+> Aug 12 09:49:10 (none) kernel: sata_via 0000:00:0f.0: version 2.3
+> Aug 12 09:49:10 (none) kernel: sata_via 0000:00:0f.0: PCI INT B -> GSI 20
+> (level, low) -> IRQ 20
+> Aug 12 09:49:10 (none) kernel: sata_via 0000:00:0f.0: routed to hard irq line 0
+> Aug 12 09:49:10 (none) kernel: scsi2 : sata_via
+> Aug 12 09:49:10 (none) kernel: scsi3 : sata_via
+> Aug 12 09:49:10 (none) kernel: ata3: SATA max UDMA/133 cmd 0x9800 ctl 0x9400
+> bmdma 0x8400 irq 20
+> Aug 12 09:49:10 (none) kernel: ata4: SATA max UDMA/133 cmd 0x9000 ctl 0x8800
+> bmdma 0x8408 irq 20
+> Aug 12 09:49:10 (none) kernel: ata3: SATA link up 1.5 Gbps (SStatus 113 SControl
+> 300)
+> Aug 12 09:49:10 (none) kernel: ata3.00: ATA-7: Maxtor 6L300S0, BANC1E00, max
+> UDMA/133
+> Aug 12 09:49:10 (none) kernel: ata3.00: 586114704 sectors, multi 16: LBA48 NCQ
+> (not used)
+> Aug 12 09:49:10 (none) kernel: ata3.00: configured for UDMA/133
+> Aug 12 09:49:10 (none) kernel: ata4: SATA link up 1.5 Gbps (SStatus 113 SControl
+> 300)
+> Aug 12 09:49:10 (none) kernel: ata4.00: ATA-7: ST3320620AS, 3.AAC, max UDMA/133
+> Aug 12 09:49:10 (none) kernel: ata4.00: 625134827 sectors, multi 16: LBA48 NCQ
+> (depth 0/32)
+> Aug 12 09:49:10 (none) kernel: ata4.00: configured for UDMA/133
+> Aug 12 09:49:10 (none) kernel: scsi 2:0:0:0: Direct-Access     ATA      Maxtor
+> 6L300S0   BANC PQ: 0 ANSI: 5
+> Aug 12 09:49:10 (none) kernel: sd 2:0:0:0: [sdc] 586114704 512-byte hardware
+> sectors (300091 MB)
+> Aug 12 09:49:10 (none) kernel: sd 2:0:0:0: [sdc] Write Protect is off
+> Aug 12 09:49:10 (none) kernel: sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+> Aug 12 09:49:10 (none) kernel: sd 2:0:0:0: [sdc] Write cache: enabled, read
+> cache: enabled, doesn't support DPO or FUA
+> Aug 12 09:49:10 (none) kernel: sd 2:0:0:0: [sdc] 586114704 512-byte hardware
+> sectors (300091 MB)
+> Aug 12 09:49:10 (none) kernel: sd 2:0:0:0: [sdc] Write Protect is off
+> Aug 12 09:49:10 (none) kernel: sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+> Aug 12 09:49:10 (none) kernel: sd 2:0:0:0: [sdc] Write cache: enabled, read
+> cache: enabled, doesn't support DPO or FUA
+> Aug 12 09:49:10 (none) kernel:  sdc: sdc1 sdc2
+> Aug 12 09:49:10 (none) kernel: sd 2:0:0:0: [sdc] Attached SCSI disk
+> Aug 12 09:49:10 (none) kernel: sd 2:0:0:0: Attached scsi generic sg2 type 0
+> Aug 12 09:49:10 (none) kernel: scsi 3:0:0:0: Direct-Access     ATA
+> ST3320620AS      3.AA PQ: 0 ANSI: 5
+> Aug 12 09:49:10 (none) kernel: sd 3:0:0:0: [sdd] 625134827 512-byte hardware
+> sectors (320069 MB)
+> Aug 12 09:49:10 (none) kernel: sd 3:0:0:0: [sdd] Write Protect is off
+> Aug 12 09:49:10 (none) kernel: sd 3:0:0:0: [sdd] Mode Sense: 00 3a 00 00
+> Aug 12 09:49:10 (none) kernel: sd 3:0:0:0: [sdd] Write cache: enabled, read
+> cache: enabled, doesn't support DPO or FUA
+> Aug 12 09:49:10 (none) kernel: sd 3:0:0:0: [sdd] 625134827 512-byte hardware
+> sectors (320069 MB)
+> Aug 12 09:49:10 (none) kernel: sd 3:0:0:0: [sdd] Write Protect is off
+> Aug 12 09:49:10 (none) kernel: sd 3:0:0:0: [sdd] Mode Sense: 00 3a 00 00
+> Aug 12 09:49:10 (none) kernel: sd 3:0:0:0: [sdd] Write cache: enabled, read
+> cache: enabled, doesn't support DPO or FUA
+> Aug 12 09:49:10 (none) kernel:  sdd: sdd1 sdd2 sdd3
+> Aug 12 09:49:10 (none) kernel: sd 3:0:0:0: [sdd] Attached SCSI disk
+> Aug 12 09:49:10 (none) kernel: sd 3:0:0:0: Attached scsi generic sg3 type 0
+> Aug 12 09:49:10 (none) kernel: PNP: PS/2 Controller [PNP0303:PS2K,PNP0f03:PS2M]
+> at 0x60,0x64 irq 1,12
+> Aug 12 09:49:10 (none) kernel: serio: i8042 KBD port at 0x60,0x64 irq 1
+> Aug 12 09:49:10 (none) kernel: serio: i8042 AUX port at 0x60,0x64 irq 12
+> Aug 12 09:49:10 (none) kernel: mice: PS/2 mouse device common for all mice
+> Aug 12 09:49:10 (none) kernel: input: AT Translated Set 2 keyboard as
+> /class/input/input2
+> Aug 12 09:49:10 (none) kernel: md: raid1 personality registered for level 1
+> Aug 12 09:49:10 (none) kernel: raid6: int32x1    925 MB/s
+> Aug 12 09:49:10 (none) kernel: raid6: int32x2    972 MB/s
+> Aug 12 09:49:10 (none) kernel: raid6: int32x4    789 MB/s
+> Aug 12 09:49:10 (none) kernel: raid6: int32x8    636 MB/s
+> Aug 12 09:49:10 (none) kernel: raid6: mmxx1     1753 MB/s
+> Aug 12 09:49:10 (none) kernel: raid6: mmxx2     3128 MB/s
+> Aug 12 09:49:10 (none) kernel: raid6: sse1x1    1644 MB/s
+> Aug 12 09:49:10 (none) kernel: raid6: sse1x2    2781 MB/s
+> Aug 12 09:49:10 (none) kernel: raid6: using algorithm sse1x2 (2781 MB/s)
+> Aug 12 09:49:10 (none) kernel: md: raid6 personality registered for level 6
+> Aug 12 09:49:10 (none) kernel: md: raid5 personality registered for level 5
+> Aug 12 09:49:10 (none) kernel: md: raid4 personality registered for level 4
+> Aug 12 09:49:10 (none) kernel: TCP cubic registered
+> Aug 12 09:49:10 (none) kernel: Using IPI Shortcut mode
+> Aug 12 09:49:10 (none) kernel: PM: Resume from partition /dev/sdd3
+> Aug 12 09:49:10 (none) kernel: PM: Checking hibernation image.
+> Aug 12 09:49:10 (none) kernel: PM: Resume from disk failed.
+> Aug 12 09:49:10 (none) kernel: input: ImExPS/2 Generic Explorer Mouse as
+> /class/input/input3
+> Aug 12 09:49:10 (none) kernel: md: Autodetecting RAID arrays.
+> Aug 12 09:49:10 (none) kernel: md: Scanned 2 and added 2 devices.
+> Aug 12 09:49:10 (none) kernel: md: autorun ...
+> Aug 12 09:49:10 (none) kernel: md: considering sdc2 ...
+> Aug 12 09:49:10 (none) kernel: md:  adding sdc2 ...
+> Aug 12 09:49:10 (none) kernel: md:  adding sdb2 ...
+> Aug 12 09:49:10 (none) kernel: md: created md0
+> Aug 12 09:49:10 (none) kernel: md: bind<sdb2>
+> Aug 12 09:49:10 (none) kernel: md: bind<sdc2>
+> Aug 12 09:49:10 (none) kernel: md: running: <sdc2><sdb2>
+> Aug 12 09:49:10 (none) kernel: raid1: raid set md0 active with 2 out of 2 mirrors
+> Aug 12 09:49:10 (none) kernel: md: ... autorun DONE.
+> Aug 12 09:49:10 (none) kernel: Filesystem "md0": Disabling barriers, not
+> supported by the underlying device
+> Aug 12 09:49:10 (none) kernel: XFS mounting filesystem md0
+> Aug 12 09:49:10 (none) kernel: Ending clean XFS mount for filesystem: md0
+> Aug 12 09:49:10 (none) kernel: VFS: Mounted root (xfs filesystem) readonly.
+> Aug 12 09:49:10 (none) kernel: Freeing unused kernel memory: 248k freed
+> Aug 12 09:49:10 (none) kernel: uname[892]: segfault at ffffffbf ip ffffffbf sp
+> bfb4b09c error 4
+> Aug 12 09:49:10 (none) kernel: cat[894]: segfault at ffffffbf ip ffffffbf sp
+> bfb121ec error 4
+> Aug 12 09:49:10 (none) kernel: uname[898]: segfault at ffffffbf ip ffffffbf sp
+> bfccc22c error 4
+> Aug 12 09:49:10 (none) kernel: uname[903]: segfault at ffffffbf ip ffffffbf sp
+> bfb8a0ec error 4
+> Aug 12 09:49:10 (none) kernel: uname[910]: segfault at ffffffbf ip ffffffbf sp
+> bfd7f2ec error 4
+> Aug 12 09:49:10 (none) kernel: uname[922]: segfault at ffffffbf ip ffffffbf sp
+> bffbe51c error 4
+> Aug 12 09:49:10 (none) kernel: uname[923]: segfault at ffffffbf ip ffffffbf sp
+> bf8dae3c error 4
+> Aug 12 09:49:10 (none) kernel: uname[1004]: segfault at ffffffbf ip ffffffbf sp
+> bff2dc8c error 4
+> Aug 12 09:49:10 (none) kernel: uname[1005]: segfault at ffffffbf ip ffffffbf sp
+> bfd86adc error 4
+> Aug 12 09:49:10 (none) kernel: Adding 2048276k swap on /dev/sdd3.  Priority:-1
+> extents:1 across:2048276k
+> Aug 12 09:49:10 (none) kernel: Filesystem "md0": Disabling barriers, not
+> supported by the underlying device
+> Aug 12 09:49:10 (none) kernel: uname[1032]: segfault at ffffffbf ip ffffffbf sp
+> bffd453c error 4
+> Aug 12 09:49:10 (none) kernel: device-mapper: ioctl: 4.14.0-ioctl (2008-04-23)
+> initialised: dm-devel@redhat.com
+> Aug 12 09:49:10 (none) kernel: Filesystem "md0": XFS internal error
+> xfs_btree_check_sblock at line 334 of file fs/xfs/xfs_btree.c.  Caller 0xc01f51fa
+> Aug 12 09:49:10 (none) kernel: Pid: 1113, comm: sh Not tainted 2.6.27-rc1 #10
+> Aug 12 09:49:10 (none) kernel:  [<c01efe64>] ? xfs_cmn_err+0x34/0x60
+> Aug 12 09:49:10 (none) kernel:  [<c01efede>] xfs_error_report+0x4e/0x50
+> Aug 12 09:49:10 (none) kernel:  [<c01f51fa>] ? xfs_inobt_lookup+0xfa/0x3a0
+> Aug 12 09:49:10 (none) kernel:  [<c01e29c6>] xfs_btree_check_sblock+0x56/0xd0
