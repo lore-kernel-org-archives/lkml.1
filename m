@@ -1,99 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759441AbYHULdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbYHULgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759441AbYHULdx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 07:33:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbYHULdp
+	id S1759329AbYHULgw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 07:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757701AbYHULgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 07:33:45 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:33029 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750828AbYHULdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 07:33:44 -0400
-Date: Thu, 21 Aug 2008 12:33:39 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Adam Litke <agl@us.ibm.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm <linux-mm@kvack.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
+	Thu, 21 Aug 2008 07:36:43 -0400
+Received: from mondschein.lichtvoll.de ([194.150.191.11]:52420 "EHLO
+	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757673AbYHULgm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 07:36:42 -0400
+X-Greylist: delayed 2038 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Aug 2008 07:36:41 EDT
+From: Martin Steigerwald <Martin@lichtvoll.de>
+To: Szabolcs Szakacsits <szaka@ntfs-3g.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       nacc <nacc@linux.vnet.ibm.com>, apw <apw@shadowen.org>,
-       agl <agl@linux.vnet.ibm.com>
-Subject: Re: [BUG] [PATCH v2] Make setup_zone_migrate_reserve() aware of overlapping nodes
-Message-ID: <20080821113338.GA29950@csn.ul.ie>
-References: <1218837685.12953.11.camel@localhost.localdomain> <1219252134.13885.25.camel@localhost.localdomain> <1219255911.8960.41.camel@nimitz> <1219262152.13885.27.camel@localhost.localdomain>
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: XFS vs Elevators (was Re: [PATCH RFC] nilfs2: continuous snapshotting file system)
+Date: Thu, 21 Aug 2008 13:02:50 +0200
+User-Agent: KMail/1.9.9
+References: <20080820004326.519405a2.akpm@linux-foundation.org> <20080821060418.GC5706@disturbed> <20080821082532.GE5706@disturbed> (sfid-20080821_113328_880260_8C88CA66)
+In-Reply-To: <20080821082532.GE5706@disturbed>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1219262152.13885.27.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200808211302.51633.Martin@lichtvoll.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (20/08/08 14:55), Adam Litke didst pronounce:
->     Changes since V1
->      - Fix build for !NUMA
->      - Add VM_BUG_ON() to catch this problem at the source
->     
->     I have gotten to the root cause of the hugetlb badness I reported back on
->     August 15th.  My system has the following memory topology (note the
->     overlapping node):
->     
->             Node 0 Memory: 0x8000000-0x44000000
->             Node 1 Memory: 0x0-0x8000000 0x44000000-0x80000000
->     
->     setup_zone_migrate_reserve() scans the address range 0x0-0x8000000 looking
->     for a pageblock to move onto the MIGRATE_RESERVE list.  Finding no
->     candidates, it happily continues the scan into 0x8000000-0x44000000.  When
->     a pageblock is found, the pages are moved to the MIGRATE_RESERVE list on
->     the wrong zone.  Oops.
->     
->     (Andrew: once the proper fix is agreed upon, this should also be a
->     candidate for -stable.)
->     
->     setup_zone_migrate_reserve() should skip pageblocks in overlapping nodes.
->     
->     Signed-off-by: Adam Litke <agl@us.ibm.com>
-> 
+Am Donnerstag 21 August 2008 schrieb Dave Chinner:
+> On Thu, Aug 21, 2008 at 04:04:18PM +1000, Dave Chinner wrote:
+> > On Thu, Aug 21, 2008 at 03:15:08PM +1000, Dave Chinner wrote:
+> > > On Thu, Aug 21, 2008 at 05:46:00AM +0300, Szabolcs Szakacsits wrote:
+> > > > On Thu, 21 Aug 2008, Dave Chinner wrote:
+> > > > Everything is default.
+> > > >
+> > > >   % rpm -qf =mkfs.xfs
+> > > >   xfsprogs-2.9.8-7.1
+> > > >
+> > > > which, according to ftp://oss.sgi.com/projects/xfs/cmd_tars, is
+> > > > the latest stable mkfs.xfs. Its output is
+> > > >
+> > > > meta-data=/dev/sda8              isize=256    agcount=4,
+> > > > agsize=1221440 blks =                       sectsz=512   attr=2
+> > > > data     =                       bsize=4096   blocks=4885760,
+> > > > imaxpct=25 =                       sunit=0      swidth=0 blks
+> > > > naming   =version 2              bsize=4096
+> > > > log      =internal log           bsize=4096   blocks=2560,
+> > > > version=2 =                       sectsz=512   sunit=0 blks,
+> > > > lazy-count=0 realtime =none                   extsz=4096  
+> > > > blocks=0, rtextents=0
+> > >
+> > > Ok, I thought it might be the tiny log, but it didn't improve
+> > > anything here when increased the log size, or the log buffer size.
+> >
+> > One thing I just found out - my old *laptop* is 4-5x faster than the
+> > 10krpm scsi disk behind an old cciss raid controller.  I'm wondering
+> > if the long delays in dispatch is caused by an interaction with CTQ
+> > but I can't change it on the cciss raid controllers. Are you using
+> > ctq/ncq on your machine?  If so, can you reduce the depth to
+> > something less than 4 and see what difference that makes?
+>
+> Just to point out - this is not a new problem - I can reproduce
+> it on 2.6.24 as well as 2.6.26. Likewise, my laptop shows XFS
+> being faster than ext3 on both 2.6.24 and 2.6.26. So the difference
+> is something related to the disk subsystem on the server....
 
-zone_to_nid(zone) is called every time in the loop even though it will never
-change. This is less than optimal but setup_zone_migrate_reserve() is only
-called during init and when min_free_kbytes is adjusted so it's not worth
-worrying about. Otherwise it looks good.
+Interesting. I switched from cfq to deadline some time ago, due to abysmal 
+XFS performance on parallel IO - aptitude upgrade and doing desktop 
+stuff. Just my subjective perception, but I have seen it crawl, even 
+stall for 5-10 seconds easily at times. I found deadline to be way faster 
+initially, but then it rarely happened that IO for desktop tasks is 
+basically stalled for even longer, say 15 seconds or more, on parallel 
+IO. However I can't remember having this problem with the last kernel 
+2.6.26.2.
 
-Acked-by: Mel Gorman <mel@csn.ul.ie>
+I am now testing with cfq again. On a ThinkPad T42 internal 160 GB 
+harddisk with barriers enabled. But you tell, it only happens on certain 
+servers, so I might have seen something different.
 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index af982f7..feb7916 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -694,6 +694,9 @@ static int move_freepages(struct zone *zone,
->  #endif
->  
->  	for (page = start_page; page <= end_page;) {
-> +		/* Make sure we are not inadvertently changing nodes */
-> +		VM_BUG_ON(page_to_nid(page) != zone_to_nid(zone));
-> +
->  		if (!pfn_valid_within(page_to_pfn(page))) {
->  			page++;
->  			continue;
-> @@ -2516,6 +2519,10 @@ static void setup_zone_migrate_reserve(struct zone *zone)
->  			continue;
->  		page = pfn_to_page(pfn);
->  
-> +		/* Watch out for overlapping nodes */
-> +		if (page_to_nid(page) != zone_to_nid(zone))
-> +			continue;
-> +
->  		/* Blocks with reserved pages will never free, skip them. */
->  		if (PageReserved(page))
->  			continue;
-> 
-> -- 
-> Adam Litke - (agl at us.ibm.com)
-> IBM Linux Technology Center
-> 
+Thus I had the rough feeling that something is wrong with at least CFQ and 
+XFS together, but I couldn't prove it back then. I have no idea how to 
+easily do a reproducable test case. Maybe having a script that unpacks 
+kernel source archives while I try to use the desktop...
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
