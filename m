@@ -1,105 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbYHURYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbYHUR2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbYHURYR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 13:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYHURYC
+	id S1754530AbYHUR2a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 13:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbYHUR2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 13:24:02 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:47958 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751842AbYHURX7 (ORCPT
+	Thu, 21 Aug 2008 13:28:22 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:41900 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751270AbYHUR2V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 13:23:59 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <20080727012212.GW28946@ZenIV.linux.org.uk>
-	<m1d4k2zui4.fsf@frodo.ebiederm.org>
-Date: Thu, 21 Aug 2008 10:14:53 -0700
-In-Reply-To: <m1d4k2zui4.fsf@frodo.ebiederm.org> (Eric W. Biederman's message
-	of "Thu, 21 Aug 2008 00:40:03 -0700")
-Message-ID: <m1od3mthma.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 21 Aug 2008 13:28:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=CorazjEbDuNAWiWLhmjWzhDBQVgl+6fGzunB3hqvpynjul/AwW0veNADeBl9jATAi5
+         FBPKCRGqxLpUXHY5ZzHp6Nim9FVAR6U23kRN9J91lRjWUY8nnUjdbLSC6/bfrWkTFYdh
+         i7qbxfuvrboMTXwovr2nDLs4msB+3ER8/FYQo=
+Message-ID: <19f34abd0808211028w7889587fke523ff244339e7c5@mail.gmail.com>
+Date: Thu, 21 Aug 2008 19:28:20 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: latest -git: suspend: unable to handle kernel paging request (was Re: no_console_suspend doesn't work?)
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Al Viro <viro@ZenIV.linux.org.uk>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.4 FVGT_m_MULTI_ODD Contains multiple odd letter combinations
-	*  2.2 XMSubMetaSxObfu_03 Obfuscated Sexy Noun-People
-	*  1.6 XMSubMetaSx_00 1+ Sexy Words
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [git pull] VFS patches, the first series
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ebiederm@xmission.com (Eric W. Biederman) writes:
+On Thu, Aug 21, 2008 at 6:49 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> But I think it would be a lot more useful to see _everything_. Why
+> doesn't output to ttyS0 work? It works with tty0... I have tried
+> various combinations (leaving out console=tty0, leaving out
+> earlyprintk, using netconsole, kexec crashdump), but nothing seems to
+> be able to help. Do you have any suggestions?
 
-> Al Viro <viro@ZenIV.linux.org.uk> writes:
->
->> The first part of huge pile.  Mostly it's untangling nameidata handling,
->> digging towards the pieces that kill intents and cleaning pathname
->> resolution in general.  ->permission() sanitizing and sysctl procfs
->> treatment rewrite needed for it.  A bunch of descriptor handling fixes.
->> Plus part of assorted patched from the last cycle sent by other folks.
->> A _lot_ more is still pending; this is what I'd managed to pull into
->> a series by this point.  Please, pull from
->> git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
->
-> Al a quick heads up.  In testing movement of network devices between
-> namespaces  I hit the recently added WARN_ON in unregister_sysctl_table.
+I did it!
 
-It seems to be some new oddness when destroying a network namespace.
+With a little debug patch, I got the oops to ttyS0, but with each
+printk() duplicated (I removed some of them). This is from resume:
 
-If I don't have network devices to push out of the network namespace
-when I clean it up nothing happens.  When I do I get this nice beautiful
-backtrace.
-
-I will dig into the sysctl code in a bit and see if I can understand
-why this is happening.
-
-------------[ cut here ]------------
-WARNING: at /home/eric/projects/linux/linux-2.6-arastra-ns/kernel/sysctl.c:1929 unregister_sysctl_table+0xb5/0x
-e5()
-Modules linked in:
-Pid: 22, comm: netns Tainted: G        W 2.6.27-rc3x86_64 #48
-
+BUG: unable to handle kernel BUG: unable to handle kernel paging
+requestpaging request at 00200200
+ at 00200200
+IP:IP: [<c038accc>] list_del+0xc/0x90
+ [<c038accc>] list_del+0xc/0x90
+*pdpt = 00000000331a0001 *pde = 0000000000000000
+Oops: 0000 [#1] Oops: 0000 [#1] PREEMPT PREEMPT SMP SMP
+DEBUG_PAGEALLOCDEBUG_PAGEALLOC
+Pid: 3473, comm: bash Not tainted (2.6.27-rc4-00003-ga798564-dirty #30)
+EIP: 0060:[<c038accc>] EFLAGS: 00210082 CPU: 0
+EIP is at list_del+0xc/0x90
+EAX: 00200200 EBX: f77fcc00 ECX: 00000001 EDX: f31a6000
+ESI: c088e814 EDI: c088e83c EBP: f31a7be8 ESP: f31a7bd0
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process bash (pid: 3473, ti=f31a6000 task=f30ea700 task.ti=f31a6000)
+Stack: Stack: 00000000 00000000 00000002 00000002 00000000 00000000
+c01b39be c01b39be f77cefa0 f77cefa0 f77fcbd0 f77fcbd0 f31a7bfc
+f31a7bfc c01b39ef c01b39ef
+              f77cefa0 f77cefa0 00000000 00000000 c1133598 c1133598
+f31a7c3c f31a7c3c c01b3ebc c01b3ebc c0b530c0 c0b530c0 f31a7c18
+f31a7c18 c015b60e c015b60e
+              f31a7c18 f31a7c18 ffffffff ffffffff 00000020 00000020
+c088e800 c088e800 00200046 00200046 00000000 00000000 00000000
+00000000 00000000 00000000
 Call Trace:
- [<ffffffff802361da>] warn_on_slowpath+0x51/0x77
- [<ffffffff8023c631>] unregister_sysctl_table+0x34/0xe5
- [<ffffffff8023c6b2>] unregister_sysctl_table+0xb5/0xe5
- [<ffffffff80523f8c>] neigh_sysctl_unregister+0x1a/0x31
- [<ffffffff80559635>] inetdev_event+0x2b4/0x3d1
- [<ffffffff8024b850>] notifier_call_chain+0x29/0x56
- [<ffffffff8051fa2a>] dev_change_net_namespace+0x1bb/0x1da
- [<ffffffff8051fa9d>] default_device_exit+0x54/0xa2
- [<ffffffff8052105e>] netdev_run_todo+0x1fd/0x206
- [<ffffffff8051ce0b>] cleanup_net+0x0/0x95
- [<ffffffff8051ce6f>] cleanup_net+0x64/0x95
- [<ffffffff80244e58>] run_workqueue+0xf1/0x1ee
- [<ffffffff80244e02>] run_workqueue+0x9b/0x1ee
- [<ffffffff802459ee>] worker_thread+0xd8/0xe3
- [<ffffffff80248426>] autoremove_wake_function+0x0/0x2e
- [<ffffffff80245916>] worker_thread+0x0/0xe3
- [<ffffffff80248311>] kthread+0x47/0x76
- [<ffffffff805c7529>] trace_hardirqs_on_thunk+0x3a/0x3f
- [<ffffffff8020cdc9>] child_rip+0xa/0x11
- [<ffffffff8020c3ff>] restore_args+0x0/0x30
- [<ffffffff80230bcd>] finish_task_switch+0x0/0xc4
- [<ffffffff802482ca>] kthread+0x0/0x76
- [<ffffffff8020cdbf>] child_rip+0x0/0x11
+ [<c01b39be>]  [<c01b39be>] ? ? get_partial_node+0x3e/0xc0
+ [<c01b39ef>]  [<c01b39ef>] ? ? get_partial_node+0x6f/0xc0
+ [<c01b3ebc>]  [<c01b3ebc>] ? ? __slab_alloc+0x11c/0x4e0
+ [<c015b60e>]  [<c015b60e>] ? ? get_lock_stats+0x1e/0x50
+ [<c01b5ffc>]  [<c01b5ffc>] ? ? __kmalloc+0x11c/0x130
+ [<c03ceeb2>]  [<c03ceeb2>] ? ? tty_buffer_request_room+0xe2/0x130
+ [<c03ceeb2>]  [<c03ceeb2>] ? ? tty_buffer_request_room+0xe2/0x130
+ [<c03ceeb2>]  [<c03ceeb2>] ? ? tty_buffer_request_room+0xe2/0x130
+ [<c03d131d>]  [<c03d131d>] ? ? tty_insert_flip_string_flags+0x2d/0xa0
+ [<c03efcf1>]  [<c03efcf1>] ? ? receive_chars+0x161/0x290
+ [<c03f0d24>]  [<c03f0d24>] ? ? serial8250_interrupt+0x134/0x150
+ [<c017db28>]  [<c017db28>] ? ? handle_IRQ_event+0x28/0x70
+ [<c017f0ef>]  [<c017f0ef>] ? ? handle_edge_irq+0xaf/0x140
+ [<c0108138>]  [<c0108138>] ? ? do_IRQ+0x48/0xa0
+ [<c037b7a4>]  [<c037b7a4>] ? ? trace_hardirqs_off_thunk+0xc/0x18
+ [<c0105a3c>]  [<c0105a3c>] ? ? common_interrupt+0x28/0x30
+ [<c013b2d1>]  [<c013b2d1>] ? ? vprintk+0x151/0x3c0
+ [<c015e884>]  [<c015e884>] ? ? trace_hardirqs_on_caller+0xd4/0x160
+ [<c015e91b>]  [<c015e91b>] ? ? trace_hardirqs_on+0xb/0x10
+ [<c0687983>]  [<c0687983>] ? ? _spin_unlock_irqrestore+0x43/0x70
+ [<c038ef8b>]  [<c038ef8b>] ? ? pci_bus_read_config_byte+0x5b/0x70
+ [<c013b55b>]  [<c013b55b>] ? ? printk+0x1b/0x20
+ [<c059a748>]  [<c059a748>] ? ? pcibios_set_master+0x68/0xa0
+ [<c03925c4>]  [<c03925c4>] ? ? pci_set_master+0x54/0x60
+ [<c0513d9c>]  [<c0513d9c>] ? ? usb_hcd_pci_resume+0x4c/0xf0
+ [<c015e91b>]  [<c015e91b>] ? ? trace_hardirqs_on+0xb/0x10
+ [<c0393cf6>]  [<c0393cf6>] ? ? pci_legacy_resume+0x16/0x30
+ [<c0393d5a>]  [<c0393d5a>] ? ? pci_pm_restore+0x4a/0x60
+ [<c03f83e5>]  [<c03f83e5>] ? ? pm_op+0x115/0x130
+ [<c03f8986>]  [<c03f8986>] ? ? device_resume+0xd6/0x380
+ [<c0168791>]  [<c0168791>] ? ? hibernation_snapshot+0xa1/0x220
+ [<c013b55b>]  [<c013b55b>] ? ? printk+0x1b/0x20
+ [<c01689f0>]  [<c01689f0>] ? ? hibernate+0xe0/0x180
+ [<c01674a0>]  [<c01674a0>] ? ? state_store+0x0/0xd0
+ [<c016755f>]  [<c016755f>] ? ? state_store+0xbf/0xd0
+ [<c01674a0>]  [<c01674a0>] ? ? state_store+0x0/0xd0
+ [<c0375ef4>]  [<c0375ef4>] ? ? kobj_attr_store+0x24/0x30
+ [<c01fa432>]  [<c01fa432>] ? ? sysfs_write_file+0xa2/0x100
+ [<c01bbf06>]  [<c01bbf06>] ? ? vfs_write+0x96/0x130
+ [<c01fa390>]  [<c01fa390>] ? ? sysfs_write_file+0x0/0x100
+ [<c01bc44d>]  [<c01bc44d>] ? ? sys_write+0x3d/0x70
+ [<c0104f3b>]  [<c0104f3b>] ? ? sysenter_do_call+0x12/0x3f
+ =======================
+Code: Code: e8 e8 01 01 89 89 44 44 24 24 04 04 e8 e8 94 94 08 08 db
+db ff ff 8b 8b 55 55 04 04 b8 b8 80 80 45 45 7a 7a c0 c0 e8 e8 e7 e7
+c2 c2 dd dd ff ff e8 e8
+ a2 a2 c7 c7 d7 d7 ff ff eb eb a9 a9 55 55 89 89 e5 e5 53 53 89 89 c3
+c3 83 83 ec ec 14 14 8b 8b 40 40 04 04 <8b> <8b> 00 00 39 39 d8 d8 75
+75 24 24 8b 8b 13 13
+8b 8b 42 42 04 04 39 39 d8 d8 75 75 41 41 8b 8b 43 43 04 04 89 89 42 42 04 04
+EIP: [<c038accc>] EIP: [<c038accc>] list_del+0xc/0x90list_del+0xc/0x90
+SS:ESP 0068:f31a7bd0
+Kernel panic - not syncing: Fatal exception in interrupt
 
----[ end trace f9cc56de378eb3ce ]---
+The EIP corresponds to the first line of list_del, lib/list_debug.c:46:
 
+void list_del(struct list_head *entry)
+{
+        WARN(entry->prev->next != entry,
+
+I actually have one theory: Data arrives on the serial port at the
+wrong moment, so interrupt happens before everything is
+restored/resumed. You can see the interrupt in the stack trace. Does
+this seem possible?
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
