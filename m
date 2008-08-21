@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759726AbYHULpN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759715AbYHULq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759726AbYHULpN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 07:45:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbYHULoz
+	id S1759715AbYHULq2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 07:46:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758687AbYHULqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 07:44:55 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:53638 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759496AbYHULoy convert rfc822-to-8bit (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 07:44:54 -0400
-Subject: Re: [PATCH 10/10] AXFS: axfs_uncompress.c
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: jaredeh@gmail.com
-Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>, tim.bird@AM.SONY.COM,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-In-Reply-To: <48AD0126.1050609@gmail.com>
-References: <48AD0126.1050609@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 21 Aug 2008 14:40:38 +0300
-Message-Id: <1219318838.18027.68.camel@sauron>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 21 Aug 2008 11:42:17.0926 (UTC) FILETIME=[F6DFBE60:01C90382]
-X-Nokia-AV: Clean
+	Thu, 21 Aug 2008 07:46:18 -0400
+Received: from mail.gmx.net ([213.165.64.20]:50630 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1758533AbYHULqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 07:46:17 -0400
+X-Authenticated: #1587495
+X-Provags-ID: V01U2FsdGVkX1/OygxYnQfOFgH7qrjdKRpssEh8wP/zWDXiFpAVz4
+	EmRwIw+UwSSafQ
+From: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+To: Thomas Winischhofer <thomas@winischhofer.net>
+Subject: [PATCH] sisusbvga: add USB ID for 0711:0918 Magic Control Technology Corp.
+Date: Thu, 21 Aug 2008 13:46:11 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808211346.13628.s.L-H@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-08-20 at 22:46 -0700, Jared Hulbert wrote:
-> +	err = zlib_inflateReset(&stream);
-> +	if (err != Z_OK) {
-> +		printk(KERN_ERR "zlib_inflateReset error %d\n", err);
-> +		zlib_inflateEnd(&stream);
-> +		zlib_inflateInit(&stream);
-> +	}
+sisusbvga: add USB ID for 0711:0918 Magic Control Technology Corp.
 
-Jared,
+usb 1-2: new high speed USB device using ehci_hcd and address 4
+usb 1-2: configuration #1 chosen from 1 choice
+usb 1-2: USB2VGA dongle found at address 4
+usb 1-2: Allocated 8 output buffers
+usb 1-2: 8MB 1 ch/1 r SDR SDRAM, bus width 32
+usb 1-2: New USB device found, idVendor=0711, idProduct=0918
+usb 1-2: New USB device strings: Mfr=0, Product=0, SerialNumber=0
 
-just FYI, are you aware that LZO which is also present in the kernel is
-much faster on decompress than zlib, while its compression is only
-slightly worse?
+Signed-off-by: Stefan Lippers-Hollmann <s.L-H@gmx.de>
 
-I do not remember the digits, but last time I tested UBIFS, LZO
-decompression was about 3 times faster than zlib on OMAP3. This depends
-on architecture, etc of course. This may matter a lot if one is fighting
-for faster system boot-up. So you might consider supporting LZO as well.
-
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
-
+diff --git a/drivers/usb/misc/sisusbvga/sisusb.c b/drivers/usb/misc/sisusbvga/sisusb.c
+index fbace41..69c34a5 100644
+--- a/drivers/usb/misc/sisusbvga/sisusb.c
++++ b/drivers/usb/misc/sisusbvga/sisusb.c
+@@ -3270,6 +3270,7 @@ static struct usb_device_id sisusb_table [] = {
+ 	{ USB_DEVICE(0x0711, 0x0900) },
+ 	{ USB_DEVICE(0x0711, 0x0901) },
+ 	{ USB_DEVICE(0x0711, 0x0902) },
++	{ USB_DEVICE(0x0711, 0x0918) },
+ 	{ USB_DEVICE(0x182d, 0x021c) },
+ 	{ USB_DEVICE(0x182d, 0x0269) },
+ 	{ }
