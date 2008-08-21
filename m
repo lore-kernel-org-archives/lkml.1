@@ -1,39 +1,395 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbYHUDKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYHUDK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbYHUDKc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 23:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757020AbYHUDKD
+	id S1756079AbYHUDK6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 23:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbYHUDKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 23:10:03 -0400
-Received: from smtp-vbr10.xs4all.nl ([194.109.24.30]:2438 "EHLO
-	smtp-vbr10.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756019AbYHUDKA (ORCPT
+	Wed, 20 Aug 2008 23:10:19 -0400
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:45379 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756330AbYHUDKR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 23:10:00 -0400
-Date: Thu, 21 Aug 2008 05:09:44 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@localhost.localdomain
-To: Mike Frysinger <vapier@gentoo.org>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] linux/timex.h: cleanup for userspace
-In-Reply-To: <1219200383-19556-1-git-send-email-vapier@gentoo.org>
-Message-ID: <Pine.LNX.4.64.0808210507410.2507@localhost.localdomain>
-References: <1219200383-19556-1-git-send-email-vapier@gentoo.org>
+	Wed, 20 Aug 2008 23:10:17 -0400
+Date: Wed, 20 Aug 2008 23:07:16 -0400 (EDT)
+From: Oren Laadan <orenl@cs.columbia.edu>
+X-X-Sender: orenl@takamine.ncl.cs.columbia.edu
+To: dave@linux.vnet.ibm.com
+cc: arnd@arndb.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+Subject: [RFC v2][PATCH 8/9] File descriprtors - dump state
+In-Reply-To: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>
+Message-ID: <Pine.LNX.4.64.0808202306530.17436@takamine.ncl.cs.columbia.edu>
+References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Tue, 19 Aug 2008, Mike Frysinger wrote:
+Dump the files_struct of a task with 'struct cr_hdr_files', followed by
+all open file descriptors. Since FDs can be shared, they are assigned a
+tag and registered in the object hash.
 
-> MAXFREQ_SCALED was tweaked recently to contain a (s64) cast.  Assuming this
-> is meant for userspace, change it to (__s64) and pull in linux/types.h.
+For each open FD there is a 'struct cr_hdr_fd_ent' with the FD, its tag
+and its close-on-exec property. If the FD is to be saved (first time)
+then this is followed by a 'struct cr_hdr_fd_data' with the FD state.
+Then will come the next FD and so on.
 
-No, it's irrelevant for user space.
-Most of it can be moved down into the __KERNEL__ block.
-Look at the glibc timex.h for what is currently exported.
+This patch only handles basic FDs - regular files, directories and also
+symbolic links.
 
-bye, Roman
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+---
+  checkpoint/Makefile    |    3 +-
+  checkpoint/ckpt.h      |    2 +-
+  checkpoint/ckpt_file.c |  234 ++++++++++++++++++++++++++++++++++++++++++++++++
+  checkpoint/ckpt_file.h |   17 ++++
+  checkpoint/ckpt_hdr.h  |   31 +++++++
+  5 files changed, 285 insertions(+), 2 deletions(-)
+  create mode 100644 checkpoint/ckpt_file.c
+  create mode 100644 checkpoint/ckpt_file.h
+
+diff --git a/checkpoint/Makefile b/checkpoint/Makefile
+index cd57d9d..179175b 100644
+--- a/checkpoint/Makefile
++++ b/checkpoint/Makefile
+@@ -1,2 +1,3 @@
+-obj-y += sys.o checkpoint.o restart.o objhash.o ckpt_mem.o rstr_mem.o
++obj-y += sys.o checkpoint.o restart.o objhash.o \
++	ckpt_mem.o rstr_mem.o ckpt_file.o
+  obj-$(CONFIG_X86) += ckpt_x86.o rstr_x86.o
+diff --git a/checkpoint/ckpt.h b/checkpoint/ckpt.h
+index 8b02c4c..ef2f74d 100644
+--- a/checkpoint/ckpt.h
++++ b/checkpoint/ckpt.h
+@@ -13,7 +13,7 @@
+  #include <linux/path.h>
+  #include <linux/fs.h>
+
+-#define CR_VERSION  1
++#define CR_VERSION  2
+
+  struct cr_ctx {
+  	pid_t pid;		/* container identifier */
+diff --git a/checkpoint/ckpt_file.c b/checkpoint/ckpt_file.c
+new file mode 100644
+index 0000000..18faaf1
+--- /dev/null
++++ b/checkpoint/ckpt_file.c
+@@ -0,0 +1,234 @@
++/*
++ *  Checkpoint file descriptors
++ *
++ *  Copyright (C) 2008 Oren Laadan
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of the Linux
++ *  distribution for more details.
++ */
++
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/file.h>
++#include <linux/fdtable.h>
++
++#include "ckpt.h"
++#include "ckpt_hdr.h"
++#include "ckpt_file.h"
++
++#define CR_DEFAULT_FDTABLE  128
++
++/**
++ * cr_scan_fds - scan file table and construct array of open fds
++ * @files: files_struct pointer
++ * @fdtable: (output) array of open fds
++ * @return: the number of open fds found
++ *
++ * Allocates the file descriptors array (*fdtable), caller should free
++ */
++int cr_scan_fds(struct files_struct *files, int **fdtable)
++{
++	int i, j, n, max;
++	struct fdtable *fdt;
++	int *fdlist;
++
++	max = CR_DEFAULT_FDTABLE;
++
++ repeat:
++	fdlist = kmalloc(max * sizeof(*fdlist), GFP_KERNEL);
++	if (!fdlist)
++		return -ENOMEM;
++
++	j = 0;
++	n = 0;
++
++	spin_lock(&files->file_lock);
++	fdt = files_fdtable(files);
++	for (;;) {
++		unsigned long set;
++		i = j * __NFDBITS;
++		if (i >= fdt->max_fds)
++			break;
++		set = fdt->open_fds->fds_bits[j++];
++		while (set) {
++			if (set & 1) {
++				if (unlikely(n == max)) {
++					spin_unlock(&files->file_lock);
++					kfree(fdlist);
++					max *= 2;
++					if (max < 0)	/* overflow ? */
++						return -EMFILE;
++					goto repeat;
++				}
++				fdlist[n++] = i;
++			}
++			i++;
++			set >>= 1;
++		}
++	}
++	spin_unlock(&files->file_lock);
++
++	*fdtable = fdlist;
++	return n;
++}
++
++/* cr_write_fd_data - dump the state of a given file pointer */
++static int cr_write_fd_data(struct cr_ctx *ctx, struct file *file, int ptag)
++{
++	struct cr_hdr h;
++	struct cr_hdr_fd_data *hh = ctx->hbuf;
++	struct dentry *dent = file->f_dentry;
++	struct inode *inode = dent->d_inode;
++	char *fname;
++	int flen, how, ret;
++
++	h.type = CR_HDR_FD_DATA;
++	h.len = sizeof(*hh);
++	h.ptag = ptag;
++
++	BUG_ON(!inode);
++
++	flen = PAGE_SIZE;
++	fname = cr_fill_fname(&file->f_path, ctx->vfsroot, ctx->tbuf, &flen);
++	if (IS_ERR(fname))
++		return PTR_ERR(fname);
++
++	hh->f_flags = file->f_flags;
++	hh->f_mode = file->f_mode;
++	hh->f_pos = file->f_pos;
++	hh->f_uid = file->f_uid;
++	hh->f_gid = file->f_gid;
++	hh->f_version = file->f_version;
++	/* FIX: need also file->f_owner */
++
++	switch(inode->i_mode & S_IFMT) {
++	case S_IFREG:
++		how = CR_FD_FILE;
++		break;
++	case S_IFDIR:
++		how = CR_FD_DIR;
++		break;
++	case S_IFLNK:
++		how = CR_FD_LINK;
++		break;
++	default:
++		return -EBADF;
++	}
++
++	/* FIX: check if the file/dir/link is unlinked */
++
++	BUG_ON(!flen);
++
++	ret = cr_write_obj(ctx, &h, hh);
++	if (!ret && flen)
++		ret = cr_write_str(ctx, fname, flen);
++
++	return ret;
++}
++
++/**
++ * cr_write_fd_ent - dump the state of a given file descriptor
++ * @ctx: checkpoint context
++ * @files: files_struct pointer
++ * @fd: file descriptor
++ * 
++ * Save the state of the file descriptor; look up the actual file pointer
++ * in the hash table, and if found save the matching tag, otherwise call
++ * cr_write_fd_data to dump the file pointer too.
++ */
++static int
++cr_write_fd_ent(struct cr_ctx *ctx, struct files_struct *files, int fd)
++{
++	struct cr_hdr h;
++	struct cr_hdr_fd_ent *hh = ctx->hbuf;
++	struct file *file = NULL;
++	struct fdtable *fdt;
++	int coe, tag, ret;
++
++	/* make sure hh->fd (that is of type __u16) doesn't overflow */
++	if (fd > USHORT_MAX) {
++		pr_warning("CR: open files table too big (%d)\n", USHORT_MAX);
++		return -EMFILE;
++	}
++
++	rcu_read_lock();
++	fdt = files_fdtable(files);
++	if (fd < fdt->max_fds)
++		file = rcu_dereference(fdt->fd[fd]);
++	if (file) {
++		coe = FD_ISSET(fd, fdt->close_on_exec);
++		get_file(file);
++	}
++	rcu_read_unlock();
++
++	/* sanity check (although this shouldn't happen) */
++	if (unlikely(!file))
++		return -EBADF;
++
++	ret = cr_obj_add_ptr(ctx, (void *) file, &tag, CR_OBJ_FILE, 0);
++	cr_debug("fd %d tag %d file %p c-o-e %d)\n", fd, tag, file, coe);
++
++	if (ret >= 0) {
++		int new = ret;
++
++		h.type = CR_HDR_FD_ENT;
++		h.len = sizeof(*hh);
++		h.ptag = 0;
++ 
++		hh->tag = tag;
++		hh->fd = fd;
++		hh->close_on_exec = coe;
++
++		ret = cr_write_obj(ctx, &h, hh);
++
++		/* new==1 if-and-only-if file was new and added to hash */
++		if (!ret && new)
++			ret = cr_write_fd_data(ctx, file, tag);
++	}
++
++	fput(file);
++	return ret;
++}
++
++int cr_write_files(struct cr_ctx *ctx, struct task_struct *t)
++{
++	struct cr_hdr h;
++	struct cr_hdr_files *hh = ctx->hbuf;
++	struct files_struct *files;
++	int *fdtable;
++	int nfds, n, ret;
++
++	h.type = CR_HDR_FILES;
++	h.len = sizeof(*hh);
++	h.ptag = task_pid_vnr(t);
++
++	files = get_files_struct(t);
++
++	nfds = cr_scan_fds(files, &fdtable);
++	if (nfds < 0) {
++		ret = nfds;
++		goto out;
++	}
++ 
++	hh->tag = 0;
++	hh->nfds = nfds;
++
++	ret = cr_write_obj(ctx, &h, hh);
++	if (ret < 0)
++		goto clean;
++
++	cr_debug("nfds %d\n", nfds);
++	for (n = 0; n < nfds; n++) {
++		ret = cr_write_fd_ent(ctx, files, n);
++		if (ret < 0)
++			break;
++	}
++
++ clean:
++	kfree(fdtable);
++ out:
++	put_files_struct(files);
++
++	return ret;
++}
+diff --git a/checkpoint/ckpt_file.h b/checkpoint/ckpt_file.h
+new file mode 100644
+index 0000000..9dc3eba
+--- /dev/null
++++ b/checkpoint/ckpt_file.h
+@@ -0,0 +1,17 @@
++#ifndef _CHECKPOINT_CKPT_FILE_H_
++#define _CHECKPOINT_CKPT_FILE_H_
++/*
++ *  Checkpoint file descriptors
++ *
++ *  Copyright (C) 2008 Oren Laadan
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of the Linux
++ *  distribution for more details.
++ */
++
++#include <linux/fdtable.h>
++
++int cr_scan_fds(struct files_struct *files, int **fdtable);
++
++#endif /* _CHECKPOINT_CKPT_FILE_H_ */
+diff --git a/checkpoint/ckpt_hdr.h b/checkpoint/ckpt_hdr.h
+index a3919cf..a8a37db 100644
+--- a/checkpoint/ckpt_hdr.h
++++ b/checkpoint/ckpt_hdr.h
+@@ -43,6 +43,10 @@ enum {
+  	CR_HDR_VMA,
+  	CR_HDR_MM_CONTEXT,
+
++	CR_HDR_FILES = 301,
++	CR_HDR_FD_ENT,
++	CR_HDR_FD_DATA,
++
+  	CR_HDR_TAIL = 5001
+  };
+
+@@ -52,6 +56,13 @@ enum {
+  	CR_VMA_FILE
+  };
+
++/* fd subtypes */
++enum {
++	CR_FD_FILE = 1,
++	CR_FD_DIR,
++	CR_FD_LINK
++};
++
+  struct cr_hdr_head {
+  	__u64 magic;
+
+@@ -114,4 +125,24 @@ struct cr_hdr_vma {
+
+  } __attribute__ ((aligned (8)));
+
++struct cr_hdr_files {
++	__u32 tag;	/* sharing identifier */
++	__u32 nfds;
++} __attribute__ ((aligned (8)));
++
++struct cr_hdr_fd_ent {
++	__u32 tag;
++	__u16 fd;
++	__u16 close_on_exec;
++} __attribute__ ((aligned (8)));
++
++struct cr_hdr_fd_data {
++	__u16 how;
++	__u16 f_mode;
++	__u32 f_flags;
++	__u32 f_uid, f_gid;
++	__u64 f_pos;
++	__u64 f_version;
++} __attribute__ ((aligned (8)));
++
+  #endif /* _CHECKPOINT_CKPT_HDR_H_ */
+-- 
+1.5.4.3
+
