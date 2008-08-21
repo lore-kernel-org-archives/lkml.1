@@ -1,58 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758817AbYHUVvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759778AbYHUVwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758817AbYHUVvx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 17:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929AbYHUVvp
+	id S1759778AbYHUVwy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 17:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929AbYHUVwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 17:51:45 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:31509 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754624AbYHUVvo (ORCPT
+	Thu, 21 Aug 2008 17:52:45 -0400
+Received: from n3b.bullet.mail.ac4.yahoo.com ([76.13.13.73]:29829 "HELO
+	n3b.bullet.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753768AbYHUVwn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 17:51:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=HbzD3bt2kPNTUEtV+zPWJzPnwJMkidJyaslqSJhJ4VvHIuBlLlwJ0PWAEfWItaA0/+
-         BN8s2iRRMV9JHegk66IIGj53mFCkiwNUdZm4YEf2gvm3RDBwHJY7BPDPD8obyntz2Gg4
-         bSoVUqrv9tWnUiBMbgnou9ENHI45ZCZlXHdLk=
-Message-ID: <86802c440808211451u4483f88ft845cd20c3f23c53a@mail.gmail.com>
-Date: Thu, 21 Aug 2008 14:51:43 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Joshua Hoblitt" <josh@hoblitt.com>
-Subject: Re: [Bug 11388] New: 2.6.27-rc3 warns about MTRR range; only 3 of 16gb of memory is usable
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
-       j_kernel@hoblitt.com
-In-Reply-To: <20080821205558.GC23377@hoblitt.com>
+	Thu, 21 Aug 2008 17:52:43 -0400
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 362023.48787.bm@omp114.mail.ac4.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=34eYWmOaZKCs+ScE5vGTU6VpgIus1+H3ppgTj//fUfUwQ58IcT1g2DrXdrjRx8U7ZaudC4Ojub8iMlNx9uhiBcACgh0loammrmoecXin+IAp1ZRxhWym4b2738kjYNyBC0eSnhHyvz9UDr5606iL9bkQZWSEYpOPfDktTIMvTPU=;
+X-Mailer: YahooMailWebService/0.7.218
+Date: Thu, 21 Aug 2008 14:52:41 -0700 (PDT)
+From: amruth <amruth_pv@yahoo.com>
+Reply-To: amruth_pv@yahoo.com
+Subject: USB Serial device disconnect causes IRQ disable details captured
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.44L0.0808211712530.17334-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <bug-11388-27@http.bugzilla.kernel.org/>
-	 <20080820180405.7f164450.akpm@linux-foundation.org>
-	 <86802c440808201820w6c684a10y2f1d0f70a344a14a@mail.gmail.com>
-	 <86802c440808201849k6665c395x5a5b871eca55addd@mail.gmail.com>
-	 <20080821205558.GC23377@hoblitt.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <685308.61820.qm@web45211.mail.sp1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 1:55 PM, Joshua Hoblitt <josh@hoblitt.com> wrote:
-> Both hunks in the patch applied with an offset of -36 but the show_msr
-> flag doesn't seem to have any effect.  The dmesg is still the same
-> number of lines accord to wc.
->
-> I'm attaching the new dmesg anyways.
->
-> $ cat /proc/cmdline
-> root=/dev/ram0 real_root=/dev/sda3 init=/linuxrc show_msr=1 console=tty0
-> console=ttyS0,115200n8
+Thanks Alan. I will test in another computers with the new patch and let you know if I again find the issue.
 
-can you check that with tip/master?
+Thanks
+Amruth p.v
 
-http://people.redhat.com/mingo/tip.git/readme.txt
 
-YH
+--- On Thu, 8/21/08, Alan Stern <stern@rowland.harvard.edu> wrote:
+
+> From: Alan Stern <stern@rowland.harvard.edu>
+> Subject: Re: USB Serial device disconnect causes IRQ disable details captured
+> To: "amruth" <amruth_pv@yahoo.com>
+> Cc: "Oliver Neukum" <oliver@neukum.org>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+> Date: Thursday, August 21, 2008, 4:20 PM
+> On Thu, 21 Aug 2008, amruth wrote:
+> 
+> > Hi
+> > Oliver
+> > I got the same issue once again. I have captured
+> detail log and lusb -t with interrupts.
+> > cat /proc/interrupts:
+> 
+> > dmesg:
+> > sb 1-5: Magtek 75/Excella USB card reader converter
+> now attached to ttyUSB1
+> > drivers/usb/core/inode.c: creating file '012'
+> > usb 1-5: New USB device found, idVendor=0801,
+> idProduct=2231
+> > usb 1-5: New USB device strings: Mfr=1, Product=2,
+> SerialNumber=3
+> > usb 1-5: Product: STX
+> > usb 1-5: Manufacturer: MagTek
+> > usb 1-5: SerialNumber: STX001
+> > usb 2-2: uhci_result_common: failed with status 440000
+> > /home/amr/linux-2.6.26/drivers/usb/serial/magtek.c:
+> magtek_read_int_callback - p
+> > ort 0
+> > uhci_hcd 0000:00:1d.0: release dev 6 ep81-INT, period
+> 8, phase 4, 61 us
+> > hub 2-0:1.0: state 7 ports 2 chg 0000 evt 0004
+> > uhci_hcd 0000:00:1d.0: port 2 portsc 008a,00
+> > hub 2-0:1.0: port 2, status 0100, change 0003, 12 Mb/s
+> > usb 2-2: USB disconnect, address 6
+> > usb 2-2: unregistering device
+> > usb 2-2: usb_disable_device nuking all URBs
+> > usb 2-2: unregistering interface 2-2:1.0
+> > /home/amr/linux-2.6.26/drivers/usb/serial/magtek.c:
+> magtek_shutdown
+> > magtek ttyUSB0: Magtek 75/Excella USB card reader
+> converter now disconnected from ttyUSB0
+> > magtek 2-2:1.0: device disconnected
+> > usb 2-2:1.0: uevent
+> > usb 2-2: uevent
+> > hub 2-0:1.0: debounce: port 2: total 100ms stable
+> 100ms status 0x100
+> > usb usb2: suspend_rh (auto-stop)
+> > ehci_hcd 0000:00:1d.7: devpath 5 ep2in 3strikes
+> > /home/amr/linux-2.6.26/drivers/usb/serial/magtek.c:
+> magtek_read_int_callback - port 1
+> > usb 1-5: unlink qh0-00ff/dec56380 start 0 [1/0 us]
+> > usb 1-5: link qh0-00ff/dec56380 start 0 [1/0 us]
+> > usb 1-5: unlink qh0-00ff/dec56380 start 0 [1/0 us]
+> > ehci_hcd 0000:00:1d.7: HC died; cleaning up
+> 
+> You should try using the patch in this message:
+> 
+> 	http://marc.info/?l=linux-usb&m=121848784300960&w=2
+> 
+> If that doesn't help, can you test this on another
+> computer to see if
+> the same thing happens?
+> 
+> For future testing, it would help if you enable
+> CONFIG_PRINTK_TIME.
+> 
+> Alan Stern
+
+
+      
+
