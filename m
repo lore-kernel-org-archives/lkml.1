@@ -1,83 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbYHUDRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752644AbYHUDRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757407AbYHUDRb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 23:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755991AbYHUDQK
+	id S1752644AbYHUDRp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 23:17:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbYHUDQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 23:16:10 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:50100 "EHLO
+	Wed, 20 Aug 2008 23:16:11 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:50076 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754956AbYHUDQF (ORCPT
+	with ESMTP id S1754944AbYHUDQE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 23:16:05 -0400
+	Wed, 20 Aug 2008 23:16:04 -0400
 Date: Wed, 20 Aug 2008 20:50:35 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808210250.m7L2oZAq028328@wolfmountaingroup.com>
+Message-Id: <200808210250.m7L2oZ8l028320@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc4 6/27] mdb: add mdb.h architecure main include
+Subject: [PATCH 2.6.27-rc4 2/27] mdb: add makefile for Merkey's Linux Kernel Debugger module
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add mdb.h architecure main include
+add makefile for Merkey's Linux Kernel Debugger module
 
 
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/debug/mdb/mdb.h	1969-12-31 17:00:00.000000000 -0700
-+++ b/debug/mdb/mdb.h	2008-08-18 23:40:26.000000000 -0600
-@@ -0,0 +1,54 @@
+--- a/debug/Makefile	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/Makefile	2008-08-18 23:40:26.000000000 -0600
+@@ -0,0 +1,5 @@
++#
++# Makefile for kernel debugger modules
++#
 +
-+/***************************************************************************
-+*
-+*   Copyright (c) 2008 Jeff V. Merkey  All Rights Reserved.
-+*   1058 East 50 South
-+*   Lindon, Utah 84042
-+*   jmerkey@wolfmountaingroup.com
-+*
-+*   This program is free software; you can redistribute it and/or modify it
-+*   under the terms of the GNU General Public License as published by the
-+*   Free Software Foundation, version 2.
-+*
-+*   This program is distributed in the hope that it will be useful, but
-+*   WITHOUT ANY WARRANTY; without even the implied warranty of
-+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+*   General Public License for more details.
-+*
-+*   You are free to modify and re-distribute this program in accordance
-+*   with the terms specified in the GNU Public License.  The copyright
-+*   contained in this code is required to be present in any derivative
-+*   works and you are required to provide the source code for this
-+*   program as part of any commercial or non-commercial distribution.
-+*   You are required to respect the rights of the Copyright holders
-+*   named within this code.
-+*
-+*   jmerkey@wolfmountaingroup.com is the official maintainer of
-+*   this code.  You are encouraged to report any bugs, problems, fixes,
-+*   suggestions, and comments about this software.
-+*
-+*   AUTHOR   :  Jeff V. Merkey
-+*   DESCRIP  :  Merkey's Linux Debugger
-+*
-+***************************************************************************/
-+
-+#ifndef _MDB_H
-+#define _MDB_H
-+
-+/* screen output function */
-+extern int mdb_printf(char *s, ...);
-+#define DBGPrint   mdb_printf
-+
-+/* external entry points used by linux */
-+#define DEBUGGER_EXCEPTION        1
-+#define NMI_EXCEPTION             2
-+#define BREAKPOINT_EXCEPTION      3
-+#define GENERAL_PROTECTION       13
-+#define PAGE_FAULT_EXCEPTION     14
-+#define KEYBOARD_ENTRY           19
-+#define SOFTWARE_EXCEPTION       22
-+
-+/* internal trace messages */
-+#define MDB_DEBUG_DEBUGGER       0
-+
-+#endif
++obj-$(CONFIG_MDB)		+= mdb/
