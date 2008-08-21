@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbYHUKap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758552AbYHUKbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758647AbYHUKap (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 06:30:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYHUKah
+	id S1758552AbYHUKbq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 06:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbYHUKbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 06:30:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38746 "EHLO mx3.mail.elte.hu"
+	Thu, 21 Aug 2008 06:31:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36209 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751101AbYHUKag (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 06:30:36 -0400
-Date: Thu, 21 Aug 2008 12:30:01 +0200
+	id S1752993AbYHUKbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 06:31:38 -0400
+Date: Thu, 21 Aug 2008 12:31:17 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Kevin Diggs <kevdig@hypersurf.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org,
-       david@fromorbit.com, arnd@arndb.de,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: {NOT a PATCH} Corrections please ...
-Message-ID: <20080821103000.GA19452@elte.hu>
-References: <48AB73A3.9010404@hypersurf.com> <20080820095908.GC28492@elte.hu> <48ABF880.5010605@s5r6.in-berlin.de> <48AC7790.8010207@hypersurf.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] ftrace: x86 use copy to and from user functions
+Message-ID: <20080821103117.GB19452@elte.hu>
+References: <alpine.DEB.1.10.0808201253330.494@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48AC7790.8010207@hypersurf.com>
+In-Reply-To: <alpine.DEB.1.10.0808201253330.494@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,12 +38,18 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Kevin Diggs <kevdig@hypersurf.com> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> Here is the latest (maybe line wrap is set to 99 so it won't be goofed 
-> anymore?):
+> The modification of code is performed either by kstop_machine, before 
+> SMP starts, or on module code before the module is executed. There is 
+> no reason to do the modifications from assembly. The copy to and from 
+> user functions are sufficient and produces cleaner and easier to read 
+> code.
+> 
+> Thanks to Benjamin Herrenschmidt for suggesting the idea.
+> 
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 
-the patch wont apply as it has whitespace corruption (double spaces). 
-Please check Documentation/email-clients.txt.
+applied to tip/tracing/ftrace - thanks Steve!
 
 	Ingo
