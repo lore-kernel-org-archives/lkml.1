@@ -1,37 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753719AbYHUJ32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbYHUJcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753719AbYHUJ32 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 05:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbYHUJ3U
+	id S1754080AbYHUJcw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 05:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbYHUJco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 05:29:20 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61631 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751595AbYHUJ3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 05:29:19 -0400
-Date: Thu, 21 Aug 2008 10:27:57 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.27-rc3: 'APIC error on CPU1: 00(40)', but only on resume!
-In-Reply-To: <200808202356.33036.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.55.0808211023020.22938@cliff.in.clinika.pl>
-References: <200808202106.41058.elendil@planet.nl> <200808202138.13302.rjw@sisk.pl>
- <200808202226.45655.elendil@planet.nl> <200808202356.33036.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 21 Aug 2008 05:32:44 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58942 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751254AbYHUJcn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 05:32:43 -0400
+Subject: Re: [RFC][PATCH 2/2] quicklist shouldn't be proportional to # of
+	CPUs
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, kosaki.motohiro@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       cl@linux-foundation.org, tokunaga.keiich@jp.fujitsu.com,
+       travis <travis@sgi.com>
+In-Reply-To: <20080821002757.b7c807ad.akpm@linux-foundation.org>
+References: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080820200709.12F0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080820234615.258a9c04.akpm@linux-foundation.org>
+	 <20080821.001322.236658980.davem@davemloft.net>
+	 <20080821002757.b7c807ad.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 21 Aug 2008 11:32:34 +0200
+Message-Id: <1219311154.8651.96.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008, Rafael J. Wysocki wrote:
+On Thu, 2008-08-21 at 00:27 -0700, Andrew Morton wrote:
+> On Thu, 21 Aug 2008 00:13:22 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+> 
+> > From: Andrew Morton <akpm@linux-foundation.org>
+> > Date: Wed, 20 Aug 2008 23:46:15 -0700
+> > 
+> > > On Wed, 20 Aug 2008 20:08:13 +0900 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > > 
+> > > > +	num_cpus_per_node = cpus_weight_nr(node_to_cpumask(node));
+> > > 
+> > > sparc64 allmodconfig:
+> > > 
+> > > mm/quicklist.c: In function `max_pages':
+> > > mm/quicklist.c:44: error: invalid lvalue in unary `&'
+> > > 
+> > > we seem to have a made a spectacular mess of cpumasks lately.
+> > 
+> > It should explode similarly on x86, since it also defines node_to_cpumask()
+> > as an inline function.
+> > 
+> > IA64 seems to be one of the few platforms to define this as a macro
+> > evaluating to the node-to-cpumask array entry, so it's clear what
+> > platform Motohiro-san did build testing on :-)
+> 
+> Seems to compile OK on x86_32, x86_64, ia64 and powerpc for some reason.
+> 
+> This seems to fix things on sparc64:
+> 
+> --- a/mm/quicklist.c~mm-quicklist-shouldnt-be-proportional-to-number-of-cpus-fix
+> +++ a/mm/quicklist.c
+> @@ -28,7 +28,7 @@ static unsigned long max_pages(unsigned 
+>  	unsigned long node_free_pages, max;
+>  	int node = numa_node_id();
+>  	struct zone *zones = NODE_DATA(node)->node_zones;
+> -	int num_cpus_per_node;
+> +	cpumask_t node_cpumask;
+>  
+>  	node_free_pages =
+>  #ifdef CONFIG_ZONE_DMA
+> @@ -41,8 +41,8 @@ static unsigned long max_pages(unsigned 
+>  
+>  	max = node_free_pages / FRACTION_OF_NODE_MEM;
+>  
+> -	num_cpus_per_node = cpus_weight_nr(node_to_cpumask(node));
+> -	max /= num_cpus_per_node;
+> +	node_cpumask = node_to_cpumask(node);
+> +	max /= cpus_weight_nr(node_cpumask);
+>  
+>  	return max(max, min_pages);
+>  }
 
-> On my box I see many "APIC error on CPU1: 00(40)" messages that don't seem
-> to be related to anything obviously bad and I've alwas been seeing them.
+humm, I thought we wanted to keep cpumask_t stuff away from our stack -
+since on insanely large SGI boxen (/me looks at mike) the thing becomes
+512 bytes.
 
- Barring a hardware erratum, this is a bug in the kernel.  It should be
-moderately easy to track down with some debugging added to writes
-accessing LVT and redirection table entries.
-
-  Maciej
