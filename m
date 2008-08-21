@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757760AbYHUGqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbYHUGqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757760AbYHUGqO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 02:46:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757370AbYHUGoW
+	id S1758130AbYHUGqn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 02:46:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757458AbYHUGoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 02:44:22 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:50446 "EHLO
+	Thu, 21 Aug 2008 02:44:25 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:50460 "EHLO
 	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755835AbYHUGoI (ORCPT
+	with ESMTP id S1756156AbYHUGoK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 02:44:08 -0400
+	Thu, 21 Aug 2008 02:44:10 -0400
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: Greg KH <greg@kroah.com>
 Cc: Greg Kroah-Hartman <gregkh@suse.de>,
@@ -31,25 +31,27 @@ References: <m1y74iiidz.fsf_-_@frodo.ebiederm.org>
 	<20080820021754.GA25182@kroah.com>
 	<m1od3m282j.fsf_-_@frodo.ebiederm.org>
 	<m1hc9e27ya.fsf_-_@frodo.ebiederm.org>
-Date: Wed, 20 Aug 2008 23:34:39 -0700
-In-Reply-To: <m1hc9e27ya.fsf_-_@frodo.ebiederm.org> (Eric W. Biederman's
-	message of "Wed, 20 Aug 2008 23:33:33 -0700")
-Message-ID: <m1d4k227wg.fsf_-_@frodo.ebiederm.org>
+	<m1d4k227wg.fsf_-_@frodo.ebiederm.org>
+	<m18wuq27uj.fsf_-_@frodo.ebiederm.org>
+Date: Wed, 20 Aug 2008 23:37:55 -0700
+In-Reply-To: <m18wuq27uj.fsf_-_@frodo.ebiederm.org> (Eric W. Biederman's
+	message of "Wed, 20 Aug 2008 23:35:48 -0700")
+Message-ID: <m1zln6zxdo.fsf_-_@frodo.ebiederm.org>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 X-SA-Exim-Connect-IP: 24.130.11.59
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
 X-Spam-Combo: ;Greg KH <greg@kroah.com>
 X-Spam-Relay-Country: 
 X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
 	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
+	*      [score: 0.0025]
 	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
 	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: [PATCH 2/8] sysfs: Merge sysfs_rename_dir and sysfs_move_dir
+Subject: [PATCH 4/8] driver core: Implement tagged directory support for device classes.
 X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
 X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -57,207 +59,205 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-These two functions do 90% of the same work and it doesn't significantly
-obfuscate the function to allow both the parent dir and the name to change
-at the same time.  So merge them together to simplify maintenance, and
-increase testing.
+This patch enables tagging on every class directory if struct class
+has a tag_type.
+
+In addition device_del and device_rename were modified to use
+sysfs_delete_link and sysfs_rename_link respectively to ensure
+when these operations happen on devices whose classes have
+tag_ops that they work properly.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Signed-off-by: Benjamin Thery <benjamin.thery@bull.net>
 ---
- fs/sysfs/dir.c |  121 +++++++++++++++++--------------------------------------
- 1 files changed, 38 insertions(+), 83 deletions(-)
+ drivers/base/class.c   |   30 ++++++++++++++++++++++---
+ drivers/base/core.c    |   56 ++++++++++++++++++++++++++++++------------------
+ include/linux/device.h |    3 ++
+ 3 files changed, 64 insertions(+), 25 deletions(-)
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index dec7586..a76fb54 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -955,44 +955,57 @@ err_out:
- 	return error;
+diff --git a/drivers/base/class.c b/drivers/base/class.c
+index cc5e28c..0cd5704 100644
+--- a/drivers/base/class.c
++++ b/drivers/base/class.c
+@@ -135,6 +135,17 @@ static void remove_class_attrs(struct class *cls)
+ 	}
  }
  
--int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
-+static int sysfs_mv_dir(struct sysfs_dirent *sd,
-+	struct sysfs_dirent *new_parent_sd, const char *new_name)
- {
--	struct sysfs_dirent *sd = kobj->sd;
- 	struct list_head todo;
- 	struct sysfs_rename_struct *srs;
--	struct inode *parent_inode = NULL;
-+	struct inode *old_parent_inode = NULL, *new_parent_inode = NULL;
- 	const char *dup_name = NULL;
- 	const void *old_tag, *tag;
- 	int error;
- 
- 	INIT_LIST_HEAD(&todo);
-+	BUG_ON(!sd->s_parent);
- 	mutex_lock(&sysfs_rename_mutex);
-+	if (!new_parent_sd)
-+		new_parent_sd = &sysfs_root;
++static int class_setup_tagging(struct class *cls)
++{
++	enum sysfs_tag_type type;
 +
- 	old_tag = sd->s_tag;
- 	tag = sysfs_creation_tag(sd->s_parent, sd);
++	type = cls->tag_type;
++	if (type == SYSFS_TAG_TYPE_NONE)
++		return 0;
++
++	return sysfs_make_tagged_dir(&cls->p->class_subsys.kobj, type);
++}
++
+ int __class_register(struct class *cls, struct lock_class_key *key)
+ {
+ 	struct class_private *cp;
+@@ -171,13 +182,24 @@ int __class_register(struct class *cls, struct lock_class_key *key)
+ 	cls->p = cp;
  
- 	error = 0;
--	if ((old_tag == tag) && (strcmp(sd->s_name, new_name) == 0))
--		goto out;	/* nothing to rename */
-+	if ((sd->s_parent == new_parent_sd) && (old_tag == tag) &&
-+	    (strcmp(sd->s_name, new_name) == 0))
-+		goto out;	/* nothing to do */
+ 	error = kset_register(&cp->class_subsys);
+-	if (error) {
+-		kfree(cp);
+-		return error;
+-	}
++	if (error)
++		goto out_free_cp;
++
++	error = class_setup_tagging(cls);
++	if (error)
++		goto out_unregister;
++
+ 	error = add_class_attrs(class_get(cls));
+ 	class_put(cls);
++	if (error)
++		goto out_unregister;
++out:
+ 	return error;
++out_unregister:
++	kset_unregister(&cp->class_subsys);
++out_free_cp:
++	kfree(cp);
++	goto out;
+ }
+ EXPORT_SYMBOL_GPL(__class_register);
  
- 	sysfs_grab_supers();
- 	if (old_tag == tag) {
--		error = prep_rename(&todo, sd, sd->s_parent, new_name);
-+		error = prep_rename(&todo, sd, new_parent_sd, new_name);
- 		if (error)
- 			goto out_release;
- 	}
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 2bf7116..4fb9b00 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -122,9 +122,21 @@ static void device_release(struct kobject *kobj)
+ 			dev->bus_id);
+ }
  
- 	error = -ENOMEM;
- 	mutex_lock(&sysfs_mutex);
--	parent_inode = sysfs_get_inode(sd->s_parent);
-+	old_parent_inode = sysfs_get_inode(sd->s_parent);
-+	new_parent_inode = sysfs_get_inode(new_parent_sd);
- 	mutex_unlock(&sysfs_mutex);
--	if (!parent_inode)
-+	if (!old_parent_inode || !new_parent_inode)
- 		goto out_release;
++static const void *device_sysfs_tag(struct kobject *kobj)
++{
++	struct device *dev = to_dev(kobj);
++	const void *tag = NULL;
++
++	if (dev->class && dev->class->tag_type)
++		tag = dev->class->sysfs_tag(dev);
++
++	return tag;
++}
++
+ static struct kobj_type device_ktype = {
+ 	.release	= device_release,
+ 	.sysfs_ops	= &dev_sysfs_ops,
++	.sysfs_tag	= device_sysfs_tag,
+ };
  
--	mutex_lock(&parent_inode->i_mutex);
-+again:
-+	mutex_lock(&old_parent_inode->i_mutex);
-+	if (old_parent_inode != new_parent_inode) {
-+		if (!mutex_trylock(&new_parent_inode->i_mutex)) {
-+			mutex_unlock(&old_parent_inode->i_mutex);
-+			goto again;
-+		}
-+	}
- 	mutex_lock(&sysfs_mutex);
  
- 	error = -EEXIST;
--	if (sysfs_find_dirent(sd->s_parent, tag, new_name))
-+	if (sysfs_find_dirent(new_parent_sd, tag, new_name))
- 		goto out_unlock;
- 
- 	/* rename sysfs_dirent */
-@@ -1005,7 +1018,7 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- 	sd->s_name = new_name;
- 	sd->s_tag = tag;
- 
--	/* rename */
-+	/* rename dcache entries */
- 	list_for_each_entry(srs, &todo, list) {
- 		d_add(srs->new_dentry, NULL);
- 		d_move(srs->old_dentry, srs->new_dentry);
-@@ -1025,77 +1038,6 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+@@ -617,6 +629,10 @@ static struct kobject *get_device_parent(struct device *dev,
+ 			kobject_put(k);
+ 			return NULL;
  		}
++		/* If we created a new class-directory setup tagging */
++		if (dev->class->tag_type)
++			sysfs_make_tagged_dir(k, dev->class->tag_type);
++
+ 		/* do not emit an uevent for this simple "glue" directory */
+ 		return k;
  	}
+@@ -707,7 +723,7 @@ out_device:
+ out_busid:
+ 	if (dev->kobj.parent != &dev->class->p->class_subsys.kobj &&
+ 	    device_is_not_partition(dev))
+-		sysfs_remove_link(&dev->class->p->class_subsys.kobj,
++		sysfs_delete_link(&dev->class->p->class_subsys.kobj, &dev->kobj,
+ 				  dev->bus_id);
+ #else
+ 	/* link in the class directory pointing to the device */
+@@ -725,7 +741,7 @@ out_busid:
+ 	return 0;
  
--	error = 0;
--out_unlock:
--	mutex_unlock(&sysfs_mutex);
--	mutex_unlock(&parent_inode->i_mutex);
--	kfree(dup_name);
--out_release:
--	iput(parent_inode);
--	post_rename(&todo);
--	sysfs_release_supers();
--out:
--	mutex_unlock(&sysfs_rename_mutex);
--	return error;
--}
--
--int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent_kobj)
--{
--	struct sysfs_dirent *sd = kobj->sd;
--	struct sysfs_dirent *new_parent_sd;
--	struct list_head todo;
--	struct sysfs_rename_struct *srs;
--	struct inode *old_parent_inode = NULL, *new_parent_inode = NULL;
--	int error;
--	const void *tag;
--
--	INIT_LIST_HEAD(&todo);
--	mutex_lock(&sysfs_rename_mutex);
--	BUG_ON(!sd->s_parent);
--	new_parent_sd = new_parent_kobj->sd ? new_parent_kobj->sd : &sysfs_root;
--	tag = sd->s_tag;
--
--	error = 0;
--	if (sd->s_parent == new_parent_sd)
--		goto out;	/* nothing to move */
--
--	sysfs_grab_supers();
--	error = prep_rename(&todo, sd, new_parent_sd, sd->s_name);
--	if (error)
--		goto out_release;
--
--	error = -ENOMEM;
--	mutex_lock(&sysfs_mutex);
--	old_parent_inode = sysfs_get_inode(sd->s_parent);
--	mutex_unlock(&sysfs_mutex);
--	if (!old_parent_inode)
--		goto out_release;
--
--	error = -ENOMEM;
--	mutex_lock(&sysfs_mutex);
--	new_parent_inode = sysfs_get_inode(new_parent_sd);
--	mutex_unlock(&sysfs_mutex);
--	if (!new_parent_inode)
--		goto out_release;
--
--again:
--	mutex_lock(&old_parent_inode->i_mutex);
--	if (!mutex_trylock(&new_parent_inode->i_mutex)) {
--		mutex_unlock(&old_parent_inode->i_mutex);
--		goto again;
--	}
--	mutex_lock(&sysfs_mutex);
--
--	error = -EEXIST;
--	if (sysfs_find_dirent(new_parent_sd, tag, sd->s_name))
--		goto out_unlock;
--
--	error = 0;
--	list_for_each_entry(srs, &todo, list) {
--		d_add(srs->new_dentry, NULL);
--		d_move(srs->old_dentry, srs->new_dentry);
--	}
--
- 	/* Remove from old parent's list and insert into new parent's list. */
- 	sysfs_unlink_sibling(sd);
- 	sysfs_get(new_parent_sd);
-@@ -1103,10 +1045,13 @@ again:
- 	sd->s_parent = new_parent_sd;
- 	sysfs_link_sibling(sd);
+ out_busid:
+-	sysfs_remove_link(&dev->class->p->class_subsys.kobj, dev->bus_id);
++	sysfs_delete_link(&dev->class->p->class_subsys.kobj, &dev->kobj, dev->bus_id);
+ #endif
  
-+	error = 0;
- out_unlock:
- 	mutex_unlock(&sysfs_mutex);
--	mutex_unlock(&new_parent_inode->i_mutex);
-+	if (new_parent_inode != old_parent_inode)
-+		mutex_unlock(&new_parent_inode->i_mutex);
- 	mutex_unlock(&old_parent_inode->i_mutex);
-+	kfree(dup_name);
+ out_subsys:
+@@ -753,13 +769,13 @@ static void device_remove_class_symlinks(struct device *dev)
  
- out_release:
- 	iput(new_parent_inode);
-@@ -1118,6 +1063,16 @@ out:
- 	return error;
- }
+ 	if (dev->kobj.parent != &dev->class->p->class_subsys.kobj &&
+ 	    device_is_not_partition(dev))
+-		sysfs_remove_link(&dev->class->p->class_subsys.kobj,
++		sysfs_delete_link(&dev->class->p->class_subsys.kobj, &dev->kobj,
+ 				  dev->bus_id);
+ #else
+ 	if (dev->parent && device_is_not_partition(dev))
+ 		sysfs_remove_link(&dev->kobj, "device");
  
-+int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
-+{
-+	return sysfs_mv_dir(kobj->sd, kobj->sd->s_parent, new_name);
-+}
+-	sysfs_remove_link(&dev->class->p->class_subsys.kobj, dev->bus_id);
++	sysfs_delete_link(&dev->class->p->class_subsys.kobj, &dev->kobj, dev->bus_id);
+ #endif
+ 
+ 	sysfs_remove_link(&dev->kobj, "subsystem");
+@@ -1347,6 +1363,15 @@ int device_rename(struct device *dev, char *new_name)
+ 	strlcpy(old_device_name, dev->bus_id, BUS_ID_SIZE);
+ 	strlcpy(dev->bus_id, new_name, BUS_ID_SIZE);
+ 
++#ifndef CONFIG_SYSFS_DEPRECATED
++	if (dev->class) {
++		error = sysfs_rename_link(&dev->class->p->class_subsys.kobj,
++			&dev->kobj, old_device_name, new_name);
++		if (error)
++			goto out;
++	}
++#endif
 +
-+int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent_kobj)
-+{
-+	return sysfs_mv_dir(kobj->sd, new_parent_kobj->sd, kobj->sd->s_name);
-+}
+ 	error = kobject_rename(&dev->kobj, new_name);
+ 	if (error) {
+ 		strlcpy(dev->bus_id, old_device_name, BUS_ID_SIZE);
+@@ -1355,24 +1380,13 @@ int device_rename(struct device *dev, char *new_name)
+ 
+ #ifdef CONFIG_SYSFS_DEPRECATED
+ 	if (old_class_name) {
++		error = -ENOMEM;
+ 		new_class_name = make_class_name(dev->class->name, &dev->kobj);
+-		if (new_class_name) {
+-			error = sysfs_create_link_nowarn(&dev->parent->kobj,
+-							 &dev->kobj,
+-							 new_class_name);
+-			if (error)
+-				goto out;
+-			sysfs_remove_link(&dev->parent->kobj, old_class_name);
+-		}
+-	}
+-#else
+-	if (dev->class) {
+-		error = sysfs_create_link_nowarn(&dev->class->p->class_subsys.kobj,
+-						 &dev->kobj, dev->bus_id);
+-		if (error)
+-			goto out;
+-		sysfs_remove_link(&dev->class->p->class_subsys.kobj,
+-				  old_device_name);
++		if (new_class_name)
++			error = sysfs_rename_link(&dev->parent->kobj,
++						  &dev->kobj,
++						  old_class_name,
++						  new_class_name);
+ 	}
+ #endif
+ 
+diff --git a/include/linux/device.h b/include/linux/device.h
+index d6fdd60..8d65016 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -195,6 +195,9 @@ struct class {
+ 	int (*suspend)(struct device *dev, pm_message_t state);
+ 	int (*resume)(struct device *dev);
+ 
++	enum sysfs_tag_type tag_type;
++	const void *(*sysfs_tag)(struct device *dev);
 +
- /* Relationship between s_mode and the DT_xxx types */
- static inline unsigned char dt_type(struct sysfs_dirent *sd)
- {
+ 	struct pm_ops *pm;
+ 	struct class_private *p;
+ };
 -- 
 1.5.3.rc6.17.g1911
 
