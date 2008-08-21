@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761290AbYHUTe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761266AbYHUTfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761290AbYHUTe0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 15:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756170AbYHUTeR
+	id S1761266AbYHUTfs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 15:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756257AbYHUTfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 15:34:17 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39733 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756215AbYHUTeQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 15:34:16 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: latest -git: suspend: unable to handle kernel paging request (was Re: no_console_suspend doesn't work?)
-Date: Thu, 21 Aug 2008 21:37:52 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-References: <19f34abd0808211028w7889587fke523ff244339e7c5@mail.gmail.com> <200808212113.53411.rjw@sisk.pl> <19f34abd0808211216q319e4fbclc41b362d8dbdcbc0@mail.gmail.com>
-In-Reply-To: <19f34abd0808211216q319e4fbclc41b362d8dbdcbc0@mail.gmail.com>
+	Thu, 21 Aug 2008 15:35:39 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:49146 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756166AbYHUTfi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 15:35:38 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=at5T+iMHdplpU7iId8EG3tM5MoRevjUcgfUHMEfOH5lb/02NC1z718VlqwtMcJ3gn
+	fMsCPISLGX3u9NkNg5mvw==
+Message-ID: <b040c32a0808211235t24a35ce5q3fbc7a6c908b8c72@mail.gmail.com>
+Date: Thu, 21 Aug 2008 12:35:31 -0700
+From: "Ken Chen" <kenchen@google.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [patch] fix NPTL thread iterator construct in cap_set_pg()
+Cc: linux-kernel@vger.kernel.org, morgan@kernel.org
+In-Reply-To: <20080821121827.45e44e4f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808212137.52757.rjw@sisk.pl>
+References: <b040c32a0808150924h2b93529aj803e0b923e1f96f3@mail.gmail.com>
+	 <20080821121827.45e44e4f.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 21 of August 2008, Vegard Nossum wrote:
-> On Thu, Aug 21, 2008 at 9:13 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> ...followed by the "unable to handle kernel paging request" as in
-> >> previous e-mail. The numbers 00100104 and 00200200 seem to appear all
-> >> the time.
-> >>
-> >> At least it is 100% reproducible now and with nice oopses too :-)
-> >
-> > Hm, slab corruption, it seems.
-> >
-> > Do you use SLAB or SLUB?
-> 
-> SLUB, with all possible debugging:
-> 
-> CONFIG_SLUB_DEBUG=y
-> # CONFIG_SLAB is not set
-> CONFIG_SLUB=y
-> # CONFIG_SLOB is not set
-> CONFIG_SLABINFO=y
-> CONFIG_SLUB_DEBUG_ON=y
-> CONFIG_SLUB_STATS=y
-> 
-> (Thanks for helping out.)
+On Thu, Aug 21, 2008 at 12:18 PM, Andrew Morton wrote:
+> cap_set_pg() gets deleted by the credentials patches in linux-next and
+> afaict nothing replaced it.
+>
+> Does this patch actually fix anything?  If not, ignoring it would be a
+> nice labour-saving device...
 
-(You're welcome.)
+No, the patch was a result of code inspection.  There wasn't anything
+that affected anyone.  If the function cap_set_pg() is destined for
+deletion, yeah I agree there is no point of fixing it.
 
-Can you switch to SLAB and retest?  I don't really think SLUB is the issue
-here, but SLAB may give us additional information.
-
-Thanks,
-Rafael
+- Ken
