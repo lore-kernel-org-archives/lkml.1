@@ -1,145 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757281AbYHUFso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbYHUF4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757281AbYHUFso (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 01:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbYHUFqE
+	id S1755394AbYHUF4A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 01:56:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbYHUFzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 01:46:04 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:23291 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755962AbYHUFqB (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 01:46:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=hURqR6+Ih4vp1morYfWPFwyfXa7PEDUHnPDB/thb4+/gpM7/Ek6vTvmLuZ65aSMRES
-         KT9S0ls+wfspqiPs6Shj9KNS4B3+dI38PxEvoeuCBgDlaVmTiTmcnhH5Z2u+tuhERxUy
-         A9rdx+vVyddO/QRMoKItJWFDwnfUbcxSyfiqw=
-Message-ID: <48AD0126.1050609@gmail.com>
-Date: Wed, 20 Aug 2008 22:46:14 -0700
-From: Jared Hulbert <jaredeh@gmail.com>
-Reply-To: jaredeh@gmail.com
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+	Thu, 21 Aug 2008 01:55:49 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:37749 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752454AbYHUFzs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 01:55:48 -0400
+Message-ID: <48AD02B2.7020004@oracle.com>
+Date: Wed, 20 Aug 2008 22:52:50 -0700
+From: rdunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@AM.SONY.COM,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-Subject: [PATCH 10/10] AXFS: axfs_uncompress.c
+To: lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
+       mike.miller@hp.com
+Subject: BUG: in 2.6.23-rc3-git7 in do_cciss_intr
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Handles the decompression for axfs, modeled after fs/cramfs/uncompress.c.
+on x86_64, 4 proc, 8 GB RAM:
 
-Signed-off-by: Jared Hulbert <jaredeh@gmail.com>
----
-diff --git a/fs/axfs/axfs_uncompress.c b/fs/axfs/axfs_uncompress.c
-new file mode 100644
-index 0000000..b7a2060
---- /dev/null
-+++ b/fs/axfs/axfs_uncompress.c
-@@ -0,0 +1,97 @@
-+/*
-+ * Advanced XIP File System for Linux - AXFS
-+ *   Readonly, compressed, and XIP filesystem for Linux systems big and small
-+ *
-+ *   Modified in 2006 by Eric Anderson
-+ *     from the cramfs sources fs/cramfs/uncompress.c
-+ *
-+ * (C) Copyright 1999 Linus Torvalds
-+ *
-+ * axfs_uncompress.c -
-+ *  axfs interfaces to the uncompression library. There's really just
-+ * three entrypoints:
-+ *
-+ *  - axfs_uncompress_init() - called to initialize the thing.
-+ *  - axfs_uncompress_exit() - tell me when you're done
-+ *  - axfs_uncompress_block() - uncompress a block.
-+ *
-+ * NOTE NOTE NOTE! The uncompression is entirely single-threaded. We
-+ * only have one stream, and we'll initialize it only once even if it
-+ * then is used by multiple filesystems.
-+ *
-+ */
-+
-+#include <linux/errno.h>
-+#include <linux/vmalloc.h>
-+#include <linux/zlib.h>
-+#include <linux/mutex.h>
-+
-+static z_stream stream;
-+static int initialized;
-+static struct mutex axfs_uncmp_mutex;
-+
-+int axfs_uncompress_block(void *dst, int dstlen, void *src, int srclen)
-+{
-+	int err;
-+	int out;
-+
-+	mutex_lock(&axfs_uncmp_mutex);
-+
-+	stream.next_in = src;
-+	stream.avail_in = srclen;
-+
-+	stream.next_out = dst;
-+	stream.avail_out = dstlen;
-+
-+	err = zlib_inflateReset(&stream);
-+	if (err != Z_OK) {
-+		printk(KERN_ERR "zlib_inflateReset error %d\n", err);
-+		zlib_inflateEnd(&stream);
-+		zlib_inflateInit(&stream);
-+	}
-+
-+	err = zlib_inflate(&stream, Z_FINISH);
-+	if (err != Z_STREAM_END)
-+		goto err;
-+
-+	out = stream.total_out;
-+
-+	mutex_unlock(&axfs_uncmp_mutex);
-+
-+	return out;
-+
-+err:
-+
-+	mutex_unlock(&axfs_uncmp_mutex);
-+
-+	printk(KERN_ERR "Error %d while decompressing!\n", err);
-+	printk(KERN_ERR "%p(%d)->%p(%d)\n", src, srclen, dst, dstlen);
-+	return 0;
-+}
-+
-+int axfs_uncompress_init(void)
-+{
-+	if (!initialized++) {
-+
-+		mutex_init(&axfs_uncmp_mutex);
-+
-+		stream.workspace = vmalloc(zlib_inflate_workspacesize());
-+		if (!stream.workspace) {
-+			initialized = 0;
-+			return -ENOMEM;
-+		}
-+		stream.next_in = NULL;
-+		stream.avail_in = 0;
-+		zlib_inflateInit(&stream);
-+	}
-+	return 0;
-+}
-+
-+int axfs_uncompress_exit(void)
-+{
-+	if (!--initialized) {
-+		zlib_inflateEnd(&stream);
-+		vfree(stream.workspace);
-+	}
-+	return 0;
-+}
+calling  cciss_init+0x0/0x2e [cciss]
+HP CISS Driver (v 3.6.20)
+ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 54
+cciss 0000:42:08.0: PCI INT A -> Link[LNKA] -> GSI 54 (level, high) -> IRQ 54
+cciss0: <0x3238> at PCI 0000:42:08.0 IRQ 503 using DAC
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000248
+IP: [<ffffffffa001bb68>] do_cciss_intr+0x627/0xa6c [cciss]
+PGD 17e422067 PUD 17e423067 PMD 0
+Oops: 0002 [1] SMP
+CPU 2
+Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
+Pid: 0, comm: swapper Not tainted 2.6.27-rc3-git7 #1
+RIP: 0010:[<ffffffffa001bb68>]  [<ffffffffa001bb68>] do_cciss_intr+0x627/0xa6c [cciss]
+RSP: 0018:ffff88027f66fee8  EFLAGS: 00010007
+RAX: 0000000000000000 RBX: ffff88007f840270 RCX: 000000000000000c
+RDX: 0000000000000000 RSI: ffff88027e5c0000 RDI: ffff88027e5c0000
+RBP: ffff88027f66ff18 R08: 0000000000000000 R09: ffff88017fa95e88
+R10: 0000000000000000 R11: ffff88027f66ff48 R12: ffff88027e5c0000
+R13: 0000000000000000 R14: 00000000000001f7 R15: 0000000000000086
+FS:  0000000000680850(0000) GS:ffff88017fc02c80(0000) knlGS:0000000000000000
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: 0000000000000248 CR3: 000000017e425000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process swapper (pid: 0, threadinfo ffff88017fa94000, task ffff88027f63d340)
+Stack:  ffff88027f66fee0 ffff88017e9b4800 0000000000000000 0000000000000000
+ 00000000000001f7 0000000000000000 ffff88027f66ff48 ffffffff8026757e
+ ffffffff80719000 00000000000001f7 ffff88017e9b4800 ffffffff80719050
+Call Trace:
+ <IRQ>  [<ffffffff8026757e>] handle_IRQ_event+0x27/0x57
+ [<ffffffff80268d08>] handle_edge_irq+0xed/0x12e
+ [<ffffffff8020eaab>] do_IRQ+0xf6/0x167
+ [<ffffffff8020c471>] ret_from_intr+0x0/0xa
+ <EOI>  [<ffffffff802122b1>] ? default_idle+0x2b/0x40
+ [<ffffffff802124bf>] ? c1e_idle+0xd4/0xdb
+ [<ffffffff8055677d>] ? atomic_notifier_call_chain+0xf/0x11
+ [<ffffffff8020ac6c>] ? cpu_idle+0x71/0x8f
+ [<ffffffff8054e752>] ? start_secondary+0x157/0x15c
 
 
+Code: 8b 83 48 02 00 00 48 39 d8 74 37 49 39 9c 24 c0 00 01 00 75 08 49 89 84 24 c0 00 01 00 48 8b 83 40 02 00 00 48 8b 93 48 02 00 00 <48> 89 90 48 02 00 00 48 8b 93 48 02 00 00 48 89 82 40 02 00 00
+RIP  [<ffffffffa001bb68>] do_cciss_intr+0x627/0xa6c [cciss]
+ RSP <ffff88027f66fee8>
+CR2: 0000000000000248
+---[ end trace 902dc79a9e72d3ed ]---
