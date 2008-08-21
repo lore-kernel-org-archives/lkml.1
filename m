@@ -1,89 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbYHUCq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbYHUCtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881AbYHUCq0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 22:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbYHUCqO
+	id S1755243AbYHUCtR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 22:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYHUCsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 22:46:14 -0400
-Received: from tamago.serverit.net ([91.189.209.155]:45620 "EHLO
-	mail.hosting2.serverit.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752725AbYHUCqN (ORCPT
+	Wed, 20 Aug 2008 22:48:54 -0400
+Received: from web82105.mail.mud.yahoo.com ([209.191.84.218]:33982 "HELO
+	web82105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753667AbYHUCsv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 22:46:13 -0400
-Date: Thu, 21 Aug 2008 05:46:00 +0300 (EEST)
-From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
-X-X-Sender: szaka@tamago.serverit.net
-To: Dave Chinner <david@fromorbit.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
-In-Reply-To: <20080821021259.GA5706@disturbed>
-Message-ID: <Pine.LNX.4.62.0808210535450.25448@tamago.serverit.net>
-References: <20080820004326.519405a2.akpm@linux-foundation.org>
- <200808201613.AA00212@capsicum.lab.ntt.co.jp> <Pine.LNX.4.61.0808202352450.4532@dhcppc2>
- <20080820143916.1a7eddab.akpm@linux-foundation.org> <20080821021259.GA5706@disturbed>
+	Wed, 20 Aug 2008 22:48:51 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=WHRflLnvx/xkDuc5D94+YIFr3vI3XZ1yGfQ4xW12EyVJBXoZoj4JPU+KI/zTp3jMfjQz3wGdnjCtWthINE8CXoRKppYbe987Y1ZOgW/YAO7sc5Z4Ht/thFvSLUeL3g0TZXpXyYkcViHSP3XsR58lpO3rnr8kbdfqcDpebvGXaIs=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Wed, 20 Aug 2008 19:48:50 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Vivek Goyal <vgoyal@redhat.com>,
+       Bill Fink <billfink@mindspring.com>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       netdev <netdev@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <81856.40793.qm@web82105.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 21 Aug 2008, Dave Chinner wrote:
-> On Wed, Aug 20, 2008 at 02:39:16PM -0700, Andrew Morton wrote:
-> > On Thu, 21 Aug 2008 00:25:55 +0300 (MET DST)
-> > Szabolcs Szakacsits <szaka@ntfs-3g.org> wrote:
-> > > I ran compilebench on kernel 2.6.26 with freshly formatted volumes. 
-> > > The behavior of NILFS2 was interesting.
-> > > 
-> > > Its peformance rapidly degrades to the lowest ever measured level 
-> > > (< 1 MB/s) but after a while it recovers and gives consistent numbers.
-> > > However it's still very far from the current unstable btrfs performance. 
-> > > The results are reproducible.
-> > > 
-> > >                     MB/s    Runtime (s)
-> > >                    -----    -----------
-> > >   btrfs unstable   17.09        572
-> > >   ext3             13.24        877
-> > >   btrfs 0.16       12.33        793
-> > >   nilfs2 2nd+ runs 11.29        674
-> > >   ntfs-3g           8.55        865
-> > >   reiserfs          8.38        966
-> > >   nilfs2 1st run    4.95       3800
-> > >   xfs               1.88       3901
-> > 
-> > err, what the heck happened to xfs?  Is this usual?
+
+
+> > As a separate experiment, I started over with a clean version of
+> > 700efc1b, then introduced the change from request_resource() to
+> > insert_resource():
+> > ===== BEGIN DIFF ================
+> > diff --git a/arch/x86/kernel/e820_64.c b/arch/x86/kernel/e820_64.c
+> > index a8694a3..988195d 100644
+> > --- a/arch/x86/kernel/e820_64.c
+> > +++ b/arch/x86/kernel/e820_64.c
+> > @@ -245,7 +245,7 @@ void __init e820_reserve_resources(struct resource 
+> *code_resource,
+> >         res->start = e820.map[i].addr;
+> >         res->end = res->start + e820.map[i].size - 1;
+> >         res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+> > -        request_resource(&iomem_resource, res);
+> > +        insert_resource(&iomem_resource, res);
+> >         if (e820.map[i].type == E820_RAM) {
+> >             /*
+> >              * We don't know which RAM region contains kernel data,
+> > ===== END DIFF ================
+> >
+> > The kernel produced from the change HANGS!
 > 
-> No, definitely not usual. I suspect it's from an old mkfs and
-> barriers being used.  What is the output of the xfs.mkfs when
-> you make the filesystem and what mount options being used?
+> because code/data/bss/crashk is inserted at first
+> 
+> in e820_reserve_resource if you call request_resource instead of
+> insert_resource. the entries from e820 tables that has conflict to
+> entries already added will not show in
+> resource list /proc/iomem.
 
-Everything is default.
+Ahh, what an error I made!  I made at least 3 errors in that post, and
+now that I am home from work I can try to correct them.
 
-  % rpm -qf =mkfs.xfs
-  xfsprogs-2.9.8-7.1 
 
-which, according to ftp://oss.sgi.com/projects/xfs/cmd_tars, is the 
-latest stable mkfs.xfs. Its output is
+> please send out /proc/iomem when it happens to boot.
 
-meta-data=/dev/sda8              isize=256    agcount=4, agsize=1221440 blks
-         =                       sectsz=512   attr=2
-data     =                       bsize=4096   blocks=4885760, imaxpct=25
-         =                       sunit=0      swidth=0 blks
-naming   =version 2              bsize=4096  
-log      =internal log           bsize=4096   blocks=2560, version=2
-         =                       sectsz=512   sunit=0 blks, lazy-count=0
-realtime =none                   extsz=4096   blocks=0, rtextents=0
+OK, this was my first error.  My first experiment -- leave 
+request_resource() alone, and move the additions of the kernel memory
+regions to setup_arch() -- produced a booting kernel.  When that
+happened, I was already late for work... so I produced the output
+of 'cat /proc/iomem' from that kernel and moved on to my second test
 
-Kernel xfs log:
+I simply forgot to include the output in my message because I was
+rushing to get out of the house!  Here it is:
 
-SGI XFS with ACLs, security attributes, realtime, large block/inode numbers, no debug enabled
-SGI XFS Quota Management subsystem
-XFS mounting filesystem sda8
-Ending clean XFS mount for filesystem: sda8
+==============================
+00000000-0009f3ff : System RAM
+0009f400-0009ffff : reserved
+000f0000-000fffff : reserved
+00200000-005570e1 : Kernel code
+005570e2-006b4397 : Kernel data
+00736000-0077d387 : Kernel bss
+77fe0000-77fe2fff : ACPI Non-volatile Storage
+77fe3000-77feffff : ACPI Tables
+77ff0000-77ffffff : reserved
+78000000-7fffffff : pnp 00:0d
+d8000000-dfffffff : PCI Bus #01
+  d8000000-dfffffff : 0000:01:05.0
+    d8000000-d8ffffff : uvesafb
+e0000000-efffffff : PCI MMCONFIG 0
+  e0000000-efffffff : reserved
+fdc00000-fdcfffff : PCI Bus #02
+  fdcff000-fdcff0ff : 0000:02:05.0
+    fdcff000-fdcff0ff : r8169
+fdd00000-fdefffff : PCI Bus #01
+  fdd00000-fddfffff : 0000:01:05.0
+  fdee0000-fdeeffff : 0000:01:05.0
+  fdefc000-fdefffff : 0000:01:05.2
+    fdefc000-fdefffff : ICH HD audio
+fdf00000-fdffffff : PCI Bus #02
+fe020000-fe023fff : 0000:00:14.2
+  fe020000-fe023fff : ICH HD audio
+fe029000-fe0290ff : 0000:00:13.5
+  fe029000-fe0290ff : ehci_hcd
+fe02a000-fe02afff : 0000:00:13.4
+  fe02a000-fe02afff : ohci_hcd
+fe02b000-fe02bfff : 0000:00:13.3
+  fe02b000-fe02bfff : ohci_hcd
+fe02c000-fe02cfff : 0000:00:13.2
+  fe02c000-fe02cfff : ohci_hcd
+fe02d000-fe02dfff : 0000:00:13.1
+  fe02d000-fe02dfff : ohci_hcd
+fe02e000-fe02efff : 0000:00:13.0
+  fe02e000-fe02efff : ohci_hcd
+fe02f000-fe02f3ff : 0000:00:12.0
+  fe02f000-fe02f3ff : ahci
+fec00000-fec00fff : IOAPIC 0
+  fec00000-fec00fff : pnp 00:0d
+fed00000-fed003ff : HPET 0
+  fed00000-fed003ff : 0000:00:14.0
+fee00000-fee00fff : Local APIC
+fff80000-fffeffff : pnp 00:0d
+ffff0000-ffffffff : pnp 00:0d
+==============================
 
-	Szaka
 
---
-NTFS-3G:  http://ntfs-3g.org
+My second (huge) error was to carry out my second experiment incorrectly.
+When I replaced request_resource() with insert_resource(), I positioned
+it before the code that added the kernel memory regions to the resource
+for the system RAM region containing them.
 
+I actually intended the second experiment to be different, but only
+realized it when Yinghai corrected me (above).  Here is the diff for
+the _actual_ experiment I intended:
+===== BEGIN DIFF ================
+diff --git a/arch/x86/kernel/e820_64.c b/arch/x86/kernel/e820_64.c
+index a8694a3..f2498ae 100644
+--- a/arch/x86/kernel/e820_64.c
++++ b/arch/x86/kernel/e820_64.c
+@@ -245,7 +245,6 @@ void __init e820_reserve_resources(struct resource *code_resource,
+         res->start = e820.map[i].addr;
+         res->end = res->start + e820.map[i].size - 1;
+         res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+-        request_resource(&iomem_resource, res);
+         if (e820.map[i].type == E820_RAM) {
+             /*
+              * We don't know which RAM region contains kernel data,
+@@ -260,6 +259,7 @@ void __init e820_reserve_resources(struct resource *code_resource,
+                 request_resource(res, &crashk_res);
+ #endif
+         }
++        insert_resource(&iomem_resource, res);
+     }
+ }
+===== END DIFF ================
+
+This change produces a kernel that hangs.  The difference between the
+results of the two experiments was what I was trying to show.  We now
+know that:
+
+- moving the code that adds {code,data,bss}_resource to the iomem_resource
+tree out of e820_reserve_resources() and into setup_arch() is NOT what
+caused my problem.
+
+- the change from using request_resource() to insert_resource() seems
+to be to blame.
+
+My purpose in those experiments was to try to present a sort of "proof",
+like a mathematical proof.  But my understanding of the code is fairly
+shallow, so my "proof" might not mean very much.  I was hoping to 
+provide useful data here, but only kernel developers can assess whether
+or not this information is useful.
+
+
+My third error was my "conclusion":
+
+> My conclusion is that, somehow, the reordering of adding 
+> {code,data,bss}_resource to the iomem_resource tree is doing funky 
+> things to certain people's machines!
+
+I meant to say just the opposite:  reordering the place where adding the
+kernel memory resources to the iomem_resource tree is NOT the problem;
+somehow the change to insert_resource() is the problem.
+
+My apologies to all here:  I was racing to finish up, post my results,
+and get to work... and completely botched the second experiment and the
+message describing them!
+
+
+Dave W.
