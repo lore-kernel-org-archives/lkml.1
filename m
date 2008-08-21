@@ -1,90 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758104AbYHUSCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbYHUSE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758104AbYHUSCQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 14:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYHUSB7
+	id S1758218AbYHUSE5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 14:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbYHUSEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 14:01:59 -0400
-Received: from h155.mvista.com ([63.81.120.155]:62796 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752883AbYHUSB6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 14:01:58 -0400
-Message-ID: <48ADADA3.9060805@ru.mvista.com>
-Date: Thu, 21 Aug 2008 22:02:11 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       khilman@deeprootsystems.com
-Subject: Re: [PATCH 1/7] ide: add ide_host_add() helper
-References: <20080628214355.21345.94835.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080628214355.21345.94835.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+	Thu, 21 Aug 2008 14:04:48 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:50420 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753077AbYHUSEr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 14:04:47 -0400
+X-IronPort-AV: E=Sophos;i="4.32,246,1217822400"; 
+   d="scan'208";a="16837580"
+From: Alex Nixon <alex.nixon@citrix.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Alex Nixon <alex.nixon@citrix.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 1/7] x86/paravirt:  Add hooks for CPU hotplugging
+Date: Thu, 21 Aug 2008 19:04:42 +0100
+Message-Id: <1219341888-23191-1-git-send-email-alex.nixon@citrix.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
+X-OriginalArrivalTime: 21 Aug 2008 18:04:46.0037 (UTC) FILETIME=[65039850:01C903B8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/paravirt.c   |    8 ++++++++
+ arch/x86/kernel/process_32.c |   10 ++++++++--
+ arch/x86/kernel/process_64.c |    9 +++++++--
+ arch/x86/kernel/smpboot.c    |    8 ++++----
+ include/asm-x86/paravirt.h   |   27 +++++++++++++++++++++++++++
+ include/asm-x86/smp.h        |   13 +++++++++++--
+ 6 files changed, 65 insertions(+), 10 deletions(-)
 
-> Add ide_host_add() helper which does ide_host_alloc()+ide_host_register(),
-> then convert ide_setup_pci_device[s](), ide_legacy_device_add() and some
-> host drivers to use it.
+diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
+index 7cd2747..8ffe4d1 100644
+--- a/arch/x86/kernel/paravirt.c
++++ b/arch/x86/kernel/paravirt.c
+@@ -125,6 +125,7 @@ static void *get_call_destination(u8 type)
+ 		.pv_apic_ops = pv_apic_ops,
+ 		.pv_mmu_ops = pv_mmu_ops,
+ 		.pv_lock_ops = pv_lock_ops,
++		.pv_hotplug_ops = pv_hotplug_ops,
+ 	};
+ 	return *((void **)&tmpl + type);
+ }
+@@ -455,9 +456,16 @@ struct pv_mmu_ops pv_mmu_ops = {
+ 	.set_fixmap = native_set_fixmap,
+ };
+ 
++struct pv_hotplug_ops pv_hotplug_ops = {
++	.cpu_die = native_cpu_die,
++	.cpu_disable = native_cpu_disable,
++	.play_dead = native_play_dead,
++};
++
+ EXPORT_SYMBOL_GPL(pv_time_ops);
+ EXPORT_SYMBOL    (pv_cpu_ops);
+ EXPORT_SYMBOL    (pv_mmu_ops);
+ EXPORT_SYMBOL_GPL(pv_apic_ops);
+ EXPORT_SYMBOL_GPL(pv_info);
+ EXPORT_SYMBOL    (pv_irq_ops);
++EXPORT_SYMBOL    (pv_hotplug_ops);
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index 593b73e..53887cd 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -77,6 +77,12 @@ unsigned long thread_saved_pc(struct task_struct *tsk)
+ #ifdef CONFIG_HOTPLUG_CPU
+ #include <asm/nmi.h>
+ 
++#ifdef CONFIG_PARAVIRT
++#include <asm/paravirt.h>
++#else
++#define play_dead native_play_dead
++#endif
++
+ static void cpu_exit_clear(void)
+ {
+ 	int cpu = raw_smp_processor_id();
+@@ -93,7 +99,7 @@ static void cpu_exit_clear(void)
+ }
+ 
+ /* We don't actually take CPU down, just spin without interrupts. */
+-static inline void play_dead(void)
++void native_play_dead(void)
+ {
+ 	/* This must be done before dead CPU ack */
+ 	cpu_exit_clear();
+@@ -109,7 +115,7 @@ static inline void play_dead(void)
+ 	wbinvd_halt();
+ }
+ #else
+-static inline void play_dead(void)
++void play_dead(void)
+ {
+ 	BUG();
+ }
+diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+index 8248dc0..7512044 100644
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -86,13 +86,18 @@ void exit_idle(void)
+ 		return;
+ 	__exit_idle();
+ }
++#ifdef CONFIG_PARAVIRT
++#include <asm/paravirt.h>
++#else
++#define play_dead native_play_dead
++#endif
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ DECLARE_PER_CPU(int, cpu_state);
+ 
+ #include <linux/nmi.h>
+ /* We halt the CPU with physical CPU hotplug */
+-static inline void play_dead(void)
++void native_play_dead(void)
+ {
+ 	idle_task_exit();
+ 	mb();
+@@ -104,7 +109,7 @@ static inline void play_dead(void)
+ 	wbinvd_halt();
+ }
+ #else
+-static inline void play_dead(void)
++void native_play_dead(void)
+ {
+ 	BUG();
+ }
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index eea2fd6..2a555a1 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1340,7 +1340,7 @@ static void __ref remove_cpu_from_maps(int cpu)
+ 	numa_remove_cpu(cpu);
+ }
+ 
+-int __cpu_disable(void)
++int native_cpu_disable(void)
+ {
+ 	int cpu = smp_processor_id();
+ 
+@@ -1379,7 +1379,7 @@ int __cpu_disable(void)
+ 	return 0;
+ }
+ 
+-void __cpu_die(unsigned int cpu)
++void native_cpu_die(unsigned int cpu)
+ {
+ 	/* We don't do anything here: idle task is faking death itself. */
+ 	unsigned int i;
+@@ -1397,12 +1397,12 @@ void __cpu_die(unsigned int cpu)
+ 	printk(KERN_ERR "CPU %u didn't die...\n", cpu);
+ }
+ #else /* ... !CONFIG_HOTPLUG_CPU */
+-int __cpu_disable(void)
++int native_cpu_disable(void)
+ {
+ 	return -ENOSYS;
+ }
+ 
+-void __cpu_die(unsigned int cpu)
++void native_cpu_die(unsigned int cpu)
+ {
+ 	/* We said "no" in __cpu_disable */
+ 	BUG();
+diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
+index eca8c4f..fd922c3 100644
+--- a/include/asm-x86/paravirt.h
++++ b/include/asm-x86/paravirt.h
+@@ -332,6 +332,12 @@ struct pv_lock_ops {
+ 	void (*spin_unlock)(struct raw_spinlock *lock);
+ };
+ 
++struct pv_hotplug_ops {
++	void (*play_dead)(void);
++	int (*cpu_disable)(void);
++	void (*cpu_die)(unsigned int);
++};
++
+ /* This contains all the paravirt structures: we get a convenient
+  * number for each function using the offset which we use to indicate
+  * what to patch. */
+@@ -343,6 +349,7 @@ struct paravirt_patch_template {
+ 	struct pv_apic_ops pv_apic_ops;
+ 	struct pv_mmu_ops pv_mmu_ops;
+ 	struct pv_lock_ops pv_lock_ops;
++	struct pv_hotplug_ops pv_hotplug_ops;
+ };
+ 
+ extern struct pv_info pv_info;
+@@ -353,6 +360,7 @@ extern struct pv_irq_ops pv_irq_ops;
+ extern struct pv_apic_ops pv_apic_ops;
+ extern struct pv_mmu_ops pv_mmu_ops;
+ extern struct pv_lock_ops pv_lock_ops;
++extern struct pv_hotplug_ops pv_hotplug_ops;
+ 
+ #define PARAVIRT_PATCH(x)					\
+ 	(offsetof(struct paravirt_patch_template, x) / sizeof(void *))
+@@ -1408,6 +1416,25 @@ static __always_inline void __raw_spin_unlock(struct raw_spinlock *lock)
+ 
+ #endif
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++
++static inline int __cpu_disable(void)
++{
++	return PVOP_CALL0(int, pv_hotplug_ops.cpu_disable);
++}
++
++static inline void __cpu_die(unsigned int cpu)
++{
++	PVOP_VCALL1(pv_hotplug_ops.cpu_die, cpu);
++}
++
++static inline void play_dead(void)
++{
++	PVOP_VCALL0(pv_hotplug_ops.play_dead);
++}
++
++#endif
++
+ /* These all sit in the .parainstructions section to tell us what to patch. */
+ struct paravirt_patch_site {
+ 	u8 *instr; 		/* original instructions */
+diff --git a/include/asm-x86/smp.h b/include/asm-x86/smp.h
+index 29324c1..f7d153f 100644
+--- a/include/asm-x86/smp.h
++++ b/include/asm-x86/smp.h
+@@ -113,11 +113,20 @@ void native_smp_prepare_boot_cpu(void);
+ void native_smp_prepare_cpus(unsigned int max_cpus);
+ void native_smp_cpus_done(unsigned int max_cpus);
+ int native_cpu_up(unsigned int cpunum);
++int native_cpu_disable(void);
++void native_cpu_die(unsigned int cpu);
++void native_play_dead(void);
++
+ void native_send_call_func_ipi(cpumask_t mask);
+ void native_send_call_func_single_ipi(int cpu);
+ 
+-extern int __cpu_disable(void);
+-extern void __cpu_die(unsigned int cpu);
++
++#ifdef CONFIG_PARAVIRT
++#include <asm/paravirt.h>
++#else
++#define __cpu_disable	native_cpu_disable
++#define __cpu_die	native_cpu_die
++#endif
+ 
+ void smp_store_cpu_info(int id);
+ #define cpu_physical_id(cpu)	per_cpu(x86_cpu_to_apicid, cpu)
+-- 
+1.5.4.3
 
-> While at it:
-
-> * Fix ide_setup_pci_device[s](), ide_arm.c, gayle.c, ide-4drives.c,
->   macide.c, q40ide.c, cmd640.c and cs5520.c to return correct error value.
-
-> * -ENOENT -> -ENOMEM in rapide.c, ide-h8300.c, ide-generic.c, au1xxx-ide.c
->   and pmac.c
-
-> * -ENODEV -> -ENOMEM in palm_bk3710.c, ide_platform.c and delkin_cb.c
-
-> * -1 -> -ENOMEM in ide-pnp.c
-
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Index: b/drivers/ide/arm/palm_bk3710.c
-> ===================================================================
-> --- a/drivers/ide/arm/palm_bk3710.c
-> +++ b/drivers/ide/arm/palm_bk3710.c
-> @@ -351,7 +351,7 @@ static int __devinit palm_bk3710_probe(s
->  	struct resource *mem, *irq;
->  	struct ide_host *host;
-
-    You forgot to remove this variable which caused the warning:
-
-drivers/ide/arm/palm_bk3710.c: In the fucntion ‘palm_bk3710_probe’
-drivers/ide/arm/palm_bk3710.c:350: warning: unused variable ‘host’
-
->  	unsigned long base;
-> -	int i;
-> +	int i, rc;
->  	hw_regs_t hw, *hws[] = { &hw, NULL, NULL, NULL };
->  
->  	clkp = clk_get(NULL, "IDECLK");
-> @@ -394,16 +394,14 @@ static int __devinit palm_bk3710_probe(s
->  	hw.irq = irq->start;
->  	hw.chipset = ide_palm3710;
->  
-> -	host = ide_host_alloc(&palm_bk3710_port_info, hws);
-> -	if (host == NULL)
-> +	rc = ide_host_add(&palm_bk3710_port_info, hws, NULL);
-> +	if (rc)
->  		goto out;
->  
-> -	ide_host_register(host, &palm_bk3710_port_info, hws);
-> -
->  	return 0;
->  out:
->  	printk(KERN_WARNING "Palm Chip BK3710 IDE Register Fail\n");
-> -	return -ENODEV;
-> +	return rc;
->  }
->  
->  /* work with hotplug and coldplug */
-
-MBR, Sergei
