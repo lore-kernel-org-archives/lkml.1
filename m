@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760888AbYHUS0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760625AbYHUS3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760888AbYHUS0z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 14:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbYHUS0r
+	id S1760625AbYHUS3i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 14:29:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbYHUS3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 14:26:47 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:55682 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753369AbYHUS0q (ORCPT
+	Thu, 21 Aug 2008 14:29:31 -0400
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:20658 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753207AbYHUS3a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 14:26:46 -0400
-Subject: x86: VMI: Fix bug, do_IRQ: cannot handle...
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>
-Cc: Zachary Amsden <zach@vmware.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Thu, 21 Aug 2008 11:26:43 -0700
-Message-Id: <1219343203.18349.39.camel@alok-dev1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Aug 2008 14:29:30 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=RqIbheGASmcvmg8qkvo72fZOZJJjMZHuwUCnokz15HdcqeeKjEQZS35OH/cM/0HGgpN0NMQ9wrI5uhcRUwna35fl3zc6HJRzXgIgNWjKUVusShyDM/Fmh4tmksE0atrhaPypfJK+pAzObRuWbNAKnom5dYCbdht2ylXT/XhU0q8=  ;
+X-YMail-OSG: 9isq0uwVM1nOSwZGQ5Jr7GbLpnJtey_pDua69mi_glbNkEjK2TCz4ZwgKzG1oM3xETudrgGajTprw0EkDmB4cchpN06OcRUSitpQsXapKw--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 06/15] driver model: anti-oopsing medicine
+Date: Thu, 21 Aug 2008 11:24:22 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <20080821173036.GB7974@suse.de> <1219339983-9634-6-git-send-email-gregkh@suse.de>
+In-Reply-To: <1219339983-9634-6-git-send-email-gregkh@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200808211124.22485.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Below is the patch which needs to be applied to x86-tip/master, to fix
-the VMI bug caused by 
-commit 9c3f2468d8339866d9ef6a25aae31a8909c6be0d.
-x86: make 32bit support per_cpu vector
+On Thursday 21 August 2008, Greg Kroah-Hartman wrote:
+> +       if (!class->p) {
+> +               WARN(1, "%s called for class '%s' before it was initialized",
+> +                    __func__, class->name);
+> +               return -EINVAL;
+> +       }
 
-Thanks to Yinghai, for giving a heads up.
+Or -- for future reference -- using WARN() with non-constant
+initial parameter:
 
-Please apply.
+	if (WARN(!class-p, "%s called ...\n" ...))
+		return -EINVAL;
 
-Alok
+Some of those macros now have return values, supportin C code
+that looks a bit more compact.
 
---
-From: Alok N Kataria <akataria@vmware.com>
-
-x86: VMI, Initialize IRQ vector.
-
-Initialize vector_irq for the vmi used vector, to point to correct irq.
-
-Signed-off-by: Alok N Kataria <akataria@vmware.com>
-Cc: Zachary Amsden <zach@vmware.com>
----
-
- arch/x86/kernel/vmiclock_32.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-
-diff --git a/arch/x86/kernel/vmiclock_32.c b/arch/x86/kernel/vmiclock_32.c
-index 6953859..254ee07 100644
---- a/arch/x86/kernel/vmiclock_32.c
-+++ b/arch/x86/kernel/vmiclock_32.c
-@@ -235,11 +235,14 @@ static void __devinit vmi_time_init_clockevent(void)
- 
- void __init vmi_time_init(void)
- {
-+	unsigned int cpu;
- 	/* Disable PIT: BIOSes start PIT CH0 with 18.2hz peridic. */
- 	outb_pit(0x3a, PIT_MODE); /* binary, mode 5, LSB/MSB, ch 0 */
- 
- 	vmi_time_init_clockevent();
- 	setup_irq(0, &vmi_clock_action);
-+	for_each_possible_cpu(cpu)
-+		per_cpu(vector_irq, cpu)[vmi_get_timer_vector()] = 0;
- }
- 
- #ifdef CONFIG_X86_LOCAL_APIC
-
-
+- Dave
