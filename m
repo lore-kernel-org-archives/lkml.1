@@ -1,76 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbYHUCmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbYHUCq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbYHUCmx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 22:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbYHUCmn
+	id S1754881AbYHUCq0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 22:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbYHUCqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 22:42:43 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:34306 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752896AbYHUCmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 22:42:43 -0400
-Date: Wed, 20 Aug 2008 21:42:40 -0500
-From: Robin Holt <holt@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, cl@linux-foundation.org,
-       tokunaga.keiich@jp.fujitsu.com, stable@kernel.org
-Subject: Re: [RFC][PATCH 0/2] Quicklist is slighly problematic.
-Message-ID: <20080821024240.GC23397@sgi.com>
-References: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080820113131.f032c8a2.akpm@linux-foundation.org>
+	Wed, 20 Aug 2008 22:46:14 -0400
+Received: from tamago.serverit.net ([91.189.209.155]:45620 "EHLO
+	mail.hosting2.serverit.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752725AbYHUCqN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 22:46:13 -0400
+Date: Thu, 21 Aug 2008 05:46:00 +0300 (EEST)
+From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
+X-X-Sender: szaka@tamago.serverit.net
+To: Dave Chinner <david@fromorbit.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
+In-Reply-To: <20080821021259.GA5706@disturbed>
+Message-ID: <Pine.LNX.4.62.0808210535450.25448@tamago.serverit.net>
+References: <20080820004326.519405a2.akpm@linux-foundation.org>
+ <200808201613.AA00212@capsicum.lab.ntt.co.jp> <Pine.LNX.4.61.0808202352450.4532@dhcppc2>
+ <20080820143916.1a7eddab.akpm@linux-foundation.org> <20080821021259.GA5706@disturbed>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080820113131.f032c8a2.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> OK, that's a fatal bug and it's present in 2.6.25.x and 2.6.26.x.  A
-> serious issue.
+
+On Thu, 21 Aug 2008, Dave Chinner wrote:
+> On Wed, Aug 20, 2008 at 02:39:16PM -0700, Andrew Morton wrote:
+> > On Thu, 21 Aug 2008 00:25:55 +0300 (MET DST)
+> > Szabolcs Szakacsits <szaka@ntfs-3g.org> wrote:
+> > > I ran compilebench on kernel 2.6.26 with freshly formatted volumes. 
+> > > The behavior of NILFS2 was interesting.
+> > > 
+> > > Its peformance rapidly degrades to the lowest ever measured level 
+> > > (< 1 MB/s) but after a while it recovers and gives consistent numbers.
+> > > However it's still very far from the current unstable btrfs performance. 
+> > > The results are reproducible.
+> > > 
+> > >                     MB/s    Runtime (s)
+> > >                    -----    -----------
+> > >   btrfs unstable   17.09        572
+> > >   ext3             13.24        877
+> > >   btrfs 0.16       12.33        793
+> > >   nilfs2 2nd+ runs 11.29        674
+> > >   ntfs-3g           8.55        865
+> > >   reiserfs          8.38        966
+> > >   nilfs2 1st run    4.95       3800
+> > >   xfs               1.88       3901
+> > 
+> > err, what the heck happened to xfs?  Is this usual?
 > 
-> The patches do apply to both stable kernels and I have tagged them for
-> backporting into them.  They're nice and small, but I didn't get a
-> really solid yes-this-is-what-we-should-do from Christoph?
-> 
-> 
-> This (from [patch 2/2]): "(Although its patch applied, quicklist can
-> waste 64GB on 1TB server (= 1TB / 16), it is still too much??)" is a
-> bit of a worry.  Yes, 64GB is too much!  But at least this is now only
-> a performance issue rather than a stability issue, yes?
+> No, definitely not usual. I suspect it's from an old mkfs and
+> barriers being used.  What is the output of the xfs.mkfs when
+> you make the filesystem and what mount options being used?
 
-That 64GB is not quite correct.  That assumes all 1TB is free.  The
-quicklists are trimmed down as the nodes undergo allocations.  The
-problem I see right now is that page tables allocated on one node and
-freed on a cpu on a different node could be placed early enough on the
-quicklist that it will not be freed until the other node gets under
-memory pressure.
+Everything is default.
 
-Could you give the following a try?  It hasn't even been compiled.  I
-think this in addition to your cpus per node change are the right thing
-to do.
+  % rpm -qf =mkfs.xfs
+  xfsprogs-2.9.8-7.1 
 
-Thanks,
-Robin
+which, according to ftp://oss.sgi.com/projects/xfs/cmd_tars, is the 
+latest stable mkfs.xfs. Its output is
 
-Index: ia64-cleanups/include/linux/quicklist.h
-===================================================================
---- ia64-cleanups.orig/include/linux/quicklist.h	2008-08-20 21:35:10.000000000 -0500
-+++ ia64-cleanups/include/linux/quicklist.h	2008-08-20 21:38:00.891943270 -0500
-@@ -66,6 +66,15 @@ static inline void __quicklist_free(int 
- 
- static inline void quicklist_free(int nr, void (*dtor)(void *), void *pp)
- {
-+#ifdef CONFIG_NUMA
-+	unsigned long nid = page_to_nid(virt_to_page(pp));
-+
-+	if (unlikely(nid != numa_node_id())) {
-+		free_page((unsigned long)pp);
-+		return;
-+	}
-+#endif
-+
- 	__quicklist_free(nr, dtor, pp, virt_to_page(pp));
- }
- 
+meta-data=/dev/sda8              isize=256    agcount=4, agsize=1221440 blks
+         =                       sectsz=512   attr=2
+data     =                       bsize=4096   blocks=4885760, imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096  
+log      =internal log           bsize=4096   blocks=2560, version=2
+         =                       sectsz=512   sunit=0 blks, lazy-count=0
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+
+Kernel xfs log:
+
+SGI XFS with ACLs, security attributes, realtime, large block/inode numbers, no debug enabled
+SGI XFS Quota Management subsystem
+XFS mounting filesystem sda8
+Ending clean XFS mount for filesystem: sda8
+
+	Szaka
+
+--
+NTFS-3G:  http://ntfs-3g.org
+
