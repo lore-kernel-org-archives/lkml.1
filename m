@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756696AbYHUIUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754050AbYHUIUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756696AbYHUIUA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 04:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbYHUITl
+	id S1754050AbYHUIUd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 04:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756117AbYHUITw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 04:19:41 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:62569 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751036AbYHUITi (ORCPT
+	Thu, 21 Aug 2008 04:19:52 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:37264 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756352AbYHUITu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 04:19:38 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] powerpc/cell/oprofile: fix mutex locking for spu-oprofile
-Date: Thu, 21 Aug 2008 10:14:42 +0200
-User-Agent: KMail/1.9.9
-Cc: Paul Mackerras <paulus@samba.org>, Robert Richter <robert.richter@amd.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       oprofile-list@lists.sourceforge.net, cel <cel@linux.vnet.ibm.com>
-References: <1217620879.15667.145.camel@carll-linux-desktop> <200808201519.19453.arnd@arndb.de> <18604.60738.523963.886786@drongo.ozlabs.ibm.com>
-In-Reply-To: <18604.60738.523963.886786@drongo.ozlabs.ibm.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 21 Aug 2008 04:19:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=IZklBTPpjnz8ePbNF2WE/bXywPWgXmyRkX+yGt8DXWXoT0fbK+bVfHfmrT56S3+j1e
+         CO09OS6aiEUldx34eldJW9Ibh5GgExpuoXAjth1x+cpSl+/R+5+UrT5QOVR8WYKOPuYt
+         gHHmfILXk6XjObZ/EUiWw5S24boAf8j5rPon0=
+Message-ID: <19f34abd0808210119m70d95ea0t93d9887944a0c84b@mail.gmail.com>
+Date: Thu, 21 Aug 2008 10:19:49 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "jay kumar" <jaykumarks@gmail.com>
+Subject: Re: Bug: "bad unlock balance detected" 2.6.27-rc3-next-20080820
+Cc: "David Howells" <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org
+In-Reply-To: <19f34abd0808210110s4dd2ec12r6d3044e45a21d67@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808211014.42683.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19vxHhfWHFZcp0K2nNhMO0yV5Of2785tHPONKe
- jQ1q3NVd3k018uxYqoKtgwORYtJxL2aDe4fH+cuTjB4trkANG1
- S8H60UybdqUCqulqZzaAg==
+References: <6f31812b0808210004i63b3273ehf65ce9eb139256f0@mail.gmail.com>
+	 <19f34abd0808210110s4dd2ec12r6d3044e45a21d67@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 August 2008, Paul Mackerras wrote:
-> Arnd Bergmann writes:
-> 
-> > Paul, any chance we can still get this into 2.6.27?
-> 
-> Possibly.  We'll need a really good explanation for Linus as to why
-> this is needed (what regression or serious bug this fixes) and why it
-> is late.  Can you send me something explaining that?
+On Thu, Aug 21, 2008 at 10:10 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> On Thu, Aug 21, 2008 at 9:04 AM, jay kumar <jaykumarks@gmail.com> wrote:
+>> While testing 2.6.27-rc3-next-20080820 ,  i observed this    "BUG:bad
+>> unlock balance detected" during boot time
+>>
+> Thanks for the report. The error comes from
+>
+> commit d9a939fb80ef390b78b3c801f668bd1e35ebc970
+> Author: David Howells <dhowells@redhat.com>
+> Date:   Thu Aug 7 20:02:20 2008 +1000
+>
+>    CRED: Make execve() take advantage of copy-on-write credentials
+>
+> (Added to Cc. I guess it's also nice to Cc linux-next on errors in -next code.)
+>
+> I couldn't reproduce your original failure, but I've attempted to fix
+> it by reordering the mutex unlock and bprm free and removing the
+> extraneous unlock (see attached patch; it boots for me without
+> errors).
 
-The patch does not fix a regression, the spu-oprofile code basically never
-worked. With the current code in Linux, samples in the profile buffer
-can get corrupted because reader and writer to that buffer use different
-locks for accessing it. It took us several iterations to come up with
-a solution that does not introduce other problems and I didn't want to
-push an earlier version that would need more fixups.
+Actually, I was able to reproduce the original issue after all. And
+the patch fixed it for me. Please review :-)
 
-Since rc4 is out now, I understand if you feel more comfortable with
-putting the patch into -next instead of -merge.
-Note that the second patch is trivial and fixes an oopsable condition
-of the kernel, so at least that should still go into 2.6.27.
 
-> > I've added the Ack and uploaded it again for you to
-> > pull from
-> > 
-> >  master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git merge
-> 
-> Are you sure you actually managed to update that?
+Vegard
 
-No, but it's there now. I was missing the '-f' for git-push.
-
-	Arnd <><
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
