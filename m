@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbYHUHoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757635AbYHUHrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025AbYHUHoR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 03:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbYHUHoA
+	id S1757635AbYHUHrR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 03:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbYHUHrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 03:44:00 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:35391 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752897AbYHUHoA (ORCPT
+	Thu, 21 Aug 2008 03:47:04 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44345 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755257AbYHUHrD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 03:44:00 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <20080727012212.GW28946@ZenIV.linux.org.uk>
-Date: Thu, 21 Aug 2008 00:40:03 -0700
-In-Reply-To: <20080727012212.GW28946@ZenIV.linux.org.uk> (Al Viro's message of
-	"Sun, 27 Jul 2008 02:22:12 +0100")
-Message-ID: <m1d4k2zui4.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Al Viro <viro@ZenIV.linux.org.uk>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  2.2 XMSubMetaSxObfu_03 Obfuscated Sexy Noun-People
-	*  1.6 XMSubMetaSx_00 1+ Sexy Words
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [git pull] VFS patches, the first series
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+	Thu, 21 Aug 2008 03:47:03 -0400
+Date: Thu, 21 Aug 2008 16:43:39 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       Dave Hansen <haveblue@us.ibm.com>,
+       Andrea Righi <righi.andrea@gmail.com>, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [discuss] memrlimit - potential applications that can use
+Message-Id: <20080821164339.679212b2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <48ACE040.2030807@linux.vnet.ibm.com>
+References: <48AA73B5.7010302@linux.vnet.ibm.com>
+	<1219161525.23641.125.camel@nimitz>
+	<48AAF8C0.1010806@linux.vnet.ibm.com>
+	<1219167669.23641.156.camel@nimitz>
+	<48ABD545.8010209@linux.vnet.ibm.com>
+	<1219249757.8960.22.camel@nimitz>
+	<48ACE040.2030807@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro <viro@ZenIV.linux.org.uk> writes:
+On Thu, 21 Aug 2008 08:55:52 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> The first part of huge pile.  Mostly it's untangling nameidata handling,
-> digging towards the pieces that kill intents and cleaning pathname
-> resolution in general.  ->permission() sanitizing and sysctl procfs
-> treatment rewrite needed for it.  A bunch of descriptor handling fixes.
-> Plus part of assorted patched from the last cycle sent by other folks.
-> A _lot_ more is still pending; this is what I'd managed to pull into
-> a series by this point.  Please, pull from
-> git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
+> >>> So, before we expand the use of those features to control groups by
+> >>> adding a bunch of new code, let's make sure that there will be users
+> >> for
+> >>> it and that those users have no better way of doing it.
+> >> I am all ears to better ways of doing it. Are you suggesting that overcommit was
+> >> added even though we don't actually need it?
+> > 
+> > It serves a purpose, certainly.  We have have better ways of doing it
+> > now, though.  "﻿So, before we expand the use of those features to
+> > control groups by adding a bunch of new code, let's make sure that there
+> > will be users for it and that those users have no better way of doing
+> > it."
+> > 
+> > The one concrete user that's been offered so far is postgres.  I've
+> 
+> No, you've been offered several, including php and apache that use memory limits.
+> 
+> > suggested something that I hope will be more effective than enforcing
+> > overcommit.  
+> 
 
-Al a quick heads up.  In testing movement of network devices between
-namespaces  I hit the recently added WARN_ON in unregister_sysctl_table.
+I'm sorry I miss the point. My concern on memrlimit (for overcommiting) is that
+it's not fair because an application which get -ENOMEM at mmap() is just someone
+unlucky. I think it's better to trigger some notifier to application or daemon
+rather than return -ENOMEM at mmap(). Notification like "Oh, it seems the VSZ
+of total application exceeds the limit you set. Although you can continue your
+operation, it's recommended that you should fix up the  situation".
+will be good.
 
-More tomorrow when I get a after I have dug into this farther.
+Thanks,
+-Kame
 
-Eric
