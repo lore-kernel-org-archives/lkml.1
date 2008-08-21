@@ -1,58 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760965AbYHUS7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761180AbYHUTAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760965AbYHUS7x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 14:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755436AbYHUS7m
+	id S1761180AbYHUTAU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 15:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755436AbYHUS75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 14:59:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51834 "EHLO mx1.redhat.com"
+	Thu, 21 Aug 2008 14:59:57 -0400
+Received: from gw.goop.org ([64.81.55.164]:57122 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754012AbYHUS7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 14:59:40 -0400
-Date: Thu, 21 Aug 2008 14:59:39 -0400
-From: "'Aristeu Rozanski'" <arozansk@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Tosoni <jp.tosoni@acksys.fr>,
-       "'Laurent Pinchart'" <laurentp@cse-semaphore.com>,
-       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v1] 8250: add support for DTR/DSR hardware flow control
-Message-ID: <20080821185938.GG7154@redhat.com>
-References: <200808071032.16709.laurentp@cse-semaphore.com> <000f01c8f88c$ad29d950$2e01a8c0@acksys.local> <20080818162526.1975dace@lxorguk.ukuu.org.uk> <20080820214336.GN17926@cathedrallabs.org> <20080821112309.6519c29f@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080821112309.6519c29f@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.4.2.2i
+	id S1760982AbYHUS7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 14:59:55 -0400
+Message-ID: <48ADBB29.3040800@goop.org>
+Date: Thu, 21 Aug 2008 11:59:53 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Hugh Dickins <hugh@veritas.com>
+CC: =?ISO-8859-1?Q?Rafa=3F_Mi=3Fecki?= <zajec5@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Jack Steiner <steiner@sgi.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: [Bug #11313] Plugging HDMI causes "unable to handle kernel paging
+ request"
+References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>  <sNRO-BDDjQL.A.DYF.sazpIB@albercik>  <b170af450808171228i37951c6vd77071da7584669b@mail.gmail.com>  <48AB5D17.5030600@goop.org>  <b170af450808200410v3d7cd076h3e62546b48ddf507@mail.gmail.com>  <48AC3FA4.9080603@goop.org> <b170af450808201327q48b5b2e0n319c89b0fc1759b6@mail.gmail.com> <48ADB041.9040806@goop.org> <Pine.LNX.4.64.0808211946300.28535@blonde.site>
+In-Reply-To: <Pine.LNX.4.64.0808211946300.28535@blonde.site>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > About a RS485 ioctl: could you consider the attached files which are already
-> > > > in the Linux kernel (in include/asm-cris).
-> > > > They define a TIOCSERSETRS485 (ioctl.h), and the data structure (rs485.h)
-> > > > with allows to specify timings. Sounds just like what we want ?
-> > > 
-> > > I had a deeper look at this for RS485 and the answer is "sort of". I've
-> > > reworked the structure to keep it the same size irrespective of 32/64bit
-> > > systems, and to make stuff flags that can be, plus add some extra u32
-> > > words in case we need to (.. when we need to ;)) add stuff later.
-> > > 
-> > > Comments, thoughts - will this do what people in the RS485 world need ?
-> > as for DTR/DSR patch, will be used the same approach?
-> 
-> I'm still trying to get a sensible answer on how other Unixes handle it
-I did some research on that:
-Solaris and AIX:
-	TC{G,S}ETX for extended options and only input flow control (DTRXOFF)
-SCO:
-	{S,G}ETFLOW for configuring flow control, TXHARD, RXHARD for DTRDSR
-FreeBSD:
-	cflags has 'dtrflow' and 'dsrflow'
+Hugh Dickins wrote:
+> On Thu, 21 Aug 2008, Jeremy Fitzhardinge wrote:
+>   
+>> Some notes as I pick through all the evidence so far:
+>>
+>> - the crash is specifically because there are reserved bits set in the pmd
+>> - the pmd is b02a00043a6001a3 in both cases
+>>     
+>
+> Yes, it's corrupt, it should be
+>                800000013a6001a3
+>
+>   
+>> - the vaddr is ffff88013a600000 in the first crash, and
+>>                ffff81013a6d1c00 in the second
+>>   corresponding to the same large-page pmd mapping of phys page 0x13a600000
+>> - this maps to e820 entry
+>>  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
+>> - the corresponding boot-time mapping is
+>>
+>> init_memory_mapping
+>>  0100000000 - 0140000000 page 2M
+>> kernel direct mapping tables up to 140000000 @ b000-11000
+>>                                                ^^^^^^^^^^
+>> addr 100000000 reusing pgd 201880 0000000000202063
+>> last_map_addr: 140000000 end: 140000000
+>>
+>> !!! and the memory allocated for this pagetable is:
+>>   #5 [0000008000 - 000000b000]          PGTABLE ==> [0000008000 - 000000b000]
+>>   #6 [000000b000 - 000000c000]          PGTABLE ==> [000000b000 - 000000c000]
+>>                                                      ^^^^^^^^^^^^^^^^^^^^^^^
+>>
+>> IOW, it's mapping using b000-11000, but it has only reserved b000 - c000
+>>
+>> Also, this is right in the middle of the ISA area, which seems risky.
+>> <<<<
+>>
+>> Bug #11237 shows the same symptom, so I'm pretty confident they're dups now.
+>>     
+>
+> [ Sorry, I'm replying to #11313 even though we think it's dup of #11237. ]
+>
+> Haven't you got that backwards?
+>
+> My reading is that find_early_table_space set aside b000-11000 for the
+> worst case possible, but actually only b000-c000 was needed (because
+> most of the tables were already there): no problem.
+>   
 
-Having the option to set individually which pins to use for input and output
-flow control and which ones should be on/off all the time seem to be a powerful
-way to do it, instead of having a "CDTRDSR".
+Drat.  I think you may be right.
 
--- 
-Aristeu
+    J
 
