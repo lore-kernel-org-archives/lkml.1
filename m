@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbYHUFqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbYHUFqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755964AbYHUFqG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 01:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbYHUFpA
+	id S1756188AbYHUFqd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 01:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755488AbYHUFpO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 01:45:00 -0400
+	Thu, 21 Aug 2008 01:45:14 -0400
 Received: from py-out-1112.google.com ([64.233.166.179]:6219 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755385AbYHUFo6 (ORCPT
+	with ESMTP id S1755483AbYHUFpJ (ORCPT
 	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 01:44:58 -0400
+	Thu, 21 Aug 2008 01:45:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:reply-to:user-agent:mime-version:to:subject
          :content-type:content-transfer-encoding;
-        b=KbneJ5jB5cKf50LpRdPraA3L5/oK0HRzcTuN3AbBj9ckwPa/Oe6jjrEaYlnrVOlvXg
-         8DDaO2vqwzK5OHZnyUsOektDnDGEojOATNeUsvzvLVfcszlejE0d359BXt+ZnL4UjUB6
-         AqDLPkEtkJDWzST0RvxDnKm4vvWrHxQKiEMtk=
-Message-ID: <48AD00E6.2070505@gmail.com>
-Date: Wed, 20 Aug 2008 22:45:10 -0700
+        b=v+iIAkdutuFG0LNJDVnC2aGDiSGYc1mCtT6I0+erNiguwQF9ZNpy7NGxPEp/IKz3AQ
+         TGZ5rgVKdrfkxL+id266378+94zlkOiSnVx5Cm2wPqTT4fUkoEkdPepbGiBD+z0qF7l9
+         LwQdIWXBR4yNuj74Ng62ktSpjLbD4W0FuUA3c=
+Message-ID: <48AD00F0.5030403@gmail.com>
+Date: Wed, 20 Aug 2008 22:45:20 -0700
 From: Jared Hulbert <jaredeh@gmail.com>
 Reply-To: jaredeh@gmail.com
 User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
@@ -27,23 +27,23 @@ To: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
        linux-mtd <linux-mtd@lists.infradead.org>,
        =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@AM.SONY.COM,
        cotte@de.ibm.com, nickpiggin@yahoo.com.au
-Subject: [PATCH 03/10] AXFS: axfs.h
+Subject: [PATCH 04/10] AXFS: axfs_inode.c
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The AXFS header.
+This is the main filesystem logic.
 
 Signed-off-by: Jared Hulbert <jaredeh@gmail.com>
 ---
-diff --git a/include/linux/axfs.h b/include/linux/axfs.h
+diff --git a/fs/axfs/axfs_inode.c b/fs/axfs/axfs_inode.c
 new file mode 100644
-index 0000000..87af84a
+index 0000000..cbf3dd1
 --- /dev/null
-+++ b/include/linux/axfs.h
-@@ -0,0 +1,360 @@
++++ b/fs/axfs/axfs_inode.c
+@@ -0,0 +1,488 @@
 +/*
 + * Advanced XIP File System for Linux - AXFS
 + *   Readonly, compressed, and XIP filesystem for Linux systems big and small
@@ -61,348 +61,476 @@ index 0000000..87af84a
 + *  Justin Treon
 + *
 + * Project url: http://axfs.sourceforge.net
++ *
++ * Borrowed heavily from fs/cramfs/inode.c by Linus Torvalds
++ *
++ * axfs_inode.c -
++ *   Contains the most of the filesystem logic with the major exception of the
++ *   mounting infrastructure.
++ *
 + */
 +
-+#ifndef __AXFS_H
-+#define __AXFS_H
++#include <linux/axfs.h>
++#include <linux/pagemap.h>
 +
++/***************** functions in other axfs files ******************************/
++int axfs_get_sb(struct file_system_type *, int, const char *, void *,
++		struct vfsmount *);
++void axfs_kill_super(struct super_block *);
++void axfs_profiling_add(struct axfs_super *, unsigned long, unsigned int);
++int axfs_copy_mtd(struct super_block *, void *, u64, u64);
++int axfs_copy_block(struct super_block *, void *, u64, u64);
++/******************************************************************************/
++static int axfs_readdir(struct file *, void *, filldir_t);
++static int axfs_mmap(struct file *, struct vm_area_struct *);
++static ssize_t axfs_file_read(struct file *, char __user *, size_t, loff_t *);
++static int axfs_readpage(struct file *, struct page *);
++static int axfs_fault(struct vm_area_struct *, struct vm_fault *);
++static struct dentry *axfs_lookup(struct inode *, struct dentry *,
++				  struct nameidata *);
++static int axfs_get_xip_mem(struct address_space *, pgoff_t, int, void **,
++			    unsigned long *);
 +
-+#ifdef __KERNEL__
-+#include <linux/rwsem.h>
-+#endif
-+#include <linux/errno.h>
-+#include <linux/time.h>
++/******************************************************************************/
 +
-+#define AXFS_MAGIC	0x48A0E4CD	/* some random number */
-+#define AXFS_SIGNATURE	"Advanced XIP FS"
-+#define AXFS_MAXPATHLEN 255
-+
-+/* Uncompression interfaces to the underlying zlib */
-+int axfs_uncompress_block(void *, int, void *, int);
-+int axfs_uncompress_init(void);
-+int axfs_uncompress_exit(void);
-+
-+struct axfs_profiling_data {
-+	u64 inode_number;
-+	unsigned long count;
++static struct file_operations axfs_directory_operations = {
++	.llseek = generic_file_llseek,
++	.read = generic_read_dir,
++	.readdir = axfs_readdir,
 +};
 +
-+enum axfs_node_types {
-+	XIP = 0,
-+	Compressed,
-+	Byte_Aligned,
++static struct file_operations axfs_fops = {
++	.read = axfs_file_read,
++	.aio_read = generic_file_aio_read,
++	.mmap = axfs_mmap,
 +};
 +
-+enum axfs_compression_types {
-+	ZLIB = 0
++static struct address_space_operations axfs_aops = {
++	.readpage = axfs_readpage,
++	.get_xip_mem = axfs_get_xip_mem,
 +};
 +
-+/*
-+ *  on media struct describing a data region
-+ */
-+struct axfs_region_desc_onmedia {
-+	u64 fsoffset;
-+	u64 size;
-+	u64 compressed_size;
-+	u64 max_index;
-+	u8 table_byte_depth;
-+	u8 incore;
++static struct inode_operations axfs_dir_inode_operations = {
++	.lookup = axfs_lookup,
 +};
 +
-+struct axfs_region_desc {
-+	u64 fsoffset;
-+	u64 size;
-+	u64 compressed_size;
-+	u64 max_index;
-+	void *virt_addr;
-+	u8 table_byte_depth;
-+	u8 incore;
++static struct vm_operations_struct axfs_vm_ops = {
++	.fault = axfs_fault,
 +};
 +
-+/*
-+ * axfs_super is the on media format for the super block it must be big endian
-+ */
-+struct axfs_super_onmedia {
-+	u32 magic;		/* 0x48A0E4CD - random number */
-+	u8 signature[16];	/* "Advanced XIP FS" */
-+	u8 digest[40];		/* sha1 digest for checking data integrity */
-+	u32 cblock_size;	/* maximum size of the block being compressed */
-+	u64 files;		/* number of inodes/files in fs */
-+	u64 size;		/* total image size */
-+	u64 blocks;		/* number of nodes in fs */
-+	u64 mmap_size;		/* size of the memory mapped part of image */
-+	u64 strings;		/* offset to strings region descriptor */
-+	u64 xip;		/* offset to xip region descriptor */
-+	u64 byte_aligned;	/* offset to the byte aligned region desc */
-+	u64 compressed;		/* offset to the compressed region desc */
-+	u64 node_type;		/* offset to node type region desc */
-+	u64 node_index;		/* offset to node index region desc */
-+	u64 cnode_offset;	/* offset to cnode offset region desc */
-+	u64 cnode_index;	/* offset to cnode index region desc */
-+	u64 banode_offset;	/* offset to banode offset region desc */
-+	u64 cblock_offset;	/* offset to cblock offset region desc */
-+	u64 inode_file_size;	/* offset to inode file size desc*/
-+	u64 inode_name_offset;	/* offset to inode num_entries region desc */
-+	u64 inode_num_entries;	/* offset to inode num_entries region desc */
-+	u64 inode_mode_index;	/* offset to inode mode index region desc */
-+	u64 inode_array_index;	/* offset to inode node index region desc */
-+	u64 modes;		/* offset to mode mode region desc */
-+	u64 uids;		/* offset to mode uid index region desc */
-+	u64 gids;		/* offset to mode gid index region desc */
-+	u8 version_major;
-+	u8 version_minor;
-+	u8 version_sub;
-+	u8 compression_type;	/* Identifies type of compression used on FS */
-+	u64 timestamp;		/* UNIX time_t of filesystem build time */
-+};
-+
-+/*
-+ * axfs super-block data in core
-+ */
-+struct axfs_super {
-+	u32 magic;
-+	u8 version_major;
-+	u8 version_minor;
-+	u8 version_sub;
-+	u8 padding;
-+	u64 files;
-+	u64 size;
-+	u64 blocks;
-+	u64 mmap_size;
-+	struct axfs_region_desc strings;
-+	struct axfs_region_desc xip;
-+	struct axfs_region_desc compressed;
-+	struct axfs_region_desc byte_aligned;
-+	struct axfs_region_desc node_type;
-+	struct axfs_region_desc node_index;
-+	struct axfs_region_desc cnode_offset;
-+	struct axfs_region_desc cnode_index;
-+	struct axfs_region_desc banode_offset;
-+	struct axfs_region_desc cblock_offset;
-+	struct axfs_region_desc inode_file_size;
-+	struct axfs_region_desc inode_name_offset;
-+	struct axfs_region_desc inode_num_entries;
-+	struct axfs_region_desc inode_mode_index;
-+	struct axfs_region_desc inode_array_index;
-+	struct axfs_region_desc modes;
-+	struct axfs_region_desc uids;
-+	struct axfs_region_desc gids;
-+	unsigned long phys_start_addr;
-+	unsigned long virt_start_addr;
-+	char *second_dev;
-+	unsigned long iomem_size;
-+	void *mtd0;		/* primary device */
-+	void *mtd1;		/* secondary device */
-+	u32 cblock_size;
-+	u64 current_cnode_index;
-+	void *cblock_buffer[2];
-+	struct rw_semaphore lock;
-+	struct axfs_profiling_data *profile_data_ptr;
-+	u8 profiling_on;	/* Determines if profiling is on or off */
-+	u8 mtd_pointed;
-+	u8 compression_type;
-+	struct timespec timestamp;
-+};
-+
-+#define AXFS_PAGE_SIZE 4096
-+
-+#define AXFS_SB(sb) (struct axfs_super *)((sb)->s_fs_info)
-+#define AXFS_MTD(sb) (void *)((sb)->s_mtd)
-+#define AXFS_MTD0(sb) (((AXFS_SB(sb))->mtd0) ? \
-+  ((AXFS_SB(sb))->mtd0) : (AXFS_MTD(sb)))
-+#define AXFS_MTD1(sb) ((AXFS_SB(sb))->mtd1)
-+
-+#define AXFS_BDEV(sb) ((sb)->s_bdev)
-+
-+#define AXFS_HAS_BDEV(sb) \
-+  ((AXFS_BDEV(sb) != NULL) ? TRUE : FALSE)
-+#define AXFS_HAS_MTD(sb) \
-+  (((AXFS_MTD0(sb) != NULL) || \
-+    (AXFS_MTD1(sb) != NULL) || \
-+    (AXFS_MTD(sb) != NULL)) ? TRUE : FALSE)
-+
-+#define AXFS_NODEV(sb) \
-+  ((!AXFS_HAS_MTD(sb) && !AXFS_HAS_BDEV(sb)) ? TRUE : FALSE)
-+
-+static inline u64 axfs_bytetable_stitch(u8 depth, u8 *table, u64 index)
++static int axfs_copy_data(struct super_block *sb, void *dst,
++			  struct axfs_region_desc *region, u64 offset, u64 len)
 +{
-+	u64 i;
-+	u64 output = 0;
-+	u64 byte = 0;
-+	u64 j;
-+	u64 bits;
++	u64 mmapped = 0;
++	u64 end = region->fsoffset + offset + len;
++	u64 begin = region->fsoffset + offset;
++	u64 left;
++	void *addr;
++	void *newdst;
++	struct axfs_super *sbi = AXFS_SB(sb);
 +
-+	for (i = 0; i < depth; i++) {
-+		j = index * depth + i;
-+		bits = 8 * (depth - i - 1);
-+		byte = table[j];
-+		output += byte << bits;
++	if (len == 0)
++		return 0;
++
++	if (region->virt_addr) {
++		if (sbi->mmap_size >= end) {
++			mmapped = len;
++		} else if (sbi->mmap_size > begin) {
++			mmapped = sbi->mmap_size - begin;
++		}
 +	}
-+	return output;
++
++	if (mmapped) {
++		addr = (void *)(region->virt_addr + offset);
++		memcpy(dst, addr, mmapped);
++	}
++
++	newdst = (void *)(dst + mmapped);
++	left = len - mmapped;
++
++	if (left == 0)
++		return len;
++
++	if (AXFS_HAS_BDEV(sb)) {
++		return axfs_copy_block(sb, newdst, begin + mmapped, left);
++	} else if (AXFS_HAS_MTD(sb)) {
++		return axfs_copy_mtd(sb, newdst, begin + mmapped, left);
++	} else {
++		return 0;
++	}
 +}
 +
-+#define AXFS_GET_BYTETABLE_VAL(desc,index) \
-+  axfs_bytetable_stitch(((struct axfs_region_desc)(desc)).table_byte_depth,\
-+  (u8 *)((struct axfs_region_desc)(desc)).virt_addr, index)
++static int axfs_iget5_test(struct inode *inode, void *opaque)
++{
++	u64 *inode_number = (u64 *) opaque;
 +
-+#define AXFS_GET_NODE_TYPE(sbi,node_index) \
-+  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->node_type,\
-+   (node_index))
++	if (inode->i_sb == NULL) {
++		printk(KERN_ERR "axfs_iget5_test:"
++		       " the super block is set to null\n");
++	}
++	if (inode->i_ino == *inode_number)
++		return 1;	/* matches */
++	else
++		return 0;	/* does not match */
++}
 +
-+#define AXFS_GET_NODE_INDEX(sbi,node__index) \
-+  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->node_index,\
-+   (node__index))
++static int axfs_iget5_set(struct inode *inode, void *opaque)
++{
++	u64 *inode_number = (u64 *) opaque;
 +
-+#define AXFS_IS_NODE_XIP(sbi,node_index) \
-+  (AXFS_GET_NODE_TYPE(sbi, (node_index)) == XIP)
++	if (inode->i_sb == NULL) {
++		printk(KERN_ERR "axfs_iget5_set:"
++		       " the super block is set to null \n");
++	}
++	inode->i_ino = *inode_number;
++	return 0;
++}
 +
-+#define AXFS_GET_CNODE_INDEX(sbi,node_index) \
-+  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->cnode_index,\
-+   (node_index))
++struct inode *axfs_create_vfs_inode(struct super_block *sb, int ino)
++{
++	struct axfs_super *sbi = AXFS_SB(sb);
++	struct inode *inode;
++	u64 size;
 +
-+#define AXFS_GET_CNODE_OFFSET(desc,node_index) \
-+  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->cnode_offset,\
-+   (node_index))
++	inode = iget5_locked(sb, ino, axfs_iget5_test, axfs_iget5_set, &ino);
 +
-+#define AXFS_GET_BANODE_OFFSET(desc,node_index) \
-+  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->banode_offset,\
-+   (node_index))
++	if (!(inode && (inode->i_state & I_NEW)))
++		return inode;
 +
-+#define AXFS_GET_CBLOCK_OFFSET(desc,node_index) \
-+  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->cblock_offset,\
-+   (node_index))
++	inode->i_mode = AXFS_GET_MODE(sbi, ino);
++	inode->i_uid = AXFS_GET_UID(sbi, ino);
++	size = AXFS_GET_INODE_FILE_SIZE(sbi, ino);
++	inode->i_size = size;
++	inode->i_blocks = AXFS_GET_INODE_NUM_ENTRIES(sbi, ino);
++	inode->i_blkbits = PAGE_CACHE_SIZE * 8;
++	inode->i_gid = AXFS_GET_GID(sbi, ino);
 +
-+#define AXFS_GET_INODE_FILE_SIZE(sbi,inode_index) \
-+  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->inode_file_size,\
-+   (inode_index))
++	inode->i_mtime = inode->i_atime = inode->i_ctime = sbi->timestamp;
++	inode->i_ino = ino;
 +
-+#define AXFS_GET_INODE_NAME_OFFSET(sbi,inode_index) \
-+  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->inode_name_offset,\
-+	(inode_index))
++	if (S_ISREG(inode->i_mode)) {
++		inode->i_fop = &axfs_fops;
++		inode->i_data.a_ops = &axfs_aops;
++		inode->i_mapping->a_ops = &axfs_aops;
++	} else if (S_ISDIR(inode->i_mode)) {
++		inode->i_op = &axfs_dir_inode_operations;
++		inode->i_fop = &axfs_directory_operations;
++	} else if (S_ISLNK(inode->i_mode)) {
++		inode->i_op = &page_symlink_inode_operations;
++		inode->i_data.a_ops = &axfs_aops;
++	} else {
++		inode->i_size = 0;
++		inode->i_blocks = 0;
++		init_special_inode(inode, inode->i_mode, old_decode_dev(size));
++	}
++	unlock_new_inode(inode);
 +
-+#define AXFS_GET_INODE_NUM_ENTRIES(sbi,inode_index) \
-+  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->inode_num_entries,\
-+	(inode_index))
++	return inode;
++}
 +
-+#define AXFS_GET_INODE_MODE_INDEX(sbi,inode_index) \
-+  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->inode_mode_index,\
-+   (inode_index))
 +
-+#define AXFS_GET_INODE_ARRAY_INDEX(sbi,inode_index) \
-+  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->inode_array_index,\
-+   (inode_index))
++static int axfs_mmap(struct file *file, struct vm_area_struct *vma)
++{
 +
-+#define AXFS_GET_MODE(sbi,mode_index) \
-+  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->modes,\
-+  (AXFS_GET_INODE_MODE_INDEX(sbi, (mode_index))))
++	file_accessed(file);
 +
-+#define AXFS_GET_UID(sbi,mode_index) \
-+  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->uids,\
-+  (AXFS_GET_INODE_MODE_INDEX(sbi, (mode_index))))
++	vma->vm_ops = &axfs_vm_ops;
 +
-+#define AXFS_GET_GID(sbi,mode_index) \
-+  AXFS_GET_BYTETABLE_VAL(((struct axfs_super *)(sbi))->gids,\
-+  (AXFS_GET_INODE_MODE_INDEX(sbi, (mode_index))))
++	vma->vm_flags |= VM_CAN_NONLINEAR | VM_MIXEDMAP;
 +
-+#define AXFS_IS_REGION_COMPRESSED(_region) \
-+    (( \
-+     ((struct axfs_region_desc *)(_region))->compressed_size > \
-+     0 \
-+    ) ? TRUE : FALSE)
++	return 0;
++}
 +
-+#define AXFS_PHYSADDR_IS_VALID(sbi) \
-+    (((((struct axfs_super *)(sbi))->phys_start_addr) > 0 \
-+	) ? TRUE : FALSE)
++static struct dentry *axfs_lookup(struct inode *dir, struct dentry *dentry,
++				  struct nameidata *nd)
++{
++	struct super_block *sb = dir->i_sb;
++	struct axfs_super *sbi = AXFS_SB(sb);
++	u64 ino_number = dir->i_ino;
++	u64 dir_index = 0;
++	u64 entry;
++	char *name;
++	int namelen, err;
 +
-+#define AXFS_VIRTADDR_IS_VALID(sbi) \
-+    (((((struct axfs_super *)(sbi))->virt_start_addr) > 0 \
-+	) ? TRUE : FALSE)
++	while (dir_index < AXFS_GET_INODE_NUM_ENTRIES(sbi, ino_number)) {
++		entry = AXFS_GET_INODE_ARRAY_INDEX(sbi, ino_number);
++		entry += dir_index;
 +
-+#define AXFS_IS_IOMEM(sbi) \
-+    (((((struct axfs_super *)(sbi))->iomem_size) > 0) ? TRUE : FALSE)
++		name = AXFS_GET_INODE_NAME(sbi, entry);
++		namelen = strlen(name);
 +
-+#define AXFS_IS_POINTED(sbi) \
-+    (((((struct axfs_super *)(sbi))->mtd_pointed) > 0) ? TRUE : FALSE)
++		/* fast test, the entries are sorted alphabetically and the
++		 * first letter is smaller than the first letter in the search
++		 * name then it isn't in this directory.  Keeps this loop from
++		 * needing to scan through always.
++		 */
++		if (dentry->d_name.name[0] < name[0])
++			break;
 +
-+#define AXFS_IS_PHYSMEM(sbi) \
-+    (( \
-+      AXFS_PHYSADDR_IS_VALID(sbi) \
-+      && !AXFS_IS_IOMEM(sbi) \
-+      && !AXFS_IS_POINTED(sbi) \
-+    ) ? TRUE : FALSE)
++		dir_index++;
 +
-+#define AXFS_IS_MMAPABLE(sbi,offset) \
-+    ((\
-+       (((struct axfs_super *)(sbi))->mmap_size) > (offset) \
-+    ) ? TRUE : FALSE)
++		/* Quick check that the name is roughly the right length */
++		if (dentry->d_name.len != namelen)
++			continue;
 +
-+#define AXFS_IS_OFFSET_MMAPABLE(sbi,offset) \
-+    (( \
-+       AXFS_IS_MMAPABLE(sbi, offset) && AXFS_VIRTADDR_IS_VALID(sbi) \
-+     ) ? TRUE : FALSE)
++		err = memcmp(dentry->d_name.name, name, namelen);
++		if (err > 0)
++			continue;
 +
-+#define AXFS_IS_REGION_MMAPABLE(sbi,_region) \
-+    (( \
-+      AXFS_IS_MMAPABLE(sbi, ((struct axfs_region_desc *)(_region))->fsoffset) \
-+      && AXFS_VIRTADDR_IS_VALID(sbi) \
-+     ) ? TRUE : FALSE)
++		/* The file name isn't present in the directory. */
++		if (err < 0)
++			break;
 +
-+#define AXFS_IS_REGION_INCORE(_region) \
-+    (((_region)->incore > 0) ? TRUE : FALSE)
++		d_add(dentry, axfs_create_vfs_inode(dir->i_sb, entry));
++		goto out;
 +
-+#define AXFS_IS_REGION_XIP(sbi,_region) \
-+    (( \
-+     !AXFS_IS_REGION_COMPRESSED(_region) && \
-+     !AXFS_IS_REGION_INCORE(_region) && \
-+     AXFS_IS_REGION_MMAPABLE(sbi,_region) \
-+    ) ? TRUE : FALSE)
++	}
++	d_add(dentry, NULL);
 +
-+#define AXFS_GET_XIP_REGION_PHYSADDR(sbi) \
-+    (unsigned long)((sbi)->phys_start_addr + (sbi)->xip.fsoffset)
++out:
++	return NULL;
++}
 +
-+#define AXFS_GET_INODE_NAME(sbi,inode_index) \
-+     (char *)( \
-+	(sbi)->strings.virt_addr \
-+	+ AXFS_GET_INODE_NAME_OFFSET(sbi,inode_index) \
-+     )
++static int axfs_readdir(struct file *filp, void *dirent, filldir_t filldir)
++{
++	struct inode *inode = filp->f_dentry->d_inode;
++	struct super_block *sb = inode->i_sb;
++	struct axfs_super *sbi = AXFS_SB(sb);
++	u64 ino_number = inode->i_ino;
++	u64 entry;
++	loff_t dir_index;
++	char *name;
++	int namelen, mode;
++	int err = 0;
 +
-+#define AXFS_GET_CBLOCK_ADDRESS(sbi, cnode_index)\
-+    (unsigned long)( \
-+       (sbi)->compressed.virt_addr \
-+       + AXFS_GET_CBLOCK_OFFSET(sbi, cnode_index) \
-+    )
++	/* Get the current index into the directory and verify it is not beyond
++	   the end of the list */
++	dir_index = filp->f_pos;
++	if (dir_index >= AXFS_GET_INODE_NUM_ENTRIES(sbi, ino_number))
++		goto out;
 +
-+#define AXFS_GET_NODE_ADDRESS(sbi,node__index) \
-+    (unsigned long)( \
-+       (sbi)->node_index.virt_addr \
-+       + AXFS_GET_NODE_INDEX(sbi, node__index) \
-+    )
++	/* Verify the inode is for a directory */
++	if (!(S_ISDIR(inode->i_mode))) {
++		err = -EINVAL;
++		goto out;
++	}
 +
-+#define AXFS_GET_BANODE_ADDRESS(sbi,banode_index) \
-+    (unsigned long)( \
-+       (sbi)->byte_aligned.virt_addr \
-+       + AXFS_GET_BANODE_OFFSET(sbi, banode_index) \
-+    )
++	while (dir_index < AXFS_GET_INODE_NUM_ENTRIES(sbi, ino_number)) {
++		entry = AXFS_GET_INODE_ARRAY_INDEX(sbi, ino_number) + dir_index;
 +
-+#define AXFS_FSOFFSET_2_DEVOFFSET(sbi,fsoffset) \
-+    (( \
-+      ((sbi)->phys_start_addr == 0) && ((sbi)->virt_start_addr == 0) \
-+      ) ? (fsoffset) : (fsoffset - (sbi)->mmap_size) \
-+    )
++		name = (char *)AXFS_GET_INODE_NAME(sbi, entry);
++		namelen = strlen(name);
 +
-+#define AXFS_GET_CBLOCK_LENGTH(sbi,cblock_index) \
-+    (u64)( \
-+      (u64)AXFS_GET_CBLOCK_OFFSET(sbi, ((u64)(cblock_index)+(u64)1)) \
-+      - (u64)AXFS_GET_CBLOCK_OFFSET(sbi, (cblock_index)) \
-+    )
++		mode = (int)AXFS_GET_MODE(sbi, entry);
++		err = filldir(dirent, name, namelen, dir_index, entry, mode);
 +
-+#ifndef TRUE
-+#define TRUE 1
-+#endif
-+#ifndef FALSE
-+#define FALSE 0
-+#endif
++		if (err)
++			break;
 +
-+#endif
++		dir_index++;
++		filp->f_pos = dir_index;
++	}
++
++out:
++	return 0;
++}
++
++/******************************************************************************
++ *
++ * axfs_fault
++ *
++ * Description: This function is mapped into the VMA operations vector, and
++ *              gets called on a page fault. Depending on whether the page
++ *              is XIP or compressed, xip_file_fault or filemap_fault is
++ *              called.  This function also logs when a fault occurs when
++ *              profiling is on.
++ *
++ * Parameters:
++ *    (IN) vma  - The virtual memory area corresponding to a file
++ *
++ *    (IN) vmf  - The fault info pass in by the fault handler
++ *
++ * Returns:
++ *    0 or error number
++ *
++ *****************************************************************************/
++static int axfs_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
++{
++	struct file *file = vma->vm_file;
++	struct inode *inode = file->f_dentry->d_inode;
++	struct super_block *sb = inode->i_sb;
++	struct axfs_super *sbi = AXFS_SB(sb);
++	u64 ino_number = inode->i_ino;
++	u64 array_index;
++
++	array_index = AXFS_GET_INODE_ARRAY_INDEX(sbi, ino_number) + vmf->pgoff;
++
++	/* if that pages are marked for write they will probably end up in RAM
++	   therefore we don't want their counts for being XIP'd */
++	if (!(vma->vm_flags & VM_WRITE))
++		axfs_profiling_add(sbi, array_index, ino_number);
++
++	/* figure out if the node is XIP or compressed and call the
++	   appropriate function
++	 */
++	if (AXFS_IS_NODE_XIP(sbi, array_index))
++		return xip_file_fault(vma, vmf);
++	return filemap_fault(vma, vmf);
++
++}
++
++
++/******************************************************************************
++ *
++ * axfs_file_read
++ *
++ * Description: axfs_file_read is mapped into the file_operations vector for
++ *              all axfs files. It loops through the pages to be read and calls
++ *              either do_sync_read (if the page is a compressed one) or
++ *              xip_file_read (if the page is XIP).
++ *
++ * Parameters:
++ *    (IN) filp -  file to be read
++ *
++ *    (OUT) buf - user buffer that is filled with the data that we read.
++ *
++ *    (IN) len - length of file to be read
++ *
++ *    (IN) ppos - offset within the file to read from
++ *
++ * Returns:
++ *    actual size of data read.
++ *
++ *****************************************************************************/
++static ssize_t axfs_file_read(struct file *filp, char __user *buf, size_t len,
++			      loff_t *ppos)
++{
++	struct inode *inode = filp->f_dentry->d_inode;
++	struct super_block *sb = inode->i_sb;
++	struct axfs_super *sbi = AXFS_SB(sb);
++	size_t read = 0, total_read = 0;
++	size_t readlength, actual_size, file_size, remaining;
++	u64 ino_number = inode->i_ino;
++	u64 size, array_index;
++
++	file_size = AXFS_GET_INODE_FILE_SIZE(sbi, ino_number);
++	remaining = file_size - *ppos;
++	actual_size = len > remaining ? remaining : len;
++	readlength = actual_size < PAGE_SIZE ? actual_size : PAGE_SIZE;
++
++	for (size = actual_size; size > 0; size -= read) {
++		array_index = AXFS_GET_INODE_ARRAY_INDEX(sbi, ino_number);
++		array_index += *ppos >> PAGE_SHIFT;
++
++		if (AXFS_IS_NODE_XIP(sbi, array_index)) {
++			read = xip_file_read(filp, buf, readlength, ppos);
++		} else {
++			read = do_sync_read(filp, buf, readlength, ppos);
++		}
++		buf += read;
++		total_read += read;
++
++		if ((len - total_read < PAGE_SIZE) && (total_read != len))
++			readlength = len - total_read;
++	}
++
++	return total_read;
++}
++
++static int axfs_readpage(struct file *file, struct page *page)
++{
++	struct inode *inode = page->mapping->host;
++	struct super_block *sb = inode->i_sb;
++	struct axfs_super *sbi = AXFS_SB(sb);
++	u64 array_index, node_index, cnode_index, maxblock, ofs;
++	u64 ino_number = inode->i_ino;
++	u32 max_len, cnode_offset;
++	u32 cblk_size = sbi->cblock_size;
++	u32 len = 0;
++	u8 node_type;
++	void *pgdata;
++	void *src;
++	void *cblk0 = sbi->cblock_buffer[0];
++	void *cblk1 = sbi->cblock_buffer[1];
++
++	maxblock = (inode->i_size + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
++	pgdata = kmap(page);
++
++	if (page->index >= maxblock)
++		goto out;
++
++	array_index = AXFS_GET_INODE_ARRAY_INDEX(sbi, ino_number);
++	array_index += page->index;
++
++	node_index = AXFS_GET_NODE_INDEX(sbi, array_index);
++	node_type = AXFS_GET_NODE_TYPE(sbi, array_index);
++
++	if (node_type == Compressed) {
++		/* node is in compessed region */
++		cnode_offset = AXFS_GET_CNODE_OFFSET(sbi, node_index);
++		cnode_index = AXFS_GET_CNODE_INDEX(sbi, node_index);
++		down_write(&sbi->lock);
++		if (cnode_index != sbi->current_cnode_index) {
++			/* uncompress only necessary if different cblock */
++			ofs = AXFS_GET_CBLOCK_OFFSET(sbi, cnode_index);
++			len = AXFS_GET_CBLOCK_OFFSET(sbi, cnode_index + 1);
++			len -= ofs;
++			axfs_copy_data(sb, cblk1, &(sbi->compressed), ofs, len);
++			axfs_uncompress_block(cblk0, cblk_size, cblk1, len);
++			sbi->current_cnode_index = cnode_index;
++		}
++		downgrade_write(&sbi->lock);
++		max_len = cblk_size - cnode_offset;
++		len = max_len > PAGE_CACHE_SIZE ? PAGE_CACHE_SIZE : max_len;
++		src = (void *)((unsigned long)cblk0 + cnode_offset);
++		memcpy(pgdata, src, len);
++		up_read(&sbi->lock);
++	} else if (node_type == Byte_Aligned) {
++		/* node is in BA region */
++		ofs = AXFS_GET_BANODE_OFFSET(sbi, node_index);
++		max_len = sbi->byte_aligned.size - ofs;
++		len = max_len > PAGE_CACHE_SIZE ? PAGE_CACHE_SIZE : max_len;
++		axfs_copy_data(sb, pgdata, &(sbi->byte_aligned), ofs, len);
++	} else {
++		/* node is XIP */
++		ofs = node_index << PAGE_SHIFT;
++		len = PAGE_CACHE_SIZE;
++		axfs_copy_data(sb, pgdata, &(sbi->xip), ofs, len);
++	}
++
++out:
++	memset(pgdata + len, 0, PAGE_CACHE_SIZE - len);
++	kunmap(page);
++	flush_dcache_page(page);
++	SetPageUptodate(page);
++	unlock_page(page);
++	return 0;
++}
++
++static int axfs_get_xip_mem(struct address_space *mapping, pgoff_t offset,
++			    int create, void **kaddr, unsigned long *pfn)
++{
++	struct inode *inode = mapping->host;
++	struct super_block *sb = inode->i_sb;
++	struct axfs_super *sbi = AXFS_SB(sb);
++	u64 ino_number = inode->i_ino;
++	u64 ino_index, node_index;
++
++	ino_index = AXFS_GET_INODE_ARRAY_INDEX(sbi, ino_number);
++	ino_index += offset;
++
++	node_index = AXFS_GET_NODE_INDEX(sbi, ino_index);
++
++	*kaddr = (void *)(sbi->xip.virt_addr + (node_index << PAGE_SHIFT));
++	if (AXFS_PHYSADDR_IS_VALID(sbi)) {
++		*pfn = (AXFS_GET_XIP_REGION_PHYSADDR(sbi) >> PAGE_SHIFT);
++		*pfn += node_index;
++	} else {
++		*pfn = page_to_pfn(virt_to_page((unsigned long)*kaddr));
++	}
++
++	return 0;
++}
++
 
 
