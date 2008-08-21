@@ -1,77 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755802AbYHUGA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbYHUGAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755802AbYHUGA0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 02:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYHUGAM
+	id S1756596AbYHUGAs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 02:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbYHUGAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 02:00:12 -0400
-Received: from web34508.mail.mud.yahoo.com ([66.163.178.174]:31288 "HELO
-	web34508.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751072AbYHUGAK (ORCPT
+	Thu, 21 Aug 2008 02:00:38 -0400
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:53521 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751526AbYHUGAg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 02:00:10 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=5r9SCkn72plnsdxQRs0xpJlZrzvaxetZgzV6pKkSh2zjmQC53tqOVZo6dlA80pfPSqaUCkxB10gq/Sogj2JcRfQzD+NzuC1Mjd1+D7HZLqrZT7F2QBv/uKyz9h78YkvltVP7EKe9tbOmW2T2vWFGdZuct+40ZmsaeriSeV83k3c=;
-X-YMail-OSG: gMal2EIVM1nqHJ6pLYmPKeWvFsK25Z5VCBFHtUYgKrXWUFZCNEU_wohlJ8Qhh6fCQwLHt6vARMmdrzve_WL12NP3kBCobppiwYo3Zm_YA6jYm7DrPrUDWfeMsRnATcLHoTTPLrhfR2braINm7HpngOw-
-X-Mailer: YahooMailWebService/0.7.218.2
-Date: Wed, 20 Aug 2008 23:00:07 -0700 (PDT)
-From: gus3 <musicman529@yahoo.com>
-Reply-To: MusicMan529@yahoo.com
-Subject: Re: XFS vs Elevators (was Re: [PATCH RFC] nilfs2: continuous snapshotting file system)
-To: Szabolcs Szakacsits <szaka@ntfs-3g.org>,
-       Dave Chinner <david@fromorbit.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-In-Reply-To: <20080821051508.GB5706@disturbed>
+	Thu, 21 Aug 2008 02:00:36 -0400
+Message-ID: <48AD0379.9030705@cs.columbia.edu>
+Date: Thu, 21 Aug 2008 01:56:09 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <684252.68814.qm@web34508.mail.mud.yahoo.com>
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Dave Hansen <dave@linux.vnet.ibm.com>,
+       containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: checkpoint/restart ABI
+References: <20080807224033.FFB3A2C1@kernel> <200808111853.13854.arnd@arndb.de>	<1218484114.5598.43.camel@nimitz> <200808112347.50245.arnd@arndb.de>
+In-Reply-To: <200808112347.50245.arnd@arndb.de>
+Content-Type: text/plain; charset=iso-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- On Wed, 8/20/08, Dave Chinner <david@fromorbit.com> wrote:
 
-> Ok, I thought it might be the tiny log, but it didn't
-> improve anything
-> here when increased the log size, or the log buffer size.
+
+Arnd Bergmann wrote:
+> On Monday 11 August 2008, Dave Hansen wrote:
+>> Thanks for all of the very interesting comments about the ABI.  
+>>
+>> Considering that we're still *really* early in getting this concept
+>> merged up into mainline, what do you all think we should do now?
 > 
-> Looking at the block trace, I think elevator merging is
-> somewhat busted. I'm
-> seeing adjacent I/Os being dispatched without having been
-> merged.  e.g:
-
-[snip]
-
-> Also, CFQ appears to not be merging WRITE_SYNC bios or
-> issuing them
-> with any urgency.  The result of this is that it stalls the
-> XFS
-> transaction subsystem by capturing all the log buffers in
-> the
-> elevator and not issuing them. e.g.:
-
-[snip]
-
-> The I/Os are merged, but there's still that 700ms delay
-> before dispatch.
-> i was looking at this a while back but didn't get to
-> finishing it off.
-> i.e.:
+> I think the two most important aspects here need to be security and
+> simplicity. If you have to choose between the two, it probably makes
+> sense to put security first, because loading untrusted data into
+> the kernel puts you at a significant risk to start with. If you
+> can show a restart interface that lets regular users restart their
+> tasks in a way anyone can verify to be secure, that will be a
+> good indication that you're on the right track.
 > 
-> http://oss.sgi.com/archives/xfs/2008-01/msg00151.html
-> http://oss.sgi.com/archives/xfs/2008-01/msg00152.html
+> The other problem that you really need to solve is interface
+> stability. What you are creating is a binary representation
+> of many kernel internal data structures, so in our common
+> rules, you have to make sure that you remain forward and
+> backward compatible. Simply saying that you need to run
+> an identical kernel when restarting from a checkpoint is not
+> enough IMHO.
 > 
-> I'll have a bit more of a look at this w.r.t to
-> compilebench performance,
-> because it seems like a similar set of problems that I was
-> seeing back
-> then...
 
-I concur your observation, esp. w.r.t. XFS and CFQ clashing:
+quoting:
 
-http://gus3.typepad.com/i_am_therefore_i_think/2008/07/finding-the-fas.html
+ > There could be a case for viewing sys_restore() as being a lot like
+ > sys_init_module() - a view into kernel internals that goes beyond the
+ > normal user-space ABI, and beyond the stability guarantee.  It might be
+ > possible to create a certain amount of version portability with a
+ > modversions-like mechanism, but it sure seems hard to do better than
+ > that.
+ >
+ > jon
 
-CFQ is the default on most Linux systems AFAIK; for decent XFS performance one needs to switch to "noop" or "deadline". I wasn't sure if it was broken code, or simply base assumptions in conflict (XFS vs. CFQ). Your log output sheds light on the matter for me, thanks.
+Extending this view in the context of security - we can require sysadmin
+privilege to restart, and then sysadmin is responsible for the contents
+of the file. The kernel will ensure the the data isn't corrupted. Much
+like with loading a kenrel module - the admin may load any sort of crap.
+Then, sysadmin may, for instance, add a signature on a checkpointed file
+to verify it's integrity.
+
+(Well, one problem with this scheme in the context of self-checkpoint
+would be - who can be trusted to generate the signature in that case).
+
+> Some more words on specific interfaces that we have discussed:
+> 
+> The single-file-descriptor approach has the big advantage of
+> keeping the complexity in one place (the kernel). To be consistent
+> with other kernel interfaces, I would make the kernel hand out a
+> file descriptor, not let the user open a file and pass that into
+> the kernel as you do now.
+> 
+> A new file system is a good idea for many complex interfaces that
+> make their way into the kernel, but I don't think it will help
+> in this case.
+> 
+> For checkpointing a single task, or even a task with its children,
+> a different interface I could imagine would be to have a new
+> file in procfs per pid that you can read as a pipe giving our
+> the same data that you currently save in the checkpoint file
+> descriptor. It does mean that you won't be able to pass flags
+> down easily (you could write to the pipe before you start reading,
+> but that's not too nice).
+
+Using a single handle (crid or a special file descriptor) to identify
+the whole checkpoint is very useful - to be able to stream it (eg. over
+the network, or through filters). It is also very important for future
+features and optimizations. For example, to reduce downtime of the
+application during checkpoint, one can use COW for dirty pages, and
+only write-back the entire data after the application resumes execution.
+Or imagine a use-case where one would like to keep the entire checkpoint
+in memory. These are pretty hard to do if you split the handling between
+multiple files or handles.
+
+> 
+> On the restart side, I think the most consistent interface would
+> be a new binfmt_chkpt implementation that you can use to execve
+> a checkpoint, just like you execute an ELF file today. The binfmt
+> can be a module (unlike a syscall), so an administrator that is
+> afraid of the security implications can just disable it by not
+> loading the module. In an execve model, the parent process can
+> set up anything related to credentials as good as it's allowed
+> to and then let the kernel do the rest.
+
+This is an interesting idea but not without its problems. In particular,
+a successful execve() by one thread destroys all the others. Also, it
+isn't clear how this can work with pre-copying and live-migration; And
+finally, I'm not sure how to handle shared objects in this manner.
+
+As for kernel module - it is easy to implement most of the checkpoint
+restart functionality in a kernel module, leaving only the syscall stubs
+in the kernel.
+
+Oren.
+
