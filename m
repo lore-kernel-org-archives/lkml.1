@@ -1,69 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759066AbYHUNS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759180AbYHUNUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759066AbYHUNS7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 09:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757313AbYHUNSq
+	id S1759180AbYHUNUa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 09:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbYHUNUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 09:18:46 -0400
-Received: from cluster-g.mailcontrol.com ([208.87.233.190]:43471 "EHLO
+	Thu, 21 Aug 2008 09:20:17 -0400
+Received: from cluster-g.mailcontrol.com ([208.87.233.190]:37569 "EHLO
 	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758800AbYHUNSp (ORCPT
+	with ESMTP id S1752931AbYHUNUP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 09:18:45 -0400
-Message-ID: <48AD6AF0.3050504@csr.com>
-Date: Thu, 21 Aug 2008 14:17:36 +0100
+	Thu, 21 Aug 2008 09:20:15 -0400
+Message-ID: <48AD6B4A.1020803@csr.com>
+Date: Thu, 21 Aug 2008 14:19:06 +0100
 From: David Vrabel <david.vrabel@csr.com>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
 To: Kernel development list <linux-kernel@vger.kernel.org>
 CC: linux-usb <linux-usb@vger.kernel.org>, torvalds@linux-foundation.org
-Subject: New subsystems: Ultra-Wideband radio, Wireless USB and WiMedia LLC
- Protocol
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Aug 2008 13:17:36.0502 (UTC) FILETIME=[47693160:01C90390]
+Subject: [patch] bitmap: add bitmap_copy_le()
+References: <48AD6AF0.3050504@csr.com>
+In-Reply-To: <48AD6AF0.3050504@csr.com>
+Content-Type: multipart/mixed;
+ boundary="------------090104030106020003020508"
+X-OriginalArrivalTime: 21 Aug 2008 13:19:06.0421 (UTC) FILETIME=[7D01BE50:01C90390]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm the maintainer of the Ultra-Wideband (UWB) radio, Certified Wireless
-USB (WUSB) and WiMedia LLC Protocol (WLP) subsystems.  These are now in
-a state were I consider them suitable for inclusion into the kernel.
+This is a multi-part message in MIME format.
+--------------090104030106020003020508
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-UWB is a new high speed, short range radio technology (480 Mbit/s at 1
-m, 53.3 Mbit/s at 10 m).  The specifications are freely available and
-are managed by the WiMedia Alliance.   For more information see
-http://www.wimedia.org/.
-
-Various protocols run on top of the UWB radio: Certified Wireless USB
-(WUSB); WiMedia LLC Protocol (WLP), for IP (etc) networks; and (in the
-future) high speed Bluetooth.
-
-The code is some 35,000 lines so I won't be posting it to this list but
-you can view the patch set here:
-
-http://www.davidvrabel.org.uk/~david/linux/uwb/
-
-Or you can pull the changes from the uwb branch of
-
-git://pear.davidvrabel.org.uk/git/uwb.git
-
-(Please don't clone the entire tree from here as I have very limited
-bandwidth.)
-
-Or you can view the patches in the linux-usb archive here:
-
-http://thread.gmane.org/gmane.linux.usb.general/8715
-
-The vast majority of the code forms part of the new UWB, WUSB, and WLP
-subsystem with no impact on the rest of the kernel.  It has all been
-posted to the linux-usb list and has been reviewed there.
-
-For a wider review, I will follow up with the 2 minor patches that add
-some simple infrastructure.
-
-David
 -- 
 David Vrabel, Senior Software Engineer, Drivers
 CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
 Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
+
+--------------090104030106020003020508
+Content-Type: text/x-diff;
+ name="bitmap-add-bitmap_copy_le.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="bitmap-add-bitmap_copy_le.patch"
+
+bitmap: add bitmap_copy_le()
+
+From: David Vrabel <david.vrabel@csr.com>
+
+bitmap_copy_le() copies a bitmap, putting the bits into little-endian
+order (i.e., each unsigned long word in the bitmap is put into
+little-endian order).
+
+The UWB stack used bitmaps to manage Medium Access Slot availability,
+and these bitmaps need to be written to the hardware in LE order.
+
+Signed-off-by: David Vrabel <david.vrabel@csr.com>
+Cc: Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ include/linux/bitmap.h |    1 +
+ lib/bitmap.c           |   22 ++++++++++++++++++++++
+ 2 files changed, 23 insertions(+)
+
+Index: linux-git/include/linux/bitmap.h
+===================================================================
+--- linux-git.orig/include/linux/bitmap.h	2008-08-12 14:51:02.000000000 +0100
++++ linux-git/include/linux/bitmap.h	2008-08-12 14:51:07.000000000 +0100
+@@ -129,6 +129,7 @@
+ extern int bitmap_find_free_region(unsigned long *bitmap, int bits, int order);
+ extern void bitmap_release_region(unsigned long *bitmap, int pos, int order);
+ extern int bitmap_allocate_region(unsigned long *bitmap, int pos, int order);
++extern void bitmap_copy_le(void *dst, const unsigned long *src, int nbits);
+ 
+ #define BITMAP_LAST_WORD_MASK(nbits)					\
+ (									\
+Index: linux-git/lib/bitmap.c
+===================================================================
+--- linux-git.orig/lib/bitmap.c	2008-08-12 14:51:02.000000000 +0100
++++ linux-git/lib/bitmap.c	2008-08-12 14:51:07.000000000 +0100
+@@ -996,3 +996,25 @@
+ 	return 0;
+ }
+ EXPORT_SYMBOL(bitmap_allocate_region);
++
++/**
++ * bitmap_copy_le - copy a bitmap, putting the bits into little-endian order.
++ * @dst:   destination buffer
++ * @src:   bitmap to copy
++ * @nbits: number of bits in the bitmap
++ *
++ * Require nbits % BITS_PER_LONG == 0.
++ */
++void bitmap_copy_le(void *dst, const unsigned long *src, int nbits)
++{
++	unsigned long *d = dst;
++	int i;
++
++	for (i = 0; i < nbits/BITS_PER_LONG; i++) {
++		if (BITS_PER_LONG == 64)
++			d[i] = cpu_to_le64(src[i]);
++		else
++			d[i] = cpu_to_le32(src[i]);
++	}
++}
++EXPORT_SYMBOL(bitmap_copy_le);
+
+--------------090104030106020003020508--
