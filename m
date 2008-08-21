@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759059AbYHUQWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757678AbYHUQZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759059AbYHUQWA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 12:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbYHUQVn
+	id S1757678AbYHUQZr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 12:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbYHUQZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 12:21:43 -0400
-Received: from il.qumranet.com ([212.179.150.194]:15207 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754084AbYHUQVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 12:21:42 -0400
-Message-ID: <48AD9614.6060701@qumranet.com>
-Date: Thu, 21 Aug 2008 19:21:40 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 21 Aug 2008 12:25:39 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:64982 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752064AbYHUQZi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 12:25:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jv0ehkWGxMJqhEq0BE57RsM9WUWKsOWgI2UIN0xHzwLVjtq8AGcPMCmZxrX98fV4JC
+         2dXbswrl/yL7tIZVmTjcxXcWqVVQ/IfxB4OhEcuD9kZRLN7tDUO3bsoeVQdqyhk17dCi
+         55EFYg5Y7PQBYgqc5TiGTUUga6r/DwxaAOCUY=
+Message-ID: <86802c440808210925g401d62e4td84a43c223571327@mail.gmail.com>
+Date: Thu, 21 Aug 2008 09:25:37 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Robert Richter" <robert.richter@amd.com>
+Subject: Re: patch "x86: MOVE PCI IO ECS code to x86/pci" breaks CPU hotplug
+Cc: "Jan Beulich" <jbeulich@novell.com>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080821132952.GD13011@erda.amd.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>, jmerkey@wolfmountaingroup.com,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [ANNOUNCE] mdb: Merkey's Linux Kernel Debugger 	2.6.27-rc4	released
-References: <200808210250.m7L2obNX028353@wolfmountaingroup.com>	 <48AD5A21.7020801@s5r6.in-berlin.de>	 <43593.166.70.238.46.1219321595.squirrel@webmail.wolfmountaingroup.com>	 <200808212337.38626.nickpiggin@yahoo.com.au> <1219327799.8651.134.camel@twins>
-In-Reply-To: <1219327799.8651.134.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48AD82D5.76E4.0078.0@novell.com>
+	 <20080821132952.GD13011@erda.amd.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> Not sure - I think all barrier clobber the full register and memory set.
-> So if you access a variable after a barrier it will have to issue a
-> load.
->   
+On Thu, Aug 21, 2008 at 6:29 AM, Robert Richter <robert.richter@amd.com> wrote:
+> On 21.08.08 13:59:33, Jan Beulich wrote:
+>> Even worse - this would even try to access the MSR on non-AMD CPUs
+>> (currently probably prevented just by the fact that only AMD ones use
+>> family values of 0x10 or higher).
+>
+> Ups, really worse. Code was AMD specific before and became
+> generic. Will fix this.
+>
 
-IIRC a barrier only clobbers memory.  gcc must reload a variable from 
-memory unless it can prove the variable's address has not escaped anywhere.
+it seems you didn't address the concern about hotplug as you promised
 
-So:
+http://lkml.org/lkml/2008/6/13/151
 
-void f()
-{
-    int v;
-
-    v = g();
-    barrier();
-    do_domething_with(v);
-}
-
-Need not reload v from memory (indeed, v can be in a register for its 
-entire lifetime), but
-
-void f()
-{
-    int v;
-
-    v = g();
-    h(&v);
-    barrier();
-    do_domething_with(v);
-}
- 
-Will force v into memory, and reload it after the barrier.
-
--- 
-error compiling committee.c: too many arguments to function
-
+YH
