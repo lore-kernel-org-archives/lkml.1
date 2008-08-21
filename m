@@ -1,101 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757232AbYHUMwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757925AbYHUMww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757232AbYHUMwV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 08:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbYHUMwN
+	id S1757925AbYHUMww (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 08:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbYHUMwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 08:52:13 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:58634 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753352AbYHUMwM (ORCPT
+	Thu, 21 Aug 2008 08:52:42 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:59200 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753902AbYHUMwl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 08:52:12 -0400
-Message-ID: <43593.166.70.238.46.1219321595.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <48AD5A21.7020801@s5r6.in-berlin.de>
-References: <200808210250.m7L2obNX028353@wolfmountaingroup.com>
-    <1219313231.8651.101.camel@twins> <48AD4A0B.8020805@s5r6.in-berlin.de>
-    <1219316568.8651.107.camel@twins>
-    <20080821114745.GD21089@linux.vnet.ibm.com>
-    <48AD5A21.7020801@s5r6.in-berlin.de>
-Date: Thu, 21 Aug 2008 06:26:35 -0600 (MDT)
-Subject: Re: [ANNOUNCE] mdb: Merkey's Linux Kernel Debugger 
-     2.6.27-rc4	released
-From: jmerkey@wolfmountaingroup.com
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Cc: paulmck@linux.vnet.ibm.com, "Peter Zijlstra" <peterz@infradead.org>,
-       jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "David Howells" <dhowells@redhat.com>
-User-Agent: SquirrelMail/1.4.6
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Thu, 21 Aug 2008 08:52:41 -0400
+Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
+From: Chris Mason <chris.mason@oracle.com>
+To: Szabolcs Szakacsits <szaka@ntfs-3g.org>
+Cc: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.61.0808202352450.4532@dhcppc2>
+References: <20080820004326.519405a2.akpm@linux-foundation.org>
+	 <200808201613.AA00212@capsicum.lab.ntt.co.jp>
+	 <Pine.LNX.4.61.0808202352450.4532@dhcppc2>
+Content-Type: text/plain
+Date: Thu, 21 Aug 2008 08:51:31 -0400
+Message-Id: <1219323091.7854.45.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Paul E. McKenney wrote:
->> On Thu, Aug 21, 2008 at 01:02:48PM +0200, Peter Zijlstra wrote:
->>> On Thu, 2008-08-21 at 12:57 +0200, Stefan Richter wrote:
->>>> Peter Zijlstra wrote:
->>>>> On Wed, 2008-08-20 at 20:50 -0600, jmerkey@wolfmountaingroup.com
->>>>> wrote:
->>>>>
->>>>>>  volatiles left in the code due to the previously stated
->>>>>>  (and still present) severe breakage of the GNU compiler with SMP
->>>>>>  shared data.  most of the barrier() functions are just plain broken
->>>>>>  and do not result in proper compiler behavior in this tree.
->>>>> Can you provide explicit detail?
->>>>>
->>>>> By using barrier() the compiler should clobber all its memory and
->>>>> registers therefore forcing a write/reload of the variable.
->>>> I hope Jeff didn't try mere barrier()s only.  smp_wmb() and smp_rmb()
->>>> are the more relevant barrier variants for mdb, from what I remember
->>>> when I last looked at it.
->>> Sure, but volatile isn't a replacement for memory barriers.
->>
->> Let's face it, the C standard does not support concurrency, so we are
->> all in a state of sin in any case, forced to rely on combinations of
->> gcc-specific non-standard language extensions and assembly language.
->>
->> Could be worse!!!
->
-> Nevertheless, an analysis of which particular parts of code generation
-> are insufficient if one particular volatile qualification is removed is
-> IMO likely to turn up places in mdb where a clearer or/and more
-> efficient implementation is possible.  (Based on what I saw a few
-> revisions ago; I haven't looked at the current one yet.)
-> --
-> Stefan Richter
-> -=====-==--- =--- =-=-=
-> http://arcgraph.de/sr/
->
+On Thu, 2008-08-21 at 00:25 +0300, Szabolcs Szakacsits wrote:
+> On Thu, 21 Aug 2008, Ryusuke Konishi wrote:
+> > >> Some impressive benchmark results on SSD are shown in [3],
+> > >
+> > >heh.  It wipes the floor with everything, including btrfs.
+> 
+> It seems the benchmark was done over half year ago. It's questionable how 
+> relevant today the performance comparison is with actively developed file 
+> systems ...
+> 
 
-I used the smp_wmb() functions.  I noted a couple of things.  a) some of
-these macros just emit __asm__ __volatile__ into the code so why not just
-say "volatile" to begin with b) smp_wmb() in some cases worked and in
-other cases jut optimized away the global reference. c) I can go back and
-break the code again by inserting them and building broken assembler d) I
-ave been doing hardware and software design since the early 1980;s, I
-invented SMP affinity scheduling, and yes, I understand barriers and this
-concept of instruction score-boarding and optimization very well -- its
-not an excuse for a busted C compiler.
+I'd expect that nilfs continues to win postmark.  Btrfs splits data and
+metadata into different parts of the disk, so at best btrfs is going to
+produce two streams of writes into the SSD while nilfs is doing one.
+Most consumer ssds still benefit from huge writes, and so nilfs is
+pretty optimal in that case.
 
-It did not break all the places in the code, but broke enough for SMP to
-lock up and fail,  It turned global variables into local variables.  If
-you want me to reproduce this I can but it will have to wait til this
-evening
-because I have some product releases to get out the door at Omega 8 today.
+The main benefit of the split for btrfs is being able to have different
+duplication policies for metadata and data, and faster fsck times
+because the metadata is more compact.  Over time that may prove less
+relevant on SSD, and changing it in btrfs is just flipping a few bits
+during allocation.
 
-It's simple to reproduce.  Take away the volatile declaration for the
-rlock_t structure in mdb-ia32.c (rlock_t debug_lock) in all code
-references and watch the thing lock up in SMP with multiple processors in
-the debugger each stuck with their own local copy of debug_lock.
+-chris
 
-The barrier functions do not appear to work in all cases.
-
-Jeff
 
