@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758077AbYHUGuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbYHUHA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758077AbYHUGuV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 02:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756652AbYHUGuE
+	id S1757420AbYHUHA6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 03:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbYHUHAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 02:50:04 -0400
-Received: from mga06.intel.com ([134.134.136.21]:34910 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755187AbYHUGuD (ORCPT
+	Thu, 21 Aug 2008 03:00:48 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:43248 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752473AbYHUHAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 02:50:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,243,1217833200"; 
-   d="scan'208";a="327943705"
-Subject: Re: VolanoMark regression with 2.6.27-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, Chris Friesen <cfriesen@nortel.com>
-In-Reply-To: <20080821061622.GC14572@elte.hu>
-References: <20080811185008.GA29291@linux.vnet.ibm.com>
-	 <1912726331.25608.235.camel@ymzhang>
-	 <20080817115035.GA32223@linux.vnet.ibm.com>
-	 <20080818052155.GA5063@linux.vnet.ibm.com>
-	 <1219217089.8781.27.camel@ymzhang> <1219218089.10800.404.camel@twins>
-	 <20080820105141.GA18226@elte.hu> <1219239137.8651.52.camel@twins>
-	 <20080820134708.GA20648@elte.hu> <1219285502.8781.35.camel@ymzhang>
-	 <20080821061622.GC14572@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 21 Aug 2008 14:48:26 +0800
-Message-Id: <1219301306.8781.55.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Thu, 21 Aug 2008 03:00:47 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=nb1eQTz10XOM/t/BTYfxvguW+ZamfOPCyZGD0ZW2171esm+gacan0sDxP9XSrBrgGJtFHKXwPCTSwDixJziFM7VoybtPKWONV7Q8vu0aE210Yn1JlYj2LR3YIf5ZrFQ7Fde66zD1wnt51p0tXMkfNYMf4fOs4ookG+AkWVIDTcM=  ;
+X-YMail-OSG: 4LYkB7EVM1ncxcDUcq0i_D_BN5kEZVtJIV7N.Tawi7cVoATuQVq9zVc8Gju8F2zylJ5eJw22C29FyJe._XTv02oOW2meQM9O._EdKNzxVH8RnrT5Szon55ukf7s6IS5ClBk-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Dave Chinner <david@fromorbit.com>
+Subject: Re: XFS vs Elevators (was Re: [PATCH RFC] nilfs2: continuous snapshotting file system)
+Date: Thu, 21 Aug 2008 17:00:39 +1000
+User-Agent: KMail/1.9.5
+Cc: gus3 <musicman529@yahoo.com>, Szabolcs Szakacsits <szaka@ntfs-3g.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+References: <20080821051508.GB5706@disturbed> <684252.68814.qm@web34508.mail.mud.yahoo.com> <20080821061443.GD5706@disturbed>
+In-Reply-To: <20080821061443.GD5706@disturbed>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200808211700.39584.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 21 August 2008 16:14, Dave Chinner wrote:
 
-On Thu, 2008-08-21 at 08:16 +0200, Ingo Molnar wrote:
-> * Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
-> 
-> > > ok, i've applied this one to tip/sched/urgent instead of the 
-> > > feature-disabling patchlet. Yanmin, could you please check whether this 
-> > > one does the trick?
-> >
-> > This new patch almost doesn't help volanoMark. Pls. use the patch 
-> > which sets ﻿LB_BIAS=1 by default.
-> 
-> ok. That also removes the kernel.h complications ;-)
-Sorry, I have new update.
-Originally, I worked on 2.6.27-rc1. I just move to 2.6.27-rc3 and found
-something defferent when CONFIG_GROUP_SCHED=n.
+> I think that we need to issue explicit unplugs to get the log I/O
+> dispatched the way we want on all elevators and stop trying to
+> give elevators implicit hints by abusing the bio types and hoping
+> they do the right thing....
 
-With 2.6.27-rc3, on my 8-core stoakley, all volanoMark regression disappears,
-no matter if I enable LB_BIAS. On 16-core tigerton, the regression is still
-there if I don't enable LB_BIAS and regression becomes 11% from 65%.
+FWIW, my explicit plugging idea is still hanging around in one of
+Jens' block trees (actually he refreshed it a couple of months ago).
 
-8-core stoakley:
-﻿2.6.26_nogroup			340669
-﻿2.6.27-rc1_nogroup		267237
-2.6.27-rc1_nogroup+LB_BIAS=1	330693
-2.6.27-rc3_nogroup		352193
-2.6.27-rc3_nogroup+LB_BIAS=1	355872
+It provides an API for VM or filesystems to plug and unplug
+requests coming out of the current process, and it can reduce the
+need to idle the queue. Needs more performance analysis and tuning
+though.
 
-16-core tigerton:
-﻿2.6.26_nogroup			539644
-﻿2.6.27-rc1_nogroup		309334
-2.6.27-rc1_nogroup+LB_BIAS=1	478360
-2.6.27-rc3_nogroup		348426
-2.6.27-rc3_nogroup+LB_BIAS=1	483150
-
--yanmin
-
+But existing plugging is below the level of the elevators, and should
+only kick in for at most tens of ms at queue idle events, so it sounds
+like it may not be your problem. Elevators will need some hint to give
+priority to specific requests -- either via the current threads's io
+priority, or information attached to bios.
 
