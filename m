@@ -1,133 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758917AbYHUNx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbYHUOEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758917AbYHUNx1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 09:53:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbYHUNxS
+	id S1752723AbYHUOEO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 10:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYHUOD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 09:53:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44972 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751708AbYHUNxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 09:53:17 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] CRED: Document the credential API's (ab)use of const pointers
-To: jmorris@namei.org, akpm@linux-foundation.org, harvey.harrison@gmail.com
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Thu, 21 Aug 2008 14:52:24 +0100
-Message-ID: <20080821135224.17166.32291.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Thu, 21 Aug 2008 10:03:58 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:36953 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbYHUOD6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 10:03:58 -0400
+Message-ID: <48AD757A.8000608@s5r6.in-berlin.de>
+Date: Thu, 21 Aug 2008 16:02:34 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: jmerkey@wolfmountaingroup.com
+CC: paulmck@linux.vnet.ibm.com, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [ANNOUNCE] mdb: Merkey's Linux Kernel Debugger      2.6.27-rc4
+ released
+References: <200808210250.m7L2obNX028353@wolfmountaingroup.com>    <1219313231.8651.101.camel@twins> <48AD4A0B.8020805@s5r6.in-berlin.de>    <1219316568.8651.107.camel@twins>    <20080821114745.GD21089@linux.vnet.ibm.com>    <48AD5A21.7020801@s5r6.in-berlin.de> <43593.166.70.238.46.1219321595.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <43593.166.70.238.46.1219321595.squirrel@webmail.wolfmountaingroup.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Document the credential API's (ab)use of const pointers.  Various pointers to
-credentials, such as those in the task_struct, are declared const.  The purpose
-of this is to compile-time discouragement of altering credentials through those
-pointers.  Once a set of credentials has been made public through one of these
-pointers, it may not be modified, except under special circumstances:
+jmerkey@wolfmountaingroup.com wrote:
+> It's simple to reproduce.  Take away the volatile declaration for the
+> rlock_t structure in mdb-ia32.c (rlock_t debug_lock) in all code
+> references and watch the thing lock up in SMP with multiple processors in
+> the debugger each stuck with their own local copy of debug_lock.
 
-  (1) Its reference count may incremented and decremented.
+I'm having a quick look at mdb-2.6.27-rc4-ia32-08-20-08.patch at the
+moment.  Speaking of debug_lock()...:
 
-  (2) The keyrings to which it points may be modified, but not replaced.
+You use spin_trylock_irqsave((spinlock_t *)&rlock->lock, rlock->flags)
+in there.  Minor nit:  The pointer type cast is unnecessary.
 
-The only safe way to modify anything else is to create a replacement and commit
-using the functions described in Documentation/credentials.txt.
+Major problem:  rlock->flags is wrong in this call.  Use an on-stack
+flags variable for the initial spin_trylock_irqsave.  Ditto in the
+following call of spin_trylock_irqsave.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Next major problem with debug_lock() and debug_unlock():  The reference
+counting doesn't work.  You need an atomic_t counter.  Have a look at
+the struct kref accessors for example, or even make use of the kref API.
+Or if it isn't feasible to fix with atomic_t, add a second spinlock to
+rlock_t to ensure integrity of .count (and of the .processor if necessary).
 
- Documentation/credentials.txt |   19 +++++++++++++++++++
- include/linux/cred.h          |   12 +++++++++++-
- kernel/cred.c                 |    2 +-
- 3 files changed, 31 insertions(+), 2 deletions(-)
+Furthermore, I have doubts about the loop which is entered by CPU B
+while CPU A holds the rlock.  You are fully aware that atomic_read(a) &&
+!atomic_read(b) in its entirety is not atomic, I hope.
 
+All this aside, I don't see *anything* in debug_lock and _unlock which
+would necessitate volatile.  Well, volatile might have papered over some
+of these bugs.
 
-diff --git a/Documentation/credentials.txt b/Documentation/credentials.txt
-index d1f1391..df03169 100644
---- a/Documentation/credentials.txt
-+++ b/Documentation/credentials.txt
-@@ -14,6 +14,7 @@ Contents:
- 
-  (*) Task credentials.
- 
-+     - Immutable credentials.
-      - Accessing task credentials.
-      - Accessing another task's credentials.
-      - Altering credentials.
-@@ -309,6 +310,24 @@ attachment to process-specific keyrings in the requesting process as the
- instantiating process may need to create them.
- 
- 
-+IMMUTABLE CREDENTIALS
-+---------------------
-+
-+Once a set of credentials has been made public (by calling commit_creds() for
-+example), it must be considered immutable, barring two exceptions:
-+
-+ (1) The reference count may be altered.
-+
-+ (2) Whilst the keyring subscriptions of a set of credentials may not be
-+     changed, the keyrings subscribed to may have their contents altered.
-+
-+To catch accidental credential alteration at compile time, struct task_struct
-+has _const_ pointers to its credential sets, as does struct file.  Furthermore,
-+certain functions such as get_cred() and put_cred() operate on const pointers,
-+thus rendering casts unnecessary, but require to temporarily ditch the const
-+qualification to be able to alter the reference count.
-+
-+
- ACCESSING TASK CREDENTIALS
- --------------------------
- 
-diff --git a/include/linux/cred.h b/include/linux/cred.h
-index b156ed4..1f8d8d0 100644
---- a/include/linux/cred.h
-+++ b/include/linux/cred.h
-@@ -1,4 +1,4 @@
--/* Credentials management
-+/* Credentials management - see Documentation/credentials.txt
-  *
-  * Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
-  * Written by David Howells (dhowells@redhat.com)
-@@ -175,6 +175,12 @@ static inline struct cred *get_new_cred(struct cred *cred)
-  *
-  * Get a reference on the specified set of credentials.  The caller must
-  * release the reference.
-+ *
-+ * This is used to deal with a committed set of credentials.  Although the
-+ * pointer is const, this will temporarily discard the const and increment the
-+ * usage count.  The purpose of this is to attempt to catch at compile time the
-+ * accidental alteration of a set of credentials that should be considered
-+ * immutable.
-  */
- static inline const struct cred *get_cred(const struct cred *cred)
- {
-@@ -187,6 +193,10 @@ static inline const struct cred *get_cred(const struct cred *cred)
-  *
-  * Release a reference to a set of credentials, deleting them when the last ref
-  * is released.
-+ *
-+ * This takes a const pointer to a set of credentials because the credentials
-+ * on task_struct are attached by const pointers to prevent accidental
-+ * alteration of otherwise immutable credential sets.
-  */
- static inline void put_cred(const struct cred *_cred)
- {
-diff --git a/kernel/cred.c b/kernel/cred.c
-index decd080..9006c75 100644
---- a/kernel/cred.c
-+++ b/kernel/cred.c
-@@ -1,4 +1,4 @@
--/* Task credentials management
-+/* Task credentials management - see Documentation/credentials.txt
-  *
-  * Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
-  * Written by David Howells (dhowells@redhat.com)
+PS:
+Try to cut down on #if/#endif clutter.  It should be possible to reduce
+them at least in .c files; .h are a different matter.  For example,
+#if MDB_DEBUG_DEBUGGER
+	DBGPrint("something");
+#endif
+can be trivially reduced to
+	dbg_mdb_printk("something");
+where dbg_mdb_printk() is defined as an inline function which does
+nothing when MDB_DEBUG_DEBUGGER is false.
 
+PS2:
+Why are there this many debug printks anyway?
+-- 
+Stefan Richter
+-=====-==--- =--- =-=-=
+http://arcgraph.de/sr/
