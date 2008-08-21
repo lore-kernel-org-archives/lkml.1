@@ -1,66 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbYHUC0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbYHUCgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753973AbYHUC0p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Aug 2008 22:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbYHUC0g
+	id S1754112AbYHUCgv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Aug 2008 22:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbYHUCgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Aug 2008 22:26:36 -0400
-Received: from mga06.intel.com ([134.134.136.21]:48867 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751004AbYHUC0f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Aug 2008 22:26:35 -0400
+	Wed, 20 Aug 2008 22:36:41 -0400
+Received: from mga09.intel.com ([134.134.136.24]:47008 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750828AbYHUCgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Aug 2008 22:36:41 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.32,243,1217833200"; 
-   d="scan'208";a="327899121"
-Subject: Re: VolanoMark regression with 2.6.27-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, Chris Friesen <cfriesen@nortel.com>
-In-Reply-To: <20080820134708.GA20648@elte.hu>
-References: <1912217169.25608.228.camel@ymzhang>
-	 <1218180605.8625.64.camel@twins>
-	 <20080811185008.GA29291@linux.vnet.ibm.com>
-	 <1912726331.25608.235.camel@ymzhang>
-	 <20080817115035.GA32223@linux.vnet.ibm.com>
-	 <20080818052155.GA5063@linux.vnet.ibm.com>
-	 <1219217089.8781.27.camel@ymzhang> <1219218089.10800.404.camel@twins>
-	 <20080820105141.GA18226@elte.hu> <1219239137.8651.52.camel@twins>
-	 <20080820134708.GA20648@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 21 Aug 2008 10:25:02 +0800
-Message-Id: <1219285502.8781.35.camel@ymzhang>
+   d="scan'208";a="430955227"
+Subject: [patch 0/4]array interface pageattr APIs for AGP
+From: Shaohua Li <shaohua.li@intel.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Dave Airlie <airlied@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 21 Aug 2008 10:46:03 +0800
+Message-Id: <1219286763.18007.38.camel@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+These are Dave Airlie's array interface patches for pageattr. I
+refreshed them and did bug fixing. The purpose of the patches is to
+reduce tlb/cache flush in agp gart memory allocation.
 
-On Wed, 2008-08-20 at 15:47 +0200, Ingo Molnar wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> 
-> > Just realized my brainfart..
-> > 
-> > ---
-> > Subject: sched: load-balance bias fixes
-> > From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Date: Wed Aug 20 15:28:51 CEST 2008
-> > 
-> > Yanmin spotted a regression with my patch that introduces LB_BIAS:
-> 
-> ok, i've applied this one to tip/sched/urgent instead of the 
-> feature-disabling patchlet. Yanmin, could you please check whether this 
-> one does the trick?
-This new patch almost doesn't help volanoMark. Pls. use the patch
-which sets ﻿LB_BIAS=1 by default.
+the patches apply to tip tree, but please remove my two patches first
+1ac2f7d55b7ee1613c90631e87fea22ec06781e5
+466ae837424dcc538b1af2a0eaf53be32edcdbe7
 
--yanmin
-
+Thanks,
+Shaohua
 
