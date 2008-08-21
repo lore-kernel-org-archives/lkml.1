@@ -1,33 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbYHUMGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbYHUMJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754636AbYHUMGz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 08:06:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbYHUMGr
+	id S1754884AbYHUMJV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 08:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbYHUMJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 08:06:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58000 "EHLO mx3.mail.elte.hu"
+	Thu, 21 Aug 2008 08:09:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38455 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752165AbYHUMGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 08:06:46 -0400
-Date: Thu, 21 Aug 2008 14:06:26 +0200
+	id S1752314AbYHUMJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 08:09:09 -0400
+Date: Thu, 21 Aug 2008 14:08:28 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Dave Airlie <airlied@gmail.com>, Rene Herman <rene.herman@keyaccess.nl>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: AGP and PAT (induced?) problem (on AMD family 6)
-Message-ID: <20080821120626.GG5615@elte.hu>
-References: <20080819102633.GE6722@elte.hu> <48AAD680.7020508@keyaccess.nl> <20080819190757.GA17470@linux-os.sc.intel.com> <20080820100440.GE28492@elte.hu> <48ABF6DC.8070305@keyaccess.nl> <48AC29CA.1060203@keyaccess.nl> <20080820194127.GA10887@linux-os.sc.intel.com> <48AC8F69.4050201@keyaccess.nl> <21d7e9970808201446k3c1a6bc1naf04568a8ad06ed4@mail.gmail.com> <20080820221630.GA3598@linux-os.sc.intel.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>, Bruce Duncan <bwduncan@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH v2 0/6] ftrace: to kill a daemon (small updates)
+Message-ID: <20080821120828.GH5615@elte.hu>
+References: <20080814194506.233473381@goodmis.org> <20080815123624.GC5285@joi> <alpine.DEB.1.10.0808150840410.1065@gandalf.stny.rr.com> <20080815133517.GA5292@joi> <20080820192849.GA5888@joi> <alpine.DEB.1.10.0808201536260.11714@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080820221630.GA3598@linux-os.sc.intel.com>
+In-Reply-To: <alpine.DEB.1.10.0808201536260.11714@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -42,13 +48,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> BTW, Rene: Did the patch from yday, caching the last list add, help in 
-> eliminating the slowdown in X startup?
+> > I assume this patchset won't go into .27. So is there any plan to 
+> > fix it in .27?
+> 
+> I'm hoping that this does go into 27, since it is more reliable than 
+> the current daemon approach.
 
-Would be nice to test tip/master - it has both that patch included and 
-the latest pageattr-array API (with enablement in AGP drivers) patchset, 
-done by Shaohua Li, based on Dave's original patch.
+it cannot really go into .27 - there's a lot of ftrace stuff piled up in 
+tip/tracing/ftrace. (the script is also pretty hacky and unproven. All 
+this stuff was written after the merge window.)
 
 	Ingo
