@@ -1,25 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbYHUKBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbYHUKER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754958AbYHUKBU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 06:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbYHUKBG
+	id S1755561AbYHUKER (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 06:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbYHUKEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 06:01:06 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48120 "EHLO
+	Thu, 21 Aug 2008 06:04:01 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45952 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752697AbYHUKBD (ORCPT
+	with ESMTP id S1752654AbYHUKEA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 06:01:03 -0400
-Date: Thu, 21 Aug 2008 10:43:07 +0100
+	Thu, 21 Aug 2008 06:04:00 -0400
+Date: Thu, 21 Aug 2008 10:46:26 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rufus & Azrael <rufus-azrael@numericable.fr>
-Cc: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Marcin Slusarz <marcin.slusarz@gmail.com>,
-       akpm@osdl.org
-Subject: Re: [2.6.27-rc4] compilation warnings and section mismatches
-Message-ID: <20080821104307.346cbcb7@lxorguk.ukuu.org.uk>
-In-Reply-To: <48AD2701.2000304@numericable.fr>
-References: <48AD2701.2000304@numericable.fr>
+To: Eric Lacombe <tuxiko@free.fr>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Theodore Tso <tytso@mit.edu>
+Subject: Re: EXT3-fs error
+Message-ID: <20080821104626.0a10f40c@lxorguk.ukuu.org.uk>
+In-Reply-To: <200808211106.39574.tuxiko@free.fr>
+References: <200808211106.39574.tuxiko@free.fr>
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -31,20 +29,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Aug 2008 10:27:45 +0200
-Rufus & Azrael <rufus-azrael@numericable.fr> wrote:
+On Thu, 21 Aug 2008 11:06:39 +0200
+Eric Lacombe <tuxiko@free.fr> wrote:
 
-> Hi all,
+> Hi,
 > 
-> Here are my compilation warnings and section mismatches when building 
-> the fresh rc4 kernel version.
-> 
-> Hope it could help you to fix.
+> Recently, my computer freezes a lot, and I noted the problems below. I wonder 
+> if my hard disk is going die.
+> Can someone confirm or infirm my suspicion?
 
-All harmless
-
-And patches to the skfp one have been posted repeatedly so I've no idea
-why they are still not in 2.6.27-rc - has Mr Garzik disappeared because
-some of the ATA ones are missing too like the LBA48 off by one fix ?
+Might be worth running memtest86 on the box overnight and seeing if its
+memory or other problems. smartmontools will give you info on the disk
+status (as the disk sees it) which can sometimes give clues.
 
 Alan
