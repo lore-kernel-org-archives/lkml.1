@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758238AbYHUNSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbYHUNTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758238AbYHUNSi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 09:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYHUNSb
+	id S1759230AbYHUNTe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 09:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755452AbYHUNTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 09:18:31 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:37326 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752273AbYHUNSa convert rfc822-to-8bit (ORCPT
+	Thu, 21 Aug 2008 09:19:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35250 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755158AbYHUNTW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 09:18:30 -0400
-Message-Id: <48AD8786.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Thu, 21 Aug 2008 14:19:34 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <robert.richter@amd.com>, <linux-kernel@vger.kernel.org>
-Subject: Re: patch "x86: MOVE PCI IO ECS code to x86/pci" breaks CPU
-	hotplug
-References: <48AD7F80.76E4.0078.0@novell.com>
- <20080821130259.GA22887@elte.hu>
-In-Reply-To: <20080821130259.GA22887@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Thu, 21 Aug 2008 09:19:22 -0400
+Message-ID: <48AD6B20.1080105@linux-foundation.org>
+Date: Thu, 21 Aug 2008 08:18:24 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Robin Holt <holt@sgi.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       tokunaga.keiich@jp.fujitsu.com, stable@kernel.org
+Subject: Re: [RFC][PATCH 0/2] Quicklist is slighly problematic.
+References: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080820113131.f032c8a2.akpm@linux-foundation.org> <20080821024240.GC23397@sgi.com> <48AD689F.6080103@linux-foundation.org> <20080821131404.GC26567@sgi.com>
+In-Reply-To: <20080821131404.GC26567@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Ingo Molnar <mingo@elte.hu> 21.08.08 15:02 >>>
->
->* Jan Beulich <jbeulich@novell.com> wrote:
->
->> Converting __cpuinit functions called out of init_amd() (and similar 
->> others) to __init (and making them subject of xxx_initcall() handling 
->> isn't valid, as they would no longer be called for hot plugged CPUs.
->> 
->> Further, since it's likely that in virtualized environments the MSR 
->> write would at best be ignored, I'd also recommend using the 
->> fault-safe accessors here *and* check that the bit actually got set 
->> before setting PCI_HAS_IO_ECS (one would obviously have to BUG() when 
->> hot-plugged CPUs fail to set the bit when those available at boot 
->> successfully did so).
->
->hm, which patch is this exactly, and in what tree? It's not upstream nor 
->in -tip.
+Robin Holt wrote:
 
-It is upstream:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=3a27dd1ce5de08e21e0266ddf00e6f1f843bfe8b
-(and I just verified it didn't change between -rc3 and -rc4).
+>> We removed this code because it frees a page before the TLB flush has been
+>> performed. This code segment was the reason that quicklists were not accepted
+>> for x86.
+> 
+> How could we do this.  It was a _HUGE_ problem on altix boxes.  When you
+> started a jobs with a large number of MPI ranks, they would all start
+> from the shepherd process on a single node and the children would
+> migrate to a different cpu.  Unless subsequent jobs used enough memory
+> to flush those remote quicklists, we would end up with a depleted node
+> that never reclaimed.
 
-Jan
+Well I tried to get the quicklist stuff resolved at SGI multiple times last
+year when the early free before flush was discovered but there did not seem to
+be much interest at that point, so we dropped it.
 
+In order to make this work correctly we would need to create a list of remote
+pages. These remote pages would then be freed after the TLB flush.
