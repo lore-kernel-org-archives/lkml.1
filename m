@@ -1,105 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbYHUN2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757582AbYHUN3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759230AbYHUN2V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 09:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbYHUN2J
+	id S1757582AbYHUN3j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 09:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbYHUN3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 09:28:09 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:47255 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752649AbYHUN2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 09:28:08 -0400
-Date: Thu, 21 Aug 2008 14:28:05 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: linux-arm-kernel@lists.arm.linux.org.uk
-Cc: linux-kernel@vger.kernel.org, hsweeten@visionengravers.com,
-       akpm@linux-foundation.org
-Subject: [PATCH] Skip memory holes in FLATMEM when reading /proc/pagetypeinfo (resend)
-Message-ID: <20080821132804.GA6206@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 21 Aug 2008 09:29:31 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:56654 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752991AbYHUN3a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 09:29:30 -0400
+Subject: Re: char/tpm: tpm_infineon no longer loaded for HP 2510p laptop
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, Marcel Selhorst <tpm@selhorst.net>,
+       Thomas Renninger <trenn@suse.de>, Adam Belay <ambx1@neo.rr.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
+In-Reply-To: <200808211440.27577.rjw@sisk.pl>
+References: <200808181540.25286.elendil@planet.nl>
+	 <200808200956.52883.bjorn.helgaas@hp.com>  <200808211440.27577.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Thu, 21 Aug 2008 15:28:56 +0200
+Message-Id: <1219325336.20723.32.camel@lgn.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18XJtRcEaFdDQrEBVrN+2w7NMvO6DAb9tW6wdM
+ nsWo6oPqU3DfciNLVj5dwRSLPPWtH9MCNmt4EwFOj2rvePkZcM
+ bXAmID20rWMXY1/ngSTjM/ntIZ8pqtB
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a resend. The last patch went to Russell King with lkml cc'd as I
-wasn't subscribed to the linux-arm list. However, I haven't heard it being
-picked up so trying linux-arm this time.
+On Thu, 2008-08-21 at 14:40 +0200, Rafael J. Wysocki wrote:
+> On Wednesday, 20 of August 2008, Bjorn Helgaas wrote:
+> > On Monday 18 August 2008 07:40:24 am Frans Pop wrote:
+> > > While comparing the loaded modules for 2.6.26 and 2.6.27-rc3 for my HP 
+> > > 2510p, I noticed that the tpm_infineon module and related modules no 
+> > > longer get loaded automatically.
+> > > 
+> > > The difference seems to be that 2.6.26 listed:
+> > > /lib/modules/2.6.26.2/modules.alias:alias pnp:dIFX0102* tpm_infineon
+> > > /lib/modules/2.6.26.2/modules.alias:alias pnp:dIFX0101* tpm_infineon
+> > > 
+> > > while 2.6.27 has:
+> > > /lib/modules/2.6.27-rc3/modules.alias:alias acpi*:IFX0101:* tpm_infineon
+> > > /lib/modules/2.6.27-rc3/modules.alias:alias pnp:dIFX0101* tpm_infineon
+> > > 
+> > > My system has:
+> > > $ grep IFX /sys/bus/pnp/devices/*/id
+> > > /sys/bus/pnp/devices/00:02/id:IFX0102
+> > 
+> > drivers/char/tpm/tpm_infineon.c hasn't changed since v2.6.26.  I think
+> > the problem is more likely related to commit 22454cb99fc39f2629a:
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=22454cb99fc39f2629ad06a7eccb3df312f8830e
+> 
+> Frans, could you verify if reverting commit 22454cb99fc39f2629a fixes the
+> problem for you?
 
-===
+Yeah, we miss to loop over the list. This should fix it. Thanks!
 
-Ordinarily, memory holes in flatmem still have a valid memmap and is safe
-to use. However, an architecture (ARM) frees up the memmap backing memory
-holes on the assumption it is never used. /proc/pagetypeinfo reads the
-whole range of pages in a zone believing that the memmap is valid and that
-pfn_valid will return false if it is not. On ARM, freeing the memmap breaks
-the page->zone linkages even though pfn_valid() returns true and the kernel
-can oops shortly afterwards due to accessing a bogus struct zone *.
 
-This patch lets architectures say when FLATMEM can have holes in the
-memmap. Rather than an expensive check for valid memory, /proc/pagetypeinfo
-will confirm that the page linkages are still valid by checking page->zone
-is still the expected zone. The lookup of page_zone is safe as there is a
-limited range of memory that is accessed when calling page_zone.  Even if
-page_zone happens to return the correct zone, the impact is that the counters
-in /proc/pagetypeinfo are slightly off but fragmentation monitoring is
-unlikely to be relevant on an embedded system.
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: pnp: fix "add acpi:* modalias entries"
 
-Reported-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Tested-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+With 22454cb99fc39f2629ad06a7eccb3df312f8830e we added only the
+first entry of the device table. We need to loop over the whole
+device list.
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 4b8acd2..70dba16 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -810,6 +810,11 @@ config OABI_COMPAT
- 	  UNPREDICTABLE (in fact it can be predicted that it won't work
- 	  at all). If in doubt say Y.
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+---
+
+ file2alias.c |   16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -344,14 +344,20 @@ static void do_pnp_device_entry(void *symval, unsigned long size,
+ 				struct module *mod)
+ {
+ 	const unsigned long id_size = sizeof(struct pnp_device_id);
+-	const struct pnp_device_id *id = symval;
++	const unsigned int count = (size / id_size)-1;
++	const struct pnp_device_id *devs = symval;
++	unsigned int i;
  
-+config ARCH_FLATMEM_HAS_HOLES
-+	bool
-+	default y
-+	depends on FLATMEM
+ 	device_id_check(mod->name, "pnp", size, id_size, symval);
+ 
+-	buf_printf(&mod->dev_table_buf,
+-		   "MODULE_ALIAS(\"pnp:d%s*\");\n", id->id);
+-	buf_printf(&mod->dev_table_buf,
+-		   "MODULE_ALIAS(\"acpi*:%s:*\");\n", id->id);
++	for (i = 0; i < count; i++) {
++		const char *id = (char *)devs[i].id;
 +
- config ARCH_DISCONTIGMEM_ENABLE
- 	bool
- 	default (ARCH_LH7A40X && !LH7A40X_CONTIGMEM)
-diff --git a/mm/vmstat.c b/mm/vmstat.c
-index b0d08e6..98aa882 100644
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -516,9 +516,26 @@ static void pagetypeinfo_showblockcount_print(struct seq_file *m,
- 			continue;
++		buf_printf(&mod->dev_table_buf,
++			   "MODULE_ALIAS(\"pnp:d%s*\");\n", id);
++		buf_printf(&mod->dev_table_buf,
++			   "MODULE_ALIAS(\"acpi*:%s:*\");\n", id);
++	}
+ }
  
- 		page = pfn_to_page(pfn);
-+#ifdef CONFIG_ARCH_FLATMEM_HAS_HOLES
-+		/*
-+		 * Ordinarily, memory holes in flatmem still have a valid
-+		 * memmap for the PFN range. However, an architecture for
-+		 * embedded systems (e.g. ARM) can free up the memmap backing
-+		 * holes to save memory on the assumption the memmap is
-+		 * never used. The page_zone linkages are then broken even
-+		 * though pfn_valid() returns true. Skip the page if the
-+		 * linkages are broken. Even if this test passed, the impact
-+		 * is that the counters for the movable type are off but
-+		 * fragmentation monitoring is likely meaningless on small
-+		 * systems.
-+		 */
-+		if (page_zone(page) != zone)
-+			continue;
-+#endif
- 		mtype = get_pageblock_migratetype(page);
- 
--		count[mtype]++;
-+		if (mtype < MIGRATE_TYPES)
-+			count[mtype]++;
- 	}
- 
- 	/* Print counts */
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+ /* looks like: "pnp:dD" for every device of the card */
+
+
