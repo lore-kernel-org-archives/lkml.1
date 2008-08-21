@@ -1,222 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbYHUUVF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757712AbYHUUZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759259AbYHUUVF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 16:21:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755098AbYHUUUv
+	id S1757712AbYHUUZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 16:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbYHUUZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 16:20:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49000 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754095AbYHUUUt (ORCPT
+	Thu, 21 Aug 2008 16:25:21 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:41431 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751705AbYHUUZU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 16:20:49 -0400
-Date: Thu, 21 Aug 2008 13:20:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-Cc: linux-fsdevel@vger.kernel.org, dm-devel@redhat.com,
-       viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
-       hch@infradead.org, axboe@kernel.dk, mtk.manpages@googlemail.com,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH 3/3] Add timeout feature
-Message-Id: <20080821132006.9949101c.akpm@linux-foundation.org>
-In-Reply-To: <20080818212856t-sato@mail.jp.nec.com>
-References: <20080818212856t-sato@mail.jp.nec.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Aug 2008 16:25:20 -0400
+Date: Thu, 21 Aug 2008 14:25:04 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Alex Chiang <achiang@hp.com>, gregkh@suse.de, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: refcount leak in pci_get_device()?
+Message-ID: <20080821202504.GU8318@parisc-linux.org>
+References: <20080821201918.GA24411@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080821201918.GA24411@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Aug 2008 21:28:56 +0900
-Takashi Sato <t-sato@yk.jp.nec.com> wrote:
-
-> The timeout feature is added to freeze ioctl.  And new ioctl
-> to reset the timeout period is added.
-> o Freeze the filesystem
->   int ioctl(int fd, int FIFREEZE, long *timeout_sec)
->     fd: The file descriptor of the mountpoint
->     FIFREEZE: request code for the freeze
->     timeout_sec: the timeout period in seconds
->              If it's 0 or 1, the timeout isn't set.
->              This special case of "1" is implemented to keep
->              the compatibility with XFS applications.
->     Return value: 0 if the operation succeeds. Otherwise, -1
+On Thu, Aug 21, 2008 at 02:19:18PM -0600, Alex Chiang wrote:
+> #define for_each_pci_dev(d) while ((d = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, d)) != NULL)
 > 
-> o Reset the timeout period
->   int ioctl(int fd, int FIFREEZE_RESET_TIMEOUT, long *timeout_sec)
->     fd:file descriptor of mountpoint
->     FIFREEZE_RESET_TIMEOUT: request code for reset of timeout period
->     timeout_sec: new timeout period in seconds
->     Return value: 0 if the operation succeeds. Otherwise, -1
->     Error number: If the filesystem has already been unfrozen,
->                   errno is set to EINVAL.
+> That eventually calls pci_get_dev_by_id(), which increases the
+> refcount on the device, but never decrements it.
+> 
+> Looks like that change in behavior happened here:
+> 
+> 	PCI: clean up search.c a lot
+> 	95247b57ed844511a212265b45cf9a919753aea1
+> 
+> pci_get_device() used to decrement the refcount, but no longer
+> does.
+> 
+> Thanks to Matthew Wilcox for helping me get this far...
+> 
+> Like I said, I'm still trying to track down my particular issue,
+> but I'd like to get your opinion on this.
 
-I don't think the changelogs actually explained why this feature is
-being added?
+In particular, I'd like to know whether this should be fixed by
+pci_get_dev_by_id() decrementing the refcount of from/dev_start,
+pci_get_subsys() decrementing 'from', or by bus_find_device()
+decrementing 'start'.  It looks like bus_find_device() is the place
+where this should logically happen, but the kerneldoc doesn't document
+the intended behaviour.
 
-Which userspace tools are expected to send these ioctls?  Something in
-util-linux?  dm-utils?  Are patches to those packages planned?
-
->
-> ...
->
->  /*
-> + * ioctl_freeze_reset_timeout - Reset timeout for freeze.
-> + *
-> + * @filp:       target file
-> + * @argp:       timeout value(sec)
-> + *
-> + * Reset timeout for freeze.
-> + */
-> +static int
-> +ioctl_freeze_reset_timeout(struct file *filp, int __user *argp)
-> +{
-> +	int timeout_sec;
-> +	unsigned int timeout_msec;
-> +	struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
-> +	struct block_device *bdev = sb->s_bdev;
-> +	int error;
-> +
-> +	if (!capable(CAP_SYS_ADMIN))
-> +		return -EPERM;
-> +
-> +	/* If a regular file or a directory isn't specified, return EINVAL. */
-> +	if (bdev == NULL)
-> +		return -EINVAL;
-> +
-> +	/* arg(sec) to tick value */
-> +	error = get_user(timeout_sec, argp);
-> +	if (error)
-> +		return error;
-> +
-> +	if (timeout_sec <= 0 || timeout_sec > UINT_MAX/1000)
-> +		return -EINVAL;
-> +
-> +	timeout_msec = timeout_sec * 1000;
-> +
-> +	down(&bdev->bd_freeze_sem);
-> +	if (!bdev->bd_freeze_count) {
-> +		up(&bdev->bd_freeze_sem);
-> +		return -EINVAL;
-> +	}
-> +	/* setup unfreeze timer */
-> +	add_freeze_timeout(bdev, timeout_msec);
-> +	up(&bdev->bd_freeze_sem);
-> +
-> +	return 0;
-> +}
-
-This duplicates quite a bit of code from ioctl_freeze().  Can this be
-cleaned up?
-
-
-> +/*
->   * When you add any new common ioctls to the switches above and below
->   * please update compat_sys_ioctl() too.
->   *
-> @@ -235,13 +302,17 @@ int do_vfs_ioctl(struct file *filp, unsi
->  		break;
->  
->  	case FIFREEZE:
-> -		error = ioctl_freeze(filp);
-> +		error = ioctl_freeze(filp, argp);
->  		break;
->  
->  	case FITHAW:
->  		error = ioctl_thaw(filp);
->  		break;
->  
-> +	case FIFREEZE_RESET_TIMEOUT:
-> +		error = ioctl_freeze_reset_timeout(filp, argp);
-> +		break;
-> +
->  	default:
->  		if (S_ISREG(filp->f_path.dentry->d_inode->i_mode))
->  			error = file_ioctl(filp, cmd, arg);
->
-> ...
->
->  EXPORT_SYMBOL_GPL(kern_mount_data);
-> +
-> +/*
-> + * freeze_timeout - Thaw the filesystem.
-> + *
-> + * @work:	work queue (delayed_work.work)
-> + *
-> + * Called by the delayed work when elapsing the timeout period.
-> + * Thaw the filesystem.
-> + */
-> +void freeze_timeout(struct work_struct *work)
-> +{
-> +	struct block_device *bd = container_of(work,
-> +			struct block_device, bd_freeze_timeout.work);
-> +	struct super_block *sb = get_super(bd);
-> +
-> +	thaw_bdev(bd, sb);
-> +
-> +	if (sb)
-> +		drop_super(sb);
-> +}
-> +EXPORT_SYMBOL_GPL(freeze_timeout);
-
-I can't see why this was exported.
-
-> +/*
-> + * add_freeze_timeout - Add timeout for freeze.
-> + *
-> + * @bdev:		block device struct
-> + * @timeout_msec:	timeout period
-> + *
-> + * Add the delayed work for freeze timeout to the delayed work queue.
-> + */
-> +void add_freeze_timeout(struct block_device *bdev, unsigned int timeout_msec)
-> +{
-> +	s64 timeout_jiffies = msecs_to_jiffies(timeout_msec);
-> +
-> +	/* Set delayed work queue */
-> +	cancel_delayed_work_sync(&bdev->bd_freeze_timeout);
-> +	schedule_delayed_work(&bdev->bd_freeze_timeout, timeout_jiffies);
-> +}
-
-I don't particularly like the names of these new global symbols.  The
-kernel already has a "freezer" thing, part of power-management. 
-Introducing another one is a bit confusing.
-
-otoh, freezer seems to have consistently used "freezer", so the 'r'
-arguable saves us.
-
-Still, I'd have thought that "fsfreeze" would have been a clearer, more
-specific identifier for the whole project.
-
-> +/*
-> + * del_freeze_timeout - Delete timeout for freeze.
-> + *
-> + * @bdev:	block device struct
-> + *
-> + * Delete the delayed work for freeze timeout from the delayed work queue.
-> + */
-> +void del_freeze_timeout(struct block_device *bdev)
-> +{
-> +	/*
-> +	 * It's possible that the delayed work task (freeze_timeout()) calls
-> +	 * del_freeze_timeout().  If the delayed work task calls
-> +	 * cancel_delayed_work_sync((), the deadlock will occur.
-> +	 * So we need this check (delayed_work_pending()).
-> +	 */
-> +	if (delayed_work_pending(&bdev->bd_freeze_timeout))
-> +		cancel_delayed_work_sync(&bdev->bd_freeze_timeout);
-> +}
-
-So if the calling task is keventd via run_workqueue() then
-delayed_work_pending() should return false due to run_workqueue()
-ordering, so we avoid the deadlock.
-
-Seems a bit racy if some other process starts the delayed-work while
-this function is running but I guess the new semaphore prevents that.
-
-Perhaps cancel_delayed_work_sync() shouldn't hang up if called from the
-work handler?
-
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
