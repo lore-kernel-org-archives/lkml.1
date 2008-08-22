@@ -1,95 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbYHVRKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbYHVRRF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755530AbYHVRKR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 13:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbYHVRKA
+	id S1754659AbYHVRRF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 13:17:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbYHVRQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 13:10:00 -0400
-Received: from mx71.mail.ru ([194.67.23.4]:64389 "EHLO mx71.mail.ru"
+	Fri, 22 Aug 2008 13:16:55 -0400
+Received: from w241.dkm.cz ([62.24.88.241]:59695 "EHLO machine.or.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752486AbYHVRKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 13:10:00 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.27-rc4: 90% system time because of khubd, unable to reboot
-Date: Fri, 22 Aug 2008 21:09:53 +0400
-User-Agent: KMail/1.9.9
-Cc: linux-usb@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>
-References: <200808222026.25944.arvidjaar@mail.ru> <200808222053.09066.arvidjaar@mail.ru> <200808221904.04773.rjw@sisk.pl>
-In-Reply-To: <200808221904.04773.rjw@sisk.pl>
+	id S1751682AbYHVRQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 13:16:54 -0400
+Date: Fri, 22 Aug 2008 19:16:51 +0200
+From: Petr Baudis <pasky@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org
+Subject: Re: Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
+Message-ID: <20080822171651.GP10544@machine.or.cz>
+References: <48A36838.3050309@hp.com> <20080819124602.9e8e69f7.akpm@linux-foundation.org> <48AEDD3D.4060507@hp.com> <20080822092549.ddcb7e79.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3238344.Hm86jHa3B4";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200808222109.55358.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: OK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080822092549.ddcb7e79.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3238344.Hm86jHa3B4
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, Aug 22, 2008 at 09:25:49AM -0700, Andrew Morton wrote:
+> On Fri, 22 Aug 2008 11:37:33 -0400 "Alan D. Brunelle" <Alan.Brunelle@hp.com> wrote:
+> 
+> > I /did/ bisect it down to the aforementioned merge, the question is: How
+> > to crack open that merge into it's composite pieces? (Where do I go to
+> > bisect within that?)
+> 
+> urgh, it's irritating when git-bisect directs you to a merge commit - it
+> hasn't done it for me for ages.
 
-On Friday 22 August 2008, Rafael J. Wysocki wrote:
-> On Friday, 22 of August 2008, Andrey Borzenkov wrote:
-> > On Friday 22 August 2008, Andrey Borzenkov wrote:
-> > >=20
-> > > 2.6.26-rc3 is OK
->=20
-> Thanks for the report, but ...
-> =20
-> > > top - 20:11:08 up 5 min,  1 user,  load average: 7.05, 4.50, 1.93
-> > > Tasks: 103 total,   3 running, 100 sleeping,   0 stopped,   0 zombie
-> > > Cpu(s):  8.3%us, 91.7%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si=
-,  0.0%st
-> > > Mem:    494172k total,   278192k used,   215980k free,    18264k buff=
-ers
-> > > Swap:   500432k total,        0k used,   500432k free,   159376k cach=
-ed
-> > >=20
-> > >   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-> > >   851 root      15  -5     0    0    0 R 65.6  0.0   3:21.16 khubd
-> >=20
-> > reverting 38b375d9610e2467cb793a84d17c6f65e44cdb39 fixed it
-> >=20
->=20
-> ... that is:
->=20
-> commit 38b375d9610e2467cb793a84d17c6f65e44cdb39
-> Author: Alan Stern <stern@rowland.harvard.edu>
-> Date:   Mon Jul 21 09:56:26 2008 -0400
->=20
->     USB: OHCI: fix system hang caused by earlier patch
->=20
->     Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
->     Tested by: Andrey Borzenkov <arvidjaar@mail.ru>
->     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
->=20
-> so it apparently used to work for you at that time.  What gives?
->=20
+Hmm, but doesn't that happen only when it's actually really the merge
+commit that introduces the bug? Both parents of the merge commit were
+marked as good by the user, so...
 
-Well, you should not commit a fix without commiting code that has been
-fixed first :)
+> One (probably wrong) approach is to run
+> 
+> 	gitk 1c89ac55017f982355c7761e1c912c88c941483d
+> 
+> then peer at the output, work out which real commits were in that
+> merge.
+> 
+> It looks like the merge ended with
+> b1b135c8d619cb2c7045d6ee4e48375882518bb5 and started with
+> 40c42076ebd362dc69210cccea101ac80b6d4bd4, so perhaps you can do
+> 
+> 	git bisect bad b1b135c8d619cb2c7045d6ee4e48375882518bb5
+> 	git bisect good 40c42076ebd362dc69210cccea101ac80b6d4bd4
 
---nextPart3238344.Hm86jHa3B4
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+...I don't quite get this - according to the bisection log,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+	# good: [b1b135c8d619cb2c7045d6ee4e48375882518bb5] fix spinlock recursion in hvc_console
 
-iEYEABECAAYFAkiu8uMACgkQR6LMutpd94zDAwCgtGGJd1Y5P/7lzta4JQhRX94w
-nW0AoMgnMxjXSrNNG+VE/5SaQS+CHQht
-=aAWv
------END PGP SIGNATURE-----
+and now you want to mark it as bad?
 
---nextPart3238344.Hm86jHa3B4--
+You could try to revert some of the merged commits at the point of the
+merge, though.
+
+-- 
+				Petr "Pasky" Baudis
+The next generation of interesting software will be done
+on the Macintosh, not the IBM PC.  -- Bill Gates
