@@ -1,85 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbYHVSMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbYHVSMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756811AbYHVSMQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 14:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbYHVSME
+	id S1757152AbYHVSMs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 14:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754955AbYHVSMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 14:12:04 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:50647 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1749667AbYHVSMD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 14:12:03 -0400
-Message-ID: <48AF014D.8040103@zytor.com>
-Date: Fri, 22 Aug 2008 11:11:25 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 22 Aug 2008 14:12:34 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:4277 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755960AbYHVSMd (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 14:12:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=UejSTO27oVqd1RmKLNmc7S9aVCXMGlvYbwh9I41H/FsDYpXMiHXOpiAliBGd7xNrUJ
+         OLm2PZAS2An/rMk4NG1Q/w4Mlo3kRIAECGM3n0KUphwaJZr8lkYORNfo2Da4GHrVCi0V
+         +Rhz51T0D8a1XyW4FouZMqXiecZ9X8vXirmA0=
+Message-ID: <6934efce0808221112p64fe1346kc5530ca71dbb108b@mail.gmail.com>
+Date: Fri, 22 Aug 2008 11:12:32 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 03/10] AXFS: axfs.h
+Cc: "Arnd Bergmann" <arnd@arndb.de>, Linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       "=?UTF-8?Q?J=C3=B6rn_Engel?=" <joern@logfs.org>, tim.bird@am.sony.com,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+In-Reply-To: <Pine.LNX.4.64.0808221402170.17105@vixen.sonytel.be>
 MIME-Version: 1.0
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
-References: <20080820162925.75a5e064@doriath.conectiva>	<48ADDF4F.2020401@zytor.com>	<48AE5FCF.6030103@zytor.com>	<20080822065012.GV14110@elte.hu>	<20080822113941.147a1db0@doriath.conectiva>	<20080822153451.GA8390@Krystal>	<20080822132948.57e47076@doriath.conectiva>	<20080822163520.GA9860@Krystal> <20080822142054.403cbdef@doriath.conectiva>
-In-Reply-To: <20080822142054.403cbdef@doriath.conectiva>
-Content-Type: multipart/mixed;
- boundary="------------030908030101030601060804"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48AD00E6.2070505@gmail.com> <200808211424.31966.arnd@arndb.de>
+	 <6934efce0808211540p237f2c52pd71c2b955b3f54a8@mail.gmail.com>
+	 <200808221327.37371.arnd@arndb.de>
+	 <Pine.LNX.4.64.0808221402170.17105@vixen.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030908030101030601060804
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+>> So do I understand right that 3 bytes is your minimum size, and going
+>> smaller than that would not be helpful? Otherwise I would assume that
+>> storing a '5' should only take one byte instead of three.
 
-Hi Luiz, two more tests:
+Right.  But you need 3 bytes to store the maximum value 0x0a0000
 
-1. a small program to run in userspace and tell us what you get;
-2. a patch against -linus for testing.
+If we had:
+0x0000000000000003
+0x00000000000000FF
+0x000000000000000A
 
-	-hpa
+You would only need a 1 byte depth.
 
+> From the paper, the minimum size (called `depth') is 1.
 
---------------030908030101030601060804
-Content-Type: text/x-csrc;
- name="nopl.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="nopl.c"
+Correct the depth can be from 1 to 8 bytes.  The depth is determined
+by the maximum value in the array.
 
-#include <stdio.h>
+>> I don't unsterstand yet why you store the length of each word separate
+>> from the word. Most variable-length codes store that implicitly in
+>> the data itself, e.g. in the upper three bits, so that for storing
+>> 0x5, 0x1001, 0xa0000, this could e.g. end up as 0x054010014a0000,
+>> which is shorter than what you have, but not harder to decode.
+>
+> AFAIU, the length (`depth') of each word is not stored separate, as the
+> depth is the same for all values in the same table.
 
-int main(void)
-{
-  unsigned int eax, edx;
-
-  asm(".byte 0x0f,0x1f,0x84,0x00,0x98,0x98,0x98,0x98,0x92,0x90,0x90,0x90"
-      : "=a" (eax), "=d" (edx)
-      : "a" (0x88776655), "d" (0x44332211));
-
-  printf("%08x:%08x\n", edx, eax);
-  return 0;
-}
-
---------------030908030101030601060804
-Content-Type: text/plain;
- name="diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="diff"
-
-diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
-index 2763cb3..33193fe 100644
---- a/arch/x86/kernel/alternative.c
-+++ b/arch/x86/kernel/alternative.c
-@@ -157,8 +157,6 @@ static const struct nop {
- } noptypes[] = {
- 	{ X86_FEATURE_K8, k8_nops },
- 	{ X86_FEATURE_K7, k7_nops },
--	{ X86_FEATURE_P4, p6_nops },
--	{ X86_FEATURE_P3, p6_nops },
- 	{ -1, NULL }
- };
- 
-
---------------030908030101030601060804--
+That is correct.  Each table has a single depth stored in the region descriptor.
