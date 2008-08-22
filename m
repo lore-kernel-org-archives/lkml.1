@@ -1,34 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbYHVRm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbYHVRoO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756194AbYHVRm7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 13:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYHVRmt
+	id S1756369AbYHVRoO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 13:44:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbYHVRnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 13:42:49 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:62543 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbYHVRmt (ORCPT
+	Fri, 22 Aug 2008 13:43:55 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:3332 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754258AbYHVRny (ORCPT
 	<rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 13:42:49 -0400
+	Fri, 22 Aug 2008 13:43:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=tj5aB7BT5UTG56KqTP6t/XAjznFMCbGZ2krDil6XQuinYKKwB9hVMbZpx1EE6nv6iQ
-         IC41lx2/nYJ/3GpFa1pNX7UuF11MjDopPyiHhDlll4MURxDBmddLo7x+EzR1RkzeAeDg
-         M7FsE5L7zqW6qrnyL/ElI7MmujbHbpeCSLlXQ=
-Message-ID: <6934efce0808221042u6d0c21eft6f8cdf67f0217a85@mail.gmail.com>
-Date: Fri, 22 Aug 2008 10:42:47 -0700
+        b=A5UuJvCTXNyVDbIJfHwaEEFfRbUF/r7y61klC8rCQJlzy7LMSQ0zzCujcTYXSAyUlk
+         rZA962MzI9oomkKsRi++wT8Bt5UaQTAESTeu+9+aKgYicBiHBSWvYtAatto0GeRWmRtw
+         BJ7FXVdhDBA16xEwLFexsOgTlyEGHUoEYh5WQ=
+Message-ID: <6934efce0808221043i3d463ac2gb54b7dd4cfde4b81@mail.gmail.com>
+Date: Fri, 22 Aug 2008 10:43:52 -0700
 From: "Jared Hulbert" <jaredeh@gmail.com>
-To: "Phillip Lougher" <phillip@lougher.demon.co.uk>
+To: "Arnd Bergmann" <arnd@arndb.de>
 Subject: Re: [PATCH 06/10] AXFS: axfs_super.c
-Cc: "Arnd Bergmann" <arnd@arndb.de>, Linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
+Cc: "Phillip Lougher" <phillip@lougher.demon.co.uk>,
+       Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
        linux-mtd <linux-mtd@lists.infradead.org>,
        "=?UTF-8?Q?J=C3=B6rn_Engel?=" <joern@logfs.org>, tim.bird@am.sony.com,
        cotte@de.ibm.com, nickpiggin@yahoo.com.au
-In-Reply-To: <48AEF976.1010705@lougher.demon.co.uk>
+In-Reply-To: <200808221852.38950.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
@@ -36,13 +36,12 @@ Content-Disposition: inline
 References: <48AD0101.4020505@gmail.com> <48AE19AD.1020209@lougher.demon.co.uk>
 	 <6934efce0808212005h30fa16d8w48833e8a0becfd8c@mail.gmail.com>
 	 <200808221852.38950.arnd@arndb.de>
-	 <48AEF976.1010705@lougher.demon.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Squashfs and AXFS should be seen as complementary filesystems, and there
-> should be room in the Linux kernel for both.
+> It certainly sounds like something for your medium-term TODO list,
+> although I wouldn't think of it as a show-stopper.
 
-Exactly.  We had different design assumptions.  One is not _better_
-than the other, they are just different.
+Maybe.  It more of a feature rather than a bug.  It makes stat() and
+such fast.  The trade off is RAM...
