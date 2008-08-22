@@ -1,39 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbYHVTTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbYHVTUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756585AbYHVTTN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 15:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbYHVTS7
+	id S1756893AbYHVTUX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 15:20:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbYHVTUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 15:18:59 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58174 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751595AbYHVTS6 (ORCPT
+	Fri, 22 Aug 2008 15:20:07 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:41755 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751029AbYHVTUG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 15:18:58 -0400
-Message-ID: <48AF10FD.2000209@zytor.com>
-Date: Fri, 22 Aug 2008 12:18:21 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 22 Aug 2008 15:20:06 -0400
+Message-ID: <48AF0FF5.1020007@oracle.com>
+Date: Fri, 22 Aug 2008 12:13:57 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
-References: <20080820162925.75a5e064@doriath.conectiva>	<48ADDF4F.2020401@zytor.com>	<48AE5FCF.6030103@zytor.com>	<20080822065012.GV14110@elte.hu>	<20080822113941.147a1db0@doriath.conectiva>	<20080822153451.GA8390@Krystal>	<20080822132948.57e47076@doriath.conectiva>	<48AEF457.5020100@zytor.com> <20080822161040.27c68cf0@doriath.conectiva>
-In-Reply-To: <20080822161040.27c68cf0@doriath.conectiva>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] documentation: add more early_param boot options
+References: <48AF0D4E.2030007@oracle.com> <86802c440808221207k726a7eb5p67e2333818fe4303@mail.gmail.com>
+In-Reply-To: <86802c440808221207k726a7eb5p67e2333818fe4303@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luiz Fernando N. Capitulino wrote:
-> 
->  I'm running Mandriva's VirtualBox 1.6.4 OSE, my host kernel is 2.6.26-3mnb
-> (patched).
-> 
+Yinghai Lu wrote:
+> On Fri, Aug 22, 2008 at 12:02 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>>
+>> Add some (more) early_param boot options to kernel-parameters.txt.
+>>
+>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+>> ---
+>>  Documentation/kernel-parameters.txt |   12 ++++++++++++
+>>  1 file changed, 12 insertions(+)
+>>
+>> --- lin2627-rc4.orig/Documentation/kernel-parameters.txt
+>> +++ lin2627-rc4/Documentation/kernel-parameters.txt
+>> @@ -129,6 +129,13 @@ and is between 256 and 4096 characters.
+>>  ./include/asm/setup.h as COMMAND_LINE_SIZE.
+>>
+>>
+>> +       additional_cpus=  [IA-64,X86-32,X86-64]
+>> +                       Format: <int>
+>> +                       Specify the number of additional hotplug CPUs that
+>> +                       should be supported/allowed.  Can be used to
+>> +                       override BIOS info or to provide this info if not
+>> +                       already available.
+>> +
+> how about the one in Documentation/x86/x86_64/boot-options.txt ?
 
-What is your host *system* like -- CPU especially, and is your host 
-kernel 32 or 64 bits?
+Oh.  Thanks.  I'll think about how to handle that (or drop that part)
+and respin/resend it.
 
-	-hpa
