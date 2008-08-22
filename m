@@ -1,123 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252AbYHVTQB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbYHVTTN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754252AbYHVTQB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 15:16:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756897AbYHVTPR
+	id S1756585AbYHVTTN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 15:19:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbYHVTS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 15:15:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55263 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756139AbYHVTPM (ORCPT
+	Fri, 22 Aug 2008 15:18:59 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58174 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751595AbYHVTS6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 15:15:12 -0400
-Date: Fri, 22 Aug 2008 12:12:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Karen Xie <kxie@chelsio.com>
-Cc: netdev@vger.kernel.org, open-iscsi@googlegroups.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com, davem@davemloft.net, michaelc@cs.wisc.edu,
-       swise@opengridcomputing.com, rdreier@cisco.com, daisyc@us.ibm.com,
-       wenxiong@us.ibm.com, bhua@us.ibm.com, divy@chelsio.com, dm@chelsio.com,
-       leedom@chelsio.com, kxie@chelsio.com
-Subject: Re: [PATCH 2/4 2.6.28] cxgb3 - handle ARP replies for private iSCSI
- IP address
-Message-Id: <20080822121250.55949d3d.akpm@linux-foundation.org>
-In-Reply-To: <200808221839.m7MId8Sq004410@localhost.localdomain>
-References: <200808221839.m7MId8Sq004410@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 22 Aug 2008 15:18:58 -0400
+Message-ID: <48AF10FD.2000209@zytor.com>
+Date: Fri, 22 Aug 2008 12:18:21 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
+References: <20080820162925.75a5e064@doriath.conectiva>	<48ADDF4F.2020401@zytor.com>	<48AE5FCF.6030103@zytor.com>	<20080822065012.GV14110@elte.hu>	<20080822113941.147a1db0@doriath.conectiva>	<20080822153451.GA8390@Krystal>	<20080822132948.57e47076@doriath.conectiva>	<48AEF457.5020100@zytor.com> <20080822161040.27c68cf0@doriath.conectiva>
+In-Reply-To: <20080822161040.27c68cf0@doriath.conectiva>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Aug 2008 11:39:08 -0700
-Karen Xie <kxie@chelsio.com> wrote:
-
-> [PATCH 2/4 2.6.28] cxgb3 - handle ARP replies for private iSCSI IP address
+Luiz Fernando N. Capitulino wrote:
 > 
-> From: Karen Xie <kxie@chelsio.com>
+>  I'm running Mandriva's VirtualBox 1.6.4 OSE, my host kernel is 2.6.26-3mnb
+> (patched).
 > 
-> stg can be tricky ...
-> [adding @adapter in cxgb3_arp_process doxygen header]
-> The accelerated iSCSI traffic uses a private IP address unknown to the OS.
-> The driver has to reply to ARP requests dedicated to the private IP address.
-> 
-> Signed-off-by: Divy Le Ray <divy@chelsio.com>
-> ---
-> 
->  drivers/net/cxgb3/sge.c |   71 ++++++++++++++++++++++++++++++++++++++++++++---
->  1 files changed, 66 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
-> index 1b0861d..d2a9285 100644
-> --- a/drivers/net/cxgb3/sge.c
-> +++ b/drivers/net/cxgb3/sge.c
-> @@ -36,6 +36,7 @@
->  #include <linux/ip.h>
->  #include <linux/tcp.h>
->  #include <linux/dma-mapping.h>
-> +#include <net/arp.h>
->  #include "common.h"
->  #include "regs.h"
->  #include "sge_defs.h"
-> @@ -1859,6 +1860,54 @@ static void restart_tx(struct sge_qset *qs)
->  }
->  
->  /**
-> + *	cxgb3_arp_process - process an ARP request probing a private IP address
-> + *	@adapter: the adapter
-> + *	@skb: the skbuff containing the ARP request
-> + *
-> + *	Check if the ARP request is probing the private IP address
-> + *	dedicated to iSCSI, generate an ARP reply if so.
-> + */
-> +static void cxgb3_arp_process(struct adapter *adapter, struct sk_buff *skb)
-> +{
-> +	struct net_device *dev = skb->dev;
-> +	struct port_info *pi;
-> +	struct arphdr *arp;
-> +	unsigned char *arp_ptr;
-> +	unsigned char *sha;
-> +	u32 sip, tip;
-> +
-> +	if (!dev)
-> +		return;
 
-Can this happen?
+What is your host *system* like -- CPU especially, and is your host 
+kernel 32 or 64 bits?
 
-> +	skb_reset_network_header(skb);
-> +	arp = arp_hdr(skb);
-> +
-> +	if (arp->ar_op != htons(ARPOP_REQUEST))
-> +		return;
-> +
-> +	arp_ptr = (unsigned char *)(arp + 1);
-> +	sha = arp_ptr;
-> +	arp_ptr += dev->addr_len;
-> +	memcpy(&sip, arp_ptr, 4);
-> +	arp_ptr += 4;
-> +	arp_ptr += dev->addr_len;
-> +	memcpy(&tip, arp_ptr, 4);
-
-Should arp_hdr_len() be used here?
-
-> +	pi = netdev_priv(dev);
-> +	if (ntohl(tip) != pi->iscsi_ipaddr)
-> +		return;
-> +
-> +	arp_send(ARPOP_REPLY, ETH_P_ARP, sip, dev, tip, sha,
-> +		 dev->dev_addr, sha);
-> +
-> +}
-> +
-> +static inline int is_arp(struct sk_buff *skb)
-> +{
-> +	return skb->protocol == htons(ETH_P_ARP);
-
-Other net code uses __constant_htons() for this.
-
-(Dunno why - if it makes a difference, htons() is broken?)
-
-
+	-hpa
