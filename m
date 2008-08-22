@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbYHVVyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759406AbYHVVz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759351AbYHVVyZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 17:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754486AbYHVVyK
+	id S1759406AbYHVVz0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 17:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754486AbYHVVzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 17:54:10 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54747 "EHLO
+	Fri, 22 Aug 2008 17:55:11 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54765 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753863AbYHVVyJ (ORCPT
+	with ESMTP id S1757047AbYHVVzK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 17:54:09 -0400
-Date: Fri, 22 Aug 2008 16:54:08 -0500
+	Fri, 22 Aug 2008 17:55:10 -0400
+Date: Fri, 22 Aug 2008 16:55:09 -0500
 From: Russ Anderson <rja@sgi.com>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
 Cc: Russ Anderson <rja@sgi.com>, Jack Steiner <steiner@sgi.com>
-Subject: [PATCH 3/4] x86: Add UV partition call
-Message-ID: <20080822215408.GD143104@sgi.com>
+Subject: [PATCH 4/4] x86: Add sysfs entries for UV
+Message-ID: <20080822215509.GE143104@sgi.com>
 Reply-To: Russ Anderson <rja@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,181 +25,110 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 3/4] x86: Add UV partition call
+[PATCH 4/4] x86: Add sysfs entries for UV
 
-Add a bios call to return partitioning related info.
+Create /sys/firmware/sgi_uv sysfs entries for partition_id and coherence_id.
 
 Signed-off-by: Russ Anderson <rja@sgi.com>
 
 ---
- arch/x86/kernel/bios_uv.c        |   52 ++++++++++++++++++++++++++++++++++-----
- arch/x86/kernel/genx2apic_uv_x.c |   14 ++++++----
- include/asm-x86/uv/bios.h        |   30 ++++++++++++++++------
- 3 files changed, 76 insertions(+), 20 deletions(-)
+ arch/x86/kernel/Makefile   |    2 -
+ arch/x86/kernel/uv_sysfs.c |   61 +++++++++++++++++++++++++++++++++++++++++++++
+ include/asm-x86/uv/bios.h  |    2 +
+ 3 files changed, 64 insertions(+), 1 deletion(-)
 
-Index: linux/arch/x86/kernel/bios_uv.c
+Index: linux/arch/x86/kernel/Makefile
 ===================================================================
---- linux.orig/arch/x86/kernel/bios_uv.c	2008-08-22 14:52:00.000000000 -0500
-+++ linux/arch/x86/kernel/bios_uv.c	2008-08-22 14:52:08.000000000 -0500
-@@ -62,14 +62,54 @@ s64 uv_bios_call_reentrant(int which, u6
- 	return ret;
- }
- 
--long
--x86_bios_freq_base(unsigned long clock_type, unsigned long *ticks_per_second,
--					unsigned long *drift_info)
-+
-+u8 sn_partition_id;
-+EXPORT_SYMBOL(sn_partition_id);
-+u8 uv_coherency_id;
-+EXPORT_SYMBOL(uv_coherency_id);
-+u8 uv_type;
-+EXPORT_SYMBOL(uv_type);
-+
+--- linux.orig/arch/x86/kernel/Makefile	2008-08-22 14:49:44.000000000 -0500
++++ linux/arch/x86/kernel/Makefile	2008-08-22 14:52:48.000000000 -0500
+@@ -106,7 +106,7 @@ obj-$(CONFIG_OLPC)		+= olpc.o
+ # 64 bit specific files
+ ifeq ($(CONFIG_X86_64),y)
+         obj-y				+= genapic_64.o genapic_flat_64.o genx2apic_uv_x.o tlb_uv.o
+-	obj-y				+= bios_uv.o
++	obj-y				+= bios_uv.o uv_sysfs.o
+         obj-y				+= genx2apic_cluster.o
+         obj-y				+= genx2apic_phys.o
+         obj-$(CONFIG_X86_PM_TIMER)	+= pmtimer_64.o
+Index: linux/arch/x86/kernel/uv_sysfs.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/arch/x86/kernel/uv_sysfs.c	2008-08-22 14:52:48.000000000 -0500
+@@ -0,0 +1,61 @@
 +/*
-+ * Returns information about the UV HUB.
++ * This file supports the /sys/firmware/sgi_uv interfaces for SGI UV.
 + *
-+ * Parameters for UV_BIOS_GET_SN_INFO call:
-+ *  In:
-+ *	arg0 - UV_BIOS_GET_SN_INFO
-+ *	arg1 - fc (0 for now, other values reserved for future use)
-+ *  Out:
-+ *      v0
-+ *		[7:0]   - uv hub version (0=hub1, 1=hub2)
-+ *		[31:24] - partition ID
-+ *		[39:32] - coherency_id
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ *
++ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
++ *  Copyright (c) Russ Anderson
 + */
-+s64 uv_bios_get_sn_info(int fc, u8 *uvtype, u8 *partid, u8 *coher)
- {
--	return uv_bios_call(BIOS_FREQ_BASE, clock_type,
--				(u64)ticks_per_second, 0, 0, 0);
-+	s64 ret;
-+	u64 v0, v1;
 +
-+	ret = uv_bios_call_irqsave(UV_BIOS_GET_SN_INFO, fc,
-+				(u64)(&v0), (u64)(&v1), 0, 0);
-+	if (ret != BIOS_STATUS_SUCCESS)
-+		return ret;
++#include <linux/sysdev.h>
++#include <asm/uv/bios.h>
 +
-+	if (uvtype)
-+		*uvtype = v0 & 0xff;
-+	if (partid)
-+		*partid = (v0 >> 8) & 0xff;
-+	if (coher)
-+		*coher = (v0 >> 24) & 0xff;
-+	return ret;
- }
--EXPORT_SYMBOL_GPL(x86_bios_freq_base);
++struct kobject *sgi_uv_kobj;
 +
-+
-+s64
-+uv_bios_freq_base(u64 clock_type, u64 *ticks_per_second)
++static ssize_t partition_id_show(struct kobject *kobj,
++			struct kobj_attribute *attr, char *buf)
 +{
-+	return uv_bios_call(UV_BIOS_FREQ_BASE, clock_type,
-+			   (u64)ticks_per_second, 0, 0, 0);
++	return snprintf(buf, PAGE_SIZE, "%d\n", sn_partition_id);
 +}
-+EXPORT_SYMBOL_GPL(uv_bios_freq_base);
- 
- 
- #ifdef CONFIG_EFI
-Index: linux/arch/x86/kernel/genx2apic_uv_x.c
-===================================================================
---- linux.orig/arch/x86/kernel/genx2apic_uv_x.c	2008-08-22 14:52:00.000000000 -0500
-+++ linux/arch/x86/kernel/genx2apic_uv_x.c	2008-08-22 14:52:08.000000000 -0500
-@@ -342,12 +342,12 @@ static __init void map_mmioh_high(int ma
- 
- static __init void uv_rtc_init(void)
- {
--	long status, ticks_per_sec, drift;
-+	long status;
-+	u64 ticks_per_sec;
- 
--	status =
--	    x86_bios_freq_base(BIOS_FREQ_BASE_REALTIME_CLOCK, &ticks_per_sec,
--					&drift);
--	if (status != 0 || ticks_per_sec < 100000) {
-+	status = uv_bios_freq_base(BIOS_FREQ_BASE_REALTIME_CLOCK,
-+					&ticks_per_sec);
-+	if (status != BIOS_STATUS_SUCCESS || ticks_per_sec < 100000) {
- 		printk(KERN_WARNING
- 			"unable to determine platform RTC clock frequency, "
- 			"guessing.\n");
-@@ -412,6 +412,8 @@ static __init void uv_system_init(void)
- 		       ~((1 << n_val) - 1)) << m_val;
- 
- 	uv_bios_init();
-+	uv_bios_get_sn_info(0, &uv_type, &sn_partition_id,
-+			    &uv_coherency_id);
- 	uv_rtc_init();
- 
- 	for_each_present_cpu(cpu) {
-@@ -433,7 +435,7 @@ static __init void uv_system_init(void)
- 		uv_cpu_hub_info(cpu)->gpa_mask = (1 << (m_val + n_val)) - 1;
- 		uv_cpu_hub_info(cpu)->gnode_upper = gnode_upper;
- 		uv_cpu_hub_info(cpu)->global_mmr_base = mmr_base;
--		uv_cpu_hub_info(cpu)->coherency_domain_number = 0;/* ZZZ */
-+		uv_cpu_hub_info(cpu)->coherency_domain_number = uv_coherency_id;
- 		uv_node_to_blade[nid] = blade;
- 		uv_cpu_to_blade[cpu] = blade;
- 		max_pnode = max(pnode, max_pnode);
++
++static ssize_t coherence_id_show(struct kobject *kobj,
++			struct kobj_attribute *attr, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", partition_coherence_id());
++}
++
++static struct kobj_attribute partition_id_attr =
++	__ATTR(partition_id, S_IRUGO, partition_id_show, NULL);
++
++static struct kobj_attribute coherence_id_attr =
++	__ATTR(coherence_id, S_IRUGO, coherence_id_show, NULL);
++
++
++static int __init sgi_uv_sysfs_init(void)
++{
++	if (!sgi_uv_kobj)
++		sgi_uv_kobj = kobject_create_and_add("sgi_uv", firmware_kobj);
++	if (!sgi_uv_kobj) {
++		printk(KERN_WARNING "kobject_create_and_add sgi_uv failed \n");
++		return -EINVAL;
++	}
++
++	sysfs_create_file(sgi_uv_kobj, &partition_id_attr.attr);
++	sysfs_create_file(sgi_uv_kobj, &coherence_id_attr.attr);
++
++	return 0;
++}
++
++device_initcall(sgi_uv_sysfs_init);
 Index: linux/include/asm-x86/uv/bios.h
 ===================================================================
---- linux.orig/include/asm-x86/uv/bios.h	2008-08-22 14:52:00.000000000 -0500
-+++ linux/include/asm-x86/uv/bios.h	2008-08-22 14:52:08.000000000 -0500
-@@ -24,12 +24,15 @@
+--- linux.orig/include/asm-x86/uv/bios.h	2008-08-22 14:52:08.000000000 -0500
++++ linux/include/asm-x86/uv/bios.h	2008-08-22 14:52:48.000000000 -0500
+@@ -79,6 +79,8 @@ extern u8 uv_coherency_id;
+ #define partition_coherence_id()	(uv_coherency_id)
  
- #include <linux/rtc.h>
  
--#define BIOS_FREQ_BASE			0x01000001
--
-+/*
-+ * Values for the BIOS calls.  It is passed as the first * argument in the
-+ * BIOS call.  Passing any other value in the first argument will result
-+ * in a BIOS_STATUS_UNIMPLEMENTED return status.
-+ */
- enum {
--	BIOS_FREQ_BASE_PLATFORM = 0,
--	BIOS_FREQ_BASE_INTERVAL_TIMER = 1,
--	BIOS_FREQ_BASE_REALTIME_CLOCK = 2
-+	UV_BIOS_COMMON,
-+	UV_BIOS_GET_SN_INFO,
-+	UV_BIOS_FREQ_BASE
- };
- 
- /*
-@@ -52,6 +55,12 @@ struct sal_systab {
- 	u64 function; 		/* BIOS runtime callback function ptr */
- };
- 
-+enum {
-+	BIOS_FREQ_BASE_PLATFORM = 0,
-+	BIOS_FREQ_BASE_INTERVAL_TIMER = 1,
-+	BIOS_FREQ_BASE_REALTIME_CLOCK = 2
-+};
++extern struct kobject *sgi_uv_kobj;	/* /sys/firmware/sgi_uv */
 +
- /*
-  * bios calls have 6 parameters
-  */
-@@ -59,11 +68,16 @@ extern s64 uv_bios_call(int, u64, u64, u
- extern s64 uv_bios_call_irqsave(int, u64, u64, u64, u64, u64);
- extern s64 uv_bios_call_reentrant(int which, u64, u64, u64, u64, u64);
- 
-+extern s64 uv_bios_get_sn_info(int, u8 *, u8 *, u8 *);
-+extern s64 uv_bios_freq_base(u64, u64 *);
-+
- extern void uv_bios_init(void);
- 
--extern long
--x86_bios_freq_base(unsigned long which, unsigned long *ticks_per_second,
--		   unsigned long *drift_info);
-+extern u8 uv_type;
-+extern u8 sn_partition_id;
-+extern u8 uv_coherency_id;
-+#define partition_coherence_id()	(uv_coherency_id)
-+
- 
  #ifndef CONFIG_EFI
  extern u64 efi_call6(void *, u64, u64, u64, u64, u64, u64);
+ #endif
 -- 
 Russ Anderson, OS RAS/Partitioning Project Lead  
 SGI - Silicon Graphics Inc          rja@sgi.com
