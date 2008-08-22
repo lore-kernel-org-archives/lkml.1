@@ -1,129 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbYHVHc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbYHVHez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbYHVHc0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 03:32:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbYHVHcS
+	id S1753170AbYHVHez (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 03:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753673AbYHVHef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 03:32:18 -0400
-Received: from sh.osrg.net ([192.16.179.4]:37988 "EHLO sh.osrg.net"
+	Fri, 22 Aug 2008 03:34:35 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:56968 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751453AbYHVHcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 03:32:18 -0400
-Date: Fri, 22 Aug 2008 16:29:10 +0900
-To: mingo@elte.hu
-Cc: fujita.tomonori@lab.ntt.co.jp, joerg.roedel@amd.com,
-       jbarnes@virtuousgeek.org, mingo@redhat.com, tglx@linutronix.de,
-       hpa@zytor.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, muli@il.ibm.com
-Subject: Re: [PATCH 0/8] x86 dma_*_coherent rework patchset v2
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080822070450.GX14110@elte.hu>
-References: <20080822064414.GT14110@elte.hu>
-	<20080822155754C.fujita.tomonori@lab.ntt.co.jp>
-	<20080822070450.GX14110@elte.hu>
+	id S1752653AbYHVHe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 03:34:29 -0400
+Date: Fri, 22 Aug 2008 17:34:15 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for August 22
+Message-Id: <20080822173415.6958cbcc.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080822162957F.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__22_Aug_2008_17_34_15_+1000_3r9F.fL2bEG5J9nG"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Aug 2008 09:04:50 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+--Signature=_Fri__22_Aug_2008_17_34_15_+1000_3r9F.fL2bEG5J9nG
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> 
-> > Can you drop the following patch in tip/x86/gart?
-> > 
-> > commit 0bc65ffd52a78a65f582b42503f727b3f3773cc4
-> > Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Date:   Mon Aug 18 00:36:18 2008 +0900
-> > 
-> >     x86 gart: allocate size-aligned address for alloc_coherent, v2
-> > 
-> > Joerg's patchset and this patch slightly conflict with the above
-> > patch. I'll send a new patch against tip/x86/iommu shortly.
-> 
-> such conflicts are no problem usually, check out the resolution in 
-> tip/master - so there's no need to resend. Also, i just merged 
-> tip/x86/gart into tip/x86/iommu, to make the integration even more 
-> apparent.
+Hi all,
 
-Ok, here's a patch against tip/x86/iommu:
+Changes since next-20080821:
 
-commit 0d8136ea509132c66155ca8a1e7cf60699f95c37
-Merge: 766af9f... 7b22ff5...
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Fri Aug 22 09:03:43 2008 +0200
+The pcmcia tree gained a build fix patch.
 
-    Merge branch 'x86/gart' into x86/iommu
+The ttydev tree gained a conflict against the driver-core tree.
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] gart: allocate size-aligned address for alloc_coherent
+I have also applied the following patches for known problems:
 
-alloc_coherent dma_ops callback was added to GART, however, it doesn't
-return a size aligned address wrt dma_alloc_coherent, as
-DMA-mapping.txt defines. This patch fixes it.
+	Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
+	powerpc: export CMO_PageSize
 
-This patch also removes unused gart_map_simple
-(dma_mapping_ops->map_simple has gone).
+----------------------------------------------------------------------------
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/x86/kernel/pci-gart_64.c |   25 ++++++++++---------------
- 1 files changed, 10 insertions(+), 15 deletions(-)
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
-diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-index 338c4f2..4d08649 100644
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -261,20 +261,6 @@ static dma_addr_t dma_map_area(struct device *dev, dma_addr_t phys_mem,
- 	return iommu_bus_base + iommu_page*PAGE_SIZE + (phys_mem & ~PAGE_MASK);
- }
- 
--static dma_addr_t
--gart_map_simple(struct device *dev, phys_addr_t paddr, size_t size, int dir)
--{
--	dma_addr_t map;
--	unsigned long align_mask;
--
--	align_mask = (1UL << get_order(size)) - 1;
--	map = dma_map_area(dev, paddr, size, dir, align_mask);
--
--	flush_gart();
--
--	return map;
--}
--
- /* Map a single area into the IOMMU */
- static dma_addr_t
- gart_map_single(struct device *dev, phys_addr_t paddr, size_t size, int dir)
-@@ -512,12 +498,21 @@ gart_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_addr,
- 		    gfp_t flag)
- {
- 	void *vaddr;
-+	unsigned long align_mask;
- 
- 	vaddr = (void *)__get_free_pages(flag | __GFP_ZERO, get_order(size));
- 	if (!vaddr)
- 		return NULL;
- 
--	*dma_addr = gart_map_single(dev, __pa(vaddr), size, DMA_BIDIRECTIONAL);
-+	align_mask = (1UL << get_order(size)) - 1;
-+
-+	if (!dev)
-+		dev = &x86_dma_fallback_dev;
-+
-+	*dma_addr = dma_map_area(dev, __pa(vaddr), size, DMA_BIDIRECTIONAL,
-+				 align_mask);
-+	flush_gart();
-+
- 	if (*dma_addr != bad_dma_address)
- 		return vaddr;
- 
--- 
-1.5.5.GIT
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
 
+Below is a summary of the state of the merge.
+
+We are up to 112 trees (counting Linus' and 14 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging cris/for-next
+Merging ia64/test
+Merging quilt/m68k
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/powerpc-next
+Merging 4xx/next
+Merging galak/powerpc-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging quilt/driver-core
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging ftrace/auto-ftrace-next
+CONFLICT (content): Merge conflict in kernel/module.c
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+CONFLICT (content): Merge conflict in kernel/fork.c
+Merging timers/auto-timers-next
+Merging x86/auto-x86-next
+CONFLICT (content): Merge conflict in include/asm-x86/pda.h
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/stable
+CONFLICT (content): Merge conflict in drivers/media/video/zr364xx.c
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging blackfin/for-linus
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+CONFLICT (content): Merge conflict in include/asm-x86/kvm.h
+Merging dlm/next
+Merging scsi/master
+Merging tests/master
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+CONFLICT (content): Merge conflict in include/asm-x86/cpufeature.h
+Merging vfs/for-next
+CONFLICT (content): Merge conflict in arch/ia64/ia32/sys_ia32.c
+CONFLICT (content): Merge conflict in arch/powerpc/kernel/sys_ppc32.c
+CONFLICT (content): Merge conflict in fs/nfsd/export.c
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_export.c
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_iops.c
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Applying input/cm109: fix up for info() removal
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+Merging bkl-removal/bkl-removal
+Merging trivial/next
+CONFLICT (content): Merge conflict in Documentation/edac.txt
+CONFLICT (content): Merge conflict in include/linux/securebits.h
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Kconfig
+CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Makefile
+Merging pcmcia/master
+Applying pcmcia: fix cs_debug_level availablility
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in arch/x86/kernel/process_64.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/traps_64.c
+CONFLICT (content): Merge conflict in mm/Makefile
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/reg-for-linus
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+CONFLICT (content): Merge conflict in drivers/char/tty_io.c
+CONFLICT (content): Merge conflict in drivers/net/usb/hso.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/aircable.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/keyspan_pda.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/safe_serial.c
+Merging agp/agp-next
+Merging creds/next-creds
+CONFLICT (content): Merge conflict in fs/namespace.c
+CONFLICT (content): Merge conflict in fs/nfsd/nfs4recover.c
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_linux.h
+CONFLICT (content): Merge conflict in fs/xfs/xfs_inode.c
+CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.c
+CONFLICT (content): Merge conflict in include/linux/capability.h
+CONFLICT (add/add): Merge conflict in include/linux/cred.h
+CONFLICT (content): Merge conflict in kernel/exit.c
+CONFLICT (content): Merge conflict in kernel/fork.c
+CONFLICT (content): Merge conflict in security/commoncap.c
+CONFLICT (content): Merge conflict in security/selinux/hooks.c
+CONFLICT (content): Merge conflict in security/smack/smack_lsm.c
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+CONFLICT (content): Merge conflict in include/linux/init.h
+Applying Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
+Applying powerpc: export CMO_PageSize
+
+--Signature=_Fri__22_Aug_2008_17_34_15_+1000_3r9F.fL2bEG5J9nG
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiua/cACgkQjjKRsyhoI8y1IgCfbWrpiLaAGBTCYRcWFonbWYIU
+3vIAn0j8mHtfrRuAhislhPhiyLV9dn8k
+=vrCu
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__22_Aug_2008_17_34_15_+1000_3r9F.fL2bEG5J9nG--
