@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757261AbYHVB7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759862AbYHVCAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757261AbYHVB7U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 21:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbYHVB7A
+	id S1759862AbYHVCAz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 22:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbYHVCAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 21:59:00 -0400
-Received: from relay2.globalproof.net ([194.146.153.25]:37135 "EHLO
-	relay2.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752087AbYHVB67 (ORCPT
+	Thu, 21 Aug 2008 22:00:46 -0400
+Received: from elasmtp-scoter.atl.sa.earthlink.net ([209.86.89.67]:47548 "EHLO
+	elasmtp-scoter.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752805AbYHVCAp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 21:58:59 -0400
-From: Denys Fedoryshchenko <denys@visp.net.lb>
-Organization: Virtual ISP
-To: netdev@vger.kernel.org
-Subject: loaded router, excessive getnstimeofday in oprofile
-Date: Fri, 22 Aug 2008 04:57:40 +0300
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 21 Aug 2008 22:00:45 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=earthlink.net;
+  b=XfGwTwODWoJG4MvEHPkUmFv2P/p+/YfpPruaNOtNd92/4/jCDQ3jxAzB8MouZnqH;
+  h=Message-ID:Date:From:Reply-To:To:Subject:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Mailer:X-ELNK-Trace:X-Originating-IP;
+Message-ID: <10836950.1219370444356.JavaMail.root@elwamui-cypress.atl.sa.earthlink.net>
+Date: Thu, 21 Aug 2008 19:00:44 -0700 (GMT-07:00)
+From: Bruce Leonard <brucle@earthlink.net>
+Reply-To: Bruce Leonard <brucle@earthlink.net>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2][MTD] Support for > 2GiB MTD devices
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808220457.40892.denys@visp.net.lb>
+X-Mailer: EarthLink Zoo Mail 1.0
+X-ELNK-Trace: 481fc18f0ae4055094f5150ab1c16ac08868399773331e3065de3f0af26411f149cccb026c7e2c7e350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 209.86.224.32
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have loaded router (~650 Mbps In+Out), based on 2xAMD Opteron 248, Sun Fire 
-X4100. HPET timer available (TSC seems not available on this platform).
-Network interfaces is onboard, connected over PCI-X.
+All,
 
-Right now i am using only one processor, cause using only one interface and 
-interrupts stick to it. Other is almost not used.
-At peak time i notice in mpstat, that this processor is almost "dead", and if 
-i run minor application consuming resources - ping over this router will be 
-terrible. For me it is clear - system overloaded. I did oprofile, and here is 
-result (at low load time, but at peak time it is very similar).
+Over the course of the last several months, I've been working on adding support to
+the kernel for MTD devices that exceed 2GiB in size.  In my particular case I
+have a need for 8GiB of NAND flash that appears as a single device.  I'm now
+ready to submit my (first ever!) patch (please be kind :)  ).
 
-CPU: AMD64 processors, speed 2193.74 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (Cycles outside of halt state) with a unit 
-mask of 0x00 (No unit mask) count 100000
-CPU_CLK_UNHALT...|
-  samples|      %|
-------------------
-  2679376 71.9851 vmlinux
-   287212  7.7163 e1000
-   278674  7.4870 ip_tables
-   259923  6.9832 nf_conntrack
-    29699  0.7979 iptable_nat
-    26752  0.7187 nf_nat
-    26093  0.7010 nf_conntrack_ipv4
-    16525  0.4440 iptable_mangle
-    14988  0.4027 oprofiled
+Design Details:
+The problem - The size field of struct mtd_info is only 32-bits, which limits
+	the size of mtd devices to 2GiB (0x80000000).
+The solution - The size of a device can be calculated buy multiplying the number
+	of erase blocks by the erase block size.  I added a new field to struct
+	mtd_info to hold the number of erase blocks and an inline function to
+	determine the device size by returning mtd_info->size if it's non-zero
+	or returning (mtd_info->num_eraseblocks * mtd_info->erasesize).
 
+A couple of comments.  First and foremost, these patches don't completely change
+the MTD layer.  Due to my in-experience outside of what I was focused on
+(NAND/UBI/UBIFS/MTDCHAR) I felt it was best if I restricted my changes to what I
+knew.  If the community feels I need to take these changes into the rest of the
+MTD layer please advise.  Secondly, there were changes that I needed to make in
+mtd-utils, but I again only focused on the UBI sub-set.  mtd-utils no longer builds
+because of the changes (though the UBI tools still build).  But I really do NOT
+feel qualified to make changes to the rest of mtd-utils as they're tools I don't
+use and don't understand and I don't want to accidentaly break something I don't
+understand.  The changes in mtd-utils are the same changes as in
+.../include/linux/mtd/mtd.h and .../include/mtd/mtd-abi.h.  If anyone has a
+suggestion as to how I should handle mtd-utils I would appreciate it.
 
-CPU: AMD64 processors, speed 2193.74 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (Cycles outside of halt state) with a unit 
-mask of 0x00 (No unit mask) count 100000
-samples  %        symbol name
-1031727  37.1736  getnstimeofday
-230457    8.3035  __napi_schedule
-122154    4.4013  __do_softirq
-110036    3.9647  dev_queue_xmit
-88800     3.1995  net_rx_action
-71163     2.5640  ip_route_input
-52232     1.8819  local_bh_enable
-43804     1.5783  get_next_timer_interrupt
-43387     1.5633  ip_forward
-35501     1.2791  nf_iterate
-35212     1.2687  __slab_alloc
-34652     1.2485  default_idle
-32375     1.1665  kfree
-28127     1.0134  kmem_cache_alloc
+Thanks again to everyone who's answered my endless stupid questions.
 
-What is bothering me, why getnstimeofday called so much? Even i remove HTB 
-shaper, it still takes 30-40% of whole vmlinux time. From other 
-applications - only zebra is running.
-Any ideas?
+Bruce
+
