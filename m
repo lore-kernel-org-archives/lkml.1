@@ -1,50 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbYHVVgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759097AbYHVVhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759206AbYHVVgr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 17:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758181AbYHVVgX
+	id S1759097AbYHVVhq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 17:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbYHVVhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 17:36:23 -0400
-Received: from mail.gmx.net ([213.165.64.20]:51932 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757921AbYHVVgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 17:36:22 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX18fLXppQ7gfyXjBb4EuziUcyeByoSM8Hj3bHL7gam
-	r1VY+07ea4yICH
-Date: Fri, 22 Aug 2008 23:36:18 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Junio C Hamano <gitster@pobox.com>, pasky@suse.cz, Alan.Brunelle@hp.com,
-       linux-kernel@vger.kernel.org, git@vger.kernel.org
-Subject: Re: Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-Message-ID: <20080822213618.GC1598@atjola.homenet>
-References: <48A36838.3050309@hp.com> <20080819124602.9e8e69f7.akpm@linux-foundation.org> <48AEDD3D.4060507@hp.com> <20080822092549.ddcb7e79.akpm@linux-foundation.org> <20080822171651.GP10544@machine.or.cz> <20080822105136.a8432875.akpm@linux-foundation.org> <7v7ia8ahgu.fsf@gitster.siamese.dyndns.org> <20080822141651.fe16ed99.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080822141651.fe16ed99.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.72
+	Fri, 22 Aug 2008 17:37:36 -0400
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:23424 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753800AbYHVVhf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 17:37:35 -0400
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: John Ronciak <john.ronciak@gmail.com>, Grant Coady <gcoady.lk@gmail.com>,
+       linux-kernel@vger.kernel.org, neilb@suse.de, bfields@fieldses.org,
+       linux-nfs@vger.kernel.org, Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Bruce Allan <bruce.w.allan@intel.com>,
+       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
+       John Ronciak <john.ronciak@intel.com>,
+       e1000-devel@lists.sourceforge.net
+In-Reply-To: <1219440202.9097.14.camel@localhost>
+References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com>
+	 <1219087258.7192.19.camel@localhost>
+	 <1219400624.18774.67.camel@zakaz.uk.xensource.com>
+	 <1219428489.6919.21.camel@localhost>
+	 <1219428818.27921.43.camel@localhost.localdomain>
+	 <56a8daef0808221233h68853587n6015ca7d809b17e1@mail.gmail.com>
+	 <1219435207.27921.51.camel@localhost.localdomain>
+	 <1219440202.9097.14.camel@localhost>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-8xcMljYBej7XE9kYy7DV"
+Date: Fri, 22 Aug 2008 22:37:21 +0100
+Message-Id: <1219441041.27921.57.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+X-SA-Exim-Connect-IP: 192.168.1.5
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008.08.22 14:16:51 -0700, Andrew Morton wrote:
-> It's pretty simple.  If git-bisect tells us that the regression was
-> introduced by a merge commit, we want to perform a bisection within
-> that merge's individual commits.
 
-bisect already did that. It asked for the left side and the right side,
-both were good. What you can still do is creating a _new_ history where
-the commits are not in parallel but linearized, like Jeff described. But
-that's (in general) not a trivial task as you need to reapply individual
-commit patches which can cause conflicts that were already solved in the
-existing merges to show up again. Or, it can even produce new conflicts,
-for example when a commit on one side was reverted before the merge
-happened. In that case, you get into a state with changes that were
-never visible before.
+--=-8xcMljYBej7XE9kYy7DV
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Björn
+On Fri, 2008-08-22 at 14:23 -0700, Trond Myklebust wrote:
+> On Fri, 2008-08-22 at 21:00 +0100, Ian Campbell wrote:
+> > On Fri, 2008-08-22 at 12:33 -0700, John Ronciak wrote:
+> > > On Fri, Aug 22, 2008 at 11:13 AM, Ian Campbell <ijc@hellion.org.uk> w=
+rote:
+> > >=20
+> > > >> That's probably also a networking device driver issue candidate: y=
+our
+> > > >> RPC task is queued up waiting to be sent.
+> > > >>
+> > > >> What networking card+device driver are you using here?
+> > > >
+> > > > # ethtool -i eth0
+> > > > driver: e1000
+> > > > version: 7.3.20-k2-NAPI
+> > > > firmware-version: N/A
+> > > > bus-info: 0000:01:0a.0
+> > > There is nothing indicating that the NIC/driver is causing any sort o=
+f
+> > > problem here, at least not with what has been presented so far.  When
+> > > the NFS mount isn't working is the networking still active and
+> > > working?
+> >=20
+> > So far as I can tell, yes. I can login via ssh so long as the user
+> > doesn't have NFS $HOME, I haven't tried much else and the box isn't
+> > locked up at the moment, I'd bet it's fine though.
+>=20
+> ...and the server? Something is preventing that RPC payload from being
+> delivered...
+
+I can ssh to the server fine. The same server also serves my NFS home
+directory to the box I'm writing this from and I've not seen any trouble
+with this box at all, it's a 2.6.18-xen box.
+
+If I downgrade the problematic box to 2.6.24 then the hangs do not
+occur. They do occur with 2.6.25. (sorry that's a critical bit of
+information which I stupidly forgot to mention up til now).
+
+Ian.
+
+--=20
+Ian Campbell
+
+It is much easier to be critical than to be correct.
+		-- Benjamin Disraeli
+
+--=-8xcMljYBej7XE9kYy7DV
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkivMZEACgkQM0+0qS9rzVm+gACgwe5kMxefdRi4JPleL/HXxply
+qUoAnRtMiB4jG88FbVYyGZfhNkaXSywh
+=PLA2
+-----END PGP SIGNATURE-----
+
+--=-8xcMljYBej7XE9kYy7DV--
+
