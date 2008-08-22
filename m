@@ -1,115 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbYHVSOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbYHVSPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756198AbYHVSOI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 14:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbYHVSNx
+	id S1757079AbYHVSPV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 14:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbYHVSPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 14:13:53 -0400
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:24778 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756054AbYHVSNv (ORCPT
+	Fri, 22 Aug 2008 14:15:05 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39408 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753290AbYHVSPD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 14:13:51 -0400
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
-       neilb@suse.de, bfields@fieldses.org, linux-nfs@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       e1000-devel@lists.sourceforge.net
-In-Reply-To: <1219428489.6919.21.camel@localhost>
-References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com>
-	 <1219087258.7192.19.camel@localhost>
-	 <1219400624.18774.67.camel@zakaz.uk.xensource.com>
-	 <1219428489.6919.21.camel@localhost>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-3x0/XuuH4gaAYTKPEX+I"
-Date: Fri, 22 Aug 2008 19:13:38 +0100
-Message-Id: <1219428818.27921.43.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-SA-Exim-Connect-IP: 192.168.1.5
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: NFS regression?  Odd delays and lockups accessing an NFS
-	export.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+	Fri, 22 Aug 2008 14:15:03 -0400
+Date: Fri, 22 Aug 2008 14:14:58 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Takashi Sato <t-sato@yk.jp.nec.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "axboe@kernel.dk" <axboe@kernel.dk>,
+       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] Implement generic freeze feature
+Message-ID: <20080822181458.GA15469@infradead.org>
+References: <20080818212819t-sato@mail.jp.nec.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080818212819t-sato@mail.jp.nec.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Aug 18, 2008 at 09:28:19PM +0900, Takashi Sato wrote:
+> +	down(&bdev->bd_freeze_sem);
+> +	bdev->bd_freeze_count++;
+> +	if (bdev->bd_freeze_count > 1) {
+> +		sb = get_super(bdev);
+> +		drop_super(sb);
+> +		up(&bdev->bd_freeze_sem);
+> +		return sb;
+> +	}
+> +
+>  	down(&bdev->bd_mount_sem);
 
---=-3x0/XuuH4gaAYTKPEX+I
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Now you have a reference counter of freezes which actually is pretty
+sensible, but also needs some documentation.  What I don't understand
+here at all is why you do the get_super/drop_super in the already frozen
+case.
 
-On Fri, 2008-08-22 at 11:08 -0700, Trond Myklebust wrote:
-> On Fri, 2008-08-22 at 11:23 +0100, Ian Campbell wrote:
-> > On Mon, 2008-08-18 at 15:20 -0400, Trond Myklebust wrote:
-> > > Please try to reproduce the hang, then do
-> > >=20
-> > > 	echo 0 >/proc/sys/sunrpc/rpc_debug
-> > >=20
-> > > and send the output from 'dmesg'...
-> >=20
-> > I've also been seeing some NFS related lockups, although I'm not sure i=
-f
-> > they are the same as the one in this thread or not. Client is 2.6.26
-> > (Debian's kernel) and Server is 2.6.25 (also a Debian kernel, but from
-> > backports.org).
-> >=20
-> > rpc_debug on the server gives nothing, on the client gives:
-> > [144741.637997] -pid- proc flgs status -client- -prog- --rqstp- -timeou=
-t -rpcwait -action- ---ops--
-> > [144741.637997]  3439 0004 0080    -11 f3f48200 100003 f7770000        =
-0 xprt_sending fa0ae88e fa0bddf4
-> > [144741.637997]  3438 0001 00a0      0 f77f2a00 100003 f77700d0    1500=
-0 xprt_pending fa0ae88e fa0bddf4
->=20
-> That's probably also a networking device driver issue candidate: your
-> RPC task is queued up waiting to be sent.
->=20
-> What networking card+device driver are you using here?
+Now that the freeze_count has replaced one of the uses of bd_mount_sem
+you should also replace the other use in the unmount path by simply
+checking for the freez_count and abort if it's set.  To do so you'll
+need to hold the bd_mount_sem over the whole unmount operation to
+prevent new frezes from coming in.
 
-# ethtool -i eth0
-driver: e1000
-version: 7.3.20-k2-NAPI
-firmware-version: N/A
-bus-info: 0000:01:0a.0
+As others noted it should be a mutex and not a semaphore.
 
-Adding CC's to peeps listed in MAINTAINERS
+>  /*
+> + * ioctl_freeze - Freeze the filesystem.
+> + *
+> + * @filp:	target file
+> + *
+> + * Call freeze_bdev() to freeze the filesystem.
+> + */
+> +static int ioctl_freeze(struct file *filp)
 
-I have to reboot the system now (or else there will be no TV to watch
-during my tea ;-). It will probably repro again quite soon though.
+This is not quite kerneldcoc format, which would ne a /** as commnt
+start.  But I don't think the comment is actually needed, it's a pretty
+obvious file scope function. (Same commnt also applies to ioctl_thaw)
 
-> > There are no processes running with pid 3439 3438 (I don't think it's
-> > that sort of pid though).
->=20
-> The 'pid' is an internal RPC cookie that just serves to identify and
-> track specific RPC requests.
+> +	struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
+> +
+> +	if (!capable(CAP_SYS_ADMIN))
+> +		return -EPERM;
+> +
+> +	/* If filesystem doesn't support freeze feature, return. */
+> +	if (sb->s_op->write_super_lockfs == NULL)
+> +		return -EOPNOTSUPP;
+> +
+> +	/* If a regular file or a directory isn't specified, return. */
+> +	if (sb->s_bdev == NULL)
+> +		return -EINVAL;
 
-Right, thanks.
-
-Ian.
-
---=20
-Ian Campbell
-
-Colors may fade.
-
---=-3x0/XuuH4gaAYTKPEX+I
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkivAdIACgkQM0+0qS9rzVlFcQCffxm5vgStyXKuaFGnuguUtXdk
-PpYAoMD+hYRiMVPZa7ouxp5dZn/OP8BF
-=HAJQ
------END PGP SIGNATURE-----
-
---=-3x0/XuuH4gaAYTKPEX+I--
+I don't understand this commnt.  What you are checking is that the
+filesystem has a non-NULL s_bdev, which implies a not blockdevice-backed
+filesystem.
 
