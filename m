@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756635AbYHVTKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbYHVTLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756635AbYHVTKv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 15:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbYHVTKG
+	id S1756799AbYHVTLU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 15:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbYHVTKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 15:10:06 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:63820 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753320AbYHVTKE (ORCPT
+	Fri, 22 Aug 2008 15:10:38 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:58042 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754555AbYHVTKg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 15:10:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=NEhY/V2o8wmPUXa8NI1+ho3je1X6sYUfU96bCWy2mnHs3K2XBuVJztOLrLECUXztWB
-         FcvaJXDmCt059Ha2bHRxMIQLUrXSfAsVDtrqNiZ7cUdPDRVsflvTpecTQwrT33T/saZz
-         EAHwP2sFT4QQPk3Gufe5HSsMU0g9civgGqTT4=
-Message-ID: <86802c440808221210x40057476p5566d0dc82032608@mail.gmail.com>
-Date: Fri, 22 Aug 2008 12:10:04 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Robert Richter" <robert.richter@amd.com>
-Subject: Re: [PATCH] x86: fix: make PCI ECS for AMD CPUs hotplug capable
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Jan Beulich" <jbeulich@novell.com>
-In-Reply-To: <20080822190724.GB14103@erda.amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 22 Aug 2008 15:10:36 -0400
+Date: Fri, 22 Aug 2008 16:10:40 -0300
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
+Message-ID: <20080822161040.27c68cf0@doriath.conectiva>
+In-Reply-To: <48AEF457.5020100@zytor.com>
+References: <20080820162925.75a5e064@doriath.conectiva>
+	<48ADDF4F.2020401@zytor.com>
+	<48AE5FCF.6030103@zytor.com>
+	<20080822065012.GV14110@elte.hu>
+	<20080822113941.147a1db0@doriath.conectiva>
+	<20080822153451.GA8390@Krystal>
+	<20080822132948.57e47076@doriath.conectiva>
+	<48AEF457.5020100@zytor.com>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48AD82D5.76E4.0078.0@novell.com>
-	 <1219429418-29023-2-git-send-email-robert.richter@amd.com>
-	 <86802c440808221156h7ef48973hb5db8cf2b01ac27b@mail.gmail.com>
-	 <20080822190724.GB14103@erda.amd.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 22, 2008 at 12:07 PM, Robert Richter <robert.richter@amd.com> wrote:
-> On 22.08.08 11:56:08, Yinghai Lu wrote:
->
-> [...]
->
->> > +static int __init pci_io_ecs_init(void)
->> > +{
->> > +       int cpu;
->> > +
->> >        /* assume all cpus from fam10h have IO ECS */
->> >         if (boot_cpu_data.x86 < 0x10)
->> >                return 0;
->> > -       on_each_cpu(enable_pci_io_ecs_per_cpu, NULL, 1);
->> > +
->> > +       register_cpu_notifier(&amd_cpu_notifier);
->> > +       for_each_online_cpu(cpu)
->> > +               amd_cpu_notify(&amd_cpu_notifier, (unsigned long)CPU_ONLINE,
->> > +                              (void *)(long)cpu);
->>
->> wonder if those two lines should be reversed.
->
-> Do you mean setting PCI_HAS_IO_ECS before for_each_online_cpu(...)?
-> PCI_HAS_IO_ECS will be used only in pci_direct_init(). PCI is
-> initialized in a later init stage, so it doesn't matter. My intention
-> was to set the bit after the setup of all online cpus is finished.
+Em Fri, 22 Aug 2008 10:16:07 -0700
+"H. Peter Anvin" <hpa@zytor.com> escreveu:
 
+| So, Luiz: the DEBUG_INFO version of vmlinux would be helpful.  It would 
+| also help to know the exact version of VirtualBox you're running, what 
+| source you got it from, and what your host system looks like.
 
-==>
-+       for_each_online_cpu(cpu)
-+               amd_cpu_notify(&amd_cpu_notifier, (unsigned long)CPU_ONLINE,
-+                              (void *)(long)cpu);
-+       register_cpu_notifier(&amd_cpu_notifier);
+ You will find vmlinux with DEBUG_INFO enabled at:
 
-YH
+http://users.mandriva.com.br/~lcapitulino/virtualbox-oops/
+
+ I'm running Mandriva's VirtualBox 1.6.4 OSE, my host kernel is 2.6.26-3mnb
+(patched).
+
+ I could try with upstream's VirtualBox just to be sure it's not
+something else, but I don't think it is since there are reports for
+ArchLinux and Ubuntu as well:
+
+https://bugs.launchpad.net/ubuntu/intrepid/+source/linux/+bug/246067
+
+-- 
+Luiz Fernando N. Capitulino
