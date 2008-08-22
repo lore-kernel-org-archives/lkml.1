@@ -1,88 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbYHVRv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbYHVR5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351AbYHVRv4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 13:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbYHVRvo
+	id S1754929AbYHVR5t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 13:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbYHVR5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 13:51:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46570 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751094AbYHVRvn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 13:51:43 -0400
-Date: Fri, 22 Aug 2008 10:51:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Petr Baudis <pasky@suse.cz>
-Cc: Alan.Brunelle@hp.com, linux-kernel@vger.kernel.org, git@vger.kernel.org
-Subject: Re: Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-Message-Id: <20080822105136.a8432875.akpm@linux-foundation.org>
-In-Reply-To: <20080822171651.GP10544@machine.or.cz>
-References: <48A36838.3050309@hp.com>
-	<20080819124602.9e8e69f7.akpm@linux-foundation.org>
-	<48AEDD3D.4060507@hp.com>
-	<20080822092549.ddcb7e79.akpm@linux-foundation.org>
-	<20080822171651.GP10544@machine.or.cz>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 22 Aug 2008 13:57:37 -0400
+Received: from mx40.mail.ru ([194.67.23.36]:56624 "EHLO mx40.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751631AbYHVR5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 13:57:36 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: 2.6.27-rc4: 90% system time because of khubd, unable to reboot
+Date: Fri, 22 Aug 2008 21:57:22 +0400
+User-Agent: KMail/1.9.9
+Cc: linux-usb@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>
+References: <Pine.LNX.4.44L0.0808221333110.2230-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808221333110.2230-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1420124.kVVLJoIB8I";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200808222157.29299.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: OK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Aug 2008 19:16:51 +0200
-Petr Baudis <pasky@suse.cz> wrote:
+--nextPart1420124.kVVLJoIB8I
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> On Fri, Aug 22, 2008 at 09:25:49AM -0700, Andrew Morton wrote:
-> > On Fri, 22 Aug 2008 11:37:33 -0400 "Alan D. Brunelle" <Alan.Brunelle@hp.com> wrote:
-> > 
-> > > I /did/ bisect it down to the aforementioned merge, the question is: How
-> > > to crack open that merge into it's composite pieces? (Where do I go to
-> > > bisect within that?)
-> > 
-> > urgh, it's irritating when git-bisect directs you to a merge commit - it
-> > hasn't done it for me for ages.
-> 
-> Hmm, but doesn't that happen only when it's actually really the merge
-> commit that introduces the bug? Both parents of the merge commit were
-> marked as good by the user, so...
+On Friday 22 August 2008, Alan Stern wrote:
+> On Fri, 22 Aug 2008, Andrey Borzenkov wrote:
+>=20
+> > > > reverting 38b375d9610e2467cb793a84d17c6f65e44cdb39 fixed it
+> > > >=20
+> > >=20
+> > > ... that is:
+> > >=20
+> > > commit 38b375d9610e2467cb793a84d17c6f65e44cdb39
+> > > Author: Alan Stern <stern@rowland.harvard.edu>
+> > > Date:   Mon Jul 21 09:56:26 2008 -0400
+> > >=20
+> > >     USB: OHCI: fix system hang caused by earlier patch
+> > >=20
+> > >     Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> > >     Tested by: Andrey Borzenkov <arvidjaar@mail.ru>
+> > >     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > >=20
+> > > so it apparently used to work for you at that time.  What gives?
+> > >=20
+> >=20
+> > Well, you should not commit a fix without commiting code that has been
+> > fixed first :)
+>=20
+> Actually the code to be fixed _was_ committed first -- but then it was=20
+> reverted before the fix was accepted, so the fix was merged without it.
+>=20
+> My advice is not to worry about it.  That code has been sent once again
+> to Linus -- it's not merged yet but presumably it will be soon. =20
+> Certainly before 2.6.27-rc5 appears.
+>=20
+> On the other hand, I still have to wonder how the fix could have caused
+> your problem without the original patch in place.  The fix itself
+> should have been totally innocuous.
+>=20
 
-A merge commit doesn't contain any kernel changes?  It's the individual
-commits (aka "patches") which were in that merge which broke stuff. 
-Confused.
+It looks even funnier. Right now I am running with commits
+38b375d9610e2467cb793a84d17c6f65e44cdb39 *and*
+e872154921a6b5256a3c412dd69158ac0b135176 reverted. I.e. this should be
+the state which hopelessly failed in 2.6.26-rc. It seems to be doing
+quite well now in 2.6.27-rc.
 
-We're trying to dive inside that merge commit to find out which of the
-real commits caused the regression.
+"git revert e872154921a6b5256a3c412dd69158ac0b135176" gives me this
+one liner patch:
 
-> > One (probably wrong) approach is to run
-> > 
-> > 	gitk 1c89ac55017f982355c7761e1c912c88c941483d
-> > 
-> > then peer at the output, work out which real commits were in that
-> > merge.
-> > 
-> > It looks like the merge ended with
-> > b1b135c8d619cb2c7045d6ee4e48375882518bb5 and started with
-> > 40c42076ebd362dc69210cccea101ac80b6d4bd4, so perhaps you can do
-> > 
-> > 	git bisect bad b1b135c8d619cb2c7045d6ee4e48375882518bb5
-> > 	git bisect good 40c42076ebd362dc69210cccea101ac80b6d4bd4
-> 
-> ...I don't quite get this - according to the bisection log,
-> 
-> 	# good: [b1b135c8d619cb2c7045d6ee4e48375882518bb5] fix spinlock recursion in hvc_console
-> 
-> and now you want to mark it as bad?
+commit f3cf9ad86ee76077d1c6be9af7d197aa13ccdff9
+Author: Andrey Borzenkov <arvidjaar@mail.ru>
+Date:   Fri Aug 22 21:15:26 2008 +0400
 
-<what bisection log?>
+    Revert "USB: don't explicitly reenable root-hub status interrupts"
 
-I assume that Alan's bisection search ended up saying that the merge
-commit (1c89ac55017f982355c7761e1c912c88c941483d) was the first bad
-commit.
+    This reverts commit e872154921a6b5256a3c412dd69158ac0b135176.
 
-Now I don't know what's going on.
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index 107e1d2..d30f822 100644
+=2D-- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -3086,6 +3086,11 @@ static void hub_events(void)
+                if (!hdev->parent && !hub->busy_bits[0])
+                        usb_enable_root_hub_irq(hdev->bus);
 
-> You could try to revert some of the merged commits at the point of the
-> merge, though.
++               /* If this is a root hub, tell the HCD it's okay to
++                * re-enable port-change interrupts now. */
++               if (!hdev->parent && !hub->busy_bits[0])
++                       usb_enable_root_hub_irq(hdev->bus);
++
+ loop_autopm:
+                /* Allow autosuspend if we're not going to run again */
+                if (list_empty(&hub->event_list))
 
+Either my git tree is completely botched or most parts were already reverted
+before.
 
+So the problem seems to have cured by itself between 2.6.26 and 2.6.27? =20
+
+--nextPart1420124.kVVLJoIB8I
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkiu/gQACgkQR6LMutpd94xEQgCguqFRQgWBGRhXjZouLQM+eQZC
+vCwAoKNKmgFA/Rtr8itqvdrkS3TrXQfa
+=9z0E
+-----END PGP SIGNATURE-----
+
+--nextPart1420124.kVVLJoIB8I--
