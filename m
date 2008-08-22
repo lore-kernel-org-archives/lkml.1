@@ -1,80 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbYHVIlF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbYHVIlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756784AbYHVIlF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 04:41:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbYHVIkt
+	id S1758426AbYHVIlo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 04:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbYHVIl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 04:40:49 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:36990 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751972AbYHVIks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 04:40:48 -0400
-Message-ID: <48AE7B7E.1010503@atmel.com>
-Date: Fri, 22 Aug 2008 10:40:30 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Nicolas Ferre <nicolas.ferre@atmel.com>,
-       lkml <linux-kernel@vger.kernel.org>, Andrew Victor <linux@maxim.org.za>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [patch 2.6.27-rc3] at91_mci: don't use coherent dma buffers
-References: <200808181607.21516.david-b@pacbell.net> <48AE6D50.4030609@atmel.com>
-In-Reply-To: <48AE6D50.4030609@atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 22 Aug 2008 04:41:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:55094 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753365AbYHVIl0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 04:41:26 -0400
+Subject: Re: char/tpm: tpm_infineon no longer loaded for HP 2510p laptop
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: ambx1@neo.rr.com, elendil@planet.nl, trenn@suse.de,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       tpm@selhorst.net, rjw@sisk.pl, greg@kroah.com
+In-Reply-To: <200808211558.23725.bjorn.helgaas@hp.com>
+References: <24565067.73831219353513508.JavaMail.servlet@kundenserver>
+	 <200808211558.23725.bjorn.helgaas@hp.com>
+Content-Type: text/plain
+Date: Fri, 22 Aug 2008 10:40:46 +0200
+Message-Id: <1219394447.20723.51.camel@lgn.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18LkkPoAha5EtF65IRlPteBoGa+5loAdDzPZyL
+ GGMI0UPRVPL6idqVDir26bee18yPwf4zMNuH23EGjSJdJl1TFc
+ ToWuA/7exRCvs2pS+Idnf8Pk6/Z06zq
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre, Andrew,
-
-Based on Andrew comments, I rewrite this email..
-
-You can add my...
-
-> David Brownell :
->> From: David Brownell <dbrownell@users.sourceforge.net>
->>
->> At91_mci is abusing dma_free_coherent(), which may not be called
->> with IRQs disabled.  I saw "mkfs.ext3" on an MMC card objecting
->> voluminously as each write completed:
->>
->>  WARNING: at arch/arm/mm/consistent.c:368 dma_free_coherent+0x2c/0x224()
->>  [<c002726c>] (dump_stack+0x0/0x14) from [<c00387d4>] 
->> (warn_on_slowpath+0x4c/0x68)
->>  [<c0038788>] (warn_on_slowpath+0x0/0x68) from [<c0028768>] 
->> (dma_free_coherent+0x2c/0x224)
->>   r6:00008008 r5:ffc06000 r4:00000000
->>  [<c002873c>] (dma_free_coherent+0x0/0x224) from [<c01918ac>] 
->> (at91_mci_irq+0x374/0x420)
->>  [<c0191538>] (at91_mci_irq+0x0/0x420) from [<c0065d9c>] 
->> (handle_IRQ_event+0x2c/0x6c)
->>  ...
->>
->> This bug has been around for a LONG time.  The MM warning is
->> from late 2005, but the driver merged a year later ... so I'm
->> puzzled why nobody noticed this before now.
->>
->> The fix involves noting that this buffer shouldn't be DMA-coherent;
->> it's just used for normal DMA writes.  So replace it with standard
->> kmalloc() buffering and DMA mapping calls.
->>
->> This is the quickie fix.  A better one would not rely on allocating
->> large bounce buffers.  (Note that dma_alloc_coherent could have failed
->> too, but that case was ignored... kmalloc is a bit more likely to
->> fail though.)
->>
->> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+On Thu, 2008-08-21 at 15:58 -0600, Bjorn Helgaas wrote:
+> On Thursday 21 August 2008 03:18:33 pm Kay Sievers wrote:
+> > Bjorn Helgaas wrote:
+> > >Is there a "complete idiot's guide to modules
+> > >and udev"?  There's precious little in Documentation/ other than a bunch
+> > >of sample rules for various subsystems.
+> > 
+> > I don't know of any specific documentation, but it's pretty easy:
+> > ...
 > 
-> ...
+> Thanks for the tutorial.
+> 
+> > >Could I fix this by implementing pnp_device_uevent()?
+> > 
+> > Only if we change the format of the current pnp device aliases
+> > to something like:
+> >   pnp*:XYZ2324:*
+> >   pnp*:ABC1234:*
+> > 
+> > and create a "modalias" file at every pnp device, and add MODALIAS to
+> > the uevent. The modalias must contains all ID's which belong to that
+> > device in one single string, separated and terminated by a special
+> > character, something like:
+> >   pnp:ABC1234:XYZ2324:RST3445:
+> 
+> This all sounds like good stuff that I'd like PNP to have.  Is there
+> any reason I shouldn't implement pnp_device_uevent()?  Any backwards-
+> compatibility issues?
 
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+Yeah, people probably use the current aliases in modprobe.conf files,
+I'm not sure, if we can change them.
 
+> I think that sounds like a better solution than doing this PNP ID
+> mangling.
 
-Kind regards,
--- 
-Nicolas Ferre
+Sure, that will go with the acpi aliases + acpi modalias, or if you
+change pnp to have proper pnp aliases + pnp modalias, then with them,
+yes.
+
+Thanks,
+Kay
 
