@@ -1,33 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbYHVRSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbYHVRUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbYHVRSO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 13:18:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYHVRRz
+	id S1755604AbYHVRUc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 13:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYHVRUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 13:17:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36128 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752285AbYHVRRy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 13:17:54 -0400
-Message-ID: <48AEF482.2060709@linux-foundation.org>
-Date: Fri, 22 Aug 2008 12:16:50 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Fri, 22 Aug 2008 13:20:23 -0400
+Received: from lazybastard.de ([212.112.238.170]:42580 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752882AbYHVRUX (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 13:20:23 -0400
+Date: Fri, 22 Aug 2008 19:19:59 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: Arnd Bergmann <arnd@arndb.de>, jaredeh@gmail.com,
+       Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>, tim.bird@am.sony.com,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 04/10] AXFS: axfs_inode.c
+Message-ID: <20080822171959.GA30977@logfs.org>
+References: <48AD00F0.5030403@gmail.com> <200808211417.14425.arnd@arndb.de> <48AE22F5.3000309@lougher.demon.co.uk> <200808221200.26052.arnd@arndb.de> <48AEF2A3.7020905@lougher.demon.co.uk>
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Mel Gorman <mel@csn.ul.ie>, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-kernel@vger.kernel.org, hsweeten@visionengravers.com,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Skip memory holes in FLATMEM when reading	/proc/pagetypeinfo
- (resend)
-References: <20080821132804.GA6206@csn.ul.ie> <1219421954.20559.73.camel@nimitz>
-In-Reply-To: <1219421954.20559.73.camel@nimitz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <48AEF2A3.7020905@lougher.demon.co.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The VMEMMAP code can also be instead of flatmem with holes. Just put the
-memmap into real memory and make the populate function do nothing.
+On Fri, 22 August 2008 18:08:51 +0100, Phillip Lougher wrote:
+> 
+> Squashfs stores significantly more metadata than cramfs.  Remember 
+> cramfs has no support for filesystems > ~ 16Mbytes, no inode timestamps, 
+> truncates uid/gids, no hard-links, no nlink counts, no hashed 
+> directories,  no unique inode numbers.  If Squashfs didn't compress the 
+> metadata it would be significantly larger than cramfs.
+
+Elsewhere in this maze of threads Arnd claimed to have tested the
+benefits of metadata compression - and it making little impact.
+
+My guess is that it would make a large impact if metadata would be a
+significant part of the filesystem image.  Usually metadata is close
+enough to 0% to be mistaken for statistical noise.  So compressing it
+makes a significant impact on an insignificant amount of data.
+
+Jörn
+
+-- 
+One of my most productive days was throwing away 1000 lines of code.
+-- Ken Thompson.
