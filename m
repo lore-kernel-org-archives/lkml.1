@@ -1,153 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbYHVQTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbYHVQTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754921AbYHVQTW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 12:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYHVQTO
+	id S1753168AbYHVQTh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 12:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbYHVQTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 12:19:14 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:45866 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752723AbYHVQTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 12:19:13 -0400
-Date: Fri, 22 Aug 2008 11:19:08 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, zohar@us.ibm.com, dvelarde@us.ibm.com,
-       safford@us.ibm.com
-Subject: Re: [PATCH] TPM: update char dev BKL pushdown
-Message-ID: <20080822161908.GA24791@us.ibm.com>
-References: <1219421072.4765.7.camel@blackbox>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1219421072.4765.7.camel@blackbox>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 22 Aug 2008 12:19:25 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:55966 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754954AbYHVQTX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 12:19:23 -0400
+Subject: Re: [PATCH] Skip memory holes in FLATMEM when reading
+	/proc/pagetypeinfo (resend)
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       hsweeten@visionengravers.com, akpm@linux-foundation.org,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <20080821132804.GA6206@csn.ul.ie>
+References: <20080821132804.GA6206@csn.ul.ie>
+Content-Type: text/plain
+Date: Fri, 22 Aug 2008 09:19:14 -0700
+Message-Id: <1219421954.20559.73.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Rajiv Andrade (srajiv@linux.vnet.ibm.com):
-> This patch removes the BKL calls from the TPM driver, which
-> were added in the overall misc-char-dev-BKL-pushdown.patch,
-> as they are not needed. Changed num_opens from an int to atomic_t.
-> 
-> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
-> Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+On Thu, 2008-08-21 at 14:28 +0100, Mel Gorman wrote:
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index 4b8acd2..70dba16 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -810,6 +810,11 @@ config OABI_COMPAT
+>  	  UNPREDICTABLE (in fact it can be predicted that it won't work
+>  	  at all). If in doubt say Y.
+>  
+> +config ARCH_FLATMEM_HAS_HOLES
+> +	bool
+> +	default y
+> +	depends on FLATMEM
+> +
+>  config ARCH_DISCONTIGMEM_ENABLE
+>  	bool
+>  	default (ARCH_LH7A40X && !LH7A40X_CONTIGMEM)
+> diff --git a/mm/vmstat.c b/mm/vmstat.c
+> index b0d08e6..98aa882 100644
+> --- a/mm/vmstat.c
+> +++ b/mm/vmstat.c
+> @@ -516,9 +516,26 @@ static void pagetypeinfo_showblockcount_print(struct seq_file *m,
+>  			continue;
+>  
+>  		page = pfn_to_page(pfn);
+> +#ifdef CONFIG_ARCH_FLATMEM_HAS_HOLES
+> +		/*
+> +		 * Ordinarily, memory holes in flatmem still have a valid
+> +		 * memmap for the PFN range. However, an architecture for
+> +		 * embedded systems (e.g. ARM) can free up the memmap backing
+> +		 * holes to save memory on the assumption the memmap is
+> +		 * never used.
 
-Yes, this patch is good.  
+I'm not sure where this assumption is coming from.  Have you taken a
+look at the ARM code?
 
-It would also be good to rename num_opens.  Note that it is always
-either 0 or 1, and indicates whether someone has opened the chip.
-So 'is_open' may make more sense.
+> 		               The page_zone linkages are then broken even
+> +		 * though pfn_valid() returns true. Skip the page if the
+> +		 * linkages are broken. Even if this test passed, the impact
+> +		 * is that the counters for the movable type are off but
+> +		 * fragmentation monitoring is likely meaningless on small
+> +		 * systems.
+> +		 */
+> +		if (page_zone(page) != zone)
+> +			continue;
+> +#endif
+>  		mtype = get_pageblock_migratetype(page);
+>  
+> -		count[mtype]++;
+> +		if (mtype < MIGRATE_TYPES)
+> +			count[mtype]++;
+>  	}
 
-Mimi is also working on a patch (on top of this one) to use rcu
-to protect chip->list, and that patch will (I hope) include an
-explanation of all of the locking/protection involved.
+Is that really worth an #ifdef?  It is in code that isn't in a hot path,
+and the page_zone() should be a repetitive operation on a structure that
+is already (or will soon be) in the cpu cache.  
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+Ugh, but as I think about it, this is going to be a much more widespread
+problem.  Looking at the arm code, the memory for the mem_map[]e *does*
+get freed back into the bootmem allocator:
 
-> ---
->  drivers/char/tpm/tpm.c |   22 +++++++---------------
->  drivers/char/tpm/tpm.h |    2 +-
->  2 files changed, 8 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
-> index ae766d8..cd4ff36 100644
-> --- a/drivers/char/tpm/tpm.c
-> +++ b/drivers/char/tpm/tpm.c
-> @@ -960,7 +960,6 @@ int tpm_open(struct inode *inode, struct file *file)
->  	int rc = 0, minor = iminor(inode);
->  	struct tpm_chip *chip = NULL, *pos;
-> 
-> -	lock_kernel();
->  	spin_lock(&driver_lock);
-> 
->  	list_for_each_entry(pos, &tpm_chip_list, list) {
-> @@ -975,34 +974,31 @@ int tpm_open(struct inode *inode, struct file *file)
->  		goto err_out;
->  	}
-> 
-> -	if (chip->num_opens) {
-> +	if (atomic_read(&chip->num_opens)) {
->  		dev_dbg(chip->dev, "Another process owns this TPM\n");
->  		rc = -EBUSY;
->  		goto err_out;
->  	}
-> 
-> -	chip->num_opens++;
-> +	atomic_inc(&chip->num_opens);
->  	get_device(chip->dev);
-> 
->  	spin_unlock(&driver_lock);
-> 
->  	chip->data_buffer = kmalloc(TPM_BUFSIZE * sizeof(u8), GFP_KERNEL);
->  	if (chip->data_buffer == NULL) {
-> -		chip->num_opens--;
-> +		atomic_dec(&chip->num_opens);
->  		put_device(chip->dev);
-> -		unlock_kernel();
->  		return -ENOMEM;
->  	}
-> 
->  	atomic_set(&chip->data_pending, 0);
-> 
->  	file->private_data = chip;
-> -	unlock_kernel();
->  	return 0;
-> 
->  err_out:
->  	spin_unlock(&driver_lock);
-> -	unlock_kernel();
->  	return rc;
->  }
->  EXPORT_SYMBOL_GPL(tpm_open);
-> @@ -1016,7 +1012,7 @@ int tpm_release(struct inode *inode, struct file *file)
->  	file->private_data = NULL;
->  	del_singleshot_timer_sync(&chip->user_read_timer);
->  	atomic_set(&chip->data_pending, 0);
-> -	chip->num_opens--;
-> +	atomic_dec(chip->num_opens);
->  	put_device(chip->dev);
->  	kfree(chip->data_buffer);
->  	spin_unlock(&driver_lock);
-> @@ -1231,20 +1227,16 @@ struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vend
->  		return NULL;
->  	}
-> 
-> -	spin_lock(&driver_lock);
-> -
-> -	list_add(&chip->list, &tpm_chip_list);
-> -
-> -	spin_unlock(&driver_lock);
-> -
->  	if (sysfs_create_group(&dev->kobj, chip->vendor.attr_group)) {
-> -		list_del(&chip->list);
->  		misc_deregister(&chip->vendor.miscdev);
->  		put_device(chip->dev);
->  		return NULL;
->  	}
-> 
->  	chip->bios_dir = tpm_bios_log_setup(devname);
-> +	spin_lock(&driver_lock);
-> +	list_add(&chip->list, &tpm_chip_list);
-> +	spin_unlock(&driver_lock);
-> 
->  	return chip;
->  }
-> diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
-> index e885148..edb8ed6 100644
-> --- a/drivers/char/tpm/tpm.h
-> +++ b/drivers/char/tpm/tpm.h
-> @@ -90,7 +90,7 @@ struct tpm_chip {
->  	struct device *dev;	/* Device stuff */
-> 
->  	int dev_num;		/* /dev/tpm# */
-> -	int num_opens;		/* only one allowed */
-> +	atomic_t num_opens;		/* only one allowed */
->  	int time_expired;
-> 
->  	/* Data passed to and from the tpm via the read/write calls */
-> -- 
-> 1.5.4.5
-> 
-> 
+free_memmap(int node, unsigned long start_pfn, unsigned long end_pfn)
+{
+...
+        if (pg < pgend)
+                free_bootmem_node(NODE_DATA(node), pg, pgend - pg);
+}
+
+Doesn't that mean that we can get random gunk in the middle of the
+mem_map[] when someone else allocates and uses this memory?
+
+We have quite a few things across the kernel that iterate over pfn
+ranges and require pfn_valid() to be working. 
+
+Can we talk ARM into converting over to sparsemem?  A plain sparsemem
+port for MIPS that got coded up recently was ~25 lines of arch code.  A
+bit more if they decide to do vmemmap.  There's even a nice bit for
+Documentation/ about what was done:
+
+http://article.gmane.org/gmane.linux.ports.mips.general/21248/match=mips+sparsemem
+
+-- Dave
+
