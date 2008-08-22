@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYHVODS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbYHVO2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754201AbYHVODS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 10:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbYHVODH
+	id S1753927AbYHVO2k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 10:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbYHVO2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 10:03:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47954 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752608AbYHVODG (ORCPT
+	Fri, 22 Aug 2008 10:28:32 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:46904 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752736AbYHVO2c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 10:03:06 -0400
-Message-ID: <48AEC6B2.1080701@linux-foundation.org>
-Date: Fri, 22 Aug 2008 09:01:22 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 2/2] smp_call_function: use rwlocks on queues rather than
- rcu
-References: <48AE0883.6050701@goop.org> <20080822062800.GQ14110@elte.hu> <84144f020808220006n25d684b1n9db306ddc4f58c4c@mail.gmail.com>
-In-Reply-To: <84144f020808220006n25d684b1n9db306ddc4f58c4c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 22 Aug 2008 10:28:32 -0400
+Date: Fri, 22 Aug 2008 11:28:38 -0300
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca, mingo@elte.hu
+Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
+Message-ID: <20080822112838.75fef782@doriath.conectiva>
+In-Reply-To: <48ADDF4F.2020401@zytor.com>
+References: <20080820162925.75a5e064@doriath.conectiva>
+	<48ADDF4F.2020401@zytor.com>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> Hi Ingo,
-> 
-> On Fri, Aug 22, 2008 at 9:28 AM, Ingo Molnar <mingo@elte.hu> wrote:
->> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->>
->>> RCU can only control the lifetime of allocated memory blocks, which
->>> forces all the call structures to be allocated.  This is expensive
->>> compared to allocating them on the stack, which is the common case for
->>> synchronous calls.
->>>
->>> This patch takes a different approach.  Rather than using RCU, the
->>> queues are managed under rwlocks.  Adding or removing from the queue
->>> requires holding the lock for writing, but multiple CPUs can walk the
->>> queues to process function calls under read locks.  In the common
->>> case, where the structures are stack allocated, the calling CPU need
->>> only wait for its call to be done, take the lock for writing and
->>> remove the call structure.
->>>
->>> Lock contention - particularly write vs read - is reduced by using
->>> multiple queues.
->> hm, is there any authorative data on what is cheaper on a big box, a
->> full-blown MESI cache miss that occurs for every reader in this new
->> fastpath, or a local SLAB/SLUB allocation+free that occurs with the
->> current RCU approach?
-> 
-> Christoph might have an idea about it.
+Em Thu, 21 Aug 2008 14:34:07 -0700
+"H. Peter Anvin" <hpa@zytor.com> escreveu:
 
-Its on the stack which is presumably hot so no cache miss? If its async then
-presumably we do not need to wait so its okay to call an allocator.
+| > 
+| >  Does this look like a kernel bug?
+| > 
+| 
+| No, it looks like a very common virtualizer bug.  Does the attached 
+| patch work for you?
 
-Generally: The larger the box (longer cacheline acquisition latencies) and the
-higher the contention (cannot get cacheline because of contention) the better
-a slab allocation will be compared to a cacheline miss.
+ Unfortunately it does not.
 
-RCU is problematic because it lets cachelines get cold. A hot cacheline that
-is used frequently read and written to by the same cpu is very good thing for
-performace.
-
+-- 
+Luiz Fernando N. Capitulino
