@@ -1,64 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbYHVKu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbYHVKwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757583AbYHVKu3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 06:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYHVKuL
+	id S1758752AbYHVKwS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 06:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbYHVKwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 06:50:11 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:5813 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752481AbYHVKuH (ORCPT
+	Fri, 22 Aug 2008 06:52:04 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:15428 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752574AbYHVKwC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 06:50:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Q6U1tgo9KT9Ed31zKupgJCkOa+eT80VZcqwBqIirxN8a5up62HH1kH2ERY81rxVfMX
-         t0YnbGViXfrV4KMv+K8JCjXX2Umxf3EG6se5VahnO+sojLVkhb72ZPlmyYjv/MVS83/7
-         pDnsuqONWrC9lc6iU+uBUfm6bXwNoJi47d5lM=
-Message-ID: <8db1092f0808220350wc56af7di5c5e1c2eb2421249@mail.gmail.com>
-Date: Fri, 22 Aug 2008 12:50:06 +0200
-From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [2.6.26.*] boot problem (ahci/irq related?)
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, "Jeff Garzik" <jgarzik@pobox.com>,
-       tj@kernel.org, andi@firstfloor.org,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>
-In-Reply-To: <200808221210.59560.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8db1092f0808111312x3baf819bxbb05030c05693065@mail.gmail.com>
-	 <200808211445.46467.rjw@sisk.pl>
-	 <8db1092f0808220158k742c6429y5f8ee48d5eb61a30@mail.gmail.com>
-	 <200808221210.59560.rjw@sisk.pl>
+	Fri, 22 Aug 2008 06:52:02 -0400
+X-IronPort-AV: E=Sophos;i="4.32,251,1217822400"; 
+   d="scan'208";a="16925822"
+From: Alex Nixon <alex.nixon@citrix.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Alex Nixon <alex.nixon@citrix.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 2/5] x86_32:  Clean up play_dead.
+Date: Fri, 22 Aug 2008 11:52:12 +0100
+Message-Id: <1219402335-29773-2-git-send-email-alex.nixon@citrix.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1219402335-29773-1-git-send-email-alex.nixon@citrix.com>
+References: <>
+ <1219402335-29773-1-git-send-email-alex.nixon@citrix.com>
+X-OriginalArrivalTime: 22 Aug 2008 10:51:53.0431 (UTC) FILETIME=[168C2E70:01C90445]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/22 Rafael J. Wysocki <rjw@sisk.pl>:
+The removal of the CPU from the various maps was redundant as it already happened in cpu_disable.
 
->> http://unixy.pl/maciek/download/kernel/2.6.27-rc3/dmesg-2.6.27-rc3.txt
->
-> This doesn't look like the same configuration as in the picture you
-> sent previously.  In particular, the ICH7 lines are missing.
->
-> Thanks,
-> Rafael
->
+After cleaning this up, cpu_uninit only resets the tlb state, so rename it and create a noop version for the X86_64 case (so the two play_deads can be unified later).
 
-I'm sorry, I boot wrong kernel. This is correct:
-http://unixy.pl/maciek/download/kernel/dupa/dmesg-2.6.26-rc2-initcall_debug.txt
+Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/cpu/common.c |    6 +-----
+ arch/x86/kernel/process_32.c |   17 ++++-------------
+ include/asm-x86/smp.h        |    7 ++++++-
+ 3 files changed, 11 insertions(+), 19 deletions(-)
 
-
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index d3bc82f..531e054 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -755,14 +755,10 @@ void __cpuinit cpu_init(void)
+ 	xsave_init();
+ }
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-void __cpuinit cpu_uninit(void)
++void reset_lazy_tlbstate(void)
+ {
+ 	int cpu = raw_smp_processor_id();
+-	cpu_clear(cpu, cpu_initialized);
+ 
+-	/* lazy TLB state */
+ 	per_cpu(cpu_tlbstate, cpu).state = 0;
+ 	per_cpu(cpu_tlbstate, cpu).active_mm = &init_mm;
+ }
+-#endif
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index ae376af..c4abfab 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -77,26 +77,17 @@ unsigned long thread_saved_pc(struct task_struct *tsk)
+ #ifdef CONFIG_HOTPLUG_CPU
+ #include <asm/nmi.h>
+ 
+-static void cpu_exit_clear(void)
++/* We don't actually take CPU down, just spin without interrupts. */
++void native_play_dead(void)
+ {
+ 	int cpu = raw_smp_processor_id();
+ 
+ 	idle_task_exit();
+ 
+-	cpu_uninit();
+-	irq_ctx_exit(cpu);
++	reset_lazy_tlbstate();
+ 
+-	cpu_clear(cpu, cpu_callout_map);
+-	cpu_clear(cpu, cpu_callin_map);
+-
+-	numa_remove_cpu(cpu);
+-}
++	irq_ctx_exit(cpu);
+ 
+-/* We don't actually take CPU down, just spin without interrupts. */
+-void native_play_dead(void)
+-{
+-	/* This must be done before dead CPU ack */
+-	cpu_exit_clear();
+ 	mb();
+ 	/* Ack it */
+ 	__get_cpu_var(cpu_state) = CPU_DEAD;
+diff --git a/include/asm-x86/smp.h b/include/asm-x86/smp.h
+index cb1d51d..dba14d3 100644
+--- a/include/asm-x86/smp.h
++++ b/include/asm-x86/smp.h
+@@ -226,7 +226,12 @@ static inline int hard_smp_processor_id(void)
+ #endif /* CONFIG_X86_LOCAL_APIC */
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-extern void cpu_uninit(void);
++#ifdef CONFIG_X86_32
++extern void reset_lazy_tlbstate(void);
++#else
++static inline void reset_lazy_tlbstate(void)
++{ }
++#endif /* CONFIG_X86_32 */
+ #endif
+ 
+ #endif /* __ASSEMBLY__ */
 -- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+1.5.4.3
+
