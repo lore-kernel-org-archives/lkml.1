@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbYHVBiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbYHVBkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755247AbYHVBiQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 21:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYHVBh7
+	id S1755992AbYHVBkk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 21:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbYHVBkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 21:37:59 -0400
-Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:22751 "HELO
-	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751638AbYHVBh7 (ORCPT
+	Thu, 21 Aug 2008 21:40:32 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:28315 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751740AbYHVBkb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 21:37:59 -0400
+	Thu, 21 Aug 2008 21:40:31 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=dkH75wlXw2clZ4zCuI7Re5iZDEEDUvHYWjOgJdI/+yxlN6VF3/qPEASkX43PrTw7LwN50j45b3RpktD6mg3CEck4SdB+bPyM1QJy2wf3A+Oyz0WcSW+8d1nMbOeMHkl7prNs1jh1xuY1Lhwa+5BXySs/8JnfH69pnd2D5kD3u9g=  ;
-X-YMail-OSG: k31MPxQVM1niW.FlSt12tUWEOrLlJSEtdgVUN19Zwx1gcekJkAXCq0JFGY7rVRpVOSrHFZkEUR77o8.RlAA89NjI9VgNsZzQJSPJQLBhwR4aASYt6lRhIa3_Ah6rUJZ5y1E01ugFiKwW8K0igyl5n3c7
+  b=BMcXL1Tk7CR2U8c/NIvb/dgMKQwfXG1vlr3X0dCqSM539IVKwxo0fqU4/g6vDrCxFXpJEjmxVY3TvMUHjG0uJAs3VOFzABq77/ScEcZyP6KSahLFa/hID7y8fBdsMYd4tuUGafKUcyYZH270+NgULyULTccdgx8n4NE/VqwZZ5s=  ;
+X-YMail-OSG: p7OtRbUVM1lPeMEaA56EF1xTsN_ZiPooQvy7GY6zcSj1LODxgKRlzCXvBN9S94TGtWe7CxaT.wC9N141HxOljr1p0lPvRlB43QD_crXqGXcQ0sCGFSyX7QldSTqmGCQC7A67PxcSvMerHFzoD6Fz_Ej7
 X-Yahoo-Newman-Property: ymail-3
 From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Subject: Re: [ANNOUNCE] mdb: Merkey's Linux Kernel Debugger  2.6.27-rc4 released
-Date: Fri, 22 Aug 2008 11:37:50 +1000
+Date: Fri, 22 Aug 2008 11:40:24 +1000
 User-Agent: KMail/1.9.5
-Cc: jmerkey@wolfmountaingroup.com, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       paulmck@linux.vnet.ibm.com, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org,
+Cc: jmerkey@wolfmountaingroup.com, paulmck@linux.vnet.ibm.com,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        David Howells <dhowells@redhat.com>
-References: <200808210250.m7L2obNX028353@wolfmountaingroup.com> <200808212337.38626.nickpiggin@yahoo.com.au> <48ADD8DE.3010209@goop.org>
-In-Reply-To: <48ADD8DE.3010209@goop.org>
+References: <200808210250.m7L2obNX028353@wolfmountaingroup.com> <200808212337.38626.nickpiggin@yahoo.com.au> <48AD7705.2000404@s5r6.in-berlin.de>
+In-Reply-To: <48AD7705.2000404@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808221137.50509.nickpiggin@yahoo.com.au>
+Message-Id: <200808221140.25029.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 August 2008 07:06, Jeremy Fitzhardinge wrote:
+On Friday 22 August 2008 00:09, Stefan Richter wrote:
 > Nick Piggin wrote:
 > > On Thursday 21 August 2008 22:26, jmerkey@wolfmountaingroup.com wrote:
-> >> I used the smp_wmb() functions.  I noted a couple of things.  a) some of
-> >> these macros just emit __asm__ __volatile__ into the code so why not
-> >> just say "volatile" to begin with
+> >> It's simple to reproduce.  Take away the volatile declaration for the
+> >> rlock_t structure in mdb-ia32.c (rlock_t debug_lock) in all code
+> >> references and watch the thing lock up in SMP with multiple processors
+> >> in the debugger each stuck with their own local copy of debug_lock.
 > >
-> > It is not the same as volatile type. What it does is tell the compiler
-> > to clobber all registers or temporaries. This something pretty well
-> > defined and hard to get wrong compared to volatile type.
+> > You should disable preempt before getting the processor id. Can't see any
+> > other possible bugs, but you should be able to see from the disassembly
+> > pretty easily.
 >
-> No, that's not what "asm volatile" means.  Its *only* meaning is "emit
-> this, even if it doesn't look like it has side-effects and its results
-> are not used".  An asm() with no outputs is "volatile" by default, which
-> makes most of the uses of "asm volatile" in the kernel redundant.  "asm
-> volatile" also has no effect on the ordering of the asm with respect to
-> other code; you must use constraints to do that.
->
-> An asm with a "memory" clobber is sufficient to make sure that gcc
-> doesn't cache memory values in registers; perhaps that's what you mean.
+> debug_lock() is AFAICS only called from contexts which have preemption
+> disabled.  Last time around I recommended to Jeff to document this
+> requirement on the calling context.
 
-That is what I meant, yes.
+I'm not talking about where debug_lock gets called, I'm talking about
+where the processor id is derived that eventually filters down to
+debug_lock.
+
+> But even though preemption is disabled, debug_lock() is still incorrect
+> as I mentioned in my other post a minute ago.  It corrupts its .flags
+> and .count members.  (Or maybe it coincidentally doesn't as long as
+> volatile is around.)
+
+I don't think so. And flags should only be restored by the processor
+that saved it because the spinlock should disable preemption, right?
