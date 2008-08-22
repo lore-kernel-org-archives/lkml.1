@@ -1,71 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbYHVVXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbYHVVY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758898AbYHVVXn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 17:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbYHVVXd
+	id S1759117AbYHVVY2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 17:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbYHVVYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 17:23:33 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:46099 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753508AbYHVVXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 17:23:32 -0400
-Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Ian Campbell <ijc@hellion.org.uk>
-Cc: John Ronciak <john.ronciak@gmail.com>, Grant Coady <gcoady.lk@gmail.com>,
-       linux-kernel@vger.kernel.org, neilb@suse.de, bfields@fieldses.org,
-       linux-nfs@vger.kernel.org, Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       e1000-devel@lists.sourceforge.net
-In-Reply-To: <1219435207.27921.51.camel@localhost.localdomain>
-References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com>
-	 <1219087258.7192.19.camel@localhost>
-	 <1219400624.18774.67.camel@zakaz.uk.xensource.com>
-	 <1219428489.6919.21.camel@localhost>
-	 <1219428818.27921.43.camel@localhost.localdomain>
-	 <56a8daef0808221233h68853587n6015ca7d809b17e1@mail.gmail.com>
-	 <1219435207.27921.51.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 22 Aug 2008 14:23:22 -0700
-Message-Id: <1219440202.9097.14.camel@localhost>
+	Fri, 22 Aug 2008 17:24:06 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:28798 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756211AbYHVVYE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 17:24:04 -0400
+Date: Fri, 22 Aug 2008 14:23:00 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, trivial@kernel.org
+Subject: Re: [Patch] Trivial: fix "*er then" typos
+Message-Id: <20080822142300.6654e4dd.randy.dunlap@oracle.com>
+In-Reply-To: <20080822160222.GF3053@hack.voiplan.pt>
+References: <20080822160222.GF3053@hack.voiplan.pt>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 8CED00EFD0D45DD5B651E2975D5FF512EC913A40
-X-UiO-SPAM-Test: remote_host: 198.95.226.240 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 5 max/h 2 blacklist 0 greylist 0 ratelimit 0
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-22 at 21:00 +0100, Ian Campbell wrote:
-> On Fri, 2008-08-22 at 12:33 -0700, John Ronciak wrote:
-> > On Fri, Aug 22, 2008 at 11:13 AM, Ian Campbell <ijc@hellion.org.uk> wrote:
-> > 
-> > >> That's probably also a networking device driver issue candidate: your
-> > >> RPC task is queued up waiting to be sent.
-> > >>
-> > >> What networking card+device driver are you using here?
-> > >
-> > > # ethtool -i eth0
-> > > driver: e1000
-> > > version: 7.3.20-k2-NAPI
-> > > firmware-version: N/A
-> > > bus-info: 0000:01:0a.0
-> > There is nothing indicating that the NIC/driver is causing any sort of
-> > problem here, at least not with what has been presented so far.  When
-> > the NFS mount isn't working is the networking still active and
-> > working?
+On Fri, 22 Aug 2008 17:02:22 +0100 WANG Cong wrote:
+
 > 
-> So far as I can tell, yes. I can login via ssh so long as the user
-> doesn't have NFS $HOME, I haven't tried much else and the box isn't
-> locked up at the moment, I'd bet it's fine though.
+> Obviously, these "*er then" should be "*er than".
+> 
+> Signed-off-by: WANG Cong <wangcong@zeuux.org>
+> Cc: trivial@kernel.org
 
-...and the server? Something is preventing that RPC payload from being
-delivered...
+Mostly good...
 
-Trond
 
+> diff --git a/drivers/media/video/usbvideo/ibmcam.c b/drivers/media/video/usbvideo/ibmcam.c
+> index 59166b7..caf4306 100644
+> --- a/drivers/media/video/usbvideo/ibmcam.c
+> +++ b/drivers/media/video/usbvideo/ibmcam.c
+> @@ -488,7 +488,7 @@ static enum ParseState ibmcam_parse_lines(
+>  	 * Now we are sure that entire line (representing all 'scanLength'
+>  	 * pixels from the camera) is available in the buffer. We
+>  	 * start copying the line left-aligned to the V4L buffer.
+> -	 * If the camera line is shorter then we should pad the V4L
+> +	 * If the camera line is shorter than we should pad the V4L
+
+This one should remain as "then".
+
+>  	 * buffer with something (black) to complete the line.
+>  	 */
+>  	assert(frame->data != NULL);
+> @@ -703,7 +703,7 @@ static enum ParseState ibmcam_model2_320x240_parse_lines(
+>  	 * pixels from the camera) is available in the scratch buffer. We
+>  	 * start copying the line left-aligned to the V4L buffer (which
+>  	 * might be larger - not smaller, hopefully). If the camera
+> -	 * line is shorter then we should pad the V4L buffer with something
+> +	 * line is shorter than we should pad the V4L buffer with something
+
+ditto.
+
+>  	 * (black in this case) to complete the line.
+>  	 */
+>  	f = frame->data + (v4l_linesize * frame->curline);
+
+> diff --git a/fs/ubifs/shrinker.c b/fs/ubifs/shrinker.c
+> index f248533..bfe0920 100644
+> --- a/fs/ubifs/shrinker.c
+> +++ b/fs/ubifs/shrinker.c
+> @@ -65,7 +65,7 @@ atomic_long_t ubifs_clean_zn_cnt;
+>   * @contention: if any contention, this is set to %1
+>   *
+>   * This function traverses TNC tree and frees clean znodes. It does not free
+> - * clean znodes which younger then @age. Returns number of freed znodes.
+> + * clean znodes which younger than @age. Returns number of freed znodes.
+
+                   which are younger
+
+>   */
+>  static int shrink_tnc(struct ubifs_info *c, int nr, int age, int *contention)
+>  {
+
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
