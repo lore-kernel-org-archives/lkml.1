@@ -1,226 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbYHVTKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756635AbYHVTKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756185AbYHVTKP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 15:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbYHVTKD
+	id S1756635AbYHVTKv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 15:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbYHVTKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 15:10:03 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48878 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751004AbYHVTKA (ORCPT
+	Fri, 22 Aug 2008 15:10:06 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:63820 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753320AbYHVTKE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 15:10:00 -0400
-Date: Fri, 22 Aug 2008 12:08:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Karen Xie <kxie@chelsio.com>
-Cc: netdev@vger.kernel.org, open-iscsi@googlegroups.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com, davem@davemloft.net, michaelc@cs.wisc.edu,
-       swise@opengridcomputing.com, rdreier@cisco.com, daisyc@us.ibm.com,
-       wenxiong@us.ibm.com, bhua@us.ibm.com, divy@chelsio.com, dm@chelsio.com,
-       leedom@chelsio.com, kxie@chelsio.com
-Subject: Re: [PATCH 1/4 2.6.28] cxgb3 - manage a private ip address for
- iSCSI
-Message-Id: <20080822120851.c45a90f2.akpm@linux-foundation.org>
-In-Reply-To: <200808221838.m7MIcW6a004400@localhost.localdomain>
-References: <200808221838.m7MIcW6a004400@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 22 Aug 2008 15:10:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=NEhY/V2o8wmPUXa8NI1+ho3je1X6sYUfU96bCWy2mnHs3K2XBuVJztOLrLECUXztWB
+         FcvaJXDmCt059Ha2bHRxMIQLUrXSfAsVDtrqNiZ7cUdPDRVsflvTpecTQwrT33T/saZz
+         EAHwP2sFT4QQPk3Gufe5HSsMU0g9civgGqTT4=
+Message-ID: <86802c440808221210x40057476p5566d0dc82032608@mail.gmail.com>
+Date: Fri, 22 Aug 2008 12:10:04 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Robert Richter" <robert.richter@amd.com>
+Subject: Re: [PATCH] x86: fix: make PCI ECS for AMD CPUs hotplug capable
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Jan Beulich" <jbeulich@novell.com>
+In-Reply-To: <20080822190724.GB14103@erda.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48AD82D5.76E4.0078.0@novell.com>
+	 <1219429418-29023-2-git-send-email-robert.richter@amd.com>
+	 <86802c440808221156h7ef48973hb5db8cf2b01ac27b@mail.gmail.com>
+	 <20080822190724.GB14103@erda.amd.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Aug 2008 11:38:32 -0700
-Karen Xie <kxie@chelsio.com> wrote:
+On Fri, Aug 22, 2008 at 12:07 PM, Robert Richter <robert.richter@amd.com> wrote:
+> On 22.08.08 11:56:08, Yinghai Lu wrote:
+>
+> [...]
+>
+>> > +static int __init pci_io_ecs_init(void)
+>> > +{
+>> > +       int cpu;
+>> > +
+>> >        /* assume all cpus from fam10h have IO ECS */
+>> >         if (boot_cpu_data.x86 < 0x10)
+>> >                return 0;
+>> > -       on_each_cpu(enable_pci_io_ecs_per_cpu, NULL, 1);
+>> > +
+>> > +       register_cpu_notifier(&amd_cpu_notifier);
+>> > +       for_each_online_cpu(cpu)
+>> > +               amd_cpu_notify(&amd_cpu_notifier, (unsigned long)CPU_ONLINE,
+>> > +                              (void *)(long)cpu);
+>>
+>> wonder if those two lines should be reversed.
+>
+> Do you mean setting PCI_HAS_IO_ECS before for_each_online_cpu(...)?
+> PCI_HAS_IO_ECS will be used only in pci_direct_init(). PCI is
+> initialized in a later init stage, so it doesn't matter. My intention
+> was to set the bit after the setup of all online cpus is finished.
 
-> [PATCH 1/4 2.6.28] cxgb3 - manage a private ip address for iSCSI
-> 
-> From: Karen Xie <kxie@chelsio.com>
-> 
-> Create a per port sysfs entry to pass an IP address to the NIC driver, and a control call for the iSCSI driver to grab it.
-> The IP address is required in both drivers to manage ARP requests and connection set up.
-> 
-> Signed-off-by: Divy Le Ray <divy@chelsio.com>
-> ---
-> 
->  drivers/net/cxgb3/adapter.h        |    1 +
->  drivers/net/cxgb3/cxgb3_ctl_defs.h |    7 ++++
->  drivers/net/cxgb3/cxgb3_main.c     |   65 ++++++++++++++++++++++++++++++++++++
->  drivers/net/cxgb3/cxgb3_offload.c  |    6 +++
->  4 files changed, 79 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/net/cxgb3/adapter.h b/drivers/net/cxgb3/adapter.h
-> index 2711404..0e4fe95 100644
-> --- a/drivers/net/cxgb3/adapter.h
-> +++ b/drivers/net/cxgb3/adapter.h
-> @@ -64,6 +64,7 @@ struct port_info {
->  	struct link_config link_config;
->  	struct net_device_stats netstats;
->  	int activity;
-> +	__be32 iscsi_ipaddr;
->  };
->  
->  enum {				/* adapter flags */
-> diff --git a/drivers/net/cxgb3/cxgb3_ctl_defs.h b/drivers/net/cxgb3/cxgb3_ctl_defs.h
-> index 6ad9240..e171aa8 100644
-> --- a/drivers/net/cxgb3/cxgb3_ctl_defs.h
-> +++ b/drivers/net/cxgb3/cxgb3_ctl_defs.h
-> @@ -57,6 +57,7 @@ enum {
->  	RDMA_GET_MIB		= 19,
->  
->  	GET_RX_PAGE_INFO	= 50,
-> +	GET_ISCSI_IPADDR	= 51,
->  };
->  
->  /*
-> @@ -86,6 +87,12 @@ struct iff_mac {
->  	u16 vlan_tag;
->  };
->  
-> +/* Structure used to request a port's iSCSI IP address */
-> +struct iscsi_ipaddr {
-> +	struct net_device *dev;		/* the net_device */
-> +	__be32 ipaddr;			/* the return iSCSI IP address */
-> +};
-> +
->  struct pci_dev;
->  
->  /*
-> diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-> index 5447f3e..1c8952c 100644
-> --- a/drivers/net/cxgb3/cxgb3_main.c
-> +++ b/drivers/net/cxgb3/cxgb3_main.c
-> @@ -687,6 +687,66 @@ static struct attribute *offload_attrs[] = {
->  
->  static struct attribute_group offload_attr_group = {.attrs = offload_attrs };
->  
-> +static ssize_t iscsi_ipaddr_attr_show(struct device *d,
-> +				      char *buf)
 
-could fit in a single 80-col line.
+==>
++       for_each_online_cpu(cpu)
++               amd_cpu_notify(&amd_cpu_notifier, (unsigned long)CPU_ONLINE,
++                              (void *)(long)cpu);
++       register_cpu_notifier(&amd_cpu_notifier);
 
-> +{
-> +	struct port_info *pi = netdev_priv(to_net_dev(d));
-> +	__be32 a = ntohl(pi->iscsi_ipaddr);
-> +
-> +	return sprintf(buf, "%d.%d.%d.%d\n",
-> +		       (a >> 24) & 0xff,
-> +		       (a >> 16) & 0xff,
-> +		       (a >>  8) & 0xff,
-> +		       (a >>  0) & 0xff);
-
-Use NIPQUAD and NIPQUAD_FMT here?
-
-> +}
-> +
-> +static ssize_t iscsi_ipaddr_attr_store(struct device *d,
-> +				       const char *buf, size_t len)
-> +{
-> +	struct port_info *pi = netdev_priv(to_net_dev(d));
-> +	__be32 a = 0;
-
-There's not really any need to use __be32 in kernel code.  Plain old
-be23 is fine.
-
-> +	unsigned long octet;
-> +	const char *parse = buf;
-> +	char *endp;
-> +	int i;
-> +
-> +	for (i = 1; i <= 4; i++) {
-> +		octet = simple_strtoul(parse, &endp, 10);
-> +		if (endp == buf || octet > 255 ||
-> +		    (i < 4 && *endp != '.') ||
-> +		    (i == 4 && *endp != '\0' && *endp != '\n'))
-> +			return -EINVAL;
-> +		a = (a << 8) | octet;
-> +		parse = endp+1;
-> +	}
-> +	pi->iscsi_ipaddr = htonl(a);
-> +	return endp-buf;
-> +}
-
-This appears to be taking a dotted quad ipv4 address in ascii form,
-turning it into a u32 while performing checking?
-
-Surely we have a library function somewhere in networking which does
-this?  If not, I'd suggest writing one. 
-
-> +#define ISCSI_IPADDR_ATTR(name) \
-> +static ssize_t show_##name(struct device *d, struct device_attribute *attr, \
-> +			   char *buf) \
-> +{ \
-> +	return iscsi_ipaddr_attr_show(d, buf); \
-> +} \
-> +static ssize_t store_##name(struct device *d, struct device_attribute *attr, \
-> +                            const char *buf, size_t len) \
-> +{ \
-> +	return iscsi_ipaddr_attr_store(d, buf, len); \
-> +} \
-> +static DEVICE_ATTR(name, S_IRUGO | S_IWUSR, show_##name, store_##name)
-> +
-> +ISCSI_IPADDR_ATTR(iscsi_ipaddr);
-> +
-> +static struct attribute *iscsi_offload_attrs[] = {
-> +	&dev_attr_iscsi_ipaddr.attr,
-> +	NULL
-> +};
-> +
-> +static struct attribute_group iscsi_offload_attr_group = {
-> +        .attrs = iscsi_offload_attrs
-> +};
-> +
->  /*
->   * Sends an sk_buff to an offload queue driver
->   * after dealing with any active network taps.
-> @@ -1078,6 +1138,7 @@ static int cxgb_open(struct net_device *dev)
->  		if (err)
->  			printk(KERN_WARNING
->  			       "Could not initialize offload capabilities\n");
-> +		sysfs_create_group(&dev->dev.kobj, &iscsi_offload_attr_group);
->  	}
->  
->  	link_start(dev);
-> @@ -1100,6 +1161,9 @@ static int cxgb_close(struct net_device *dev)
->  	netif_carrier_off(dev);
->  	t3_mac_disable(&pi->mac, MAC_DIRECTION_TX | MAC_DIRECTION_RX);
->  
-> +        if (is_offload(adapter) && !ofld_disable)
-> +		sysfs_remove_group(&dev->dev.kobj, &iscsi_offload_attr_group);
-> +
->  	spin_lock(&adapter->work_lock);	/* sync with update task */
->  	clear_bit(pi->port_id, &adapter->open_device_map);
->  	spin_unlock(&adapter->work_lock);
-> @@ -2681,6 +2745,7 @@ static int __devinit init_one(struct pci_dev *pdev,
->  		pi->first_qset = i;
->  		pi->activity = 0;
->  		pi->port_id = i;
-> +		pi->iscsi_ipaddr = 0;
->  		netif_carrier_off(netdev);
->  		netdev->irq = pdev->irq;
->  		netdev->mem_start = mmio_start;
-> diff --git a/drivers/net/cxgb3/cxgb3_offload.c b/drivers/net/cxgb3/cxgb3_offload.c
-> index c5b3de1..d5687dc 100644
-> --- a/drivers/net/cxgb3/cxgb3_offload.c
-> +++ b/drivers/net/cxgb3/cxgb3_offload.c
-> @@ -407,6 +407,12 @@ static int cxgb_offload_ctl(struct t3cdev *tdev, unsigned int req, void *data)
->  		rx_page_info->page_size = tp->rx_pg_size;
->  		rx_page_info->num = tp->rx_num_pgs;
->  		break;
-> +	case GET_ISCSI_IPADDR: {
-> +		struct iscsi_ipaddr *p = data;
-> +		struct port_info *pi = netdev_priv(p->dev);
-> +		p->ipaddr = pi->iscsi_ipaddr;
-> +		break;
-> +	}
->  	default:
->  		return -EOPNOTSUPP;
->  	}
-
-I'm wondering about ipv6.  Will it never ever be supported?
-
-Even if not, it would perhaps be clearer if this was called
-GET_ISCSI_IPV4ADDR?
-
+YH
