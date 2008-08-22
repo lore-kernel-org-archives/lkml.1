@@ -1,87 +1,311 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758850AbYHVVRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756464AbYHVVSF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758850AbYHVVRn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 17:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbYHVVRc
+	id S1756464AbYHVVSF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 17:18:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758199AbYHVVRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 17:17:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37712 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754518AbYHVVRb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 17:17:31 -0400
-Date: Fri, 22 Aug 2008 14:16:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Junio C Hamano <gitster@pobox.com>
-Cc: pasky@suse.cz, Alan.Brunelle@hp.com, linux-kernel@vger.kernel.org,
-       git@vger.kernel.org
-Subject: Re: Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-Message-Id: <20080822141651.fe16ed99.akpm@linux-foundation.org>
-In-Reply-To: <7v7ia8ahgu.fsf@gitster.siamese.dyndns.org>
-References: <48A36838.3050309@hp.com>
-	<20080819124602.9e8e69f7.akpm@linux-foundation.org>
-	<48AEDD3D.4060507@hp.com>
-	<20080822092549.ddcb7e79.akpm@linux-foundation.org>
-	<20080822171651.GP10544@machine.or.cz>
-	<20080822105136.a8432875.akpm@linux-foundation.org>
-	<7v7ia8ahgu.fsf@gitster.siamese.dyndns.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 22 Aug 2008 17:17:49 -0400
+Received: from const.mimas.ru ([88.200.217.78]:49610 "EHLO const.mimas.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758867AbYHVVRr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 17:17:47 -0400
+X-Greylist: delayed 569 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Aug 2008 17:17:47 EDT
+Message-ID: <48AF2ABF.8080901@const.mimas.ru>
+Date: Sat, 23 Aug 2008 02:08:15 +0500
+From: Constantin Baranov <const@const.mimas.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.16) Gecko/20080805 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH 2.6.27-rc3] led: driver for LEDs on PCEngines ALIX.2 and
+ ALIX.3 boards
+References: <48AB019D.6080302@const.mimas.ru> <20080822115150.6b3907a4.akpm@linux-foundation.org>
+In-Reply-To: <20080822115150.6b3907a4.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Aug 2008 14:05:21 -0700
-Junio C Hamano <gitster@pobox.com> wrote:
-
-> Andrew Morton <akpm@linux-foundation.org> writes:
+Andrew Morton wrote:
+> How's this look?
 > 
-> > On Fri, 22 Aug 2008 19:16:51 +0200
-> > Petr Baudis <pasky@suse.cz> wrote:
-> >
-> >> On Fri, Aug 22, 2008 at 09:25:49AM -0700, Andrew Morton wrote:
-> > ...
-> >> > urgh, it's irritating when git-bisect directs you to a merge commit - it
-> >> > hasn't done it for me for ages.
-> >> 
-> >> Hmm, but doesn't that happen only when it's actually really the merge
-> >> commit that introduces the bug? Both parents of the merge commit were
-> >> marked as good by the user, so...
-> >
-> > A merge commit doesn't contain any kernel changes?  It's the individual
-> > commits (aka "patches") which were in that merge which broke stuff. 
-> > Confused.
-> >
-> > We're trying to dive inside that merge commit to find out which of the
-> > real commits caused the regression.
+> From: Andrew Morton <akpm@linux-foundation.org>
 > 
-> You may find neither parents were buggy, but the result of the merge is.
+> - cleanups
 > 
-> A trivial example is when one branch changes the semantics of an existing
-> function and converts all the call sites to the updated semantics, while
-> the other branch adds a new call site that still relies on the old
-> behaviour of that function.  The merge most likely won't textually
-> conflict, and neither git merge nor quilt patch would report conflicts,
-> but the end result is that the new call site added by the latter branch
-> now gets an unexpected outcome from the function and can misbehave.  You
-> cannot blame the breakage to either branch for such a breakage.
+> - fix off-by-one on error path
+> 
+> Cc: Constantin Baranov <const@tltsu.ru>
+> Cc: Richard Purdie <rpurdie@rpsys.net>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  drivers/leds/leds-alix.c |    9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
+> 
+> diff -puN drivers/leds/leds-alix.c~led-driver-for-leds-on-pcengines-alix2-and-alix3-boards-fix drivers/leds/leds-alix.c
+> --- a/drivers/leds/leds-alix.c~led-driver-for-leds-on-pcengines-alix2-and-alix3-boards-fix
+> +++ a/drivers/leds/leds-alix.c
+> @@ -4,7 +4,7 @@
+>   * Copyright (C) 2008 Constantin Baranov <const@tltsu.ru>
+>   */
+>  
+> -#include <asm/io.h>
+> +#include <linux/io.h>
+>  #include <linux/err.h>
+>  #include <linux/kernel.h>
+>  #include <linux/leds.h>
+> @@ -22,6 +22,7 @@ static void alix_led_set(struct led_clas
+>  {
+>  	struct alix_led *led_dev =
+>  		container_of(led_cdev, struct alix_led, cdev);
+> +
+>  	if (brightness)
+>  		outl(led_dev->on_value, led_dev->port);
+>  	else
+> @@ -63,6 +64,7 @@ static struct alix_led alix_leds[] = {
+>  static int alix_led_suspend(struct platform_device *dev, pm_message_t state)
+>  {
+>  	int i;
+> +
+>  	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
+>  		led_classdev_suspend(&alix_leds[i].cdev);
+>  	return 0;
+> @@ -71,6 +73,7 @@ static int alix_led_suspend(struct platf
+>  static int alix_led_resume(struct platform_device *dev)
+>  {
+>  	int i;
+> +
+>  	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
+>  		led_classdev_resume(&alix_leds[i].cdev);
+>  	return 0;
+> @@ -92,7 +95,7 @@ static int __init alix_led_probe(struct 
+>  		ret = led_classdev_register(&pdev->dev, &alix_leds[i].cdev);
+>  
+>  	if (ret < 0) {
+> -		for (i = i - 2; i >= 0; i--)
+> +		while (--i >= 0)
+>  			led_classdev_unregister(&alix_leds[i].cdev);
+>  	}
 
-Sure, but
+At the first iteration this while-loop will attempt to unregister
+device that has failed and thus is not registered.
+My for-loop starts from device immediately before failed one.
+Note that probe routine originates from leds-ams-delta.c.
 
-a) whoever added a change like that without also causing the build to
-   break is slappable and
+>  
+> @@ -102,6 +105,7 @@ static int __init alix_led_probe(struct 
+>  static int alix_led_remove(struct platform_device *pdev)
+>  {
+>  	int i;
+> +
+>  	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
+>  		led_classdev_unregister(&alix_leds[i].cdev);
+>  	return 0;
+> @@ -122,6 +126,7 @@ static struct platform_device *pdev;
+>  static int __init alix_led_init(void)
+>  {
+>  	int ret;
+> +
+>  	pdev = platform_device_register_simple(KBUILD_MODNAME, -1, NULL, 0);
+>  	if (!IS_ERR(pdev)) {
+>  		ret = platform_driver_probe(&alix_led_driver, alix_led_probe);
+> _
+> 
 
-b) there are now two commits (one in each branch) either one of
-   which, when applied on top of the other branch will introduce the
-   regression.
+I have fixed header and whitespaces.
 
-   That's useful infomation, but we don't know how to get
-   git-bisect to give it to us.
+From: Constantin Baranov <const@tltsu.ru>
 
+Driver for LEDs on PCEngines ALIX.2 and ALIX.3 system boards.
 
-It's pretty simple.  If git-bisect tells us that the regression was
-introduced by a merge commit, we want to perform a bisection within
-that merge's individual commits.
+Signed-off-by: Constantin Baranov <const@tltsu.ru>
+---
+ drivers/leds/Kconfig     |    6 +
+ drivers/leds/Makefile    |    1 
+ drivers/leds/leds-alix.c |  151 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 158 insertions(+)
 
+diff -uprN linux-2.6.27-rc3/drivers/leds/Kconfig linux-2.6.27-rc3-alix/drivers/leds/Kconfig
+--- linux-2.6.27-rc3/drivers/leds/Kconfig	2008-08-19 20:14:06.355647765 +0500
++++ linux-2.6.27-rc3-alix/drivers/leds/Kconfig	2008-08-19 20:20:08.023147125 +0500
+@@ -77,6 +77,12 @@ config LEDS_WRAP
+ 	help
+ 	  This option enables support for the PCEngines WRAP programmable LEDs.
+ 
++config LEDS_ALIX
++	tristate "LED support for ALIX series"
++	depends on LEDS_CLASS && X86
++	help
++	  This option enables support for the PCEngines ALIX.2 and ALIX.3 LEDs.
++
+ config LEDS_H1940
+ 	tristate "LED Support for iPAQ H1940 device"
+ 	depends on LEDS_CLASS && ARCH_H1940
+diff -uprN linux-2.6.27-rc3/drivers/leds/leds-alix.c linux-2.6.27-rc3-alix/drivers/leds/leds-alix.c
+--- linux-2.6.27-rc3/drivers/leds/leds-alix.c	1970-01-01 04:00:00.000000000 +0400
++++ linux-2.6.27-rc3-alix/drivers/leds/leds-alix.c	2008-08-19 21:59:05.207153570 +0500
+@@ -0,0 +1,151 @@
++/*
++ * LEDs driver for PCEngines ALIX.2 and ALIX.3
++ *
++ * Copyright (C) 2008 Constantin Baranov <const@tltsu.ru>
++ */
++
++#include <linux/err.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/leds.h>
++#include <linux/platform_device.h>
++
++struct alix_led {
++	struct led_classdev cdev;
++	unsigned short port;
++	unsigned int on_value;
++	unsigned int off_value;
++};
++
++static void alix_led_set(struct led_classdev *led_cdev,
++			 enum led_brightness brightness)
++{
++	struct alix_led *led_dev =
++		container_of(led_cdev, struct alix_led, cdev);
++
++	if (brightness)
++		outl(led_dev->on_value, led_dev->port);
++	else
++		outl(led_dev->off_value, led_dev->port);
++}
++
++static struct alix_led alix_leds[] = {
++	{
++		.cdev = {
++			.name = "alix:1",
++			.brightness_set = alix_led_set,
++		},
++		.port = 0x6100,
++		.on_value = 1 << 22,
++		.off_value = 1 << 6,
++	},
++	{
++		.cdev = {
++			.name = "alix:2",
++			.brightness_set = alix_led_set,
++		},
++		.port = 0x6180,
++		.on_value = 1 << 25,
++		.off_value = 1 << 9,
++	},
++	{
++		.cdev = {
++			.name = "alix:3",
++			.brightness_set = alix_led_set,
++		},
++		.port = 0x6180,
++		.on_value = 1 << 27,
++		.off_value = 1 << 11,
++	},
++};
++
++#ifdef CONFIG_PM
++
++static int alix_led_suspend(struct platform_device *dev, pm_message_t state)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
++		led_classdev_suspend(&alix_leds[i].cdev);
++	return 0;
++}
++
++static int alix_led_resume(struct platform_device *dev)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
++		led_classdev_resume(&alix_leds[i].cdev);
++	return 0;
++}
++
++#else
++
++#define alix_led_suspend NULL
++#define alix_led_resume NULL
++
++#endif
++
++static int __init alix_led_probe(struct platform_device *pdev)
++{
++	int i;
++	int ret = 0;
++
++	for (i = 0; i < ARRAY_SIZE(alix_leds) && ret >= 0; i++)
++		ret = led_classdev_register(&pdev->dev, &alix_leds[i].cdev);
++
++	if (ret < 0) {
++		for (i = i - 2; i >= 0; i--)
++			led_classdev_unregister(&alix_leds[i].cdev);
++	}
++
++	return ret;
++}
++
++static int alix_led_remove(struct platform_device *pdev)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
++		led_classdev_unregister(&alix_leds[i].cdev);
++	return 0;
++}
++
++static struct platform_driver alix_led_driver = {
++	.remove = alix_led_remove,
++	.suspend = alix_led_suspend,
++	.resume = alix_led_resume,
++	.driver = {
++		.name = KBUILD_MODNAME,
++		.owner = THIS_MODULE,
++	},
++};
++
++static struct platform_device *pdev;
++
++static int __init alix_led_init(void)
++{
++	int ret;
++
++	pdev = platform_device_register_simple(KBUILD_MODNAME, -1, NULL, 0);
++	if (!IS_ERR(pdev)) {
++		ret = platform_driver_probe(&alix_led_driver, alix_led_probe);
++		if (ret)
++			platform_device_unregister(pdev);
++	} else
++		ret = PTR_ERR(pdev);
++	return ret;
++}
++
++static void __exit alix_led_exit(void)
++{
++	platform_device_unregister(pdev);
++	platform_driver_unregister(&alix_led_driver);
++}
++
++module_init(alix_led_init);
++module_exit(alix_led_exit);
++
++MODULE_AUTHOR("Constantin Baranov <const@tltsu.ru>");
++MODULE_DESCRIPTION("PCEngines ALIX LED driver");
++MODULE_LICENSE("GPL");
+diff -uprN linux-2.6.27-rc3/drivers/leds/Makefile linux-2.6.27-rc3-alix/drivers/leds/Makefile
+--- linux-2.6.27-rc3/drivers/leds/Makefile	2008-08-19 20:14:06.365646999 +0500
++++ linux-2.6.27-rc3-alix/drivers/leds/Makefile	2008-08-19 20:20:22.485647344 +0500
+@@ -13,6 +13,7 @@ obj-$(CONFIG_LEDS_S3C24XX)		+= leds-s3c2
+ obj-$(CONFIG_LEDS_AMS_DELTA)		+= leds-ams-delta.o
+ obj-$(CONFIG_LEDS_NET48XX)		+= leds-net48xx.o
+ obj-$(CONFIG_LEDS_WRAP)			+= leds-wrap.o
++obj-$(CONFIG_LEDS_ALIX)			+= leds-alix.o
+ obj-$(CONFIG_LEDS_H1940)		+= leds-h1940.o
+ obj-$(CONFIG_LEDS_COBALT_QUBE)		+= leds-cobalt-qube.o
+ obj-$(CONFIG_LEDS_COBALT_RAQ)		+= leds-cobalt-raq.o
