@@ -1,66 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbYHVPhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753592AbYHVPtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754765AbYHVPhq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 11:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbYHVPhh
+	id S1753592AbYHVPtp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 11:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbYHVPtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 11:37:37 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:17943 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752574AbYHVPhh (ORCPT
+	Fri, 22 Aug 2008 11:49:35 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:46792 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751145AbYHVPte convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 11:37:37 -0400
-Message-ID: <48AEDD3D.4060507@hp.com>
-Date: Fri, 22 Aug 2008 11:37:33 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 22 Aug 2008 11:49:34 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Date: Fri, 22 Aug 2008 15:48:59 +0000
+Subject: RE: in 2.6.23-rc3-git7 in do_cciss_intr
+Thread-Topic: in 2.6.23-rc3-git7 in do_cciss_intr
+Thread-Index: AckD7dGoLeBMVVChQP6Fd7qIS0VZ2QAgLRyA
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A77883511810706@GVW0547EXC.americas.hpqcorp.net>
+References: <48AD02B2.7020004@oracle.com>
+	<0F5B06BAB751E047AB5C87D1F77A778835116209D3@GVW0547EXC.americas.hpqcorp.net>
+	<20080821084333.c471b439.randy.dunlap@oracle.com>
+	<0F5B06BAB751E047AB5C87D1F77A7788351181004C@GVW0547EXC.americas.hpqcorp.net>
+	<20080821091514.8f56e2d5.randy.dunlap@oracle.com>
+	<0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net>
+ <20080821172653.3e3e855c.randy.dunlap@oracle.com>
+In-Reply-To: <20080821172653.3e3e855c.randy.dunlap@oracle.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-References: <48A36838.3050309@hp.com> <20080819124602.9e8e69f7.akpm@linux-foundation.org>
-In-Reply-To: <20080819124602.9e8e69f7.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
 
-> 
-> You could confirm/debug it with something along the lines of this:
-> 
-> --- a/mm/vmalloc.c~a
-> +++ a/mm/vmalloc.c
-> @@ -214,7 +214,9 @@ __get_vm_area_node(unsigned long size, u
->  	unsigned long align = 1;
->  	unsigned long addr;
->  
-> -	BUG_ON(in_interrupt());
-> +	if (preempt_count() > 10)
-> +		printk("%s: preempt_count()=%d\n", __func__, preempt_count());
-> +	WARN_ON(in_interrupt());
->  	if (flags & VM_IOREMAP) {
->  		int bit = fls(size);
->  
-> _
-> 
-> 
-> But this bug could be in practically anywhere in the kernel and
-> bisection is by far the best way to find it.  It's sad and odd that
-> bisection landed you on a merge commit.  I'd suggest that you persist
-> with the bisection (please). 
-> http://www.kernel.org/doc/local/git-quick.html#example might be useful.
 
-Sorry, was off on other things for the last couple of days:
+> -----Original Message-----
+> From: Randy Dunlap [mailto:randy.dunlap@oracle.com]
+> Sent: Thursday, August 21, 2008 7:27 PM
+> To: Miller, Mike (OS Dev)
+> Cc: lkml; scsi; akpm
+> Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
+>
+> On Thu, 21 Aug 2008 16:25:24 +0000 Miller, Mike (OS Dev) wrote:
+>
+> > > >
+> > > > Randy,
+> > > > We know of a race condition in cciss_init_one. It's fixed
+> > > in 2.6.26 I believe. Here's the patch:
+> > > >
+> > > >
+> > >
+> http://groups.google.com/group/linux.kernel/browse_thread/thread/7b3
+> > > 9f
+> > > >
+> 2b77622ab03/4f5f45c008655ca1?hl=en&lnk=gst&q=cciss#4f5f45c008655ca
+> > > > 1
+> > >
+> > >
+> > > Mike,
+> > > Sorry, but my fingers have typoed the $subject.  My bad.
+> > > Kernel is 2.6.27-rc3-git7 (from above):
+> > >
+> > > > > > > Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
+> > > > > > > Pid: 0, comm: swapper Not tainted 2.6.27-rc3-git7 #1
+> > > > > > > RIP: 0010:[<ffffffffa001bb68>]  [<ffffffffa001bb68>]
+> > > > > > > do_cciss_intr+0x627/0xa6c [cciss]
+> > >
+> > Hmmmmm, let me know what happens from your retest. I'll
+> look at this
+> > as soon as I finish what I'm doing now. We trying to spin
+> for our test
+> > teams but I have something hopelessly broken. :(
+>
+> It didn't BUG in the retest.  That just means that it's more
+> difficult to find/fix, right?
 
-I /did/ bisect it down to the aforementioned merge, the question is: How
-to crack open that merge into it's composite pieces? (Where do I go to
-bisect within that?)
+Yup.
 
-I'll try the patch above, and see what that reports.
-
-Alan
