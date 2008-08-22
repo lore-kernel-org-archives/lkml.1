@@ -1,233 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYHVMIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbYHVMSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756061AbYHVMIW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 08:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYHVMIO
+	id S1755318AbYHVMSr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 08:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYHVMSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 08:08:14 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:54056 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751923AbYHVMIM (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 08:08:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=oDjgYUKpfkw7ctUGdPKsr6EQQBCR22o/Mb/AwJwzQJ/9BE/ISpmX1XbKb9oXgchFMy
-         nQurBiB3++CkSrmUG46WnYahj8cM6XUhjbTa5LbHl1jG43w/9wEuZcKhyVmy4Z5vMzJT
-         0rrJVlPYrs6KhTbrZHqudlvpqYqa/TDMuBgAY=
-Date: Fri, 22 Aug 2008 14:07:29 +0200
-From: Bernhard Reutner-Fischer <rep.dot.nop@gmail.com>
-To: Jared Hulbert <jaredeh@gmail.com>
-Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>, tim.bird@AM.SONY.COM,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 06/10] AXFS: axfs_super.c
-Message-ID: <20080822120729.GA319@mx.loc>
-References: <48AD0101.4020505@gmail.com>
+	Fri, 22 Aug 2008 08:18:38 -0400
+Received: from web82107.mail.mud.yahoo.com ([209.191.84.220]:31119 "HELO
+	web82107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753279AbYHVMSh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 08:18:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=vsKWC6fHQgH6clVflm01Iz5C1iKlx0TEdff8DqbQ1xoLmfWt9k5njw7cmiljX0cFyXrmmW4DO+6EZ+SPbY3DTLu11D5ojW0/TI7kbZs996R5lCAwvZPZwNV3GutZELaTRVHw47ltMhfrFIiydhGXjaYKzVLMkZbcDhrruINxutg=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Fri, 22 Aug 2008 05:18:36 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- alternate console options?
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48AD0101.4020505@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-ID: <664503.95740.qm@web82107.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 20, 2008 at 10:45:37PM -0700, Jared Hulbert wrote:
->+static int axfs_get_onmedia_super(struct super_block *sb)
->+{
->+	int err;
->+	struct axfs_super *sbi = AXFS_SB(sb);
->+	struct axfs_super_onmedia *sbo;
->+
->+	sbo = kmalloc(sizeof(*sbo), GFP_KERNEL);
->+	if (!sbo)
->+		return -ENOMEM;
->+
->+	axfs_copy_metadata(sb, (void *)sbo, 0, sizeof(*sbo));
->+
->+	/* Do sanity checks on the superblock */
->+	if (be32_to_cpu(sbo->magic) != AXFS_MAGIC) {
->+		printk(KERN_ERR "axfs: wrong magic\n");
->+		err = -EINVAL;
->+		goto out;
->+	}
->+
->+	/* verify the signiture is correct */
->+	if (strncmp(sbo->signature, AXFS_SIGNATURE, sizeof(AXFS_SIGNATURE))) {
->+		printk(KERN_ERR "axfs: wrong axfs signature,"
->+		       " read %s, expected %s\n",
->+		       sbo->signature, AXFS_SIGNATURE);
->+		err = -EINVAL;
->+		goto out;
->+	}
 
-As Phillip mentioned for some other cases, just initialize err to
-EINVAL.
->+
->+	sbi->magic = be32_to_cpu(sbo->magic);
->+	sbi->version_major = sbo->version_major;
->+	sbi->version_minor = sbo->version_minor;
->+	sbi->version_sub = sbo->version_sub;
->+	sbi->files = be64_to_cpu(sbo->files);
->+	sbi->size = be64_to_cpu(sbo->size);
->+	sbi->blocks = be64_to_cpu(sbo->blocks);
->+	sbi->mmap_size = be64_to_cpu(sbo->mmap_size);
->+	sbi->cblock_size = be32_to_cpu(sbo->cblock_size);
->+	sbi->timestamp.tv_sec = be64_to_cpu(sbo->timestamp);
->+	sbi->timestamp.tv_nsec = 0;
->+	sbi->compression_type = sbo->compression_type;
->+
->+	err = axfs_set_compression_type(sbi);
->+	if (err)
->+		goto out;
->+
->+	/* If no block or MTD device, adjust mmapable to cover all image */
->+	if (AXFS_NODEV(sb))
->+		sbi->mmap_size = sbi->size;
->+
->+	err = axfs_fill_region_descriptors(sb, sbo);
-[as already mentioned the clipped snippet here is unneeded]
->+out:
->+	kfree(sbo);
->+	return err;
->+}
 
->+int axfs_verify_device_sizes(struct super_block *sb)
->+{
->+	struct axfs_super *sbi = AXFS_SB(sb);
->+	struct mtd_info *mtd0 = AXFS_MTD(sb);
->+	struct mtd_info *mtd1 = AXFS_MTD1(sb);
->+	int sndsize = sbi->size - sbi->mmap_size;
->+
->+	/* Whole FS on one device */
->+	if (mtd0 && !mtd1 && (mtd0->size < sbi->size)) {
->+		printk(KERN_ERR "axfs: ERROR: Filesystem extends beyond end of"
->+		       "MTD! Filesystem cannot be safely mounted!\n");
+----- Original Message ----
 
-missing space in "end ofMTD"
-You're mixing the style of where you put such a space, so potential
-errors are not easy to spot (manually).
-e.g.:
+> From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+> To: David Witbrodt <dawitbro@sbcglobal.net>
+> Sent: Friday, August 22, 2008 1:19:27 AM
+> Subject: RE: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
+> 
+> It may not be a help, but may I so kindly suggest setting up a serial
+> console (if you have a serial port and another computer nearby, and a
+> "null modem cable" by booting with kernel options
+> console=ttyS0,115200n8 console=tty0
 
->+			printk(KERN_ERR "axfs: ERROR: Mmap segment extends"
->+			       " beyond end of MTD!");
->+			printk(KERN_ERR "mtd name: %s, mtd size: 0x%x, mmap "
->+			       "size: 0x%llx",
->+			       mtd0->name, mtd0->size, sbi->mmap_size);
+Thanks for the ideas, Jesse.  Let me address the serial console question
+below, where you bring up netconsole....
 
->+static int axfs_check_options(char *options, struct axfs_super *sbi)
->+{
->+	unsigned long address = 0;
->+	char *iomem = NULL;
->+	unsigned long length = 0;
->+	char *p;
->+	int err = -EINVAL;
->+	substring_t args[MAX_OPT_ARGS];
->+
->+	if (!options)
->+		return 0;
->+
->+	if (!*options)
->+		return 0;
->+
->+	while ((p = strsep(&options, ",")) != NULL) {
->+		int token;
->+		if (!*p)
->+			continue;
->+
->+		token = match_token(p, tokens, args);
->+		switch (token) {
->+		case OPTION_SECOND_DEV:
->+			sbi->second_dev = match_strdup(&args[0]);
->+			if (!(sbi->second_dev)) {
->+				err = -ENOMEM;
->+				goto out;
->+			}
->+			if (!*(sbi->second_dev))
->+				goto bad_value;
->+			break;
->+		case OPTION_IOMEM:
->+			iomem = match_strdup(&args[0]);
->+			if (!(iomem)) {
->+				err = -ENOMEM;
->+				goto out;
->+			}
->+			if (!*iomem)
->+				goto bad_value;
->+			break;
->+		case OPTION_PHYSICAL_ADDRESS_LOWER_X:
->+		case OPTION_PHYSICAL_ADDRESS_UPPER_X:
->+			if (match_hex(&args[0], (int *)&address))
->+				goto out;
->+			if (!address)
->+				goto bad_value;
->+			break;
->+		default:
 
-just:
-			goto bad_value;
+> if you can't do that (and maybe even if you can) you should try booting
+> with vga=1
+> 
+> this will boot 80x50 vga mode.
 
->+			printk(KERN_ERR
->+			       "axfs: unrecognized mount option \"%s\" "
->+			       "or missing value\n", p);
->+			goto out;
->+		}
->+	}
->+
->+	if (iomem) {
->+		if (address)
->+			goto out;
->+		err = axfs_get_uml_address(iomem, &address, &length);
+Wow, this really helps!  I didn't know this was even an option... but I 
+was scratching my head, since I remember that even DOS could boot to 
+80x50 text mode.
 
-missing:
-		if (err)
-			goto out;
+I just tried 80x50, and it works great.  I wish someone had mentioned this
+sooner... but everyone probably assumes I know these things already.  Let
+me repeat:
 
->+		kfree(iomem);
->+		sbi->iomem_size = length;
->+		sbi->virt_start_addr = address;
->+	}
->+
->+	sbi->phys_start_addr = address;
->+	return 0;
->+
->+bad_value:
->+	printk(KERN_ERR
->+	       "axfs: unrecognized mount option \"%s\" "
->+	       "or missing value\n", p);
->+out:
->+	if (iomem)
->+		kfree(iomem);
+I am not a kernel developer!  I am and end user with a regression, so most
+the things people here take for granted are things I don't know!
 
-just kfree(iomem);
 
->+	return err;
->+}
->+
+> The other option if you have a video card that supports vesafb well,
+> make sure you're compiling vesafb support into your framebuffer section
+> of kernel config and boot with
+> vga=0x318
+> appended to your kernel boot line (same line where root= is) and that
+> should boot 1024x768 vga mode.
 
->+static int axfs_statfs(struct dentry *dentry, struct kstatfs *buf)
->+{
->+	struct axfs_super *sbi = AXFS_SB(dentry->d_sb);
->+
->+	buf->f_type = AXFS_MAGIC;
->+	buf->f_bsize = AXFS_PAGE_SIZE;
+Thank you for this.  Yours is the 2nd private message I've received
+regarding framebuffers, so I would like to respond publicly so that
+anyone reading this thread will be aware:
 
-What will happen if i transfer the filesystem to a box with a different
-pagesize?
+I have been a UVESA framebuffer user ever since the feature was added to
+the kernel.  My distro is Debian, which is only just beginning to 
+provide support for UVESA FB users -- which means I had to learn to 
+rebuild 'klibc' against my custom kernels and repackage the DEBs, instead
+of using Debian packages.  Until recently, Debian didn't even offer the 
+required 'v86d' software as packages, so I had to install that manually.
+I also avoid initial ramdisks, so I pack 'v86d' with the kernel image 
+itself via initramfs.
 
->+	buf->f_blocks = sbi->blocks;
->+	buf->f_bfree = 0;
->+	buf->f_bavail = 0;
->+	buf->f_files = sbi->files;
->+	buf->f_ffree = 0;
->+	buf->f_namelen = AXFS_MAXPATHLEN;
->+	return 0;
->+}
+Having said that... no framebuffer of any sort is useful for me, since
+my 2.6.2[67] kernels hang before framebuffers are initialized.
 
-I think i have seen the string "compessed" in one of your patches,
-should be "compressed".
+I appreciate all suggestions, so please don't stop sending them, but
+framebuffers just cannot help me, folks!  (But "vga=1" is _extremely_
+helpful!)
 
+
+> There is also and early_printk boot option (I may have gotten the syntax
+> wrong, but look for it in Documentation/kernel-parameters.txt)
+
+Thanks for mentioning this, too.  It does happen to be something I knew
+about before coming to LKML with my problem, but I found that provided 
+little extra relevant output.
+
+
+> A last and most difficult to configure option is netconsole.  If you
+> compile you network driver into your kernel you can boot with
+> netconsole= option and specify a remote machine that listens with
+> netcat/nc to receive messages over the network.
+
+I did find this in Documentation/* quite a while ago, but I believe that
+I cannot take advantage of it for the same reason that framebuffers do
+not help:  my kernels are hanging too early in the boot.  In my case,
+they hang in inet_init(), which I believe would have to complete
+successfully before I could use networking devices.
+
+But... let me aim this at the experts:
+
+Can I use the netconsole option if my kernel freezes before inet_init()
+returns?  (I have been assuming "No".)
+
+Can I use the serial console under these circumstances?  After all, I do
+have 3 or 4 machines sitting right next to each other here, all with 
+serial ports.  I have never had need for a null modem cable before, so I
+do not have one, but I could probably obtain one with a little effort.
+
+So far, I've been able to use printk's to get all of the info I've wanted
+onto the screen just before my kernel hangs (since it always hangs at the
+same point in the kernel code).
+
+
+> Hope this helps, I've spent a lot of time debugging and there are a lot
+> of tricks I still don't know.
+
+Thanks for sharing the info!  The "vga=1" option will help me very much!
+It also makes me feel a bit less guilty, realizing that people with much
+more experience than I also still don't know all the tricks.
+
+
+Much thanks,
+Dave W.
