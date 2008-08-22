@@ -1,54 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbYHVRB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbYHVRCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755470AbYHVRB6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 13:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYHVRBu
+	id S1755725AbYHVRCe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 13:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbYHVRCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 13:01:50 -0400
-Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:48626 "EHLO
-	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750818AbYHVRBt (ORCPT
+	Fri, 22 Aug 2008 13:02:24 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:45438 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751596AbYHVRCX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 13:01:49 -0400
-Message-ID: <48AEF0EC.3080709@euromail.se>
-Date: Fri, 22 Aug 2008 19:01:32 +0200
-From: Henrik Rydberg <rydberg@euromail.se>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: torvalds@linux-foundation.org, linux-input@vger.kernel.org,
-       trivial@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Adding a maintainer for the BCM5974 multitouch driver
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 22 Aug 2008 13:02:23 -0400
+Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
+       lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+In-Reply-To: <48AEEE0A.1010900@oracle.com>
+References: <48AD02B2.7020004@oracle.com>
+	 <0F5B06BAB751E047AB5C87D1F77A778835116209D3@GVW0547EXC.americas.hpqcorp.net>
+	 <20080821084333.c471b439.randy.dunlap@oracle.com>
+	 <0F5B06BAB751E047AB5C87D1F77A7788351181004C@GVW0547EXC.americas.hpqcorp.net>
+	 <20080821091514.8f56e2d5.randy.dunlap@oracle.com>
+	 <0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net>
+	 <20080821172653.3e3e855c.randy.dunlap@oracle.com>
+	 <0F5B06BAB751E047AB5C87D1F77A77883511810706@GVW0547EXC.americas.hpqcorp.net>
+	 <1219420487.3339.22.camel@localhost.localdomain>
+	 <48AEEE0A.1010900@oracle.com>
+Content-Type: text/plain
+Date: Fri, 22 Aug 2008 12:02:17 -0500
+Message-Id: <1219424538.3339.51.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: 83.248.33.80
-X-Scan-Result: No virus found in message 1KWa1B-0006sq-3m.
-X-Scan-Signature: ch-smtp01.sth.basefarm.net 1KWa1B-0006sq-3m 18fdc587e913d2d79f8f5b24cf16fbf4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
----
- MAINTAINERS |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+On Fri, 2008-08-22 at 09:49 -0700, Randy Dunlap wrote:
+> James Bottomley wrote:
+> > On Fri, 2008-08-22 at 15:48 +0000, Miller, Mike (OS Dev) wrote:
+> >>> -----Original Message-----
+> >>> From: Randy Dunlap [mailto:randy.dunlap@oracle.com]
+> >>> Sent: Thursday, August 21, 2008 7:27 PM
+> >>> To: Miller, Mike (OS Dev)
+> >>> Cc: lkml; scsi; akpm
+> >>> Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
+> >>>
+> >>> On Thu, 21 Aug 2008 16:25:24 +0000 Miller, Mike (OS Dev) wrote:
+> >>>
+> >>>>>> Randy,
+> >>>>>> We know of a race condition in cciss_init_one. It's fixed
+> >>>>> in 2.6.26 I believe. Here's the patch:
+> >>>>>>
+> >>> http://groups.google.com/group/linux.kernel/browse_thread/thread/7b3
+> >>>>> 9f
+> >>> 2b77622ab03/4f5f45c008655ca1?hl=en&lnk=gst&q=cciss#4f5f45c008655ca
+> >>>>>> 1
+> >>>>>
+> >>>>> Mike,
+> >>>>> Sorry, but my fingers have typoed the $subject.  My bad.
+> >>>>> Kernel is 2.6.27-rc3-git7 (from above):
+> >>>>>
+> >>>>>>>>> Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
+> >>>>>>>>> Pid: 0, comm: swapper Not tainted 2.6.27-rc3-git7 #1
+> >>>>>>>>> RIP: 0010:[<ffffffffa001bb68>]  [<ffffffffa001bb68>]
+> >>>>>>>>> do_cciss_intr+0x627/0xa6c [cciss]
+> >>>> Hmmmmm, let me know what happens from your retest. I'll
+> >>> look at this
+> >>>> as soon as I finish what I'm doing now. We trying to spin
+> >>> for our test
+> >>>> teams but I have something hopelessly broken. :(
+> >>> It didn't BUG in the retest.  That just means that it's more
+> >>> difficult to find/fix, right?
+> >> Yup.
+> > 
+> > Randy,
+> > 
+> > If you can't reproduce it, could you use the debug information or gdb to
+> > tell us what line in the source code this:
+> > 
+> > do_cciss_intr+0x627
+> > 
+> > corresponds to?  That might help isolating the problem.
+> 
+> 
+> Sure, here's an attempt at that.  Please let me know if you want it
+> differently or some other info.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 28c69aa..74e3381 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -419,6 +419,12 @@ L:	linux-laptop@vger.kernel.org
- W:	http://www.canb.auug.org.au/~sfr/
- S:	Supported
+> (gdb) x/20i do_cciss_intr+0x627
+> 0x3b68 <do_cciss_intr+1575>:    mov    %rdx,0x248(%rax)
+> 0x3b6f <do_cciss_intr+1582>:    mov    0x248(%rbx),%rdx
+> 0x3b76 <do_cciss_intr+1589>:    mov    %rax,0x240(%rdx)
+> 0x3b7d <do_cciss_intr+1596>:    jmp    0x3b8b <do_cciss_intr+1610>
+> 0x3b7f <do_cciss_intr+1598>:    movq   $0x0,0x100c0(%r12)
+> 0x3b8b <do_cciss_intr+1610>:    mov    0x234(%rbx),%eax
+> 0x3b91 <do_cciss_intr+1616>:    test   %eax,%eax
+> 0x3b93 <do_cciss_intr+1618>:    jne    0x3f27 <do_cciss_intr+2534>
+> 0x3b99 <do_cciss_intr+1624>:    mov    0x250(%rbx),%r14
+> 0x3ba0 <do_cciss_intr+1631>:    movl   $0x0,0xcc(%r14)
+> 0x3bab <do_cciss_intr+1642>:    mov    0x228(%rbx),%r8
+> 0x3bb2 <do_cciss_intr+1649>:    mov    0x2(%r8),%dx
+> 0x3bb7 <do_cciss_intr+1654>:    test   %dx,%dx
+> 0x3bba <do_cciss_intr+1657>:    je     0x3f0e <do_cciss_intr+2509>
+> 
+> 
+> $ addr2line -e cciss.o -f  do_cciss_intr+0x627
+> SA5_fifo_full
+> /home/rdunlap/linsrc/linux-2.6.27-rc3-git7/drivers/block/cciss.h:206
 
-+APPLE BCM5974 MULTITOUCH DRIVER
-+P:	Henrik Rydberg
-+M:	rydberg@euromail.se
-+L:	linux-input@vger.kernel.org
-+S:	Maintained
-+
- APPLE SMC DRIVER
- P:	Nicolas Boichat
- M:	nicolas@boichat.ch
--- 
-1.5.4.3
+OK ...that's confusing.  It seems to be saying that ctrlr_info_t * was
+NULL.  However, I can't see a way of getting into the fifo_full callback
+from do_cciss_intr .. especially not with an NULL host.
+
+James
+
 
