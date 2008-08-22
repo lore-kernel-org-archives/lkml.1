@@ -1,96 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbYHVUAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbYHVUBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755868AbYHVUAb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 16:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbYHVUAV
+	id S1756750AbYHVUBr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 16:01:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbYHVUBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 16:00:21 -0400
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:7593 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752394AbYHVUAU (ORCPT
+	Fri, 22 Aug 2008 16:01:40 -0400
+Received: from blackbird.sr71.net ([64.146.134.44]:39163 "EHLO
+	blackbird.sr71.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751029AbYHVUBj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 16:00:20 -0400
-X-Greylist: delayed 34539 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Aug 2008 16:00:19 EDT
-From: Ian Campbell <ijc@hellion.org.uk>
-To: John Ronciak <john.ronciak@gmail.com>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
-       neilb@suse.de, bfields@fieldses.org, linux-nfs@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       e1000-devel@lists.sourceforge.net
-In-Reply-To: <56a8daef0808221233h68853587n6015ca7d809b17e1@mail.gmail.com>
-References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com>
-	 <1219087258.7192.19.camel@localhost>
-	 <1219400624.18774.67.camel@zakaz.uk.xensource.com>
-	 <1219428489.6919.21.camel@localhost>
-	 <1219428818.27921.43.camel@localhost.localdomain>
-	 <56a8daef0808221233h68853587n6015ca7d809b17e1@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-CBwd4TKqH0W80+UCawfT"
-Date: Fri, 22 Aug 2008 21:00:07 +0100
-Message-Id: <1219435207.27921.51.camel@localhost.localdomain>
+	Fri, 22 Aug 2008 16:01:39 -0400
+X-Greylist: delayed 1719 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Aug 2008 16:01:39 EDT
+Subject: Re: [RFC v2][PATCH 1/9] Create trivial sys_checkpoint/sys_restart
+	syscalls
+From: Dave Hansen <dave@sr71.net>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: containers@lists.linux-foundation.org, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, arnd@arndb.de
+In-Reply-To: <Pine.LNX.4.64.0808202302510.17436@takamine.ncl.cs.columbia.edu>
+References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>
+	 <Pine.LNX.4.64.0808202302510.17436@takamine.ncl.cs.columbia.edu>
+Content-Type: text/plain
+Date: Fri, 22 Aug 2008 12:32:58 -0700
+Message-Id: <1219433578.20559.98.camel@nimitz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-SA-Exim-Connect-IP: 192.168.1.5
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-08-20 at 23:03 -0400, Oren Laadan wrote:
+> 6/unistd_32.h
+> index d739467..88bdec4 100644
+> --- a/include/asm-x86/unistd_32.h
+> +++ b/include/asm-x86/unistd_32.h
+> @@ -338,6 +338,8 @@
+>   #define __NR_dup3             330
+>   #define __NR_pipe2            331
+>   #define __NR_inotify_init1    332
+> +#define __NR_checkpoint                333
+> +#define __NR_restart           334
+> 
+>   #ifdef __KERNEL__
 
---=-CBwd4TKqH0W80+UCawfT
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Uh oh.  These got whitespace mangled somehow.  I'll look through them,
+but probably can't produce patches on top of them for now.
 
-On Fri, 2008-08-22 at 12:33 -0700, John Ronciak wrote:
-> On Fri, Aug 22, 2008 at 11:13 AM, Ian Campbell <ijc@hellion.org.uk> wrote=
-:
->=20
-> >> That's probably also a networking device driver issue candidate: your
-> >> RPC task is queued up waiting to be sent.
-> >>
-> >> What networking card+device driver are you using here?
-> >
-> > # ethtool -i eth0
-> > driver: e1000
-> > version: 7.3.20-k2-NAPI
-> > firmware-version: N/A
-> > bus-info: 0000:01:0a.0
-> There is nothing indicating that the NIC/driver is causing any sort of
-> problem here, at least not with what has been presented so far.  When
-> the NFS mount isn't working is the networking still active and
-> working?
-
-So far as I can tell, yes. I can login via ssh so long as the user
-doesn't have NFS $HOME, I haven't tried much else and the box isn't
-locked up at the moment, I'd bet it's fine though.
-
-Ian.
-
---=20
-Ian Campbell
-
-"On a normal ascii line, the only safe condition to detect is a 'BREAK'
-- everything else having been assigned functions by Gnu EMACS."
-(By Tarl Neustaedter)
-
---=-CBwd4TKqH0W80+UCawfT
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkivGsYACgkQM0+0qS9rzVk1qACeILsY9z8su3G1T9vcBFtVDalF
-h6YAn2hHgJc4Zkd/AjoasBMl2qzt58ir
-=+jje
------END PGP SIGNATURE-----
-
---=-CBwd4TKqH0W80+UCawfT--
+-- Dave
 
