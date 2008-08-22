@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbYHVI6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758140AbYHVJD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757589AbYHVI6g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 04:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYHVI61
+	id S1758140AbYHVJD1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 05:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbYHVJDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 04:58:27 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:52425 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751801AbYHVI60 (ORCPT
+	Fri, 22 Aug 2008 05:03:20 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41918 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752959AbYHVJDT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 04:58:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Vv68QdWgTSB/i40LzgyP4bAN9MdD/ZjKNzJ9rpfULrlQ7x71wH9/nKI6OQ7G5d8MBV
-         wDiCY8tIQ5EOrf9O2ZYLVNZvKvBaUHR1fYUoqevFw1ObVlUiIjL3nu/cYkUuEaqI3Rdp
-         NAsXcRN0S2aMYIsHzPmIB93yZ6sWjdSFYYYrA=
-Message-ID: <8db1092f0808220158k742c6429y5f8ee48d5eb61a30@mail.gmail.com>
-Date: Fri, 22 Aug 2008 10:58:25 +0200
-From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [2.6.26.*] boot problem (ahci/irq related?)
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, "Jeff Garzik" <jgarzik@pobox.com>,
-       tj@kernel.org, andi@firstfloor.org,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>
-In-Reply-To: <200808211445.46467.rjw@sisk.pl>
+	Fri, 22 Aug 2008 05:03:19 -0400
+Date: Fri, 22 Aug 2008 11:03:18 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Fundamental Design Flaw of the Device Driver Model?
+Message-ID: <20080822090318.GB6542@atrey.karlin.mff.cuni.cz>
+References: <f17812d70808212325m24f25518t5e8dd2fc5e7919b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <8db1092f0808111312x3baf819bxbb05030c05693065@mail.gmail.com>
-	 <8db1092f0808160236o63c42de4k3c455c349d3e9da6@mail.gmail.com>
-	 <8db1092f0808201136y15a67647i95fd00fb5d2476fc@mail.gmail.com>
-	 <200808211445.46467.rjw@sisk.pl>
+In-Reply-To: <f17812d70808212325m24f25518t5e8dd2fc5e7919b@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/21 Rafael J. Wysocki <rjw@sisk.pl>:
+> Fundamental Design Flaw of the Device Driver Model?
+> ===================================================
+> 
+> Sorry for the misleading subject, its purpose is to draw your attention :-)
+> The ideas below are preliminary and I hope I'm not making serious mistakes
+> here.
+> 
+> This question has actually been around in my mind for several months, when
+> I started to work on some devices with multiple functions. Specifically, a
+> Power Management IC (PMIC in short in the following text) usually includes
+> LEDs support (charging, indication...) audio, touch screen, power monitoring,
+> LDOs, DC-DC bucks, and possibly some others.
+> 
+> The initial two ideas came into my mind were:
+> 
+>    1. separate the functions into multiple devices, write a driver for each
+>       of these devices
 
->
-> Do you have a log where it doesn't hang?
->
-> Rafael
->
+Go for 1.
 
-http://unixy.pl/maciek/download/kernel/2.6.27-rc3/dmesg-2.6.27-rc3.txt
+>    4. An intermediate device with no bus, no driver, no many other things
+>       is really not something deserving a "struct device", that's a waste
+>       of memory.
 
+Memory is not _that_ expensive, and struct device is not that
+big. Adding infrastructure to driver model for supporting this would
+also cost you memory, this time in .text segment.
+
+									Pavel
 -- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
