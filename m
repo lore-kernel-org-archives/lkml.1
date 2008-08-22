@@ -1,89 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758629AbYHVUzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753639AbYHVU4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758629AbYHVUzt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 16:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752968AbYHVUzO
+	id S1753639AbYHVU4J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 16:56:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758617AbYHVUzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 16:55:14 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:38114 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752689AbYHVUzM (ORCPT
+	Fri, 22 Aug 2008 16:55:48 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:50749 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758605AbYHVUzq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 16:55:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=WzJY+IvrW6Jqyyn51Q++P9QcAG3Vk7P5OriFRt/MP7lAWTQM9SG0m0clVzA/JCDi7w
-         L9CFpPskScXd9VvePrMkvC+JznOU08ZHIXVrJRdK1v3JQhHMwnAcoEITJHE2STk84QBI
-         P7kHlQYwdPcT0he3vxiPaVDvJsPiz4+O247xQ=
-Date: Fri, 22 Aug 2008 22:54:19 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: ftraced and suspend to ram
-Message-ID: <20080822205415.GA5452@joi>
-References: <alpine.DEB.1.10.0808211139420.3947@gandalf.stny.rr.com> <20080822072343.GA24173@atrey.karlin.mff.cuni.cz> <20080822103533.GA5425@joi> <200808221839.35640.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808221839.35640.rjw@sisk.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 22 Aug 2008 16:55:46 -0400
+Date: Fri, 22 Aug 2008 17:55:58 -0300
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
+Message-ID: <20080822175558.4b26a97f@doriath.conectiva>
+In-Reply-To: <48AF2235.7080906@zytor.com>
+References: <20080820162925.75a5e064@doriath.conectiva>
+	<48ADDF4F.2020401@zytor.com>
+	<48AE5FCF.6030103@zytor.com>
+	<20080822065012.GV14110@elte.hu>
+	<20080822113941.147a1db0@doriath.conectiva>
+	<20080822153451.GA8390@Krystal>
+	<20080822132948.57e47076@doriath.conectiva>
+	<20080822163520.GA9860@Krystal>
+	<20080822142054.403cbdef@doriath.conectiva>
+	<48AF014D.8040103@zytor.com>
+	<20080822164023.7060137e@doriath.conectiva>
+	<48AF2235.7080906@zytor.com>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 22, 2008 at 06:39:34PM +0200, Rafael J. Wysocki wrote:
-> On Friday, 22 of August 2008, Marcin Slusarz wrote:
-> > On Fri, Aug 22, 2008 at 09:23:43AM +0200, Pavel Machek wrote:
-> > > > 
-> > > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > > 
-> > > > > > > The code in question is the ftraced() function in 
-> > > > > > > kernel/trace/ftrace.c
-> > > > > > 
-> > > > > > Thanks, I'll have a look in a while.
-> > > > > 
-> > > > > Can you try the appended patch, please?
-> > > > 
-> > > > makes sense - i've applied it to tip/tracing/urgent, see the tidied up 
-> > > > commit below.
-> > > > 
-> > > > It should be no big issue not being able to trace across suspend+resume 
-> > > > - and that restriction will go away with Steve's build-time based mcount 
-> > > > patching mechanism in v2.6.28.
-> > > 
-> > > Patch looks okay to me, but I'm not sure if another issue is not
-> > > hiding under it. Did anyone actually test ftrace + suspend after
-> > > applying this?
-> > 
-> > I just tested this patch - it didn't help ;(
-> > 
-> > diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> > index 49f4c3f..02e41b2 100644
-> > --- a/kernel/trace/ftrace.c
-> > +++ b/kernel/trace/ftrace.c
-> > @@ -27,6 +27,7 @@
-> >  #include <linux/ctype.h>
-> >  #include <linux/hash.h>
-> >  #include <linux/list.h>
-> > +#include <linux/freezer.h>
-> >  
-> >  #include <asm/ftrace.h>
-> 
-> This is needed to fix compilation, sorry for the omission.
-> 
-> Still, did you test ftrace + suspend with the original patch and your fix
-> applied and if you did, then what happend?
+Em Fri, 22 Aug 2008 13:31:49 -0700
+"H. Peter Anvin" <hpa@zytor.com> escreveu:
 
-Suspend works fine. When I hit power button I see some informations from
-video card (nvidia), then screen goes black and monitor says "no signal"
-and then I see the same informations from video card, then BIOS and GRUB.
-When everything works fine, X comes back after first infos from video card.
+| Luiz Fernando N. Capitulino wrote:
+| > 
+| > | 2. a patch against -linus for testing.
+| > 
+| >  I have tried this patch with Linus tree early today, should I try
+| > it with Ingo's tree too?
+| > 
+| 
+| It doesn't apply to tip.  This did not fix the problem?
 
-Marcin
+ No, it did not. :(
+
+-- 
+Luiz Fernando N. Capitulino
