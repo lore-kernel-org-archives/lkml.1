@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758507AbYHVVgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbYHVVgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758507AbYHVVgZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 17:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816AbYHVVgL
+	id S1759206AbYHVVgr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 17:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758181AbYHVVgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 17:36:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53917 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755255AbYHVVgJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 17:36:09 -0400
-Date: Fri, 22 Aug 2008 14:35:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: ehabkost@redhat.com, benh@kernel.crashing.org, paulus@samba.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1 of 3] add phys_addr_t for holding physical addresses
-Message-Id: <20080822143515.512ff182.akpm@linux-foundation.org>
-In-Reply-To: <48AF2B74.5030605@goop.org>
-References: <patchbomb.1219176169@localhost>
-	<73196c9129c7298f2428.1219176170@localhost>
-	<20080822130235.af69ccb5.akpm@linux-foundation.org>
-	<48AF2B74.5030605@goop.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Aug 2008 17:36:23 -0400
+Received: from mail.gmx.net ([213.165.64.20]:51932 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757921AbYHVVgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 17:36:22 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX18fLXppQ7gfyXjBb4EuziUcyeByoSM8Hj3bHL7gam
+	r1VY+07ea4yICH
+Date: Fri, 22 Aug 2008 23:36:18 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Junio C Hamano <gitster@pobox.com>, pasky@suse.cz, Alan.Brunelle@hp.com,
+       linux-kernel@vger.kernel.org, git@vger.kernel.org
+Subject: Re: Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
+Message-ID: <20080822213618.GC1598@atjola.homenet>
+References: <48A36838.3050309@hp.com> <20080819124602.9e8e69f7.akpm@linux-foundation.org> <48AEDD3D.4060507@hp.com> <20080822092549.ddcb7e79.akpm@linux-foundation.org> <20080822171651.GP10544@machine.or.cz> <20080822105136.a8432875.akpm@linux-foundation.org> <7v7ia8ahgu.fsf@gitster.siamese.dyndns.org> <20080822141651.fe16ed99.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080822141651.fe16ed99.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.72
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Aug 2008 14:11:16 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On 2008.08.22 14:16:51 -0700, Andrew Morton wrote:
+> It's pretty simple.  If git-bisect tells us that the regression was
+> introduced by a merge commit, we want to perform a bisection within
+> that merge's individual commits.
 
-> Andrew Morton wrote:
-> > On Tue, 19 Aug 2008 13:02:50 -0700
-> > Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> >
-> >   
-> >> Add a kernel-wide "phys_addr_t" which is guaranteed to be able to hold
-> >> any physical address.  By default it equals the word size of the
-> >> architecture, but a 32-bit architecture can set ARCH_PHYS_ADDR_T_64BIT
-> >> if it needs a 64-bit phys_addr_t.
-> >>
-> >>     
-> >
-> > You say this is a bugfix but you don't describe the bug.  This makes it
-> > rather hard to make the 2.6.2[5678] decisions.
-> >
-> > Ditto on [patch 2/3].
-> >   
-> 
-> 1/3 is not a bugfix in itself, but a pre-requisite for 2/3.
-> 
-> 2/3 replaces an ad-hoc Xen fix with a general fix to prevent address
-> truncation when using PFN_PHYS() on any PFN above the 4G mark.  The Xen
-> crash is the only bug I know of that's directly attributable to this,
-> and it was already addressed in older kernels with the casts in the Xen
-> code that this patch removes.
-> 
-> So I don't think there's any strong need to push this to earlier kernels.
-> 
+bisect already did that. It asked for the left side and the right side,
+both were good. What you can still do is creating a _new_ history where
+the commits are not in parallel but linearized, like Jeff described. But
+that's (in general) not a trivial task as you need to reapply individual
+commit patches which can cause conflicts that were already solved in the
+existing merges to show up again. Or, it can even produce new conflicts,
+for example when a commit on one side was reverted before the merge
+happened. In that case, you get into a state with changes that were
+never visible before.
 
-Still confused.  The above implies that 2.6.27 doesn't need fixing
-either, because the typecasts already avoid the crash.
+Björn
