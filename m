@@ -1,255 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbYHVHez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757860AbYHVHgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753170AbYHVHez (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 03:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753673AbYHVHef
+	id S1757860AbYHVHgT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 03:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYHVHgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 03:34:35 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:56968 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752653AbYHVHe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 03:34:29 -0400
-Date: Fri, 22 Aug 2008 17:34:15 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for August 22
-Message-Id: <20080822173415.6958cbcc.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__22_Aug_2008_17_34_15_+1000_3r9F.fL2bEG5J9nG"
+	Fri, 22 Aug 2008 03:36:07 -0400
+Received: from wr-out-0506.google.com ([64.233.184.229]:37667 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751783AbYHVHgD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 03:36:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=gyrcivWN9iE5g0EJeqCTzqunsRVv6J9xafO92NXAvJ1N1ING49aB3t6XRHRUzaTp48
+         5I7dEJe4vd5qCByuC213VcAY/uTx551yon2qYMd/+ZCKF2FEk7twKBtL6W+pPXoochH7
+         HHd1+8q/W5v/zKh0ox2PGf+1GJeS8K7ISVYe0=
+Message-ID: <806dafc20808220036k3c1360e6l1b5fea9b659592b3@mail.gmail.com>
+Date: Fri, 22 Aug 2008 03:36:01 -0400
+From: xiphmont@xiph.org
+To: axboe@suse.de, "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       pjones@redhat.com
+Subject: [PATCH] SG_IO block filter whitelist missing MMC SET READ AHEAD command
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: 4b4a1d886617ee0c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__22_Aug_2008_17_34_15_+1000_3r9F.fL2bEG5J9nG
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Jens,
 
-Hi all,
+I have another request for the block filter SG_IO command whitelist,
+specifically the MMC streaming command set SET READ AHEAD command.
+The command applies only to MMC CDROM/DVDROM drives with the streaming
+optional feature set.  The command is useful to cdparanoia in that it
+allows explicit cache control side effects that are, on many drives,
+cdparanoia's most efficient way to flush/disable the media cache on
+cdrom drives. I am aware of no reason why it should not be accessible
+from usespace.
 
-Changes since next-20080821:
+Also note that the command is already fully accessible through the
+SCSI-native version of the SG_IO ioctl as well as the traditional SG
+interface.  The command is only being refused on block devices.  That
+means that on a typical stock distro, the command is available through
+/dev/sg* but not /dev/scd* although both are typically available and
+accessible.  Filtering the command is not providing any protection,
+only a confusing inconsistency.
 
-The pcmcia tree gained a build fix patch.
+For convenience's sake, trivial patch below.
 
-The ttydev tree gained a conflict against the driver-core tree.
+diff -ru linux-2.6.26.3/block/scsi_ioctl.c
+linux-2.6.26.3-monty/block/scsi_ioctl.c
+--- linux-2.6.26.3/block/scsi_ioctl.c   2008-08-20 14:11:37.000000000 -0400
++++ linux-2.6.26.3-monty/block/scsi_ioctl.c     2008-08-22
+04:17:56.194248000 -0400
+@@ -188,6 +188,7 @@
+                safe_for_write(GPCMD_PREVENT_ALLOW_MEDIUM_REMOVAL),
+                safe_for_write(GPCMD_LOAD_UNLOAD),
+                safe_for_write(GPCMD_SET_STREAMING),
++               safe_for_write(GPCMD_SET_READ_AHEAD),
+        };
+        unsigned char type = cmd_type[cmd[0]];
 
-I have also applied the following patches for known problems:
 
-	Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
-	powerpc: export CMO_PageSize
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 112 trees (counting Linus' and 14 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-2.6.26
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging cris/for-next
-Merging ia64/test
-Merging quilt/m68k
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/powerpc-next
-Merging 4xx/next
-Merging galak/powerpc-next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging ftrace/auto-ftrace-next
-CONFLICT (content): Merge conflict in kernel/module.c
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-CONFLICT (content): Merge conflict in kernel/fork.c
-Merging timers/auto-timers-next
-Merging x86/auto-x86-next
-CONFLICT (content): Merge conflict in include/asm-x86/pda.h
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/stable
-CONFLICT (content): Merge conflict in drivers/media/video/zr364xx.c
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging blackfin/for-linus
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-CONFLICT (content): Merge conflict in include/asm-x86/kvm.h
-Merging dlm/next
-Merging scsi/master
-Merging tests/master
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging ocfs2/linux-next
-Merging ext4/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-CONFLICT (content): Merge conflict in include/asm-x86/cpufeature.h
-Merging vfs/for-next
-CONFLICT (content): Merge conflict in arch/ia64/ia32/sys_ia32.c
-CONFLICT (content): Merge conflict in arch/powerpc/kernel/sys_ppc32.c
-CONFLICT (content): Merge conflict in fs/nfsd/export.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_export.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_iops.c
-Merging sound/for-next
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Applying input/cm109: fix up for info() removal
-Merging semaphore/semaphore
-Merging semaphore-removal/semaphore-removal
-Merging bkl-removal/bkl-removal
-Merging trivial/next
-CONFLICT (content): Merge conflict in Documentation/edac.txt
-CONFLICT (content): Merge conflict in include/linux/securebits.h
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Kconfig
-CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Makefile
-Merging pcmcia/master
-Applying pcmcia: fix cs_debug_level availablility
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in arch/x86/kernel/process_64.c
-CONFLICT (content): Merge conflict in arch/x86/kernel/traps_64.c
-CONFLICT (content): Merge conflict in mm/Makefile
-CONFLICT (content): Merge conflict in mm/slab.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging generic-ipi/auto-generic-ipi-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/reg-for-linus
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-CONFLICT (content): Merge conflict in drivers/char/tty_io.c
-CONFLICT (content): Merge conflict in drivers/net/usb/hso.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/aircable.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/keyspan_pda.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/safe_serial.c
-Merging agp/agp-next
-Merging creds/next-creds
-CONFLICT (content): Merge conflict in fs/namespace.c
-CONFLICT (content): Merge conflict in fs/nfsd/nfs4recover.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_linux.h
-CONFLICT (content): Merge conflict in fs/xfs/xfs_inode.c
-CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.c
-CONFLICT (content): Merge conflict in include/linux/capability.h
-CONFLICT (add/add): Merge conflict in include/linux/cred.h
-CONFLICT (content): Merge conflict in kernel/exit.c
-CONFLICT (content): Merge conflict in kernel/fork.c
-CONFLICT (content): Merge conflict in security/commoncap.c
-CONFLICT (content): Merge conflict in security/selinux/hooks.c
-CONFLICT (content): Merge conflict in security/smack/smack_lsm.c
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-CONFLICT (content): Merge conflict in include/linux/init.h
-Applying Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
-Applying powerpc: export CMO_PageSize
-
---Signature=_Fri__22_Aug_2008_17_34_15_+1000_3r9F.fL2bEG5J9nG
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiua/cACgkQjjKRsyhoI8y1IgCfbWrpiLaAGBTCYRcWFonbWYIU
-3vIAn0j8mHtfrRuAhislhPhiyLV9dn8k
-=vrCu
------END PGP SIGNATURE-----
-
---Signature=_Fri__22_Aug_2008_17_34_15_+1000_3r9F.fL2bEG5J9nG--
+Thanks,
+Monty
