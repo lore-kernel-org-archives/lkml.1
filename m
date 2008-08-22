@@ -1,448 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbYHVTec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbYHVThr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbYHVTec (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 15:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYHVTeX
+	id S1754695AbYHVThr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 15:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbYHVThf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 15:34:23 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:56844 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753444AbYHVTeW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 15:34:22 -0400
-Date: Fri, 22 Aug 2008 14:34:13 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>, SELinux <selinux@tycho.nsa.gov>,
-       "David P. Quigley" <dpquigl@tycho.nsa.gov>
-Subject: [PATCH 1/1] selinux: add support for installing a dummy policy
-Message-ID: <20080822193413.GA8401@us.ibm.com>
+	Fri, 22 Aug 2008 15:37:35 -0400
+Received: from mail.gmx.net ([213.165.64.20]:54152 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752329AbYHVThe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 15:37:34 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX18hQAxQi2ghHKXKEKShSFm2jfKMNFT/5GjbPkTDmq
+	UuDxSEUGrXI8It
+Date: Fri, 22 Aug 2008 21:37:30 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Petr Baudis <pasky@suse.cz>, Alan.Brunelle@hp.com,
+       linux-kernel@vger.kernel.org, git@vger.kernel.org
+Subject: Re: Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
+Message-ID: <20080822193730.GA1598@atjola.homenet>
+References: <48A36838.3050309@hp.com> <20080819124602.9e8e69f7.akpm@linux-foundation.org> <48AEDD3D.4060507@hp.com> <20080822092549.ddcb7e79.akpm@linux-foundation.org> <20080822171651.GP10544@machine.or.cz> <20080822105136.a8432875.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080822105136.a8432875.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In August 2006 I posted a patch to the selinux list generating a minimal
-SELinux policy.  This week, David P. Quigley posted an updated version
-of that as a patch against the kernel.  In addition to some fixes, also
-had nice logic for auto-installing the policy.
+On 2008.08.22 10:51:36 -0700, Andrew Morton wrote:
+> On Fri, 22 Aug 2008 19:16:51 +0200 Petr Baudis <pasky@suse.cz> wrote:
+> > On Fri, Aug 22, 2008 at 09:25:49AM -0700, Andrew Morton wrote:
+> > > One (probably wrong) approach is to run
+> > > 
+> > > 	gitk 1c89ac55017f982355c7761e1c912c88c941483d
+> > > 
+> > > then peer at the output, work out which real commits were in that
+> > > merge.
+> > > 
+> > > It looks like the merge ended with
+> > > b1b135c8d619cb2c7045d6ee4e48375882518bb5 and started with
+> > > 40c42076ebd362dc69210cccea101ac80b6d4bd4, so perhaps you can do
+> > > 
+> > > 	git bisect bad b1b135c8d619cb2c7045d6ee4e48375882518bb5
+> > > 	git bisect good 40c42076ebd362dc69210cccea101ac80b6d4bd4
+> > 
+> > ...I don't quite get this - according to the bisection log,
+> > 
+> > 	# good: [b1b135c8d619cb2c7045d6ee4e48375882518bb5] fix spinlock recursion in hvc_console
+> > 
+> > and now you want to mark it as bad?
+> 
+> <what bisection log?>
 
-I've gone ahead and hooked it into the kernel Makefile logic.  The way I
-have it here, doing 'make scripts' ends up compiling 'mdp', after which
-you must
-	cd scripts/selinux
-	sh install_policy.sh
+Alan provided his bisection log as an attachment to the original bug
+report.
 
-That isn't as nice as being able to do
-	make selinux_install
-the way David had it, but it avoids mucking with the top-level
-Makefile.  Which is preferred?
+> I assume that Alan's bisection search ended up saying that the merge
+> commit (1c89ac55017f982355c7761e1c912c88c941483d) was the first bad
+> commit.
 
-In any case, this seems like a good thing to have in the kernel
-tree, to facilitate simple selinux boot tests.
+Yep, and that's totally correct as far as bisect is concerned. The
+parents of that merge commit are:
+88fa08f67bee1a0c765237bdac106a32872f57d2
+b1b135c8d619cb2c7045d6ee4e48375882518bb5
 
-Following is David's original patch intro (preserved especially
-bc it has stats on the generated policies):
+And Alan marked both of them as good.
 
-======================================================================
-For those interested in the changes there were only two significant
-changes. The first is that the iteration through the list of classes
-used NULL as a sentinel value. The problem with this is that the
-class_to_string array actually has NULL entries in its table as place
-holders for the user space object classes.
+So, unless Alan made a mistake during his bisection, each of the
+branches is correct, but the merge did not lead to a correct result. So
+while there were no textual conflicts, there were still incompatible
+changes regarding the code semantics and compatibility was not restored
+during the merge.
 
-The second change was that it would seem at some point the initial sids
-table was NULL terminated. This is no longer the case so that iteration
-has to be done on array length instead of looking for NULL.
+To get an overview over what got merged together you can can use
+something like:
+gitk --left-right 1c89ac55017^1...1c89ac55017^2
 
-Some statistics on the policy that it generates:
+Which shows all commits that were on only one side of the merge, with
+nice "arrows" that indicate from which side the commit is coming. The
+conflict should be between one commit from the left and one commit from
+the right side, obviously.
 
-The policy consists of 523 lines which contain no blank lines. Of those
-523 lines 453 of them are class, permission, and initial sid
-definitions. These lines are usually little to no concern to the policy
-developer since they will not be adding object classes or permissions.
-Of the remaining 70 lines there is one type, one role, and one user
-statement. The remaining lines are broken into three portions. The first
-group are TE allow rules which make up 29 of the remaining lines, the
-second is assignment of labels to the initial sids which consist of 27
-lines, and file system labeling statements which are the remaining 11.
-
-In addition to the policy.conf generated there is a single file_contexts
-file containing two lines which labels the entire system with base_t.
-
-This policy generates a policy.23 binary that is 7920 bytes.
-======================================================================
-(then a few versions later...):
-======================================================================
-The new policy is 587 lines (stripped of blank lines) with 476 of those
-lines being the boilerplate that I mentioned last time. The remaining
-111 lines have the 3 lines for type, user, and role, 70 lines for the
-allow rules (one for each object class including user space object
-classes), 27 lines to assign types to the initial sids, and 11 lines for
-file system labeling. The policy binary is 9194 bytes.
-======================================================================
-
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
----
- scripts/Makefile                  |    1 +
- scripts/selinux/Makefile          |    1 +
- scripts/selinux/install_policy.sh |   49 ++++++++
- scripts/selinux/mdp/Makefile      |    4 +
- scripts/selinux/mdp/dbus_contexts |    6 +
- scripts/selinux/mdp/mdp.c         |  242 +++++++++++++++++++++++++++++++++++++
- 6 files changed, 303 insertions(+), 0 deletions(-)
- create mode 100644 scripts/selinux/Makefile
- create mode 100644 scripts/selinux/install_policy.sh
- create mode 100644 scripts/selinux/mdp/Makefile
- create mode 100644 scripts/selinux/mdp/dbus_contexts
- create mode 100644 scripts/selinux/mdp/mdp.c
-
-diff --git a/scripts/Makefile b/scripts/Makefile
-index 1c73c5a..0741e9e 100644
---- a/scripts/Makefile
-+++ b/scripts/Makefile
-@@ -20,6 +20,7 @@ hostprogs-y += unifdef
- 
- subdir-$(CONFIG_MODVERSIONS) += genksyms
- subdir-y                     += mod
-+subdir-$(CONFIG_SECURITY_SELINUX) += selinux
- 
- # Let clean descend into subdirs
- subdir-	+= basic kconfig package
-diff --git a/scripts/selinux/Makefile b/scripts/selinux/Makefile
-new file mode 100644
-index 0000000..5660bb8
---- /dev/null
-+++ b/scripts/selinux/Makefile
-@@ -0,0 +1 @@
-+subdir-y := mdp
-diff --git a/scripts/selinux/install_policy.sh b/scripts/selinux/install_policy.sh
-new file mode 100644
-index 0000000..4b64642
---- /dev/null
-+++ b/scripts/selinux/install_policy.sh
-@@ -0,0 +1,49 @@
-+#!/bin/sh
-+if [ `id -u` -ne 0 ]; then
-+	echo "$0: must be root to install the selinux policy"
-+	exit 1
-+fi
-+SF=`which setfiles`
-+if [ $? -eq 1 ]; then
-+	if [ -f /usr/sbin/setfiles ]; then
-+		SF="/usr/sbin/setfiles"
-+	else
-+		echo "no selinux tools installed: setfiles"
-+		exit 1
-+	fi
-+fi
-+
-+cd mdp
-+
-+CP=`which checkpolicy`
-+./mdp policy.conf file_contexts
-+$CP -o policy.`checkpolicy -V | awk '{print $1}'` policy.conf
-+
-+mkdir -p /etc/selinux/dummy/policy
-+mkdir -p /etc/selinux/dummy/contexts/files
-+
-+cp file_contexts /etc/selinux/dummy/contexts/files
-+cp dbus_contexts /etc/selinux/dummy/contexts
-+cp policy.`checkpolicy -V | awk '{print $1}'` /etc/selinux/dummy/policy
-+FC_FILE=/etc/selinux/dummy/contexts/files/file_contexts
-+if [ ! -f $FC_FILE ]; then
-+	echo "no file contests file.  Please run"
-+	echo "make selinux_policy_install"
-+	exit 1
-+fi
-+
-+cd /etc/selinux/dummy/contexts/files
-+$SF file_contexts /
-+
-+mounts=`cat /proc/$$/mounts | egrep "ext2|ext3|xfs|jfs" | awk '{ print $2 '}`
-+for line in $mounts; do
-+	$SF file_contexts $line
-+done
-+
-+dodev=`cat /proc/$$/mounts | grep "/dev "`
-+if [ "eq$dodev" != "eq" ]; then
-+	mount --move /dev /mnt
-+	$SF file_contexts /dev
-+	mount --move /mnt /dev
-+fi
-+
-diff --git a/scripts/selinux/mdp/Makefile b/scripts/selinux/mdp/Makefile
-new file mode 100644
-index 0000000..b55b2fe
---- /dev/null
-+++ b/scripts/selinux/mdp/Makefile
-@@ -0,0 +1,4 @@
-+hostprogs-y	:= mdp
-+HOST_EXTRACFLAGS += -Isecurity/selinux/include
-+
-+always		:= $(hostprogs-y)
-diff --git a/scripts/selinux/mdp/dbus_contexts b/scripts/selinux/mdp/dbus_contexts
-new file mode 100644
-index 0000000..116e684
---- /dev/null
-+++ b/scripts/selinux/mdp/dbus_contexts
-@@ -0,0 +1,6 @@
-+<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
-+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
-+<busconfig>
-+  <selinux>
-+  </selinux>
-+</busconfig>
-diff --git a/scripts/selinux/mdp/mdp.c b/scripts/selinux/mdp/mdp.c
-new file mode 100644
-index 0000000..e2a73c9
---- /dev/null
-+++ b/scripts/selinux/mdp/mdp.c
-@@ -0,0 +1,242 @@
-+/*
-+ *
-+ * mdp - make dummy policy
-+ *
-+ * When pointed at a kernel tree, builds a dummy policy for that kernel
-+ * with exactly one type with full rights to itself.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2006
-+ *
-+ * Authors: Serge E. Hallyn <serue@us.ibm.com>
-+ */
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <string.h>
-+
-+#include "flask.h"
-+
-+void usage(char *name)
-+{
-+	printf("usage: %s [-m] policy_file context_file\n", name);
-+	exit(1);
-+}
-+
-+void find_common_name(char *cname, char *dest, int len)
-+{
-+	char *start, *end;
-+	
-+	start = strchr(cname, '_')+1;
-+	end = strchr(start, '_');
-+	if (!start || !end || start-cname > len || end-start > len) {
-+		printf("Error with commons defines\n");
-+		exit(1);
-+	}
-+	strncpy(dest, start, end-start);
-+	dest[end-start] = '\0';
-+}
-+
-+#define S_(x) x,
-+static char *classlist[] = {
-+#include "class_to_string.h"
-+	NULL
-+};
-+#undef S_
-+
-+#include "initial_sid_to_string.h"
-+
-+#define TB_(x) char *x[] = {
-+#define TE_(x) NULL };
-+#define S_(x) x,
-+#include "common_perm_to_string.h"
-+#undef TB_
-+#undef TE_
-+#undef S_
-+
-+struct common {
-+	char *cname;
-+	char **perms;
-+};
-+struct common common[] = {
-+#define TB_(x) { #x, x },
-+#define S_(x) 
-+#define TE_(x)
-+#include "common_perm_to_string.h"
-+#undef TB_
-+#undef TE_
-+#undef S_
-+};
-+
-+#define S_(x, y, z) {x, #y},
-+struct av_inherit {
-+	int class;
-+	char *common;
-+};
-+struct av_inherit av_inherit[] = {
-+#include "av_inherit.h"
-+};
-+#undef S_
-+
-+#include "av_permissions.h"
-+#define S_(x, y, z) {x, y, z},
-+struct av_perms {
-+	int class;
-+	int perm_i;
-+	char *perm_s;
-+};
-+struct av_perms av_perms[] = {
-+#include "av_perm_to_string.h"
-+};
-+#undef S_
-+
-+int main(int argc, char *argv[])
-+{
-+	int i, j, mls = 0;
-+	char **arg, *polout, *ctxout;
-+	int classlist_len, initial_sid_to_string_len;
-+	FILE *fout;
-+
-+	if (argc < 3)
-+		usage(argv[0]);
-+	arg = argv+1;
-+	if (argc==4 && strcmp(argv[1], "-m") == 0) {
-+		mls = 1;
-+		arg++;
-+	}
-+	polout = *arg++;
-+	ctxout = *arg;
-+
-+	fout = fopen(polout, "w");
-+	if (!fout) {
-+		printf("Could not open %s for writing\n", polout);
-+		usage(argv[0]);
-+	}
-+
-+	classlist_len = sizeof(classlist) / sizeof(char *);
-+	/* print out the classes */
-+	for (i=1; i < classlist_len; i++) {
-+		if(classlist[i])
-+			fprintf(fout, "class %s\n", classlist[i]);
-+		else
-+			fprintf(fout, "class user%d\n", i);
-+	}
-+	fprintf(fout, "\n");
-+
-+	initial_sid_to_string_len = sizeof(initial_sid_to_string) / sizeof (char *);
-+	/* print out the sids */
-+	for (i=1; i < initial_sid_to_string_len; i++) 
-+		fprintf(fout, "sid %s\n", initial_sid_to_string[i]);
-+	fprintf(fout, "\n");
-+
-+	/* print out the commons */
-+	for (i=0; i< sizeof(common)/sizeof(struct common); i++) {
-+		char cname[101];
-+		find_common_name(common[i].cname, cname, 100);
-+		cname[100] = '\0';
-+		fprintf(fout, "common %s\n{\n", cname);
-+		for (j=0; common[i].perms[j]; j++)
-+			fprintf(fout, "\t%s\n", common[i].perms[j]);
-+		fprintf(fout, "}\n\n");
-+	}
-+	fprintf(fout, "\n");
-+
-+	/* print out the class permissions */
-+	for (i=1; i < classlist_len; i++) {
-+		if (classlist[i]) {
-+			int firstperm = -1, numperms = 0;
-+
-+			fprintf(fout, "class %s\n", classlist[i]);
-+			/* does it inherit from a common? */
-+			for (j=0; j < sizeof(av_inherit)/sizeof(struct av_inherit); j++)
-+				if (av_inherit[j].class == i)
-+					fprintf(fout, "inherits %s\n", av_inherit[j].common);
-+
-+			for (j=0; j < sizeof(av_perms)/sizeof(struct av_perms); j++) {
-+				if (av_perms[j].class == i) {
-+					if (firstperm == -1)
-+						firstperm = j;
-+					numperms++;
-+				}
-+			}
-+			if (!numperms) {
-+				fprintf(fout, "\n");
-+				continue;
-+			}
-+
-+			fprintf(fout, "{\n");
-+			/* print out the av_perms */
-+			for (j=0; j < numperms; j++) {
-+				fprintf(fout, "\t%s\n", av_perms[firstperm+j].perm_s);
-+			}
-+			fprintf(fout, "}\n\n");
-+		}
-+	}
-+	fprintf(fout, "\n");
-+
-+	/* NOW PRINT OUT MLS STUFF */
-+	if (mls) {
-+		printf("MLS not yet implemented\n");
-+		exit(1);
-+	}
-+
-+	/* types, roles, and allows */
-+	fprintf(fout, "type base_t;\n");
-+	fprintf(fout, "role base_r types { base_t };\n");
-+	for (i=1; i < classlist_len; i++) {
-+		if (classlist[i])
-+			fprintf(fout, "allow base_t base_t:%s *;\n", classlist[i]);
-+		else
-+			fprintf(fout, "allow base_t base_t:user%d *;\n", i);
-+	}
-+	fprintf(fout, "user user_u roles { base_r };\n");
-+	fprintf(fout, "\n");
-+
-+	/* default sids */
-+	for (i=1; i < initial_sid_to_string_len; i++)
-+		fprintf(fout, "sid %s user_u:base_r:base_t\n", initial_sid_to_string[i]);
-+	fprintf(fout, "\n");
-+
-+
-+	fprintf(fout, "fs_use_xattr ext2 user_u:base_r:base_t;\n");
-+	fprintf(fout, "fs_use_xattr ext3 user_u:base_r:base_t;\n");
-+	fprintf(fout, "fs_use_xattr jfs user_u:base_r:base_t;\n");
-+	fprintf(fout, "fs_use_xattr xfs user_u:base_r:base_t;\n");
-+	fprintf(fout, "fs_use_xattr reiserfs user_u:base_r:base_t;\n");
-+
-+	fprintf(fout, "fs_use_task pipefs user_u:base_r:base_t;\n");
-+	fprintf(fout, "fs_use_task sockfs user_u:base_r:base_t;\n");
-+
-+	fprintf(fout, "fs_use_trans devpts user_u:base_r:base_t;\n");
-+	fprintf(fout, "fs_use_trans tmpfs user_u:base_r:base_t;\n");
-+	fprintf(fout, "fs_use_trans shm user_u:base_r:base_t;\n");
-+
-+	fprintf(fout, "genfscon proc / user_u:base_r:base_t\n");
-+
-+	fclose(fout);
-+
-+	fout = fopen(ctxout, "w");
-+	if (!fout) {
-+		printf("Wrote policy, but cannot open %s for writing\n", ctxout);
-+		usage(argv[0]);
-+	}
-+	fprintf(fout, "/ user_u:base_r:base_t\n");
-+	fprintf(fout, "/.* user_u:base_r:base_t\n");
-+	fclose(fout);
-+
-+	return 0;
-+}
--- 
-1.5.4.3
-
+Björn
