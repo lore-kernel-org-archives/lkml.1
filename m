@@ -1,65 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759862AbYHVCAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760437AbYHVCBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759862AbYHVCAz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 22:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbYHVCAq
+	id S1760437AbYHVCBW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 22:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759230AbYHVCAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 22:00:46 -0400
-Received: from elasmtp-scoter.atl.sa.earthlink.net ([209.86.89.67]:47548 "EHLO
-	elasmtp-scoter.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752805AbYHVCAp (ORCPT
+	Thu, 21 Aug 2008 22:00:54 -0400
+Received: from elasmtp-kukur.atl.sa.earthlink.net ([209.86.89.65]:58603 "EHLO
+	elasmtp-kukur.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758214AbYHVCAx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 22:00:45 -0400
+	Thu, 21 Aug 2008 22:00:53 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=dk20050327; d=earthlink.net;
-  b=XfGwTwODWoJG4MvEHPkUmFv2P/p+/YfpPruaNOtNd92/4/jCDQ3jxAzB8MouZnqH;
+  b=iePyjIHAoW+iBwyjp/3P/qCNpsal2HHSjjD3CDThhGBKmJQmfuQ8fHkjlZ3ey/+n;
   h=Message-ID:Date:From:Reply-To:To:Subject:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Mailer:X-ELNK-Trace:X-Originating-IP;
-Message-ID: <10836950.1219370444356.JavaMail.root@elwamui-cypress.atl.sa.earthlink.net>
-Date: Thu, 21 Aug 2008 19:00:44 -0700 (GMT-07:00)
+Message-ID: <24000594.1219370450154.JavaMail.root@elwamui-cypress.atl.sa.earthlink.net>
+Date: Thu, 21 Aug 2008 19:00:50 -0700 (GMT-07:00)
 From: Bruce Leonard <brucle@earthlink.net>
 Reply-To: Bruce Leonard <brucle@earthlink.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2][MTD] Support for > 2GiB MTD devices
+Subject: [PATCH 1/2][MTD] Code cleanup for > 2GiB MTD devices
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-Mailer: EarthLink Zoo Mail 1.0
-X-ELNK-Trace: 481fc18f0ae4055094f5150ab1c16ac08868399773331e3065de3f0af26411f149cccb026c7e2c7e350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-ELNK-Trace: 481fc18f0ae4055094f5150ab1c16ac08868399773331e304f90e17fc8bc2c326777ef747ff19f52350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
 X-Originating-IP: 209.86.224.32
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All,
+>From ab740d4e4b786a04a51b1de44e91f51919709e0a Mon Sep 17 00:00:00 2001
+From: brucle <brucle@selinc.com>
+Date: Wed, 13 Aug 2008 17:16:48 -0700
+Subject: [PATCH] Code clean up preping for support of > 2GiB MTD devices
 
-Over the course of the last several months, I've been working on adding support to
-the kernel for MTD devices that exceed 2GiB in size.  In my particular case I
-have a need for 8GiB of NAND flash that appears as a single device.  I'm now
-ready to submit my (first ever!) patch (please be kind :)  ).
+Signed-off-by: Bruce D. Leonard <brucle@selinc.com>
 
-Design Details:
-The problem - The size field of struct mtd_info is only 32-bits, which limits
-	the size of mtd devices to 2GiB (0x80000000).
-The solution - The size of a device can be calculated buy multiplying the number
-	of erase blocks by the erase block size.  I added a new field to struct
-	mtd_info to hold the number of erase blocks and an inline function to
-	determine the device size by returning mtd_info->size if it's non-zero
-	or returning (mtd_info->num_eraseblocks * mtd_info->erasesize).
+---
+ drivers/mtd/nand/nand_base.c |    2 +-
+ drivers/mtd/nand/nand_bbt.c  |    5 ++---
+ 2 files changed, 3 insertions(+), 4 deletions(-)
 
-A couple of comments.  First and foremost, these patches don't completely change
-the MTD layer.  Due to my in-experience outside of what I was focused on
-(NAND/UBI/UBIFS/MTDCHAR) I felt it was best if I restricted my changes to what I
-knew.  If the community feels I need to take these changes into the rest of the
-MTD layer please advise.  Secondly, there were changes that I needed to make in
-mtd-utils, but I again only focused on the UBI sub-set.  mtd-utils no longer builds
-because of the changes (though the UBI tools still build).  But I really do NOT
-feel qualified to make changes to the rest of mtd-utils as they're tools I don't
-use and don't understand and I don't want to accidentaly break something I don't
-understand.  The changes in mtd-utils are the same changes as in
-.../include/linux/mtd/mtd.h and .../include/mtd/mtd-abi.h.  If anyone has a
-suggestion as to how I should handle mtd-utils I would appreciate it.
+diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
+index d1129ba..d5ac675 100644
+--- a/drivers/mtd/nand/nand_base.c
++++ b/drivers/mtd/nand/nand_base.c
+@@ -2042,7 +2042,7 @@ int nand_erase_nand(struct mtd_info *mtd, struct erase_info *instr,
+ 		return -EINVAL;
+ 	}
+ 
+-	instr->fail_addr = 0xffffffff;
++	instr->fail_addr = (typeof(instr->fail_addr))(-1);
+ 
+ 	/* Grab the lock and see if the device is available */
+ 	nand_get_device(chip, mtd, FL_ERASING);
+diff --git a/drivers/mtd/nand/nand_bbt.c b/drivers/mtd/nand/nand_bbt.c
+index 0b1c485..2f9f0f5 100644
+--- a/drivers/mtd/nand/nand_bbt.c
++++ b/drivers/mtd/nand/nand_bbt.c
+@@ -411,7 +411,7 @@ static int create_bbt(struct mtd_info *mtd, uint8_t *buf,
+ 		numblocks = this->chipsize >> (this->bbt_erase_shift - 1);
+ 		startblock = chip * numblocks;
+ 		numblocks += startblock;
+-		from = startblock << (this->bbt_erase_shift - 1);
++		from = (loff_t)startblock << (this->bbt_erase_shift - 1);
+ 	}
+ 
+ 	for (i = startblock; i < numblocks;) {
+@@ -495,7 +495,7 @@ static int search_bbt(struct mtd_info *mtd, uint8_t *buf, struct nand_bbt_descr
+ 		for (block = 0; block < td->maxblocks; block++) {
+ 
+ 			int actblock = startblock + dir * block;
+-			loff_t offs = actblock << this->bbt_erase_shift;
++			loff_t offs = (loff_t)actblock << this->bbt_erase_shift;
+ 
+ 			/* Read first page */
+ 			scan_read_raw(mtd, buf, offs, mtd->writesize);
+@@ -1027,7 +1027,6 @@ int nand_update_bbt(struct mtd_info *mtd, loff_t offs)
+ 	if (!this->bbt || !td)
+ 		return -EINVAL;
+ 
+-	len = mtd->size >> (this->bbt_erase_shift + 2);
+ 	/* Allocate a temporary buffer for one eraseblock incl. oob */
+ 	len = (1 << this->bbt_erase_shift);
+ 	len += (len >> this->page_shift) * mtd->oobsize;
+-- 
+1.5.3.4
 
-Thanks again to everyone who's answered my endless stupid questions.
-
-Bruce
 
