@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbYHVObC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754329AbYHVOdj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753949AbYHVObC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 10:31:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbYHVOaw
+	id S1754329AbYHVOdj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 10:33:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYHVOdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 10:30:52 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:41218 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751560AbYHVOav (ORCPT
+	Fri, 22 Aug 2008 10:33:32 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:14441 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752146AbYHVOdb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 10:30:51 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] ext4 bug fixes
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1KWXf5-0004gv-P7@closure.thunk.org>
-Date: Fri, 22 Aug 2008 10:30:47 -0400
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Fri, 22 Aug 2008 10:33:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jOlrTKV5CaYDdZn4R7rdYQkS5DAqRELnlQdK9hj+56Pn7/T+mV16Oc1A6aXgMqXvdp
+         Y0M1DBuTBIPuo2iAHi6ahWeyqJlbB0p3AUqIJuc+zfqbdpwCnpegzf6IGGExehfmv4ik
+         rr3DM5Pf0moHgUGW+hVigagQ/d2COzlKKGlJU=
+Message-ID: <9e4733910808220733o7a8904do9dec947dde7d09c0@mail.gmail.com>
+Date: Fri, 22 Aug 2008 10:33:30 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Eric Miao" <eric.y.miao@gmail.com>
+Subject: Re: Fundamental Design Flaw of the Device Driver Model?
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <f17812d70808212325m24f25518t5e8dd2fc5e7919b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <f17812d70808212325m24f25518t5e8dd2fc5e7919b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On 8/22/08, Eric Miao <eric.y.miao@gmail.com> wrote:
+======================================================
+>    This, however, creates many questions you have to face with:
+>
+>    1. on what bus shall these sub-devices be?
+>       ** this is the reason I choose to use "platform_device", at least they
+>       can reside on the platform_bus_type, thus platform_driver can be used
+>       for this sub-device
 
-Please pull from:
+Another option is making your own bus. If I understand your hardware
+it effectively has an internal bus.
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
-
-This patch series contains a number of bug fixes that fixes various
-BUG() crashes discovered by early adopters for ext4 and by benchmarkers.
-I'd really like to get these fixes included for 2.6.27.
-
-Thanks!!
-
-						- Ted
-
-Diffstats:
-
- Documentation/filesystems/ext4.txt |    6 +
- fs/ext4/balloc.c                   |    3 +
- fs/ext4/dir.c                      |   20 ++-
- fs/ext4/ext4.h                     |    4 +
- fs/ext4/ext4_extents.h             |    4 +-
- fs/ext4/ext4_jbd2.h                |    8 +
- fs/ext4/extents.c                  |  113 ++++-----
- fs/ext4/ialloc.c                   |    2 +-
- fs/ext4/inode.c                    |  478 ++++++++++++++++++++++++------------
- fs/ext4/mballoc.c                  |   53 ++++-
- fs/ext4/migrate.c                  |    3 +-
- fs/ext4/resize.c                   |    3 +-
- fs/ext4/super.c                    |    1 +
- 13 files changed, 460 insertions(+), 238 deletions(-)
-
-Aneesh Kumar K.V (5):
-      ext4: Handle unwritten extent properly with delayed allocation
-      ext4: Rework the ext4_da_writepages() function
-      ext4: make sure ext4_has_free_blocks returns 0 for ENOSPC
-      ext4: Initialize writeback_index to 0 when allocating a new inode
-      ext4: Fix small file fragmentation
-
-Eric Sandeen (1):
-      ext4: Fix bug where we return ENOSPC even though we have plenty of inodes
-
-Josef Bacik (1):
-      ext4: don't try to resize if there are no reserved gdt blocks left
-
-Mingming Cao (5):
-      ext4: Fix delalloc release block reservation for truncate
-      ext4: journal credits calulation cleanup and fix for non-extent writepage
-      ext4: journal credits reservation fixes for extent file writepage
-      ext4: journal credits reservation fixes for DIO, fallocate
-      ext4: journal credit fix for the delayed allocation's writepages() function
-
-Theodore Ts'o (4):
-      ext4: Fix potential truncate BUG due to i_prealloc_list being non-empty
-      ext4: Fix ext4_dx_readdir hash collision handling
-      ext4: Use ext4_discard_reservations instead of mballoc-specific call
-      ext4: Update documentation to remind users to update mke2fs.conf
-
+-- 
+Jon Smirl
+jonsmirl@gmail.com
