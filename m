@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbYHVMiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758614AbYHVMip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756898AbYHVMiT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 08:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbYHVMiH
+	id S1758614AbYHVMip (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 08:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbYHVMie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 08:38:07 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:39397 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752449AbYHVMiG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 08:38:06 -0400
-Message-ID: <48AEB2D8.7000304@s5r6.in-berlin.de>
-Date: Fri, 22 Aug 2008 14:36:40 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Fri, 22 Aug 2008 08:38:34 -0400
+Received: from mail.ukfsn.org ([77.75.108.10]:39411 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753486AbYHVMid (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 08:38:33 -0400
+Message-ID: <48AEB347.2000200@dgreaves.com>
+Date: Fri, 22 Aug 2008 13:38:31 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-To: jmerkey@wolfmountaingroup.com
-CC: Nick Piggin <nickpiggin@yahoo.com.au>, paulmck@linux.vnet.ibm.com,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [ANNOUNCE] mdb: Merkey's Linux Kernel Debugger  2.6.27-rc4  
-    released
-References: <200808210250.m7L2obNX028353@wolfmountaingroup.com>    <200808212337.38626.nickpiggin@yahoo.com.au>    <48AD7705.2000404@s5r6.in-berlin.de>    <200808221140.25029.nickpiggin@yahoo.com.au>    <tkrat.28e983dc4d04d109@s5r6.in-berlin.de> <42930.166.70.238.46.1219406040.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <42930.166.70.238.46.1219406040.squirrel@webmail.wolfmountaingroup.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, linux-fsdevel@vger.kernel.org,
+       Dave Chinner <david@fromorbit.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Regression? 2.6.27-rc3 segfault on cold boot; not on warm boot.
+References: <48AD3921.5090709@dgreaves.com> <200808212026.17590.rjw@sisk.pl>
+In-Reply-To: <200808212026.17590.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jmerkey@wolfmountaingroup.com wrote:
-[rlock->flags in debug_lock(), debug_unlock()]
-> since this case only
-> occurs when two processors both have an int1 exception (or some exception
-> other than an NMI) and ints are disabled here anyway, its benign.
+Rafael J. Wysocki wrote:
+> [Adding CCs]
+> 
+> [The issue is probably present in 2.6.26 too]
+> 
+> On Thursday, 21 of August 2008, David Greaves wrote:
+>> I have a desktop system that has started having problems booting up in the morning.
+>>
+>> It appears to just happen on more recent kernels.
+>> I was having unrelated CDROM problems with a driver in an old kernel and decided
+>> to test 2.6.27-rcX
+>> The CDROM problem is fine now.
+>>
+>> However I started having problems on -rc1. I found that the machine was hanging
+>> soon after booting and needed a reboot. After a reboot it would work fine for
+>> the rest of the day.
+>> When -rc3 came out I tried that and the problem still appears to be there.
+>>
+>> The normal process is now to boot to single-user, ctrl-alt-sysreq-SUB and then
+>> reboot to multi-user. This isn't ideal.
+>>
+>>
+>> If I cold boot 2.6.25.3 the problem doesn't occur.
+>> I will try different versions over the next few days.
 
-Ah, thanks.  I missed the bigger picture.
--- 
-Stefan Richter
--=====-==--- =--- =-==-
-http://arcgraph.de/sr/
+As promised, I tried 2.6.26.3 this morning and didn't have the problem. I will
+try again a few times to confirm.
+Nb Although the log had an XFS failure, I think the real issue is the segfaults;
+I think XFS is a casuality, not a cause. Th problem almost always results in an
+XFS crash at some point - but usually preceded by many segfaults in random binaries.
+
+David
+
