@@ -1,146 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbYHVLsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbYHVMEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755506AbYHVLsY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 07:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbYHVLsQ
+	id S1754695AbYHVMEZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 08:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbYHVMEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 07:48:16 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50728 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752723AbYHVLsP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 07:48:15 -0400
-Date: Fri, 22 Aug 2008 20:54:05 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>, ryov@valinux.co.jp
-Subject: Re: [PATCH -mm][preview] memcg: a patch series for next [8/9]
-Message-Id: <20080822205405.a08dda6d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080822192943.4009a7b5.nishimura@mxp.nes.nec.co.jp>
-References: <20080819173014.17358c17.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080819173721.750d489e.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080819174404.80dd5102.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080822192943.4009a7b5.nishimura@mxp.nes.nec.co.jp>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Aug 2008 08:04:15 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:60944 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752314AbYHVMEO (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 08:04:14 -0400
+Date: Fri, 22 Aug 2008 14:04:12 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Jared Hulbert <jaredeh@gmail.com>, Linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       =?utf-8?q?J=C3=B6rn?= Engel <joern@logfs.org>, tim.bird@am.sony.com,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 03/10] AXFS: axfs.h
+In-Reply-To: <200808221327.37371.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.64.0808221402170.17105@vixen.sonytel.be>
+References: <48AD00E6.2070505@gmail.com> <200808211424.31966.arnd@arndb.de>
+ <6934efce0808211540p237f2c52pd71c2b955b3f54a8@mail.gmail.com>
+ <200808221327.37371.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-947473005-1219406652=:17105"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Aug 2008 19:29:43 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> Hi.
-> 
-> I think you are making updated ones, I send comments so far.
-> 
-Ah, sorry. I just sent one ;(.
+---584349381-947473005-1219406652=:17105
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-> On Tue, 19 Aug 2008 17:44:04 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > Very experimental...
+On Fri, 22 Aug 2008, Arnd Bergmann wrote:
+> On Friday 22 August 2008, Jared Hulbert wrote:
+> > If I have an array of u64 numbers tracking small numbers (a[0] = 1;
+> > a[1] = 2;) just throwing that onmedia is a big waste.
+> > (0x0000000000000001; 0x0000000000000002)  Having different array types
+> > for different images such as arrays of u8,u16,u32,u64 becomes less
+> > efficient for 3,5,6 and 7 byte numbers, 3 bytes was a particularly
+> > interesting size for me.
 > > 
-> > mem+swap controller prototype.
+> > All I'm doing is removing the totally unnecessary zeros and aligning by bytes.
+> > Take an array of u64 like this :
+> > 0x0000000000000005
+> > 0x0000000000001001
+> > 0x00000000000a0000
 > > 
-> > This patch adds CONFIG_CGROUP_MEM_RES_CTLR_SWAP as memory resource
-> > controller's swap extension.
+> > I strip off the unneeded leading zeros:
+> > 0x000005
+> > 0x001001
+> > 0x0a0000
 > > 
-> > When enabling this, memory resource controller will have 2 limits.
+> > Then pack them to byte alignment:
+> > 0x0000050010010a0000
 > > 
-> >  - memory.limit_in_bytes .... limit for pages
-> >  - memory.memsw_limit_in_bytes .... limit for pages + swaps.
-> > 
-> > Following is (easy) accounting state transion after this patch.
-> > 
-> >    pages   swaps    pages_total   memsw_total
-> >     +1       -           +1           +1        new page allocation.
-> >     -1      +1           -1           -         swap out.
-> >     +1      -1            0           -         swap in (*).
-> >     -       -1           -            -1        swap_free.
-> > 
-> What do you mean by "pages_total"?
+> > Sure it could be encoded more but that would make it harder to extract
+> > the data.  This way I can read the data in one, maybe two, cache
+> > misses.  A couple of shifts to deal with the alignment and endianness
+> > and we are done.
 > 
-On memory resource. 
-  The sum of
-  - mapped anonymous pages 
-  - pages of file cache.
-  - pages of swap cache.
+> So do I understand right that 3 bytes is your minimum size, and going
+> smaller than that would not be helpful? Otherwise I would assume that
+> storing a '5' should only take one byte instead of three.
 
+>From the paper, the minimum size (called `depth') is 1.
 
-> > At swap-out, swp_entry will be charged against the cgroup of the page.
-> > At swap-in, the page will be charged when it's mapped.
-> > (Maybe accounting at read_swap() will be beautiful but we can avoid some of
-> >  error handling to delay accounting until mem_cgroup_charge().)
-> > 
-> > The charge against swap_entry will be uncharged when swap_entry is freed.
-> > 
-> > The parameter res.swaps just includes swaps not-on swap cache.
-> > So, this doesn't show real usage of swp_entry just shows swp_entry on disk.
-> > 
-> IMHO, it would be better to "show" real usage of swp_entry.
-> Otherwise, "sum of swap usage of all groups" != "swap usage of
-> system shown by meminfo"(but it means adding another counter, hmm...).
-> 
-Yes it means to add another counter. I'd like to try it.
+> I don't unsterstand yet why you store the length of each word separate
+> from the word. Most variable-length codes store that implicitly in
+> the data itself, e.g. in the upper three bits, so that for storing
+> 0x5, 0x1001, 0xa0000, this could e.g. end up as 0x054010014a0000,
+> which is shorter than what you have, but not harder to decode.
 
-> Instead of showing the usage of disk_swap, how about showing
-> the memsw total usage, which is to be limited by user.
-> 
+AFAIU, the length (`depth') of each word is not stored separate, as the
+depth is the same for all values in the same table.
 
-Yes, I feel the amount of disk_swap is not very useful in my test.
-Ok, showing memsw total somewhere.
+With kind regards,
 
+Geert Uytterhoeven
+Software Architect
 
-> > This patch doesn't include codes for control files.
-> > 
-> > TODO:
-> >   - clean up. and add comments.
-> >   - support vm_swap_full() under cgroup.
-> Is it needed?
-> 
-maybe.
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-> In my swap controller, swap entries are limited per cgroup.
-> So, to make swap_cgroup_charge() fail less frequently,
-> vm_swap_full() should be calculated per cgroup so that
-> vm can free swap entries in advance.
-> 
-> But I think in mem+swap controller the situation is different.
-> 
-Hmm, I'd like to postpone this until we ends the test.
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-
-> >   - find easier-to-understand protocol....
-> >   - check force_empty....(maybe buggy)
-> >   - support page migration.
-> >   - test!!
-> > 
-> And,
-> - move charge along with task move
-yes and moving charge of on-memory-resource should be done, too.
-
-> - hierarchy support
-> 
-> Of course, more basic features and stabilization should be done first.
-> 
-Yes ;)
-
-> 
-> I agree with this patch as a whole, but I'm worrying about race
-> between swapout and swapin about the same entry(I should consider more...).
-> 
-> 
-swapout/swapin race is guarded by the face I always handle swap-cache.
-
-add_to_swap_cache/delete_from_swap_cache is under lock_page().
-and do_swap_page()'s charging is moved under lock_page().
-
-I saw race with force_empty ;(. I hope it's fixed in the latest version.
-
-Thanks,
--Kame
-
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-947473005-1219406652=:17105--
