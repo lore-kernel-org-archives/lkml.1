@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbYHVUZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758522AbYHVU0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756796AbYHVUZf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 16:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756375AbYHVUYy
+	id S1758522AbYHVU0A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 16:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758504AbYHVUZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 16:24:54 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52682 "EHLO
+	Fri, 22 Aug 2008 16:25:08 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52692 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753410AbYHVUYx (ORCPT
+	with ESMTP id S1758442AbYHVUZH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 16:24:53 -0400
-Date: Fri, 22 Aug 2008 12:52:46 +0200
+	Fri, 22 Aug 2008 16:25:07 -0400
+Date: Fri, 22 Aug 2008 12:56:27 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oneukum@suse.de>, linux-pm@lists.linux-foundation.org,
-       James.Bottomley@hansenpartnership.com,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
-Subject: Re: [linux-pm] Power management for SCSI
-Message-ID: <20080822105246.GB3482@elf.ucw.cz>
-References: <200808191533.15244.oneukum@suse.de> <Pine.LNX.4.44L0.0808191108440.2669-100000@iolanthe.rowland.org>
+To: oneukum@suse.de, linux-pm@lists.linux-foundation.org,
+       James.Bottomley@hansenpartnership.com, linux-kernel@vger.kernel.org,
+       teheo@novell.com, stefanr@s5r6.in-berlin.de
+Cc: Martin.Leisner@xerox.com
+Subject: autosuspend for SCSI devices
+Message-ID: <20080822105626.GA9475@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0808191108440.2669-100000@iolanthe.rowland.org>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+From: Alan Stern <stern@rowland.harvard.edu>
 
-> > - suspending has side effects
-> 
-> I'm not sure what you mean by that.  Suspension always has side effects 
-> of one kind or another.
-> 
-> > Suspension in USB has always side effects. That's not true for other
-> > subsystems.
-> 
-> Name one.  At the very least, suspending a device means you can't use
-> it again without first calling the driver's resume method.  That's a 
-> side effect.
+Add support for autosuspend/autoresume of the SCSI devices. Lowlevel
+driver can use it to spin the disk down... and it is neccessary step
+for powering down the controllers.
 
-IDE, actually. I don't think it is relevant, but you can do hdparm -y,
-and it will automatically spin up when you try to talk to it next
-time.
+Spinning down the disk is useful - saves ~0.5W here, and it is last
+major thing we can do to save power on some small machines like
+Kohjinsha subnotebooks.
 
-								Pavel
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
