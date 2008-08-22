@@ -1,55 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbYHVWk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbYHVWmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbYHVWk3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 18:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYHVWkV
+	id S1756216AbYHVWmE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 18:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbYHVWlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 18:40:21 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:38902 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751816AbYHVWkT (ORCPT
+	Fri, 22 Aug 2008 18:41:52 -0400
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:40818 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752351AbYHVWlv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 18:40:19 -0400
-Date: Fri, 22 Aug 2008 15:40:16 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] smp_call_function: use rwlocks on queues rather
-	than rcu
-Message-ID: <20080822224016.GN6744@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <48AE0883.6050701@goop.org> <20080822062800.GQ14110@elte.hu> <84144f020808220006n25d684b1n9db306ddc4f58c4c@mail.gmail.com> <48AEC6B2.1080701@linux-foundation.org> <20080822151156.GA6744@linux.vnet.ibm.com> <48AEF3FD.70906@linux-foundation.org> <20080822182915.GG6744@linux.vnet.ibm.com> <20080822183346.GS23334@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080822183346.GS23334@one.firstfloor.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 22 Aug 2008 18:41:51 -0400
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: John Ronciak <john.ronciak@gmail.com>, Grant Coady <gcoady.lk@gmail.com>,
+       linux-kernel@vger.kernel.org, neilb@suse.de, bfields@fieldses.org,
+       linux-nfs@vger.kernel.org, Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Bruce Allan <bruce.w.allan@intel.com>,
+       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
+       John Ronciak <john.ronciak@intel.com>,
+       e1000-devel@lists.sourceforge.net
+In-Reply-To: <1219442213.9097.25.camel@localhost>
+References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com>
+	 <1219087258.7192.19.camel@localhost>
+	 <1219400624.18774.67.camel@zakaz.uk.xensource.com>
+	 <1219428489.6919.21.camel@localhost>
+	 <1219428818.27921.43.camel@localhost.localdomain>
+	 <56a8daef0808221233h68853587n6015ca7d809b17e1@mail.gmail.com>
+	 <1219435207.27921.51.camel@localhost.localdomain>
+	 <1219440202.9097.14.camel@localhost>
+	 <1219441041.27921.57.camel@localhost.localdomain>
+	 <1219442213.9097.25.camel@localhost>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-bxvbPgWU/qS2+K/bctcs"
+Date: Fri, 22 Aug 2008 23:41:43 +0100
+Message-Id: <1219444903.27921.65.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+X-SA-Exim-Connect-IP: 192.168.1.5
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 22, 2008 at 08:33:46PM +0200, Andi Kleen wrote:
-> > Would it make sense to push the freed-by-RCU memory further up the
-> > hierarchy, so that such memory is not mistaken for recently freed
-> > hot-in-cache memory?
-> 
-> Right now my impression is that it is not well understood why
-> the kmalloc makes the IPI that much slower. In theory a kmalloc
-> shouldn't be all that slow, it's essentially just a 
-> "disable interrupts; unlink object from cpu cache; enable interrupts"
-> with some window dressing. kfree() is similar.
-> 
-> Does it bounce a cache line on freeing perhaps?
 
-It is indeed easy to focus on the wrong area when attempting to
-improve performance.  Done it many times myself...  :-/
+--=-bxvbPgWU/qS2+K/bctcs
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-							Thanx, Paul
+On Fri, 2008-08-22 at 14:56 -0700, Trond Myklebust wrote:
+> On Fri, 2008-08-22 at 22:37 +0100, Ian Campbell wrote:
+> > I can ssh to the server fine. The same server also serves my NFS home
+> > directory to the box I'm writing this from and I've not seen any troubl=
+e
+> > with this box at all, it's a 2.6.18-xen box.
+>=20
+> OK... Are you able to reproduce the problem reliably?
+
+It usually happens in around a day, but I can't make it happen at will
+so that I can arrange to be present at the time. It has usually locked
+up over night in the past.
+
+> If so, can you provide me with a binary tcpdump or wireshark dump? If
+> using tcpdump, then please use something like
+>=20
+>    tcpdump -w /tmp/dump.out -s 90000 host myserver.foo.bar and port 2049
+
+I'll try leaving this going overnight but using -C and -W to limit the
+size to the disk space available.
+
+> Please also try to provide a netstat dump of the current TCP connections
+> as soon as the hang occurs:
+>=20
+>   netstat -t
+
+Will do it ASAP after it happens.
+
+Ian.
+--=20
+Ian Campbell
+
+revision 1.17.2.7
+date: 2001/05/31 21:32:44;  author: branden;  state: Exp;  lines: +1 -1
+ARRRRGH!!  GOT THE G** D*** SENSE OF A F******* TEST BACKWARDS!
+
+--=-bxvbPgWU/qS2+K/bctcs
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkivQKcACgkQM0+0qS9rzVmsKgCeMaRkuiWw6jzKAcu2lWWP2oGl
+N4AAoIBRSMwibWM9yIxIRXlyEt4siGKM
+=EAxU
+-----END PGP SIGNATURE-----
+
+--=-bxvbPgWU/qS2+K/bctcs--
+
