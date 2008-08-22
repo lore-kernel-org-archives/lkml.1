@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbYHVSii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbYHVSnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756916AbYHVSii (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 14:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbYHVSi3
+	id S1755693AbYHVSnj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 14:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYHVSn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 14:38:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49773 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751297AbYHVSi3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 14:38:29 -0400
-Message-ID: <48AF0735.60402@linux-foundation.org>
-Date: Fri, 22 Aug 2008 13:36:37 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Fri, 22 Aug 2008 14:43:29 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:52772 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751431AbYHVSn2 (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 14:43:28 -0400
+Date: Fri, 22 Aug 2008 19:43:26 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Jared Hulbert <jaredeh@gmail.com>
+Cc: Greg Ungerer <gerg@snapgear.com>, Linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>, tim.bird@am.sony.com,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
+Message-ID: <20080822184326.GE24179@shareable.org>
+References: <48AD00C4.6060302@gmail.com> <20080821110749.GA1926@shareable.org> <6934efce0808210711t686a88eci6eb294dbb54d68fe@mail.gmail.com> <48AE0476.80109@snapgear.com> <20080822181314.GB24179@shareable.org> <6934efce0808221116w76a662b0t954b0922b69d3232@mail.gmail.com> <20080822183713.GC24179@shareable.org>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] smp_call_function: use rwlocks on queues rather	than
- rcu
-References: <48AE0883.6050701@goop.org> <20080822062800.GQ14110@elte.hu> <84144f020808220006n25d684b1n9db306ddc4f58c4c@mail.gmail.com> <48AEC6B2.1080701@linux-foundation.org> <20080822151156.GA6744@linux.vnet.ibm.com> <48AEF3FD.70906@linux-foundation.org> <20080822182915.GG6744@linux.vnet.ibm.com>
-In-Reply-To: <20080822182915.GG6744@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080822183713.GC24179@shareable.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-
->>> So on your these large boxes, read-only cachelines are preferentially
->>> ejected from the cache, so that one should write to per-CPU data
->>> occasionally to keep it resident?  Or is the issue the long RCU grace
->>> periods which allow the structure being freed to age out of all relevant
->>> caches?  (My guess would be the second.)
->> The issue are the RCU grace period that are generally long enough to make the
->> cacheline fall out of all caches.
+Jamie Lokier wrote:
+> Jared Hulbert wrote:
+> > What kind of NOR you using?  That is not what I measure with fast
+> > synchronous burst NOR's.
 > 
-> Would it make sense to push the freed-by-RCU memory further up the
-> hierarchy, so that such memory is not mistaken for recently freed
-> hot-in-cache memory?
+> I think the "fast" in "fast synchronous" gives it away :-)
+> 
+> I'm using Spansion MirrorBit S29GL128N, which reads at about 0.6 MByte/s.
 
-That would mean passing a gfp flag like __GFP_COLD on free from RCU? Or how
-would that work at the higher levels?
+By the way, what speeds do you get on fast synchronous burst NORs - and
+which chips are those?
 
-
+Thanks,
+-- Jamie
