@@ -1,132 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbYHVLRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbYHVLYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755394AbYHVLRU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 07:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbYHVLRN
+	id S1755519AbYHVLYA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 07:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYHVLXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 07:17:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42780 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751519AbYHVLRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 07:17:12 -0400
-Subject: Re: Fundamental Design Flaw of the Device Driver Model?
-From: Liam Girdwood <lrg@kernel.org>
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
-In-Reply-To: <f17812d70808212325m24f25518t5e8dd2fc5e7919b@mail.gmail.com>
-References: <f17812d70808212325m24f25518t5e8dd2fc5e7919b@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 22 Aug 2008 12:17:02 +0100
-Message-Id: <1219403822.10949.29.camel@odin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Aug 2008 07:23:52 -0400
+Received: from [93.163.65.50] ([93.163.65.50]:7431 "EHLO kernel.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751460AbYHVLXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 07:23:52 -0400
+Date: Fri, 22 Aug 2008 13:23:49 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Aaron Carroll <aaronc@gelato.unsw.edu.au>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cfq-iosched: fix queue depth detection
+Message-ID: <20080822112349.GK20055@kernel.dk>
+References: <48AE5FE2.2060003@gelato.unsw.edu.au> <20080822090620.GY20055@kernel.dk> <48AE9CDE.9090504@gelato.unsw.edu.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48AE9CDE.9090504@gelato.unsw.edu.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-22 at 14:25 +0800, Eric Miao wrote:
-> Fundamental Design Flaw of the Device Driver Model?
-> ===================================================
+On Fri, Aug 22 2008, Aaron Carroll wrote:
+> Jens Axboe wrote:
+> >On Fri, Aug 22 2008, Aaron Carroll wrote:
+> >>Hi Jens,
+> >>
+> >>This patch fixes a bug in the hw_tag detection logic causing a huge 
+> >>performance
+> >>hit under certain workloads on real queuing devices.  For example, an FIO 
+> >>load
+> >>of 16k direct random reads on an 8-disk hardware RAID yields about 2 
+> >>MiB/s on
+> >>default CFQ, while noop achieves over 20 MiB/s.
+> >>
+> >>While the solution is pretty ugly, it does have the advantage of adapting 
+> >>to
+> >>queue depth changes.  Such a situation might occur if the queue depth is
+> >>configured in userspace late in the boot process.
+> >
+> >I don't think it's that ugly, and I prefer this logic to the existing
+> >one in fact. Since it's a static property of the device, why did you
+> >change it to toggle the flag back and forth instead of just setting it
+> >once?
 > 
-> Sorry for the misleading subject, its purpose is to draw your attention :-)
-> The ideas below are preliminary and I hope I'm not making serious mistakes
-> here.
+> Because it is possible (albeit uncommon) that the queue depth can change
+> at run time, like the example I gave.  However, there should be no false
+> positives; the flag should only be toggled if the queue depth does change.
+> So even if it doesn't occur often, we can handle this corner case for very
+> little cost.
+
+Good point, the user could fiddle with queue_depth to turn it on or off.
+So the patch is fine from that stand point.
+
+> >doesn't do queueing. So the interesting window is the one where we have
+> >more requests pending yet the driver doesn't ask for it. I'd prefer a
+> >patch that took that more into account, instead of just looking at the
+> >past 50 samples and then toggle the hw_tag flag depending on the
+> >behaviour in that time frame. You could easily have a depth of 1 there
+> >always if it's a sync workload, even if hardware can do tagged queuing.
 > 
-> This question has actually been around in my mind for several months, when
-> I started to work on some devices with multiple functions. Specifically, a
-> Power Management IC (PMIC in short in the following text) usually includes
-> LEDs support (charging, indication...) audio, touch screen, power monitoring,
-> LDOs, DC-DC bucks, and possibly some others.
+> That's exactly what the lines
 > 
-> The initial two ideas came into my mind were:
+> 	if (cfqd->rq_queued <= CFQ_HW_QUEUE_MIN &&
+> 	    cfqd->rq_in_driver <= CFQ_HW_QUEUE_MIN)
+> 		return;
 > 
->    1. separate the functions into multiple devices, write a driver for each
->       of these devices
-> 
+> are for.  It's not just the past 50 samples, but rather 50 samples with
+> sufficient load to see whether the device could be queuing.
 
-I've opted for this option with the WM8350 PMIC driver.
+Alright, that answers that concern. And you still use the same magic
+depth of 4, I think that still makes sense.
 
+Thanks, I'll queue up the patch.
 
->    This, however, creates many questions you have to face with:
-> 
->    1. on what bus shall these sub-devices be?
->       ** this is the reason I choose to use "platform_device", at least they
->       can reside on the platform_bus_type, thus platform_driver can be used
->       for this sub-device
-
-My WM8350 clients are all platform_devices too.
-
-> 
->    2. these devices are actually useless except for linking the sub-device
->       to it's sub-device driver and of course, wasting memory. Normally in
->       the driver, another dedicated device will be created. E.g. let's take
->       a typical simple LED driver as an example:
-> 
-
-They are not useless as most of my client devices _need_ some sort of
-platform data to be passed on for their probe() e.g. my LED driver needs
-to know it's brightness values, trigger etc. They also all need a PMIC
-reference (passed in the platform_data) which they will need to call any
-core PMIC functions e.g. chip read/write
-
-
-> 
->    3. Who should be the correct parent of these LED devices, the intermediate
->       sub-device we created just now? Or the pmic device on the I2C bus?
->       My answer is the the latter, obviously. However, writing code like:
-> 
->       led_classdev_register(pdev->dev.parent, &led_cdev)
-
-Fwiw, I've made the WM8350 I2C driver the parent. The I2C driver also
-contains the core PMIC services e.g. IRQs, GPIO's, IO, etc 
-
-
-> A normal device layout would be:
-> 
->                                         device specific
-> 					virtual bus type
-> 					       |
->          platform_bus_type      i2c_bus_type   |  virtual devices
->                  |                   |         |        |
->      (device)    V                   V         V        V
->    Platform BUS ---> I2C Controller ---> PMIC -+-> LED device (1)
->                                                |
-> 					       +-> LED device (2)
-> 					       |
-> 					       +-> LED device (3)
-> 					       |
-> 					       +-> DC-DC Buck1
-> 					       |
-> 					       +-> DC-DC Buck2
-> 					       |
-> 					       +-> LDO1
-> 					       |
-> 					       +-> LDO2
-> 					       |
-> 					       +-> Backlight PWM1
-> 					       |
-> 					       +-> Backlight PWM2
-> 					       |
-> 					      ...
-> 
-
-Ok, I basically have :-
-
-                                 Platform devices
-                                     |        |
-                                     V        V
-Platform Bus --> I2C controller --> PMIC +-> LED1
-                                         +-> LED2
-                                         +-> Audio
-                                         +-> DCDC1
-                                         +-> Backlight
-
-I originally had a PMIC bus (like above) but decided it was easier just
-to use the existing kernel infrastructure. My I2C PMIC driver just
-registers the client platform_devices when it probes.
-
-Cheers
-
-Liam
+-- 
+Jens Axboe
 
