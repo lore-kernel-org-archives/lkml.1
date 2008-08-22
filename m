@@ -1,114 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbYHVOB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYHVODS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754456AbYHVOB6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 10:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbYHVOBu
+	id S1754201AbYHVODS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 10:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbYHVODH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 10:01:50 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:39597 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752701AbYHVOBt (ORCPT
+	Fri, 22 Aug 2008 10:03:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47954 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752608AbYHVODG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 10:01:49 -0400
-Message-ID: <48AEC678.8060008@s5r6.in-berlin.de>
-Date: Fri, 22 Aug 2008 16:00:24 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Fri, 22 Aug 2008 10:03:06 -0400
+Message-ID: <48AEC6B2.1080701@linux-foundation.org>
+Date: Fri, 22 Aug 2008 09:01:22 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-To: Eric Miao <eric.y.miao@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Liam Girdwood <lrg@kernel.org>,
-       pHilipp Zabel <philipp.zabel@gmail.com>
-Subject: Re: Fundamental Design Flaw of the Device Driver Model?
-References: <f17812d70808212325m24f25518t5e8dd2fc5e7919b@mail.gmail.com>
-In-Reply-To: <f17812d70808212325m24f25518t5e8dd2fc5e7919b@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 2/2] smp_call_function: use rwlocks on queues rather than
+ rcu
+References: <48AE0883.6050701@goop.org> <20080822062800.GQ14110@elte.hu> <84144f020808220006n25d684b1n9db306ddc4f58c4c@mail.gmail.com>
+In-Reply-To: <84144f020808220006n25d684b1n9db306ddc4f58c4c@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Miao wrote:
-> I'd really like to blame the device model that prevent me from writing a
-> perfect driver for such multi-function devices, otherwise I'd like to
-> blame the semiconductor manufacturers to come up with such devices making
-> us write ugly drivers. But I couldn't:
+Pekka Enberg wrote:
+> Hi Ingo,
 > 
->    1. the PMIC design is nature, if I were the PMIC designer, with so many
->       analog circuitry already built-in, I would also add ADC, Touch, Audio
->       PWM, and many others to make them squeeze into the tiny chip. (No,
->       not including using I2C bus, which I'd prefer to avoid)
+> On Fri, Aug 22, 2008 at 9:28 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>>
+>>> RCU can only control the lifetime of allocated memory blocks, which
+>>> forces all the call structures to be allocated.  This is expensive
+>>> compared to allocating them on the stack, which is the common case for
+>>> synchronous calls.
+>>>
+>>> This patch takes a different approach.  Rather than using RCU, the
+>>> queues are managed under rwlocks.  Adding or removing from the queue
+>>> requires holding the lock for writing, but multiple CPUs can walk the
+>>> queues to process function calls under read locks.  In the common
+>>> case, where the structures are stack allocated, the calling CPU need
+>>> only wait for its call to be done, take the lock for writing and
+>>> remove the call structure.
+>>>
+>>> Lock contention - particularly write vs read - is reduced by using
+>>> multiple queues.
+>> hm, is there any authorative data on what is cheaper on a big box, a
+>> full-blown MESI cache miss that occurs for every reader in this new
+>> fastpath, or a local SLAB/SLUB allocation+free that occurs with the
+>> current RCU approach?
 > 
->    2. There's no fundamental flaw in the device model (sorry for the title),
->       of course, after weeks of reviewing the underlying code.
-> 
-> So probably, we are writing drivers in an incorrect way, that we have
-> ignored for the following reasons:
-> 
->    1. Most Linux developers are working on the PC world, which usually don't
->       have to care about the multi-function devices, one PCI card, one PCI
->       device, and one PCI device one function, we have a PCI driver to handle
->       that, in that PCI driver, implement the function we need, that's all.
-> 
->    2. Even if there are multiple sub-devices, they are probably of the same
->       functionality, and creating an array is easy, managing them in a whole
->       in the driver is really not a big deal.
-> 
->    3. We don't strictly distinguish between a physical device and a virtual
->       device, a physical device driver and a virtual device driver. E.g. a
->       virtual device could be a "net_device", "mtd_device", "led_classdev",
->       and many others
+> Christoph might have an idea about it.
 
-I didn't read and understand all of your post.  Nevertheless I dare to
-comment on these last 3 points here, because they don't fully match what
-we already have been dealing with for a long time now.  For example,
-SCSI (including newer transport types over serial buses or networks)
-deals with target devices which have children called logical units.
-Logical units of the same target can have very different functionality
-(= implement different command sets) while there is still a dependency
-of the logical units on the target which provides them.  Other example:
- USB presumably deals with multi-function devices with some inner
-structure and dependency too.  (I don't know details.)
+Its on the stack which is presumably hot so no cache miss? If its async then
+presumably we do not need to wait so its okay to call an allocator.
 
-Ditto FireWire:  There are "nodes" on a bus, and each node can have 0..n
-"units".  The units can implement various different protocols.  During
-the presence of a node on the bus, units on it can come and go at any
-time.  (Our drivers handle this in a simplified manner though.)  The
-ieee1394 driver stack and its future replacement, the firewire stack,
-instantiate a struct device for each node, and a struct device for each
-unit.  There are appropriate parent-child relationships between them.
-(Furthermore, node devices are children of the respective bus controller
-device.)
+Generally: The larger the box (longer cacheline acquisition latencies) and the
+higher the contention (cannot get cacheline because of contention) the better
+a slab allocation will be compared to a cacheline miss.
 
-All these devices have the same bus_type.  The older ieee1394 core
-distinguishes between node devices and unit devices by means of
-different class devices.  The newer, leaner firewire core distinguishes
-between them by means of different device_type.
+RCU is problematic because it lets cachelines get cold. A hot cacheline that
+is used frequently read and written to by the same cpu is very good thing for
+performace.
 
-There are high-level drivers which are bound to unit devices, but not to
-node devices.  These drivers have the necessary knowledge of the
-hierarchy though because their business with a unit device typically
-also involves some dealings with the parent and grandparent.
-
-(Types of the new stack:  struct fw_device and struct fw_unit in
-drivers/firewire/fw-device.[hc],
-types of the old stack:  struct node_entry and struct unit_directory in
-drivers/ieee1394/nodemgr.[hc])
-
-Anyway; there are several approaches to multi-function devices possible.
-Wherever you go, the goal should be to keep it simple.  (The ieee1394
-stack is not a good example for this; the firewire stack is better in
-this regard.)  It typically makes a lot of sense to create struct device
-based objects _not_ based on which boundaries the silicon draws, but
-which functionality is there.  E.g. if you can operate the various
-functions of a hardware by means of separate drivers that don't
-interfere a lot with each other (a core layer may control such
-interferences), then separate struct device embedding objects for each
-functionality are a good idea.
-
-And you may not even have to resort to the term "virtual" when talking
-about devices or device types or bus types if you structure it all
-nicely and reasonably simple.
--- 
-Stefan Richter
--=====-==--- =--- =-==-
-http://arcgraph.de/sr/
