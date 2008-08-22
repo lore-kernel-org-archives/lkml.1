@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759138AbYHVCFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758208AbYHVCKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759138AbYHVCFT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 22:05:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbYHVCFF
+	id S1758208AbYHVCKa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 22:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYHVCKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 22:05:05 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:35941 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751611AbYHVCFE (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 22:05:04 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=tLUS7VLkjZK0iAYMM86gUeONjtoldl2j2v54MZrFsCZwkJ0iuRWpCPccD71PGsBvsMZfjJk16R/rMQBTTT8oXO32K7KOh6Js2M2zwStIx0ANHPtoKZJ6o1y4k7xmvKhKse/aDfQqE9+1AmmbeL7T/RwzZ+di9gqcxgB5hFotgZk=  ;
-X-YMail-OSG: uaS5cgQVM1mqCT59UGF1mlGOqpBFVwOPUMmnzgqJCIHh2AelINm7DzEmFeOB2iioG.IX5SBCqFQUU7cI0MDzgWN8W1EHJ39yUrX039Nc2yKTzOxMTa5ilw3GIe9u9FuKIdI-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Jared Hulbert" <jaredeh@gmail.com>
-Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
-Date: Fri, 22 Aug 2008 12:04:57 +1000
-User-Agent: KMail/1.9.5
-Cc: "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>,
-       Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       "=?utf-8?q?J=C3=B6rn?= Engel" <joern@logfs.org>, tim.bird@am.sony.com,
-       cotte@de.ibm.com
-References: <48AD00C4.6060302@gmail.com> <ac9c93b10808202332n2654884eh877848df2da59f20@mail.gmail.com> <6934efce0808211232i21fcf347vb6baa6502246adb2@mail.gmail.com>
-In-Reply-To: <6934efce0808211232i21fcf347vb6baa6502246adb2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Aug 2008 22:10:22 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39586 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752701AbYHVCKU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 22:10:20 -0400
+Date: Fri, 22 Aug 2008 04:12:21 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Dave Airlie <airlied@gmail.com>, Rene Herman <rene.herman@keyaccess.nl>,
+       Ingo Molnar <mingo@elte.hu>, "Li, Shaohua" <shaohua.li@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: AGP and PAT (induced?) problem (on AMD family 6)
+Message-ID: <20080822021221.GD23334@one.firstfloor.org>
+References: <20080819190757.GA17470@linux-os.sc.intel.com> <20080820100440.GE28492@elte.hu> <48ABF6DC.8070305@keyaccess.nl> <48AC29CA.1060203@keyaccess.nl> <20080820194127.GA10887@linux-os.sc.intel.com> <48AC8F69.4050201@keyaccess.nl> <21d7e9970808201446k3c1a6bc1naf04568a8ad06ed4@mail.gmail.com> <20080820221630.GA3598@linux-os.sc.intel.com> <87wsibxcdh.fsf@basil.nowhere.org> <20080821211302.GD1152@linux-os.sc.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808221204.57413.nickpiggin@yahoo.com.au>
+In-Reply-To: <20080821211302.GD1152@linux-os.sc.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 August 2008 05:32, Jared Hulbert wrote:
-> > Jared, nice work!
+> Andi, we are planning to add couple of page flags which will track
 
-> > - would axfs be suitable as a filesystem on a ram disk?
->
-> It could be.  I plan on implementing support for brd.  That might work
-> nicely.
+page flags are still scarce unfortunately, at least on 32bit.
+It's a little better now than it used to be (at some point
+they were nearly out before some were reclaimed), but adding a lot 
+of flags is still difficult. 
 
-I was going to take a look at this too. With any luck, it should be
-little effort required as it looks like you have the block device
-support in place?
+In interest of full disclosure I need at least two for other
+work too.
 
-This filesystem actually should in theory work fairly well with brd,
-because then we wouldn't have to bring the data over into pagecache
-for frequently used pages but we can retain the compressed storage
-for the infrequently used stuff.
+On 64bit adding a lot of new flags is fine, but 64bit only
+solutions are not good in this case.
 
-I say in theory because I don't know of any serious users (except
-kernel testing) of brd :)
+> the memory attribute of the page. We need to do some checks like,
+> allow the memory attribute of the page to be changed, only if it is not
+> mapped any where and not on free lists(like the in the X driver case,
+> where they allocate the page and then change the attribute). Similarly,
+> in generic -mm, we need to ensure that the page before it gets added to free
+> list, has the right memory attribute etc.
+
+You want to handle that in __free_pages? 
+
+I would have thought that should be handled in some higher level
+function which could just check the memattr.
+
+ If the driver is exposing this
+> page with special attribute, then it is drivers responsibility to
+> use the same attribute across all the mappings.
+> 
+> Is there a reason why this won't work with anonymous pages? Can you please
+> elaborate.
+
+The issue is just if you reuse the two list heads in struct page
+because they're already used by the
+
+Adding flags does not conflict here of course.
+
+> > Also it doesn't fix the scalability of the data structure anyways
+> > (a list is a list),  just saves some memory.
+> 
+> With this, we will track only the reserved regions using the linked list
+> and typically these reserved regions will be small number (may be huge
+> contiguous chunks but total number of such chunks will be reasonably smaller).
+
+Reserved region defined how exactly?
+
+-Andi
