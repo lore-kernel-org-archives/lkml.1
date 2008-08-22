@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758932AbYHVVUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758962AbYHVVVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758932AbYHVVUi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 17:20:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbYHVVUa
+	id S1758962AbYHVVVi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 17:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbYHVVVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 17:20:30 -0400
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:42045 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755722AbYHVVU3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 17:20:29 -0400
-Message-ID: <48AF2D8E.9000405@cs.columbia.edu>
-Date: Fri, 22 Aug 2008 17:20:14 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Fri, 22 Aug 2008 17:21:24 -0400
+Received: from peff.net ([208.65.91.99]:1294 "EHLO peff.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753056AbYHVVVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 17:21:23 -0400
+Date: Fri, 22 Aug 2008 17:21:21 -0400
+From: Jeff King <peff@peff.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Junio C Hamano <gitster@pobox.com>, pasky@suse.cz, Alan.Brunelle@hp.com,
+       linux-kernel@vger.kernel.org, git@vger.kernel.org
+Subject: Re: Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
+Message-ID: <20080822212121.GA31546@coredump.intra.peff.net>
+References: <48A36838.3050309@hp.com> <20080819124602.9e8e69f7.akpm@linux-foundation.org> <48AEDD3D.4060507@hp.com> <20080822092549.ddcb7e79.akpm@linux-foundation.org> <20080822171651.GP10544@machine.or.cz> <20080822105136.a8432875.akpm@linux-foundation.org> <7v7ia8ahgu.fsf@gitster.siamese.dyndns.org> <20080822141651.fe16ed99.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Dave Hansen <dave@sr71.net>
-CC: containers@lists.linux-foundation.org, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, arnd@arndb.de
-Subject: Re: [RFC v2][PATCH 1/9] Create trivial sys_checkpoint/sys_restart
- syscalls
-References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>	 <Pine.LNX.4.64.0808202302510.17436@takamine.ncl.cs.columbia.edu> <1219433578.20559.98.camel@nimitz>
-In-Reply-To: <1219433578.20559.98.camel@nimitz>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080822141651.fe16ed99.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 22, 2008 at 02:16:51PM -0700, Andrew Morton wrote:
 
-
-Dave Hansen wrote:
-> On Wed, 2008-08-20 at 23:03 -0400, Oren Laadan wrote:
->> 6/unistd_32.h
->> index d739467..88bdec4 100644
->> --- a/include/asm-x86/unistd_32.h
->> +++ b/include/asm-x86/unistd_32.h
->> @@ -338,6 +338,8 @@
->>   #define __NR_dup3             330
->>   #define __NR_pipe2            331
->>   #define __NR_inotify_init1    332
->> +#define __NR_checkpoint                333
->> +#define __NR_restart           334
->>
->>   #ifdef __KERNEL__
+> Sure, but
 > 
-> Uh oh.  These got whitespace mangled somehow.  I'll look through them,
-> but probably can't produce patches on top of them for now.
+> a) whoever added a change like that without also causing the build to
+>    break is slappable and
+
+Well, the point is to find out _who_ to slap. ;)
+
+> b) there are now two commits (one in each branch) either one of
+>    which, when applied on top of the other branch will introduce the
+>    regression.
 > 
+>    That's useful infomation, but we don't know how to get
+>    git-bisect to give it to us.
+>
+> It's pretty simple.  If git-bisect tells us that the regression was
+> introduced by a merge commit, we want to perform a bisection within
+> that merge's individual commits.
 
-Oops .. not sure what happened.
-I'll re-send after addressing the recent comments.
+I mentioned linearizing the two lines of development in another
+message in this thread. But there are, of course, two linearizations,
+neither of which might be possible to generate automatically, and one
+might give you a better answer than the other.
 
-Oren.
-
+-Peff
