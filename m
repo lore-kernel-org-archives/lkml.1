@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbYHVRj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbYHVRkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756104AbYHVRj0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 13:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbYHVRjT
+	id S1756303AbYHVRkH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 13:40:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbYHVRjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 13:39:19 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:2257 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753035AbYHVRjS (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 13:39:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ksXhmdVewAtGF4mpo5Nabi1itaptrCcgxp30TIXxqBzLBhdUa/NObLhiHzDuXXOF8/
-         ynU+k3KD5CHaaIVxTzrQB5e2Bv+DMqJrrKMYbHDO4jzdLOsNDaqm58pGNE2ScKa1T0vz
-         SOCP/zfEOnCFEqDvuyWahQJY6/eEcHmaVD+7A=
-Message-ID: <6934efce0808221039o3ea57e35ka24a617621e2646e@mail.gmail.com>
-Date: Fri, 22 Aug 2008 10:39:18 -0700
-From: "Jared Hulbert" <jaredeh@gmail.com>
-To: "Bernhard Reutner-Fischer" <rep.dot.nop@gmail.com>
-Subject: Re: [PATCH 07/10] AXFS: axfs_bdev.c
-Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       "=?UTF-8?Q?J=C3=B6rn_Engel?=" <joern@logfs.org>, tim.bird@am.sony.com,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-In-Reply-To: <20080822125440.GA1396@mx.loc>
+	Fri, 22 Aug 2008 13:39:52 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:48040 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753661AbYHVRjv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 13:39:51 -0400
+Date: Fri, 22 Aug 2008 13:39:50 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, <linux-usb@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: 2.6.27-rc4: 90% system time because of khubd, unable to reboot
+In-Reply-To: <200808222109.55358.arvidjaar@mail.ru>
+Message-ID: <Pine.LNX.4.44L0.0808221333110.2230-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48AD010B.6030209@gmail.com> <20080822125440.GA1396@mx.loc>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> mismatch between documentation and implementation WRT the function name ;)
-oops.
+On Fri, 22 Aug 2008, Andrey Borzenkov wrote:
 
->>+{
->>+      struct axfs_super *sbi = AXFS_SB(sb);
->>+      u64 boffset = AXFS_FSOFFSET_2_DEVOFFSET(sbi, fsoffset);
->>+      u64 blocks;
->>+      u64 blksize = sb->s_blocksize;
->>+      unsigned long dst;
->>+      unsigned long src;
->>+      sector_t block;
->>+      size_t bytes;
->>+      struct buffer_head *bh;
->>+      u64 copied = 0;
->>+
->>+      if (len == 0)
->>+              return 0;
->>+
->>+      blocks = len / blksize;
->>+      if ((len % blksize) > 0)
->>+              blocks += 1;
->>+
->>+      while (copied < len) {
->>+              /* Explicit casting for ARM linker errors. */
->
-> did it try to emit some external div()? Is this still needed?
+> > > reverting 38b375d9610e2467cb793a84d17c6f65e44cdb39 fixed it
+> > > 
+> > 
+> > ... that is:
+> > 
+> > commit 38b375d9610e2467cb793a84d17c6f65e44cdb39
+> > Author: Alan Stern <stern@rowland.harvard.edu>
+> > Date:   Mon Jul 21 09:56:26 2008 -0400
+> > 
+> >     USB: OHCI: fix system hang caused by earlier patch
+> > 
+> >     Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> >     Tested by: Andrey Borzenkov <arvidjaar@mail.ru>
+> >     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > 
+> > so it apparently used to work for you at that time.  What gives?
+> > 
+> 
+> Well, you should not commit a fix without commiting code that has been
+> fixed first :)
 
-exactly.  I haven't heard otherwise, it was a Freescale ARM11 build
-that had the issue... I don't have the set up.
+Actually the code to be fixed _was_ committed first -- but then it was 
+reverted before the fix was accepted, so the fix was merged without it.
+
+My advice is not to worry about it.  That code has been sent once again
+to Linus -- it's not merged yet but presumably it will be soon.  
+Certainly before 2.6.27-rc5 appears.
+
+On the other hand, I still have to wonder how the fix could have caused
+your problem without the original patch in place.  The fix itself
+should have been totally innocuous.
+
+Alan Stern
+
