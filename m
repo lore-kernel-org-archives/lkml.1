@@ -1,33 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbYHVPzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754020AbYHVQCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753954AbYHVPzB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 11:55:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbYHVPyv
+	id S1754020AbYHVQCT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 12:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYHVQCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 11:54:51 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:42511 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752592AbYHVPyv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 11:54:51 -0400
-Subject: RE: in 2.6.23-rc3-git7 in do_cciss_intr
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>
-In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A77883511810706@GVW0547EXC.americas.hpqcorp.net>
-References: <48AD02B2.7020004@oracle.com>
-	 <0F5B06BAB751E047AB5C87D1F77A778835116209D3@GVW0547EXC.americas.hpqcorp.net>
-	 <20080821084333.c471b439.randy.dunlap@oracle.com>
-	 <0F5B06BAB751E047AB5C87D1F77A7788351181004C@GVW0547EXC.americas.hpqcorp.net>
-	 <20080821091514.8f56e2d5.randy.dunlap@oracle.com>
-	 <0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net>
-	 <20080821172653.3e3e855c.randy.dunlap@oracle.com>
-	 <0F5B06BAB751E047AB5C87D1F77A77883511810706@GVW0547EXC.americas.hpqcorp.net>
+	Fri, 22 Aug 2008 12:02:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34809 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752713AbYHVQCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 12:02:09 -0400
+Subject: [PATCH] TPM: include subscribers-only notation in MAINTAINERS
+From: Eric Paris <eparis@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: debora@linux.vnet.ibm.com, srajiv@linux.vnet.ibm.com, tpm@selhorst.net
 Content-Type: text/plain
-Date: Fri, 22 Aug 2008 10:54:46 -0500
-Message-Id: <1219420487.3339.22.camel@localhost.localdomain>
+Date: Fri, 22 Aug 2008 11:55:19 -0400
+Message-Id: <1219420519.3613.16.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -35,62 +23,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-22 at 15:48 +0000, Miller, Mike (OS Dev) wrote:
-> 
-> > -----Original Message-----
-> > From: Randy Dunlap [mailto:randy.dunlap@oracle.com]
-> > Sent: Thursday, August 21, 2008 7:27 PM
-> > To: Miller, Mike (OS Dev)
-> > Cc: lkml; scsi; akpm
-> > Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
-> >
-> > On Thu, 21 Aug 2008 16:25:24 +0000 Miller, Mike (OS Dev) wrote:
-> >
-> > > > >
-> > > > > Randy,
-> > > > > We know of a race condition in cciss_init_one. It's fixed
-> > > > in 2.6.26 I believe. Here's the patch:
-> > > > >
-> > > > >
-> > > >
-> > http://groups.google.com/group/linux.kernel/browse_thread/thread/7b3
-> > > > 9f
-> > > > >
-> > 2b77622ab03/4f5f45c008655ca1?hl=en&lnk=gst&q=cciss#4f5f45c008655ca
-> > > > > 1
-> > > >
-> > > >
-> > > > Mike,
-> > > > Sorry, but my fingers have typoed the $subject.  My bad.
-> > > > Kernel is 2.6.27-rc3-git7 (from above):
-> > > >
-> > > > > > > > Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
-> > > > > > > > Pid: 0, comm: swapper Not tainted 2.6.27-rc3-git7 #1
-> > > > > > > > RIP: 0010:[<ffffffffa001bb68>]  [<ffffffffa001bb68>]
-> > > > > > > > do_cciss_intr+0x627/0xa6c [cciss]
-> > > >
-> > > Hmmmmm, let me know what happens from your retest. I'll
-> > look at this
-> > > as soon as I finish what I'm doing now. We trying to spin
-> > for our test
-> > > teams but I have something hopelessly broken. :(
-> >
-> > It didn't BUG in the retest.  That just means that it's more
-> > difficult to find/fix, right?
-> 
-> Yup.
+Include subscribers-only notation in the MAINTAINERS information for the
+tpm development mailing list so people like me don't get rejected
+sending mails to closed lists next time.
 
-Randy,
+---
 
-If you can't reproduce it, could you use the debug information or gdb to
-tell us what line in the source code this:
+ MAINTAINERS |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-do_cciss_intr+0x627
-
-corresponds to?  That might help isolating the problem.
-
-Thanks,
-
-James
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 663485b..44f8006 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4132,7 +4132,7 @@ W:	http://tpmdd.sourceforge.net
+ P:	Marcel Selhorst
+ M:	tpm@selhorst.net
+ W:	http://www.prosec.rub.de/tpm/
+-L:	tpmdd-devel@lists.sourceforge.net
++L:	tpmdd-devel@lists.sourceforge.net (subscribers-only)
+ S:	Maintained
+ 
+ TRIVIAL PATCHES
 
 
