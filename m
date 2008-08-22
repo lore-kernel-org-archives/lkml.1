@@ -1,94 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbYHVSPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbYHVSQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757079AbYHVSPV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 14:15:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbYHVSPF
+	id S1757271AbYHVSQe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 14:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbYHVSQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 14:15:05 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39408 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753290AbYHVSPD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 14:15:03 -0400
-Date: Fri, 22 Aug 2008 14:14:58 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "axboe@kernel.dk" <axboe@kernel.dk>,
-       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] Implement generic freeze feature
-Message-ID: <20080822181458.GA15469@infradead.org>
-References: <20080818212819t-sato@mail.jp.nec.com>
+	Fri, 22 Aug 2008 14:16:22 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:5691 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750824AbYHVSQV (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 14:16:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=pZprWEcA9ilGNmVzHMq+GoqEBJglEZMH3n4WaRzrPX4hjBAtH6V3peeBU2U7iez7rZ
+         xkE+Ci5lp9Sqwy55eM1X9r5e3mAUg8g6TN0rJOLvSlD9YspVQkYme1l0KBdRfRQIwTFS
+         THZwtLMYlWBI1vZ3ZwN6yr0KjGkBMMHudIlQw=
+Message-ID: <6934efce0808221116w76a662b0t954b0922b69d3232@mail.gmail.com>
+Date: Fri, 22 Aug 2008 11:16:20 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: "Jamie Lokier" <jamie@shareable.org>
+Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
+Cc: "Greg Ungerer" <gerg@snapgear.com>, Linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       "=?UTF-8?Q?J=C3=B6rn_Engel?=" <joern@logfs.org>, tim.bird@am.sony.com,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+In-Reply-To: <20080822181314.GB24179@shareable.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080818212819t-sato@mail.jp.nec.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <48AD00C4.6060302@gmail.com> <20080821110749.GA1926@shareable.org>
+	 <6934efce0808210711t686a88eci6eb294dbb54d68fe@mail.gmail.com>
+	 <48AE0476.80109@snapgear.com> <20080822181314.GB24179@shareable.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 18, 2008 at 09:28:19PM +0900, Takashi Sato wrote:
-> +	down(&bdev->bd_freeze_sem);
-> +	bdev->bd_freeze_count++;
-> +	if (bdev->bd_freeze_count > 1) {
-> +		sb = get_super(bdev);
-> +		drop_super(sb);
-> +		up(&bdev->bd_freeze_sem);
-> +		return sb;
-> +	}
-> +
->  	down(&bdev->bd_mount_sem);
+On Fri, Aug 22, 2008 at 11:13 AM, Jamie Lokier <jamie@shareable.org> wrote:
+> Greg Ungerer wrote:
+>> One thing for sure is that many people who do non-MMU setups
+>> are interested in XIP to get the space savings. These are very
+>> often small devices with very constrained RAM and flash. (For
+>> whatever it is worth single NOR flash only boards are common in
+>> these smaller form factors :-)
+>
+> I'm using XIP on a device with 32MB RAM.  The reason I use it is
+> _partly_ to save RAM, partly because programs start about 10 times
+> faster (reading NOR flash is slow and I keep the XIP region in RAM)
 
-Now you have a reference counter of freezes which actually is pretty
-sensible, but also needs some documentation.  What I don't understand
-here at all is why you do the get_super/drop_super in the already frozen
-case.
-
-Now that the freeze_count has replaced one of the uses of bd_mount_sem
-you should also replace the other use in the unmount path by simply
-checking for the freez_count and abort if it's set.  To do so you'll
-need to hold the bd_mount_sem over the whole unmount operation to
-prevent new frezes from coming in.
-
-As others noted it should be a mutex and not a semaphore.
-
->  /*
-> + * ioctl_freeze - Freeze the filesystem.
-> + *
-> + * @filp:	target file
-> + *
-> + * Call freeze_bdev() to freeze the filesystem.
-> + */
-> +static int ioctl_freeze(struct file *filp)
-
-This is not quite kerneldcoc format, which would ne a /** as commnt
-start.  But I don't think the comment is actually needed, it's a pretty
-obvious file scope function. (Same commnt also applies to ioctl_thaw)
-
-> +	struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
-> +
-> +	if (!capable(CAP_SYS_ADMIN))
-> +		return -EPERM;
-> +
-> +	/* If filesystem doesn't support freeze feature, return. */
-> +	if (sb->s_op->write_super_lockfs == NULL)
-> +		return -EOPNOTSUPP;
-> +
-> +	/* If a regular file or a directory isn't specified, return. */
-> +	if (sb->s_bdev == NULL)
-> +		return -EINVAL;
-
-I don't understand this commnt.  What you are checking is that the
-filesystem has a non-NULL s_bdev, which implies a not blockdevice-backed
-filesystem.
-
+What kind of NOR you using?  That is not what I measure with fast
+synchronous burst NOR's.
