@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760257AbYHVHGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759624AbYHVHK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760257AbYHVHGY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 03:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755659AbYHVHGG
+	id S1759624AbYHVHK2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 03:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYHVHKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 03:06:06 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:10976 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755663AbYHVHGE (ORCPT
+	Fri, 22 Aug 2008 03:10:12 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:61796 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753644AbYHVHKL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 03:06:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=xDHx8qnE45bqXu9C6pWYMW7WWcYrB8hyh72zSzTQlU7d1tvDwTyEuK83u8d7h4LRo1
-         vPKjs2SPotuCLtOq3V0LCnnSrrwzOjOKNbFTJVLd1+KpeDHHRJZE4biNZeTo/na4U4EC
-         ADnjSWrhcTN8cEZsHKFjX5mdVKzHmk9Hyu064=
-Message-ID: <84144f020808220006n25d684b1n9db306ddc4f58c4c@mail.gmail.com>
-Date: Fri, 22 Aug 2008 10:06:02 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 2/2] smp_call_function: use rwlocks on queues rather than rcu
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Suresh Siddha" <suresh.b.siddha@intel.com>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Rusty Russell" <rusty@rustcorp.com.au>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       "Christoph Lameter" <cl@linux-foundation.org>
-In-Reply-To: <20080822062800.GQ14110@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48AE0883.6050701@goop.org> <20080822062800.GQ14110@elte.hu>
-X-Google-Sender-Auth: 47a241c0048cbdc6
+	Fri, 22 Aug 2008 03:10:11 -0400
+Date: Fri, 22 Aug 2008 01:09:58 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 1/3] Implement generic freeze feature
+In-reply-to: <20080821125841.a04a706f.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Takashi Sato <t-sato@yk.jp.nec.com>, linux-fsdevel@vger.kernel.org,
+       dm-devel@redhat.com, viro@ZenIV.linux.org.uk,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, hch@infradead.org,
+       axboe@kernel.dk, mtk.manpages@googlemail.com,
+       linux-kernel@vger.kernel.org
+Message-id: <20080822070958.GU3392@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <20080818212819t-sato@mail.jp.nec.com>
+ <20080821125841.a04a706f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Aug 21, 2008  12:58 -0700, Andrew Morton wrote:
+> >  #define FIGETBSZ   _IO(0x00,2)	/* get the block size used for bmap */
+> > +#define FIFREEZE	_IOWR('X', 119, int)	/* Freeze */
+> > +#define FITHAW		_IOWR('X', 120, int)	/* Thaw */
+> 
+> FIFREEZE is 119, but a few lines above we have
+> 
+> #define BLKDISCARD _IO(0x12,119)
+>
+> Should we be using 120 and 121 here?
 
-On Fri, Aug 22, 2008 at 9:28 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->> RCU can only control the lifetime of allocated memory blocks, which
->> forces all the call structures to be allocated.  This is expensive
->> compared to allocating them on the stack, which is the common case for
->> synchronous calls.
->>
->> This patch takes a different approach.  Rather than using RCU, the
->> queues are managed under rwlocks.  Adding or removing from the queue
->> requires holding the lock for writing, but multiple CPUs can walk the
->> queues to process function calls under read locks.  In the common
->> case, where the structures are stack allocated, the calling CPU need
->> only wait for its call to be done, take the lock for writing and
->> remove the call structure.
->>
->> Lock contention - particularly write vs read - is reduced by using
->> multiple queues.
->
-> hm, is there any authorative data on what is cheaper on a big box, a
-> full-blown MESI cache miss that occurs for every reader in this new
-> fastpath, or a local SLAB/SLUB allocation+free that occurs with the
-> current RCU approach?
+No, because 'X' != 0x12...  The 'X' is used because this ioctl is compatible
+with the XFS implementation of this feature.
 
-Christoph might have an idea about it.
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
