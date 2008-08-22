@@ -1,84 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758666AbYHVJSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759527AbYHVJTC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758666AbYHVJSh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 05:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbYHVJS3
+	id S1759527AbYHVJTC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 05:19:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbYHVJSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 05:18:29 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44415 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752028AbYHVJS2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 05:18:28 -0400
-Date: Fri, 22 Aug 2008 11:18:27 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Max Krasnyanskiy <maxk@qualcomm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: latest -git: hibernate: possible circular locking dependency detected
-Message-ID: <20080822091827.GC6542@atrey.karlin.mff.cuni.cz>
-References: <19f34abd0808210804y7ee91d1fy12da5ad6f82d2451@mail.gmail.com> <b647ffbd0808211038h686f9df3ud335efbc46242952@mail.gmail.com> <19f34abd0808211059m451f5f7au949217aeecccccaf@mail.gmail.com>
-MIME-Version: 1.0
+	Fri, 22 Aug 2008 05:18:53 -0400
+Received: from main.gmane.org ([80.91.229.2]:33369 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753140AbYHVJSv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 05:18:51 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: Compiling the kernel with VMware
+Date: Fri, 22 Aug 2008 10:18:34 +0100
+Message-ID: <g8m09a$hee$1@ger.gmane.org>
+References: <11887b820808212026v52c7c7adj175a774e5506f237@mail.gmail.com> <11887b820808212102y65e4b744q2da69dc3a9d03a30@mail.gmail.com> <1219383831.4021.247.camel@moss.renham>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0808211059m451f5f7au949217aeecccccaf@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 86.53.68.233
+User-Agent: KNode/0.10.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Ben Nizette wrote:
 
-> > this path is triggered as a result of "echo disk > /sys/power/state"
 > 
-> Yes. That is what I typed.
-> 
-> >
-> > disable_nonboot_cpus() calls cpu_maps_update_being() which takes
-> > "cpu_add_remove_lock" (lock-1).
-> >
-> > If we go down the road cleanup_workqueue_thread() ->
-> > flush_cpu_workqueue() will take "cwq->lock" (lock-2).
-> > So this should be the second lock.
-> >
-> >
-> [...]
-> 
-> > hmm, did you somehow hit "Sysrq + o"?
-> >
-> > 'cause I don't see any other places (say, with handle_sysrq(k,...)
-> > where "k" migth be 'o') from where do_power_off() might have been
-> > triggered...
-> >
-> 
-> No. But in my logs I often saw SysRq triggered, even though I didn't
-> do it any of these times:
-> 
-> log-20080821-104053.txt:SysRq : SysRq : Show State
-> log-20080821-105541.txt:SysRq : Emergency Sync
-> log-20080821-105541.txt:SysRq : Emergency Sync
-> log-20080821-105541.txt:SysRq : Power Off
-> log-20080821-110514.txt:SysRq : Terminate All Tasks
-> log-20080821-111650.txt:SysRq : HELP : loglevel0-8 <6>serial 00:0d: activated
-> log-20080821-111650.txt:SysRq : Power Off
-> log-20080821-111650.txt:SysRq : Terminate All Tasks
-> log-20080821-111650.txt:SysRq : SysRq : <6>serial 00:0d: activated
-> log-20080821-120628.txt:SysRq : SysRq : HELP : HELP : <6>serial 00:0d: activated
-> log-20080821-120628.txt:SysRq : SysRq : HELP : HELP : <6>serial 00:0d: activated
-> 
-> (And it seems to pick a random letter too. It even showed the "HELP:"
-> line at one point!)
-> 
-> I have no idea why this happens. Is it possible to trigger SysRq by
-> writing data on the other end of the serial console? (Maybe my cable
-> is bad or something, but data seems to be going in both directions
-> over my serial console.)
+> On Thu, 2008-08-21 at 23:02 -0500, Alex Zajac wrote:
+>> Hello,
+>> Currently, I wanted to begin work on the kernel, and as such, I need a
+>> way to compile it. All I have available to me is my XP Home computer
+>> (and I lack funds to buy another, so please do not just say, "get a
+>> Linux comp"). The specs are as follows:
+>> 1.4 Ghz Single-core processor
+>> 384 MB RAM
+>> 20 GB hard drive (5.5 GB free right now)
+>> 
+>> Now, is there a way to compile the kernel using VMware Player? If so,
+>> what image would be the best to boot and use? Also, exactly what would
+>> I have to do to set up VMware and the image so that I could compile?
 
-Serial break translates to sysrq, IIRC.
+Don't.  It's much more useful having linux run on the bare metal - so you
+can test real drivers etc.  Grab the Ubuntu Wubi installer, which allows
+you to install Ubuntu linux "as just another application under windows"
+(paraphrased).  It will live in a file on your windows filesystem; you will
+have to reserve a set amount of space in advance.  Other than that it'll be
+a classic dual-boot system.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Alan
+
