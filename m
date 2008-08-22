@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758554AbYHVUiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755110AbYHVUs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758554AbYHVUiw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 16:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbYHVUif
+	id S1755110AbYHVUs7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 16:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbYHVUst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 16:38:35 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:62337 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755020AbYHVUid convert rfc822-to-8bit (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 16:38:33 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Jared Hulbert" <jaredeh@gmail.com>
-Subject: Re: [PATCH 05/10] AXFS: axfs_profiling.c
-Date: Fri, 22 Aug 2008 22:37:19 +0200
-User-Agent: KMail/1.9.9
-Cc: "David Woodhouse" <dwmw2@infradead.org>, carsteno@de.ibm.com,
-       Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       "=?utf-8?q?J=C3=B6rn?= Engel" <joern@logfs.org>, tim.bird@am.sony.com,
-       nickpiggin@yahoo.com.au
-References: <48AD00F8.1030004@gmail.com> <200808211339.37187.arnd@arndb.de> <6934efce0808210755n1977e085o63b8b91e84575dc9@mail.gmail.com>
-In-Reply-To: <6934efce0808210755n1977e085o63b8b91e84575dc9@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 22 Aug 2008 16:48:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46434 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751978AbYHVUst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 16:48:49 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: ftraced and suspend to ram
+Date: Fri, 22 Aug 2008 22:52:11 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@suse.cz>, Marcin Slusarz <marcin.slusarz@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <alpine.DEB.1.10.0808211139420.3947@gandalf.stny.rr.com> <20080822104610.GA3482@elf.ucw.cz> <alpine.DEB.1.10.0808221632410.14231@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0808221632410.14231@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808222237.20346.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/Y3agoKghSIUlR8XjdfWe3rt10mlok2rToTk0
- h3DL5WFxosWq6lbLo9UMOWUa2eJyDip94wZj+e5CPZD7ZYjyCV
- tWngfZ/y19LtR5U2/uyHA==
+Message-Id: <200808222252.12547.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 August 2008, Jared Hulbert wrote:
-> 1) same mount point -
-> I don't see how this works without an ioctl.  I can't just make up
-> files in my mounted filesystem.   You expect the mounted version to
-> match input to the mkfs.  I'd not be happy with an ioctl.  You can
-> just read it.
+On Friday, 22 of August 2008, Steven Rostedt wrote:
 > 
-> 2) sysfs -
-> I agree with Carsten, I don't see how this fits in the sysfs hierarchy.
+> On Fri, 22 Aug 2008, Pavel Machek wrote:
+> > 
+> > Does ftrace hook itself onto _all_ the functions? Or all .c functions?
 > 
-> 3) debugfs -
-> I don't know diddly about this.
+> It hooks into all .c functions that are not annotated with "notrace"
+> or the files have not been marked in the Makefile like:
+> 
+>   CFLAGS_REMOVE_<file>.o = -pg
+> 
+> 
+> > 
+> > I guess low-level suspend code needs to be exempt from
+> > tracing. Certainly all the assembly functions.
+> 
+> I'm looking into that now too. Are the functions in arch/x86/power/cpu*.c 
+> the suspend to ram code?
 
-Ok, so now yet another suggestion, which may sound a little strange:
+They contain code executed during suspend to RAM, but such code is also:
+- in all files under arch/x86/kernel/acpi/
+- in main.c, console.c under kernel/power
+- in all files under drivers/acpi/sleep
+- in drivers/acpi/hardware/hwsleep.c
 
-oprofilefs
+Generally, ACPI is heavily involved and I'm not the right person to ask which
+of the ACPI functions should get the 'notrace' thing.  Also, I'm not sure about
+the device drivers' ->suspend() and ->resume() callbacks, especially for
+sysdevs and ->suspend_late(), ->resume_early() for platform devices and PCI.
 
-I believe you can use the oprofile infrastructure to record data
-about file accesses, even independent of the file system you
-are looking at.
+Well, how exactly suspend to RAM is broken by ftrace?
 
-It's probably a lot of work to get it right, but I would be worth it.
-
-	Arnd <><
+Rafael
