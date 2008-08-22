@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbYHVWPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758785AbYHVWUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759065AbYHVWPy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 18:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbYHVWPn
+	id S1758785AbYHVWUn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 18:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbYHVWUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 18:15:43 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:48549 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751589AbYHVWPm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 18:15:42 -0400
-Message-ID: <48AF3A87.1070705@pobox.com>
-Date: Fri, 22 Aug 2008 18:15:35 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Karen Xie <kxie@chelsio.com>
-CC: netdev@vger.kernel.org, open-iscsi@googlegroups.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       davem@davemloft.net, michaelc@cs.wisc.edu, swise@opengridcomputing.com,
-       rdreier@cisco.com, daisyc@us.ibm.com, wenxiong@us.ibm.com,
-       bhua@us.ibm.com, divy@chelsio.com, dm@chelsio.com, leedom@chelsio.com
-Subject: Re: [PATCH 0/4 2.6.28] cxgb3i - Add iSCSI driver
-References: <200808221837.m7MIbAvv004384@localhost.localdomain>
-In-Reply-To: <200808221837.m7MIbAvv004384@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 22 Aug 2008 18:20:34 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:37483 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754203AbYHVWUd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 18:20:33 -0400
+Date: Fri, 22 Aug 2008 15:20:59 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Krzysztof Halasa <khc@pm.waw.pl>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for August 22 (hdlc/wanbook)
+Message-Id: <20080822152059.c83ea19a.randy.dunlap@oracle.com>
+In-Reply-To: <20080822173415.6958cbcc.sfr@canb.auug.org.au>
+References: <20080822173415.6958cbcc.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karen Xie wrote:
-> Hi, everyone,
-> 
-> Please review our new version of the iSCSI Initiator drivers for Chelsio S3 adapters. The cxgb3i driver provides iscsi acceleration (PDU digest offload and payload direct-placement) to the open-iscsi initiator. It accesses the hardware through the cxgb3 module.
-> 
-> The accelerated iscsi traffic uses a private IP address which is unknown to the OS.
-
-I have not reviewed in depth, but this does appear to remove the major 
-objection we had.
-
-Thanks,
-
-	Jeff
+Merging hdlc/hdlc-next
 
 
+Hi Krzysztof,
 
+wanbook.tmpl was removed!?!  why?
+Is there some replacement for it or is it just not useful?
+
+I seem to have missed the patch(es) that did this...
+
+Anyway, "make htmldocs" now fails with:
+
+head: cannot open `/local/linsrc/linux-next-20080822/Documentation/DocBook/wanbook.xml' for reading: No such file or directory
+make[1]: *** [Documentation/DocBook/wanbook.html] Error 1
+
+
+
+Looks like Documentation/DocBook/Makefile was missed in the patch.
+
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
