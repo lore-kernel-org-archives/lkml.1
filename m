@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbYHVSDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbYHVSE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756423AbYHVSDX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 14:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755287AbYHVSDE
+	id S1756590AbYHVSE3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 14:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755677AbYHVSEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 14:03:04 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:45585 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755329AbYHVSDC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 14:03:02 -0400
+	Fri, 22 Aug 2008 14:04:12 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:6570 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755303AbYHVSEK (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 14:04:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tHgcpD8+tJPwqQDSu9dbpWGzvqSUWKcDCVcDPqPPLxDHD0ecC2/Q6HMdhrn4o0faO/
-         zw7r/Jl83t3uzcJV5H+8on1O3GV8o+xswjVy4sDkI69nZn2S0mwuNHCYk3dSam4fJmZk
-         NcPwTWd2ncIb7dZ46NFeg5F5SUPxHIXtzfcls=
-Date: Fri, 22 Aug 2008 14:02:56 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Niels de Vos <niels.devos@wincor-nixdorf.com>
-Cc: linux-input@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] POSKeyboard driver for exclusive keyboard access
-Message-ID: <20080822135507.ZZRA012@mailhub.coreip.homeip.net>
-References: <1b51b6f80808220917t20fdb09el78b117c5ba5b7f7c@mail.gmail.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=tZqEUqQcYsDH85hZ/1XC1R1ujexV603VStpdbbOlGQFdrJeXEc39LqM5NkYHXXtW/V
+         wzi1h3uSsrSYg9JqTWK25et3v1/+gz1RuqKLDH/nfugR0HYgcjzisQl8MTTCVEmSgP0y
+         AmqOR5V+/giihRJTV6S/f1hdREfCdowt6eo1c=
+Message-ID: <6934efce0808221104w1609bea8mbbff54019c261d80@mail.gmail.com>
+Date: Fri, 22 Aug 2008 11:04:08 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: "=?UTF-8?Q?J=C3=B6rn_Engel?=" <joern@logfs.org>
+Subject: Re: [PATCH 04/10] AXFS: axfs_inode.c
+Cc: "Phillip Lougher" <phillip@lougher.demon.co.uk>,
+       "Arnd Bergmann" <arnd@arndb.de>, Linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>, tim.bird@am.sony.com,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+In-Reply-To: <20080822171959.GA30977@logfs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1b51b6f80808220917t20fdb09el78b117c5ba5b7f7c@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <48AD00F0.5030403@gmail.com> <200808211417.14425.arnd@arndb.de>
+	 <48AE22F5.3000309@lougher.demon.co.uk>
+	 <200808221200.26052.arnd@arndb.de>
+	 <48AEF2A3.7020905@lougher.demon.co.uk>
+	 <20080822171959.GA30977@logfs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Niels,
+> Elsewhere in this maze of threads Arnd claimed to have tested the
+> benefits of metadata compression - and it making little impact.
+>
+> My guess is that it would make a large impact if metadata would be a
+> significant part of the filesystem image.  Usually metadata is close
+> enough to 0% to be mistaken for statistical noise.  So compressing it
+> makes a significant impact on an insignificant amount of data.
 
-On Fri, Aug 22, 2008 at 06:17:28PM +0200, Niels de Vos wrote:
-> This new driver makes it possible for middleware like JavaPOS to use
-> a POSKeyboard (connected to PS/2) with exclusive access. This is
-> required by the UnifiedPOS Specification which is available from
-> http://www.nrf-arts.org/UnifiedPOS. Any middleware using this driver
-> should implement the full exception-handling in user-space. Therefor
-> it is possible to use specific POS-extensions of POSKeyboards, without
-> abusing other keyboard-drivers.
-> 
-> Opening /dev/poskeyboard will route all scancodes to this device. The
-> scancodes will not be processes by the input-subsystem anymore. Reading
-> /dev/poskeyboard results in receiving the scancodes as raw data for
-> further processing by the reader. Sending commands to the hardware can
-> be done by writing to /dev/poskeyboard.
-> 
-> If the driver is loaded and /dev/poskeyboard is not opened, all
-> scancodes are given to the input-subsystem. This allows 'normal' use of
-> the keyboard.
-> 
-> Making the driver active involves some commands like the following:
->    echo -n serio1 > /sys/bus/serio/drivers/atkbd/unbind
->    echo -n serio1 > /sys/bus/serio/drivers/poskbd/bind
-> 
-
-It seems you have just reimplemented serio_raw driver, therefore NAK.
-Right now serio_raw is limited to untranslated ports but adding
-SERIO_I8042XL signature should be easy.
-
-> Open questions:
-> - How to achieve the same with USB-HID complaint keyboards?
-
-Thsi is probably is the candidate for legitimate use of EVIOCGRAB.
-Just grab device for exclusive access and do your processing, probably
-looking at MSC_SCAN (or KEY_*, depends on how hardware-sepcific this
-thing is). This approach shoudl work equally well for HID, PS/2,
-serial or any other kind of keyboard/input device actually. You can
-also re-inject the keystrokes you are not interested in back into
-input core via uinput.
-
-> - Does serio_unregister_port() a kfree() on the port?
-
-Eventually, after the last user drops off.
-
--- 
-Dmitry
+Like I said early it depends on the value you assign to significant.
+For a fs sizes I started designing to 16MB-64MB if you have to track a
+whole bunch of 8Byte numbers for every symlink, dev node, inode, and
+page.  It adds up quickly to a couple of MB, that can translate to
+lots of money.  Even at only an extra $0.25 a system * 12Million units
+= $3Million.
