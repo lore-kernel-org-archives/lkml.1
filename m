@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbYHVTjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbYHVTk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756797AbYHVTjG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 15:39:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbYHVTin
+	id S1756342AbYHVTk2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 15:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYHVTkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 15:38:43 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:54397 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753511AbYHVTim convert rfc822-to-8bit (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 15:38:42 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Jared Hulbert" <jaredeh@gmail.com>
-Subject: Re: [PATCH 06/10] AXFS: axfs_super.c
-Date: Fri, 22 Aug 2008 21:37:15 +0200
-User-Agent: KMail/1.9.9
-Cc: "Phillip Lougher" <phillip@lougher.demon.co.uk>,
-       Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       "=?utf-8?q?J=C3=B6rn?= Engel" <joern@logfs.org>, tim.bird@am.sony.com,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-References: <48AD0101.4020505@gmail.com> <200808221852.38950.arnd@arndb.de> <6934efce0808221043i3d463ac2gb54b7dd4cfde4b81@mail.gmail.com>
-In-Reply-To: <6934efce0808221043i3d463ac2gb54b7dd4cfde4b81@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200808222137.16108.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/AqhTm/WVnWLolGZNIvAKkwA57F+2MJKpMA2W
- PbuEZZO046rI0NCfl8nUL+5T1qfwg6BM1KtRO619zrExhBkq4w
- eeQNKX9/PcBkZixe8kUnQ==
+	Fri, 22 Aug 2008 15:40:13 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:46947 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753344AbYHVTkM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 15:40:12 -0400
+Date: Fri, 22 Aug 2008 16:40:23 -0300
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
+Message-ID: <20080822164023.7060137e@doriath.conectiva>
+In-Reply-To: <48AF014D.8040103@zytor.com>
+References: <20080820162925.75a5e064@doriath.conectiva>
+	<48ADDF4F.2020401@zytor.com>
+	<48AE5FCF.6030103@zytor.com>
+	<20080822065012.GV14110@elte.hu>
+	<20080822113941.147a1db0@doriath.conectiva>
+	<20080822153451.GA8390@Krystal>
+	<20080822132948.57e47076@doriath.conectiva>
+	<20080822163520.GA9860@Krystal>
+	<20080822142054.403cbdef@doriath.conectiva>
+	<48AF014D.8040103@zytor.com>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 August 2008, Jared Hulbert wrote:
-> > It certainly sounds like something for your medium-term TODO list,
-> > although I wouldn't think of it as a show-stopper.
-> 
-> Maybe.  It more of a feature rather than a bug.  It makes stat() and
-> such fast.  The trade off is RAM...
+Em Fri, 22 Aug 2008 11:11:25 -0700
+"H. Peter Anvin" <hpa@zytor.com> escreveu:
 
-Yes. And if you implement it at some point later, it can well be
-a mount option or an mkfs option in case it needs format changes.
+| Hi Luiz, two more tests:
+| 
+| 1. a small program to run in userspace and tell us what you get;
 
-	Arnd <><
+ 88776655:44332211
+
+ It is the same output in the virtualized system and the host
+system.
+
+| 2. a patch against -linus for testing.
+
+ I have tried this patch with Linus tree early today, should I try
+it with Ingo's tree too?
+
+-- 
+Luiz Fernando N. Capitulino
