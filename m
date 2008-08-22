@@ -1,131 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051AbYHVPfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbYHVPf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754051AbYHVPfG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 11:35:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbYHVPez
+	id S1754742AbYHVPf4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 11:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbYHVPfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 11:34:55 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:49178 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752028AbYHVPey (ORCPT
+	Fri, 22 Aug 2008 11:35:47 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:20015 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752138AbYHVPfp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 11:34:54 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAIN5rkhMRKxB/2dsb2JhbACBZbR3gWg
-Date: Fri, 22 Aug 2008 11:34:52 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
-Message-ID: <20080822153451.GA8390@Krystal>
-References: <20080820162925.75a5e064@doriath.conectiva> <48ADDF4F.2020401@zytor.com> <48AE5FCF.6030103@zytor.com> <20080822065012.GV14110@elte.hu> <20080822113941.147a1db0@doriath.conectiva>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 22 Aug 2008 11:35:45 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch] vsprintf: use new vsprintf symbolic function pointer format
+Date: Fri, 22 Aug 2008 09:34:43 -0600
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       linux-parisc@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080822113941.147a1db0@doriath.conectiva>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:30:15 up 78 days, 20:10,  7 users,  load average: 0.26, 0.73,
-	0.74
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200808220934.44782.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Luiz Fernando N. Capitulino (lcapitulino@mandriva.com.br) wrote:
-> Em Fri, 22 Aug 2008 08:50:12 +0200
-> Ingo Molnar <mingo@elte.hu> escreveu:
-> 
-> | 
-> | * H. Peter Anvin <hpa@zytor.com> wrote:
-> | 
-> | > H. Peter Anvin wrote:
-> | >>>
-> | >>>  Does this look like a kernel bug?
-> | >>>
-> | >>
-> | >> No, it looks like a very common virtualizer bug.  Does the attached  
-> | >> patch work for you?
-> | >>
-> | >
-> | > Also, in addition to this, please try tip:master.  There is a patch in 
-> | > tip:master which I hope should fix this problem, but the details are 
-> | > important.
-> | 
-> | access coordinates would be at:
-> | 
-> |   http://people.redhat.com/mingo/tip.git/README
-> 
->  As I already have Linus tree downloaded I have cloned it in
-> the usual way.
-> 
->  Got the same results: OOPS in virtualbox but it works on QEMU.
-> 
->  The OOPS's output follows and I have attached the .config I'm using
-> to reproduce the problem.
-> 
+Use the '%pF' format to get rid of an "#ifdef DEBUG" and make
+some printks atomic.
 
-Can you try booting with the kernel argument :
-  debug_alternative 
+This removes the last in-tree uses of print_fn_descriptor_symbol().
+I marked print_fn_descriptor_symbol() deprecated and scheduled it
+for removal next year to give time for out-of-tree modules to be
+updated.
 
-The dmesg of the kernel bootup up to the oops would be helpful.
+I cc'd the parisc folks because print_fn_descriptor_symbol() is
+currently broken there (it needs to dereference the function pointer
+similar to ia64 and power).  This patch shouldn't make anything worse,
+but it means we need to fix dereference_function_descriptor() instead
+of print_fn_descriptor_symbol() to get meaningful initcall_debug
+output.
 
-My guess is that there may be something wrong with irq disabling which
-protects text_poke_early in apply_alternatives().
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+---
 
-Mathieu
+ Documentation/feature-removal-schedule.txt |    8 ++++++++
+ drivers/base/power/main.c                  |    7 ++-----
+ drivers/pci/quirks.c                       |    5 +----
+ include/linux/kallsyms.h                   |    8 +++-----
+ init/main.c                                |   14 ++++++--------
+ 5 files changed, 20 insertions(+), 22 deletions(-)
 
 
-> """
-> BUG: unable to handle kernel NULL pointer dereference at 00000246
-> IP: [<c01310f1>] vprintk+0x181/0x440
-> *pde = 00000000 
-> Oops: 0002 [#1] SMP 
-> Modules linked in:
-> 
-> Pid: 1, comm: swapper Not tainted (2.6.27-rc4-test24-tip #3)
-> EIP: 0060:[<c01310f1>] EFLAGS: 00010246 CPU: 0
-> EIP is at vprintk+0x181/0x440
-> EAX: 00000246 EBX: 00000000 ECX: c0130ca9 EDX: 0000dedd
-> ESI: c0474ae3 EDI: c04cf6bc EBP: c7435f24 ESP: c7435eb0
->  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0069
-> Process swapper (pid: 1, ti=c7434000 task=c7438000 task.ti=c7434000)
-> Stack: 0000dedd c0130ca9 c7435f40 00000000 a026104f a026106c c7434000 c7435ee6 
->        00000006 00000246 00000000 a0260cf3 0000001c c7434000 00000282 00000046 
->        c11a85a0 c7435efc c0135c6f c7435f14 c0115fcb a0296e91 c0104c2c 00000000 
-> Call Trace:
->  [<c0130ca9>] ? release_console_sem+0x199/0x1e0
->  [<c0135c6f>] ? irq_exit+0x3f/0x90
->  [<c0115fcb>] ? smp_apic_timer_interrupt+0x5b/0x90
->  [<c0104c2c>] ? apic_timer_interrupt+0x28/0x30
->  [<c0474ae3>] ? net_ns_init+0x0/0x1ad
->  [<c0474ae3>] ? net_ns_init+0x0/0x1ad
->  [<c0346ed9>] ? printk+0x18/0x1f
->  [<c0474b00>] ? net_ns_init+0x1d/0x1ad
->  [<c0474ae3>] ? net_ns_init+0x0/0x1ad
->  [<c0101116>] ? do_one_initcall+0x26/0x170
->  [<c0128f66>] ? try_to_wake_up+0xc6/0x240
->  [<c012910f>] ? wake_up_process+0xf/0x20
->  [<c014192d>] ? start_workqueue_thread+0x1d/0x20
->  [<c0141d4b>] ? __create_workqueue_key+0x1eb/0x240
->  [<c0141820>] ? worker_thread+0x0/0xf0
->  [<c044b387>] ? kernel_init+0x141/0x214
->  [<c044b246>] ? kernel_init+0x0/0x214
->  [<c0104dc7>] ? kernel_thread_helper+0x7/0x10
->  =======================
-> Code: c0 0f 84 0b 01 00 00 b8 50 f1 41 c0 c7 05 ec f1 41 c0 ff ff ff ff e8 cf 8b 21 00 e8 ea 04 02 00 8b 45 b0 50 9d 0f 1f 84 00 00 00 <00> 00 8b 45 bc 83 c4 60 5b 5e 5f 5d c3 66 90 a1 ec f1 41 c0 e8 
-> EIP: [<c01310f1>] vprintk+0x181/0x440 SS:ESP 0069:c7435eb0
-> ---[ end trace 4eaa2a86a8e2da22 ]---
-> """
-> 
-> -- 
-> Luiz Fernando N. Capitulino
-
-
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index eb1a47b..6951fb4 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -322,3 +322,11 @@ Why:  Accounting can now be enabled/disabled without kernel recompilation.
+       controlled by a kernel/module/sysfs/sysctl parameter.
+ Who:  Krzysztof Piotr Oledzki <ole@ans.pl>
+ 
++---------------------------
++
++What: print_fn_descriptor_symbol()
++When: October 2009
++Why:  The %pF vsprintf format provides the same functionality in a
++      simpler way.  print_fn_descriptor_symbol() is deprecated but
++      still present to give out-of-tree modules time to change.
++Who:  Bjorn Helgaas <bjorn.helgaas@hp.com>
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 3250c52..cd12708 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -787,10 +787,7 @@ EXPORT_SYMBOL_GPL(device_suspend);
+ 
+ void __suspend_report_result(const char *function, void *fn, int ret)
+ {
+-	if (ret) {
+-		printk(KERN_ERR "%s(): ", function);
+-		print_fn_descriptor_symbol("%s returns ", fn);
+-		printk("%d\n", ret);
+-	}
++	if (ret)
++		printk(KERN_ERR "%s(): %pF returns %d\n", function, fn, ret);
+ }
+ EXPORT_SYMBOL_GPL(__suspend_report_result);
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index 9236e7f..0143268 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1560,10 +1560,7 @@ static void pci_do_fixups(struct pci_dev *dev, struct pci_fixup *f, struct pci_f
+ 	while (f < end) {
+ 		if ((f->vendor == dev->vendor || f->vendor == (u16) PCI_ANY_ID) &&
+  		    (f->device == dev->device || f->device == (u16) PCI_ANY_ID)) {
+-#ifdef DEBUG
+-			dev_dbg(&dev->dev, "calling ");
+-			print_fn_descriptor_symbol("%s\n", f->hook);
+-#endif
++			dev_dbg(&dev->dev, "calling %pF\n", f->hook);
+ 			f->hook(dev);
+ 		}
+ 		f++;
+diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
+index b961448..f3fe343 100644
+--- a/include/linux/kallsyms.h
++++ b/include/linux/kallsyms.h
+@@ -93,12 +93,10 @@ static inline void print_symbol(const char *fmt, unsigned long addr)
+ }
+ 
+ /*
+- * Pretty-print a function pointer.
+- *
+- * ia64 and ppc64 function pointers are really function descriptors,
+- * which contain a pointer the real address.
++ * Pretty-print a function pointer.  This function is deprecated.
++ * Please use the "%pF" vsprintf format instead.
+  */
+-static inline void print_fn_descriptor_symbol(const char *fmt, void *addr)
++static inline void __deprecated print_fn_descriptor_symbol(const char *fmt, void *addr)
+ {
+ #if defined(CONFIG_IA64) || defined(CONFIG_PPC64)
+ 	addr = *(void **)addr;
+diff --git a/init/main.c b/init/main.c
+index f6f7042..75a038d 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -708,7 +708,7 @@ int do_one_initcall(initcall_t fn)
+ 	int result;
+ 
+ 	if (initcall_debug) {
+-		print_fn_descriptor_symbol("calling  %s\n", fn);
++		printk("calling  %pF\n", fn);
+ 		t0 = ktime_get();
+ 	}
+ 
+@@ -718,9 +718,8 @@ int do_one_initcall(initcall_t fn)
+ 		t1 = ktime_get();
+ 		delta = ktime_sub(t1, t0);
+ 
+-		print_fn_descriptor_symbol("initcall %s", fn);
+-		printk(" returned %d after %Ld msecs\n", result,
+-			(unsigned long long) delta.tv64 >> 20);
++		printk("initcall %pF returned %d after %Ld msecs\n", fn,
++		       result, (unsigned long long) delta.tv64 >> 20);
+ 	}
+ 
+ 	msgbuf[0] = 0;
+@@ -736,10 +735,9 @@ int do_one_initcall(initcall_t fn)
+ 		strlcat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
+ 		local_irq_enable();
+ 	}
+-	if (msgbuf[0]) {
+-		print_fn_descriptor_symbol(KERN_WARNING "initcall %s", fn);
+-		printk(" returned with %s\n", msgbuf);
+-	}
++	if (msgbuf[0])
++		printk(KERN_WARNING "initcall %pF returned with %s\n",
++		       fn, msgbuf);
+ 
+ 	return result;
+ }
