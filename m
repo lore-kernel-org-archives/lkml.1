@@ -1,52 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbYHVADU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759127AbYHVADh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755799AbYHVADU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 20:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbYHVADH
+	id S1759127AbYHVADh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 20:03:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757768AbYHVADY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 20:03:07 -0400
-Received: from gw.goop.org ([64.81.55.164]:55435 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751847AbYHVADG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 20:03:06 -0400
-Message-ID: <48AE022F.6030100@goop.org>
-Date: Thu, 21 Aug 2008 17:02:55 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 21 Aug 2008 20:03:24 -0400
+Received: from hpsmtp-eml13.kpnxchange.com ([213.75.38.113]:46556 "EHLO
+	hpsmtp-eml13.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757742AbYHVADY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 20:03:24 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27-rc3: 'APIC error on CPU1: 00(40)', but only on resume!
+Date: Fri, 22 Aug 2008 02:02:52 +0200
+User-Agent: KMail/1.9.9
+References: <200808202106.41058.elendil@planet.nl> <200808202226.45655.elendil@planet.nl> <20080821113141.GB3796@srcf.ucam.org>
+In-Reply-To: <20080821113141.GB3796@srcf.ucam.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alex Nixon <alex.nixon@citrix.com>
-Subject: Re: [PATCH] x86: fix probe_nr_irqs for xen
-References: <1219349409-15698-1-git-send-email-yhlu.kernel@gmail.com>	 <48ADFB33.8010204@goop.org>	 <86802c440808211649h37ac7533q4b95a83306ecd430@mail.gmail.com>	 <48ADFFD2.7030309@goop.org> <86802c440808211656o20f9a22dv34e3ac8e8e84b4e1@mail.gmail.com>
-In-Reply-To: <86802c440808211656o20f9a22dv34e3ac8e8e84b4e1@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808220202.52853.elendil@planet.nl>
+X-OriginalArrivalTime: 22 Aug 2008 00:03:22.0228 (UTC) FILETIME=[7DA9CB40:01C903EA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> like system vectors with smp-ipi etc?
->   
-
-More or less.  Xen currently uses 6 per-cpu event channels, and it maps
-each to its own irq.  My plan is to allocate just 6 irqs, map 6 vectors
-to them, and bind each event channel to a vector/cpu pair.  If nothing
-else, it will make /proc/interrupts somewhat sane again.
-
-
->> Also, implementing probe_nr_irqs() in a more generic (rather than
->> io_apic-specific) way.  Using some interface that queries each irq chip
->> for how many irqs it supports, or something.
->>     
+On Thursday 21 August 2008, Matthew Garrett wrote:
+> On Wed, Aug 20, 2008 at 10:26:45PM +0200, Frans Pop wrote:
+> > The only weirdness I can see (only spotted that just now) is that
+> > both cores will always seem to be changing frequency together (using
+> > ondemand governor), even when 'top' shows one as idle. On my other
+> > Core Duo system (an older desktop) the cores react independently.
 >
-> hope we can kill nr_irqs/NR_IRQS
->   
+> The cores can't actually be independently scaled.
 
-When irqs are truely dynamically allocated?
+That makes sense.
 
-    J
+> Some older kernels 
+> would give the impression that they could, but the package itself will
+> run at the greater of the defined frequencies.
+
+It does not seem to be kernel related, but processor related.
+Here are some results from two different systems (desktop and laptop) 
+running an _identical_ 2.6.27-rc4 x86_64 kernel.
+(The desktop is actually Pentium D, not also Core Duo.)
+
+Desktop
+=======
+processor       : 1
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 4
+model name      :               Intel(R) Pentium(R) D CPU 3.20GHz
+stepping        : 7
+cpu MHz         : 2800.000
+cache size      : 1024 KB
+physical id     : 0
+siblings        : 2
+core id         : 1
+cpu cores       : 2
+
+Samples from /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq:
+2800000 2800000
+2800000 2800000
+2800000 3200000		# Start single busy loop, one core idle
+3200000 3200000
+2800000 3200000
+2800000 3200000
+
+Laptop
+======
+processor       : 1
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 15
+model name      : Intel(R) Core(TM)2 Duo CPU     U7700  @ 1.33GHz
+stepping        : 13
+cpu MHz         : 1333.000
+cache size      : 2048 KB
+physical id     : 0
+siblings        : 2
+core id         : 1
+cpu cores       : 2
+
+Samples from /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq:
+800000 800000
+800000 800000
+1333000 1333000		# Start single busy loop, one core idle
+1333000 1333000
+1333000 1333000
+
+So in the first case frequency changes are reported as if the cores are 
+independent while in the second case the cores appear linked.
+
+Is a Pentium D really different from a Core Duo in that respect?
