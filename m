@@ -1,267 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbYHVBnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756330AbYHVBrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757322AbYHVBnS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 21:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbYHVBnF
+	id S1756330AbYHVBrz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 21:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbYHVBrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 21:43:05 -0400
-Received: from anchor-post-35.mail.demon.net ([194.217.242.85]:4900 "EHLO
-	anchor-post-35.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752087AbYHVBnE (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 21:43:04 -0400
-Message-ID: <48AE19AD.1020209@lougher.demon.co.uk>
-Date: Fri, 22 Aug 2008 02:43:09 +0100
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+	Thu, 21 Aug 2008 21:47:47 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:21982 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752168AbYHVBrq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 21:47:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=MFgVNi5grjCtMB4b0r51pWfNgIdqPp0sYMcdeiNYF7iQ08AXb35oTsZgfhBDUbTT789RhxDMPiLJPLoSpHzuSuHPgmjfup0ozAeheBMCjDmiXDQV/hCTSFmY2DriEKNDPol+vrzod2gUWcUrQjZGbDio8ocMGo2elCruZuUGUhI=  ;
+X-YMail-OSG: 8M1K26QVM1m7vkirDdd7fdZhrTlEno8frzmFGB1X1lX66ds5p1XhL0RW1lpO8dfjvWG19m_M1wxx.0HbPB9XLGPuOTEOb6gHBMQKxqLWLQ5Usv_9y8jwheG80XN381hqWh_iIvOY8G5RISgScWxFA1HR7SH.n5sEvG0-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/2] smp_call_function: don't use lock in call_function_data
+Date: Fri, 22 Aug 2008 11:47:39 +1000
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+References: <48AE087C.4000408@goop.org>
+In-Reply-To: <48AE087C.4000408@goop.org>
 MIME-Version: 1.0
-To: jaredeh@gmail.com
-CC: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@AM.SONY.COM,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 06/10] AXFS: axfs_super.c
-References: <48AD0101.4020505@gmail.com>
-In-Reply-To: <48AD0101.4020505@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808221147.39974.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jared Hulbert wrote:
-> +static void axfs_free_region(struct axfs_super *sbi,
-> +			     struct axfs_region_desc *region)
-> +{
-> +	if (!region)
-> +		return;
-> +
-> +	if (AXFS_IS_REGION_XIP(sbi, region))
-> +		return;
-> +
-> +	if (region->virt_addr)
-> +		vfree(region->virt_addr);
-> +}
-> +
+On Friday 22 August 2008 10:29, Jeremy Fitzhardinge wrote:
+> There's no need for a lock in call_function_data, since it's only used
+> to decrement-and-test a counter.  Use an atomic instead.
 
-No need to do
+Actually I wanted to convert the cpu_clear operation to be non-atomic,
+and keep it under the lock. Thus the spinlock would save one atomic
+operation. I simply forgot about this after Jens took over the patchset.
 
-	if(xxx)
-		vfree(xxx)
+We could get rid of that WARN_ON branch in 2.6.28 I expect, unless we
+see it trigger.
 
-vfree/kfree can cope with NULL pointers.
-
-> +static void axfs_put_sbi(struct axfs_super *sbi)
-> +{
-
-> +	axfs_free_region(sbi, &sbi->uids);
-> +	axfs_free_region(sbi, &sbi->gids);
-> +
-> +	if (sbi->second_dev)
-> +		kfree(sbi->second_dev);
-> +
-> +	if (sbi->cblock_buffer[0])
-> +		vfree(sbi->cblock_buffer[0]);
-> +	if (sbi->cblock_buffer[1])
-> +		vfree(sbi->cblock_buffer[1]);
-> +
-
-Again, just kfree(xxx)/vfree(xxx)
-
-> +
-> +static int axfs_copy_mem(struct super_block *sb, void *buf, u64 fsoffset,
-> +			 u64 len)
-> +{
-> +	struct axfs_super *sbi = AXFS_SB(sb);
-> +	unsigned long addr;
-> +
-> +	addr = sbi->virt_start_addr + (unsigned long)fsoffset;
-> +	memcpy(buf, (void *)addr, (size_t) len);
-> +	return 0;
-
-Always returns 0, consider changing to static void
-
-> +}
-> +
-> +static int axfs_copy_metadata(struct super_block *sb, void *buf, u64 fsoffset,
-> +			      u64 len)
-> +{
-> +	struct axfs_super *sbi = AXFS_SB(sb);
-> +	u64 end = fsoffset + len;
-> +	u64 a = sbi->mmap_size - fsoffset;
-> +	u64 b = end - sbi->mmap_size;
-> +	void *bb = (void *)((unsigned long)buf + (unsigned long)a);
-> +	int err;
-> +
-> +	/* Catches case where sbi is not yet fully initialized. */
-> +	if ((sbi->magic == 0) && (sbi->virt_start_addr != 0))
-> +		return axfs_copy_mem(sb, buf, fsoffset, len);
-> +
-> +	if (fsoffset < sbi->mmap_size) {
-> +		if (end > sbi->mmap_size) {
-> +			err = axfs_copy_metadata(sb, buf, fsoffset, a);
-> +			if (err)
-> +				return err;
-> +			err = axfs_copy_metadata(sb, bb, sbi->mmap_size, b);
-> +		} else {
-> +			if (AXFS_IS_OFFSET_MMAPABLE(sbi, fsoffset)) {
-> +				err = axfs_copy_mem(sb, buf, fsoffset, len);
-> +			} else if (AXFS_HAS_MTD(sb)) {
-> +				err = axfs_copy_mtd(sb, buf, fsoffset, len);
-> +			} else if (AXFS_HAS_BDEV(sb)) {
-> +				err = axfs_copy_block(sb, buf, fsoffset, len);
-> +			} else {
-> +				err = -EINVAL;
-
-Consider initialising err to -EINVAL at declaration time, and get rid of 
-this else,
-
-> +			}
-> +		}
-> +	} else {
-> +		if (AXFS_NODEV(sb)) {
-> +			err = axfs_copy_mem(sb, buf, fsoffset, len);
-> +		} else if (AXFS_HAS_BDEV(sb)) {
-> +			err = axfs_copy_block(sb, buf, fsoffset, len);
-> +		} else if (AXFS_HAS_MTD(sb)) {
-> +			err = axfs_copy_mtd(sb, buf, fsoffset, len);
-> +		} else {
-> +			err = -EINVAL;
-
-and this one.
-
-> +		}
-> +	}
-> +	return err;
-> +}
-> +
-> +static int axfs_fill_region_data(struct super_block *sb,
-> +				 struct axfs_region_desc *region, int force)
-> +{
-> +
-> +	if (AXFS_IS_REGION_INCORE(region))
-> +		goto incore;
-> +
-> +	if (AXFS_IS_REGION_COMPRESSED(region))
-> +		goto incore;
-> +
-> +	if (AXFS_IS_REGION_XIP(sbi, region)) {
-> +		if ((end > sbi->mmap_size) && (force))
-> +			goto incore;
-> +		addr = sbi->virt_start_addr;
-> +		addr += (unsigned long)fsoffset;
-> +		region->virt_addr = (void *)addr;
-> +		return 0;
-> +	}
-> +
-> +incore:
-> +	region->virt_addr = vmalloc(size);
-> +	if (!region->virt_addr)
-> +		goto out;
-> +	vaddr = region->virt_addr;
-> +
-> +	if (AXFS_IS_REGION_COMPRESSED(region)) {
-> +		buff = vmalloc(c_size);
-> +		if (!buff)
-> +			goto out;
-> +		axfs_copy_metadata(sb, buff, fsoffset, c_size);
-> +		err = axfs_uncompress_block(vaddr, size, buff, c_size);
-> +		if (!err)
-> +			goto out;
-> +		vfree(buff);
-> +	} else {
-> +		axfs_copy_metadata(sb, vaddr, fsoffset, size);
-> +	}
-> +
-> +	return 0;
-
-
- From this it would appear that if the region data can't be mapped XIP 
-(i.e. it is compressed or on a block device), it is cached in its 
-entirety in RAM?
-
-This implies for block devices that the entire filesystem metadata has 
-to be cached in RAM.  This severely limits the size of AXFS filesystems 
-when using block devices, or the else memory usage will be excessive.
-
-
-> +
-> +out:
-> +	if (buff)
-> +		vfree(buff);
-> +	if (region->virt_addr)
-> +		vfree(region->virt_addr);
-> +	return err;
-> +}
-> +
-
-Just do kfree(xxx)
-
-
-> +
-> +static int axfs_get_onmedia_super(struct super_block *sb)
-> +{
-> +	int err;
-> +	struct axfs_super *sbi = AXFS_SB(sb);
-> +	struct axfs_super_onmedia *sbo;
-> +
-> +	sbo = kmalloc(sizeof(*sbo), GFP_KERNEL);
-> +	if (!sbo)
-> +		return -ENOMEM;
-> +
-> +	axfs_copy_metadata(sb, (void *)sbo, 0, sizeof(*sbo));
-> +
-> +	/* Do sanity checks on the superblock */
-> +	if (be32_to_cpu(sbo->magic) != AXFS_MAGIC) {
-> +		printk(KERN_ERR "axfs: wrong magic\n");
-> +		err = -EINVAL;
-> +		goto out;
-> +	}
-> +
-> +	/* verify the signiture is correct */
-> +	if (strncmp(sbo->signature, AXFS_SIGNATURE, sizeof(AXFS_SIGNATURE))) {
-> +		printk(KERN_ERR "axfs: wrong axfs signature,"
-> +		       " read %s, expected %s\n",
-> +		       sbo->signature, AXFS_SIGNATURE);
-> +		err = -EINVAL;
-> +		goto out;
-> +	}
-> +
-> +	sbi->magic = be32_to_cpu(sbo->magic);
-> +	sbi->version_major = sbo->version_major;
-> +	sbi->version_minor = sbo->version_minor;
-> +	sbi->version_sub = sbo->version_sub;
-> +	sbi->files = be64_to_cpu(sbo->files);
-> +	sbi->size = be64_to_cpu(sbo->size);
-> +	sbi->blocks = be64_to_cpu(sbo->blocks);
-> +	sbi->mmap_size = be64_to_cpu(sbo->mmap_size);
-> +	sbi->cblock_size = be32_to_cpu(sbo->cblock_size);
-> +	sbi->timestamp.tv_sec = be64_to_cpu(sbo->timestamp);
-> +	sbi->timestamp.tv_nsec = 0;
-> +	sbi->compression_type = sbo->compression_type;
-> +
-> +	err = axfs_set_compression_type(sbi);
-> +	if (err)
-> +		goto out;
-> +
-> +	/* If no block or MTD device, adjust mmapable to cover all image */
-> +	if (AXFS_NODEV(sb))
-> +		sbi->mmap_size = sbi->size;
-> +
-> +	err = axfs_fill_region_descriptors(sb, sbo);
-> +	if (err)
-> +		goto out;
-> +
-> +	err = 0;
-
-Redundant code
-
-> +out:
-> +	kfree(sbo);
-> +	return err;
-> +}
-> +
-
-Phillip
-
-
+>
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> ---
+>  kernel/smp.c |   17 ++++-------------
+>  1 file changed, 4 insertions(+), 13 deletions(-)
+>
+> ===================================================================
+> --- a/kernel/smp.c
+> +++ b/kernel/smp.c
+> @@ -10,6 +10,7 @@
+>  #include <linux/rcupdate.h>
+>  #include <linux/rculist.h>
+>  #include <linux/smp.h>
+> +#include <asm/atomic.h>
+>
+>  bool __read_mostly smp_single_ipi_queue = false;
+>
+> @@ -37,8 +38,7 @@
+>
+>  struct call_function_data {
+>  	struct call_single_data csd;
+> -	spinlock_t lock;
+> -	unsigned int refs;
+> +	atomic_t refs;
+>  	cpumask_t cpumask;
+>  	struct rcu_head rcu_head;
+>  };
+> @@ -125,21 +125,13 @@
+>  	 */
+>  	rcu_read_lock();
+>  	list_for_each_entry_rcu(data, &queue->list, csd.list) {
+> -		int refs;
+> -
+>  		if (!cpu_isset(cpu, data->cpumask))
+>  			continue;
+>
+>  		data->csd.func(data->csd.info);
+>
+> -		spin_lock(&data->lock);
+>  		cpu_clear(cpu, data->cpumask);
+> -		WARN_ON(data->refs == 0);
+> -		data->refs--;
+> -		refs = data->refs;
+> -		spin_unlock(&data->lock);
+> -
+> -		if (refs)
+> +		if (!atomic_dec_and_test(&data->refs))
+>  			continue;
+>
+>  		spin_lock(&queue->lock);
+> @@ -379,10 +371,9 @@
+>  		slowpath = 1;
+>  	}
+>
+> -	spin_lock_init(&data->lock);
+>  	data->csd.func = func;
+>  	data->csd.info = info;
+> -	data->refs = num_cpus;
+> +	atomic_set(&data->refs, num_cpus);
+>  	data->cpumask = mask;
+>
+>  	spin_lock_irqsave(&queue->lock, flags);
