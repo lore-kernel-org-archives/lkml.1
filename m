@@ -1,118 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbYHVRCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbYHVRIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755725AbYHVRCe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 13:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbYHVRCY
+	id S1755433AbYHVRIx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 13:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbYHVRIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 13:02:24 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:45438 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751596AbYHVRCX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 13:02:23 -0400
-Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
-       lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>
-In-Reply-To: <48AEEE0A.1010900@oracle.com>
-References: <48AD02B2.7020004@oracle.com>
-	 <0F5B06BAB751E047AB5C87D1F77A778835116209D3@GVW0547EXC.americas.hpqcorp.net>
-	 <20080821084333.c471b439.randy.dunlap@oracle.com>
-	 <0F5B06BAB751E047AB5C87D1F77A7788351181004C@GVW0547EXC.americas.hpqcorp.net>
-	 <20080821091514.8f56e2d5.randy.dunlap@oracle.com>
-	 <0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net>
-	 <20080821172653.3e3e855c.randy.dunlap@oracle.com>
-	 <0F5B06BAB751E047AB5C87D1F77A77883511810706@GVW0547EXC.americas.hpqcorp.net>
-	 <1219420487.3339.22.camel@localhost.localdomain>
-	 <48AEEE0A.1010900@oracle.com>
-Content-Type: text/plain
-Date: Fri, 22 Aug 2008 12:02:17 -0500
-Message-Id: <1219424538.3339.51.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Fri, 22 Aug 2008 13:08:44 -0400
+Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:2582 "EHLO
+	anchor-post-31.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751682AbYHVRIo (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 13:08:44 -0400
+Message-ID: <48AEF2A3.7020905@lougher.demon.co.uk>
+Date: Fri, 22 Aug 2008 18:08:51 +0100
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: jaredeh@gmail.com, Linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       =?windows-1252?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@am.sony.com,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 04/10] AXFS: axfs_inode.c
+References: <48AD00F0.5030403@gmail.com> <200808211417.14425.arnd@arndb.de> <48AE22F5.3000309@lougher.demon.co.uk> <200808221200.26052.arnd@arndb.de>
+In-Reply-To: <200808221200.26052.arnd@arndb.de>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-22 at 09:49 -0700, Randy Dunlap wrote:
-> James Bottomley wrote:
-> > On Fri, 2008-08-22 at 15:48 +0000, Miller, Mike (OS Dev) wrote:
-> >>> -----Original Message-----
-> >>> From: Randy Dunlap [mailto:randy.dunlap@oracle.com]
-> >>> Sent: Thursday, August 21, 2008 7:27 PM
-> >>> To: Miller, Mike (OS Dev)
-> >>> Cc: lkml; scsi; akpm
-> >>> Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
-> >>>
-> >>> On Thu, 21 Aug 2008 16:25:24 +0000 Miller, Mike (OS Dev) wrote:
-> >>>
-> >>>>>> Randy,
-> >>>>>> We know of a race condition in cciss_init_one. It's fixed
-> >>>>> in 2.6.26 I believe. Here's the patch:
-> >>>>>>
-> >>> http://groups.google.com/group/linux.kernel/browse_thread/thread/7b3
-> >>>>> 9f
-> >>> 2b77622ab03/4f5f45c008655ca1?hl=en&lnk=gst&q=cciss#4f5f45c008655ca
-> >>>>>> 1
-> >>>>>
-> >>>>> Mike,
-> >>>>> Sorry, but my fingers have typoed the $subject.  My bad.
-> >>>>> Kernel is 2.6.27-rc3-git7 (from above):
-> >>>>>
-> >>>>>>>>> Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
-> >>>>>>>>> Pid: 0, comm: swapper Not tainted 2.6.27-rc3-git7 #1
-> >>>>>>>>> RIP: 0010:[<ffffffffa001bb68>]  [<ffffffffa001bb68>]
-> >>>>>>>>> do_cciss_intr+0x627/0xa6c [cciss]
-> >>>> Hmmmmm, let me know what happens from your retest. I'll
-> >>> look at this
-> >>>> as soon as I finish what I'm doing now. We trying to spin
-> >>> for our test
-> >>>> teams but I have something hopelessly broken. :(
-> >>> It didn't BUG in the retest.  That just means that it's more
-> >>> difficult to find/fix, right?
-> >> Yup.
-> > 
-> > Randy,
-> > 
-> > If you can't reproduce it, could you use the debug information or gdb to
-> > tell us what line in the source code this:
-> > 
-> > do_cciss_intr+0x627
-> > 
-> > corresponds to?  That might help isolating the problem.
+Arnd Bergmann wrote:
+> On Friday 22 August 2008, Phillip Lougher wrote:
+>>> This looks very nice, but could use some comments about how the data is
+>>> actually stored on disk. It took me some time to figure out that it actually
+>>> allows to do tail merging into compressed blocks, which I was about to suggest
+>>> you implement ;-). Cramfs doesn't have them, and I found that they are the
+>>> main reason why squashfs compresses better than cramfs, besides the default
+>>> block size, which you can change on either one.
+>> Squashfs has much larger block sizes than cramfs (last time I looked it 
+>> was limited to 4K blocks), and it compresses the metadata which helps to 
+>> get better compression.  But tail merging (fragments in Squashfs 
+>> terminology) is obviously a major reason why Squashfs gets good compression.
 > 
-> 
-> Sure, here's an attempt at that.  Please let me know if you want it
-> differently or some other info.
+> The *default* block size in cramfs is smaller than in squashfs, but they both
+> have user selectable block sizes. I found the impact of compressed metadata
+> to be almost zero. 
 
-> (gdb) x/20i do_cciss_intr+0x627
-> 0x3b68 <do_cciss_intr+1575>:    mov    %rdx,0x248(%rax)
-> 0x3b6f <do_cciss_intr+1582>:    mov    0x248(%rbx),%rdx
-> 0x3b76 <do_cciss_intr+1589>:    mov    %rax,0x240(%rdx)
-> 0x3b7d <do_cciss_intr+1596>:    jmp    0x3b8b <do_cciss_intr+1610>
-> 0x3b7f <do_cciss_intr+1598>:    movq   $0x0,0x100c0(%r12)
-> 0x3b8b <do_cciss_intr+1610>:    mov    0x234(%rbx),%eax
-> 0x3b91 <do_cciss_intr+1616>:    test   %eax,%eax
-> 0x3b93 <do_cciss_intr+1618>:    jne    0x3f27 <do_cciss_intr+2534>
-> 0x3b99 <do_cciss_intr+1624>:    mov    0x250(%rbx),%r14
-> 0x3ba0 <do_cciss_intr+1631>:    movl   $0x0,0xcc(%r14)
-> 0x3bab <do_cciss_intr+1642>:    mov    0x228(%rbx),%r8
-> 0x3bb2 <do_cciss_intr+1649>:    mov    0x2(%r8),%dx
-> 0x3bb7 <do_cciss_intr+1654>:    test   %dx,%dx
-> 0x3bba <do_cciss_intr+1657>:    je     0x3f0e <do_cciss_intr+2509>
-> 
-> 
-> $ addr2line -e cciss.o -f  do_cciss_intr+0x627
-> SA5_fifo_full
-> /home/rdunlap/linsrc/linux-2.6.27-rc3-git7/drivers/block/cciss.h:206
+Squashfs stores significantly more metadata than cramfs.  Remember 
+cramfs has no support for filesystems > ~ 16Mbytes, no inode timestamps, 
+truncates uid/gids, no hard-links, no nlink counts, no hashed 
+directories,  no unique inode numbers.  If Squashfs didn't compress the 
+metadata it would be significantly larger than cramfs.
 
-OK ...that's confusing.  It seems to be saying that ctrlr_info_t * was
-NULL.  However, I can't see a way of getting into the fifo_full callback
-from do_cciss_intr .. especially not with an NULL host.
+Cheers
 
-James
-
-
+Phillip
