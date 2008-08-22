@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758697AbYHVAPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757861AbYHVA1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758697AbYHVAPb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 20:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbYHVAPQ
+	id S1757861AbYHVA1M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 20:27:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYHVA04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 20:15:16 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:35018 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752554AbYHVAPO (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 20:15:14 -0400
-Message-ID: <48AE0476.80109@snapgear.com>
-Date: Fri, 22 Aug 2008 10:12:38 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Jared Hulbert <jaredeh@gmail.com>
-CC: Jamie Lokier <jamie@shareable.org>, Linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>, tim.bird@am.sony.com,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
-References: <48AD00C4.6060302@gmail.com> <20080821110749.GA1926@shareable.org> <6934efce0808210711t686a88eci6eb294dbb54d68fe@mail.gmail.com>
-In-Reply-To: <6934efce0808210711t686a88eci6eb294dbb54d68fe@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 21 Aug 2008 20:26:56 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:52392 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752785AbYHVA0z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 20:26:55 -0400
+Date: Thu, 21 Aug 2008 17:26:53 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
+Message-Id: <20080821172653.3e3e855c.randy.dunlap@oracle.com>
+In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net>
+References: <48AD02B2.7020004@oracle.com>
+	<0F5B06BAB751E047AB5C87D1F77A778835116209D3@GVW0547EXC.americas.hpqcorp.net>
+	<20080821084333.c471b439.randy.dunlap@oracle.com>
+	<0F5B06BAB751E047AB5C87D1F77A7788351181004C@GVW0547EXC.americas.hpqcorp.net>
+	<20080821091514.8f56e2d5.randy.dunlap@oracle.com>
+	<0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jared,
+On Thu, 21 Aug 2008 16:25:24 +0000 Miller, Mike (OS Dev) wrote:
 
-Jared Hulbert wrote:
->> How does it fare with no MMU?  Can the profiler and image builder lay
->> out the XIP pages in such a way that no-MMU mmaps can map those regions?
->>
->> No complaint if not, it would be a nice bonus though.
-> 
-> Sorry.  I don't believe it will work on no-MMU as is.  That said you
-> _could_ tweak the mkfs tool to lay mmap()'ed regions down contiguously
-> but then if you mmap() an unprofiled region, well that would be bad.
-> I suppose you could make axfs_mmap smart enough to handle that.  I
-> guess the cleanest way would be to just make files lay down
-> contiguously, you lose some of the space saving but it would work.
+> > >
+> > > Randy,
+> > > We know of a race condition in cciss_init_one. It's fixed
+> > in 2.6.26 I believe. Here's the patch:
+> > >
+> > >
+> > http://groups.google.com/group/linux.kernel/browse_thread/thread/7b39f
+> > > 2b77622ab03/4f5f45c008655ca1?hl=en&lnk=gst&q=cciss#4f5f45c008655ca1
+> >
+> >
+> > Mike,
+> > Sorry, but my fingers have typoed the $subject.  My bad.
+> > Kernel is 2.6.27-rc3-git7 (from above):
+> >
+> > > > > > Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
+> > > > > > Pid: 0, comm: swapper Not tainted 2.6.27-rc3-git7 #1
+> > > > > > RIP: 0010:[<ffffffffa001bb68>]  [<ffffffffa001bb68>]
+> > > > > > do_cciss_intr+0x627/0xa6c [cciss]
+> >
+> Hmmmmm, let me know what happens from your retest. I'll look at this as soon as I finish what I'm doing now. We trying to spin for our test teams but I have something hopelessly broken. :(
 
-That would be enough I think. If you could manually select
-which files are contiguous-and-uncompressed that would be
-useful for some too here.
+It didn't BUG in the retest.  That just means that it's more difficult
+to find/fix, right?
 
-
-> I'm not plannin to get to this anytime soon.  But I'd be willing merge
-> patches.  Can anybody convince me offline that working on no-MMU this
-> makes financial sense for my employer?  This is getting to be a common
-> question.  How many noMMU users are out there and why are you so
-> interested?
-
-One of those unknown factors, how many are there?
-Who knows, pretty much impossible to tell.
-
-One thing for sure is that many people who do non-MMU setups
-are interested in XIP to get the space savings. These are very
-often small devices with very constrained RAM and flash. (For
-whatever it is worth single NOR flash only boards are common in
-these smaller form factors :-)
-
-Regards
-Greg
-
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-Secure Computing Corporation                PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
