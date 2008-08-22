@@ -1,89 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbYHVThr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbYHVTir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754695AbYHVThr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 15:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbYHVThf
+	id S1755925AbYHVTir (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 15:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYHVTie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 15:37:35 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54152 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752329AbYHVThe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 15:37:34 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX18hQAxQi2ghHKXKEKShSFm2jfKMNFT/5GjbPkTDmq
-	UuDxSEUGrXI8It
-Date: Fri, 22 Aug 2008 21:37:30 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Petr Baudis <pasky@suse.cz>, Alan.Brunelle@hp.com,
-       linux-kernel@vger.kernel.org, git@vger.kernel.org
-Subject: Re: Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-Message-ID: <20080822193730.GA1598@atjola.homenet>
-References: <48A36838.3050309@hp.com> <20080819124602.9e8e69f7.akpm@linux-foundation.org> <48AEDD3D.4060507@hp.com> <20080822092549.ddcb7e79.akpm@linux-foundation.org> <20080822171651.GP10544@machine.or.cz> <20080822105136.a8432875.akpm@linux-foundation.org>
+	Fri, 22 Aug 2008 15:38:34 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:56497 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753248AbYHVTid (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 15:38:33 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Jared Hulbert" <jaredeh@gmail.com>
+Subject: Re: [PATCH 05/10] AXFS: axfs_profiling.c
+Date: Fri, 22 Aug 2008 21:38:25 +0200
+User-Agent: KMail/1.9.9
+References: <48AD00F8.1030004@gmail.com> <200808221840.39206.arnd@arndb.de> <6934efce0808221037u4548dd00q9ccd67545bfbcc8@mail.gmail.com>
+In-Reply-To: <6934efce0808221037u4548dd00q9ccd67545bfbcc8@mail.gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+Cc: "David Woodhouse" <dwmw2@infradead.org>, carsteno@de.ibm.com,
+       Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       "=?utf-8?q?J=C3=B6rn?= Engel" <joern@logfs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080822105136.a8432875.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.55
+Message-Id: <200808222138.26927.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+2l93AUUZIsnqyWGwrlAq7jPWkYeJ/jYAf8rx
+ OwVWuTKonFPzw+VO3WNNa3BQEa0JPF3yXDYVGFJNbFp3f8Y5VE
+ nc5pKWz6Cfu7uqyG97+6g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008.08.22 10:51:36 -0700, Andrew Morton wrote:
-> On Fri, 22 Aug 2008 19:16:51 +0200 Petr Baudis <pasky@suse.cz> wrote:
-> > On Fri, Aug 22, 2008 at 09:25:49AM -0700, Andrew Morton wrote:
-> > > One (probably wrong) approach is to run
-> > > 
-> > > 	gitk 1c89ac55017f982355c7761e1c912c88c941483d
-> > > 
-> > > then peer at the output, work out which real commits were in that
-> > > merge.
-> > > 
-> > > It looks like the merge ended with
-> > > b1b135c8d619cb2c7045d6ee4e48375882518bb5 and started with
-> > > 40c42076ebd362dc69210cccea101ac80b6d4bd4, so perhaps you can do
-> > > 
-> > > 	git bisect bad b1b135c8d619cb2c7045d6ee4e48375882518bb5
-> > > 	git bisect good 40c42076ebd362dc69210cccea101ac80b6d4bd4
-> > 
-> > ...I don't quite get this - according to the bisection log,
-> > 
-> > 	# good: [b1b135c8d619cb2c7045d6ee4e48375882518bb5] fix spinlock recursion in hvc_console
-> > 
-> > and now you want to mark it as bad?
+On Friday 22 August 2008, you wrote:
+> You mean to take this off list?
+
+No, i replied to your mail that was sent just to me.
+Putting everyone back on now
+
+> > In 3, you create files with sysfs_create_file, and are fairly limited
+> > with how you can use it. A structured file like you have in procfs
+> > would not be allowed. File names are fixed, directory names can
+> > be used to identify the mounted file systems. You can create symlinks
+> > between your directory and other things in sysfs.
 > 
-> <what bisection log?>
+> What do you mean a structured file wouldn't be allowed?  What's in them then?
 
-Alan provided his bisection log as an attachment to the original bug
-report.
+sysfs files are meant to have just a single value. Some have a list of
+values of the same type, but a file that needs a nontrivial parser
+(even sscanf) is not allowed in sysfs, by convention.
+There is also the technical limitation of the size to a single page,
+which makes it hard to write variable size data.
 
-> I assume that Alan's bisection search ended up saying that the merge
-> commit (1c89ac55017f982355c7761e1c912c88c941483d) was the first bad
-> commit.
+> > In 4, you write a whole file system like debugfs (it's not as hard
+> > as it sounds) and are free to do anything in there, but you can't
+> > easily symlink to sysfs.
+> 
+> Argh.  No it might not be too bad to do to do, but it sounds like a
+> maintenance hassle.  Sounds like the best option though.
+> 
+> Why did we decide debugfs is a bad fit?
 
-Yep, and that's totally correct as far as bisect is concerned. The
-parents of that merge commit are:
-88fa08f67bee1a0c765237bdac106a32872f57d2
-b1b135c8d619cb2c7045d6ee4e48375882518bb5
+It's basically the same as debugfs -- actually I once started a patch
+to make it a single function call to instantiate a debugfs-like
+file system, but I never finished that patch.
 
-And Alan marked both of them as good.
+debugfs is a bad idea here because it is not meant for stable interfaces
+but rather ad-hoc stuff. In a distribution kernel, debugfs is supposed
+to be empty.
 
-So, unless Alan made a mistake during his bisection, each of the
-branches is correct, but the merge did not lead to a correct result. So
-while there were no textual conflicts, there were still incompatible
-changes regarding the code semantics and compatibility was not restored
-during the merge.
+> > So where does a page show up in the profile if you have two identical
+> > files and both are mapped?
+> 
+> In which ever file was actually read.  The kernel driver doesn't
+> really know pages are redundant.
 
-To get an overview over what got merged together you can can use
-something like:
-gitk --left-right 1c89ac55017^1...1c89ac55017^2
+ok.
 
-Which shows all commits that were on only one side of the merge, with
-nice "arrows" that indicate from which side the commit is coming. The
-conflict should be between one commit from the left and one commit from
-the right side, obviously.
+> > Will the kernel map them to the same page
+> > but count the files separately, or will it show the same count for both?
+> 
+> I count faults on pages in mmap() so I don't really care whether a
+> page is mapped twice or just once.  I'll count it every time you fault
+> it even if it's the same physical page.  It's the image builders job
+> to figure out if there are redundant pages.
 
-Björn
+ok, makes sense.
+
+I think there is still another option, which would be to generalize
+the profiling interface so it can work with arbitrary file systems.
+I'm sure that other people can benefit from that as well, e.g. for
+optimizing boot times on disks. For such a general interface,
+a per-file ioctl would fit best, and then file systems can implement
+it if they want, or it can be moved into VFS.
+
+	Arnd <><
