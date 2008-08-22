@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbYHVIz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbYHVI6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756767AbYHVIz5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 04:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbYHVIzu
+	id S1757589AbYHVI6g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 04:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYHVI61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 04:55:50 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42441 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751550AbYHVIzt (ORCPT
+	Fri, 22 Aug 2008 04:58:27 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:52425 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751801AbYHVI60 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 04:55:49 -0400
-Date: Fri, 22 Aug 2008 10:55:48 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Max Krasnyanskiy <maxk@qualcomm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: latest -git: hibernate: possible circular locking dependency detected
-Message-ID: <20080822085548.GA6542@atrey.karlin.mff.cuni.cz>
-References: <19f34abd0808210804y7ee91d1fy12da5ad6f82d2451@mail.gmail.com>
+	Fri, 22 Aug 2008 04:58:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Vv68QdWgTSB/i40LzgyP4bAN9MdD/ZjKNzJ9rpfULrlQ7x71wH9/nKI6OQ7G5d8MBV
+         wDiCY8tIQ5EOrf9O2ZYLVNZvKvBaUHR1fYUoqevFw1ObVlUiIjL3nu/cYkUuEaqI3Rdp
+         NAsXcRN0S2aMYIsHzPmIB93yZ6sWjdSFYYYrA=
+Message-ID: <8db1092f0808220158k742c6429y5f8ee48d5eb61a30@mail.gmail.com>
+Date: Fri, 22 Aug 2008 10:58:25 +0200
+From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [2.6.26.*] boot problem (ahci/irq related?)
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, "Jeff Garzik" <jgarzik@pobox.com>,
+       tj@kernel.org, andi@firstfloor.org,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>
+In-Reply-To: <200808211445.46467.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <19f34abd0808210804y7ee91d1fy12da5ad6f82d2451@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <8db1092f0808111312x3baf819bxbb05030c05693065@mail.gmail.com>
+	 <8db1092f0808160236o63c42de4k3c455c349d3e9da6@mail.gmail.com>
+	 <8db1092f0808201136y15a67647i95fd00fb5d2476fc@mail.gmail.com>
+	 <200808211445.46467.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+2008/8/21 Rafael J. Wysocki <rjw@sisk.pl>:
 
+>
+> Do you have a log where it doesn't hang?
+>
+> Rafael
+>
 
-> I just got this on v2.6.27-rc4 (+ unrelated fix):
-
-Did suspend ever work for you on this machine?
-								Pavel
+http://unixy.pl/maciek/download/kernel/2.6.27-rc3/dmesg-2.6.27-rc3.txt
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Maciej Rutecki
+http://www.maciek.unixy.pl
