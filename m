@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbYHVLDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbYHVLLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755964AbYHVLDa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 07:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbYHVLDV
+	id S1754066AbYHVLLt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 07:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbYHVLLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 07:03:21 -0400
-Received: from tone.orchestra.cse.unsw.EDU.AU ([129.94.242.59]:55230 "EHLO
-	tone.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753346AbYHVLDU (ORCPT
+	Fri, 22 Aug 2008 07:11:42 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:53173 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbYHVLLl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 07:03:20 -0400
-From: Aaron Carroll <aaronc@gelato.unsw.edu.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Date: Fri, 22 Aug 2008 21:02:54 +1000
-Message-ID: <48AE9CDE.9090504@gelato.unsw.edu.au>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080618)
+	Fri, 22 Aug 2008 07:11:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent:from;
+        b=cQV427RGYFqS+3O26aGKTenH7mIrnDo9qNq/b3TEhMo0gGH5LPK2RQ1To8cdulGrfI
+         aQfA8ieKSgPyKA4lwPuvO51gISd/7vRkIfj6qttleQT3q8RuOd2hzzjsvIfpeXeLG7nU
+         A6STeTTEOCoN6q4JGJAEEGH8fBdVJ8eKJwRdY=
+Date: Fri, 22 Aug 2008 15:13:01 +0400
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "H. Peter Anvin" <hpa@kernel.org>, Dave Jones <davej@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: latest -git: WARNING: at arch/x86/kernel/ipi.c:123	send_IPI_mask_bitmask+0xc3/0xe0()
+Message-ID: <20080822111301.GA2321@x200.localdomain>
+References: <19f34abd0808191251x4eb61c50n13ecf7c90f0f3d9f@mail.gmail.com> <20080820013930.GN9807@one.firstfloor.org> <19f34abd0808192326jc10e758m99e76bbd5714c5b8@mail.gmail.com> <20080822003659.GA7581@redhat.com> <48AE20B8.9000204@kernel.org> <20080822022841.GG23334@one.firstfloor.org>
 MIME-Version: 1.0
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cfq-iosched: fix queue depth detection
-References: <48AE5FE2.2060003@gelato.unsw.edu.au> <20080822090620.GY20055@kernel.dk>
-In-Reply-To: <20080822090620.GY20055@kernel.dk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080822022841.GG23334@one.firstfloor.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: adobriyan@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Fri, Aug 22 2008, Aaron Carroll wrote:
->> Hi Jens,
->>
->> This patch fixes a bug in the hw_tag detection logic causing a huge 
->> performance
->> hit under certain workloads on real queuing devices.  For example, an FIO 
->> load
->> of 16k direct random reads on an 8-disk hardware RAID yields about 2 MiB/s 
->> on
->> default CFQ, while noop achieves over 20 MiB/s.
->>
->> While the solution is pretty ugly, it does have the advantage of adapting to
->> queue depth changes.  Such a situation might occur if the queue depth is
->> configured in userspace late in the boot process.
+On Fri, Aug 22, 2008 at 04:28:41AM +0200, Andi Kleen wrote:
+> > You may want to see if this patch fixes the problem; it does *NOT* have 
+> > the correct error behaviour (some of the intervening layers don't 
+> > propagate errors), but it should make the fault go away.
 > 
-> I don't think it's that ugly, and I prefer this logic to the existing
-> one in fact. Since it's a static property of the device, why did you
-> change it to toggle the flag back and forth instead of just setting it
-> once?
+> The alternative would be to just take out those msr_on_cpu() 
+> interfaces again. Right now they are useless in the kernel,
+> but still cause problems.
+> 
+> They were only added for OpenVZ's vCPUs which they back then
+> promised me would hit mainline soon.
 
-Because it is possible (albeit uncommon) that the queue depth can change
-at run time, like the example I gave.  However, there should be no false
-positives; the flag should only be toggled if the queue depth does change.
-So even if it doesn't occur often, we can handle this corner case for very
-little cost.
+There were no such promises made. Reread thread.
 
-> doesn't do queueing. So the interesting window is the one where we have
-> more requests pending yet the driver doesn't ask for it. I'd prefer a
-> patch that took that more into account, instead of just looking at the
-> past 50 samples and then toggle the hw_tag flag depending on the
-> behaviour in that time frame. You could easily have a depth of 1 there
-> always if it's a sync workload, even if hardware can do tagged queuing.
-
-That's exactly what the lines
-
-	if (cfqd->rq_queued <= CFQ_HW_QUEUE_MIN &&
-	    cfqd->rq_in_driver <= CFQ_HW_QUEUE_MIN)
-		return;
-
-are for.  It's not just the past 50 samples, but rather 50 samples with
-sufficient load to see whether the device could be queuing.
-
-
-Thanks,
-   -- Aaron
+> But that was some time  ago and there wasn't much progress on this.
 
