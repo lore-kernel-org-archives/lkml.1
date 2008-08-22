@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756616AbYHVDwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755632AbYHVD4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756616AbYHVDwS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 23:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbYHVDwD
+	id S1755632AbYHVD4f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 23:56:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbYHVD41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 23:52:03 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49427 "EHLO mx3.mail.elte.hu"
+	Thu, 21 Aug 2008 23:56:27 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40530 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752165AbYHVDwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 23:52:01 -0400
-Date: Fri, 22 Aug 2008 05:51:44 +0200
+	id S1750861AbYHVD40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Aug 2008 23:56:26 -0400
+Date: Fri, 22 Aug 2008 05:56:09 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+Cc: Joshua Hoblitt <josh@hoblitt.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
        bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
        j_kernel@hoblitt.com
 Subject: Re: [Bug 11388] New: 2.6.27-rc3 warns about MTRR range; only 3 of
 	16gb of memory is usable
-Message-ID: <20080822035144.GC30284@elte.hu>
-References: <bug-11388-27@http.bugzilla.kernel.org/> <20080820180405.7f164450.akpm@linux-foundation.org> <86802c440808201820w6c684a10y2f1d0f70a344a14a@mail.gmail.com> <86802c440808201849k6665c395x5a5b871eca55addd@mail.gmail.com> <20080821114430.GC30667@elte.hu> <20080821115642.GA2270@elte.hu> <86802c440808210839u452d9440kd7d12694db515411@mail.gmail.com>
+Message-ID: <20080822035609.GD30284@elte.hu>
+References: <20080822001047.GF23377@hoblitt.com> <86802c440808211728r4b5a7a37w929c2dd68616361d@mail.gmail.com> <20080822002952.GG23377@hoblitt.com> <20080822010014.GH23377@hoblitt.com> <20080822011055.GI23377@hoblitt.com> <86802c440808211855h50ea65faudc169e48f83e18e2@mail.gmail.com> <20080822021512.GJ23377@hoblitt.com> <86802c440808211926k1ec5b2a2g2bec1b7faee7ebbb@mail.gmail.com> <86802c440808212024v3ccd2a7ey6517c180464275f0@mail.gmail.com> <20080822035024.GB30284@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86802c440808210839u452d9440kd7d12694db515411@mail.gmail.com>
+In-Reply-To: <20080822035024.GB30284@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,35 +38,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> On Thu, Aug 21, 2008 at 4:56 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> >>
-> >> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >>
-> >> > [PATCH] x86_64: printout msr
-> >>
-> >> looks rather useful - added it to tip/x86/debug.
-> >
-> > fails to build with the attached config:
-> >
-> > arch/x86/kernel/cpu/common_64.c: In function 'print_cpu_msr':
-> > arch/x86/kernel/cpu/common_64.c:456: error: implicit declaration of function 'rdmsrl_amd_safe'
-> > arch/x86/kernel/cpu/common_64.c: In function 'print_cpu_info':
-> > arch/x86/kernel/cpu/common_64.c:486: error: 'struct cpuinfo_x86' has no member named 'cpu_index'
-> >
-> > i realize that this wasnt sent for inclusion, but i think it would make
-> > sense to tidy it up and integrate it.
-> 
-> that was one tool to verify if BIOS does right thing about some special bits.
-> 
-> it seems it doesn't compile when xen etc is enable in config.
+> i've tidied up your patch (see the commit below) and have queued it up 
+> in x86/urgent. It seems fairly safe and i guess we can push it to 
+> v2.6.27 if Joshua reports test success. Joshua, could you give it a go 
+> please?
 
-yeah - but would be nice to fix it, as it's a useful diagnostic patch. 
-If people have similar problems in the future they can boot their distro 
-kernels with show_mtrr=x to get a MTRR dump.
+or just try the latest tip/master - please check whether you are getting 
+the right amount of RAM out of box plus this warning message:
+
+> WARN_ON("mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
 
 	Ingo
