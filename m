@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758916AbYHVVuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759221AbYHVVve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758916AbYHVVuk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 17:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbYHVVuc
+	id S1759221AbYHVVve (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 17:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754486AbYHVVvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 17:50:32 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54659 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753465AbYHVVub (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 17:50:31 -0400
-Date: Fri, 22 Aug 2008 16:50:30 -0500
+	Fri, 22 Aug 2008 17:51:25 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:35829 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754672AbYHVVvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 17:51:25 -0400
+Date: Fri, 22 Aug 2008 16:51:24 -0500
 From: Russ Anderson <rja@sgi.com>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
 Cc: Russ Anderson <rja@sgi.com>, Jack Steiner <steiner@sgi.com>
-Subject: [PATCH 0/4] x86: UV runtime bios calls
-Message-ID: <20080822215030.GA143104@sgi.com>
+Subject: [PATCH 1/4] x86: Add UV EFI table entry
+Message-ID: <20080822215124.GB143104@sgi.com>
 Reply-To: Russ Anderson <rja@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,43 +24,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 0/4] x86: UV runtime bios calls
+[PATCH 1/4] x86: Add UV EFI table entry
 
-Purpose: 
-	Create an interface to allow calls into bios to return platform
-	specific information.  The interface uses EFI SAL table entry.
-	EFI provides a mechanism for defining function pointers to 
-	firmware routines.  This patchset builds on the EFI mechanism
-	to provide access to those firmware routines.
+Look for a SAL entry in the EFI tables.
 
-Patches:
-	uv_efi_bios:	Look for SAL entry in EFI tables.
+Signed-off-by: Russ Anderson <rja@sgi.com>
+Signed-off-by: Paul Jackson <pj@sgi.com>
 
-	uv_bios_common:	Add the EFI callback function using the EFI table
-			entry.  Create associated wrapper code.  Initialize
-			SAL system table entry info at boot time.
+---
+ arch/x86/kernel/efi.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-	uv_bios_call_partition: Add call to get partitioning related info.
-
-	uv_sysfs:	Create sysfs entrys in /sys/firmware/sgi_uv/ for
-			partitioning related information.
-
-Implementation comments:
-
-	This patch uses sal_systab.  sal_systab is used on ia64, but was
-	not used on x86.  An alternative would be to create a new
-	EFI entry type (uv_systab), though that would require adding 
-	to struct efi.
-
-	The location in sysfs (/sys/firmware/sgi_uv/) is based on
-	community feedback.
-
-	If EFI is not configured (CONFIG_EFI), the calls will return -ENOSYS.
-	If run on a system with a bios that does not supportes EFI SAL, the
-	calls will return -ENOSYS.
-
-	Paul Jackson assisted in the development of this code.
-	
+Index: linux/arch/x86/kernel/efi.c
+===================================================================
+--- linux.orig/arch/x86/kernel/efi.c	2008-08-22 14:49:44.000000000 -0500
++++ linux/arch/x86/kernel/efi.c	2008-08-22 14:50:10.000000000 -0500
+@@ -367,6 +367,10 @@ void __init efi_init(void)
+ 			efi.smbios = config_tables[i].table;
+ 			printk(" SMBIOS=0x%lx ", config_tables[i].table);
+ 		} else if (!efi_guidcmp(config_tables[i].guid,
++					SAL_SYSTEM_TABLE_GUID)) {
++			efi.sal_systab = config_tables[i].table;
++			printk(" SALsystab=0x%lx ", config_tables[i].table);
++		} else if (!efi_guidcmp(config_tables[i].guid,
+ 					HCDP_TABLE_GUID)) {
+ 			efi.hcdp = config_tables[i].table;
+ 			printk(" HCDP=0x%lx ", config_tables[i].table);
 -- 
 Russ Anderson, OS RAS/Partitioning Project Lead  
 SGI - Silicon Graphics Inc          rja@sgi.com
