@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759081AbYHVVxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbYHVVyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759081AbYHVVxV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 17:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756248AbYHVVxL
+	id S1759351AbYHVVyZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 17:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754486AbYHVVyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 17:53:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54722 "EHLO
+	Fri, 22 Aug 2008 17:54:10 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54747 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754896AbYHVVxK (ORCPT
+	with ESMTP id S1753863AbYHVVyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 17:53:10 -0400
-Date: Fri, 22 Aug 2008 16:53:09 -0500
+	Fri, 22 Aug 2008 17:54:09 -0400
+Date: Fri, 22 Aug 2008 16:54:08 -0500
 From: Russ Anderson <rja@sgi.com>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
 Cc: Russ Anderson <rja@sgi.com>, Jack Steiner <steiner@sgi.com>
-Subject: [PATCH 2/4] x86: Add UV bios call infrastructure
-Message-ID: <20080822215309.GC143104@sgi.com>
+Subject: [PATCH 3/4] x86: Add UV partition call
+Message-ID: <20080822215408.GD143104@sgi.com>
 Reply-To: Russ Anderson <rja@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,255 +25,181 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 2/4] x86: Add UV bios call infrastructure
+[PATCH 3/4] x86: Add UV partition call
 
-Add the EFI callback function and associated wrapper code.
-Initialize SAL system table entry info at boot time.
+Add a bios call to return partitioning related info.
 
 Signed-off-by: Russ Anderson <rja@sgi.com>
-Signed-off-by: Paul Jackson <pj@sgi.com>
 
 ---
- arch/x86/kernel/bios_uv.c        |  106 +++++++++++++++++++++++++++++++--------
- arch/x86/kernel/genx2apic_uv_x.c |    1 
- include/asm-x86/uv/bios.h        |   58 +++++++++++----------
- 3 files changed, 117 insertions(+), 48 deletions(-)
+ arch/x86/kernel/bios_uv.c        |   52 ++++++++++++++++++++++++++++++++++-----
+ arch/x86/kernel/genx2apic_uv_x.c |   14 ++++++----
+ include/asm-x86/uv/bios.h        |   30 ++++++++++++++++------
+ 3 files changed, 76 insertions(+), 20 deletions(-)
 
 Index: linux/arch/x86/kernel/bios_uv.c
 ===================================================================
---- linux.orig/arch/x86/kernel/bios_uv.c	2008-08-22 14:51:54.000000000 -0500
-+++ linux/arch/x86/kernel/bios_uv.c	2008-08-22 14:52:00.000000000 -0500
-@@ -1,8 +1,6 @@
- /*
-  * BIOS run time interface routines.
-  *
-- *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-- *
-  *  This program is free software; you can redistribute it and/or modify
-  *  it under the terms of the GNU General Public License as published by
-  *  the Free Software Foundation; either version 2 of the License, or
-@@ -16,33 +14,99 @@
-  *  You should have received a copy of the GNU General Public License
-  *  along with this program; if not, write to the Free Software
-  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ *
-+ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ *  Copyright (c) Russ Anderson
-  */
- 
-+#include <linux/efi.h>
-+#include <linux/io.h>
- #include <asm/uv/bios.h>
- 
--const char *
--x86_bios_strerror(long status)
-+struct sal_systab sal_systab;
-+
-+s64 uv_bios_call(int which, u64 a1, u64 a2, u64 a3, u64 a4, u64 a5)
- {
--	const char *str;
--	switch (status) {
--	case  0: str = "Call completed without error"; break;
--	case -1: str = "Not implemented"; break;
--	case -2: str = "Invalid argument"; break;
--	case -3: str = "Call completed with error"; break;
--	default: str = "Unknown BIOS status code"; break;
--	}
--	return str;
-+	struct sal_systab *tab = &sal_systab;
-+
-+	if (tab->function == (unsigned long)NULL)
-+		/*
-+		 * BIOS does not support SAL systab
-+		 */
-+		return BIOS_STATUS_UNIMPLEMENTED;
-+
-+	return efi_call6((void *)__va(tab->function),
-+					which, a1, a2, a3, a4, a5);
+--- linux.orig/arch/x86/kernel/bios_uv.c	2008-08-22 14:52:00.000000000 -0500
++++ linux/arch/x86/kernel/bios_uv.c	2008-08-22 14:52:08.000000000 -0500
+@@ -62,14 +62,54 @@ s64 uv_bios_call_reentrant(int which, u6
+ 	return ret;
  }
  
 -long
--x86_bios_freq_base(unsigned long which, unsigned long *ticks_per_second,
--		   unsigned long *drift_info)
-+s64 uv_bios_call_irqsave(int which, u64 a1, u64 a2, u64 a3, u64 a4, u64 a5)
- {
--	struct uv_bios_retval isrv;
-+	unsigned long bios_flags;
-+	s64 ret;
- 
--	BIOS_CALL(isrv, BIOS_FREQ_BASE, which, 0, 0, 0, 0, 0, 0);
--	*ticks_per_second = isrv.v0;
--	*drift_info = isrv.v1;
--	return isrv.status;
-+	local_irq_save(bios_flags);
-+	ret = uv_bios_call(which, a1, a2, a3, a4, a5);
-+	local_irq_restore(bios_flags);
+-x86_bios_freq_base(unsigned long clock_type, unsigned long *ticks_per_second,
+-					unsigned long *drift_info)
 +
-+	return ret;
-+}
++u8 sn_partition_id;
++EXPORT_SYMBOL(sn_partition_id);
++u8 uv_coherency_id;
++EXPORT_SYMBOL(uv_coherency_id);
++u8 uv_type;
++EXPORT_SYMBOL(uv_type);
 +
-+s64 uv_bios_call_reentrant(int which, u64 a1, u64 a2, u64 a3, u64 a4, u64 a5)
-+{
-+	s64 ret;
-+
-+	preempt_disable();
-+	ret = uv_bios_call(which, a1, a2, a3, a4, a5);
-+	preempt_enable();
-+
-+	return ret;
-+}
-+
-+long
-+x86_bios_freq_base(unsigned long clock_type, unsigned long *ticks_per_second,
-+					unsigned long *drift_info)
-+{
-+	return uv_bios_call(BIOS_FREQ_BASE, clock_type,
-+				(u64)ticks_per_second, 0, 0, 0);
- }
- EXPORT_SYMBOL_GPL(x86_bios_freq_base);
-+
-+
-+#ifdef CONFIG_EFI
-+void uv_bios_init(void)
-+{
-+	struct sal_systab *tab;
-+
-+	if ((efi.sal_systab == EFI_INVALID_TABLE_ADDR) ||
-+	    (efi.sal_systab == (unsigned long)NULL)) {
-+		printk(KERN_CRIT "No EFI SAL System Table.\n");
-+		sal_systab.function = (unsigned long)NULL;
-+		return;
-+	}
-+
-+	tab = (struct sal_systab *)ioremap(efi.sal_systab,
-+					sizeof(struct sal_systab));
-+	if (strncmp(tab->signature, "SST_", 4) != 0)
-+		printk(KERN_ERR "bad signature in SAL system table!");
-+
-+	/*
-+	 * Copy table to permanent spot for later use.
-+	 */
-+	memcpy(&sal_systab, tab, sizeof(struct sal_systab));
-+	iounmap(tab);
-+
-+	printk(KERN_INFO "EFI SAL System Table Revision %d\n", tab->revision);
-+}
-+#else	/* !CONFIG_EFI */
 +/*
-+ * IF EFI is not configured, have the EFI calls return unimplemented.
++ * Returns information about the UV HUB.
++ *
++ * Parameters for UV_BIOS_GET_SN_INFO call:
++ *  In:
++ *	arg0 - UV_BIOS_GET_SN_INFO
++ *	arg1 - fc (0 for now, other values reserved for future use)
++ *  Out:
++ *      v0
++ *		[7:0]   - uv hub version (0=hub1, 1=hub2)
++ *		[31:24] - partition ID
++ *		[39:32] - coherency_id
 + */
-+u64 efi_call6(void *fp, u64 arg1, u64 arg2, u64 arg3,
-+			u64 arg4, u64 arg5, u64 arg6)
++s64 uv_bios_get_sn_info(int fc, u8 *uvtype, u8 *partid, u8 *coher)
+ {
+-	return uv_bios_call(BIOS_FREQ_BASE, clock_type,
+-				(u64)ticks_per_second, 0, 0, 0);
++	s64 ret;
++	u64 v0, v1;
++
++	ret = uv_bios_call_irqsave(UV_BIOS_GET_SN_INFO, fc,
++				(u64)(&v0), (u64)(&v1), 0, 0);
++	if (ret != BIOS_STATUS_SUCCESS)
++		return ret;
++
++	if (uvtype)
++		*uvtype = v0 & 0xff;
++	if (partid)
++		*partid = (v0 >> 8) & 0xff;
++	if (coher)
++		*coher = (v0 >> 24) & 0xff;
++	return ret;
+ }
+-EXPORT_SYMBOL_GPL(x86_bios_freq_base);
++
++
++s64
++uv_bios_freq_base(u64 clock_type, u64 *ticks_per_second)
 +{
-+	return  BIOS_STATUS_UNIMPLEMENTED;
++	return uv_bios_call(UV_BIOS_FREQ_BASE, clock_type,
++			   (u64)ticks_per_second, 0, 0, 0);
 +}
-+
-+void uv_bios_init(void) { }
-+#endif
-+
++EXPORT_SYMBOL_GPL(uv_bios_freq_base);
+ 
+ 
+ #ifdef CONFIG_EFI
 Index: linux/arch/x86/kernel/genx2apic_uv_x.c
 ===================================================================
---- linux.orig/arch/x86/kernel/genx2apic_uv_x.c	2008-08-22 14:51:54.000000000 -0500
-+++ linux/arch/x86/kernel/genx2apic_uv_x.c	2008-08-22 14:52:00.000000000 -0500
-@@ -411,6 +411,7 @@ static __init void uv_system_init(void)
- 	gnode_upper = (((unsigned long)node_id.s.node_id) &
+--- linux.orig/arch/x86/kernel/genx2apic_uv_x.c	2008-08-22 14:52:00.000000000 -0500
++++ linux/arch/x86/kernel/genx2apic_uv_x.c	2008-08-22 14:52:08.000000000 -0500
+@@ -342,12 +342,12 @@ static __init void map_mmioh_high(int ma
+ 
+ static __init void uv_rtc_init(void)
+ {
+-	long status, ticks_per_sec, drift;
++	long status;
++	u64 ticks_per_sec;
+ 
+-	status =
+-	    x86_bios_freq_base(BIOS_FREQ_BASE_REALTIME_CLOCK, &ticks_per_sec,
+-					&drift);
+-	if (status != 0 || ticks_per_sec < 100000) {
++	status = uv_bios_freq_base(BIOS_FREQ_BASE_REALTIME_CLOCK,
++					&ticks_per_sec);
++	if (status != BIOS_STATUS_SUCCESS || ticks_per_sec < 100000) {
+ 		printk(KERN_WARNING
+ 			"unable to determine platform RTC clock frequency, "
+ 			"guessing.\n");
+@@ -412,6 +412,8 @@ static __init void uv_system_init(void)
  		       ~((1 << n_val) - 1)) << m_val;
  
-+	uv_bios_init();
+ 	uv_bios_init();
++	uv_bios_get_sn_info(0, &uv_type, &sn_partition_id,
++			    &uv_coherency_id);
  	uv_rtc_init();
  
  	for_each_present_cpu(cpu) {
+@@ -433,7 +435,7 @@ static __init void uv_system_init(void)
+ 		uv_cpu_hub_info(cpu)->gpa_mask = (1 << (m_val + n_val)) - 1;
+ 		uv_cpu_hub_info(cpu)->gnode_upper = gnode_upper;
+ 		uv_cpu_hub_info(cpu)->global_mmr_base = mmr_base;
+-		uv_cpu_hub_info(cpu)->coherency_domain_number = 0;/* ZZZ */
++		uv_cpu_hub_info(cpu)->coherency_domain_number = uv_coherency_id;
+ 		uv_node_to_blade[nid] = blade;
+ 		uv_cpu_to_blade[cpu] = blade;
+ 		max_pnode = max(pnode, max_pnode);
 Index: linux/include/asm-x86/uv/bios.h
 ===================================================================
---- linux.orig/include/asm-x86/uv/bios.h	2008-08-22 14:51:54.000000000 -0500
-+++ linux/include/asm-x86/uv/bios.h	2008-08-22 14:52:00.000000000 -0500
-@@ -2,9 +2,7 @@
- #define ASM_X86__UV__BIOS_H
- 
- /*
-- * BIOS layer definitions.
-- *
-- *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ * UV BIOS layer definitions.
-  *
-  *  This program is free software; you can redistribute it and/or modify
-  *  it under the terms of the GNU General Public License as published by
-@@ -19,6 +17,9 @@
-  *  You should have received a copy of the GNU General Public License
-  *  along with this program; if not, write to the Free Software
-  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ *
-+ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ *  Copyright (c) Russ Anderson
-  */
+--- linux.orig/include/asm-x86/uv/bios.h	2008-08-22 14:52:00.000000000 -0500
++++ linux/include/asm-x86/uv/bios.h	2008-08-22 14:52:08.000000000 -0500
+@@ -24,12 +24,15 @@
  
  #include <linux/rtc.h>
-@@ -31,38 +32,41 @@ enum {
- 	BIOS_FREQ_BASE_REALTIME_CLOCK = 2
- };
  
--# define BIOS_CALL(result, a0, a1, a2, a3, a4, a5, a6, a7)		\
--	do {								\
--		/* XXX - the real call goes here */			\
--		result.status = BIOS_STATUS_UNIMPLEMENTED;		\
--		isrv.v0 = 0;						\
--		isrv.v1 = 0;						\
--	} while (0)
+-#define BIOS_FREQ_BASE			0x01000001
 -
 +/*
-+ * Status values returned from a BIOS call.
++ * Values for the BIOS calls.  It is passed as the first * argument in the
++ * BIOS call.  Passing any other value in the first argument will result
++ * in a BIOS_STATUS_UNIMPLEMENTED return status.
 + */
  enum {
- 	BIOS_STATUS_SUCCESS		=  0,
--	BIOS_STATUS_UNIMPLEMENTED	= -1,
--	BIOS_STATUS_EINVAL		= -2,
--	BIOS_STATUS_ERROR		= -3
-+	BIOS_STATUS_UNIMPLEMENTED	= -ENOSYS,
-+	BIOS_STATUS_EINVAL		= -EINVAL,
-+	BIOS_STATUS_UNAVAIL		= -EBUSY
+-	BIOS_FREQ_BASE_PLATFORM = 0,
+-	BIOS_FREQ_BASE_INTERVAL_TIMER = 1,
+-	BIOS_FREQ_BASE_REALTIME_CLOCK = 2
++	UV_BIOS_COMMON,
++	UV_BIOS_GET_SN_INFO,
++	UV_BIOS_FREQ_BASE
  };
  
--struct uv_bios_retval {
--	/*
--	 * A zero status value indicates call completed without error.
--	 * A negative status value indicates reason of call failure.
--	 * A positive status value indicates success but an
--	 * informational value should be printed (e.g., "reboot for
--	 * change to take effect").
--	 */
--	s64 status;
--	u64 v0;
--	u64 v1;
--	u64 v2;
-+/*
-+ * The SAL system table describes specific firmware
-+ * capabilities available to the Linux kernel at runtime.
-+ */
-+struct sal_systab {
-+	char signature[4];	/* must be "SST_" */
-+	u32 revision;		/* distinguish different firmware revs */
-+	u64 function; 		/* BIOS runtime callback function ptr */
+ /*
+@@ -52,6 +55,12 @@ struct sal_systab {
+ 	u64 function; 		/* BIOS runtime callback function ptr */
  };
  
-+/*
-+ * bios calls have 6 parameters
-+ */
-+extern s64 uv_bios_call(int, u64, u64, u64, u64, u64);
-+extern s64 uv_bios_call_irqsave(int, u64, u64, u64, u64, u64);
-+extern s64 uv_bios_call_reentrant(int which, u64, u64, u64, u64, u64);
++enum {
++	BIOS_FREQ_BASE_PLATFORM = 0,
++	BIOS_FREQ_BASE_INTERVAL_TIMER = 1,
++	BIOS_FREQ_BASE_REALTIME_CLOCK = 2
++};
 +
-+extern void uv_bios_init(void);
-+
- extern long
- x86_bios_freq_base(unsigned long which, unsigned long *ticks_per_second,
- 		   unsigned long *drift_info);
--extern const char *x86_bios_strerror(long status);
-+
-+#ifndef CONFIG_EFI
-+extern u64 efi_call6(void *, u64, u64, u64, u64, u64, u64);
-+#endif
+ /*
+  * bios calls have 6 parameters
+  */
+@@ -59,11 +68,16 @@ extern s64 uv_bios_call(int, u64, u64, u
+ extern s64 uv_bios_call_irqsave(int, u64, u64, u64, u64, u64);
+ extern s64 uv_bios_call_reentrant(int which, u64, u64, u64, u64, u64);
  
- #endif /* ASM_X86__UV__BIOS_H */
++extern s64 uv_bios_get_sn_info(int, u8 *, u8 *, u8 *);
++extern s64 uv_bios_freq_base(u64, u64 *);
++
+ extern void uv_bios_init(void);
+ 
+-extern long
+-x86_bios_freq_base(unsigned long which, unsigned long *ticks_per_second,
+-		   unsigned long *drift_info);
++extern u8 uv_type;
++extern u8 sn_partition_id;
++extern u8 uv_coherency_id;
++#define partition_coherence_id()	(uv_coherency_id)
++
+ 
+ #ifndef CONFIG_EFI
+ extern u64 efi_call6(void *, u64, u64, u64, u64, u64, u64);
 -- 
 Russ Anderson, OS RAS/Partitioning Project Lead  
 SGI - Silicon Graphics Inc          rja@sgi.com
