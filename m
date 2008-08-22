@@ -1,99 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758751AbYHVVLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758677AbYHVVNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758751AbYHVVLv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 17:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758669AbYHVVLf
+	id S1758677AbYHVVNW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 17:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYHVVNC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 17:11:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45603 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758668AbYHVVLe (ORCPT
+	Fri, 22 Aug 2008 17:13:02 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:54592 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751475AbYHVVNA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 17:11:34 -0400
-Date: Fri, 22 Aug 2008 14:10:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Philip Langdale <philipl@overt.org>
-Cc: linux-kernel@vger.kernel.org, hmh@hmh.eng.br, mjg59@srcf.ucam.org,
-       toshiba_acpi@memebeam.org, ivdoorn@gmail.com,
-       linux-wireless@vger.kernel.org
-Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling
- through rfkill (v6)
-Message-Id: <20080822141045.488f9334.akpm@linux-foundation.org>
-In-Reply-To: <48AB8902.3010406@overt.org>
-References: <48AB8902.3010406@overt.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 22 Aug 2008 17:13:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=KSImIORA/uTVHDdhCD4fikn8ATWAS88Klwo0rIB0zrJe9LYrlbrlp0g/+ewCz9mrZR
+         56KwboZ6chAvszHnoNHjXk1pMSthT2a0RJ1mebrjHjVKQbm9va/eCsXmNSjs1vAC7TUp
+         HOfrM+hXB7FzSErGyHA5r5zkQRRRydNdCGAQU=
+Message-ID: <6278d2220808221412x28f4ac5dl508884c8030b364a@mail.gmail.com>
+Date: Fri, 22 Aug 2008 22:12:59 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Linux Kernel" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+Subject: [2.6.27-rc4] XFS i_lock vs i_iolock...
+Cc: "Christoph Lameter" <clameter@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2.6.27-rc4 with various debug options enabled, lockdep claims lock
+ordering issues with XFS [1] - easiest reproducer is just running
+xfs_fsr. Mount options I was using were
+'nobarrier,noatime,nodiratime'.
 
-> User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+Thanks,
+  Daniel
 
-uh-oh.
+--- [1]
 
-On Tue, 19 Aug 2008 20:01:22 -0700
-Philip Langdale <philipl@overt.org> wrote:
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.27-rc4-224c #1
+-------------------------------------------------------
+xfs_fsr/5763 is trying to acquire lock:
+ (&(&ip->i_lock)->mr_lock/2){--..}, at: [<ffffffff803ad8fc>] xfs_ilock+0x8c/0xb0
 
-> There's been a patch floating around for toshiba_acpi that exports an ad-hoc
-> /proc interface to toggle the bluetooth adapter in a large number of Toshiba
-> laptops. I'm not sure if it's still relevant for the latest models, but it is
-> still required for older models such as my Tecra M3.
-> 
-> This change pulls in the low level Toshiba-specific code from the old patch and
-> sets up an rfkill device and a polled input device to track the state of the
-> hardware kill-switch.
-> 
-> Signed-off-by: Philip Langdale <philipl@overt.org>
-> ---
->   Kconfig        |    1
->   toshiba_acpi.c |  263 +++++++++++++++++++++++++++++++++++++++++++++++++++++++--
-> 
-> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-> index 735f5ea..047829c 100644
-> --- a/drivers/acpi/Kconfig
-> +++ b/drivers/acpi/Kconfig
-> @@ -260,6 +260,7 @@ config ACPI_ASUS
->   config ACPI_TOSHIBA
->   	tristate "Toshiba Laptop Extras"
->   	depends on X86
-> +	select INPUT_POLLDEV
->   	select BACKLIGHT_CLASS_DEVICE
->   	---help---
->   	  This driver adds support for access to certain system settings
-> diff --git a/drivers/acpi/toshiba_acpi.c b/drivers/acpi/toshiba_acpi.c
-> index 0a43c8e..5723019 100644
-> --- a/drivers/acpi/toshiba_acpi.c
-> +++ b/drivers/acpi/toshiba_acpi.c
-> @@ -3,6 +3,7 @@
->    *
->    *
->    *  Copyright (C) 2002-2004 John Belmonte
-> + *  Copyright (C) 2008 Philip Langdale
+but task is already holding lock:
+ (&(&ip->i_iolock)->mr_lock/3){--..}, at: [<ffffffff803ad915>]
+xfs_ilock+0xa5/0xb0
 
-your email client is performing space-stuffing.  Please see
-Documentation/email-clients.txt.
+which lock already depends on the new lock.
 
-Please pass the patch through scripts/checkpatch.pl.  It finds a large
-number of errors.
 
-Please consistently put a single blank line between end-of-locals and
-start-of-code.  Avoid randomness like:
+the existing dependency chain (in reverse order) is:
 
-> +static void bt_poll_rfkill(struct input_polled_dev *poll_dev)
-> +{
-> +	bool state_changed;
-> +	bool new_rfk_state;
-> +	bool value;
-> +	u32 hci_result;
-> +
-> +	struct toshiba_acpi_dev *dev = poll_dev->private;
-> +
-> +	hci_result = hci_get_radio_state(&value);
->
+-> #1 (&(&ip->i_iolock)->mr_lock/3){--..}:
+       [<ffffffff8026b011>] __lock_acquire+0xdb1/0x1150
+       [<ffffffff8026b441>] lock_acquire+0x91/0xc0
+       [<ffffffff8025d967>] down_write_nested+0x57/0x90
+       [<ffffffff803ad915>] xfs_ilock+0xa5/0xb0
+       [<ffffffff803cb086>] xfs_lock_two_inodes+0x106/0x120
+       [<ffffffff803b78e0>] xfs_swap_extents+0x70/0x5b0
+       [<ffffffff803b7f68>] xfs_swapext+0x148/0x150
+       [<ffffffff803d8195>] xfs_ioctl+0x6a5/0x810
+       [<ffffffff803d58bd>] xfs_file_ioctl_invis+0x3d/0x80
+       [<ffffffff802d4586>] vfs_ioctl+0x36/0xb0
+       [<ffffffff802d488b>] do_vfs_ioctl+0x28b/0x2f0
+       [<ffffffff802d493f>] sys_ioctl+0x4f/0x80
+       [<ffffffff8020c74b>] system_call_fastpath+0x16/0x1b
+       [<ffffffffffffffff>] 0xffffffffffffffff
 
-The code uses new-style `bool' but it also adds at least one usage of
-the old-style `FALSE'.
+-> #0 (&(&ip->i_lock)->mr_lock/2){--..}:
+       [<ffffffff8026b0f5>] __lock_acquire+0xe95/0x1150
+       [<ffffffff8026b441>] lock_acquire+0x91/0xc0
+       [<ffffffff8025d967>] down_write_nested+0x57/0x90
+       [<ffffffff803ad8fc>] xfs_ilock+0x8c/0xb0
+       [<ffffffff803caff0>] xfs_lock_two_inodes+0x70/0x120
+       [<ffffffff803b7b03>] xfs_swap_extents+0x293/0x5b0
+       [<ffffffff803b7f68>] xfs_swapext+0x148/0x150
+       [<ffffffff803d8195>] xfs_ioctl+0x6a5/0x810
+       [<ffffffff803d58bd>] xfs_file_ioctl_invis+0x3d/0x80
+       [<ffffffff802d4586>] vfs_ioctl+0x36/0xb0
+       [<ffffffff802d488b>] do_vfs_ioctl+0x28b/0x2f0
+       [<ffffffff802d493f>] sys_ioctl+0x4f/0x80
+       [<ffffffff8020c74b>] system_call_fastpath+0x16/0x1b
+       [<ffffffffffffffff>] 0xffffffffffffffff
 
+other info that might help us debug this:
+
+2 locks held by xfs_fsr/5763:
+ #0:  (&(&ip->i_iolock)->mr_lock/2){--..}, at: [<ffffffff803ad915>]
+xfs_ilock+0xa5/0xb0
+ #1:  (&(&ip->i_iolock)->mr_lock/3){--..}, at: [<ffffffff803ad915>]
+xfs_ilock+0xa5/0xb0
+
+stack backtrace:
+Pid: 5763, comm: xfs_fsr Not tainted 2.6.27-rc4-224c #1
+
+Call Trace:
+ [<ffffffff80268d1f>] print_circular_bug_tail+0x9f/0xe0
+ [<ffffffff8026b0f5>] __lock_acquire+0xe95/0x1150
+ [<ffffffff8026b441>] lock_acquire+0x91/0xc0
+ [<ffffffff803ad8fc>] ? xfs_ilock+0x8c/0xb0
+ [<ffffffff8025d967>] down_write_nested+0x57/0x90
+ [<ffffffff803ad8fc>] ? xfs_ilock+0x8c/0xb0
+ [<ffffffff803ad8fc>] xfs_ilock+0x8c/0xb0
+ [<ffffffff803caff0>] xfs_lock_two_inodes+0x70/0x120
+ [<ffffffff803b7b03>] xfs_swap_extents+0x293/0x5b0
+ [<ffffffff803b7f68>] xfs_swapext+0x148/0x150
+ [<ffffffff803d8195>] xfs_ioctl+0x6a5/0x810
+ [<ffffffff802148b0>] ? native_sched_clock+0x70/0xa0
+ [<ffffffff802e24f2>] ? mnt_drop_write+0x62/0x140
+ [<ffffffff803d58bd>] xfs_file_ioctl_invis+0x3d/0x80
+ [<ffffffff802d4586>] vfs_ioctl+0x36/0xb0
+ [<ffffffff802d488b>] do_vfs_ioctl+0x28b/0x2f0
+ [<ffffffff8064128e>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+ [<ffffffff802d493f>] sys_ioctl+0x4f/0x80
+ [<ffffffff8020c74b>] system_call_fastpath+0x16/0x1b
+-- 
+Daniel J Blueman
