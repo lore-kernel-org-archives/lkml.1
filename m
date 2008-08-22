@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbYHVULj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbYHVUNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755239AbYHVULj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 16:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbYHVULa
+	id S1757598AbYHVUNo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 16:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754147AbYHVUNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 16:11:30 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:39374 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754045AbYHVUL3 (ORCPT
+	Fri, 22 Aug 2008 16:13:36 -0400
+Received: from server78.greatnet.de ([83.133.96.102]:44007 "EHLO
+	server78.greatnet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753828AbYHVUNg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 16:11:29 -0400
-Subject: Re: [RFC v2][PATCH 1/9] Create trivial sys_checkpoint/sys_restart
-	syscalls
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: containers@lists.linux-foundation.org, jeremy@goop.org, arnd@arndb.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1219433578.20559.98.camel@nimitz>
-References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>
-	 <Pine.LNX.4.64.0808202302510.17436@takamine.ncl.cs.columbia.edu>
-	 <1219433578.20559.98.camel@nimitz>
-Content-Type: text/plain
-Date: Fri, 22 Aug 2008 13:11:25 -0700
-Message-Id: <1219435885.20559.125.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Fri, 22 Aug 2008 16:13:36 -0400
+Message-ID: <48AF1DD1.1080800@nachtwindheim.de>
+Date: Fri, 22 Aug 2008 22:13:05 +0200
+From: Henne <henne@nachtwindheim.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: mchehab@infradead.org
+CC: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] V4L: fix return value of meye probe callback
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-22 at 12:32 -0700, Dave Hansen wrote:
-> On Wed, 2008-08-20 at 23:03 -0400, Oren Laadan wrote:
-> > 6/unistd_32.h
-> > index d739467..88bdec4 100644
-> > --- a/include/asm-x86/unistd_32.h
-> > +++ b/include/asm-x86/unistd_32.h
-> > @@ -338,6 +338,8 @@
-> >   #define __NR_dup3             330
-> >   #define __NR_pipe2            331
-> >   #define __NR_inotify_init1    332
-> > +#define __NR_checkpoint                333
-> > +#define __NR_restart           334
-> > 
-> >   #ifdef __KERNEL__
-> 
-> Uh oh.  These got whitespace mangled somehow.  I'll look through them,
-> but probably can't produce patches on top of them for now.
+From: Henrik Kretzschmar <henne@nachtwindheim.de>
+Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
 
-This patch also has to go *AFTER* you actually define the syscall
-functions.  Otherwise, this won't be build-bisectable when it gets
-committed.
+The return vaule of the probe function should return -ENOMEM instead
+of -EBUSY if video_device_alloc() fails.
 
--- Dave
+diff --git a/drivers/media/video/meye.c b/drivers/media/video/meye.c
+index 7c8ef6a..225714b 100644
+--- a/drivers/media/video/meye.c
++++ b/drivers/media/video/meye.c
+@@ -1774,6 +1774,7 @@ static int __devinit meye_probe(struct pci_dev *pcidev,
+ 		goto outnotdev;
+ 	}
+ 
++	ret = -ENOMEM;
+ 	meye.mchip_dev = pcidev;
+ 	meye.video_dev = video_device_alloc();
+ 	if (!meye.video_dev) {
+@@ -1781,7 +1782,6 @@ static int __devinit meye_probe(struct pci_dev *pcidev,
+ 		goto outnotdev;
+ 	}
+ 
+-	ret = -ENOMEM;
+ 	meye.grab_temp = vmalloc(MCHIP_NB_PAGES_MJPEG * PAGE_SIZE);
+ 	if (!meye.grab_temp) {
+ 		printk(KERN_ERR "meye: grab buffer allocation failed\n");
+
 
