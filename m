@@ -1,108 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbYHVKta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbYHVKu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756229AbYHVKta (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 06:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750923AbYHVKtW
+	id S1757583AbYHVKu3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 06:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYHVKuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 06:49:22 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:44154 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750819AbYHVKtV (ORCPT
+	Fri, 22 Aug 2008 06:50:11 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:5813 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752481AbYHVKuH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 06:49:21 -0400
-Date: Fri, 22 Aug 2008 19:29:43 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>, ryov@valinux.co.jp
-Subject: Re: [PATCH -mm][preview] memcg: a patch series for next [8/9]
-Message-Id: <20080822192943.4009a7b5.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20080819174404.80dd5102.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080819173014.17358c17.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080819173721.750d489e.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080819174404.80dd5102.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 22 Aug 2008 06:50:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Q6U1tgo9KT9Ed31zKupgJCkOa+eT80VZcqwBqIirxN8a5up62HH1kH2ERY81rxVfMX
+         t0YnbGViXfrV4KMv+K8JCjXX2Umxf3EG6se5VahnO+sojLVkhb72ZPlmyYjv/MVS83/7
+         pDnsuqONWrC9lc6iU+uBUfm6bXwNoJi47d5lM=
+Message-ID: <8db1092f0808220350wc56af7di5c5e1c2eb2421249@mail.gmail.com>
+Date: Fri, 22 Aug 2008 12:50:06 +0200
+From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [2.6.26.*] boot problem (ahci/irq related?)
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, "Jeff Garzik" <jgarzik@pobox.com>,
+       tj@kernel.org, andi@firstfloor.org,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>
+In-Reply-To: <200808221210.59560.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8db1092f0808111312x3baf819bxbb05030c05693065@mail.gmail.com>
+	 <200808211445.46467.rjw@sisk.pl>
+	 <8db1092f0808220158k742c6429y5f8ee48d5eb61a30@mail.gmail.com>
+	 <200808221210.59560.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+2008/8/22 Rafael J. Wysocki <rjw@sisk.pl>:
 
-I think you are making updated ones, I send comments so far.
+>> http://unixy.pl/maciek/download/kernel/2.6.27-rc3/dmesg-2.6.27-rc3.txt
+>
+> This doesn't look like the same configuration as in the picture you
+> sent previously.  In particular, the ICH7 lines are missing.
+>
+> Thanks,
+> Rafael
+>
 
-On Tue, 19 Aug 2008 17:44:04 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Very experimental...
-> 
-> mem+swap controller prototype.
-> 
-> This patch adds CONFIG_CGROUP_MEM_RES_CTLR_SWAP as memory resource
-> controller's swap extension.
-> 
-> When enabling this, memory resource controller will have 2 limits.
-> 
->  - memory.limit_in_bytes .... limit for pages
->  - memory.memsw_limit_in_bytes .... limit for pages + swaps.
-> 
-> Following is (easy) accounting state transion after this patch.
-> 
->    pages   swaps    pages_total   memsw_total
->     +1       -           +1           +1        new page allocation.
->     -1      +1           -1           -         swap out.
->     +1      -1            0           -         swap in (*).
->     -       -1           -            -1        swap_free.
-> 
-What do you mean by "pages_total"?
-
-> At swap-out, swp_entry will be charged against the cgroup of the page.
-> At swap-in, the page will be charged when it's mapped.
-> (Maybe accounting at read_swap() will be beautiful but we can avoid some of
->  error handling to delay accounting until mem_cgroup_charge().)
-> 
-> The charge against swap_entry will be uncharged when swap_entry is freed.
-> 
-> The parameter res.swaps just includes swaps not-on swap cache.
-> So, this doesn't show real usage of swp_entry just shows swp_entry on disk.
-> 
-IMHO, it would be better to "show" real usage of swp_entry.
-Otherwise, "sum of swap usage of all groups" != "swap usage of
-system shown by meminfo"(but it means adding another counter, hmm...).
-
-Instead of showing the usage of disk_swap, how about showing
-the memsw total usage, which is to be limited by user.
-
-> This patch doesn't include codes for control files.
-> 
-> TODO:
->   - clean up. and add comments.
->   - support vm_swap_full() under cgroup.
-Is it needed?
-
-In my swap controller, swap entries are limited per cgroup.
-So, to make swap_cgroup_charge() fail less frequently,
-vm_swap_full() should be calculated per cgroup so that
-vm can free swap entries in advance.
-
-But I think in mem+swap controller the situation is different.
-
->   - find easier-to-understand protocol....
->   - check force_empty....(maybe buggy)
->   - support page migration.
->   - test!!
-> 
-And,
-- move charge along with task move
-- hierarchy support
-
-Of course, more basic features and stabilization should be done first.
+I'm sorry, I boot wrong kernel. This is correct:
+http://unixy.pl/maciek/download/kernel/dupa/dmesg-2.6.26-rc2-initcall_debug.txt
 
 
-I agree with this patch as a whole, but I'm worrying about race
-between swapout and swapin about the same entry(I should consider more...).
-
-
-Thanks,
-Daisuke Nishimura.
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
