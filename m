@@ -1,49 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757795AbYHVSbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756965AbYHVSc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757795AbYHVSbv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 14:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbYHVSbm
+	id S1756965AbYHVSc3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 14:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757936AbYHVSb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 14:31:42 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60636 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753762AbYHVSbl (ORCPT
+	Fri, 22 Aug 2008 14:31:57 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:23173 "EHLO
+	stargate.asicdesigners.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757851AbYHVSbz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 14:31:41 -0400
-Date: Fri, 22 Aug 2008 20:33:46 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] smp_call_function: use rwlocks on queues rather than rcu
-Message-ID: <20080822183346.GS23334@one.firstfloor.org>
-References: <48AE0883.6050701@goop.org> <20080822062800.GQ14110@elte.hu> <84144f020808220006n25d684b1n9db306ddc4f58c4c@mail.gmail.com> <48AEC6B2.1080701@linux-foundation.org> <20080822151156.GA6744@linux.vnet.ibm.com> <48AEF3FD.70906@linux-foundation.org> <20080822182915.GG6744@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080822182915.GG6744@linux.vnet.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 22 Aug 2008 14:31:55 -0400
+Date: Fri, 22 Aug 2008 11:37:10 -0700
+From: Karen Xie <kxie@chelsio.com>
+Message-Id: <200808221837.m7MIbAvv004384@localhost.localdomain>
+To: netdev@vger.kernel.org, open-iscsi@googlegroups.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/4 2.6.28] cxgb3i - Add iSCSI driver
+Cc: jgarzik@pobox.com, davem@davemloft.net, michaelc@cs.wisc.edu,
+       swise@opengridcomputing.com, rdreier@cisco.com, daisyc@us.ibm.com,
+       wenxiong@us.ibm.com, bhua@us.ibm.com, divy@chelsio.com, dm@chelsio.com,
+       leedom@chelsio.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Would it make sense to push the freed-by-RCU memory further up the
-> hierarchy, so that such memory is not mistaken for recently freed
-> hot-in-cache memory?
+Hi, everyone,
 
-Right now my impression is that it is not well understood why
-the kmalloc makes the IPI that much slower. In theory a kmalloc
-shouldn't be all that slow, it's essentially just a 
-"disable interrupts; unlink object from cpu cache; enable interrupts"
-with some window dressing. kfree() is similar.
+Please review our new version of the iSCSI Initiator drivers for Chelsio S3 adapters. The cxgb3i driver provides iscsi acceleration (PDU digest offload and payload direct-placement) to the open-iscsi initiator. It accesses the hardware through the cxgb3 module.
 
-Does it bounce a cache line on freeing perhaps?
+The accelerated iscsi traffic uses a private IP address which is unknown to the OS.
 
--Andi
+netdev list, please review part 1, 2 and cxgb3i_offload.[ch] in part 4 which handle the iscsi connection APIs to the adapter.
+
+Thanks.
+Karen
