@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758281AbYHVG2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757758AbYHVGfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758281AbYHVG2p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 02:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbYHVG2h
+	id S1757758AbYHVGfm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 02:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYHVGfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 02:28:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40981 "EHLO mx3.mail.elte.hu"
+	Fri, 22 Aug 2008 02:35:34 -0400
+Received: from 8bytes.org ([88.198.83.132]:53313 "EHLO 8bytes.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752502AbYHVG2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 02:28:37 -0400
-Date: Fri, 22 Aug 2008 08:28:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 2/2] smp_call_function: use rwlocks on queues rather
-	than rcu
-Message-ID: <20080822062800.GQ14110@elte.hu>
-References: <48AE0883.6050701@goop.org>
+	id S1753178AbYHVGfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 02:35:33 -0400
+Date: Fri, 22 Aug 2008 08:35:30 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: joerg.roedel@amd.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, mingo@redhat.com, hpa@zytor.com,
+       tglx@linutronix.de
+Subject: Re: [PATCH] x86: make gart_alloc_coherent return zeroed memory
+Message-ID: <20080822063530.GA16706@8bytes.org>
+References: <20080821225038E.fujita.tomonori@lab.ntt.co.jp> <1219339707-30592-1-git-send-email-joerg.roedel@amd.com> <20080822081517F.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48AE0883.6050701@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080822081517F.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> RCU can only control the lifetime of allocated memory blocks, which 
-> forces all the call structures to be allocated.  This is expensive 
-> compared to allocating them on the stack, which is the common case for 
-> synchronous calls.
+On Fri, Aug 22, 2008 at 08:19:35AM +0900, FUJITA Tomonori wrote:
+> On Thu, 21 Aug 2008 19:28:27 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
 > 
-> This patch takes a different approach.  Rather than using RCU, the 
-> queues are managed under rwlocks.  Adding or removing from the queue 
-> requires holding the lock for writing, but multiple CPUs can walk the 
-> queues to process function calls under read locks.  In the common 
-> case, where the structures are stack allocated, the calling CPU need 
-> only wait for its call to be done, take the lock for writing and 
-> remove the call structure.
+> > The dma_alloc_coherent function should return memory set to zero. This patch
+> > adds this to the GART implementation.
+> > 
+> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> > ---
+> >  arch/x86/kernel/pci-gart_64.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> Lock contention - particularly write vs read - is reduced by using 
-> multiple queues.
+> This should be foiled to the first patch in the patchset. No good
+> reason to push a patch that might cause a problem.
 
-hm, is there any authorative data on what is cheaper on a big box, a 
-full-blown MESI cache miss that occurs for every reader in this new 
-fastpath, or a local SLAB/SLUB allocation+free that occurs with the 
-current RCU approach?
+The reason is, that in my experience, Ingo prefers update patches
+instead replacements once he has merged something.
 
-	Ingo
+Joerg
+
