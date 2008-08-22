@@ -1,46 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbYHVR6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbYHVSDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756142AbYHVR6N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 13:58:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbYHVR5r
+	id S1756423AbYHVSDX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 14:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755287AbYHVSDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 13:57:47 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:41923 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753795AbYHVR5q (ORCPT
+	Fri, 22 Aug 2008 14:03:04 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:45585 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755329AbYHVSDC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 13:57:46 -0400
-Message-ID: <48AEFDF6.7020504@zytor.com>
-Date: Fri, 22 Aug 2008 10:57:10 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 22 Aug 2008 14:03:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=tHgcpD8+tJPwqQDSu9dbpWGzvqSUWKcDCVcDPqPPLxDHD0ecC2/Q6HMdhrn4o0faO/
+         zw7r/Jl83t3uzcJV5H+8on1O3GV8o+xswjVy4sDkI69nZn2S0mwuNHCYk3dSam4fJmZk
+         NcPwTWd2ncIb7dZ46NFeg5F5SUPxHIXtzfcls=
+Date: Fri, 22 Aug 2008 14:02:56 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Niels de Vos <niels.devos@wincor-nixdorf.com>
+Cc: linux-input@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] POSKeyboard driver for exclusive keyboard access
+Message-ID: <20080822135507.ZZRA012@mailhub.coreip.homeip.net>
+References: <1b51b6f80808220917t20fdb09el78b117c5ba5b7f7c@mail.gmail.com>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
-References: <20080820162925.75a5e064@doriath.conectiva> <48ADDF4F.2020401@zytor.com> <48AE5FCF.6030103@zytor.com> <20080822065012.GV14110@elte.hu> <20080822113941.147a1db0@doriath.conectiva> <20080822153451.GA8390@Krystal> <20080822132948.57e47076@doriath.conectiva> <48AEF457.5020100@zytor.com> <20080822174529.GA13020@Krystal>
-In-Reply-To: <20080822174529.GA13020@Krystal>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1b51b6f80808220917t20fdb09el78b117c5ba5b7f7c@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
+Hi Niels,
+
+On Fri, Aug 22, 2008 at 06:17:28PM +0200, Niels de Vos wrote:
+> This new driver makes it possible for middleware like JavaPOS to use
+> a POSKeyboard (connected to PS/2) with exclusive access. This is
+> required by the UnifiedPOS Specification which is available from
+> http://www.nrf-arts.org/UnifiedPOS. Any middleware using this driver
+> should implement the full exception-handling in user-space. Therefor
+> it is possible to use specific POS-extensions of POSKeyboards, without
+> abusing other keyboard-drivers.
 > 
-> The patch which turns on this bug this this important change to the
-> apply paravirt : it disables interrupts _near_ the code patching,
-> _within_ the loop. Before, interrupts were disabled outside of the loop.
-> It needs to disable interrupts within the loop to be able to use vmap in
-> text_poke().
+> Opening /dev/poskeyboard will route all scancodes to this device. The
+> scancodes will not be processes by the input-subsystem anymore. Reading
+> /dev/poskeyboard results in receiving the scancodes as raw data for
+> further processing by the reader. Sending commands to the hardware can
+> be done by writing to /dev/poskeyboard.
 > 
-> So I bet VirtualBox has a race in the way it handles interrupt
-> disabling.
+> If the driver is loaded and /dev/poskeyboard is not opened, all
+> scancodes are given to the input-subsystem. This allows 'normal' use of
+> the keyboard.
+> 
+> Making the driver active involves some commands like the following:
+>    echo -n serio1 > /sys/bus/serio/drivers/atkbd/unbind
+>    echo -n serio1 > /sys/bus/serio/drivers/poskbd/bind
 > 
 
-That seems a bit far-fetched.  The fault is in an initcall, and there 
-are no interrupts involved.  Perhaps VirtualBox doesn't manage its 
-tcache correctly, but I don't see this as being interrupt-related.
+It seems you have just reimplemented serio_raw driver, therefore NAK.
+Right now serio_raw is limited to untranslated ports but adding
+SERIO_I8042XL signature should be easy.
 
-	-hpa
+> Open questions:
+> - How to achieve the same with USB-HID complaint keyboards?
+
+Thsi is probably is the candidate for legitimate use of EVIOCGRAB.
+Just grab device for exclusive access and do your processing, probably
+looking at MSC_SCAN (or KEY_*, depends on how hardware-sepcific this
+thing is). This approach shoudl work equally well for HID, PS/2,
+serial or any other kind of keyboard/input device actually. You can
+also re-inject the keystrokes you are not interested in back into
+input core via uinput.
+
+> - Does serio_unregister_port() a kfree() on the port?
+
+Eventually, after the last user drops off.
+
+-- 
+Dmitry
