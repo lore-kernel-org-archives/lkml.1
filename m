@@ -1,60 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbYHVUz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758629AbYHVUzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758134AbYHVUz0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 16:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYHVUzI
+	id S1758629AbYHVUzt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 16:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752968AbYHVUzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 16:55:08 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:37146 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751355AbYHVUzH (ORCPT
+	Fri, 22 Aug 2008 16:55:14 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:38114 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752689AbYHVUzM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 16:55:07 -0400
-Date: Fri, 22 Aug 2008 16:55:05 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
+	Fri, 22 Aug 2008 16:55:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=WzJY+IvrW6Jqyyn51Q++P9QcAG3Vk7P5OriFRt/MP7lAWTQM9SG0m0clVzA/JCDi7w
+         L9CFpPskScXd9VvePrMkvC+JznOU08ZHIXVrJRdK1v3JQhHMwnAcoEITJHE2STk84QBI
+         P7kHlQYwdPcT0he3vxiPaVDvJsPiz4+O247xQ=
+Date: Fri, 22 Aug 2008 22:54:19 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Pavel Machek <pavel@suse.cz>, Marcin Slusarz <marcin.slusarz@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
+Cc: Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
        Nigel Cunningham <nigel@nigel.suspend2.net>,
        LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: ftraced and suspend to ram
-In-Reply-To: <200808222252.12547.rjw@sisk.pl>
-Message-ID: <alpine.DEB.1.10.0808221651350.15941@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0808211139420.3947@gandalf.stny.rr.com> <20080822104610.GA3482@elf.ucw.cz> <alpine.DEB.1.10.0808221632410.14231@gandalf.stny.rr.com> <200808222252.12547.rjw@sisk.pl>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+Message-ID: <20080822205415.GA5452@joi>
+References: <alpine.DEB.1.10.0808211139420.3947@gandalf.stny.rr.com> <20080822072343.GA24173@atrey.karlin.mff.cuni.cz> <20080822103533.GA5425@joi> <200808221839.35640.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808221839.35640.rjw@sisk.pl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 22 Aug 2008, Rafael J. Wysocki wrote:
-> > > tracing. Certainly all the assembly functions.
+On Fri, Aug 22, 2008 at 06:39:34PM +0200, Rafael J. Wysocki wrote:
+> On Friday, 22 of August 2008, Marcin Slusarz wrote:
+> > On Fri, Aug 22, 2008 at 09:23:43AM +0200, Pavel Machek wrote:
+> > > > 
+> > > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > > 
+> > > > > > > The code in question is the ftraced() function in 
+> > > > > > > kernel/trace/ftrace.c
+> > > > > > 
+> > > > > > Thanks, I'll have a look in a while.
+> > > > > 
+> > > > > Can you try the appended patch, please?
+> > > > 
+> > > > makes sense - i've applied it to tip/tracing/urgent, see the tidied up 
+> > > > commit below.
+> > > > 
+> > > > It should be no big issue not being able to trace across suspend+resume 
+> > > > - and that restriction will go away with Steve's build-time based mcount 
+> > > > patching mechanism in v2.6.28.
+> > > 
+> > > Patch looks okay to me, but I'm not sure if another issue is not
+> > > hiding under it. Did anyone actually test ftrace + suspend after
+> > > applying this?
 > > 
-> > I'm looking into that now too. Are the functions in arch/x86/power/cpu*.c 
-> > the suspend to ram code?
+> > I just tested this patch - it didn't help ;(
+> > 
+> > diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> > index 49f4c3f..02e41b2 100644
+> > --- a/kernel/trace/ftrace.c
+> > +++ b/kernel/trace/ftrace.c
+> > @@ -27,6 +27,7 @@
+> >  #include <linux/ctype.h>
+> >  #include <linux/hash.h>
+> >  #include <linux/list.h>
+> > +#include <linux/freezer.h>
+> >  
+> >  #include <asm/ftrace.h>
 > 
-> They contain code executed during suspend to RAM, but such code is also:
-> - in all files under arch/x86/kernel/acpi/
-> - in main.c, console.c under kernel/power
-> - in all files under drivers/acpi/sleep
-> - in drivers/acpi/hardware/hwsleep.c
+> This is needed to fix compilation, sorry for the omission.
 > 
-> Generally, ACPI is heavily involved and I'm not the right person to ask which
-> of the ACPI functions should get the 'notrace' thing.  Also, I'm not sure about
-> the device drivers' ->suspend() and ->resume() callbacks, especially for
-> sysdevs and ->suspend_late(), ->resume_early() for platform devices and PCI.
-> 
-> Well, how exactly suspend to RAM is broken by ftrace?
-> 
+> Still, did you test ftrace + suspend with the original patch and your fix
+> applied and if you did, then what happend?
 
-I know that the smp_processor_id may be defined in the %fs register, but 
-if ftrace is called before the %fs is set up, it may crash because it 
-uses smp_processor_id.
+Suspend works fine. When I hit power button I see some informations from
+video card (nvidia), then screen goes black and monitor says "no signal"
+and then I see the same informations from video card, then BIOS and GRUB.
+When everything works fine, X comes back after first infos from video card.
 
--- Steve
-
+Marcin
