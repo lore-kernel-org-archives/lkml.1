@@ -1,64 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbYHVSZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbYHVS0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754401AbYHVSZp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 14:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbYHVSZR
+	id S1757394AbYHVS0i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 14:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbYHVS0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 14:25:17 -0400
-Received: from mail.gmx.net ([213.165.64.20]:57378 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752551AbYHVSZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 14:25:15 -0400
-X-Authenticated: #36809985
-X-Provags-ID: V01U2FsdGVkX1/7RMQNvPj7SKYvFYuxVDntmlqOW+aZv4DvZ8Kys8
-	Hip3qrPbE/IhH9
-Subject: [PATCH] pci: Fix printk warnings in setup-bus.c
-From: Johann Felix Soden <johfel@gmx.de>
-Reply-To: Johann Felix Soden <johfel@users.sourceforge.net>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Fri, 22 Aug 2008 20:25:10 +0200
-Message-Id: <1219429510.7010.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+	Fri, 22 Aug 2008 14:26:20 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:35550 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752366AbYHVS0T convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 14:26:19 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+CC: lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Date: Fri, 22 Aug 2008 18:25:20 +0000
+Subject: RE: in 2.6.23-rc3-git7 in do_cciss_intr
+Thread-Topic: in 2.6.23-rc3-git7 in do_cciss_intr
+Thread-Index: AckEeOcgKmjbDKjnSPKQjOVHgRRVBwAC1EYA
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A77883511810894@GVW0547EXC.americas.hpqcorp.net>
+References: <48AD02B2.7020004@oracle.com>
+	 <0F5B06BAB751E047AB5C87D1F77A778835116209D3@GVW0547EXC.americas.hpqcorp.net>
+	 <20080821084333.c471b439.randy.dunlap@oracle.com>
+	 <0F5B06BAB751E047AB5C87D1F77A7788351181004C@GVW0547EXC.americas.hpqcorp.net>
+	 <20080821091514.8f56e2d5.randy.dunlap@oracle.com>
+	 <0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net>
+	 <20080821172653.3e3e855c.randy.dunlap@oracle.com>
+	 <0F5B06BAB751E047AB5C87D1F77A77883511810706@GVW0547EXC.americas.hpqcorp.net>
+	 <1219420487.3339.22.camel@localhost.localdomain>
+	 <48AEEE0A.1010900@oracle.com>
+ <1219424538.3339.51.camel@localhost.localdomain>
+In-Reply-To: <1219424538.3339.51.camel@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Johann Felix Soden <johfel@users.sourceforge.net>
-
-Fix printk format warnings:
-drivers/pci/setup-bus.c: In function 'pci_bus_dump_res':
-drivers/pci/setup-bus.c:542: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'resource_size_t'
-drivers/pci/setup-bus.c:542: warning: format '%llx' expects type 'long long unsigned int', but argument 6 has type 'resource_size_t'
-
-Signed-off-by: Johann Felix Soden <johfel@users.sourceforge.net>
----
- drivers/pci/setup-bus.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index 82634a2..c6ea4e9 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -539,7 +539,11 @@ static void pci_bus_dump_res(struct pci_bus *bus)
-                 if (!res)
-                         continue;
- 
--		printk(KERN_INFO "bus: %02x index %x %s: [%llx, %llx]\n", bus->number, i, (res->flags & IORESOURCE_IO)? "io port":"mmio", res->start, res->end);
-+		printk(KERN_INFO "bus: %02x index %x %s: [%llx, %llx]\n",
-+			bus->number, i,
-+			(res->flags & IORESOURCE_IO) ? "io port" : "mmio",
-+			(unsigned long long) res->start,
-+			(unsigned long long) res->end);
-         }
- }
- 
--- 
-1.5.6.3
 
 
+> -----Original Message-----
+> From: James Bottomley [mailto:James.Bottomley@HansenPartnership.com]
+> Sent: Friday, August 22, 2008 12:02 PM
+> To: Randy Dunlap
+> Cc: Miller, Mike (OS Dev); lkml; scsi; akpm
+> Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
+>
+> On Fri, 2008-08-22 at 09:49 -0700, Randy Dunlap wrote:
+> > James Bottomley wrote:
+> > > On Fri, 2008-08-22 at 15:48 +0000, Miller, Mike (OS Dev) wrote:
+> > >>> -----Original Message-----
+> > >>> From: Randy Dunlap [mailto:randy.dunlap@oracle.com]
+> > >>> Sent: Thursday, August 21, 2008 7:27 PM
+> > >>> To: Miller, Mike (OS Dev)
+> > >>> Cc: lkml; scsi; akpm
+> > >>> Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
+> > >>>
+> > >>> On Thu, 21 Aug 2008 16:25:24 +0000 Miller, Mike (OS Dev) wrote:
+> > >>>
+> > >>>>>> Randy,
+> > >>>>>> We know of a race condition in cciss_init_one. It's fixed
+> > >>>>> in 2.6.26 I believe. Here's the patch:
+> > >>>>>>
+> > >>>
+> http://groups.google.com/group/linux.kernel/browse_thread/thread/7
+> > >>> b3
+> > >>>>> 9f
+> > >>>
+> 2b77622ab03/4f5f45c008655ca1?hl=en&lnk=gst&q=cciss#4f5f45c008655ca
+> > >>>>>> 1
+> > >>>>>
+> > >>>>> Mike,
+> > >>>>> Sorry, but my fingers have typoed the $subject.  My bad.
+> > >>>>> Kernel is 2.6.27-rc3-git7 (from above):
+> > >>>>>
+> > >>>>>>>>> Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
+> > >>>>>>>>> Pid: 0, comm: swapper Not tainted 2.6.27-rc3-git7 #1
+> > >>>>>>>>> RIP: 0010:[<ffffffffa001bb68>]  [<ffffffffa001bb68>]
+> > >>>>>>>>> do_cciss_intr+0x627/0xa6c [cciss]
+> > >>>> Hmmmmm, let me know what happens from your retest. I'll
+> > >>> look at this
+> > >>>> as soon as I finish what I'm doing now. We trying to spin
+> > >>> for our test
+> > >>>> teams but I have something hopelessly broken. :(
+> > >>> It didn't BUG in the retest.  That just means that it's more
+> > >>> difficult to find/fix, right?
+> > >> Yup.
+> > >
+> > > Randy,
+> > >
+> > > If you can't reproduce it, could you use the debug information or
+> > > gdb to tell us what line in the source code this:
+> > >
+> > > do_cciss_intr+0x627
+> > >
+> > > corresponds to?  That might help isolating the problem.
+> >
+> >
+> > Sure, here's an attempt at that.  Please let me know if you want it
+> > differently or some other info.
+>
+> > (gdb) x/20i do_cciss_intr+0x627
+> > 0x3b68 <do_cciss_intr+1575>:    mov    %rdx,0x248(%rax)
+> > 0x3b6f <do_cciss_intr+1582>:    mov    0x248(%rbx),%rdx
+> > 0x3b76 <do_cciss_intr+1589>:    mov    %rax,0x240(%rdx)
+> > 0x3b7d <do_cciss_intr+1596>:    jmp    0x3b8b <do_cciss_intr+1610>
+> > 0x3b7f <do_cciss_intr+1598>:    movq   $0x0,0x100c0(%r12)
+> > 0x3b8b <do_cciss_intr+1610>:    mov    0x234(%rbx),%eax
+> > 0x3b91 <do_cciss_intr+1616>:    test   %eax,%eax
+> > 0x3b93 <do_cciss_intr+1618>:    jne    0x3f27 <do_cciss_intr+2534>
+> > 0x3b99 <do_cciss_intr+1624>:    mov    0x250(%rbx),%r14
+> > 0x3ba0 <do_cciss_intr+1631>:    movl   $0x0,0xcc(%r14)
+> > 0x3bab <do_cciss_intr+1642>:    mov    0x228(%rbx),%r8
+> > 0x3bb2 <do_cciss_intr+1649>:    mov    0x2(%r8),%dx
+> > 0x3bb7 <do_cciss_intr+1654>:    test   %dx,%dx
+> > 0x3bba <do_cciss_intr+1657>:    je     0x3f0e <do_cciss_intr+2509>
+> >
+> >
+> > $ addr2line -e cciss.o -f  do_cciss_intr+0x627 SA5_fifo_full
+> > /home/rdunlap/linsrc/linux-2.6.27-rc3-git7/drivers/block/cciss.h:206
+>
+> OK ...that's confusing.  It seems to be saying that
+> ctrlr_info_t * was NULL.  However, I can't see a way of
+> getting into the fifo_full callback from do_cciss_intr ..
+> especially not with an NULL host.
+>
+> James
+
+That is weird. Even if we could get there fifo_full doesn't do anything but wait for a bit.
+
+mikem
