@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbYHVGFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbYHVGIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755875AbYHVGFr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 02:05:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYHVGFj
+	id S1756439AbYHVGIF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 02:08:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYHVGHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 02:05:39 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57386 "EHLO mx2.mail.elte.hu"
+	Fri, 22 Aug 2008 02:07:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45687 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752675AbYHVGFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 02:05:39 -0400
-Date: Fri, 22 Aug 2008 08:05:20 +0200
+	id S1752776AbYHVGHx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 02:07:53 -0400
+Date: Fri, 22 Aug 2008 08:07:32 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: patch "x86: MOVE PCI IO ECS code to x86/pci" breaks CPU hotplug
-Message-ID: <20080822060520.GG14110@elte.hu>
-References: <48AD7F80.76E4.0078.0@novell.com> <20080821130259.GA22887@elte.hu> <20080821131652.GC13011@erda.amd.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] genirq: fix irq_desc->depth handling with DEBUG_SHIRQ
+Message-ID: <20080822060727.GH14110@elte.hu>
+References: <20080821185828.GA14070@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080821131652.GC13011@erda.amd.com>
+In-Reply-To: <20080821185828.GA14070@oksana.dev.rtsoft.ru>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,55 +35,51 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Robert Richter <robert.richter@amd.com> wrote:
+* Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-> On 21.08.08 15:02:59, Ingo Molnar wrote:
-> > 
-> > * Jan Beulich <jbeulich@novell.com> wrote:
-> > 
-> > > Converting __cpuinit functions called out of init_amd() (and similar 
-> > > others) to __init (and making them subject of xxx_initcall() handling 
-> > > isn't valid, as they would no longer be called for hot plugged CPUs.
-> > > 
-> > > Further, since it's likely that in virtualized environments the MSR 
-> > > write would at best be ignored, I'd also recommend using the 
-> > > fault-safe accessors here *and* check that the bit actually got set 
-> > > before setting PCI_HAS_IO_ECS (one would obviously have to BUG() when 
-> > > hot-plugged CPUs fail to set the bit when those available at boot 
-> > > successfully did so).
-> > 
-> > hm, which patch is this exactly, and in what tree? It's not upstream nor 
-> > in -tip.
+> When DEBUG_SHIRQ is selected, a spurious IRQ is issued before
+> the setup_irq() initializes the desc->depth. An IRQ handler may
+> call disable_irq_nosync(), but then setup_irq() will overwrite
+> desc->depth, and upon enable_irq() we'll catch this WARN:
 > 
-> Probably this in the mainline kernel is meant:
+> ------------[ cut here ]------------
+> Badness at kernel/irq/manage.c:180
+> NIP: c0061ab8 LR: c0061f10 CTR: 00000000
+> REGS: cf83be50 TRAP: 0700   Not tainted  (2.6.27-rc3-23450-g74919b0)
+> MSR: 00021032 <ME,IR,DR>  CR: 22042022  XER: 20000000
+> TASK = cf829100[5] 'events/0' THREAD: cf83a000
+> GPR00: c0061f10 cf83bf00 cf829100 c038e674 00000016 00000000 cf83bef8 00000038
+> GPR08: c0298910 00000000 c0310d28 cf83a000 00000c9c 1001a1a8 0fffe000 00800000
+> GPR16: ffffffff 00000000 007fff00 00000000 007ffeb0 c03320a0 c031095c c0310924
+> GPR24: cf8292ec cf807190 cf83a000 00009032 c038e6a4 c038e674 cf99b1cc c038e674
+> NIP [c0061ab8] __enable_irq+0x20/0x80
+> LR [c0061f10] enable_irq+0x50/0x70
+> Call Trace:
+> [cf83bf00] [c038e674] irq_desc+0x630/0x9000 (unreliable)
+> [cf83bf10] [c0061f10] enable_irq+0x50/0x70
+> [cf83bf30] [c01abe94] phy_change+0x68/0x108
+> [cf83bf50] [c0046394] run_workqueue+0xc4/0x16c
+> [cf83bf90] [c0046834] worker_thread+0x74/0xd4
+> [cf83bfd0] [c004ab7c] kthread+0x48/0x84
+> [cf83bff0] [c00135e0] kernel_thread+0x44/0x60
+> Instruction dump:
+> 4e800020 3d20c031 38a94214 4bffffcc 9421fff0 7c0802a6 93e1000c 7c7f1b78
+> 90010014 8123001c 2f890000 409e001c <0fe00000> 80010014 83e1000c 38210010
 > 
-> commit 3a27dd1ce5de08e21e0266ddf00e6f1f843bfe8b
-> Author: Robert Richter <robert.richter@amd.com>
-> Date:   Thu Jun 12 20:19:23 2008 +0200
+> That trace corresponds to this line:
+> WARN(1, KERN_WARNING "Unbalanced enable for IRQ %d\n", irq);
 > 
->     x86: Move PCI IO ECS code to x86/pci
->     
->     "Form follows function". Code is now where it belongs to.
->     
->     Signed-off-by: Robert Richter <robert.richter@amd.com>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> The patch fixes the problem by moving the SHIRQ code below the
+> setup_irq().
 > 
-> The problem is code like this:
+> Unfortunately we can't easily move the SHIRQ code inside the
+> setup_irq(), since it grabs a spinlock, so to prvent a 'real'
+> IRQ from interfere us we should disable that IRQ.
 > 
-> +static int __init enable_pci_io_ecs(void)
-> +{
-> +       /* assume all cpus from fam10h have IO ECS */
-> +        if (boot_cpu_data.x86 < 0x10)
-> +               return 0;
-> +       on_each_cpu(enable_pci_io_ecs_per_cpu, NULL, 1, 1);
-> +       pci_probe |= PCI_HAS_IO_ECS;
-> +       return 0;
-> +}
+> p.s. The driver in question is drivers/net/phy/phy.c.
 > 
-> It is only called during the setup and if the cpu is enabled. I intend 
-> to rewrite the cpu setup code using cpu notifiers.
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-ok. Unfortunately the revert looks quite non-trivial for v2.6.27. Could 
-we have some _really_ minimal fix for v2.6.27?
+applied to tip/genirq - thanks Anton.
 
 	Ingo
