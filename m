@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbYHVLbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757204AbYHVLdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756711AbYHVLbs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 07:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbYHVLbl
+	id S1757204AbYHVLdp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 07:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbYHVLdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 07:31:41 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34318 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752562AbYHVLbk (ORCPT
+	Fri, 22 Aug 2008 07:33:37 -0400
+Received: from torres.zugschlus.de ([85.214.68.41]:45873 "EHLO
+	torres.zugschlus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752172AbYHVLdg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 07:31:40 -0400
-Date: Fri, 22 Aug 2008 06:31:39 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: silence section mismatch warning - uv_cpu_init
-Message-ID: <20080822113139.GA30014@sgi.com>
-References: <1219259268-5868-2-git-send-email-marcin.slusarz@gmail.com> <20080821103444.GE19452@elte.hu> <20080821184859.GA5403@joi> <20080822061901.GN14110@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 22 Aug 2008 07:33:36 -0400
+Date: Fri, 22 Aug 2008 13:33:32 +0200
+From: Marc Haber <mh+linux-kernel@zugschlus.de>
+To: Michael Chan <mchan@broadcom.com>
+Cc: Matthew Carlson <mcarlson@broadcom.com>,
+       David Miller <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.26/tg3 ping roundtrip times > 2000 ms on local network
+Message-ID: <20080822113332.GD10603@torres.zugschlus.de>
+References: <20080821160928.GB21967@torres.zugschlus.de> <C27F8246C663564A84BB7AB343977242024953CE46@IRVEXCHCCR01.corp.ad.broadcom.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080822061901.GN14110@elte.hu>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <C27F8246C663564A84BB7AB343977242024953CE46@IRVEXCHCCR01.corp.ad.broadcom.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 22, 2008 at 08:19:01AM +0200, Ingo Molnar wrote:
+On Thu, Aug 21, 2008 at 09:21:28AM -0700, Michael Chan wrote:
+> Marc Haber wrote:
+> > On Wed, Aug 20, 2008 at 07:11:50AM -0700, Michael Chan wrote:
+> > > On Wed, 2008-08-20 at 10:47 -0700, Marc Haber wrote:
+> > > > Now I need to understand why the other, nearly[1]
+> > identical box didn't
+> > > > need the patch to function properly.
+> > >
+> > > It depends on whether you have ASF enabled or not and what
+> > version of
+> > > ASF you have.  ASF is management firmware running inside
+> > the NIC.  When
+> > > the tg3 driver loads, it will show ASF[1] in dmesg if ASF
+> > is enabled.
+> >
+> > Both machines have that string in their dmesg.
+> >
 > 
-> * Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
-> 
-> > From: Marcin Slusarz <marcin.slusarz@gmail.com>
-> > Subject: [PATCH v2] x86: fix section mismatch warning - uv_cpu_init
-> > 
-> > WARNING: vmlinux.o(.cpuinit.text+0x3cc4): Section mismatch in reference from the function uv_cpu_init() to the function .init.text:uv_system_init()
-> > The function __cpuinit uv_cpu_init() references
-> > a function __init uv_system_init().
-> > If uv_system_init is only used by uv_cpu_init then
-> > annotate uv_system_init with a matching annotation.
-> > 
-> > uv_system_init was ment to be called only once, so do it from codepath
-> > (native_smp_prepare_cpus) which is called once, right before activation
-> > of other cpus (smp_init).
-> > 
-> > Note: old code relied on uv_node_to_blade being initialized to 0,
-> > but it'a not initialized from anywhere.
-> 
-> thanks - applied it to tip/x86/urgent. Jack, any objections?
+> It may be different versions of ASF.  Try ethtool -i eth0.  It
+> may tell us the firmware version.
 
-Looks good. Thanks.
+$ sudo ethtool -i eth0
+driver: tg3
+version: 3.92.1
+firmware-version: 5704-v3.26
+bus-info: 0000:02:00.0
 
-Acked-by: Jack Steiner <steiner@sgi.com>
+The other box is the same, only that bus-info ends in .1, and the .0
+device is unused.
 
---- jack
+Greetings
+Marc
+
+-- 
+-----------------------------------------------------------------------------
+Marc Haber         | "I don't trust Computers. They | Mailadresse im Header
+Mannheim, Germany  |  lose things."    Winona Ryder | Fon: *49 621 72739834
+Nordisch by Nature |  How to make an American Quilt | Fax: *49 3221 2323190
