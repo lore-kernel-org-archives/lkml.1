@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755706AbYHVUxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbYHVUy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755706AbYHVUxy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 16:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbYHVUxo
+	id S1758092AbYHVUy2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 16:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756328AbYHVUyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 16:53:44 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:50356 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751810AbYHVUxn (ORCPT
+	Fri, 22 Aug 2008 16:54:06 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:44768 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756168AbYHVUyE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 16:53:43 -0400
-Date: Fri, 22 Aug 2008 13:53:39 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] smp_call_function: use rwlocks on queues rather
-	than rcu
-Message-ID: <20080822205339.GK6744@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <48AE0883.6050701@goop.org> <20080822062800.GQ14110@elte.hu> <84144f020808220006n25d684b1n9db306ddc4f58c4c@mail.gmail.com> <48AEC6B2.1080701@linux-foundation.org> <20080822151156.GA6744@linux.vnet.ibm.com> <48AEF3FD.70906@linux-foundation.org> <20080822182915.GG6744@linux.vnet.ibm.com> <48AF0735.60402@linux-foundation.org> <20080822195226.GJ6744@linux.vnet.ibm.com> <48AF1B81.3050806@linux-foundation.org>
+	Fri, 22 Aug 2008 16:54:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=uCHuBeovo4zOt4rsHfYqVq1bwrYm9+LNCj37cdKQeIVH3iCZ3rwgpz+3ckC+xTrFw6
+         CXUeTLttlNp6j+v6uFHH9H43AEbPymSDICiPs4nBoYH46T0IGkcswTQITTpB9aTD/JJl
+         jz0fZnrsVapE+HsTxdXUTSgWAWsK4LUzBsNCI=
+Message-ID: <6278d2220808221354s7b978e28q718a0654cb4b34eb@mail.gmail.com>
+Date: Fri, 22 Aug 2008 21:54:03 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: [2.6.27-rc4] MAX_LOCK_DEPTH too low...
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48AF1B81.3050806@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 22, 2008 at 03:03:13PM -0500, Christoph Lameter wrote:
-> Paul E. McKenney wrote:
-> 
-> > I was indeed thinking in terms of the free from RCU being specially marked.
-> 
-> Isnt there some way to shorten the rcu periods significantly? Critical
-> sections do not take that long after all.
+When running some kvm testing on 2.6.27-rc4 with various kernel debug
+options enabled, I hit the MAX_LOCK_DEPTH limit of 48:
 
-In theory, yes.  However, the shorter the grace period, the greater the
-per-update overhead of grace-period detection -- the general approach
-is to use a per-CPU high-resolution timer to force RCU grace period
-processing every 100 microseconds or so.  Also, by definition, the RCU
-grace period can be no shorter than the longest active RCU read-side
-critical section.  Nevertheless, I have designed my current hierarchical
-RCU patch with expedited grace periods in mind, though more for the
-purpose of reducing latency of long strings of operations that involve
-synchronize_rcu() than for cache locality.
+[   30.670253] uhci_hcd 0000:00:1d.2: FGR not stopped yet!
+[   30.701773] uhci_hcd 0000:00:1d.1: FGR not stopped yet!
+[   30.733533] uhci_hcd 0000:00:1d.0: FGR not stopped yet!
+[   30.765379] uhci_hcd 0000:00:1a.2: FGR not stopped yet!
+[   30.797253] uhci_hcd 0000:00:1a.0: FGR not stopped yet!
+[  115.469934] uhci_hcd 0000:00:1d.0: FGR not stopped yet!
+[  184.507012] Hangcheck: hangcheck value past margin!
+[  245.448004] BUG: MAX_LOCK_DEPTH too low!
+[  245.448004] turning off the locking correctness validator.
+[  260.937296] kvm: emulating exchange as write
+[  364.507049] Hangcheck: hangcheck value past margin!
+[  544.454998] Hangcheck: hangcheck value past margin!
+[  724.507006] Hangcheck: hangcheck value past margin!
 
-> If the RCU periods are much shorter then the chance of cache hotness of the
-> objects is increased.
+Maybe the result of a particular path abusing a lock (ie a bug) even?
 
-How short does the grace period need to be to significantly increase the
-chance of an RCU-protected data element remaining in cache across an RCU
-grace period?  The last time I calculated this, the knee of the curve was
-at a few tens of milliseconds, but to give you an idea of how long ago
-that was, the workload I used was TPC/A.  Which might no longer be very
-representative.  ;-)
-
-							Thanx, Paul
+Daniel
+-- 
+Daniel J Blueman
