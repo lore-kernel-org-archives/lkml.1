@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758920AbYHVKgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758518AbYHVKl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758920AbYHVKgm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 06:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbYHVKge
+	id S1758518AbYHVKl7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 06:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbYHVKlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 06:36:34 -0400
-Received: from mu-out-0910.google.com ([209.85.134.184]:49835 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754980AbYHVKgd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 06:36:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Ag16ej0hshK1JgCkFXSUG41TVWM1n+78eTHgQaNk33omXd2VkqFkD8Uu41/P7MxKhP
-         1K5d2mskjAXDtdOeRyH6TjptsaB9EYB7U9BjUC+HZnmPFMUiqjLvVz86UDhvvggt5rSR
-         x4Qj3nF/Bu6YC5d4d+ruJ2ev1BlA1ADU4r6RY=
-Date: Fri, 22 Aug 2008 12:35:39 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: ftraced and suspend to ram
-Message-ID: <20080822103533.GA5425@joi>
-References: <alpine.DEB.1.10.0808211139420.3947@gandalf.stny.rr.com> <alpine.DEB.1.10.0808211423410.678@gandalf.stny.rr.com> <200808212037.11775.rjw@sisk.pl> <200808212159.37678.rjw@sisk.pl> <20080822044649.GA356@elte.hu> <20080822072343.GA24173@atrey.karlin.mff.cuni.cz>
+	Fri, 22 Aug 2008 06:41:51 -0400
+Received: from h155.mvista.com ([63.81.120.155]:16271 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752651AbYHVKlu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 06:41:50 -0400
+Message-ID: <48AE97E8.6050707@ru.mvista.com>
+Date: Fri, 22 Aug 2008 14:41:44 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080822072343.GA24173@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, Borislav Petkov <petkovbb@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] ide: set IDE_AFLAG_DRQ_INTERRUPT in do_identify()
+References: <20080819183934.16469.69799.sendpatchset@localhost.localdomain> <48AE92F8.8020704@ru.mvista.com>
+In-Reply-To: <48AE92F8.8020704@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 22, 2008 at 09:23:43AM +0200, Pavel Machek wrote:
-> > 
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > 
-> > > > > The code in question is the ftraced() function in 
-> > > > > kernel/trace/ftrace.c
-> > > > 
-> > > > Thanks, I'll have a look in a while.
-> > > 
-> > > Can you try the appended patch, please?
-> > 
-> > makes sense - i've applied it to tip/tracing/urgent, see the tidied up 
-> > commit below.
-> > 
-> > It should be no big issue not being able to trace across suspend+resume 
-> > - and that restriction will go away with Steve's build-time based mcount 
-> > patching mechanism in v2.6.28.
-> 
-> Patch looks okay to me, but I'm not sure if another issue is not
-> hiding under it. Did anyone actually test ftrace + suspend after
-> applying this?
+Hello, I wrote:
 
-I just tested this patch - it didn't help ;(
+>> Set IDE_AFLAG_DRQ_INTERRUPT in do_identify() instead of ATAPI
+>> device drivers *_setup() methods.
+>>
+>> While at it:
+>> - use ata_id_cdb_intr()
+>>
+>> There should be no functional changes caused by this patch.
+>>
+>> Cc: Borislav Petkov <petkovbb@gmail.com>
+>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>>   
+> [...]
+>> Index: b/drivers/ide/ide-cd.c
+>> ===================================================================
+>> --- a/drivers/ide/ide-cd.c
+>> +++ b/drivers/ide/ide-cd.c
+>> @@ -1887,9 +1887,6 @@ static int ide_cdrom_setup(ide_drive_t *
+>>      drive->atapi_flags = IDE_AFLAG_MEDIA_CHANGED | IDE_AFLAG_NO_EJECT |
+>>                 ide_cd_flags(id);
+>>  
+>> -    if ((id[ATA_ID_CONFIG] & 0x0060) == 0x20)
+>> -        drive->atapi_flags |= IDE_AFLAG_DRQ_INTERRUPT;
+>> -
+>>   
+>
+>   Wait, this needs to be fixed first -- 0x20 does *not* mean CDB INTRQ!
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 49f4c3f..02e41b2 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -27,6 +27,7 @@
- #include <linux/ctype.h>
- #include <linux/hash.h>
- #include <linux/list.h>
-+#include <linux/freezer.h>
- 
- #include <asm/ftrace.h>
- 
+   Ignore me -- it's not my day. :-]
+
+WBR, Sergei
+
+
+
