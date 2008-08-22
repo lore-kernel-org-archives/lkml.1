@@ -1,58 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbYHVRIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbYHVRKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755433AbYHVRIx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 13:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbYHVRIo
+	id S1755530AbYHVRKR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 13:10:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbYHVRKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 13:08:44 -0400
-Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:2582 "EHLO
-	anchor-post-31.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751682AbYHVRIo (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 13:08:44 -0400
-Message-ID: <48AEF2A3.7020905@lougher.demon.co.uk>
-Date: Fri, 22 Aug 2008 18:08:51 +0100
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+	Fri, 22 Aug 2008 13:10:00 -0400
+Received: from mx71.mail.ru ([194.67.23.4]:64389 "EHLO mx71.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752486AbYHVRKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 13:10:00 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.27-rc4: 90% system time because of khubd, unable to reboot
+Date: Fri, 22 Aug 2008 21:09:53 +0400
+User-Agent: KMail/1.9.9
+Cc: linux-usb@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>
+References: <200808222026.25944.arvidjaar@mail.ru> <200808222053.09066.arvidjaar@mail.ru> <200808221904.04773.rjw@sisk.pl>
+In-Reply-To: <200808221904.04773.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: jaredeh@gmail.com, Linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       =?windows-1252?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@am.sony.com,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 04/10] AXFS: axfs_inode.c
-References: <48AD00F0.5030403@gmail.com> <200808211417.14425.arnd@arndb.de> <48AE22F5.3000309@lougher.demon.co.uk> <200808221200.26052.arnd@arndb.de>
-In-Reply-To: <200808221200.26052.arnd@arndb.de>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart3238344.Hm86jHa3B4";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200808222109.55358.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: OK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Friday 22 August 2008, Phillip Lougher wrote:
->>> This looks very nice, but could use some comments about how the data is
->>> actually stored on disk. It took me some time to figure out that it actually
->>> allows to do tail merging into compressed blocks, which I was about to suggest
->>> you implement ;-). Cramfs doesn't have them, and I found that they are the
->>> main reason why squashfs compresses better than cramfs, besides the default
->>> block size, which you can change on either one.
->> Squashfs has much larger block sizes than cramfs (last time I looked it 
->> was limited to 4K blocks), and it compresses the metadata which helps to 
->> get better compression.  But tail merging (fragments in Squashfs 
->> terminology) is obviously a major reason why Squashfs gets good compression.
-> 
-> The *default* block size in cramfs is smaller than in squashfs, but they both
-> have user selectable block sizes. I found the impact of compressed metadata
-> to be almost zero. 
+--nextPart3238344.Hm86jHa3B4
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Squashfs stores significantly more metadata than cramfs.  Remember 
-cramfs has no support for filesystems > ~ 16Mbytes, no inode timestamps, 
-truncates uid/gids, no hard-links, no nlink counts, no hashed 
-directories,  no unique inode numbers.  If Squashfs didn't compress the 
-metadata it would be significantly larger than cramfs.
+On Friday 22 August 2008, Rafael J. Wysocki wrote:
+> On Friday, 22 of August 2008, Andrey Borzenkov wrote:
+> > On Friday 22 August 2008, Andrey Borzenkov wrote:
+> > >=20
+> > > 2.6.26-rc3 is OK
+>=20
+> Thanks for the report, but ...
+> =20
+> > > top - 20:11:08 up 5 min,  1 user,  load average: 7.05, 4.50, 1.93
+> > > Tasks: 103 total,   3 running, 100 sleeping,   0 stopped,   0 zombie
+> > > Cpu(s):  8.3%us, 91.7%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si=
+,  0.0%st
+> > > Mem:    494172k total,   278192k used,   215980k free,    18264k buff=
+ers
+> > > Swap:   500432k total,        0k used,   500432k free,   159376k cach=
+ed
+> > >=20
+> > >   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+> > >   851 root      15  -5     0    0    0 R 65.6  0.0   3:21.16 khubd
+> >=20
+> > reverting 38b375d9610e2467cb793a84d17c6f65e44cdb39 fixed it
+> >=20
+>=20
+> ... that is:
+>=20
+> commit 38b375d9610e2467cb793a84d17c6f65e44cdb39
+> Author: Alan Stern <stern@rowland.harvard.edu>
+> Date:   Mon Jul 21 09:56:26 2008 -0400
+>=20
+>     USB: OHCI: fix system hang caused by earlier patch
+>=20
+>     Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+>     Tested by: Andrey Borzenkov <arvidjaar@mail.ru>
+>     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>=20
+> so it apparently used to work for you at that time.  What gives?
+>=20
 
-Cheers
+Well, you should not commit a fix without commiting code that has been
+fixed first :)
 
-Phillip
+--nextPart3238344.Hm86jHa3B4
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkiu8uMACgkQR6LMutpd94zDAwCgtGGJd1Y5P/7lzta4JQhRX94w
+nW0AoMgnMxjXSrNNG+VE/5SaQS+CHQht
+=aAWv
+-----END PGP SIGNATURE-----
+
+--nextPart3238344.Hm86jHa3B4--
