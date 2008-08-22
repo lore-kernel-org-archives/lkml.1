@@ -1,84 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756399AbYHVSob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbYHVSrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756399AbYHVSob (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 14:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbYHVSoU
+	id S1753543AbYHVSrU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 14:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbYHVSrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 14:44:20 -0400
-Received: from smtp-vbr5.xs4all.nl ([194.109.24.25]:3016 "EHLO
-	smtp-vbr5.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751174AbYHVSoT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 14:44:19 -0400
-X-Greylist: delayed 762 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Aug 2008 14:44:19 EDT
-Date: Fri, 22 Aug 2008 20:31:28 +0200
-From: Danny ter Haar <dth@cistron.nl>
-To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org
-Subject: [PATCH] trivial typo's 2.6.*
-Message-ID: <20080822183128.GA23232@cistron.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Message-Flag: WARNING!! You are using MS (f)outlook: Please consider upgrading to software with less bugs.
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 22 Aug 2008 14:47:05 -0400
+Received: from mail.gmx.net ([213.165.64.20]:44879 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751072AbYHVSrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 14:47:04 -0400
+X-Authenticated: #36809985
+X-Provags-ID: V01U2FsdGVkX19se18hiCVsyzMyCHPL4YKSnBhtPjpQ47X7Xegh+E
+	1GPSlt2aYSLbGk
+Subject: [PATCH] pci: Fix printk warnings in probe.c
+From: Johann Felix Soden <johfel@gmx.de>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Fri, 22 Aug 2008 20:46:59 +0200
+Message-Id: <1219430819.7010.5.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.46
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I noticed a typo during message on bootup.
-Using grep found a few more.
+From: Johann Felix Soden <johfel@users.sourceforge.net>
 
-Signed-off-by: Danny ter Haar <dth@cistron.nl>
-Cc: trivial@kernel.org
+Fix printk format warnings:
+drivers/pci/probe.c: In function 'pci_read_bridge_bases':
+drivers/pci/probe.c:386: warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'resource_size_t'
+drivers/pci/probe.c:386: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'resource_size_t'
+drivers/pci/probe.c:398: warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'resource_size_t'
+drivers/pci/probe.c:398: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'resource_size_t'
+drivers/pci/probe.c:434: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'resource_size_t'
+drivers/pci/probe.c:434: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'resource_size_t'
 
---------------------------------------
+Signed-off-by: Johann Felix Soden <johfel@users.sourceforge.net>
+---
+ drivers/pci/probe.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
-
-
-diff -r -u linux-2.6.27-rc3-git6.orig/Documentation/cris/README linux-2.6.27-rc3-git6/Documentation/cris/README
---- linux-2.6.27-rc3-git6.orig/Documentation/cris/README	2008-07-13 23:51:29.000000000 +0200
-+++ linux-2.6.27-rc3-git6/Documentation/cris/README	2008-08-19 16:04:20.876635000 +0200
-@@ -27,7 +27,7 @@
- The ETRAX 100LX chip
- --------------------
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index cce2f4c..0ad9367 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -383,7 +383,9 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 			res->start = base;
+ 		if (!res->end)
+ 			res->end = limit + 0xfff;
+-		printk(KERN_INFO "PCI: bridge %s io port: [%llx, %llx]\n", pci_name(dev), res->start, res->end);
++		printk(KERN_INFO "PCI: bridge %s io port: [%llx, %llx]\n",
++			pci_name(dev), (unsigned long long) res->start,
++			(unsigned long long) res->end);
+ 	}
  
--For reference, plase see the press-release:
-+For reference, please see the press-release:
+ 	res = child->resource[1];
+@@ -395,7 +397,8 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM;
+ 		res->start = base;
+ 		res->end = limit + 0xfffff;
+-		printk(KERN_INFO "PCI: bridge %s 32bit mmio: [%llx, %llx]\n", pci_name(dev), res->start, res->end);
++		printk(KERN_INFO "PCI: bridge %s 32bit mmio: [%llx, %llx]\n", pci_name(dev),
++			(unsigned long long) res->start, (unsigned long long) res->end);
+ 	}
  
- http://www.axis.com/news/us/001101_etrax.htm
+ 	res = child->resource[2];
+@@ -431,7 +434,9 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM | IORESOURCE_PREFETCH;
+ 		res->start = base;
+ 		res->end = limit + 0xfffff;
+-		printk(KERN_INFO "PCI: bridge %s %sbit mmio pref: [%llx, %llx]\n", pci_name(dev), (res->flags & PCI_PREF_RANGE_TYPE_64)?"64":"32",res->start, res->end);
++		printk(KERN_INFO "PCI: bridge %s %sbit mmio pref: [%llx, %llx]\n",
++			pci_name(dev), (res->flags & PCI_PREF_RANGE_TYPE_64) ? "64" : "32",
++			(unsigned long long) res->start, (unsigned long long) res->end);
+ 	}
+ }
  
-diff -r -u linux-2.6.27-rc3-git6.orig/Documentation/ia64/kvm.txt linux-2.6.27-rc3-git6/Documentation/ia64/kvm.txt
---- linux-2.6.27-rc3-git6.orig/Documentation/ia64/kvm.txt	2008-08-19 14:43:18.496631000 +0200
-+++ linux-2.6.27-rc3-git6/Documentation/ia64/kvm.txt	2008-08-19 16:05:35.796644000 +0200
-@@ -1,7 +1,8 @@
--Currently, kvm module in EXPERIMENTAL stage on IA64. This means that
--interfaces are not stable enough to use. So, plase had better don't run
--critical applications in virtual machine. We will try our best to make it
--strong in future versions!
-+Currently, kvm module is in EXPERIMENTAL stage on IA64. This means that
-+interfaces are not stable enough to use. So, please don't run critical 
-+applications in virtual machine. 
-+We will try our best to improve it in future versions!
-+
- 				Guide: How to boot up guests on kvm/ia64
- 
- This guide is to describe how to enable kvm support for IA-64 systems.
-diff -r -u linux-2.6.27-rc3-git6.orig/net/netfilter/nf_conntrack_acct.c linux-2.6.27-rc3-git6/net/netfilter/nf_conntrack_acct.c
---- linux-2.6.27-rc3-git6.orig/net/netfilter/nf_conntrack_acct.c	2008-08-19 14:46:12.906631000 +0200
-+++ linux-2.6.27-rc3-git6/net/netfilter/nf_conntrack_acct.c	2008-08-22 20:19:43.976982594 +0200
-@@ -69,7 +69,7 @@
- 	int ret;
- 
- #ifdef CONFIG_NF_CT_ACCT
--	printk(KERN_WARNING "CONFIG_NF_CT_ACCT is deprecated and will be removed soon. Plase use\n");
-+	printk(KERN_WARNING "CONFIG_NF_CT_ACCT is deprecated and will be removed soon. Please use\n");
- 	printk(KERN_WARNING "nf_conntrack.acct=1 kernel paramater, acct=1 nf_conntrack module option or\n");
- 	printk(KERN_WARNING "sysctl net.netfilter.nf_conntrack_acct=1 to enable it.\n");
- #endif
-
-
-
-
 -- 
-The five R's of windows tech support: Retry, Reboot, Reinstall, Replace & Resign
+1.5.6.3
+
