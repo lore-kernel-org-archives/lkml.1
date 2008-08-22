@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755688AbYHVRiI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbYHVRj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755688AbYHVRiI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 13:38:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbYHVRhy
+	id S1756104AbYHVRj0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 13:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbYHVRjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 13:37:54 -0400
-Received: from anchor-post-34.mail.demon.net ([194.217.242.92]:2668 "EHLO
-	anchor-post-34.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751838AbYHVRhy (ORCPT
+	Fri, 22 Aug 2008 13:39:19 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:2257 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753035AbYHVRjS (ORCPT
 	<rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 13:37:54 -0400
-Message-ID: <48AEF976.1010705@lougher.demon.co.uk>
-Date: Fri, 22 Aug 2008 18:37:58 +0100
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Jared Hulbert <jaredeh@gmail.com>, Linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
+	Fri, 22 Aug 2008 13:39:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ksXhmdVewAtGF4mpo5Nabi1itaptrCcgxp30TIXxqBzLBhdUa/NObLhiHzDuXXOF8/
+         ynU+k3KD5CHaaIVxTzrQB5e2Bv+DMqJrrKMYbHDO4jzdLOsNDaqm58pGNE2ScKa1T0vz
+         SOCP/zfEOnCFEqDvuyWahQJY6/eEcHmaVD+7A=
+Message-ID: <6934efce0808221039o3ea57e35ka24a617621e2646e@mail.gmail.com>
+Date: Fri, 22 Aug 2008 10:39:18 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: "Bernhard Reutner-Fischer" <rep.dot.nop@gmail.com>
+Subject: Re: [PATCH 07/10] AXFS: axfs_bdev.c
+Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
        linux-mtd <linux-mtd@lists.infradead.org>,
-       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>, tim.bird@am.sony.com,
+       "=?UTF-8?Q?J=C3=B6rn_Engel?=" <joern@logfs.org>, tim.bird@am.sony.com,
        cotte@de.ibm.com, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 06/10] AXFS: axfs_super.c
-References: <48AD0101.4020505@gmail.com> <48AE19AD.1020209@lougher.demon.co.uk> <6934efce0808212005h30fa16d8w48833e8a0becfd8c@mail.gmail.com> <200808221852.38950.arnd@arndb.de>
-In-Reply-To: <200808221852.38950.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+In-Reply-To: <20080822125440.GA1396@mx.loc>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48AD010B.6030209@gmail.com> <20080822125440.GA1396@mx.loc>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Friday 22 August 2008, Jared Hulbert wrote:
->>> This implies for block devices that the entire filesystem metadata has to be
->>> cached in RAM.  This severely limits the size of AXFS filesystems when using
->>> block devices, or the else memory usage will be excessive.
->> This is where 64bit squashfs could be a better fit.
-> 
-> Is this the only place where squashfs has a significant advantage? 
-> If so, you might want to change it in axfs eventually to make the
-> decision easier for users ;-)
+> mismatch between documentation and implementation WRT the function name ;)
+oops.
 
-As you asked here's the list.
+>>+{
+>>+      struct axfs_super *sbi = AXFS_SB(sb);
+>>+      u64 boffset = AXFS_FSOFFSET_2_DEVOFFSET(sbi, fsoffset);
+>>+      u64 blocks;
+>>+      u64 blksize = sb->s_blocksize;
+>>+      unsigned long dst;
+>>+      unsigned long src;
+>>+      sector_t block;
+>>+      size_t bytes;
+>>+      struct buffer_head *bh;
+>>+      u64 copied = 0;
+>>+
+>>+      if (len == 0)
+>>+              return 0;
+>>+
+>>+      blocks = len / blksize;
+>>+      if ((len % blksize) > 0)
+>>+              blocks += 1;
+>>+
+>>+      while (copied < len) {
+>>+              /* Explicit casting for ARM linker errors. */
+>
+> did it try to emit some external div()? Is this still needed?
 
-1. Support for > 4GB filesystems.  In theory 2^64 bytes.
-2. Compressed metadata
-3. Inode timestamps
-4. Hard-link support, and correct nlink counts
-5. Sparse file support
-6. Support for ". & ".." in readdir
-7. Indexed directories for fast lookup
-8. NFS exporting
-9. No need to cache entire metadata in memory
-
-Squashfs has been optimised for block-based rotating media like hard 
-disks, CDROMS.  AXFS has been optimised for flash based media.  Squashfs 
-will outperform AXFS on rotating media, AXFS will outperform Squashfs on 
-flash based media.
-
-Squashfs and AXFS should be seen as complementary filesystems, and there 
-should be room in the Linux kernel for both.
-
-I don't see what your problem is here.  I think AXFS is an extremely 
-good filesystem and should be merged.  But I don't see why this should 
-lead to more Squashfs bashing.
-
-Phillip
+exactly.  I haven't heard otherwise, it was a Freescale ARM11 build
+that had the issue... I don't have the set up.
