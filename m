@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759541AbYHVGpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759417AbYHVGrE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759541AbYHVGpA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 02:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbYHVGow
+	id S1759417AbYHVGrE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 02:47:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbYHVGqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 02:44:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59023 "EHLO mx2.mail.elte.hu"
+	Fri, 22 Aug 2008 02:46:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59677 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753694AbYHVGov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 02:44:51 -0400
-Date: Fri, 22 Aug 2008 08:44:14 +0200
+	id S1754726AbYHVGqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 02:46:53 -0400
+Date: Fri, 22 Aug 2008 08:46:35 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: joerg.roedel@amd.com, jbarnes@virtuousgeek.org, mingo@redhat.com,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, muli@il.ibm.com
-Subject: Re: [PATCH 0/8] x86 dma_*_coherent rework patchset v2
-Message-ID: <20080822064414.GT14110@elte.hu>
-References: <1219156366-32498-1-git-send-email-joerg.roedel@amd.com> <20080820094612.GA28492@elte.hu> <20080821231230V.fujita.tomonori@lab.ntt.co.jp> <20080822001238F.fujita.tomonori@lab.ntt.co.jp>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH v2] ftrace: warn on failure to disable mcount callers
+Message-ID: <20080822064634.GU14110@elte.hu>
+References: <alpine.DEB.1.10.0808201237210.27481@gandalf.stny.rr.com> <20080821084418.GJ28386@elte.hu> <alpine.DEB.1.10.0808211030300.20825@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080822001238F.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <alpine.DEB.1.10.0808211030300.20825@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,26 +37,28 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> > As I wrote in another mail, GART should return zeroed memory 
-> > (keeping the current behavior is better). Except for it, the 
-> > patchset looks fine.
-> 
-> I think that you can apply the following patch after Joerg's patchset.
-> 
-> =
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Subject: [PATCH] x86: remove map_simple hook in struct dma_mapping_ops
-> 
-> pci-dma.c doesn't use map_simple hook any more so we can remove it 
-> from struct dma_mapping_ops now.
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> +			WARN_ON_ONCE(1);
+> +			pr_info("ftrace faulted on modifying ");
+> +			print_ip_sym(ip);
+> +			break;
+> +		case 2:
+> +			WARN_ON_ONCE(1);
+> +			pr_info("ftrace failed to modify ");
+> +			print_ip_sym(ip);
+> +			print_ip_ins(" expected: ", call);
+> +			print_ip_ins(" actual: ", (unsigned char *)ip);
+> +			print_ip_ins(" replace: ", nop);
+> +			printk(KERN_CONT "\n");
+> +			break;
 
-applied to tip/x86/iommu - thanks!
+hm, i think it makes little sense to only print out the stacktrace once, 
+but to print out the rest all the time.
 
-i also grepped the full tree and this is indeed the last user of this. 
-Nice cleanup.
+If there's such a failure then ftrace should warn once, with stacktrace 
+and everthing else, and turn itself off permanently. That makes it sure 
+that we 1) get the report 2) dont spam the user 3) keep the system 
+working 4) turn off the malfunctioning component.
 
 	Ingo
