@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759417AbYHVGrE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbYHVGum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759417AbYHVGrE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 02:47:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbYHVGqy
+	id S1758716AbYHVGum (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 02:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbYHVGue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 02:46:54 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59677 "EHLO mx2.mail.elte.hu"
+	Fri, 22 Aug 2008 02:50:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56290 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754726AbYHVGqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 02:46:53 -0400
-Date: Fri, 22 Aug 2008 08:46:35 +0200
+	id S1752414AbYHVGue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 02:50:34 -0400
+Date: Fri, 22 Aug 2008 08:50:12 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v2] ftrace: warn on failure to disable mcount callers
-Message-ID: <20080822064634.GU14110@elte.hu>
-References: <alpine.DEB.1.10.0808201237210.27481@gandalf.stny.rr.com> <20080821084418.GJ28386@elte.hu> <alpine.DEB.1.10.0808211030300.20825@gandalf.stny.rr.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
+Message-ID: <20080822065012.GV14110@elte.hu>
+References: <20080820162925.75a5e064@doriath.conectiva> <48ADDF4F.2020401@zytor.com> <48AE5FCF.6030103@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0808211030300.20825@gandalf.stny.rr.com>
+In-Reply-To: <48AE5FCF.6030103@zytor.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,28 +35,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-> +			WARN_ON_ONCE(1);
-> +			pr_info("ftrace faulted on modifying ");
-> +			print_ip_sym(ip);
-> +			break;
-> +		case 2:
-> +			WARN_ON_ONCE(1);
-> +			pr_info("ftrace failed to modify ");
-> +			print_ip_sym(ip);
-> +			print_ip_ins(" expected: ", call);
-> +			print_ip_ins(" actual: ", (unsigned char *)ip);
-> +			print_ip_ins(" replace: ", nop);
-> +			printk(KERN_CONT "\n");
-> +			break;
+> H. Peter Anvin wrote:
+>>>
+>>>  Does this look like a kernel bug?
+>>>
+>>
+>> No, it looks like a very common virtualizer bug.  Does the attached  
+>> patch work for you?
+>>
+>
+> Also, in addition to this, please try tip:master.  There is a patch in 
+> tip:master which I hope should fix this problem, but the details are 
+> important.
 
-hm, i think it makes little sense to only print out the stacktrace once, 
-but to print out the rest all the time.
+access coordinates would be at:
 
-If there's such a failure then ftrace should warn once, with stacktrace 
-and everthing else, and turn itself off permanently. That makes it sure 
-that we 1) get the report 2) dont spam the user 3) keep the system 
-working 4) turn off the malfunctioning component.
+  http://people.redhat.com/mingo/tip.git/README
 
 	Ingo
