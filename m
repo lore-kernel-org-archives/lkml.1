@@ -1,28 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756284AbYHVHKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760139AbYHVHNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756284AbYHVHKm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 03:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbYHVHKQ
+	id S1760139AbYHVHNA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 03:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbYHVHMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 03:10:16 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51865 "EHLO mx2.mail.elte.hu"
+	Fri, 22 Aug 2008 03:12:53 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42729 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755659AbYHVHKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 03:10:13 -0400
-Date: Fri, 22 Aug 2008 09:09:31 +0200
+	id S1752126AbYHVHMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 03:12:52 -0400
+Date: Fri, 22 Aug 2008 09:12:09 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, joerg.roedel@amd.com,
-       mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       muli@il.ibm.com
-Subject: Re: [PATCH 0/8] x86 dma_*_coherent rework patchset v2
-Message-ID: <20080822070931.GY14110@elte.hu>
-References: <20080820094612.GA28492@elte.hu> <20080821120011.GD5615@elte.hu> <20080821231720S.fujita.tomonori@lab.ntt.co.jp> <200808210807.05996.jbarnes@virtuousgeek.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH 2/2] smp_call_function: use rwlocks on queues rather
+	than rcu
+Message-ID: <20080822071209.GZ14110@elte.hu>
+References: <48AE0883.6050701@goop.org> <20080822062800.GQ14110@elte.hu> <84144f020808220006n25d684b1n9db306ddc4f58c4c@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200808210807.05996.jbarnes@virtuousgeek.org>
+In-Reply-To: <84144f020808220006n25d684b1n9db306ddc4f58c4c@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,30 +43,40 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-> > Surely, this patchset should be for 2.6.28.
-> >
-> > Can you send this via the x86 tree instead of pci?
-> >
-> > - IOMMU code is arch stuff rather than pci.
-> > - We can avoid a mistake such as the previous one.
+> Hi Ingo,
 > 
-> Yeah I was thinking 2.6.28 too, via the x86 tree.  The problem last 
-> time was that I sent it too soon (I misunderstood Ingo when he said it 
-> was ready) so we broke the build on some non-x86 platforms.  I don't 
-> think that'll be an issue this time, but we may as well push through 
-> x86 anyway; I agree that IOMMU is really a platform feature more than 
-> a PCI one.
+> On Fri, Aug 22, 2008 at 9:28 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> >
+> >> RCU can only control the lifetime of allocated memory blocks, which
+> >> forces all the call structures to be allocated.  This is expensive
+> >> compared to allocating them on the stack, which is the common case for
+> >> synchronous calls.
+> >>
+> >> This patch takes a different approach.  Rather than using RCU, the
+> >> queues are managed under rwlocks.  Adding or removing from the queue
+> >> requires holding the lock for writing, but multiple CPUs can walk the
+> >> queues to process function calls under read locks.  In the common
+> >> case, where the structures are stack allocated, the calling CPU need
+> >> only wait for its call to be done, take the lock for writing and
+> >> remove the call structure.
+> >>
+> >> Lock contention - particularly write vs read - is reduced by using
+> >> multiple queues.
+> >
+> > hm, is there any authorative data on what is cheaper on a big box, a
+> > full-blown MESI cache miss that occurs for every reader in this new
+> > fastpath, or a local SLAB/SLUB allocation+free that occurs with the
+> > current RCU approach?
+> 
+> Christoph might have an idea about it.
 
-yeah, GART/IOMMU has been historically a more platform specific thing 
-although there's certainly no hard boundaries. This code will show up in 
-linux-next as well soon, so there's plenty of time to discover and fix 
-any cross-arch breakages. (if any)
+... thought of that missing Cc: line entry exactly 1.3 seconds after 
+having sent the mail :)
 
-and if the PCI tree becomes very active in this area that would make the 
-movement of these commits over there more practical we can do that too 
-at any point of time, it's all kept separate in tip/x86/iommu, purely 
-based on Linus's tree. The blessings of 160+ topic branches ;-)
+Christoph, any preferences/suggestions?
 
 	Ingo
