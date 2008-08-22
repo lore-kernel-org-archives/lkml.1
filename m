@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbYHVUcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbYHVUeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757570AbYHVUcj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 16:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbYHVUca
+	id S1757938AbYHVUeP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 16:34:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbYHVUeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 16:32:30 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:43867 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753904AbYHVUca (ORCPT
+	Fri, 22 Aug 2008 16:34:03 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:45762 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754359AbYHVUeB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 16:32:30 -0400
-Message-ID: <48AF2235.7080906@zytor.com>
-Date: Fri, 22 Aug 2008 13:31:49 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 22 Aug 2008 16:34:01 -0400
+Date: Fri, 22 Aug 2008 16:33:59 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Pavel Machek <pavel@suse.cz>
+cc: Marcin Slusarz <marcin.slusarz@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: ftraced and suspend to ram
+In-Reply-To: <20080822104610.GA3482@elf.ucw.cz>
+Message-ID: <alpine.DEB.1.10.0808221632410.14231@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0808211139420.3947@gandalf.stny.rr.com> <alpine.DEB.1.10.0808211423410.678@gandalf.stny.rr.com> <200808212037.11775.rjw@sisk.pl> <200808212159.37678.rjw@sisk.pl> <20080822044649.GA356@elte.hu> <20080822072343.GA24173@atrey.karlin.mff.cuni.cz>
+ <20080822103533.GA5425@joi> <20080822104610.GA3482@elf.ucw.cz>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
-References: <20080820162925.75a5e064@doriath.conectiva>	<48ADDF4F.2020401@zytor.com>	<48AE5FCF.6030103@zytor.com>	<20080822065012.GV14110@elte.hu>	<20080822113941.147a1db0@doriath.conectiva>	<20080822153451.GA8390@Krystal>	<20080822132948.57e47076@doriath.conectiva>	<20080822163520.GA9860@Krystal>	<20080822142054.403cbdef@doriath.conectiva>	<48AF014D.8040103@zytor.com> <20080822164023.7060137e@doriath.conectiva>
-In-Reply-To: <20080822164023.7060137e@doriath.conectiva>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luiz Fernando N. Capitulino wrote:
-> 
-> | 2. a patch against -linus for testing.
-> 
->  I have tried this patch with Linus tree early today, should I try
-> it with Ingo's tree too?
-> 
 
-It doesn't apply to tip.  This did not fix the problem?
+On Fri, 22 Aug 2008, Pavel Machek wrote:
+> 
+> Does ftrace hook itself onto _all_ the functions? Or all .c functions?
 
-	-hpa
+It hooks into all .c functions that are not annotated with "notrace"
+or the files have not been marked in the Makefile like:
+
+  CFLAGS_REMOVE_<file>.o = -pg
+
+
+> 
+> I guess low-level suspend code needs to be exempt from
+> tracing. Certainly all the assembly functions.
+
+I'm looking into that now too. Are the functions in arch/x86/power/cpu*.c 
+the suspend to ram code?
+
+Thanks,
+
+-- Steve
+
