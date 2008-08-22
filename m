@@ -1,262 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760500AbYHVKxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbYHVLDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760500AbYHVKxg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 06:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754994AbYHVKwK
+	id S1755964AbYHVLDa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 07:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbYHVLDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 06:52:10 -0400
-Received: from smtp02.citrix.com ([66.165.176.63]:12612 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753577AbYHVKwF (ORCPT
+	Fri, 22 Aug 2008 07:03:21 -0400
+Received: from tone.orchestra.cse.unsw.EDU.AU ([129.94.242.59]:55230 "EHLO
+	tone.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753346AbYHVLDU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 06:52:05 -0400
-X-IronPort-AV: E=Sophos;i="4.32,251,1217822400"; 
-   d="scan'208";a="16925835"
-From: Alex Nixon <alex.nixon@citrix.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Alex Nixon <alex.nixon@citrix.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 5/5] Xen:  Implement CPU hotplugging
-Date: Fri, 22 Aug 2008 11:52:15 +0100
-Message-Id: <1219402335-29773-5-git-send-email-alex.nixon@citrix.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1219402335-29773-4-git-send-email-alex.nixon@citrix.com>
-References: <>
- <1219402335-29773-1-git-send-email-alex.nixon@citrix.com>
- <1219402335-29773-2-git-send-email-alex.nixon@citrix.com>
- <1219402335-29773-3-git-send-email-alex.nixon@citrix.com>
- <1219402335-29773-4-git-send-email-alex.nixon@citrix.com>
-X-OriginalArrivalTime: 22 Aug 2008 10:52:02.0868 (UTC) FILETIME=[1C2C2740:01C90445]
+	Fri, 22 Aug 2008 07:03:20 -0400
+From: Aaron Carroll <aaronc@gelato.unsw.edu.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Date: Fri, 22 Aug 2008 21:02:54 +1000
+Message-ID: <48AE9CDE.9090504@gelato.unsw.edu.au>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080618)
+MIME-Version: 1.0
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cfq-iosched: fix queue depth detection
+References: <48AE5FE2.2060003@gelato.unsw.edu.au> <20080822090620.GY20055@kernel.dk>
+In-Reply-To: <20080822090620.GY20055@kernel.dk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Note the changes from 2.6.18-xen CPU hotplugging:
+Jens Axboe wrote:
+> On Fri, Aug 22 2008, Aaron Carroll wrote:
+>> Hi Jens,
+>>
+>> This patch fixes a bug in the hw_tag detection logic causing a huge 
+>> performance
+>> hit under certain workloads on real queuing devices.  For example, an FIO 
+>> load
+>> of 16k direct random reads on an 8-disk hardware RAID yields about 2 MiB/s 
+>> on
+>> default CFQ, while noop achieves over 20 MiB/s.
+>>
+>> While the solution is pretty ugly, it does have the advantage of adapting to
+>> queue depth changes.  Such a situation might occur if the queue depth is
+>> configured in userspace late in the boot process.
+> 
+> I don't think it's that ugly, and I prefer this logic to the existing
+> one in fact. Since it's a static property of the device, why did you
+> change it to toggle the flag back and forth instead of just setting it
+> once?
 
-A vcpu_down request from the remote admin via Xenbus both hotunplugs the CPU, and disables it by removing it from the cpu_present map, and removing its entry in /sys
+Because it is possible (albeit uncommon) that the queue depth can change
+at run time, like the example I gave.  However, there should be no false
+positives; the flag should only be toggled if the queue depth does change.
+So even if it doesn't occur often, we can handle this corner case for very
+little cost.
 
-A vcpu_up request from the remote admin only re-enables the CPU, and does not immediately bring the CPU up.  A udev event is emitted, which can be caught by the user if he wishes to automatically re-up CPUs when available, or implement a more complex policy.
+> doesn't do queueing. So the interesting window is the one where we have
+> more requests pending yet the driver doesn't ask for it. I'd prefer a
+> patch that took that more into account, instead of just looking at the
+> past 50 samples and then toggle the hw_tag flag depending on the
+> behaviour in that time frame. You could easily have a depth of 1 there
+> always if it's a sync workload, even if hardware can do tagged queuing.
 
-Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/xen/smp.c      |   60 +++++++++++++++++++++++++++++++++++++---------
- arch/x86/xen/spinlock.c |    5 ++++
- arch/x86/xen/time.c     |    8 ++++++
- arch/x86/xen/xen-ops.h  |    6 ++++
- drivers/xen/Makefile    |    2 +-
- drivers/xen/events.c    |    4 +++
- 6 files changed, 72 insertions(+), 13 deletions(-)
+That's exactly what the lines
 
-diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
-index baca7f2..be5cbb2 100644
---- a/arch/x86/xen/smp.c
-+++ b/arch/x86/xen/smp.c
-@@ -11,8 +11,6 @@
-  * useful topology information for the kernel to make use of.  As a
-  * result, all CPUs are treated as if they're single-core and
-  * single-threaded.
-- *
-- * This does not handle HOTPLUG_CPU yet.
-  */
- #include <linux/sched.h>
- #include <linux/err.h>
-@@ -61,11 +59,12 @@ static irqreturn_t xen_reschedule_interrupt(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--static __cpuinit void cpu_bringup_and_idle(void)
-+static __cpuinit void cpu_bringup(void)
- {
- 	int cpu = smp_processor_id();
- 
- 	cpu_init();
-+	touch_softlockup_watchdog();
- 	preempt_disable();
- 
- 	xen_enable_sysenter();
-@@ -86,6 +85,11 @@ static __cpuinit void cpu_bringup_and_idle(void)
- 	local_irq_enable();
- 
- 	wmb();			/* make sure everything is out */
-+}
-+
-+static __cpuinit void cpu_bringup_and_idle(void)
-+{
-+	cpu_bringup();
- 	cpu_idle();
- }
- 
-@@ -209,8 +213,6 @@ static void __init xen_smp_prepare_cpus(unsigned int max_cpus)
- 
- 		cpu_set(cpu, cpu_present_map);
- 	}
--
--	//init_xenbus_allowed_cpumask();
- }
- 
- static __cpuinit int
-@@ -278,12 +280,6 @@ static int __cpuinit xen_cpu_up(unsigned int cpu)
- 	struct task_struct *idle = idle_task(cpu);
- 	int rc;
- 
--#if 0
--	rc = cpu_up_check(cpu);
--	if (rc)
--		return rc;
--#endif
--
- #ifdef CONFIG_X86_64
- 	/* Allocate node local memory for AP pdas */
- 	WARN_ON(cpu == 0);
-@@ -336,6 +332,42 @@ static void xen_smp_cpus_done(unsigned int max_cpus)
- {
- }
- 
-+int xen_cpu_disable(void)
-+{
-+	unsigned int cpu = smp_processor_id();
-+	if (cpu == 0)
-+		return -EBUSY;
-+
-+	cpu_disable_common();
-+
-+	load_cr3(swapper_pg_dir);
-+	return 0;
-+}
-+
-+void xen_cpu_die(unsigned int cpu)
-+{
-+	while (HYPERVISOR_vcpu_op(VCPUOP_is_up, cpu, NULL)) {
-+		current->state = TASK_UNINTERRUPTIBLE;
-+		schedule_timeout(HZ/10);
-+	}
-+	unbind_from_irqhandler(per_cpu(resched_irq, cpu), NULL);
-+	unbind_from_irqhandler(per_cpu(callfunc_irq, cpu), NULL);
-+	unbind_from_irqhandler(per_cpu(debug_irq, cpu), NULL);
-+	unbind_from_irqhandler(per_cpu(callfuncsingle_irq, cpu), NULL);
-+	xen_uninit_lock_cpu(cpu);
-+	xen_teardown_timer(cpu);
-+
-+	if (num_online_cpus() == 1)
-+		alternatives_smp_switch(0);
-+}
-+
-+void xen_play_dead(void)
-+{
-+	play_dead_common();
-+	HYPERVISOR_vcpu_op(VCPUOP_down, smp_processor_id(), NULL);
-+	cpu_bringup();
-+}
-+
- static void stop_self(void *v)
- {
- 	int cpu = smp_processor_id();
-@@ -419,9 +451,13 @@ static irqreturn_t xen_call_function_single_interrupt(int irq, void *dev_id)
- static const struct smp_ops xen_smp_ops __initdata = {
- 	.smp_prepare_boot_cpu = xen_smp_prepare_boot_cpu,
- 	.smp_prepare_cpus = xen_smp_prepare_cpus,
--	.cpu_up = xen_cpu_up,
- 	.smp_cpus_done = xen_smp_cpus_done,
- 
-+	.cpu_up = xen_cpu_up,
-+	.cpu_die = xen_cpu_die,
-+	.cpu_disable = xen_cpu_disable,
-+	.play_dead = xen_play_dead,
-+
- 	.smp_send_stop = xen_smp_send_stop,
- 	.smp_send_reschedule = xen_smp_send_reschedule,
- 
-diff --git a/arch/x86/xen/spinlock.c b/arch/x86/xen/spinlock.c
-index f8fea68..bb6bc72 100644
---- a/arch/x86/xen/spinlock.c
-+++ b/arch/x86/xen/spinlock.c
-@@ -357,6 +357,11 @@ void __cpuinit xen_init_lock_cpu(int cpu)
- 	printk("cpu %d spinlock event irq %d\n", cpu, irq);
- }
- 
-+void xen_uninit_lock_cpu(int cpu)
-+{
-+	unbind_from_irqhandler(per_cpu(lock_kicker_irq, cpu), NULL);
-+}
-+
- void __init xen_init_spinlocks(void)
- {
- 	pv_lock_ops.spin_is_locked = xen_spin_is_locked;
-diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
-index 20182d9..004ba86 100644
---- a/arch/x86/xen/time.c
-+++ b/arch/x86/xen/time.c
-@@ -450,6 +450,14 @@ void xen_setup_timer(int cpu)
- 	setup_runstate_info(cpu);
- }
- 
-+void xen_teardown_timer(int cpu)
-+{
-+	struct clock_event_device *evt;
-+	BUG_ON(cpu == 0);
-+	evt = &per_cpu(xen_clock_events, cpu);
-+	unbind_from_irqhandler(evt->irq, NULL);
-+}
-+
- void xen_setup_cpu_clockevents(void)
- {
- 	BUG_ON(preemptible());
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index 1e8bfda..8dbd97f 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -34,6 +34,7 @@ void __init xen_build_dynamic_phys_to_machine(void);
- 
- void xen_init_irq_ops(void);
- void xen_setup_timer(int cpu);
-+void xen_teardown_timer(int cpu);
- cycle_t xen_clocksource_read(void);
- void xen_setup_cpu_clockevents(void);
- unsigned long xen_tsc_khz(void);
-@@ -50,11 +51,16 @@ void xen_mark_init_mm_pinned(void);
- 
- void __init xen_setup_vcpu_info_placement(void);
- 
-+void xen_play_dead(void);
-+void xen_cpu_die(unsigned int cpu);
-+int xen_cpu_disable(void);
-+
- #ifdef CONFIG_SMP
- void xen_smp_init(void);
- 
- void __init xen_init_spinlocks(void);
- __cpuinit void xen_init_lock_cpu(int cpu);
-+void xen_uninit_lock_cpu(int cpu);
- 
- extern cpumask_t xen_cpu_initialized_map;
- #else
-diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
-index 363286c..f62d8df 100644
---- a/drivers/xen/Makefile
-+++ b/drivers/xen/Makefile
-@@ -1,4 +1,4 @@
--obj-y	+= grant-table.o features.o events.o manage.o
-+obj-y	+= grant-table.o features.o events.o manage.o cpu_hotplug.o
- obj-y	+= xenbus/
- obj-$(CONFIG_XEN_XENCOMM)	+= xencomm.o
- obj-$(CONFIG_XEN_BALLOON)	+= balloon.o
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-index 792ca6e..e6d47e8 100644
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -364,6 +364,10 @@ static void unbind_from_irq(unsigned int irq)
- 			per_cpu(virq_to_irq, cpu_from_evtchn(evtchn))
- 				[index_from_irq(irq)] = -1;
- 			break;
-+		case IRQT_IPI:
-+			per_cpu(ipi_to_irq, cpu_from_evtchn(evtchn))
-+				[index_from_irq(irq)] = -1;
-+			break;
- 		default:
- 			break;
- 		}
--- 
-1.5.4.3
+	if (cfqd->rq_queued <= CFQ_HW_QUEUE_MIN &&
+	    cfqd->rq_in_driver <= CFQ_HW_QUEUE_MIN)
+		return;
+
+are for.  It's not just the past 50 samples, but rather 50 samples with
+sufficient load to see whether the device could be queuing.
+
+
+Thanks,
+   -- Aaron
 
