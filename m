@@ -1,134 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759406AbYHVVz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759409AbYHVV5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759406AbYHVVz0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 17:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754486AbYHVVzL
+	id S1759409AbYHVV5V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 17:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756610AbYHVV5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 17:55:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54765 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757047AbYHVVzK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 17:55:10 -0400
-Date: Fri, 22 Aug 2008 16:55:09 -0500
-From: Russ Anderson <rja@sgi.com>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
-Cc: Russ Anderson <rja@sgi.com>, Jack Steiner <steiner@sgi.com>
-Subject: [PATCH 4/4] x86: Add sysfs entries for UV
-Message-ID: <20080822215509.GE143104@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
+	Fri, 22 Aug 2008 17:57:03 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:43463 "EHLO mail-out1.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752742AbYHVV5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 17:57:01 -0400
+Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Ian Campbell <ijc@hellion.org.uk>
+Cc: John Ronciak <john.ronciak@gmail.com>, Grant Coady <gcoady.lk@gmail.com>,
+       linux-kernel@vger.kernel.org, neilb@suse.de, bfields@fieldses.org,
+       linux-nfs@vger.kernel.org, Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Bruce Allan <bruce.w.allan@intel.com>,
+       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
+       John Ronciak <john.ronciak@intel.com>,
+       e1000-devel@lists.sourceforge.net
+In-Reply-To: <1219441041.27921.57.camel@localhost.localdomain>
+References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com>
+	 <1219087258.7192.19.camel@localhost>
+	 <1219400624.18774.67.camel@zakaz.uk.xensource.com>
+	 <1219428489.6919.21.camel@localhost>
+	 <1219428818.27921.43.camel@localhost.localdomain>
+	 <56a8daef0808221233h68853587n6015ca7d809b17e1@mail.gmail.com>
+	 <1219435207.27921.51.camel@localhost.localdomain>
+	 <1219440202.9097.14.camel@localhost>
+	 <1219441041.27921.57.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 22 Aug 2008 14:56:53 -0700
+Message-Id: <1219442213.9097.25.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 704FAF4792C973223B5499D268C874D19868F63B
+X-UiO-SPAM-Test: remote_host: 198.95.226.240 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 2 total 6 max/h 2 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 4/4] x86: Add sysfs entries for UV
+On Fri, 2008-08-22 at 22:37 +0100, Ian Campbell wrote:
+> I can ssh to the server fine. The same server also serves my NFS home
+> directory to the box I'm writing this from and I've not seen any trouble
+> with this box at all, it's a 2.6.18-xen box.
 
-Create /sys/firmware/sgi_uv sysfs entries for partition_id and coherence_id.
+OK... Are you able to reproduce the problem reliably?
 
-Signed-off-by: Russ Anderson <rja@sgi.com>
+If so, can you provide me with a binary tcpdump or wireshark dump? If
+using tcpdump, then please use something like
 
----
- arch/x86/kernel/Makefile   |    2 -
- arch/x86/kernel/uv_sysfs.c |   61 +++++++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/uv/bios.h  |    2 +
- 3 files changed, 64 insertions(+), 1 deletion(-)
+   tcpdump -w /tmp/dump.out -s 90000 host myserver.foo.bar and port 2049
 
-Index: linux/arch/x86/kernel/Makefile
-===================================================================
---- linux.orig/arch/x86/kernel/Makefile	2008-08-22 14:49:44.000000000 -0500
-+++ linux/arch/x86/kernel/Makefile	2008-08-22 14:52:48.000000000 -0500
-@@ -106,7 +106,7 @@ obj-$(CONFIG_OLPC)		+= olpc.o
- # 64 bit specific files
- ifeq ($(CONFIG_X86_64),y)
-         obj-y				+= genapic_64.o genapic_flat_64.o genx2apic_uv_x.o tlb_uv.o
--	obj-y				+= bios_uv.o
-+	obj-y				+= bios_uv.o uv_sysfs.o
-         obj-y				+= genx2apic_cluster.o
-         obj-y				+= genx2apic_phys.o
-         obj-$(CONFIG_X86_PM_TIMER)	+= pmtimer_64.o
-Index: linux/arch/x86/kernel/uv_sysfs.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/arch/x86/kernel/uv_sysfs.c	2008-08-22 14:52:48.000000000 -0500
-@@ -0,0 +1,61 @@
-+/*
-+ * This file supports the /sys/firmware/sgi_uv interfaces for SGI UV.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ *
-+ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ *  Copyright (c) Russ Anderson
-+ */
-+
-+#include <linux/sysdev.h>
-+#include <asm/uv/bios.h>
-+
-+struct kobject *sgi_uv_kobj;
-+
-+static ssize_t partition_id_show(struct kobject *kobj,
-+			struct kobj_attribute *attr, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%d\n", sn_partition_id);
-+}
-+
-+static ssize_t coherence_id_show(struct kobject *kobj,
-+			struct kobj_attribute *attr, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%d\n", partition_coherence_id());
-+}
-+
-+static struct kobj_attribute partition_id_attr =
-+	__ATTR(partition_id, S_IRUGO, partition_id_show, NULL);
-+
-+static struct kobj_attribute coherence_id_attr =
-+	__ATTR(coherence_id, S_IRUGO, coherence_id_show, NULL);
-+
-+
-+static int __init sgi_uv_sysfs_init(void)
-+{
-+	if (!sgi_uv_kobj)
-+		sgi_uv_kobj = kobject_create_and_add("sgi_uv", firmware_kobj);
-+	if (!sgi_uv_kobj) {
-+		printk(KERN_WARNING "kobject_create_and_add sgi_uv failed \n");
-+		return -EINVAL;
-+	}
-+
-+	sysfs_create_file(sgi_uv_kobj, &partition_id_attr.attr);
-+	sysfs_create_file(sgi_uv_kobj, &coherence_id_attr.attr);
-+
-+	return 0;
-+}
-+
-+device_initcall(sgi_uv_sysfs_init);
-Index: linux/include/asm-x86/uv/bios.h
-===================================================================
---- linux.orig/include/asm-x86/uv/bios.h	2008-08-22 14:52:08.000000000 -0500
-+++ linux/include/asm-x86/uv/bios.h	2008-08-22 14:52:48.000000000 -0500
-@@ -79,6 +79,8 @@ extern u8 uv_coherency_id;
- #define partition_coherence_id()	(uv_coherency_id)
- 
- 
-+extern struct kobject *sgi_uv_kobj;	/* /sys/firmware/sgi_uv */
-+
- #ifndef CONFIG_EFI
- extern u64 efi_call6(void *, u64, u64, u64, u64, u64, u64);
- #endif
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+Please also try to provide a netstat dump of the current TCP connections
+as soon as the hang occurs:
+
+  netstat -t
+
+Cheers
+  Trond
+
