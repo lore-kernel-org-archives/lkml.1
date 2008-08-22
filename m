@@ -1,180 +1,262 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbYHVKwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760500AbYHVKxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755123AbYHVKwt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 06:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313AbYHVKwH
+	id S1760500AbYHVKxg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 06:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754994AbYHVKwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 06:52:07 -0400
-Received: from smtp02.citrix.com ([66.165.176.63]:4602 "EHLO SMTP02.CITRIX.COM"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753344AbYHVKwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 06:52:04 -0400
+	Fri, 22 Aug 2008 06:52:10 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:12612 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753577AbYHVKwF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 06:52:05 -0400
 X-IronPort-AV: E=Sophos;i="4.32,251,1217822400"; 
-   d="scan'208";a="16925824"
+   d="scan'208";a="16925835"
 From: Alex Nixon <alex.nixon@citrix.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Alex Nixon <alex.nixon@citrix.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 3/5] x86:  Unify x86_32 and x86_64 play_dead into one function
-Date: Fri, 22 Aug 2008 11:52:13 +0100
-Message-Id: <1219402335-29773-3-git-send-email-alex.nixon@citrix.com>
+Subject: [PATCH 5/5] Xen:  Implement CPU hotplugging
+Date: Fri, 22 Aug 2008 11:52:15 +0100
+Message-Id: <1219402335-29773-5-git-send-email-alex.nixon@citrix.com>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1219402335-29773-2-git-send-email-alex.nixon@citrix.com>
+In-Reply-To: <1219402335-29773-4-git-send-email-alex.nixon@citrix.com>
 References: <>
  <1219402335-29773-1-git-send-email-alex.nixon@citrix.com>
  <1219402335-29773-2-git-send-email-alex.nixon@citrix.com>
-X-OriginalArrivalTime: 22 Aug 2008 10:51:56.0603 (UTC) FILETIME=[187030B0:01C90445]
+ <1219402335-29773-3-git-send-email-alex.nixon@citrix.com>
+ <1219402335-29773-4-git-send-email-alex.nixon@citrix.com>
+X-OriginalArrivalTime: 22 Aug 2008 10:52:02.0868 (UTC) FILETIME=[1C2C2740:01C90445]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the new play_dead into smpboot.c, as it fits more cleanly in there alongside other CONFIG_HOTPLUG functions.
-Separate out the common code into its own function.
+Note the changes from 2.6.18-xen CPU hotplugging:
+
+A vcpu_down request from the remote admin via Xenbus both hotunplugs the CPU, and disables it by removing it from the cpu_present map, and removing its entry in /sys
+
+A vcpu_up request from the remote admin only re-enables the CPU, and does not immediately bring the CPU up.  A udev event is emitted, which can be caught by the user if he wishes to automatically re-up CPUs when available, or implement a more complex policy.
 
 Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/process_32.c |   32 --------------------------------
- arch/x86/kernel/process_64.c |   23 -----------------------
- arch/x86/kernel/smpboot.c    |   29 +++++++++++++++++++++++++++++
- include/asm-x86/smp.h        |    1 +
- 4 files changed, 30 insertions(+), 55 deletions(-)
+ arch/x86/xen/smp.c      |   60 +++++++++++++++++++++++++++++++++++++---------
+ arch/x86/xen/spinlock.c |    5 ++++
+ arch/x86/xen/time.c     |    8 ++++++
+ arch/x86/xen/xen-ops.h  |    6 ++++
+ drivers/xen/Makefile    |    2 +-
+ drivers/xen/events.c    |    4 +++
+ 6 files changed, 72 insertions(+), 13 deletions(-)
 
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index c4abfab..aff137c 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -74,38 +74,6 @@ unsigned long thread_saved_pc(struct task_struct *tsk)
- 	return ((unsigned long *)tsk->thread.sp)[3];
+diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
+index baca7f2..be5cbb2 100644
+--- a/arch/x86/xen/smp.c
++++ b/arch/x86/xen/smp.c
+@@ -11,8 +11,6 @@
+  * useful topology information for the kernel to make use of.  As a
+  * result, all CPUs are treated as if they're single-core and
+  * single-threaded.
+- *
+- * This does not handle HOTPLUG_CPU yet.
+  */
+ #include <linux/sched.h>
+ #include <linux/err.h>
+@@ -61,11 +59,12 @@ static irqreturn_t xen_reschedule_interrupt(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
  }
  
--#ifdef CONFIG_HOTPLUG_CPU
--#include <asm/nmi.h>
--
--/* We don't actually take CPU down, just spin without interrupts. */
--void native_play_dead(void)
--{
--	int cpu = raw_smp_processor_id();
--
--	idle_task_exit();
--
--	reset_lazy_tlbstate();
--
--	irq_ctx_exit(cpu);
--
--	mb();
--	/* Ack it */
--	__get_cpu_var(cpu_state) = CPU_DEAD;
--
--	/*
--	 * With physical CPU hotplug, we should halt the cpu
--	 */
--	local_irq_disable();
--	/* mask all interrupts, flush any and all caches, and halt */
--	wbinvd_halt();
--}
--#else
--void native_play_dead(void)
--{
--	BUG();
--}
--#endif /* CONFIG_HOTPLUG_CPU */
--
- /*
-  * The idle thread. There's no useful work to be
-  * done, so just try to conserve power and have a
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 1cca50c..b2bab8e 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -87,29 +87,6 @@ void exit_idle(void)
- 	__exit_idle();
- }
+-static __cpuinit void cpu_bringup_and_idle(void)
++static __cpuinit void cpu_bringup(void)
+ {
+ 	int cpu = smp_processor_id();
  
--#ifdef CONFIG_HOTPLUG_CPU
--DECLARE_PER_CPU(int, cpu_state);
--
--#include <linux/nmi.h>
--/* We halt the CPU with physical CPU hotplug */
--void native_play_dead(void)
--{
--	idle_task_exit();
--	mb();
--	/* Ack it */
--	__get_cpu_var(cpu_state) = CPU_DEAD;
--
--	local_irq_disable();
--	/* mask all interrupts, flush any and all caches, and halt */
--	wbinvd_halt();
--}
--#else
--void native_play_dead(void)
--{
--	BUG();
--}
--#endif /* CONFIG_HOTPLUG_CPU */
--
- /*
-  * The idle thread. There's no useful work to be
-  * done, so just try to conserve power and have a
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index c6832ca..58d8c6c 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -1399,6 +1399,29 @@ void native_cpu_die(unsigned int cpu)
- 	}
- 	printk(KERN_ERR "CPU %u didn't die...\n", cpu);
- }
-+
-+void play_dead_common(void)
-+{
-+	idle_task_exit();
-+	reset_lazy_tlbstate();
-+	irq_ctx_exit(raw_smp_processor_id());
-+
-+	mb();
-+	/* Ack it */
-+	__get_cpu_var(cpu_state) = CPU_DEAD;
-+
-+	/*
-+	 * With physical CPU hotplug, we should halt the cpu
-+	 */
-+	local_irq_disable();
+ 	cpu_init();
++	touch_softlockup_watchdog();
+ 	preempt_disable();
+ 
+ 	xen_enable_sysenter();
+@@ -86,6 +85,11 @@ static __cpuinit void cpu_bringup_and_idle(void)
+ 	local_irq_enable();
+ 
+ 	wmb();			/* make sure everything is out */
 +}
 +
-+void native_play_dead(void)
++static __cpuinit void cpu_bringup_and_idle(void)
++{
++	cpu_bringup();
+ 	cpu_idle();
+ }
+ 
+@@ -209,8 +213,6 @@ static void __init xen_smp_prepare_cpus(unsigned int max_cpus)
+ 
+ 		cpu_set(cpu, cpu_present_map);
+ 	}
+-
+-	//init_xenbus_allowed_cpumask();
+ }
+ 
+ static __cpuinit int
+@@ -278,12 +280,6 @@ static int __cpuinit xen_cpu_up(unsigned int cpu)
+ 	struct task_struct *idle = idle_task(cpu);
+ 	int rc;
+ 
+-#if 0
+-	rc = cpu_up_check(cpu);
+-	if (rc)
+-		return rc;
+-#endif
+-
+ #ifdef CONFIG_X86_64
+ 	/* Allocate node local memory for AP pdas */
+ 	WARN_ON(cpu == 0);
+@@ -336,6 +332,42 @@ static void xen_smp_cpus_done(unsigned int max_cpus)
+ {
+ }
+ 
++int xen_cpu_disable(void)
++{
++	unsigned int cpu = smp_processor_id();
++	if (cpu == 0)
++		return -EBUSY;
++
++	cpu_disable_common();
++
++	load_cr3(swapper_pg_dir);
++	return 0;
++}
++
++void xen_cpu_die(unsigned int cpu)
++{
++	while (HYPERVISOR_vcpu_op(VCPUOP_is_up, cpu, NULL)) {
++		current->state = TASK_UNINTERRUPTIBLE;
++		schedule_timeout(HZ/10);
++	}
++	unbind_from_irqhandler(per_cpu(resched_irq, cpu), NULL);
++	unbind_from_irqhandler(per_cpu(callfunc_irq, cpu), NULL);
++	unbind_from_irqhandler(per_cpu(debug_irq, cpu), NULL);
++	unbind_from_irqhandler(per_cpu(callfuncsingle_irq, cpu), NULL);
++	xen_uninit_lock_cpu(cpu);
++	xen_teardown_timer(cpu);
++
++	if (num_online_cpus() == 1)
++		alternatives_smp_switch(0);
++}
++
++void xen_play_dead(void)
 +{
 +	play_dead_common();
-+	wbinvd_halt();
++	HYPERVISOR_vcpu_op(VCPUOP_down, smp_processor_id(), NULL);
++	cpu_bringup();
 +}
 +
- #else /* ... !CONFIG_HOTPLUG_CPU */
- int native_cpu_disable(void)
+ static void stop_self(void *v)
  {
-@@ -1410,4 +1433,10 @@ void native_cpu_die(unsigned int cpu)
- 	/* We said "no" in __cpu_disable */
- 	BUG();
- }
+ 	int cpu = smp_processor_id();
+@@ -419,9 +451,13 @@ static irqreturn_t xen_call_function_single_interrupt(int irq, void *dev_id)
+ static const struct smp_ops xen_smp_ops __initdata = {
+ 	.smp_prepare_boot_cpu = xen_smp_prepare_boot_cpu,
+ 	.smp_prepare_cpus = xen_smp_prepare_cpus,
+-	.cpu_up = xen_cpu_up,
+ 	.smp_cpus_done = xen_smp_cpus_done,
+ 
++	.cpu_up = xen_cpu_up,
++	.cpu_die = xen_cpu_die,
++	.cpu_disable = xen_cpu_disable,
++	.play_dead = xen_play_dead,
 +
-+void native_play_dead(void)
+ 	.smp_send_stop = xen_smp_send_stop,
+ 	.smp_send_reschedule = xen_smp_send_reschedule,
+ 
+diff --git a/arch/x86/xen/spinlock.c b/arch/x86/xen/spinlock.c
+index f8fea68..bb6bc72 100644
+--- a/arch/x86/xen/spinlock.c
++++ b/arch/x86/xen/spinlock.c
+@@ -357,6 +357,11 @@ void __cpuinit xen_init_lock_cpu(int cpu)
+ 	printk("cpu %d spinlock event irq %d\n", cpu, irq);
+ }
+ 
++void xen_uninit_lock_cpu(int cpu)
 +{
-+	BUG();
++	unbind_from_irqhandler(per_cpu(lock_kicker_irq, cpu), NULL);
 +}
 +
- #endif
-diff --git a/include/asm-x86/smp.h b/include/asm-x86/smp.h
-index dba14d3..95b28c1 100644
---- a/include/asm-x86/smp.h
-+++ b/include/asm-x86/smp.h
-@@ -135,6 +135,7 @@ int native_cpu_up(unsigned int cpunum);
- int native_cpu_disable(void);
- void native_cpu_die(unsigned int cpu);
- void native_play_dead(void);
-+void play_dead_common(void);
+ void __init xen_init_spinlocks(void)
+ {
+ 	pv_lock_ops.spin_is_locked = xen_spin_is_locked;
+diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
+index 20182d9..004ba86 100644
+--- a/arch/x86/xen/time.c
++++ b/arch/x86/xen/time.c
+@@ -450,6 +450,14 @@ void xen_setup_timer(int cpu)
+ 	setup_runstate_info(cpu);
+ }
  
- void native_send_call_func_ipi(cpumask_t mask);
- void native_send_call_func_single_ipi(int cpu);
++void xen_teardown_timer(int cpu)
++{
++	struct clock_event_device *evt;
++	BUG_ON(cpu == 0);
++	evt = &per_cpu(xen_clock_events, cpu);
++	unbind_from_irqhandler(evt->irq, NULL);
++}
++
+ void xen_setup_cpu_clockevents(void)
+ {
+ 	BUG_ON(preemptible());
+diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
+index 1e8bfda..8dbd97f 100644
+--- a/arch/x86/xen/xen-ops.h
++++ b/arch/x86/xen/xen-ops.h
+@@ -34,6 +34,7 @@ void __init xen_build_dynamic_phys_to_machine(void);
+ 
+ void xen_init_irq_ops(void);
+ void xen_setup_timer(int cpu);
++void xen_teardown_timer(int cpu);
+ cycle_t xen_clocksource_read(void);
+ void xen_setup_cpu_clockevents(void);
+ unsigned long xen_tsc_khz(void);
+@@ -50,11 +51,16 @@ void xen_mark_init_mm_pinned(void);
+ 
+ void __init xen_setup_vcpu_info_placement(void);
+ 
++void xen_play_dead(void);
++void xen_cpu_die(unsigned int cpu);
++int xen_cpu_disable(void);
++
+ #ifdef CONFIG_SMP
+ void xen_smp_init(void);
+ 
+ void __init xen_init_spinlocks(void);
+ __cpuinit void xen_init_lock_cpu(int cpu);
++void xen_uninit_lock_cpu(int cpu);
+ 
+ extern cpumask_t xen_cpu_initialized_map;
+ #else
+diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
+index 363286c..f62d8df 100644
+--- a/drivers/xen/Makefile
++++ b/drivers/xen/Makefile
+@@ -1,4 +1,4 @@
+-obj-y	+= grant-table.o features.o events.o manage.o
++obj-y	+= grant-table.o features.o events.o manage.o cpu_hotplug.o
+ obj-y	+= xenbus/
+ obj-$(CONFIG_XEN_XENCOMM)	+= xencomm.o
+ obj-$(CONFIG_XEN_BALLOON)	+= balloon.o
+diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+index 792ca6e..e6d47e8 100644
+--- a/drivers/xen/events.c
++++ b/drivers/xen/events.c
+@@ -364,6 +364,10 @@ static void unbind_from_irq(unsigned int irq)
+ 			per_cpu(virq_to_irq, cpu_from_evtchn(evtchn))
+ 				[index_from_irq(irq)] = -1;
+ 			break;
++		case IRQT_IPI:
++			per_cpu(ipi_to_irq, cpu_from_evtchn(evtchn))
++				[index_from_irq(irq)] = -1;
++			break;
+ 		default:
+ 			break;
+ 		}
 -- 
 1.5.4.3
 
