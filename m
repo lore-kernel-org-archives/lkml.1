@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbYHVVIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbYHVVJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757841AbYHVVIx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 17:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYHVVIn
+	id S1754213AbYHVVJU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 17:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbYHVVIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 17:08:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46544 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751529AbYHVVIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 17:08:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: ftraced and suspend to ram
-Date: Fri, 22 Aug 2008 23:11:54 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@suse.cz>, Marcin Slusarz <marcin.slusarz@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <alpine.DEB.1.10.0808211139420.3947@gandalf.stny.rr.com> <200808222252.12547.rjw@sisk.pl> <alpine.DEB.1.10.0808221651350.15941@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.1.10.0808221651350.15941@gandalf.stny.rr.com>
+	Fri, 22 Aug 2008 17:08:45 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:35198 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753143AbYHVVIo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 17:08:44 -0400
+Message-ID: <48AF2ABD.9070100@zytor.com>
+Date: Fri, 22 Aug 2008 14:08:13 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
+References: <20080820162925.75a5e064@doriath.conectiva>	<48ADDF4F.2020401@zytor.com>	<48AE5FCF.6030103@zytor.com>	<20080822065012.GV14110@elte.hu>	<20080822113941.147a1db0@doriath.conectiva>	<20080822153451.GA8390@Krystal>	<20080822132948.57e47076@doriath.conectiva>	<20080822163520.GA9860@Krystal>	<20080822142054.403cbdef@doriath.conectiva> <20080822175741.6bc83dc8@doriath.conectiva>
+In-Reply-To: <20080822175741.6bc83dc8@doriath.conectiva>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808222311.55236.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 22 of August 2008, Steven Rostedt wrote:
+Luiz Fernando N. Capitulino wrote:
 > 
-> On Fri, 22 Aug 2008, Rafael J. Wysocki wrote:
-> > > > tracing. Certainly all the assembly functions.
-> > > 
-> > > I'm looking into that now too. Are the functions in arch/x86/power/cpu*.c 
-> > > the suspend to ram code?
-> > 
-> > They contain code executed during suspend to RAM, but such code is also:
-> > - in all files under arch/x86/kernel/acpi/
-> > - in main.c, console.c under kernel/power
-> > - in all files under drivers/acpi/sleep
-> > - in drivers/acpi/hardware/hwsleep.c
-> > 
-> > Generally, ACPI is heavily involved and I'm not the right person to ask which
-> > of the ACPI functions should get the 'notrace' thing.  Also, I'm not sure about
-> > the device drivers' ->suspend() and ->resume() callbacks, especially for
-> > sysdevs and ->suspend_late(), ->resume_early() for platform devices and PCI.
-> > 
-> > Well, how exactly suspend to RAM is broken by ftrace?
-> > 
+>  I have asked Mandriva and Ubuntu users to test this and all of
+> them so far are saying that noreplace-paravirt works.
 > 
-> I know that the smp_processor_id may be defined in the %fs register, but 
-> if ftrace is called before the %fs is set up, it may crash because it 
-> uses smp_processor_id.
+>  It makes the system slower, but it works.
+> 
 
-The wake-up code is the most interesting for you, then.  It's located in
-arch/x86/kernel/acpi/ , but on x86-64 it also uses trampoline code in
-trampoline_64.S (this is assembly, though).
+Yes, the big issue is exactly what VirtualBox screws up in this matter, 
+how to detect it, and how to work around it.
 
-On x86-64, wakeup_long64 in wakeup_64.S is where we get from the real-mode
-wake-up code, but under arch/x86/kernel/acpi/realmode there are some C files
-containing functions executed in real mode.  Everything in there and everything
-referred to from there should be 'notrace' IMO.
+It's pretty clear it's a VirtualBox f*ckup at this point, but the 
+failure mechanism isn't at all obvious and so far the workaround is elusive.
 
-Thanks,
-Rafael
+I'm strongly suspect this is a VirtualBox tcache management failure, but 
+that doesn't help the situation without knowing how it happens.
+
+	-hpa
+
 
