@@ -1,96 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbYHVVY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbYHVV0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759117AbYHVVY2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 17:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbYHVVYG
+	id S1758873AbYHVV0x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 17:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbYHVV0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 17:24:06 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:28798 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756211AbYHVVYE (ORCPT
+	Fri, 22 Aug 2008 17:26:45 -0400
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:44490 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753160AbYHVV0p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 17:24:04 -0400
-Date: Fri, 22 Aug 2008 14:23:00 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, trivial@kernel.org
-Subject: Re: [Patch] Trivial: fix "*er then" typos
-Message-Id: <20080822142300.6654e4dd.randy.dunlap@oracle.com>
-In-Reply-To: <20080822160222.GF3053@hack.voiplan.pt>
-References: <20080822160222.GF3053@hack.voiplan.pt>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 22 Aug 2008 17:26:45 -0400
+Message-ID: <48AF2DD7.9030902@cs.columbia.edu>
+Date: Fri, 22 Aug 2008 17:21:27 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Louis.Rilling@kerlabs.com
+CC: dave@linux.vnet.ibm.com, arnd@arndb.de, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: Re: [RFC v2][PATCH 4/9] Memory management - dump state
+References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu> <Pine.LNX.4.64.0808202304490.17436@takamine.ncl.cs.columbia.edu> <20080821095316.GH581@hawkmoon.kerlabs.com>
+In-Reply-To: <20080821095316.GH581@hawkmoon.kerlabs.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Aug 2008 17:02:22 +0100 WANG Cong wrote:
 
+Thanks Louis for all the comments. Will fix in v3.
+
+Oren.
+
+Louis Rilling wrote:
+> On Wed, Aug 20, 2008 at 11:05:15PM -0400, Oren Laadan wrote:
+>> For each VMA, there is a 'struct cr_vma'; if the VMA is file-mapped,
+>> it will be followed by the file name.  The cr_vma->npages will tell
+>> how many pages were dumped for this VMA.  Then it will be followed
+>> by the actual data: first a dump of the addresses of all dumped
+>> pages (npages entries) followed by a dump of the contents of all
+>> dumped pages (npages pages). Then will come the next VMA and so on.
 > 
-> Obviously, these "*er then" should be "*er than".
+> [...]
 > 
-> Signed-off-by: WANG Cong <wangcong@zeuux.org>
-> Cc: trivial@kernel.org
-
-Mostly good...
-
-
-> diff --git a/drivers/media/video/usbvideo/ibmcam.c b/drivers/media/video/usbvideo/ibmcam.c
-> index 59166b7..caf4306 100644
-> --- a/drivers/media/video/usbvideo/ibmcam.c
-> +++ b/drivers/media/video/usbvideo/ibmcam.c
-> @@ -488,7 +488,7 @@ static enum ParseState ibmcam_parse_lines(
->  	 * Now we are sure that entire line (representing all 'scanLength'
->  	 * pixels from the camera) is available in the buffer. We
->  	 * start copying the line left-aligned to the V4L buffer.
-> -	 * If the camera line is shorter then we should pad the V4L
-> +	 * If the camera line is shorter than we should pad the V4L
-
-This one should remain as "then".
-
->  	 * buffer with something (black) to complete the line.
->  	 */
->  	assert(frame->data != NULL);
-> @@ -703,7 +703,7 @@ static enum ParseState ibmcam_model2_320x240_parse_lines(
->  	 * pixels from the camera) is available in the scratch buffer. We
->  	 * start copying the line left-aligned to the V4L buffer (which
->  	 * might be larger - not smaller, hopefully). If the camera
-> -	 * line is shorter then we should pad the V4L buffer with something
-> +	 * line is shorter than we should pad the V4L buffer with something
-
-ditto.
-
->  	 * (black in this case) to complete the line.
->  	 */
->  	f = frame->data + (v4l_linesize * frame->curline);
-
-> diff --git a/fs/ubifs/shrinker.c b/fs/ubifs/shrinker.c
-> index f248533..bfe0920 100644
-> --- a/fs/ubifs/shrinker.c
-> +++ b/fs/ubifs/shrinker.c
-> @@ -65,7 +65,7 @@ atomic_long_t ubifs_clean_zn_cnt;
->   * @contention: if any contention, this is set to %1
->   *
->   * This function traverses TNC tree and frees clean znodes. It does not free
-> - * clean znodes which younger then @age. Returns number of freed znodes.
-> + * clean znodes which younger than @age. Returns number of freed znodes.
-
-                   which are younger
-
->   */
->  static int shrink_tnc(struct ubifs_info *c, int nr, int age, int *contention)
->  {
-
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+>> diff --git a/checkpoint/ckpt_mem.c b/checkpoint/ckpt_mem.c
+>> new file mode 100644
+>> index 0000000..a23aa29
+>> --- /dev/null
+>> +++ b/checkpoint/ckpt_mem.c
+> 
+> [...]
+> 
+>> +/**
+>> + * cr_vma_fill_pgarr - fill a page-array with addr/page tuples for a vma
+>> + * @ctx - checkpoint context
+>> + * @pgarr - page-array to fill
+>> + * @vma - vma to scan
+>> + * @start - start address (updated)
+>> + */
+>> +static int cr_vma_fill_pgarr(struct cr_ctx *ctx, struct cr_pgarr *pgarr,
+>> +			     struct vm_area_struct *vma, unsigned long *start)
+>> +{
+>> +	unsigned long end = vma->vm_end;
+>> +	unsigned long addr = *start;
+>> +	struct page **pagep;
+>> +	unsigned long *addrp;
+>> +	int cow, nr, ret = 0;
+>> +
+>> +	nr = pgarr->nleft;
+>> +	pagep = &pgarr->pages[pgarr->nused];
+>> +	addrp = &pgarr->addrs[pgarr->nused];
+>> +	cow = !!vma->vm_file;
+>> +
+>> +	while (addr < end) {
+>> +		struct page *page;
+>> +
+>> +		/* simplified version of get_user_pages(): already have vma,
+>> +		* only need FOLL_TOUCH, and (for now) ignore fault stats */
+>> +
+>> +		cond_resched();
+>> +		while (!(page = follow_page(vma, addr, FOLL_TOUCH))) {
+>> +			ret = handle_mm_fault(vma->vm_mm, vma, addr, 0);
+>> +			if (ret & VM_FAULT_ERROR) {
+>> +				if (ret & VM_FAULT_OOM)
+>> +					ret = -ENOMEM;
+>> +				else if (ret & VM_FAULT_SIGBUS)
+>> +					ret = -EFAULT;
+>> +				else
+>> +					BUG();
+>> +				break;
+>> +			}
+> 
+> +			ret = 0;
+> 
+>> +			cond_resched();
+>> +		}
+>> +
+>> +		if (IS_ERR(page)) {
+>> +			ret = PTR_ERR(page);
+>> +			break;
+>> +		}
+> 
+> Need to check ret here:
+> 
+> + 		if (ret)
+> 			break;
+> 
+>> +
+>> +		if (page == ZERO_PAGE(0))
+>> +			page = NULL;	/* zero page: ignore */
+>> +		else if (cow && page_mapping(page) != NULL)
+>> +			page = NULL;	/* clean cow: ignore */
+>> +		else {
+>> +			get_page(page);
+>> +			*(addrp++) = addr;
+>> +			*(pagep++) = page;
+>> +			if (--nr == 0) {
+>> +				addr += PAGE_SIZE;
+>> +				break;
+>> +			}
+>> +		}
+>> +
+>> +		addr += PAGE_SIZE;
+>> +	}
+>> +
+>> +	if (unlikely(ret < 0)) {
+>> +		nr = pgarr->nleft - nr;
+>> +		while (nr--)
+>> +			page_cache_release(*(--pagep));
+>> +		return ret;
+>> +	}
+>> +
+>> +	*start = addr;
+>> +	return (pgarr->nleft - nr);
+>> +}
+> 
+> [...]
+> 
+> Thanks,
+> 
+> Louis
+> 
