@@ -1,33 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbYHVEQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbYHVE0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753644AbYHVEQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 00:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYHVEQT
+	id S1753885AbYHVE0s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 00:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYHVE0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 00:16:19 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52822 "EHLO mx2.mail.elte.hu"
+	Fri, 22 Aug 2008 00:26:39 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40786 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750787AbYHVEQS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 00:16:18 -0400
-Date: Fri, 22 Aug 2008 06:15:44 +0200
+	id S1751500AbYHVE0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 00:26:38 -0400
+Date: Fri, 22 Aug 2008 06:26:10 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Dave Airlie <airlied@gmail.com>, "Li, Shaohua" <shaohua.li@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: [PATCH] x86: have set_memory_array_{uc,wb} coalesce memtypes.
-Message-ID: <20080822041544.GF30284@elte.hu>
-References: <20080820100440.GE28492@elte.hu> <48ABF6DC.8070305@keyaccess.nl> <48AC29CA.1060203@keyaccess.nl> <20080820194127.GA10887@linux-os.sc.intel.com> <48AC8F69.4050201@keyaccess.nl> <21d7e9970808201446k3c1a6bc1naf04568a8ad06ed4@mail.gmail.com> <20080820221630.GA3598@linux-os.sc.intel.com> <20080821120626.GG5615@elte.hu> <48ADA2C2.8090905@keyaccess.nl> <48ADF3FC.7070002@keyaccess.nl>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Alex Nixon <alex.nixon@citrix.com>, Alan Mayer <ajm@sgi.com>
+Subject: Re: [PATCH] x86: fix probe_nr_irqs for xen
+Message-ID: <20080822042610.GA15212@elte.hu>
+References: <1219349409-15698-1-git-send-email-yhlu.kernel@gmail.com> <48ADFB33.8010204@goop.org> <86802c440808211649h37ac7533q4b95a83306ecd430@mail.gmail.com> <48ADFFD2.7030309@goop.org> <86802c440808211656o20f9a22dv34e3ac8e8e84b4e1@mail.gmail.com> <48AE022F.6030100@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48ADF3FC.7070002@keyaccess.nl>
+In-Reply-To: <48AE022F.6030100@goop.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -42,53 +37,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rene Herman <rene.herman@keyaccess.nl> wrote:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> Actually, might as well simply reconstruct the memtype list at free 
-> time I guess. How is this for a coalescing version of the array 
-> functions?
+> > hope we can kill nr_irqs/NR_IRQS
+> 
+> When irqs are truely dynamically allocated?
 
-impressive! Rarely do we get this much bang for such a low linecount :-)
+they in essence already are truly dynamic in tip/master. Not yet 
+unconditionally so on x86, we chose to also have a !SPARSEIRQ build 
+model to make sure dense IRQ arrays still work fine as well. (that's far 
+easier to test and validate than to keep a farm of cross compilers to 
+other arches alive.)
 
-> NOTE: I am posting this because I'm going to bed but haven't stared 
-> comfortably long at this and might be buggy. Compiles, boots and 
-> provides me with:
->
-> root@7ixe4:~# wc -l /debug/x86/pat_memtype_list
-> 53 /debug/x86/pat_memtype_list
->
-> otherwise (down from 16384+).
->
-> <snore>
+But by all means SPARSEIRQ is the primary and only model on x86.
 
-cool!
-
-I'd do this in v2.6.27 but i forced myself to be reasonable and applied 
-your patches to tip/x86/pat instead, for tentative v2.6.28 merging 
-(assuming it all passes testing, etc.):
-
- # 9a79f4f: x86: {reverve,free}_memtype() take a physical address
- # c5e147c: x86: have set_memory_array_{uc,wb} coalesce memtypes.
- # 5f310b6: agp: enable optimized agp_alloc_pages methods
-
-( note that i flipped them around a bit and have put your 
-  enable-agp_alloc_pages()-widely patch last, so that we get better 
-  bisection behavior. )
-
-The frontside cache itself is in x86/urgent:
-
- # 80c5e73: x86: fix Xorg startup/shutdown slowdown with PAT
-
-... and should at least solve the symptom that you've hit in practice 
-(the slowdown), without changing the underlying PAT machinery. (which 
-would be way too dangerous for v2.6.27)
-
-And it's all merged up in tip/master, you might want to test that too to 
-check whether all the pieces fit together nicely.
-
-Tens of thousands of page granular memtypes was Not Nice.
-
-Venki, Suresh, Shaohua, Dave, Arjan - any observations about this line 
-of action?
+We could even plug in the dynamic vector allocator from Alan Mayer now, 
+both on 32-bit and on 64-bit x86: Yinghai, any complications expected 
+there? I guess we need to unify the local APIC code first.
 
 	Ingo
