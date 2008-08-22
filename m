@@ -1,110 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759097AbYHVVhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759231AbYHVVjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759097AbYHVVhq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 17:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbYHVVhg
+	id S1759231AbYHVVjQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 17:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756005AbYHVVjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 17:37:36 -0400
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:23424 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753800AbYHVVhf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 17:37:35 -0400
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: John Ronciak <john.ronciak@gmail.com>, Grant Coady <gcoady.lk@gmail.com>,
-       linux-kernel@vger.kernel.org, neilb@suse.de, bfields@fieldses.org,
-       linux-nfs@vger.kernel.org, Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       e1000-devel@lists.sourceforge.net
-In-Reply-To: <1219440202.9097.14.camel@localhost>
-References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com>
-	 <1219087258.7192.19.camel@localhost>
-	 <1219400624.18774.67.camel@zakaz.uk.xensource.com>
-	 <1219428489.6919.21.camel@localhost>
-	 <1219428818.27921.43.camel@localhost.localdomain>
-	 <56a8daef0808221233h68853587n6015ca7d809b17e1@mail.gmail.com>
-	 <1219435207.27921.51.camel@localhost.localdomain>
-	 <1219440202.9097.14.camel@localhost>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-8xcMljYBej7XE9kYy7DV"
-Date: Fri, 22 Aug 2008 22:37:21 +0100
-Message-Id: <1219441041.27921.57.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-SA-Exim-Connect-IP: 192.168.1.5
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+	Fri, 22 Aug 2008 17:39:01 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56849 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755773AbYHVVjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 17:39:00 -0400
+Message-ID: <48AF318E.1060508@redhat.com>
+Date: Fri, 22 Aug 2008 17:37:18 -0400
+From: Christopher Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Wappler Marcel <Marcel.Wappler@bridgeco.net>
+CC: Alex Riesen <raa.lkml@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Behaviour of the VM on a embedded linux
+References: <83116F0A4FF67A4F97BA0B6E408C48E30289D8F0@zuerich.BC-Int.NET> <81b0412b0808220559w502edf03y7f318d0f3673884@mail.gmail.com> <83116F0A4FF67A4F97BA0B6E408C48E30289D979@zuerich.BC-Int.NET>
+In-Reply-To: <83116F0A4FF67A4F97BA0B6E408C48E30289D979@zuerich.BC-Int.NET>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Wappler Marcel wrote:
+> Alex Riesen wrote:
+>>> I'm trying to figure out whats going on an embedded system I have to deal
+>>> with. It's running a 2.6.24.7 kernel on 32 MBytes of RAM. There is no
+>>> swapping. There are some daemons and shells running and - a big
+>>> monolithic c++ application.
+>>> 
+>>> The application runs a lot of pthreads on different real time priority
+>>> levels. It looks like the application consumes  a huge ammount of real
+>>> memory in contrast to the assumption, that large code size is no problem
+>>> due to paging out pages with unused code.
+>> Maybe the kernel wont page anything if the paging support is compiled out.
+>> IOW, you still need paging code even if there is now swap partitions.
+> 
+> Alex, this is the case - I do observe normal operation of the VM subsytem -
+> it moves memory pages dynamicaly throughout the system. But: when I create a
+> large file on the tmpfs a kernel OOM occurs and kills the big monolithic
+> application instead of stealing pages from the application. This is the fact
+> I'm wondering about. In the past every guy told me that code size is no
+> problem on systems using MMUs because the system can steal pages which
+> contain code of the application in situations of low memory. But in my
+> situation this is not the case.
+> 
+> Any ideas?
+> 
+> Marcel PS: please CC me on replies
 
---=-8xcMljYBej7XE9kYy7DV
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+All these things you're doing in userspace have a memory footprint in 
+kernelspace as well, and that memory can't be swapped.  Page tables for your 
+tmpfs mappings aren't free.  Kernel stacks and task_structs for your threads 
+aren't free.
 
-On Fri, 2008-08-22 at 14:23 -0700, Trond Myklebust wrote:
-> On Fri, 2008-08-22 at 21:00 +0100, Ian Campbell wrote:
-> > On Fri, 2008-08-22 at 12:33 -0700, John Ronciak wrote:
-> > > On Fri, Aug 22, 2008 at 11:13 AM, Ian Campbell <ijc@hellion.org.uk> w=
-rote:
-> > >=20
-> > > >> That's probably also a networking device driver issue candidate: y=
-our
-> > > >> RPC task is queued up waiting to be sent.
-> > > >>
-> > > >> What networking card+device driver are you using here?
-> > > >
-> > > > # ethtool -i eth0
-> > > > driver: e1000
-> > > > version: 7.3.20-k2-NAPI
-> > > > firmware-version: N/A
-> > > > bus-info: 0000:01:0a.0
-> > > There is nothing indicating that the NIC/driver is causing any sort o=
-f
-> > > problem here, at least not with what has been presented so far.  When
-> > > the NFS mount isn't working is the networking still active and
-> > > working?
-> >=20
-> > So far as I can tell, yes. I can login via ssh so long as the user
-> > doesn't have NFS $HOME, I haven't tried much else and the box isn't
-> > locked up at the moment, I'd bet it's fine though.
->=20
-> ...and the server? Something is preventing that RPC payload from being
-> delivered...
+Also, there are many places in the kernel where a thread may not go to sleep to 
+wait for memory to be freed.  The kernel has asynchronous tasks that try to keep 
+memory free to avoid this problem, but if you're churning through your big 
+monolithic binary, it's getting paged in as fast as the kernel can page it out.
 
-I can ssh to the server fine. The same server also serves my NFS home
-directory to the box I'm writing this from and I've not seen any trouble
-with this box at all, it's a 2.6.18-xen box.
+That said, the modern VM is tuned with larger systems in mind, so you may be 
+able to improve the situation by tweaking the vm.* sysctls, particularly 
+vm.min_free_kbytes.  You can also change oom-killer settings for your process 
+via the /proc/$PID/oom_* parameters.  It might help, or it might replace a 
+recoverable userspace oom-kill with an unrecoverable kernel oom panic.
 
-If I downgrade the problematic box to 2.6.24 then the hangs do not
-occur. They do occur with 2.6.25. (sorry that's a critical bit of
-information which I stupidly forgot to mention up til now).
+Either way, I'd be a little more conservative about code size on very small 
+systems with no swap.
 
-Ian.
-
---=20
-Ian Campbell
-
-It is much easier to be critical than to be correct.
-		-- Benjamin Disraeli
-
---=-8xcMljYBej7XE9kYy7DV
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkivMZEACgkQM0+0qS9rzVm+gACgwe5kMxefdRi4JPleL/HXxply
-qUoAnRtMiB4jG88FbVYyGZfhNkaXSywh
-=PLA2
------END PGP SIGNATURE-----
-
---=-8xcMljYBej7XE9kYy7DV--
-
+-- Chris
