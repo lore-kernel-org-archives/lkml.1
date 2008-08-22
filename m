@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758706AbYHVVcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758507AbYHVVgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758706AbYHVVcs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 17:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbYHVVcj
+	id S1758507AbYHVVgZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 17:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816AbYHVVgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 17:32:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42670 "EHLO
+	Fri, 22 Aug 2008 17:36:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53917 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752261AbYHVVci (ORCPT
+	by vger.kernel.org with ESMTP id S1755255AbYHVVgJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 17:32:38 -0400
-Date: Fri, 22 Aug 2008 14:31:43 -0700
+	Fri, 22 Aug 2008 17:36:09 -0400
+Date: Fri, 22 Aug 2008 14:35:15 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Constantin Baranov <const@const.mimas.ru>
-Cc: linux-kernel@vger.kernel.org, rpurdie@rpsys.net
-Subject: Re: [PATCH 2.6.27-rc3] led: driver for LEDs on PCEngines ALIX.2 and
- ALIX.3 boards
-Message-Id: <20080822143143.4202f940.akpm@linux-foundation.org>
-In-Reply-To: <48AF2ABF.8080901@const.mimas.ru>
-References: <48AB019D.6080302@const.mimas.ru>
-	<20080822115150.6b3907a4.akpm@linux-foundation.org>
-	<48AF2ABF.8080901@const.mimas.ru>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: ehabkost@redhat.com, benh@kernel.crashing.org, paulus@samba.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1 of 3] add phys_addr_t for holding physical addresses
+Message-Id: <20080822143515.512ff182.akpm@linux-foundation.org>
+In-Reply-To: <48AF2B74.5030605@goop.org>
+References: <patchbomb.1219176169@localhost>
+	<73196c9129c7298f2428.1219176170@localhost>
+	<20080822130235.af69ccb5.akpm@linux-foundation.org>
+	<48AF2B74.5030605@goop.org>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,57 +30,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Aug 2008 02:08:15 +0500
-Constantin Baranov <const@const.mimas.ru> wrote:
+On Fri, 22 Aug 2008 14:11:16 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> >  static int alix_led_resume(struct platform_device *dev)
-> >  {
-> >  	int i;
-> > +
-> >  	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
-> >  		led_classdev_resume(&alix_leds[i].cdev);
-> >  	return 0;
-> > @@ -92,7 +95,7 @@ static int __init alix_led_probe(struct 
-> >  		ret = led_classdev_register(&pdev->dev, &alix_leds[i].cdev);
-> >  
-> >  	if (ret < 0) {
-> > -		for (i = i - 2; i >= 0; i--)
-> > +		while (--i >= 0)
-> >  			led_classdev_unregister(&alix_leds[i].cdev);
-> >  	}
+> Andrew Morton wrote:
+> > On Tue, 19 Aug 2008 13:02:50 -0700
+> > Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> >
+> >   
+> >> Add a kernel-wide "phys_addr_t" which is guaranteed to be able to hold
+> >> any physical address.  By default it equals the word size of the
+> >> architecture, but a 32-bit architecture can set ARCH_PHYS_ADDR_T_64BIT
+> >> if it needs a 64-bit phys_addr_t.
+> >>
+> >>     
+> >
+> > You say this is a bugfix but you don't describe the bug.  This makes it
+> > rather hard to make the 2.6.2[5678] decisions.
+> >
+> > Ditto on [patch 2/3].
+> >   
 > 
-> At the first iteration this while-loop will attempt to unregister
-> device that has failed and thus is not registered.
-> My for-loop starts from device immediately before failed one.
+> 1/3 is not a bugfix in itself, but a pre-requisite for 2/3.
+> 
+> 2/3 replaces an ad-hoc Xen fix with a general fix to prevent address
+> truncation when using PFN_PHYS() on any PFN above the 4G mark.  The Xen
+> crash is the only bug I know of that's directly attributable to this,
+> and it was already addressed in older kernels with the casts in the Xen
+> code that this patch removes.
+> 
+> So I don't think there's any strong need to push this to earlier kernels.
+> 
 
-ug, OK, the complex expression in that for-loop is to blame.
-
-For maintinability we should aim for code which is as simple and as
-straightfroward as possible and which adheres to oft-used and
-well-understood kernel idioms.
-
-For example, this?
-
-static int __init alix_led_probe(struct platform_device *pdev)
-{
-	int i;
-	int ret;
-
-	for (i = 0; i < ARRAY_SIZE(alix_leds); i++) {
-		ret = led_classdev_register(&pdev->dev, &alix_leds[i].cdev);
-		if (ret < 0)
-			goto fail;
-	}
-	return 0;
-
-fail:
-	while (--i >= 0)
-		led_classdev_unregister(&alix_leds[i].cdev);
-	return ret;
-}
-
-(note there's no longer a need for a fake initalisation of `ret')
-
-> Note that probe routine originates from leds-ams-delta.c.
-
-That's what you get for copying stuff :(
+Still confused.  The above implies that 2.6.27 doesn't need fixing
+either, because the typecasts already avoid the crash.
