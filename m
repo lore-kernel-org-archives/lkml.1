@@ -1,88 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753592AbYHVPtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbYHVPu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753592AbYHVPtp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 11:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbYHVPtf
+	id S1754073AbYHVPu6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 11:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbYHVPus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 11:49:35 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:46792 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751145AbYHVPte convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 11:49:34 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>
-Date: Fri, 22 Aug 2008 15:48:59 +0000
-Subject: RE: in 2.6.23-rc3-git7 in do_cciss_intr
-Thread-Topic: in 2.6.23-rc3-git7 in do_cciss_intr
-Thread-Index: AckD7dGoLeBMVVChQP6Fd7qIS0VZ2QAgLRyA
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A77883511810706@GVW0547EXC.americas.hpqcorp.net>
-References: <48AD02B2.7020004@oracle.com>
-	<0F5B06BAB751E047AB5C87D1F77A778835116209D3@GVW0547EXC.americas.hpqcorp.net>
-	<20080821084333.c471b439.randy.dunlap@oracle.com>
-	<0F5B06BAB751E047AB5C87D1F77A7788351181004C@GVW0547EXC.americas.hpqcorp.net>
-	<20080821091514.8f56e2d5.randy.dunlap@oracle.com>
-	<0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net>
- <20080821172653.3e3e855c.randy.dunlap@oracle.com>
-In-Reply-To: <20080821172653.3e3e855c.randy.dunlap@oracle.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Fri, 22 Aug 2008 11:50:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34401 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750828AbYHVPur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 11:50:47 -0400
+Subject: [PATCH] securityfs: do not depend on CONFIG_SECURITY
+From: Eric Paris <eparis@redhat.com>
+To: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: chrisw@sous-sol.org, debora@linux.vnet.ibm.com, srajiv@linux.vnet.ibm.com,
+       tpm@selhorst.net, tpmdd-devel@lists.sourceforge.net
+Content-Type: text/plain
+Date: Fri, 22 Aug 2008 11:35:57 -0400
+Message-Id: <1219419357.3613.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add a new Kconfig option SECURITYFS which will build securityfs support
+but does not require CONFIG_SECURITY.  The only current user of
+securityfs does not depend on CONFIG_SECURITY and there is no reason the
+full LSM needs to be built to build this fs.
 
+Signed-off-by: Eric Paris <eparis@redhat.com>
 
-> -----Original Message-----
-> From: Randy Dunlap [mailto:randy.dunlap@oracle.com]
-> Sent: Thursday, August 21, 2008 7:27 PM
-> To: Miller, Mike (OS Dev)
-> Cc: lkml; scsi; akpm
-> Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
->
-> On Thu, 21 Aug 2008 16:25:24 +0000 Miller, Mike (OS Dev) wrote:
->
-> > > >
-> > > > Randy,
-> > > > We know of a race condition in cciss_init_one. It's fixed
-> > > in 2.6.26 I believe. Here's the patch:
-> > > >
-> > > >
-> > >
-> http://groups.google.com/group/linux.kernel/browse_thread/thread/7b3
-> > > 9f
-> > > >
-> 2b77622ab03/4f5f45c008655ca1?hl=en&lnk=gst&q=cciss#4f5f45c008655ca
-> > > > 1
-> > >
-> > >
-> > > Mike,
-> > > Sorry, but my fingers have typoed the $subject.  My bad.
-> > > Kernel is 2.6.27-rc3-git7 (from above):
-> > >
-> > > > > > > Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
-> > > > > > > Pid: 0, comm: swapper Not tainted 2.6.27-rc3-git7 #1
-> > > > > > > RIP: 0010:[<ffffffffa001bb68>]  [<ffffffffa001bb68>]
-> > > > > > > do_cciss_intr+0x627/0xa6c [cciss]
-> > >
-> > Hmmmmm, let me know what happens from your retest. I'll
-> look at this
-> > as soon as I finish what I'm doing now. We trying to spin
-> for our test
-> > teams but I have something hopelessly broken. :(
->
-> It didn't BUG in the retest.  That just means that it's more
-> difficult to find/fix, right?
+---
 
-Yup.
+Testing was basically just making sure that my kernel built with TCG_TPM
+on but SECURITY off.  I don't actually have a way to test is TCG_TPM
+still worked properly....
+
+ drivers/char/tpm/Kconfig    |    1 +
+ include/linux/security.h    |   54 +++++++++++++++++++++++-------------------
+ security/Kconfig            |    8 ++++++
+ security/Makefile           |    3 +-
+ 4 files changed, 41 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/char/tpm/Kconfig b/drivers/char/tpm/Kconfig
+index 3738cfa..f5fc64f 100644
+--- a/drivers/char/tpm/Kconfig
++++ b/drivers/char/tpm/Kconfig
+@@ -6,6 +6,7 @@ menuconfig TCG_TPM
+ 	tristate "TPM Hardware Support"
+ 	depends on HAS_IOMEM
+ 	depends on EXPERIMENTAL
++	select SECURITYFS
+ 	---help---
+ 	  If you have a TPM security chip in your system, which
+ 	  implements the Trusted Computing Group's specification,
+diff --git a/drivers/char/tpm/tpm_bios.c b/drivers/char/tpm/tpm_bios.c
+diff --git a/include/linux/security.h b/include/linux/security.h
+index 80c4d00..f5c4a51 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -1560,11 +1560,6 @@ struct security_operations {
+ extern int security_init(void);
+ extern int security_module_enable(struct security_operations *ops);
+ extern int register_security(struct security_operations *ops);
+-extern struct dentry *securityfs_create_file(const char *name, mode_t mode,
+-					     struct dentry *parent, void *data,
+-					     const struct file_operations *fops);
+-extern struct dentry *securityfs_create_dir(const char *name, struct dentry *parent);
+-extern void securityfs_remove(struct dentry *dentry);
+ 
+ /* Security operations */
+ int security_ptrace_may_access(struct task_struct *child, unsigned int mode);
+@@ -2424,25 +2419,6 @@ static inline int security_netlink_recv(struct sk_buff *skb, int cap)
+ 	return cap_netlink_recv(skb, cap);
+ }
+ 
+-static inline struct dentry *securityfs_create_dir(const char *name,
+-					struct dentry *parent)
+-{
+-	return ERR_PTR(-ENODEV);
+-}
+-
+-static inline struct dentry *securityfs_create_file(const char *name,
+-						mode_t mode,
+-						struct dentry *parent,
+-						void *data,
+-						const struct file_operations *fops)
+-{
+-	return ERR_PTR(-ENODEV);
+-}
+-
+-static inline void securityfs_remove(struct dentry *dentry)
+-{
+-}
+-
+ static inline int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
+ {
+ 	return -EOPNOTSUPP;
+@@ -2806,5 +2782,35 @@ static inline void security_audit_rule_free(void *lsmrule)
+ #endif /* CONFIG_SECURITY */
+ #endif /* CONFIG_AUDIT */
+ 
++#ifdef CONFIG_SECURITYFS
++
++extern struct dentry *securityfs_create_file(const char *name, mode_t mode,
++					     struct dentry *parent, void *data,
++					     const struct file_operations *fops);
++extern struct dentry *securityfs_create_dir(const char *name, struct dentry *parent);
++extern void securityfs_remove(struct dentry *dentry);
++
++#else /* CONFIG_SECURITYFS */
++
++static inline struct dentry *securityfs_create_dir(const char *name,
++						   struct dentry *parent)
++{
++	return ERR_PTR(-ENODEV);
++}
++
++static inline struct dentry *securityfs_create_file(const char *name,
++						    mode_t mode,
++						    struct dentry *parent,
++						    void *data,
++						    const struct file_operations *fops)
++{
++	return ERR_PTR(-ENODEV);
++}
++
++static inline void securityfs_remove(struct dentry *dentry)
++{}
++
++#endif
++
+ #endif /* ! __LINUX_SECURITY_H */
+ 
+diff --git a/security/Kconfig b/security/Kconfig
+index 5592939..d9f47ce 100644
+--- a/security/Kconfig
++++ b/security/Kconfig
+@@ -51,6 +51,14 @@ config SECURITY
+ 
+ 	  If you are unsure how to answer this question, answer N.
+ 
++config SECURITYFS
++	bool "Enable the securityfs filesystem"
++	help
++	  This will build the securityfs filesystem.  It is currently used by
++	  the TPM bios character driver.  It is not used by SELinux or SMACK.
++
++	  If you are unsure how to answer this question, answer N.
++
+ config SECURITY_NETWORK
+ 	bool "Socket and Networking Security Hooks"
+ 	depends on SECURITY
+diff --git a/security/Makefile b/security/Makefile
+index f654260..c05c127 100644
+--- a/security/Makefile
++++ b/security/Makefile
+@@ -10,7 +10,8 @@ subdir-$(CONFIG_SECURITY_SMACK)		+= smack
+ obj-y		+= commoncap.o
+ 
+ # Object file lists
+-obj-$(CONFIG_SECURITY)			+= security.o capability.o inode.o
++obj-$(CONFIG_SECURITY)			+= security.o capability.o
++obj-$(CONFIG_SECURITYFS)		+= inode.o
+ # Must precede capability.o in order to stack properly.
+ obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
+ obj-$(CONFIG_SECURITY_SMACK)		+= smack/built-in.o
+diff --git a/security/inode.c b/security/inode.c
+
 
