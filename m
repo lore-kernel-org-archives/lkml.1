@@ -1,119 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbYHVNe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbYHVNn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753543AbYHVNe6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 09:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbYHVNer
+	id S1753237AbYHVNn6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 09:43:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbYHVNnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 09:34:47 -0400
-Received: from mailgw1.uni-kl.de ([131.246.120.220]:56615 "EHLO
-	mailgw1.uni-kl.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752382AbYHVNep (ORCPT
+	Fri, 22 Aug 2008 09:43:45 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:32286 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbYHVNno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 09:34:45 -0400
-X-Greylist: delayed 1208 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Aug 2008 09:34:44 EDT
-From: Nicos Gollan <gtdev@spearhead.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.25.10] pm_qos_params: change spinlock to rwlock
-Date: Fri, 22 Aug 2008 15:14:30 +0200
-User-Agent: KMail/1.9.9
-References: <200807130119.19663.jozwicki@aster.pl> <20080713012816.8c136efa.akpm@linux-foundation.org> <200807131505.25990.jozwicki@aster.pl>
-In-Reply-To: <200807131505.25990.jozwicki@aster.pl>
+	Fri, 22 Aug 2008 09:43:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=M0HbYVPkOvXMuw3ZY9xF5YYiQBSWbi9VuHhkRLc/+9YeB4KuG50mZze+ldCyvrjuKE
+         rsl6X0tB7/qXAI4XqCOQc56GQEsWWbhwwJAEJX9NlCX7jMum9r5RjW6M1lUCoTV214gc
+         E/kRF76dpkdMSnXWK0InrNJmYz4ZSZXYGllJE=
+Date: Fri, 22 Aug 2008 17:44:10 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Alex Nixon <alex.nixon@citrix.com>, Alan Mayer <ajm@sgi.com>
+Subject: Re: [PATCH] x86: fix probe_nr_irqs for xen
+Message-ID: <20080822134410.GA7351@lenovo>
+References: <1219349409-15698-1-git-send-email-yhlu.kernel@gmail.com> <48ADFB33.8010204@goop.org> <86802c440808211649h37ac7533q4b95a83306ecd430@mail.gmail.com> <48ADFFD2.7030309@goop.org> <86802c440808211656o20f9a22dv34e3ac8e8e84b4e1@mail.gmail.com> <48AE022F.6030100@goop.org> <20080822042610.GA15212@elte.hu> <86802c440808212206s66c31203n651ca021c01104ca@mail.gmail.com> <20080822051656.GA7696@elte.hu>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Length: 5045
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200808221514.30675.gtdev@spearhead.de>
+In-Reply-To: <20080822051656.GA7696@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+[Ingo Molnar - Fri, Aug 22, 2008 at 07:16:56AM +0200]
+| 
+| * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+| 
+| > > But by all means SPARSEIRQ is the primary and only model on x86.
+| > >
+| > > We could even plug in the dynamic vector allocator from Alan Mayer 
+| > > now, both on 32-bit and on 64-bit x86: Yinghai, any complications 
+| > > expected there? I guess we need to unify the local APIC code first.
+| > 
+| > apic_32.c and apic_64.c
+| > irqinit_32.c and irqinit_64.c
+| > irq_32.c and irq_64.c
+| > 
+| > Cyrill, is still working on merging apic_32.c apic_64.c.?
+| 
+| there's a few weeks of inactivity expected in that area i think - so if 
+| you'd like to pick it up from there, feel free ...
+| 
+| but apic_32/64.c is looking already pretty good in tip/master:
+| 
+|  1 file changed, 391 insertions(+), 358 deletions(-)
+| 
+| the most significant bit of that delta seems to be around x2apic, 
+| calibration differences and some older 32-bit legacies which are not on 
+| the 64-bit side (but which we can add safely).
+| 
+| 	Ingo
+| 
 
-I stumbled across mysterious system freezes in kernels from 2.6.23. After some 
-digging around, I ended up with http://kerneltrap.org/node/16521 (I'll 
-reproduce it in this mail for completeness). The stacktrace I get from the 
-NMI watchdog looks like it might actually be related to the issue the patch 
-was originally aimed at.
+Yes - I will be busy for a few weeks with other duties, sorry for
+that. There not that much diff rest:
 
---- Copied text from kerneltrap.org ---
+- apic clock calibration
+- x2apic operations
+- interrupt handlers (different declarations)
+- command line handling
 
-I have a fun little issue with a few kernels. A lot of releases, if not all, 
-after 2.6.22 tend to randomly freeze after a few minutes. One system this 
-happens on is a Lenovo Thinkpad Z61m (model 9453-A11), another one is a Dell 
-Precision. The laptop has a Core Duo CPU, the desktop a C2D. Both use Intel 
-ICH7 chipsets.
+ugh... maybe not that small heap of todo's :)
 
-The freezes result in a complete lockup of the system. No output is generated 
-on the console, in syslog, or in messages.
+Anyway - before sending patches I'll fetch tip/x86/apic
+branch so no problem if someone bring any changes into
+the branch.
 
-    * Magic SysRq is inoperable.
-    * I tried a lot of options in kernel hacking, including lock debugging. 
-That only sped up the time to freeze. The NMI watchdog produces output.
-    * I built a minimal kernel with all but the essential drivers disabled, so 
-I rule out issues with sound, network, PCCard, DRI/DRM, and others.
-    * It happens with a stock Debian kernel (2.6.25, built for 486 arch) as 
-well as with custom-built kernels.
-    * I tried building with both GCC 4.3 and 4.2.
-    * The systems run perfectly fine with older kernels (2.6.21, 2.6.22 
-series), as well as Windows. memtest86+ doesn't find any issues.
-    * "noacpi" is not an option since the laptop won't even boot with that. I 
-tried disabling stuff like MSI(-X), IRQ balancing, tick-free kernel, all to 
-no avail.
-    * 2.6.26.2 runs fine on a non-SMP AMD system. Both affected systems are 
-dual-core. Setting the "nosmp" option doesn't help.
-
---- End copied text ---
-
-Now for the thing that makes me hope for a patch:
-
-On Sunday 13 July 2008 15:05:25 Jakub W. Jozwicki wrote:
-> [  114.647010] BUG: sleeping function called from invalid context
-> swapper(0) at kernel/rtmutex.c:742
-> [  114.647010] in_atomic():1 [00000001], irqs_disabled():0
-> [  114.647010] Pid: 0, comm: swapper Not tainted 2.6.25.10-rtXXX #10
-> [  114.647010]  [<c0120fc4>] __might_sleep+0xf1/0xf8
-> [  114.647010]  [<c045499c>] __rt_spin_lock+0x24/0x61
-> [  114.647010]  [<c04549e1>] rt_spin_lock+0x8/0xa
-> [  114.647010]  [<c013ec8d>] pm_qos_requirement+0x10/0x29
-> [  114.647010]  [<c038ef36>] menu_select+0x5d/0x7f
-> [  114.647010]  [<c038e4d8>] cpuidle_idle_call+0x47/0x9b
-> [  114.647010]  [<c038e491>] ? cpuidle_idle_call+0x0/0x9b
-> [  114.647010]  [<c01060ff>] cpu_idle+0xaf/0x106
-> [  114.647010]  [<c0441c87>] rest_init+0x67/0x69
-> [  114.647010]  =======================
-
-The output from the watchdog handler (from a 2.6.26.2 stock kernel) reads 
-similar:
-
-Pid: 0, comm: swapper Not tainted (2.6.26.2-debug #2)
-EIP: 0060:[<c0117210>] EFLAGS: 00000097 CPU: 0
-EIP is at hpet_rtc_interrupt+0x2e0/0x320
-EAX: 00000000 EBX: 00000002 ECX: 00000046 EDX: 00000002
-ESI: ffffc8ab EDI: c03f1edc EBP: c03f1ee8 ESP: c03f1e9c
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-Process swapper (pid: 0, ti=c03f0000 task=c03c9300 task.ti=c03f0000)
-Stack: 03aa5b2e 00000000 f7bc7c00 f8800128 00000000 a61408d3 0061fd6e 00000000
-       00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-       f7b87f80 00000000 00000000 c03f1f00 c0159d81 00000000 c03e7080 f7b87f80
-Call Trace:
- [<c0159d81>] ? handle_IRQ_event+0x31/0x60
- [<c015af65>] ? handle_edge_irq+0xb5/0x150
- [<c0106c50>] ? do_IRQ+0x40/0x80
- [<c0104783>] ? common_iterrupt+0x23/0x28
- [<c013007b>] ? del_timer_sync+0x1b/0x20
- [<f8858058>] ? acpi_idle_enter_bm+0x2c2/0x344 [processor]
- [<c013f6c6>] ? pm_qos_requirement+0x26/0x30
- [<c0298891>] ? cpuidle_idle_call+0x81/0xc0
- [<c0298810>] ? cpuidle_idle_call+0x0/0xc0
- [<c0102c82>] ? cpu_idle+0x62/0xe0
- [<c0319f6e>] ? rest_init+0x4e/0x60
- =======================
-Code: 80 8d 04 46 89 45 d8 89 f8 83 e7 0f c1 f8 04 8d 04 80 8d 04 47 89 45 dc 
-8b 45 cc 48 89 45 e0 e9 70 fd ff ff 8d b4 26 00 00 00 00 <f3> 90 a1 80 6b 3e 
-c0 29 f0 83 f8 04 76 f2 e9 d2 fe ff ff 90 8d
-
-Regards,
-  Nicos Gollan
-(not subscribed to the list)
+		- Cyrill -
