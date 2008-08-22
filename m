@@ -1,144 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757484AbYHVAOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759127AbYHVAOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757484AbYHVAOU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Aug 2008 20:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbYHVAOE
+	id S1759127AbYHVAOg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Aug 2008 20:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYHVAOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Aug 2008 20:14:04 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:51354 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751826AbYHVAOB (ORCPT
+	Thu, 21 Aug 2008 20:14:09 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:33518 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752945AbYHVAOF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Aug 2008 20:14:01 -0400
+	Thu, 21 Aug 2008 20:14:05 -0400
 From: ebiederm@xmission.com (Eric W. Biederman)
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, <netdev@vger.kernel.org>,
-       "Denis V. Lunev" <den@openvz.org>
-References: <20080727012212.GW28946@ZenIV.linux.org.uk>
-	<m1d4k2zui4.fsf@frodo.ebiederm.org>
-	<m1od3mthma.fsf@frodo.ebiederm.org>
-Date: Thu, 21 Aug 2008 17:08:25 -0700
-In-Reply-To: <m1od3mthma.fsf@frodo.ebiederm.org> (Eric W. Biederman's message
-	of "Thu, 21 Aug 2008 10:14:53 -0700")
-Message-ID: <m1iqttnc7a.fsf@frodo.ebiederm.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>
+References: <1218854205-2375-1-git-send-email-yhlu.kernel@gmail.com>
+	<200808211333.00887.jbarnes@virtuousgeek.org>
+	<m13akyqenn.fsf@frodo.ebiederm.org>
+	<200808211607.05811.jbarnes@virtuousgeek.org>
+Date: Thu, 21 Aug 2008 17:11:12 -0700
+In-Reply-To: <200808211607.05811.jbarnes@virtuousgeek.org> (Jesse Barnes's
+	message of "Thu, 21 Aug 2008 16:07:05 -0700")
+Message-ID: <m1ej4hnc2n.fsf@frodo.ebiederm.org>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 X-SA-Exim-Connect-IP: 24.130.11.59
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Al Viro <viro@ZenIV.linux.org.uk>
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Jesse Barnes <jbarnes@virtuousgeek.org>
 X-Spam-Relay-Country: 
 X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
 	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
 	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0001]
+	*      [score: 0.0004]
 	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.4 FVGT_m_MULTI_ODD Contains multiple odd letter combinations
-	*  2.2 XMSubMetaSxObfu_03 Obfuscated Sexy Noun-People
-	*  1.6 XMSubMetaSx_00 1+ Sexy Words
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
 	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [git pull] VFS patches, the first series
+Subject: Re: [PATCH] pci: change msi-x vector to 32bit
 X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
 X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ebiederm@xmission.com (Eric W. Biederman) writes:
+Jesse Barnes <jbarnes@virtuousgeek.org> writes:
 
-> ebiederm@xmission.com (Eric W. Biederman) writes:
->
->> Al Viro <viro@ZenIV.linux.org.uk> writes:
+> On Thursday, August 21, 2008 1:47 pm Eric W. Biederman wrote:
+>> Jesse Barnes <jbarnes@virtuousgeek.org> writes:
+>> > On Friday, August 15, 2008 7:36 pm Yinghai Lu wrote:
+>> >> we are using 28bit pci (bus/dev/fn + 12 bits) as irq number, so the
+>> >> cache for irq number should be 32 bit too.
+>> >>
+>> >> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>> >> Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>
+>> >>
+>> >> ---
+>> >>  drivers/scsi/qla2xxx/qla_def.h |    2 +-
+>> >>  include/linux/pci.h            |    2 +-
+>> >>  2 files changed, 2 insertions(+), 2 deletions(-)
+>> >>
+>> >> Index: linux-2.6/drivers/scsi/qla2xxx/qla_def.h
+>> >> ===================================================================
+>> >> --- linux-2.6.orig/drivers/scsi/qla2xxx/qla_def.h
+>> >> +++ linux-2.6/drivers/scsi/qla2xxx/qla_def.h
+>> >> @@ -2109,7 +2109,7 @@ struct scsi_qla_host;
+>> >>
+>> >>  struct qla_msix_entry {
+>> >>  	int have_irq;
+>> >> -	uint16_t msix_vector;
+>> >> +	uint32_t msix_vector;
+>> >>  	uint16_t msix_entry;
+>> >>  };
+>> >>
+>> >> Index: linux-2.6/include/linux/pci.h
+>> >> ===================================================================
+>> >> --- linux-2.6.orig/include/linux/pci.h
+>> >> +++ linux-2.6/include/linux/pci.h
+>> >> @@ -730,7 +730,7 @@ enum pci_dma_burst_strategy {
+>> >>  };
+>> >>
+>> >>  struct msix_entry {
+>> >> -	u16 	vector;	/* kernel uses to write allocated vector */
+>> >> +	u32	vector;	/* kernel uses to write allocated vector */
+>> >>  	u16	entry;	/* driver uses to specify entry, OS writes */
+>> >>  };
+>> >
+>> > I see a lot of smoke about this, but not a clear consensus.  It sounds
+>> > like no one objects to making the MSI vector field 32 bits, but there
+>> > were a lot of concerns about IRQ vector naming/numbering in general?  And
+>> > I assume this particular patch isn't 2.6.27 material...
 >>
->>> The first part of huge pile.  Mostly it's untangling nameidata handling,
->>> digging towards the pieces that kill intents and cleaning pathname
->>> resolution in general.  ->permission() sanitizing and sysctl procfs
->>> treatment rewrite needed for it.  A bunch of descriptor handling fixes.
->>> Plus part of assorted patched from the last cycle sent by other folks.
->>> A _lot_ more is still pending; this is what I'd managed to pull into
->>> a series by this point.  Please, pull from
->>> git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
+>> There is no need for this particular patch in 2.6.27.
+>> It is a trivial bug fix so it can go in whenever.
 >>
->> Al a quick heads up.  In testing movement of network devices between
->> namespaces  I hit the recently added WARN_ON in unregister_sysctl_table.
+>> Mostly this is a discussion about code that should land in the 2.6.28
+>> timeframe assuming all is well.
 >
-> It seems to be some new oddness when destroying a network namespace.
->
-> If I don't have network devices to push out of the network namespace
-> when I clean it up nothing happens.  When I do I get this nice beautiful
-> backtrace.
->
-> I will dig into the sysctl code in a bit and see if I can understand
-> why this is happening.
+> Ok, thanks Eric.  I'll queue it up for linux-next after the next 2.6.27 pull.
 
-Ok.  The situation is now clear.
-
-/proc/sys/net/ipv4/neigh/default does not currently exist in network
-namespaces.    This looks like an oversight.
-
-In my network namespace I have the interfaces lo, sit, veth0
-
-We have the result that /proc/sys/net/ipv4/neigh/veth0 has /proc/sys/net/ipv4/neigh/lo.
-
-lo gets unregistered before veth0 when we bring the network namespaces down.
-Then when veth gets unregistered we have a problem.
-
-I'm not certain what to do about it.  The semantics of the how the
-sysctl tables are access have changed significantly.  Now the first 
-sysctl table to describe a directory must remain until there are no
-other tables that have entries in that directory and a sysctl table
-must have a pure path of directories for any portion of the address
-space it shares with an earlier sysctl table.  This is noticeably
-different from the union mount semantics we have had previously for
-the sysctl tables.
-
-If it doesn't look to bad to maintain the new semantics it looks like
-the right thing to do is to add some additional checks so we get more
-precise warnings (who knows what out of tree sysctl code will do) and
-to find someplace I can insert a net/ipv4/neigh sysctl directory into
-(ipv4_net_table looks like it will work) to keep the network namespace
-code working safely.
-
-Al btw nice trick using compare to keep the dentries separate allowing
-us to cache everything in /proc.  I feel silly for missing that one.
-Want to get together in the next couple of weeks and build a tree that
-updates the sysctls infrastructure to suck less?
+Are you maintaining the pci tree now?  I get lost who is doing what some days.
 
 Eric
 
-> ------------[ cut here ]------------
-> WARNING: at /home/eric/projects/linux/linux-2.6-arastra-ns/kernel/sysctl.c:1929
-> unregister_sysctl_table+0xb5/0x
-> e5()
-> Modules linked in:
-> Pid: 22, comm: netns Tainted: G        W 2.6.27-rc3x86_64 #48
->
-> Call Trace:
->  [<ffffffff802361da>] warn_on_slowpath+0x51/0x77
->  [<ffffffff8023c631>] unregister_sysctl_table+0x34/0xe5
->  [<ffffffff8023c6b2>] unregister_sysctl_table+0xb5/0xe5
->  [<ffffffff80523f8c>] neigh_sysctl_unregister+0x1a/0x31
->  [<ffffffff80559635>] inetdev_event+0x2b4/0x3d1
->  [<ffffffff8024b850>] notifier_call_chain+0x29/0x56
->  [<ffffffff8051fa2a>] dev_change_net_namespace+0x1bb/0x1da
->  [<ffffffff8051fa9d>] default_device_exit+0x54/0xa2
->  [<ffffffff8052105e>] netdev_run_todo+0x1fd/0x206
->  [<ffffffff8051ce0b>] cleanup_net+0x0/0x95
->  [<ffffffff8051ce6f>] cleanup_net+0x64/0x95
->  [<ffffffff80244e58>] run_workqueue+0xf1/0x1ee
->  [<ffffffff80244e02>] run_workqueue+0x9b/0x1ee
->  [<ffffffff802459ee>] worker_thread+0xd8/0xe3
->  [<ffffffff80248426>] autoremove_wake_function+0x0/0x2e
->  [<ffffffff80245916>] worker_thread+0x0/0xe3
->  [<ffffffff80248311>] kthread+0x47/0x76
->  [<ffffffff805c7529>] trace_hardirqs_on_thunk+0x3a/0x3f
->  [<ffffffff8020cdc9>] child_rip+0xa/0x11
->  [<ffffffff8020c3ff>] restore_args+0x0/0x30
->  [<ffffffff80230bcd>] finish_task_switch+0x0/0xc4
->  [<ffffffff802482ca>] kthread+0x0/0x76
->  [<ffffffff8020cdbf>] child_rip+0x0/0x11
->
-> ---[ end trace f9cc56de378eb3ce ]---
