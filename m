@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbYHVVOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758820AbYHVVPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758798AbYHVVOV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 17:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbYHVVOL
+	id S1758820AbYHVVPu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 17:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbYHVVPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 17:14:11 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46608 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753698AbYHVVOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 17:14:10 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: Re: ftraced and suspend to ram
-Date: Fri, 22 Aug 2008 23:17:56 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <alpine.DEB.1.10.0808211139420.3947@gandalf.stny.rr.com> <200808221839.35640.rjw@sisk.pl> <20080822205415.GA5452@joi>
-In-Reply-To: <20080822205415.GA5452@joi>
+	Fri, 22 Aug 2008 17:15:39 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:28631 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753698AbYHVVPj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 17:15:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=kEeq42cCirWYLPeAaR1eTtu/xrhGMNBGpBuVVrDWjlEm6k7P7BadPMKZag+v3e+wbz
+         ErgHsRrHZF1NJSkmfnZFP6g9b8O6v8/7f9DYyM5URJ20M3M0KBhBfSbCN03FTqpfy9R9
+         07Fw0prGI8I82v/6XVAFq8d7lV/9/Sx43a338=
+Message-ID: <56a8daef0808221415y111a8024w117e6aa8526eba7@mail.gmail.com>
+Date: Fri, 22 Aug 2008 14:15:36 -0700
+From: "John Ronciak" <john.ronciak@gmail.com>
+To: "Ian Campbell" <ijc@hellion.org.uk>
+Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
+Cc: "Trond Myklebust" <trond.myklebust@fys.uio.no>,
+       "Grant Coady" <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
+       neilb@suse.de, bfields@fieldses.org, linux-nfs@vger.kernel.org,
+       "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>,
+       "Jesse Brandeburg" <jesse.brandeburg@intel.com>,
+       "Bruce Allan" <bruce.w.allan@intel.com>,
+       "PJ Waskiewicz" <peter.p.waskiewicz.jr@intel.com>,
+       "John Ronciak" <john.ronciak@intel.com>,
+       e1000-devel@lists.sourceforge.net
+In-Reply-To: <1219435207.27921.51.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808222317.57599.rjw@sisk.pl>
+References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com>
+	 <1219087258.7192.19.camel@localhost>
+	 <1219400624.18774.67.camel@zakaz.uk.xensource.com>
+	 <1219428489.6919.21.camel@localhost>
+	 <1219428818.27921.43.camel@localhost.localdomain>
+	 <56a8daef0808221233h68853587n6015ca7d809b17e1@mail.gmail.com>
+	 <1219435207.27921.51.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 22 of August 2008, Marcin Slusarz wrote:
-> On Fri, Aug 22, 2008 at 06:39:34PM +0200, Rafael J. Wysocki wrote:
-> > On Friday, 22 of August 2008, Marcin Slusarz wrote:
-> > > On Fri, Aug 22, 2008 at 09:23:43AM +0200, Pavel Machek wrote:
-> > > > > 
-> > > > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > > > 
-> > > > > > > > The code in question is the ftraced() function in 
-> > > > > > > > kernel/trace/ftrace.c
-> > > > > > > 
-> > > > > > > Thanks, I'll have a look in a while.
-> > > > > > 
-> > > > > > Can you try the appended patch, please?
-> > > > > 
-> > > > > makes sense - i've applied it to tip/tracing/urgent, see the tidied up 
-> > > > > commit below.
-> > > > > 
-> > > > > It should be no big issue not being able to trace across suspend+resume 
-> > > > > - and that restriction will go away with Steve's build-time based mcount 
-> > > > > patching mechanism in v2.6.28.
-> > > > 
-> > > > Patch looks okay to me, but I'm not sure if another issue is not
-> > > > hiding under it. Did anyone actually test ftrace + suspend after
-> > > > applying this?
-> > > 
-> > > I just tested this patch - it didn't help ;(
-> > > 
-> > > diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> > > index 49f4c3f..02e41b2 100644
-> > > --- a/kernel/trace/ftrace.c
-> > > +++ b/kernel/trace/ftrace.c
-> > > @@ -27,6 +27,7 @@
-> > >  #include <linux/ctype.h>
-> > >  #include <linux/hash.h>
-> > >  #include <linux/list.h>
-> > > +#include <linux/freezer.h>
-> > >  
-> > >  #include <asm/ftrace.h>
-> > 
-> > This is needed to fix compilation, sorry for the omission.
-> > 
-> > Still, did you test ftrace + suspend with the original patch and your fix
-> > applied and if you did, then what happend?
-> 
-> Suspend works fine. When I hit power button I see some informations from
-> video card (nvidia), then screen goes black and monitor says "no signal"
-> and then I see the same informations from video card, then BIOS and GRUB.
-> When everything works fine, X comes back after first infos from video card.
+On Fri, Aug 22, 2008 at 1:00 PM, Ian Campbell <ijc@hellion.org.uk> wrote:
 
-I suspect that something under arch/x86/kernel/acpi/realmode is broken
-somehow.
+> So far as I can tell, yes. I can login via ssh so long as the user
+> doesn't have NFS $HOME, I haven't tried much else and the box isn't
+> locked up at the moment, I'd bet it's fine though.
+Then it's highly unlikely that the NIC/driver is causing your problem.
+ We'll continue to monitor this thread waiting for any info that this
+is somehow NIC/driver related.
 
-Thanks,
-Rafael
+Good luck.
+
+
+
+-- 
+Cheers,
+John
