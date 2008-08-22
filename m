@@ -1,89 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbYHVUOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758140AbYHVUP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758076AbYHVUOc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 16:14:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbYHVUOX
+	id S1758140AbYHVUP2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 16:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbYHVUPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 16:14:23 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:36798 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754147AbYHVUOX (ORCPT
+	Fri, 22 Aug 2008 16:15:10 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:64108 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754325AbYHVUPI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 16:14:23 -0400
-Message-ID: <48AF1E67.2030509@keyaccess.nl>
-Date: Fri, 22 Aug 2008 22:15:35 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Fri, 22 Aug 2008 16:15:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=cS2ZhUsU36HI6MUz/oR5CBTn0VYhlxvLSHafClFpcKp1qR3bwHLkRgEsQ6dO/36AlR
+         MTS64MQVeReaOZw5+FkEi9YRiFbcO+XkXYnCUjsenPlTYgDY+buL6cvMy4krXwOKra03
+         qrj32AeqB9NIohCT4sgMP6KMLSU4sT6xREM+g=
+Date: Fri, 22 Aug 2008 16:15:03 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Neil Brown <neilb@suse.de>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC]  Resolve 2 year old issue with different demands
+	on EVIOCGRAB
+Message-ID: <20080822160414.ZZRA012@mailhub.coreip.homeip.net>
+References: <18596.58273.713075.332009@notabene.brown> <20080815022453.GA9438@anvil.corenet.prv> <18600.51093.613662.435395@notabene.brown> <20080818112609.ZZRA012@mailhub.coreip.homeip.net> <18604.45689.859491.192621@notabene.brown>
 MIME-Version: 1.0
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, Dave Airlie <airlied@gmail.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: [PATCH] x86: have set_memory_array_{uc,wb} coalesce memtypes.
-References: <48ABF6DC.8070305@keyaccess.nl> <48AC29CA.1060203@keyaccess.nl> <20080820194127.GA10887@linux-os.sc.intel.com> <48AC8F69.4050201@keyaccess.nl> <21d7e9970808201446k3c1a6bc1naf04568a8ad06ed4@mail.gmail.com> <20080820221630.GA3598@linux-os.sc.intel.com> <20080821120626.GG5615@elte.hu> <48ADA2C2.8090905@keyaccess.nl> <48ADF3FC.7070002@keyaccess.nl> <20080822041544.GF30284@elte.hu> <20080822190817.GA17381@linux-os.sc.intel.com>
-In-Reply-To: <20080822190817.GA17381@linux-os.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: 0.7 (/)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18604.45689.859491.192621@notabene.brown>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22-08-08 21:08, Venki Pallipadi wrote:
-
-> On Thu, Aug 21, 2008 at 09:15:44PM -0700, Ingo Molnar wrote:
-
->> Venki, Suresh, Shaohua, Dave, Arjan - any observations about this
->> line of action?
+On Thu, Aug 21, 2008 at 10:10:33AM +1000, Neil Brown wrote:
+> On Monday August 18, dmitry.torokhov@gmail.com wrote:
+> > On Mon, Aug 18, 2008 at 10:51:33AM +1000, Neil Brown wrote:
+> > >  But the X server still needs to know a little bit about /dev/tty to
+> > >  make sure that control-C doesn't get delivered the wrong way.  That's
+> > >  awkward.
+> > 
+> > Does it need to do anything besides switching VC into the raw mode?
 > 
-> The concern I have here is that the coalescing is not guaranteed to
-> work. We may still end up having horrible worst case latency, even
-> though this improves the normal case (boot the system, start X, exit
-> X, reboot the system). It depends on how pages are allocated and how
-> much memory is there in the system and what else is running etc.
-
-Yes, I agree. Independent of the current trigger PAT wants a more 
-scalable approach and yes, worst case is still single page entries.
-
-That worst case is the guaranteed case now though, so I do feel it's a 
-generic fix. After all, there wouldn't seem to be a reason to _not_ 
-coalesce in set_memory_array_{uc,wb}().
-
-> Here on my test system, without this coalescing change I see
+> Probably not, no.
 > 
-> [root@localhost ~]# cat /proc/sys/debug/x86/pat_memtype_list | wc -l
-> 19528
+> > 
+> > >  It also negates much of the power of the input layer (easy hot-plug).
+> > >  I don't much like that approach.
+> > > 
+> > 
+> > I think this is the only sensible approach though. X needs to have
+> > native hotplug capabilities anyway because of all these new mice that
+> > have bazillion of buttons on them that PS/2 emulation simply can not
+> > support. And once you have hotplug support in X and don't rely on
+> > myultiplexors anymore you can remove bunch of things, like grabbing
+> > devices in one fashion or another and you can even keep the devices
+> > open while switching to the text mode - no need to close and reopen
+> > them all the time.
 > 
-> With the coalescing change I see
-> [root@localhost ~]# cat /proc/sys/debug/x86/pat_memtype_list | wc -l
-> 135
+> So your position is that for anything non-trivial, the clever stuff in
+> the input layer like multiplexing and simulating PS2 mice is not
+> sufficiently powerful and not worth fixing, and it should all be left
+> to userspace.  Correct?
+
+Yes, due to limitations of the PS/2 protocol itself among other
+things. I am sure Vojtech will correct me but I believe he made
+/dev/input/mice as a stop-gap measure until X is ready... well, it was
+8 some years ago ;(
+
+> I must confess a certain sympathy for that position, but it does make
+> solving my current problem harder - which dampens my enthusiasm :-)
+>
+
+Yeah, I can understand that.
+
+> So:  The X server need to support hotplug of input devices. 
+> Apparently there is code out there (for nearly 2 years) but it doesn't
+> seem to be in a release yet.
+> Quoting http://wiki.x.org/wiki/XInputHotplug
 > 
-> quit and restart X
-> [root@localhost ~]# cat /proc/sys/debug/x86/pat_memtype_list | wc -l
-> 985
-
-[ constantly growing number of entries ]
-
-Yes, absolutely right, PAT definitely needs something other than the 
-simple linked list. I do believe we also want the coalescing change 
-though - it seems to make sense regardless of trigger and it's only 
-little code.
-
-> I think this as a good workaround for now. But, for long run we still need to
-> look at other ways of eliminating this overhead (like using page struct
-> that Suresh mentioned in the other thread).
+>    The X.org server supports hotplugging input devices since November
+>    2006
+>    http://lists.freedesktop.org/archives/xorg/2006-October/019007.html
+>    (X11R7.2 will NOT have hotplug support yet).  
 > 
+> So both the kernel and the X server could provide the hotplug support
+> required, but neither are really quite usable at the moment for very
+> different reasons.  Sad.
+> Options...
+>  First: problem description.
+>    Device with a touchscreen wants:
+>     - touch screen events to be delivered as absolute events to X
+>          server.
+>     - Other programs to be able to monitor the touch screen to
+>       e.g. detect activity independently of whether an X server is in
+>       use or direct fbdev access is happening (e.g. Qtopia).
+>     - hot-plugged mice (e.g. bluetooth) should be recognised by
+>       X server.
 > 
-> Also, there seems to be a bug in the error path of the patch. Below should
-> fix it.
+>  We could:
+>   1/ Wait for X11 XInputHotplug to be released.
+>   2/ Hack a little input driver for X which somehow finds 
+>      mouse devices and interprets them.
+>   3/ Use kernel's input multiplexing and:
+>    3a/ change EVIOCGRAB to not exclude other evdev devices
+>    3b/ change EVIOCGRAB to optionally not exclude other evdev devices.
+>    3c/ somehow convince mousedev never to listen on the touchscreen.
+> 
+>  Did I miss anything?
+> 
+>  3a is what the openmoko kernel (and presumably others) do today.  But
+>  it breaks backwards compatibility .
+>  3b is what I suggested but you don't like.
+>  1 does not provide a solution in a reasonable time frame
+>  2 is likely to be very messy and error prone
+> 
+>  So I'm now wondering about 3c.
 
-Ah, yes, thanks, just sent out a final version with this fixed as well.
+All these solutions require changes to userspace/drivers. I feel that
+this time is better spent on the X itself rather on various drivers
+re-implementing the same thing and stumbling over the same problems.
 
-Rene.
+>  While I can understand the value of pretending that a touch-pad looks
+>  like a mouse, a touch-screen is a very different thing.  I don't
+>  think it would ever make sense for a touch screen to generate
+>  relative events.
 
+It probaibly was a mistake to make touchscreens go through
+/dev/input/mice. Again, the adea was to allow limitied use until
+proper driver is installed.
+
+>  So how might we make our touchscreen appear uninteresting to
+>  mousedev?
+> 
+>  We could get it to return some other 'key' rather one of
+>      BTN_TOUCH BTN_TOOL_FINGER BTN_LEFT
+> 
+>  Maybe BTN_STYLUS.  Given that the touchpad is designed for finger
+>  usage it is a bit of a lie.  But it would work.
+> 
+>  This is really sidestepping the issue.  We really want to be able to
+>  say "This is a device where relative events are completely
+>  meaningless".  I suspect that isn't going to happen though.
+> 
+>  tslib doesn't seem to care much about what key is sent.  It only
+>  looks for BTN_TOUCH, but all it sees is when the value goes to zero
+>  as a "finger is removed" event.  It equally gets that from
+>  ABS_PRESSURE going to zero.
+> 
+>  So if I just arranged for the touchscreen to deliver BTN_STYLUS
+>  instead of BTN_TOUCH it would hide it from all the mousedev devices
+>  (which I think is the correct thing) and mean that the Xserver
+>  doesn't need to use EVIOCGRAB, so we don't need to break it in the
+>  kernel.
+> 
+> OK, I think I can go forward with that.  Thanks for listening.
+> 
+
+Maybe openmoko could just patch mousedev to ignore touchscreens for
+now, until X is fixed?
+
+-- 
+Dmitry
