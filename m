@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757881AbYHVTzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbYHVUAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757881AbYHVTzy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 15:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757498AbYHVTzc
+	id S1755868AbYHVUAb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 16:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbYHVUAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 15:55:32 -0400
-Received: from peff.net ([208.65.91.99]:4411 "EHLO peff.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755602AbYHVTzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 15:55:31 -0400
-X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Aug 2008 15:55:30 EDT
-Date: Fri, 22 Aug 2008 15:48:46 -0400
-From: Jeff King <peff@peff.net>
-To: =?utf-8?B?QmrDtnJu?= Steinbrink <B.Steinbrink@gmx.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Petr Baudis <pasky@suse.cz>,
-       Alan.Brunelle@hp.com, linux-kernel@vger.kernel.org, git@vger.kernel.org
-Subject: Re: Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-Message-ID: <20080822194846.GA31356@coredump.intra.peff.net>
-References: <48A36838.3050309@hp.com> <20080819124602.9e8e69f7.akpm@linux-foundation.org> <48AEDD3D.4060507@hp.com> <20080822092549.ddcb7e79.akpm@linux-foundation.org> <20080822171651.GP10544@machine.or.cz> <20080822105136.a8432875.akpm@linux-foundation.org> <20080822193730.GA1598@atjola.homenet>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080822193730.GA1598@atjola.homenet>
+	Fri, 22 Aug 2008 16:00:21 -0400
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:7593 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752394AbYHVUAU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 16:00:20 -0400
+X-Greylist: delayed 34539 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Aug 2008 16:00:19 EDT
+From: Ian Campbell <ijc@hellion.org.uk>
+To: John Ronciak <john.ronciak@gmail.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
+       neilb@suse.de, bfields@fieldses.org, linux-nfs@vger.kernel.org,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Bruce Allan <bruce.w.allan@intel.com>,
+       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
+       John Ronciak <john.ronciak@intel.com>,
+       e1000-devel@lists.sourceforge.net
+In-Reply-To: <56a8daef0808221233h68853587n6015ca7d809b17e1@mail.gmail.com>
+References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com>
+	 <1219087258.7192.19.camel@localhost>
+	 <1219400624.18774.67.camel@zakaz.uk.xensource.com>
+	 <1219428489.6919.21.camel@localhost>
+	 <1219428818.27921.43.camel@localhost.localdomain>
+	 <56a8daef0808221233h68853587n6015ca7d809b17e1@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-CBwd4TKqH0W80+UCawfT"
+Date: Fri, 22 Aug 2008 21:00:07 +0100
+Message-Id: <1219435207.27921.51.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+X-SA-Exim-Connect-IP: 192.168.1.5
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 22, 2008 at 09:37:30PM +0200, Björn Steinbrink wrote:
 
-> Yep, and that's totally correct as far as bisect is concerned. The
-> parents of that merge commit are:
-> 88fa08f67bee1a0c765237bdac106a32872f57d2
-> b1b135c8d619cb2c7045d6ee4e48375882518bb5
-> 
-> And Alan marked both of them as good.
-> 
-> So, unless Alan made a mistake during his bisection, each of the
-> branches is correct, but the merge did not lead to a correct result. So
-> while there were no textual conflicts, there were still incompatible
-> changes regarding the code semantics and compatibility was not restored
-> during the merge.
+--=-CBwd4TKqH0W80+UCawfT
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-One thing that I have seen proposed (but never tried myself) is that you
-can linearize the changes using "rebase -i" (or cherry-picking), and
-then bisect that result. That is, given a history
+On Fri, 2008-08-22 at 12:33 -0700, John Ronciak wrote:
+> On Fri, Aug 22, 2008 at 11:13 AM, Ian Campbell <ijc@hellion.org.uk> wrote=
+:
+>=20
+> >> That's probably also a networking device driver issue candidate: your
+> >> RPC task is queued up waiting to be sent.
+> >>
+> >> What networking card+device driver are you using here?
+> >
+> > # ethtool -i eth0
+> > driver: e1000
+> > version: 7.3.20-k2-NAPI
+> > firmware-version: N/A
+> > bus-info: 0000:01:0a.0
+> There is nothing indicating that the NIC/driver is causing any sort of
+> problem here, at least not with what has been presented so far.  When
+> the NFS mount isn't working is the networking still active and
+> working?
 
-A-B-C-D
- \   /
-  E-F
+So far as I can tell, yes. I can login via ssh so long as the user
+doesn't have NFS $HOME, I haven't tried much else and the box isn't
+locked up at the moment, I'd bet it's fine though.
 
-where the merge "D" introduces the bug, you could try creating:
+Ian.
 
-  A-B-C-E'-F'
+--=20
+Ian Campbell
 
-and bisecting that. And you should know that C is good from your
-previous bisection, but that F' probably is not, since it should be
-textually the same as D (unless, of course, you had textual conflicts
-during the rebase that you fixed up differently).
+"On a normal ascii line, the only safe condition to detect is a 'BREAK'
+- everything else having been assigned functions by Gnu EMACS."
+(By Tarl Neustaedter)
 
-So in essence you are testing each of E and F, but based on the other
-work. So you should be able to find the one patch that causes the
-conflict. And depending on the conflict, you may get more information by
-doing it the other way. I.e.,:
+--=-CBwd4TKqH0W80+UCawfT
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-  A-E-F-B'-C'
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
--Peff
+iEYEABECAAYFAkivGsYACgkQM0+0qS9rzVk1qACeILsY9z8su3G1T9vcBFtVDalF
+h6YAn2hHgJc4Zkd/AjoasBMl2qzt58ir
+=+jje
+-----END PGP SIGNATURE-----
+
+--=-CBwd4TKqH0W80+UCawfT--
+
