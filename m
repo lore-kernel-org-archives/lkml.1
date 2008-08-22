@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758614AbYHVMip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbYHVMmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758614AbYHVMip (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 08:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbYHVMie
+	id S1757755AbYHVMmL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 08:42:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbYHVMl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 08:38:34 -0400
-Received: from mail.ukfsn.org ([77.75.108.10]:39411 "EHLO mail.ukfsn.org"
+	Fri, 22 Aug 2008 08:41:57 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:42286 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753486AbYHVMid (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 08:38:33 -0400
-Message-ID: <48AEB347.2000200@dgreaves.com>
-Date: Fri, 22 Aug 2008 13:38:31 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	id S1753930AbYHVMl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 08:41:56 -0400
+Date: Fri, 22 Aug 2008 15:41:53 +0300
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Ingo Oeser <ioe-lkml@rameria.de>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH 01/15] kobject: Replace ALL occurrences of '/' with '!'
+	instead of only the first one.
+Message-ID: <20080822124153.GF16680@sci.fi>
+Mail-Followup-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
+	Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+	Ingo Oeser <ioe-lkml@rameria.de>,
+	Kay Sievers <kay.sievers@vrfy.org>
+References: <20080821173036.GB7974@suse.de> <1219339983-9634-1-git-send-email-gregkh@suse.de>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, linux-fsdevel@vger.kernel.org,
-       Dave Chinner <david@fromorbit.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Regression? 2.6.27-rc3 segfault on cold boot; not on warm boot.
-References: <48AD3921.5090709@dgreaves.com> <200808212026.17590.rjw@sisk.pl>
-In-Reply-To: <200808212026.17590.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1219339983-9634-1-git-send-email-gregkh@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> [Adding CCs]
+On Thu, Aug 21, 2008 at 10:32:49AM -0700, Greg Kroah-Hartman wrote:
+> From: Ingo Oeser <ioe-lkml@rameria.de>
 > 
-> [The issue is probably present in 2.6.26 too]
+> A recent patch from Kay Sievers <kay.sievers@vrfy.org>
+> replaced the first occurrence of '/' with '!' as needed for block devices.
 > 
-> On Thursday, 21 of August 2008, David Greaves wrote:
->> I have a desktop system that has started having problems booting up in the morning.
->>
->> It appears to just happen on more recent kernels.
->> I was having unrelated CDROM problems with a driver in an old kernel and decided
->> to test 2.6.27-rcX
->> The CDROM problem is fine now.
->>
->> However I started having problems on -rc1. I found that the machine was hanging
->> soon after booting and needed a reboot. After a reboot it would work fine for
->> the rest of the day.
->> When -rc3 came out I tried that and the problem still appears to be there.
->>
->> The normal process is now to boot to single-user, ctrl-alt-sysreq-SUB and then
->> reboot to multi-user. This isn't ideal.
->>
->>
->> If I cold boot 2.6.25.3 the problem doesn't occur.
->> I will try different versions over the next few days.
+> Now do some cheap defensive coding and replace all of them to avoid future
+> issues in this area.
+> 
+> Signed-off-by: Ingo Oeser <ioe-lkml@rameria.de>
+> Cc: Kay Sievers <kay.sievers@vrfy.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  lib/kobject.c |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
+> 
+> diff --git a/lib/kobject.c b/lib/kobject.c
+> index bd732ff..fbf0ae2 100644
+> --- a/lib/kobject.c
+> +++ b/lib/kobject.c
+> @@ -223,8 +223,7 @@ static int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
+>  		return -ENOMEM;
+>  
+>  	/* ewww... some of these buggers have '/' in the name ... */
+> -	s = strchr(kobj->name, '/');
+> -	if (s)
+> +	while ((s = strchr(kobj->name, '/')))
+>  		s[0] = '!';
 
-As promised, I tried 2.6.26.3 this morning and didn't have the problem. I will
-try again a few times to confirm.
-Nb Although the log had an XFS failure, I think the real issue is the segfaults;
-I think XFS is a casuality, not a cause. Th problem almost always results in an
-XFS crash at some point - but usually preceded by many segfaults in random binaries.
+That's somewhat inefficient. How about this?
 
-David
+s = kobj->name;
+while ((s = strchr(s, '/')))
+	*s++ = '!';
 
+-- 
+Ville Syrjälä
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
