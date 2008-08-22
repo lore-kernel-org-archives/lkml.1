@@ -1,55 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbYHVLLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbYHVLRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754066AbYHVLLt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 07:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbYHVLLm
+	id S1755394AbYHVLRU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 07:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbYHVLRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 07:11:42 -0400
-Received: from mu-out-0910.google.com ([209.85.134.186]:53173 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbYHVLLl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 07:11:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:from;
-        b=cQV427RGYFqS+3O26aGKTenH7mIrnDo9qNq/b3TEhMo0gGH5LPK2RQ1To8cdulGrfI
-         aQfA8ieKSgPyKA4lwPuvO51gISd/7vRkIfj6qttleQT3q8RuOd2hzzjsvIfpeXeLG7nU
-         A6STeTTEOCoN6q4JGJAEEGH8fBdVJ8eKJwRdY=
-Date: Fri, 22 Aug 2008 15:13:01 +0400
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "H. Peter Anvin" <hpa@kernel.org>, Dave Jones <davej@redhat.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: latest -git: WARNING: at arch/x86/kernel/ipi.c:123	send_IPI_mask_bitmask+0xc3/0xe0()
-Message-ID: <20080822111301.GA2321@x200.localdomain>
-References: <19f34abd0808191251x4eb61c50n13ecf7c90f0f3d9f@mail.gmail.com> <20080820013930.GN9807@one.firstfloor.org> <19f34abd0808192326jc10e758m99e76bbd5714c5b8@mail.gmail.com> <20080822003659.GA7581@redhat.com> <48AE20B8.9000204@kernel.org> <20080822022841.GG23334@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080822022841.GG23334@one.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: adobriyan@gmail.com
+	Fri, 22 Aug 2008 07:17:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42780 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751519AbYHVLRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 07:17:12 -0400
+Subject: Re: Fundamental Design Flaw of the Device Driver Model?
+From: Liam Girdwood <lrg@kernel.org>
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
+In-Reply-To: <f17812d70808212325m24f25518t5e8dd2fc5e7919b@mail.gmail.com>
+References: <f17812d70808212325m24f25518t5e8dd2fc5e7919b@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 22 Aug 2008 12:17:02 +0100
+Message-Id: <1219403822.10949.29.camel@odin>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 22, 2008 at 04:28:41AM +0200, Andi Kleen wrote:
-> > You may want to see if this patch fixes the problem; it does *NOT* have 
-> > the correct error behaviour (some of the intervening layers don't 
-> > propagate errors), but it should make the fault go away.
+On Fri, 2008-08-22 at 14:25 +0800, Eric Miao wrote:
+> Fundamental Design Flaw of the Device Driver Model?
+> ===================================================
 > 
-> The alternative would be to just take out those msr_on_cpu() 
-> interfaces again. Right now they are useless in the kernel,
-> but still cause problems.
+> Sorry for the misleading subject, its purpose is to draw your attention :-)
+> The ideas below are preliminary and I hope I'm not making serious mistakes
+> here.
 > 
-> They were only added for OpenVZ's vCPUs which they back then
-> promised me would hit mainline soon.
+> This question has actually been around in my mind for several months, when
+> I started to work on some devices with multiple functions. Specifically, a
+> Power Management IC (PMIC in short in the following text) usually includes
+> LEDs support (charging, indication...) audio, touch screen, power monitoring,
+> LDOs, DC-DC bucks, and possibly some others.
+> 
+> The initial two ideas came into my mind were:
+> 
+>    1. separate the functions into multiple devices, write a driver for each
+>       of these devices
+> 
 
-There were no such promises made. Reread thread.
+I've opted for this option with the WM8350 PMIC driver.
 
-> But that was some time  ago and there wasn't much progress on this.
+
+>    This, however, creates many questions you have to face with:
+> 
+>    1. on what bus shall these sub-devices be?
+>       ** this is the reason I choose to use "platform_device", at least they
+>       can reside on the platform_bus_type, thus platform_driver can be used
+>       for this sub-device
+
+My WM8350 clients are all platform_devices too.
+
+> 
+>    2. these devices are actually useless except for linking the sub-device
+>       to it's sub-device driver and of course, wasting memory. Normally in
+>       the driver, another dedicated device will be created. E.g. let's take
+>       a typical simple LED driver as an example:
+> 
+
+They are not useless as most of my client devices _need_ some sort of
+platform data to be passed on for their probe() e.g. my LED driver needs
+to know it's brightness values, trigger etc. They also all need a PMIC
+reference (passed in the platform_data) which they will need to call any
+core PMIC functions e.g. chip read/write
+
+
+> 
+>    3. Who should be the correct parent of these LED devices, the intermediate
+>       sub-device we created just now? Or the pmic device on the I2C bus?
+>       My answer is the the latter, obviously. However, writing code like:
+> 
+>       led_classdev_register(pdev->dev.parent, &led_cdev)
+
+Fwiw, I've made the WM8350 I2C driver the parent. The I2C driver also
+contains the core PMIC services e.g. IRQs, GPIO's, IO, etc 
+
+
+> A normal device layout would be:
+> 
+>                                         device specific
+> 					virtual bus type
+> 					       |
+>          platform_bus_type      i2c_bus_type   |  virtual devices
+>                  |                   |         |        |
+>      (device)    V                   V         V        V
+>    Platform BUS ---> I2C Controller ---> PMIC -+-> LED device (1)
+>                                                |
+> 					       +-> LED device (2)
+> 					       |
+> 					       +-> LED device (3)
+> 					       |
+> 					       +-> DC-DC Buck1
+> 					       |
+> 					       +-> DC-DC Buck2
+> 					       |
+> 					       +-> LDO1
+> 					       |
+> 					       +-> LDO2
+> 					       |
+> 					       +-> Backlight PWM1
+> 					       |
+> 					       +-> Backlight PWM2
+> 					       |
+> 					      ...
+> 
+
+Ok, I basically have :-
+
+                                 Platform devices
+                                     |        |
+                                     V        V
+Platform Bus --> I2C controller --> PMIC +-> LED1
+                                         +-> LED2
+                                         +-> Audio
+                                         +-> DCDC1
+                                         +-> Backlight
+
+I originally had a PMIC bus (like above) but decided it was easier just
+to use the existing kernel infrastructure. My I2C PMIC driver just
+registers the client platform_devices when it probes.
+
+Cheers
+
+Liam
 
