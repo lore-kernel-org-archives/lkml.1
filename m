@@ -1,90 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759030AbYHVMnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760320AbYHVMne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759030AbYHVMnM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 08:43:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758232AbYHVMmQ
+	id S1760320AbYHVMne (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 08:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbYHVMnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 08:42:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56259 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757986AbYHVMmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 08:42:14 -0400
-Date: Fri, 22 Aug 2008 14:42:10 +0200
-From: Karel Zak <kzak@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-Subject: [ANNOUNCE] util-linux-ng v2.14.1-rc2
-Message-ID: <20080822124210.GF6029@nb.net.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 22 Aug 2008 08:43:15 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:62140 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759039AbYHVMnM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 08:43:12 -0400
+Subject: Re: char/tpm: tpm_infineon no longer loaded for HP 2510p laptop
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: ambx1@neo.rr.com, elendil@planet.nl, trenn@suse.de,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       tpm@selhorst.net, rjw@sisk.pl, greg@kroah.com
+In-Reply-To: <200808220606.39722.bjorn.helgaas@hp.com>
+References: <24565067.73831219353513508.JavaMail.servlet@kundenserver>
+	 <200808211558.23725.bjorn.helgaas@hp.com>
+	 <1219394447.20723.51.camel@lgn.site>
+	 <200808220606.39722.bjorn.helgaas@hp.com>
+Content-Type: text/plain
+Date: Fri, 22 Aug 2008 14:43:05 +0200
+Message-Id: <1219408985.20723.66.camel@lgn.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+tdnrR0TsQoWVYLux9dTvj+Gb88wApidwThhy
+ 5kDiBaXFleFDbMbjm5B5o1EKq4NtfjUw73I7ws8FlyZytlyTJv
+ yQQ31BOZJ1WM4laO+X/XUOV/7zJam1O
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-08-22 at 06:06 -0600, Bjorn Helgaas wrote:
+> On Friday 22 August 2008 2:40:46 am Kay Sievers wrote:
+> > On Thu, 2008-08-21 at 15:58 -0600, Bjorn Helgaas wrote:
+> > > On Thursday 21 August 2008 03:18:33 pm Kay Sievers wrote:
+> > > > Bjorn Helgaas wrote:
+> > > > >Is there a "complete idiot's guide to modules
+> > > > >and udev"?  There's precious little in Documentation/ other than a
+> > > > > bunch of sample rules for various subsystems.
+> > > >
+> > > > I don't know of any specific documentation, but it's pretty easy:
+> > > > ...
+> > >
+> > > Thanks for the tutorial.
+> > >
+> > > > >Could I fix this by implementing pnp_device_uevent()?
+> > > >
+> > > > Only if we change the format of the current pnp device aliases
+> > > > to something like:
+> > > >   pnp*:XYZ2324:*
+> > > >   pnp*:ABC1234:*
+> > > >
+> > > > and create a "modalias" file at every pnp device, and add MODALIAS to
+> > > > the uevent. The modalias must contains all ID's which belong to that
+> > > > device in one single string, separated and terminated by a special
+> > > > character, something like:
+> > > >   pnp:ABC1234:XYZ2324:RST3445:
+> > >
+> > > This all sounds like good stuff that I'd like PNP to have.  Is there
+> > > any reason I shouldn't implement pnp_device_uevent()?  Any backwards-
+> > > compatibility issues?
+> >
+> > Yeah, people probably use the current aliases in modprobe.conf files,
+> > I'm not sure, if we can change them.
+> >
+> > > I think that sounds like a better solution than doing this PNP ID
+> > > mangling.
+> >
+> > Sure, that will go with the acpi aliases + acpi modalias, or if you
+> > change pnp to have proper pnp aliases + pnp modalias, then with them,
+> > yes.
+> 
+> Since PNP currently doesn't generate any uevents or modalias files,
+> I expect that a non-ACPI system will be unable to autoload modules
+> for ISAPNP or PNPBIOS devices.  Right?
 
-The second util-linux-ng 2.14.1 release candidate is available at
+They do create events, but without modalias. The shell script hack,
+which udev runs, will make the event behave like it contained one.
 
-    ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/
+Kay
 
-(Note that 2.14.1 is stable maintenance release.)
-
-Feedback and bug reports, as always, are welcomed.
-
-
-	Karel
-
-
-
-Util-linux-ng 2.14.1 Release Notes
-==================================
-
-ChangeLog between v2.14 and v2.14.1
------------------------------------
-
- For more details see ChangeLog files at:
- ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.14/
-
-build-sys:
-   - cleanup sys-utils/Makefile.am  [Karel Zak]
-   - fix dmesg.1 installation  [Karel Zak]
-   - release++ (v2.14.1-rc1)  [Karel Zak]
-   - tgets is not in ncurses but in tinfo  [Arkadiusz Miskiewicz]
-docs:
-   - update AUTHORS file  [Karel Zak]
-   - update v2.14.1 ReleaseNotes  [Karel Zak]
-fdisk:
-   - don't check for GPT when asked for disk size only  [Karel Zak]
-hwclock:
-   - omit warning about drift if --noadjfile given  [Matthias Koenig]
-   - unshadow a diagnostic printf  [Kalev Soikonen]
-ipcs:
-   - ungettextize the spacing of the table headers  [Benno Schulenberg]
-losetup:
-   - remove unnecessary minor number check  [Karel Zak]
-mount:
-   - add docs about utf8=0 for vfat  [Karel Zak]
-   - add fallback for versionsort()  [Karel Zak]
-   - add info about tz=UTC option for FAT to mount.8  [Karel Zak]
-   - add norealtime to mount.8  [Karel Zak]
-po:
-   - add zh_CN.po (from translationproject.org)  [Ray Wang]
-   - merge changes  [Karel Zak]
-   - update cs.po (from translationproject.org)  [Petr Pisar]
-   - update nl.po (from translationproject.org)  [Benno Schulenberg]
-rtcwake:
-   - cleanup return codes  [Karel Zak]
-   - prefer RTC_WKALM_SET over RTC_ALM_SET  [Gabriel Burt]
-scriptreplay:
-   - new implementation is out-of-sync  [Karel Zak]
-selinux:
-   - is_selinux_enabled() returns 0, 1 and -1  [Karel Zak]
-sfdisk:
-   - print version should end with a newline  [Denis ChengRq]
-umount:
-   - improve "-d" option for autoclear loops  [Karel Zak]
-write:
-   - doesn't check for tty group  [Karel Zak]
--- 
- Karel Zak  <kzak@redhat.com>
