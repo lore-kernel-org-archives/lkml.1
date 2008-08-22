@@ -1,311 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757125AbYHVSwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbYHVS4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757125AbYHVSwl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 14:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbYHVSwL
+	id S1754950AbYHVS4T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 14:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYHVS4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 14:52:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33721 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751870AbYHVSwJ (ORCPT
+	Fri, 22 Aug 2008 14:56:10 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:59818 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751928AbYHVS4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 14:52:09 -0400
-Date: Fri, 22 Aug 2008 11:51:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Constantin Baranov <const@const.mimas.ru>
-Cc: linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: [PATCH 2.6.27-rc3] led: driver for LEDs on PCEngines ALIX.2 and
- ALIX.3 boards
-Message-Id: <20080822115150.6b3907a4.akpm@linux-foundation.org>
-In-Reply-To: <48AB019D.6080302@const.mimas.ru>
-References: <48AB019D.6080302@const.mimas.ru>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 22 Aug 2008 14:56:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ofhot60jiHmsKHAxJSR3mNuh+z/XwcGmjz2ZISBKIXUhVmTn8g5OI6scWI8vTkgDWf
+         S5NjZ7osJtCJtHSzoxfWaNmZ1oFEYeBG8kHClwGKxlt9vH8Pt7fa5L47RB2iEdORI5kT
+         Sf7P/NsyNGjdioRGe2/gNv0g4JoGRpH6c5gns=
+Message-ID: <86802c440808221156h7ef48973hb5db8cf2b01ac27b@mail.gmail.com>
+Date: Fri, 22 Aug 2008 11:56:08 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Robert Richter" <robert.richter@amd.com>
+Subject: Re: [PATCH] x86: fix: make PCI ECS for AMD CPUs hotplug capable
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Jan Beulich" <jbeulich@novell.com>
+In-Reply-To: <1219429418-29023-2-git-send-email-robert.richter@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48AD82D5.76E4.0078.0@novell.com>
+	 <1219429418-29023-2-git-send-email-robert.richter@amd.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Aug 2008 22:23:41 +0500
-Constantin Baranov <const@const.mimas.ru> wrote:
-
-> From: Constantin Baranov <const@tltsu.ru>
-> 
-> Driver for LEDs on PCEngines ALIX.2 and ALIX.3 system boards.
-> 
-> Signed-off-by: Constantin Baranov <const@tltsu.ru>
+On Fri, Aug 22, 2008 at 11:23 AM, Robert Richter <robert.richter@amd.com> wrote:
+> Until now, PCI ECS setup was performed at boot time only and for cpus
+> that are enabled then. This patch fixes this and adds cpu hotplug.
+>
+> Tests sequence (check if ECS bit is set when bringing cpu online again):
+>
+>  # ( perl -e 'sysseek(STDIN, 0xC001001F, 0)'; hexdump -n 8 -e '2/4 "%08x " "\n"' )   < /dev/cpu/1/msr
+>  00000008 00404010
+>  # ( perl -e 'sysseek(STDOUT, 0xC001001F, 0); print pack "l*", 8, 0x00400010' ) > /dev/cpu/1/msr
+>  # ( perl -e 'sysseek(STDIN, 0xC001001F, 0)'; hexdump -n 8 -e '2/4 "%08x " "\n"' )   < /dev/cpu/1/msr
+>  00000008 00400010
+>  # echo 0 > /sys/devices/system/cpu/cpu1/online
+>  # echo 1 > /sys/devices/system/cpu/cpu1/online
+>  # ( perl -e 'sysseek(STDIN, 0xC001001F, 0)'; hexdump -n 8 -e '2/4 "%08x " "\n"' )   < /dev/cpu/1/msr
+>  00000008 00404010
+>
+> Cc: Jan Beulich <jbeulich@novell.com>
+> Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
 > ---
->  drivers/leds/Kconfig     |    6 +
->  drivers/leds/Makefile    |    1 
->  drivers/leds/leds-alix.c |  146 +++++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 153 insertions(+)
-> 
-> diff -uprN linux-2.6.27-rc3/drivers/leds/Kconfig linux-2.6.27-rc3-alix/drivers/leds/Kconfig
-> --- linux-2.6.27-rc3/drivers/leds/Kconfig	2008-08-19 20:14:06.355647765 +0500
-> +++ linux-2.6.27-rc3-alix/drivers/leds/Kconfig	2008-08-19 20:20:08.023147125 +0500
-> @@ -77,6 +77,12 @@ config LEDS_WRAP
->  	help
->  	  This option enables support for the PCEngines WRAP programmable LEDs.
->  
-> +config LEDS_ALIX
-> +	tristate "LED support for ALIX series"
-> +	depends on LEDS_CLASS && X86
-> +	help
-> +	  This option enables support for the PCEngines ALIX.2 and ALIX.3 LEDs.
+>  arch/x86/pci/amd_bus.c |   35 +++++++++++++++++++++++++++++++----
+>  1 files changed, 31 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
+> index 4a6f1a6..6a0fca7 100644
+> --- a/arch/x86/pci/amd_bus.c
+> +++ b/arch/x86/pci/amd_bus.c
+> @@ -1,6 +1,7 @@
+>  #include <linux/init.h>
+>  #include <linux/pci.h>
+>  #include <linux/topology.h>
+> +#include <linux/cpu.h>
+>  #include "pci.h"
+>
+>  #ifdef CONFIG_X86_64
+> @@ -565,7 +566,7 @@ static int __init early_fill_mp_bus_info(void) { return 0; }
+>
+>  #define ENABLE_CF8_EXT_CFG      (1ULL << 46)
+>
+> -static void enable_pci_io_ecs_per_cpu(void *unused)
+> +static void enable_pci_io_ecs(void *unused)
+>  {
+>        u64 reg;
+>        rdmsrl(MSR_AMD64_NB_CFG, reg);
+> @@ -575,13 +576,39 @@ static void enable_pci_io_ecs_per_cpu(void *unused)
+>        }
+>  }
+>
+> -static int __init enable_pci_io_ecs(void)
+> +static int __cpuinit amd_cpu_notify(struct notifier_block *self,
+> +                                   unsigned long action, void *hcpu)
+>  {
+> +       int cpu = (long)hcpu;
+> +       switch(action) {
+> +       case CPU_ONLINE:
+> +       case CPU_ONLINE_FROZEN:
+> +               smp_call_function_single(cpu, enable_pci_io_ecs, NULL, 0);
+> +               break;
+> +       default:
+> +               break;
+> +       }
+> +       return NOTIFY_OK;
+> +}
 > +
->  config LEDS_H1940
->  	tristate "LED Support for iPAQ H1940 device"
->  	depends on LEDS_CLASS && ARCH_H1940
-> diff -uprN linux-2.6.27-rc3/drivers/leds/leds-alix.c linux-2.6.27-rc3-alix/drivers/leds/leds-alix.c
-> --- linux-2.6.27-rc3/drivers/leds/leds-alix.c	1970-01-01 04:00:00.000000000 +0400
-> +++ linux-2.6.27-rc3-alix/drivers/leds/leds-alix.c	2008-08-19 21:59:05.207153570 +0500
-> @@ -0,0 +1,146 @@
-> +/*
-> + * LEDs driver for PCEngines ALIX.2 and ALIX.3
-> + *
-> + * Copyright (C) 2008 Constantin Baranov <const@tltsu.ru>
-> + */
-> +
-> +#include <asm/io.h>
-
-Please use linux/io.h.  scripts/checkpatch.pl has a nice warning for this.
-
-> +#include <linux/err.h>
-> +#include <linux/kernel.h>
-> +#include <linux/leds.h>
-> +#include <linux/platform_device.h>
-> +
-> +struct alix_led {
-> +	struct led_classdev cdev;
-> +	unsigned short port;
-> +	unsigned int on_value;
-> +	unsigned int off_value;
+> +static struct notifier_block __cpuinitdata amd_cpu_notifier = {
+> +       .notifier_call  = amd_cpu_notify,
 > +};
 > +
-> +static void alix_led_set(struct led_classdev *led_cdev,
-> +			 enum led_brightness brightness)
+> +static int __init pci_io_ecs_init(void)
 > +{
-> +	struct alix_led *led_dev =
-> +		container_of(led_cdev, struct alix_led, cdev);
-> +	if (brightness)
-> +		outl(led_dev->on_value, led_dev->port);
-> +	else
-> +		outl(led_dev->off_value, led_dev->port);
-> +}
+> +       int cpu;
 > +
-> +static struct alix_led alix_leds[] = {
-> +	{
-> +		.cdev = {
-> +			.name = "alix:1",
-> +			.brightness_set = alix_led_set,
-> +		},
-> +		.port = 0x6100,
-> +		.on_value = 1 << 22,
-> +		.off_value = 1 << 6,
-> +	},
-> +	{
-> +		.cdev = {
-> +			.name = "alix:2",
-> +			.brightness_set = alix_led_set,
-> +		},
-> +		.port = 0x6180,
-> +		.on_value = 1 << 25,
-> +		.off_value = 1 << 9,
-> +	},
-> +	{
-> +		.cdev = {
-> +			.name = "alix:3",
-> +			.brightness_set = alix_led_set,
-> +		},
-> +		.port = 0x6180,
-> +		.on_value = 1 << 27,
-> +		.off_value = 1 << 11,
-> +	},
-> +};
+>        /* assume all cpus from fam10h have IO ECS */
+>         if (boot_cpu_data.x86 < 0x10)
+>                return 0;
+> -       on_each_cpu(enable_pci_io_ecs_per_cpu, NULL, 1);
 > +
-> +#ifdef CONFIG_PM
-> +
-> +static int alix_led_suspend(struct platform_device *dev, pm_message_t state)
-> +{
-> +	int i;
-> +	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
-> +		led_classdev_suspend(&alix_leds[i].cdev);
-> +	return 0;
-> +}
-> +
-> +static int alix_led_resume(struct platform_device *dev)
-> +{
-> +	int i;
-> +	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
-> +		led_classdev_resume(&alix_leds[i].cdev);
-> +	return 0;
-> +}
-> +
-> +#else
-> +
-> +#define alix_led_suspend NULL
-> +#define alix_led_resume NULL
-> +
-> +#endif
-> +
-> +static int __init alix_led_probe(struct platform_device *pdev)
-> +{
-> +	int i;
-> +	int ret = 0;
-> +	
-> +	for (i = 0; i < ARRAY_SIZE(alix_leds) && ret >= 0; i++)
-> +		ret = led_classdev_register(&pdev->dev, &alix_leds[i].cdev);
-> +
-> +	if (ret < 0) {
-> +		for (i = i - 2; i >= 0; i--)
+> +       register_cpu_notifier(&amd_cpu_notifier);
+> +       for_each_online_cpu(cpu)
+> +               amd_cpu_notify(&amd_cpu_notifier, (unsigned long)CPU_ONLINE,
+> +                              (void *)(long)cpu);
 
-this is off-by-one, surely.
+wonder if those two lines should be reversed.
 
-If we get here with i==1, we'll loop 4 billion times.
-
-> +			led_classdev_unregister(&alix_leds[i].cdev);
-> +	}
+>        pci_probe |= PCI_HAS_IO_ECS;
 > +
-> +	return ret;
-> +}
-> +
-> +static int alix_led_remove(struct platform_device *pdev)
-> +{
-> +	int i;
-> +	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
-> +		led_classdev_unregister(&alix_leds[i].cdev);
-> +	return 0;
-> +}
-
-A blank line between end-of-locals and start-of-code is conventional.
-
-> +static struct platform_driver alix_led_driver = {
-> +	.remove = alix_led_remove,
-> +	.suspend = alix_led_suspend,
-> +	.resume = alix_led_resume,
-> +	.driver = {
-> +		.name = KBUILD_MODNAME,
-> +		.owner = THIS_MODULE,
-> +	},
-> +};
-> +
-> +static struct platform_device *pdev;
-> +
-> +static int __init alix_led_init(void)
-> +{
-> +	int ret;
-> +	pdev = platform_device_register_simple(KBUILD_MODNAME, -1, NULL, 0);
-> +	if (!IS_ERR(pdev)) {
-> +		ret = platform_driver_probe(&alix_led_driver, alix_led_probe);
-> +		if (ret)
-> +			platform_device_unregister(pdev);
-> +	} else
-> +		ret = PTR_ERR(pdev);
-> +	return ret;
-> +}
-> +
-> +static void __exit alix_led_exit(void)
-> +{
-> +	platform_device_unregister(pdev);
-> +	platform_driver_unregister(&alix_led_driver);
-> +}
-> +
-> +module_init(alix_led_init);
-> +module_exit(alix_led_exit);
-> +
-> +MODULE_AUTHOR("Constantin Baranov <const@tltsu.ru>");
-> +MODULE_DESCRIPTION("PCEngines ALIX LED driver");
-> +MODULE_LICENSE("GPL");
-> diff -uprN linux-2.6.27-rc3/drivers/leds/Makefile linux-2.6.27-rc3-alix/drivers/leds/Makefile
-> --- linux-2.6.27-rc3/drivers/leds/Makefile	2008-08-19 20:14:06.365646999 +0500
-> +++ linux-2.6.27-rc3-alix/drivers/leds/Makefile	2008-08-19 20:20:22.485647344 +0500
-> @@ -13,6 +13,7 @@ obj-$(CONFIG_LEDS_S3C24XX)		+= leds-s3c2
->  obj-$(CONFIG_LEDS_AMS_DELTA)		+= leds-ams-delta.o
->  obj-$(CONFIG_LEDS_NET48XX)		+= leds-net48xx.o
->  obj-$(CONFIG_LEDS_WRAP)			+= leds-wrap.o
-> +obj-$(CONFIG_LEDS_ALIX)			+= leds-alix.o
->  obj-$(CONFIG_LEDS_H1940)		+= leds-h1940.o
->  obj-$(CONFIG_LEDS_COBALT_QUBE)		+= leds-cobalt-qube.o
->  obj-$(CONFIG_LEDS_COBALT_RAQ)		+= leds-cobalt-raq.o
-
-
-How's this look?
-
-From: Andrew Morton <akpm@linux-foundation.org>
-
-- cleanups
-
-- fix off-by-one on error path
-
-Cc: Constantin Baranov <const@tltsu.ru>
-Cc: Richard Purdie <rpurdie@rpsys.net>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- drivers/leds/leds-alix.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-diff -puN drivers/leds/leds-alix.c~led-driver-for-leds-on-pcengines-alix2-and-alix3-boards-fix drivers/leds/leds-alix.c
---- a/drivers/leds/leds-alix.c~led-driver-for-leds-on-pcengines-alix2-and-alix3-boards-fix
-+++ a/drivers/leds/leds-alix.c
-@@ -4,7 +4,7 @@
-  * Copyright (C) 2008 Constantin Baranov <const@tltsu.ru>
-  */
- 
--#include <asm/io.h>
-+#include <linux/io.h>
- #include <linux/err.h>
- #include <linux/kernel.h>
- #include <linux/leds.h>
-@@ -22,6 +22,7 @@ static void alix_led_set(struct led_clas
- {
- 	struct alix_led *led_dev =
- 		container_of(led_cdev, struct alix_led, cdev);
-+
- 	if (brightness)
- 		outl(led_dev->on_value, led_dev->port);
- 	else
-@@ -63,6 +64,7 @@ static struct alix_led alix_leds[] = {
- static int alix_led_suspend(struct platform_device *dev, pm_message_t state)
- {
- 	int i;
-+
- 	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
- 		led_classdev_suspend(&alix_leds[i].cdev);
- 	return 0;
-@@ -71,6 +73,7 @@ static int alix_led_suspend(struct platf
- static int alix_led_resume(struct platform_device *dev)
- {
- 	int i;
-+
- 	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
- 		led_classdev_resume(&alix_leds[i].cdev);
- 	return 0;
-@@ -92,7 +95,7 @@ static int __init alix_led_probe(struct 
- 		ret = led_classdev_register(&pdev->dev, &alix_leds[i].cdev);
- 
- 	if (ret < 0) {
--		for (i = i - 2; i >= 0; i--)
-+		while (--i >= 0)
- 			led_classdev_unregister(&alix_leds[i].cdev);
- 	}
- 
-@@ -102,6 +105,7 @@ static int __init alix_led_probe(struct 
- static int alix_led_remove(struct platform_device *pdev)
- {
- 	int i;
-+
- 	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
- 		led_classdev_unregister(&alix_leds[i].cdev);
- 	return 0;
-@@ -122,6 +126,7 @@ static struct platform_device *pdev;
- static int __init alix_led_init(void)
- {
- 	int ret;
-+
- 	pdev = platform_device_register_simple(KBUILD_MODNAME, -1, NULL, 0);
- 	if (!IS_ERR(pdev)) {
- 		ret = platform_driver_probe(&alix_led_driver, alix_led_probe);
-_
-
+>        return 0;
+>  }
+>
+> @@ -591,7 +618,7 @@ static int __init amd_postcore_init(void)
+>                return 0;
+>
+>        early_fill_mp_bus_info();
+> -       enable_pci_io_ecs();
+> +       pci_io_ecs_init();
+>
+>        return 0;
+>  }
+> --
+> 1.5.6.4
+>
+>
+>
