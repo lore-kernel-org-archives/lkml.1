@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753681AbYHWGry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbYHWG5M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753681AbYHWGry (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 02:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYHWGrp
+	id S1753237AbYHWG5M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 02:57:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbYHWG44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 02:47:45 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:59070 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1749667AbYHWGro (ORCPT
+	Sat, 23 Aug 2008 02:56:56 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:59460 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751652AbYHWG4y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 02:47:44 -0400
-Message-ID: <48AFB1C2.5020806@zytor.com>
-Date: Fri, 22 Aug 2008 23:44:18 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Sat, 23 Aug 2008 02:56:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Ve7miroFz4SNby8cL53gyEZwh2hrfbg6JYOSmCxR/VIchm+MutgPoICEASLssHEsNL
+         65osiPYZ816pjajX8rQKoBa0p972ZpZk84PInZT6Dxn28Kvf9+lXEViD9hwQB3tUAAsR
+         T2Kuen3n4dwWfP1lfDFnyJtR25KBkMq458H3k=
+Message-ID: <86802c440808222356r716fe370v49519486ae74aa30@mail.gmail.com>
+Date: Fri, 22 Aug 2008 23:56:54 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "David Witbrodt" <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Vivek Goyal" <vgoyal@redhat.com>,
+       "Bill Fink" <billfink@mindspring.com>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, netdev <netdev@vger.kernel.org>
+In-Reply-To: <86802c440808222241k36c95cd2h8e24031be1dc7b8@mail.gmail.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@kernel.org>,
-       Dave Jones <davej@redhat.com>, Vegard Nossum <vegard.nossum@gmail.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: latest -git: WARNING: at arch/x86/kernel/ipi.c:123	send_IPI_mask_bitmask+0xc3/0xe0()
-References: <19f34abd0808191251x4eb61c50n13ecf7c90f0f3d9f@mail.gmail.com> <20080820013930.GN9807@one.firstfloor.org> <19f34abd0808192326jc10e758m99e76bbd5714c5b8@mail.gmail.com> <20080822003659.GA7581@redhat.com> <48AE20B8.9000204@kernel.org> <20080822022841.GG23334@one.firstfloor.org> <48AE5BB8.5080701@zytor.com> <20080822093518.GK23334@one.firstfloor.org> <48AEEC4F.3060003@zytor.com> <48AFB14F.7090407@goop.org>
-In-Reply-To: <48AFB14F.7090407@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <773466.71707.qm@web82102.mail.mud.yahoo.com>
+	 <86802c440808222241k36c95cd2h8e24031be1dc7b8@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> H. Peter Anvin wrote:
->> Well, smp_call_function_single already does all necessary locking; it
->> makes more sense for it to check that what it's about to call still
->> exists while inside the lock, instead of requiring the higher layers
->> to guarantee that cannot happen on it.  This is simply a matter of the
->> cost of checking at this point being quite low. 
-> 
-> It does, already doesn't it?  Hm, smp_call_function_mask() ands the
-> provided mask with the online mask, but it doesn't look like
-> smp_call_function_single() does the equivalent.
+please send out after booting with hpet=disable
+lspci -tv
+lspci -vvxxx
 
-It doesn't, and that's how this bug was introduced.  It's a trivial add 
-(see test patch already posted) and should hardly matter in terms of 
-execution time.
-
-I'll write up a clean patch with all the error propagation tomorrow or 
-Sunday.
-
-	-hpa
+YH
