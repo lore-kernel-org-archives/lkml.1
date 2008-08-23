@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbYHWNDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755708AbYHWNDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146AbYHWNDV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 09:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbYHWNBG
+	id S1755708AbYHWNDw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 09:03:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbYHWNDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 09:01:06 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:19071 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752706AbYHWNA7 (ORCPT
+	Sat, 23 Aug 2008 09:03:18 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:42837 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755359AbYHWNDR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 09:00:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=J86cy+J+GaZ63gkn3ZAvuDasx/uw134lBUA82m51Dk+mxc+m4trZZpNL/Y9OJ4EMGY
-         iF2tHqrPyUZadCeLZmxwkaqD+JcTfnizJeKAVWMcjIOST9aWWmXOQB9mR5LlQHHsjC4E
-         5KicyxZK+yGkwCNymd+HPXmwwJwj9d6vmgh4Y=
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: mingo@elte.hu, macro@linux-mips.org
-Cc: yhlu.kernel@gmail.com, hpa@zytor.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: [PATCH 8/8] x86: apic - unify smp_apic_timer_interrupt
-Date: Sat, 23 Aug 2008 17:01:25 +0400
-Message-Id: <770f9ab03c2f99a7910cd2c9aece885cf668b3ed.1219491572.git.gorcunov@gmail.com>
-X-Mailer: git-send-email 1.6.0.6.gc667
-In-Reply-To: <1219496485-9513-1-git-send-email-gorcunov@gmail.com>
-References: <1219496485-9513-1-git-send-email-gorcunov@gmail.com>
-In-Reply-To: <a02f3dc9088b9b6c0d22fa77839fdd9d5309ec97.1219491572.git.gorcunov@gmail.com>
-References: <a02f3dc9088b9b6c0d22fa77839fdd9d5309ec97.1219491572.git.gorcunov@gmail.com>
+	Sat, 23 Aug 2008 09:03:17 -0400
+Date: Sat, 23 Aug 2008 15:03:05 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, schwidefsky@de.ibm.com,
+       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] s390: use kernel/uid.c
+Message-ID: <20080823130305.GA5683@osiris.boeblingen.de.ibm.com>
+References: <20080810204031.GC8399@cs181140183.pp.htv.fi> <200808151734.43710.arnd@arndb.de> <20080815190043.GC1973@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080815190043.GC1973@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
- arch/x86/kernel/apic_32.c |    3 +++
- arch/x86/kernel/apic_64.c |    2 ++
- 2 files changed, 5 insertions(+), 0 deletions(-)
+On Fri, Aug 15, 2008 at 10:00:43PM +0300, Adrian Bunk wrote:
+> On Fri, Aug 15, 2008 at 05:34:43PM +0200, Arnd Bergmann wrote:
+> > On Sunday 10 August 2008, Adrian Bunk wrote:
+> > > Unless I missed a twist the only reason for s390 to not use the code in 
+> > > kernel/uid.c was that it copied the code from sparc64 (that is now 
+> > > being changed in a similar way by David).
+> > > 
+> > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > 
+> > I tried doing this before but couldn't figure out an easy way,
+> > but the circumstances may have changed by now.
+> > 
+> > Back then, the basic problem was that CONFIG_UID16 had side-effects
+> > that break the 64-bit versions of some syscalls. I don't see that
+> > being the case any more, but from what I can tell, you still need
+> > to add definitions for __kernel_old_uid_t etc on s390x.
+> 
+> They are already in arch/s390/include/asm/posix_types.h
+> 
+> The one thing I can say about my patch is that it compiles with the 
+> defconfig (where the uid16 code is used due to COMPAT=y).
 
-diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-index 0c608ac..a7193cb 100644
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -718,6 +718,9 @@ void smp_apic_timer_interrupt(struct pt_regs *regs)
- 	 * Besides, if we don't timer interrupts ignore the global
- 	 * interrupt lock, which is the WrongThing (tm) to do.
- 	 */
-+#ifdef CONFIG_X86_64
-+	exit_idle();
-+#endif
- 	irq_enter();
- 	local_apic_timer_interrupt();
- 	irq_exit();
-diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
-index 99b5f97..bcfa91d 100644
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -617,7 +617,9 @@ void smp_apic_timer_interrupt(struct pt_regs *regs)
- 	 * Besides, if we don't timer interrupts ignore the global
- 	 * interrupt lock, which is the WrongThing (tm) to do.
- 	 */
-+#ifdef CONFIG_X86_64
- 	exit_idle();
-+#endif
- 	irq_enter();
- 	local_apic_timer_interrupt();
- 	irq_exit();
--- 
-1.6.0.6.gc667
-
+A lot of stuff compiles ;) .
+If I remember correctly this doesn't work because the types of
+__kernel_old_uid_t are different on 64BIT on !64BIT on s390.
+So you can't use the generic uid16 code for compat calls.
+Tried the same more than two years ago and decided it wasn't worth
+the effort: http://lkml.org/lkml/2006/7/10/49
