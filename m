@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbYHXJEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbYHWT7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756391AbYHXJEz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 05:04:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754875AbYHXJDG
+	id S1757563AbYHWT7U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 15:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757003AbYHWTrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 05:03:06 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:44068 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754836AbYHXJDE (ORCPT
+	Sat, 23 Aug 2008 15:47:43 -0400
+Received: from web82102.mail.mud.yahoo.com ([209.191.84.215]:41615 "HELO
+	web82102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756991AbYHWTrm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 05:03:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Rw4QYdACt6ImcZPi4a+huVl89eJ5MoC0T7pDG36U27eOve69pwEVgQ4IO1EGqyVCYT
-         TUgBerFUJi5VnSQoTksL3Zp3n0LeTMgKwleEj12sSy3gPwdqi+NAH7wRwyKu6gddLypR
-         ZnBNB5tVYQDyi8emqW9Ly8SSEJlZ+iou36W0o=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Cyrill Gorcunov <gorcunov@gmail.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 06/18] x86: apic_32.c should use __cpuinit section
-Date: Sun, 24 Aug 2008 02:01:44 -0700
-Message-Id: <1219568516-681-7-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1219568516-681-1-git-send-email-yhlu.kernel@gmail.com>
-References: <1219568516-681-1-git-send-email-yhlu.kernel@gmail.com>
+	Sat, 23 Aug 2008 15:47:42 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=3cqg3fDvRfVprvLSlT0prxujUVTs8FW1XlisUmqVf7mDTF6Fw2iYLjoXO4SjXh4QL/df5DPM0dU0JE0eX/CWYb4R0xEba6YrJR36DGmQTQ7KG8S+WZkwkXej/gPwvBasyoGwaycBQ7NGCvfsZfs/wNPNpDnQIwHo+WWpKnXPPYA=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Sat, 23 Aug 2008 12:47:41 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
+To: Yinghai Lu <yhlu.kernel@gmail.com>,
+       Rufus & Azrael <rufus-azrael@numericable.fr>
+Cc: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kenrel@gmail.com>, Ingo Molnar <mingo@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <772766.85250.qm@web82102.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cyrill Gorcunov <gorcunov@gmail.com>
 
-All callers are __init or __cpuinit so there is no need
-to hold this code without CPU_HOTPLUG being set.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
----
- arch/x86/kernel/apic_32.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+> please check v2.
 
-diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-index 42acb3a..63bebb3 100644
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -383,7 +383,7 @@ static void lapic_timer_broadcast(cpumask_t mask)
-  * Setup the local APIC timer for this CPU. Copy the initilized values
-  * of the boot CPU and register the clock event in the framework.
-  */
--static void __devinit setup_APIC_timer(void)
-+static void __cpuinit setup_APIC_timer(void)
- {
- 	struct clock_event_device *levt = &__get_cpu_var(lapic_events);
- 
-@@ -652,7 +652,7 @@ void __init setup_boot_APIC_clock(void)
- 	setup_APIC_timer();
- }
- 
--void __devinit setup_secondary_APIC_clock(void)
-+void __cpuinit setup_secondary_APIC_clock(void)
- {
- 	setup_APIC_timer();
- }
-@@ -1713,7 +1713,7 @@ static struct sys_device device_lapic = {
- 	.cls	= &lapic_sysclass,
- };
- 
--static void __devinit apic_pm_activate(void)
-+static void __cpuinit apic_pm_activate(void)
- {
- 	apic_pm_state.active = 1;
- }
--- 
-1.5.4.5
+Thanks Yinghai.  This still applies to a different line number in
+v2.6.27-rc4 than what the patch indicates.  I also get a warning
+about unused variable "i" (I commented it out in my previous fix,
+but not this time).
 
+At any rate, I still produces a kernel that hangs at the typical
+location.
+
+
+Dave W.
