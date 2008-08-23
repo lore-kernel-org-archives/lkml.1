@@ -1,81 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbYHWMYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbYHWMbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754216AbYHWMYW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 08:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbYHWMYH
+	id S1754021AbYHWMbT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 08:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbYHWMbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 08:24:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36730
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752764AbYHWMYF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 08:24:05 -0400
-Date: Sat, 23 Aug 2008 05:24:03 -0700 (PDT)
-Message-Id: <20080823.052403.235513545.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 23 Aug 2008 08:31:07 -0400
+Received: from khc.piap.pl ([195.187.100.11]:60613 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751563AbYHWMbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 08:31:06 -0400
+To: Jari Aalto <jari.aalto@cante.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25 DMA: Out of SW-IOMMU space - Asus M2N32 AMD 8GB memory
+References: <87od3k2egi.fsf@jondo.cante.net>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sat, 23 Aug 2008 14:31:03 +0200
+In-Reply-To: <87od3k2egi.fsf@jondo.cante.net> (Jari Aalto's message of "Sat\, 23 Aug 2008 13\:49\:49 +0300")
+Message-ID: <m3vdxrhq0o.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jari Aalto <jari.aalto@cante.net> writes:
 
-Here are some bug fixes:
+>         [1] Aug 21 11:01:19 jondo kernel: [174628.275859] DMA: Out of SW-IOMMU space for 65536 bytes at device 0000:00:0d.0
+>         model name      : AMD Athlon(tm) X2 Dual Core Processor
+>         BE-2400
 
-1) Zebra routing daemon is confused because ipv6 netlink
-   event messages don't set the protocol field properly
-   like ipv4 ones do.  Fix from Stephen Hemminger.
-
-2) Insufficient qdisc list locking leads to Qdisc corruption
-   and oops.  Fix from Jarek Poplawski.
-
-3) Qdisc watchdog timer can race with dev_deactivate(), put
-   state tests in the slow path to prevent this.  Also from
-   Jarek Poplawski.
-
-4) Several SCTP-AUTH sock options are user OOPS'able.  Fix from Vlad
-   Yasevich.
-
-5) Fix smp_processor_id() usage by icmp_sk(), needs to disable
-   preemption.  Fix from Denis V. Lunev
-
-Please pull, thanks a lot.
-
-The following changes since commit 6a55617ed5d1aa62b850de2cf66f5ede2eef4825:
-  Linus Torvalds (1):
-        Linux v2.6.27-rc4
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Denis V. Lunev (1):
-      icmp: icmp_sk() should not use smp_processor_id() in preemptible code
-
-Jarek Poplawski (2):
-      pkt_sched: Fix qdisc_watchdog() vs. dev_deactivate() race
-      pkt_sched: Fix qdisc list locking
-
-Stephen Hemminger (1):
-      ipv6: protocol for address routes
-
-Vlad Yasevich (1):
-      sctp: fix potential panics in the SCTP-AUTH API.
-
- include/net/pkt_sched.h   |    1 +
- include/net/sch_generic.h |    5 +++
- net/ipv4/icmp.c           |   22 +++++++----
- net/ipv6/addrconf.c       |    1 +
- net/ipv6/icmp.c           |   23 ++++++------
- net/sched/sch_api.c       |   48 +++++++++++++++++++++++---
- net/sched/sch_cbq.c       |    4 ++
- net/sched/sch_generic.c   |    5 +--
- net/sctp/endpointola.c    |    4 +-
- net/sctp/socket.c         |   85 ++++++++++++++++++++++++++++++++++----------
- 10 files changed, 149 insertions(+), 49 deletions(-)
+grep GART_IOMMU .config
+-- 
+Krzysztof Halasa
