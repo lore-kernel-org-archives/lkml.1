@@ -1,106 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752688AbYHWEzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbYHWFJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752688AbYHWEzn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 00:55:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYHWEzh
+	id S1752758AbYHWFJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 01:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbYHWFJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 00:55:37 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:59094 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751148AbYHWEzg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 00:55:36 -0400
-Date: Sat, 23 Aug 2008 14:55:20 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Karen Xie <kxie@chelsio.com>, netdev@vger.kernel.org,
-       open-iscsi@googlegroups.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jgarzik@pobox.com, davem@davemloft.net,
-       michaelc@cs.wisc.edu, swise@opengridcomputing.com, rdreier@cisco.com,
-       daisyc@us.ibm.com, wenxiong@us.ibm.com, bhua@us.ibm.com,
-       divy@chelsio.com, dm@chelsio.com, leedom@chelsio.com
-Subject: Re: [PATCH 1/4 2.6.28] cxgb3 - manage a private ip address for iSCSI
-Message-ID: <20080823045520.GA4759@gondor.apana.org.au>
-References: <200808221838.m7MIcW6a004400@localhost.localdomain> <20080822120851.c45a90f2.akpm@linux-foundation.org>
+	Sat, 23 Aug 2008 01:09:20 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:44495 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751118AbYHWFJT convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 01:09:19 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjwFADMyr0hMRKxB/2dsb2JhbACBZbMAgWiDKw
+Date: Sat, 23 Aug 2008 01:09:16 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC PATCH] Writer-biased low-latency rwlock v8
+Message-ID: <20080823050916.GA1172@Krystal>
+References: <20080817075335.GA25019@Krystal> <alpine.LFD.1.10.0808170909420.3324@nehalem.linux-foundation.org> <20080817191034.GA5258@Krystal> <20080818232500.GF6732@linux.vnet.ibm.com> <20080819060417.GB24085@Krystal> <20080819073345.GA30285@Krystal> <alpine.LFD.1.10.0808190946560.3324@nehalem.linux-foundation.org> <20080821205045.GA24909@Krystal> <alpine.LFD.1.10.0808211356360.3487@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808211402370.3487@nehalem.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080822120851.c45a90f2.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <alpine.LFD.1.10.0808211402370.3487@nehalem.linux-foundation.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 00:30:14 up 79 days,  9:10,  5 users,  load average: 0.47, 0.28,
+	0.27
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 22, 2008 at 07:08:51PM +0000, Andrew Morton wrote:
->
->> +static ssize_t iscsi_ipaddr_attr_store(struct device *d,
->> +                                    const char *buf, size_t len)
->> +{
->> +     struct port_info *pi = netdev_priv(to_net_dev(d));
->> +     __be32 a = 0;
+* Linus Torvalds (torvalds@linux-foundation.org) wrote:
 > 
-> There's not really any need to use __be32 in kernel code.  Plain old
-> be23 is fine.
+> 
+> On Thu, 21 Aug 2008, Linus Torvalds wrote:
+> > 
+> > That leaves 30 bits for readers. If you still think you need to "limit the 
+> > number of readers", then you aren't getting it.
+> 
+[...]
+> and I'm pretty damn sure that that should be totally sufficient for a 
+> spinning rwlock. The non-spinning one is more complex just because the 
+> unlock paths need to guarantee that something gets woken up, that just 
+> isn't an issue when you do spinlocks.
+> 
+> Now, in the slow-path:
+>  - on the rwlock slowpath side, set bit#1 to make sure that readers get 
+>    caught in the slowpath
+>  - then do a *separate* count of how many pending readers and writers 
+>    (ie the ones that got caught into the slowpath) you have (one word 
+>    each is probably fine), and then the slowpaths can just do the right 
+>    thing depending on whether there are pending readers/writers.
+> 
+> See? The main lock needs not worry about number of writers AT ALL, because 
+> it's totally irrelevant. So don't worry about running out of bits. You 
+> won't. Just put those counts somewhere else! The only thing that matters 
+> for the main lock word is whether there are active readers (30 bits), and 
+> whether there is an active writer (there can only ever be one: 1 bit), and 
+> whether new readers should be trapped (1 bit).
+> 
+> If you worry about overflows, you're doing something wrong.
+> 
+> 			Linus
 
-Sorry but where is be32 defined? I couldn't find it in linux/types.h.
+Hi Linus,
 
-Perhaps we should resurrect this patch from 2005?
+After having had a look 15 times more at your rwlock code, and again at
+your answer, in loops, I come to the conclusion that I made a terrible
+job at explaining the core idea beneath my rwlock design. So let's try
+to make it more obvious. I am going to keep this explanation short.
 
-[PATCH] Add be*/le* types without underscores
+First, the goal : to kill latency induced by rwlocks.
 
-I've seen a number of patches that have started to use the __le*/__be*
-types within the kernel.  Nice as they are, the underscores are really
-a bit of an eye sore.  Since there seems to be no name conflict within
-the kernel, why don't we use them without the underscores like just as
-we do with types like u32?
+Now, let me explain why I need at least not one, but _four different_
+contention bits. Simply because there are four types of contention, one
+for each execution context which may take the read lock. (irq, softirq,
+non-preemptable, preemptable)
 
-Here is a patch to do just that.  I've verified that there are no
-conflicts by grepping the current git tree and then building it with
-the patch.
+So let's suppose I share the rwlock between non-preemptable writers,
+non-preemptable readers and interrupt context readers. The idea is this:
+If I want to take the write lock, I'll have to protect against both
+non-preemptable and interrupt readers (and also against other writers).
 
-Of course userspace won't see them since they're protected by
-#ifdef __KERNEL__.
+A way to do that without inducing high interrupt latency with current
+rwlocks would be for the writer to take _two_ locks, not just one. The
+first excludes preemptable readers and the second excludes irqs. So we
+have :
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+For the writer :
 
-diff --git a/fs/ntfs/types.h b/fs/ntfs/types.h
-index 8c8053b..79b44c7 100644
---- a/fs/ntfs/types.h
-+++ b/fs/ntfs/types.h
-@@ -25,9 +25,6 @@
- 
- #include <linux/types.h>
- 
--typedef __le16 le16;
--typedef __le32 le32;
--typedef __le64 le64;
- typedef __u16 __bitwise sle16;
- typedef __u32 __bitwise sle32;
- typedef __u64 __bitwise sle64;
-diff --git a/include/linux/types.h b/include/linux/types.h
-index d4a9ce6..61747dc 100644
---- a/include/linux/types.h
-+++ b/include/linux/types.h
-@@ -189,6 +189,15 @@ typedef __u16 __bitwise __sum16;
- typedef __u32 __bitwise __wsum;
- 
- #ifdef __KERNEL__
-+typedef __le16 le16;
-+typedef __be16 be16;
-+typedef __le32 le32;
-+typedef __be32 be32;
-+#if defined(__GNUC__)
-+typedef __le64 le64;
-+typedef __be64 be64;
-+#endif
-+
- typedef unsigned __bitwise__ gfp_t;
- 
- #ifdef CONFIG_RESOURCES_64BIT
+preempt_disable();
+write_lock(&preempt_rwlock);
 
-Cheers,
+local_irq_disable();
+write_lock(&irq_rwlock);
+
+/* Write access */
+
+write_unlock(&irq_rwlock);
+local_irq_enable();
+
+write_unlock(&preempt_rwlock);
+preempt_enable();
+
+And the readers :
+
+Interrupt :
+read_lock(&irq_rwlock);
+...
+read_unlock(&irq_rwlock);
+
+non-preemptable :
+read_lock(&preempt_rwlock);
+...
+read_unlock(&preempt_rwlock);
+
+
+If you still wonder why I need to take two locks, thus elevating the
+context priority by exluding one context at a time, we can go to this
+example showing why current rwlock use in the kernel produces such high
+latencies. The current use is :
+
+For the writer, we exclude all the readers in one go :
+
+local_irq_disable();
+write_lock(&big_lock_against_all_readers);
+
+/* Write access */
+
+write_unlock(&big_lock_against_all_readers);
+local_irq_enable();
+
+write_unlock(&preempt_rwlock);
+preempt_enable();
+
+And for the readers :
+
+Interrupt :
+read_lock(&big_lock_against_all_readers);
+...
+read_unlock(&big_lock_against_all_readers);
+
+non-preemptable :
+read_lock(&big_lock_against_all_readers);
+...
+read_unlock(&big_lock_against_all_readers);
+
+
+And where is the problem ? In the following execution sequence :
+- non-preemptable reader takes the read lock
+- writer disables irqs
+- writer takes the write lock, contended by the reader
+  - hrm, the reader can take a while to complete, may be iterating on
+    the tasklist, interrupted by irqs and softirqs...
+
+This contention is pretty bad because interrupts are disabled while we
+busy-loop. And yes, the new implementation you proposed *does* suffer
+from the same problem. Now if you go in the multiple locks scenario I
+explained above, you'll notice that you don't have this problem. Then
+comes the question : how can we efficiently take many locks, one per
+reader execution context we want to exclude.
+
+This is where we need to have at _least_ one contention bit _per
+context_. Because at a given moment, non-preemptable readers can be
+contended, but not irq readers. But we also have to know when a
+particular reader execution context is locked out so that the writer
+knows it has exclusive access and can therefore either disable
+interrupts and exclude interrupt readers or finally access the critical
+section. Therefore, we need to keep one reader count _per context_,
+which makes that 4 reader counts (irq, softirq, non-preemptable,
+preemptable). And that's where we start being short on bits.
+
+But my current maximums for number of readers is not a problem,
+especially because I detect overflow beforehand using cmpxchg and
+busy-loop in the rare event these counters would be full. And I am not
+limited to NR_CPUS _at all_ anymore, as shows these constants :
+
+#define PTHREAD_RMAX    16384
+#define NPTHREAD_RMAX   2048
+#define SOFTIRQ_RMAX    512
+#define HARDIRQ_RMAX    256
+
+So, before discussing optimization or implementation details further,
+I'd like to know if I made myself clear enough about the design goal. If
+not, then again I must be doing a terrible job at explaining it and
+please let me know. I made a big patch cleanup after v8, so you might
+want to wait for us to come to an understanding before going through a
+next patch release.
+
+Mathieu
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
