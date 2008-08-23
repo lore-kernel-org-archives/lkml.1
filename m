@@ -1,116 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbYHXHBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbYHWUg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753945AbYHXHBe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 03:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbYHXHBZ
+	id S1756243AbYHWUg7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 16:36:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbYHWUgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 03:01:25 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:44935 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752175AbYHXHBY (ORCPT
+	Sat, 23 Aug 2008 16:36:52 -0400
+Received: from smtp7.tech.numericable.fr ([82.216.111.43]:42900 "EHLO
+	smtp7.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751174AbYHWUgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 03:01:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to
-         :mime-version:content-type:content-disposition:user-agent:from;
-        b=rtJosLvKit9FQnA4FO7X5mVWof/+W6+jR7Vf3ixpJzLxjKJ0YiFu5ELynXrl2JEw7f
-         WD29Ov1Ci61ob1h0wMTz5ZUuvCHmYmMvdT/Xp19ZE8oYUFZAONee18c6HHPdnkL5eDML
-         0x0BYHw8rkeMkHfYX+BCj/nXvtaG3d2SN2oy0=
-Date: Sun, 24 Aug 2008 09:01:19 +0200
-To: bzolnier@gmail.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ide-atapi: use drive->waiting_for_dma
-Message-ID: <20080824070119.GA18284@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com, bzolnier@gmail.com,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+	Sat, 23 Aug 2008 16:36:51 -0400
+Message-ID: <48B074E1.9020106@numericable.fr>
+Date: Sat, 23 Aug 2008 22:36:49 +0200
+From: Rufus & Azrael <rufus-azrael@numericable.fr>
+User-Agent: Thunderbird/3.0a2 (X11; 2008081609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user
+ with the same regression
+References: <48B0563B.2040207@numericable.fr>	 <86802c440808231217q3eebc738v863170b178bb03ab@mail.gmail.com>	 <48B067B3.6020008@numericable.fr>	 <86802c440808231310hdafc30aw6931b77ea926338e@mail.gmail.com>	 <48B06FF9.1030404@numericable.fr>	 <86802c440808231328w5c6a3fa3s9be9d90ec1f30aa1@mail.gmail.com>	 <48B07409.60905@numericable.fr> <86802c440808231335n9214e38q5141a3560c698f76@mail.gmail.com>
+In-Reply-To: <86802c440808231335n9214e38q5141a3560c698f76@mail.gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------060106030909060107010205"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Borislav Petkov <petkovbb@gmail.com>
-Date: Sun, 24 Aug 2008 08:57:57 +0200
-Subject: [PATCH] ide-atapi: use drive->waiting_for_dma
+This is a multi-part message in MIME format.
+--------------060106030909060107010205
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-.. and remove PC_FLAG_DMA_IN_PROGRESS. There should
-be no functionality change resulting from this patch.
+Yinghai Lu wrote:
+> cat /proc/timer_list
+>    
+see file attached.
 
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
----
- drivers/ide/ide-atapi.c |   10 +++++-----
- include/linux/ide.h     |    7 +++----
- 2 files changed, 8 insertions(+), 9 deletions(-)
+--------------060106030909060107010205
+Content-Type: text/plain;
+ name="timer_list"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="timer_list"
 
-diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-index a1d8c35..09ac062 100644
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -282,7 +282,7 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
- 	/* Clear the interrupt */
- 	stat = tp_ops->read_status(hwif);
- 
--	if (pc->flags & PC_FLAG_DMA_IN_PROGRESS) {
-+	if (drive->waiting_for_dma) {
- 		if (hwif->dma_ops->dma_end(drive) ||
- 		    (drive->media == ide_tape && !scsi && (stat & ATA_ERR))) {
- 			if (drive->media == ide_floppy && !scsi)
-@@ -303,7 +303,7 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
- 		debug_log("Packet command completed, %d bytes transferred\n",
- 			  pc->xferred);
- 
--		pc->flags &= ~PC_FLAG_DMA_IN_PROGRESS;
-+		drive->waiting_for_dma = 0;
- 
- 		local_irq_enable_in_hardirq();
- 
-@@ -347,8 +347,8 @@ cmd_finished:
- 		return ide_stopped;
- 	}
- 
--	if (pc->flags & PC_FLAG_DMA_IN_PROGRESS) {
--		pc->flags &= ~PC_FLAG_DMA_IN_PROGRESS;
-+	if (drive->waiting_for_dma) {
-+		drive->waiting_for_dma = 0;
- 		printk(KERN_ERR "%s: The device wants to issue more interrupts "
- 				"in DMA mode\n", drive->name);
- 		ide_dma_off(drive);
-@@ -528,7 +528,7 @@ static ide_startstop_t ide_transfer_pc(ide_drive_t *drive)
- 
- 	/* Begin DMA, if necessary */
- 	if (pc->flags & PC_FLAG_DMA_OK) {
--		pc->flags |= PC_FLAG_DMA_IN_PROGRESS;
-+		drive->waiting_for_dma = 1;
- 		hwif->dma_ops->dma_start(drive);
- 	}
- 
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index e3ccec2..1268e71 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -393,11 +393,10 @@ enum {
- 	PC_FLAG_SUPPRESS_ERROR		= (1 << 1),
- 	PC_FLAG_WAIT_FOR_DSC		= (1 << 2),
- 	PC_FLAG_DMA_OK			= (1 << 3),
--	PC_FLAG_DMA_IN_PROGRESS		= (1 << 4),
--	PC_FLAG_DMA_ERROR		= (1 << 5),
--	PC_FLAG_WRITING			= (1 << 6),
-+	PC_FLAG_DMA_ERROR		= (1 << 4),
-+	PC_FLAG_WRITING			= (1 << 5),
- 	/* command timed out */
--	PC_FLAG_TIMEDOUT		= (1 << 7),
-+	PC_FLAG_TIMEDOUT		= (1 << 6),
- };
- 
- /*
--- 
-1.5.5.4
-
--- 
-Regards/Gruss,
-    Boris.
+VGltZXIgTGlzdCBWZXJzaW9uOiB2MC4zCkhSVElNRVJfTUFYX0NMT0NLX0JBU0VTOiAyCm5v
+dyBhdCAzNjk1OTc0Mjc0NjYzIG5zZWNzCgpjcHU6IDAKIGNsb2NrIDA6CiAgLmluZGV4OiAg
+ICAgIDAKICAucmVzb2x1dGlvbjogMSBuc2VjcwogIC5nZXRfdGltZTogICBrdGltZV9nZXRf
+cmVhbAogIC5vZmZzZXQ6ICAgICAxMjE5NTIwMDYyMTk1NTczOTQwIG5zZWNzCmFjdGl2ZSB0
+aW1lcnM6CiBjbG9jayAxOgogIC5pbmRleDogICAgICAxCiAgLnJlc29sdXRpb246IDEgbnNl
+Y3MKICAuZ2V0X3RpbWU6ICAga3RpbWVfZ2V0CiAgLm9mZnNldDogICAgIDAgbnNlY3MKYWN0
+aXZlIHRpbWVyczoKICMwOiA8ZmZmZjg4MDA3MzY1ZGQ2OD4sIHRpY2tfc2NoZWRfdGltZXIs
+IFM6MDEKICMgZXhwaXJlcyBhdCAzNjk1OTc1MDAwMDAwIG5zZWNzIFtpbiA3MjUzMzcgbnNl
+Y3NdCiAjMTogPGZmZmY4ODAwNzM2NWRkNjg+LCBocnRpbWVyX3dha2V1cCwgUzowMQogIyBl
+eHBpcmVzIGF0IDM2OTY0NDA0NjA1MjcgbnNlY3MgW2luIDQ2NjE4NTg2NCBuc2Vjc10KICAu
+ZXhwaXJlc19uZXh0ICAgOiAzNjk1OTc1MDAwMDAwIG5zZWNzCiAgLmhyZXNfYWN0aXZlICAg
+IDogMQogIC5ucl9ldmVudHMgICAgICA6IDMyOTk5OQogIC5ub2h6X21vZGUgICAgICA6IDIK
+ICAuaWRsZV90aWNrICAgICAgOiAzNjk1OTEyMDAwMDAwIG5zZWNzCiAgLnRpY2tfc3RvcHBl
+ZCAgIDogMAogIC5pZGxlX2ppZmZpZXMgICA6IDQyOTgzNjMyMDcKICAuaWRsZV9jYWxscyAg
+ICAgOiAzOTIxMDQKICAuaWRsZV9zbGVlcHMgICAgOiAxMTIzMTUKICAuaWRsZV9lbnRyeXRp
+bWUgOiAzNjk1OTczMzkyNzA3IG5zZWNzCiAgLmlkbGVfd2FrZXRpbWUgIDogMzY5NTkxMTAw
+MjY1NSBuc2VjcwogIC5pZGxlX2V4aXR0aW1lICA6IDM2OTU5NzMyNjExOTYgbnNlY3MKICAu
+aWRsZV9zbGVlcHRpbWUgOiAzNjMxNDg1NDAyMzU4IG5zZWNzCiAgLmxhc3RfamlmZmllcyAg
+IDogNDI5ODM2MzI2OQogIC5uZXh0X2ppZmZpZXMgICA6IDQyOTgzNjMzMDcKICAuaWRsZV9l
+eHBpcmVzICAgOiAzNjk2MDExMDAwMDAwIG5zZWNzCmppZmZpZXM6IDQyOTgzNjMyNzAKCmNw
+dTogMQogY2xvY2sgMDoKICAuaW5kZXg6ICAgICAgMAogIC5yZXNvbHV0aW9uOiAxIG5zZWNz
+CiAgLmdldF90aW1lOiAgIGt0aW1lX2dldF9yZWFsCiAgLm9mZnNldDogICAgIDEyMTk1MjAw
+NjIxOTU1NzM5NDAgbnNlY3MKYWN0aXZlIHRpbWVyczoKIGNsb2NrIDE6CiAgLmluZGV4OiAg
+ICAgIDEKICAucmVzb2x1dGlvbjogMSBuc2VjcwogIC5nZXRfdGltZTogICBrdGltZV9nZXQK
+ICAub2Zmc2V0OiAgICAgMCBuc2VjcwphY3RpdmUgdGltZXJzOgogIzA6IDxmZmZmODgwMDcz
+NjVkZDY4PiwgdGlja19zY2hlZF90aW1lciwgUzowMQogIyBleHBpcmVzIGF0IDM2OTU5NzUy
+NTAwMDAgbnNlY3MgW2luIDk3NTMzNyBuc2Vjc10KICMxOiA8ZmZmZjg4MDA3MzY1ZGQ2OD4s
+IGl0X3JlYWxfZm4sIFM6MDEKICMgZXhwaXJlcyBhdCAzNjk1OTkzNDg0MTI5IG5zZWNzIFtp
+biAxOTIwOTQ2NiBuc2Vjc10KICMyOiA8ZmZmZjg4MDA3MzY1ZGQ2OD4sIGhydGltZXJfd2Fr
+ZXVwLCBTOjAxCiAjIGV4cGlyZXMgYXQgMzY5NjA2MDQ0NzUyNyBuc2VjcyBbaW4gODYxNzI4
+NjQgbnNlY3NdCiAjMzogPGZmZmY4ODAwNzM2NWRkNjg+LCBocnRpbWVyX3dha2V1cCwgUzow
+MQogIyBleHBpcmVzIGF0IDM2OTg5ODkwMjAxODIgbnNlY3MgW2luIDMwMTQ3NDU1MTkgbnNl
+Y3NdCiAjNDogPGZmZmY4ODAwNzM2NWRkNjg+LCBocnRpbWVyX3dha2V1cCwgUzowMQogIyBl
+eHBpcmVzIGF0IDM3Mjg2MzgzNDc1MjcgbnNlY3MgW2luIDMyNjY0MDcyODY0IG5zZWNzXQog
+IzU6IDxmZmZmODgwMDczNjVkZDY4PiwgaHJ0aW1lcl93YWtldXAsIFM6MDEKICMgZXhwaXJl
+cyBhdCAzNzQzNDE3MDc1MDE1IG5zZWNzIFtpbiA0NzQ0MjgwMDM1MiBuc2Vjc10KICAuZXhw
+aXJlc19uZXh0ICAgOiAzNjk1OTc1MjUwMDAwIG5zZWNzCiAgLmhyZXNfYWN0aXZlICAgIDog
+MQogIC5ucl9ldmVudHMgICAgICA6IDM4NjU1OAogIC5ub2h6X21vZGUgICAgICA6IDIKICAu
+aWRsZV90aWNrICAgICAgOiAzNjk1OTU0MjUwMDAwIG5zZWNzCiAgLnRpY2tfc3RvcHBlZCAg
+IDogMAogIC5pZGxlX2ppZmZpZXMgICA6IDQyOTgzNjMyNTAKICAuaWRsZV9jYWxscyAgICAg
+OiA1ODk0NDkKICAuaWRsZV9zbGVlcHMgICAgOiAzNzI1MjAKICAuaWRsZV9lbnRyeXRpbWUg
+OiAzNjk1OTc0MjYxNDYzIG5zZWNzCiAgLmlkbGVfd2FrZXRpbWUgIDogMzY5NTk3MjcxNTEw
+NyBuc2VjcwogIC5pZGxlX2V4aXR0aW1lICA6IDM2OTU5NzI3Mzg1NzQgbnNlY3MKICAuaWRs
+ZV9zbGVlcHRpbWUgOiAzNTI2MDg4MTYxOTU5IG5zZWNzCiAgLmxhc3RfamlmZmllcyAgIDog
+NDI5ODM2MzI3MAogIC5uZXh0X2ppZmZpZXMgICA6IDQyOTgzNjMyNzkKICAuaWRsZV9leHBp
+cmVzICAgOiAzNjk2MDAwMDAwMDAwIG5zZWNzCmppZmZpZXM6IDQyOTgzNjMyNzAKCgpUaWNr
+IERldmljZTogbW9kZTogICAgIDEKQ2xvY2sgRXZlbnQgRGV2aWNlOiBocGV0CiBtYXhfZGVs
+dGFfbnM6ICAgMTQ5OTgzMDAzNTIwCiBtaW5fZGVsdGFfbnM6ICAgMzM1MgogbXVsdDogICAg
+ICAgICAgIDYxNDk2MTE1CiBzaGlmdDogICAgICAgICAgMzIKIG1vZGU6ICAgICAgICAgICAz
+CiBuZXh0X2V2ZW50OiAgICAgOTIyMzM3MjAzNjg1NDc3NTgwNyBuc2Vjcwogc2V0X25leHRf
+ZXZlbnQ6IGhwZXRfbGVnYWN5X25leHRfZXZlbnQKIHNldF9tb2RlOiAgICAgICBocGV0X2xl
+Z2FjeV9zZXRfbW9kZQogZXZlbnRfaGFuZGxlcjogIHRpY2tfaGFuZGxlX29uZXNob3RfYnJv
+YWRjYXN0CnRpY2tfYnJvYWRjYXN0X21hc2s6IDAwMDAwMDAwCnRpY2tfYnJvYWRjYXN0X29u
+ZXNob3RfbWFzazogMDAwMDAwMDAKCgpUaWNrIERldmljZTogbW9kZTogICAgIDEKQ2xvY2sg
+RXZlbnQgRGV2aWNlOiBsYXBpYwogbWF4X2RlbHRhX25zOiAgIDY3MjY5MzI5MAogbWluX2Rl
+bHRhX25zOiAgIDEyMDIKIG11bHQ6ICAgICAgICAgICA1MzU1OTAxOQogc2hpZnQ6ICAgICAg
+ICAgIDMyCiBtb2RlOiAgICAgICAgICAgMwogbmV4dF9ldmVudDogICAgIDM2OTU5NzUwMDAw
+MDAgbnNlY3MKIHNldF9uZXh0X2V2ZW50OiBsYXBpY19uZXh0X2V2ZW50CiBzZXRfbW9kZTog
+ICAgICAgbGFwaWNfdGltZXJfc2V0dXAKIGV2ZW50X2hhbmRsZXI6ICBocnRpbWVyX2ludGVy
+cnVwdAoKVGljayBEZXZpY2U6IG1vZGU6ICAgICAxCkNsb2NrIEV2ZW50IERldmljZTogbGFw
+aWMKIG1heF9kZWx0YV9uczogICA2NzI2OTMyOTAKIG1pbl9kZWx0YV9uczogICAxMjAyCiBt
+dWx0OiAgICAgICAgICAgNTM1NTkwMTkKIHNoaWZ0OiAgICAgICAgICAzMgogbW9kZTogICAg
+ICAgICAgIDMKIG5leHRfZXZlbnQ6ICAgICAzNjk1OTc1MjUwMDAwIG5zZWNzCiBzZXRfbmV4
+dF9ldmVudDogbGFwaWNfbmV4dF9ldmVudAogc2V0X21vZGU6ICAgICAgIGxhcGljX3RpbWVy
+X3NldHVwCiBldmVudF9oYW5kbGVyOiAgaHJ0aW1lcl9pbnRlcnJ1cHQKCg==
+--------------060106030909060107010205--
