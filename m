@@ -1,113 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbYHWUg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbYHWQ1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756243AbYHWUg7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 16:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbYHWUgw
+	id S1754528AbYHWQ1x (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 12:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbYHWQ1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 16:36:52 -0400
-Received: from smtp7.tech.numericable.fr ([82.216.111.43]:42900 "EHLO
-	smtp7.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751174AbYHWUgv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 16:36:51 -0400
-Message-ID: <48B074E1.9020106@numericable.fr>
-Date: Sat, 23 Aug 2008 22:36:49 +0200
-From: Rufus & Azrael <rufus-azrael@numericable.fr>
-User-Agent: Thunderbird/3.0a2 (X11; 2008081609)
+	Sat, 23 Aug 2008 12:27:43 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:44226 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751286AbYHWQ1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 12:27:42 -0400
+Date: Sat, 23 Aug 2008 18:27:38 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: linville@tuxdriver.com, xemul@openvz.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] net/mac80211/mesh.c: correct the argument to __mesh_table_free
+Message-ID: <Pine.LNX.4.64.0808231826470.3162@ask.diku.dk>
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user
- with the same regression
-References: <48B0563B.2040207@numericable.fr>	 <86802c440808231217q3eebc738v863170b178bb03ab@mail.gmail.com>	 <48B067B3.6020008@numericable.fr>	 <86802c440808231310hdafc30aw6931b77ea926338e@mail.gmail.com>	 <48B06FF9.1030404@numericable.fr>	 <86802c440808231328w5c6a3fa3s9be9d90ec1f30aa1@mail.gmail.com>	 <48B07409.60905@numericable.fr> <86802c440808231335n9214e38q5141a3560c698f76@mail.gmail.com>
-In-Reply-To: <86802c440808231335n9214e38q5141a3560c698f76@mail.gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------060106030909060107010205"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060106030909060107010205
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Julia Lawall <julia@diku.dk>
 
-Yinghai Lu wrote:
-> cat /proc/timer_list
->    
-see file attached.
+In the function mesh_table_grow, it is the new table not the argument table
+that should be freed if the function fails (cf commit
+bd9b448f4c0a514559bdae4ca18ca3e8cd999c6d)
 
---------------060106030909060107010205
-Content-Type: text/plain;
- name="timer_list"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="timer_list"
+The semantic match that detects this problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-VGltZXIgTGlzdCBWZXJzaW9uOiB2MC4zCkhSVElNRVJfTUFYX0NMT0NLX0JBU0VTOiAyCm5v
-dyBhdCAzNjk1OTc0Mjc0NjYzIG5zZWNzCgpjcHU6IDAKIGNsb2NrIDA6CiAgLmluZGV4OiAg
-ICAgIDAKICAucmVzb2x1dGlvbjogMSBuc2VjcwogIC5nZXRfdGltZTogICBrdGltZV9nZXRf
-cmVhbAogIC5vZmZzZXQ6ICAgICAxMjE5NTIwMDYyMTk1NTczOTQwIG5zZWNzCmFjdGl2ZSB0
-aW1lcnM6CiBjbG9jayAxOgogIC5pbmRleDogICAgICAxCiAgLnJlc29sdXRpb246IDEgbnNl
-Y3MKICAuZ2V0X3RpbWU6ICAga3RpbWVfZ2V0CiAgLm9mZnNldDogICAgIDAgbnNlY3MKYWN0
-aXZlIHRpbWVyczoKICMwOiA8ZmZmZjg4MDA3MzY1ZGQ2OD4sIHRpY2tfc2NoZWRfdGltZXIs
-IFM6MDEKICMgZXhwaXJlcyBhdCAzNjk1OTc1MDAwMDAwIG5zZWNzIFtpbiA3MjUzMzcgbnNl
-Y3NdCiAjMTogPGZmZmY4ODAwNzM2NWRkNjg+LCBocnRpbWVyX3dha2V1cCwgUzowMQogIyBl
-eHBpcmVzIGF0IDM2OTY0NDA0NjA1MjcgbnNlY3MgW2luIDQ2NjE4NTg2NCBuc2Vjc10KICAu
-ZXhwaXJlc19uZXh0ICAgOiAzNjk1OTc1MDAwMDAwIG5zZWNzCiAgLmhyZXNfYWN0aXZlICAg
-IDogMQogIC5ucl9ldmVudHMgICAgICA6IDMyOTk5OQogIC5ub2h6X21vZGUgICAgICA6IDIK
-ICAuaWRsZV90aWNrICAgICAgOiAzNjk1OTEyMDAwMDAwIG5zZWNzCiAgLnRpY2tfc3RvcHBl
-ZCAgIDogMAogIC5pZGxlX2ppZmZpZXMgICA6IDQyOTgzNjMyMDcKICAuaWRsZV9jYWxscyAg
-ICAgOiAzOTIxMDQKICAuaWRsZV9zbGVlcHMgICAgOiAxMTIzMTUKICAuaWRsZV9lbnRyeXRp
-bWUgOiAzNjk1OTczMzkyNzA3IG5zZWNzCiAgLmlkbGVfd2FrZXRpbWUgIDogMzY5NTkxMTAw
-MjY1NSBuc2VjcwogIC5pZGxlX2V4aXR0aW1lICA6IDM2OTU5NzMyNjExOTYgbnNlY3MKICAu
-aWRsZV9zbGVlcHRpbWUgOiAzNjMxNDg1NDAyMzU4IG5zZWNzCiAgLmxhc3RfamlmZmllcyAg
-IDogNDI5ODM2MzI2OQogIC5uZXh0X2ppZmZpZXMgICA6IDQyOTgzNjMzMDcKICAuaWRsZV9l
-eHBpcmVzICAgOiAzNjk2MDExMDAwMDAwIG5zZWNzCmppZmZpZXM6IDQyOTgzNjMyNzAKCmNw
-dTogMQogY2xvY2sgMDoKICAuaW5kZXg6ICAgICAgMAogIC5yZXNvbHV0aW9uOiAxIG5zZWNz
-CiAgLmdldF90aW1lOiAgIGt0aW1lX2dldF9yZWFsCiAgLm9mZnNldDogICAgIDEyMTk1MjAw
-NjIxOTU1NzM5NDAgbnNlY3MKYWN0aXZlIHRpbWVyczoKIGNsb2NrIDE6CiAgLmluZGV4OiAg
-ICAgIDEKICAucmVzb2x1dGlvbjogMSBuc2VjcwogIC5nZXRfdGltZTogICBrdGltZV9nZXQK
-ICAub2Zmc2V0OiAgICAgMCBuc2VjcwphY3RpdmUgdGltZXJzOgogIzA6IDxmZmZmODgwMDcz
-NjVkZDY4PiwgdGlja19zY2hlZF90aW1lciwgUzowMQogIyBleHBpcmVzIGF0IDM2OTU5NzUy
-NTAwMDAgbnNlY3MgW2luIDk3NTMzNyBuc2Vjc10KICMxOiA8ZmZmZjg4MDA3MzY1ZGQ2OD4s
-IGl0X3JlYWxfZm4sIFM6MDEKICMgZXhwaXJlcyBhdCAzNjk1OTkzNDg0MTI5IG5zZWNzIFtp
-biAxOTIwOTQ2NiBuc2Vjc10KICMyOiA8ZmZmZjg4MDA3MzY1ZGQ2OD4sIGhydGltZXJfd2Fr
-ZXVwLCBTOjAxCiAjIGV4cGlyZXMgYXQgMzY5NjA2MDQ0NzUyNyBuc2VjcyBbaW4gODYxNzI4
-NjQgbnNlY3NdCiAjMzogPGZmZmY4ODAwNzM2NWRkNjg+LCBocnRpbWVyX3dha2V1cCwgUzow
-MQogIyBleHBpcmVzIGF0IDM2OTg5ODkwMjAxODIgbnNlY3MgW2luIDMwMTQ3NDU1MTkgbnNl
-Y3NdCiAjNDogPGZmZmY4ODAwNzM2NWRkNjg+LCBocnRpbWVyX3dha2V1cCwgUzowMQogIyBl
-eHBpcmVzIGF0IDM3Mjg2MzgzNDc1MjcgbnNlY3MgW2luIDMyNjY0MDcyODY0IG5zZWNzXQog
-IzU6IDxmZmZmODgwMDczNjVkZDY4PiwgaHJ0aW1lcl93YWtldXAsIFM6MDEKICMgZXhwaXJl
-cyBhdCAzNzQzNDE3MDc1MDE1IG5zZWNzIFtpbiA0NzQ0MjgwMDM1MiBuc2Vjc10KICAuZXhw
-aXJlc19uZXh0ICAgOiAzNjk1OTc1MjUwMDAwIG5zZWNzCiAgLmhyZXNfYWN0aXZlICAgIDog
-MQogIC5ucl9ldmVudHMgICAgICA6IDM4NjU1OAogIC5ub2h6X21vZGUgICAgICA6IDIKICAu
-aWRsZV90aWNrICAgICAgOiAzNjk1OTU0MjUwMDAwIG5zZWNzCiAgLnRpY2tfc3RvcHBlZCAg
-IDogMAogIC5pZGxlX2ppZmZpZXMgICA6IDQyOTgzNjMyNTAKICAuaWRsZV9jYWxscyAgICAg
-OiA1ODk0NDkKICAuaWRsZV9zbGVlcHMgICAgOiAzNzI1MjAKICAuaWRsZV9lbnRyeXRpbWUg
-OiAzNjk1OTc0MjYxNDYzIG5zZWNzCiAgLmlkbGVfd2FrZXRpbWUgIDogMzY5NTk3MjcxNTEw
-NyBuc2VjcwogIC5pZGxlX2V4aXR0aW1lICA6IDM2OTU5NzI3Mzg1NzQgbnNlY3MKICAuaWRs
-ZV9zbGVlcHRpbWUgOiAzNTI2MDg4MTYxOTU5IG5zZWNzCiAgLmxhc3RfamlmZmllcyAgIDog
-NDI5ODM2MzI3MAogIC5uZXh0X2ppZmZpZXMgICA6IDQyOTgzNjMyNzkKICAuaWRsZV9leHBp
-cmVzICAgOiAzNjk2MDAwMDAwMDAwIG5zZWNzCmppZmZpZXM6IDQyOTgzNjMyNzAKCgpUaWNr
-IERldmljZTogbW9kZTogICAgIDEKQ2xvY2sgRXZlbnQgRGV2aWNlOiBocGV0CiBtYXhfZGVs
-dGFfbnM6ICAgMTQ5OTgzMDAzNTIwCiBtaW5fZGVsdGFfbnM6ICAgMzM1MgogbXVsdDogICAg
-ICAgICAgIDYxNDk2MTE1CiBzaGlmdDogICAgICAgICAgMzIKIG1vZGU6ICAgICAgICAgICAz
-CiBuZXh0X2V2ZW50OiAgICAgOTIyMzM3MjAzNjg1NDc3NTgwNyBuc2Vjcwogc2V0X25leHRf
-ZXZlbnQ6IGhwZXRfbGVnYWN5X25leHRfZXZlbnQKIHNldF9tb2RlOiAgICAgICBocGV0X2xl
-Z2FjeV9zZXRfbW9kZQogZXZlbnRfaGFuZGxlcjogIHRpY2tfaGFuZGxlX29uZXNob3RfYnJv
-YWRjYXN0CnRpY2tfYnJvYWRjYXN0X21hc2s6IDAwMDAwMDAwCnRpY2tfYnJvYWRjYXN0X29u
-ZXNob3RfbWFzazogMDAwMDAwMDAKCgpUaWNrIERldmljZTogbW9kZTogICAgIDEKQ2xvY2sg
-RXZlbnQgRGV2aWNlOiBsYXBpYwogbWF4X2RlbHRhX25zOiAgIDY3MjY5MzI5MAogbWluX2Rl
-bHRhX25zOiAgIDEyMDIKIG11bHQ6ICAgICAgICAgICA1MzU1OTAxOQogc2hpZnQ6ICAgICAg
-ICAgIDMyCiBtb2RlOiAgICAgICAgICAgMwogbmV4dF9ldmVudDogICAgIDM2OTU5NzUwMDAw
-MDAgbnNlY3MKIHNldF9uZXh0X2V2ZW50OiBsYXBpY19uZXh0X2V2ZW50CiBzZXRfbW9kZTog
-ICAgICAgbGFwaWNfdGltZXJfc2V0dXAKIGV2ZW50X2hhbmRsZXI6ICBocnRpbWVyX2ludGVy
-cnVwdAoKVGljayBEZXZpY2U6IG1vZGU6ICAgICAxCkNsb2NrIEV2ZW50IERldmljZTogbGFw
-aWMKIG1heF9kZWx0YV9uczogICA2NzI2OTMyOTAKIG1pbl9kZWx0YV9uczogICAxMjAyCiBt
-dWx0OiAgICAgICAgICAgNTM1NTkwMTkKIHNoaWZ0OiAgICAgICAgICAzMgogbW9kZTogICAg
-ICAgICAgIDMKIG5leHRfZXZlbnQ6ICAgICAzNjk1OTc1MjUwMDAwIG5zZWNzCiBzZXRfbmV4
-dF9ldmVudDogbGFwaWNfbmV4dF9ldmVudAogc2V0X21vZGU6ICAgICAgIGxhcGljX3RpbWVy
-X3NldHVwCiBldmVudF9oYW5kbGVyOiAgaHJ0aW1lcl9pbnRlcnJ1cHQKCg==
---------------060106030909060107010205--
+// <smpl>
+@r exists@
+local idexpression x;
+expression E,f;
+position p1,p2,p3;
+identifier l;
+statement S;
+@@
+
+x = mesh_table_alloc@p1(...)
+...
+if (x == NULL) S
+... when != E = x
+    when != mesh_table_free(x)
+goto@p2 l;
+... when != E = x
+    when != f(...,x,...)
+    when any
+(
+return \(0\|x\);
+|
+return@p3 ...;
+)
+
+@script:python@
+p1 << r.p1;
+p2 << r.p2;
+p3 << r.p3;
+@@
+
+print "%s: call on line %s not freed or saved before return on line %s via line %s" % (p1[0].file,p1[0].line,p3[0].line,p2[0].line)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ net/mac80211/mesh.c           |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/net/mac80211/mesh.c b/net/mac80211/mesh.c
+index b5933b2..35f2f95 100644
+--- a/net/mac80211/mesh.c
++++ b/net/mac80211/mesh.c
+@@ -383,7 +383,7 @@ errcopy:
+ 		hlist_for_each_safe(p, q, &newtbl->hash_buckets[i])
+ 			tbl->free_node(p, 0);
+ 	}
+-	__mesh_table_free(tbl);
++	__mesh_table_free(newtbl);
+ endgrow:
+ 	return NULL;
+ }
