@@ -1,67 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752851AbYHWImk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbYHWIsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752851AbYHWImk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 04:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYHWImb
+	id S1753476AbYHWIsV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 04:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYHWIsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 04:42:31 -0400
-Received: from torres.zugschlus.de ([85.214.68.41]:35251 "EHLO
-	torres.zugschlus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750865AbYHWIma (ORCPT
+	Sat, 23 Aug 2008 04:48:11 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:61686 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751906AbYHWIsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 04:42:30 -0400
-Date: Sat, 23 Aug 2008 10:42:28 +0200
-From: Marc Haber <mh+linux-kernel@zugschlus.de>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: 2.6.26.3 mount process looping on ext3 rw remount
-Message-ID: <20080823084228.GA21293@torres.zugschlus.de>
+	Sat, 23 Aug 2008 04:48:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=WL9T+kyrcVvStps8uACK9NmemXpPb2uL9CZ1NGVC3sVISWQ/ZYMJa4ONAbp9+2cF1m
+         HfomavOE4lzL0wN2HU7ftepMMDYV+wvmTC0LTcI1uQdWBBCU2B0xw+zM63y9z+jzkGZU
+         AjfgPQR0TA3M7bku0qQm0R5eDBmibwksi32fU=
+Message-ID: <ef1cd66f0808230148u317eb063xac80a319414c9f33@mail.gmail.com>
+Date: Sat, 23 Aug 2008 09:48:08 +0100
+From: "=?ISO-8859-1?Q?Jochen_Vo=DF?=" <jochen.voss@googlemail.com>
+To: "Dominik Brodowski" <linux@dominikbrodowski.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Andreas Mohr" <andi@lisas.de>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, johnstul@us.ibm.com,
+       hirofumi@mail.parknet.co.jp, alan@lxorguk.ukuu.org.uk,
+       arjan@infradead.org
+Subject: Re: [PATCH v2 2/2] acpi_pm.c: check for monotonicity
+In-Reply-To: <20080822222604.GA704@isilmar.linta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20080810190759.GA1879@rhlx01.hs-esslingen.de>
+	 <20080818121924.6b61f7af.akpm@linux-foundation.org>
+	 <20080818193517.GA22097@isilmar.linta.de>
+	 <20080818124755.162f24d1.akpm@linux-foundation.org>
+	 <20080818200916.GA18209@comet.dominikbrodowski.net>
+	 <20080818201033.GB18209@comet.dominikbrodowski.net>
+	 <20080819024334.2f3e69fa.akpm@linux-foundation.org>
+	 <20080819094938.GA21126@isilmar.linta.de>
+	 <20080819025915.c34951b6.akpm@linux-foundation.org>
+	 <20080822222604.GA704@isilmar.linta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-on my laptop, I am a heavy user of laptop-mode and suspend-to-disk.
-Sometimes (maybe once out of ten), when disconnecting or connecting
-external power, I have a mount process called by laptopmode busy
-looping and taking all available CPU:
+some minor comments:
 
-  ├─acpid,4680 -c /etc/acpi/events
-  │   └─lm_ac_adapter.s,29317 /etc/acpi/actions/lm_ac_adapter.sh
-  │       └─laptop_mode,29318 /usr/sbin/laptop_mode auto
-  │           └─laptop-mode,29386 /usr/share/laptop-mode-tools/modules/laptop-mode
-  │               └─laptop-mode,29390 /usr/share/laptop-mode-tools/modules/laptop-mode
-  │                   └─laptop-mode,29409 /usr/share/laptop-mode-tools/modules/laptop-mode
-  │                       └─mount,29410 /dev/mapper/usr /mnt/usr -t ext3 -o remount,rw,commit=600
+2008/8/22 Dominik Brodowski <linux@dominikbrodowski.net>:
+> +       for (j = 0; j < ACPI_PM_MONOTONICITY_CHECKS; j++) {
+> +               value1 = clocksource_acpi_pm.read();
+> +               for (i = 0; i < 10000; i++) {
+> +                       value2 = clocksource_acpi_pm.read();
+> +                       if (value2 == value1)
+> +                               continue;
+> +                       if (value2 > value1)
+> +                               good++;
+> +                               break;
+> +                       if ((value2 < value1) && ((value2) < 0xFFF))
+The brackets arout value2 are not needed and look strange.
 
-this is what top says
-Cpu(s):  2.7%us, 96.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  1.3%hi,  0.0%si, 0.0%st
-29410 root      20   0  2068  684  564 R 92.7  0.0  87:37.71 mount
+> +                               good++;
+> +                               break;
+> +                       printk(KERN_INFO "PM-Timer had inconsistent results:"
+> +                              " 0x%#llx, 0x%#llx - aborting.\n",
+> +                              value1, value2);
+> +                       return -EINVAL;
+> +               }
+> +               udelay(300 * i);
+300*10000 microseconds seems like a long time to me.  Is this the
+intended maximal delay?
 
-The mount process does not react to SIGKILL, stracing the looping
-process doesn't give any output, and the strace gets stuck and does
-not react to Ctrl-C. A SIGKILL works for the strace process, though.
+> +       }
+> +
+> +       if (good != ACPI_PM_MONOTONICITY_CHECKS) {
+> +               printk(KERN_INFO "PM-Timer failed consistency check "
+> +                      " (0x%#llx) - aborting.\n", value1);
+> +               return -ENODEV;
+If the inner loop runs out once, you alreay know that you will later
+abort here.  Maybe move the check directly after the inner loop to
+avoid the additional delay (10*10000*300 microseconds = 30 seconds) in
+case of failure?
 
-To me as a layman this looks like the mount process gets stuck
-somewhere in kernel land. I currently have the issue with 2.6.26.3.
-
-In the situation of plugging and/or unplugging the power, the notebook
-used to completely freeze in the time when 2.6.24 and 2.6.25.$SMALL
-were in use, with 2.6.25.$HIGH and 2.6.26 I haven't hat these freezes
-any more. However, I am now plagued with the hanging mount processes.
-
-Any ideas?
-
-Greetings
-Marc
-
+I hope this helps,
+Jochen
 -- 
------------------------------------------------------------------------------
-Marc Haber         | "I don't trust Computers. They | Mailadresse im Header
-Mannheim, Germany  |  lose things."    Winona Ryder | Fon: *49 621 72739834
-Nordisch by Nature |  How to make an American Quilt | Fax: *49 3221 2323190
+http://seehuhn.de/
