@@ -1,53 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbYHYMSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbYHWS0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755858AbYHYMSj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 08:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbYHYMSc
+	id S1754180AbYHWS0U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 14:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYHWS0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 08:18:32 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:55310 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753810AbYHYMSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 08:18:31 -0400
-Subject: Re: [PATCH 1/1] selinux: add support for installing a dummy policy
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: James Morris <jmorris@namei.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       SELinux <selinux@tycho.nsa.gov>,
-       "David P. Quigley" <dpquigl@tycho.nsa.gov>
-In-Reply-To: <alpine.LRH.1.10.0808251911050.32555@tundra.namei.org>
-References: <20080822193413.GA8401@us.ibm.com>
-	 <alpine.LRH.1.10.0808230852320.24779@tundra.namei.org>
-	 <20080823023812.GA30915@us.ibm.com>
-	 <alpine.LRH.1.10.0808251911050.32555@tundra.namei.org>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Mon, 25 Aug 2008 08:16:55 -0400
-Message-Id: <1219666615.2721.32.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sat, 23 Aug 2008 14:26:09 -0400
+Received: from smtp7.tech.numericable.fr ([82.216.111.43]:36305 "EHLO
+	smtp7.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752058AbYHWS0I convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 14:26:08 -0400
+Message-ID: <48B0563B.2040207@numericable.fr>
+Date: Sat, 23 Aug 2008 20:26:03 +0200
+From: Rufus & Azrael <rufus-azrael@numericable.fr>
+User-Agent: Thunderbird/3.0a2 (X11; 2008081609)
+MIME-Version: 1.0
+To: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Yinghai Lu <yhlu.kenrel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user
+ with the same regression
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>
+> On Sat, Aug 23, 2008 at 4:58 AM, David Witbrodt<dawitbro@sbcglobal.net>  wrote:
+> >
+> >
+> >>  please send out after booting with hpet=disable
+> >>  lspci -tv
+> >>  lspci -vvxxx
+> >
+> >  Info attached:
+>
+> 00:14.0 SMBus: ATI Technologies Inc SBx00 SMBus Controller (rev 13)
+> 	Subsystem: Elitegroup Computer Systems Device 2621
+> 	Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx+
+> 	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium>TAbort-
+> <TAbort-<MAbort->SERR-<PERR- INTx-
+> 	Region 0: I/O ports at fa00 [size=16]
+> 	Region 1: Memory at 80000000 (32-bit, non-prefetchable) [size=1K]
+> 	Capabilities: [b0] HyperTransport: MSI Mapping Enable- Fixed+
+> 	Kernel driver in use: piix4_smbus
+> 00: 02 10 85 43 03 04 30 02 13 00 05 0c 00 00 80 00
+> 10: 01 fa 00 00 00 00 00 80 00 00 00 00 00 00 00 00
+> 20: 00 00 00 00 00 00 00 00 00 00 00 00 19 10 21 26
+> 30: 00 00 00 00 b0 00 00 00 00 00 00 00 00 00 00 00
+> 40: d4 3b 00 05 00 00 00 00 0f ff 00 00 00 00 00 00
+> 50: f0 01 f0 0e f0 0f f0 07 11 0b f0 0f 00 00 00 00
+> 60: 01 00 24 00 bf fd de 8f 3f 90 00 00 20 00 00 00
+> 70: 00 01 00 00 08 00 c0 fe ff 6e 00 00 00 00 f0 0f
+> 80: f0 0a f0 0f 00 00 00 00 00 00 00 00 8c 00 00 80
+> 90: 01 fa 00 00 fa de ff 00 00 00 00 00 00 00 00 00
+> a0: 00 00 ff ff ff ff f0 08 ff fd 12 02 16 7b 20 00
+> b0: 08 00 02 a8 00 00 00 00 00 00 00 00 f0 0f 08 1a
+> c0: ff ff ff ff 00 00 00 00 00 00 00 00 00 00 00 00
+> d0: 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00
+> e0: 20 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> f0: d8 0c 00 00 00 00 44 00 00 00 00 00 aa 00 10 01
+> it seems kernel update BAR1 from 0xfed00000 to 0x80000000 after it can
+> not give 0xfed00000 to that device.
+> please try attached patch, and send out lspci -vvxxxx again.
+> YH
+> [PATCH] x86: protect hpet in BAR for one ATI chipset
+>
+> so avoid kernel don't allocate nre resource for it because it can not allocate the old
+> address from BIOS.
+>
+> the same way like some IO APIC address in BAR handling
+>
+> Signed-off-by: Yinghai Lu<yhlu.kenrel@gmail.com>
+>
+> ---
+>   drivers/pci/quirks.c |   16 ++++++++++++++++
+>   1 file changed, 16 insertions(+)
+> Index: linux-2.6/drivers/pci/quirks.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/quirks.c
+> +++ linux-2.6/drivers/pci/quirks.c
+> @@ -1918,6 +1918,22 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_B
+>   			 PCI_DEVICE_ID_NX2_5709S,
+>   			 quirk_brcm_570x_limit_vpd);
+>
+> +static void __init quirk_hpet_in_bar(struct pci_dev *pdev)
+> +{
+> +	int i;
+> +	unsigned int base, size;
+> +
+> +	/* the BAR1 is the location of the HPET...we must
+> +	 * not touch this, so forcibly insert it into the resource tree */
+> +	base = pci_resource_start(pdev, 1);
+> +	size = pci_resource_len(pdev, 1);
+> +	if (base&&  size) {
+> +		insert_resource(&iomem_resource,&pdev->resource[1]);
+> +		dev_info(&dev->dev, "HPET at %04x-%04x\n", name, base, base + size - 1);
+> +	}
+> +}
+> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI, 0x3485, quirk_hpet_in_bar);
+> +
+>   #ifdef CONFIG_PCI_MSI
+>   /* Some chipsets do not support MSI. We cannot easily rely on setting
+>    * PCI_BUS_FLAGS_NO_MSI in its bus flags because there are actually
+Hi Yinghai,
 
-On Mon, 2008-08-25 at 19:12 +1000, James Morris wrote:
-> On Fri, 22 Aug 2008, Serge E. Hallyn wrote:
-> 
-> > Good point.  Where would people who'd want to use this be most
-> > likely to look, in a scripts/selinux/README, or in
-> > Documentation/selinux or Documentation/security/selinux or
-> > somesuch?
-> 
-> There's Smack documentation under Documentation/, so perhaps next to that, 
-> with a pointer to it in scripts/selinux/README.
 
-In that case, we really ought to have a general introduction to SELinux
-there first, and then include description of this dummy policy and a
-pointer to the reference policy as part of that text.
+Your patch seems to be broken, see :
 
--- 
-Stephen Smalley
-National Security Agency
+>   CC      drivers/pci/quirks.o
+> drivers/pci/quirks.c: In function ‘quirk_hpet_in_bar’:
+> drivers/pci/quirks.c:1804: erreur: ‘dev’ undeclared (first use in this 
+> function)
+> drivers/pci/quirks.c:1804: erreur: (Each undeclared identifier is 
+> reported only once
+> drivers/pci/quirks.c:1804: erreur: for each function it appears in.)
+> drivers/pci/quirks.c:1804: erreur: ‘name’ undeclared (first use in 
+> this function)
+> drivers/pci/quirks.c:1804: attention : trop d'arguments pour le format
+> drivers/pci/quirks.c:1795: attention : unused variable ‘i’
+> make[2]: *** [drivers/pci/quirks.o] Erreur 1
+Regards.
+
 
