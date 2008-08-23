@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbYHWVqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbYHWVlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754969AbYHWVqH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 17:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbYHWVp5
+	id S1755291AbYHWVlu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 17:41:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYHWVln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 17:45:57 -0400
-Received: from h155.mvista.com ([63.81.120.155]:35064 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752213AbYHWVp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 17:45:56 -0400
-Message-ID: <48B0850D.4000105@ru.mvista.com>
-Date: Sun, 24 Aug 2008 01:45:49 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Sat, 23 Aug 2008 17:41:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60439 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753887AbYHWVlm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 17:41:42 -0400
+Date: Sat, 23 Aug 2008 14:40:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC PATCH] Writer-biased low-latency rwlock v8
+In-Reply-To: <20080823203016.GA1328@Krystal>
+Message-ID: <alpine.LFD.1.10.0808231435230.3363@nehalem.linux-foundation.org>
+References: <20080817191034.GA5258@Krystal> <20080818232500.GF6732@linux.vnet.ibm.com> <20080819060417.GB24085@Krystal> <20080819073345.GA30285@Krystal> <alpine.LFD.1.10.0808190946560.3324@nehalem.linux-foundation.org> <20080821205045.GA24909@Krystal>
+ <alpine.LFD.1.10.0808211356360.3487@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808211402370.3487@nehalem.linux-foundation.org> <20080823050916.GA1172@Krystal> <alpine.LFD.1.10.0808231100090.3363@nehalem.linux-foundation.org>
+ <20080823203016.GA1328@Krystal>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/9] ide-disk: set_addressing() fixes
-References: <20080817171454.27943.37234.sendpatchset@localhost.localdomain> <20080817171501.27943.57473.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080817171501.27943.57473.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
 
-Bartlomiej Zolnierkiewicz wrote:
 
-> * Return -EIO if arg > 0 and LBA48 is unsupported.
+On Sat, 23 Aug 2008, Mathieu Desnoyers wrote:
 >
-> * No need to reset ->addressing.
->
-> * Make ->addressing a single bit flag.
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->   
-[...]
-> Index: b/include/linux/ide.h
-> ===================================================================
-> --- a/include/linux/ide.h
-> +++ b/include/linux/ide.h
-> @@ -507,7 +507,7 @@ struct ide_drive_s {
->  	unsigned sleeping	: 1;	/* 1=sleeping & sleep field valid */
->  	unsigned post_reset	: 1;
->  	unsigned udma33_warned	: 1;
-> -	unsigned addressing	: 2;	/* 0=28-bit, 1=48-bit, 2=48-bit doing 28-bit */
-> +	unsigned addressing	: 1;	/* 0=28-bit, 1=48-bit */
->  	unsigned wcache		: 1;	/* status of write cache */
->  	unsigned nowerr		: 1;	/* used for ignoring ATA_DF */
->   
+> Actually, the point I just fixed in my head is that this bit will be a
+> "MAY_CONTEND" bit, which could let higher priority readers access the
+> lock in the slow path.
 
-   Don't you want to get rid of things like:
+EXACTLY.
 
-        u8 lba48 = (drive->addressing == 1) ? 1 : 0;
+It's not even necessarily a "contention" bit per se - it's literally a 
+"readers have to take the slow-path" bit (writers will obviously _always_ 
+take the slowpath if there is any non-zero value at all, so they don't 
+need it).
 
-MBR, Sergei
+Then, the slow-path might actually decide that "hey, there is no _actual_ 
+writer there yet - just some _waiting_ writer, but since this read lock is 
+in an interrupt context, we have to let it go through _despite_ the fact 
+that the lock is contended in order to avoid deadlock".
 
+So it allows a fast-path for the trivial cases that is literally just a 
+couple of instructions long, and that is nice not just because of 
+performance issues, but because it then means that you can entirely ignore 
+all those things in the slow path. It also means that everybody can look 
+at the fast-path and decide that "ok, the fast-path really is optimal". 
 
+That fast-path is what a lot of people care more about than just about 
+anything else.
+
+The slow-path, in comparison, can be in C, and can do all those checks 
+like "are we in an (sw-)interrupt handler?" and basically prioritize 
+certain classes of people.
+
+			Linus
