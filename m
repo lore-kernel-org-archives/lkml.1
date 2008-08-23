@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbYHWTt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYHWTol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757402AbYHWTt2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 15:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755080AbYHWTm2
+	id S1756218AbYHWTol (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 15:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755575AbYHWTlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 15:42:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50149 "EHLO ogre.sisk.pl"
+	Sat, 23 Aug 2008 15:41:45 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50110 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755719AbYHWTmX convert rfc822-to-8bit (ORCPT
+	id S1755044AbYHWTlm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 15:42:23 -0400
+	Sat, 23 Aug 2008 15:41:42 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>
+       "Adrian Bunk" <bunk@kernel.org>
 References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
 In-Reply-To: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <VSpL6AnBTS.A.XG.9aGsIB@albercik>
-Subject: [Bug #11340] LTP overnight run resulted in unusable box
+Message-ID: <VSpL6AnBTS.A.mGB.TcGsIB@albercik>
+Subject: [Bug #11254] KVM: fix userspace ABI breakage
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 23 Aug 2008 20:10:19 +0200 (CEST)
+Date: Sat, 23 Aug 2008 20:10:16 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,10 +35,12 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11340
-Subject		: LTP overnight run resulted in unusable box
-Submitter	: Alexey Dobriyan <adobriyan@gmail.com>
-Date		: 2008-08-13 9:24 (11 days old)
-References	: http://marc.info/?l=linux-kernel&m=121861951902949&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11254
+Subject		: KVM: fix userspace ABI breakage
+Submitter	: Adrian Bunk <bunk@kernel.org>
+Date		: 21 Jul 2008 17:58:26 (0 days old)
+References	: http://lkml.org/lkml/2008/7/21/197
+Handled-By	: Adrian Bunk <bunk@kernel.org>
+Patch		: http://lkml.org/lkml/2008/7/21/197
 
 
