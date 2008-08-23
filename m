@@ -1,92 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbYHXIXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYHWVth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754593AbYHXIXQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 04:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbYHXIW6
+	id S1755180AbYHWVth (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 17:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbYHWVta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 04:22:58 -0400
-Received: from po-out-1718.google.com ([72.14.252.152]:35546 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751583AbYHXIWy (ORCPT
+	Sat, 23 Aug 2008 17:49:30 -0400
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:36158 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751593AbYHWVt3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 04:22:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=VSXwnXHa/yq2zjVD8ZgndzVVubEbMD/Khuw5nOGvYGcuYe6f7yiC9azV+wfnNbWqWA
-         7g8gLAxlPAojvUMYtVdBCQognAgsekAXcLf2jpEBvSeD9PQ6AIC/2/Yi+KCQQCPLP0jV
-         oetnU0+VmnY74hl0f9p8d4RZ1U06jdK8YwQC8=
-Message-ID: <86802c440808240122r64ac91beu68e7782d5056bbb3@mail.gmail.com>
-Date: Sun, 24 Aug 2008 01:22:54 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: 9a2d43b: __alloc_bootmem_core(): zero-sized request
-Cc: "Johannes Weiner" <hannes@saeurebad.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <19f34abd0808240058h3d286151x18cba0939f175edd@mail.gmail.com>
+	Sat, 23 Aug 2008 17:49:29 -0400
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Writable packet CD-RW mounting broken in 2.6.26 by your commit 68154e90c9d1492d570671ae181d9a8f8530da55
+References: <87ej52vtxq.fsf@hades.wkstn.nix>
+	<20080808031437.GA14249@martell.zuzino.mipt.ru>
+	<20080808053735.GA5274@martell.zuzino.mipt.ru>
+From: Nix <nix@esperi.org.uk>
+Emacs: (setq software-quality (/ 1 number-of-authors))
+Date: Sat, 23 Aug 2008 22:48:55 +0100
+In-Reply-To: <20080808053735.GA5274@martell.zuzino.mipt.ru> (Alexey Dobriyan's message of "Fri, 8 Aug 2008 09:37:35 +0400")
+Message-ID: <8763pr1jy0.fsf_-_@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0808221224s4674e5aaq34bd0a874dfba699@mail.gmail.com>
-	 <87myj4yzll.fsf@skyscraper.fehenstaub.lan>
-	 <19f34abd0808240058h3d286151x18cba0939f175edd@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
+X-DCC-CTc-dcc2-Metrics: hades 1031; Body=4 Fuz1=4 Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 24, 2008 at 12:58 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> On Sat, Aug 23, 2008 at 9:12 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
->> "Vegard Nossum" <vegard.nossum@gmail.com> writes:
->>>
->>> I was trying out
->>>
->>> commit 9a2d43b7566caeeeb414aa628bc2759028897dbb
->>> Date:   Tue Jul 15 21:21:43 2008 +0200
->>>
->>> ..as part of the debugging of a different issue, but I got this:
->>>
->>> __alloc_bootmem_core(): zero-sized request
->
-> [...]
->
->>> I saw some bootmem errata lately, can I cherry-pick anything to fix
->>> this?
->>
->> This behaviour hasn't changed after the rewrite.
->
-> Yep, the error is somewhere else.
->
-> Inserted a printk("nr_kernel_pages = %llu\n", nr_kernel_pages); and
-> this is the output:
->
-> nr_kernel_pages = 13869392367443771392
->
-> ...it looks very, very big. I think this is initialized via
-> free_area_init_*() functions, which come from arch code. Does x86
-> experts know if any of this changed recently (i.e. after July 15)?
->
-> The whole dmesg and config can be seen here:
-> http://userweb.kernel.org/~vegard/bugs/20080824-numa/
->
+On 8 Aug 2008, Alexey Dobriyan told this:
 
-seems something wrong about apic probe...
+> On Fri, Aug 08, 2008 at 07:14:37AM +0400, Alexey Dobriyan wrote:
+>> On Wed, Aug 06, 2008 at 08:12:49PM +0100, Nix wrote:
+>> > It seems to be impossible to mount packet-written CD-RWs writably in
+>> > 2.6.26.x, even as root. Things worked in 2.6.25.x.
 
-MPTABLE: OEM ID: Intel    Product ID: Lakeport     Warning!  May not
-be a NUMA-Q system!
-MPTABLE: Product ID: Lakeport     <6>MPTABLE: APIC at: 0xFEE00000
-Processor #0 15:6 APIC version 20 (quad 0, apic 1)
-Processor #0 (Bootup-CPU)
-Bus #0 is PCI    (node 0)
-Bus #1 is PCI    (node 0)
-Bus #2 is PCI    (node 0)
-Bus #3 is ISA    (node 0)
-I/O APIC #2 Version 32 at 0xFEC00000.
-Enabling APIC mode:  NUMA-Q.  Using 1 I/O APICs
+Bisected. The bug starts here:
 
+commit 68154e90c9d1492d570671ae181d9a8f8530da55
+Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Date:   Fri Apr 25 12:47:50 2008 +0200
 
-please check with tip/master to see if it is fixed already...
+    block: add dma alignment and padding support to blk_rq_map_kern
 
-YH
+    This patch adds bio_copy_kern similar to
+    bio_copy_user. blk_rq_map_kern uses bio_copy_kern instead of
+    bio_map_kern if necessary.
+
+    bio_copy_kern uses temporary pages and the bi_end_io callback frees
+    these pages. bio_copy_kern saves the original kernel buffer at
+    bio->bi_private it doesn't use something like struct bio_map_data to
+    store the information about the caller.
+
+    Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+    Cc: Tejun Heo <htejun@gmail.com>
+    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+
+With this patch from Alexey applied for diagnostics:
+
+--- a/drivers/block/pktcdvd.c
++++ b/drivers/block/pktcdvd.c
+@@ -1934,6 +1934,7 @@ static int pkt_writable_track(struct pktcdvd_device *pd, track_information *ti)
+  */
+ static int pkt_writable_disc(struct pktcdvd_device *pd, disc_information *di)
+ {
++	printk("%s: pd = %p, ->mmc3_profile = %u\n", __func__, pd, pd->mmc3_profile);
+ 	switch (pd->mmc3_profile) {
+ 		case 0x0a: /* CD-RW */
+ 		case 0xffff: /* MMC3 not supported */
+@@ -1986,7 +1987,16 @@ static noinline_for_stack int pkt_probe_settings(struct pktcdvd_device *pd)
+ 	cgc.cmd[0] = GPCMD_GET_CONFIGURATION;
+ 	cgc.cmd[8] = 8;
+ 	ret = pkt_generic_packet(pd, &cgc);
++	{
++		int i;
++
++		printk("%s:", __func__);
++		for (i = 0; i < 12; i++)
++			printk(" %02x", buf[i]);
++		printk("\n");
++	}
+ 	pd->mmc3_profile = ret ? 0xffff : buf[6] << 8 | buf[7];
++	printk("%s: pd = %p, ->mmc3_profile = %u\n", __func__, pd, pd->mmc3_profile);
+ 
+ 	memset(&di, 0, sizeof(disc_information));
+ 	memset(&ti, 0, sizeof(track_information));
+
+We see output upon packet-written CD-RW mount going from the expected:
+
+Aug 23 22:15:24 hades warning: kernel: pkt_probe_settings: 00 00 00 ac 00 00 00 0a 00 00 00 00
+Aug 23 22:15:24 hades warning: kernel: pkt_probe_settings: pd = efce7ec0, ->mmc3_profile = 10
+Aug 23 22:15:24 hades warning: kernel: pkt_writable_disc: pd = efce7ec0, ->mmc3_profile = 10
+
+(i.e. `this is a CD-RW'), to the incorrect-by-one-byte
+
+Aug 23 22:06:41 hades warning: kernel: pkt_probe_settings: 00 00 00 ac 00 00 00 00 00 00 00 00
+                                                                                ^^
+Aug 23 22:06:41 hades warning: kernel: pkt_probe_settings: pd = efc97dc0, ->mmc3_profile = 0
+Aug 23 22:06:41 hades warning: kernel: pkt_writable_disc: pd = efc97dc0, ->mmc3_profile = 0
+
+i.e., not a CD-RW, writable mounts impossible.
+
+So something in this patch seems to be corrupting the results of at
+least some ATAPI sg requests going to or from the block layer: and
+indeed blk_rq_map_kern(), called by pkt_generic_packet(), is changed by
+this patch.
+
+Tomonori, Jens, can you see any immediate cause of this? It seems to me
+that the alignment check in blk_rq_map_kern() *must* be going wrong,
+somehow: this can't be an unaligned buffer or the code wouldn't have
+worked before the patch, yet if the buffer was aligned, we should be
+calling bio_map_kern(), which this patch hasn't changed. Perhaps the
+buffer length of 12 is leading it to believe that it should go via a
+bounce buffer and is calling the new code (and tripping some bug in it,
+since presumably even the new code isn't expected to corrupt the data in
+flight ;) )
+
+Further investigations soon but I've had enough of rebooting my desktop
+for tonight.
+
+-- 
+`Not even vi uses vi key bindings for its command line.' --- PdS
