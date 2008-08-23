@@ -1,58 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbYHWLLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbYHWLTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754003AbYHWLLA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 07:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbYHWLKs
+	id S1754010AbYHWLTu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 07:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbYHWLTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 07:10:48 -0400
-Received: from ausc60pc101.us.dell.com ([143.166.85.206]:58788 "EHLO
-	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752299AbYHWLKr convert rfc822-to-8bit (ORCPT
+	Sat, 23 Aug 2008 07:19:42 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:34338 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752643AbYHWLTm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 07:10:47 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Sat, 23 Aug 2008 07:19:42 -0400
+X-Sasl-enc: eE9wveuzLTisFEjFSISejn2wJoXwQlhiz/aRnc8WARc+ 1219490381
+Date: Sat, 23 Aug 2008 08:19:37 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-kernel@vger.kernel.org, IvDoorn@gmail.com
+Subject: Re: [PATCH] hp-wmi: Update to match current rfkill semantics
+Message-ID: <20080823111936.GB28005@khazad-dum.debian.net>
+References: <20080823083735.GA7930@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 4/4 2.6.28] cxgb3i - cxgb3i iscsi driver
-Date: Sat, 23 Aug 2008 16:40:45 +0530
-Message-ID: <46A00B48CC54E4468EF6911F877AC4CA018D73C1@blrx3m10.blr.amer.dell.com>
-In-Reply-To: <20080823.022934.127206564.davem@davemloft.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 4/4 2.6.28] cxgb3i - cxgb3i iscsi driver
-thread-index: AckFAthDOtt6ze0QTNyelaVGVzQQKgADT1og
-References: <46A00B48CC54E4468EF6911F877AC4CA018D73BB@blrx3m10.blr.amer.dell.com><20080823.012830.262443664.davem@davemloft.net><46A00B48CC54E4468EF6911F877AC4CA018D73BC@blrx3m10.blr.amer.dell.com> <20080823.022934.127206564.davem@davemloft.net>
-From: <Shyam_Iyer@Dell.com>
-To: <davem@davemloft.net>
-Cc: <akpm@linux-foundation.org>, <kxie@chelsio.com>, <netdev@vger.kernel.org>,
-       <open-iscsi@googlegroups.com>, <linux-scsi@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <jgarzik@pobox.com>,
-       <michaelc@cs.wisc.edu>, <swise@opengridcomputing.com>,
-       <rdreier@cisco.com>, <daisyc@us.ibm.com>, <wenxiong@us.ibm.com>,
-       <bhua@us.ibm.com>, <divy@chelsio.com>, <dm@chelsio.com>,
-       <leedom@chelsio.com>
-X-OriginalArrivalTime: 23 Aug 2008 11:10:42.0244 (UTC) FILETIME=[E1C92040:01C90510]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080823083735.GA7930@srcf.ucam.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Look, what you're suggesting is to change existing practice and that
-doesn't belong in the discussion of the review of a specific driver.
->If you want to bring that up as a topic and change globally how that is
-handled, bring that up as a seperate topic on linux-kernel.
+The rfkill changes look fine to me (I didn't test or compile it, though).
 
-Sounds reasonable.
+Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
->Don't bug the poor driver submitter who is just following existing and
-accepted practice.
-
-That wasn't the intention here. It rose out of the discussion that was
-being suggested that DRV_MODULE_VERSION be removed and I don't think
-should be done.
-So, I suggested a followup suggestion from there. Will take that up as
-you suggested.
-
--Shyam
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
