@@ -1,106 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbYHWTNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbYHWUf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754444AbYHWTNb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 15:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbYHWTNW
+	id S1756137AbYHWUf0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 16:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbYHWUfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 15:13:22 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:55219 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753105AbYHWTNW (ORCPT
+	Sat, 23 Aug 2008 16:35:18 -0400
+Received: from po-out-1718.google.com ([72.14.252.159]:42142 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754836AbYHWUfP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 15:13:22 -0400
+	Sat, 23 Aug 2008 16:35:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=Fz0qSWCQKE8BD80JWq6GS+orqYS4XxT+BEPUfAFrFJwrnwyp/k4x5OFz2Lw/PrWt97
-         Tg5TfRsF8Biz21gkc0mXy2kyde9cVIt9DMneXSGEmZz8wUbO3lXUquiaS4s08JfLTsye
-         4ruuboVJKToJkMC/vVxgSwUK3fmWpmCakkK0w=
-Message-ID: <86802c440808231213j9a2ffdem548ca91570c981b1@mail.gmail.com>
-Date: Sat, 23 Aug 2008 12:13:21 -0700
+        b=G0jq2XWIMqzXbMGRwRMuHvCC/m4oYntCgSp4WKibbuKAgetRRQ2SMmK8A8gmoZvq8F
+         HtcS1PQcCuO3js9EfDKlFCkfRXIMhyOccjK6riv8DWdlh+pAMZTBO2F41HQkrNQrNnu4
+         RWZLvuVh+QfanQrTt+v9LDl26E0xdwHqRqtpk=
+Message-ID: <86802c440808231335n9214e38q5141a3560c698f76@mail.gmail.com>
+Date: Sat, 23 Aug 2008 13:35:14 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Cyrill Gorcunov" <gorcunov@gmail.com>
-Subject: Re: [PATCH 5/8] x86: apic - unify hard_smp_processor_id
-Cc: mingo@elte.hu, macro@linux-mips.org, hpa@zytor.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <ad4298d4a7d4eb0bf4611765df4481ac129b5db6.1219491572.git.gorcunov@gmail.com>
+To: "Rufus & Azrael" <rufus-azrael@numericable.fr>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
+Cc: "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "David Witbrodt" <dawitbro@sbcglobal.net>
+In-Reply-To: <48B07409.60905@numericable.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <a02f3dc9088b9b6c0d22fa77839fdd9d5309ec97.1219491572.git.gorcunov@gmail.com>
-	 <ad4298d4a7d4eb0bf4611765df4481ac129b5db6.1219491572.git.gorcunov@gmail.com>
+References: <48B0563B.2040207@numericable.fr>
+	 <86802c440808231217q3eebc738v863170b178bb03ab@mail.gmail.com>
+	 <48B067B3.6020008@numericable.fr>
+	 <86802c440808231310hdafc30aw6931b77ea926338e@mail.gmail.com>
+	 <48B06FF9.1030404@numericable.fr>
+	 <86802c440808231328w5c6a3fa3s9be9d90ec1f30aa1@mail.gmail.com>
+	 <48B07409.60905@numericable.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 23, 2008 at 6:01 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> Move hard_smp_processor_id to apic_32.c.
-> There is no need to keep it in header - we are linked to
-> apic_xx.c code anyway.
+On Sat, Aug 23, 2008 at 1:33 PM, Rufus & Azrael
+<rufus-azrael@numericable.fr> wrote:
+> Yinghai Lu wrote:
+>>
+>> On Sat, Aug 23, 2008 at 1:15 PM, Rufus&  Azrael
+>> <rufus-azrael@numericable.fr>  wrote:
+>>
+>>>
+>>> Yinghai Lu wrote:
+>>>
+>>>>
+>>>> On Sat, Aug 23, 2008 at 12:40 PM, Rufus&   Azrael
+>>>> <rufus-azrael@numericable.fr>   wrote:
+>>>>
+>>>>
+>>>>>
+>>>>> Yinghai Lu wrote:
+>>>>>
+>>>>>
+>>>>>>
+>>>>>> On Sat, Aug 23, 2008 at 11:26 AM, Rufus&    Azrael
+>>>>>> <rufus-azrael@numericable.fr>    wrote:
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>>>>
+>>>>>>>> On Sat, Aug 23, 2008 at 4:58 AM, David
+>>>>>>>> Witbrodt<dawitbro@sbcglobal.net>
+>>>>>>>>  wrote:
+>>>>>>>>
+>>>>>>>>
+>>>>>>>>
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>>>
+>>>>>>>>>>  please send out after booting with hpet=disable
+>>>>>>>>>>  lspci -tv
+>>>>>>>>>>  lspci -vvxxx
+>>>>>>>>>>
+>>>>>>>>>>
+>>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>>  Info attached:
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>
+>>>>>>>> 00:14.0 SMBus: ATI Technologies Inc SBx00 SMBus Controller (rev 13)
+>>>>>>>>        Subsystem: Elitegroup Computer Systems Device 2621
+>>>>>>>>        Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop-
+>>>>>>>> ParErr-
+>>>>>>>> Stepping- SERR- FastB2B- DisINTx+
+>>>>>>>>        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr-
+>>>>>>>> DEVSEL=medium>TAbort-
+>>>>>>>> <TAbort-<MAbort->SERR-<PERR- INTx-
+>>>>>>>>        Region 0: I/O ports at fa00 [size=16]
+>>>>>>>>        Region 1: Memory at 80000000 (32-bit, non-prefetchable)
+>>>>>>>> [size=1K]
+>>>>>>>>        Capabilities: [b0] HyperTransport: MSI Mapping Enable- Fixed+
+>>>>>>>>        Kernel driver in use: piix4_smbus
+>>>>>>>> 00: 02 10 85 43 03 04 30 02 13 00 05 0c 00 00 80 00
+>>>>>>>> 10: 01 fa 00 00 00 00 00 80 00 00 00 00 00 00 00 00
+>>>>>>>> 20: 00 00 00 00 00 00 00 00 00 00 00 00 19 10 21 26
+>>>>>>>> 30: 00 00 00 00 b0 00 00 00 00 00 00 00 00 00 00 00
+>>>>>>>> 40: d4 3b 00 05 00 00 00 00 0f ff 00 00 00 00 00 00
+>>>>>>>> 50: f0 01 f0 0e f0 0f f0 07 11 0b f0 0f 00 00 00 00
+>>>>>>>> 60: 01 00 24 00 bf fd de 8f 3f 90 00 00 20 00 00 00
+>>>>>>>> 70: 00 01 00 00 08 00 c0 fe ff 6e 00 00 00 00 f0 0f
+>>>>>>>> 80: f0 0a f0 0f 00 00 00 00 00 00 00 00 8c 00 00 80
+>>>>>>>> 90: 01 fa 00 00 fa de ff 00 00 00 00 00 00 00 00 00
+>>>>>>>> a0: 00 00 ff ff ff ff f0 08 ff fd 12 02 16 7b 20 00
+>>>>>>>> b0: 08 00 02 a8 00 00 00 00 00 00 00 00 f0 0f 08 1a
+>>>>>>>> c0: ff ff ff ff 00 00 00 00 00 00 00 00 00 00 00 00
+>>>>>>>> d0: 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00
+>>>>>>>> e0: 20 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>>>>>>>> f0: d8 0c 00 00 00 00 44 00 00 00 00 00 aa 00 10 01
+>>>>>>>> it seems kernel update BAR1 from 0xfed00000 to 0x80000000 after it
+>>>>>>>> can
+>>>>>>>> not give 0xfed00000 to that device.
+>>>>>>>> please try attached patch, and send out lspci -vvxxxx again.
+>>>>>>>> YH
+>>>>>>>> [PATCH] x86: protect hpet in BAR for one ATI chipset
+>>>>>>>>
+>>>>>>>> so avoid kernel don't allocate nre resource for it because it can
+>>>>>>>> not
+>>>>>>>> allocate the old
+>>>>>>>> address from BIOS.
+>>>>>>>>
+>>>>>>>> the same way like some IO APIC address in BAR handling
+>>>>>>>>
+>>>>>>>> Signed-off-by: Yinghai Lu<yhlu.kenrel@gmail.com>
+>>>>>>>>
+>>>>>>>> ---
+>>>>>>>>  drivers/pci/quirks.c |   16 ++++++++++++++++
+>>>>>>>>  1 file changed, 16 insertions(+)
+>>>>>>>> Index: linux-2.6/drivers/pci/quirks.c
+>>>>>>>> ===================================================================
+>>>>>>>> --- linux-2.6.orig/drivers/pci/quirks.c
+>>>>>>>> +++ linux-2.6/drivers/pci/quirks.c
+>>>>>>>> @@ -1918,6 +1918,22 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_B
+>>>>>>>>                         PCI_DEVICE_ID_NX2_5709S,
+>>>>>>>>                         quirk_brcm_570x_limit_vpd);
+>>>>>>>>
+>>>>>>>> +static void __init quirk_hpet_in_bar(struct pci_dev *pdev)
+>>>>>>>> +{
+>>>>>>>> +       int i;
+>>>>>>>> +       unsigned int base, size;
+>>>>>>>> +
+>>>>>>>> +       /* the BAR1 is the location of the HPET...we must
+>>>>>>>> +        * not touch this, so forcibly insert it into the resource
+>>>>>>>> tree
+>>>>>>>> */
+>>>>>>>> +       base = pci_resource_start(pdev, 1);
+>>>>>>>> +       size = pci_resource_len(pdev, 1);
+>>>>>>>> +       if (base&&     size) {
+>>>>>>>> +               insert_resource(&iomem_resource,&pdev->resource[1]);
+>>>>>>>> +               dev_info(&dev->dev, "HPET at %04x-%04x\n", name,
+>>>>>>>> base,
+>>>>>>>> base + size - 1);
+>>>>>>>> +       }
+>>>>>>>> +}
+>>>>>>>> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI, 0x3485,
+>>>>>>>> quirk_hpet_in_bar);
+>>>>>>>> +
+>>>>>>>>  #ifdef CONFIG_PCI_MSI
+>>>>>>>>  /* Some chipsets do not support MSI. We cannot easily rely on
+>>>>>>>> setting
+>>>>>>>>   * PCI_BUS_FLAGS_NO_MSI in its bus flags because there are actually
+>>>>>>>>
+>>>>>>>>
+>>>>>>>>
+>>>>>>>
+>>>>>>> Hi Yinghai,
+>>>>>>>
+>>>>>>>
+>>>>>>> Your patch seems to be broken, see :
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>>>
+>>>>>>>>  CC      drivers/pci/quirks.o
+>>>>>>>> drivers/pci/quirks.c: In function 'quirk_hpet_in_bar':
+>>>>>>>> drivers/pci/quirks.c:1804: erreur: 'dev' undeclared (first use in
+>>>>>>>> this
+>>>>>>>> function)
+>>>>>>>> drivers/pci/quirks.c:1804: erreur: (Each undeclared identifier is
+>>>>>>>> reported
+>>>>>>>> only once
+>>>>>>>> drivers/pci/quirks.c:1804: erreur: for each function it appears in.)
+>>>>>>>> drivers/pci/quirks.c:1804: erreur: 'name' undeclared (first use in
+>>>>>>>> this
+>>>>>>>> function)
+>>>>>>>> drivers/pci/quirks.c:1804: attention : trop d'arguments pour le
+>>>>>>>> format
+>>>>>>>> drivers/pci/quirks.c:1795: attention : unused variable 'i'
+>>>>>>>> make[2]: *** [drivers/pci/quirks.o] Erreur 1
+>>>>>>>>
+>>>>>>>>
+>>>>>>>>
+>>>>>>
+>>>>>> please check v2.
+>>>>>>
+>>>>>> YH
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>
+>>>>> Thanks Yinghai,
+>>>>>
+>>>>> Your patch applied, I attach lspci -vvxxxx.
+>>>>>
+>>>>> Regards.
+>>>>>
+>>>>>
+>>>>> 00:14.0 SMBus: ATI Technologies Inc SBx00 SMBus Controller (rev 14)
+>>>>>        Subsystem: Micro-Star International Co., Ltd. Device 7327
+>>>>>        Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop-
+>>>>> ParErr-
+>>>>> Stepping- SERR- FastB2B- DisINTx+
+>>>>>        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium>TAbort-
+>>>>> <TAbort-<MAbort->SERR-<PERR- INTx-
+>>>>>        Region 0: I/O ports at 0b00 [size=16]
+>>>>>        Capabilities: [b0] HyperTransport: MSI Mapping Enable- Fixed+
+>>>>>        Kernel driver in use: piix4_smbus
+>>>>> 00: 02 10 85 43 01 04 30 02 14 00 05 0c 00 00 80 00
+>>>>> 10: 01 0b 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>>>>> 20: 00 00 00 00 00 00 00 00 00 00 00 00 62 14 27 73
+>>>>> 30: 00 00 00 00 b0 00 00 00 00 00 00 00 00 00 00 00
+>>>>> 40: d4 2b 00 05 00 00 00 00 0f ff 00 00 00 00 00 00
+>>>>> 50: 10 01 00 00 00 00 80 08 11 0b f0 0f 00 00 00 00
+>>>>> 60: 01 00 24 00 bf fd 9e 83 3f 90 00 00 20 00 00 00
+>>>>> 70: 00 01 00 00 08 00 c0 fe ff 2e 00 00 00 00 f0 0f
+>>>>> 80: f4 0a f0 0f 00 00 00 00 00 00 00 00 8c 00 00 80
+>>>>> 90: 01 0b 00 00 3b de ff 00 00 00 00 00 00 00 00 00
+>>>>> a0: 00 00 ff ff ff ff f0 08 02 f0 02 00 16 79 00 18
+>>>>> b0: 08 00 02 a8 00 00 00 00 00 00 00 00 f0 0f 08 1a
+>>>>> c0: ff ff ff ff 00 00 00 00 00 00 00 00 00 00 00 00
+>>>>> d0: 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00
+>>>>> e0: 20 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>>>>> f0: d8 0c 00 00 00 00 44 00 00 00 00 00 aa 00 10 01
+>>>>>
+>>>>>
+>>>>
+>>>> bios didn't set HPET in BAR1?
+>>>>
+>>>> YH
+>>>>
+>>>>
+>>>>
+>>>
+>>> Yinghai,
+>>>
+>>> How do I check this ?
+>>>
+>>>
+>>
+>> it seems that you BIOS have HPET in acpi tables, but didn't set that
+>> in BAR1 of 00:14.0
+>>
+>> or BIOS have set one magic bit to hide BAR1 to OS.
+>>
+>> please check if your hpet works. if so, we could have other quirks to
+>> hide BAR1 for David's system.
+>>
+>> YH
+>>
+>>
 >
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> ---
->  arch/x86/kernel/apic_32.c |    5 +++++
->  include/asm-x86/smp.h     |   10 ----------
->  2 files changed, 5 insertions(+), 10 deletions(-)
+> Yinghai,
 >
-> diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-> index ad295cf..c71a77c 100644
-> --- a/arch/x86/kernel/apic_32.c
-> +++ b/arch/x86/kernel/apic_32.c
-> @@ -1569,6 +1569,11 @@ void __cpuinit generic_processor_info(int apicid, int version)
->        cpu_set(cpu, cpu_present_map);
->  }
+> I found these lines in dmesg :
 >
-> +int hard_smp_processor_id(void)
-> +{
-> +       return read_apic_id();
-> +}
-> +
->  /*
->  * Power management
->  */
-> diff --git a/include/asm-x86/smp.h b/include/asm-x86/smp.h
-> index 29324c1..914a73d 100644
-> --- a/include/asm-x86/smp.h
-> +++ b/include/asm-x86/smp.h
-> @@ -185,17 +185,7 @@ static inline unsigned int read_apic_id(void)
->  }
->  #endif
+>> [    0.145977] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0, 0
+>> [    0.145977] hpet0: 4 32-bit timers, 14318180 Hz
 >
-> -
-> -# if defined(APIC_DEFINITION) || defined(CONFIG_X86_64)
->  extern int hard_smp_processor_id(void);
-> -# else
-> -#include <mach_apicdef.h>
-> -static inline int hard_smp_processor_id(void)
-> -{
-> -       /* we don't want to mark this access volatile - bad code generation */
-> -       return read_apic_id();
-> -}
-> -# endif /* APIC_DEFINITION */
->
->  #else /* CONFIG_X86_LOCAL_APIC */
->
-> --
-> 1.6.0.6.gc667
->
+> do you think hpet works ?
 >
 
-this one seems have some problem with 32bit with genericarch
-
-because we have
-
-int hard_smp_processor_id(void)
-{
-        return genapic->get_apic_id(*(unsigned long *)(APIC_BASE+APIC_ID));
-}
-
-arch/x86/mach-generic/probe.c
-
-updated 64 bit to have MACRO.
+cat /proc/timer_list
 
 YH
