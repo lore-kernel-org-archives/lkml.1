@@ -1,45 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752760AbYHWES1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752688AbYHWEzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752760AbYHWES1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 00:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYHWESU
+	id S1752688AbYHWEzn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 00:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYHWEzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 00:18:20 -0400
-Received: from main.gmane.org ([80.91.229.2]:48940 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750801AbYHWESU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 00:18:20 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Russ Dill <Russ.Dill@gmail.com>
-Subject: Re: ftraced and suspend to ram
-Date: Sat, 23 Aug 2008 04:18:08 +0000 (UTC)
-Message-ID: <loom.20080823T041606-671@post.gmane.org>
-References: <alpine.DEB.1.10.0808211139420.3947@gandalf.stny.rr.com> <20080822072343.GA24173@atrey.karlin.mff.cuni.cz> <20080822103533.GA5425@joi> <200808221839.35640.rjw@sisk.pl>
-Mime-Version: 1.0
+	Sat, 23 Aug 2008 00:55:37 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:59094 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751148AbYHWEzg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 00:55:36 -0400
+Date: Sat, 23 Aug 2008 14:55:20 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Karen Xie <kxie@chelsio.com>, netdev@vger.kernel.org,
+       open-iscsi@googlegroups.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jgarzik@pobox.com, davem@davemloft.net,
+       michaelc@cs.wisc.edu, swise@opengridcomputing.com, rdreier@cisco.com,
+       daisyc@us.ibm.com, wenxiong@us.ibm.com, bhua@us.ibm.com,
+       divy@chelsio.com, dm@chelsio.com, leedom@chelsio.com
+Subject: Re: [PATCH 1/4 2.6.28] cxgb3 - manage a private ip address for iSCSI
+Message-ID: <20080823045520.GA4759@gondor.apana.org.au>
+References: <200808221838.m7MIcW6a004400@localhost.localdomain> <20080822120851.c45a90f2.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 70.190.167.62 (Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.0.1) Gecko/2008071816 Ubuntu/8.10 (intrepid) Firefox/3.0.1)
+Content-Disposition: inline
+In-Reply-To: <20080822120851.c45a90f2.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki <rjw <at> sisk.pl> writes:
+On Fri, Aug 22, 2008 at 07:08:51PM +0000, Andrew Morton wrote:
+>
+>> +static ssize_t iscsi_ipaddr_attr_store(struct device *d,
+>> +                                    const char *buf, size_t len)
+>> +{
+>> +     struct port_info *pi = netdev_priv(to_net_dev(d));
+>> +     __be32 a = 0;
 > 
-> This is needed to fix compilation, sorry for the omission.
-> 
-> Still, did you test ftrace + suspend with the original patch and your fix
-> applied and if you did, then what happend?
-> 
-> Rafael
-> 
+> There's not really any need to use __be32 in kernel code.  Plain old
+> be23 is fine.
 
-On my x86_64 laptop, both with and without the patch, the laptop never resumes,
-nor does it reboot. Just the power light comes on. I've tried the PM test rtc
-thing, but the clock never gets changed. Disabling FTRACE causes suspend/resume
-to work.
+Sorry but where is be32 defined? I couldn't find it in linux/types.h.
 
+Perhaps we should resurrect this patch from 2005?
 
+[PATCH] Add be*/le* types without underscores
+
+I've seen a number of patches that have started to use the __le*/__be*
+types within the kernel.  Nice as they are, the underscores are really
+a bit of an eye sore.  Since there seems to be no name conflict within
+the kernel, why don't we use them without the underscores like just as
+we do with types like u32?
+
+Here is a patch to do just that.  I've verified that there are no
+conflicts by grepping the current git tree and then building it with
+the patch.
+
+Of course userspace won't see them since they're protected by
+#ifdef __KERNEL__.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+diff --git a/fs/ntfs/types.h b/fs/ntfs/types.h
+index 8c8053b..79b44c7 100644
+--- a/fs/ntfs/types.h
++++ b/fs/ntfs/types.h
+@@ -25,9 +25,6 @@
+ 
+ #include <linux/types.h>
+ 
+-typedef __le16 le16;
+-typedef __le32 le32;
+-typedef __le64 le64;
+ typedef __u16 __bitwise sle16;
+ typedef __u32 __bitwise sle32;
+ typedef __u64 __bitwise sle64;
+diff --git a/include/linux/types.h b/include/linux/types.h
+index d4a9ce6..61747dc 100644
+--- a/include/linux/types.h
++++ b/include/linux/types.h
+@@ -189,6 +189,15 @@ typedef __u16 __bitwise __sum16;
+ typedef __u32 __bitwise __wsum;
+ 
+ #ifdef __KERNEL__
++typedef __le16 le16;
++typedef __be16 be16;
++typedef __le32 le32;
++typedef __be32 be32;
++#if defined(__GNUC__)
++typedef __le64 le64;
++typedef __be64 be64;
++#endif
++
+ typedef unsigned __bitwise__ gfp_t;
+ 
+ #ifdef CONFIG_RESOURCES_64BIT
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
