@@ -1,133 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbYHWOrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbYHWPEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754063AbYHWOrW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 10:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYHWOrP
+	id S1753398AbYHWPEp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 11:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYHWPEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 10:47:15 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:42805 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751288AbYHWOrO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 10:47:14 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Bart Trojanowski <bart@jukie.net>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH] document additional vfat mount options
-References: <20080823031229.GA28029@jukie.net>
-	<1219461278-26776-1-git-send-email-bart@jukie.net>
-	<87tzdcfm2g.fsf@devron.myhome.or.jp>
-	<20080823131131.GE28029@jukie.net>
-Date: Sat, 23 Aug 2008 23:47:08 +0900
-In-Reply-To: <20080823131131.GE28029@jukie.net> (Bart Trojanowski's message of
-	"Sat, 23 Aug 2008 09:11:31 -0400")
-Message-ID: <87bpzj94b7.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Sat, 23 Aug 2008 11:04:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52322 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751264AbYHWPEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 11:04:34 -0400
+Date: Sat, 23 Aug 2008 17:03:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Witbrodt <dawitbro@sbcglobal.net>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Bill Fink <billfink@mindspring.com>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user
+	with the same regression
+Message-ID: <20080823150358.GA8579@elte.hu>
+References: <825188.80277.qm@web82105.mail.mud.yahoo.com> <20080823133643.GA23766@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Disposition: inline
+In-Reply-To: <20080823133643.GA23766@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bart Trojanowski <bart@jukie.net> writes:
 
-> * OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> [080822 23:27]:
->> Thanks. Fixed. Current patch is the following.
->
-> Indeed, I have made some mistakes.
->
-> Now that I read it again...
->
->> +gid=###       -- Explisitly set ownership of all files on this
->> +                 filesystem to this group ID number.  Default is to use
->> +                 the GID of the mounting process.
->
-> ... it has a 'explicit' typo, spotted by Ian Ward, and it's not setting
-> ownership, but rather group ownership.  So how about this
->
-> gid=###       -- Explicitly set group ownership of all files on this
->                  filesystem to this group ID number.  Default is to use
->                  the GID of the mounting process.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Looks good. However, I've noticed manpage's one may be simpler and
-consistent. So, the updated patch is following.
+> could you try the debug patch below ontop of latest tip/master:
 
-If you found something wrong, please let me know.  Thanks
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+please use the replacement debug patch below. (the previous one was 
+buggy, it would likely lock up because it iterated incorrectly.)
 
+[ and i'd also like to stress that this isnt a solution, this is a debug
+  hack that can lead to a solution. ]
 
-From: Bart Trojanowski <bart@jukie.net>
+	Ingo
 
-While debugging a sync mount regression on vfat I noticed that there
-were mount options parsed by the driver that were not documented.
+-------------->
+>From dc1c9cafd20edacb14e902c5ee72547f14c12545 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sat, 23 Aug 2008 15:33:51 +0200
+Subject: [PATCH] debug: ignore resource conflicts
 
-[hirofumi@mail.parknet.co.jp: fix some parts]
-Signed-off-by: Bart Trojanowski <bart@jukie.net>
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 ---
+ kernel/resource.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
 
- Documentation/filesystems/vfat.txt |   24 ++++++++++++++++++++++--
- 1 file changed, 22 insertions(+), 2 deletions(-)
-
-diff -puN Documentation/filesystems/vfat.txt~fat-doc-fixes Documentation/filesystems/vfat.txt
---- linux-2.6/Documentation/filesystems/vfat.txt~fat-doc-fixes	2008-08-23 12:15:06.000000000 +0900
-+++ linux-2.6-hirofumi/Documentation/filesystems/vfat.txt	2008-08-23 23:38:32.000000000 +0900
-@@ -8,6 +8,12 @@ if you want to format from within Linux.
+diff --git a/kernel/resource.c b/kernel/resource.c
+index f5b518e..45877ec 100644
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -156,15 +156,19 @@ static struct resource * __request_resource(struct resource *root, struct resour
+ 	for (;;) {
+ 		tmp = *p;
+ 		if (!tmp || tmp->start > end) {
++insert:
+ 			new->sibling = tmp;
+ 			*p = new;
+ 			new->parent = root;
+ 			return NULL;
+ 		}
+-		p = &tmp->sibling;
+-		if (tmp->end < start)
++		if (tmp->end < start) {
++			p = &tmp->sibling;
+ 			continue;
+-		return tmp;
++		}
++		printk("ignoring resource conflict between %s/{%p..%p} and %s/{%p..%p}\n", new->name, (void *)new->start, (void *)new->end, tmp->name, (void *)tmp->start, (void *)tmp->end);
++		WARN_ON(1);
++		goto insert;
+ 	}
+ }
  
- VFAT MOUNT OPTIONS
- ----------------------------------------------------------------------
-+uid=###       -- Set the owner of all files on this filesystem.
-+		 The default is the uid of current process.
-+
-+gid=###       -- Set the group of all files on this filesystem.
-+		 The default is the gid of current process.
-+
- umask=###     -- The permission mask (for files and directories, see umask(1)).
-                  The default is the umask of current process.
- 
-@@ -36,7 +42,7 @@ codepage=###  -- Sets the codepage numbe
- 		 characters on FAT filesystem.
- 		 By default, FAT_DEFAULT_CODEPAGE setting is used.
- 
--iocharset=name -- Character set to use for converting between the
-+iocharset=<name> -- Character set to use for converting between the
- 		 encoding is used for user visible filename and 16 bit
- 		 Unicode characters. Long filenames are stored on disk
- 		 in Unicode format, but Unix for the most part doesn't
-@@ -86,6 +92,8 @@ check=s|r|n   -- Case sensitivity checki
-                  r: relaxed, case insensitive
-                  n: normal, default setting, currently case insensitive
- 
-+nocase        -- This was deprecated for vfat. Use shortname=win95 instead.
-+
- shortname=lower|win95|winnt|mixed
- 	      -- Shortname display/create setting.
- 		 lower: convert to lowercase for display,
-@@ -99,11 +107,23 @@ shortname=lower|win95|winnt|mixed
- tz=UTC        -- Interpret timestamps as UTC rather than local time.
-                  This option disables the conversion of timestamps
-                  between local time (as used by Windows on FAT) and UTC
--                 (which Linux uses internally).  This is particuluarly
-+                 (which Linux uses internally).  This is particularly
-                  useful when mounting devices (like digital cameras)
-                  that are set to UTC in order to avoid the pitfalls of
-                  local time.
- 
-+showexec      -- If set, the execute permission bits of the file will be
-+		 allowed only if the extension part of the name is .EXE,
-+		 .COM, or .BAT. Not set by default.
-+
-+debug         -- Can be set, but unused by the current implementation.
-+
-+sys_immutable -- If set, ATTR_SYS attribute on FAT is handled as
-+		 IMMUTABLE flag on Linux. Not set by default.
-+
-+flush         -- If set, the filesystem will try to flush to disk more
-+		 early than normal. Not set by default.
-+
- <bool>: 0,1,yes,no,true,false
- 
- TODO
-_
