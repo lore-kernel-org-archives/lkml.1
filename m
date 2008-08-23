@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbYHWQ1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYHWW0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754528AbYHWQ1x (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 12:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbYHWQ1n
+	id S1755251AbYHWW0m (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 18:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYHWW0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 12:27:43 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:44226 "EHLO mgw1.diku.dk"
+	Sat, 23 Aug 2008 18:26:34 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:44352 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751286AbYHWQ1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 12:27:42 -0400
-Date: Sat, 23 Aug 2008 18:27:38 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: linville@tuxdriver.com, xemul@openvz.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] net/mac80211/mesh.c: correct the argument to __mesh_table_free
-Message-ID: <Pine.LNX.4.64.0808231826470.3162@ask.diku.dk>
+	id S1751136AbYHWW0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 18:26:34 -0400
+Message-ID: <48B08E94.8030805@garzik.org>
+Date: Sat, 23 Aug 2008 18:26:28 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jaswinder Singh <jaswinderlinux@gmail.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: [Bug #11271] BUG: fealnx in 2.6.27-rc1
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.U-.FcGsIB@albercik>
+In-Reply-To: <VSpL6AnBTS.A.U-.FcGsIB@albercik>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11271
+> Subject		: BUG: fealnx in 2.6.27-rc1
+> Submitter	: Jaswinder Singh <jaswinderlinux@gmail.com>
+> Date		: 2008-08-05 14:58 (19 days old)
+> References	: http://marc.info/?l=linux-netdev&m=121794762016830&w=4
+> 		  http://lkml.org/lkml/2008/8/10/98
+> Handled-By	: Francois Romieu <romieu@fr.zoreil.com>
 
-In the function mesh_table_grow, it is the new table not the argument table
-that should be freed if the function fails (cf commit
-bd9b448f4c0a514559bdae4ca18ca3e8cd999c6d)
 
-The semantic match that detects this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+Jaswinder, does reverting 28cd4289abc2c8db90344ee4ff064a9bdf086fdf help?
 
-// <smpl>
-@r exists@
-local idexpression x;
-expression E,f;
-position p1,p2,p3;
-identifier l;
-statement S;
-@@
+That's the only material change to fealnx itself in years.
 
-x = mesh_table_alloc@p1(...)
-...
-if (x == NULL) S
-... when != E = x
-    when != mesh_table_free(x)
-goto@p2 l;
-... when != E = x
-    when != f(...,x,...)
-    when any
-(
-return \(0\|x\);
-|
-return@p3 ...;
-)
+If not, any chance you could bisect this problem, and add more info to 
+the bug?
 
-@script:python@
-p1 << r.p1;
-p2 << r.p2;
-p3 << r.p3;
-@@
-
-print "%s: call on line %s not freed or saved before return on line %s via line %s" % (p1[0].file,p1[0].line,p3[0].line,p2[0].line)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- net/mac80211/mesh.c           |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/net/mac80211/mesh.c b/net/mac80211/mesh.c
-index b5933b2..35f2f95 100644
---- a/net/mac80211/mesh.c
-+++ b/net/mac80211/mesh.c
-@@ -383,7 +383,7 @@ errcopy:
- 		hlist_for_each_safe(p, q, &newtbl->hash_buckets[i])
- 			tbl->free_node(p, 0);
- 	}
--	__mesh_table_free(tbl);
-+	__mesh_table_free(newtbl);
- endgrow:
- 	return NULL;
- }
