@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbYHWWfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754138AbYHWR6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755181AbYHWWfA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 18:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbYHWWew
+	id S1754138AbYHWR6o (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 13:58:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbYHWR6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 18:34:52 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55160 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752562AbYHWWev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 18:34:51 -0400
-Message-ID: <48B09087.3090202@garzik.org>
-Date: Sat, 23 Aug 2008 18:34:47 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Manny Maxwell <mannymax@mannymax.net>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #11343] SATA Cold Boot Problems with 2.6.27-rc[23] on nVidia
- 680i
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.m3H.3aGsIB@albercik>
-In-Reply-To: <VSpL6AnBTS.A.m3H.3aGsIB@albercik>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Sat, 23 Aug 2008 13:58:36 -0400
+Received: from vms044pub.verizon.net ([206.46.252.44]:45605 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752760AbYHWR6f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 13:58:35 -0400
+Date: Sat, 23 Aug 2008 13:58:22 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Ot & Probably off the wall question.
+To: linux-kernel@vger.kernel.org
+Message-id: <200808231358.22972.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11343
-> Subject		: SATA Cold Boot Problems with 2.6.27-rc[23] on nVidia 680i
-> Submitter	: Manny Maxwell <mannymax@mannymax.net>
-> Date		: 2008-08-14 4:16 (10 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121868782917600&w=4
+Greetings;
 
+I had a family dinner to visit last night, and since my camera is a vfat file 
+system with a usb interface, I thought I'd put about 50 of the pix I've taken 
+with that camera, back on it and show the rest of the family what has been 
+keeping me out of the bars this summer.
 
-hmmmm.  Looking at changes between the two csets listed in the email 
-(623fa57..8f616cd), all of them are driver-specific and unrelated to 
-Manny's hardware except for
+When I was done, the camera said it had room for 22 more pix, empty is 84 as 
+its a 64 meg card, and I unmounted it after the write led on the camera went 
+out, then remounted it to see if they were all there and they were.
 
-	commit 2486fa561a3192bbbec39c7feef87a1e07bd6342
-	Author: Tejun Heo <tj@kernel.org>
-	Date:   Thu Jul 31 07:52:40 2008 +0900
+So I get to the dinner, drag out the camera as a brag book, and check the 
+first and last pix before handing it off.  But there were only 4 viewable, 
+and they were the first 4 chronologically, even the ones I'd left on it were 
+gone, not viewable.  But the memory was still used.
 
-	    libata: update atapi disable handling
+Getting back to the house and mounting it to /media/camera, every pix on it, 
+about 65 by then, was perfectly readable.  Just for grins, I had the camera 
+format the card and wrote 6 more pix to it with the computer.  But only 4 
+were visible and readable on its own viewfinder.
 
-So you could try to revert that and see what happens.  But given that 
-small range of changes, it really seems like something else, maybe in 
-the PCI subsystem (random guess).
+The camera is too old now to bother yelling at Olympus, am I stuck with this, 
+or is there some sort of a bug in the usb-storage module I have uncovered?
 
-Looking at the entire kernel, nothing jumps out, either.  Its mostly fs 
-updates (ext4, xfs), a networking update, an ARM update, and a libata 
-update.
-
-Also, some reset-related fixes just went in, so re-testing the latest 
--git would be helpful as well.
-
-	Jeff
-
-
-
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+A computer scientist is someone who fixes things that aren't broken.
