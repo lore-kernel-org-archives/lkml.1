@@ -1,62 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbYHWVF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbYHWRvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755173AbYHWVF1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 17:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbYHWVFQ
+	id S1753909AbYHWRvm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 13:51:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYHWRvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 17:05:16 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50593 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753217AbYHWVFO (ORCPT
+	Sat, 23 Aug 2008 13:51:31 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:51681 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752804AbYHWRva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 17:05:14 -0400
-Date: Sat, 23 Aug 2008 14:05:09 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org, carlos@strangeworlds.co.uk,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Fix oops in acer_wmi
-Message-ID: <20080823140509.4b197021@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 23 Aug 2008 13:51:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=Bbb/vA7UdEfAhWAyR4LfnF1U8Lvr8tWzkRCT0xl+ERlOE0/zWQKBd74jKIZBNecjSZ
+         92GbdpXelKukiHFpe/haX/WfmxclimMgve/LSDPa55BEOmcy6pZcLZW0210ZKAUW7U1M
+         Ja0eKEvpjQhhV6vAz7fhI2Zx8WDIXQ0itFKVI=
+Message-ID: <86802c440808231051j54bbebd3j7cb1943ef1af3e45@mail.gmail.com>
+Date: Sat, 23 Aug 2008 10:51:29 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "David Witbrodt" <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Vivek Goyal" <vgoyal@redhat.com>,
+       "Bill Fink" <billfink@mindspring.com>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, netdev <netdev@vger.kernel.org>
+In-Reply-To: <825188.80277.qm@web82105.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_33971_17542914.1219513889637"
+References: <825188.80277.qm@web82105.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the current kerneloops.org stats, acer_wmi is pretty high on the
-list for 2.6.27-rc:
-http://www.kerneloops.org/search.php?search=acer_wmi_init
+------=_Part_33971_17542914.1219513889637
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-this is due to a null pointer due to a misordered initialization...
-when the DMI quirks get run, the "interface" variable might not have been initialized.
-The patch below 1) prevents the oops and 2) runs the quirks again after all the "interface"
-initialization has completed.
+On Sat, Aug 23, 2008 at 4:58 AM, David Witbrodt <dawitbro@sbcglobal.net> wrote:
+>
+>
+>> please send out after booting with hpet=disable
+>> lspci -tv
+>> lspci -vvxxx
+>
+> Info attached:
 
-This oops is new in 2.6.27-rc and thus counts as a regression...
+00:14.0 SMBus: ATI Technologies Inc SBx00 SMBus Controller (rev 13)
+	Subsystem: Elitegroup Computer Systems Device 2621
+	Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B- DisINTx+
+	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR- INTx-
+	Region 0: I/O ports at fa00 [size=16]
+	Region 1: Memory at 80000000 (32-bit, non-prefetchable) [size=1K]
+	Capabilities: [b0] HyperTransport: MSI Mapping Enable- Fixed+
+	Kernel driver in use: piix4_smbus
+00: 02 10 85 43 03 04 30 02 13 00 05 0c 00 00 80 00
+10: 01 fa 00 00 00 00 00 80 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 19 10 21 26
+30: 00 00 00 00 b0 00 00 00 00 00 00 00 00 00 00 00
+40: d4 3b 00 05 00 00 00 00 0f ff 00 00 00 00 00 00
+50: f0 01 f0 0e f0 0f f0 07 11 0b f0 0f 00 00 00 00
+60: 01 00 24 00 bf fd de 8f 3f 90 00 00 20 00 00 00
+70: 00 01 00 00 08 00 c0 fe ff 6e 00 00 00 00 f0 0f
+80: f0 0a f0 0f 00 00 00 00 00 00 00 00 8c 00 00 80
+90: 01 fa 00 00 fa de ff 00 00 00 00 00 00 00 00 00
+a0: 00 00 ff ff ff ff f0 08 ff fd 12 02 16 7b 20 00
+b0: 08 00 02 a8 00 00 00 00 00 00 00 00 f0 0f 08 1a
+c0: ff ff ff ff 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 20 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: d8 0c 00 00 00 00 44 00 00 00 00 00 aa 00 10 01
 
+it seems kernel update BAR1 from 0xfed00000 to 0x80000000 after it can
+not give 0xfed00000 to that device.
 
---- linux.trees.git/drivers/misc/acer-wmi.c~	2008-08-23 13:59:22.000000000 -0700
-+++ linux.trees.git/drivers/misc/acer-wmi.c	2008-08-23 14:00:32.000000000 -0700
-@@ -192,6 +192,9 @@ static struct quirk_entry *quirks;
- 
- static void set_quirks(void)
- {
-+	if (!interface)
-+		return;
-+
- 	if (quirks->mailled)
- 		interface->capability |= ACER_CAP_MAILLED;
- 
-@@ -1237,6 +1240,8 @@ static int __init acer_wmi_init(void)
- 		return -ENODEV;
- 	}
- 
-+	set_quirks();
-+
- 	if (platform_driver_register(&acer_platform_driver)) {
- 		printk(ACER_ERR "Unable to register platform driver.\n");
- 		goto error_platform_register;
+please try attached patch, and send out lspci -vvxxxx again.
+
+YH
+
+------=_Part_33971_17542914.1219513889637
+Content-Type: text/x-patch; name=hpet_in_bar1.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fk8j033r1
+Content-Disposition: attachment; filename=hpet_in_bar1.patch
+
+W1BBVENIXSB4ODY6IHByb3RlY3QgaHBldCBpbiBCQVIgZm9yIG9uZSBBVEkgY2hpcHNldAoKc28g
+YXZvaWQga2VybmVsIGRvbid0IGFsbG9jYXRlIG5yZSByZXNvdXJjZSBmb3IgaXQgYmVjYXVzZSBp
+dCBjYW4gbm90IGFsbG9jYXRlIHRoZSBvbGQKYWRkcmVzcyBmcm9tIEJJT1MuCgp0aGUgc2FtZSB3
+YXkgbGlrZSBzb21lIElPIEFQSUMgYWRkcmVzcyBpbiBCQVIgaGFuZGxpbmcKClNpZ25lZC1vZmYt
+Ynk6IFlpbmdoYWkgTHUgPHlobHUua2VucmVsQGdtYWlsLmNvbT4KCi0tLQogZHJpdmVycy9wY2kv
+cXVpcmtzLmMgfCAgIDE2ICsrKysrKysrKysrKysrKysKIDEgZmlsZSBjaGFuZ2VkLCAxNiBpbnNl
+cnRpb25zKCspCgpJbmRleDogbGludXgtMi42L2RyaXZlcnMvcGNpL3F1aXJrcy5jCj09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2RyaXZlcnMvcGNpL3F1aXJrcy5jCisrKyBsaW51eC0yLjYv
+ZHJpdmVycy9wY2kvcXVpcmtzLmMKQEAgLTE5MTgsNiArMTkxOCwyMiBAQCBERUNMQVJFX1BDSV9G
+SVhVUF9IRUFERVIoUENJX1ZFTkRPUl9JRF9CCiAJCQkgUENJX0RFVklDRV9JRF9OWDJfNTcwOVMs
+CiAJCQkgcXVpcmtfYnJjbV81NzB4X2xpbWl0X3ZwZCk7CiAKK3N0YXRpYyB2b2lkIF9faW5pdCBx
+dWlya19ocGV0X2luX2JhcihzdHJ1Y3QgcGNpX2RldiAqcGRldikKK3sKKwlpbnQgaTsKKwl1bnNp
+Z25lZCBpbnQgYmFzZSwgc2l6ZTsKKworCS8qIHRoZSBCQVIxIGlzIHRoZSBsb2NhdGlvbiBvZiB0
+aGUgSFBFVC4uLndlIG11c3QKKwkgKiBub3QgdG91Y2ggdGhpcywgc28gZm9yY2libHkgaW5zZXJ0
+IGl0IGludG8gdGhlIHJlc291cmNlIHRyZWUgKi8KKwliYXNlID0gcGNpX3Jlc291cmNlX3N0YXJ0
+KHBkZXYsIDEpOworCXNpemUgPSBwY2lfcmVzb3VyY2VfbGVuKHBkZXYsIDEpOworCWlmIChiYXNl
+ICYmIHNpemUpIHsKKwkJaW5zZXJ0X3Jlc291cmNlKCZpb21lbV9yZXNvdXJjZSwgJnBkZXYtPnJl
+c291cmNlWzFdKTsKKwkJZGV2X2luZm8oJmRldi0+ZGV2LCAiSFBFVCBhdCAlMDR4LSUwNHhcbiIs
+IG5hbWUsIGJhc2UsIGJhc2UgKyBzaXplIC0gMSk7CisJfQorfQorREVDTEFSRV9QQ0lfRklYVVBf
+SEVBREVSKFBDSV9WRU5ET1JfSURfQVRJLCAweDM0ODUsIHF1aXJrX2hwZXRfaW5fYmFyKTsKKwog
+I2lmZGVmIENPTkZJR19QQ0lfTVNJCiAvKiBTb21lIGNoaXBzZXRzIGRvIG5vdCBzdXBwb3J0IE1T
+SS4gV2UgY2Fubm90IGVhc2lseSByZWx5IG9uIHNldHRpbmcKICAqIFBDSV9CVVNfRkxBR1NfTk9f
+TVNJIGluIGl0cyBidXMgZmxhZ3MgYmVjYXVzZSB0aGVyZSBhcmUgYWN0dWFsbHkK
+------=_Part_33971_17542914.1219513889637--
