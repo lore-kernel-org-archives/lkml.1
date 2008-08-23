@@ -1,70 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbYHWC0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbYHWCd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753203AbYHWC0V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 22:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbYHWC0B
+	id S1752740AbYHWCd4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 22:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbYHWCdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 22:26:01 -0400
-Received: from web82102.mail.mud.yahoo.com ([209.191.84.215]:20972 "HELO
-	web82102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751039AbYHWC0A (ORCPT
+	Fri, 22 Aug 2008 22:33:47 -0400
+Received: from relay03.mail-hub.dodo.com.au ([123.2.6.238]:42361 "EHLO
+	relay03.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1749667AbYHWCdr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 22:26:00 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=zolSqm/Xz5ttYxFqwfqMgXluowTmjEc+BSfBdxoe7Kv3Rg5KtfK8Zw6Ht9qpdbSbX1F9cioiONGcDA+yC2GvuFeC4R0p32icH9hvRRNd5Itc0VwWk8GPaNMAsbZKHdOnSBTBSmrwXhn2/YX1e3+QkWC9hdJsgJX4pth5XlYnito=;
-X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
-Date: Fri, 22 Aug 2008 19:25:59 -0700 (PDT)
-From: David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Vivek Goyal <vgoyal@redhat.com>,
-       Bill Fink <billfink@mindspring.com>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
+	Fri, 22 Aug 2008 22:33:47 -0400
+From: Grant Coady <grant_lkml@dodo.com.au>
+To: Bart Trojanowski <bart@jukie.net>
+Cc: linux-kernel@vger.kernel.org, Bart Trojanowski <bart@jukie.net>,
+       trivial@kernel.org, hirofumi@mail.parknet.co.jp
+Subject: Re: [PATCH] document additional vfat mount options
+Date: Sat, 23 Aug 2008 12:33:16 +1000
+Organization: http://bugsplatter.id.au/
+Reply-To: Grant Coady <gcoady.lk@gmail.com>
+Message-ID: <sktua4ta7e0jspqnsbd3fqveb204togekh@4ax.com>
+References: <20080820022712.GF28029@jukie.net> <1219452859-24960-1-git-send-email-bart@jukie.net>
+In-Reply-To: <1219452859-24960-1-git-send-email-bart@jukie.net>
+X-Mailer: Forte Agent 2.0/32.652
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <773466.71707.qm@web82102.mail.mud.yahoo.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 22 Aug 2008 20:54:19 -0400, Bart Trojanowski <bart@jukie.net> wrote:
 
-Yinghai,
+>While debugging a sync mount regression on vfat I noticed that there
+>were mount options parsed by the driver that were not documented.
+>
+>Signed-off-by: Bart Trojanowski <bart@jukie.net>
+>Cc: trivial@kernel.org
+>Cc: hirofumi@mail.parknet.co.jp
+>---
+> Documentation/filesystems/vfat.txt |   31 +++++++++++++++++++++++++++++--
+> 1 files changed, 29 insertions(+), 2 deletions(-)
+>
+>diff --git a/Documentation/filesystems/vfat.txt b/Documentation/filesystems/vfat.txt
+>index bbac4f1..4e26744 100644
+>--- a/Documentation/filesystems/vfat.txt
+>+++ b/Documentation/filesystems/vfat.txt
+>@@ -8,6 +8,14 @@ if you want to format from within Linux.
+> 
+> VFAT MOUNT OPTIONS
+> ----------------------------------------------------------------------
+>+uid=###       -- Explicitly set ownership of all files on this
+>+                 filesystem to this user ID number.  Default is to use
+>+                 the UID of the mounting process.
+>+
+>+gid=###       -- Explisitly set ownership of all files on thsi
+							    ^^^^
+>+                 filesystem to this group ID number.  Default is to use
+>+                 the GID of the mounting process.
+>+
+> umask=###     -- The permission mask (for files and directories, see umask(1)).
+>                  The default is the umask of current process.
+> 
+>@@ -36,7 +44,7 @@ codepage=###  -- Sets the codepage number for converting to shortname
+> 		 characters on FAT filesystem.
+> 		 By default, FAT_DEFAULT_CODEPAGE setting is used.
+> 
+>-iocharset=name -- Character set to use for converting between the
+>+iocharset=<name> -- Character set to use for converting between the
+> 		 encoding is used for user visible filename and 16 bit
+> 		 Unicode characters. Long filenames are stored on disk
+> 		 in Unicode format, but Unix for the most part doesn't
+>@@ -86,6 +94,10 @@ check=s|r|n   -- Case sensitivity checking setting.
+>                  r: relaxed, case insensitive
+>                  n: normal, default setting, currently case insensitive
+> 
+>+nocase        -- If set, files and directories read from device will have
+>+                 their names converted to lowercase.  Not set by
+>+                 default.
+>+
+> shortname=lower|win95|winnt|mixed
+> 	      -- Shortname display/create setting.
+> 		 lower: convert to lowercase for display,
+>@@ -99,11 +111,26 @@ shortname=lower|win95|winnt|mixed
+> tz=UTC        -- Interpret timestamps as UTC rather than local time.
+>                  This option disables the conversion of timestamps
+>                  between local time (as used by Windows on FAT) and UTC
+>-                 (which Linux uses internally).  This is particuluarly
+>+                 (which Linux uses internally).  This is particularly
+>                  useful when mounting devices (like digital cameras)
+>                  that are set to UTC in order to avoid the pitfalls of
+>                  local time.
+> 
+>+showexec      -- If set, files that end if .EXE, .COM, or .BAT will have
+>+                 the execute permission bits set.  Not set by default,
+>+                 in which case all files show up with the execute bits set.
+>+
+>+debug         -- Can be set, but unused by the current implementation.
+>+
+>+sys_immutable -- If set, all files on this filesystem which have the SYS
+>+                 attribute (DOS bit) set will become IMMUTABLE (inode flag)
+>+                 preventing write operations on these files.  Not set by
+>+                 default.
+>+
+>+flush         -- If set, modified inodes will be flushed to disk on file
+>+                 close system call.  This is ideal for USB connected
+>+                 devices.  Not set by default.
+>+
+> <bool>: 0,1,yes,no,true,false
+> 
+> TODO
+>-- 
+>1.6.0.rc0.43.gb0a469
 
-I finally found time to try to get some output using your patch for
-resource.c on a kernel that hangs.
-
-Some really good advice came in earlier today:  I can use "vga=1" to
-get 80x50 mode during the early boot sequence.  I used that, and made
-some alterations to the changes in your patch to squeeze more info
-onto the screen.  I also changed KERN_DEBUG to KERN_ERR in your
-printk's so that I could decrease the other output by using 
-"loglevel=4".
-
-While I cannot see the entire set of output from your debug printk's,
-I can see the last 45+ lines that appear before the hang.  The results
-were the same as when I used "hpet=disable":  the only difference 
-between the working 2.6.25 kernel and the hanging 2.6.27 kernel was 
-that the resource named "0000:00:14.0" (fed00000-fed003ff) switched
-from "conflict=0" to "conflict=1".
-
-The output from 'cat /proc/iomem' on a non-hanging kernel included
-these two lines:
-
-fed00000-fed003ff : HPET 0
-  fed00000-fed003ff : 0000:00:14.0
-
-
-None of this is really new information, since it matches with info
-I've already posted.  I just wanted to let you know the results of
-your patch on a kernel that hangs.
-
-If I find a way to read the info from the 15-20 lines that scroll 
-away on me, and if I find a difference, I'll post that as well.
-
-
-DW
