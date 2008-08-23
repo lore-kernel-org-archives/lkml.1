@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbYHWNLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbYHWNSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbYHWNLk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 09:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYHWNLd
+	id S1754080AbYHWNSq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 09:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYHWNSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 09:11:33 -0400
-Received: from tau.jukie.net ([216.239.93.128]:36511 "EHLO tau.jukie.net"
+	Sat, 23 Aug 2008 09:18:37 -0400
+Received: from khc.piap.pl ([195.187.100.11]:33572 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751057AbYHWNLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 09:11:32 -0400
-Date: Sat, 23 Aug 2008 09:11:31 -0400
-From: Bart Trojanowski <bart@jukie.net>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH] document additional vfat mount options
-Message-ID: <20080823131131.GE28029@jukie.net>
-References: <20080823031229.GA28029@jukie.net> <1219461278-26776-1-git-send-email-bart@jukie.net> <87tzdcfm2g.fsf@devron.myhome.or.jp>
+	id S1751057AbYHWNSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 09:18:37 -0400
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for August 22 (hdlc/wanbook)
+References: <20080822173415.6958cbcc.sfr@canb.auug.org.au>
+	<20080822152059.c83ea19a.randy.dunlap@oracle.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sat, 23 Aug 2008 15:18:34 +0200
+In-Reply-To: <20080822152059.c83ea19a.randy.dunlap@oracle.com> (Randy Dunlap's message of "Fri\, 22 Aug 2008 15\:20\:59 -0700")
+Message-ID: <m3od3jhnth.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87tzdcfm2g.fsf@devron.myhome.or.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> [080822 23:27]:
-> Thanks. Fixed. Current patch is the following.
+Hi Randy,
 
-Indeed, I have made some mistakes.
+Randy Dunlap <randy.dunlap@oracle.com> writes:
 
-Now that I read it again...
+> wanbook.tmpl was removed!?!  why?
+> Is there some replacement for it or is it just not useful?
 
-> +gid=###       -- Explisitly set ownership of all files on this
-> +                 filesystem to this group ID number.  Default is to use
-> +                 the GID of the mounting process.
+The latter. wanbook.tmpl was actually syncppp description only, and
+syncppp doesn't seem to be surviving.
 
-... it has a 'explicit' typo, spotted by Ian Ward, and it's not setting
-ownership, but rather group ownership.  So how about this
+> I seem to have missed the patch(es) that did this...
 
-gid=###       -- Explicitly set group ownership of all files on this
-                 filesystem to this group ID number.  Default is to use
-                 the GID of the mounting process.
+http://lkml.org/lkml/2008/8/9/130
 
--Bart
+> Looks like Documentation/DocBook/Makefile was missed in the patch.
 
+Precisely. Thanks for the info. Fixed now.
 -- 
-				WebSig: http://www.jukie.net/~bart/sig/
+Krzysztof Halasa
