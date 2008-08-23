@@ -1,164 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbYHWQCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbYHWUvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754880AbYHWQCV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 12:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYHWQCK
+	id S1755376AbYHWUvt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 16:51:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbYHWUvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 12:02:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40583 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751581AbYHWQCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 12:02:08 -0400
-Date: Sat, 23 Aug 2008 18:01:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] rtc: fix deadlock
-Message-ID: <20080823160151.GB27974@elte.hu>
-References: <200808230948.m7N9mUc1016360@harpo.it.uu.se>
+	Sat, 23 Aug 2008 16:51:42 -0400
+Received: from po-out-1718.google.com ([72.14.252.157]:42342 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751423AbYHWUvl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 16:51:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=VdA/NegpYVJxgm0pZv+g6RDNS2UFCTLthNJS6k0ahyqvVWqLvg+DAZ93XWqzi12W16
+         O0JfvSD4yAE8oGkICCwhEkFBm6WgMTh9YFapey5tRA0IJcp/FhiTwe7Ib1ncVqARzC2f
+         ymi9o+2P+KTmbW0AFrk7jzyb1fxHO9ZkDb7Sk=
+Message-ID: <86802c440808231351w491dc6acjec0590eb5f8d09fb@mail.gmail.com>
+Date: Sat, 23 Aug 2008 13:51:37 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "David Witbrodt" <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
+Cc: "Rufus & Azrael" <rufus-azrael@numericable.fr>,
+       "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Yinghai Lu" <yhlu.kenrel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <772766.85250.qm@web82102.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808230948.m7N9mUc1016360@harpo.it.uu.se>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_34965_13641378.1219524697599"
+References: <772766.85250.qm@web82102.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------=_Part_34965_13641378.1219524697599
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-* Mikael Pettersson <mikpe@it.uu.se> wrote:
+On Sat, Aug 23, 2008 at 12:47 PM, David Witbrodt <dawitbro@sbcglobal.net> wrote:
+>
+>
+>> please check v2.
+>
+> Thanks Yinghai.  This still applies to a different line number in
+> v2.6.27-rc4 than what the patch indicates.  I also get a warning
+> about unused variable "i" (I commented it out in my previous fix,
+> but not this time).
+>
+> At any rate, I still produces a kernel that hangs at the typical
+> location.
+>
+David,
 
-> Since 2.6.27-rc1 my Core2Duo has been getting sporadic oopses
-> from hpet_rtc_interrupt, usually during shutdown or reboot,
-> but occasionally also early in init. Today I finally managed
-> to capture one via a serial cable:
-> 
-> INIT: version 2.86 booting
-> 		Welcome to Fedora Core
-> 		Press 'I' to enter interactive startup.
-> BUG: NMI Watchdog detected LOCKUP on CPU0, ip c0117092, registers:
-> Modules linked in: ehci_hcd uhci_hcd usbcore
-> 
-> Pid: 311, comm: nash-hotplug Not tainted (2.6.27-rc4 #1)
-> EIP: 0060:[<c0117092>] EFLAGS: 00000097 CPU: 0
-> EIP is at hpet_rtc_interrupt+0x2d2/0x310
-> EAX: 00000000 EBX: 00000002 ECX: 00000046 EDX: 00000002
-> ESI: 000000a6 EDI: ffff8e25 EBP: 00000008 ESP: f7bd7f28
->  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> Process nash-hotplug (pid: 311, ti=f7bd6000 task=f7b70460 task.ti=f7bd6000)
-> Stack: f7bd7f6c c0139cc0 00000000 c035ba04 00000000 00000000 00000000 00000000 
->        00000000 00000000 00000000 00000000 00000000 f7b845a0 00000000 00000000 
->        00000008 c01478a8 c035bf80 f7b845a0 c035bfb0 00000008 c0148f71 00000400 
-> Call Trace:
->  [<c0139cc0>] hrtimer_run_pending+0x20/0x90
->  [<c01478a8>] handle_IRQ_event+0x28/0x50
->  [<c0148f71>] handle_edge_irq+0xa1/0x120
->  [<c010615b>] do_IRQ+0x3b/0x70
->  [<c0113225>] smp_apic_timer_interrupt+0x55/0x80
->  [<c0103c4f>] common_interrupt+0x23/0x28
->  [<c02c0000>] unix_release_sock+0xc0/0x220
->  =======================
-> Code: 89 44 24 18 0f b6 c2 e8 5d 74 0c 00 8b 0d d8 9c 3b c0 89 44 24 1c 8b 44 24 0c 48 89 44 24 20 e9 84 fd ff ff 90 8d 74 26 00 f3 90 <a1> 80 ba 35 c0 29 f8 83 f8 01 76 f2 e9 e1 fe ff ff 90 8d 74 26 
-> 
-> This points to the following loop in hpet_rtc_interrupt:
-> 
-> 0xc0117090 <hpet_rtc_interrupt+720>:    pause  
-> 0xc0117092 <hpet_rtc_interrupt+722>:    mov    0xc035ba80,%eax
-> 0xc0117097 <hpet_rtc_interrupt+727>:    sub    %edi,%eax
-> 0xc0117099 <hpet_rtc_interrupt+729>:    cmp    $0x1,%eax
-> 0xc011709c <hpet_rtc_interrupt+732>:    jbe    0xc0117090 <hpet_rtc_interrupt+720>
-> 
-> Note: 0xc035ba80 == &jiffies
-> 
-> This loop originates from asm-generic/rtc.h:get_rtc_time()
-> 
-> 		while (jiffies - uip_watchdog < 2*HZ/100) {
-> 			barrier();
-> 			cpu_relax();
-> 		}
-> 
-> Note: HZ == CONFIG_HZ == 100
-> 
-> The bug may not originate from the 2.6.27-rc series as I only recently 
-> enabled HPET in this machine's kernels (not due to HPET problems, it 
-> inherited its .config way back from an older machine w/o HPET).
+please check v3
 
-argh, that loop in asm-generic/rtc.h:get_rtc_time looks extremely 
-fragile, we'll lock up if it's ever called with hardirqs off!
+deviceid should be 0x4385 instead.
 
-Does the patch below do the trick?
+YH
 
-	Ingo
+------=_Part_34965_13641378.1219524697599
+Content-Type: text/x-patch; name=hpet_in_bar1_v3.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fk8pgu1z0
+Content-Disposition: attachment; filename=hpet_in_bar1_v3.patch
 
------------------>
->From 2273cc870b52a7ed09eb225142a6db97299e4f39 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sat, 23 Aug 2008 17:59:07 +0200
-Subject: [PATCH] rtc: fix deadlock
-
-if get_rtc_time() is _ever_ called with IRQs off, we deadlock badly
-in it, waiting for jiffies to increment.
-
-So make the code more robust by doing an explicit mdelay(20).
-
-This solves a very hard to reproduce/debug hard lockup reported
-by Mikael Pettersson.
-
-Reported-by: Mikael Pettersson <mikpe@it.uu.se>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/asm-generic/rtc.h |   12 ++++--------
- 1 files changed, 4 insertions(+), 8 deletions(-)
-
-diff --git a/include/asm-generic/rtc.h b/include/asm-generic/rtc.h
-index be4af00..71ef3f0 100644
---- a/include/asm-generic/rtc.h
-+++ b/include/asm-generic/rtc.h
-@@ -15,6 +15,7 @@
- #include <linux/mc146818rtc.h>
- #include <linux/rtc.h>
- #include <linux/bcd.h>
-+#include <linux/delay.h>
- 
- #define RTC_PIE 0x40		/* periodic interrupt enable */
- #define RTC_AIE 0x20		/* alarm interrupt enable */
-@@ -43,7 +44,6 @@ static inline unsigned char rtc_is_updating(void)
- 
- static inline unsigned int get_rtc_time(struct rtc_time *time)
- {
--	unsigned long uip_watchdog = jiffies;
- 	unsigned char ctrl;
- 	unsigned long flags;
- 
-@@ -53,19 +53,15 @@ static inline unsigned int get_rtc_time(struct rtc_time *time)
- 
- 	/*
- 	 * read RTC once any update in progress is done. The update
--	 * can take just over 2ms. We wait 10 to 20ms. There is no need to
-+	 * can take just over 2ms. We wait 20ms. There is no need to
- 	 * to poll-wait (up to 1s - eeccch) for the falling edge of RTC_UIP.
- 	 * If you need to know *exactly* when a second has started, enable
- 	 * periodic update complete interrupts, (via ioctl) and then 
- 	 * immediately read /dev/rtc which will block until you get the IRQ.
- 	 * Once the read clears, read the RTC time (again via ioctl). Easy.
- 	 */
--
--	if (rtc_is_updating() != 0)
--		while (jiffies - uip_watchdog < 2*HZ/100) {
--			barrier();
--			cpu_relax();
--		}
-+	if (rtc_is_updating())
-+		mdelay(20);
- 
- 	/*
- 	 * Only the values that we read from the RTC are set. We leave
+W1BBVENIXSB4ODY6IHByb3RlY3QgaHBldCBpbiBCQVIgZm9yIG9uZSBBVEkgY2hpcHNldCB2MwoK
+c28gYXZvaWQga2VybmVsIGRvbid0IGFsbG9jYXRlIG5yZSByZXNvdXJjZSBmb3IgaXQgYmVjYXVz
+ZSBpdCBjYW4gbm90IGFsbG9jYXRlIHRoZSBvbGQKYWRkcmVzcyBmcm9tIEJJT1MuCgp0aGUgc2Ft
+ZSB3YXkgbGlrZSBzb21lIElPIEFQSUMgYWRkcmVzcyBpbiBCQVIgaGFuZGxpbmcKClNpZ25lZC1v
+ZmYtYnk6IFlpbmdoYWkgTHUgPHlobHUua2VybmVsQGdtYWlsLmNvbT4KCi0tLQogZHJpdmVycy9w
+Y2kvcXVpcmtzLmMgfCAgIDE2ICsrKysrKysrKysrKysrKysKIDEgZmlsZSBjaGFuZ2VkLCAxNiBp
+bnNlcnRpb25zKCspCgpJbmRleDogbGludXgtMi42L2RyaXZlcnMvcGNpL3F1aXJrcy5jCj09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2RyaXZlcnMvcGNpL3F1aXJrcy5jCisrKyBsaW51eC0y
+LjYvZHJpdmVycy9wY2kvcXVpcmtzLmMKQEAgLTE5MTgsNiArMTkxOCwyMiBAQCBERUNMQVJFX1BD
+SV9GSVhVUF9IRUFERVIoUENJX1ZFTkRPUl9JRF9CCiAJCQkgUENJX0RFVklDRV9JRF9OWDJfNTcw
+OVMsCiAJCQkgcXVpcmtfYnJjbV81NzB4X2xpbWl0X3ZwZCk7CiAKK3N0YXRpYyB2b2lkIF9faW5p
+dCBxdWlya19ocGV0X2luX2JhcihzdHJ1Y3QgcGNpX2RldiAqcGRldikKK3sKKwlpbnQgaTsKKwl1
+NjQgYmFzZSwgc2l6ZTsKKworCS8qIHRoZSBCQVIxIGlzIHRoZSBsb2NhdGlvbiBvZiB0aGUgSFBF
+VC4uLndlIG11c3QKKwkgKiBub3QgdG91Y2ggdGhpcywgc28gZm9yY2libHkgaW5zZXJ0IGl0IGlu
+dG8gdGhlIHJlc291cmNlIHRyZWUgKi8KKwliYXNlID0gcGNpX3Jlc291cmNlX3N0YXJ0KHBkZXYs
+IDEpOworCXNpemUgPSBwY2lfcmVzb3VyY2VfbGVuKHBkZXYsIDEpOworCWlmIChiYXNlICYmIHNp
+emUpIHsKKwkJaW5zZXJ0X3Jlc291cmNlKCZpb21lbV9yZXNvdXJjZSwgJnBkZXYtPnJlc291cmNl
+WzFdKTsKKwkJZGV2X2luZm8oJnBkZXYtPmRldiwgIkhQRVQgYXQgJTA4bGx4LSUwOGxseFxuIiwg
+YmFzZSwgYmFzZSArIHNpemUgLSAxKTsKKwl9Cit9CitERUNMQVJFX1BDSV9GSVhVUF9IRUFERVIo
+UENJX1ZFTkRPUl9JRF9BVEksIDB4NDM4NSwgcXVpcmtfaHBldF9pbl9iYXIpOworCiAjaWZkZWYg
+Q09ORklHX1BDSV9NU0kKIC8qIFNvbWUgY2hpcHNldHMgZG8gbm90IHN1cHBvcnQgTVNJLiBXZSBj
+YW5ub3QgZWFzaWx5IHJlbHkgb24gc2V0dGluZwogICogUENJX0JVU19GTEFHU19OT19NU0kgaW4g
+aXRzIGJ1cyBmbGFncyBiZWNhdXNlIHRoZXJlIGFyZSBhY3R1YWxseQo=
+------=_Part_34965_13641378.1219524697599--
