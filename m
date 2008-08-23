@@ -1,118 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbYHWRvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbYHWXHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753909AbYHWRvm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 13:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYHWRvb
+	id S1755597AbYHWXHU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 19:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbYHWXHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 13:51:31 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:51681 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752804AbYHWRva (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 13:51:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=Bbb/vA7UdEfAhWAyR4LfnF1U8Lvr8tWzkRCT0xl+ERlOE0/zWQKBd74jKIZBNecjSZ
-         92GbdpXelKukiHFpe/haX/WfmxclimMgve/LSDPa55BEOmcy6pZcLZW0210ZKAUW7U1M
-         Ja0eKEvpjQhhV6vAz7fhI2Zx8WDIXQ0itFKVI=
-Message-ID: <86802c440808231051j54bbebd3j7cb1943ef1af3e45@mail.gmail.com>
-Date: Sat, 23 Aug 2008 10:51:29 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "David Witbrodt" <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Vivek Goyal" <vgoyal@redhat.com>,
-       "Bill Fink" <billfink@mindspring.com>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, netdev <netdev@vger.kernel.org>
-In-Reply-To: <825188.80277.qm@web82105.mail.mud.yahoo.com>
+	Sat, 23 Aug 2008 19:07:08 -0400
+Received: from const.mimas.ru ([88.200.217.78]:48559 "EHLO const.mimas.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752684AbYHWXHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 19:07:07 -0400
+Message-ID: <48B09816.2070502@const.mimas.ru>
+Date: Sun, 24 Aug 2008 04:07:02 +0500
+From: Constantin Baranov <const@const.mimas.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.16) Gecko/20080805 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_33971_17542914.1219513889637"
-References: <825188.80277.qm@web82105.mail.mud.yahoo.com>
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Richard Purdie <rpurdie@rpsys.net>
+Subject: [PATCH v2 2.6.27-rc3] led: driver for LEDs on PCEngines ALIX.2 and
+ ALIX.3 boards
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_33971_17542914.1219513889637
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+From: Constantin Baranov <const@tltsu.ru>
 
-On Sat, Aug 23, 2008 at 4:58 AM, David Witbrodt <dawitbro@sbcglobal.net> wrote:
->
->
->> please send out after booting with hpet=disable
->> lspci -tv
->> lspci -vvxxx
->
-> Info attached:
+Driver for LEDs on PCEngines ALIX.2 and ALIX.3 system boards.
 
-00:14.0 SMBus: ATI Technologies Inc SBx00 SMBus Controller (rev 13)
-	Subsystem: Elitegroup Computer Systems Device 2621
-	Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx+
-	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Region 0: I/O ports at fa00 [size=16]
-	Region 1: Memory at 80000000 (32-bit, non-prefetchable) [size=1K]
-	Capabilities: [b0] HyperTransport: MSI Mapping Enable- Fixed+
-	Kernel driver in use: piix4_smbus
-00: 02 10 85 43 03 04 30 02 13 00 05 0c 00 00 80 00
-10: 01 fa 00 00 00 00 00 80 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 19 10 21 26
-30: 00 00 00 00 b0 00 00 00 00 00 00 00 00 00 00 00
-40: d4 3b 00 05 00 00 00 00 0f ff 00 00 00 00 00 00
-50: f0 01 f0 0e f0 0f f0 07 11 0b f0 0f 00 00 00 00
-60: 01 00 24 00 bf fd de 8f 3f 90 00 00 20 00 00 00
-70: 00 01 00 00 08 00 c0 fe ff 6e 00 00 00 00 f0 0f
-80: f0 0a f0 0f 00 00 00 00 00 00 00 00 8c 00 00 80
-90: 01 fa 00 00 fa de ff 00 00 00 00 00 00 00 00 00
-a0: 00 00 ff ff ff ff f0 08 ff fd 12 02 16 7b 20 00
-b0: 08 00 02 a8 00 00 00 00 00 00 00 00 f0 0f 08 1a
-c0: ff ff ff ff 00 00 00 00 00 00 00 00 00 00 00 00
-d0: 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00
-e0: 20 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-f0: d8 0c 00 00 00 00 44 00 00 00 00 00 aa 00 10 01
+Signed-off-by: Constantin Baranov <const@tltsu.ru>
+---
+ drivers/leds/Kconfig     |    6 +
+ drivers/leds/Makefile    |    1 
+ drivers/leds/leds-alix.c |  153 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 160 insertions(+)
 
-it seems kernel update BAR1 from 0xfed00000 to 0x80000000 after it can
-not give 0xfed00000 to that device.
-
-please try attached patch, and send out lspci -vvxxxx again.
-
-YH
-
-------=_Part_33971_17542914.1219513889637
-Content-Type: text/x-patch; name=hpet_in_bar1.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fk8j033r1
-Content-Disposition: attachment; filename=hpet_in_bar1.patch
-
-W1BBVENIXSB4ODY6IHByb3RlY3QgaHBldCBpbiBCQVIgZm9yIG9uZSBBVEkgY2hpcHNldAoKc28g
-YXZvaWQga2VybmVsIGRvbid0IGFsbG9jYXRlIG5yZSByZXNvdXJjZSBmb3IgaXQgYmVjYXVzZSBp
-dCBjYW4gbm90IGFsbG9jYXRlIHRoZSBvbGQKYWRkcmVzcyBmcm9tIEJJT1MuCgp0aGUgc2FtZSB3
-YXkgbGlrZSBzb21lIElPIEFQSUMgYWRkcmVzcyBpbiBCQVIgaGFuZGxpbmcKClNpZ25lZC1vZmYt
-Ynk6IFlpbmdoYWkgTHUgPHlobHUua2VucmVsQGdtYWlsLmNvbT4KCi0tLQogZHJpdmVycy9wY2kv
-cXVpcmtzLmMgfCAgIDE2ICsrKysrKysrKysrKysrKysKIDEgZmlsZSBjaGFuZ2VkLCAxNiBpbnNl
-cnRpb25zKCspCgpJbmRleDogbGludXgtMi42L2RyaXZlcnMvcGNpL3F1aXJrcy5jCj09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2RyaXZlcnMvcGNpL3F1aXJrcy5jCisrKyBsaW51eC0yLjYv
-ZHJpdmVycy9wY2kvcXVpcmtzLmMKQEAgLTE5MTgsNiArMTkxOCwyMiBAQCBERUNMQVJFX1BDSV9G
-SVhVUF9IRUFERVIoUENJX1ZFTkRPUl9JRF9CCiAJCQkgUENJX0RFVklDRV9JRF9OWDJfNTcwOVMs
-CiAJCQkgcXVpcmtfYnJjbV81NzB4X2xpbWl0X3ZwZCk7CiAKK3N0YXRpYyB2b2lkIF9faW5pdCBx
-dWlya19ocGV0X2luX2JhcihzdHJ1Y3QgcGNpX2RldiAqcGRldikKK3sKKwlpbnQgaTsKKwl1bnNp
-Z25lZCBpbnQgYmFzZSwgc2l6ZTsKKworCS8qIHRoZSBCQVIxIGlzIHRoZSBsb2NhdGlvbiBvZiB0
-aGUgSFBFVC4uLndlIG11c3QKKwkgKiBub3QgdG91Y2ggdGhpcywgc28gZm9yY2libHkgaW5zZXJ0
-IGl0IGludG8gdGhlIHJlc291cmNlIHRyZWUgKi8KKwliYXNlID0gcGNpX3Jlc291cmNlX3N0YXJ0
-KHBkZXYsIDEpOworCXNpemUgPSBwY2lfcmVzb3VyY2VfbGVuKHBkZXYsIDEpOworCWlmIChiYXNl
-ICYmIHNpemUpIHsKKwkJaW5zZXJ0X3Jlc291cmNlKCZpb21lbV9yZXNvdXJjZSwgJnBkZXYtPnJl
-c291cmNlWzFdKTsKKwkJZGV2X2luZm8oJmRldi0+ZGV2LCAiSFBFVCBhdCAlMDR4LSUwNHhcbiIs
-IG5hbWUsIGJhc2UsIGJhc2UgKyBzaXplIC0gMSk7CisJfQorfQorREVDTEFSRV9QQ0lfRklYVVBf
-SEVBREVSKFBDSV9WRU5ET1JfSURfQVRJLCAweDM0ODUsIHF1aXJrX2hwZXRfaW5fYmFyKTsKKwog
-I2lmZGVmIENPTkZJR19QQ0lfTVNJCiAvKiBTb21lIGNoaXBzZXRzIGRvIG5vdCBzdXBwb3J0IE1T
-SS4gV2UgY2Fubm90IGVhc2lseSByZWx5IG9uIHNldHRpbmcKICAqIFBDSV9CVVNfRkxBR1NfTk9f
-TVNJIGluIGl0cyBidXMgZmxhZ3MgYmVjYXVzZSB0aGVyZSBhcmUgYWN0dWFsbHkK
-------=_Part_33971_17542914.1219513889637--
+diff -uprN linux-2.6.27-rc3/drivers/leds/Kconfig linux-2.6.27-rc3-alix/drivers/leds/Kconfig
+--- linux-2.6.27-rc3/drivers/leds/Kconfig	2008-08-19 20:14:06.355647765 +0500
++++ linux-2.6.27-rc3-alix/drivers/leds/Kconfig	2008-08-19 20:20:08.023147125 +0500
+@@ -77,6 +77,12 @@ config LEDS_WRAP
+ 	help
+ 	  This option enables support for the PCEngines WRAP programmable LEDs.
+ 
++config LEDS_ALIX
++	tristate "LED support for ALIX series"
++	depends on LEDS_CLASS && X86
++	help
++	  This option enables support for the PCEngines ALIX.2 and ALIX.3 LEDs.
++
+ config LEDS_H1940
+ 	tristate "LED Support for iPAQ H1940 device"
+ 	depends on LEDS_CLASS && ARCH_H1940
+diff -uprN linux-2.6.27-rc3/drivers/leds/leds-alix.c linux-2.6.27-rc3-alix/drivers/leds/leds-alix.c
+--- linux-2.6.27-rc3/drivers/leds/leds-alix.c	1970-01-01 04:00:00.000000000 +0400
++++ linux-2.6.27-rc3-alix/drivers/leds/leds-alix.c	2008-08-19 21:59:05.207153570 +0500
+@@ -0,0 +1,153 @@
++/*
++ * LEDs driver for PCEngines ALIX.2 and ALIX.3
++ *
++ * Copyright (C) 2008 Constantin Baranov <const@tltsu.ru>
++ */
++
++#include <linux/err.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/leds.h>
++#include <linux/platform_device.h>
++
++struct alix_led {
++	struct led_classdev cdev;
++	unsigned short port;
++	unsigned int on_value;
++	unsigned int off_value;
++};
++
++static void alix_led_set(struct led_classdev *led_cdev,
++			 enum led_brightness brightness)
++{
++	struct alix_led *led_dev =
++		container_of(led_cdev, struct alix_led, cdev);
++
++	if (brightness)
++		outl(led_dev->on_value, led_dev->port);
++	else
++		outl(led_dev->off_value, led_dev->port);
++}
++
++static struct alix_led alix_leds[] = {
++	{
++		.cdev = {
++			.name = "alix:1",
++			.brightness_set = alix_led_set,
++		},
++		.port = 0x6100,
++		.on_value = 1 << 22,
++		.off_value = 1 << 6,
++	},
++	{
++		.cdev = {
++			.name = "alix:2",
++			.brightness_set = alix_led_set,
++		},
++		.port = 0x6180,
++		.on_value = 1 << 25,
++		.off_value = 1 << 9,
++	},
++	{
++		.cdev = {
++			.name = "alix:3",
++			.brightness_set = alix_led_set,
++		},
++		.port = 0x6180,
++		.on_value = 1 << 27,
++		.off_value = 1 << 11,
++	},
++};
++
++#ifdef CONFIG_PM
++
++static int alix_led_suspend(struct platform_device *dev, pm_message_t state)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
++		led_classdev_suspend(&alix_leds[i].cdev);
++	return 0;
++}
++
++static int alix_led_resume(struct platform_device *dev)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
++		led_classdev_resume(&alix_leds[i].cdev);
++	return 0;
++}
++
++#else
++
++#define alix_led_suspend NULL
++#define alix_led_resume NULL
++
++#endif
++
++static int __init alix_led_probe(struct platform_device *pdev)
++{
++	int i;
++	int ret;
++
++	for (i = 0; i < ARRAY_SIZE(alix_leds); i++) {
++		ret = led_classdev_register(&pdev->dev, &alix_leds[i].cdev);
++		if (ret < 0)
++			goto fail;
++	}
++	return 0;
++
++fail:
++	while (--i >= 0)
++		led_classdev_unregister(&alix_leds[i].cdev);
++	return ret;
++}
++
++static int alix_led_remove(struct platform_device *pdev)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
++		led_classdev_unregister(&alix_leds[i].cdev);
++	return 0;
++}
++
++static struct platform_driver alix_led_driver = {
++	.remove = alix_led_remove,
++	.suspend = alix_led_suspend,
++	.resume = alix_led_resume,
++	.driver = {
++		.name = KBUILD_MODNAME,
++		.owner = THIS_MODULE,
++	},
++};
++
++static struct platform_device *pdev;
++
++static int __init alix_led_init(void)
++{
++	int ret;
++
++	pdev = platform_device_register_simple(KBUILD_MODNAME, -1, NULL, 0);
++	if (!IS_ERR(pdev)) {
++		ret = platform_driver_probe(&alix_led_driver, alix_led_probe);
++		if (ret)
++			platform_device_unregister(pdev);
++	} else
++		ret = PTR_ERR(pdev);
++	return ret;
++}
++
++static void __exit alix_led_exit(void)
++{
++	platform_device_unregister(pdev);
++	platform_driver_unregister(&alix_led_driver);
++}
++
++module_init(alix_led_init);
++module_exit(alix_led_exit);
++
++MODULE_AUTHOR("Constantin Baranov <const@tltsu.ru>");
++MODULE_DESCRIPTION("PCEngines ALIX LED driver");
++MODULE_LICENSE("GPL");
+diff -uprN linux-2.6.27-rc3/drivers/leds/Makefile linux-2.6.27-rc3-alix/drivers/leds/Makefile
+--- linux-2.6.27-rc3/drivers/leds/Makefile	2008-08-19 20:14:06.365646999 +0500
++++ linux-2.6.27-rc3-alix/drivers/leds/Makefile	2008-08-19 20:20:22.485647344 +0500
+@@ -13,6 +13,7 @@ obj-$(CONFIG_LEDS_S3C24XX)		+= leds-s3c2
+ obj-$(CONFIG_LEDS_AMS_DELTA)		+= leds-ams-delta.o
+ obj-$(CONFIG_LEDS_NET48XX)		+= leds-net48xx.o
+ obj-$(CONFIG_LEDS_WRAP)			+= leds-wrap.o
++obj-$(CONFIG_LEDS_ALIX)			+= leds-alix.o
+ obj-$(CONFIG_LEDS_H1940)		+= leds-h1940.o
+ obj-$(CONFIG_LEDS_COBALT_QUBE)		+= leds-cobalt-qube.o
+ obj-$(CONFIG_LEDS_COBALT_RAQ)		+= leds-cobalt-raq.o
