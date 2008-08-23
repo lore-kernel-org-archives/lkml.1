@@ -1,101 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754853AbYHWQBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbYHWQCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754853AbYHWQBR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 12:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbYHWQBA
+	id S1754880AbYHWQCV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 12:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYHWQCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 12:01:00 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:35613 "EHLO mgw2.diku.dk"
+	Sat, 23 Aug 2008 12:02:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40583 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752319AbYHWQA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 12:00:58 -0400
-Date: Sat, 23 Aug 2008 18:00:56 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: paulus@samba.org, benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/2] drivers/char/hvc_console.c: adjust call to put_tty_driver
-Message-ID: <Pine.LNX.4.64.0808231800200.3162@ask.diku.dk>
+	id S1751581AbYHWQCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 12:02:08 -0400
+Date: Sat, 23 Aug 2008 18:01:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] rtc: fix deadlock
+Message-ID: <20080823160151.GB27974@elte.hu>
+References: <200808230948.m7N9mUc1016360@harpo.it.uu.se>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808230948.m7N9mUc1016360@harpo.it.uu.se>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
 
-The call to put_tty_driver is out of place and is applied to the wrong
-argument.
+* Mikael Pettersson <mikpe@it.uu.se> wrote:
 
-The function enclosing the patched code calls alloc_tty_driver and stores
-the result in drv.  Subsequently, there are two occurrences of error
-handling code, one making a goto to put_tty and one making a goto to
-stop_thread.  At the point of the first one the assignment hvc_driver = drv
-has not yet been executed, and from inspecting the rest of the file it
-seems that hvc_driver would be NULL.  Thus the current call to
-put_tty_driver is useless, and one applied to drv is needed.  The goto
-stop_thread is in the error handling code for a call to
-tty_register_driver, but the error cases in tty_register_driver do not free
-its argument, so it should be done here.  Thus, I have moved the put_tty
-label after the stop_thread label, so that put_tty_driver is called in both
-cases.
+> Since 2.6.27-rc1 my Core2Duo has been getting sporadic oopses
+> from hpet_rtc_interrupt, usually during shutdown or reboot,
+> but occasionally also early in init. Today I finally managed
+> to capture one via a serial cable:
+> 
+> INIT: version 2.86 booting
+> 		Welcome to Fedora Core
+> 		Press 'I' to enter interactive startup.
+> BUG: NMI Watchdog detected LOCKUP on CPU0, ip c0117092, registers:
+> Modules linked in: ehci_hcd uhci_hcd usbcore
+> 
+> Pid: 311, comm: nash-hotplug Not tainted (2.6.27-rc4 #1)
+> EIP: 0060:[<c0117092>] EFLAGS: 00000097 CPU: 0
+> EIP is at hpet_rtc_interrupt+0x2d2/0x310
+> EAX: 00000000 EBX: 00000002 ECX: 00000046 EDX: 00000002
+> ESI: 000000a6 EDI: ffff8e25 EBP: 00000008 ESP: f7bd7f28
+>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Process nash-hotplug (pid: 311, ti=f7bd6000 task=f7b70460 task.ti=f7bd6000)
+> Stack: f7bd7f6c c0139cc0 00000000 c035ba04 00000000 00000000 00000000 00000000 
+>        00000000 00000000 00000000 00000000 00000000 f7b845a0 00000000 00000000 
+>        00000008 c01478a8 c035bf80 f7b845a0 c035bfb0 00000008 c0148f71 00000400 
+> Call Trace:
+>  [<c0139cc0>] hrtimer_run_pending+0x20/0x90
+>  [<c01478a8>] handle_IRQ_event+0x28/0x50
+>  [<c0148f71>] handle_edge_irq+0xa1/0x120
+>  [<c010615b>] do_IRQ+0x3b/0x70
+>  [<c0113225>] smp_apic_timer_interrupt+0x55/0x80
+>  [<c0103c4f>] common_interrupt+0x23/0x28
+>  [<c02c0000>] unix_release_sock+0xc0/0x220
+>  =======================
+> Code: 89 44 24 18 0f b6 c2 e8 5d 74 0c 00 8b 0d d8 9c 3b c0 89 44 24 1c 8b 44 24 0c 48 89 44 24 20 e9 84 fd ff ff 90 8d 74 26 00 f3 90 <a1> 80 ba 35 c0 29 f8 83 f8 01 76 f2 e9 e1 fe ff ff 90 8d 74 26 
+> 
+> This points to the following loop in hpet_rtc_interrupt:
+> 
+> 0xc0117090 <hpet_rtc_interrupt+720>:    pause  
+> 0xc0117092 <hpet_rtc_interrupt+722>:    mov    0xc035ba80,%eax
+> 0xc0117097 <hpet_rtc_interrupt+727>:    sub    %edi,%eax
+> 0xc0117099 <hpet_rtc_interrupt+729>:    cmp    $0x1,%eax
+> 0xc011709c <hpet_rtc_interrupt+732>:    jbe    0xc0117090 <hpet_rtc_interrupt+720>
+> 
+> Note: 0xc035ba80 == &jiffies
+> 
+> This loop originates from asm-generic/rtc.h:get_rtc_time()
+> 
+> 		while (jiffies - uip_watchdog < 2*HZ/100) {
+> 			barrier();
+> 			cpu_relax();
+> 		}
+> 
+> Note: HZ == CONFIG_HZ == 100
+> 
+> The bug may not originate from the 2.6.27-rc series as I only recently 
+> enabled HPET in this machine's kernels (not due to HPET problems, it 
+> inherited its .config way back from an older machine w/o HPET).
 
-The semantic match that finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+argh, that loop in asm-generic/rtc.h:get_rtc_time looks extremely 
+fragile, we'll lock up if it's ever called with hardirqs off!
 
-// <smpl>
-@r exists@
-local idexpression x;
-expression E,f;
-position p1,p2,p3;
-identifier l;
-statement S;
-@@
+Does the patch below do the trick?
 
-x = alloc_tty_driver@p1(...)
-...
-if (x == NULL) S
-... when != E = x
-    when != put_tty_driver(x)
-goto@p2 l;
-... when != E = x
-    when != f(...,x,...)
-    when any
-(
-return \(0\|x\);
-|
-return@p3 ...;
-)
+	Ingo
 
-@script:python@
-p1 << r.p1;
-p2 << r.p2;
-p3 << r.p3;
-@@
+----------------->
+>From 2273cc870b52a7ed09eb225142a6db97299e4f39 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sat, 23 Aug 2008 17:59:07 +0200
+Subject: [PATCH] rtc: fix deadlock
 
-print "%s: call on line %s not freed or saved before return on line %s via line %s" % (p1[0].file,p1[0].line,p3[0].line,p2[0].line)
-// </smpl>
+if get_rtc_time() is _ever_ called with IRQs off, we deadlock badly
+in it, waiting for jiffies to increment.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+So make the code more robust by doing an explicit mdelay(20).
 
+This solves a very hard to reproduce/debug hard lockup reported
+by Mikael Pettersson.
+
+Reported-by: Mikael Pettersson <mikpe@it.uu.se>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- drivers/char/hvc_console.c    |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ include/asm-generic/rtc.h |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
-index fd64137..ec7aded 100644
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -819,11 +819,11 @@ static int hvc_init(void)
- 	hvc_driver = drv;
- 	return 0;
+diff --git a/include/asm-generic/rtc.h b/include/asm-generic/rtc.h
+index be4af00..71ef3f0 100644
+--- a/include/asm-generic/rtc.h
++++ b/include/asm-generic/rtc.h
+@@ -15,6 +15,7 @@
+ #include <linux/mc146818rtc.h>
+ #include <linux/rtc.h>
+ #include <linux/bcd.h>
++#include <linux/delay.h>
  
--put_tty:
--	put_tty_driver(hvc_driver);
- stop_thread:
- 	kthread_stop(hvc_task);
- 	hvc_task = NULL;
-+put_tty:
-+	put_tty_driver(drv);
- out:
- 	return err;
- }
+ #define RTC_PIE 0x40		/* periodic interrupt enable */
+ #define RTC_AIE 0x20		/* alarm interrupt enable */
+@@ -43,7 +44,6 @@ static inline unsigned char rtc_is_updating(void)
+ 
+ static inline unsigned int get_rtc_time(struct rtc_time *time)
+ {
+-	unsigned long uip_watchdog = jiffies;
+ 	unsigned char ctrl;
+ 	unsigned long flags;
+ 
+@@ -53,19 +53,15 @@ static inline unsigned int get_rtc_time(struct rtc_time *time)
+ 
+ 	/*
+ 	 * read RTC once any update in progress is done. The update
+-	 * can take just over 2ms. We wait 10 to 20ms. There is no need to
++	 * can take just over 2ms. We wait 20ms. There is no need to
+ 	 * to poll-wait (up to 1s - eeccch) for the falling edge of RTC_UIP.
+ 	 * If you need to know *exactly* when a second has started, enable
+ 	 * periodic update complete interrupts, (via ioctl) and then 
+ 	 * immediately read /dev/rtc which will block until you get the IRQ.
+ 	 * Once the read clears, read the RTC time (again via ioctl). Easy.
+ 	 */
+-
+-	if (rtc_is_updating() != 0)
+-		while (jiffies - uip_watchdog < 2*HZ/100) {
+-			barrier();
+-			cpu_relax();
+-		}
++	if (rtc_is_updating())
++		mdelay(20);
+ 
+ 	/*
+ 	 * Only the values that we read from the RTC are set. We leave
