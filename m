@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbYHWVbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbYHWTqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755250AbYHWVbU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 17:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbYHWVbJ
+	id S1755983AbYHWTqO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 15:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbYHWTlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 17:31:09 -0400
-Received: from h155.mvista.com ([63.81.120.155]:34985 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752301AbYHWVbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 17:31:07 -0400
-Message-ID: <48B08194.5030403@ru.mvista.com>
-Date: Sun, 24 Aug 2008 01:31:00 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Sat, 23 Aug 2008 15:41:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50119 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755576AbYHWTlo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 15:41:44 -0400
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Jaswinder Singh" <jaswinderlinux@gmail.com>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+In-Reply-To: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, Borislav Petkov <petkovbb@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/22] ide: add ide_do_test_unit_ready() helper
-References: <20080810153527.16255.2504.sendpatchset@localhost.localdomain> <20080810153700.16255.79527.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080810153700.16255.79527.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <VSpL6AnBTS.A.n3.CcGsIB@albercik>
+Subject: [Bug #11272] BUG: parport_serial in 2.6.27-rc1 for NetMos Technology PCI 9835
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Sat, 23 Aug 2008 20:10:17 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+This message has been generated automatically as a part of a report
+of recent regressions.
 
-> * Add ide_do_test_unit_ready() helper and convert ide-{floppy,tape}.c
->   to use it.
->
-> * Remove no longer used idetape_create_test_unit_ready_cmd().
->
-> There should be no functional changes caused by this patch.
->
-> Cc: Borislav Petkov <petkovbb@gmail.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+The following bug entry is on the current list of known regressions
+from 2.6.26.  Please verify if it still should be listed and let me know
+(either way).
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-MBR, Sergei
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11272
+Subject		: BUG: parport_serial in 2.6.27-rc1 for NetMos Technology PCI 9835
+Submitter	: Jaswinder Singh <jaswinderlinux@gmail.com>
+Date		: 2008-08-05 15:12 (19 days old)
+References	: http://marc.info/?l=linux-kernel&m=121794900319776&w=4
 
 
