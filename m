@@ -1,431 +1,1237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752903AbYHXEwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbYHWTkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752903AbYHXEwR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 00:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbYHXEwB
+	id S1755196AbYHWTkt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 15:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbYHWTkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 00:52:01 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:41666 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759AbYHXEwA (ORCPT
+	Sat, 23 Aug 2008 15:40:41 -0400
+Received: from smtp2.tech.numericable.fr ([82.216.111.38]:36874 "EHLO
+	smtp2.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753266AbYHWTkj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 00:52:00 -0400
-Message-ID: <51467.166.70.238.43.1219551931.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <alpine.LFD.1.10.0808211415410.3487@nehalem.linux-foundation.org>
-References: <200808210250.m7L2obNX028353@wolfmountaingroup.com>
-    <48AD5A21.7020801@s5r6.in-berlin.de>
-    <43593.166.70.238.46.1219321595.squirrel@webmail.wolfmountaingroup.com>
-    <200808212337.38626.nickpiggin@yahoo.com.au>
-    <48ADD8DE.3010209@goop.org>
-    <alpine.LFD.1.10.0808211415410.3487@nehalem.linux-foundation.org>
-Date: Sat, 23 Aug 2008 22:25:31 -0600 (MDT)
-Subject: Re: [ANNOUNCE] mdb: Merkey's Linux Kernel Debugger  2.6.27-rc4 
-     released
-From: jmerkey@wolfmountaingroup.com
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>, jmerkey@wolfmountaingroup.com,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       paulmck@linux.vnet.ibm.com, "Peter Zijlstra" <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, "David Howells" <dhowells@redhat.com>
-User-Agent: SquirrelMail/1.4.6
+	Sat, 23 Aug 2008 15:40:39 -0400
+Message-ID: <48B067B3.6020008@numericable.fr>
+Date: Sat, 23 Aug 2008 21:40:35 +0200
+From: Rufus & Azrael <rufus-azrael@numericable.fr>
+User-Agent: Thunderbird/3.0a2 (X11; 2008081609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kenrel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user
+ with the same regression
+References: <48B0563B.2040207@numericable.fr> <86802c440808231217q3eebc738v863170b178bb03ab@mail.gmail.com>
+In-Reply-To: <86802c440808231217q3eebc738v863170b178bb03ab@mail.gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------020809060602080107000006"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------020809060602080107000006
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Results from Analysis of GCC volatile/memory barriers
+Yinghai Lu wrote:
+> On Sat, Aug 23, 2008 at 11:26 AM, Rufus&  Azrael
+> <rufus-azrael@numericable.fr>  wrote:
+>    
+>>> On Sat, Aug 23, 2008 at 4:58 AM, David Witbrodt<dawitbro@sbcglobal.net>
+>>>   wrote:
+>>>        
+>>>>          
+>>>>>   please send out after booting with hpet=disable
+>>>>>   lspci -tv
+>>>>>   lspci -vvxxx
+>>>>>            
+>>>>   Info attached:
+>>>>          
+>>> 00:14.0 SMBus: ATI Technologies Inc SBx00 SMBus Controller (rev 13)
+>>>         Subsystem: Elitegroup Computer Systems Device 2621
+>>>         Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr-
+>>> Stepping- SERR- FastB2B- DisINTx+
+>>>         Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium>TAbort-
+>>> <TAbort-<MAbort->SERR-<PERR- INTx-
+>>>         Region 0: I/O ports at fa00 [size=16]
+>>>         Region 1: Memory at 80000000 (32-bit, non-prefetchable) [size=1K]
+>>>         Capabilities: [b0] HyperTransport: MSI Mapping Enable- Fixed+
+>>>         Kernel driver in use: piix4_smbus
+>>> 00: 02 10 85 43 03 04 30 02 13 00 05 0c 00 00 80 00
+>>> 10: 01 fa 00 00 00 00 00 80 00 00 00 00 00 00 00 00
+>>> 20: 00 00 00 00 00 00 00 00 00 00 00 00 19 10 21 26
+>>> 30: 00 00 00 00 b0 00 00 00 00 00 00 00 00 00 00 00
+>>> 40: d4 3b 00 05 00 00 00 00 0f ff 00 00 00 00 00 00
+>>> 50: f0 01 f0 0e f0 0f f0 07 11 0b f0 0f 00 00 00 00
+>>> 60: 01 00 24 00 bf fd de 8f 3f 90 00 00 20 00 00 00
+>>> 70: 00 01 00 00 08 00 c0 fe ff 6e 00 00 00 00 f0 0f
+>>> 80: f0 0a f0 0f 00 00 00 00 00 00 00 00 8c 00 00 80
+>>> 90: 01 fa 00 00 fa de ff 00 00 00 00 00 00 00 00 00
+>>> a0: 00 00 ff ff ff ff f0 08 ff fd 12 02 16 7b 20 00
+>>> b0: 08 00 02 a8 00 00 00 00 00 00 00 00 f0 0f 08 1a
+>>> c0: ff ff ff ff 00 00 00 00 00 00 00 00 00 00 00 00
+>>> d0: 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00
+>>> e0: 20 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>>> f0: d8 0c 00 00 00 00 44 00 00 00 00 00 aa 00 10 01
+>>> it seems kernel update BAR1 from 0xfed00000 to 0x80000000 after it can
+>>> not give 0xfed00000 to that device.
+>>> please try attached patch, and send out lspci -vvxxxx again.
+>>> YH
+>>> [PATCH] x86: protect hpet in BAR for one ATI chipset
+>>>
+>>> so avoid kernel don't allocate nre resource for it because it can not
+>>> allocate the old
+>>> address from BIOS.
+>>>
+>>> the same way like some IO APIC address in BAR handling
+>>>
+>>> Signed-off-by: Yinghai Lu<yhlu.kenrel@gmail.com>
+>>>
+>>> ---
+>>>   drivers/pci/quirks.c |   16 ++++++++++++++++
+>>>   1 file changed, 16 insertions(+)
+>>> Index: linux-2.6/drivers/pci/quirks.c
+>>> ===================================================================
+>>> --- linux-2.6.orig/drivers/pci/quirks.c
+>>> +++ linux-2.6/drivers/pci/quirks.c
+>>> @@ -1918,6 +1918,22 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_B
+>>>                          PCI_DEVICE_ID_NX2_5709S,
+>>>                          quirk_brcm_570x_limit_vpd);
+>>>
+>>> +static void __init quirk_hpet_in_bar(struct pci_dev *pdev)
+>>> +{
+>>> +       int i;
+>>> +       unsigned int base, size;
+>>> +
+>>> +       /* the BAR1 is the location of the HPET...we must
+>>> +        * not touch this, so forcibly insert it into the resource tree */
+>>> +       base = pci_resource_start(pdev, 1);
+>>> +       size = pci_resource_len(pdev, 1);
+>>> +       if (base&&   size) {
+>>> +               insert_resource(&iomem_resource,&pdev->resource[1]);
+>>> +               dev_info(&dev->dev, "HPET at %04x-%04x\n", name, base,
+>>> base + size - 1);
+>>> +       }
+>>> +}
+>>> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI, 0x3485, quirk_hpet_in_bar);
+>>> +
+>>>   #ifdef CONFIG_PCI_MSI
+>>>   /* Some chipsets do not support MSI. We cannot easily rely on setting
+>>>    * PCI_BUS_FLAGS_NO_MSI in its bus flags because there are actually
+>>>        
+>> Hi Yinghai,
+>>
+>>
+>> Your patch seems to be broken, see :
+>>
+>>      
+>>>   CC      drivers/pci/quirks.o
+>>> drivers/pci/quirks.c: In function 'quirk_hpet_in_bar':
+>>> drivers/pci/quirks.c:1804: erreur: 'dev' undeclared (first use in this
+>>> function)
+>>> drivers/pci/quirks.c:1804: erreur: (Each undeclared identifier is reported
+>>> only once
+>>> drivers/pci/quirks.c:1804: erreur: for each function it appears in.)
+>>> drivers/pci/quirks.c:1804: erreur: 'name' undeclared (first use in this
+>>> function)
+>>> drivers/pci/quirks.c:1804: attention : trop d'arguments pour le format
+>>> drivers/pci/quirks.c:1795: attention : unused variable 'i'
+>>> make[2]: *** [drivers/pci/quirks.o] Erreur 1
+>>>        
+>
+> please check v2.
+>
+> YH
+>    
+Thanks Yinghai,
 
-Use of volatile will produce the results intended in those files which
-have shared data elements, but will also result in some cases global data
-which is not referenced outside of a file and which has not also been
-declared as volatile as being treated as static and optimized
-into local variables in some cases.
+Your patch applied, I attach lspci -vvxxxx.
 
-If volatile is avoided entirely, the compiler appears to make correct
-assumptions about whether or not it is in fact global memory references.
-My conclusion is that the code generation of gcc appears correct and
-in fact does a better job than Microsoft's implementation of shared
-data management on SMP systems.
-
-If you use volatile, and use optimization at the same time, the compiler
-will take you at your word and potentially optimize global references into
-local variables.  This is in fact better than MS cl which will ALWAYS
-optimize global data into local if volatile is not used with SMP data within
-a single file.
-
-If you choose to use volatile, then you had better use it on every variable
-you need shared between processors -- or just leave it out entirely -- and
-gcc does appear figure it out code references properly (though some of them
-are quite odd).
-
-While this may be counter-intuitive, it makes sense.  When you are using
-volatile, you are telling the compiler anything not declared as volatile
-witihin a given file is fair game for local optimization if you turn on
-optimization at the same time.
-
-
-Analysis
-
-Code Generation for two atomic_t variables.  One an array and the other
-standalone -- macros in kernel includes and their interactions
-with the compiler may be the basis of some of these cases.
-
-    atomic_inc(&debuggerActive);
-    atomic_inc(&debuggerProcessors[processor]);
-
-    55a0:	f0 ff 05 00 00 00 00 	lock incl 0x0
-    55a7:	8d 2c 8d 00 00 00 00 	lea    0x0(,%ecx,4),%ebp
-    55ae:	8d 85 00 00 00 00    	lea    0x0(%ebp),%eax
-    55b4:	89 04 24             	mov    %eax,(%esp)
-    55b7:	f0 ff 85 00 00 00 00 	lock incl 0x0(%ebp)
-
-Although the emitted asssembly is essentially correct, its odd.  two
-identical data types, one emitted as a global fixup and the other as
-a relative fixup indirected from the stack frame.  This works since
-the fixup (substitute for the 0x0) input by the loader is a negative
-offset relative to the entire 32 bit address space i.e. lock incl
-[ebp-f800XXXX], but its still an odd way to treat an atomic variable.
-I would think these would result in an absolute address fixup record
-treated some other way than as data referenced from the stack frame.
-
-Code section with mixed volatile declarations
-
-volatile unsigned long ProcessorHold[MAX_PROCESSORS];
-unsigned long ProcessorState[MAX_PROCESSORS];
-
-         case 2: /* nmi */
-            if (ProcessorHold[processor])  /* hold processor */
-            {
-               ProcessorHold[processor] = 0;
-	       ProcessorState[processor] = PROCESSOR_SUSPEND;
-
-               /* processor suspend loop */
-               atomic_inc(&nmiProcessors[processor]);
-	       while ((ProcessorState[processor] != PROCESSOR_RESUME) &&
-	              (ProcessorState[processor] != PROCESSOR_SWITCH))
-               {
-	          if ((ProcessorState[processor] == PROCESSOR_RESUME) ||
-	              (ProcessorState[processor] == PROCESSOR_SWITCH))
-                     break;
-
-                  touch_nmi_watchdog();
-                  cpu_relax();
-               }
-               atomic_dec(&nmiProcessors[processor]);
-    56ec:	83 3c b5 00 00 00 00 	cmpl   $0x0,0x0(,%esi,4)
-    56f3:	00
-    56f4:	74 1b                	je     5711 <debugger_entry+0x17e>
-    56f6:	c7 04 b5 00 00 00 00 	movl   $0x0,0x0(,%esi,4)
-    56fd:	00 00 00 00
-    5701:	f0 ff 85 00 00 00 00 	lock incl 0x0(%ebp)
-    5708:	e8 fc ff ff ff       	call   5709 <debugger_entry+0x176>
-    570d:	f3 90                	pause
-    570f:	eb f7                	jmp    5708 <debugger_entry+0x175>
-
-    // THIS APPEARS BROKEN - THE COMPILER IS TREATING A GLOBAL ARRAY
-    // AS LOCAL DATA
-    5711:	89 f1                	mov    %esi,%ecx
-    5713:	89 da                	mov    %ebx,%edx
-    5715:	b8 02 00 00 00       	mov    $0x2,%eax
-    571a:	eb 06                	jmp    5722 <debugger_entry+0x18f>
-    571c:	89 f1                	mov    %esi,%ecx
-    571e:	89 da                	mov    %ebx,%edx
-    5720:	89 f8                	mov    %edi,%eax
-    5722:	e8 fc ff ff ff       	call   5723 <debugger_entry+0x190>
-    5727:	83 3c b5 00 00 00 00 	cmpl   $0x0,0x0(,%esi,4)
-    572e:	00
-    572f:	75 c5                	jne    56f6 <debugger_entry+0x163>
-    5731:	e8 fc ff ff ff       	call   5732 <debugger_entry+0x19f>
-    5736:	e8 fc ff ff ff       	call   5737 <debugger_entry+0x1a4>
-    573b:	85 c0                	test   %eax,%eax
-    573d:	74 0f                	je     574e <debugger_entry+0x1bb>
-    573f:	89 f0                	mov    %esi,%eax
-    5741:	c1 e0 07             	shl    $0x7,%eax
-    5744:	05 00 00 00 00       	add    $0x0,%eax
-    5749:	e8 fc ff ff ff       	call   574a <debugger_entry+0x1b7>
-    574e:	c7 04 b5 00 00 00 00 	movl   $0x0,0x0(,%esi,4)
-    5755:	00 00 00 00
-    5759:	8b 04 24             	mov    (%esp),%eax
-    575c:	c7 04 b5 00 00 00 00 	movl   $0x1,0x0(,%esi,4)
-    5763:	01 00 00 00
-    5767:	f0 ff 08             	lock decl (%eax)
-
-
-
-Code section without ANY volatile declarations (CODE GENERATION CORRECT)
-
-unsigned long ProcessorHold[MAX_PROCESSORS];
-unsigned long ProcessorState[MAX_PROCESSORS];
-
-         case 2: /* nmi */
-            if (ProcessorHold[processor])  /* hold processor */
-            {
-               ProcessorHold[processor] = 0;
-	       ProcessorState[processor] = PROCESSOR_SUSPEND;
-
-               /* processor suspend loop */
-               atomic_inc(&nmiProcessors[processor]);
-	       while ((ProcessorState[processor] != PROCESSOR_RESUME) &&
-	              (ProcessorState[processor] != PROCESSOR_SWITCH))
-               {
-	          if ((ProcessorState[processor] == PROCESSOR_RESUME) ||
-	              (ProcessorState[processor] == PROCESSOR_SWITCH))
-                     break;
-
-                  touch_nmi_watchdog();
-                  cpu_relax();
-               }
-               atomic_dec(&nmiProcessors[processor]);
-
-Code output from section without ANY volatile declarations
-
-    56f2:	83 3c bd 00 00 00 00 	cmpl   $0x0,0x0(,%edi,4)
-    56f9:	00
-    56fa:	74 5f                	je     575b <debugger_entry+0x1c8>
-    56fc:	c7 04 bd 00 00 00 00 	movl   $0x0,0x0(,%edi,4)
-    5703:	00 00 00 00
-    5707:	8d b5 00 00 00 00    	lea    0x0(%ebp),%esi
-    570d:	c7 04 bd 00 00 00 00 	movl   $0x2,0x0(,%edi,4)
-    5714:	02 00 00 00
-    5718:	f0 ff 85 00 00 00 00 	lock incl 0x0(%ebp)
-    571f:	eb 11                	jmp    5732 <debugger_entry+0x19f>
-    5721:	83 f8 03             	cmp    $0x3,%eax
-    5724:	74 1d                	je     5743 <debugger_entry+0x1b0>
-    5726:	83 f8 07             	cmp    $0x7,%eax
-    5729:	74 18                	je     5743 <debugger_entry+0x1b0>
-    572b:	e8 fc ff ff ff       	call   572c <debugger_entry+0x199>
-    5730:	f3 90                	pause
-    5732:	8b 04 bd 00 00 00 00 	mov    0x0(,%edi,4),%eax
-    5739:	83 f8 03             	cmp    $0x3,%eax
-    573c:	74 05                	je     5743 <debugger_entry+0x1b0>
-    573e:	83 f8 07             	cmp    $0x7,%eax
-    5741:	75 de                	jne    5721 <debugger_entry+0x18e>
-    5743:	f0 ff 0e             	lock decl (%esi)
-    5746:	83 3c bd 00 00 00 00 	cmpl   $0x7,0x0(,%edi,4)
+Regards.
 
 
+--------------020809060602080107000006
+Content-Type: text/plain;
+ name="lspci"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="lspci"
 
-Code from section with volatile declarations (CODE GENERATION CORRECT)
-
-volatile unsigned long ProcessorHold[MAX_PROCESSORS];
-volatile unsigned long ProcessorState[MAX_PROCESSORS];
-
-         case 2: /* nmi */
-            if (ProcessorHold[processor])  /* hold processor */
-            {
-               ProcessorHold[processor] = 0;
-	       ProcessorState[processor] = PROCESSOR_SUSPEND;
-
-               /* processor suspend loop */
-               atomic_inc(&nmiProcessors[processor]);
-	       while ((ProcessorState[processor] != PROCESSOR_RESUME) &&
-	              (ProcessorState[processor] != PROCESSOR_SWITCH))
-               {
-	          if ((ProcessorState[processor] == PROCESSOR_RESUME) ||
-	              (ProcessorState[processor] == PROCESSOR_SWITCH))
-                     break;
-
-                  touch_nmi_watchdog();
-                  cpu_relax();
-               }
-               atomic_dec(&nmiProcessors[processor]);
-
-
-Code Output from section with volatile declarations
-
-    5896:	8b 04 9d 00 00 00 00 	mov    0x0(,%ebx,4),%eax
-    589d:	85 c0                	test   %eax,%eax
-    589f:	74 73                	je     5914 <debugger_entry+0x1f7>
-    58a1:	c7 04 9d 00 00 00 00 	movl   $0x0,0x0(,%ebx,4)
-    58a8:	00 00 00 00
-    58ac:	8d bd 00 00 00 00    	lea    0x0(%ebp),%edi
-    58b2:	c7 04 9d 00 00 00 00 	movl   $0x2,0x0(,%ebx,4)
-    58b9:	02 00 00 00
-    58bd:	f0 ff 85 00 00 00 00 	lock incl 0x0(%ebp)
-    58c4:	eb 1f                	jmp    58e5 <debugger_entry+0x1c8>
-    58c6:	8b 04 9d 00 00 00 00 	mov    0x0(,%ebx,4),%eax
-    58cd:	83 f8 03             	cmp    $0x3,%eax
-    58d0:	74 2b                	je     58fd <debugger_entry+0x1e0>
-    58d2:	8b 04 9d 00 00 00 00 	mov    0x0(,%ebx,4),%eax
-    58d9:	83 f8 07             	cmp    $0x7,%eax
-    58dc:	74 1f                	je     58fd <debugger_entry+0x1e0>
-    58de:	e8 fc ff ff ff       	call   58df <debugger_entry+0x1c2>
-    58e3:	f3 90                	pause
-    58e5:	8b 04 9d 00 00 00 00 	mov    0x0(,%ebx,4),%eax
-    58ec:	83 f8 03             	cmp    $0x3,%eax
-    58ef:	74 0c                	je     58fd <debugger_entry+0x1e0>
-    58f1:	8b 04 9d 00 00 00 00 	mov    0x0(,%ebx,4),%eax
-    58f8:	83 f8 07             	cmp    $0x7,%eax
-    58fb:	75 c9                	jne    58c6 <debugger_entry+0x1a9>
-    58fd:	f0 ff 0f             	lock decl (%edi)
-    5900:	8b 04 9d 00 00 00 00 	mov    0x0(,%ebx,4),%eax
-
-
-
-Code from sections without volatile declaration using wmb()/rmb()
-                                     (CODE GENERATION CORRECT)
-
-   for (i=0; i < MAX_PROCESSORS; i++)
-   {
-      if (ProcessorState[i] != PROCESSOR_HOLD)
-      {
-         wmb();
-         ProcessorState[i] = PROCESSOR_RESUME;
-      }
-   }
-
-unsigned long ProcessorHold[MAX_PROCESSORS];
-unsigned long ProcessorState[MAX_PROCESSORS];
-
-         case 2: /* nmi */
-            if (ProcessorHold[processor])  /* hold processor */
-            {
-               ProcessorHold[processor] = 0;
-	       ProcessorState[processor] = PROCESSOR_SUSPEND;
-
-               /* processor suspend loop */
-               atomic_inc(&nmiProcessors[processor]);
-	       while ((ProcessorState[processor] != PROCESSOR_RESUME) &&
-	              (ProcessorState[processor] != PROCESSOR_SWITCH))
-               {
-                  rmb();
-	          if ((ProcessorState[processor] == PROCESSOR_RESUME) ||
-	              (ProcessorState[processor] == PROCESSOR_SWITCH))
-                     break;
-
-                  touch_nmi_watchdog();
-                  cpu_relax();
-               }
-               atomic_dec(&nmiProcessors[processor]);
-
-Code output from sections without volatile declaration using wmb()/rmb()
-
-    56fa:	83 3c b5 00 00 00 00 	cmpl   $0x0,0x0(,%esi,4)
-    5701:	00
-    5702:	74 6b                	je     576f <debugger_entry+0x1d7>
-    5704:	c7 04 b5 00 00 00 00 	movl   $0x0,0x0(,%esi,4)
-    570b:	00 00 00 00
-    570f:	8d bd 00 00 00 00    	lea    0x0(%ebp),%edi
-    5715:	c7 04 b5 00 00 00 00 	movl   $0x2,0x0(,%esi,4)
-    571c:	02 00 00 00
-    5720:	f0 ff 85 00 00 00 00 	lock incl 0x0(%ebp)
-    5727:	eb 1d                	jmp    5746 <debugger_entry+0x1ae>
-    5729:	f0 83 04 24 00       	lock addl $0x0,(%esp)
-    572e:	8b 04 b5 00 00 00 00 	mov    0x0(,%esi,4),%eax
-    5735:	83 f8 03             	cmp    $0x3,%eax
-    5738:	74 1d                	je     5757 <debugger_entry+0x1bf>
-    573a:	83 f8 07             	cmp    $0x7,%eax
-    573d:	74 18                	je     5757 <debugger_entry+0x1bf>
-    573f:	e8 fc ff ff ff       	call   5740 <debugger_entry+0x1a8>
-    5744:	f3 90                	pause
-    5746:	8b 04 b5 00 00 00 00 	mov    0x0(,%esi,4),%eax
-    574d:	83 f8 03             	cmp    $0x3,%eax
-    5750:	74 05                	je     5757 <debugger_entry+0x1bf>
-    5752:	83 f8 07             	cmp    $0x7,%eax
-    5755:	75 d2                	jne    5729 <debugger_entry+0x191>
-    5757:	f0 ff 0f             	lock decl (%edi)
-    575a:	83 3c b5 00 00 00 00 	cmpl   $0x7,0x0(,%esi,4)
-    5761:	07
-    5762:	75 21                	jne    5785 <debugger_entry+0x1ed>
-    5764:	89 f1                	mov    %esi,%ecx
-
-000001e1 <FreeProcessorsExclSelf>:
-     1e1:	31 c0                	xor    %eax,%eax
-     1e3:	83 3c 85 00 00 00 00 	cmpl   $0x8,0x0(,%eax,4)
-     1ea:	08
-     1eb:	74 10                	je     1fd <FreeProcessorsExclSelf+0x1c>
-     1ed:	f0 83 04 24 00       	lock addl $0x0,(%esp)
-     1f2:	c7 04 85 00 00 00 00 	movl   $0x3,0x0(,%eax,4)
-     1f9:	03 00 00 00
-     1fd:	40                   	inc    %eax
-     1fe:	83 f8 08             	cmp    $0x8,%eax
-     201:	75 e0                	jne    1e3 <FreeProcessorsExclSelf+0x2>
-     203:	c3                   	ret
-
-
-
-Code from sections without volatile declaration using barrier()
-                                       (CODE GENERATION CORRECT)
-
-   for (i=0; i < MAX_PROCESSORS; i++)
-   {
-      if (ProcessorState[i] != PROCESSOR_HOLD)
-      {
-         barrier();
-         ProcessorState[i] = PROCESSOR_RESUME;
-      }
-   }
-
-unsigned long ProcessorHold[MAX_PROCESSORS];
-unsigned long ProcessorState[MAX_PROCESSORS];
-
-         case 2: /* nmi */
-            if (ProcessorHold[processor])  /* hold processor */
-            {
-               ProcessorHold[processor] = 0;
-	       ProcessorState[processor] = PROCESSOR_SUSPEND;
-
-               /* processor suspend loop */
-               atomic_inc(&nmiProcessors[processor]);
-	       while ((ProcessorState[processor] != PROCESSOR_RESUME) &&
-	              (ProcessorState[processor] != PROCESSOR_SWITCH))
-               {
-                  barrier();
-	          if ((ProcessorState[processor] == PROCESSOR_RESUME) ||
-	              (ProcessorState[processor] == PROCESSOR_SWITCH))
-                     break;
-
-                  touch_nmi_watchdog();
-                  cpu_relax();
-               }
-               atomic_dec(&nmiProcessors[processor]);
-
-Code output from sections without volatile declaration using barrier()
-
-    56f5:	83 3c b5 00 00 00 00 	cmpl   $0x0,0x0(,%esi,4)
-    56fc:	00
-    56fd:	74 66                	je     5765 <debugger_entry+0x1d2>
-    56ff:	c7 04 b5 00 00 00 00 	movl   $0x0,0x0(,%esi,4)
-    5706:	00 00 00 00
-    570a:	8d bd 00 00 00 00    	lea    0x0(%ebp),%edi
-    5710:	c7 04 b5 00 00 00 00 	movl   $0x2,0x0(,%esi,4)
-    5717:	02 00 00 00
-    571b:	f0 ff 85 00 00 00 00 	lock incl 0x0(%ebp)
-    5722:	eb 18                	jmp    573c <debugger_entry+0x1a9>
-    5724:	8b 04 b5 00 00 00 00 	mov    0x0(,%esi,4),%eax
-    572b:	83 f8 03             	cmp    $0x3,%eax
-    572e:	74 1d                	je     574d <debugger_entry+0x1ba>
-    5730:	83 f8 07             	cmp    $0x7,%eax
-    5733:	74 18                	je     574d <debugger_entry+0x1ba>
-    5735:	e8 fc ff ff ff       	call   5736 <debugger_entry+0x1a3>
-    573a:	f3 90                	pause
-    573c:	8b 04 b5 00 00 00 00 	mov    0x0(,%esi,4),%eax
-    5743:	83 f8 03             	cmp    $0x3,%eax
-    5746:	74 05                	je     574d <debugger_entry+0x1ba>
-    5748:	83 f8 07             	cmp    $0x7,%eax
-    574b:	75 d7                	jne    5724 <debugger_entry+0x191>
-    574d:	f0 ff 0f             	lock decl (%edi)
-    5750:	83 3c b5 00 00 00 00 	cmpl   $0x7,0x0(,%esi,4)
-    5757:	07
-
-000001e1 <FreeProcessorsExclSelf>:
-     1e1:	31 c0                	xor    %eax,%eax
-     1e3:	83 3c 85 00 00 00 00 	cmpl   $0x8,0x0(,%eax,4)
-     1ea:	08
-     1eb:	74 0b                	je     1f8 <FreeProcessorsExclSelf+0x17>
-     1ed:	c7 04 85 00 00 00 00 	movl   $0x3,0x0(,%eax,4)
-     1f4:	03 00 00 00
-     1f8:	40                   	inc    %eax
-     1f9:	83 f8 08             	cmp    $0x8,%eax
-     1fc:	75 e5                	jne    1e3 <FreeProcessorsExclSelf+0x2>
-     1fe:	c3                   	ret
-
-
-Jeff
-
+MDA6MDAuMCBIb3N0IGJyaWRnZTogQVRJIFRlY2hub2xvZ2llcyBJbmMgUlM2OTAgSG9zdCBC
+cmlkZ2UKCVN1YnN5c3RlbTogQVRJIFRlY2hub2xvZ2llcyBJbmMgUlM2OTAgSG9zdCBCcmlk
+Z2UKCUNvbnRyb2w6IEkvTy0gTWVtKyBCdXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVtV0lOVi0g
+VkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZhc3RCMkItIERpc0lOVHgtCglT
+dGF0dXM6IENhcC0gNjZNSHorIFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9bWVkaXVt
+ID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQrID5TRVJSLSA8UEVSUi0gSU5UeC0KCUxhdGVu
+Y3k6IDAKMDA6IDAyIDEwIDEwIDc5IDA2IDAwIDIwIDIyIDAwIDAwIDAwIDA2IDAwIDAwIDAw
+IDAwCjEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MAoyMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDIgMTAgMTAgNzkK
+MzA6IDAwIDAwIDAwIDAwIGM0IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjQw
+OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCA0MiAyMCAwNSAwMAo1MDog
+MDIgMTAgMTAgNzkgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNjA6IDVm
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAyIDIwIDAwIGE4IGY4IDAxIDAwCjcwOiAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo4MDogNDAgNDMg
+MDAgMDAgOTUgMDAgMDAgMDMgMjAgMDUgMTAgMDAgMDMgMjYgMDAgMDAKOTA6IDAwIDAwIDAw
+IDc4IDQwIGM0IDQwIGUyIDAwIGYwIDAwIDA4IDAxIDAwIDAwIDAwCmEwOiAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwNyAwMSAwMCAwMCA0OSAwMSAxMCAwNwpiMDogMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYzA6IDAwIDAwIDAwIDAwIDA4
+IDAwIDk0IDAxIDYwIDAwIDExIDExIGQwIDAwIDAwIDAwCmQwOiAyNSAwNiA2NSAwMCAwMiAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAplMDogMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDMgMDAgMDAgMDAgNzggZmYgN2YKZjA6IDAwIDAwIDAwIDAwIDAwIDgwIDgw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCgowMDowMS4wIFBDSSBicmlkZ2U6IEFUSSBU
+ZWNobm9sb2dpZXMgSW5jIFJTNjkwIFBDSSB0byBQQ0kgQnJpZGdlIChJbnRlcm5hbCBnZngp
+IChwcm9nLWlmIDAwIFtOb3JtYWwgZGVjb2RlXSkKCUNvbnRyb2w6IEkvTysgTWVtKyBCdXNN
+YXN0ZXIrIFNwZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmct
+IFNFUlIrIEZhc3RCMkItIERpc0lOVHgtCglTdGF0dXM6IENhcCsgNjZNSHorIFVERi0gRmFz
+dEIyQi0gUGFyRXJyLSBERVZTRUw9bWVkaXVtID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQt
+ID5TRVJSLSA8UEVSUi0gSU5UeC0KCUxhdGVuY3k6IDY0CglCdXM6IHByaW1hcnk9MDAsIHNl
+Y29uZGFyeT0wMSwgc3Vib3JkaW5hdGU9MDEsIHNlYy1sYXRlbmN5PTY0CglJL08gYmVoaW5k
+IGJyaWRnZTogMDAwMGQwMDAtMDAwMGRmZmYKCU1lbW9yeSBiZWhpbmQgYnJpZGdlOiBmZTkw
+MDAwMC1mZWFmZmZmZgoJUHJlZmV0Y2hhYmxlIG1lbW9yeSBiZWhpbmQgYnJpZGdlOiAwMDAw
+MDAwMGYwMDAwMDAwLTAwMDAwMDAwZjdmZmZmZmYKCVNlY29uZGFyeSBzdGF0dXM6IDY2TUh6
+KyBGYXN0QjJCLSBQYXJFcnItIERFVlNFTD1tZWRpdW0gPlRBYm9ydC0gPFRBYm9ydC0gPE1B
+Ym9ydC0gPFNFUlItIDxQRVJSLQoJQnJpZGdlQ3RsOiBQYXJpdHktIFNFUlIrIE5vSVNBLSBW
+R0EtIE1BYm9ydC0gPlJlc2V0LSBGYXN0QjJCLQoJCVByaURpc2NUbXItIFNlY0Rpc2NUbXIt
+IERpc2NUbXJTdGF0LSBEaXNjVG1yU0VSUkVuLQoJQ2FwYWJpbGl0aWVzOiBbNDRdIEh5cGVy
+VHJhbnNwb3J0OiBNU0kgTWFwcGluZyBFbmFibGUrIEZpeGVkKwoJQ2FwYWJpbGl0aWVzOiBb
+YjBdIFN1YnN5c3RlbTogQVRJIFRlY2hub2xvZ2llcyBJbmMgUlM2OTAgUENJIHRvIFBDSSBC
+cmlkZ2UgKEludGVybmFsIGdmeCkKMDA6IDAyIDEwIDEyIDc5IDA3IDAxIDMwIDAyIDAwIDAw
+IDA0IDA2IDAwIDQwIDAxIDAwCjEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMSAw
+MSA0MCBkMSBkMSAyMCAwMgoyMDogOTAgZmUgYTAgZmUgMDEgZjAgZjEgZjcgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAKMzA6IDAwIDAwIDAwIDAwIDQ0IDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDEyIDAwCjQwOiAwMCAwMCAwMCAwMCAwOCBiMCAwMyBhOCAwMCAwMCAwMCAwMCAw
+MiAxMCAxMiA3OQo1MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAKNjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwCjcwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMAo4MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAKOTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+CmEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApi
+MDogMGQgMDAgMDAgMDAgMDIgMTAgMTIgNzkgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYzA6
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmQwOiAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAplMDogMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZjA6IDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCgowMDowNy4wIFBD
+SSBicmlkZ2U6IEFUSSBUZWNobm9sb2dpZXMgSW5jIFJTNjkwIFBDSSB0byBQQ0kgQnJpZGdl
+IChQQ0kgRXhwcmVzcyBQb3J0IDMpIChwcm9nLWlmIDAwIFtOb3JtYWwgZGVjb2RlXSkKCUNv
+bnRyb2w6IEkvTysgTWVtKyBCdXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25v
+b3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlIrIEZhc3RCMkItIERpc0lOVHgtCglTdGF0dXM6
+IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9ZmFzdCA+VEFib3J0
+LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCglMYXRlbmN5OiAwLCBD
+YWNoZSBMaW5lIFNpemU6IDY0IGJ5dGVzCglCdXM6IHByaW1hcnk9MDAsIHNlY29uZGFyeT0w
+Miwgc3Vib3JkaW5hdGU9MDIsIHNlYy1sYXRlbmN5PTAKCUkvTyBiZWhpbmQgYnJpZGdlOiAw
+MDAwZTAwMC0wMDAwZWZmZgoJTWVtb3J5IGJlaGluZCBicmlkZ2U6IGZlYjAwMDAwLWZlYmZm
+ZmZmCglTZWNvbmRhcnkgc3RhdHVzOiA2Nk1Iei0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9
+ZmFzdCA+VEFib3J0LSA8VEFib3J0LSA8TUFib3J0LSA8U0VSUi0gPFBFUlItCglCcmlkZ2VD
+dGw6IFBhcml0eSsgU0VSUisgTm9JU0EtIFZHQS0gTUFib3J0LSA+UmVzZXQtIEZhc3RCMkIt
+CgkJUHJpRGlzY1Rtci0gU2VjRGlzY1Rtci0gRGlzY1RtclN0YXQtIERpc2NUbXJTRVJSRW4t
+CglDYXBhYmlsaXRpZXM6IFs1MF0gUG93ZXIgTWFuYWdlbWVudCB2ZXJzaW9uIDMKCQlGbGFn
+czogUE1FQ2xrLSBEU0ktIEQxLSBEMi0gQXV4Q3VycmVudD0wbUEgUE1FKEQwKyxEMS0sRDIt
+LEQzaG90KyxEM2NvbGQrKQoJCVN0YXR1czogRDAgUE1FLUVuYWJsZS0gRFNlbD0wIERTY2Fs
+ZT0wIFBNRS0KCUNhcGFiaWxpdGllczogWzU4XSBFeHByZXNzICh2MSkgUm9vdCBQb3J0IChT
+bG90KyksIE1TSSAwMAoJCURldkNhcDoJTWF4UGF5bG9hZCAxMjggYnl0ZXMsIFBoYW50RnVu
+YyAwLCBMYXRlbmN5IEwwcyA8NjRucywgTDEgPDF1cwoJCQlFeHRUYWcrIFJCRSsgRkxSZXNl
+dC0KCQlEZXZDdGw6CVJlcG9ydCBlcnJvcnM6IENvcnJlY3RhYmxlKyBOb24tRmF0YWwrIEZh
+dGFsKyBVbnN1cHBvcnRlZCsKCQkJUmx4ZE9yZCsgRXh0VGFnLSBQaGFudEZ1bmMtIEF1eFB3
+ci0gTm9Tbm9vcCsKCQkJTWF4UGF5bG9hZCAxMjggYnl0ZXMsIE1heFJlYWRSZXEgMTI4IGJ5
+dGVzCgkJRGV2U3RhOglDb3JyRXJyLSBVbmNvcnJFcnItIEZhdGFsRXJyLSBVbnN1cHBSZXEt
+IEF1eFB3ci0gVHJhbnNQZW5kLQoJCUxua0NhcDoJUG9ydCAjNCwgU3BlZWQgMi41R1Qvcywg
+V2lkdGggeDEsIEFTUE0gTDBzIEwxLCBMYXRlbmN5IEwwIDw2NG5zLCBMMSA8MXVzCgkJCUNs
+b2NrUE0tIFN1cHJpc2UtIExMQWN0UmVwKyBCd05vdC0KCQlMbmtDdGw6CUFTUE0gRGlzYWJs
+ZWQ7IFJDQiA2NCBieXRlcyBEaXNhYmxlZC0gUmV0cmFpbi0gQ29tbUNsaysKCQkJRXh0U3lu
+Y2gtIENsb2NrUE0tIEF1dFdpZERpcy0gQldJbnQtIEF1dEJXSW50LQoJCUxua1N0YToJU3Bl
+ZWQgMi41R1QvcywgV2lkdGggeDEsIFRyRXJyLSBUcmFpbi0gU2xvdENsaysgRExBY3RpdmUr
+IEJXTWdtdC0gQUJXTWdtdC0KCQlTbHRDYXA6CUF0dG5CdG4tIFB3ckN0cmwtIE1STC0gQXR0
+bkluZC0gUHdySW5kLSBIb3RQbHVnLSBTdXJwaXNlLQoJCQlTbG90ICMgIDYsIFBvd2VyTGlt
+aXQgMjUuMDAwMDAwOyBJbnRlcmxvY2stIE5vQ29tcGwtCgkJU2x0Q3RsOglFbmFibGU6IEF0
+dG5CdG4tIFB3ckZsdC0gTVJMLSBQcmVzRGV0LSBDbWRDcGx0LSBIUElycS0gTGlua0NoZy0K
+CQkJQ29udHJvbDogQXR0bkluZCBPZmYsIFB3ckluZCBPZmYsIFBvd2VyLSBJbnRlcmxvY2st
+CgkJU2x0U3RhOglTdGF0dXM6IEF0dG5CdG4tIFBvd2VyRmx0LSBNUkwtIENtZENwbHQtIFBy
+ZXNEZXQrIEludGVybG9jay0KCQkJQ2hhbmdlZDogTVJMLSBQcmVzRGV0KyBMaW5rU3RhdGUt
+CgkJUm9vdEN0bDogRXJyQ29ycmVjdGFibGUtIEVyck5vbi1GYXRhbC0gRXJyRmF0YWwtIFBN
+RUludEVuYS0gQ1JTVmlzaWJsZS0KCQlSb290Q2FwOiBDUlNWaXNpYmxlLQoJCVJvb3RTdGE6
+IFBNRSBSZXFJRCAwMDAwLCBQTUVTdGF0dXMtIFBNRVBlbmRpbmctCglDYXBhYmlsaXRpZXM6
+IFs4MF0gTWVzc2FnZSBTaWduYWxsZWQgSW50ZXJydXB0czogTWFzay0gNjRiaXQtIFF1ZXVl
+PTAvMCBFbmFibGUtCgkJQWRkcmVzczogMDAwMDAwMDAgIERhdGE6IDAwMDAKCUNhcGFiaWxp
+dGllczogW2IwXSBTdWJzeXN0ZW06IEFUSSBUZWNobm9sb2dpZXMgSW5jIERldmljZSA3OTEw
+CglDYXBhYmlsaXRpZXM6IFtiOF0gSHlwZXJUcmFuc3BvcnQ6IE1TSSBNYXBwaW5nIEVuYWJs
+ZSsgRml4ZWQrCglDYXBhYmlsaXRpZXM6IFsxMDBdIFZpcnR1YWwgQ2hhbm5lbCA8Pz4KCUtl
+cm5lbCBkcml2ZXIgaW4gdXNlOiBwY2llcG9ydC1kcml2ZXIKMDA6IDAyIDEwIDE3IDc5IDA3
+IDAxIDEwIDAwIDAwIDAwIDA0IDA2IDEwIDAwIDAxIDAwCjEwOiAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMiAwMiAwMCBlMSBlMSAwMCAwMAoyMDogYjAgZmUgYjAgZmUgZjEgZmYg
+MDEgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMzA6IDAwIDAwIDAwIDAwIDUwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIGZmIDAwIDAzIDAwCjQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo1MDogMDEgNTggMDMgYzggMDAgMDAgMDAgMDAg
+MTAgODAgNDEgMDEgMjAgODAgMDAgMDAKNjA6IDFmIDA4IDAwIDAwIDExIDBjIDEwIDA0IDQw
+IDAwIDExIDMwIDgwIDBjIDMwIDAwCjcwOiBjMCAwMyA0OCAwMCAwMCAwMCAwMSAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMAo4MDogMDUgYjAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAKOTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwCmEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMApiMDogMGQgYjggMDAgMDAgMDIgMTAgMTAgNzkgMDggMDAgMDMgYTgg
+MDAgMDAgMDAgMDAKYzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCmQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMAplMDogYTUgMDAgMDAgMDAgMTAgMjIgMjEgMjAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKZjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCjEwMDogMDIgMDAgMDEgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAKMTEwOiAwMCAwMCAwMCAwMCBmZiAwMCAwMCA4MCAwMCAwMCAwMCAwMCAwMCA4MCAwMCAw
+MAoxMjA6IDAwIDAwIDAwIDAwIDAyIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+CjEzMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+MTQwOiAwMSAwMCAwMSAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAzMCAyMCAwNiAwMAox
+NTA6IDAwIDAwIDAwIDAwIDAwIDIwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjE2
+MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMTcw
+OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAoxODA6
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjE5MDog
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMWEwOiAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAoxYjA6IDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjFjMDogMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMWQwOiAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAoxZTA6IDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjFmMDogMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMjAwOiAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAoyMTA6IDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjIyMDogMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMjMwOiAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAoyNDA6IDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjI1MDogMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMjYwOiAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAoyNzA6IDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjI4MDogMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMjkwOiAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAoyYTA6IDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjJiMDogMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMmMwOiAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAoyZDA6IDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjJlMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMmYwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAozMDA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjMxMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMzIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMAozMzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwCjM0MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAKMzUwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMAozNjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwCjM3MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAKMzgwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMAozOTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwCjNhMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAKM2IwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMAozYzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwCjNkMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAKM2UwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMAozZjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCjQwMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAKNDEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMAo0MjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwCjQzMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKNDQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMAo0NTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCjQ2MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAKNDcwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MAo0ODA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+CjQ5MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+NGEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo0
+YjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjRj
+MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNGQw
+OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo0ZTA6
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjRmMDog
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNTAwOiAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo1MTA6IDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjUyMDogMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNTMwOiAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo1NDA6IDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjU1MDogMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNTYwOiAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo1NzA6IDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjU4MDogMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNTkwOiAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo1YTA6IDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjViMDogMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNWMwOiAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo1ZDA6IDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjVlMDogMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNWYwOiAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo2MDA6IDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjYxMDogMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNjIwOiAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo2MzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjY0MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNjUwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo2NjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjY3MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNjgwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo2OTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwCjZhMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAKNmIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMAo2YzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwCjZkMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAKNmUwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMAo2ZjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwCjcwMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAKNzEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMAo3MjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwCjczMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAKNzQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMAo3NTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCjc2MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAKNzcwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMAo3ODA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwCjc5MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKN2EwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMAo3YjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCjdjMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAKN2QwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MAo3ZTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+CjdmMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+ODAwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo4
+MTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjgy
+MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKODMw
+OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo4NDA6
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjg1MDog
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKODYwOiAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo4NzA6IDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjg4MDogMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKODkwOiAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo4YTA6IDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjhiMDogMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKOGMwOiAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo4ZDA6IDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjhlMDogMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKOGYwOiAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo5MDA6IDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjkxMDogMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKOTIwOiAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo5MzA6IDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjk0MDogMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKOTUwOiAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo5NjA6IDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjk3MDogMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKOTgwOiAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo5OTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjlhMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKOWIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo5YzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjlkMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKOWUwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo5ZjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwCmEwMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAKYTEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMAphMjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwCmEzMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAKYTQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMAphNTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwCmE2MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAKYTcwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMAphODA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwCmE5MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAKYWEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMAphYjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCmFjMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAKYWQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMAphZTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwCmFmMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKYjAwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMApiMTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCmIyMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAKYjMwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MApiNDA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+CmI1MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+YjYwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApi
+NzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmI4
+MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYjkw
+OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApiYTA6
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmJiMDog
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYmMwOiAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApiZDA6IDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmJlMDogMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYmYwOiAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApjMDA6IDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmMxMDogMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYzIwOiAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApjMzA6IDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmM0MDogMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYzUwOiAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApjNjA6IDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmM3MDogMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYzgwOiAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApjOTA6IDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmNhMDogMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKY2IwOiAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApjYzA6IDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmNkMDogMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKY2UwOiAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApjZjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmQwMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZDEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApkMjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmQzMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZDQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMApkNTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwCmQ2MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAKZDcwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMApkODA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwCmQ5MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAKZGEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMApkYjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwCmRjMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAKZGQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMApkZTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwCmRmMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAKZTAwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMAplMTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCmUyMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAKZTMwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMAplNDA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwCmU1MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKZTYwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMAplNzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCmU4MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAKZTkwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MAplYTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+CmViMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+ZWMwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApl
+ZDA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmVl
+MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZWYw
+OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApmMDA6
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmYxMDog
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZjIwOiAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApmMzA6IDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmY0MDogMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZjUwOiAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApmNjA6IDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmY3MDogMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZjgwOiAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApmOTA6IDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmZhMDogMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZmIwOiAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApmYzA6IDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmZkMDogMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZmUwOiAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApmZjA6IDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCgowMDoxMi4wIFNBVEEgY29udHJv
+bGxlcjogQVRJIFRlY2hub2xvZ2llcyBJbmMgU0I2MDAgTm9uLVJhaWQtNSBTQVRBIChwcm9n
+LWlmIDAxIFtBSENJIDEuMF0pCglTdWJzeXN0ZW06IE1pY3JvLVN0YXIgSW50ZXJuYXRpb25h
+bCBDby4sIEx0ZC4gRGV2aWNlIDczMjkKCUNvbnRyb2w6IEkvTysgTWVtKyBCdXNNYXN0ZXIr
+IFNwZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlIr
+IEZhc3RCMkItIERpc0lOVHgtCglTdGF0dXM6IENhcCsgNjZNSHorIFVERi0gRmFzdEIyQi0g
+UGFyRXJyLSBERVZTRUw9bWVkaXVtID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQtID5TRVJS
+LSA8UEVSUi0gSU5UeC0KCUxhdGVuY3k6IDY0LCBDYWNoZSBMaW5lIFNpemU6IDY0IGJ5dGVz
+CglJbnRlcnJ1cHQ6IHBpbiBBIHJvdXRlZCB0byBJUlEgMjIKCVJlZ2lvbiAwOiBJL08gcG9y
+dHMgYXQgYzAwMCBbc2l6ZT04XQoJUmVnaW9uIDE6IEkvTyBwb3J0cyBhdCBiMDAwIFtzaXpl
+PTRdCglSZWdpb24gMjogSS9PIHBvcnRzIGF0IGEwMDAgW3NpemU9OF0KCVJlZ2lvbiAzOiBJ
+L08gcG9ydHMgYXQgOTAwMCBbc2l6ZT00XQoJUmVnaW9uIDQ6IEkvTyBwb3J0cyBhdCA4MDAw
+IFtzaXplPTE2XQoJUmVnaW9uIDU6IE1lbW9yeSBhdCBmZThmZjgwMCAoMzItYml0LCBub24t
+cHJlZmV0Y2hhYmxlKSBbc2l6ZT0xS10KCUNhcGFiaWxpdGllczogWzYwXSBQb3dlciBNYW5h
+Z2VtZW50IHZlcnNpb24gMgoJCUZsYWdzOiBQTUVDbGstIERTSSsgRDEtIEQyLSBBdXhDdXJy
+ZW50PTBtQSBQTUUoRDAtLEQxLSxEMi0sRDNob3QtLEQzY29sZC0pCgkJU3RhdHVzOiBEMCBQ
+TUUtRW5hYmxlLSBEU2VsPTAgRFNjYWxlPTAgUE1FLQoJS2VybmVsIGRyaXZlciBpbiB1c2U6
+IGFoY2kKMDA6IDAyIDEwIDgwIDQzIDA3IDAxIDMwIDAyIDAwIDAxIDA2IDAxIDEwIDQwIDAw
+IDAwCjEwOiAwMSBjMCAwMCAwMCAwMSBiMCAwMCAwMCAwMSBhMCAwMCAwMCAwMSA5MCAwMCAw
+MAoyMDogMDEgODAgMDAgMDAgMDAgZjggOGYgZmUgMDAgMDAgMDAgMDAgNjIgMTQgMjkgNzMK
+MzA6IDAwIDAwIDAwIDAwIDYwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDBiIDAxIDAwIDAwCjQw
+OiAxMCAwMCA4MCAwMiAwMSAwMCAxMCAwMCAwMSAwMCAwMCAwMCAwMCAwMCAwMCAwMAo1MDog
+MDUgMDAgODQgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNjA6IDAx
+IDAwIDIyIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjcwOiAxMiAw
+MCAxMCAwMCAwZiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo4MDogMDAgMDAg
+MDAgMDAgMDYgMDAgMDAgMmMgZDYgMDEgYjQgMDAgMTYgMjAgYjQgMDAKOTA6IDk2IDIwIGI0
+IDAwIDU2IDIwIGI0IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmEwOiAwMCAwMCAwMCAw
+MCAwMCA3OCAwMCAwMCAwMCAwMCAwMCAwMCAwMCA3OCAwMCAwMApiMDogMDAgMDAgMDAgMDAg
+MDAgNzggMDAgMDAgMDAgMDAgMDAgMDAgMDAgNzggMDAgMDAKYzA6IDAwIDIwIDAwIDAwIDgw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmQwOiAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAplMDogMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCgowMDoxMy4wIFVTQiBDb250cm9sbGVyOiBB
+VEkgVGVjaG5vbG9naWVzIEluYyBTQjYwMCBVU0IgKE9IQ0kwKSAocHJvZy1pZiAxMCBbT0hD
+SV0pCglTdWJzeXN0ZW06IE1pY3JvLVN0YXIgSW50ZXJuYXRpb25hbCBDby4sIEx0ZC4gRGV2
+aWNlIDczMjcKCUNvbnRyb2w6IEkvTysgTWVtKyBCdXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVt
+V0lOVisgVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlIrIEZhc3RCMkItIERpc0lO
+VHgtCglTdGF0dXM6IENhcC0gNjZNSHorIFVERi0gRmFzdEIyQisgUGFyRXJyLSBERVZTRUw9
+bWVkaXVtID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQtID5TRVJSLSA8UEVSUi0gSU5UeC0K
+CUxhdGVuY3k6IDY0LCBDYWNoZSBMaW5lIFNpemU6IDY0IGJ5dGVzCglJbnRlcnJ1cHQ6IHBp
+biBBIHJvdXRlZCB0byBJUlEgMTYKCVJlZ2lvbiAwOiBNZW1vcnkgYXQgZmU4ZmUwMDAgKDMy
+LWJpdCwgbm9uLXByZWZldGNoYWJsZSkgW3NpemU9NEtdCglLZXJuZWwgZHJpdmVyIGluIHVz
+ZTogb2hjaV9oY2QKMDA6IDAyIDEwIDg3IDQzIDE3IDAxIGEwIDAyIDAwIDEwIDAzIDBjIDEw
+IDQwIDgwIDAwCjEwOiAwMCBlMCA4ZiBmZSAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMAoyMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgNjIgMTQg
+MjcgNzMKMzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDA1IDAxIDAw
+IDAwCjQwOiA4MCAxZiAwMCAwMCAwYSA4NCBiNyAxOCAwNyAzNSAwMCAwMCAwMCAwMCAwMCAw
+MAo1MDogMDAgOWMgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMjIgMzMgNDQgNzcgMDAgMDAgMDAK
+NjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjcw
+OiAwMCAwMCAwMCAwMCBmZiAwMCAwMCA4MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo4MDog
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKOTA6IDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmEwOiAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApiMDogMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYzA6IDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmQwOiAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAplMDogMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZjA6IDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCgowMDoxMy4xIFVTQiBDb250cm9s
+bGVyOiBBVEkgVGVjaG5vbG9naWVzIEluYyBTQjYwMCBVU0IgKE9IQ0kxKSAocHJvZy1pZiAx
+MCBbT0hDSV0pCglTdWJzeXN0ZW06IE1pY3JvLVN0YXIgSW50ZXJuYXRpb25hbCBDby4sIEx0
+ZC4gRGV2aWNlIDczMjcKCUNvbnRyb2w6IEkvTysgTWVtKyBCdXNNYXN0ZXIrIFNwZWNDeWNs
+ZS0gTWVtV0lOVisgVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlIrIEZhc3RCMkIt
+IERpc0lOVHgtCglTdGF0dXM6IENhcC0gNjZNSHorIFVERi0gRmFzdEIyQisgUGFyRXJyLSBE
+RVZTRUw9bWVkaXVtID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQtID5TRVJSLSA8UEVSUi0g
+SU5UeC0KCUxhdGVuY3k6IDY0LCBDYWNoZSBMaW5lIFNpemU6IDY0IGJ5dGVzCglJbnRlcnJ1
+cHQ6IHBpbiBCIHJvdXRlZCB0byBJUlEgMTcKCVJlZ2lvbiAwOiBNZW1vcnkgYXQgZmU4ZmQw
+MDAgKDMyLWJpdCwgbm9uLXByZWZldGNoYWJsZSkgW3NpemU9NEtdCglLZXJuZWwgZHJpdmVy
+IGluIHVzZTogb2hjaV9oY2QKMDA6IDAyIDEwIDg4IDQzIDE3IDAxIGEwIDAyIDAwIDEwIDAz
+IDBjIDEwIDQwIDAwIDAwCjEwOiAwMCBkMCA4ZiBmZSAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMAoyMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+NjIgMTQgMjcgNzMKMzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAz
+IDAyIDAwIDAwCjQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMAo1MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKNjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCjcwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MAo4MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+OTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmEw
+OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApiMDog
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYzA6IDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmQwOiAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAplMDogMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZjA6IDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCgowMDoxMy4yIFVTQiBD
+b250cm9sbGVyOiBBVEkgVGVjaG5vbG9naWVzIEluYyBTQjYwMCBVU0IgKE9IQ0kyKSAocHJv
+Zy1pZiAxMCBbT0hDSV0pCglTdWJzeXN0ZW06IE1pY3JvLVN0YXIgSW50ZXJuYXRpb25hbCBD
+by4sIEx0ZC4gRGV2aWNlIDczMjcKCUNvbnRyb2w6IEkvTysgTWVtKyBCdXNNYXN0ZXIrIFNw
+ZWNDeWNsZS0gTWVtV0lOVisgVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlIrIEZh
+c3RCMkItIERpc0lOVHgtCglTdGF0dXM6IENhcC0gNjZNSHorIFVERi0gRmFzdEIyQisgUGFy
+RXJyLSBERVZTRUw9bWVkaXVtID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQtID5TRVJSLSA8
+UEVSUi0gSU5UeC0KCUxhdGVuY3k6IDY0LCBDYWNoZSBMaW5lIFNpemU6IDY0IGJ5dGVzCglJ
+bnRlcnJ1cHQ6IHBpbiBDIHJvdXRlZCB0byBJUlEgMTgKCVJlZ2lvbiAwOiBNZW1vcnkgYXQg
+ZmU4ZmMwMDAgKDMyLWJpdCwgbm9uLXByZWZldGNoYWJsZSkgW3NpemU9NEtdCglLZXJuZWwg
+ZHJpdmVyIGluIHVzZTogb2hjaV9oY2QKMDA6IDAyIDEwIDg5IDQzIDE3IDAxIGEwIDAyIDAw
+IDEwIDAzIDBjIDEwIDQwIDAwIDAwCjEwOiAwMCBjMCA4ZiBmZSAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMAoyMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgNjIgMTQgMjcgNzMKMzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDBhIDAzIDAwIDAwCjQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMAo1MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAKNjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCjcwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMAo4MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKOTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCmEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MApiMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+YzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmQw
+OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAplMDog
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZjA6IDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCgowMDoxMy4z
+IFVTQiBDb250cm9sbGVyOiBBVEkgVGVjaG5vbG9naWVzIEluYyBTQjYwMCBVU0IgKE9IQ0kz
+KSAocHJvZy1pZiAxMCBbT0hDSV0pCglTdWJzeXN0ZW06IE1pY3JvLVN0YXIgSW50ZXJuYXRp
+b25hbCBDby4sIEx0ZC4gRGV2aWNlIDczMjcKCUNvbnRyb2w6IEkvTysgTWVtKyBCdXNNYXN0
+ZXIrIFNwZWNDeWNsZS0gTWVtV0lOVisgVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNF
+UlIrIEZhc3RCMkItIERpc0lOVHgtCglTdGF0dXM6IENhcC0gNjZNSHorIFVERi0gRmFzdEIy
+QisgUGFyRXJyLSBERVZTRUw9bWVkaXVtID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQtID5T
+RVJSLSA8UEVSUi0gSU5UeC0KCUxhdGVuY3k6IDY0LCBDYWNoZSBMaW5lIFNpemU6IDY0IGJ5
+dGVzCglJbnRlcnJ1cHQ6IHBpbiBCIHJvdXRlZCB0byBJUlEgMTcKCVJlZ2lvbiAwOiBNZW1v
+cnkgYXQgZmU4ZmIwMDAgKDMyLWJpdCwgbm9uLXByZWZldGNoYWJsZSkgW3NpemU9NEtdCglL
+ZXJuZWwgZHJpdmVyIGluIHVzZTogb2hjaV9oY2QKMDA6IDAyIDEwIDhhIDQzIDE3IDAxIGEw
+IDAyIDAwIDEwIDAzIDBjIDEwIDQwIDAwIDAwCjEwOiAwMCBiMCA4ZiBmZSAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAoyMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgNjIgMTQgMjcgNzMKMzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAzIDAyIDAwIDAwCjQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMAo1MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAKNjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwCjcwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMAo4MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAKOTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCmEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMApiMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKYzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCmQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MAplMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+ZjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCgow
+MDoxMy40IFVTQiBDb250cm9sbGVyOiBBVEkgVGVjaG5vbG9naWVzIEluYyBTQjYwMCBVU0Ig
+KE9IQ0k0KSAocHJvZy1pZiAxMCBbT0hDSV0pCglTdWJzeXN0ZW06IE1pY3JvLVN0YXIgSW50
+ZXJuYXRpb25hbCBDby4sIEx0ZC4gRGV2aWNlIDczMjcKCUNvbnRyb2w6IEkvTysgTWVtKyBC
+dXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVtV0lOVisgVkdBU25vb3AtIFBhckVyci0gU3RlcHBp
+bmctIFNFUlIrIEZhc3RCMkItIERpc0lOVHgtCglTdGF0dXM6IENhcC0gNjZNSHorIFVERi0g
+RmFzdEIyQisgUGFyRXJyLSBERVZTRUw9bWVkaXVtID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJv
+cnQtID5TRVJSLSA8UEVSUi0gSU5UeC0KCUxhdGVuY3k6IDY0LCBDYWNoZSBMaW5lIFNpemU6
+IDY0IGJ5dGVzCglJbnRlcnJ1cHQ6IHBpbiBDIHJvdXRlZCB0byBJUlEgMTgKCVJlZ2lvbiAw
+OiBNZW1vcnkgYXQgZmU4ZmEwMDAgKDMyLWJpdCwgbm9uLXByZWZldGNoYWJsZSkgW3NpemU9
+NEtdCglLZXJuZWwgZHJpdmVyIGluIHVzZTogb2hjaV9oY2QKMDA6IDAyIDEwIDhiIDQzIDE3
+IDAxIGEwIDAyIDAwIDEwIDAzIDBjIDEwIDQwIDAwIDAwCjEwOiAwMCBhMCA4ZiBmZSAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAoyMDogMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgNjIgMTQgMjcgNzMKMzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDBhIDAzIDAwIDAwCjQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo1MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwCjcwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMAo4MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAKOTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwCmEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMApiMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAKYzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCmQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMAplMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKZjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCgowMDoxMy41IFVTQiBDb250cm9sbGVyOiBBVEkgVGVjaG5vbG9naWVzIEluYyBTQjYw
+MCBVU0IgQ29udHJvbGxlciAoRUhDSSkgKHByb2ctaWYgMjAgW0VIQ0ldKQoJU3Vic3lzdGVt
+OiBNaWNyby1TdGFyIEludGVybmF0aW9uYWwgQ28uLCBMdGQuIERldmljZSA3MzI3CglDb250
+cm9sOiBJL08rIE1lbSsgQnVzTWFzdGVyKyBTcGVjQ3ljbGUtIE1lbVdJTlYrIFZHQVNub29w
+LSBQYXJFcnItIFN0ZXBwaW5nLSBTRVJSKyBGYXN0QjJCLSBEaXNJTlR4LQoJU3RhdHVzOiBD
+YXArIDY2TUh6KyBVREYtIEZhc3RCMkIrIFBhckVyci0gREVWU0VMPW1lZGl1bSA+VEFib3J0
+LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCglMYXRlbmN5OiA2NCwg
+Q2FjaGUgTGluZSBTaXplOiA2NCBieXRlcwoJSW50ZXJydXB0OiBwaW4gRCByb3V0ZWQgdG8g
+SVJRIDE5CglSZWdpb24gMDogTWVtb3J5IGF0IGZlOGZmMDAwICgzMi1iaXQsIG5vbi1wcmVm
+ZXRjaGFibGUpIFtzaXplPTI1Nl0KCUNhcGFiaWxpdGllczogW2MwXSBQb3dlciBNYW5hZ2Vt
+ZW50IHZlcnNpb24gMgoJCUZsYWdzOiBQTUVDbGstIERTSS0gRDErIEQyKyBBdXhDdXJyZW50
+PTBtQSBQTUUoRDArLEQxKyxEMissRDNob3QrLEQzY29sZC0pCgkJU3RhdHVzOiBEMCBQTUUt
+RW5hYmxlLSBEU2VsPTAgRFNjYWxlPTAgUE1FLQoJCUJyaWRnZTogUE0tIEIzKwoJQ2FwYWJp
+bGl0aWVzOiBbZTRdIERlYnVnIHBvcnQ6IEJBUj0xIG9mZnNldD0wMGUwCglLZXJuZWwgZHJp
+dmVyIGluIHVzZTogZWhjaV9oY2QKMDA6IDAyIDEwIDg2IDQzIDE3IDAxIGIwIDAyIDAwIDIw
+IDAzIDBjIDEwIDQwIDAwIDAwCjEwOiAwMCBmMCA4ZiBmZSAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMAoyMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgNjIgMTQgMjcgNzMKMzA6IDAwIDAwIDAwIDAwIGMwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDBhIDA0IDAwIDAwCjQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMAo1MDogNDAgMDAgMGUgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAKNjA6IDIwIDIwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwCjcwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMAo4MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAKOTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+CmEwOiAwMSAwMCAwMCAwMCAwMCAwMCAwOCBjMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApi
+MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYzA6
+IDAxIGU0IDAyIDdlIDAwIDAwIDQwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmQwOiAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAplMDogMDAg
+MDAgMDAgMDAgMGEgMDAgZTAgMjAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZjA6IDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCgowMDoxNC4wIFNN
+QnVzOiBBVEkgVGVjaG5vbG9naWVzIEluYyBTQngwMCBTTUJ1cyBDb250cm9sbGVyIChyZXYg
+MTQpCglTdWJzeXN0ZW06IE1pY3JvLVN0YXIgSW50ZXJuYXRpb25hbCBDby4sIEx0ZC4gRGV2
+aWNlIDczMjcKCUNvbnRyb2w6IEkvTysgTWVtLSBCdXNNYXN0ZXItIFNwZWNDeWNsZS0gTWVt
+V0lOVi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZhc3RCMkItIERpc0lO
+VHgrCglTdGF0dXM6IENhcCsgNjZNSHorIFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9
+bWVkaXVtID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQtID5TRVJSLSA8UEVSUi0gSU5UeC0K
+CVJlZ2lvbiAwOiBJL08gcG9ydHMgYXQgMGIwMCBbc2l6ZT0xNl0KCUNhcGFiaWxpdGllczog
+W2IwXSBIeXBlclRyYW5zcG9ydDogTVNJIE1hcHBpbmcgRW5hYmxlLSBGaXhlZCsKCUtlcm5l
+bCBkcml2ZXIgaW4gdXNlOiBwaWl4NF9zbWJ1cwowMDogMDIgMTAgODUgNDMgMDEgMDQgMzAg
+MDIgMTQgMDAgMDUgMGMgMDAgMDAgODAgMDAKMTA6IDAxIDBiIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCA2MiAxNCAyNyA3MwozMDogMDAgMDAgMDAgMDAgYjAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAKNDA6IGQ0IDJiIDAwIDA1IDAwIDAwIDAwIDAwIDBmIGZm
+IDAwIDAwIDAwIDAwIDAwIDAwCjUwOiAxMCAwMSAwMCAwMCAwMCAwMCA4MCAwOCAxMSAwYiBm
+MCAwZiAwMCAwMCAwMCAwMAo2MDogMDEgMDAgMjQgMDAgYmYgZmQgOWUgODMgM2YgOTAgMDAg
+MDAgMjAgMDAgMDAgMDAKNzA6IDAwIDAxIDAwIDAwIDA4IDAwIGMwIGZlIGZmIDJlIDAwIDAw
+IDAwIDAwIGYwIDBmCjgwOiBmNCAwYSBmMCAwZiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCA4
+YyAwMCAwMCA4MAo5MDogMDEgMGIgMDAgMDAgM2IgZGUgZmYgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAKYTA6IDAwIDAwIGZmIGZmIGZmIGZmIGYwIDA4IDAyIGYwIDAyIDAwIDE2IDc5
+IDAwIDE4CmIwOiAwOCAwMCAwMiBhOCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCBmMCAwZiAw
+OCAxYQpjMDogZmYgZmYgZmYgZmYgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAKZDA6IDAwIDAwIDAxIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+CmUwOiAyMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApm
+MDogZDggMGMgMDAgMDAgMDAgMDAgNDQgMDAgMDAgMDAgMDAgMDAgYWEgMDAgMTAgMDEKCjAw
+OjE0LjEgSURFIGludGVyZmFjZTogQVRJIFRlY2hub2xvZ2llcyBJbmMgU0I2MDAgSURFIChw
+cm9nLWlmIDhhIFtNYXN0ZXIgU2VjUCBQcmlQXSkKCVN1YnN5c3RlbTogTWljcm8tU3RhciBJ
+bnRlcm5hdGlvbmFsIENvLiwgTHRkLiBEZXZpY2UgNzMyNwoJQ29udHJvbDogSS9PKyBNZW0t
+IEJ1c01hc3RlcisgU3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9vcC0gUGFyRXJyLSBTdGVw
+cGluZy0gU0VSUi0gRmFzdEIyQi0gRGlzSU5UeC0KCVN0YXR1czogQ2FwLSA2Nk1IeisgVURG
+LSBGYXN0QjJCLSBQYXJFcnItIERFVlNFTD1tZWRpdW0gPlRBYm9ydC0gPFRBYm9ydC0gPE1B
+Ym9ydC0gPlNFUlItIDxQRVJSLSBJTlR4LQoJTGF0ZW5jeTogNjQKCUludGVycnVwdDogcGlu
+IEEgcm91dGVkIHRvIElSUSAxNgoJUmVnaW9uIDA6IEkvTyBwb3J0cyBhdCAwMWYwIFtzaXpl
+PThdCglSZWdpb24gMTogSS9PIHBvcnRzIGF0IDAzZjQgW3NpemU9MV0KCVJlZ2lvbiAyOiBJ
+L08gcG9ydHMgYXQgMDE3MCBbc2l6ZT04XQoJUmVnaW9uIDM6IEkvTyBwb3J0cyBhdCAwMzc0
+IFtzaXplPTFdCglSZWdpb24gNDogSS9PIHBvcnRzIGF0IGZmMDAgW3NpemU9MTZdCglLZXJu
+ZWwgZHJpdmVyIGluIHVzZTogcGF0YV9hdGlpeHAKMDA6IDAyIDEwIDhjIDQzIDA1IDAwIDIw
+IDAyIDAwIDhhIDAxIDAxIDAwIDQwIDAwIDAwCjEwOiAwMSAwMCAwMCAwMCAwMSAwMCAwMCAw
+MCAwMSAwMCAwMCAwMCAwMSAwMCAwMCAwMAoyMDogMDEgZmYgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgNjIgMTQgMjcgNzMKMzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAxIDAwIDAwCjQwOiA1ZCAyMCAwMCAwMCBmZiAyMCAwMCAwMCAwMCAw
+MCAwNCAwMCAwMCAwMCAwMCAwMAo1MDogMDAgMDAgMDAgMDAgMDAgMDAgMDIgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAKNjA6IDAwIDAwIDQwIDAwIDEwIDJjIDAxIDA3IDAxIDAwIDAw
+IDAwIGZmIGZmIDBmIDAwCjcwOiAwNSAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMAo4MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAKOTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCmEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMApiMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKYzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCmQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MAplMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+ZjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCgow
+MDoxNC4yIEF1ZGlvIGRldmljZTogQVRJIFRlY2hub2xvZ2llcyBJbmMgU0J4MDAgQXphbGlh
+CglTdWJzeXN0ZW06IE1pY3JvLVN0YXIgSW50ZXJuYXRpb25hbCBDby4sIEx0ZC4gRGV2aWNl
+IDczMjcKCUNvbnRyb2w6IEkvTy0gTWVtKyBCdXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVtV0lO
+Vi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZhc3RCMkItIERpc0lOVHgt
+CglTdGF0dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9c2xv
+dyA+VEFib3J0LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCglMYXRl
+bmN5OiA2NCwgQ2FjaGUgTGluZSBTaXplOiA2NCBieXRlcwoJSW50ZXJydXB0OiBwaW4gPyBy
+b3V0ZWQgdG8gSVJRIDE2CglSZWdpb24gMDogTWVtb3J5IGF0IGZlOGY0MDAwICg2NC1iaXQs
+IG5vbi1wcmVmZXRjaGFibGUpIFtzaXplPTE2S10KCUNhcGFiaWxpdGllczogWzUwXSBQb3dl
+ciBNYW5hZ2VtZW50IHZlcnNpb24gMgoJCUZsYWdzOiBQTUVDbGstIERTSS0gRDEtIEQyLSBB
+dXhDdXJyZW50PTU1bUEgUE1FKEQwKyxEMS0sRDItLEQzaG90KyxEM2NvbGQrKQoJCVN0YXR1
+czogRDAgUE1FLUVuYWJsZS0gRFNlbD0wIERTY2FsZT0wIFBNRS0KCUtlcm5lbCBkcml2ZXIg
+aW4gdXNlOiBIREEgSW50ZWwKMDA6IDAyIDEwIDgzIDQzIDA2IDAwIDEwIDA0IDAwIDAwIDAz
+IDA0IDEwIDQwIDAwIDAwCjEwOiAwNCA0MCA4ZiBmZSAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMAoyMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+NjIgMTQgMjcgNzMKMzA6IDAwIDAwIDAwIDAwIDUwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDA1
+IDAwIDAwIDAwCjQwOiAwMCAwMCAwMiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMSAw
+MCAwMCAwMAo1MDogMDEgMDAgNDIgYzggMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKNjA6IDA1IDAwIDgwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCjcwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MAo4MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+OTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmEw
+OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApiMDog
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYzA6IDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmQwOiAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAplMDogMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZjA6IDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCgowMDoxNC4zIElTQSBi
+cmlkZ2U6IEFUSSBUZWNobm9sb2dpZXMgSW5jIFNCNjAwIFBDSSB0byBMUEMgQnJpZGdlCglT
+dWJzeXN0ZW06IE1pY3JvLVN0YXIgSW50ZXJuYXRpb25hbCBDby4sIEx0ZC4gRGV2aWNlIDcz
+MjcKCUNvbnRyb2w6IEkvTysgTWVtKyBCdXNNYXN0ZXIrIFNwZWNDeWNsZSsgTWVtV0lOVi0g
+VkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZhc3RCMkItIERpc0lOVHgtCglT
+dGF0dXM6IENhcC0gNjZNSHorIFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9bWVkaXVt
+ID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQtID5TRVJSLSA8UEVSUi0gSU5UeC0KCUxhdGVu
+Y3k6IDAKMDA6IDAyIDEwIDhkIDQzIDBmIDAwIDIwIDAyIDAwIDAwIDAxIDA2IDAwIDAwIDgw
+IDAwCjEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MAoyMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgNjIgMTQgMjcgNzMK
+MzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjQw
+OiAwNCAwMCAwMCAwMCAwMyBjMCBjMyBmNyAwNyBmZiA0MiAwMCAwMCAwMCAwMCAwMAo1MDog
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNjA6IDAw
+IDAwIDAwIDAwIDAwIDBlIDAwIDAwIDBlIDAwIDBmIDAwIGY4IGZmIGZmIGZmCjcwOiA2NyA0
+NSAyMyAwMSAwMCAwMCAwMCAwMCAwMSAwMCAwMCAwMCAwNSAwMCAwMCAwMAo4MDogMDggMDAg
+MDMgYTggMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKOTA6IDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmEwOiAwMCAwMSBjMCBm
+ZSAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApiMDogMDEgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYzA6IDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmQwOiAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAplMDogMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCgowMDoxNC40IFBDSSBicmlkZ2U6IEFUSSBU
+ZWNobm9sb2dpZXMgSW5jIFNCeDAwIFBDSSB0byBQQ0kgQnJpZGdlIChwcm9nLWlmIDAxIFtT
+dWJ0cmFjdGl2ZSBkZWNvZGVdKQoJQ29udHJvbDogSS9PKyBNZW0tIEJ1c01hc3RlcisgU3Bl
+Y0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9vcC0gUGFyRXJyLSBTdGVwcGluZy0gU0VSUisgRmFz
+dEIyQi0gRGlzSU5UeC0KCVN0YXR1czogQ2FwLSA2Nk1IeisgVURGLSBGYXN0QjJCKyBQYXJF
+cnItIERFVlNFTD1tZWRpdW0gPlRBYm9ydC0gPFRBYm9ydC0gPE1BYm9ydC0gPlNFUlItIDxQ
+RVJSLSBJTlR4LQoJTGF0ZW5jeTogNjQKCUJ1czogcHJpbWFyeT0wMCwgc2Vjb25kYXJ5PTAz
+LCBzdWJvcmRpbmF0ZT0wMywgc2VjLWxhdGVuY3k9NjQKCVNlY29uZGFyeSBzdGF0dXM6IDY2
+TUh6LSBGYXN0QjJCKyBQYXJFcnItIERFVlNFTD1tZWRpdW0gPlRBYm9ydC0gPFRBYm9ydC0g
+PE1BYm9ydCsgPFNFUlItIDxQRVJSLQoJQnJpZGdlQ3RsOiBQYXJpdHkrIFNFUlIrIE5vSVNB
+LSBWR0EtIE1BYm9ydC0gPlJlc2V0LSBGYXN0QjJCLQoJCVByaURpc2NUbXItIFNlY0Rpc2NU
+bXItIERpc2NUbXJTdGF0LSBEaXNjVG1yU0VSUkVuLQowMDogMDIgMTAgODQgNDMgMDUgMDEg
+YTAgMDIgMDAgMDEgMDQgMDYgMDAgNDAgODEgMDAKMTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAzIDAzIDQwIGYwIDAwIDgwIDIyCjIwOiBmMCBmZiAwMCAwMCBmMCBmZiAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAozMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDMgMDAKNDA6IDI2IDAwIDBjIGZmIDAwIDAwIDAwIDAwIDBj
+IDAxIDNmIGQxIDAwIDAxIDAwIDAwCjUwOiAwMSAwMCAwMCAwMCAwOCAwMCAwMyBhOCAwMCAw
+MCAwMCAwMCA4NSAwMCBmZiBmZgo2MDogY2EgMGUgMTcgMDAgYmEgMTggMTAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAKNzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwCjgwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMAo5MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAKYTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCmIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMApjMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKZDA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAxIDAwIDAy
+IDA2CmUwOiAwMCAwMCA4MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MApmMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+CjAwOjE4LjAgSG9zdCBicmlkZ2U6IEFkdmFuY2VkIE1pY3JvIERldmljZXMgW0FNRF0gSzgg
+W0F0aGxvbjY0L09wdGVyb25dIEh5cGVyVHJhbnNwb3J0IFRlY2hub2xvZ3kgQ29uZmlndXJh
+dGlvbgoJQ29udHJvbDogSS9PLSBNZW0tIEJ1c01hc3Rlci0gU3BlY0N5Y2xlLSBNZW1XSU5W
+LSBWR0FTbm9vcC0gUGFyRXJyLSBTdGVwcGluZy0gU0VSUi0gRmFzdEIyQi0gRGlzSU5UeC0K
+CVN0YXR1czogQ2FwKyA2Nk1Iei0gVURGLSBGYXN0QjJCLSBQYXJFcnItIERFVlNFTD1mYXN0
+ID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQtID5TRVJSLSA8UEVSUi0gSU5UeC0KCUNhcGFi
+aWxpdGllczogWzgwXSBIeXBlclRyYW5zcG9ydDogSG9zdCBvciBTZWNvbmRhcnkgSW50ZXJm
+YWNlCgkJISEhIFBvc3NpYmx5IGluY29tcGxldGUgZGVjb2RpbmcKCQlDb21tYW5kOiBXYXJt
+UnN0KyBEYmxFbmQtCgkJTGluayBDb250cm9sOiBDRmxFLSBDU1QtIENGRS0gPExrRmFpbC0g
+SW5pdCsgRU9DLSBUWE8tIDxDUkNFcnI9MAoJCUxpbmsgQ29uZmlnOiBNTFdJPTE2Yml0IE1M
+V089MTZiaXQgTFdJPTE2Yml0IExXTz0xNmJpdAoJCVJldmlzaW9uIElEOiAxLjAyCjAwOiAy
+MiAxMCAwMCAxMSAwMCAwMCAxMCAwMCAwMCAwMCAwMCAwNiAwMCAwMCA4MCAwMAoxMDogMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMjA6IDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjMwOiAwMCAwMCAw
+MCAwMCA4MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo0MDogMDEgMDEgMDEg
+MDAgMDEgMDEgMDEgMDAgMDEgMDEgMDEgMDAgMDEgMDEgMDEgMDAKNTA6IDAxIDAxIDAxIDAw
+IDAxIDAxIDAxIDAwIDAxIDAxIDAxIDAwIDAxIDAxIDAxIDAwCjYwOiAwMCAwMCAwMSAwMCBl
+NCAwMCAwMCAwMCAyMCBjOCAyZiAwZiAyYyAwMCAwMCAwMAo3MDogMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKODA6IDA4IDAwIDAxIDIxIDIwIDAw
+IDExIDExIDIyIDA2IDc1IDgwIDAyIDAwIDAwIDAwCjkwOiA3OCAwMSA3MCAwMSAwMCAwMCBm
+ZiAwMCAwNyAwMCAwMCAwMCAwMCAwMCAwMCAwMAphMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmMwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMApkMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAKZTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwCmYwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMAoKMDA6MTguMSBIb3N0IGJyaWRnZTogQWR2YW5jZWQgTWljcm8g
+RGV2aWNlcyBbQU1EXSBLOCBbQXRobG9uNjQvT3B0ZXJvbl0gQWRkcmVzcyBNYXAKCUNvbnRy
+b2w6IEkvTy0gTWVtLSBCdXNNYXN0ZXItIFNwZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25vb3At
+IFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZhc3RCMkItIERpc0lOVHgtCglTdGF0dXM6IENh
+cC0gNjZNSHotIFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9ZmFzdCA+VEFib3J0LSA8
+VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCjAwOiAyMiAxMCAwMSAxMSAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwNiAwMCAwMCA4MCAwMAoxMDogMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMjA6IDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjMwOiAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo0MDogMDMgMDAgMDAgMDAgMDAgMDAgN2Yg
+MDAgMDAgMDAgMDAgMDAgMDEgMDAgMDAgMDAKNTA6IDAwIDAwIDAwIDAwIDAyIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAzIDAwIDAwIDAwCjYwOiAwMCAwMCAwMCAwMCAwNCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwNSAwMCAwMCAwMAo3MDogMDAgMDAgMDAgMDAgMDYgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDcgMDAgMDAgMDAKODA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwCjkwOiAwMyAwMCBmMCAwMCA4MCBmZSBmNyAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMAphMDogMDMgMDAgZTAgMDAgODAgZmYgZWYgMDAgMDMgMDAgODAg
+MDAgMDAgZmYgZGYgMDAKYjA6IDAzIDBhIDAwIDAwIDAwIDBiIDAwIDAwIDAzIGZmIGY3IDAw
+IDAwIGZmIGZmIDAwCmMwOiAxMyAxMCAwMCAwMCAwMCBmMCBmZiAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMApkMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAKZTA6IDAzIDAwIDAwIGZmIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwCmYwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMAoKMDA6MTguMiBIb3N0IGJyaWRnZTogQWR2YW5jZWQgTWljcm8gRGV2aWNlcyBbQU1E
+XSBLOCBbQXRobG9uNjQvT3B0ZXJvbl0gRFJBTSBDb250cm9sbGVyCglDb250cm9sOiBJL08t
+IE1lbS0gQnVzTWFzdGVyLSBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29wLSBQYXJFcnIt
+IFN0ZXBwaW5nLSBTRVJSLSBGYXN0QjJCLSBEaXNJTlR4LQoJU3RhdHVzOiBDYXAtIDY2TUh6
+LSBVREYtIEZhc3RCMkItIFBhckVyci0gREVWU0VMPWZhc3QgPlRBYm9ydC0gPFRBYm9ydC0g
+PE1BYm9ydC0gPlNFUlItIDxQRVJSLSBJTlR4LQowMDogMjIgMTAgMDIgMTEgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDYgMDAgMDAgODAgMDAKMTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMAozMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAKNDA6IDAxIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwCjUwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMAo2MDogZTAgM2YgNzggMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAKNzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDQ2IDAwIDAwIDAw
+IDAwIDAwIDAwIDAwCjgwOiAwNSAwMCAwMCAwMCAwMCAwMCAwMCAwMCAzNCBjMiA2YSA1ZCAy
+MCAxMyAyMiAwMAo5MDogMTAgMGMgMDEgMDAgNWEgMDAgNTAgNjcgMTAgMDAgMDAgODAgMzEg
+MDAgMDAgMDAKYTA6IGVmIDAyIDAwIDVkIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwCmIwOiA0NyAyZiAwNSAyYiBiMyAwMCAwMCAwMCBmYSA4ZiA4YSA4MCAyZSAyMiAw
+NyAwMgpjMDogMDAgMDAgMDIgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAKZDA6IGUzIGE4IGMwIGM3IDYyIDVkIDQyIGI4IDFkIDI1IDU2IDhhIDUwIDhjIDFjIGQx
+CmUwOiA2MCAzYSBhOSAyOCA3YiBjYiAxZSBmNSAwOCBhMyBiMyA2YSAyNCAyOSA4YyA0OApm
+MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKCjAw
+OjE4LjMgSG9zdCBicmlkZ2U6IEFkdmFuY2VkIE1pY3JvIERldmljZXMgW0FNRF0gSzggW0F0
+aGxvbjY0L09wdGVyb25dIE1pc2NlbGxhbmVvdXMgQ29udHJvbAoJQ29udHJvbDogSS9PLSBN
+ZW0tIEJ1c01hc3Rlci0gU3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9vcC0gUGFyRXJyLSBT
+dGVwcGluZy0gU0VSUi0gRmFzdEIyQi0gRGlzSU5UeC0KCVN0YXR1czogQ2FwKyA2Nk1Iei0g
+VURGLSBGYXN0QjJCLSBQYXJFcnItIERFVlNFTD1mYXN0ID5UQWJvcnQtIDxUQWJvcnQtIDxN
+QWJvcnQtID5TRVJSLSA8UEVSUi0gSU5UeC0KCUNhcGFiaWxpdGllczogW2YwXSBTZWN1cmUg
+ZGV2aWNlIDw/PgoJS2VybmVsIGRyaXZlciBpbiB1c2U6IGs4dGVtcAowMDogMjIgMTAgMDMg
+MTEgMDAgMDAgMTAgMDAgMDAgMDAgMDAgMDYgMDAgMDAgODAgMDAKMTA6IDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjIwOiAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAozMDogMDAgMDAgMDAgMDAgZjAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNDA6IGZmIDNiIDA0IDAwIDQwIDAw
+IDEwIDBhIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjUwOiAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCBjMCBmYiBkYiAzYQo2MDogZjQgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNzA6IDExIDAxIDMyIDUxIDIxIDQwIDcwIDUw
+IDAwIDJhIDAwIDA4IDE3IDIxIDAwIDAwCjgwOiAwMCAzNyAwNyAyMyAxMyAyMSAxMyAyMSAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo5MDogMDAgMDAgMDAgMDAgOTMgMzkgMDAgMDAgOTAg
+M2EgNGUgYjIgMDAgMDAgMDAgMDAKYTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwCmIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMApjMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAKZDA6IDAwIDAwIDAwIDAwIDAxIGE3IDBkIDAwIDAwIDAwIDYwIDA4
+IDI1IDI2IDI2IDAwCmUwOiAwMCAwMCAwMCAwMCAyNCAxNiA0ZCAwMCAxOSAxNyAwMCAwMCAw
+MCAwMCAwMCAwMApmMDogMGYgMDAgMTAgMDAgMDAgMDQgMDAgMDAgMDIgMDAgMDAgMDAgMzMg
+MGYgMDQgMDAKCjAxOjA1LjAgVkdBIGNvbXBhdGlibGUgY29udHJvbGxlcjogQVRJIFRlY2hu
+b2xvZ2llcyBJbmMgUlM2OTAgW1JhZGVvbiBYMTIwMCBTZXJpZXNdIChwcm9nLWlmIDAwIFtW
+R0EgY29udHJvbGxlcl0pCglTdWJzeXN0ZW06IE1pY3JvLVN0YXIgSW50ZXJuYXRpb25hbCBD
+by4sIEx0ZC4gRGV2aWNlIDczMjcKCUNvbnRyb2w6IEkvTysgTWVtKyBCdXNNYXN0ZXIrIFNw
+ZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlIrIEZh
+c3RCMkItIERpc0lOVHgtCglTdGF0dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQi0gUGFy
+RXJyLSBERVZTRUw9ZmFzdCA+VEFib3J0LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBF
+UlItIElOVHgtCglMYXRlbmN5OiA2NCwgQ2FjaGUgTGluZSBTaXplOiA2NCBieXRlcwoJSW50
+ZXJydXB0OiBwaW4gQSByb3V0ZWQgdG8gSVJRIDE4CglSZWdpb24gMDogTWVtb3J5IGF0IGYw
+MDAwMDAwICg2NC1iaXQsIHByZWZldGNoYWJsZSkgW3NpemU9MTI4TV0KCVJlZ2lvbiAyOiBN
+ZW1vcnkgYXQgZmVhZjAwMDAgKDY0LWJpdCwgbm9uLXByZWZldGNoYWJsZSkgW3NpemU9NjRL
+XQoJUmVnaW9uIDQ6IEkvTyBwb3J0cyBhdCBkMDAwIFtzaXplPTI1Nl0KCVJlZ2lvbiA1OiBN
+ZW1vcnkgYXQgZmU5MDAwMDAgKDMyLWJpdCwgbm9uLXByZWZldGNoYWJsZSkgW3NpemU9MU1d
+CglDYXBhYmlsaXRpZXM6IFs1MF0gUG93ZXIgTWFuYWdlbWVudCB2ZXJzaW9uIDIKCQlGbGFn
+czogUE1FQ2xrLSBEU0ktIEQxKyBEMisgQXV4Q3VycmVudD0wbUEgUE1FKEQwLSxEMS0sRDIt
+LEQzaG90LSxEM2NvbGQtKQoJCVN0YXR1czogRDAgUE1FLUVuYWJsZS0gRFNlbD0wIERTY2Fs
+ZT0wIFBNRS0KCUNhcGFiaWxpdGllczogWzgwXSBNZXNzYWdlIFNpZ25hbGxlZCBJbnRlcnJ1
+cHRzOiBNYXNrLSA2NGJpdCsgUXVldWU9MC8wIEVuYWJsZS0KCQlBZGRyZXNzOiAwMDAwMDAw
+MDAwMDAwMDAwICBEYXRhOiAwMDAwCjAwOiAwMiAxMCAxZSA3OSAwNyAwMSAxMCAwMCAwMCAw
+MCAwMCAwMyAxMCA0MCAwMCAwMAoxMDogMGMgMDAgMDAgZjAgMDAgMDAgMDAgMDAgMDQgMDAg
+YWYgZmUgMDAgMDAgMDAgMDAKMjA6IDAxIGQwIDAwIDAwIDAwIDAwIDkwIGZlIDAwIDAwIDAw
+IDAwIDYyIDE0IDI3IDczCjMwOiAwMCAwMCAwMCAwMCA1MCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwYSAwMSAwMCAwMAo0MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+NjIgMTQgMjcgNzMKNTA6IDAxIDgwIDAyIDA2IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCjYwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMAo3MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKODA6IDA1IDAwIDgwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCjkwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MAphMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+YjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmMw
+OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApkMDog
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZTA6IDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmYwOiAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAoKMDI6MDAuMCBF
+dGhlcm5ldCBjb250cm9sbGVyOiBSZWFsdGVrIFNlbWljb25kdWN0b3IgQ28uLCBMdGQuIFJU
+TDgxMDFFIFBDSSBFeHByZXNzIEZhc3QgRXRoZXJuZXQgY29udHJvbGxlciAocmV2IDAxKQoJ
+U3Vic3lzdGVtOiBNaWNyby1TdGFyIEludGVybmF0aW9uYWwgQ28uLCBMdGQuIERldmljZSAz
+MjdjCglDb250cm9sOiBJL08rIE1lbSsgQnVzTWFzdGVyKyBTcGVjQ3ljbGUtIE1lbVdJTlYt
+IFZHQVNub29wLSBQYXJFcnItIFN0ZXBwaW5nLSBTRVJSKyBGYXN0QjJCLSBEaXNJTlR4LQoJ
+U3RhdHVzOiBDYXArIDY2TUh6LSBVREYtIEZhc3RCMkItIFBhckVyci0gREVWU0VMPWZhc3Qg
+PlRBYm9ydC0gPFRBYm9ydC0gPE1BYm9ydC0gPlNFUlItIDxQRVJSLSBJTlR4LQoJTGF0ZW5j
+eTogMCwgQ2FjaGUgTGluZSBTaXplOiA2NCBieXRlcwoJSW50ZXJydXB0OiBwaW4gQSByb3V0
+ZWQgdG8gSVJRIDE5CglSZWdpb24gMDogSS9PIHBvcnRzIGF0IGU4MDAgW3NpemU9MjU2XQoJ
+UmVnaW9uIDI6IE1lbW9yeSBhdCBmZWJmZjAwMCAoNjQtYml0LCBub24tcHJlZmV0Y2hhYmxl
+KSBbc2l6ZT00S10KCUV4cGFuc2lvbiBST00gYXQgZmViYzAwMDAgW2Rpc2FibGVkXSBbc2l6
+ZT0xMjhLXQoJQ2FwYWJpbGl0aWVzOiBbNDBdIFBvd2VyIE1hbmFnZW1lbnQgdmVyc2lvbiAy
+CgkJRmxhZ3M6IFBNRUNsay0gRFNJLSBEMSsgRDIrIEF1eEN1cnJlbnQ9Mzc1bUEgUE1FKEQw
+LSxEMSssRDIrLEQzaG90KyxEM2NvbGQrKQoJCVN0YXR1czogRDAgUE1FLUVuYWJsZS0gRFNl
+bD0wIERTY2FsZT0wIFBNRS0KCUNhcGFiaWxpdGllczogWzQ4XSBWaXRhbCBQcm9kdWN0IERh
+dGEgPD8+CglDYXBhYmlsaXRpZXM6IFs1MF0gTWVzc2FnZSBTaWduYWxsZWQgSW50ZXJydXB0
+czogTWFzay0gNjRiaXQrIFF1ZXVlPTAvMSBFbmFibGUtCgkJQWRkcmVzczogMDAwMDAwMDAw
+MDAwMDAwMCAgRGF0YTogMDAwMAoJQ2FwYWJpbGl0aWVzOiBbNjBdIEV4cHJlc3MgKHYxKSBF
+bmRwb2ludCwgTVNJIDAwCgkJRGV2Q2FwOglNYXhQYXlsb2FkIDEyOCBieXRlcywgUGhhbnRG
+dW5jIDAsIExhdGVuY3kgTDBzIDwxdXMsIEwxIHVubGltaXRlZAoJCQlFeHRUYWcrIEF0dG5C
+dG4rIEF0dG5JbmQrIFB3ckluZCsgUkJFLSBGTFJlc2V0LQoJCURldkN0bDoJUmVwb3J0IGVy
+cm9yczogQ29ycmVjdGFibGUtIE5vbi1GYXRhbC0gRmF0YWwtIFVuc3VwcG9ydGVkLQoJCQlS
+bHhkT3JkLSBFeHRUYWctIFBoYW50RnVuYy0gQXV4UHdyLSBOb1Nub29wLQoJCQlNYXhQYXls
+b2FkIDEyOCBieXRlcywgTWF4UmVhZFJlcSAxMjggYnl0ZXMKCQlEZXZTdGE6CUNvcnJFcnIt
+IFVuY29yckVycisgRmF0YWxFcnItIFVuc3VwcFJlcSsgQXV4UHdyKyBUcmFuc1BlbmQtCgkJ
+TG5rQ2FwOglQb3J0ICMwLCBTcGVlZCAyLjVHVC9zLCBXaWR0aCB4MSwgQVNQTSBMMHMsIExh
+dGVuY3kgTDAgdW5saW1pdGVkLCBMMSB1bmxpbWl0ZWQKCQkJQ2xvY2tQTS0gU3VwcmlzZS0g
+TExBY3RSZXAtIEJ3Tm90LQoJCUxua0N0bDoJQVNQTSBEaXNhYmxlZDsgUkNCIDY0IGJ5dGVz
+IERpc2FibGVkLSBSZXRyYWluLSBDb21tQ2xrKwoJCQlFeHRTeW5jaC0gQ2xvY2tQTS0gQXV0
+V2lkRGlzLSBCV0ludC0gQXV0QldJbnQtCgkJTG5rU3RhOglTcGVlZCAyLjVHVC9zLCBXaWR0
+aCB4MSwgVHJFcnItIFRyYWluLSBTbG90Q2xrKyBETEFjdGl2ZS0gQldNZ210LSBBQldNZ210
+LQoJQ2FwYWJpbGl0aWVzOiBbODRdIFZlbmRvciBTcGVjaWZpYyBJbmZvcm1hdGlvbiA8Pz4K
+CUNhcGFiaWxpdGllczogWzEwMF0gQWR2YW5jZWQgRXJyb3IgUmVwb3J0aW5nIDw/PgoJQ2Fw
+YWJpbGl0aWVzOiBbMTJjXSBWaXJ0dWFsIENoYW5uZWwgPD8+CglDYXBhYmlsaXRpZXM6IFsx
+NDhdIERldmljZSBTZXJpYWwgTnVtYmVyIDM2LTgxLWVjLTEwLTAwLTAwLTEwLTAxCglDYXBh
+YmlsaXRpZXM6IFsxNTRdIFBvd2VyIEJ1ZGdldGluZyA8Pz4KCUtlcm5lbCBkcml2ZXIgaW4g
+dXNlOiByODE2OQowMDogZWMgMTAgMzYgODEgMDcgMDEgMTAgMDAgMDEgMDAgMDAgMDIgMTAg
+MDAgMDAgMDAKMTA6IDAxIGU4IDAwIDAwIDAwIDAwIDAwIDAwIDA0IGYwIGJmIGZlIDAwIDAw
+IDAwIDAwCjIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCA2MiAxNCA3
+YyAzMgozMDogMDAgMDAgYmMgZmUgNDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMGEgMDEgMDAg
+MDAKNDA6IDAxIDQ4IGMyIGY3IDAwIDAwIDAwIDAwIDAzIDUwIDAwIDAwIDAwIDAwIDAwIDAw
+CjUwOiAwNSA2MCA4MiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo2
+MDogMTAgODQgMDEgMDAgMjAgN2YgMDAgMDAgMDAgMDAgMWEgMDAgMTEgZjQgMDMgMDAKNzA6
+IDQwIDAwIDExIDEwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjgwOiAw
+MCAwMCAwMCAwMCAwOSAwMCA0YyAwMSAwMSAxYyAwMiAwMCBmYiBmZiBmZiAxMQo5MDogMDgg
+MzAgMDAgMDAgNDEgMGYgMDIgMDAgYmIgYTAgMGQgMDAgYmQgMDkgMDAgMDAKYTA6IDAyIDI4
+IGZmIDAxIDAwIDAwIDAwIDAwIDAwIDAxIDAwIDAwIDAzIDAwIDAzIDAwCmIwOiAwMCAwMCAw
+MCAwMCBmZiAzZiBmZiAzZiBmZiBmZiAwMCAwMCAwMCAwMCAwMCAwMApjMDogMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZDA6IDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmUwOiAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApmMDogMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMTAwOiAwMSAwMCBjMSAxMiAwMCAw
+MCAxMCAwMCAwMCAwMCAwMCAwMCAxMSAyMCAwNiAwMAoxMTA6IDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDE0IDAwIDAwIDAwIDAxIDAwIDAwIDA0CjEyMDogMDMgMDAgMDAgMDAgMDAgMDAg
+MDEgMDIgMTIgZTcgY2MgOTQgMDIgMDAgODEgMTQKMTMwOiAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAoxNDA6IGZmIDAwIDAwIDgwIDAwIDAwIDAw
+IDAwIDAzIDAwIDQxIDE1IDM2IDgxIGVjIDEwCjE1MDogMDAgMDAgMTAgMDEgMDQgMDAgMDEg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMTYwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAoxNzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjE4MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMTkwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMAoxYTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwCjFiMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAKMWMwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMAoxZDA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwCjFlMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAKMWYwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMAoyMDA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwCjIxMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAKMjIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMAoyMzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwCjI0MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAKMjUwOiAwMCAwMCAwMCAwMCAwNCAwMCAwMSAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMAoyNjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCjI3MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAKMjgwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMAoyOTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwCjJhMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKMmIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMAoyYzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCjJkMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAKMmUwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MAoyZjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+CjMwMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+MzEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAoz
+MjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjMz
+MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMzQw
+OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAozNTA6
+IDAwIDAwIDAwIDAwIDA0IDAwIDAxIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjM2MDog
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMzcwOiAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAozODA6IDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjM5MDogMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKM2EwOiAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAozYjA6IDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjNjMDogMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKM2QwOiAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAozZTA6IDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjNmMDogMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNDAwOiAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo0MTA6IDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjQyMDogMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNDMwOiAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo0NDA6IDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjQ1MDogMDAgMDAgMDAgMDAgMDQg
+MDAgMDEgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNDYwOiAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo0NzA6IDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjQ4MDogMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNDkwOiAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo0YTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjRiMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNGMwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo0ZDA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjRlMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNGYwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo1MDA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwCjUxMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAKNTIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMAo1MzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwCjU0MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAKNTUwOiAwMCAwMCAwMCAwMCAwNCAwMCAwMSAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMAo1NjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwCjU3MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAKNTgwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMAo1OTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwCjVhMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAKNWIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMAo1YzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCjVkMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAKNWUwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMAo1ZjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwCjYwMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKNjEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMAo2MjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCjYzMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAKNjQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MAo2NTA6IDAwIDAwIDAwIDAwIDA0IDAwIDAxIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+CjY2MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+NjcwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo2
+ODA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjY5
+MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNmEw
+OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo2YjA6
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjZjMDog
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNmQwOiAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo2ZTA6IDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjZmMDogMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNzAwOiAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo3MTA6IDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjcyMDogMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNzMwOiAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo3NDA6IDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjc1MDogMDAgMDAgMDAg
+MDAgMDQgMDAgMDEgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNzYwOiAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo3NzA6IDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjc4MDogMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKNzkwOiAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo3YTA6IDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjdiMDogMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKN2MwOiAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo3ZDA6IDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjdlMDogMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKN2YwOiAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo4MDA6IDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjgxMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKODIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo4MzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjg0MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKODUwOiAwMCAwMCAwMCAwMCAwNCAwMCAwMSAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo4NjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwCjg3MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAKODgwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMAo4OTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwCjhhMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAKOGIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMAo4YzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwCjhkMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAKOGUwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMAo4ZjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwCjkwMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAKOTEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMAo5MjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCjkzMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAKOTQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMAo5NTA6IDAwIDAwIDAwIDAwIDA0IDAwIDAxIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwCjk2MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKOTcwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMAo5ODA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCjk5MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAKOWEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MAo5YjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+CjljMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+OWQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo5
+ZTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjlm
+MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYTAw
+OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAphMTA6
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmEyMDog
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYTMwOiAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAphNDA6IDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmE1MDogMDAg
+MDAgMDAgMDAgMDQgMDAgMDEgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYTYwOiAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAphNzA6IDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmE4MDogMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYTkwOiAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAphYTA6IDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmFiMDogMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYWMwOiAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAphZDA6IDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmFlMDogMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYWYwOiAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApiMDA6IDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmIxMDogMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYjIwOiAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApiMzA6IDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmI0MDogMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYjUwOiAwMCAwMCAwMCAwMCAwNCAwMCAw
+MSAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApiNjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmI3MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYjgwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApiOTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmJhMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYmIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMApiYzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwCmJkMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAKYmUwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMApiZjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwCmMwMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAKYzEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMApjMjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwCmMzMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAKYzQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMApjNTA6IDAwIDAwIDAwIDAwIDA0IDAwIDAxIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwCmM2MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAKYzcwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMApjODA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCmM5MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAKY2EwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMApjYjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwCmNjMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAKY2QwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMApjZTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwCmNmMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAKZDAwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MApkMTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+CmQyMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
+ZDMwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApk
+NDA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmQ1
+MDogMDAgMDAgMDAgMDAgMDQgMDAgMDEgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZDYw
+OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApkNzA6
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmQ4MDog
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZDkwOiAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApkYTA6IDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmRiMDogMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZGMwOiAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMApkZDA6IDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmRlMDogMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZGYwOiAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAplMDA6IDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmUxMDogMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZTIwOiAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAplMzA6IDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmU0MDogMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZTUwOiAwMCAwMCAwMCAwMCAw
+NCAwMCAwMSAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAplNjA6IDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmU3MDogMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZTgwOiAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAplOTA6IDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmVhMDogMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZWIwOiAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAplYzA6IDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmVkMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZWUwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAplZjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmYwMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKZjEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMCAwMApmMjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwCmYzMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAgMDAKZjQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAwMApmNTA6IDAwIDAwIDAwIDAwIDA0IDAwIDAxIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwCmY2MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAgMDAKZjcwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMApmODA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwCmY5MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAgMDAKZmEwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMCAwMApmYjA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwCmZjMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgMDAKZmQwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
+MCAwMCAwMCAwMApmZTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwCmZmMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAKCg==
+--------------020809060602080107000006--
