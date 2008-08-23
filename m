@@ -1,60 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbYHWAWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbYHWAyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbYHWAWr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 20:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYHWAWi
+	id S1755332AbYHWAyb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 20:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbYHWAyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 20:22:38 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:40918 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753325AbYHWAWh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 20:22:37 -0400
-Date: Fri, 22 Aug 2008 14:22:35 -1000
-From: Joshua Hoblitt <j_kernel@hoblitt.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [Bug 11388] New: 2.6.27-rc3 warns about MTRR range; only 3 of
-	16gb of memory is usable
-Message-ID: <20080823002235.GL23377@hoblitt.com>
-References: <20080822002952.GG23377@hoblitt.com> <20080822010014.GH23377@hoblitt.com> <20080822011055.GI23377@hoblitt.com> <86802c440808211855h50ea65faudc169e48f83e18e2@mail.gmail.com> <20080822021512.GJ23377@hoblitt.com> <86802c440808211926k1ec5b2a2g2bec1b7faee7ebbb@mail.gmail.com> <86802c440808212024v3ccd2a7ey6517c180464275f0@mail.gmail.com> <20080822035024.GB30284@elte.hu> <20080822035609.GD30284@elte.hu> <86802c440808212148k74e56fa2mdb2e329ed4df1271@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440808212148k74e56fa2mdb2e329ed4df1271@mail.gmail.com>
+	Fri, 22 Aug 2008 20:54:22 -0400
+Received: from tau.jukie.net ([216.239.93.128]:50989 "EHLO tau.jukie.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751839AbYHWAyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 20:54:22 -0400
+From: Bart Trojanowski <bart@jukie.net>
+To: linux-kernel@vger.kernel.org
+Cc: Bart Trojanowski <bart@jukie.net>, trivial@kernel.org,
+       hirofumi@mail.parknet.co.jp
+Subject: [PATCH] document additional vfat mount options
+Date: Fri, 22 Aug 2008 20:54:19 -0400
+Message-Id: <1219452859-24960-1-git-send-email-bart@jukie.net>
+X-Mailer: git-send-email 1.5.6.1.109.ga974cd.dirty
+In-Reply-To: <20080820022712.GF28029@jukie.net>
+References: <20080820022712.GF28029@jukie.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've confirmed that the boards in these systems are Tyan Tempest i5400PW
-(S5397)s.  We've discovered a workload that will deadlock the system
-under both 2.6.24.2 and -tip kernel with the mtrr masking patch.  The
-only thing unusual about this workload is that one of the binaries in
-it constantly segvs...  Is it possible that these deadlocks (no kernel
-oops on console) are caused by MSR setup wierdness or is it likely unrelated?
+While debugging a sync mount regression on vfat I noticed that there
+were mount options parsed by the driver that were not documented.
 
--J
+Signed-off-by: Bart Trojanowski <bart@jukie.net>
+Cc: trivial@kernel.org
+Cc: hirofumi@mail.parknet.co.jp
+---
+ Documentation/filesystems/vfat.txt |   31 +++++++++++++++++++++++++++++--
+ 1 files changed, 29 insertions(+), 2 deletions(-)
 
---
-On Thu, Aug 21, 2008 at 09:48:41PM -0700, Yinghai Lu wrote:
-> On Thu, Aug 21, 2008 at 8:56 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> >> i've tidied up your patch (see the commit below) and have queued it up
-> >> in x86/urgent. It seems fairly safe and i guess we can push it to
-> >> v2.6.27 if Joshua reports test success. Joshua, could you give it a go
-> >> please?
-> >
-> > or just try the latest tip/master - please check whether you are getting
-> > the right amount of RAM out of box plus this warning message:
-> >
-> >> WARN_ON("mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
-> >
-> 
-> according to his dmesg, it works.
-> 
-> may need to change it to WARN_ON only print one time
-> 
-> YH
+diff --git a/Documentation/filesystems/vfat.txt b/Documentation/filesystems/vfat.txt
+index bbac4f1..4e26744 100644
+--- a/Documentation/filesystems/vfat.txt
++++ b/Documentation/filesystems/vfat.txt
+@@ -8,6 +8,14 @@ if you want to format from within Linux.
+ 
+ VFAT MOUNT OPTIONS
+ ----------------------------------------------------------------------
++uid=###       -- Explicitly set ownership of all files on this
++                 filesystem to this user ID number.  Default is to use
++                 the UID of the mounting process.
++
++gid=###       -- Explisitly set ownership of all files on thsi
++                 filesystem to this group ID number.  Default is to use
++                 the GID of the mounting process.
++
+ umask=###     -- The permission mask (for files and directories, see umask(1)).
+                  The default is the umask of current process.
+ 
+@@ -36,7 +44,7 @@ codepage=###  -- Sets the codepage number for converting to shortname
+ 		 characters on FAT filesystem.
+ 		 By default, FAT_DEFAULT_CODEPAGE setting is used.
+ 
+-iocharset=name -- Character set to use for converting between the
++iocharset=<name> -- Character set to use for converting between the
+ 		 encoding is used for user visible filename and 16 bit
+ 		 Unicode characters. Long filenames are stored on disk
+ 		 in Unicode format, but Unix for the most part doesn't
+@@ -86,6 +94,10 @@ check=s|r|n   -- Case sensitivity checking setting.
+                  r: relaxed, case insensitive
+                  n: normal, default setting, currently case insensitive
+ 
++nocase        -- If set, files and directories read from device will have
++                 their names converted to lowercase.  Not set by
++                 default.
++
+ shortname=lower|win95|winnt|mixed
+ 	      -- Shortname display/create setting.
+ 		 lower: convert to lowercase for display,
+@@ -99,11 +111,26 @@ shortname=lower|win95|winnt|mixed
+ tz=UTC        -- Interpret timestamps as UTC rather than local time.
+                  This option disables the conversion of timestamps
+                  between local time (as used by Windows on FAT) and UTC
+-                 (which Linux uses internally).  This is particuluarly
++                 (which Linux uses internally).  This is particularly
+                  useful when mounting devices (like digital cameras)
+                  that are set to UTC in order to avoid the pitfalls of
+                  local time.
+ 
++showexec      -- If set, files that end if .EXE, .COM, or .BAT will have
++                 the execute permission bits set.  Not set by default,
++                 in which case all files show up with the execute bits set.
++
++debug         -- Can be set, but unused by the current implementation.
++
++sys_immutable -- If set, all files on this filesystem which have the SYS
++                 attribute (DOS bit) set will become IMMUTABLE (inode flag)
++                 preventing write operations on these files.  Not set by
++                 default.
++
++flush         -- If set, modified inodes will be flushed to disk on file
++                 close system call.  This is ideal for USB connected
++                 devices.  Not set by default.
++
+ <bool>: 0,1,yes,no,true,false
+ 
+ TODO
+-- 
+1.6.0.rc0.43.gb0a469
+
