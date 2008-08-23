@@ -1,92 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbYHWIsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbYHWJJO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753476AbYHWIsV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 04:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYHWIsL
+	id S1753289AbYHWJJO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 05:09:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYHWJI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 04:48:11 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:61686 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751906AbYHWIsJ (ORCPT
+	Sat, 23 Aug 2008 05:08:57 -0400
+Received: from ausc60ps301.us.dell.com ([143.166.148.206]:63224 "EHLO
+	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752085AbYHWJI4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 04:48:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=WL9T+kyrcVvStps8uACK9NmemXpPb2uL9CZ1NGVC3sVISWQ/ZYMJa4ONAbp9+2cF1m
-         HfomavOE4lzL0wN2HU7ftepMMDYV+wvmTC0LTcI1uQdWBBCU2B0xw+zM63y9z+jzkGZU
-         AjfgPQR0TA3M7bku0qQm0R5eDBmibwksi32fU=
-Message-ID: <ef1cd66f0808230148u317eb063xac80a319414c9f33@mail.gmail.com>
-Date: Sat, 23 Aug 2008 09:48:08 +0100
-From: "=?ISO-8859-1?Q?Jochen_Vo=DF?=" <jochen.voss@googlemail.com>
-To: "Dominik Brodowski" <linux@dominikbrodowski.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Andreas Mohr" <andi@lisas.de>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, johnstul@us.ibm.com,
-       hirofumi@mail.parknet.co.jp, alan@lxorguk.ukuu.org.uk,
-       arjan@infradead.org
-Subject: Re: [PATCH v2 2/2] acpi_pm.c: check for monotonicity
-In-Reply-To: <20080822222604.GA704@isilmar.linta.de>
+	Sat, 23 Aug 2008 05:08:56 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080810190759.GA1879@rhlx01.hs-esslingen.de>
-	 <20080818121924.6b61f7af.akpm@linux-foundation.org>
-	 <20080818193517.GA22097@isilmar.linta.de>
-	 <20080818124755.162f24d1.akpm@linux-foundation.org>
-	 <20080818200916.GA18209@comet.dominikbrodowski.net>
-	 <20080818201033.GB18209@comet.dominikbrodowski.net>
-	 <20080819024334.2f3e69fa.akpm@linux-foundation.org>
-	 <20080819094938.GA21126@isilmar.linta.de>
-	 <20080819025915.c34951b6.akpm@linux-foundation.org>
-	 <20080822222604.GA704@isilmar.linta.de>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 4/4 2.6.28] cxgb3i - cxgb3i iscsi driver
+Date: Sat, 23 Aug 2008 14:37:53 +0530
+Message-ID: <46A00B48CC54E4468EF6911F877AC4CA018D73BC@blrx3m10.blr.amer.dell.com>
+In-Reply-To: <20080823.012830.262443664.davem@davemloft.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 4/4 2.6.28] cxgb3i - cxgb3i iscsi driver
+thread-index: AckE+jvcAUzEcXJFQCqRPbtIa+rXlAABLLqw
+References: <200808221840.m7MIeuvB004442@localhost.localdomain><20080822124844.b05ee3e8.akpm@linux-foundation.org><46A00B48CC54E4468EF6911F877AC4CA018D73BB@blrx3m10.blr.amer.dell.com> <20080823.012830.262443664.davem@davemloft.net>
+From: <Shyam_Iyer@Dell.com>
+To: <davem@davemloft.net>
+Cc: <akpm@linux-foundation.org>, <kxie@chelsio.com>, <netdev@vger.kernel.org>,
+       <open-iscsi@googlegroups.com>, <linux-scsi@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <jgarzik@pobox.com>,
+       <michaelc@cs.wisc.edu>, <swise@opengridcomputing.com>,
+       <rdreier@cisco.com>, <daisyc@us.ibm.com>, <wenxiong@us.ibm.com>,
+       <bhua@us.ibm.com>, <divy@chelsio.com>, <dm@chelsio.com>,
+       <leedom@chelsio.com>
+X-OriginalArrivalTime: 23 Aug 2008 09:07:53.0480 (UTC) FILETIME=[B9A8F880:01C904FF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> David Miller wrote: 
+> > Andrew Morton wrote:
+> >I'd suggest that the version number just be removed.  It becomes
+> meaningless (and often misleading) once a driver is in the mainline 
+> kernel.  People will >update the driver without changing the version 
+> number.  Code external to the driver but which affects it can change.
 
-some minor comments:
+>I totally disagree.  I find it very useful when I get a debugging dump
+from the user and they have no idea where their kernel came from nor can
+figure 
+>out how to determine the kernel version.
 
-2008/8/22 Dominik Brodowski <linux@dominikbrodowski.net>:
-> +       for (j = 0; j < ACPI_PM_MONOTONICITY_CHECKS; j++) {
-> +               value1 = clocksource_acpi_pm.read();
-> +               for (i = 0; i < 10000; i++) {
-> +                       value2 = clocksource_acpi_pm.read();
-> +                       if (value2 == value1)
-> +                               continue;
-> +                       if (value2 > value1)
-> +                               good++;
-> +                               break;
-> +                       if ((value2 < value1) && ((value2) < 0xFFF))
-The brackets arout value2 are not needed and look strange.
+>Sure it might sometimes not get updated for trivial patches that bypass
+the maintainer, but the maintainer is always going to bump it after
+non-trivial 
+>changes.
 
-> +                               good++;
-> +                               break;
-> +                       printk(KERN_INFO "PM-Timer had inconsistent results:"
-> +                              " 0x%#llx, 0x%#llx - aborting.\n",
-> +                              value1, value2);
-> +                       return -EINVAL;
-> +               }
-> +               udelay(300 * i);
-300*10000 microseconds seems like a long time to me.  Is this the
-intended maximal delay?
+Exactly. And I am also suggesting that the driver version is not
+standard among different vendors. So, why not get them generated in an
+automatic build process.
+Something like "kernel-version.driver-version". I am just imagining
+here. The details can be worked out.
 
-> +       }
-> +
-> +       if (good != ACPI_PM_MONOTONICITY_CHECKS) {
-> +               printk(KERN_INFO "PM-Timer failed consistency check "
-> +                      " (0x%#llx) - aborting.\n", value1);
-> +               return -ENODEV;
-If the inner loop runs out once, you alreay know that you will later
-abort here.  Maybe move the check directly after the inner loop to
-avoid the additional delay (10*10000*300 microseconds = 30 seconds) in
-case of failure?
-
-I hope this helps,
-Jochen
--- 
-http://seehuhn.de/
+-Shyam
