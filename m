@@ -1,72 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbYHXPb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756443AbYHWTzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbYHXPb5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 11:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbYHXPbt
+	id S1756443AbYHWTzj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 15:55:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755917AbYHWTnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 11:31:49 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:44031 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751010AbYHXPbt (ORCPT
+	Sat, 23 Aug 2008 15:43:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50219 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755893AbYHWTne convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 11:31:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=FJM0JDvW4dVwQkGE6DAUB3SByDD0IC6gbDC+3nZ/vRge6jOyWMO2ljxhkR7nG4wwJJ
-         s1rEmJ1ektrNsHDxWnlow23lxuO1mslZYcdZD/ARcaCrvfsKnd2ZfCYYm7G0CQC+AxNw
-         wixMcYEt49YHKWbnTomvq/l4adcYigMVtIYrQ=
-Message-ID: <48B17EE0.2090608@panasas.com>
-Date: Sun, 24 Aug 2008 18:31:44 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 3.0a1 (X11/2008050714)
+	Sat, 23 Aug 2008 15:43:34 -0400
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Bruce Allan" <bruce.w.allan@intel.com>,
+       "Jeff Garzik" <jgarzik@redhat.com>,
+       "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+In-Reply-To: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-To: Larry Finger <Larry.Finger@lwfinger.net>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: Help with compiler warning
-References: <48AE1802.5090301@lwfinger.net> <48B17E56.3060106@panasas.com>
-In-Reply-To: <48B17E56.3060106@panasas.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <VSpL6AnBTS.A.G3G.NaGsIB@albercik>
+Subject: [Bug #11402] skbuff bug?
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Sat, 23 Aug 2008 20:10:24 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug. 24, 2008, 18:29 +0300, Benny Halevy <bhalevy@panasas.com> wrote:
-> On Aug. 22, 2008, 4:36 +0300, Larry Finger <Larry.Finger@lwfinger.net> wrote:
->> In drivers/pcmcia/cardbus.c, the following statement
->>
->>          memcpy_fromio(ptr, s->cb_cis_virt + addr, len);
->>
->> generates the warning
->>
->>    CC [M]  drivers/pcmcia/cardbus.o
->> include/asm/io_32.h: In function ‘memcpy_fromio’:
->> include/asm/io_32.h:151: warning: passing argument 2 of ‘__memcpy’ 
->> discards qualifiers from pointer target type
->>
->> s->cb_cis_virt is "void __iomem" and addr is uint.
->>
->> What cast does argument 2 need to silence the warning?
-> 
-> memcpy_fromio takes a (const volatile void __iomem *) for the 
-> src address.
+This message has been generated automatically as a part of a report
+of recent regressions.
 
-So the culprit could be the volatile qualifier...
+The following bug entry is on the current list of known regressions
+from 2.6.26.  Please verify if it still should be listed and let me know
+(either way).
 
-> 
-> Benny
-> 
->> Thanks,
->>
->> Larry
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11402
+Subject		: skbuff bug?
+Submitter	: Yinghai Lu <yhlu.kernel@gmail.com>
+Date		: 2008-08-21 3:56 (3 days old)
+References	: http://marc.info/?l=linux-kernel&m=121929102707658&w=4
+
 
