@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbYHWT7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbYHWTvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757563AbYHWT7U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 15:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757003AbYHWTrn
+	id S1756628AbYHWTvp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 15:51:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755493AbYHWTnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 15:47:43 -0400
-Received: from web82102.mail.mud.yahoo.com ([209.191.84.215]:41615 "HELO
-	web82102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756991AbYHWTrm (ORCPT
+	Sat, 23 Aug 2008 15:43:00 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50177 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755830AbYHWTm6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 15:47:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=3cqg3fDvRfVprvLSlT0prxujUVTs8FW1XlisUmqVf7mDTF6Fw2iYLjoXO4SjXh4QL/df5DPM0dU0JE0eX/CWYb4R0xEba6YrJR36DGmQTQ7KG8S+WZkwkXej/gPwvBasyoGwaycBQ7NGCvfsZfs/wNPNpDnQIwHo+WWpKnXPPYA=;
-X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
-Date: Sat, 23 Aug 2008 12:47:41 -0700 (PDT)
-From: David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
-To: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Rufus & Azrael <rufus-azrael@numericable.fr>
-Cc: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kenrel@gmail.com>, Ingo Molnar <mingo@elte.hu>
+	Sat, 23 Aug 2008 15:42:58 -0400
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Jeff Garzik" <jeff@garzik.org>,
+       "Tobias Diedrich" <ranma+kernel@tdiedrich.de>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+In-Reply-To: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <772766.85250.qm@web82102.mail.mud.yahoo.com>
+Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <VSpL6AnBTS.A.FmH.naGsIB@albercik>
+Subject: [Bug #11358] net: forcedeth call restore mac addr in nv_shutdown path
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Sat, 23 Aug 2008 20:10:21 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This message has been generated automatically as a part of a report
+of recent regressions.
+
+The following bug entry is on the current list of known regressions
+from 2.6.26.  Please verify if it still should be listed and let me know
+(either way).
 
 
-> please check v2.
-
-Thanks Yinghai.  This still applies to a different line number in
-v2.6.27-rc4 than what the patch indicates.  I also get a warning
-about unused variable "i" (I commented it out in my previous fix,
-but not this time).
-
-At any rate, I still produces a kernel that hangs at the typical
-location.
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11358
+Subject		: net: forcedeth call restore mac addr in nv_shutdown path
+Submitter	: Yinghai Lu <yhlu.kernel@gmail.com>
+Date		: 2008-08-17 3:30 (7 days old)
+References	: http://marc.info/?l=linux-kernel&m=121894389018584&w=4
+Handled-By	: Yinghai Lu <yhlu.kernel@gmail.com>
+Patch		: http://marc.info/?l=linux-kernel&m=121894389018584&w=4
 
 
-Dave W.
