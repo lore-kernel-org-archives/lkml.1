@@ -1,81 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755919AbYHWUa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683AbYHWW4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755919AbYHWUa3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 16:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbYHWUaV
+	id S1755683AbYHWW4p (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 18:56:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbYHWW4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 16:30:21 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:40639 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752981AbYHWUaU (ORCPT
+	Sat, 23 Aug 2008 18:56:37 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:37505 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752562AbYHWW4g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 16:30:20 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjwFAA8KsEhMRKxB/2dsb2JhbACBZbJdgWg
-Date: Sat, 23 Aug 2008 16:30:16 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC PATCH] Writer-biased low-latency rwlock v8
-Message-ID: <20080823203016.GA1328@Krystal>
-References: <20080817191034.GA5258@Krystal> <20080818232500.GF6732@linux.vnet.ibm.com> <20080819060417.GB24085@Krystal> <20080819073345.GA30285@Krystal> <alpine.LFD.1.10.0808190946560.3324@nehalem.linux-foundation.org> <20080821205045.GA24909@Krystal> <alpine.LFD.1.10.0808211356360.3487@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808211402370.3487@nehalem.linux-foundation.org> <20080823050916.GA1172@Krystal> <alpine.LFD.1.10.0808231100090.3363@nehalem.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0808231100090.3363@nehalem.linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:26:13 up 80 days,  1:06,  4 users,  load average: 0.27, 0.39,
-	1.07
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sat, 23 Aug 2008 18:56:36 -0400
+Date: Sat, 23 Aug 2008 18:56:34 -0400 (EDT)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [patch] include: linux/fs.h: put declarations in __KERNEL__
+Message-ID: <alpine.LNX.1.10.0808231854460.7980@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Linus Torvalds (torvalds@linux-foundation.org) wrote:
-> 
-> 
-> On Sat, 23 Aug 2008, Mathieu Desnoyers wrote:
-> > 
-> > Now, let me explain why I need at least not one, but _four different_
-> > contention bits. Simply because there are four types of contention, one
-> > for each execution context which may take the read lock. (irq, softirq,
-> > non-preemptable, preemptable)
-> 
-> No. You need _one_ contention bit in the fast-path.
-> 
-> Then, as you get into the slow-path, you can decide on four different 
-> behaviours.
-> 
-> Quite frankly, I don't think this discussion is going anywhere. I don't 
-> think I'd take anything from you, since you seem to have a really hard 
-> time separating out the issue of fast-path and slow-path. So I'm simply 
-> not going to bother, and I'm not going to expect to merge your work. 
-> 
-> Sorry, but it simply isn't worth my time or effort.
-> 
-> 			Linus
+parent 6450f65168bcf3c03b5fb44c2fe96682c0d3086b
+commit 738da10c6393d13d7a757b1e4cb1fb2c7f98dc56
+Author: Jan Engelhardt <jengelh@medozas.de>
+Date:   Sat Aug 23 18:53:37 2008 -0400
 
-Hi,
+include: linux/fs.h: put declarations in __KERNEL__
 
-OK, I now see how I can apply this contention bit idea to my algo.
-Actually, the point I just fixed in my head is that this bit will be a
-"MAY_CONTEND" bit, which could let higher priority readers access the
-lock in the slow path. Only one fast path reader count will be required,
-just as you said.
+An anonymous user tried to use symbols from /usr/include/linux/fs.h.
+Since these however are not defined in libc, but are specific to the
+kernel, they should be in an #ifdef __KERNEL__ section. Move them
+there.
 
-Sorry about taking that much time to get my head around this. Thanks for
-your helpful explanations and your time.
+Signed-off-by: Jan Engelhardt <jengelh@medozas.de>
+---
+ include/linux/fs.h |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
-Mathieu
-
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 580b513..6d7b4a5 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -21,7 +21,6 @@
+ 
+ /* Fixed constants first: */
+ #undef NR_OPEN
+-extern int sysctl_nr_open;
+ #define INR_OPEN 1024		/* Initial setting for nfile rlimits */
+ 
+ #define BLOCK_SIZE_BITS 10
+@@ -38,21 +37,13 @@ struct files_stat_struct {
+ 	int nr_free_files;	/* read only */
+ 	int max_files;		/* tunable */
+ };
+-extern struct files_stat_struct files_stat;
+-extern int get_max_files(void);
+ 
+ struct inodes_stat_t {
+ 	int nr_inodes;
+ 	int nr_unused;
+ 	int dummy[5];		/* padding for sysctl ABI compatibility */
+ };
+-extern struct inodes_stat_t inodes_stat;
+ 
+-extern int leases_enable, lease_break_time;
+-
+-#ifdef CONFIG_DNOTIFY
+-extern int dir_notify_enable;
+-#endif
+ 
+ #define NR_FILE  8192	/* this can well be larger on a larger system */
+ 
+@@ -310,6 +301,15 @@ extern void __init inode_init(void);
+ extern void __init inode_init_early(void);
+ extern void __init files_init(unsigned long);
+ 
++extern struct files_stat_struct files_stat;
++extern int get_max_files(void);
++extern int sysctl_nr_open;
++extern struct inodes_stat_t inodes_stat;
++extern int leases_enable, lease_break_time;
++#ifdef CONFIG_DNOTIFY
++extern int dir_notify_enable;
++#endif
++
+ struct buffer_head;
+ typedef int (get_block_t)(struct inode *inode, sector_t iblock,
+ 			struct buffer_head *bh_result, int create);
