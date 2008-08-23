@@ -1,139 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbYHWOpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbYHWOrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753398AbYHWOpT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 10:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbYHWOpF
+	id S1754063AbYHWOrW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 10:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYHWOrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 10:45:05 -0400
-Received: from main.gmane.org ([80.91.229.2]:48885 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751597AbYHWOpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 10:45:04 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Sergey Spiridonov <sena@hurd.homeunix.org>
-Subject: GA-MA790FX-DS5 SATA ahci NCQ erros on Jmicron 20360/20363  (JMB363)
- kernel 2.6.25-2 Debian/Lenny
-Date: Sat, 23 Aug 2008 16:32:04 +0200
-Message-ID: <g8p6po$nm$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 87.234.202.175
-User-Agent: Icedove 1.5.0.14eol (X11/20080509)
-X-Enigmail-Version: 0.94.2.0
+	Sat, 23 Aug 2008 10:47:15 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:42805 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751288AbYHWOrO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 10:47:14 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Bart Trojanowski <bart@jukie.net>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: Re: [PATCH] document additional vfat mount options
+References: <20080823031229.GA28029@jukie.net>
+	<1219461278-26776-1-git-send-email-bart@jukie.net>
+	<87tzdcfm2g.fsf@devron.myhome.or.jp>
+	<20080823131131.GE28029@jukie.net>
+Date: Sat, 23 Aug 2008 23:47:08 +0900
+In-Reply-To: <20080823131131.GE28029@jukie.net> (Bart Trojanowski's message of
+	"Sat, 23 Aug 2008 09:11:31 -0400")
+Message-ID: <87bpzj94b7.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Bart Trojanowski <bart@jukie.net> writes:
 
-I got kernel errors [1] and [2] followed by SATA reset on heavy load on
-the hard drive connected to the GA-MA790FX-DS5 onboard controller
-Jmicron 20360/20363 (JMB363) (here is lspci [3]). Hard drive connected
-to the another onboard (south bridge from AMD SB600) controller works
-without problem.
+> * OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> [080822 23:27]:
+>> Thanks. Fixed. Current patch is the following.
+>
+> Indeed, I have made some mistakes.
+>
+> Now that I read it again...
+>
+>> +gid=###       -- Explisitly set ownership of all files on this
+>> +                 filesystem to this group ID number.  Default is to use
+>> +                 the GID of the mounting process.
+>
+> ... it has a 'explicit' typo, spotted by Ian Ward, and it's not setting
+> ownership, but rather group ownership.  So how about this
+>
+> gid=###       -- Explicitly set group ownership of all files on this
+>                  filesystem to this group ID number.  Default is to use
+>                  the GID of the mounting process.
 
-I got two 1TB Seagate hard disks, ST31000340AS and ST31000340NS. I
-connected one to Jmicron JMB363, another to SB600. After some testing
-with several instances of bonnie++ I got kernel errors [1] and [2].
-After this I exchanged hard disks connections. The one which was
-connected to JMB363 I connected to SB600 and vs versa. Errors, timeouts
-and hard drive resetting happened always on the hard drive which is
-connected to the JMB363 (in log file it is sdb). There are no errors if
-both drives are connected to the SB600.
+Looks good. However, I've noticed manpage's one may be simpler and
+consistent. So, the updated patch is following.
 
-Here [4] is complete (before i get errors) dmesg output after system is
-booted.
-
-I already replaced (took from working PC) power supply, memory, video
-card and dvd drive. I get same problems also with this devices. So
-problem must be motherboard, software or CPU. CPU seems to work O.K.
-
-It looks like the problem is motherboard or ahci ata driver. Does
-somebody have any clue about it? Is chip JMB363 broken or linux driver
-is broken?
-
-[1] http://hurd.homeunix.org/~sena/GA-MA790FX-DS5/dmesg-sata-errors.txt
-[2] http://hurd.homeunix.org/~sena/GA-MA790FX-DS5/dmesg-sata-errors2.txt
-[3] http://hurd.homeunix.org/~sena/GA-MA790FX-DS5/lspci.txt
-[4] http://hurd.homeunix.org/~sena/GA-MA790FX-DS5/dmesg-after-boot.txt
-
-Here is complete hw description:
---------------------------------------------
-Motherboard : GA-MA790FX-DS5(rev. 1.0)
-BIOS Ver : F6 (was tested also with F5)
-VGA Brand : Asus Model : EN8400GS HTP TD 256MB
-CPU Brand : AMD Model : AM2 Athlon64 X2 4850E boxed Speed : 2500 MHz
-Operation System : Debian GNU/Linux Lenny with kernel 2.6.25-2
-Memory Brand : Kingston Type : DDRII
-Memory Size : 1GB Speed : 800Mhz
-Power Supply : 600W MS-Tech MP-600 W
---------------------------------------------
-
-Here is part of error log, in case links does not work:
-
-[  373.263823] ata7.00: exception Emask 0x10 SAct 0x777ff SErr 0x580100
-action 0x2
-[  373.263904] ata7.00: irq_stat 0x08000000
-[  373.263973] ata7: SError: { UnrecovData 10B8B Dispar Handshk }
-[  373.264039] ata7.00: cmd 61/00:00:ce:5a:68/04:00:0a:00:00/40 tag 0
-ncq 524288 out
-[  373.264041]          res 40/00:70:46:4f:68/00:00:0a:00:00/40 Emask
-0x10 (ATA bus error)
-[  373.264197] ata7.00: status: { DRDY }
-[  373.264266] ata7.00: cmd 61/00:08:ce:5e:68/03:00:0a:00:00/40 tag 1
-ncq 393216 out
-[  373.264267]          res 40/00:70:46:4f:68/00:00:0a:00:00/40 Emask
-0x10 (ATA bus error)
-[  373.264415] ata7.00: status: { DRDY }
-[  373.264484] ata7.00: cmd 61/30:10:d6:69:68/02:00:0a:00:00/40 tag 2
-ncq 286720 out
-[  373.264485]          res 40/00:70:46:4f:68/00:00:0a:00:00/40 Emask
-0x10 (ATA bus error)
-
-...
-
-
-[  373.271291] ata7: hard resetting link
-[  373.915361] ata7: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-[  376.158770] ata7.00: configured for UDMA/133
-[  376.158770] ata7: exception Emask 0x1 SAct 0x0 SErr 0x0 action 0x0 t4
-[  376.158770] ata7: irq_stat 0x48000000
-[  376.158770] ata7: EH complete
-[  376.158770] sd 6:0:0:0: [sdb] 1953523055 512-byte hardware sectors
-(1000204 MB)
-[  376.158770] sd 6:0:0:0: [sdb] Write Protect is off
-[  376.158770] sd 6:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-[  376.158770] sd 6:0:0:0: [sdb] Write cache: enabled, read cache:
-enabled, doesn't support DPO or FUA
-[ 1557.808227] ata7.00: exception Emask 0x2 SAct 0x7e7ff SErr 0x980400
-action 0x2
-[ 1557.808227] ata7.00: irq_stat 0x08000000
-[ 1557.808227] ata7: SError: { Proto 10B8B Dispar LinkSeq }
-[ 1557.808227] ata7.00: cmd 61/00:00:4e:d5:41/04:00:11:00:00/40 tag 0
-ncq 524288 out
-[ 1557.808227]          res 40/00:80:d6:21:41/00:00:11:00:00/40 Emask
-0x2 (HSM violation)
-[ 1557.808227] ata7.00: status: { DRDY }
-[ 1557.808227] ata7.00: cmd 61/60:08:0e:2e:42/02:00:11:00:00/40 tag 1
-ncq 311296 out
-[ 1557.808227]          res 40/00:80:d6:21:41/00:00:11:00:00/40 Emask
-0x2 (HSM violation)
-[ 1557.808227] ata7.00: status: { DRDY }
-
-
-lspci:
-
-03:00.0 SATA controller: JMicron Technologies, Inc. JMicron 20360/20363
-AHCI Controller (rev 02)
-03:00.1 IDE interface: JMicron Technologies, Inc. JMicron 20360/20363
-AHCI Controller (rev 02)
-04:00.0 SATA controller: JMicron Technologies, Inc. JMicron 20360/20363
-AHCI Controller (rev 02)
-04:00.1 IDE interface: JMicron Technologies, Inc. JMicron 20360/20363
-AHCI Controller (rev 02)
+If you found something wrong, please let me know.  Thanks
 -- 
-Best regards, Sergey Spiridonov
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 
+
+From: Bart Trojanowski <bart@jukie.net>
+
+While debugging a sync mount regression on vfat I noticed that there
+were mount options parsed by the driver that were not documented.
+
+[hirofumi@mail.parknet.co.jp: fix some parts]
+Signed-off-by: Bart Trojanowski <bart@jukie.net>
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
+
+ Documentation/filesystems/vfat.txt |   24 ++++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
+
+diff -puN Documentation/filesystems/vfat.txt~fat-doc-fixes Documentation/filesystems/vfat.txt
+--- linux-2.6/Documentation/filesystems/vfat.txt~fat-doc-fixes	2008-08-23 12:15:06.000000000 +0900
++++ linux-2.6-hirofumi/Documentation/filesystems/vfat.txt	2008-08-23 23:38:32.000000000 +0900
+@@ -8,6 +8,12 @@ if you want to format from within Linux.
+ 
+ VFAT MOUNT OPTIONS
+ ----------------------------------------------------------------------
++uid=###       -- Set the owner of all files on this filesystem.
++		 The default is the uid of current process.
++
++gid=###       -- Set the group of all files on this filesystem.
++		 The default is the gid of current process.
++
+ umask=###     -- The permission mask (for files and directories, see umask(1)).
+                  The default is the umask of current process.
+ 
+@@ -36,7 +42,7 @@ codepage=###  -- Sets the codepage numbe
+ 		 characters on FAT filesystem.
+ 		 By default, FAT_DEFAULT_CODEPAGE setting is used.
+ 
+-iocharset=name -- Character set to use for converting between the
++iocharset=<name> -- Character set to use for converting between the
+ 		 encoding is used for user visible filename and 16 bit
+ 		 Unicode characters. Long filenames are stored on disk
+ 		 in Unicode format, but Unix for the most part doesn't
+@@ -86,6 +92,8 @@ check=s|r|n   -- Case sensitivity checki
+                  r: relaxed, case insensitive
+                  n: normal, default setting, currently case insensitive
+ 
++nocase        -- This was deprecated for vfat. Use shortname=win95 instead.
++
+ shortname=lower|win95|winnt|mixed
+ 	      -- Shortname display/create setting.
+ 		 lower: convert to lowercase for display,
+@@ -99,11 +107,23 @@ shortname=lower|win95|winnt|mixed
+ tz=UTC        -- Interpret timestamps as UTC rather than local time.
+                  This option disables the conversion of timestamps
+                  between local time (as used by Windows on FAT) and UTC
+-                 (which Linux uses internally).  This is particuluarly
++                 (which Linux uses internally).  This is particularly
+                  useful when mounting devices (like digital cameras)
+                  that are set to UTC in order to avoid the pitfalls of
+                  local time.
+ 
++showexec      -- If set, the execute permission bits of the file will be
++		 allowed only if the extension part of the name is .EXE,
++		 .COM, or .BAT. Not set by default.
++
++debug         -- Can be set, but unused by the current implementation.
++
++sys_immutable -- If set, ATTR_SYS attribute on FAT is handled as
++		 IMMUTABLE flag on Linux. Not set by default.
++
++flush         -- If set, the filesystem will try to flush to disk more
++		 early than normal. Not set by default.
++
+ <bool>: 0,1,yes,no,true,false
+ 
+ TODO
+_
