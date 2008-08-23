@@ -1,117 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbYHWD1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753639AbYHWDdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753815AbYHWD1T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 23:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbYHWD1H
+	id S1753639AbYHWDdn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 23:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYHWDdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 23:27:07 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:50667 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752012AbYHWD1G (ORCPT
+	Fri, 22 Aug 2008 23:33:35 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41683 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751972AbYHWDde (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 23:27:06 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Bart Trojanowski <bart@jukie.net>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH] document additional vfat mount options
-References: <20080823031229.GA28029@jukie.net>
-	<1219461278-26776-1-git-send-email-bart@jukie.net>
-Date: Sat, 23 Aug 2008 12:27:03 +0900
-In-Reply-To: <1219461278-26776-1-git-send-email-bart@jukie.net> (Bart
-	Trojanowski's message of "Fri, 22 Aug 2008 23:14:38 -0400")
-Message-ID: <87tzdcfm2g.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Fri, 22 Aug 2008 23:33:34 -0400
+Date: Sat, 23 Aug 2008 04:33:28 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "Denis V. Lunev" <den@openvz.org>
+Subject: Re: [git pull] VFS patches, the first series
+Message-ID: <20080823033328.GH28946@ZenIV.linux.org.uk>
+References: <20080727012212.GW28946@ZenIV.linux.org.uk> <m1d4k2zui4.fsf@frodo.ebiederm.org> <m1od3mthma.fsf@frodo.ebiederm.org> <m1iqttnc7a.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Disposition: inline
+In-Reply-To: <m1iqttnc7a.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bart Trojanowski <bart@jukie.net> writes:
+On Thu, Aug 21, 2008 at 05:08:25PM -0700, Eric W. Biederman wrote:
 
-> +gid=###       -- Explisitly set ownership of all files on this
-> +                 filesystem to this group ID number.  Default is to use
-> +                 the GID of the mounting process.
-> +
+> I'm not certain what to do about it.  The semantics of the how the
+> sysctl tables are access have changed significantly.  Now the first 
+> sysctl table to describe a directory must remain until there are no
+> other tables that have entries in that directory and a sysctl table
+> must have a pure path of directories for any portion of the address
+> space it shares with an earlier sysctl table.  This is noticeably
+> different from the union mount semantics we have had previously for
+> the sysctl tables.
 
-Thanks. Fixed. Current patch is the following.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Note that the old semantics had a lovely inherent problem (leaving aside
+the utterly insane amount of walking and re-walking the trees, as you've
+found out the hard way - don't tell me you hadn't cursed it when writing
+the previous version of proc_sysctl.c): there's redundancy between the
+trees.  At the very least, just what are we supposed to get when the
+stems do not match each other - either in permissions or in ctl_name?
 
+> If it doesn't look to bad to maintain the new semantics it looks like
+> the right thing to do is to add some additional checks so we get more
+> precise warnings (who knows what out of tree sysctl code will do) and
+> to find someplace I can insert a net/ipv4/neigh sysctl directory into
+> (ipv4_net_table looks like it will work) to keep the network namespace
+> code working safely.
+> 
+> Al btw nice trick using compare to keep the dentries separate allowing
+> us to cache everything in /proc.  I feel silly for missing that one.
+> Want to get together in the next couple of weeks and build a tree that
+> updates the sysctls infrastructure to suck less?
 
-From: Bart Trojanowski <bart@jukie.net>
+Fine by me...  BTW, fixing that particular crap is not hard - you need
+to have the entry in question show up before either interface, that's all.
+I missed that part of ordering mess, to be honest.  I'll look into that,
+hopefully will post the fix later tonight.
 
-While debugging a sync mount regression on vfat I noticed that there
-were mount options parsed by the driver that were not documented.
-
-[hirofumi@mail.parknet.co.jp: fix some parts]
-Signed-off-by: Bart Trojanowski <bart@jukie.net>
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
----
-
- Documentation/filesystems/vfat.txt |   26 ++++++++++++++++++++++++--
- 1 file changed, 24 insertions(+), 2 deletions(-)
-
-diff -puN Documentation/filesystems/vfat.txt~fat-doc-fixes Documentation/filesystems/vfat.txt
---- linux-2.6/Documentation/filesystems/vfat.txt~fat-doc-fixes	2008-08-23 12:15:06.000000000 +0900
-+++ linux-2.6-hirofumi/Documentation/filesystems/vfat.txt	2008-08-23 12:23:15.000000000 +0900
-@@ -8,6 +8,14 @@ if you want to format from within Linux.
- 
- VFAT MOUNT OPTIONS
- ----------------------------------------------------------------------
-+uid=###       -- Explicitly set ownership of all files on this
-+                 filesystem to this user ID number.  Default is to use
-+                 the UID of the mounting process.
-+
-+gid=###       -- Explisitly set ownership of all files on this
-+                 filesystem to this group ID number.  Default is to use
-+                 the GID of the mounting process.
-+
- umask=###     -- The permission mask (for files and directories, see umask(1)).
-                  The default is the umask of current process.
- 
-@@ -36,7 +44,7 @@ codepage=###  -- Sets the codepage numbe
- 		 characters on FAT filesystem.
- 		 By default, FAT_DEFAULT_CODEPAGE setting is used.
- 
--iocharset=name -- Character set to use for converting between the
-+iocharset=<name> -- Character set to use for converting between the
- 		 encoding is used for user visible filename and 16 bit
- 		 Unicode characters. Long filenames are stored on disk
- 		 in Unicode format, but Unix for the most part doesn't
-@@ -86,6 +94,8 @@ check=s|r|n   -- Case sensitivity checki
-                  r: relaxed, case insensitive
-                  n: normal, default setting, currently case insensitive
- 
-+nocase        -- This was deprecated for vfat. Use shortname=win95 instead.
-+
- shortname=lower|win95|winnt|mixed
- 	      -- Shortname display/create setting.
- 		 lower: convert to lowercase for display,
-@@ -99,11 +109,23 @@ shortname=lower|win95|winnt|mixed
- tz=UTC        -- Interpret timestamps as UTC rather than local time.
-                  This option disables the conversion of timestamps
-                  between local time (as used by Windows on FAT) and UTC
--                 (which Linux uses internally).  This is particuluarly
-+                 (which Linux uses internally).  This is particularly
-                  useful when mounting devices (like digital cameras)
-                  that are set to UTC in order to avoid the pitfalls of
-                  local time.
- 
-+showexec      -- If set, the execute permission bits of the file will be
-+		 allowed only if the extension part of the name is .EXE,
-+		 .COM, or .BAT. Not set by default.
-+
-+debug         -- Can be set, but unused by the current implementation.
-+
-+sys_immutable -- If set, ATTR_SYS attribute on FAT is handled as
-+		 IMMUTABLE flag on Linux. Not set by default.
-+
-+flush         -- If set, the filesystem will try to flush to disk more
-+		 early than normal. Not set by default.
-+
- <bool>: 0,1,yes,no,true,false
- 
- TODO
-_
+FWIW, I'd very much prefer ->d_compare() trick to the horrors you guys
+are doing around sysfs; it might or might not be feasible depending on
+what visibility rules you end up with there, but if it's feasible at all
+I'd rather go for it and avoid the entire 'separate backing store' mess.
+IIRC, I had described that scheme to you quite a few months ago in sysfs
+context; got no response back then...
