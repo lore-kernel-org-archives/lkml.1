@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbYHWDOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbYHWD1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbYHWDOs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 23:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYHWDOl
+	id S1753815AbYHWD1T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 23:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbYHWD1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 23:14:41 -0400
-Received: from tau.jukie.net ([216.239.93.128]:44911 "EHLO tau.jukie.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751911AbYHWDOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 23:14:40 -0400
-From: Bart Trojanowski <bart@jukie.net>
-To: linux-kernel@vger.kernel.org
-Cc: Bart Trojanowski <bart@jukie.net>, trivial@kernel.org,
-       hirofumi@mail.parknet.co.jp
-Subject: [PATCH] document additional vfat mount options
-Date: Fri, 22 Aug 2008 23:14:38 -0400
-Message-Id: <1219461278-26776-1-git-send-email-bart@jukie.net>
-X-Mailer: git-send-email 1.5.6.1.109.ga974cd.dirty
-In-Reply-To: <20080823031229.GA28029@jukie.net>
+	Fri, 22 Aug 2008 23:27:07 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:50667 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752012AbYHWD1G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 23:27:06 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Bart Trojanowski <bart@jukie.net>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: Re: [PATCH] document additional vfat mount options
 References: <20080823031229.GA28029@jukie.net>
+	<1219461278-26776-1-git-send-email-bart@jukie.net>
+Date: Sat, 23 Aug 2008 12:27:03 +0900
+In-Reply-To: <1219461278-26776-1-git-send-email-bart@jukie.net> (Bart
+	Trojanowski's message of "Fri, 22 Aug 2008 23:14:38 -0400")
+Message-ID: <87tzdcfm2g.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bart Trojanowski <bart@jukie.net> writes:
+
+> +gid=###       -- Explisitly set ownership of all files on this
+> +                 filesystem to this group ID number.  Default is to use
+> +                 the GID of the mounting process.
+> +
+
+Thanks. Fixed. Current patch is the following.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+
+
+From: Bart Trojanowski <bart@jukie.net>
+
 While debugging a sync mount regression on vfat I noticed that there
 were mount options parsed by the driver that were not documented.
 
+[hirofumi@mail.parknet.co.jp: fix some parts]
 Signed-off-by: Bart Trojanowski <bart@jukie.net>
-Cc: trivial@kernel.org
-Cc: hirofumi@mail.parknet.co.jp
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 ---
- Documentation/filesystems/vfat.txt |   31 +++++++++++++++++++++++++++++--
- 1 files changed, 29 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/filesystems/vfat.txt b/Documentation/filesystems/vfat.txt
-index bbac4f1..5ed7918 100644
---- a/Documentation/filesystems/vfat.txt
-+++ b/Documentation/filesystems/vfat.txt
+ Documentation/filesystems/vfat.txt |   26 ++++++++++++++++++++++++--
+ 1 file changed, 24 insertions(+), 2 deletions(-)
+
+diff -puN Documentation/filesystems/vfat.txt~fat-doc-fixes Documentation/filesystems/vfat.txt
+--- linux-2.6/Documentation/filesystems/vfat.txt~fat-doc-fixes	2008-08-23 12:15:06.000000000 +0900
++++ linux-2.6-hirofumi/Documentation/filesystems/vfat.txt	2008-08-23 12:23:15.000000000 +0900
 @@ -8,6 +8,14 @@ if you want to format from within Linux.
  
  VFAT MOUNT OPTIONS
@@ -52,7 +71,7 @@ index bbac4f1..5ed7918 100644
  umask=###     -- The permission mask (for files and directories, see umask(1)).
                   The default is the umask of current process.
  
-@@ -36,7 +44,7 @@ codepage=###  -- Sets the codepage number for converting to shortname
+@@ -36,7 +44,7 @@ codepage=###  -- Sets the codepage numbe
  		 characters on FAT filesystem.
  		 By default, FAT_DEFAULT_CODEPAGE setting is used.
  
@@ -61,18 +80,16 @@ index bbac4f1..5ed7918 100644
  		 encoding is used for user visible filename and 16 bit
  		 Unicode characters. Long filenames are stored on disk
  		 in Unicode format, but Unix for the most part doesn't
-@@ -86,6 +94,10 @@ check=s|r|n   -- Case sensitivity checking setting.
+@@ -86,6 +94,8 @@ check=s|r|n   -- Case sensitivity checki
                   r: relaxed, case insensitive
                   n: normal, default setting, currently case insensitive
  
-+nocase        -- If set, files and directories read from device will have
-+                 their names converted to lowercase.  Not set by
-+                 default.
++nocase        -- This was deprecated for vfat. Use shortname=win95 instead.
 +
  shortname=lower|win95|winnt|mixed
  	      -- Shortname display/create setting.
  		 lower: convert to lowercase for display,
-@@ -99,11 +111,26 @@ shortname=lower|win95|winnt|mixed
+@@ -99,11 +109,23 @@ shortname=lower|win95|winnt|mixed
  tz=UTC        -- Interpret timestamps as UTC rather than local time.
                   This option disables the conversion of timestamps
                   between local time (as used by Windows on FAT) and UTC
@@ -82,24 +99,19 @@ index bbac4f1..5ed7918 100644
                   that are set to UTC in order to avoid the pitfalls of
                   local time.
  
-+showexec      -- If set, files that end if .EXE, .COM, or .BAT will have
-+                 the execute permission bits set.  Not set by default,
-+                 in which case all files show up with the execute bits set.
++showexec      -- If set, the execute permission bits of the file will be
++		 allowed only if the extension part of the name is .EXE,
++		 .COM, or .BAT. Not set by default.
 +
 +debug         -- Can be set, but unused by the current implementation.
 +
-+sys_immutable -- If set, all files on this filesystem which have the SYS
-+                 attribute (DOS bit) set will become IMMUTABLE (inode flag)
-+                 preventing write operations on these files.  Not set by
-+                 default.
++sys_immutable -- If set, ATTR_SYS attribute on FAT is handled as
++		 IMMUTABLE flag on Linux. Not set by default.
 +
-+flush         -- If set, modified inodes will be flushed to disk on file
-+                 close system call.  This is ideal for USB connected
-+                 devices.  Not set by default.
++flush         -- If set, the filesystem will try to flush to disk more
++		 early than normal. Not set by default.
 +
  <bool>: 0,1,yes,no,true,false
  
  TODO
--- 
-1.6.0.rc0.43.gb0a469
-
+_
