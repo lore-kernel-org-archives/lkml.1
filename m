@@ -1,64 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753279AbYHWDLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYHWDMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753279AbYHWDLU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Aug 2008 23:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbYHWDLI
+	id S1753937AbYHWDMi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Aug 2008 23:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbYHWDMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Aug 2008 23:11:08 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:46503 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751885AbYHWDLH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Aug 2008 23:11:07 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Bart Trojanowski <bart@jukie.net>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+	Fri, 22 Aug 2008 23:12:31 -0400
+Received: from tau.jukie.net ([216.239.93.128]:48876 "EHLO tau.jukie.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751909AbYHWDMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Aug 2008 23:12:31 -0400
+Date: Fri, 22 Aug 2008 23:12:30 -0400
+From: Bart Trojanowski <bart@jukie.net>
+To: Grant Coady <gcoady.lk@gmail.com>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       hirofumi@mail.parknet.co.jp
 Subject: Re: [PATCH] document additional vfat mount options
-References: <20080820022712.GF28029@jukie.net>
-	<1219452859-24960-1-git-send-email-bart@jukie.net>
-Date: Sat, 23 Aug 2008 12:10:59 +0900
-In-Reply-To: <1219452859-24960-1-git-send-email-bart@jukie.net> (Bart
-	Trojanowski's message of "Fri, 22 Aug 2008 20:54:19 -0400")
-Message-ID: <87k5e8ify4.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+Message-ID: <20080823031229.GA28029@jukie.net>
+References: <20080820022712.GF28029@jukie.net> <1219452859-24960-1-git-send-email-bart@jukie.net> <sktua4ta7e0jspqnsbd3fqveb204togekh@4ax.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Disposition: inline
+In-Reply-To: <sktua4ta7e0jspqnsbd3fqveb204togekh@4ax.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bart Trojanowski <bart@jukie.net> writes:
+* Grant Coady <grant_lkml@dodo.com.au> [080822 22:51]:
+> >+gid=###       -- Explisitly set ownership of all files on thsi
+> 							    ^^^^
 
-Thanks. However, some parts seem not true. I'll change those to the following.
+I actually did catch it, but I didn't regenerate the patch before
+sending it.
 
-> +nocase        -- If set, files and directories read from device will have
-> +                 their names converted to lowercase.  Not set by
-> +                 default.
+Thanks for reading it over, Grant.
 
-nocase           -- This was deprecated for vfat. Use shortname=win95 instead.
-
-> +showexec      -- If set, files that end if .EXE, .COM, or .BAT will have
-> +                 the execute permission bits set.  Not set by default,
-> +                 in which case all files show up with the execute bits set.
-
-showexec         -- If set, the execute permission bits of the file will be
-		    allowed only if the extension part of the name is .EXE,
-                    .COM, or .BAT. Not set by default.
-
-> +sys_immutable -- If set, all files on this filesystem which have the SYS
-> +                 attribute (DOS bit) set will become IMMUTABLE (inode flag)
-> +                 preventing write operations on these files.  Not set by
-> +                 default.
-
-sys_immutable    -- If set, ATTR_SYS attribute on FAT is handled as
-		    IMMUTABLE flag on Linux. Not set by default.
-
-> +flush         -- If set, modified inodes will be flushed to disk on file
-> +                 close system call.  This is ideal for USB connected
-> +                 devices.  Not set by default.
-
-flush            -- If set, the filesystem will try to flush to disk more
-		    early than normal. Not set by default.
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+				WebSig: http://www.jukie.net/~bart/sig/
