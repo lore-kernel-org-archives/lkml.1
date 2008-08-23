@@ -1,169 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbYHWPmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbYHWPpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754571AbYHWPmp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 11:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbYHWPmf
+	id S1754645AbYHWPpa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 11:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbYHWPpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 11:42:35 -0400
-Received: from web82107.mail.mud.yahoo.com ([209.191.84.220]:33271 "HELO
-	web82107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751907AbYHWPme (ORCPT
+	Sat, 23 Aug 2008 11:45:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38700 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751136AbYHWPpW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 11:42:34 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=eGPSfH4q7NxbmP/jzV8s6GKTvqzc90alalHxJl4nST5xJQwsbp9q/pndOoCjmd7yZMWwwa8Tv6NhnHyHjnnI1TUuc6NxVIXZU6RuxT+i+vygC9lfL3Rs1lonS3SXYRe7KZ5SsZLbKCAKy8FPXgiuOGJ7fDkoyTbfoDIUXpJ8YRA=;
-X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
-Date: Sat, 23 Aug 2008 08:42:33 -0700 (PDT)
-From: David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Bill Fink <billfink@mindspring.com>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
+	Sat, 23 Aug 2008 11:45:22 -0400
+Date: Sat, 23 Aug 2008 08:44:50 -0700
+From: Greg KH <greg@kroah.com>
+To: Alex Chiang <achiang@hp.com>, Matthew Wilcox <matthew@wil.cx>,
+       jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, v2] PCI: create function symlinks in
+	/sys/bus/pci/slots/N/
+Message-ID: <20080823154450.GA27985@kroah.com>
+References: <20080822162048.GA20820@ldl.fc.hp.com> <20080822182317.GW8318@parisc-linux.org> <20080822195358.GC20820@ldl.fc.hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <982729.41105.qm@web82107.mail.mud.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <20080822195358.GC20820@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-> could you try the debug patch below ontop of latest tip/master:
+On Fri, Aug 22, 2008 at 01:53:58PM -0600, Alex Chiang wrote:
+> * Matthew Wilcox <matthew@wil.cx>:
+> > On Fri, Aug 22, 2008 at 10:20:49AM -0600, Alex Chiang wrote:
+> > > This is a second attempt at creating some handy symlinks in
+> > > /sys/bus/pci/ between slots and devices.
+> > > 
+> > > It addresses the following concerns from last time:
+> > > 
+> > > 	- does not create superfluous 'device' link
+> > > 	- correctly adds and removes links after hotplug ops
+> > > 	- adds a bunch of documentation ;)
+> > > 
+> > > It does not address Willy's concerns about not needing the
+> > > functionN back-links.  I kinda thought they were useful, no one
+> > > else seemed to express an opinion...
+> > 
+> > I was just explaining why I didn't create them when I did my version of
+> > this patch.  I don't have an objection to adding them; they make logical
+> > sense.  The only concern might be the additional memory usage.
 > 
->   http://people.redhat.com/mingo/tip.git/README
-
-Thanks Ingo.
-
-I've been building your 'tip/master' tree daily (Just In Case) since 
-Aug. 11, when you first asked me to try it!  ;)
-
-
-> the patch forcibly ignores resource conflicts and reports them. This 
-> will likely break some system - but if your hpet troubles are due to 
-> resource conflicts then this patch would make the kernel boot up fine on 
-> your system by default, with a working hpet.
+> Yes, agree about the memory usage, although I wonder what the
+> actual overhead is.
 > 
-> You should also be getting a printout and a warning in the dmesg in that 
-> case.
+> Does anyone have numbers for how much it costs to create a new
+> symlink? I could try and figure this out but it will take a few
+> days (busy with other stuff).
 
-No offense... but this patch does something Bad.  [BTW, if you send patches
-for me to try in the future, could you make them attachments?  I have not
-replaced my old email system with the new one which uses my newer "server"
-machines, so I have been temporarily forced to use my ISP's _broken_ web
-interface for email.  Not only does that web client break threading in
-LKML inboxes -- sorry folks! -- it messes up the whitespace in patches, so
-I have to apply them manually, unless they are provided as attachments.]
+Almost nothing.
 
-It built OK, but when I rebooted it hung _extremely_ early.  All I got was
+sysfs creates these things on the fly as they are accessed, and if
+memory pressure on the machine happens, they are freed up properly and
+then created again if a user asks to see them in the tree.
 
-- 2 lines of GRUB output
-- kernel boot parameters (maybe also from GRUB)
-- "Decompressing Linux... Parsing ELF... done."
-- "Booting the kernel"
+So don't worry about memory issues when adding new files or symlinks in
+sysfs, it just isn't a problem (we handle 20000 disks easily on low
+memory 31bit s390 systems.)
 
-... and there it hung.
+thanks,
 
-I had forgotten to turn on debugging parameters, so I applied my own reduced
-version of Yinghai's debugging patch for resource.c, and enabled 80x50 text
-mode and set "loglevel=4", hoping I could tell you more about where the
-kernel was hanging with your new patch.
-
-Rebooting with those changes, the output was identical to the above.  The
-kernel freezes before any calls of insert_resource() or request_resource().
-
-I tried a third reboot, with "debug initcall_debug"... but the results
-were the same.  The kernel hangs almost immediately with the patch you
-sent.
-
-
-[In case my own changes are suspect, I am providing the diff for resource.c
-against the original tip/master version -- but this only shows the changes
-made for the second and third reboots.  The first reboot was with a 
-tip/master kernel using only the patch you sent me applied.]
-
-$ git diff kernel/resource.c
-diff --git a/kernel/resource.c b/kernel/resource.c
-index f5b518e..167f385 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -156,6 +156,7 @@ static struct resource * __request_resource(struct resource *root, struct resour
-     for (;;) {
-         tmp = *p;
-         if (!tmp || tmp->start > end) {
-+insert:
-             new->sibling = tmp;
-             *p = new;
-             new->parent = root;
-@@ -164,7 +165,10 @@ static struct resource * __request_resource(struct resource *root, struct resour
-         p = &tmp->sibling;
-         if (tmp->end < start)
-             continue;
--        return tmp;
-+        printk("ignoring resource conflict between %s/{%p..%p} and %s/{%p..%p}\n", new->name, 
-+               (void *)new->start, (void *)new->end, tmp->name, (void *)tmp->start, (void *)tmp->end);
-+        WARN_ON(1);
-+        goto insert;
-     }
- }
- 
-@@ -197,10 +201,20 @@ static int __release_resource(struct resource *old)
- int request_resource(struct resource *root, struct resource *new)
- {
-     struct resource *conflict;
-+     resource_size_t  dstart, dend;
-+     char has_conflict;
- 
-     write_lock(&resource_lock);
-     conflict = __request_resource(root, new);
-     write_unlock(&resource_lock);
-+ 
-+     dstart = new->start - root->start;
-+     dend = root->end - new->end;
-+     has_conflict = conflict ? '!' : ' ';
-+ 
-+     printk(KERN_ERR "R:%-12.12s%8llx-%-16llx(%c%-12.12s-%-6llx+%-6llx)\n", new->name, new->start, new->end,
-+            has_conflict, root->name, dstart, dend);
-+ 
-     return conflict ? -EBUSY : 0;
- }
- 
-@@ -382,11 +396,15 @@ int insert_resource(struct resource *parent, struct resource *new)
- 
-     write_lock(&resource_lock);
- 
-+     printk(KERN_ERR "I:%-12.12s%8llx-%-16llx(P=%-12.12s)... ", new->name, new->start, new->end, parent->name);
-+ 
-     for (;; parent = first) {
-          result = 0;
-         first = __request_resource(parent, new);
--        if (!first)
--            goto out;
-+         if (!first) {
-+                 printk(KERN_ERR "good(P=%-12.12s)\n", parent->name);
-+              goto out;
-+         }
- 
-         result = -EBUSY;
-         if (first == parent)
-@@ -414,9 +432,13 @@ int insert_resource(struct resource *parent, struct resource *new)
-     new->sibling = next->sibling;
-     new->child = first;
- 
-+     printk(KERN_ERR "in(P=%-12.12s)... ", parent->name);
-+ 
-     next->sibling = NULL;
--    for (next = first; next; next = next->sibling)
--        next->parent = new;
-+     for (next = first; next; next = next->sibling) {
-+          next->parent = new;
-+         printk(KERN_ERR "ch=%-12.12s\n", next->name);
-+     }
- 
-     if (parent->child == first) {
-         parent->child = new;
+greg k-h
