@@ -1,58 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYHWW0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbYHWT3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755251AbYHWW0m (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 18:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYHWW0e
+	id S1754774AbYHWT3r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 15:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYHWT3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 18:26:34 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44352 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751136AbYHWW0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 18:26:34 -0400
-Message-ID: <48B08E94.8030805@garzik.org>
-Date: Sat, 23 Aug 2008 18:26:28 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Sat, 23 Aug 2008 15:29:35 -0400
+Received: from web82105.mail.mud.yahoo.com ([209.191.84.218]:44185 "HELO
+	web82105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751783AbYHWT3e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 15:29:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=fZCU5DVEaM/PGB7bMXVQkrm7VKNQfYtsmh6cwzgdvmnUTjovuVD0uypGmbqjabONUiXNDSW8ZgCf3IaU5NZj/bLdXQckl6QCcJWS5yUFyi2JRluzZFLj0mm2SEn3UIBlzP9YnKjO/i908io0bBOC7xkEMCo5oLjEq12Y9Xa6Lw8=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Sat, 23 Aug 2008 12:29:33 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Vivek Goyal <vgoyal@redhat.com>,
+       Bill Fink <billfink@mindspring.com>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       netdev <netdev@vger.kernel.org>
 MIME-Version: 1.0
-To: Jaswinder Singh <jaswinderlinux@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Francois Romieu <romieu@fr.zoreil.com>
-Subject: Re: [Bug #11271] BUG: fealnx in 2.6.27-rc1
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.U-.FcGsIB@albercik>
-In-Reply-To: <VSpL6AnBTS.A.U-.FcGsIB@albercik>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <655777.49664.qm@web82105.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11271
-> Subject		: BUG: fealnx in 2.6.27-rc1
-> Submitter	: Jaswinder Singh <jaswinderlinux@gmail.com>
-> Date		: 2008-08-05 14:58 (19 days old)
-> References	: http://marc.info/?l=linux-netdev&m=121794762016830&w=4
-> 		  http://lkml.org/lkml/2008/8/10/98
-> Handled-By	: Francois Romieu <romieu@fr.zoreil.com>
 
 
-Jaswinder, does reverting 28cd4289abc2c8db90344ee4ff064a9bdf086fdf help?
+> please try attached patch, and send out lspci -vvxxxx again.
 
-That's the only material change to fealnx itself in years.
+I found that your patch was supposed to apply beginning at line 1918,
+but the code in v2.6.27-rc4 that corresponded to the patch actually
+was located at line 1790.
 
-If not, any chance you could bisect this problem, and add more info to 
-the bug?
+I also found that it would not compile, but was able to fix it...
+hopefully somewhat as you intended:
+========================
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index 9236e7f..7853a05 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1790,6 +1790,22 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_BROADCOM,
+              PCI_DEVICE_ID_NX2_5709S,
+              quirk_brcm_570x_limit_vpd);
+ 
++static void __init quirk_hpet_in_bar(struct pci_dev *pdev)
++{
++        /* int i; */
++    unsigned int base, size;
++
++    /* the BAR1 is the location of the HPET...we must
++     * not touch this, so forcibly insert it into the resource tree */
++    base = pci_resource_start(pdev, 1);
++    size = pci_resource_len(pdev, 1);
++    if (base && size) {
++        insert_resource(&iomem_resource, &pdev->resource[1]);
++        dev_info(&pdev->dev, "HPET at %04x-%04x\n", base, base + size - 1);
++    }
++}
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI, 0x3485, quirk_hpet_in_bar);
++
+ #ifdef CONFIG_PCI_MSI
+ /* Some chipsets do not support MSI. We cannot easily rely on setting
+  * PCI_BUS_FLAGS_NO_MSI in its bus flags because there are actually
+========================
 
+With these changes, the kernel still hangs at the same point as previous
+kernels.
+
+With "hpet=disable", nothing from your dev_info() call appears in 'dmesg'
+output.
+
+
+Dave W.
