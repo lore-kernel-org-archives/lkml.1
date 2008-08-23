@@ -1,33 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYHWPeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbYHWPhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbYHWPeT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 11:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYHWPeH
+	id S1754346AbYHWPhs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 11:37:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbYHWPhl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 11:34:07 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45085 "EHLO mx3.mail.elte.hu"
+	Sat, 23 Aug 2008 11:37:41 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56071 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751136AbYHWPeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 11:34:05 -0400
-Date: Sat, 23 Aug 2008 17:33:42 +0200
+	id S1751581AbYHWPhl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 11:37:41 -0400
+Date: Sat, 23 Aug 2008 17:37:25 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Dave Airlie <airlied@gmail.com>, "Li, Shaohua" <shaohua.li@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: [PATCH] x86: have set_memory_array_{uc,wb} coalesce memtypes.
-Message-ID: <20080823153342.GA16984@elte.hu>
-References: <20080820194127.GA10887@linux-os.sc.intel.com> <48AC8F69.4050201@keyaccess.nl> <21d7e9970808201446k3c1a6bc1naf04568a8ad06ed4@mail.gmail.com> <20080820221630.GA3598@linux-os.sc.intel.com> <20080821120626.GG5615@elte.hu> <48ADA2C2.8090905@keyaccess.nl> <48ADF3FC.7070002@keyaccess.nl> <20080822041544.GF30284@elte.hu> <20080822190817.GA17381@linux-os.sc.intel.com> <48AF1E67.2030509@keyaccess.nl>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Jan Beulich <jbeulich@novell.com>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] x86: fix: make PCI ECS for AMD CPUs hotplug capable
+Message-ID: <20080823153725.GB16984@elte.hu>
+References: <48AD82D5.76E4.0078.0@novell.com> <1219429418-29023-2-git-send-email-robert.richter@amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48AF1E67.2030509@keyaccess.nl>
+In-Reply-To: <1219429418-29023-2-git-send-email-robert.richter@amd.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -42,14 +35,11 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rene Herman <rene.herman@keyaccess.nl> wrote:
+* Robert Richter <robert.richter@amd.com> wrote:
 
->> Also, there seems to be a bug in the error path of the patch. Below 
->> should fix it.
->
-> Ah, yes, thanks, just sent out a final version with this fixed as 
-> well.
+> Until now, PCI ECS setup was performed at boot time only and for cpus 
+> that are enabled then. This patch fixes this and adds cpu hotplug.
 
-applied to tip/x86/pat, thanks.
+this patch does not apply cleanly to -git.
 
 	Ingo
