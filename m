@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756969AbYHWTtM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493AbYHWTmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756969AbYHWTtM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 15:49:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbYHWTm0
+	id S1755493AbYHWTmM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 15:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbYHWTlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 15:42:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50152 "EHLO ogre.sisk.pl"
+	Sat, 23 Aug 2008 15:41:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50085 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755717AbYHWTmX convert rfc822-to-8bit (ORCPT
+	id S1753446AbYHWTlL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 15:42:23 -0400
+	Sat, 23 Aug 2008 15:41:11 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Manny Maxwell" <mannymax@mannymax.net>
+       "Lukas Hejtmanek" <xhejtman@ics.muni.cz>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
 References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
 In-Reply-To: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <VSpL6AnBTS.A.m3H.3aGsIB@albercik>
-Subject: [Bug #11343] SATA Cold Boot Problems with 2.6.27-rc[23] on nVidia 680i
+Message-ID: <VSpL6AnBTS.A.0zB.JdGsIB@albercik>
+Subject: [Bug #11209] 2.6.27-rc1 process time accounting
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 23 Aug 2008 20:10:20 +0200 (CEST)
+Date: Sat, 23 Aug 2008 20:10:14 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,10 +36,11 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11343
-Subject		: SATA Cold Boot Problems with 2.6.27-rc[23] on nVidia 680i
-Submitter	: Manny Maxwell <mannymax@mannymax.net>
-Date		: 2008-08-14 4:16 (10 days old)
-References	: http://marc.info/?l=linux-kernel&m=121868782917600&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11209
+Subject		: 2.6.27-rc1 process time accounting
+Submitter	: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Date		: 2008-07-31 10:43 (24 days old)
+References	: http://marc.info/?l=linux-kernel&m=121750102917490&w=4
+Handled-By	: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
 
