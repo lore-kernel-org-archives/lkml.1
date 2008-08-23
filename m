@@ -1,203 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbYHWFJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753025AbYHWFYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752758AbYHWFJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 01:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbYHWFJU
+	id S1753025AbYHWFYQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 01:24:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYHWFYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 01:09:20 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:44495 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751118AbYHWFJT convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 01:09:19 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjwFADMyr0hMRKxB/2dsb2JhbACBZbMAgWiDKw
-Date: Sat, 23 Aug 2008 01:09:16 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC PATCH] Writer-biased low-latency rwlock v8
-Message-ID: <20080823050916.GA1172@Krystal>
-References: <20080817075335.GA25019@Krystal> <alpine.LFD.1.10.0808170909420.3324@nehalem.linux-foundation.org> <20080817191034.GA5258@Krystal> <20080818232500.GF6732@linux.vnet.ibm.com> <20080819060417.GB24085@Krystal> <20080819073345.GA30285@Krystal> <alpine.LFD.1.10.0808190946560.3324@nehalem.linux-foundation.org> <20080821205045.GA24909@Krystal> <alpine.LFD.1.10.0808211356360.3487@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808211402370.3487@nehalem.linux-foundation.org>
+	Sat, 23 Aug 2008 01:24:05 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:37999 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751735AbYHWFYD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 01:24:03 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "Denis V. Lunev" <den@openvz.org>
+References: <20080727012212.GW28946@ZenIV.linux.org.uk>
+	<m1d4k2zui4.fsf@frodo.ebiederm.org>
+	<m1od3mthma.fsf@frodo.ebiederm.org>
+	<m1iqttnc7a.fsf@frodo.ebiederm.org>
+	<20080823033328.GH28946@ZenIV.linux.org.uk>
+Date: Fri, 22 Aug 2008 22:22:09 -0700
+In-Reply-To: <20080823033328.GH28946@ZenIV.linux.org.uk> (Al Viro's message of
+	"Sat, 23 Aug 2008 04:33:28 +0100")
+Message-ID: <m18wuoz4ou.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <alpine.LFD.1.10.0808211402370.3487@nehalem.linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 00:30:14 up 79 days,  9:10,  5 users,  load average: 0.47, 0.28,
-	0.27
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: *;Al Viro <viro@ZenIV.linux.org.uk>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
+	*      [score: 0.3611]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  2.2 XMSubMetaSxObfu_03 Obfuscated Sexy Noun-People
+	*  1.6 XMSubMetaSx_00 1+ Sexy Words
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [git pull] VFS patches, the first series
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Linus Torvalds (torvalds@linux-foundation.org) wrote:
-> 
-> 
-> On Thu, 21 Aug 2008, Linus Torvalds wrote:
-> > 
-> > That leaves 30 bits for readers. If you still think you need to "limit the 
-> > number of readers", then you aren't getting it.
-> 
-[...]
-> and I'm pretty damn sure that that should be totally sufficient for a 
-> spinning rwlock. The non-spinning one is more complex just because the 
-> unlock paths need to guarantee that something gets woken up, that just 
-> isn't an issue when you do spinlocks.
-> 
-> Now, in the slow-path:
->  - on the rwlock slowpath side, set bit#1 to make sure that readers get 
->    caught in the slowpath
->  - then do a *separate* count of how many pending readers and writers 
->    (ie the ones that got caught into the slowpath) you have (one word 
->    each is probably fine), and then the slowpaths can just do the right 
->    thing depending on whether there are pending readers/writers.
-> 
-> See? The main lock needs not worry about number of writers AT ALL, because 
-> it's totally irrelevant. So don't worry about running out of bits. You 
-> won't. Just put those counts somewhere else! The only thing that matters 
-> for the main lock word is whether there are active readers (30 bits), and 
-> whether there is an active writer (there can only ever be one: 1 bit), and 
-> whether new readers should be trapped (1 bit).
-> 
-> If you worry about overflows, you're doing something wrong.
-> 
-> 			Linus
+Al Viro <viro@ZenIV.linux.org.uk> writes:
 
-Hi Linus,
+> On Thu, Aug 21, 2008 at 05:08:25PM -0700, Eric W. Biederman wrote:
+>
+>> I'm not certain what to do about it.  The semantics of the how the
+>> sysctl tables are access have changed significantly.  Now the first 
+>> sysctl table to describe a directory must remain until there are no
+>> other tables that have entries in that directory and a sysctl table
+>> must have a pure path of directories for any portion of the address
+>> space it shares with an earlier sysctl table.  This is noticeably
+>> different from the union mount semantics we have had previously for
+>> the sysctl tables.
+>
+> Note that the old semantics had a lovely inherent problem (leaving aside
+> the utterly insane amount of walking and re-walking the trees, as you've
+> found out the hard way - don't tell me you hadn't cursed it when writing
+> the previous version of proc_sysctl.c): there's redundancy between the
+> trees.  At the very least, just what are we supposed to get when the
+> stems do not match each other - either in permissions or in ctl_name?
 
-After having had a look 15 times more at your rwlock code, and again at
-your answer, in loops, I come to the conclusion that I made a terrible
-job at explaining the core idea beneath my rwlock design. So let's try
-to make it more obvious. I am going to keep this explanation short.
+That case is simple.  We never allowed overlapping leaves, and all of
+the directories had essentially the same permissions.  Beyond that
+I added checks in sysctl_check to make certain we are never out of
+sync. 
 
-First, the goal : to kill latency induced by rwlocks.
+As for the walking and rewalking I was never fond of it but it was
+simple and worked.
 
-Now, let me explain why I need at least not one, but _four different_
-contention bits. Simply because there are four types of contention, one
-for each execution context which may take the read lock. (irq, softirq,
-non-preemptable, preemptable)
+So far I am not a fan of the new semantics.
 
-So let's suppose I share the rwlock between non-preemptable writers,
-non-preemptable readers and interrupt context readers. The idea is this:
-If I want to take the write lock, I'll have to protect against both
-non-preemptable and interrupt readers (and also against other writers).
+>> If it doesn't look to bad to maintain the new semantics it looks like
+>> the right thing to do is to add some additional checks so we get more
+>> precise warnings (who knows what out of tree sysctl code will do) and
+>> to find someplace I can insert a net/ipv4/neigh sysctl directory into
+>> (ipv4_net_table looks like it will work) to keep the network namespace
+>> code working safely.
+>> 
+>> Al btw nice trick using compare to keep the dentries separate allowing
+>> us to cache everything in /proc.  I feel silly for missing that one.
+>> Want to get together in the next couple of weeks and build a tree that
+>> updates the sysctls infrastructure to suck less?
+>
+> Fine by me...  BTW, fixing that particular crap is not hard - you need
+> to have the entry in question show up before either interface, that's all.
+> I missed that part of ordering mess, to be honest.  I'll look into that,
+> hopefully will post the fix later tonight.
 
-A way to do that without inducing high interrupt latency with current
-rwlocks would be for the writer to take _two_ locks, not just one. The
-first excludes preemptable readers and the second excludes irqs. So we
-have :
+Thanks for looking.
 
-For the writer :
+The ordering problem is self inflicted as you introduced an ordering
+constraint where none existed previously, and it seems unnecessary.
 
-preempt_disable();
-write_lock(&preempt_rwlock);
+I'm currently tearing my hair out trying to think of a reasonable
+way to audit the current sysctl usage to see if there is anything
+else that was missed.
 
-local_irq_disable();
-write_lock(&irq_rwlock);
+> FWIW, I'd very much prefer ->d_compare() trick to the horrors you guys
+> are doing around sysfs; it might or might not be feasible depending on
+> what visibility rules you end up with there, but if it's feasible at all
+> I'd rather go for it and avoid the entire 'separate backing store' mess.
+> IIRC, I had described that scheme to you quite a few months ago in sysfs
+> context; got no response back then...
 
-/* Write access */
+Weird.  I must have missed seeing it, as I don't have any recollection of
+it.
 
-write_unlock(&irq_rwlock);
-local_irq_enable();
+There are two pieces of the problem.  
+- How do we get a dentry tree that the vfs won't gag on.  Without
+  knowing how to successfully implement the dcompare trick it required
+  2 dentry trees.
 
-write_unlock(&preempt_rwlock);
-preempt_enable();
+- Monitoring.  It is desirable to be able to mount the filesystem such that
+  someone outside the namespace can get a view of what the folks inside the
+  namespace see.  Roughly like is done with /proc/net today.
 
-And the readers :
+Neither of those two cases requires multiple dentry trees and the
+tagged sysfs dirents can easily support an operation like is_seen.
 
-Interrupt :
-read_lock(&irq_rwlock);
-...
-read_unlock(&irq_rwlock);
+I don't think the dcompare trick is general enough to support discriminating
+on something besides the current process.  Which leads to problems with
+monitoring.
 
-non-preemptable :
-read_lock(&preempt_rwlock);
-...
-read_unlock(&preempt_rwlock);
-
-
-If you still wonder why I need to take two locks, thus elevating the
-context priority by exluding one context at a time, we can go to this
-example showing why current rwlock use in the kernel produces such high
-latencies. The current use is :
-
-For the writer, we exclude all the readers in one go :
-
-local_irq_disable();
-write_lock(&big_lock_against_all_readers);
-
-/* Write access */
-
-write_unlock(&big_lock_against_all_readers);
-local_irq_enable();
-
-write_unlock(&preempt_rwlock);
-preempt_enable();
-
-And for the readers :
-
-Interrupt :
-read_lock(&big_lock_against_all_readers);
-...
-read_unlock(&big_lock_against_all_readers);
-
-non-preemptable :
-read_lock(&big_lock_against_all_readers);
-...
-read_unlock(&big_lock_against_all_readers);
-
-
-And where is the problem ? In the following execution sequence :
-- non-preemptable reader takes the read lock
-- writer disables irqs
-- writer takes the write lock, contended by the reader
-  - hrm, the reader can take a while to complete, may be iterating on
-    the tasklist, interrupted by irqs and softirqs...
-
-This contention is pretty bad because interrupts are disabled while we
-busy-loop. And yes, the new implementation you proposed *does* suffer
-from the same problem. Now if you go in the multiple locks scenario I
-explained above, you'll notice that you don't have this problem. Then
-comes the question : how can we efficiently take many locks, one per
-reader execution context we want to exclude.
-
-This is where we need to have at _least_ one contention bit _per
-context_. Because at a given moment, non-preemptable readers can be
-contended, but not irq readers. But we also have to know when a
-particular reader execution context is locked out so that the writer
-knows it has exclusive access and can therefore either disable
-interrupts and exclude interrupt readers or finally access the critical
-section. Therefore, we need to keep one reader count _per context_,
-which makes that 4 reader counts (irq, softirq, non-preemptable,
-preemptable). And that's where we start being short on bits.
-
-But my current maximums for number of readers is not a problem,
-especially because I detect overflow beforehand using cmpxchg and
-busy-loop in the rare event these counters would be full. And I am not
-limited to NR_CPUS _at all_ anymore, as shows these constants :
-
-#define PTHREAD_RMAX    16384
-#define NPTHREAD_RMAX   2048
-#define SOFTIRQ_RMAX    512
-#define HARDIRQ_RMAX    256
-
-So, before discussing optimization or implementation details further,
-I'd like to know if I made myself clear enough about the design goal. If
-not, then again I must be doing a terrible job at explaining it and
-please let me know. I made a big patch cleanup after v8, so you might
-want to wait for us to come to an understanding before going through a
-next patch release.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Eric
