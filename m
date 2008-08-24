@@ -1,108 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbYHXOfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbYHXRVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754320AbYHXOfF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 10:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbYHXOe4
+	id S1755903AbYHXRVU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 13:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbYHXRVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 10:34:56 -0400
-Received: from smtp-vbr14.xs4all.nl ([194.109.24.34]:4704 "EHLO
-	smtp-vbr14.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751292AbYHXOez (ORCPT
+	Sun, 24 Aug 2008 13:21:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54499 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752018AbYHXRVI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 10:34:55 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: video4linux-list@redhat.com
-Subject: Re: [PATCH] V4L: fix retval in vivi driver for more than one device
-Date: Sun, 24 Aug 2008 16:34:36 +0200
-User-Agent: KMail/1.9.9
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Henne <henne@nachtwindheim.de>, linux-kernel@vger.kernel.org
-References: <48AF1E83.4000102@nachtwindheim.de> <Pine.LNX.4.64.0808241045530.2897@areia>
-In-Reply-To: <Pine.LNX.4.64.0808241045530.2897@areia>
+	Sun, 24 Aug 2008 13:21:08 -0400
+Date: Sun, 24 Aug 2008 10:20:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Jan Harkes <jaharkes@cs.cmu.edu>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] readdir mess
+In-Reply-To: <20080824101014.GN28946@ZenIV.linux.org.uk>
+Message-ID: <alpine.LFD.1.10.0808241017580.3363@nehalem.linux-foundation.org>
+References: <20080812062241.GQ28946@ZenIV.linux.org.uk> <87ej4u9nf5.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org> <20080812181057.GR28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121316570.3462@nehalem.linux-foundation.org>
+ <20080812203808.GV28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121351570.3462@nehalem.linux-foundation.org> <20080813000433.GZ28946@ZenIV.linux.org.uk> <20080815050613.GJ4422@cs.cmu.edu> <alpine.LFD.1.10.0808150940110.3324@nehalem.linux-foundation.org>
+ <20080824101014.GN28946@ZenIV.linux.org.uk>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808241634.36653.hverkuil@xs4all.nl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 24 August 2008 16:00:45 Mauro Carvalho Chehab wrote:
-> This patch is not 100% OK, for some reasons:
->
-> 1) since ret won't be initialized anymore, it will generate
-> compilation warnings;
->
-> 2) with the current code, if you ask to allocate, let's say, 3
-> virtual drivers, and the second or the third fails, you'll still have
-> one allocated. With your change, you'll de-allocate even the ones
-> that succeeded. IMO, the better is to allow using the ones that
-> succeeded.
->
-> That's said, I can see other issues on the current vivi.c code:
->
-> 1) what happens if someone uses n_dev=0? It will return a wrong error
->     code.
->
-> 2) there are still some cases where the driver allocates less devices
-> than requested, but it will fail to register, and all stuff will be
-> de-allocated;
->
-> 3) what if n_dev is a big number? Currently, i think videodev will
-> allow you to register up to 32 video devices of this type, even if
-> you have memory for more, due to some limits inside videodev, and due
-> to the number of minors allocated for V4L.  IMO, the driver should
-> allocate up to the maximum allowed devices by videodev, and let users
-> use they.
->
-> Anyway, thanks for your patch. For sure we need to do some fixes
-> here. I'll try to address all those stuff into a patch.
-
-Hi Mauro,
-
-Please note that I am working on creating a much improved V4L 
-infrastructure to take care of such things. It's simply nuts that v4l 
-drivers need to put in all the plumbing just to be able to have 
-multiple instances.
-
-In particular, all these limitations on the number of instances should 
-disappear (unless you run out of minors).
-
-Regards,
-
-	Hans
-
->
-> Cheers,
-> Mauro.
->
-> On Fri, 22 Aug 2008, Henne wrote:
-> > From: Henrik Kretzschmar <henne@nachtwindheim.de>
-> > Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
-> >
-> > The variable ret should be set for each device to -ENOMEM, not only
-> > the first.
-> >
-> > diff --git a/drivers/media/video/vivi.c
-> > b/drivers/media/video/vivi.c index 3518af0..d739b59 100644
-> > --- a/drivers/media/video/vivi.c
-> > +++ b/drivers/media/video/vivi.c
-> > @@ -1106,11 +1106,12 @@ static struct video_device vivi_template =
-> > {
-> >
-> > static int __init vivi_init(void)
-> > {
-> > -	int ret = -ENOMEM, i;
-> > +	int ret, i;
-> > 	 struct vivi_dev *dev;
-> > 	 struct video_device *vfd;
-> >
-> > 	for (i = 0; i < n_devs; i++) {
-> > +		ret = -ENOMEM;
-> > 		 dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-> > 		 if (NULL == dev)
-> > 			 break;
 
 
+On Sun, 24 Aug 2008, Al Viro wrote:
+> 
+> One obvious note: that'll break old_readdir() on coda.  There you need to
+> change the existing check (you need to check buf.result, then ignore error
+> unless buf.result ended up 0).
+
+Hmm? old_readdir() was the only one that I didn't change, because it 
+didn't need changing. It already ignores the return value of 
+"vfs_readdir()" entirely if it is positive or zero, and takes it from 
+buf.result.
+
+So old_readdir() literally doesn't care at all (and never has) whether a 
+->readdir() function returns zero or a positive number. So changing coda 
+readdir() it to return zero _instead_ of a positive number makes 
+absolutely zero difference: old_readdir() will do the same thing 
+regardless.
+
+What am I missing?
+
+		Linus
