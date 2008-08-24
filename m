@@ -1,158 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753126AbYHXF2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbYHXGDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753126AbYHXF2H (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 01:28:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYHXF1z
+	id S1753888AbYHXGDS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 02:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbYHXGDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 01:27:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37955 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750801AbYHXF1y (ORCPT
+	Sun, 24 Aug 2008 02:03:08 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:40751 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751705AbYHXGDH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 01:27:54 -0400
-Date: Sat, 23 Aug 2008 22:27:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Zev Weiss <zevweiss@gmail.com>
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Rodolfo Giometti <giometti@enneenne.com>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] [MTD] mtdchar.c: Fix regression in MEMGETREGIONINFO
- ioctl()
-Message-Id: <20080823222707.2fb972b5.akpm@linux-foundation.org>
-In-Reply-To: <48AFC5ED.50005@gmail.com>
-References: <48ABCC0B.40607@gmail.com>
-	<20080822153451.bb79bd1f.akpm@linux-foundation.org>
-	<48AFC5ED.50005@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 24 Aug 2008 02:03:07 -0400
+Message-ID: <48B0F88C.2090403@cs.columbia.edu>
+Date: Sun, 24 Aug 2008 01:58:36 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Louis.Rilling@kerlabs.com
+CC: dave@linux.vnet.ibm.com, arnd@arndb.de, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: Re: [RFC v2][PATCH 2/9] General infrastructure for checkpoint	restart
+References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu> <Pine.LNX.4.64.0808202303460.17436@takamine.ncl.cs.columbia.edu> <20080821093529.GG581@hawkmoon.kerlabs.com>
+In-Reply-To: <20080821093529.GG581@hawkmoon.kerlabs.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Aug 2008 01:10:21 -0700 Zev Weiss <zevweiss@gmail.com> wrote:
 
-> Andrew Morton wrote:
-> > On Wed, 20 Aug 2008 00:47:23 -0700
-> > Zev Weiss <zevweiss@gmail.com> wrote:
-> > 
-> >> From: Zev Weiss <zevweiss@gmail.com>
-> >>
-> >> The MEMGETREGIONINFO ioctl() in mtdchar.c was clobbering user memory by
-> >> overwriting more than intended, due to the size of struct
-> >> mtd_erase_region_info changing in commit
-> >> 0ecbc81adfcb9f15f86b05ff576b342ce81bbef8.
-> >>
-> >> Fix uses a member-by-member copy into a local struct region_info_user,
-> >> which is then copy_to_user()'d (and matches the size correctly by being
-> >> of the same type as the pointer passed in the ioctl() call).
-> >>
-> >> Signed-off-by: Zev Weiss <zevweiss@gmail.com>
-> >> Tested-by: Zev Weiss <zevweiss@gmail.com>
-> >> ---
-> >> I had been having some problems with userspace memory corruption, and traced
-> >> them to a MEMGETREGIONINFO ioctl() on an MTD device.  I applied this patch and
-> >> it seems to fix the problem, though I am not an expert and there may be a more
-> >> correct way to go about doing this.  I'm also new at submitting patches, so
-> >> hopefully I haven't screwed up the patch-submission etiquette too
-> >> horrifically.
-> >>
-> >>   drivers/mtd/mtdchar.c |   11 +++++++++--
-> >>   1 files changed, 9 insertions(+), 2 deletions(-)
-> >>
-> >> diff --git a/drivers/mtd/mtdchar.c b/drivers/mtd/mtdchar.c
-> >> index 13cc67a..0acb135 100644
-> >> --- a/drivers/mtd/mtdchar.c
-> >> +++ b/drivers/mtd/mtdchar.c
-> >> @@ -411,14 +411,21 @@ static int mtd_ioctl(struct inode *inode, struct file *file,
-> >>   	case MEMGETREGIONINFO:
-> >>   	{
-> >>   		struct region_info_user ur;
-> >> +		struct mtd_erase_region_info *kr;
-> >>
-> >>   		if (copy_from_user(&ur, argp, sizeof(struct region_info_user)))
-> >>   			return -EFAULT;
-> >>
-> >>   		if (ur.regionindex >= mtd->numeraseregions)
-> >>   			return -EINVAL;
-> >> -		if (copy_to_user(argp, &(mtd->eraseregions[ur.regionindex]),
-> >> -				sizeof(struct mtd_erase_region_info)))
-> >> +
-> >> +		kr = &(mtd->eraseregions[ur.regionindex]);
-> >> +
-> >> +		ur.offset = kr->offset;
-> >> +		ur.erasesize = kr->erasesize;
-> >> +		ur.numblocks = kr->numblocks;
-> >> +
-> >> +		if (copy_to_user(argp, &ur, sizeof(struct region_info_user)))
-> >>   			return -EFAULT;
-> >>   		break;
-> >>   	}
-> > 
-> > ug.
-> > 
-> > Putting a kernel pointer into a shared-with-userspace data structure
-> > (struct mtd_erase_region_info) was a big mistake.
-> > 
-> > Copying a `struct region_info_user' back to userspace seems better than
-> > copying a `struct mtd_erase_region_info', but what do I know?
-> > 
-> > Actually...
-> > 
-> > Before 0ecbc81adfcb9f15f86b05ff576b342ce81bbef8, `struct
-> > mtd_erase_region_info' had three members, all u32.  We were copying
-> > three u32's out to userspace.
-> > 
-> > After 0ecbc81adfcb9f15f86b05ff576b342ce81bbef8, `struct
-> > mtd_erase_region_info' has four members: three u32's and one ulong*. 
-> > We're copying three u32's and one ulong* out to userspace.
-> > 
-> > After your change, we're copying _four_ u32's out to userspace, so
-> > there still is potential for scribbling on unsuspecting userspace?
-> > 
-> > If that reading is right, we need to go back to copying just the three
-> > u32's.  Perhaps via
-> > 
-> > struct mtd_erase_region_info {
-> > 	struct {
-> > 		u_int32_t offset;
-> > 		u_int32_t erasesize;
-> > 		u_int32_t numblocks;
-> > 	} user_part;
-> > 	unsigned long *lockmap;
-> > };
-> > 
-> > or similar.
-> > 
-> > David?  Help?  2.6.25.x anmd 2.6.26.x need fixing as well.
-> > 
-> > 
+
+Louis Rilling wrote:
+> On Wed, Aug 20, 2008 at 11:04:13PM -0400, Oren Laadan wrote:
+>> Add those interfaces, as well as helpers needed to easily manage the
+>> file format. The code is roughly broken out as follows:
+>>
+>> ckpt/sys.c - user/kernel data transfer, as well as setup of the
+>> checkpoint/restart context (a per-checkpoint data structure for
+>> housekeeping)
+>>
+>> ckpt/checkpoint.c - output wrappers and basic checkpoint handling
+>>
+>> ckpt/restart.c - input wrappers and basic restart handling
+>>
+>> Patches to add the per-architecture support as well as the actual
+>> work to do the memory checkpoint follow in subsequent patches.
+>>
 > 
-> Hmm.  Well, I may be misunderstanding what you're saying (again, I'm very much
-> a newbie to kernelspace), but I *think* the "copying four u32's out to
-> userspace" thing isn't really a problem with my patch.  It does certainly copy
-> those four u32's, but given that `ur' (struct mtd_region_info_user) is
-> initialized by copying from userspace, its fourth u32 (the `regionindex'
-> member) should be identical when copied back out to userspace, given that it's
-> not touched in the memberwise modification of the struct.
-
-OK, that's fortuitously bug-free in single-threaded userspace but
-fantastically-improbably-buggy if userspace is threaded.
-
-But it's something the kernel shouldn't be doing.
-
->  So yes, it is
-> copying 4 bytes more than is strictly necessary, but it seemed like a
-> reasonably clean way of going about it (to me, for what that's worth).
+> [...]
 > 
-> In my particular situation it didn't do anything unexpected in my testing (and
-> restored the normal behavior I had when previously running 2.6.17.7).
+>> diff --git a/checkpoint/sys.c b/checkpoint/sys.c
+>> new file mode 100644
+>> index 0000000..2891c48
+>> --- /dev/null
+>> +++ b/checkpoint/sys.c
 > 
-> On the other hand, if I'm missing something completely, please let me know,
-> and perhaps I can prepare a more suitable fix.
+> [...]
+> 
+>> +/*
+>> + * helpers to manage CR contexts: allocated for each checkpoint and/or
+>> + * restart operation, and persists until the operation is completed.
+>> + */
+>> +
+>> +static atomic_t cr_ctx_count;	/* unique checkpoint identifier */
+> 
+> I thought we agreed that this counter should be per-container. Perhaps add a
+> TODO here?
 
-"good enough" is never good enough ;)
+True.
 
-What is the ideal implementation?  Let's implement that.
+> 
+>> +
+>> +void cr_ctx_free(struct cr_ctx *ctx)
+>> +{
+>> +
+>> +	if (ctx->file)
+>> +		fput(ctx->file);
+>> +	if (ctx->vfsroot)
+>> +		path_put(ctx->vfsroot);
+>> +
+>> +	free_pages((unsigned long) ctx->tbuf, CR_TBUF_ORDER);
+>> +	free_pages((unsigned long) ctx->hbuf, CR_HBUF_ORDER);
+>> +
+>> +	kfree(ctx);
+>> +}
+>> +
+>> +struct cr_ctx *cr_ctx_alloc(pid_t pid, struct file *file, unsigned long flags)
+>> +{
+>> +	struct cr_ctx *ctx;
+>> +
+>> +	ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
+>> +	if (!ctx)
+>> +		return NULL;
+>> +
+>> +	ctx->tbuf = (void *) __get_free_pages(GFP_KERNEL, CR_TBUF_ORDER);
+>> +	ctx->hbuf = (void *) __get_free_pages(GFP_KERNEL, CR_HBUF_ORDER);
+>> +	if (!ctx->tbuf || !ctx->hbuf)
+>> +		goto nomem;
+>> +
+>> +	ctx->pid = pid;
+>> +	ctx->flags = flags;
+>> +
+>> +	ctx->file = file;
+>> +	get_file(file);
+>> +
+>> +	/* assume checkpointer is in container's root vfs */
+> 
+> I'm a bit puzzled by this assumption. I would say: either this is a
+> self-checkpoint (only current process), or this is a container checkpoint. In
+> the latter case, I expect that in the general case the checkpointer lives
+> outside the container (and the interface of sys_checkpoint() below confirms
+> this), so it's root fs is probably not the container's one.
+> 
+> Does it differ from what you're planning?
+
+You are correct. We lack infrastructure for what I'd call "container-object",
+and the patchset does not yet tackle a container and multiple tasks, so this
+is an interim solution. Will add a FIXME comment.
+
+Thanks,
+
+Oren.
 
