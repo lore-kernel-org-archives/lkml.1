@@ -1,64 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbYHXRtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbYHXLBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756070AbYHXRtV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 13:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYHXRtM
+	id S1754895AbYHXLBn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 07:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbYHXLBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 13:49:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56309 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752007AbYHXRtL (ORCPT
+	Sun, 24 Aug 2008 07:01:34 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:17147 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751850AbYHXLBd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 13:49:11 -0400
-Date: Sun, 24 Aug 2008 10:48:37 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, David Greaves <david@dgreaves.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
-In-Reply-To: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
-Message-ID: <alpine.LFD.1.10.0808241030060.3363@nehalem.linux-foundation.org>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sun, 24 Aug 2008 07:01:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=vYxlyWOF3SDQEvFsnkTUnuSi0wYFAyNPUEbuNEtyhG1W804aF/nji4b1QfWZ8QB4Lc
+         cArgdZ+Q6A2FgylaCLXtMShE+GKrBV5rKjbjSNMpDcEmPP3tu2dxc0xyhHfPvl5+D1hF
+         2gxDlkVhjrCyLCQ6CjedveatNHljKu+NtFV+Y=
+Message-ID: <48B13F88.3080306@gmail.com>
+Date: Sun, 24 Aug 2008 04:01:28 -0700
+From: Zev Weiss <zevweiss@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] [MTD] mtdchar.c: Fix regression in MEMGETREGIONINFO ioctl()
+References: <48ABCC0B.40607@gmail.com>	<20080822153451.bb79bd1f.akpm@linux-foundation.org>	<48AFC5ED.50005@gmail.com> <20080823222707.2fb972b5.akpm@linux-foundation.org>
+In-Reply-To: <20080823222707.2fb972b5.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+ > On Sat, 23 Aug 2008 01:10:21 -0700 Zev Weiss <zevweiss@gmail.com> wrote:
+ >
+ >> Hmm.  Well, I may be misunderstanding what you're saying (again, I'm very much
+ >> a newbie to kernelspace), but I *think* the "copying four u32's out to
+ >> userspace" thing isn't really a problem with my patch.  It does certainly copy
+ >> those four u32's, but given that `ur' (struct mtd_region_info_user) is
+ >> initialized by copying from userspace, its fourth u32 (the `regionindex'
+ >> member) should be identical when copied back out to userspace, given that it's
+ >> not touched in the memberwise modification of the struct.
+ >
+ > OK, that's fortuitously bug-free in single-threaded userspace but
+ > fantastically-improbably-buggy if userspace is threaded.
+ >
+ > But it's something the kernel shouldn't be doing.
+ >
+
+Ah, good point -- that hadn't occurred to me at all.  Though it looks pretty
+clumsy/simpleminded to me, I guess something like this would avoid copying and 
+rewriting the fourth u32 ("Well, duh" may be the appropriate response here):
+
+diff --git a/drivers/mtd/mtdchar.c b/drivers/mtd/mtdchar.c
+index 13cc67a..424f318 100644
+--- a/drivers/mtd/mtdchar.c
++++ b/drivers/mtd/mtdchar.c
+@@ -410,16 +410,20 @@ static int mtd_ioctl(struct inode *inode, struct file *file,
+
+         case MEMGETREGIONINFO:
+         {
+-               struct region_info_user ur;
++               u32 ur_idx;
++               struct mtd_erase_region_info *kr;
++               struct region_info_user *ur = (struct region_info_user *) argp;
+
+-               if (copy_from_user(&ur, argp, sizeof(struct region_info_user)))
++               if (get_user(ur_idx,&(ur->regionindex)))
+                         return -EFAULT;
+
+-               if (ur.regionindex >= mtd->numeraseregions)
+-                       return -EINVAL;
+-               if (copy_to_user(argp, &(mtd->eraseregions[ur.regionindex]),
+-                               sizeof(struct mtd_erase_region_info)))
++               kr = &(mtd->eraseregions[ur_idx]);
++
++               if (put_user(kr->offset, &(ur->offset))
++                   || put_user(kr->erasesize, &(ur->erasesize))
++                   || put_user(kr->numblocks, &(ur->numblocks)))
+                         return -EFAULT;
++
+                 break;
+         }
 
 
-On Sat, 23 Aug 2008, Rafael J. Wysocki wrote:
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11405
-> Subject		: 2.6.27-rc3 segfault on cold boot; not on warm boot.
-> Submitter	: David Greaves <david@dgreaves.com>
-> Date		: 2008-08-21 9:45 (3 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121931198904777&w=4
+[Note: this is not even so much as compile-tested, and will remain that way
+until Monday, but I think you get the picture.]
 
-It would be good to have some kind of bisection of this one, because it 
-looks pretty odd. Also, google doesn't find anybody else seeing that 
-"segfault at ffffffbf", even though it seems to be very consistent for 
-David. So I don't think we'll be able to even _guess_ where it is without 
-some more information about exactly when it started happening.
+ >>  So yes, it is
+ >> copying 4 bytes more than is strictly necessary, but it seemed like a
+ >> reasonably clean way of going about it (to me, for what that's worth).
+ >>
+ >> In my particular situation it didn't do anything unexpected in my testing (and
+ >> restored the normal behavior I had when previously running 2.6.17.7).
+ >>
+ >> On the other hand, if I'm missing something completely, please let me know,
+ >> and perhaps I can prepare a more suitable fix.
+ >
+ > "good enough" is never good enough ;)
+ >
+ > What is the ideal implementation?  Let's implement that.
+ >
+ >
 
-Since it's present in 2.6.26 too, it's clearly not a regression from that 
-one, but perhaps more importantly, since it's apparently an old one I'd 
-have expected more reports like this if it was some common problem. And 
-the warm-vs-cold-boot thing makes me think it's some hardware setup issue. 
+Well that, I'm afraid, is a question that I think would require somewhat
+greater depth of understanding than I possess (and I very much doubt the above
+patch is it).  Given what you said earlier, it seems like the ideal solution
+would involve a reworking of the patch that added the `lockmap' member to
+struct mtd_erase_region_info, but I'm probably not the person to be messing
+around with that.  So...anyone-who-knows-mtd-better-than-I, care to comment?
 
-Possibly the disk controller, possibly the CPU (eg some MTRR/PAT 
-setup issue or TLB thing). But the dmesg's are all from late enough at 
-boot that I can't even tell what disk controller it is (except that it is 
-SATA), nor can I tell what CPU it is.
 
-But again, if it was some MTRR/PAT issue, I'd expect a _lot_ more reports 
-of this. 
-
-MD/XFS sounds unlikely, since they should have absolutely nothing that 
-could possibly matter for cold/hot boot.
-
-			Linus
