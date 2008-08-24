@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbYHWRMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbYHXS6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754891AbYHWRMa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 13:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbYHWRMB
+	id S1756248AbYHXS6v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 14:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbYHXS6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 13:12:01 -0400
-Received: from const.mimas.ru ([88.200.217.78]:44319 "EHLO const.mimas.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752805AbYHWRMA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 13:12:00 -0400
-Message-ID: <48B044DC.5040700@const.mimas.ru>
-Date: Sat, 23 Aug 2008 22:11:56 +0500
-From: Constantin Baranov <const@const.mimas.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.16) Gecko/20080805 SeaMonkey/1.1.11
+	Sun, 24 Aug 2008 14:58:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35321 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753061AbYHXS6m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 14:58:42 -0400
+Date: Sun, 24 Aug 2008 11:58:09 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
+In-Reply-To: <19f34abd0808241143t6f5239d7o679135e9e974fe63@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0808241152370.3363@nehalem.linux-foundation.org>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>  <alpine.LFD.1.10.0808241050180.3363@nehalem.linux-foundation.org> <19f34abd0808241143t6f5239d7o679135e9e974fe63@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, rpurdie@rpsys.net
-Subject: Re: [PATCH 2.6.27-rc3] led: driver for LEDs on PCEngines ALIX.2 and
- ALIX.3 boards
-References: <48AB019D.6080302@const.mimas.ru>	<20080822115150.6b3907a4.akpm@linux-foundation.org>	<48AF2ABF.8080901@const.mimas.ru> <20080822143143.4202f940.akpm@linux-foundation.org>
-In-Reply-To: <20080822143143.4202f940.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 23 Aug 2008 02:08:15 +0500
-> Constantin Baranov <const@const.mimas.ru> wrote:
-> 
->>>  static int alix_led_resume(struct platform_device *dev)
->>>  {
->>>  	int i;
->>> +
->>>  	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
->>>  		led_classdev_resume(&alix_leds[i].cdev);
->>>  	return 0;
->>> @@ -92,7 +95,7 @@ static int __init alix_led_probe(struct 
->>>  		ret = led_classdev_register(&pdev->dev, &alix_leds[i].cdev);
->>>  
->>>  	if (ret < 0) {
->>> -		for (i = i - 2; i >= 0; i--)
->>> +		while (--i >= 0)
->>>  			led_classdev_unregister(&alix_leds[i].cdev);
->>>  	}
->> At the first iteration this while-loop will attempt to unregister
->> device that has failed and thus is not registered.
->> My for-loop starts from device immediately before failed one.
-> 
-> ug, OK, the complex expression in that for-loop is to blame.
-> 
-> For maintinability we should aim for code which is as simple and as
-> straightfroward as possible and which adheres to oft-used and
-> well-understood kernel idioms.
-> 
-> For example, this?
-> 
-> static int __init alix_led_probe(struct platform_device *pdev)
-> {
-> 	int i;
-> 	int ret;
-> 
-> 	for (i = 0; i < ARRAY_SIZE(alix_leds); i++) {
-> 		ret = led_classdev_register(&pdev->dev, &alix_leds[i].cdev);
-> 		if (ret < 0)
-> 			goto fail;
-> 	}
-> 	return 0;
-> 
-> fail:
-> 	while (--i >= 0)
-> 		led_classdev_unregister(&alix_leds[i].cdev);
-> 	return ret;
-> }
-> 
-> (note there's no longer a need for a fake initalisation of `ret')
-> 
->> Note that probe routine originates from leds-ams-delta.c.
-> 
-> That's what you get for copying stuff :(
 
-Well, this variant looks better and correct and still works.
-Should I post again patch or fix-patch?
+
+On Sun, 24 Aug 2008, Vegard Nossum wrote:
+> 
+> I haven't really used the hlists before, so my first instinct was to
+> do what is obvious.
+
+I do agree that the hlist versions aren't very nice in this regard. The 
+regular lists are much better at moving lists around.
+
+> Other than that, I guess open-coding list ops is also not very good 
+> programming practice? :-)
+
+Agreed. It would be better if the people who use hlists most (I think that 
+would be networking) would think about this.
+
+> But... feel free to submit your own patch. Oh, what am I saying.
+
+Silly boy. Next you'll ask me to _test_ any patches I send out.
+
+Anyway, I think your patch is likely fine, I just thought it looked a bit 
+odd to have a loop to move a list from one head pointer to another.
+
+But regardless, it would need some testing. Daniel?
+
+			Linus
