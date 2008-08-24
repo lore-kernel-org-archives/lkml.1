@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbYHXSE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbYHXIkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756387AbYHXSE0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 14:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbYHXSER
+	id S1754725AbYHXIkR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 04:40:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbYHXIkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 14:04:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36920 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752013AbYHXSEQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 14:04:16 -0400
-Date: Sun, 24 Aug 2008 11:03:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Vegard Nossum <vegard.nossum@gmail.com>,
-       Daniel J Blueman <daniel.blueman@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
-In-Reply-To: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
-Message-ID: <alpine.LFD.1.10.0808241050180.3363@nehalem.linux-foundation.org>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 24 Aug 2008 04:40:05 -0400
+Received: from main.gmane.org ([80.91.229.2]:37725 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752048AbYHXIkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 04:40:04 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jari Aalto <jari.aalto@cante.net>
+Subject: Re: 2.6.25 DMA: Out of SW-IOMMU space - Asus M2N32 AMD 8GB memory
+Date: Sun, 24 Aug 2008 11:37:54 +0300
+Organization: Private
+Message-ID: <874p5a24gt.fsf@jondo.cante.net>
+References: <87od3k2egi.fsf@jondo.cante.net>
+	<m3vdxrhq0o.fsf@maximus.localdomain>
+	<200808231458.39206.alistair@devzero.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: a91-155-179-127.elisa-laajakaista.fi
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/22.2 (gnu/linux)
+Cancel-Lock: sha1:AVqmlk+JWh0NeDiRhdHZwq9/BtU=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alistair John Strachan <alistair@devzero.co.uk> writes:
 
+> On Saturday 23 August 2008 13:31:03 Krzysztof Halasa wrote:
+>
+>> Jari Aalto <jari.aalto@cante.net> writes:
+>> >         [1] Aug 21 11:01:19 jondo kernel: [174628.275859] DMA: Out of
+>> > SW-IOMMU space for 65536 bytes at device 0000:00:0d.0 model name      :
+>> > AMD Athlon(tm) X2 Dual Core Processor
+>> >         BE-2400
+>>
+>> grep GART_IOMMU .config
+>
+> Agreed, you shouldn't be using the SW-IOMMU on this processor.
 
-On Sat, 23 Aug 2008, Rafael J. Wysocki wrote:
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11410
-> Subject		: SLUB list_lock vs obj_hash.lock...
-> Submitter	: Daniel J Blueman <daniel.blueman@gmail.com>
-> Date		: 2008-08-22 21:48 (2 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121944176609042&w=4
+Are these the correct boot options, without swiotlb?
 
-This one now has a suggested patch for Daniel to try from Vegard, but no 
-reply yet:
+   iommu=noagp,noaperture,off
 
-	http://marc.info/?l=linux-kernel&m=121946972307110&w=4
+Or just:
 
-Vegard, I think your patch is a bit odd, though. The result of your patch 
-is
+   iommu=off
 
- - first loop:
+> That said, do you use the r8169 driver with jumbo frames enabled? Francois
+> Romieu just fixed a leak in it that affected Intel platforms (because some
+> have no hardware IOMMU).
 
-	hlist_for_each_entry_safe(obj, node, tmp, &db->list, node) {
-		hlist_del(&obj->node);
-		hlist_add_head(&obj->node, &freelist);
-	}
+The onboard WiFi is in use:
 
-   and quite frankly, I don't see what the difference between that and a 
-   something like a simple
+        $ lsmod | grep rtl
+	rtl8187   39424  0
 
-	struct hlist_node *first = bd->list.first;
-	if (first) {
-		bd->list.first = NULL;
-		first->pprev = &first;
-	}
+        $ dmesg
 
-   really is?
+	[    2.758861] usb 1-9: new full speed USB device using ohci_hcd and address 4
+	[    2.978258] usb 1-9: configuration #1 chosen from 1 choice
+	[    2.985369] usb 1-9: New USB device found, idVendor=0bda, idProduct=8187
+	[    2.985372] usb 1-9: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+	[    2.985374] usb 1-9: Product: RTL8187_Wireless
+	[    2.985376] usb 1-9: Manufacturer: Manufacturer_Realtek_RTL8187_
+	[    2.985378] usb 1-9: SerialNumber: 0015AF0B59A6
 
-I dunno. We don't have list splicing ops for the hlist things.
+Jari
 
-		Linus
