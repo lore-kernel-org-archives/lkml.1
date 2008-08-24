@@ -1,133 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbYHXR4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753812AbYHXQl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbYHXR4A (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 13:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbYHXRzw
+	id S1753812AbYHXQl2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 12:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbYHXQlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 13:55:52 -0400
-Received: from nn7.de ([85.214.94.156]:42528 "EHLO nn7.de"
+	Sun, 24 Aug 2008 12:41:20 -0400
+Received: from il.qumranet.com ([212.179.150.194]:18137 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752062AbYHXRzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 13:55:51 -0400
-Subject: converting appletouch to usb autosuspend again...
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Oliver Neukum <oliver@neukum.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Jiri Kosina <jikos@jikos.cz>
-Content-Type: multipart/mixed; boundary="=-9ho4vgFXwXKm74UnqsP0"
-Date: Sat, 23 Aug 2008 21:00:18 +0000
-Message-Id: <1219525218.8221.31.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1751682AbYHXQlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 12:41:20 -0400
+Message-ID: <48B18F2E.8090108@qumranet.com>
+Date: Sun, 24 Aug 2008 19:41:18 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>
+CC: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: oops due to smp_call_function_single changes
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+My 2s x 2c Intel server (Xeon 5150) won't boot anymore.  I bisected this to
 
---=-9ho4vgFXwXKm74UnqsP0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+commit cc7a486cac78f6fc1a24e8cd63036bae8d2ab431
+Author: Nick Piggin <nickpiggin@yahoo.com.au>
+Date:   Mon Aug 11 13:49:30 2008 +1000
 
-Dear all,
-
-I wonder whether anyone else tried to get appletouch usb autosuspend to
-work. I've seen Oliver's patch but as it kept oopsing on me and I
-couldn't parse the usb_mark_last_busy logic I came up with the attached
-patch against (current git; at least didn't oops for me over the last
-several days and suspend/resume cycles).
-
-However things I don't understand, 
-
-a) is autosuspend on the appletouch driver used at all (how can I find
-out)
-
-b) do I need dev->intf->needs_remote_wakeup = 1; ?
-
-c) is line 33 in the patch safe to do ?
-
-And while we are at it I am still seeing these X falls back to hid mouse
-mode, only switching to console and back resolves this (looks like this
-only worked in previous kernels as resume from s2ram took a lot longer
-due to the IDE driver doing a couple of resets) - is there anything one
-could do about it?
-
-Soeren
-
-
---=-9ho4vgFXwXKm74UnqsP0
-Content-Disposition: attachment; filename=appletouch_autosuspend.diff
-Content-Type: text/x-patch; name=appletouch_autosuspend.diff; charset=ISO-8859-15
-Content-Transfer-Encoding: base64
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvaW5wdXQvbW91c2UvYXBwbGV0b3VjaC5jIGIvZHJpdmVycy9p
-bnB1dC9tb3VzZS9hcHBsZXRvdWNoLmMNCmluZGV4IDFmNDFhZTkuLjE5MDAzYzggMTAwNjQ0DQot
-LS0gYS9kcml2ZXJzL2lucHV0L21vdXNlL2FwcGxldG91Y2guYw0KKysrIGIvZHJpdmVycy9pbnB1
-dC9tb3VzZS9hcHBsZXRvdWNoLmMNCkBAIC0zNCw2ICszNCw3IEBADQogI2luY2x1ZGUgPGxpbnV4
-L3NsYWIuaD4NCiAjaW5jbHVkZSA8bGludXgvbW9kdWxlLmg+DQogI2luY2x1ZGUgPGxpbnV4L3Vz
-Yi9pbnB1dC5oPg0KKyNpbmNsdWRlIDxsaW51eC9tdXRleC5oPg0KIA0KIC8qIFR5cGUgb2YgdG91
-Y2hwYWQgKi8NCiBlbnVtIGF0cF90b3VjaHBhZF90eXBlIHsNCkBAIC0xNDAsMTAgKzE0MSwxMiBA
-QCBNT0RVTEVfREVWSUNFX1RBQkxFKHVzYiwgYXRwX3RhYmxlKTsNCiBzdHJ1Y3QgYXRwIHsNCiAJ
-Y2hhcgkJCXBoeXNbNjRdOw0KIAlzdHJ1Y3QgdXNiX2RldmljZQkqdWRldjsJCS8qIHVzYiBkZXZp
-Y2UgKi8NCisJc3RydWN0IHVzYl9pbnRlcmZhY2UJKmludGY7CQkvKiBvdXIgaW50ZXJmYWNlICov
-DQogCXN0cnVjdCB1cmIJCSp1cmI7CQkvKiB1c2IgcmVxdWVzdCBibG9jayAqLw0KIAlzaWduZWQg
-Y2hhcgkJKmRhdGE7CQkvKiB0cmFuc2ZlcnJlZCBkYXRhICovDQogCXN0cnVjdCBpbnB1dF9kZXYJ
-KmlucHV0OwkJLyogaW5wdXQgZGV2ICovDQogCWVudW0gYXRwX3RvdWNocGFkX3R5cGUJdHlwZTsJ
-CS8qIHR5cGUgb2YgdG91Y2hwYWQgKi8NCisJc3RydWN0IG11dGV4CQlwbV9tdXRleDsJLyogc2Vy
-aWFsaXplIGFjY2VzcyB0byBvcGVuL3N1c3BlbmQgKi8NCiAJYm9vbAkJCW9wZW47DQogCWJvb2wJ
-CQl2YWxpZDsJCS8qIGFyZSB0aGUgc2FtcGxlcyB2YWxpZD8gKi8NCiAJYm9vbAkJCXNpemVfZGV0
-ZWN0X2RvbmU7DQpAQCAtMjU5LDYgKzI2MiwxMSBAQCBzdGF0aWMgdm9pZCBhdHBfcmVpbml0KHN0
-cnVjdCB3b3JrX3N0cnVjdCAqd29yaykNCiAJaWYgKHJldHZhbCkNCiAJCWVycigiYXRwX3JlaW5p
-dDogdXNiX3N1Ym1pdF91cmIgZmFpbGVkIHdpdGggZXJyb3IgJWQiLA0KIAkJICAgIHJldHZhbCk7
-DQorDQorCS8qIGRldmljZSBpcyBpZGxlIGFuZCBhdmFpbGFibGUgZm9yIGF1dG9zdXNwZW5kICov
-DQorCW11dGV4X2xvY2soJmRldi0+cG1fbXV0ZXgpOw0KKwl1c2JfYXV0b3BtX2Rpc2FibGUoZGV2
-LT5pbnRmKTsNCisJbXV0ZXhfdW5sb2NrKCZkZXYtPnBtX211dGV4KTsNCiB9DQogDQogc3RhdGlj
-IGludCBhdHBfY2FsY3VsYXRlX2FicyhpbnQgKnh5X3NlbnNvcnMsIGludCBuYl9zZW5zb3JzLCBp
-bnQgZmFjdCwNCkBAIC01NDcsMjEgKzU1NSwzNyBAQCBzdGF0aWMgdm9pZCBhdHBfY29tcGxldGUo
-c3RydWN0IHVyYiAqdXJiKQ0KIHN0YXRpYyBpbnQgYXRwX29wZW4oc3RydWN0IGlucHV0X2RldiAq
-aW5wdXQpDQogew0KIAlzdHJ1Y3QgYXRwICpkZXYgPSBpbnB1dF9nZXRfZHJ2ZGF0YShpbnB1dCk7
-DQorCWludCBlcnJvciA9IHVzYl9hdXRvcG1fZ2V0X2ludGVyZmFjZShkZXYtPmludGYpOw0KKwlp
-ZiAoZXJyb3IpDQorCQlyZXR1cm4gZXJyb3I7DQogDQotCWlmICh1c2Jfc3VibWl0X3VyYihkZXYt
-PnVyYiwgR0ZQX0FUT01JQykpDQotCQlyZXR1cm4gLUVJTzsNCisJbXV0ZXhfbG9jaygmZGV2LT5w
-bV9tdXRleCk7DQorCWVycm9yPXVzYl9zdWJtaXRfdXJiKGRldi0+dXJiLCBHRlBfQVRPTUlDKTsN
-CiANCi0JZGV2LT5vcGVuID0gMTsNCi0JcmV0dXJuIDA7DQorCWlmICghZXJyb3IpDQorCSAgICBk
-ZXYtPm9wZW4gPSAxOw0KKw0KKwltdXRleF91bmxvY2soJmRldi0+cG1fbXV0ZXgpOw0KKw0KKwlp
-ZiAoZXJyb3IpDQorCQl1c2JfYXV0b3BtX3B1dF9pbnRlcmZhY2UoZGV2LT5pbnRmKTsNCisNCisJ
-cmV0dXJuIGVycm9yOw0KIH0NCiANCiBzdGF0aWMgdm9pZCBhdHBfY2xvc2Uoc3RydWN0IGlucHV0
-X2RldiAqaW5wdXQpDQogew0KIAlzdHJ1Y3QgYXRwICpkZXYgPSBpbnB1dF9nZXRfZHJ2ZGF0YShp
-bnB1dCk7DQogDQorCW11dGV4X2xvY2soJmRldi0+cG1fbXV0ZXgpOw0KKw0KIAl1c2Jfa2lsbF91
-cmIoZGV2LT51cmIpOw0KIAljYW5jZWxfd29ya19zeW5jKCZkZXYtPndvcmspOw0KIAlkZXYtPm9w
-ZW4gPSAwOw0KKw0KKwltdXRleF91bmxvY2soJmRldi0+cG1fbXV0ZXgpOw0KKw0KKwl1c2JfYXV0
-b3BtX3B1dF9pbnRlcmZhY2UoZGV2LT5pbnRmKTsNCiB9DQogDQogc3RhdGljIGludCBhdHBfaGFu
-ZGxlX2dleXNlcihzdHJ1Y3QgYXRwICpkZXYpDQpAQCAtNjE1LDkgKzYzOSwxMiBAQCBzdGF0aWMg
-aW50IGF0cF9wcm9iZShzdHJ1Y3QgdXNiX2ludGVyZmFjZSAqaWZhY2UsDQogCX0NCiANCiAJZGV2
-LT51ZGV2ID0gdWRldjsNCisJZGV2LT5pbnRmID0gaWZhY2U7DQogCWRldi0+aW5wdXQgPSBpbnB1
-dF9kZXY7DQogCWRldi0+dHlwZSA9IGlkLT5kcml2ZXJfaW5mbzsNCiAJZGV2LT5vdmVyZmxvd193
-YXJuZWQgPSBmYWxzZTsNCisJbXV0ZXhfaW5pdCgmZGV2LT5wbV9tdXRleCk7DQorDQogCWlmIChk
-ZXYtPnR5cGUgPT0gQVRQX0ZPVU5UQUlOIHx8IGRldi0+dHlwZSA9PSBBVFBfR0VZU0VSMSkNCiAJ
-CWRldi0+ZGF0YWxlbiA9IDgxOw0KIAllbHNlDQpAQCAtNzUwLDI3ICs3NzcsNDEgQEAgc3RhdGlj
-IGludCBhdHBfc3VzcGVuZChzdHJ1Y3QgdXNiX2ludGVyZmFjZSAqaWZhY2UsIHBtX21lc3NhZ2Vf
-dCBtZXNzYWdlKQ0KIHsNCiAJc3RydWN0IGF0cCAqZGV2ID0gdXNiX2dldF9pbnRmZGF0YShpZmFj
-ZSk7DQogDQorCW11dGV4X2xvY2soJmRldi0+cG1fbXV0ZXgpOw0KKw0KIAl1c2Jfa2lsbF91cmIo
-ZGV2LT51cmIpOw0KIAlkZXYtPnZhbGlkID0gZmFsc2U7DQogDQorCW11dGV4X3VubG9jaygmZGV2
-LT5wbV9tdXRleCk7DQorDQogCXJldHVybiAwOw0KIH0NCiANCiBzdGF0aWMgaW50IGF0cF9yZXN1
-bWUoc3RydWN0IHVzYl9pbnRlcmZhY2UgKmlmYWNlKQ0KIHsNCiAJc3RydWN0IGF0cCAqZGV2ID0g
-dXNiX2dldF9pbnRmZGF0YShpZmFjZSk7DQorCWludCBlcnJvciA9IDA7DQogDQotCWlmIChkZXYt
-Pm9wZW4gJiYgdXNiX3N1Ym1pdF91cmIoZGV2LT51cmIsIEdGUF9BVE9NSUMpKQ0KLQkJcmV0dXJu
-IC1FSU87DQorCW11dGV4X2xvY2soJmRldi0+cG1fbXV0ZXgpOw0KIA0KLQlyZXR1cm4gMDsNCisJ
-aWYgKGRldi0+b3BlbikNCisJICAgIGVycm9yID0gdXNiX3N1Ym1pdF91cmIoZGV2LT51cmIsIEdG
-UF9BVE9NSUMpOw0KKw0KKwltdXRleF91bmxvY2soJmRldi0+cG1fbXV0ZXgpOw0KKw0KKwlyZXR1
-cm4gZXJyb3I7DQogfQ0KIA0KIHN0YXRpYyBpbnQgYXRwX3Jlc2V0X3Jlc3VtZShzdHJ1Y3QgdXNi
-X2ludGVyZmFjZSAqaWZhY2UpDQogew0KIAlzdHJ1Y3QgYXRwICpkZXYgPSB1c2JfZ2V0X2ludGZk
-YXRhKGlmYWNlKTsNCisJaW50IGVycm9yID0gMDsNCiANCi0JcmV0dXJuIGF0cF9yZWNvdmVyKGRl
-dik7DQorCW11dGV4X2xvY2soJmRldi0+cG1fbXV0ZXgpOw0KKwllcnJvciA9IGF0cF9yZWNvdmVy
-KGRldik7DQorCW11dGV4X3VubG9jaygmZGV2LT5wbV9tdXRleCk7DQorDQorCXJldHVybiBlcnJv
-cjsNCiB9DQogDQogc3RhdGljIHN0cnVjdCB1c2JfZHJpdmVyIGF0cF9kcml2ZXIgPSB7DQpAQCAt
-NzgxLDYgKzgyMiw3IEBAIHN0YXRpYyBzdHJ1Y3QgdXNiX2RyaXZlciBhdHBfZHJpdmVyID0gew0K
-IAkucmVzdW1lCQk9IGF0cF9yZXN1bWUsDQogCS5yZXNldF9yZXN1bWUJPSBhdHBfcmVzZXRfcmVz
-dW1lLA0KIAkuaWRfdGFibGUJPSBhdHBfdGFibGUsDQorCS5zdXBwb3J0c19hdXRvc3VzcGVuZAk9
-IDEsDQogfTsNCiANCiBzdGF0aWMgaW50IF9faW5pdCBhdHBfaW5pdCh2b2lkKQ0KQEAgLTc5NSwz
-ICs4MzcsNCBAQCBzdGF0aWMgdm9pZCBfX2V4aXQgYXRwX2V4aXQodm9pZCkNCiANCiBtb2R1bGVf
-aW5pdChhdHBfaW5pdCk7DQogbW9kdWxlX2V4aXQoYXRwX2V4aXQpOw0KKw0K
+    generic-ipi: fix stack and rcu interaction bug in 
+smp_call_function_mask()
+   
+    * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+   
+    > Found a OOPS on a big SMP box during an overnight reboot test with
+    > upstream git.
+    >
+    > Suresh and I looked at the oops and looks like the root cause is in
+    > generic_smp_call_function_interrupt() and smp_call_function_mask() 
+with
+    > wait parameter.
+    >
+[...]
+    Nice debugging work.
+   
+    I'd suggest something like the attached (boot tested) patch as the 
+simple
+    fix for now.
+   
+    I expect the benefits from the less synchronized, 
+multiple-in-flight-data
+    global queue will still outweigh the costs of dynamic allocations. But
+    if worst comes to worst then we just go back to a globally synchronous
+    one-at-a-time implementation, but that would be pretty sad!
+   
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
---=-9ho4vgFXwXKm74UnqsP0--
+Reverting this commit (and cc7a486cac78f6fc1a24e8cd63036bae8d2ab431, 
+which is an add-on fix) allows my guest to boot.
+
+My .config can be found in 
+http://userweb.kernel.org/~avi/scf-oops/config.  I have an oops 
+somewhere inside a mobile phone but have yet to find a way to dig it 
+out.  Netconsole doesn't work for me built-in for some reason, and this 
+is during boot (I think during the loading of the ahci modules).
+
+-- 
+error compiling committee.c: too many arguments to function
+
