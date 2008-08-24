@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYHXU54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756700AbYHXVJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbYHXU54 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 16:57:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbYHXU5r
+	id S1756700AbYHXVJS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 17:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYHXVJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 16:57:47 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:57281 "EHLO gir.skynet.ie"
+	Sun, 24 Aug 2008 17:09:03 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54009 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752713AbYHXU5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 16:57:46 -0400
-Date: Sun, 24 Aug 2008 21:57:44 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [git pull] drm patches for 2.6.27 final
-In-Reply-To: <alpine.LFD.1.10.0808241013510.3363@nehalem.linux-foundation.org>
-Message-ID: <alpine.DEB.0.82.0808242145350.15834@skynet.skynet.ie>
-References: <alpine.DEB.0.82.0808240809170.15834@skynet.skynet.ie>
- <alpine.LFD.1.10.0808241013510.3363@nehalem.linux-foundation.org>
+	id S1750909AbYHXVJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 17:09:02 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: [Bug #11379] char/tpm: tpm_infineon no longer loaded for HP 2510p laptop
+Date: Sun, 24 Aug 2008 23:12:46 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Bjorn Helgaas" <bjorn.helgaas@hp.com>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.RSH.faGsIB@albercik> <200808240818.09275.elendil@planet.nl>
+In-Reply-To: <200808240818.09275.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808242312.47547.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Quite frankly, I'm not going to take this.
+On Sunday, 24 of August 2008, Frans Pop wrote:
+> On Saturday 23 August 2008, Rafael J. Wysocki wrote:
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11379
+> > Subject	: char/tpm: tpm_infineon no longer loaded for HP 2510p laptop
+> > Submitter	: Frans Pop <elendil@planet.nl>
+> > Date		: 2008-08-18 13:40 (6 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=121906698213329&w=4
+> > Handled-By	: Bjorn Helgaas <bjorn.helgaas@hp.com>
 > 
-> None of what you describe sounds like regressions, and this is just TOO 
-> F*CKING LATE to take big changes like this, to a fragile subsystem that 
-> has historically easily introduced new regressions.
+> Fixed with:
+> commit 5e4c6564c95ce127beeefe75e15cd11c93487436
+> Author: Kay Sievers <kay.sievers@vrfy.org>
+> Date:   Thu Aug 21 15:28:56 2008 +0200
 > 
-> Can you please make a branch with ONLY REGRESSIONS, or fixes for major 
-> problems that don't introduce several thousand lines of new code?
-> 
-> Because you seem to be constantly unable to understand what "merge window" 
-> means. And I'm not going to take this kind of crap.
+>     pnp: fix "add acpi:* modalias entries"
 
-I thought you might say that, I'll re-send with just the ones that fix the 
-major issues, instead of ones that fix issues people wanted fixed. Most of 
-the real bits were in Rawhide kernels for a few weeks, which tbh kicks the 
-ass outta a linux-next/linux-mm test cycle.
+Thanks,  closed.
 
-Your reply now serves as place to point people at when they ask why Red 
-Hat/Fedora ships features that they can't get for 1-6 months, and I'm fine 
-with that.
-
-Dave.
+Rafael
