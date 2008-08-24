@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbYHXKKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbYHXVh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755344AbYHXKKc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 06:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbYHXKKV
+	id S1756739AbYHXVh3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 17:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbYHXVhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 06:10:21 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:41320 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752648AbYHXKKU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 06:10:20 -0400
-Date: Sun, 24 Aug 2008 11:10:14 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jan Harkes <jaharkes@cs.cmu.edu>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] readdir mess
-Message-ID: <20080824101014.GN28946@ZenIV.linux.org.uk>
-References: <20080812062241.GQ28946@ZenIV.linux.org.uk> <87ej4u9nf5.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org> <20080812181057.GR28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121316570.3462@nehalem.linux-foundation.org> <20080812203808.GV28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121351570.3462@nehalem.linux-foundation.org> <20080813000433.GZ28946@ZenIV.linux.org.uk> <20080815050613.GJ4422@cs.cmu.edu> <alpine.LFD.1.10.0808150940110.3324@nehalem.linux-foundation.org>
+	Sun, 24 Aug 2008 17:37:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54098 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753126AbYHXVhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 17:37:16 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
+Date: Sun, 24 Aug 2008 23:40:31 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+In-Reply-To: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0808150940110.3324@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200808242340.31988.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 15, 2008 at 09:58:31AM -0700, Linus Torvalds wrote:
+On Saturday, 23 of August 2008, Rafael J. Wysocki wrote:
+[--snip--]
 
-> because the "filldir()" functions should all do the right thing anyway. 
-> But there's certainly nothing wrong with doing it either.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11361
+> Subject		: my servers with nvidia mcp55 nic don't work with msi in second kernel by kexec
+> Submitter	: Yinghai Lu <yhlu.kernel@gmail.com>
+> Date		: 2008-08-17 6:25 (7 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121895439927053&w=4
+> Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+> Patch		: http://marc.info/?l=linux-kernel&m=121917167232014&w=4
 
-Not all, but those won't hit coda.
+[--snip--]
  
-> However, I think the real fix is something like this. This 
-> 
->  - fixes all the callers
-> 
->  - removes more lines than it adds
-> 
->  - simplifies and clarifies the code
-> 
->  - avoids pointless goto's
-> 
->  - makes error handling of vfs_readdir() consistent among the callers
->    (some callers already did the error handling _correctly_ before this 
->    patch - this makes everybody do it the same way)
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11358
+> Subject		: net: forcedeth call restore mac addr in nv_shutdown path
+> Submitter	: Yinghai Lu <yhlu.kernel@gmail.com>
+> Date		: 2008-08-17 3:30 (7 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121894389018584&w=4
+> Handled-By	: Yinghai Lu <yhlu.kernel@gmail.com>
+> Patch		: http://marc.info/?l=linux-kernel&m=121894389018584&w=4
 
-One obvious note: that'll break old_readdir() on coda.  There you need to
-change the existing check (you need to check buf.result, then ignore error
-unless buf.result ended up 0).
+Jeff, do you have the patches for these two in your queue?
 
-I agree that such transition plan makes sense, but that'll take more
-preliminary work than in your patch; there are other vfs_readdir() and
-->readdir() callers, not just the obvious syscall ones.
-
-BTW, there are several places that call specific foo_readdir() or its helper
-functions, passing odd stuff as filldir (afs implements ->lookup() that way,
-for one; ocfs2 checks that directory is empty; gfs2 does ->get_name() -
-with filldir returning 1 on match, at that; etc.).  We obviously do not care
-about those in the beginning of patch series - they won't be affected,
-but once we start converting foofs_readdir() to returning what filldir had
-returned, we'll need to watch out for complications from those (BTW, another
-fun place in that respect is __fat_readdir())
+Rafael
