@@ -1,29 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbYHXShG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756456AbYHXVA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756248AbYHXShG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 14:37:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYHXSgy
+	id S1756456AbYHXVA2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 17:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbYHXVAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 14:36:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41674 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752519AbYHXSgy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 14:36:54 -0400
-Date: Sun, 24 Aug 2008 11:34:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Cox <alan@redhat.com>,
-       Peter Osterlund <petero2@telia.com>, Jens Axboe <jens.axboe@oracle.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
-In-Reply-To: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
-Message-ID: <alpine.LFD.1.10.0808241120460.3363@nehalem.linux-foundation.org>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sun, 24 Aug 2008 17:00:20 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:40487 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753126AbYHXVAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 17:00:19 -0400
+Date: Sun, 24 Aug 2008 22:00:17 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
+Subject: [git pull] drm tree this time only the major issues.
+Message-ID: <alpine.DEB.0.82.0808242158150.15834@skynet.skynet.ie>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,55 +23,95 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Hi Linus,
 
-On Sat, 23 Aug 2008, Rafael J. Wysocki wrote:
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11401
-> Subject		: pktcdvd: BUG, NULL pointer dereference in pkt_ioctl, bisected
-> Submitter	: Laurent Riffard <laurent.riffard@free.fr>
-> Date		: 2008-08-22 08:16 (2 days old)
+Please pull the 'drm-patches' branch from
+ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-patches
 
-This one looks irritating.
+This fixes a number of chip lockups under 3D load in the radeon driver, 
+a locking bug reported on lkml (hits a WARN_ON), and a problem where the 
+X server can't be debugged through startup.
 
-It's bisected to 5b6155ee70e9c4d2ad7e6f514c8eee06e2711c3a ("pktcdvd: push 
-BKL down into driver"), but the problem goes deeper than that.
+Dave.
 
-The "unlocked" ioctl's do not get a "struct inode *" pointer, they _only_ 
-get the "struct file *". And this is very much historical usage, where 
-some internal functions only passed in the inode (good or not, whatever).
+ drivers/gpu/drm/drm_irq.c            |   20 ++--
+ drivers/gpu/drm/drm_lock.c           |   33 +++---
+ drivers/gpu/drm/radeon/r300_cmdbuf.c |  196 ++++++++++++++++++++++++++++------
+ drivers/gpu/drm/radeon/r300_reg.h    |    5 +-
+ drivers/gpu/drm/radeon/radeon_cp.c   |   38 +++----
+ drivers/gpu/drm/radeon/radeon_drv.h  |   19 ++--
+ 6 files changed, 225 insertions(+), 86 deletions(-)
 
-And ioctl_by_bdev() doesn't have a "struct file *" and has depended on 
-passing in a NUMM "struct file *" and its own "struct inode *", and 
-expects the ioctl's to just use that instead. But the unlocked ioctl just 
-drops it on the floor, and uses just the (unusable) file pointer.
+commit 3e5fc80a404a24c858468030b63555cccfb3e79c
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Sun Aug 24 17:02:26 2008 +1000
 
-Grr.
+    drm: don't set the signal blocker on the master process.
+    
+    There is a problem with debugging the X server and gdb crashes in
+    the xkb startup code.
+    
+    This avoids the problem by allowing the master process to get signals.
+    It should be safe as the signal blocker is mainly so that you can
+    Ctrl-Z a 3D application without locking up the whole box. Ctrl-Z the
+    X server isn't something many people do.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
 
-And some other cases (like pkt_ioctl() itself) that simply pass in a 
-_different_ inode than the file itself is attached to. It does
+commit e5b4f19417b75a2d7c1e36934f60a3e836c4337e
+Author: Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
+Date:   Sun Aug 24 17:00:00 2008 +1000
 
-	blkdev_ioctl(pd->bdev->bd_inode, file, cmd, arg);
+    drm: don't call the vblank tasklet with irqs disabled.
+    
+    If a specific tasklet shares data with irq context,
+    it needs to take a private irq-blocking spinlock within
+    the tasklet itself.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
 
-where "file" points to the pkt_ioctl thing, but "inode" points to the 
-inode "behind" the pkt interface.
+commit 649ffc06a62bf487b78440669bdfeb637f1d675b
+Author: Nicolai Haehnle <nhaehnle@gmail.com>
+Date:   Wed Aug 13 09:50:12 2008 +1000
 
-Double grr.
+    r300: Fix cliprect emit
+    
+    This makes our handling of cliprects sane. drm_clip_rect always has exclusiv
+    bottom-right corners, but the hardware expects inclusive bottom-right corner
+    so we adjust this here.
+    
+    This complements Michel Daenzer's commit 57aea290e1e0a26d1e74df6cff777eb9f03
+    to Mesa. See also http://bugs.freedesktop.org/show_bug.cgi?id=16123
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
 
-I really think the only sane model is to literally make "unlocked_ioctl()" 
-have the same calling convention as the old "ioctl()" thing had, and pass 
-in both file * and inode *. It was a stupid "cleanup" to try to have a 
-simpler interface for the unlocked version. Having two different models, 
-where we have actually _depended_ on the old model and then are trying to 
-convert to a (weaker) new model, is not a good idea.
+commit e2898c5fdd91f54c9c84fbf7d32edb8e4dfda574
+Author: Nicolai Haehnle <nhaehnle@gmail.com>
+Date:   Wed Aug 13 09:49:15 2008 +1000
 
-The alternative is to do this _only_ for the blkdev_ioctl's, and have 
-those only take the "inode *", and then create a new fake "struct file *" 
-to go with it, regardless of what "struct file" was passed in (exactly 
-because the blockdev ones really think that the inode is the important 
-part).
+    drm/radeon: r300_cmdbuf: Always emit INDX_BUFFER immediately after DRAW_INDEX
+    
+    DRAW_INDEX writes a vertex count to VAP_VF_CNTL. Docs say that behaviour
+    is undefined (i.e. lockups happen) when this write is not followed by the
+    right number of vertex indices.
+    
+    Thus we used to do the wrong thing when drawing across many cliprects was
+    necessary, because we emitted a sequence
+    DRAW_INDEX, DRAW_INDEX, INDX_BUFFER, INDX_BUFFER
+    instead of
+    DRAW_INDEX, INDX_BUFFER, DRAW_INDEX, INDX_BUFFER
+    The latter is what we're doing now and which ought to be correct.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
 
-Hmm?
+commit 54f961a628b737f66710eca0b0d95346645dd33e
+Author: Jerome Glisse <glisse@freedesktop.org>
+Date:   Wed Aug 13 09:46:31 2008 +1000
 
-We need to fix this.
-
-		Linus
+    radeon: fix some hard lockups on r3/4/500s
+    
+    This patch should fix hard lockup and convert them in
+    softlockup (ie you can ssh the box but the gpu is busted
+    and we are waiting in loop for it to come back to reason).
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
