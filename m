@@ -1,386 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbYHXVmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757198AbYHXWsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756824AbYHXVmt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 17:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbYHXVml
+	id S1757198AbYHXWsR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 18:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbYHXWsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 17:42:41 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:45704 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750909AbYHXVmk (ORCPT
+	Sun, 24 Aug 2008 18:48:05 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:50056 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753653AbYHXWsD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 17:42:40 -0400
+	Sun, 24 Aug 2008 18:48:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=qOj/MAhBrNi2Nua8W/+YvEpzIPco1LBc2zDwJCHZ0N7/MpUzC5BKYEpXi5hfj0KUgo
-         6pXT3RgrGyEGARuClowPyxcbQedDntDpIWQZb5KPtufWILfKo27GGPlC3jAgbvtN9Jhu
-         7l9TtTAVuntvm2ItvtkLvp9nvHAbjRCsS4eU4=
-Message-ID: <48B1D5CA.8000607@gmail.com>
-Date: Sun, 24 Aug 2008 23:42:34 +0200
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=nOiJ/wsTtWFkMtg6nJRMsvwVYX3F3WxwqLBT1R4gfturEqjiGnE0JL6kY6Ne7Pzll2
+         nLzsT+XdjYO3GDZzbUtgos49LUZfaVcy8Z3B1UPbcRFx5G94dxxgiZatAqDRbrajNpsU
+         y0jS9pZC7hciWsmbxuZJou3hmO43T9z4oRAJs=
+Message-ID: <86802c440808241548l3af0810egfcd424b0b6c6a9cd@mail.gmail.com>
+Date: Sun, 24 Aug 2008 15:48:02 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "David Witbrodt" <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440808241229m16440f68gb8961706473447cb@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [Patch] Tracing/ftrace: Adds a marker to allow user comments
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_39989_30471844.1219618082956"
+References: <751256.282.qm@web82108.mail.mud.yahoo.com>
+	 <86802c440808241229m16440f68gb8961706473447cb@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The documentation of mmiotrace describes an unimplemented feature which allows the user
-to write any comments on his trace by writing on a tracing/marker file.
-Here is an implementation of this idea.
+------=_Part_39989_30471844.1219618082956
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-It applies on last version of tip tree.
+On Sun, Aug 24, 2008 at 12:29 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Sun, Aug 24, 2008 at 6:05 AM, David Witbrodt <dawitbro@sbcglobal.net> wrote:
+>>
+>>
+>>> > - Is there any chance I can get it into the stable 2.6.26.X updates?
+>>> > (Who should I ask, or are only developers allowed to lobby for this
+>>> > sort of thing?)
+>>>
+>>> after the patch get into linus tree. Greg will put the patch into 2.6.26.X
+>>
+>> OK, thanks a bunch.
+>>
+>>
+>>> > - Are you worried about the potential problems of a quirk-based approach?
+>>> > What if many more people experience a similar regression once 2.6.26 or
+>>> > later appears in their distribution?  I'm sure you don't want to have to
+>>> > write a different quirk for each individual's hardware, and this problem
+>>> > did not arise with the approach used for resource management in 2.6.25.
+>>>
+>>> this patch should be safe.
+>>>
+>>> 2.6.26 is fixing one bug about reserving local apic address and that
+>>> in e820 table.
+>>> and it reveals one bios bug.
+>>
+>> Correction -- it revealed at least two.  See the link I posted earlier in
+>> this thread:
+>>
+>> http://www.uwsg.indiana.edu/hypermail/linux/kernel/0808.2/1807.html
+>>
+>> Scroll down to the line that starts with "[blog]" for the link. You can see
+>> the discussion I had encouraging him to come here to help us troubleshoot
+>> if you go to that blog and click "Comments".
+>>
+>> I only mention this as a warning, in case it could lead to a lot of extra
+>> problems for you later.  If you're quite sure that everything is OK, then
+>> all I can do is thank you again and keep my fingers crossed for you and the
+>> kernel team that nothing bad happens when 2.6.2[67] hit the major distros.
+>
+> after discussing with Ingo, we have one more generic way to detect the
+> same situation.
+>
+> please help to verify the attached patch. ( don't apply previous patch)
+>
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/trace.c |  264 ++++++++++++++++++++++++++++++++++++--------------
- kernel/trace/trace.h |    5 +
- 2 files changed, 198 insertions(+), 71 deletions(-)
+and please test attached patch too. ( could test it without two patches)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 1801900..ee06849 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -955,6 +955,121 @@ __trace_special(void *__tr, void *__data,
- 	trace_wake_up();
- }
- 
-+/* Add a message provided by the user (TRACE_MARK) or by __ftrace_printk */
-+
-+void trace_print(char *buf, int len, struct trace_entry *tmp_ent,
-+		struct trace_array *tr, struct trace_array_cpu *data,
-+		unsigned long flags)
-+{
-+	struct trace_entry *entry;
-+	int write, written = 0;
-+
-+	__raw_spin_lock(&data->lock);
-+	entry = tracing_get_trace_entry(tr, data);
-+	tracing_generic_entry_update(entry, flags);
-+	entry->type = tmp_ent->type;
-+
-+	if (entry->type == TRACE_PRINT)
-+		entry->field.print.ip = tmp_ent->field.print.ip;
-+
-+	write = min(len, (int)(TRACE_PRINT_BUF_SIZE-1));
-+	memcpy(&entry->field.print.buf, buf, write);
-+	entry->field.print.buf[write] = 0;
-+
-+	written = write;
-+
-+	if (written != len)
-+		entry->field.flags |= TRACE_FLAG_CONT;
-+
-+	while (written != len) {
-+		entry = tracing_get_trace_entry(tr, data);
-+
-+		entry->type = TRACE_CONT;
-+		write = min(len - written, (int)(TRACE_CONT_BUF_SIZE-1));
-+		memcpy(&entry->cont.buf, buf+written, write);
-+		entry->cont.buf[write] = 0;
-+		written += write;
-+	}
-+	__raw_spin_unlock(&data->lock);
-+}
-+
-+/* Add a message provided by the user towards the tracing_mark file */
-+int tracing_mark(char *buf, int size)
-+{
-+	struct trace_array *tr = &global_trace;
-+	struct trace_array_cpu *data;
-+	struct trace_entry tmp_ent;
-+	unsigned long flags;
-+	long disabled;
-+	int cpu;
-+
-+	local_irq_save(flags);
-+	cpu = raw_smp_processor_id();
-+	data = tr->data[cpu];
-+	disabled = atomic_inc_return(&data->disabled);
-+
-+	if (unlikely(disabled != 1))
-+		goto out;
-+
-+	size = min(size, TRACE_BUF_SIZE - 1);
-+	tmp_ent.type = TRACE_MARK;
-+	buf[size - 1] = 0;
-+
-+	trace_print(buf, size, &tmp_ent, tr, data, flags);
-+
-+out:
-+	atomic_dec(&data->disabled);
-+	local_irq_restore(flags);
-+	return size;
-+}
-+
-+
-+int __ftrace_printk(unsigned long ip, const char *fmt, ...)
-+{
-+	struct trace_array *tr = &global_trace;
-+	static DEFINE_SPINLOCK(trace_buf_lock);
-+	static char trace_buf[TRACE_BUF_SIZE];
-+	struct trace_array_cpu *data;
-+	struct trace_entry tmp_ent;
-+	unsigned long flags;
-+	long disabled;
-+	va_list ap;
-+	int cpu, len = 0;
-+
-+	if (likely(!ftrace_function_enabled))
-+		return 0;
-+
-+	local_irq_save(flags);
-+	cpu = raw_smp_processor_id();
-+	data = tr->data[cpu];
-+	disabled = atomic_inc_return(&data->disabled);
-+
-+	if (unlikely(disabled != 1 || !ftrace_function_enabled))
-+		goto out;
-+
-+	tmp_ent.type = TRACE_PRINT;
-+	tmp_ent.field.print.ip = ip;
-+
-+	spin_lock(&trace_buf_lock);
-+	va_start(ap, fmt);
-+	len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, ap);
-+	va_end(ap);
-+
-+	len = min(len, TRACE_BUF_SIZE-1);
-+	trace_buf[len] = 0;
-+
-+	trace_print(trace_buf, len, &tmp_ent, tr, data, flags);
-+
-+	spin_unlock(&trace_buf_lock);
-+
-+ out:
-+	atomic_dec(&data->disabled);
-+	local_irq_restore(flags);
-+
-+	return len;
-+}
-+EXPORT_SYMBOL_GPL(__ftrace_printk);
-+
- void
- tracing_sched_switch_trace(struct trace_array *tr,
- 			   struct trace_array_cpu *data,
-@@ -1943,6 +2058,26 @@ static int print_bin_fmt(struct trace_iterator *iter)
- 	return 1;
- }
- 
-+/* Add the user message on the pipe */
-+static int print_mark(struct trace_iterator *iter)
-+{
-+	struct trace_seq *s = &iter->seq;
-+	struct trace_entry *entry = iter->ent;
-+	struct trace_field *field = &entry->field;
-+
-+	int ret;
-+
-+	ret = trace_seq_printf(s, field->print.buf);
-+	if (field->flags && TRACE_FLAG_CONT)
-+		trace_seq_print_cont(s, iter);
-+	trace_seq_printf(s, "\n");
-+
-+	if (ret)
-+		return 1;
-+	return 0;
-+}
-+
-+
- static int trace_empty(struct trace_iterator *iter)
- {
- 	struct trace_array_cpu *data;
-@@ -1961,6 +2096,9 @@ static int trace_empty(struct trace_iterator *iter)
- 
- static int print_trace_line(struct trace_iterator *iter)
- {
-+	if (iter->ent->type == TRACE_MARK)
-+		return print_mark(iter);
-+
- 	if (iter->trace && iter->trace->print_line)
- 		return iter->trace->print_line(iter);
- 
-@@ -2918,6 +3056,49 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
- 	return cnt;
- }
- 
-+static int tracing_open_mark(struct inode *inode, struct file *filp)
-+{
-+	int ret;
-+
-+	ret = tracing_open_generic(inode, filp);
-+	if (ret)
-+		return ret;
-+
-+	if (current_trace == &no_tracer)
-+		return -ENODEV;
-+
-+	return 0;
-+}
-+
-+
-+static ssize_t
-+tracing_mark_write(struct file *filp, const char __user *ubuf,
-+		size_t cnt, loff_t *fpos)
-+{
-+	char *buf;
-+
-+	if (cnt > TRACE_BUF_SIZE)
-+		cnt = TRACE_BUF_SIZE;
-+
-+	buf = kmalloc(cnt, GFP_KERNEL);
-+
-+	if (buf == NULL)
-+		return -ENOMEM;
-+
-+	if (copy_from_user(buf, ubuf, cnt)) {
-+		kfree(buf);
-+		return -EFAULT;
-+	}
-+
-+	cnt = tracing_mark(buf, cnt);
-+	kfree(buf);
-+	*fpos += cnt;
-+
-+	return cnt;
-+}
-+
-+
-+
- static struct file_operations tracing_max_lat_fops = {
- 	.open		= tracing_open_generic,
- 	.read		= tracing_max_lat_read,
-@@ -2949,6 +3130,11 @@ static struct file_operations tracing_entries_fops = {
- 	.write		= tracing_entries_write,
- };
- 
-+static struct file_operations tracing_mark_fops = {
-+	.open		= tracing_open_mark,
-+	.write		= tracing_mark_write,
-+};
-+
- #ifdef CONFIG_DYNAMIC_FTRACE
- 
- static ssize_t
-@@ -3066,6 +3252,13 @@ static __init void tracer_init_debugfs(void)
- 		pr_warning("Could not create debugfs "
- 			   "'trace_entries' entry\n");
- 
-+	entry = debugfs_create_file("trace_marker", 0220, d_tracer,
-+				    NULL, &tracing_mark_fops);
-+
-+	if (!entry)
-+		pr_warning("Could not create debugfs "
-+			   "'trace_marker' entry\n");
-+
- #ifdef CONFIG_DYNAMIC_FTRACE
- 	entry = debugfs_create_file("dyn_ftrace_total_info", 0444, d_tracer,
- 				    &ftrace_update_tot_cnt,
-@@ -3079,77 +3272,6 @@ static __init void tracer_init_debugfs(void)
- #endif
- }
- 
--#define TRACE_BUF_SIZE 1024
--#define TRACE_PRINT_BUF_SIZE \
--	(sizeof(struct trace_field) - offsetof(struct trace_field, print.buf))
--#define TRACE_CONT_BUF_SIZE sizeof(struct trace_field)
--
--int __ftrace_printk(unsigned long ip, const char *fmt, ...)
--{
--	struct trace_array *tr = &global_trace;
--	static DEFINE_SPINLOCK(trace_buf_lock);
--	static char trace_buf[TRACE_BUF_SIZE];
--	struct trace_array_cpu *data;
--	struct trace_entry *entry;
--	unsigned long flags;
--	long disabled;
--	va_list ap;
--	int cpu, len = 0, write, written = 0;
--
--	if (likely(!ftrace_function_enabled))
--		return 0;
--
--	local_irq_save(flags);
--	cpu = raw_smp_processor_id();
--	data = tr->data[cpu];
--	disabled = atomic_inc_return(&data->disabled);
--
--	if (unlikely(disabled != 1 || !ftrace_function_enabled))
--		goto out;
--
--	spin_lock(&trace_buf_lock);
--	va_start(ap, fmt);
--	len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, ap);
--	va_end(ap);
--
--	len = min(len, TRACE_BUF_SIZE-1);
--	trace_buf[len] = 0;
--
--	__raw_spin_lock(&data->lock);
--	entry				= tracing_get_trace_entry(tr, data);
--	tracing_generic_entry_update(entry, flags);
--	entry->type			= TRACE_PRINT;
--	entry->field.print.ip		= ip;
--
--	write = min(len, (int)(TRACE_PRINT_BUF_SIZE-1));
--
--	memcpy(&entry->field.print.buf, trace_buf, write);
--	entry->field.print.buf[write] = 0;
--	written = write;
--
--	if (written != len)
--		entry->field.flags |= TRACE_FLAG_CONT;
--
--	while (written != len) {
--		entry = tracing_get_trace_entry(tr, data);
--
--		entry->type = TRACE_CONT;
--		write = min(len - written, (int)(TRACE_CONT_BUF_SIZE-1));
--		memcpy(&entry->cont.buf, trace_buf+written, write);
--		entry->cont.buf[write] = 0;
--		written += write;
--	}
--	__raw_spin_unlock(&data->lock);
--
--	spin_unlock(&trace_buf_lock);
--
-- out:
--	atomic_dec(&data->disabled);
--	local_irq_restore(flags);
--
--	return len;
--}
--EXPORT_SYMBOL_GPL(__ftrace_printk);
- 
- static int trace_panic_handler(struct notifier_block *this,
- 			       unsigned long event, void *unused)
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 50b6d7a..ccc245c 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -14,6 +14,7 @@ enum trace_type {
- 	TRACE_CTX,
- 	TRACE_WAKE,
- 	TRACE_CONT,
-+	TRACE_MARK,
- 	TRACE_STACK,
- 	TRACE_PRINT,
- 	TRACE_SPECIAL,
-@@ -106,6 +107,10 @@ struct trace_entry {
- };
- 
- #define TRACE_ENTRY_SIZE	sizeof(struct trace_entry)
-+#define TRACE_BUF_SIZE 1024
-+#define TRACE_PRINT_BUF_SIZE \
-+	(sizeof(struct trace_field) - offsetof(struct trace_field, print.buf))
-+#define TRACE_CONT_BUF_SIZE sizeof(struct trace_field)
- 
- /*
-  * The CPU trace array - it consists of thousands of trace entries
+YH
+
+------=_Part_39989_30471844.1219618082956
+Content-Type: text/x-patch; name=only_put_e820_ram_in_res_tree.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fka92h0p1
+Content-Disposition: attachment;
+ filename=only_put_e820_ram_in_res_tree.patch
+
+RnJvbTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgpTdWJqZWN0OiBbUEFUQ0hd
+IHg4Njogb25seSBwdXQgZTgyMCByYW0gZW50cmllcyBpbiByZXNvdXJjZSB0cmVlCgptYXkgbmVl
+ZCB1c2VyIHRvIGhhdmUgbmV3IGtleGVjIHRvb2xzIHRoYXQgY291bGQgY3JlYXRlIGU4MjAgdGFi
+bGUKZnJvbSAvc3lzL2Zpcm13YXJlL21lbW1hcCBpbnN0ZWFkIG9mIC9wcm9jL2lvbWVtIGZvciBz
+ZWNvbmQga2VybmVsCgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aGx1Lmtlcm5lbEBnbWFp
+bC5jb20+CkNjOiBCZXJuaGFyZCBXYWxsZSA8YndhbGxlQHN1c2UuZGU+CkNjOiBWaXZlayBHb3lh
+bCA8dmdveWFsQHJlZGhhdC5jb20+CkNjOiAiRXJpYyBXLiBCaWVkZXJtYW4iIDxlYmllZGVybUB4
+bWlzc2lvbi5jb20+CgpJbmRleDogbGludXgtMi42L2FyY2gveDg2L2tlcm5lbC9lODIwLmMKPT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvYXJjaC94ODYva2VybmVsL2U4MjAuYworKysgbGlu
+dXgtMi42L2FyY2gveDg2L2tlcm5lbC9lODIwLmMKQEAgLTEyNzksNiArMTI3OSwxMCBAQCB2b2lk
+IF9faW5pdCBlODIwX3Jlc2VydmVfcmVzb3VyY2VzKHZvaWQpCiAKIAlyZXMgPSBhbGxvY19ib290
+bWVtX2xvdyhzaXplb2Yoc3RydWN0IHJlc291cmNlKSAqIGU4MjAubnJfbWFwKTsKIAlmb3IgKGkg
+PSAwOyBpIDwgZTgyMC5ucl9tYXA7IGkrKykgeworCQlpZiAoZTgyMC5tYXBbaV0udHlwZSAhPSBF
+ODIwX1JBTSkgeworCQkJcmVzKys7CisJCQljb250aW51ZTsKKwkJfQogCQllbmQgPSBlODIwLm1h
+cFtpXS5hZGRyICsgZTgyMC5tYXBbaV0uc2l6ZSAtIDE7CiAjaWZuZGVmIENPTkZJR19SRVNPVVJD
+RVNfNjRCSVQKIAkJaWYgKGVuZCA+IDB4MTAwMDAwMDAwVUxMKSB7Cg==
+------=_Part_39989_30471844.1219618082956--
