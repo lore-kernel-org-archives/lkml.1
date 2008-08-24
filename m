@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861AbYHXEMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbYHXQYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752861AbYHXEMd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 00:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbYHXEMX
+	id S1753354AbYHXQYZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 12:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbYHXQYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 00:12:23 -0400
-Received: from ag-out-0708.google.com ([72.14.246.247]:60895 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759AbYHXEMW (ORCPT
+	Sun, 24 Aug 2008 12:24:16 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:50831 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751311AbYHXQYQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 00:12:22 -0400
+	Sun, 24 Aug 2008 12:24:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:to:subject:from:organization:cc:content-type:mime-version
-         :x-priority:content-transfer-encoding:message-id:user-agent;
-        b=a6nLUeUrXzBRLMyw2uuPuR1qnuZU4GozIlkqt7/fgvCz6OicidCNXzifYgkpo905pK
-         5HZx7TwE1EEaUYE8dgBJyKiokAHXxW4n/IfgtjvtQBjza36FbzQ2DmgaIhdq/jFb2hpe
-         Go/6FsdgZlG4n7kfRDNsYruF8M35HWmceIgxc=
-Date: Sun, 24 Aug 2008 09:41:33 +0530
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ZPiG16cT5WgD/MXOHrjD097fKM7RiahZwPKBmwXGdTYjVyU5I1HjyuSVv5Qil7CC86
+         8XNpgrif9/CnU1SvP69L8VXSJvKqCH37b7ppPd/6xikJFjo+TaS2fndqNCoKaUvgEMmp
+         AlARse16J/4L1n8qf+U/T26lG7B0gTmat0k9w=
+Message-ID: <922976dd0808240924n3b134ec6pb5451e269273810e@mail.gmail.com>
+Date: Sun, 24 Aug 2008 18:24:14 +0200
+From: krisje8 <krisje8@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: better support for EV-DO AC8700 800 M usbserial modem ??
-From: ctuxer <ctuxer@gmail.com>
-Organization: ctuxer
-Cc: eerpini@gmail.com
-Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
+Subject: Support for MCP78 SATA controller
+In-Reply-To: <922976dd0808240919j656cef26uec4a06314ee653b6@mail.gmail.com>
 MIME-Version: 1.0
-X-Priority: 1 (Highest)
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-ID: <op.ugdhwas9jwzwy4@localhost.localdomain>
-User-Agent: Opera Mail/9.52 (Linux)
+Content-Disposition: inline
+References: <922976dd0808240919j656cef26uec4a06314ee653b6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi everyone ,
+Hello,
 
-i have been using the EVDO AC8700 modem (usbserial) with kernel 2.6.26.2 ,  
-it uses the 'option' module along with the generic usbserial module . Well  
-i am happy for the improved support for the modem handling in the new  
-kernels( like now i don have to modprobe with the vendor and product IDs )  
-, there is one point specific to this modem which is still not handled ,  
-..... the modem switches between EVDO and CDMA mode when the signal  
-strength is low or when there is a bandwidth overload at the vendor's( the  
-service provider , bsnl in my case )  tower . This switch in the mode is  
-not recognised by the driver and the connection is lost once this  
-switching occurs . I have to restart the wvdial program to reconnect .
+When trying to install Debian Lenny today on my new PC it booted the
+installation, but failed to recognise the dvd drive, and I could not
+continue the installer.
+After asking for a solution on #debian at irc.debian.org
+(irc.oftc.net), some users have tried to help me with this.
+One of them tracked down some information, and suggested me to post to
+this mailing list (his name was enouf).
 
-But if the modem were in CDMA mode when i connect , then the connection is  
-not lost when the modem switches back from CDMA to EVDO . I really don  
-know enough to understand what is the difference between the two cases or  
-what can be done to improve the support for this usbserial modem , ... can  
-anyone help ?
+This is the information that I got:
 
-Thanks in advance
+Motherboard: ASUS M3N78 Pro (according to enouf the sata controller is a MCP78)
+DVD drive: ASUS DRW-2014
 
-Satish
+The manual of my motherboard:
+http://dlsvr.asus.com/pub/ASUS/mb/socketAM2/M3N78_PRO/e3864_M3N78_PRO_manual.zip
 
--- 
-Using Opera's revolutionary e-mail client: http://www.opera.com/mail/
+He noticed upport for mcp77 and mcp79, but not for mcp78:
+http://lxr.linux.no/linux+v2.6.26.3/drivers/ata/ahci.c
+http://lxr.linux.no/linux+v2.6.26.3/drivers/net/forcedeth.c#L6007
+
+And a review about my motherboard:
+http://www.bjorn3d.com/read_pf.php?cID=1305
+
+Best regards,
+krisje8
+
+P.S.: I am not a member of the mailing list, so if you have an answer
+for me could you please CC me?
