@@ -1,130 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753812AbYHXObm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYHXSQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753812AbYHXObm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 10:31:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbYHXObe
+	id S1755936AbYHXSQl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 14:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYHXSQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 10:31:34 -0400
-Received: from mailmxout.mailmx.agnat.pl ([193.239.44.238]:9189 "EHLO
-	mailmxout.mailmx.agnat.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751045AbYHXObd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 10:31:33 -0400
-From: Arkadiusz Miskiewicz <arekm@maven.pl>
-To: linux-kernel@vger.kernel.org
-Subject: Re: resume from ram hangs on 2.6.26+ kernels on thinkpad z60m
-Date: Sun, 24 Aug 2008 16:31:14 +0200
-User-Agent: PLD Linux KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200808201602.26848.arekm@maven.pl> <200808211443.43690.rjw@sisk.pl>
-In-Reply-To: <200808211443.43690.rjw@sisk.pl>
+	Sun, 24 Aug 2008 14:16:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55206 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752626AbYHXSQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 14:16:31 -0400
+Date: Sun, 24 Aug 2008 14:13:04 -0400
+From: Dave Jones <davej@redhat.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: "H. Peter Anvin" <hpa@kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: latest -git: WARNING: at arch/x86/kernel/ipi.c:123
+	send_IPI_mask_bitmask+0xc3/0xe0()
+Message-ID: <20080824181304.GA5963@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Vegard Nossum <vegard.nossum@gmail.com>,
+	"H. Peter Anvin" <hpa@kernel.org>, Andi Kleen <andi@firstfloor.org>,
+	the arch/x86 maintainers <x86@kernel.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Rusty Russell <rusty@rustcorp.com.au>
+References: <19f34abd0808191251x4eb61c50n13ecf7c90f0f3d9f@mail.gmail.com> <20080820013930.GN9807@one.firstfloor.org> <19f34abd0808192326jc10e758m99e76bbd5714c5b8@mail.gmail.com> <20080822003659.GA7581@redhat.com> <48AE20B8.9000204@kernel.org> <19f34abd0808240220v77bcdd5di32f8f865b18fc49f@mail.gmail.com> <48B19799.6090703@kernel.org> <19f34abd0808241022j1ab6f3e6qd72b9acba5df4892@mail.gmail.com> <19f34abd0808241045r37eb8661h3cc688b6f0513777@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808241631.14746.arekm@maven.pl>
-X-Agnat-Warning: Use smtp.agnat.eu as SMTP server
-X-Authenticated-Id: arekm
+In-Reply-To: <19f34abd0808241045r37eb8661h3cc688b6f0513777@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 August 2008, Rafael J. Wysocki wrote:
-> On Wednesday, 20 of August 2008, Arkadiusz Miskiewicz wrote:
-> > I'm seeing problems with resume (using s2ram) on thinkpad z60m notebook
-> > with very fresh git kernel (built yesterday). It looks like this - I get
-> > screen resumed with X window running on it, I see mouse pointer but
-> > pointer doesn't react to movement and sysrq keys also don't respond
-> > (tried to
-> > umount+sync+reboot via sysrq).
-> >
-> > The hangs doesn't always happen but it happens quite often (often enough
-> > to get kmail trashed several times).
-> >
-> > The problem is also happening on 2.6.26 kernels (I wasn't testing .26 too
-> > much).
-> >
-> > Now I'm back on 2.6.25 where the problem doesn't occur.
-> >
-> > I didn't see any reports related  to that on lkml which is bad thing 8)
-> >
-> > Any ideas?
->
-> Not really.  We must have broken something in 2.6.26, but there were not
-> too many suspend-specific patches in there vs .25.
+On Sun, Aug 24, 2008 at 07:45:48PM +0200, Vegard Nossum wrote:
+ > Removing acpi=off helps with the CPU detection problem. The kernel is
+ > still really slow, though. From /proc/cpuinfo:
+ > 
+ > processor       : 1
+ > vendor_id       : GenuineIntel
+ > cpu family      : 15
+ > model           : 6
+ > model name      : Intel(R) Pentium(R) 4 CPU 3.00GHz
+ > stepping        : 5
+ > cpu MHz         : 375.000
+ > cache size      : 2048 KB
+ > 
+ > Why is MHz on 375!? I tried cpufreq-selector, but nothing changed. Maybe
+ > 
+ > calling  acpi_cpufreq_init+0x0/0x90
+ > initcall acpi_cpufreq_init+0x0/0x90 returned -19 after 0 msecs
 
-Ok, will get back to the problem when I get/notice something that can get us a 
-clue.
+-ENODEV.  Because you don't have frequency scaling capable CPU.
 
-> What s2ram options are used?
+ > Okay, now I used cpufreq-selector to change to "ondemand" governor,
+ > and MHz goes back to 3000. Weird. Why would "performance" governor put
+ > my machine to a constant 375?
+ 
+Probably because you're using p4-clockmod, and it's crap.
 
-None.
-
->
-> What hardware is there in the box (chipset, graphics)?
-
-[arekm@tarm ~]$ lspci
-00:00.0 Host bridge: Intel Corporation Mobile 915GM/PM/GMS/910GML Express 
-Processor to DRAM Controller (rev 03)
-00:01.0 PCI bridge: Intel Corporation Mobile 915GM/PM Express PCI Express Root 
-Port (rev 03)
-00:1b.0 Audio device: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) 
-High Definition Audio Controller (rev 03)
-00:1c.0 PCI bridge: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) PCI 
-Express Port 1 (rev 03)
-00:1c.1 PCI bridge: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) PCI 
-Express Port 2 (rev 03)
-00:1c.2 PCI bridge: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) PCI 
-Express Port 3 (rev 03)
-00:1c.3 PCI bridge: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) PCI 
-Express Port 4 (rev 03)
-00:1d.0 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) 
-USB UHCI #1 (rev 03)
-00:1d.1 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) 
-USB UHCI #2 (rev 03)
-00:1d.2 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) 
-USB UHCI #3 (rev 03)
-00:1d.3 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) 
-USB UHCI #4 (rev 03)
-00:1d.7 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) 
-USB2 EHCI Controller (rev 03)
-00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev d3)
-00:1f.0 ISA bridge: Intel Corporation 82801FBM (ICH6M) LPC Interface Bridge 
-(rev 03)
-00:1f.2 IDE interface: Intel Corporation 82801FBM (ICH6M) SATA Controller (rev 
-03)
-00:1f.3 SMBus: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) SMBus 
-Controller (rev 03)
-01:00.0 VGA compatible controller: ATI Technologies Inc M24 1P [Radeon 
-Mobility X600]
-02:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5751M Gigabit 
-Ethernet PCI Express (rev 11)
-14:00.0 CardBus bridge: Ricoh Co Ltd RL5c476 II (rev b3)
-14:00.1 FireWire (IEEE 1394): Ricoh Co Ltd R5C552 IEEE 1394 Controller (rev 
-08)
-14:00.2 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host 
-Adapter (rev 17)
-14:00.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host Adapter 
-(rev 08)
-14:02.0 Network controller: Intel Corporation PRO/Wireless 2915ABG Network 
-Connection (rev 05)
-
-[arekm@tarm ~]$ lsusb
-Bus 005 Device 001: ID 1d6b:0001
-Bus 004 Device 002: ID 0483:2016 SGS Thomson Microelectronics Fingerprint 
-Reader
-Bus 004 Device 001: ID 1d6b:0001
-Bus 003 Device 002: ID 046d:c404 Logitech, Inc. TrackMan Wheel
-Bus 003 Device 001: ID 1d6b:0001
-Bus 002 Device 001: ID 1d6b:0001
-Bus 001 Device 001: ID 1d6b:0002
-
-
-> Thanks,
-> Rafael
+	Dave
 
 -- 
-Arkadiusz Miśkiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
+http://www.codemonkey.org.uk
