@@ -1,69 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756269AbYHXPqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYHXQ7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756269AbYHXPqH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 11:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYHXPpY
+	id S1756106AbYHXQ7p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 12:59:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbYHXQ7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 11:45:24 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:60260 "EHLO mail.screens.ru"
+	Sun, 24 Aug 2008 12:59:22 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:48019 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751589AbYHXPpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 11:45:22 -0400
-Date: Sun, 24 Aug 2008 19:49:11 +0400
+	id S1752052AbYHXQ7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 12:59:20 -0400
+Date: Sun, 24 Aug 2008 21:03:57 +0400
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Robert Rex <robert.rex@exasol.com>,
-       Roland McGrath <roland@redhat.com>, Serge Hallyn <serue@us.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/4] pid_ns: zap_pid_ns_processes: fix the ->child_reaper changing
-Message-ID: <20080824154911.GA3777@tv-sign.ru>
+Cc: Takashi Sato <t-sato@yk.jp.nec.com>, linux-fsdevel@vger.kernel.org,
+       dm-devel@redhat.com, viro@ZenIV.linux.org.uk,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, hch@infradead.org,
+       axboe@kernel.dk, mtk.manpages@googlemail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] Add timeout feature
+Message-ID: <20080824170357.GC3792@tv-sign.ru>
+References: <20080818212856t-sato@mail.jp.nec.com> <20080821132006.9949101c.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080821132006.9949101c.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-zap_pid_ns_processes() sets pid_ns->child_reaper = NULL, this is wrong.
+On 08/21, Andrew Morton wrote:
+>
+> On Mon, 18 Aug 2008 21:28:56 +0900
+> Takashi Sato <t-sato@yk.jp.nec.com> wrote:
+>
+> > +void del_freeze_timeout(struct block_device *bdev)
+> > +{
+> > +	/*
+> > +	 * It's possible that the delayed work task (freeze_timeout()) calls
+> > +	 * del_freeze_timeout().  If the delayed work task calls
+> > +	 * cancel_delayed_work_sync((), the deadlock will occur.
+> > +	 * So we need this check (delayed_work_pending()).
+> > +	 */
+> > +	if (delayed_work_pending(&bdev->bd_freeze_timeout))
+> > +		cancel_delayed_work_sync(&bdev->bd_freeze_timeout);
+> > +}
 
-Yes, we have already killed all tasks in this namespace, and sys_wait4()
-doesn't see any child. But this doesn't mean ->children list is empty,
-we may have EXIT_DEAD tasks which are not visible to do_wait(). In that
-case the subsequent forget_original_parent() will crash the kernel because
-it will try to re-parent these tasks to the NULL reaper.
+I don't understand this patch, but the code above looks strange to me...
 
-Even if there are no childs, it is not good that forget_original_parent()
-uses reaper == NULL.
+Let's suppose del_freeze_timeout() is called by ioctl_thaw()->thaw_bdev().
+Now,
 
-Change the code to set ->child_reaper = init_pid_ns.child_reaper instead.
-We could use pid_ns->parent->child_reaper as well, I think this does not
-really matter. These EXIT_DEAD tasks are not visible to the new ->parent
-after re-parenting, they will silently do release_task() eventually.
+	IF delayed_work_pending() == T
 
-Note that we must change ->child_reaper, otherwise forget_original_parent()
-will use reaper == father, and in that case we will hit the (correct)
-BUG_ON(!list_empty(&father->children)).
+		we can deadlock if the timer expires before
+		cancel_delayed_work_sync() cancels it?
+		in that case we are going to wait for this work,
+		but freeze_timeout()->thaw_bdev() will block
+		on ->bd_freeze_sem, no?
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+	ELSE
 
---- 2.6.27-rc4/kernel/pid_namespace.c~1_ZAP_DONT_CLEAR_REAPER	2008-07-30 13:12:49.000000000 +0400
-+++ 2.6.27-rc4/kernel/pid_namespace.c	2008-08-24 17:22:59.000000000 +0400
-@@ -179,9 +179,12 @@ void zap_pid_ns_processes(struct pid_nam
- 		rc = sys_wait4(-1, NULL, __WALL, NULL);
- 	} while (rc != -ECHILD);
- 
--
--	/* Child reaper for the pid namespace is going away */
--	pid_ns->child_reaper = NULL;
-+	/*
-+	 * We can not clear ->child_reaper or leave it alone.
-+	 * There may by stealth EXIT_DEAD tasks on ->children,
-+	 * forget_original_parent() must move them somewhere.
-+	 */
-+	pid_ns->child_reaper = init_pid_ns.child_reaper;
- 	acct_exit_ns(pid_ns);
- 	return;
- }
+		we don't really flush the work, it is possible
+		the timer has already expired and the work
+		is pending. It will run later.
+
+Perhaps this all is correct, but in that case, why can't we just do
+
+	void del_freeze_timeout(struct block_device *bdev)
+	{
+		cancel_delayed_work(&bdev->bd_freeze_timeout);
+	}
+
+?
+
+> Perhaps cancel_delayed_work_sync() shouldn't hang up if called from the
+> work handler?
+
+This is trivial,
+
+	--- kernel/workqueue.c
+	+++ kernel/workqueue.c
+	@@ -516,6 +516,9 @@ static void wait_on_cpu_work(struct cpu_
+		struct wq_barrier barr;
+		int running = 0;
+	 
+	+	if (cwq->thread == current)
+	+		return;
+	+
+		spin_lock_irq(&cwq->lock);
+		if (unlikely(cwq->current_work == work)) {
+			insert_wq_barrier(cwq, &barr, cwq->worklist.next);
+
+but do we really need this?
+
+We have a similar hack in flush_cpu_workqueue(), and we are going
+to kill it once we fix the callers.
+
+I dunno.
+
+Oleg.
 
