@@ -1,47 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758657AbYHWT5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753126AbYHXF2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758657AbYHWT5t (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 15:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958AbYHWTnn
+	id S1753126AbYHXF2H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 01:28:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYHXF1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 15:43:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50238 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755941AbYHWTnl convert rfc822-to-8bit (ORCPT
+	Sun, 24 Aug 2008 01:27:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37955 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750801AbYHXF1y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 15:43:41 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       =?utf-8?q?Toralf=20F=C3=B6rster?= <toralf.foerster@gmx.de>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
-In-Reply-To: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <VSpL6AnBTS.A.rPG.8ZGsIB@albercik>
-Subject: [Bug #11409] build issue #564 for v2.6.27-rc4 : undefined reference to `NS8390p_init'
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 23 Aug 2008 20:10:25 +0200 (CEST)
+	Sun, 24 Aug 2008 01:27:54 -0400
+Date: Sat, 23 Aug 2008 22:27:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Zev Weiss <zevweiss@gmail.com>
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] [MTD] mtdchar.c: Fix regression in MEMGETREGIONINFO
+ ioctl()
+Message-Id: <20080823222707.2fb972b5.akpm@linux-foundation.org>
+In-Reply-To: <48AFC5ED.50005@gmail.com>
+References: <48ABCC0B.40607@gmail.com>
+	<20080822153451.bb79bd1f.akpm@linux-foundation.org>
+	<48AFC5ED.50005@gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
+On Sat, 23 Aug 2008 01:10:21 -0700 Zev Weiss <zevweiss@gmail.com> wrote:
 
-The following bug entry is on the current list of known regressions
-from 2.6.26.  Please verify if it still should be listed and let me know
-(either way).
+> Andrew Morton wrote:
+> > On Wed, 20 Aug 2008 00:47:23 -0700
+> > Zev Weiss <zevweiss@gmail.com> wrote:
+> > 
+> >> From: Zev Weiss <zevweiss@gmail.com>
+> >>
+> >> The MEMGETREGIONINFO ioctl() in mtdchar.c was clobbering user memory by
+> >> overwriting more than intended, due to the size of struct
+> >> mtd_erase_region_info changing in commit
+> >> 0ecbc81adfcb9f15f86b05ff576b342ce81bbef8.
+> >>
+> >> Fix uses a member-by-member copy into a local struct region_info_user,
+> >> which is then copy_to_user()'d (and matches the size correctly by being
+> >> of the same type as the pointer passed in the ioctl() call).
+> >>
+> >> Signed-off-by: Zev Weiss <zevweiss@gmail.com>
+> >> Tested-by: Zev Weiss <zevweiss@gmail.com>
+> >> ---
+> >> I had been having some problems with userspace memory corruption, and traced
+> >> them to a MEMGETREGIONINFO ioctl() on an MTD device.  I applied this patch and
+> >> it seems to fix the problem, though I am not an expert and there may be a more
+> >> correct way to go about doing this.  I'm also new at submitting patches, so
+> >> hopefully I haven't screwed up the patch-submission etiquette too
+> >> horrifically.
+> >>
+> >>   drivers/mtd/mtdchar.c |   11 +++++++++--
+> >>   1 files changed, 9 insertions(+), 2 deletions(-)
+> >>
+> >> diff --git a/drivers/mtd/mtdchar.c b/drivers/mtd/mtdchar.c
+> >> index 13cc67a..0acb135 100644
+> >> --- a/drivers/mtd/mtdchar.c
+> >> +++ b/drivers/mtd/mtdchar.c
+> >> @@ -411,14 +411,21 @@ static int mtd_ioctl(struct inode *inode, struct file *file,
+> >>   	case MEMGETREGIONINFO:
+> >>   	{
+> >>   		struct region_info_user ur;
+> >> +		struct mtd_erase_region_info *kr;
+> >>
+> >>   		if (copy_from_user(&ur, argp, sizeof(struct region_info_user)))
+> >>   			return -EFAULT;
+> >>
+> >>   		if (ur.regionindex >= mtd->numeraseregions)
+> >>   			return -EINVAL;
+> >> -		if (copy_to_user(argp, &(mtd->eraseregions[ur.regionindex]),
+> >> -				sizeof(struct mtd_erase_region_info)))
+> >> +
+> >> +		kr = &(mtd->eraseregions[ur.regionindex]);
+> >> +
+> >> +		ur.offset = kr->offset;
+> >> +		ur.erasesize = kr->erasesize;
+> >> +		ur.numblocks = kr->numblocks;
+> >> +
+> >> +		if (copy_to_user(argp, &ur, sizeof(struct region_info_user)))
+> >>   			return -EFAULT;
+> >>   		break;
+> >>   	}
+> > 
+> > ug.
+> > 
+> > Putting a kernel pointer into a shared-with-userspace data structure
+> > (struct mtd_erase_region_info) was a big mistake.
+> > 
+> > Copying a `struct region_info_user' back to userspace seems better than
+> > copying a `struct mtd_erase_region_info', but what do I know?
+> > 
+> > Actually...
+> > 
+> > Before 0ecbc81adfcb9f15f86b05ff576b342ce81bbef8, `struct
+> > mtd_erase_region_info' had three members, all u32.  We were copying
+> > three u32's out to userspace.
+> > 
+> > After 0ecbc81adfcb9f15f86b05ff576b342ce81bbef8, `struct
+> > mtd_erase_region_info' has four members: three u32's and one ulong*. 
+> > We're copying three u32's and one ulong* out to userspace.
+> > 
+> > After your change, we're copying _four_ u32's out to userspace, so
+> > there still is potential for scribbling on unsuspecting userspace?
+> > 
+> > If that reading is right, we need to go back to copying just the three
+> > u32's.  Perhaps via
+> > 
+> > struct mtd_erase_region_info {
+> > 	struct {
+> > 		u_int32_t offset;
+> > 		u_int32_t erasesize;
+> > 		u_int32_t numblocks;
+> > 	} user_part;
+> > 	unsigned long *lockmap;
+> > };
+> > 
+> > or similar.
+> > 
+> > David?  Help?  2.6.25.x anmd 2.6.26.x need fixing as well.
+> > 
+> > 
+> 
+> Hmm.  Well, I may be misunderstanding what you're saying (again, I'm very much
+> a newbie to kernelspace), but I *think* the "copying four u32's out to
+> userspace" thing isn't really a problem with my patch.  It does certainly copy
+> those four u32's, but given that `ur' (struct mtd_region_info_user) is
+> initialized by copying from userspace, its fourth u32 (the `regionindex'
+> member) should be identical when copied back out to userspace, given that it's
+> not touched in the memberwise modification of the struct.
 
+OK, that's fortuitously bug-free in single-threaded userspace but
+fantastically-improbably-buggy if userspace is threaded.
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11409
-Subject		: build issue #564 for v2.6.27-rc4 : undefined reference to `NS8390p_init'
-Submitter	: Toralf Förster <toralf.foerster@gmx.de>
-Date		: 2008-08-22 8:33 (2 days old)
-References	: http://marc.info/?l=linux-kernel&m=121939410214677&w=4
-Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Patch		: http://marc.info/?l=linux-kernel&m=121943097320451&w=4
+But it's something the kernel shouldn't be doing.
 
+>  So yes, it is
+> copying 4 bytes more than is strictly necessary, but it seemed like a
+> reasonably clean way of going about it (to me, for what that's worth).
+> 
+> In my particular situation it didn't do anything unexpected in my testing (and
+> restored the normal behavior I had when previously running 2.6.17.7).
+> 
+> On the other hand, if I'm missing something completely, please let me know,
+> and perhaps I can prepare a more suitable fix.
+
+"good enough" is never good enough ;)
+
+What is the ideal implementation?  Let's implement that.
 
