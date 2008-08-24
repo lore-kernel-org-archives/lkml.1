@@ -1,99 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbYHXOHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbYHXKJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754900AbYHXOHf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 10:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbYHXOH1
+	id S1754776AbYHXKJW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 06:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbYHXKJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 10:07:27 -0400
-Received: from bu3sch.de ([62.75.166.246]:39866 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751483AbYHXOH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 10:07:26 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: benh@kernel.crashing.org
-Subject: Re: Random crashes with 2.6.27-rc3 on PPC
-Date: Sun, 24 Aug 2008 15:44:11 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linuxppc-dev@ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>
-References: <200808231610.46473.mb@bu3sch.de> <1219531969.21386.205.camel@pasglop>
-In-Reply-To: <1219531969.21386.205.camel@pasglop>
+	Sun, 24 Aug 2008 06:09:13 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:42214 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752643AbYHXKJM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 06:09:12 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <48B13334.9060406@s5r6.in-berlin.de>
+Date: Sun, 24 Aug 2008 12:08:52 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200808241544.12412.mb@bu3sch.de>
-Content-Type: text/plain;
-  charset="utf-8"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Constantin Baranov <const@const.mimas.ru>, linux-kernel@vger.kernel.org,
+       Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH 2.6.27-rc3] led: driver for LEDs on PCEngines ALIX.2 and
+ ALIX.3 boards
+References: <48AB019D.6080302@const.mimas.ru> <20080822115150.6b3907a4.akpm@linux-foundation.org>
+In-Reply-To: <20080822115150.6b3907a4.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 24 August 2008, Benjamin Herrenschmidt wrote:
-> Random guess:
+Andrew Morton wrote:
+> On Tue, 19 Aug 2008 22:23:41 +0500
+> Constantin Baranov <const@const.mimas.ru> wrote:
+>> --- linux-2.6.27-rc3/drivers/leds/leds-alix.c	1970-01-01 04:00:00.000000000 +0400
+>> +++ linux-2.6.27-rc3-alix/drivers/leds/leds-alix.c	2008-08-19 21:59:05.207153570 +0500
+...
+>> +static int __init alix_led_probe(struct platform_device *pdev)
+>> +{
+>> +	int i;
+>> +	int ret = 0;
+>> +	
+>> +	for (i = 0; i < ARRAY_SIZE(alix_leds) && ret >= 0; i++)
+>> +		ret = led_classdev_register(&pdev->dev, &alix_leds[i].cdev);
+>> +
+>> +	if (ret < 0) {
+>> +		for (i = i - 2; i >= 0; i--)
 > 
-> CONFIG_FRAME_POINTER=y
-> CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
+> this is off-by-one, surely.
 > 
-> Note sure what those together do, check if you have any file compiled
-> with -fno-omit-frame-pointer and if you do, try to change things so
-> that you don't ... we found some miscompiles when that is set, exposed
-> by FTRACE typically (which you don't have enabled) but possibly by other
-> things.
+> If we get here with i==1, we'll loop 4 billion times.
+> 
+>> +			led_classdev_unregister(&alix_leds[i].cdev);
+>> +	}
+>> +
+>> +	return ret;
+>> +}
+...
+> How's this look?
+...
+> @@ -92,7 +95,7 @@ static int __init alix_led_probe(struct 
+>  		ret = led_classdev_register(&pdev->dev, &alix_leds[i].cdev);
+>  
+>  	if (ret < 0) {
+> -		for (i = i - 2; i >= 0; i--)
+> +		while (--i >= 0)
+>  			led_classdev_unregister(&alix_leds[i].cdev);
+>  	}
 
 
-Thanks for your random guess.
-The following workaround seems to fix the crashes on powerpc.
-However, this patch is clearly not what we want for other architectures,
-as they might need -fno-omit-frame-pointer to function properly.
+Really?  Constantin's code looks correct to me.  He increments i once 
+more after failure.
 
-I reproduced the random crashes of kernel and userspace applications
-(without the following patch) on a vanilla 2.6.26 and 2.6.27-rc{1-4}
-kernel. I did _not_ try a 2.6.25 kernel with -fno-omit-frame-pointer, so
-I don't know if it would also crash then.
+Perhaps write it easier to read; i.e. in the same way as most error 
+return checks everywhere in the kernel:
 
-I'm currently running more tests on a patched 2.6.27-rc4 kernel, but it
-didn't crash, yet. I already did 5 complete kernel tree compilations. It
-should have crashed by now, but it didn't :)
+	for (i = 0; i < ARRAY_SIZE(alix_leds); i++) {
+		ret = led_classdev_register(...etc...);
+		if (ret < 0)
+			break;
+	}
 
-The compiler is:
-gcc (GCC) 4.1.3 20070929 (prerelease) (Ubuntu 4.1.2-16ubuntu2)
+	if (ret < 0)
+		while (i--)
+			led_classdev_unregister(&alix_leds[i].cdev);
 
 
-Index: linux-2.6/Makefile
-===================================================================
---- linux-2.6.orig/Makefile	2008-08-24 11:49:53.000000000 +0200
-+++ linux-2.6/Makefile	2008-08-24 12:16:42.000000000 +0200
-@@ -523,13 +523,13 @@ endif
- 
- # Force gcc to behave correct even for buggy distributions
- # Arch Makefiles may override this setting
- KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
- 
- ifdef CONFIG_FRAME_POINTER
--KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
-+KBUILD_CFLAGS	+= -fno-optimize-sibling-calls
- else
- KBUILD_CFLAGS	+= -fomit-frame-pointer
- endif
- 
- ifdef CONFIG_DEBUG_INFO
- KBUILD_CFLAGS	+= -g
-Index: linux-2.6/kernel/Makefile
-===================================================================
---- linux-2.6.orig/kernel/Makefile	2008-08-24 11:50:23.000000000 +0200
-+++ linux-2.6/kernel/Makefile	2008-08-24 12:15:54.000000000 +0200
-@@ -92,13 +92,13 @@ obj-$(CONFIG_SMP) += sched_cpupri.o
- ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
- # needed for x86 only.  Why this used to be enabled for all architectures is beyond
- # me.  I suspect most platforms don't need this, but until we know that for sure
- # I turn this off for IA-64 only.  Andreas Schwab says it's also needed on m68k
- # to get a correct value for the wait-channel (WCHAN in ps). --davidm
--CFLAGS_sched.o := $(PROFILING) -fno-omit-frame-pointer
-+CFLAGS_sched.o := $(PROFILING)
- endif
- 
- $(obj)/configs.o: $(obj)/config_data.h
- 
- # config_data.h contains the same information as ikconfig.h but gzipped.
- # Info from config_data can be extracted from /proc/config*
+Or		while (--i >= 0)
+
+or		for (i--; i >= 0; i--)
+-- 
+Stefan Richter
+-=====-==--- =--- ==---
+http://arcgraph.de/sr/
