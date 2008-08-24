@@ -1,90 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbYHWQQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbYHXBGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754446AbYHWQQe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 12:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYHWQQ0
+	id S1755496AbYHXBGS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 21:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbYHXBGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 12:16:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40535 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751807AbYHWQQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 12:16:25 -0400
-Date: Sat, 23 Aug 2008 18:07:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org,
-       akpm@linux-foundation.org, manfred@colorfullife.com,
-       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, schamp@sgi.com,
-       niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org
-Subject: Re: [PATCH, RFC, tip/core/rcu] scalable classic RCU implementation
-Message-ID: <20080823160735.GC27974@elte.hu>
-References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080822043715.GD15212@elte.hu> <20080822134720.GG6875@linux.vnet.ibm.com> <20080822172221.GA9593@linux.vnet.ibm.com>
+	Sat, 23 Aug 2008 21:06:07 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:38115 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751941AbYHXBGG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Aug 2008 21:06:06 -0400
+Date: Sat, 23 Aug 2008 21:05:54 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] ext4 bug fixes
+Message-ID: <20080824010554.GE18169@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Christoph Hellwig <hch@infradead.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <E1KWXf5-0004gv-P7@closure.thunk.org> <20080823234439.GA24760@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080822172221.GA9593@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080823234439.GA24760@infradead.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Aug 23, 2008 at 07:44:39PM -0400, Christoph Hellwig wrote:
+> >       ext4: Initialize writeback_index to 0 when allocating a new inode
+> 
+> Since commit 7d455e0030eeab820773e7786605be4d9e56a04b this is already
+> done in common code, so this changeset doesn't have any effect.
+> 
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+Hmm, I thought Andrew said he this was better to do in each filesystem
+rather than in the common code, so I thought he was NACK'ing that
+patch.  Still, I see his sign-off, so I guess I must have misread the
+thread.....
 
-> Is this a sufficient improvement?
+						- Ted
 
-yeah - looks much better. This was the block that meets the eye for the 
-first time in the patch so it stuck out.
-
-just one more small pet peeve of mine: please use vertical alignment too 
-to improve readability. Instead of:
-
-> #define MAX_RCU_LEVELS 3
-> #define RCU_FANOUT (CONFIG_RCU_FANOUT)
-> #define RCU_FANOUT_SQ (RCU_FANOUT * RCU_FANOUT)
-> #define RCU_FANOUT_CUBE (RCU_FANOUT_SQ * RCU_FANOUT)
-
-this looks a bit more structured IMO:
-
-> #define MAX_RCU_LEVELS	3
-> #define RCU_FANOUT		(CONFIG_RCU_FANOUT)
-> #define RCU_FANOUT_SQ		(RCU_FANOUT * RCU_FANOUT)
-> #define RCU_FANOUT_CUBE	(RCU_FANOUT_SQ * RCU_FANOUT)
-
-maybe even this:
-
-> #if (NR_CPUS) <= RCU_FANOUT
-> #  define NUM_RCU_LVLS	1
-> #  define NUM_RCU_LVL_0	1
-> #  define NUM_RCU_LVL_1	(NR_CPUS)
-> #  define NUM_RCU_LVL_2	0
-> #  define NUM_RCU_LVL_3	0
-> #elif (NR_CPUS) <= RCU_FANOUT_SQ
-> #  define NUM_RCU_LVLS	2
-> #  define NUM_RCU_LVL_0	1
-> #  define NUM_RCU_LVL_1	(((NR_CPUS) + RCU_FANOUT - 1) / RCU_FANOUT)
-> #  define NUM_RCU_LVL_2	(NR_CPUS)
-> #  define NUM_RCU_LVL_3	0
-> #elif (NR_CPUS) <= RCU_FANOUT_CUBE
-> #  define NUM_RCU_LVLS	3
-> #  define NUM_RCU_LVL_0	1
-> #  define NUM_RCU_LVL_1	(((NR_CPUS) + RCU_FANOUT_SQ - 1) / RCU_FANOUT_SQ)
-> #  define NUM_RCU_LVL_2	(((NR_CPUS) + (RCU_FANOUT) - 1) / (RCU_FANOUT))
-> #  define NUM_RCU_LVL_3	NR_CPUS
-> #else
-> # error "CONFIG_RCU_FANOUT insufficient for NR_CPUS"
-> #endif /* #if (NR_CPUS) <= RCU_FANOUT */
-
-but no strong feelings on that one. (maybe inserting a space at the 
-right places helps too, no need for a full tab)
-
-	Ingo
