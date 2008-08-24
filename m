@@ -1,84 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbYHXP0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756954AbYHXVal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755864AbYHXP0v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 11:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbYHXP0n
+	id S1756954AbYHXVal (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 17:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbYHXVaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 11:26:43 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:46970 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751440AbYHXP0m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 11:26:42 -0400
-Message-ID: <48B17CF3.1040602@cs.helsinki.fi>
-Date: Sun, 24 Aug 2008 18:23:31 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Sun, 24 Aug 2008 17:30:15 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54067 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753205AbYHXVaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 17:30:13 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug #11355] Regression in 2.6.27-rc2 when cross-building the kernel
+Date: Sun, 24 Aug 2008 23:34:04 +0200
+User-Agent: KMail/1.9.9
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Larry Finger" <Larry.Finger@lwfinger.net>,
+       Sam Ravnborg <sam@ravnborg.org>, David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.jvH.vaGsIB@albercik>
+In-Reply-To: <VSpL6AnBTS.A.jvH.vaGsIB@albercik>
 MIME-Version: 1.0
-To: Eric Sesterhenn <snakebyte@gmx.de>
-CC: zippel@linux-m68k.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Patch] Fix Buffer overflow in hfsplus with a corrupted image
-References: <20080824130736.GA27742@alice> <84144f020808240814l41be03a6x53d4c521d7d95eb6@mail.gmail.com> <20080824152454.GA27964@alice>
-In-Reply-To: <20080824152454.GA27964@alice>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808242334.05993.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sesterhenn wrote:
-> * Pekka Enberg (penberg@cs.helsinki.fi) wrote:
->> Hi Eric,
->>
->> On Sun, Aug 24, 2008 at 4:07 PM, Eric Sesterhenn <snakebyte@gmx.de> wrote:
->>> when an hfsplus image gets corrupted it might happen that the catalog
->>> namelength field gets b0rked. If we mount such an image
->>> the memcpy() in hfsplus_cat_build_key_uni() writes more than the 255
->>> that fit in the name field. Depending on the size of the overwritten
->>> data, we either only get memory corruption or also trigger an oops like
->>> this:
->>>
->>> --- linux/fs/hfsplus/catalog.c.orig     2008-08-24 14:52:03.000000000 +0200
->>> +++ linux/fs/hfsplus/catalog.c  2008-08-24 14:54:15.000000000 +0200
->>> @@ -168,6 +168,11 @@ int hfsplus_find_cat(struct super_block
->>>                return -EIO;
->>>        }
->>>
->>> +       if (be16_to_cpu(tmp.thread.nodeName.length) >= 127) {
->>> +               printk(KERN_ERR "hfs: catalog name length corrupted\n");
->>> +               return -EIO;
->>> +       }
->> So, where does this 127 come from? I can only find reference to a
->> maximum length of 255 unicode characters (16 bits per character) in
->> the following technical note for HFS+ (see sections "HFS Plus Names"
->> and "Catalog Thread Records"):
->>
->>   http://developer.apple.com/technotes/tn/tn1150.html
->>
->> Hmm?
+On Saturday, 23 of August 2008, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Ah, i missed that the name array is __be16, i somehow assumed it was a
-> char array, and tried to account for the multiplication by 2 in 
-> hfsplus_cat_build_key_uni(). here is an updated fix.
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
 > 
-> --- linux/fs/hfsplus/catalog.c.orig	2008-08-24 14:52:03.000000000 +0200
-> +++ linux/fs/hfsplus/catalog.c	2008-08-24 14:54:15.000000000 +0200
-> @@ -168,6 +168,11 @@ int hfsplus_find_cat(struct super_block 
->  		return -EIO;
->  	}
->  
-> +	if (be16_to_cpu(tmp.thread.nodeName.length) > 255) {
-> +		printk(KERN_ERR "hfs: catalog name length corrupted\n");
-> +		return -EIO;
-> +	}
-> +
->  	hfsplus_cat_build_key_uni(fd->search_key, be32_to_cpu(tmp.thread.parentID),
->  				 &tmp.thread.nodeName);
->  	return hfs_brec_find(fd);
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11355
+> Subject		: Regression in 2.6.27-rc2 when cross-building the kernel
+> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+> Date		: 2008-08-16 2:38 (8 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121885432118368&w=4
 
-Looks good to me.
+As I wrote in the Bugzilla, I'm seeing a related problem.
 
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Namely, I build kernels on one box, with 'make O=<target>', then I mount
+<target> on another one over NFS, 'cd' to it and try to install the kernel
+modules with 'make modules_install'.  This results in 'HOSTCC firmware/ihex2fw'
+and 'fatal error: ...: Read-only file system'.  It's readily reproducible.
+
+Commenting out line 1130 of Makefile
+("$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.fwinst obj=firmware __fw_modinst")
+obviously helps, so it looks like Makefile.fwinst needs fixing.
+
+Thanks,
+Rafael
