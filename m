@@ -1,127 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbYHXXml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbYHXXtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754346AbYHXXml (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 19:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbYHXXmc
+	id S1754840AbYHXXtR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 19:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYHXXtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 19:42:32 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56550 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752520AbYHXXmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 19:42:32 -0400
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX1/LjvpcE57L1iOkS1CViu6bnlQGAHazey9Z0dZ6L4
-	pKiu5iROq2qkbw
-Date: Mon, 25 Aug 2008 01:42:28 +0200
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: zippel@linux-m68k.org, linux-kernel@vger.kernel.org
-Subject: [Patch] Check read_mapping_page return value in hfsplus
-Message-ID: <20080824234228.GA28913@alice>
+	Sun, 24 Aug 2008 19:49:04 -0400
+Received: from ns2.suse.de ([195.135.220.15]:43875 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752832AbYHXXtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 19:49:03 -0400
+From: Neil Brown <neilb@suse.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Date: Mon, 25 Aug 2008 09:48:54 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.27-rc3 (x86_64)
-X-Uptime: 01:23:09 up 5 days, 15:32,  3 users,  load average: 0.13, 0.44,
-	0.31
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.45
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18609.62310.72394.640097@notabene.brown>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC]  Resolve 2 year old issue with different demands
+	on EVIOCGRAB
+In-Reply-To: message from Dmitry Torokhov on Friday August 22
+References: <18596.58273.713075.332009@notabene.brown>
+	<20080815022453.GA9438@anvil.corenet.prv>
+	<18600.51093.613662.435395@notabene.brown>
+	<20080818112609.ZZRA012@mailhub.coreip.homeip.net>
+	<18604.45689.859491.192621@notabene.brown>
+	<20080822160414.ZZRA012@mailhub.coreip.homeip.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
+On Friday August 22, dmitry.torokhov@gmail.com wrote:
+> 
+> Maybe openmoko could just patch mousedev to ignore touchscreens for
+> now, until X is fixed?
 
-while testing more corrupted images with hfsplus, i came across
-one which triggered the following bug:
+Maybe.  And in fact it already is!
+As I delved further in to this issue, I find that not only is there a
+patch in tslib to use EVIOCGRAB, but there is also a patch in the
+kernel to exclude the "ABS_X + ABS_Y + BTN_TOUCH" case from mousedev,
+making the EVIOCGRAB patch pointless.
+And there might even be another patch in the kdrive Xserver to use
+EVIOCGRAB in a different context (which might not actually be being
+used, I'm not sure).  A twisted maze of little passages, all
+twisted. :-)
 
-[15840.675016] BUG: unable to handle kernel paging request at fffffffb
-[15840.675016] IP: [<c0116a4f>] kmap+0x15/0x56
-[15840.675016] *pde = 00008067 *pte = 00000000
-[15840.675016] Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
-[15840.675016] Modules linked in:
-[15840.675016]
-[15840.675016] Pid: 11575, comm: ln Not tainted (2.6.27-rc4-00123-gd3ee1b4-dirty #29)
-[15840.675016] EIP: 0060:[<c0116a4f>] EFLAGS: 00010202 CPU: 0
-[15840.675016] EIP is at kmap+0x15/0x56
-[15840.675016] EAX: 00000246 EBX: fffffffb ECX: 00000000 EDX: cab919c0
-[15840.675016] ESI: 000007dd EDI: cab0bcf4 EBP: cab0bc98 ESP: cab0bc94
-[15840.675016]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-[15840.675016] Process ln (pid: 11575, ti=cab0b000 task=cab919c0 task.ti=cab0b000)
-[15840.675016] Stack: 00000000 cab0bcdc c0231cfb 00000000 cab0bce0 00000800 ca9290c0 fffffffb
-[15840.675016]        cab145d0 cab919c0 cab15998 22222222 22222222 22222222 00000001 cab15960
-[15840.675016]        000007dd cab0bcf4 cab0bd04 c022cb3a cab0bcf4 cab15a6c ca9290c0 00000000
-[15840.675016] Call Trace:
-[15840.675016]  [<c0231cfb>] ? hfsplus_block_allocate+0x6f/0x2d3
-[15840.675016]  [<c022cb3a>] ? hfsplus_file_extend+0xc4/0x1db
-[15840.675016]  [<c022ce41>] ? hfsplus_get_block+0x8c/0x19d
-[15840.675016]  [<c06adde4>] ? sub_preempt_count+0x9d/0xab
-[15840.675016]  [<c019ece6>] ? __block_prepare_write+0x147/0x311
-[15840.675016]  [<c0161934>] ? __grab_cache_page+0x52/0x73
-[15840.675016]  [<c019ef4f>] ? block_write_begin+0x79/0xd5
-[15840.675016]  [<c022cdb5>] ? hfsplus_get_block+0x0/0x19d
-[15840.675016]  [<c019f22a>] ? cont_write_begin+0x27f/0x2af
-[15840.675016]  [<c022cdb5>] ? hfsplus_get_block+0x0/0x19d
-[15840.675016]  [<c0139ebe>] ? tick_program_event+0x28/0x4c
-[15840.675016]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[15840.675016]  [<c022b723>] ? hfsplus_write_begin+0x2d/0x32
-[15840.675016]  [<c022cdb5>] ? hfsplus_get_block+0x0/0x19d
-[15840.675016]  [<c0161988>] ? pagecache_write_begin+0x33/0x107
-[15840.675016]  [<c01879e5>] ? __page_symlink+0x3c/0xae
-[15840.675016]  [<c019ad34>] ? __mark_inode_dirty+0x12f/0x137
-[15840.675016]  [<c0187a70>] ? page_symlink+0x19/0x1e
-[15840.675016]  [<c022e6eb>] ? hfsplus_symlink+0x41/0xa6
-[15840.675016]  [<c01886a9>] ? vfs_symlink+0x99/0x101
-[15840.675016]  [<c018a2f6>] ? sys_symlinkat+0x6b/0xad
-[15840.675016]  [<c018a348>] ? sys_symlink+0x10/0x12
-[15840.675016]  [<c01038bd>] ? sysenter_do_call+0x12/0x31
-[15840.675016]  =======================
-[15840.675016] Code: 00 00 75 10 83 3d 88 2f ec c0 02 75 07 89 d0 e8 12 56 05 00 5d c3 55 ba 06 00 00 00 89 e5 53 89 c3 b8 3d eb 7e c0 e8 16 74 00 00 <8b> 03 c1 e8 1e 69 c0 d8 02 00 00 05 b8 69 8e c0 2b 80 c4 02 00
-[15840.675016] EIP: [<c0116a4f>] kmap+0x15/0x56 SS:ESP 0068:cab0bc94
-[15840.675016] ---[ end trace 4fea40dad6b70e5f ]---
+But I am firmly against carrying patches like this which cannot go
+upstream.  They can lead to subtle incompatibilities and can be hard
+to get rid of.  I much prefer a solution that can work for everyone,
+and I currently think the BTN_TOUCH -> BTN_STYLUS change is that
+solution.  It remains to be seen which I can push into the openmoko
+source tree :-)
 
-This happens because the return value of read_mapping_page() is passed
-on to kmap unchecked. The bug is triggered after the first
-read_mapping_page() in hfsplus_block_allocate(), this patch
-fixes all three usages in this functions but leaves the ones further
-down in the file unchanged.
-
-Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
-
---- linux/fs/hfsplus/bitmap.c.orig	2008-08-25 01:18:51.000000000 +0200
-+++ linux/fs/hfsplus/bitmap.c	2008-08-25 01:38:49.000000000 +0200
-@@ -32,6 +32,10 @@ int hfsplus_block_allocate(struct super_
- 	mutex_lock(&HFSPLUS_SB(sb).alloc_file->i_mutex);
- 	mapping = HFSPLUS_SB(sb).alloc_file->i_mapping;
- 	page = read_mapping_page(mapping, offset / PAGE_CACHE_BITS, NULL);
-+	if (IS_ERR(page)) {
-+		start = size;
-+		goto out;
-+	}
- 	pptr = kmap(page);
- 	curr = pptr + (offset & (PAGE_CACHE_BITS - 1)) / 32;
- 	i = offset % 32;
-@@ -73,6 +77,10 @@ int hfsplus_block_allocate(struct super_
- 			break;
- 		page = read_mapping_page(mapping, offset / PAGE_CACHE_BITS,
- 					 NULL);
-+		if (IS_ERR(page)) {
-+			start = size;
-+			goto out;
-+		}
- 		curr = pptr = kmap(page);
- 		if ((size ^ offset) / PAGE_CACHE_BITS)
- 			end = pptr + PAGE_CACHE_BITS / 32;
-@@ -120,6 +128,10 @@ found:
- 		offset += PAGE_CACHE_BITS;
- 		page = read_mapping_page(mapping, offset / PAGE_CACHE_BITS,
- 					 NULL);
-+		if (IS_ERR(page)) {
-+			start = size;
-+			goto out;
-+		}
- 		pptr = kmap(page);
- 		curr = pptr;
- 		end = pptr + PAGE_CACHE_BITS / 32;
+Thanks,
+NeilBrown
