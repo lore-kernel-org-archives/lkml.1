@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbYHWXxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbYHXCjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755707AbYHWXxr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 19:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbYHWXxj
+	id S1753150AbYHXCjt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 22:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYHXCjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 19:53:39 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49118 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752684AbYHWXxi (ORCPT
+	Sat, 23 Aug 2008 22:39:41 -0400
+Received: from web82107.mail.mud.yahoo.com ([209.191.84.220]:23855 "HELO
+	web82107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751425AbYHXCjk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 19:53:38 -0400
-Date: Sat, 23 Aug 2008 16:53:18 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Joshua Hoblitt <josh@hoblitt.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
-       j_kernel@hoblitt.com
-Subject: Re: [Bug 11388] New: 2.6.27-rc3 warns about MTRR range; only 3 of
- 16gb of memory is usable
-Message-ID: <20080823165318.50ae9d8c@infradead.org>
-In-Reply-To: <20080822062459.GO14110@elte.hu>
-References: <86802c440808211728r4b5a7a37w929c2dd68616361d@mail.gmail.com>
-	<20080822002952.GG23377@hoblitt.com>
-	<20080822010014.GH23377@hoblitt.com>
-	<20080822011055.GI23377@hoblitt.com>
-	<86802c440808211855h50ea65faudc169e48f83e18e2@mail.gmail.com>
-	<20080822021512.GJ23377@hoblitt.com>
-	<86802c440808211926k1ec5b2a2g2bec1b7faee7ebbb@mail.gmail.com>
-	<86802c440808212024v3ccd2a7ey6517c180464275f0@mail.gmail.com>
-	<20080822035024.GB30284@elte.hu>
-	<86802c440808212316t1c89321fl717fa80d2013f155@mail.gmail.com>
-	<20080822062459.GO14110@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 23 Aug 2008 22:39:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=xqZN/OJX7f8JUkBxzIduEV+jKnhggY8+oqswzDBFvuLaNTkwvSKncK2Mg9JNFL7Gzwb2KRAMDWNIXxoa6UqMeIAgUAqVoVbA+WGVwHfBrW+E5+ZKaZlbpqahFBQlCDarlxeXHX8H8CvGCk7Wt1abeaT/bazUxRbADx+H2jmK4xQ=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Sat, 23 Aug 2008 19:39:39 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <558013.68193.qm@web82107.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Aug 2008 08:24:59 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
 
+
+> > (BTW, just what kernel version were you using for those patches?  The
+> > v2.6.27-rcX series place the patch's changes over 100 lines earlier
+> > than the line numbers indicated in your patches....)
 > 
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> 
-> > > +               if (tmp != mask_lo) {
-> > > +                       WARN_ON("mtrr: your BIOS has set up an
-> > > incorrect mask, fixing it up.\n");
-> > 
-> > can you change WARN_ON to WARN_ON_ONCE ?
-> 
-> the commit below does that. Note that the condition is 
-> WARN_ON(condition) or WARN(string) - WARN_ON(string) will just print
-> a kernel stack unconditionally. Unfortunately there's no WARN_ONCE(). 
-> (Arjan?)
+> we are working on tip/master
 
-Andrew removed that from the patches as "unused" :-(
-oh well easy to add back ;-)
+My mistake... sorry.  Previously, Ingo had me doing things with tip/master,
+but usually you had me working with v2.6.27-rc3.  I should have tried
+tip/master as soon as I saw the discrepancy.
 
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+I have some questions about what happens next:
+
+- This fix will naturally make it into v2.6.27, maybe even as soon
+as v2.6.27-rc5, correct?
+
+- Is there any chance I can get it into the stable 2.6.26.X updates?
+(Who should I ask, or are only developers allowed to lobby for this
+sort of thing?)
+
+- Are you worried about the potential problems of a quirk-based approach?
+What if many more people experience a similar regression once 2.6.26 or
+later appears in their distribution?  I'm sure you don't want to have to
+write a different quirk for each individual's hardware, and this problem
+did not arise with the approach used for resource management in 2.6.25.
+
+
+Thanks again Yinghai (and Ingo),
+Dave W.
