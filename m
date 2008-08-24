@@ -1,111 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbYHWT64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756815AbYHXTX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758473AbYHWT64 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 15:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755959AbYHWTpU
+	id S1756815AbYHXTX5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 15:23:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756700AbYHXTXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 15:45:20 -0400
-Received: from qb-out-0506.google.com ([72.14.204.233]:54390 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755853AbYHWTpQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 15:45:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=S86hyq0A6XgJbRrdXDifL9V2ylpTucStQLPxSiolt/HRHqqj2Ei3HD7YxgoGOS2aqS
-         kuENpKQdb9IxclpzG2DA7oTkbYRS966tJmp4wuyIyB5TmxmssUN/qD/qRWJX0B1+hzIb
-         fSQw++wUeCZOtuQVGDyxBqS/ymn+IyKBYslrY=
-Date: Sat, 23 Aug 2008 23:45:41 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: mingo@elte.hu, macro@linux-mips.org, hpa@zytor.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/8] x86: apic - unify hard_smp_processor_id
-Message-ID: <20080823194541.GC22089@lenovo>
-References: <a02f3dc9088b9b6c0d22fa77839fdd9d5309ec97.1219491572.git.gorcunov@gmail.com> <ad4298d4a7d4eb0bf4611765df4481ac129b5db6.1219491572.git.gorcunov@gmail.com> <86802c440808231213j9a2ffdem548ca91570c981b1@mail.gmail.com>
+	Sun, 24 Aug 2008 15:23:45 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:39995 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753155AbYHXTXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 15:23:44 -0400
+Date: Sun, 24 Aug 2008 22:23:06 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
+Message-ID: <20080824192252.GB1627@cs181140183.pp.htv.fi>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <alpine.LFD.1.10.0808241201090.3363@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <86802c440808231213j9a2ffdem548ca91570c981b1@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <alpine.LFD.1.10.0808241201090.3363@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Yinghai Lu - Sat, Aug 23, 2008 at 12:13:21PM -0700]
-| On Sat, Aug 23, 2008 at 6:01 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| > Move hard_smp_processor_id to apic_32.c.
-| > There is no need to keep it in header - we are linked to
-| > apic_xx.c code anyway.
-| >
-| > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-| > ---
-| >  arch/x86/kernel/apic_32.c |    5 +++++
-| >  include/asm-x86/smp.h     |   10 ----------
-| >  2 files changed, 5 insertions(+), 10 deletions(-)
-| >
-| > diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-| > index ad295cf..c71a77c 100644
-| > --- a/arch/x86/kernel/apic_32.c
-| > +++ b/arch/x86/kernel/apic_32.c
-| > @@ -1569,6 +1569,11 @@ void __cpuinit generic_processor_info(int apicid, int version)
-| >        cpu_set(cpu, cpu_present_map);
-| >  }
-| >
-| > +int hard_smp_processor_id(void)
-| > +{
-| > +       return read_apic_id();
-| > +}
-| > +
-| >  /*
-| >  * Power management
-| >  */
-| > diff --git a/include/asm-x86/smp.h b/include/asm-x86/smp.h
-| > index 29324c1..914a73d 100644
-| > --- a/include/asm-x86/smp.h
-| > +++ b/include/asm-x86/smp.h
-| > @@ -185,17 +185,7 @@ static inline unsigned int read_apic_id(void)
-| >  }
-| >  #endif
-| >
-| > -
-| > -# if defined(APIC_DEFINITION) || defined(CONFIG_X86_64)
-| >  extern int hard_smp_processor_id(void);
-| > -# else
-| > -#include <mach_apicdef.h>
-| > -static inline int hard_smp_processor_id(void)
-| > -{
-| > -       /* we don't want to mark this access volatile - bad code generation */
-| > -       return read_apic_id();
-| > -}
-| > -# endif /* APIC_DEFINITION */
-| >
-| >  #else /* CONFIG_X86_LOCAL_APIC */
-| >
-| > --
-| > 1.6.0.6.gc667
-| >
-| >
-| 
-| this one seems have some problem with 32bit with genericarch
-| 
-| because we have
-| 
-| int hard_smp_processor_id(void)
-| {
-|         return genapic->get_apic_id(*(unsigned long *)(APIC_BASE+APIC_ID));
-| }
-| 
-| arch/x86/mach-generic/probe.c
-| 
-| updated 64 bit to have MACRO.
-| 
-| YH
-| 
+On Sun, Aug 24, 2008 at 12:03:37PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Sat, 23 Aug 2008, Rafael J. Wysocki wrote:
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11356
+> > Subject		: Linux 2.6.27-rc3 - build failure: undefined reference to `.lockdep_count_forward_deps'
+> > Submitter	: Frans Pop <elendil@planet.nl>
+> > Date		: 2008-08-16 19:11 (8 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=121891396320127&w=4
+> 
+> Hmm. Wasn't this already confirmed to be fixed by commit
+> df60a8441866153d691ae69b77934904c2de5e0d? 
+> 
+> At least Adrian sent out an email saying "Confirmed, bug closed.", but 
+> bugzilla seems to disagree and still show it as open.
 
-thanks Yinghai, but isn't it called _after_ x86 apic chip
-initialized?
+There were two different reports, Rafael opened a bug for each, and I 
+missed that there were two open bugs for the same issue.
 
-		- Cyrill -
+The one I closed was #11344.
+
+I've now closed #11356 as a duplicate of #11344.
+
+> 		Linus
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
