@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbYHXP3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755139AbYHXJ2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbYHXP3n (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 11:29:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbYHXP3f
+	id S1755139AbYHXJ2o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 05:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbYHXJ2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 11:29:35 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:37769 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751666AbYHXP3e (ORCPT
+	Sun, 24 Aug 2008 05:28:35 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:12880 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041AbYHXJ2e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 11:29:34 -0400
+	Sun, 24 Aug 2008 05:28:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=WOfaR3BkvDiPA8fMMljNMQ3GEK4eQ7ZCuIbjdtpBv5DBYZxodiY1fPd+qeDkDC3XLc
-         RaVn65c5s7G4q4owusutFk2E2fkpNEjFwSutkGBLUBk3e8uoqyABZ71z9TN5+qTfs8Bv
-         9OvZ4jdU9AAI4B7WM7Ei9RBaIuh1Yoz5PCP54=
-Message-ID: <48B17E56.3060106@panasas.com>
-Date: Sun, 24 Aug 2008 18:29:26 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 3.0a1 (X11/2008050714)
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=sQJm7z+hOG/07Ts2FsUdp1pc5Nc1WMhtE6k+3N+qGUwOHhm60ZQkB9CfrPmwOEG9zR
+         Vlgw6NRMlal0hDMoMHZDaaMS76CQC3GqcfB4hMCrctbsmUv0ZTeOGhsJRbxwJrakWBWC
+         G6TcKSb4Yxnz2IOF3DVZzObr6h4igHgKlBuw4=
+Message-ID: <2084b47d0808240228k3bcf2d77v5409197eab7719e1@mail.gmail.com>
+Date: Sun, 24 Aug 2008 11:28:34 +0200
+From: Jose <jmalv04@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: mmap - mlock problems
 MIME-Version: 1.0
-To: Larry Finger <Larry.Finger@lwfinger.net>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: Help with compiler warning
-References: <48AE1802.5090301@lwfinger.net>
-In-Reply-To: <48AE1802.5090301@lwfinger.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug. 22, 2008, 4:36 +0300, Larry Finger <Larry.Finger@lwfinger.net> wrote:
-> In drivers/pcmcia/cardbus.c, the following statement
-> 
->          memcpy_fromio(ptr, s->cb_cis_virt + addr, len);
-> 
-> generates the warning
-> 
->    CC [M]  drivers/pcmcia/cardbus.o
-> include/asm/io_32.h: In function ‘memcpy_fromio’:
-> include/asm/io_32.h:151: warning: passing argument 2 of ‘__memcpy’ 
-> discards qualifiers from pointer target type
-> 
-> s->cb_cis_virt is "void __iomem" and addr is uint.
-> 
-> What cast does argument 2 need to silence the warning?
+Hi,
 
-memcpy_fromio takes a (const volatile void __iomem *) for the 
-src address.
+I found this old thread /lkml/2001/10/30/256 which uncovered
+some mmap problems with 2.4.x kernels.
 
-Benny
+I ran the test program on a 2.6.21 x86_64 with 2GB and the test program
+doesn't make the system unusable but it fails when it runs out of
+free memory and has to start recycling.
 
-> 
-> Thanks,
-> 
-> Larry
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+This is almost the same to the original problem and I wonder whether
+there is a missing patch somewhere or any reason why
+this was not fixed in newer versions.
 
+thanks
