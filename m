@@ -1,99 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYHXWMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbYHXOG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756816AbYHXWMH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 18:12:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbYHXWLz
+	id S1753819AbYHXOG7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 10:06:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbYHXOGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 18:11:55 -0400
-Received: from queueout03-winn.ispmail.ntl.com ([81.103.221.33]:24936 "EHLO
-	queueout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753424AbYHXWLy (ORCPT
+	Sun, 24 Aug 2008 10:06:50 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40350 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751328AbYHXOGt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 18:11:54 -0400
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: John Ronciak <john.ronciak@gmail.com>, Grant Coady <gcoady.lk@gmail.com>,
-       linux-kernel@vger.kernel.org, neilb@suse.de, bfields@fieldses.org,
-       linux-nfs@vger.kernel.org, Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       e1000-devel@lists.sourceforge.net
-In-Reply-To: <1219605596.14389.5.camel@localhost>
-References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com>
-	 <1219087258.7192.19.camel@localhost>
-	 <1219400624.18774.67.camel@zakaz.uk.xensource.com>
-	 <1219428489.6919.21.camel@localhost>
-	 <1219428818.27921.43.camel@localhost.localdomain>
-	 <56a8daef0808221233h68853587n6015ca7d809b17e1@mail.gmail.com>
-	 <1219435207.27921.51.camel@localhost.localdomain>
-	 <1219440202.9097.14.camel@localhost>
-	 <1219441041.27921.57.camel@localhost.localdomain>
-	 <1219442213.9097.25.camel@localhost>
-	 <1219603981.27921.145.camel@localhost.localdomain>
-	 <1219605422.14389.2.camel@localhost>  <1219605596.14389.5.camel@localhost>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-p1dxoo+YnTJGB8+/EopU"
-Date: Sun, 24 Aug 2008 23:09:49 +0100
-Message-Id: <1219615789.27921.152.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-SA-Exim-Connect-IP: 192.168.1.5
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+	Sun, 24 Aug 2008 10:06:49 -0400
+Date: Sun, 24 Aug 2008 11:00:45 -0300 (BRT)
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+X-X-Sender: v4l@areia
+To: Henne <henne@nachtwindheim.de>
+cc: mchehab@infradead.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] V4L: fix retval in vivi driver for more than one device
+In-Reply-To: <48AF1E83.4000102@nachtwindheim.de>
+Message-ID: <Pine.LNX.4.64.0808241045530.2897@areia>
+References: <48AF1E83.4000102@nachtwindheim.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch is not 100% OK, for some reasons:
 
---=-p1dxoo+YnTJGB8+/EopU
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+1) since ret won't be initialized anymore, it will generate compilation
+    warnings;
 
-(added some quoting from previous mail to save replying twice)
+2) with the current code, if you ask to allocate, let's say, 3 virtual
+    drivers, and the second or the third fails, you'll still have one
+    allocated. With your change, you'll de-allocate even the ones that
+    succeeded. IMO, the better is to allow using the ones that succeeded.
 
-On Sun, 2008-08-24 at 15:19 -0400, Trond Myklebust wrote:
-> On Sun, 2008-08-24 at 15:17 -0400, Trond Myklebust wrote:
-> > >From the tcpdump, it looks as if the NFS server is failing to close th=
-e
-> > socket, when the client closes its side. You therefore end up getting
-> > stuck in the FIN_WAIT2 state (as netstat clearly shows above).
-> >
-> > Is the server keeping the client in this state for a very long
-> > period?
+That's said, I can see other issues on the current vivi.c code:
 
-Well, it had been around an hour and a half on this occasion. Next time
-it happens I can wait longer but I'm pretty sure I've come back from
-time away and it's been wedged for at least a day. How long would you
-expect it to remain in this state for?
+1) what happens if someone uses n_dev=0? It will return a wrong error
+    code.
 
-> BTW: the RPC client is closing the socket because it detected no NFS
-> activity for 5 minutes. Did you expect any NFS activity during this
-> time?
+2) there are still some cases where the driver allocates less devices than
+    requested, but it will fail to register, and all stuff will be
+    de-allocated;
 
-It's a mythtv box so at times where no one is watching anything and
-there isn't anything to record I expect NFS activity is pretty minimal.
+3) what if n_dev is a big number? Currently, i think videodev will allow
+    you to register up to 32 video devices of this type, even if you have
+    memory for more, due to some limits inside videodev, and due to the
+    number of minors allocated for V4L.  IMO, the driver should allocate up
+    to the maximum allowed devices by videodev, and let users use they.
 
-Ian.
+Anyway, thanks for your patch. For sure we need to do some fixes here. 
+I'll try to address all those stuff into a patch.
 
---=20
-Ian Campbell
+Cheers,
+Mauro.
 
-Can anyone remember when the times were not hard, and money not scarce?
 
---=-p1dxoo+YnTJGB8+/EopU
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+On Fri, 22 Aug 2008, Henne wrote:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> From: Henrik Kretzschmar <henne@nachtwindheim.de>
+> Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
+>
+> The variable ret should be set for each device to -ENOMEM, not only the 
+> first.
+>
+> diff --git a/drivers/media/video/vivi.c b/drivers/media/video/vivi.c
+> index 3518af0..d739b59 100644
+> --- a/drivers/media/video/vivi.c
+> +++ b/drivers/media/video/vivi.c
+> @@ -1106,11 +1106,12 @@ static struct video_device vivi_template = {
+> 
+> static int __init vivi_init(void)
+> {
+> -	int ret = -ENOMEM, i;
+> +	int ret, i;
+> 	 struct vivi_dev *dev;
+> 	 struct video_device *vfd;
+>
+> 	for (i = 0; i < n_devs; i++) {
+> +		ret = -ENOMEM;
+> 		 dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+> 		 if (NULL == dev)
+> 			 break;
+>
+>
+>
 
-iEYEABECAAYFAkix3C0ACgkQM0+0qS9rzVmURACguazY+lWoleZzzyfgZPrWBcIS
-vXMAnREV6AxOXisTmIhn8N65rkwxB2oM
-=DhUL
------END PGP SIGNATURE-----
-
---=-p1dxoo+YnTJGB8+/EopU--
-
+-- 
+Cheers,
+Mauro Carvalho Chehab
+http://linuxtv.org
+mchehab@infradead.org
