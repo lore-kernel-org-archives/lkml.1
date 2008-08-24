@@ -1,94 +1,386 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbYHXRWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbYHXVmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756236AbYHXRWp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 13:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbYHXRWh
+	id S1756824AbYHXVmt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 17:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbYHXVml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 13:22:37 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:18189 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752217AbYHXRWh (ORCPT
+	Sun, 24 Aug 2008 17:42:41 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:45704 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750909AbYHXVmk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 13:22:37 -0400
+	Sun, 24 Aug 2008 17:42:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=EqzCzW3t+eO5Lr99UQXDB925Nd4z9JbWs2meLd84C1Qw9sLZmLp0HWM/qjEnk9erZf
-         tos/F0Pxmmt5yE0PAYfu8fm5A9aC30hFztnSLReYAW/CC4TWqE6fsDOMa+wHwfna+I94
-         M04bEbP3tBBtOLpDgg1jWM6c3gyJB+Lv0wYVI=
-Message-ID: <19f34abd0808241022j1ab6f3e6qd72b9acba5df4892@mail.gmail.com>
-Date: Sun, 24 Aug 2008 19:22:35 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "H. Peter Anvin" <hpa@kernel.org>
-Subject: Re: latest -git: WARNING: at arch/x86/kernel/ipi.c:123 send_IPI_mask_bitmask+0xc3/0xe0()
-Cc: "Dave Jones" <davej@redhat.com>, "Andi Kleen" <andi@firstfloor.org>,
-       "the arch/x86 maintainers" <x86@kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Rusty Russell" <rusty@rustcorp.com.au>
-In-Reply-To: <48B19799.6090703@kernel.org>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=qOj/MAhBrNi2Nua8W/+YvEpzIPco1LBc2zDwJCHZ0N7/MpUzC5BKYEpXi5hfj0KUgo
+         6pXT3RgrGyEGARuClowPyxcbQedDntDpIWQZb5KPtufWILfKo27GGPlC3jAgbvtN9Jhu
+         7l9TtTAVuntvm2ItvtkLvp9nvHAbjRCsS4eU4=
+Message-ID: <48B1D5CA.8000607@gmail.com>
+Date: Sun, 24 Aug 2008 23:42:34 +0200
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [Patch] Tracing/ftrace: Adds a marker to allow user comments
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0808191251x4eb61c50n13ecf7c90f0f3d9f@mail.gmail.com>
-	 <20080820013930.GN9807@one.firstfloor.org>
-	 <19f34abd0808192326jc10e758m99e76bbd5714c5b8@mail.gmail.com>
-	 <20080822003659.GA7581@redhat.com> <48AE20B8.9000204@kernel.org>
-	 <19f34abd0808240220v77bcdd5di32f8f865b18fc49f@mail.gmail.com>
-	 <48B19799.6090703@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 24, 2008 at 7:17 PM, H. Peter Anvin <hpa@kernel.org> wrote:
-> Vegard Nossum wrote:
->>
->> Hm.
->>
->> Kernel fails to detect cpu1 at all.
->>
->> I am currently unsure of whether it's your patch or not. But it's the
->> same config that I've been booting for ages (and I copy it over for
->> each new kernel version I check out).
->>
->> Processor #0 (Bootup-CPU)
->> I/O APIC #2 Version 32 at 0xFEC00000.
->> Enabling APIC mode:  Flat.  Using 1 I/O APICs
->> Processors: 1
->> SMP: Allowing 1 CPUs, 0 hotplug CPUs
->> mapped APIC to ffffb000 (fee00000)
->> mapped IOAPIC to ffffa000 (fec00000)
->> Allocating PCI resources starting at 50000000 (gap: 40000000:bee00000)
->> PERCPU: Allocating 1221764 bytes of per cpu data
->> NR_CPUS: 7, nr_cpu_ids: 1, nr_node_ids 1
->>
->> I really don't get it. Is this something that can be caused by your
->> patch _at all_ ?
->>
->
-> Could you try this patch?  It should (hopefully) tell us if there is any
-> such invocations and what the call trace looks like.
+The documentation of mmiotrace describes an unimplemented feature which allows the user
+to write any comments on his trace by writing on a tracing/marker file.
+Here is an implementation of this idea.
 
-I'm sorry, I _just_ reverted your patch and tested the bare kernel...
-but it still only detects cpu0 :-(
+It applies on last version of tip tree.
 
-Apart from that, it's also incredibly slow and I get some
-"end_request: I/O error, dev fd0, sector 0" messages. Start-up (init 3
-on a F7) takes closer to 10 minutes. Will now take a closer look at my
-config.
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ kernel/trace/trace.c |  264 ++++++++++++++++++++++++++++++++++++--------------
+ kernel/trace/trace.h |    5 +
+ 2 files changed, 198 insertions(+), 71 deletions(-)
 
-Oh. I _just_ noticed a completely different change -- I added acpi=off
-to my boot line *blush*
-
-Will now remove it and retry your original patch.
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 1801900..ee06849 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -955,6 +955,121 @@ __trace_special(void *__tr, void *__data,
+ 	trace_wake_up();
+ }
+ 
++/* Add a message provided by the user (TRACE_MARK) or by __ftrace_printk */
++
++void trace_print(char *buf, int len, struct trace_entry *tmp_ent,
++		struct trace_array *tr, struct trace_array_cpu *data,
++		unsigned long flags)
++{
++	struct trace_entry *entry;
++	int write, written = 0;
++
++	__raw_spin_lock(&data->lock);
++	entry = tracing_get_trace_entry(tr, data);
++	tracing_generic_entry_update(entry, flags);
++	entry->type = tmp_ent->type;
++
++	if (entry->type == TRACE_PRINT)
++		entry->field.print.ip = tmp_ent->field.print.ip;
++
++	write = min(len, (int)(TRACE_PRINT_BUF_SIZE-1));
++	memcpy(&entry->field.print.buf, buf, write);
++	entry->field.print.buf[write] = 0;
++
++	written = write;
++
++	if (written != len)
++		entry->field.flags |= TRACE_FLAG_CONT;
++
++	while (written != len) {
++		entry = tracing_get_trace_entry(tr, data);
++
++		entry->type = TRACE_CONT;
++		write = min(len - written, (int)(TRACE_CONT_BUF_SIZE-1));
++		memcpy(&entry->cont.buf, buf+written, write);
++		entry->cont.buf[write] = 0;
++		written += write;
++	}
++	__raw_spin_unlock(&data->lock);
++}
++
++/* Add a message provided by the user towards the tracing_mark file */
++int tracing_mark(char *buf, int size)
++{
++	struct trace_array *tr = &global_trace;
++	struct trace_array_cpu *data;
++	struct trace_entry tmp_ent;
++	unsigned long flags;
++	long disabled;
++	int cpu;
++
++	local_irq_save(flags);
++	cpu = raw_smp_processor_id();
++	data = tr->data[cpu];
++	disabled = atomic_inc_return(&data->disabled);
++
++	if (unlikely(disabled != 1))
++		goto out;
++
++	size = min(size, TRACE_BUF_SIZE - 1);
++	tmp_ent.type = TRACE_MARK;
++	buf[size - 1] = 0;
++
++	trace_print(buf, size, &tmp_ent, tr, data, flags);
++
++out:
++	atomic_dec(&data->disabled);
++	local_irq_restore(flags);
++	return size;
++}
++
++
++int __ftrace_printk(unsigned long ip, const char *fmt, ...)
++{
++	struct trace_array *tr = &global_trace;
++	static DEFINE_SPINLOCK(trace_buf_lock);
++	static char trace_buf[TRACE_BUF_SIZE];
++	struct trace_array_cpu *data;
++	struct trace_entry tmp_ent;
++	unsigned long flags;
++	long disabled;
++	va_list ap;
++	int cpu, len = 0;
++
++	if (likely(!ftrace_function_enabled))
++		return 0;
++
++	local_irq_save(flags);
++	cpu = raw_smp_processor_id();
++	data = tr->data[cpu];
++	disabled = atomic_inc_return(&data->disabled);
++
++	if (unlikely(disabled != 1 || !ftrace_function_enabled))
++		goto out;
++
++	tmp_ent.type = TRACE_PRINT;
++	tmp_ent.field.print.ip = ip;
++
++	spin_lock(&trace_buf_lock);
++	va_start(ap, fmt);
++	len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, ap);
++	va_end(ap);
++
++	len = min(len, TRACE_BUF_SIZE-1);
++	trace_buf[len] = 0;
++
++	trace_print(trace_buf, len, &tmp_ent, tr, data, flags);
++
++	spin_unlock(&trace_buf_lock);
++
++ out:
++	atomic_dec(&data->disabled);
++	local_irq_restore(flags);
++
++	return len;
++}
++EXPORT_SYMBOL_GPL(__ftrace_printk);
++
+ void
+ tracing_sched_switch_trace(struct trace_array *tr,
+ 			   struct trace_array_cpu *data,
+@@ -1943,6 +2058,26 @@ static int print_bin_fmt(struct trace_iterator *iter)
+ 	return 1;
+ }
+ 
++/* Add the user message on the pipe */
++static int print_mark(struct trace_iterator *iter)
++{
++	struct trace_seq *s = &iter->seq;
++	struct trace_entry *entry = iter->ent;
++	struct trace_field *field = &entry->field;
++
++	int ret;
++
++	ret = trace_seq_printf(s, field->print.buf);
++	if (field->flags && TRACE_FLAG_CONT)
++		trace_seq_print_cont(s, iter);
++	trace_seq_printf(s, "\n");
++
++	if (ret)
++		return 1;
++	return 0;
++}
++
++
+ static int trace_empty(struct trace_iterator *iter)
+ {
+ 	struct trace_array_cpu *data;
+@@ -1961,6 +2096,9 @@ static int trace_empty(struct trace_iterator *iter)
+ 
+ static int print_trace_line(struct trace_iterator *iter)
+ {
++	if (iter->ent->type == TRACE_MARK)
++		return print_mark(iter);
++
+ 	if (iter->trace && iter->trace->print_line)
+ 		return iter->trace->print_line(iter);
+ 
+@@ -2918,6 +3056,49 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
+ 	return cnt;
+ }
+ 
++static int tracing_open_mark(struct inode *inode, struct file *filp)
++{
++	int ret;
++
++	ret = tracing_open_generic(inode, filp);
++	if (ret)
++		return ret;
++
++	if (current_trace == &no_tracer)
++		return -ENODEV;
++
++	return 0;
++}
++
++
++static ssize_t
++tracing_mark_write(struct file *filp, const char __user *ubuf,
++		size_t cnt, loff_t *fpos)
++{
++	char *buf;
++
++	if (cnt > TRACE_BUF_SIZE)
++		cnt = TRACE_BUF_SIZE;
++
++	buf = kmalloc(cnt, GFP_KERNEL);
++
++	if (buf == NULL)
++		return -ENOMEM;
++
++	if (copy_from_user(buf, ubuf, cnt)) {
++		kfree(buf);
++		return -EFAULT;
++	}
++
++	cnt = tracing_mark(buf, cnt);
++	kfree(buf);
++	*fpos += cnt;
++
++	return cnt;
++}
++
++
++
+ static struct file_operations tracing_max_lat_fops = {
+ 	.open		= tracing_open_generic,
+ 	.read		= tracing_max_lat_read,
+@@ -2949,6 +3130,11 @@ static struct file_operations tracing_entries_fops = {
+ 	.write		= tracing_entries_write,
+ };
+ 
++static struct file_operations tracing_mark_fops = {
++	.open		= tracing_open_mark,
++	.write		= tracing_mark_write,
++};
++
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ 
+ static ssize_t
+@@ -3066,6 +3252,13 @@ static __init void tracer_init_debugfs(void)
+ 		pr_warning("Could not create debugfs "
+ 			   "'trace_entries' entry\n");
+ 
++	entry = debugfs_create_file("trace_marker", 0220, d_tracer,
++				    NULL, &tracing_mark_fops);
++
++	if (!entry)
++		pr_warning("Could not create debugfs "
++			   "'trace_marker' entry\n");
++
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ 	entry = debugfs_create_file("dyn_ftrace_total_info", 0444, d_tracer,
+ 				    &ftrace_update_tot_cnt,
+@@ -3079,77 +3272,6 @@ static __init void tracer_init_debugfs(void)
+ #endif
+ }
+ 
+-#define TRACE_BUF_SIZE 1024
+-#define TRACE_PRINT_BUF_SIZE \
+-	(sizeof(struct trace_field) - offsetof(struct trace_field, print.buf))
+-#define TRACE_CONT_BUF_SIZE sizeof(struct trace_field)
+-
+-int __ftrace_printk(unsigned long ip, const char *fmt, ...)
+-{
+-	struct trace_array *tr = &global_trace;
+-	static DEFINE_SPINLOCK(trace_buf_lock);
+-	static char trace_buf[TRACE_BUF_SIZE];
+-	struct trace_array_cpu *data;
+-	struct trace_entry *entry;
+-	unsigned long flags;
+-	long disabled;
+-	va_list ap;
+-	int cpu, len = 0, write, written = 0;
+-
+-	if (likely(!ftrace_function_enabled))
+-		return 0;
+-
+-	local_irq_save(flags);
+-	cpu = raw_smp_processor_id();
+-	data = tr->data[cpu];
+-	disabled = atomic_inc_return(&data->disabled);
+-
+-	if (unlikely(disabled != 1 || !ftrace_function_enabled))
+-		goto out;
+-
+-	spin_lock(&trace_buf_lock);
+-	va_start(ap, fmt);
+-	len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, ap);
+-	va_end(ap);
+-
+-	len = min(len, TRACE_BUF_SIZE-1);
+-	trace_buf[len] = 0;
+-
+-	__raw_spin_lock(&data->lock);
+-	entry				= tracing_get_trace_entry(tr, data);
+-	tracing_generic_entry_update(entry, flags);
+-	entry->type			= TRACE_PRINT;
+-	entry->field.print.ip		= ip;
+-
+-	write = min(len, (int)(TRACE_PRINT_BUF_SIZE-1));
+-
+-	memcpy(&entry->field.print.buf, trace_buf, write);
+-	entry->field.print.buf[write] = 0;
+-	written = write;
+-
+-	if (written != len)
+-		entry->field.flags |= TRACE_FLAG_CONT;
+-
+-	while (written != len) {
+-		entry = tracing_get_trace_entry(tr, data);
+-
+-		entry->type = TRACE_CONT;
+-		write = min(len - written, (int)(TRACE_CONT_BUF_SIZE-1));
+-		memcpy(&entry->cont.buf, trace_buf+written, write);
+-		entry->cont.buf[write] = 0;
+-		written += write;
+-	}
+-	__raw_spin_unlock(&data->lock);
+-
+-	spin_unlock(&trace_buf_lock);
+-
+- out:
+-	atomic_dec(&data->disabled);
+-	local_irq_restore(flags);
+-
+-	return len;
+-}
+-EXPORT_SYMBOL_GPL(__ftrace_printk);
+ 
+ static int trace_panic_handler(struct notifier_block *this,
+ 			       unsigned long event, void *unused)
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 50b6d7a..ccc245c 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -14,6 +14,7 @@ enum trace_type {
+ 	TRACE_CTX,
+ 	TRACE_WAKE,
+ 	TRACE_CONT,
++	TRACE_MARK,
+ 	TRACE_STACK,
+ 	TRACE_PRINT,
+ 	TRACE_SPECIAL,
+@@ -106,6 +107,10 @@ struct trace_entry {
+ };
+ 
+ #define TRACE_ENTRY_SIZE	sizeof(struct trace_entry)
++#define TRACE_BUF_SIZE 1024
++#define TRACE_PRINT_BUF_SIZE \
++	(sizeof(struct trace_field) - offsetof(struct trace_field, print.buf))
++#define TRACE_CONT_BUF_SIZE sizeof(struct trace_field)
+ 
+ /*
+  * The CPU trace array - it consists of thousands of trace entries
