@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbYHYMEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbYHXQck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755469AbYHYMEt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 08:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbYHYMEk
+	id S1755824AbYHXQck (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 12:32:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbYHXQcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 08:04:40 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:46969 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752863AbYHYMEj (ORCPT
+	Sun, 24 Aug 2008 12:32:31 -0400
+Received: from ns2.suse.de ([195.135.220.15]:41820 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751803AbYHXQca convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 08:04:39 -0400
-Message-ID: <48B29F7B.6080405@hp.com>
-Date: Mon, 25 Aug 2008 08:03:07 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Sun, 24 Aug 2008 12:32:30 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Benny Halevy <bhalevy@panasas.com>, LKML <linux-kernel@vger.kernel.org>,
+       Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: Help with compiler warning
+References: <48AE1802.5090301@lwfinger.net> <48B17E56.3060106@panasas.com>
+	<48B17EE0.2090608@panasas.com> <48B18361.6000305@lwfinger.net>
+X-Yow: I am a jelly donut.  I am a jelly donut.
+Date: Sun, 24 Aug 2008 18:32:26 +0200
+In-Reply-To: <48B18361.6000305@lwfinger.net> (Larry Finger's message of "Sun,
+	24 Aug 2008 10:50:57 -0500")
+Message-ID: <jemyj29xwl.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.q9H.6aGsIB@albercik> <alpine.LFD.1.10.0808231257310.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808231313170.3363@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0808231313170.3363@nehalem.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Sat, 23 Aug 2008, Linus Torvalds wrote:
->> This one makes no sense. It's triggering a BUG_ON(in_interrupt()), but 
->> then the call chain shows that there is no interrupt going on.
-> 
-> Ahh, later in that thread there's another totally unrelated oops in 
-> debug_mutex_add_waiter().
-> 
-> I'd guess that it is really wild pointer corrupting memory, quite possibly 
-> due to a double free or something like that. Alan - it would be good to 
-> run with DEBUG_PAGE_ALLOC and SLUB debugging etc if you don't already do 
-> that?
-> 
-> 		Linus
-> 
+Larry Finger <Larry.Finger@lwfinger.net> writes:
 
-I'll add those in - as to the repeatability: The "bad" kernels seem to
-repeat quite reliably - not only in terms of counts (5 or 6 times in a
-row before trying something else), but also in terms of the "what" -
-either the original issue () or the other kernel with the later issue
-(debug_mutex_add_waiter). That's /goodness/ in that it should help
-narrow it down.
+> Benny Halevy wrote:
+>> On Aug. 24, 2008, 18:29 +0300, Benny Halevy <bhalevy@panasas.com> wrote:
+>>> On Aug. 22, 2008, 4:36 +0300, Larry Finger <Larry.Finger@lwfinger.net> wrote:
+>>>> In drivers/pcmcia/cardbus.c, the following statement
+>>>>
+>>>>          memcpy_fromio(ptr, s->cb_cis_virt + addr, len);
+>>>>
+>>>> generates the warning
+>>>>
+>>>>    CC [M]  drivers/pcmcia/cardbus.o
+>>>> include/asm/io_32.h: In function ‘memcpy_fromio’:
+>>>> include/asm/io_32.h:151: warning: passing argument 2 of ‘__memcpy’
+>>>> discards qualifiers from pointer target type
+>>>>
+>>>> s->cb_cis_virt is "void __iomem" and addr is uint.
+>>>>
+>>>> What cast does argument 2 need to silence the warning?
 
-I'll make sure the kernel is still failing this morning, and then add in
-DEBUG_PAGE_ALLOC and if that doesn't help, SLUB debugging...
+The cast needs to be in memcpy_fromio, but there is already one, so why
+do you get a warning in the first place?
 
-Alan
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
