@@ -1,92 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683AbYHWW4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbYHXPb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755683AbYHWW4p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 18:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbYHWW4h
+	id S1755987AbYHXPb5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 11:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbYHXPbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 18:56:37 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:37505 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752562AbYHWW4g (ORCPT
+	Sun, 24 Aug 2008 11:31:49 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:44031 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751010AbYHXPbt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 18:56:36 -0400
-Date: Sat, 23 Aug 2008 18:56:34 -0400 (EDT)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [patch] include: linux/fs.h: put declarations in __KERNEL__
-Message-ID: <alpine.LNX.1.10.0808231854460.7980@fbirervta.pbzchgretzou.qr>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Sun, 24 Aug 2008 11:31:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=FJM0JDvW4dVwQkGE6DAUB3SByDD0IC6gbDC+3nZ/vRge6jOyWMO2ljxhkR7nG4wwJJ
+         s1rEmJ1ektrNsHDxWnlow23lxuO1mslZYcdZD/ARcaCrvfsKnd2ZfCYYm7G0CQC+AxNw
+         wixMcYEt49YHKWbnTomvq/l4adcYigMVtIYrQ=
+Message-ID: <48B17EE0.2090608@panasas.com>
+Date: Sun, 24 Aug 2008 18:31:44 +0300
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 3.0a1 (X11/2008050714)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Larry Finger <Larry.Finger@lwfinger.net>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: Help with compiler warning
+References: <48AE1802.5090301@lwfinger.net> <48B17E56.3060106@panasas.com>
+In-Reply-To: <48B17E56.3060106@panasas.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-parent 6450f65168bcf3c03b5fb44c2fe96682c0d3086b
-commit 738da10c6393d13d7a757b1e4cb1fb2c7f98dc56
-Author: Jan Engelhardt <jengelh@medozas.de>
-Date:   Sat Aug 23 18:53:37 2008 -0400
+On Aug. 24, 2008, 18:29 +0300, Benny Halevy <bhalevy@panasas.com> wrote:
+> On Aug. 22, 2008, 4:36 +0300, Larry Finger <Larry.Finger@lwfinger.net> wrote:
+>> In drivers/pcmcia/cardbus.c, the following statement
+>>
+>>          memcpy_fromio(ptr, s->cb_cis_virt + addr, len);
+>>
+>> generates the warning
+>>
+>>    CC [M]  drivers/pcmcia/cardbus.o
+>> include/asm/io_32.h: In function ‘memcpy_fromio’:
+>> include/asm/io_32.h:151: warning: passing argument 2 of ‘__memcpy’ 
+>> discards qualifiers from pointer target type
+>>
+>> s->cb_cis_virt is "void __iomem" and addr is uint.
+>>
+>> What cast does argument 2 need to silence the warning?
+> 
+> memcpy_fromio takes a (const volatile void __iomem *) for the 
+> src address.
 
-include: linux/fs.h: put declarations in __KERNEL__
+So the culprit could be the volatile qualifier...
 
-An anonymous user tried to use symbols from /usr/include/linux/fs.h.
-Since these however are not defined in libc, but are specific to the
-kernel, they should be in an #ifdef __KERNEL__ section. Move them
-there.
+> 
+> Benny
+> 
+>> Thanks,
+>>
+>> Larry
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Signed-off-by: Jan Engelhardt <jengelh@medozas.de>
----
- include/linux/fs.h |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
-
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 580b513..6d7b4a5 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -21,7 +21,6 @@
- 
- /* Fixed constants first: */
- #undef NR_OPEN
--extern int sysctl_nr_open;
- #define INR_OPEN 1024		/* Initial setting for nfile rlimits */
- 
- #define BLOCK_SIZE_BITS 10
-@@ -38,21 +37,13 @@ struct files_stat_struct {
- 	int nr_free_files;	/* read only */
- 	int max_files;		/* tunable */
- };
--extern struct files_stat_struct files_stat;
--extern int get_max_files(void);
- 
- struct inodes_stat_t {
- 	int nr_inodes;
- 	int nr_unused;
- 	int dummy[5];		/* padding for sysctl ABI compatibility */
- };
--extern struct inodes_stat_t inodes_stat;
- 
--extern int leases_enable, lease_break_time;
--
--#ifdef CONFIG_DNOTIFY
--extern int dir_notify_enable;
--#endif
- 
- #define NR_FILE  8192	/* this can well be larger on a larger system */
- 
-@@ -310,6 +301,15 @@ extern void __init inode_init(void);
- extern void __init inode_init_early(void);
- extern void __init files_init(unsigned long);
- 
-+extern struct files_stat_struct files_stat;
-+extern int get_max_files(void);
-+extern int sysctl_nr_open;
-+extern struct inodes_stat_t inodes_stat;
-+extern int leases_enable, lease_break_time;
-+#ifdef CONFIG_DNOTIFY
-+extern int dir_notify_enable;
-+#endif
-+
- struct buffer_head;
- typedef int (get_block_t)(struct inode *inode, sector_t iblock,
- 			struct buffer_head *bh_result, int create);
