@@ -1,54 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbYHXUt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbYHXShG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754531AbYHXUt0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 16:49:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbYHXUtS
+	id S1756248AbYHXShG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 14:37:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYHXSgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 16:49:18 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:46965 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750909AbYHXUtR (ORCPT
+	Sun, 24 Aug 2008 14:36:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41674 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752519AbYHXSgy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 16:49:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=MaGTcOjj8jHH+R/5tAU0D0ZwU5611XPnfUcJ/r0m9K0ydZmgZbwBjH7VHlktew3G6Z
-         VPEFdpaXuQrbC7nFik5/KVMLti0zWENSZKdieg/7IeLPl10SFrv1CCs7nvxxqnVcHaL0
-         naQit4hhaFfd2zq6P4s7NevxcNJ0tWHl5zHp8=
-Message-ID: <7b9198260808241349v45c4d5ffjd908c7ffe34286a1@mail.gmail.com>
-Date: Sun, 24 Aug 2008 21:49:15 +0100
-From: "Tom Spink" <tspink@gmail.com>
-To: lkml <linux-kernel@vger.kernel.org>, "Jeff Dike" <jdike@addtoit.com>
-Subject: UML Reboot Panic
+	Sun, 24 Aug 2008 14:36:54 -0400
+Date: Sun, 24 Aug 2008 11:34:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Cox <alan@redhat.com>,
+       Peter Osterlund <petero2@telia.com>, Jens Axboe <jens.axboe@oracle.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
+In-Reply-To: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+Message-ID: <alpine.LFD.1.10.0808241120460.3363@nehalem.linux-foundation.org>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-When using UML with a UML block device, and issuing a reboot, I was
-getting a kernel panic on the next kernel startup because UML was
-unable to open the file mapped to the UBD.  I think this is because
-the file is not closed when the UBD is released, and the following
-patch appears to resolve this issue.  I'm not sure if it's the right
-fix, as I may have missed something, but it works for me.
 
--- Tom
+On Sat, 23 Aug 2008, Rafael J. Wysocki wrote:
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11401
+> Subject		: pktcdvd: BUG, NULL pointer dereference in pkt_ioctl, bisected
+> Submitter	: Laurent Riffard <laurent.riffard@free.fr>
+> Date		: 2008-08-22 08:16 (2 days old)
 
-diff --git a/arch/um/drivers/ubd_kern.c b/arch/um/drivers/ubd_kern.c
-index b58fb89..946a171 100644
---- a/arch/um/drivers/ubd_kern.c
-+++ b/arch/um/drivers/ubd_kern.c
-@@ -802,6 +802,7 @@ static void ubd_device_release(struct device *dev)
-        struct ubd *ubd_dev = dev->driver_data;
+This one looks irritating.
 
-        blk_cleanup_queue(ubd_dev->queue);
-+       os_close_file(ubd_dev->fd);
-        *ubd_dev = ((struct ubd) DEFAULT_UBD);
- }
+It's bisected to 5b6155ee70e9c4d2ad7e6f514c8eee06e2711c3a ("pktcdvd: push 
+BKL down into driver"), but the problem goes deeper than that.
+
+The "unlocked" ioctl's do not get a "struct inode *" pointer, they _only_ 
+get the "struct file *". And this is very much historical usage, where 
+some internal functions only passed in the inode (good or not, whatever).
+
+And ioctl_by_bdev() doesn't have a "struct file *" and has depended on 
+passing in a NUMM "struct file *" and its own "struct inode *", and 
+expects the ioctl's to just use that instead. But the unlocked ioctl just 
+drops it on the floor, and uses just the (unusable) file pointer.
+
+Grr.
+
+And some other cases (like pkt_ioctl() itself) that simply pass in a 
+_different_ inode than the file itself is attached to. It does
+
+	blkdev_ioctl(pd->bdev->bd_inode, file, cmd, arg);
+
+where "file" points to the pkt_ioctl thing, but "inode" points to the 
+inode "behind" the pkt interface.
+
+Double grr.
+
+I really think the only sane model is to literally make "unlocked_ioctl()" 
+have the same calling convention as the old "ioctl()" thing had, and pass 
+in both file * and inode *. It was a stupid "cleanup" to try to have a 
+simpler interface for the unlocked version. Having two different models, 
+where we have actually _depended_ on the old model and then are trying to 
+convert to a (weaker) new model, is not a good idea.
+
+The alternative is to do this _only_ for the blkdev_ioctl's, and have 
+those only take the "inode *", and then create a new fake "struct file *" 
+to go with it, regardless of what "struct file" was passed in (exactly 
+because the blockdev ones really think that the inode is the important 
+part).
+
+Hmm?
+
+We need to fix this.
+
+		Linus
