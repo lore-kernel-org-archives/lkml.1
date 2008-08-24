@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbYHXQnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbYHXRtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755287AbYHXQnq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 12:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYHXQni
+	id S1756070AbYHXRtV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 13:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYHXRtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 12:43:38 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36347 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751705AbYHXQnh (ORCPT
+	Sun, 24 Aug 2008 13:49:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56309 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752007AbYHXRtL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 12:43:37 -0400
-Message-ID: <48B18F98.1080304@kernel.org>
-Date: Sun, 24 Aug 2008 09:43:04 -0700
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 24 Aug 2008 13:49:11 -0400
+Date: Sun, 24 Aug 2008 10:48:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, David Greaves <david@dgreaves.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
+In-Reply-To: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+Message-ID: <alpine.LFD.1.10.0808241030060.3363@nehalem.linux-foundation.org>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Dave Jones <davej@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: latest -git: WARNING: at arch/x86/kernel/ipi.c:123 send_IPI_mask_bitmask+0xc3/0xe0()
-References: <19f34abd0808191251x4eb61c50n13ecf7c90f0f3d9f@mail.gmail.com>	 <20080820013930.GN9807@one.firstfloor.org>	 <19f34abd0808192326jc10e758m99e76bbd5714c5b8@mail.gmail.com>	 <20080822003659.GA7581@redhat.com> <48AE20B8.9000204@kernel.org> <19f34abd0808240220v77bcdd5di32f8f865b18fc49f@mail.gmail.com>
-In-Reply-To: <19f34abd0808240220v77bcdd5di32f8f865b18fc49f@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> 
-> Hm.
-> 
-> Kernel fails to detect cpu1 at all.
-> 
-> I am currently unsure of whether it's your patch or not. But it's the
-> same config that I've been booting for ages (and I copy it over for
-> each new kernel version I check out).
-> 
-> Processor #0 (Bootup-CPU)
-> I/O APIC #2 Version 32 at 0xFEC00000.
-> Enabling APIC mode:  Flat.  Using 1 I/O APICs
-> Processors: 1
-> SMP: Allowing 1 CPUs, 0 hotplug CPUs
-> mapped APIC to ffffb000 (fee00000)
-> mapped IOAPIC to ffffa000 (fec00000)
-> Allocating PCI resources starting at 50000000 (gap: 40000000:bee00000)
-> PERCPU: Allocating 1221764 bytes of per cpu data
-> NR_CPUS: 7, nr_cpu_ids: 1, nr_node_ids 1
-> 
-> I really don't get it. Is this something that can be caused by your
-> patch _at all_ ?
-> 
 
-Well, if smp_call_function_single() is called during the CPU up 
-sequence, without the CPU having been added to the online mask, then 
-yes, it could.  The most likely place would be from a notifier.
 
-That makes it ugly.  Need to track down the reason.
+On Sat, 23 Aug 2008, Rafael J. Wysocki wrote:
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11405
+> Subject		: 2.6.27-rc3 segfault on cold boot; not on warm boot.
+> Submitter	: David Greaves <david@dgreaves.com>
+> Date		: 2008-08-21 9:45 (3 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121931198904777&w=4
 
-	-hpa
+It would be good to have some kind of bisection of this one, because it 
+looks pretty odd. Also, google doesn't find anybody else seeing that 
+"segfault at ffffffbf", even though it seems to be very consistent for 
+David. So I don't think we'll be able to even _guess_ where it is without 
+some more information about exactly when it started happening.
+
+Since it's present in 2.6.26 too, it's clearly not a regression from that 
+one, but perhaps more importantly, since it's apparently an old one I'd 
+have expected more reports like this if it was some common problem. And 
+the warm-vs-cold-boot thing makes me think it's some hardware setup issue. 
+
+Possibly the disk controller, possibly the CPU (eg some MTRR/PAT 
+setup issue or TLB thing). But the dmesg's are all from late enough at 
+boot that I can't even tell what disk controller it is (except that it is 
+SATA), nor can I tell what CPU it is.
+
+But again, if it was some MTRR/PAT issue, I'd expect a _lot_ more reports 
+of this. 
+
+MD/XFS sounds unlikely, since they should have absolutely nothing that 
+could possibly matter for cold/hot boot.
+
+			Linus
