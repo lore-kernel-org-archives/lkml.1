@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbYHXLs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbYHXNFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbYHXLs6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 07:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYHXLst
+	id S1754752AbYHXNFU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 09:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbYHXNFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 07:48:49 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:22307 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751850AbYHXLss (ORCPT
+	Sun, 24 Aug 2008 09:05:06 -0400
+Received: from web82108.mail.mud.yahoo.com ([209.191.84.221]:23811 "HELO
+	web82108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753331AbYHXNFG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 07:48:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=XQLnOL9GWETAuh9SWk8U8acAQ1ErJZPIwuaPC37Jenh55W7VFnAlS1rXvUtqE2TptM
-         NTRtK2r34jHVqFWLS2r/CsJAs90dNWI8+p0vX864bXtr1lbYjN5t/Lhx//OQhFGHxdXt
-         XJ19hMNr70lvefK+z18clqHWB1oWgiFKIbLQ8=
-Message-ID: <19f34abd0808240448w5facaee2gec77662c14b9364f@mail.gmail.com>
-Date: Sun, 24 Aug 2008 13:48:47 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Mikael Pettersson" <mikpe@it.uu.se>
-Subject: Re: [BUG] get_rtc_time() triggers NMI watchdog in hpet_rtc_interrupt()
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de
-In-Reply-To: <18609.14516.873317.52292@harpo.it.uu.se>
+	Sun, 24 Aug 2008 09:05:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=KkD8QP1QEVWcAVEvi6XGH9lIUv5FDpXt0WLqXbqxsBYS/HB+ttYXlZuVL82tuiunpzNfxzrTuoArxcjjq8KOcjEqhU9JXix4h3Ia7SgHb4e07AHH0/XbjhWJZTiH/ZoYD2+9TBtdmJVWtZz4PPqU7zS1kBkDlHwZaI9favSDLCI=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Sun, 24 Aug 2008 06:05:04 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200808230948.m7N9mUc1016360@harpo.it.uu.se>
-	 <19f34abd0808240214o22748804s45e8487d62b34cb8@mail.gmail.com>
-	 <18609.14516.873317.52292@harpo.it.uu.se>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <751256.282.qm@web82108.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 24, 2008 at 12:32 PM, Mikael Pettersson <mikpe@it.uu.se> wrote:
->  > I also just got this during shutdown:
->  >
->  > Syncing hardware clock to system time BUG: NMI Watchdog detected
->  > LOCKUP on CPU0, ip c011d922, registers:
->  > Pid: 4181, comm: hwclock Not tainted (2.6.27-rc3-00464-g1fca254-dirty #42)
-[...]
-
-> See my reply in the thread following Ingo's patch
-> <http://lkml.org/lkml/2008/8/23/158>. I've only seen the lockup
-> while hwclock was setting or flushing the system time, so I suspect
-> broken interaction between the hpet rtc emulation and the rtc
-> user-space interface.
-
-Oops, I picked the wrong thread :-)
-
-Anyway, I guess it wouldn't be too hard to make a test cast by running
-"hwclock" (or the corresponding initscript) in a tight loop? (Sorry, I
-am not able to test this myself at the moment). That would make it
-easier to test the patch too, I guess. Maybe something like:
-
-    $ while true; do /etc/init.d/ntpdate up; /etc/init.d/ntpdate down; done
-
-(At least "ntpdate" is the one that runs hwclock for me on F9.)
-
-I will try this later unless you beat me to it :-)
-
-Thanks,
 
 
-Vegard
+> > - Is there any chance I can get it into the stable 2.6.26.X updates?
+> > (Who should I ask, or are only developers allowed to lobby for this
+> > sort of thing?)
+> 
+> after the patch get into linus tree. Greg will put the patch into 2.6.26.X
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+OK, thanks a bunch.
+
+
+> > - Are you worried about the potential problems of a quirk-based approach?
+> > What if many more people experience a similar regression once 2.6.26 or
+> > later appears in their distribution?  I'm sure you don't want to have to
+> > write a different quirk for each individual's hardware, and this problem
+> > did not arise with the approach used for resource management in 2.6.25.
+> 
+> this patch should be safe.
+> 
+> 2.6.26 is fixing one bug about reserving local apic address and that
+> in e820 table.
+> and it reveals one bios bug.
+
+Correction -- it revealed at least two.  See the link I posted earlier in
+this thread:
+
+http://www.uwsg.indiana.edu/hypermail/linux/kernel/0808.2/1807.html
+
+Scroll down to the line that starts with "[blog]" for the link. You can see
+the discussion I had encouraging him to come here to help us troubleshoot 
+if you go to that blog and click "Comments".
+
+I only mention this as a warning, in case it could lead to a lot of extra 
+problems for you later.  If you're quite sure that everything is OK, then 
+all I can do is thank you again and keep my fingers crossed for you and the
+kernel team that nothing bad happens when 2.6.2[67] hit the major distros.
+
+Thanks Yinghai and Ingo (and Peter, Paul, Bill, Mike, Ilpo, Frans, Jesse...
+and Andrew, for being the only one to tell me my ISP webmail client was 
+breaking threading in everyone's inbox!)
+
+
+Now leaving LKML...
+Dave Witbrodt
