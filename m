@@ -1,99 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbYHXKfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbYHXRRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbYHXKfg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 06:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbYHXKf1
+	id S1756165AbYHXRRo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 13:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbYHXRRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 06:35:27 -0400
-Received: from smtp14.mtu.ru ([62.5.255.60]:49600 "EHLO smtp14.mtu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752698AbYHXKf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 06:35:26 -0400
-X-Greylist: delayed 526 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Aug 2008 06:35:26 EDT
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: linux-kernel@vger.kernel.org
-Subject: What is "extra timer interrupt" in powertop output?
-Date: Sun, 24 Aug 2008 14:26:33 +0400
-User-Agent: KMail/1.10.0 (Linux/2.6.27-rc4-1avb; KDE/4.1.0; i686; ; )
+	Sun, 24 Aug 2008 13:17:36 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:38092 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751752AbYHXRRf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 13:17:35 -0400
+Message-ID: <48B19799.6090703@kernel.org>
+Date: Sun, 24 Aug 2008 10:17:13 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1511446.SVBrXjt2my";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200808241426.34304.arvidjaar@mail.ru>
-X-DCC-STREAM-Metrics: smtp14.mtu.ru 10001; Body=0 Fuz1=0 Fuz2=0
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Dave Jones <davej@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: latest -git: WARNING: at arch/x86/kernel/ipi.c:123 send_IPI_mask_bitmask+0xc3/0xe0()
+References: <19f34abd0808191251x4eb61c50n13ecf7c90f0f3d9f@mail.gmail.com>	 <20080820013930.GN9807@one.firstfloor.org>	 <19f34abd0808192326jc10e758m99e76bbd5714c5b8@mail.gmail.com>	 <20080822003659.GA7581@redhat.com> <48AE20B8.9000204@kernel.org> <19f34abd0808240220v77bcdd5di32f8f865b18fc49f@mail.gmail.com>
+In-Reply-To: <19f34abd0808240220v77bcdd5di32f8f865b18fc49f@mail.gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------010807080301070701040809"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1511446.SVBrXjt2my
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This is a multi-part message in MIME format.
+--------------010807080301070701040809
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-After disabling CD-ROM polling the next top-100 winner is "extra timer=20
-interrupt":
+Vegard Nossum wrote:
+> 
+> Hm.
+> 
+> Kernel fails to detect cpu1 at all.
+> 
+> I am currently unsure of whether it's your patch or not. But it's the
+> same config that I've been booting for ages (and I copy it over for
+> each new kernel version I check out).
+> 
+> Processor #0 (Bootup-CPU)
+> I/O APIC #2 Version 32 at 0xFEC00000.
+> Enabling APIC mode:  Flat.  Using 1 I/O APICs
+> Processors: 1
+> SMP: Allowing 1 CPUs, 0 hotplug CPUs
+> mapped APIC to ffffb000 (fee00000)
+> mapped IOAPIC to ffffa000 (fec00000)
+> Allocating PCI resources starting at 50000000 (gap: 40000000:bee00000)
+> PERCPU: Allocating 1221764 bytes of per cpu data
+> NR_CPUS: 7, nr_cpu_ids: 1, nr_node_ids 1
+> 
+> I really don't get it. Is this something that can be caused by your
+> patch _at all_ ?
+> 
 
-Cn                Avg residency       P-states (frequencies)
-C0 (cpu running)        ( 4.2%)          750 Mhz     0.0%
-polling           0.0ms ( 0.0%)          500 Mhz   100.0%
-C1                0.0ms ( 0.0%)
-C2                0.9ms (95.8%)
+Could you try this patch?  It should (hopefully) tell us if there is any 
+such invocations and what the call trace looks like.
 
+	-hpa
 
-Wakeups-from-idle per second : 1101.2   interval: 5.0s
-Power usage (ACPI estimate): 11.7W (2.2 hours)
+--------------010807080301070701040809
+Content-Type: text/x-patch;
+ name="smp-unplug-fault2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="smp-unplug-fault2.patch"
 
-Top causes for wakeups:
-  31.6% (  8.4)       <interrupt> : extra timer interrupt
-  15.0% (  4.0)   hald-addon-acpi : schedule_timeout (process_timeout)
+diff --git a/kernel/smp.c b/kernel/smp.c
+index 782e2b9..95e1bad 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -210,8 +210,10 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+ {
+ 	struct call_single_data d;
+ 	unsigned long flags;
+-	/* prevent preemption and reschedule on another processor */
++	/* prevent preemption and reschedule on another processor,
++	   as well as CPU removal */
+ 	int me = get_cpu();
++	int err = 0;
+ 
+ 	/* Can deadlock when called with interrupts disabled */
+ 	WARN_ON(irqs_disabled());
+@@ -220,7 +222,7 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+ 		local_irq_save(flags);
+ 		func(info);
+ 		local_irq_restore(flags);
+-	} else {
++	} else if ((unsigned)cpu < NR_CPUS && cpu_online(cpu)) {
+ 		struct call_single_data *data = NULL;
+ 
+ 		if (!wait) {
+@@ -236,10 +238,13 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+ 		data->func = func;
+ 		data->info = info;
+ 		generic_exec_single(cpu, data);
++	} else {
++		BUG();
++		err = -ENXIO;	/* CPU not online */
+ 	}
+ 
+ 	put_cpu();
+-	return 0;
++	return err;
+ }
+ EXPORT_SYMBOL(smp_call_function_single);
+ 
 
-I assume, this is what is simply called "timer":
-{pts/1}:~%> cat /proc/interrupts
-           CPU0
-  0:    9060975    XT-PIC-XT        timer
-  1:      18742    XT-PIC-XT        i8042
-  2:          0    XT-PIC-XT        cascade
-  3:          2    XT-PIC-XT
-  4:          2    XT-PIC-XT
-  5:          3    XT-PIC-XT
-  7:          5    XT-PIC-XT        irda0
-  8:         11    XT-PIC-XT        rtc0
-  9:       3376    XT-PIC-XT        acpi
- 10:          2    XT-PIC-XT
- 11:     239251    XT-PIC-XT        ohci_hcd:usb1, yenta, yenta, yenta, ALI=
-=20
-5451, pcmcia0.0
- 12:     621206    XT-PIC-XT        i8042
- 14:     225993    XT-PIC-XT        ide0
- 15:     315463    XT-PIC-XT        ide1
-NMI:          0   Non-maskable interrupts
-ERR:          0
-
-Any way to find out why there are so many of them? System is using dynamic=
-=20
-ticks:
-{pts/1}:~/src/linux-git%> grep NO_HZ /boot/config
-CONFIG_NO_HZ=3Dy
-
-TIA
-
-=2Dandrey
-
-
-
---nextPart1511446.SVBrXjt2my
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkixN1oACgkQR6LMutpd94xODACfdxGbx3xelWbnsEenobbmuM8P
-G1QAoMbg83kNOJjeJwXENziR+zEFj8Ai
-=B76G
------END PGP SIGNATURE-----
-
---nextPart1511446.SVBrXjt2my--
+--------------010807080301070701040809--
