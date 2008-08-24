@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbYHXSxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbYHXNjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755297AbYHXSxL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 14:53:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYHXSw4
+	id S1754196AbYHXNjt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 09:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbYHXNjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 14:52:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51052 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751678AbYHXSwz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 14:52:55 -0400
-Date: Sun, 24 Aug 2008 11:52:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Alok Kataria <akataria@vmware.com>,
-       Sean Young <sean@mess.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
-In-Reply-To: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
-Message-ID: <alpine.LFD.1.10.0808241141470.3363@nehalem.linux-foundation.org>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sun, 24 Aug 2008 09:39:40 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36728 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750712AbYHXNjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 09:39:39 -0400
+Date: Sun, 24 Aug 2008 15:39:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Glauber Costa <glommer@redhat.com>
+Cc: Glauber Costa <gcosta@redhat.com>, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, x86@kernel.org
+Subject: Re: [GIT PULL] time.c - respin
+Message-ID: <20080824133921.GA11330@elte.hu>
+References: <200808201507.m7KF79Fk021224@int-mx1.corp.redhat.com> <20080821102222.GA31922@elte.hu> <20080821130737.GA28568@poweredge.glommer> <20080824123103.GA14688@elte.hu> <20080824131603.GA5447@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080824131603.GA5447@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+bisection is a bit inconclusive:
 
-On Sat, 23 Aug 2008, Rafael J. Wysocki wrote:
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11354
-> Subject		: AMD Elan regression with 2.6.27-rc3
-> Submitter	: Sean Young <sean@mess.org>
-> Date		: 2008-08-15 18:37 (9 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121882578430056&w=4
+  ee096f75b69913dbad0e6f7f2572513de5c90002 is first bad commit
 
-Peter? Ingo? Alok?
+that is a merge commit.
 
-This _looks_ like it might be due to "x86: merge the TSC cpu-freq code" 
-thing by Alok, where we do this:
+here's the bisection log:
 
-	+static struct notifier_block time_cpufreq_notifier_block = {
-	+       .notifier_call  = time_cpufreq_notifier
-	+};
-	+
-	+static int __init cpufreq_tsc(void)
-	+{
-	+       cpufreq_register_notifier(&time_cpufreq_notifier_block,
-	+                               CPUFREQ_TRANSITION_NOTIFIER);
-	+       return 0;
-	+}
+ # good: [887f98f6] Merge branch 'irq/sparseirq'
+ # bad:  [e8d0f9bf] Merge branch 'x86/time'
+ # good: [bea0a6a6] x86: wrap MCA_bus test around an ifdef
+ # good: [8def7ec4] x86: reorganize 64-bit only code
+ # bad:  [ee096f75] manual merge of x86/time
+ # good: [291ae6a3] x86: make time_64 and time_32 equal
+ # good: [a2496715] x86: merge time.c
 
-but that's just _insane_ if the CPU doesn't even support TSC to begin 
-with. Also, in the actual time_cpufreq_notifier(), we do:
-
-	if (cpu_has(&cpu_data(freq->cpu), X86_FEATURE_CONSTANT_TSC))
-		return 0;
-
-and this is stupid because:
-
- (a) if the CPU has no TSC at all, then it sure as hell won't have a 
-     _constant_ one, so we'll actually continue into the function.
-
- (b) and why the hell is this done at run-time in the notifier, and not in 
-     the "cpufreq_tsc" init function? If anybody mixes totally different 
-     kinds of CPU's in SMP, they deserve whatever they want.
-
-so why is the patch not something like the appended?
-
-Sean, does this make any difference for you?
-
-		Linus
-
----
- arch/x86/kernel/tsc.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 46af716..9bed5ca 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -325,6 +325,10 @@ static struct notifier_block time_cpufreq_notifier_block = {
- 
- static int __init cpufreq_tsc(void)
- {
-+	if (!cpu_has_tsc)
-+		return 0;
-+	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
-+		return 0;
- 	cpufreq_register_notifier(&time_cpufreq_notifier_block,
- 				CPUFREQ_TRANSITION_NOTIFIER);
- 	return 0;
+	Ingo
