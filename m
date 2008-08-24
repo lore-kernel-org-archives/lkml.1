@@ -1,156 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbYHXUYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbYHXNHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756165AbYHXUYs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 16:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYHXUYk
+	id S1755157AbYHXNHu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 09:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbYHXNHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 16:24:40 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:63873 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752470AbYHXUYj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 16:24:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=WjOU5W3uRgIxu6tqxIkyVIrj6CKu1B9OUkcX2DRuIJqAVdZzOQ8HyijVcreuHQ6RKL
-         LDU70Llu479mFLrE/RMo7FT7JLvSmXPS6dUmdBS/EjqG1vU4VlwozvkkBJ+3umt+Qs7x
-         nn1uX3GCuHjsw4jKLMrI5IZp6UIep2/ViWJ/U=
-Message-ID: <6278d2220808241324j117725efq8e87025313fb025f@mail.gmail.com>
-Date: Sun, 24 Aug 2008 21:24:37 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Fabio Checconi" <fchecconi@gmail.com>,
-       "Jens Axboe" <jens.axboe@oracle.com>
-Subject: Re: performance "regression" in cfq compared to anticipatory, deadline and noop
-Cc: Matthew <jackdachef@gmail.com>, "Kasper Sandberg" <lkml@metanurb.dk>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080515122156.GA11600@gandalf.sssup.it>
+	Sun, 24 Aug 2008 09:07:42 -0400
+Received: from mail.gmx.net ([213.165.64.20]:40044 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752722AbYHXNHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 09:07:41 -0400
+X-Authenticated: #704063
+X-Provags-ID: V01U2FsdGVkX1/+uYkDjFb+Qaj0tKEf5BAqOfkriIinIo9J/PI9SD
+	l2vGSzO7jw+0C5
+Date: Sun, 24 Aug 2008 15:07:36 +0200
+From: Eric Sesterhenn <snakebyte@gmx.de>
+To: zippel@linux-m68k.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [Patch] Fix Buffer overflow in hfsplus with a corrupted image
+Message-ID: <20080824130736.GA27742@alice>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <e85b9d30805130558l502addbcq21996b92fdbfdc5b@mail.gmail.com>
-	 <e85b9d30805130842p3a34305l4ab1e7926e4b0dba@mail.gmail.com>
-	 <20080513180334.GS16217@kernel.dk> <20080513184057.GU16217@kernel.dk>
-	 <6278d2220805140105x27292033u6a97dcf13ab54263@mail.gmail.com>
-	 <20080514082622.GA16217@kernel.dk>
-	 <6278d2220805141352s3624d7b7qc90567f6b7a410dc@mail.gmail.com>
-	 <e85b9d30805141437u6a4b4caby1712c6f04bd4cc05@mail.gmail.com>
-	 <20080515070127.GH16217@kernel.dk>
-	 <20080515122156.GA11600@gandalf.sssup.it>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snake-basket.de
+X-Operating-System: Linux/2.6.27-rc3 (x86_64)
+X-Uptime: 14:57:23 up 5 days,  5:06,  3 users,  load average: 0.17, 1.23,
+	1.69
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.47
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Fabio, Jens,
+hi,
 
-On Thu, May 15, 2008 at 1:21 PM, Fabio Checconi <fchecconi@gmail.com> wrote:
->> From: Jens Axboe <jens.axboe@oracle.com>
->> Date: Thu, May 15, 2008 09:01:28AM +0200
->>
->> I don't think it's 2.6.25 vs 2.6.26-rc2, I can still reproduce some
->> request size offsets with the patch. So still fumbling around with this,
->> I'll be sending out another test patch when I'm confident it's solved
->> the size issue.
->
-> IMO an interesting thing is how/why anticipatory doesn't show the
-> issue.  The device is not put into ANTIC_WAIT_NEXT if there is no
-> dispatch returning no requests while the queue is not empty.  This
-> seems to be enough in the reported workloads.
->
-> I don't think this behavior is the correct one (it is still racy
-> WRT merges after breaking anticipation) anyway it should make things
-> a little bit better.  I fear that a complete solution would not
-> involve only the scheduler.
->
-> Introducing the very same behavior in cfq seems to be not so easy
-> (i.e., start idling only if there was a dispatch round while the
-> last request was being served) but an approximated version can be
-> introduced quite easily.  The patch below should do that, rescheduling
-> the dispatch only if necessary; it is not tested at all, just posted
-> for discussion.
->
-> ---
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index b399c62..41f1e0e 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -169,6 +169,7 @@ enum cfqq_state_flags {
->        CFQ_CFQQ_FLAG_queue_new,        /* queue never been serviced */
->        CFQ_CFQQ_FLAG_slice_new,        /* no requests dispatched in slice */
->        CFQ_CFQQ_FLAG_sync,             /* synchronous queue */
-> +       CFQ_CFQQ_FLAG_dispatched,       /* empty dispatch while idling */
->  };
->
->  #define CFQ_CFQQ_FNS(name)                                             \
-> @@ -196,6 +197,7 @@ CFQ_CFQQ_FNS(prio_changed);
->  CFQ_CFQQ_FNS(queue_new);
->  CFQ_CFQQ_FNS(slice_new);
->  CFQ_CFQQ_FNS(sync);
-> +CFQ_CFQQ_FNS(dispatched);
->  #undef CFQ_CFQQ_FNS
->
->  static void cfq_dispatch_insert(struct request_queue *, struct request *);
-> @@ -749,6 +751,7 @@ static void __cfq_set_active_queue(struct cfq_data *cfqd,
->                cfqq->slice_end = 0;
->                cfq_clear_cfqq_must_alloc_slice(cfqq);
->                cfq_clear_cfqq_fifo_expire(cfqq);
-> +               cfq_clear_cfqq_dispatched(cfqq);
->                cfq_mark_cfqq_slice_new(cfqq);
->                cfq_clear_cfqq_queue_new(cfqq);
->        }
-> @@ -978,6 +981,7 @@ static struct cfq_queue *cfq_select_queue(struct cfq_data *cfqd)
->         */
->        if (timer_pending(&cfqd->idle_slice_timer) ||
->            (cfqq->dispatched && cfq_cfqq_idle_window(cfqq))) {
-> +               cfq_mark_cfqq_dispatched(cfqq);
->                cfqq = NULL;
->                goto keep_queue;
->        }
-> @@ -1784,7 +1788,10 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
->                if (cfq_cfqq_wait_request(cfqq)) {
->                        cfq_mark_cfqq_must_dispatch(cfqq);
->                        del_timer(&cfqd->idle_slice_timer);
-> -                       blk_start_queueing(cfqd->queue);
-> +                       if (cfq_cfqq_dispatched(cfqq)) {
-> +                               cfq_clear_cfqq_dispatched(cfqq);
-> +                               cfq_schedule_dispatch(cfqd);
-> +                       }
->                }
->        } else if (cfq_should_preempt(cfqd, cfqq, rq)) {
->                /*
+when an hfsplus image gets corrupted it might happen that the catalog
+namelength field gets b0rked. If we mount such an image
+the memcpy() in hfsplus_cat_build_key_uni() writes more than the 255
+that fit in the name field. Depending on the size of the overwritten
+data, we either only get memory corruption or also trigger an oops like
+this:
 
-This was the last test I didn't get around to. Alas, is did help, but
-didn't give the merging required for full performance:
 
-# echo 1 >/proc/sys/vm/drop_caches; dd if=/dev/sda of=/dev/null
-bs=128k count=2000
-262144000 bytes (262 MB) copied, 2.47787 s, 106 MB/s
+[  221.628020] BUG: unable to handle kernel paging request at c82b0000
+[  221.629066] IP: [<c022d4b1>] hfsplus_find_cat+0x10d/0x151
+[  221.629066] *pde = 0ea29163 *pte = 082b0160
+[  221.629066] Oops: 0002 [#1] PREEMPT DEBUG_PAGEALLOC
+[  221.629066] Modules linked in:
+[  221.629066]
+[  221.629066] Pid: 4845, comm: mount Not tainted (2.6.27-rc4-00123-gd3ee1b4-dirty #28)
+[  221.629066] EIP: 0060:[<c022d4b1>] EFLAGS: 00010206 CPU: 0
+[  221.629066] EIP is at hfsplus_find_cat+0x10d/0x151
+[  221.629066] EAX: 00000029 EBX: 00016210 ECX: 000042c2 EDX: 00000002
+[  221.629066] ESI: c82d70ca EDI: c82b0000 EBP: c82d1bcc ESP: c82d199c
+[  221.629066]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+[  221.629066] Process mount (pid: 4845, ti=c82d1000 task=c8224060 task.ti=c82d1000)
+[  221.629066] Stack: c080b3c4 c82aa8f8 c82d19c2 00016210 c080b3be c82d1bd4 c82aa8f0 00000300
+[  221.629066]        01000000 750008b1 74006e00 74006900 65006c00 c82d6400 c013bd35 c8224060
+[  221.629066]        00000036 00000046 c82d19f0 00000082 c8224548 c8224060 00000036 c0d653cc
+[  221.629066] Call Trace:
+[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
+[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
+[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
+[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
+[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
+[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
+[  221.629066]  [<c01302d2>] ? __kernel_text_address+0x1b/0x27
+[  221.629066]  [<c010487a>] ? dump_trace+0xca/0xd6
+[  221.629066]  [<c0109e32>] ? save_stack_address+0x0/0x2c
+[  221.629066]  [<c0109eaf>] ? save_stack_trace+0x1c/0x3a
+[  221.629066]  [<c013b571>] ? save_trace+0x37/0x8d
+[  221.629066]  [<c013b62e>] ? add_lock_to_list+0x67/0x8d
+[  221.629066]  [<c013ea1c>] ? validate_chain+0x8a4/0x9f4
+[  221.629066]  [<c013553d>] ? down+0xc/0x2f
+[  221.629066]  [<c013f1f6>] ? __lock_acquire+0x68a/0x6e0
+[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
+[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
+[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
+[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
+[  221.629066]  [<c013da5d>] ? mark_held_locks+0x43/0x5a
+[  221.629066]  [<c013dc3a>] ? trace_hardirqs_on+0xb/0xd
+[  221.629066]  [<c013dbf4>] ? trace_hardirqs_on_caller+0xf4/0x12f
+[  221.629066]  [<c06abec8>] ? _spin_unlock_irqrestore+0x42/0x58
+[  221.629066]  [<c013555c>] ? down+0x2b/0x2f
+[  221.629066]  [<c022aa68>] ? hfsplus_iget+0xa0/0x154
+[  221.629066]  [<c022b0b9>] ? hfsplus_fill_super+0x280/0x447
+[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
+[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
+[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
+[  221.629066]  [<c013f1f6>] ? __lock_acquire+0x68a/0x6e0
+[  221.629066]  [<c041c9e4>] ? string+0x2b/0x74
+[  221.629066]  [<c041cd16>] ? vsnprintf+0x2e9/0x512
+[  221.629066]  [<c010487a>] ? dump_trace+0xca/0xd6
+[  221.629066]  [<c0109eaf>] ? save_stack_trace+0x1c/0x3a
+[  221.629066]  [<c0109eaf>] ? save_stack_trace+0x1c/0x3a
+[  221.629066]  [<c013b571>] ? save_trace+0x37/0x8d
+[  221.629066]  [<c013b62e>] ? add_lock_to_list+0x67/0x8d
+[  221.629066]  [<c013ea1c>] ? validate_chain+0x8a4/0x9f4
+[  221.629066]  [<c01354d3>] ? up+0xc/0x2f
+[  221.629066]  [<c013f1f6>] ? __lock_acquire+0x68a/0x6e0
+[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
+[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
+[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
+[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
+[  221.629066]  [<c041cfb7>] ? snprintf+0x1b/0x1d
+[  221.629066]  [<c01ba466>] ? disk_name+0x25/0x67
+[  221.629066]  [<c0183960>] ? get_sb_bdev+0xcd/0x10b
+[  221.629066]  [<c016ad92>] ? kstrdup+0x2a/0x4c
+[  221.629066]  [<c022a7b3>] ? hfsplus_get_sb+0x13/0x15
+[  221.629066]  [<c022ae39>] ? hfsplus_fill_super+0x0/0x447
+[  221.629066]  [<c0183583>] ? vfs_kern_mount+0x3b/0x76
+[  221.629066]  [<c0183602>] ? do_kern_mount+0x32/0xba
+[  221.629066]  [<c01960d4>] ? do_new_mount+0x46/0x74
+[  221.629066]  [<c0196277>] ? do_mount+0x175/0x193
+[  221.629066]  [<c013dbf4>] ? trace_hardirqs_on_caller+0xf4/0x12f
+[  221.629066]  [<c01663b2>] ? __get_free_pages+0x1e/0x24
+[  221.629066]  [<c06ac07b>] ? lock_kernel+0x19/0x8c
+[  221.629066]  [<c01962e6>] ? sys_mount+0x51/0x9b
+[  221.629066]  [<c01962f9>] ? sys_mount+0x64/0x9b
+[  221.629066]  [<c01038bd>] ? sysenter_do_call+0x12/0x31
+[  221.629066]  =======================
+[  221.629066] Code: 89 c2 c1 e2 08 c1 e8 08 09 c2 8b 85 e8 fd ff ff 66 89 50 06 89 c7 53 83 c7 08 56 57 68 c4 b3 80 c0 e8 8c 5c ef ff 89 d9 c1 e9 02 <f3> a5 89 d9 83 e1 03 74 02 f3 a4 83 c3 06 8b 95 e8 fd ff ff 0f
+[  221.629066] EIP: [<c022d4b1>] hfsplus_find_cat+0x10d/0x151 SS:ESP 0068:c82d199c
+[  221.629066] ---[ end trace e417a1d67f0d0066 ]---
 
-# echo 1 >/proc/sys/vm/drop_caches; hdparm -t /dev/sda
-Timing buffered disk reads:  308 MB in  3.01 seconds = 102.46 MB/sec
+Since hfsplus_cat_build_key_uni() returns
+void and only has one callsite, the check is performed at the callsite.
 
-It is an improvement over the baseline performance of 2.6.27-rc4:
+Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
 
-# echo 1 >/proc/sys/vm/drop_caches; dd if=/dev/sda of=/dev/null
-bs=128k count=2000
-262144000 bytes (262 MB) copied, 2.56514 s, 102 MB/s
 
-# echo 1 >/proc/sys/vm/drop_caches; hdparm -t /dev/sda
-Timing buffered disk reads:  294 MB in  3.02 seconds =  97.33 MB/sec
-
-Note that platter speed is around 125MB/s (which I get near at smaller
-read sizes).
-
-I feel 128KB read requests are perhaps important, as this is a
-commonly-used RAID stripe size, and may explain the read-performance
-drop sometimes we see in hardware vs software RAID benchmarks.
-
-How can we generate some ideas or movement on fixing/improving this behaviour?
-
-Thanks!
-  Daniel
--- 
-Daniel J Blueman
+--- linux/fs/hfsplus/catalog.c.orig	2008-08-24 14:52:03.000000000 +0200
++++ linux/fs/hfsplus/catalog.c	2008-08-24 14:54:15.000000000 +0200
+@@ -168,6 +168,11 @@ int hfsplus_find_cat(struct super_block 
+ 		return -EIO;
+ 	}
+ 
++	if (be16_to_cpu(tmp.thread.nodeName.length) >= 127) {
++		printk(KERN_ERR "hfs: catalog name length corrupted\n");
++		return -EIO;
++	}
++
+ 	hfsplus_cat_build_key_uni(fd->search_key, be32_to_cpu(tmp.thread.parentID),
+ 				 &tmp.thread.nodeName);
+ 	return hfs_brec_find(fd);
