@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbYHXI6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYHXI73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbYHXI6e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 04:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbYHXI6Z
+	id S1754898AbYHXI73 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 04:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbYHXI7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 04:58:25 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:49457 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751526AbYHXI6Y (ORCPT
+	Sun, 24 Aug 2008 04:59:21 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60913 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752048AbYHXI7U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 04:58:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=tUGwDAVBgDMnqKMN09QbZjQsFwpZh1qJGGC7iFi+vNrYkBG2ViWtgB3ViYgsZNIH1C
-         ByTI9LrlcpP4qdjMlR9ZgSWsJYmLz6jQN+U/8buN9RcYOIDn2mmrZejnWgT46qZkViJG
-         R05OFlNiPvMZ/kiTEFKBACjmoTQObA+7uSu/g=
-Message-ID: <86802c440808240158qe35c6ddrc2774d19dc78a96@mail.gmail.com>
-Date: Sun, 24 Aug 2008 01:58:24 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: 9a2d43b: __alloc_bootmem_core(): zero-sized request
-Cc: "Johannes Weiner" <hannes@saeurebad.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <19f34abd0808240143y10b143c6s6f2b6753490d652f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 24 Aug 2008 04:59:20 -0400
+Date: Sun, 24 Aug 2008 11:01:33 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] smp_call_function: use rwlocks on queues rather than rcu
+Message-ID: <20080824090133.GA26610@one.firstfloor.org>
+References: <20080822062800.GQ14110@elte.hu> <84144f020808220006n25d684b1n9db306ddc4f58c4c@mail.gmail.com> <48AEC6B2.1080701@linux-foundation.org> <20080822151156.GA6744@linux.vnet.ibm.com> <48AEF3FD.70906@linux-foundation.org> <20080822182915.GG6744@linux.vnet.ibm.com> <20080822183346.GS23334@one.firstfloor.org> <48AF0702.8040303@goop.org> <20080823073457.GV23334@one.firstfloor.org> <48B0E9CA.4040808@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <19f34abd0808221224s4674e5aaq34bd0a874dfba699@mail.gmail.com>
-	 <87myj4yzll.fsf@skyscraper.fehenstaub.lan>
-	 <19f34abd0808240058h3d286151x18cba0939f175edd@mail.gmail.com>
-	 <86802c440808240122r64ac91beu68e7782d5056bbb3@mail.gmail.com>
-	 <19f34abd0808240143y10b143c6s6f2b6753490d652f@mail.gmail.com>
+In-Reply-To: <48B0E9CA.4040808@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 24, 2008 at 1:43 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-dy...
->
-> Yes, the v2.6.27-rc4 boots fine. I was wondering if you knew that this
-> problem had occurred in the past (and if so, which commits I can
-> cherry-pick to fix it). But I guess there is not much to do. It is
-> also hard to test this same config with newer kernels, because
-> something in the Kconfig changed in an incompatible way (e.g. NUMAQ
-> setting changes when I change kernel versions).
+> > Ah so it was already 25% slower even without kmalloc? I thought
+> > that was with already. That doesn't sound good. Any idea where that slowdown 
+> > comes from?
+> 
+> Just longer code path, I think.  It calls the generic
 
-a lot of changes on that section code in 2.6.27.
+I did IPI measurements quite some time ago and what I remember
+from them is that IPI latencies were in the low multiple thousands cycle
+ballpark.
 
-and according to old code, you are not supposed to use numaq enabled
-kernel on non-numaq HW.
-but from 2.6.27-rc1 you could do that. we made the code probe the
-subarch and will fall back to default or bigsmp
+> smp_call_function_mask(), which then does a popcount on the cpu mask
+> (which it needs to do anyway), sees only one bit set, and then punts to
+> the smp_call_function_single() path.  
 
-YH
+But that is more in the a few tens of cycles (or maybe 1-2 hundreds
+if you have a NR_CPU==4096 kernel with really large cpumask)
+
+Doesn't really explain a 25% slowdown I would say. 
+
+Are you sure there isn't a new cache miss in there or something? Actually
+it must be even multiple ones to account for such a slow down.
+
+-Andi
+
+-- 
+ak@linux.intel.com
