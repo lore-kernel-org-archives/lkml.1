@@ -1,61 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbYHXCjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbYHXCoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753150AbYHXCjt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 22:39:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYHXCjl
+	id S1753221AbYHXCoS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Aug 2008 22:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYHXCoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 22:39:41 -0400
-Received: from web82107.mail.mud.yahoo.com ([209.191.84.220]:23855 "HELO
-	web82107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751425AbYHXCjk (ORCPT
+	Sat, 23 Aug 2008 22:44:08 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:36931 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751425AbYHXCoG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 22:39:40 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=xqZN/OJX7f8JUkBxzIduEV+jKnhggY8+oqswzDBFvuLaNTkwvSKncK2Mg9JNFL7Gzwb2KRAMDWNIXxoa6UqMeIAgUAqVoVbA+WGVwHfBrW+E5+ZKaZlbpqahFBQlCDarlxeXHX8H8CvGCk7Wt1abeaT/bazUxRbADx+H2jmK4xQ=;
-X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
-Date: Sat, 23 Aug 2008 19:39:39 -0700 (PDT)
-From: David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+	Sat, 23 Aug 2008 22:44:06 -0400
+Date: Sat, 23 Aug 2008 19:44:06 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org,
+       akpm@linux-foundation.org, manfred@colorfullife.com,
+       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, schamp@sgi.com,
+       niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org
+Subject: Re: [PATCH, RFC, tip/core/rcu] scalable classic RCU implementation
+Message-ID: <20080824024406.GC6851@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080822043715.GD15212@elte.hu> <20080822134720.GG6875@linux.vnet.ibm.com> <20080822172221.GA9593@linux.vnet.ibm.com> <20080823160735.GC27974@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <558013.68193.qm@web82107.mail.mud.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <20080823160735.GC27974@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-> > (BTW, just what kernel version were you using for those patches?  The
-> > v2.6.27-rcX series place the patch's changes over 100 lines earlier
-> > than the line numbers indicated in your patches....)
+On Sat, Aug 23, 2008 at 06:07:35PM +0200, Ingo Molnar wrote:
 > 
-> we are working on tip/master
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > Is this a sufficient improvement?
+> 
+> yeah - looks much better. This was the block that meets the eye for the 
+> first time in the patch so it stuck out.
+> 
+> just one more small pet peeve of mine: please use vertical alignment too 
+> to improve readability. Instead of:
+> 
+> > #define MAX_RCU_LEVELS 3
+> > #define RCU_FANOUT (CONFIG_RCU_FANOUT)
+> > #define RCU_FANOUT_SQ (RCU_FANOUT * RCU_FANOUT)
+> > #define RCU_FANOUT_CUBE (RCU_FANOUT_SQ * RCU_FANOUT)
+> 
+> this looks a bit more structured IMO:
+> 
+> > #define MAX_RCU_LEVELS	3
+> > #define RCU_FANOUT		(CONFIG_RCU_FANOUT)
+> > #define RCU_FANOUT_SQ		(RCU_FANOUT * RCU_FANOUT)
+> > #define RCU_FANOUT_CUBE	(RCU_FANOUT_SQ * RCU_FANOUT)
 
-My mistake... sorry.  Previously, Ingo had me doing things with tip/master,
-but usually you had me working with v2.6.27-rc3.  I should have tried
-tip/master as soon as I saw the discrepancy.
+Good point, fixed.
 
+> maybe even this:
+> 
+> > #if (NR_CPUS) <= RCU_FANOUT
+> > #  define NUM_RCU_LVLS	1
+> > #  define NUM_RCU_LVL_0	1
+> > #  define NUM_RCU_LVL_1	(NR_CPUS)
+> > #  define NUM_RCU_LVL_2	0
+> > #  define NUM_RCU_LVL_3	0
+> > #elif (NR_CPUS) <= RCU_FANOUT_SQ
+> > #  define NUM_RCU_LVLS	2
+> > #  define NUM_RCU_LVL_0	1
+> > #  define NUM_RCU_LVL_1	(((NR_CPUS) + RCU_FANOUT - 1) / RCU_FANOUT)
+> > #  define NUM_RCU_LVL_2	(NR_CPUS)
+> > #  define NUM_RCU_LVL_3	0
+> > #elif (NR_CPUS) <= RCU_FANOUT_CUBE
+> > #  define NUM_RCU_LVLS	3
+> > #  define NUM_RCU_LVL_0	1
+> > #  define NUM_RCU_LVL_1	(((NR_CPUS) + RCU_FANOUT_SQ - 1) / RCU_FANOUT_SQ)
+> > #  define NUM_RCU_LVL_2	(((NR_CPUS) + (RCU_FANOUT) - 1) / (RCU_FANOUT))
+> > #  define NUM_RCU_LVL_3	NR_CPUS
+> > #else
+> > # error "CONFIG_RCU_FANOUT insufficient for NR_CPUS"
+> > #endif /* #if (NR_CPUS) <= RCU_FANOUT */
+> 
+> but no strong feelings on that one. (maybe inserting a space at the 
+> right places helps too, no need for a full tab)
 
-I have some questions about what happens next:
+Yep, just like you, spaced it just enough to keep the longest one from
+running over one line.  ;-)
 
-- This fix will naturally make it into v2.6.27, maybe even as soon
-as v2.6.27-rc5, correct?
+I left the definitions for RCU_SUM and NUM_RCU_NODES compact, though:
 
-- Is there any chance I can get it into the stable 2.6.26.X updates?
-(Who should I ask, or are only developers allowed to lobby for this
-sort of thing?)
+#define RCU_SUM (NUM_RCU_LVL_0 + NUM_RCU_LVL_1 + NUM_RCU_LVL_2 + NUM_RCU_LVL_3)
+#define NUM_RCU_NODES (RCU_SUM - NR_CPUS)
 
-- Are you worried about the potential problems of a quirk-based approach?
-What if many more people experience a similar regression once 2.6.26 or
-later appears in their distribution?  I'm sure you don't want to have to
-write a different quirk for each individual's hardware, and this problem
-did not arise with the approach used for resource management in 2.6.25.
+The other alternative would be to stack RCU_SUM as follows:
 
+#define RCU_SUM		      (NUM_RCU_LVL_0 + NUM_RCU_LVL_1 + \
+			       NUM_RCU_LVL_2 + NUM_RCU_LVL_3)
 
-Thanks again Yinghai (and Ingo),
-Dave W.
+which seemed to me to add more ugly than enlightenment.
+
+Testing is going well.  Having to occasionally restrain myself to keep
+from going full-bore for 4096 CPU optimality -- but have to keep it
+simple until/unless someone with that large of a machine shows where
+improvements are needed.
+
+							Thanx, Paul
