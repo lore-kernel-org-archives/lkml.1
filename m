@@ -1,143 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbYHXFhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbYHXFs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753380AbYHXFhB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 01:37:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbYHXFgx
+	id S1753763AbYHXFs4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 01:48:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbYHXFss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 01:36:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51436 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751705AbYHXFgw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 01:36:52 -0400
-Date: Sat, 23 Aug 2008 22:36:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Constantin Baranov <const@const.mimas.ru>
-Cc: linux-kernel@vger.kernel.org, rpurdie@rpsys.net
-Subject: Re: [PATCH 2.6.27-rc3] led: driver for LEDs on PCEngines ALIX.2 and
- ALIX.3 boards
-Message-Id: <20080823223606.79f6d4da.akpm@linux-foundation.org>
-In-Reply-To: <48B044DC.5040700@const.mimas.ru>
-References: <48AB019D.6080302@const.mimas.ru>
-	<20080822115150.6b3907a4.akpm@linux-foundation.org>
-	<48AF2ABF.8080901@const.mimas.ru>
-	<20080822143143.4202f940.akpm@linux-foundation.org>
-	<48B044DC.5040700@const.mimas.ru>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Sun, 24 Aug 2008 01:48:48 -0400
+Received: from sh.osrg.net ([192.16.179.4]:59631 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751705AbYHXFsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 01:48:47 -0400
+Date: Sun, 24 Aug 2008 14:48:22 +0900
+To: nix@esperi.org.uk
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, adobriyan@gmail.com
+Subject: Re: Writable packet CD-RW mounting broken in 2.6.26 by your commit
+ 68154e90c9d1492d570671ae181d9a8f8530da55
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <8763pr1jy0.fsf_-_@hades.wkstn.nix>
+References: <20080808031437.GA14249@martell.zuzino.mipt.ru>
+	<20080808053735.GA5274@martell.zuzino.mipt.ru>
+	<8763pr1jy0.fsf_-_@hades.wkstn.nix>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080824144827R.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Aug 2008 22:11:56 +0500 Constantin Baranov <const@const.mimas.ru> wrote:
+On Sat, 23 Aug 2008 22:48:55 +0100
+Nix <nix@esperi.org.uk> wrote:
 
-> > For example, this?
-> > 
-> > static int __init alix_led_probe(struct platform_device *pdev)
-> > {
-> > 	int i;
-> > 	int ret;
-> > 
-> > 	for (i = 0; i < ARRAY_SIZE(alix_leds); i++) {
-> > 		ret = led_classdev_register(&pdev->dev, &alix_leds[i].cdev);
-> > 		if (ret < 0)
-> > 			goto fail;
-> > 	}
-> > 	return 0;
-> > 
-> > fail:
-> > 	while (--i >= 0)
-> > 		led_classdev_unregister(&alix_leds[i].cdev);
-> > 	return ret;
-> > }
-> > 
-> > (note there's no longer a need for a fake initalisation of `ret')
-> > 
-> >> Note that probe routine originates from leds-ams-delta.c.
-> > 
-> > That's what you get for copying stuff :(
+> On 8 Aug 2008, Alexey Dobriyan told this:
 > 
-> Well, this variant looks better and correct and still works.
-> Should I post again patch or fix-patch?
+> > On Fri, Aug 08, 2008 at 07:14:37AM +0400, Alexey Dobriyan wrote:
+> >> On Wed, Aug 06, 2008 at 08:12:49PM +0100, Nix wrote:
+> >> > It seems to be impossible to mount packet-written CD-RWs writably in
+> >> > 2.6.26.x, even as root. Things worked in 2.6.25.x.
+> 
+> Bisected. The bug starts here:
+> 
+> commit 68154e90c9d1492d570671ae181d9a8f8530da55
+> Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Date:   Fri Apr 25 12:47:50 2008 +0200
+> 
+>     block: add dma alignment and padding support to blk_rq_map_kern
+> 
+>     This patch adds bio_copy_kern similar to
+>     bio_copy_user. blk_rq_map_kern uses bio_copy_kern instead of
+>     bio_map_kern if necessary.
+> 
+>     bio_copy_kern uses temporary pages and the bi_end_io callback frees
+>     these pages. bio_copy_kern saves the original kernel buffer at
+>     bio->bi_private it doesn't use something like struct bio_map_data to
+>     store the information about the caller.
+> 
+>     Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+>     Cc: Tejun Heo <htejun@gmail.com>
+>     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 
-I already queued that as an incremental:
+Sorry about the bug and thanks for the investigation.
 
---- a/drivers/leds/leds-alix.c~led-driver-for-leds-on-pcengines-alix2-and-alix3-boards-fix
-+++ a/drivers/leds/leds-alix.c
-@@ -4,7 +4,7 @@
-  * Copyright (C) 2008 Constantin Baranov <const@tltsu.ru>
-  */
+
+> So something in this patch seems to be corrupting the results of at
+> least some ATAPI sg requests going to or from the block layer: and
+> indeed blk_rq_map_kern(), called by pkt_generic_packet(), is changed by
+> this patch.
+> 
+> Tomonori, Jens, can you see any immediate cause of this? It seems to me
+> that the alignment check in blk_rq_map_kern() *must* be going wrong,
+> somehow: this can't be an unaligned buffer or the code wouldn't have
+> worked before the patch, yet if the buffer was aligned, we should be
+> calling bio_map_kern(), which this patch hasn't changed. Perhaps the
+> buffer length of 12 is leading it to believe that it should go via a
+> bounce buffer and is calling the new code (and tripping some bug in it,
+> since presumably even the new code isn't expected to corrupt the data in
+> flight ;) )
+
+Using bio_copy_kern() should be fine since it does the same thing that
+bio_map_kern() does (the difference is that bio_copy_kern() does extra
+memory copy).
+
+Actually, pkt_probe_settings() should use bio_copy_kern because it
+tries to do DMA with a buffer on the stack (it doesn't work on some
+architectures). blk_rq_map_kern() in the latest git has the stack
+checking too.
+
+I think that I put a bug in bio_copy_kern(). Can you try this patch?
+
+I think that bio_uncopy_user has the same bug. I'll send a patch after
+fixing this bug.
+
+
+diff --git a/fs/bio.c b/fs/bio.c
+index 8000e2f..f58a7ba 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -942,19 +942,22 @@ static void bio_copy_kern_endio(struct bio *bio, int err)
+ {
+ 	struct bio_vec *bvec;
+ 	const int read = bio_data_dir(bio) == READ;
+-	char *p = bio->bi_private;
++	struct bio_map_data *bmd = bio->bi_private;
+ 	int i;
++	char *p = bmd->sgvecs[0].iov_base;
  
--#include <asm/io.h>
-+#include <linux/io.h>
- #include <linux/err.h>
- #include <linux/kernel.h>
- #include <linux/leds.h>
-@@ -22,6 +22,7 @@ static void alix_led_set(struct led_clas
- {
- 	struct alix_led *led_dev =
- 		container_of(led_cdev, struct alix_led, cdev);
-+
- 	if (brightness)
- 		outl(led_dev->on_value, led_dev->port);
- 	else
-@@ -63,6 +64,7 @@ static struct alix_led alix_leds[] = {
- static int alix_led_suspend(struct platform_device *dev, pm_message_t state)
- {
- 	int i;
-+
- 	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
- 		led_classdev_suspend(&alix_leds[i].cdev);
- 	return 0;
-@@ -71,6 +73,7 @@ static int alix_led_suspend(struct platf
- static int alix_led_resume(struct platform_device *dev)
- {
- 	int i;
-+
- 	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
- 		led_classdev_resume(&alix_leds[i].cdev);
- 	return 0;
-@@ -86,22 +89,25 @@ static int alix_led_resume(struct platfo
- static int __init alix_led_probe(struct platform_device *pdev)
- {
- 	int i;
--	int ret = 0;
-+	int ret;
+ 	__bio_for_each_segment(bvec, bio, i, 0) {
+ 		char *addr = page_address(bvec->bv_page);
++		int len = bmd->iovecs[i].bv_len;
  
--	for (i = 0; i < ARRAY_SIZE(alix_leds) && ret >= 0; i++)
-+	for (i = 0; i < ARRAY_SIZE(alix_leds); i++) {
- 		ret = led_classdev_register(&pdev->dev, &alix_leds[i].cdev);
--
--	if (ret < 0) {
--		for (i = i - 2; i >= 0; i--)
--			led_classdev_unregister(&alix_leds[i].cdev);
-+		if (ret < 0)
-+			goto fail;
+ 		if (read && !err)
+-			memcpy(p, addr, bvec->bv_len);
++			memcpy(p, addr, len);
+ 
+ 		__free_page(bvec->bv_page);
+-		p += bvec->bv_len;
++		p += len;
  	}
-+	return 0;
  
-+fail:
-+	while (--i >= 0)
-+		led_classdev_unregister(&alix_leds[i].cdev);
- 	return ret;
++	bio_free_map_data(bmd);
+ 	bio_put(bio);
  }
  
- static int alix_led_remove(struct platform_device *pdev)
- {
- 	int i;
+@@ -978,11 +981,21 @@ struct bio *bio_copy_kern(struct request_queue *q, void *data, unsigned int len,
+ 	const int nr_pages = end - start;
+ 	struct bio *bio;
+ 	struct bio_vec *bvec;
++	struct bio_map_data *bmd;
+ 	int i, ret;
++	struct sg_iovec iov;
 +
- 	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
- 		led_classdev_unregister(&alix_leds[i].cdev);
- 	return 0;
-@@ -122,6 +128,7 @@ static struct platform_device *pdev;
- static int __init alix_led_init(void)
- {
- 	int ret;
++	iov.iov_base = data;
++	iov.iov_len = len;
 +
- 	pdev = platform_device_register_simple(KBUILD_MODNAME, -1, NULL, 0);
- 	if (!IS_ERR(pdev)) {
- 		ret = platform_driver_probe(&alix_led_driver, alix_led_probe);
-_
++	bmd = bio_alloc_map_data(nr_pages, 1);
++	if (!bmd)
++		return ERR_PTR(-ENOMEM);
+ 
++	ret = -ENOMEM;
+ 	bio = bio_alloc(gfp_mask, nr_pages);
+ 	if (!bio)
+-		return ERR_PTR(-ENOMEM);
++		goto out_bmd;
+ 
+ 	while (len) {
+ 		struct page *page;
+@@ -1016,14 +1029,18 @@ struct bio *bio_copy_kern(struct request_queue *q, void *data, unsigned int len,
+ 		}
+ 	}
+ 
+-	bio->bi_private = data;
++	bio->bi_private = bmd;
+ 	bio->bi_end_io = bio_copy_kern_endio;
++
++	bio_set_map_data(bmd, bio, &iov, 1);
+ 	return bio;
+ cleanup:
+ 	bio_for_each_segment(bvec, bio, i)
+ 		__free_page(bvec->bv_page);
+ 
+ 	bio_put(bio);
++out_bmd:
++	bio_free_map_data(bmd);
+ 
+ 	return ERR_PTR(ret);
+ }
+
+
 
