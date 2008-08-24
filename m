@@ -1,81 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757211AbYHXWvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756413AbYHXVxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757211AbYHXWvR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 18:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbYHXWvA
+	id S1756413AbYHXVxB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 17:53:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbYHXVwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 18:51:00 -0400
-Received: from atlantis.8hz.com ([212.129.237.78]:54746 "EHLO atlantis.8hz.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753236AbYHXWvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 18:51:00 -0400
-Date: Sun, 24 Aug 2008 22:50:58 +0000
-From: Sean Young <sean@mess.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Alok Kataria <akataria@vmware.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
-Message-ID: <20080824225058.GA55406@atlantis.8hz.com>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <alpine.LFD.1.10.0808241141470.3363@nehalem.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0808241141470.3363@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 24 Aug 2008 17:52:54 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:32451 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750909AbYHXVwx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 17:52:53 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=DM4wlKETVA9SrQwULzsA:9 a=-hcxSDLDbLar8_8VWJQA:7 a=3z6X5WESLpGOJ24Pkb9EJyCnie8A:4 a=Aks6A_XPZJcA:10 a=88GqaR7iNyEA:10 a=LQpqtOfbXR4A:10
+Message-ID: <48B1D82C.5000107@shaw.ca>
+Date: Sun, 24 Aug 2008 15:52:44 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Jari Aalto <jari.aalto@cante.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25 DMA: Out of SW-IOMMU space - Asus M2N32 AMD 8GB memory
+References: <fa.c8YPWdZHXAabbZwTVLAgq9ahOlE@ifi.uio.no> <fa.9B7J3O7801PlFtm4WwuBX/J0kU8@ifi.uio.no> <fa.ES0QYHe349FfrOTaqTun1n3qaYk@ifi.uio.no> <fa.8FK+C3lDiXBnZCV9FTofTkm6PJE@ifi.uio.no> <fa.cN6j0N4TRlTlG7oLEhhT8Wj2N7A@ifi.uio.no> <fa.XwRqZTkk0olSp3UUnbSFZahR4TI@ifi.uio.no>
+In-Reply-To: <fa.XwRqZTkk0olSp3UUnbSFZahR4TI@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 24, 2008 at 11:52:06AM -0700, Linus Torvalds wrote:
-> On Sat, 23 Aug 2008, Rafael J. Wysocki wrote:
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11354
-> > Subject		: AMD Elan regression with 2.6.27-rc3
-> > Submitter	: Sean Young <sean@mess.org>
-> > Date		: 2008-08-15 18:37 (9 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=121882578430056&w=4
+Jari Aalto wrote:
+> Krzysztof Halasa <khc@pm.waw.pl> writes:
 > 
-> Peter? Ingo? Alok?
+>> Jari Aalto <jari.aalto@cante.net> writes:
+>>
+>>> >From Debian stock kernel:
+>>>
+>>> $ grep -Ei 'iommu|agp' /boot/config-2.6.25-2-amd64
+>>> CONFIG_GART_IOMMU=y
+>>> CONFIG_CALGARY_IOMMU=y
+>>> CONFIG_CALGARY_IOMMU_ENABLED_BY_DEFAULT=y
+>>> CONFIG_IOMMU_HELPER=y
+>>> CONFIG_AGP=y
+>>> CONFIG_AGP_AMD64=y
+>>> CONFIG_AGP_INTEL=m
+>>> CONFIG_AGP_SIS=m
+>>> CONFIG_AGP_VIA=m
+>> Should be fine. SWIOTLB is there for a backup, most (?) Intel machines
+>> don't have IOMMU (even the newest desktop boards).
+>>
+>>> Are these the correct boot options, without swiotlb?
+>>>
+>>>    iommu=noagp,noaperture,off
+>>>
+>>> Or just:
+>>>
+>>>    iommu=off
+>> Do you have problems without "iommu=XXX"?
 > 
-> This _looks_ like it might be due to "x86: merge the TSC cpu-freq code" 
-> thing by Alok, where we do this:
+> Initially when the PC was installed (and had no IOMMU) options, that
+> cause the whole harddisk to corrupt and I had to reinstall everything.
+> It might have been a little older kernel (2.6.23?), but I don't recall
+> it exactly.
 > 
-> 	+static struct notifier_block time_cpufreq_notifier_block = {
-> 	+       .notifier_call  = time_cpufreq_notifier
-> 	+};
-> 	+
-> 	+static int __init cpufreq_tsc(void)
-> 	+{
-> 	+       cpufreq_register_notifier(&time_cpufreq_notifier_block,
-> 	+                               CPUFREQ_TRANSITION_NOTIFIER);
-> 	+       return 0;
-> 	+}
+> According to messages in syslog I tried to track down similar incidents
+> and found the iommu articles. But the information was like trial and
+> error.
 > 
-> but that's just _insane_ if the CPU doesn't even support TSC to begin 
-> with. Also, in the actual time_cpufreq_notifier(), we do:
-> 
-> 	if (cpu_has(&cpu_data(freq->cpu), X86_FEATURE_CONSTANT_TSC))
-> 		return 0;
-> 
-> and this is stupid because:
-> 
->  (a) if the CPU has no TSC at all, then it sure as hell won't have a 
->      _constant_ one, so we'll actually continue into the function.
-> 
->  (b) and why the hell is this done at run-time in the notifier, and not in 
->      the "cpufreq_tsc" init function? If anybody mixes totally different 
->      kinds of CPU's in SMP, they deserve whatever they want.
-> 
-> so why is the patch not something like the appended?
-> 
-> Sean, does this make any difference for you?
+> Would you suggest that "immu=off" would be best option?
 
-Yes, this patch fixes it.
+No, you can't use iommu=off. If you have memory located over 4GB and 
+devices which can only do 32-bit DMA then you need some kind of IOMMU 
+support, otherwise things will just blow up.
 
-Thanks
-Sean
+If you use no options and it's enabled in the kernel config it should be 
+using the GART IOMMU built into the CPU on this machine..
