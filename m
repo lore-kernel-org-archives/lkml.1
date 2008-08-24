@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYHXSQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756269AbYHXPqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755936AbYHXSQl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 14:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYHXSQc
+	id S1756269AbYHXPqH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 11:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYHXPpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 14:16:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55206 "EHLO mx2.redhat.com"
+	Sun, 24 Aug 2008 11:45:24 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:60260 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752626AbYHXSQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 14:16:31 -0400
-Date: Sun, 24 Aug 2008 14:13:04 -0400
-From: Dave Jones <davej@redhat.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: "H. Peter Anvin" <hpa@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: latest -git: WARNING: at arch/x86/kernel/ipi.c:123
-	send_IPI_mask_bitmask+0xc3/0xe0()
-Message-ID: <20080824181304.GA5963@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Vegard Nossum <vegard.nossum@gmail.com>,
-	"H. Peter Anvin" <hpa@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-	the arch/x86 maintainers <x86@kernel.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Rusty Russell <rusty@rustcorp.com.au>
-References: <19f34abd0808191251x4eb61c50n13ecf7c90f0f3d9f@mail.gmail.com> <20080820013930.GN9807@one.firstfloor.org> <19f34abd0808192326jc10e758m99e76bbd5714c5b8@mail.gmail.com> <20080822003659.GA7581@redhat.com> <48AE20B8.9000204@kernel.org> <19f34abd0808240220v77bcdd5di32f8f865b18fc49f@mail.gmail.com> <48B19799.6090703@kernel.org> <19f34abd0808241022j1ab6f3e6qd72b9acba5df4892@mail.gmail.com> <19f34abd0808241045r37eb8661h3cc688b6f0513777@mail.gmail.com>
-MIME-Version: 1.0
+	id S1751589AbYHXPpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 11:45:22 -0400
+Date: Sun, 24 Aug 2008 19:49:11 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Robert Rex <robert.rex@exasol.com>,
+       Roland McGrath <roland@redhat.com>, Serge Hallyn <serue@us.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/4] pid_ns: zap_pid_ns_processes: fix the ->child_reaper changing
+Message-ID: <20080824154911.GA3777@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19f34abd0808241045r37eb8661h3cc688b6f0513777@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 24, 2008 at 07:45:48PM +0200, Vegard Nossum wrote:
- > Removing acpi=off helps with the CPU detection problem. The kernel is
- > still really slow, though. From /proc/cpuinfo:
- > 
- > processor       : 1
- > vendor_id       : GenuineIntel
- > cpu family      : 15
- > model           : 6
- > model name      : Intel(R) Pentium(R) 4 CPU 3.00GHz
- > stepping        : 5
- > cpu MHz         : 375.000
- > cache size      : 2048 KB
- > 
- > Why is MHz on 375!? I tried cpufreq-selector, but nothing changed. Maybe
- > 
- > calling  acpi_cpufreq_init+0x0/0x90
- > initcall acpi_cpufreq_init+0x0/0x90 returned -19 after 0 msecs
+zap_pid_ns_processes() sets pid_ns->child_reaper = NULL, this is wrong.
 
--ENODEV.  Because you don't have frequency scaling capable CPU.
+Yes, we have already killed all tasks in this namespace, and sys_wait4()
+doesn't see any child. But this doesn't mean ->children list is empty,
+we may have EXIT_DEAD tasks which are not visible to do_wait(). In that
+case the subsequent forget_original_parent() will crash the kernel because
+it will try to re-parent these tasks to the NULL reaper.
 
- > Okay, now I used cpufreq-selector to change to "ondemand" governor,
- > and MHz goes back to 3000. Weird. Why would "performance" governor put
- > my machine to a constant 375?
+Even if there are no childs, it is not good that forget_original_parent()
+uses reaper == NULL.
+
+Change the code to set ->child_reaper = init_pid_ns.child_reaper instead.
+We could use pid_ns->parent->child_reaper as well, I think this does not
+really matter. These EXIT_DEAD tasks are not visible to the new ->parent
+after re-parenting, they will silently do release_task() eventually.
+
+Note that we must change ->child_reaper, otherwise forget_original_parent()
+will use reaper == father, and in that case we will hit the (correct)
+BUG_ON(!list_empty(&father->children)).
+
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+--- 2.6.27-rc4/kernel/pid_namespace.c~1_ZAP_DONT_CLEAR_REAPER	2008-07-30 13:12:49.000000000 +0400
++++ 2.6.27-rc4/kernel/pid_namespace.c	2008-08-24 17:22:59.000000000 +0400
+@@ -179,9 +179,12 @@ void zap_pid_ns_processes(struct pid_nam
+ 		rc = sys_wait4(-1, NULL, __WALL, NULL);
+ 	} while (rc != -ECHILD);
  
-Probably because you're using p4-clockmod, and it's crap.
+-
+-	/* Child reaper for the pid namespace is going away */
+-	pid_ns->child_reaper = NULL;
++	/*
++	 * We can not clear ->child_reaper or leave it alone.
++	 * There may by stealth EXIT_DEAD tasks on ->children,
++	 * forget_original_parent() must move them somewhere.
++	 */
++	pid_ns->child_reaper = init_pid_ns.child_reaper;
+ 	acct_exit_ns(pid_ns);
+ 	return;
+ }
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
