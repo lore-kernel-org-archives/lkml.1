@@ -1,59 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbYHXTnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbYHXXml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756165AbYHXTnu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 15:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbYHXTnm
+	id S1754346AbYHXXml (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 19:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbYHXXmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 15:43:42 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:59024 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751884AbYHXTnl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 15:43:41 -0400
-X-Greylist: delayed 486 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Aug 2008 15:43:41 EDT
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 24 Aug 2008 12:35:33 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-cc: Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: No NONBLOCK flag for dup3() or epoll_create1()?
-In-Reply-To: <48AC4B19.6000206@gmail.com>
-Message-ID: <Pine.LNX.4.64.0808241229170.13864@alien.or.mcafeemobile.com>
-References: <48AC4B19.6000206@gmail.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sun, 24 Aug 2008 19:42:32 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56550 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752520AbYHXXmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 19:42:32 -0400
+X-Authenticated: #704063
+X-Provags-ID: V01U2FsdGVkX1/LjvpcE57L1iOkS1CViu6bnlQGAHazey9Z0dZ6L4
+	pKiu5iROq2qkbw
+Date: Mon, 25 Aug 2008 01:42:28 +0200
+From: Eric Sesterhenn <snakebyte@gmx.de>
+To: zippel@linux-m68k.org, linux-kernel@vger.kernel.org
+Subject: [Patch] Check read_mapping_page return value in hfsplus
+Message-ID: <20080824234228.GA28913@alice>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snake-basket.de
+X-Operating-System: Linux/2.6.27-rc3 (x86_64)
+X-Uptime: 01:23:09 up 5 days, 15:32,  3 users,  load average: 0.13, 0.44,
+	0.31
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.45
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008, Michael Kerrisk wrote:
+hi,
 
-> Ulrich
-> 
-> I've been doing some testing (2.6.27-rc3) of your new
-> file-descriptor-creating syscalls that accept flags.  According to
-> 
-> http://udrepper.livejournal.com/20407.html
-> 
-> all of the system calls should accept a *_NONBLOCK flag.  All of them do,
-> except for two:
-> dup3(olfd, newfd, flags)
-> and
-> epoll_create1(flags).
-> 
-> For epoll_create1() this certainly appears to be an oversight, since I can't
-> think of a reason not to support *_NONBLOCK.
+while testing more corrupted images with hfsplus, i came across
+one which triggered the following bug:
 
-Traditionally the no-wait epoll_wait() has been achieved with a zero 
-timeout, but _NONBLOCK support can be easily added if seen as necessary.
+[15840.675016] BUG: unable to handle kernel paging request at fffffffb
+[15840.675016] IP: [<c0116a4f>] kmap+0x15/0x56
+[15840.675016] *pde = 00008067 *pte = 00000000
+[15840.675016] Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
+[15840.675016] Modules linked in:
+[15840.675016]
+[15840.675016] Pid: 11575, comm: ln Not tainted (2.6.27-rc4-00123-gd3ee1b4-dirty #29)
+[15840.675016] EIP: 0060:[<c0116a4f>] EFLAGS: 00010202 CPU: 0
+[15840.675016] EIP is at kmap+0x15/0x56
+[15840.675016] EAX: 00000246 EBX: fffffffb ECX: 00000000 EDX: cab919c0
+[15840.675016] ESI: 000007dd EDI: cab0bcf4 EBP: cab0bc98 ESP: cab0bc94
+[15840.675016]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+[15840.675016] Process ln (pid: 11575, ti=cab0b000 task=cab919c0 task.ti=cab0b000)
+[15840.675016] Stack: 00000000 cab0bcdc c0231cfb 00000000 cab0bce0 00000800 ca9290c0 fffffffb
+[15840.675016]        cab145d0 cab919c0 cab15998 22222222 22222222 22222222 00000001 cab15960
+[15840.675016]        000007dd cab0bcf4 cab0bd04 c022cb3a cab0bcf4 cab15a6c ca9290c0 00000000
+[15840.675016] Call Trace:
+[15840.675016]  [<c0231cfb>] ? hfsplus_block_allocate+0x6f/0x2d3
+[15840.675016]  [<c022cb3a>] ? hfsplus_file_extend+0xc4/0x1db
+[15840.675016]  [<c022ce41>] ? hfsplus_get_block+0x8c/0x19d
+[15840.675016]  [<c06adde4>] ? sub_preempt_count+0x9d/0xab
+[15840.675016]  [<c019ece6>] ? __block_prepare_write+0x147/0x311
+[15840.675016]  [<c0161934>] ? __grab_cache_page+0x52/0x73
+[15840.675016]  [<c019ef4f>] ? block_write_begin+0x79/0xd5
+[15840.675016]  [<c022cdb5>] ? hfsplus_get_block+0x0/0x19d
+[15840.675016]  [<c019f22a>] ? cont_write_begin+0x27f/0x2af
+[15840.675016]  [<c022cdb5>] ? hfsplus_get_block+0x0/0x19d
+[15840.675016]  [<c0139ebe>] ? tick_program_event+0x28/0x4c
+[15840.675016]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
+[15840.675016]  [<c022b723>] ? hfsplus_write_begin+0x2d/0x32
+[15840.675016]  [<c022cdb5>] ? hfsplus_get_block+0x0/0x19d
+[15840.675016]  [<c0161988>] ? pagecache_write_begin+0x33/0x107
+[15840.675016]  [<c01879e5>] ? __page_symlink+0x3c/0xae
+[15840.675016]  [<c019ad34>] ? __mark_inode_dirty+0x12f/0x137
+[15840.675016]  [<c0187a70>] ? page_symlink+0x19/0x1e
+[15840.675016]  [<c022e6eb>] ? hfsplus_symlink+0x41/0xa6
+[15840.675016]  [<c01886a9>] ? vfs_symlink+0x99/0x101
+[15840.675016]  [<c018a2f6>] ? sys_symlinkat+0x6b/0xad
+[15840.675016]  [<c018a348>] ? sys_symlink+0x10/0x12
+[15840.675016]  [<c01038bd>] ? sysenter_do_call+0x12/0x31
+[15840.675016]  =======================
+[15840.675016] Code: 00 00 75 10 83 3d 88 2f ec c0 02 75 07 89 d0 e8 12 56 05 00 5d c3 55 ba 06 00 00 00 89 e5 53 89 c3 b8 3d eb 7e c0 e8 16 74 00 00 <8b> 03 c1 e8 1e 69 c0 d8 02 00 00 05 b8 69 8e c0 2b 80 c4 02 00
+[15840.675016] EIP: [<c0116a4f>] kmap+0x15/0x56 SS:ESP 0068:cab0bc94
+[15840.675016] ---[ end trace 4fea40dad6b70e5f ]---
 
+This happens because the return value of read_mapping_page() is passed
+on to kmap unchecked. The bug is triggered after the first
+read_mapping_page() in hfsplus_block_allocate(), this patch
+fixes all three usages in this functions but leaves the ones further
+down in the file unchanged.
 
+Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
 
-- Davide
-
-
+--- linux/fs/hfsplus/bitmap.c.orig	2008-08-25 01:18:51.000000000 +0200
++++ linux/fs/hfsplus/bitmap.c	2008-08-25 01:38:49.000000000 +0200
+@@ -32,6 +32,10 @@ int hfsplus_block_allocate(struct super_
+ 	mutex_lock(&HFSPLUS_SB(sb).alloc_file->i_mutex);
+ 	mapping = HFSPLUS_SB(sb).alloc_file->i_mapping;
+ 	page = read_mapping_page(mapping, offset / PAGE_CACHE_BITS, NULL);
++	if (IS_ERR(page)) {
++		start = size;
++		goto out;
++	}
+ 	pptr = kmap(page);
+ 	curr = pptr + (offset & (PAGE_CACHE_BITS - 1)) / 32;
+ 	i = offset % 32;
+@@ -73,6 +77,10 @@ int hfsplus_block_allocate(struct super_
+ 			break;
+ 		page = read_mapping_page(mapping, offset / PAGE_CACHE_BITS,
+ 					 NULL);
++		if (IS_ERR(page)) {
++			start = size;
++			goto out;
++		}
+ 		curr = pptr = kmap(page);
+ 		if ((size ^ offset) / PAGE_CACHE_BITS)
+ 			end = pptr + PAGE_CACHE_BITS / 32;
+@@ -120,6 +128,10 @@ found:
+ 		offset += PAGE_CACHE_BITS;
+ 		page = read_mapping_page(mapping, offset / PAGE_CACHE_BITS,
+ 					 NULL);
++		if (IS_ERR(page)) {
++			start = size;
++			goto out;
++		}
+ 		pptr = kmap(page);
+ 		curr = pptr;
+ 		end = pptr + PAGE_CACHE_BITS / 32;
