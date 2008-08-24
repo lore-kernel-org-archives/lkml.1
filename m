@@ -1,79 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbYHXH6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754395AbYHXIJI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754080AbYHXH6x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 03:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbYHXH6o
+	id S1754395AbYHXIJI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 04:09:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbYHXIIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 03:58:44 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:50996 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751519AbYHXH6n (ORCPT
+	Sun, 24 Aug 2008 04:08:53 -0400
+Received: from qb-out-0506.google.com ([72.14.204.238]:34429 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752399AbYHXIIu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 03:58:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=worsptO7ThoXY/eB+mH8+ryGYDJdjWTuB8nAqzrpX7FIYpxlPXh5pS/9IgMPlLJxk2
-         OmjvuqH3ZPzm+xZuB1mEzr1dc+8x43W64ZNLFGLjLmpMQ3of6uja9A6c5idJ9iPeU2xR
-         hImMhSu1Qx+8kfmMyMW7SkWiNMU3SmwR/xcnw=
-Message-ID: <19f34abd0808240058h3d286151x18cba0939f175edd@mail.gmail.com>
-Date: Sun, 24 Aug 2008 09:58:42 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Johannes Weiner" <hannes@saeurebad.de>
-Subject: Re: 9a2d43b: __alloc_bootmem_core(): zero-sized request
-Cc: "Yinghai Lu" <yhlu.kernel@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <87myj4yzll.fsf@skyscraper.fehenstaub.lan>
+	Sun, 24 Aug 2008 04:08:50 -0400
+Message-ID: <48B1170C.4050706@colorfullife.com>
+Date: Sun, 24 Aug 2008 10:08:44 +0200
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: paulmck@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, dipankar@in.ibm.com,
+       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
+       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org
+Subject: Re: [PATCH, RFC, tip/core/rcu] scalable classic RCU implementation
+References: <20080821234318.GA1754@linux.vnet.ibm.com>
+In-Reply-To: <20080821234318.GA1754@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0808221224s4674e5aaq34bd0a874dfba699@mail.gmail.com>
-	 <87myj4yzll.fsf@skyscraper.fehenstaub.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 23, 2008 at 9:12 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
-> "Vegard Nossum" <vegard.nossum@gmail.com> writes:
->>
->> I was trying out
->>
->> commit 9a2d43b7566caeeeb414aa628bc2759028897dbb
->> Date:   Tue Jul 15 21:21:43 2008 +0200
->>
->> ..as part of the debugging of a different issue, but I got this:
->>
->> __alloc_bootmem_core(): zero-sized request
+Paul E. McKenney wrote:
+> +/*
+> + * Definition for node within the RCU grace-period-detection hierarchy.
+> + */
+> +struct rcu_node {
+> +	spinlock_t lock;
+> +	unsigned long	qsmask;	/* CPUs or groups that need to switch in      */
+> +				/*  order for current grace period to proceed.*/
+> +	unsigned long	qsmaskinit;
+> +				/* Per-GP initialization for qsmask.	      */
+>   
+I'm not sure if a bitmap is the right storage. If I understand the code 
+correctly, it contains two information:
+1) If the bitmap is clear, then all cpus have completed whatever they 
+need to do.
+A counter is more efficient than a bitmap. Especially: It would allow to 
+choose the optimal fan-out, independent from 32/64 bits.
+2) The information if the current cpu must do something to complete the 
+current period.non
+This is a local information, usually (always?) only the current cpu 
+needs to know if it must do something.
+But this doesn't need to be stored in a shared structure, the 
+information could be stored in a per-cpu structure.
 
-[...]
+> +	/*
+> +	 * Extract the list of ready callbacks, disabling to prevent
+> +	 * races with call_rcu() from interrupt handlers.
+> +	 */
+> +	local_irq_save(flags);
+> +	list = rdp->nxtlist;
+> +	rdp->nxtlist = *rdp->nxttail[RCU_DONE_TAIL];
+> +	*rdp->nxttail[RCU_DONE_TAIL] = NULL;
+> +	tail = rdp->nxttail[RCU_DONE_TAIL];
+> +	for (count = RCU_NEXT_SIZE - 1; count >= 0; count--)
+> +		if (rdp->nxttail[count] == rdp->nxttail[RCU_DONE_TAIL])
+> +			rdp->nxttail[count] = &rdp->nxtlist;
+> +	local_irq_restore(flags);
+>   
+Do you have a description of the events between call_rcu() and the rcu 
+callback?
+Is the following description correct?
 
->> I saw some bootmem errata lately, can I cherry-pick anything to fix
->> this?
->
-> This behaviour hasn't changed after the rewrite.
+__call_rcu() queues in RCU_NEXT_TAIL.
+In the middle of the current grace period: rcu_check_quiescent_state() 
+calls rcu_next_callbacks_are_ready().
+Entry now in RCU_NEXT_READY_TAIL
+** 0.5 cycles: wait until all cpus have completed the current cycle.
+rcu_process_gp_end() moves from NEXT_READY_TAIL to WAIT_TAIL
 
-Yep, the error is somewhere else.
-
-Inserted a printk("nr_kernel_pages = %llu\n", nr_kernel_pages); and
-this is the output:
-
-nr_kernel_pages = 13869392367443771392
-
-...it looks very, very big. I think this is initialized via
-free_area_init_*() functions, which come from arch code. Does x86
-experts know if any of this changed recently (i.e. after July 15)?
-
-The whole dmesg and config can be seen here:
-http://userweb.kernel.org/~vegard/bugs/20080824-numa/
+** full grace period
+rcu_process_gp_end() moves from WAIT_TAIL to DONE_TAIL
+rcu_do_batch() finds the entries in DONE_TAIL and calls the callback.
 
 
-Vegard
+> +/*
+> + * Do softirq processing for the current CPU.
+> + */
+>  static void rcu_process_callbacks(struct softirq_action *unused)
+>  {
+>  	/*
+>  	 * Memory references from any prior RCU read-side critical sections
+> -	 * executed by the interrupted code must be see before any RCU
+> +	 * executed by the interrupted code must be seen before any RCU
+>  	 * grace-period manupulations below.
+>  	 */
+>  
+>  	smp_mb(); /* See above block comment. */
+>   
+Why this mb()? There was a grace period between the last read side 
+critical section that might have accessed the pointer.
+The rcu internal code already does spin_lock()+spin_unlock(). Isn't that 
+sufficient?
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+>  
+> -	__rcu_process_callbacks(&rcu_ctrlblk, &__get_cpu_var(rcu_data));
+> -	__rcu_process_callbacks(&rcu_bh_ctrlblk, &__get_cpu_var(rcu_bh_data));
+> +	__rcu_process_callbacks(&rcu_state, &__get_cpu_var(rcu_data));
+> +	__rcu_process_callbacks(&rcu_bh_state, &__get_cpu_var(rcu_bh_data));
+>   
+Have you considered merging RCU_DONE_TAIL for rcu_data and rcu_bh_data?
+
+> +
+> +/**
+> + * call_rcu - Queue an RCU callback for invocation after a grace period.
+> + * @head: structure to be used for queueing the RCU updates.
+> + * @func: actual update function to be invoked after the grace period
+> + *
+> + * The update function will be invoked some time after a full grace
+> + * period elapses, in other words after all currently executing RCU
+> + * read-side critical sections have completed.  RCU read-side critical
+> + * sections are delimited by rcu_read_lock() and rcu_read_unlock(),
+> + * and may be nested.
+> + */
+>   
+The docbook entry is duplicated: They are in include/linux/rcupdate.h 
+and here.
+What about removing one of them?
+I would go one step further:
+Even add call_rcu_sched() into rcupdate.h. Add a Kconfig bool 
+"RCU_NEEDS_SCHED" and automatically define either the extern or the #define.
+
+--
+    Manfred
