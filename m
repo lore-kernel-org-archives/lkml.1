@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbYHXXtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbYHXXwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754840AbYHXXtR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 19:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYHXXtE
+	id S1755170AbYHXXwB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 19:52:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbYHXXvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 19:49:04 -0400
-Received: from ns2.suse.de ([195.135.220.15]:43875 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752832AbYHXXtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 19:49:03 -0400
-From: Neil Brown <neilb@suse.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Date: Mon, 25 Aug 2008 09:48:54 +1000
+	Sun, 24 Aug 2008 19:51:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46557 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753339AbYHXXvv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 19:51:51 -0400
+Date: Sun, 24 Aug 2008 16:51:46 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Jan Harkes <jaharkes@cs.cmu.edu>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] readdir mess
+In-Reply-To: <20080824195908.GQ28946@ZenIV.linux.org.uk>
+Message-ID: <alpine.LFD.1.10.0808241644330.3363@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org> <20080812181057.GR28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121316570.3462@nehalem.linux-foundation.org> <20080812203808.GV28946@ZenIV.linux.org.uk>
+ <alpine.LFD.1.10.0808121351570.3462@nehalem.linux-foundation.org> <20080813000433.GZ28946@ZenIV.linux.org.uk> <20080815050613.GJ4422@cs.cmu.edu> <alpine.LFD.1.10.0808150940110.3324@nehalem.linux-foundation.org> <20080824101014.GN28946@ZenIV.linux.org.uk>
+ <alpine.LFD.1.10.0808241017580.3363@nehalem.linux-foundation.org> <20080824195908.GQ28946@ZenIV.linux.org.uk>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18609.62310.72394.640097@notabene.brown>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC]  Resolve 2 year old issue with different demands
-	on EVIOCGRAB
-In-Reply-To: message from Dmitry Torokhov on Friday August 22
-References: <18596.58273.713075.332009@notabene.brown>
-	<20080815022453.GA9438@anvil.corenet.prv>
-	<18600.51093.613662.435395@notabene.brown>
-	<20080818112609.ZZRA012@mailhub.coreip.homeip.net>
-	<18604.45689.859491.192621@notabene.brown>
-	<20080822160414.ZZRA012@mailhub.coreip.homeip.net>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday August 22, dmitry.torokhov@gmail.com wrote:
-> 
-> Maybe openmoko could just patch mousedev to ignore touchscreens for
-> now, until X is fixed?
 
-Maybe.  And in fact it already is!
-As I delved further in to this issue, I find that not only is there a
-patch in tslib to use EVIOCGRAB, but there is also a patch in the
-kernel to exclude the "ABS_X + ABS_Y + BTN_TOUCH" case from mousedev,
-making the EVIOCGRAB patch pointless.
-And there might even be another patch in the kdrive Xserver to use
-EVIOCGRAB in a different context (which might not actually be being
-used, I'm not sure).  A twisted maze of little passages, all
-twisted. :-)
 
-But I am firmly against carrying patches like this which cannot go
-upstream.  They can lead to subtle incompatibilities and can be hard
-to get rid of.  I much prefer a solution that can work for everyone,
-and I currently think the BTN_TOUCH -> BTN_STYLUS change is that
-solution.  It remains to be seen which I can push into the openmoko
-source tree :-)
+On Sun, 24 Aug 2008, Al Viro wrote:
+>
+> The fact that coda_readdir() will _not_ be returning 0 with your change
+> when called with the arguments old_readdir() gives it?  You'll get ret
+> from filldir, i.e. what you'll normally see will be -EINVAL in case of
+> fillonedir as callback.
 
-Thanks,
-NeilBrown
+Ahh. A light finally goes on. No on the first filldir() callback, but on 
+the second.
+
+Yeah, so this should fix it.
+
+		Linus
+---
+ fs/readdir.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/fs/readdir.c b/fs/readdir.c
+index 4e026e5..4899ba4 100644
+--- a/fs/readdir.c
++++ b/fs/readdir.c
+@@ -115,7 +115,7 @@ asmlinkage long old_readdir(unsigned int fd, struct old_linux_dirent __user * di
+ 	buf.dirent = dirent;
+ 
+ 	error = vfs_readdir(file, fillonedir, &buf);
+-	if (error >= 0)
++	if (buf.result || error >= 0)
+ 		error = buf.result;
+ 
+ 	fput(file);
