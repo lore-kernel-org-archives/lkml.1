@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755078AbYHXPD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbYHXREg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755078AbYHXPD5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 11:03:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbYHXPDt
+	id S1755927AbYHXREg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 13:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbYHXRE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 11:03:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38146 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751063AbYHXPDs (ORCPT
+	Sun, 24 Aug 2008 13:04:28 -0400
+Received: from kuber.nabble.com ([216.139.236.158]:33088 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751666AbYHXRE1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 11:03:48 -0400
-Date: Sun, 24 Aug 2008 11:58:35 -0300 (BRT)
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-X-X-Sender: v4l@areia
-To: Hans Verkuil <hverkuil@xs4all.nl>
-cc: video4linux-list@redhat.com, Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Henne <henne@nachtwindheim.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] V4L: fix retval in vivi driver for more than one device
-In-Reply-To: <200808241634.36653.hverkuil@xs4all.nl>
-Message-ID: <Pine.LNX.4.64.0808241152400.2897@areia>
-References: <48AF1E83.4000102@nachtwindheim.de> <Pine.LNX.4.64.0808241045530.2897@areia>
- <200808241634.36653.hverkuil@xs4all.nl>
+	Sun, 24 Aug 2008 13:04:27 -0400
+Message-ID: <19132349.post@talk.nabble.com>
+Date: Sun, 24 Aug 2008 10:04:27 -0700 (PDT)
+From: Tachwali <ytachwali@signalogic.com>
+To: linux-kernel@vger.kernel.org
+Subject: PCI device problem ... how can I debug it guys?
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Nabble-From: ytachwali@signalogic.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Please note that I am working on creating a much improved V4L
-> infrastructure to take care of such things. It's simply nuts that v4l
-> drivers need to put in all the plumbing just to be able to have
-> multiple instances.
->
-> In particular, all these limitations on the number of instances should
-> disappear (unless you run out of minors).
 
-If you use vivi with a large number of devs (for example, 128), you'll run 
-out of minors, since we currently have only 64 for video grabber. Due to 
-the videodev limits, in fact, we can allocate "only" 32 virtual devices 
-per driver.
+I am experiencing a problem with PCI device on local PCI bus governed by the
+MV64662 chip in our board. The board runs Gentoo with kernel 2.6.9. The PCI
+device is trying to master PCI bus and access the SDRAM behind the MV64662
+chip.
 
-Even with the changes on V4L infrastructure, vivi driver still doesn't do 
-the right thing if you use a large number of devs.
+The general description of the problem is that the driver at initialization
+writes a pattern "0xfeedface" to specific allocated memory locations in
+SDRAM behind the MV64662 chip and upon an interrupt, the interrupt handler
+checks these memory locations to see whether they have beed edited to check
+the validity of the interrupt (not a spurious one). In my case, the driver
+*always* finds the memory is not edited (the driver reads back the same
+pattern 0xfeedface) and quit the interrupt handling. Although, an interrupt
+is actually have been issued by the PCI device.
 
-I'm currently fixing the "vivi" driver and adding some notes on it about 
-the current limits.
+I tried to access the SDRAM using a basic read/write memory software to
+check the PCI device driver activity on the SDRAM. I used the physical
+address used by the driver to access the SDRAM but it seems that the driver
+does not write to that physical address. Some IO mapping is going on. or it
+could be some kernel configs. I am not sure :(
 
-Cheers,
-Mauro.
+Have you guys encountered a similar problem? I would appreciate any help or
+guidance on this matter or suggesting any areas to look at. Thank you all
+-- 
+View this message in context: http://www.nabble.com/PCI-device-problem-...-how-can-I-debug-it-guys--tp19132349p19132349.html
+Sent from the linux-kernel mailing list archive at Nabble.com.
+
