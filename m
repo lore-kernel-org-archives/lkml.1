@@ -1,127 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbYHWS0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYHXIoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754180AbYHWS0U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Aug 2008 14:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYHWS0J
+	id S1754572AbYHXIoR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 04:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbYHXIoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Aug 2008 14:26:09 -0400
-Received: from smtp7.tech.numericable.fr ([82.216.111.43]:36305 "EHLO
-	smtp7.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752058AbYHWS0I convert rfc822-to-8bit (ORCPT
+	Sun, 24 Aug 2008 04:44:03 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:59391 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751526AbYHXIoA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Aug 2008 14:26:08 -0400
-Message-ID: <48B0563B.2040207@numericable.fr>
-Date: Sat, 23 Aug 2008 20:26:03 +0200
-From: Rufus & Azrael <rufus-azrael@numericable.fr>
-User-Agent: Thunderbird/3.0a2 (X11; 2008081609)
+	Sun, 24 Aug 2008 04:44:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=rpfwnoE+efdb0CpTk+rr2hRfZvnF0MO6dheSE3TFyknrxq94+BE8F8erKvHtpemw2J
+         mttMIVF1NzDvsoDc5gMR9i/LUVp3bzM0ClLmGvV4avXEyAh4pbcQPFNt/tl57B4iAvBV
+         veG2eLFBWh9w2kc3nCO0iGojlp30Jbtv3wGsE=
+Message-ID: <19f34abd0808240143y10b143c6s6f2b6753490d652f@mail.gmail.com>
+Date: Sun, 24 Aug 2008 10:43:59 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: 9a2d43b: __alloc_bootmem_core(): zero-sized request
+Cc: "Johannes Weiner" <hannes@saeurebad.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440808240122r64ac91beu68e7782d5056bbb3@mail.gmail.com>
 MIME-Version: 1.0
-To: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Yinghai Lu <yhlu.kenrel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user
- with the same regression
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0808221224s4674e5aaq34bd0a874dfba699@mail.gmail.com>
+	 <87myj4yzll.fsf@skyscraper.fehenstaub.lan>
+	 <19f34abd0808240058h3d286151x18cba0939f175edd@mail.gmail.com>
+	 <86802c440808240122r64ac91beu68e7782d5056bbb3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Aug 24, 2008 at 10:22 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>> nr_kernel_pages = 13869392367443771392
+>>
+>> ...it looks very, very big. I think this is initialized via
+>> free_area_init_*() functions, which come from arch code. Does x86
+>> experts know if any of this changed recently (i.e. after July 15)?
+>>
+>> The whole dmesg and config can be seen here:
+>> http://userweb.kernel.org/~vegard/bugs/20080824-numa/
+>>
 >
-> On Sat, Aug 23, 2008 at 4:58 AM, David Witbrodt<dawitbro@sbcglobal.net>  wrote:
-> >
-> >
-> >>  please send out after booting with hpet=disable
-> >>  lspci -tv
-> >>  lspci -vvxxx
-> >
-> >  Info attached:
+> seems something wrong about apic probe...
 >
-> 00:14.0 SMBus: ATI Technologies Inc SBx00 SMBus Controller (rev 13)
-> 	Subsystem: Elitegroup Computer Systems Device 2621
-> 	Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B- DisINTx+
-> 	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium>TAbort-
-> <TAbort-<MAbort->SERR-<PERR- INTx-
-> 	Region 0: I/O ports at fa00 [size=16]
-> 	Region 1: Memory at 80000000 (32-bit, non-prefetchable) [size=1K]
-> 	Capabilities: [b0] HyperTransport: MSI Mapping Enable- Fixed+
-> 	Kernel driver in use: piix4_smbus
-> 00: 02 10 85 43 03 04 30 02 13 00 05 0c 00 00 80 00
-> 10: 01 fa 00 00 00 00 00 80 00 00 00 00 00 00 00 00
-> 20: 00 00 00 00 00 00 00 00 00 00 00 00 19 10 21 26
-> 30: 00 00 00 00 b0 00 00 00 00 00 00 00 00 00 00 00
-> 40: d4 3b 00 05 00 00 00 00 0f ff 00 00 00 00 00 00
-> 50: f0 01 f0 0e f0 0f f0 07 11 0b f0 0f 00 00 00 00
-> 60: 01 00 24 00 bf fd de 8f 3f 90 00 00 20 00 00 00
-> 70: 00 01 00 00 08 00 c0 fe ff 6e 00 00 00 00 f0 0f
-> 80: f0 0a f0 0f 00 00 00 00 00 00 00 00 8c 00 00 80
-> 90: 01 fa 00 00 fa de ff 00 00 00 00 00 00 00 00 00
-> a0: 00 00 ff ff ff ff f0 08 ff fd 12 02 16 7b 20 00
-> b0: 08 00 02 a8 00 00 00 00 00 00 00 00 f0 0f 08 1a
-> c0: ff ff ff ff 00 00 00 00 00 00 00 00 00 00 00 00
-> d0: 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00
-> e0: 20 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> f0: d8 0c 00 00 00 00 44 00 00 00 00 00 aa 00 10 01
-> it seems kernel update BAR1 from 0xfed00000 to 0x80000000 after it can
-> not give 0xfed00000 to that device.
-> please try attached patch, and send out lspci -vvxxxx again.
-> YH
-> [PATCH] x86: protect hpet in BAR for one ATI chipset
+> MPTABLE: OEM ID: Intel    Product ID: Lakeport     Warning!  May not
+> be a NUMA-Q system!
+
+It is not a NUMA-Q system, it's a normal desktop-class Pentium 4
+machine with HT. But still, this kernel is expected to work, isn't it?
+(At least expected to tell me "cannot boot" instead of giving
+unexplainable errors.)
+
+> MPTABLE: Product ID: Lakeport     <6>MPTABLE: APIC at: 0xFEE00000
+> Processor #0 15:6 APIC version 20 (quad 0, apic 1)
+> Processor #0 (Bootup-CPU)
+> Bus #0 is PCI    (node 0)
+> Bus #1 is PCI    (node 0)
+> Bus #2 is PCI    (node 0)
+> Bus #3 is ISA    (node 0)
+> I/O APIC #2 Version 32 at 0xFEC00000.
+> Enabling APIC mode:  NUMA-Q.  Using 1 I/O APICs
 >
-> so avoid kernel don't allocate nre resource for it because it can not allocate the old
-> address from BIOS.
 >
-> the same way like some IO APIC address in BAR handling
->
-> Signed-off-by: Yinghai Lu<yhlu.kenrel@gmail.com>
->
-> ---
->   drivers/pci/quirks.c |   16 ++++++++++++++++
->   1 file changed, 16 insertions(+)
-> Index: linux-2.6/drivers/pci/quirks.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/quirks.c
-> +++ linux-2.6/drivers/pci/quirks.c
-> @@ -1918,6 +1918,22 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_B
->   			 PCI_DEVICE_ID_NX2_5709S,
->   			 quirk_brcm_570x_limit_vpd);
->
-> +static void __init quirk_hpet_in_bar(struct pci_dev *pdev)
-> +{
-> +	int i;
-> +	unsigned int base, size;
-> +
-> +	/* the BAR1 is the location of the HPET...we must
-> +	 * not touch this, so forcibly insert it into the resource tree */
-> +	base = pci_resource_start(pdev, 1);
-> +	size = pci_resource_len(pdev, 1);
-> +	if (base&&  size) {
-> +		insert_resource(&iomem_resource,&pdev->resource[1]);
-> +		dev_info(&dev->dev, "HPET at %04x-%04x\n", name, base, base + size - 1);
-> +	}
-> +}
-> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI, 0x3485, quirk_hpet_in_bar);
-> +
->   #ifdef CONFIG_PCI_MSI
->   /* Some chipsets do not support MSI. We cannot easily rely on setting
->    * PCI_BUS_FLAGS_NO_MSI in its bus flags because there are actually
-Hi Yinghai,
+> please check with tip/master to see if it is fixed already...
+
+Yes, the v2.6.27-rc4 boots fine. I was wondering if you knew that this
+problem had occurred in the past (and if so, which commits I can
+cherry-pick to fix it). But I guess there is not much to do. It is
+also hard to test this same config with newer kernels, because
+something in the Kconfig changed in an incompatible way (e.g. NUMAQ
+setting changes when I change kernel versions).
+
+Unless anybody can think of something, I think I will leave this
+problem alone. It's an older version after all. Thanks for looking at
+it! :-)
 
 
-Your patch seems to be broken, see :
+Vegard
 
->   CC      drivers/pci/quirks.o
-> drivers/pci/quirks.c: In function ‘quirk_hpet_in_bar’:
-> drivers/pci/quirks.c:1804: erreur: ‘dev’ undeclared (first use in this 
-> function)
-> drivers/pci/quirks.c:1804: erreur: (Each undeclared identifier is 
-> reported only once
-> drivers/pci/quirks.c:1804: erreur: for each function it appears in.)
-> drivers/pci/quirks.c:1804: erreur: ‘name’ undeclared (first use in 
-> this function)
-> drivers/pci/quirks.c:1804: attention : trop d'arguments pour le format
-> drivers/pci/quirks.c:1795: attention : unused variable ‘i’
-> make[2]: *** [drivers/pci/quirks.o] Erreur 1
-Regards.
-
-
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
