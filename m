@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756627AbYHXTUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbYHXLs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756627AbYHXTUS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 15:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbYHXTUE
+	id S1755269AbYHXLs6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 07:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYHXLst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 15:20:04 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:53750 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753044AbYHXTUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 15:20:03 -0400
-Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Ian Campbell <ijc@hellion.org.uk>
-Cc: John Ronciak <john.ronciak@gmail.com>, Grant Coady <gcoady.lk@gmail.com>,
-       linux-kernel@vger.kernel.org, neilb@suse.de, bfields@fieldses.org,
-       linux-nfs@vger.kernel.org, Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       e1000-devel@lists.sourceforge.net
-In-Reply-To: <1219605422.14389.2.camel@localhost>
-References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com>
-	 <1219087258.7192.19.camel@localhost>
-	 <1219400624.18774.67.camel@zakaz.uk.xensource.com>
-	 <1219428489.6919.21.camel@localhost>
-	 <1219428818.27921.43.camel@localhost.localdomain>
-	 <56a8daef0808221233h68853587n6015ca7d809b17e1@mail.gmail.com>
-	 <1219435207.27921.51.camel@localhost.localdomain>
-	 <1219440202.9097.14.camel@localhost>
-	 <1219441041.27921.57.camel@localhost.localdomain>
-	 <1219442213.9097.25.camel@localhost>
-	 <1219603981.27921.145.camel@localhost.localdomain>
-	 <1219605422.14389.2.camel@localhost>
-Content-Type: text/plain
-Date: Sun, 24 Aug 2008 15:19:56 -0400
-Message-Id: <1219605596.14389.5.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sun, 24 Aug 2008 07:48:49 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:22307 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751850AbYHXLss (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 07:48:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XQLnOL9GWETAuh9SWk8U8acAQ1ErJZPIwuaPC37Jenh55W7VFnAlS1rXvUtqE2TptM
+         NTRtK2r34jHVqFWLS2r/CsJAs90dNWI8+p0vX864bXtr1lbYjN5t/Lhx//OQhFGHxdXt
+         XJ19hMNr70lvefK+z18clqHWB1oWgiFKIbLQ8=
+Message-ID: <19f34abd0808240448w5facaee2gec77662c14b9364f@mail.gmail.com>
+Date: Sun, 24 Aug 2008 13:48:47 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Mikael Pettersson" <mikpe@it.uu.se>
+Subject: Re: [BUG] get_rtc_time() triggers NMI watchdog in hpet_rtc_interrupt()
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de
+In-Reply-To: <18609.14516.873317.52292@harpo.it.uu.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 98C891B48E9F232718E93E48AA1DCF760DF793A0
-X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 2 total 23 max/h 2 blacklist 0 greylist 0 ratelimit 0
+Content-Disposition: inline
+References: <200808230948.m7N9mUc1016360@harpo.it.uu.se>
+	 <19f34abd0808240214o22748804s45e8487d62b34cb8@mail.gmail.com>
+	 <18609.14516.873317.52292@harpo.it.uu.se>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-08-24 at 15:17 -0400, Trond Myklebust wrote:
-> >From the tcpdump, it looks as if the NFS server is failing to close the
-> socket, when the client closes its side. You therefore end up getting
-> stuck in the FIN_WAIT2 state (as netstat clearly shows above).
+On Sun, Aug 24, 2008 at 12:32 PM, Mikael Pettersson <mikpe@it.uu.se> wrote:
+>  > I also just got this during shutdown:
+>  >
+>  > Syncing hardware clock to system time BUG: NMI Watchdog detected
+>  > LOCKUP on CPU0, ip c011d922, registers:
+>  > Pid: 4181, comm: hwclock Not tainted (2.6.27-rc3-00464-g1fca254-dirty #42)
+[...]
 
-BTW: the RPC client is closing the socket because it detected no NFS
-activity for 5 minutes. Did you expect any NFS activity during this
-time?
+> See my reply in the thread following Ingo's patch
+> <http://lkml.org/lkml/2008/8/23/158>. I've only seen the lockup
+> while hwclock was setting or flushing the system time, so I suspect
+> broken interaction between the hpet rtc emulation and the rtc
+> user-space interface.
 
-Trond
+Oops, I picked the wrong thread :-)
 
+Anyway, I guess it wouldn't be too hard to make a test cast by running
+"hwclock" (or the corresponding initscript) in a tight loop? (Sorry, I
+am not able to test this myself at the moment). That would make it
+easier to test the patch too, I guess. Maybe something like:
+
+    $ while true; do /etc/init.d/ntpdate up; /etc/init.d/ntpdate down; done
+
+(At least "ntpdate" is the one that runs hwclock for me on F9.)
+
+I will try this later unless you beat me to it :-)
+
+Thanks,
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
