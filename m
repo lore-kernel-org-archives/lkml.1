@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013AbYHYIA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbYHYH61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755013AbYHYIA7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 04:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbYHYIAv
+	id S1755599AbYHYH61 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 03:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbYHYH6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 04:00:51 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:30987 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbYHYIAu (ORCPT
+	Mon, 25 Aug 2008 03:58:18 -0400
+Received: from mx.bridgeco.net ([213.173.191.47]:2859 "EHLO mx.bridgeco.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753450AbYHYH6R convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 04:00:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=jw71KleVTgWp98xHeSR3/xvTRKKy+Ciy8Lx0WrzhL+Byqbez1fk+F2Zt7hSceK4wo4
-         2TLFbgKFKJDBVSJPVDmZiMgaGP60CTKZDzDH/3iaJ3PV9rCooi7v+w3QZopMHHQva8rf
-         VT3UNu/lKvvgTwkdiNiaPqw/HmdyxQ0G1iM+o=
-Message-ID: <86802c440808250100g15b056e0l359e83c6a8ee488b@mail.gmail.com>
-Date: Mon, 25 Aug 2008 01:00:50 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
-Cc: "David Witbrodt" <dawitbro@sbcglobal.net>,
-       "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <20080825073125.GA27950@elte.hu>
+	Mon, 25 Aug 2008 03:58:17 -0400
+From: Wappler Marcel <Marcel.Wappler@bridgeco.net>
+To: Arjan van de Ven <arjan@infradead.org>, Ingo Oeser <ioe-lkml@rameria.de>
+CC: Alex Riesen <raa.lkml@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Mon, 25 Aug 2008 09:58:12 +0200
+Subject: RE: Behaviour of the VM on a embedded linux
+Thread-Topic: Behaviour of the VM on a embedded linux
+Thread-Index: AckGROFeVB6OfXKjSQ+XNqIPVJ/5SgAP/nMg
+Message-ID: <462ADBE7F1A69C438B7E2ED56007E6F5ABF7DF982F@exch10.BC-Int.NET>
+References: <83116F0A4FF67A4F97BA0B6E408C48E30289D8F0@zuerich.BC-Int.NET>
+	<81b0412b0808220559w502edf03y7f318d0f3673884@mail.gmail.com>
+	<83116F0A4FF67A4F97BA0B6E408C48E30289D979@zuerich.BC-Int.NET>
+	<200808250135.50497.ioe-lkml@rameria.de>
+ <20080824165522.16216011@infradead.org>
+In-Reply-To: <20080824165522.16216011@infradead.org>
+Accept-Language: en-US, de-CH
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US, de-CH
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <914225.91320.qm@web82104.mail.mud.yahoo.com>
-	 <86802c440808242141j716b5875s709dc56c1163a7d5@mail.gmail.com>
-	 <20080825073125.GA27950@elte.hu>
+X-OriginalArrivalTime: 25 Aug 2008 07:58:20.0951 (UTC) FILETIME=[57771270:01C90688]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 25, 2008 at 12:31 AM, Ingo Molnar <mingo@elte.hu> wrote:
+Arjan van de Ven wrote:
+> On Mon, 25 Aug 2008 01:35:49 +0200
+> Ingo Oeser <ioe-lkml@rameria.de> wrote:
 >
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> this one should work. please apply this one only.
+>> Is the application linked statically? If not, code pages might be
+>> mapped privately and have been written to due to relocation.
 >>
->> YH
->>
->> [PATCH] x86: check hpet with BAR v2
+>> Link everything statically to avoid this.
 >
-> great. I've cleaned it up a bit (see the final commit below) and queued
-> it up in tip/x86/urgent for some testing. But there are a few open
-> questions, and an Ack/feedback from Jesse/Linus would be nice as well:
->
-> - the forced insertion and the embedded knowledge about iomem_resource
->  and ioport_resource looks ugly to me.
->
-> - we should also extend this to other platform resource types that we
->  know about: ioapic address(es) might be a prime candidate. (local
->  APICs are CPU entities and should never show up as PCI devices) The
->  mmconfig range is already properly accounted for by the PCI code
->  itself, right?
+> ... static linking has severe downsides though. You can also just use
+> prelink to avoid relocations in practice.
 
-please check v3
+Hm. I did a
+cat /proc/`pidof thebigbinary`/smaps | grep Dirty
+and got only about 3 MByte of dirty data. So it looks like this is not the (whole) problem (just a part). The Rss part of the /proc/pid/smaps report counts to about 14 MBytes. What is this saying exactly? I thought, those are the pages which aren't stealed by the VM from the app. Am I right?
 
->
-> - plus a more highlevel approach would be nice as well i think - making
->  sure that the hpet driver runs before any of the PCI code, and
->  inserting a special "sticky" resource there which would keep any
->  potential followup generic PCI resource that overlaps this resource
->  untouched. (with a proper kernel warning emitted as well - such
->  situations are likely BIOS bugs.)
-
-yes, can remove that late_initcall tricky code to insert resource for
-lapic and ioapic, and mmconfig etc.
-
-YH
+Marcel
