@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbYHYRzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbYHYR5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756363AbYHYRzx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 13:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbYHYRzp
+	id S1756105AbYHYR5k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 13:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbYHYR5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 13:55:45 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59323 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754347AbYHYRzp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 13:55:45 -0400
-Message-ID: <48B2F21F.7080001@sgi.com>
-Date: Mon, 25 Aug 2008 10:55:43 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 25 Aug 2008 13:57:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51255 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753551AbYHYR5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 13:57:30 -0400
+Date: Mon, 25 Aug 2008 19:57:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dave Jones <davej@codemonkey.org.uk>,
+       Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org,
+       Alok Kataria <akataria@vmware.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [BUG] cpufreq: constant cpu_khz
+Message-ID: <20080825175712.GA10848@elte.hu>
+References: <1219646032.20732.10.camel@twins> <1219664106.8515.50.camel@twins> <20080825123926.GC8663@elte.hu> <20080825175547.GA26131@codemonkey.org.uk>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 3/6] x86_64 UV: Use blinking LED for heartbeat display
-References: <20080808005639.505189000@polaris-admin.engr.sgi.com> <20080808005652.543469000@polaris-admin.engr.sgi.com> <20080811160235.GC4524@elte.hu>
-In-Reply-To: <20080811160235.GC4524@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080825175547.GA26131@codemonkey.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->> +#ifdef CONFIG_CLOCKSOURCE_WATCHDOG
->> +static void uv_display_heartbeat(void)
->> +{
->> +	int cpu;
->> +
->> +	uv_hub_info->led_heartbeat_count = nr_cpu_ids;
->> +
->> +	for_each_online_cpu(cpu) {
->> +		struct uv_hub_info_s *hub = uv_cpu_hub_info(cpu);
->> +
->> +		if (hub->led_heartbeat_count > 0) {
->> +			uv_set_led_bits_on(cpu, LED_CPU_BLINK,
->> +						LED_CPU_HEARTBEAT);
->> +			--hub->led_heartbeat_count;
->> +		}
-> 
-> this too is a bad idea. Imagine 16K cores and assume that each such 
-> iteration takes a few usecs (we write cross CPU) and you've got a 
-> GHz-ish CPU. That can easily be _milliseconds_ of delay (or more) - and 
-> in a function (the clocksource watchdog) that is all about precise 
-> timings.
-> 
-> It is also very non-preemptable.
-> 
-> Why not have a separate per cpu kthread for this that does this in a 
-> preemptable manner?
-> 
-> Also, why not let each CPU's heartbeat be set in a hierarchy instead of 
-> by _all_ CPUs. That way you get a nice constant-ish overhead instead of 
-> the current crazy quadratic(nr_cpus) behavior. I.e. let each CPU be 
-> monitored by its neighbor (cpu_id + 1), by it's second-order neighbor 
-> (cpu_id + 2), third-order neighbor (cpu_id + 4), etc.
-> 
-> That still gives pretty good coverage in practice while avoiding the 
-> quadratic nature.
-> 
-> 	Ingo
 
-Yes, I agree 100%.  There was a trade off with various approaches but I
-was hoping for some feedback on alternate approaches (and thanks for that!)
+* Dave Jones <davej@codemonkey.org.uk> wrote:
 
-Mike
+>  > hm, that too is due to the tsc.c unification - Alok Cc:-ed. Applied 
+>  > your fix to x86/urgent.
+> 
+> ACKed-by: Dave Jones <davej@redhat.com>
+> 
+> Good catch Peter.  I'm puzzled how that bug was latent on 64bit for so 
+> long with no-one realising though.
+
+i think it's the combination of these two factors:
+
+ - bootup frequently is typically full-speed, so we calibrate things 
+   right
+
+ - cpufreq events are relatively slow-scale - and when they trigger the 
+   system is definitely not under load. So how precisely the scheduler 
+   functions isnt all that important in such scenarios - there's tons of
+   CPU power available.
+
+but it's indeed nice to have this fixed, and i just pushed the fix to 
+Linus.
+
+	Ingo
