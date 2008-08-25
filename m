@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbYHYUxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbYHYUyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbYHYUxR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 16:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbYHYUxB
+	id S1756229AbYHYUyQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 16:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbYHYUyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 16:53:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41105 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752961AbYHYUxA (ORCPT
+	Mon, 25 Aug 2008 16:54:00 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:46127 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753152AbYHYUyA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 16:53:00 -0400
-Date: Mon, 25 Aug 2008 13:52:23 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
- bisected
-In-Reply-To: <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.q9H.6aGsIB@albercik> <alpine.LFD.1.10.0808231257310.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808231313170.3363@nehalem.linux-foundation.org> <48B29F7B.6080405@hp.com> <48B2A421.7080705@hp.com>
- <alpine.LFD.1.10.0808251019380.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251106270.3363@nehalem.linux-foundation.org> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 25 Aug 2008 16:54:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Kl2cNtIKxTY6bJJbDG4FZ60V94WNlJD4p+wGMODwCeQP4pGnXd4Oulo+reYJm93wme
+         nQor5LzBQ0/EGl94keurAqJIu1BuZ9Sm4b+01fmJdQD8Kdd2DCr3wyxKA1+1GgzLGQD9
+         uVhOCrHqu+4BFTS4WAZhMx7aLjwbQKVhFqPjU=
+Date: Mon, 25 Aug 2008 22:53:36 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Jochen Voss <jochen.voss@googlemail.com>
+Cc: jassi_singh_brar@yahoo.com, linux-kernel@vger.kernel.org
+Subject: Re: An idea .... with code
+Message-ID: <20080825205221.GA5635@joi>
+References: <801995.65435.qm@web33201.mail.mud.yahoo.com> <ef1cd66f0808250522s5b661e21k772ce208afa33489@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ef1cd66f0808250522s5b661e21k772ce208afa33489@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 25 Aug 2008, Linus Torvalds wrote:
+On Mon, Aug 25, 2008 at 01:22:16PM +0100, =?ISO-8859-1?Q?Jochen_Vo=DF_ wrote:
+> >
+> > static LIST_HEAD(vbd_head);
+> >
+> > static struct device vir_dev = {
+> >        .bus_id = "virblk",
+> > };
+> >
+> > static int data_xfer(struct vir_blk_dev *vbd, struct page *page, unsigned int len,
+> >                                unsigned int off, int wr, sector_t sector)
 > 
-> But I'll look at your vmlinux, see what stands out.
+> strange indentation
+> 
+> > {
+> >        ssize_t ret;
+> >        loff_t pos = sector * (1<<(vbd->sect_size_bits));
+> >        void *buf = kmap(page) + off;
+> >
+> >        if(sector + (len >> vbd->sect_size_bits) > get_capacity(vbd->gd)){
+> 
+> Kernel coding style seems to prefer spaces after "if" and before "{"
+> (more instances below).
 
-Oops. I already see the problem.
+It's better to check this patch with scripts/checkpatch.pl - it will tell you
+about all style issues.
 
-Your .config has soem _huge_ CPU count, doesn't it?
+> >        init_MUTEX(&vbd->sem);
 
-checkstack.pl shows these things as the top problems:
+You seem to use this semaphore as a mutex - why don't you convert it to mutex then?
+Semaphores should be used only when they are absolutely necessary.
 
-	0xffffffff80266234 smp_call_function_mask [vmlinux]:    2736
-	0xffffffff80234747 __build_sched_domains [vmlinux]:     2232
-	0xffffffff8023523f __build_sched_domains [vmlinux]:     2232
-	0xffffffff8021e884 setup_IO_APIC_irq [vmlinux]:         1616
-	0xffffffff8021ee24 arch_setup_ht_irq [vmlinux]:         1600
-	0xffffffff8021f144 arch_setup_msi_irq [vmlinux]:        1600
-	0xffffffff8021e3b0 __assign_irq_vector [vmlinux]:       1592
-	0xffffffff8021e626 __assign_irq_vector [vmlinux]:       1592
-	0xffffffff8023257e move_task_off_dead_cpu [vmlinux]:    1592
-	0xffffffff802326e8 move_task_off_dead_cpu [vmlinux]:    1592
-	0xffffffff8025dbc5 tick_handle_oneshot_broadcast [vmlinux]:1544
-	0xffffffff8025dcb4 tick_handle_oneshot_broadcast [vmlinux]:1544
-	0xffffffff803f3dc4 store_scaling_governor [vmlinux]:    1376
-	0xffffffff80279ef4 cpuset_write_resmask [vmlinux]:      1360
-	0xffffffff803f465d cpufreq_add_dev [vmlinux]:           1352
-	0xffffffff803f495b cpufreq_add_dev [vmlinux]:           1352
-	0xffffffff803f3fc4 store_scaling_max_freq [vmlinux]:    1328
-	0xffffffff803f4064 store_scaling_min_freq [vmlinux]:    1328
-	0xffffffff803f44c4 cpufreq_update_policy [vmlinux]:     1328
-	..
-
-and sys_init_module is actually way way down the list. I bet the only 
-reason it showed up at all was because dynamically it was such a deep 
-callchain, and part of that callchain probably called some of those really 
-nasty things.
-
-Anyway, the reason smp_call_function_mask and friends have such _huge_ 
-stack usages for you is that they contain a 'cpumask_t' on the stack.
-
-For example, for me, usign a sane NR_CPU, the size of the stack frame for 
-smp_call_function_mask is under 200 bytes.  For you, it's 2736 bytes.
-
-How about you make CONFIG_NR_CPU's something _sane_? Like 16? Or do you 
-really have four thousand CPU's in that system?
-
-Oh, I guess you have the MAXSMP config enabled? I really think that was a 
-bit too aggressive.
-
-		Linus
+Marcin
