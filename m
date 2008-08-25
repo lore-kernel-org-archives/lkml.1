@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757342AbYHYVS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757125AbYHYVUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757342AbYHYVS6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 17:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754428AbYHYVSm
+	id S1757125AbYHYVUV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 17:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbYHYVUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 17:18:42 -0400
-Received: from mail-out.m-online.net ([212.18.0.9]:51683 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754235AbYHYVSl (ORCPT
+	Mon, 25 Aug 2008 17:20:10 -0400
+Received: from qb-out-0506.google.com ([72.14.204.231]:38791 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753486AbYHYVUJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 17:18:41 -0400
-X-Auth-Info: r/ArKe+mewJxP9jz1UUulynyKOlgavWgwVaQWngxagQ=
-X-Auth-Info: r/ArKe+mewJxP9jz1UUulynyKOlgavWgwVaQWngxagQ=
-X-Auth-Info: r/ArKe+mewJxP9jz1UUulynyKOlgavWgwVaQWngxagQ=
-X-Auth-Info: r/ArKe+mewJxP9jz1UUulynyKOlgavWgwVaQWngxagQ=
-X-Auth-Info: r/ArKe+mewJxP9jz1UUulynyKOlgavWgwVaQWngxagQ=
-To: Remy Bohmer <linux@bohmer.net>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       u-boot@lists.denx.de, sam@ravnborg.org, Stefan Roese <sr@denx.de>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [U-Boot] [patch 2/2] Add support for building the new U-boot uImage format (FIT-format)
-Mime-version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-In-reply-to: <48b30a00.1701d00a.4ee8.ffffa5f7@mx.google.com>
-References: <20080825191427.728251800@bohmer.net>> <48b30a00.1701d00a.4ee8.ffffa5f7@mx.google.com>
-Comments: In-reply-to Remy Bohmer <linux@bohmer.net>
-   message dated "Mon, 25 Aug 2008 21:14:29 +0200."
-Date: Mon, 25 Aug 2008 23:18:39 +0200
-Message-Id: <20080825211839.CF83524899@gemini.denx.de>
+	Mon, 25 Aug 2008 17:20:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Q+IW4EbGthAxewNGNUHaWozvh0Prl656DrJZmLpPTF/0LvQgXjJMTuwIlfAzke5Gfy
+         l0X1D8edticMe5n3v6sFuteG76cZapRq6Frml7gDOQ6lAl+joWNDJri2S3+Bz5yFWeHp
+         RhXP6JUBvFTLnUx1bD/CgHNanzKz3nXC0UfmI=
+Message-ID: <12c511ca0808251420r10957a7v423644003377a6ec@mail.gmail.com>
+Date: Mon, 25 Aug 2008 14:20:07 -0700
+From: "Tony Luck" <tony.luck@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: [GIT PULL] ALSA fixes for 2.6.27-rc4
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <s5h1w0ddo58.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <s5h1w0ddo58.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Remy,
+On Mon, Aug 25, 2008 at 10:01 AM, Takashi Iwai <tiwai@suse.de> wrote:
+> --- a/sound/pci/ca0106/ca0106_main.c
+> +++ b/sound/pci/ca0106/ca0106_main.c
+> @@ -249,11 +249,12 @@ static struct snd_ca0106_details ca0106_chip_details[] = {
+>           .name   = "MSI K8N Diamond MB [SB0438]",
+>           .gpio_type = 2,
+>           .i2c_adc = 1 } ,
+> -        /* Another MSI K8N Diamond MB, which has apprently a different SSID */
+> +        /* MSI K8N Diamond PLUS MB */
+>         { .serial = 0x10091102,
+>           .name   = "MSI K8N Diamond MB",
+>           .gpio_type = 2,
+> -          .i2c_adc = 1 } ,
+> +          .i2c_adc = 1,
+> +          .spi_dac = 2 }
 
-In message <48b30a00.1701d00a.4ee8.ffffa5f7@mx.google.com> you wrote:
-> Allow building of the newer FIT-image format for U-boot, while keeping
-> it possible to build the legacy format, for people who do not want to (or can) 
-> upgrade to U-boot 1.3.3 or newer.
-> 
-> If an older mkimage is detected, or if there is no dtc (Device Tree Compiler)
+Missing "," on this line is causing build failure here.
 
-Why should there ever be no dtc? It is part of the Linux kernel source
-tree, see arch/powerpc/boot/dtc-src
-
-> then automagically the legacy format is created.
-> There is also a possibility to force the legacy format by means of a Kconfig
-> option.
-
-As before, I think this should not be implemented as a  configuration
-option; it should be selectable as separate make targets without need
-to reconfigure / rebuild the kernel.
-
-> Note: This patch only adapts this for ARM, AVR32, Blackfin and sh architectures.
->       It does not adapt the PowerPC tree, because PowerPC does not use the
->       script at scripts/mkuboot.sh
-
-Hm... Power support would be especially interesting, of course :-)
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Without facts, the decision cannot be made logically. You  must  rely
-on your human intuition.
-	-- Spock, "Assignment: Earth", stardate unknown
+-Tony
