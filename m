@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbYHYARw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbYHYA3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbYHYARw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 20:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbYHYARo
+	id S1754008AbYHYA3S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 20:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbYHYA3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 20:17:44 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55613 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751727AbYHYARn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 20:17:43 -0400
-Message-ID: <48B1F9F9.6090407@zytor.com>
-Date: Sun, 24 Aug 2008 17:16:57 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Alok Kataria <akataria@vmware.com>, Sean Young <sean@mess.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <alpine.LFD.1.10.0808241141470.3363@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0808241141470.3363@nehalem.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 24 Aug 2008 20:29:00 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:58430 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751805AbYHYA27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 20:28:59 -0400
+Date: Mon, 25 Aug 2008 10:28:48 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Johannes Berg <johannes@sipsolutions.net>, Takashi Iwai <tiwai@suse.de>,
+       linux-next@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       video4linux-list@redhat.com
+Subject: Re: CONFIG_KMOD breakage in next kernel
+Message-Id: <20080825102848.9b28da36.sfr@canb.auug.org.au>
+In-Reply-To: <200808251013.58975.rusty@rustcorp.com.au>
+References: <s5h3akzwtki.wl%tiwai@suse.de>
+	<1219256165.3502.10.camel@johannes.berg>
+	<200808251013.58975.rusty@rustcorp.com.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__25_Aug_2008_10_28_48_+1000_rMIZ0B7B=RBV.Dz/"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
->> 
-> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-> index 46af716..9bed5ca 100644
-> --- a/arch/x86/kernel/tsc.c
-> +++ b/arch/x86/kernel/tsc.c
-> @@ -325,6 +325,10 @@ static struct notifier_block time_cpufreq_notifier_block = {
->  
->  static int __init cpufreq_tsc(void)
->  {
-> +	if (!cpu_has_tsc)
-> +		return 0;
-> +	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
-> +		return 0;
->  	cpufreq_register_notifier(&time_cpufreq_notifier_block,
->  				CPUFREQ_TRANSITION_NOTIFIER);
->  	return 0;
+--Signature=_Mon__25_Aug_2008_10_28_48_+1000_rMIZ0B7B=RBV.Dz/
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I added this patch to x86/urgent.
+Hi Rusty,
 
-	-hpa
+On Mon, 25 Aug 2008 10:13:58 +1000 Rusty Russell <rusty@rustcorp.com.au> wr=
+ote:
+>
+> For today, I'll pull out the CONFIG_KMOD removal.
+
+Does that mean you want me to revert "remove CONFIG_KMOD" from your tree
+for today's linux-next build?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__25_Aug_2008_10_28_48_+1000_rMIZ0B7B=RBV.Dz/
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkix/MAACgkQjjKRsyhoI8yA5ACfVZAfQ2Zdbqg5kcNPnLfSGw9X
+9wkAoJZz9vHpyyGfUWiyRo3xCD54XvnW
+=mRl0
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__25_Aug_2008_10_28_48_+1000_rMIZ0B7B=RBV.Dz/--
