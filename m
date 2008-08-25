@@ -1,57 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYHYSl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbYHYSok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbYHYSl2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 14:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYHYSlU
+	id S1756148AbYHYSok (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 14:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbYHYSod
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 14:41:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58369 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753957AbYHYSlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 14:41:19 -0400
-Date: Mon, 25 Aug 2008 14:38:02 -0400
-From: Dave Jones <davej@redhat.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: "H. Peter Anvin" <hpa@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: latest -git: WARNING: at arch/x86/kernel/ipi.c:123
-	send_IPI_mask_bitmask+0xc3/0xe0()
-Message-ID: <20080825183801.GA11894@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Vegard Nossum <vegard.nossum@gmail.com>,
-	"H. Peter Anvin" <hpa@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-	the arch/x86 maintainers <x86@kernel.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Rusty Russell <rusty@rustcorp.com.au>
-References: <20080820013930.GN9807@one.firstfloor.org> <19f34abd0808192326jc10e758m99e76bbd5714c5b8@mail.gmail.com> <20080822003659.GA7581@redhat.com> <48AE20B8.9000204@kernel.org> <19f34abd0808240220v77bcdd5di32f8f865b18fc49f@mail.gmail.com> <48B19799.6090703@kernel.org> <19f34abd0808241022j1ab6f3e6qd72b9acba5df4892@mail.gmail.com> <19f34abd0808241045r37eb8661h3cc688b6f0513777@mail.gmail.com> <20080824181304.GA5963@redhat.com> <19f34abd0808251131t511d2d8g925b3dae94620e9a@mail.gmail.com>
+	Mon, 25 Aug 2008 14:44:33 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60979 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753449AbYHYSoc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 14:44:32 -0400
+Message-ID: <48B2FD8F.4000808@sgi.com>
+Date: Mon, 25 Aug 2008 11:44:31 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0808251131t511d2d8g925b3dae94620e9a@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, kosaki.motohiro@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       cl@linux-foundation.org, tokunaga.keiich@jp.fujitsu.com
+Subject: Re: [RFC][PATCH 2/2] quicklist shouldn't be proportional to # of
+ CPUs
+References: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>	 <20080820200709.12F0.KOSAKI.MOTOHIRO@jp.fujitsu.com>	 <20080820234615.258a9c04.akpm@linux-foundation.org>	 <20080821.001322.236658980.davem@davemloft.net>	 <20080821002757.b7c807ad.akpm@linux-foundation.org> <1219311154.8651.96.camel@twins>
+In-Reply-To: <1219311154.8651.96.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 25, 2008 at 08:31:04PM +0200, Vegard Nossum wrote:
- 
- > Fedora 7 init, which would prompt for the starting of cpuspeed
- > initscript. Turning off echo for the tty was what triggered the
- > slowness; removing cpuspeed from the runlevel entirely solved the
- > problem.
- > 
- > Don't know why cpuspeed would select a governor which runs the CPU at
- > a constant 300 MHz, though.
+Peter Zijlstra wrote:
+> On Thu, 2008-08-21 at 00:27 -0700, Andrew Morton wrote:
+>> On Thu, 21 Aug 2008 00:13:22 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+>>
+>>> From: Andrew Morton <akpm@linux-foundation.org>
+>>> Date: Wed, 20 Aug 2008 23:46:15 -0700
+>>>
+>>>> On Wed, 20 Aug 2008 20:08:13 +0900 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+>>>>
+>>>>> +	num_cpus_per_node = cpus_weight_nr(node_to_cpumask(node));
+>>>> sparc64 allmodconfig:
+>>>>
+>>>> mm/quicklist.c: In function `max_pages':
+>>>> mm/quicklist.c:44: error: invalid lvalue in unary `&'
+>>>>
+>>>> we seem to have a made a spectacular mess of cpumasks lately.
+>>> It should explode similarly on x86, since it also defines node_to_cpumask()
+>>> as an inline function.
+>>>
+>>> IA64 seems to be one of the few platforms to define this as a macro
+>>> evaluating to the node-to-cpumask array entry, so it's clear what
+>>> platform Motohiro-san did build testing on :-)
+>> Seems to compile OK on x86_32, x86_64, ia64 and powerpc for some reason.
+>>
+>> This seems to fix things on sparc64:
+>>
+>> --- a/mm/quicklist.c~mm-quicklist-shouldnt-be-proportional-to-number-of-cpus-fix
+>> +++ a/mm/quicklist.c
+>> @@ -28,7 +28,7 @@ static unsigned long max_pages(unsigned 
+>>  	unsigned long node_free_pages, max;
+>>  	int node = numa_node_id();
+>>  	struct zone *zones = NODE_DATA(node)->node_zones;
+>> -	int num_cpus_per_node;
+>> +	cpumask_t node_cpumask;
+>>  
+>>  	node_free_pages =
+>>  #ifdef CONFIG_ZONE_DMA
+>> @@ -41,8 +41,8 @@ static unsigned long max_pages(unsigned 
+>>  
+>>  	max = node_free_pages / FRACTION_OF_NODE_MEM;
+>>  
+>> -	num_cpus_per_node = cpus_weight_nr(node_to_cpumask(node));
+>> -	max /= num_cpus_per_node;
+>> +	node_cpumask = node_to_cpumask(node);
+>> +	max /= cpus_weight_nr(node_cpumask);
+>>  
+>>  	return max(max, min_pages);
+>>  }
+> 
+> humm, I thought we wanted to keep cpumask_t stuff away from our stack -
+> since on insanely large SGI boxen (/me looks at mike) the thing becomes
+> 512 bytes.
 
-p4-clockmod is the only cpufreq driver that can run on your hardware.
-There's nothing better.   A while back, Fedora stopped loading
-(and even building) p4-clockmod, because it sucks so bad.
-I can't remember when we made that change, but it sounds like it must
-have been a post F7 thing.
 
-	Dave
+Yes, thanks for pointing that out!  I did send out an alternate coding
+that should keep the cpumask_t off the stack for those arch's that need
+to worry about it (using the node_to_cpumask_ptr function).  I should
+probably devote some time to documenting some of these gotcha's in one
+of the Doc.../ files.
 
--- 
-http://www.codemonkey.org.uk
+Mike
