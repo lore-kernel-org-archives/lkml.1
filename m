@@ -1,334 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755313AbYHYHhm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbYHYIMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755313AbYHYHhm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 03:37:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbYHYHhd
+	id S1754753AbYHYIMT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 04:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYHYIMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 03:37:33 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:32826 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751441AbYHYHhd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 03:37:33 -0400
-Message-ID: <48B26083.8080506@linux.vnet.ibm.com>
-Date: Mon, 25 Aug 2008 09:34:27 +0200
-From: Pierre Morel <pmorel@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+	Mon, 25 Aug 2008 04:12:07 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55498 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752711AbYHYIMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 04:12:06 -0400
+Date: Mon, 25 Aug 2008 10:11:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: check hpet with BAR v3
+Message-ID: <20080825081148.GA5033@elte.hu>
+References: <1219650968-3534-1-git-send-email-yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       Roland McGrath <roland@redhat.com>,
-       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
-       sameske@linux.vnet.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [RFC] [Patch 1/1] [Self Ptrace] System call notification with self_ptrace
-Content-Type: multipart/mixed;
- boundary="------------050608090503070103060105"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1219650968-3534-1-git-send-email-yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050608090503070103060105
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-The following patch adds a new functionality to ptrace:
-system call notification to the current process.
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-It applies to the 2.6.26 vanilla kernel for the x86 and s390 architectures.
+> insert some resources to resource tree forcily, so could avoid kernel 
+> update the resources in pci device.
+> 
+> should check in device too.
+> 
+> add check for ioapic and mmconfig
 
-It provides the following:
----------------------------------
-   - Activation and de-activation of the functionality through ptrace
-     system call
-   - When the functionality is activated, the system call is not done
-     and the calling process receives a SIGSYS signal.
+ok - this one is even nicer, as the mmconfig angle is i suspect a real 
+issue too. I've queued up the commit below in x86/urgent.
 
-What is it good for?
---------------------------
-   - Debugging : a tracing tool can be implemented inside the space
-     of the current thread and access the thread data directly from
-     inside reducing task switch and IPC overhead.
-   - Virtualization : a system call interposition mechanism can be
-     implemneted inside the space of the current thread reducing the
-     overhead of task switch and IPC and access directly all syscall
-     parameters
+Barring any test failures this looks like something that might be doable 
+for v2.6.27.
 
-What is missing?
-----------------------
-   - Port to other architectures.
+The enumeration of various PC resources looks a bit ugly - but those 
+_are_ ugly because they are really non-PCI ad-hoc details of the PC 
+platform, with no single coherent driver framework around them.
 
-It follows the patch itself.
+I think the impact of the commit is narrow and to the point: it will 
+only affect generic PCI devices that have an existing BAR overlap with 
+any of the known PC platform resources, and causes them to not be 
+reallocated. Not touching that devices is the most prudent thing to do 
+in such a situation, and no non-platform device can accidentally be at 
+that address anyway. (as the system would very likely not work at all in 
+that case)
 
--- 
-=============
-Pierre Morel
-RTOS and Embedded Linux
+Jesse, Linus, what do you think?
 
+David: i've optimistically inserted your Tested-by line into the commit. 
+Could you please double-check that this commit too solves your hang (it 
+really is expected to), out of box? (You can try tip/master, it has this 
+integrated already.)
 
---------------050608090503070103060105
-Content-Type: text/plain;
- name="self_ptrace_08.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="self_ptrace_08.patch"
+	Ingo
 
-Subject: [PATCH] system call notification with self_ptrace
+------------->
+>From a2bd7274b47124d2fc4dfdb8c0591f545ba749dd Mon Sep 17 00:00:00 2001
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Date: Mon, 25 Aug 2008 00:56:08 -0700
+Subject: [PATCH] x86: fix HPET regression in 2.6.26 versus 2.6.25, check hpet against BAR, v3
 
-From: Pierre Morel <pmorel@fr.ibm.com>
+David Witbrodt tracked down (and bisected) a hpet bootup hang on his
+system to the following problem: a BIOS bug made the hpet device
+visible as a generic PCI device. If e820 reserved entries happen to
+be registered first in the resource tree [which v2.6.26 started doing],
+then the PCI code will reallocate that device's BAR to some other
+address - breaking timer IRQs and hanging the system.
 
+( Normally hpet devices are hidden by the BIOS from the OS's PCI
+  discovery via chipset magic. Sometimes the hpet is not a PCI device
+  at all. )
 
-PTRACE SELF
+Solve this fundamental fragility by making non-PCI platform drivers
+insert resources into the resource tree even if it overlaps the e820
+reserved entry, to keep the resource manager from updating the BAR.
 
-This patch adds a new functionality to ptrace: system call notification to
-the current process.
-When a process requests self ptrace, with the new request PTRACE_SELF_ON:
+Also do these checks for the ioapic and mmconfig addresses, and emit
+a warning if this happens.
 
- 1.  the next system call performed by the process will not be executed
- 2.  self ptrace will be disabled for the process
- 3.  a SIGSYS signal will be sent to the process.
-
-With an appropriate SIGSYS signal handler, the process can access its own
-data structures to
-
- 1.  get the system call number from the siginfo structure
- 2.  get the system call arguments from the stack
- 3.  instrument the system call with other system calls
- 4.  emulate the system call with other system calls
- 5.  change the arguments of the system call
- 6.  perform the system call for good
- 7.  change the return value of the system call
- 8.  request self ptrace again before returning.
-
-The new request PTRACE_SELF_OFF disables self ptrace.
-
-
-Signed-off-by: Pierre Morel <pmorel@fr.ibm.com>
-Signed-off-by: Volker Sameske <sameske@de.ibm.com>
+Bisected-by: David Witbrodt <dawitbro@sbcglobal.net>
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Tested-by: David Witbrodt <dawitbro@sbcglobal.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ arch/x86/pci/i386.c |   78 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 78 insertions(+), 0 deletions(-)
 
- arch/s390/kernel/ptrace.c     |   18 ++++++++++++++++++
- arch/s390/kernel/signal.c     |    5 +++++
- arch/x86/kernel/ptrace.c      |   36 ++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/signal_32.c   |    5 +++++
- arch/x86/kernel/signal_64.c   |    5 +++++
- include/asm-generic/siginfo.h |    6 ++++++
- include/linux/ptrace.h        |    5 +++++
- kernel/ptrace.c               |   17 +++++++++++++++++
- 8 files changed, 97 insertions(+)
-
-Index: linux/arch/s390/kernel/ptrace.c
-===================================================================
---- linux.orig/arch/s390/kernel/ptrace.c
-+++ linux/arch/s390/kernel/ptrace.c
-@@ -583,6 +583,24 @@ syscall_trace(struct pt_regs *regs, int 
+diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
+index 5807d1b..d765da9 100644
+--- a/arch/x86/pci/i386.c
++++ b/arch/x86/pci/i386.c
+@@ -31,8 +31,11 @@
+ #include <linux/ioport.h>
+ #include <linux/errno.h>
+ #include <linux/bootmem.h>
++#include <linux/acpi.h>
  
- 	if (!test_thread_flag(TIF_SYSCALL_TRACE))
- 		goto out;
+ #include <asm/pat.h>
++#include <asm/hpet.h>
++#include <asm/io_apic.h>
+ 
+ #include "pci.h"
+ 
+@@ -77,6 +80,77 @@ pcibios_align_resource(void *data, struct resource *res,
+ }
+ EXPORT_SYMBOL(pcibios_align_resource);
+ 
++static int check_res_with_valid(struct pci_dev *dev, struct resource *res)
++{
++	unsigned long base;
++	unsigned long size;
++	int i;
 +
-+	if ((current->ptrace & PT_SELF)
-+		&& (regs->gprs[2] != __NR_rt_sigreturn)
-+		&& (regs->gprs[2] != __NR_ptrace)) {
-+		if (!entryexit) {
-+			struct siginfo info;
++	base = res->start;
++	size = (res->start == 0 && res->end == res->start) ? 0 :
++		 (res->end - res->start + 1);
 +
-+			memset(&info, 0, sizeof(struct siginfo));
-+			info.si_signo = SIGSYS;
-+			info.si_code = SYS_SYSCALL;
-+			info.si_errno = regs->gprs[2];
-+			info.si_addr = (void *)regs->orig_gpr2;
-+			send_sig_info(SIGSYS, &info, current);
-+			regs->gprs[2] = -1;
++	if (!base || !size)
++		return 0;
++
++#ifdef CONFIG_HPET_TIMER
++	/* for hpet */
++	if (base == hpet_address && (res->flags & IORESOURCE_MEM)) {
++		dev_info(&dev->dev, "BAR has HPET at %08lx-%08lx\n",
++				 base, base + size - 1);
++		return 1;
++	}
++#endif
++
++#ifdef CONFIG_X86_IO_APIC
++	for (i = 0; i < nr_ioapics; i++) {
++		unsigned long ioapic_phys = mp_ioapics[i].mp_apicaddr;
++
++		if (base == ioapic_phys && (res->flags & IORESOURCE_MEM)) {
++			dev_info(&dev->dev, "BAR has ioapic at %08lx-%08lx\n",
++					 base, base + size - 1);
++			return 1;
 +		}
-+		return;
 +	}
++#endif
 +
- 	if (!(current->ptrace & PT_PTRACED))
- 		goto out;
- 	ptrace_notify(SIGTRAP | ((current->ptrace & PT_TRACESYSGOOD)
-Index: linux/arch/s390/kernel/signal.c
-===================================================================
---- linux.orig/arch/s390/kernel/signal.c
-+++ linux/arch/s390/kernel/signal.c
-@@ -409,6 +409,11 @@ handle_signal(unsigned long sig, struct 
- 		spin_unlock_irq(&current->sighand->siglock);
- 	}
- 
-+	if (current->ptrace & PT_SELF) {
-+		clear_thread_flag(TIF_SYSCALL_TRACE);
-+		current->ptrace &= ~PT_SELF;
-+	}
++#ifdef CONFIG_PCI_MMCONFIG
++	for (i = 0; i < pci_mmcfg_config_num; i++) {
++		unsigned long addr;
 +
- 	return ret;
- }
- 
-Index: linux/arch/x86/kernel/ptrace.c
-===================================================================
---- linux.orig/arch/x86/kernel/ptrace.c
-+++ linux/arch/x86/kernel/ptrace.c
-@@ -20,6 +20,7 @@
- #include <linux/audit.h>
- #include <linux/seccomp.h>
- #include <linux/signal.h>
-+#include <linux/unistd.h>
- 
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
-@@ -1394,6 +1395,21 @@ int do_syscall_trace(struct pt_regs *reg
- 	if (!entryexit)
- 		secure_computing(regs->orig_ax);
- 
-+	if ((current->ptrace & PT_SELF)
-+		&& (regs->orig_ax != __NR_rt_sigreturn)
-+		&& (regs->orig_ax != __NR_ptrace)) {
-+		if (!entryexit) {
-+		struct siginfo info;
-+
-+		memset(&info, 0, sizeof(struct siginfo));
-+		info.si_signo = SIGSYS;
-+		info.si_code = SYS_SYSCALL;
-+		info.si_addr = (void *) regs->orig_ax;
-+		send_sig_info(SIGSYS, &info, current);
++		addr = pci_mmcfg_config[i].address;
++		if (base == addr && (res->flags & IORESOURCE_MEM)) {
++			dev_info(&dev->dev, "BAR has MMCONFIG at %08lx-%08lx\n",
++					 base, base + size - 1);
++			return 1;
 +		}
-+		return 1; /* Skip system call, deliver signal. */
++	}
++#endif
++
++	return 0;
++}
++
++static int check_platform(struct pci_dev *dev, struct resource *res)
++{
++	struct resource *root = NULL;
++
++	/*
++	 * forcibly insert it into the
++	 * resource tree
++	 */
++	if (res->flags & IORESOURCE_MEM)
++		root = &iomem_resource;
++	else if (res->flags & IORESOURCE_IO)
++		root = &ioport_resource;
++
++	if (root && check_res_with_valid(dev, res)) {
++		insert_resource(root, res);
++
++		return 1;
 +	}
 +
- 	if (unlikely(current->audit_context)) {
- 		if (entryexit)
- 			audit_syscall_exit(AUDITSC_RESULT(regs->ax),
-@@ -1486,6 +1502,20 @@ asmlinkage void syscall_trace_enter(stru
- 	/* do the secure computing check first */
- 	secure_computing(regs->orig_ax);
- 
-+	if ((current->ptrace & PT_SELF)
-+		&& (regs->orig_rax != __NR_rt_sigreturn)
-+		&& (regs->orig_rax != __NR_ptrace)) {
-+		struct siginfo info;
-+
-+		memset(&info, 0, sizeof(struct siginfo));
-+		info.si_signo = SIGSYS;
-+		info.si_code = SYS_SYSCALL;
-+		info.si_addr = (void *) regs->orig_rax;
-+		send_sig_info(SIGSYS, &info, current);
-+		regs->rax = -1 ;
-+		return; /* Skip system call, deliver signal. */
-+	}
-+
- 	if (test_thread_flag(TIF_SYSCALL_TRACE)
- 	    && (current->ptrace & PT_PTRACED))
- 		syscall_trace(regs);
-@@ -1507,6 +1537,12 @@ asmlinkage void syscall_trace_enter(stru
- 
- asmlinkage void syscall_trace_leave(struct pt_regs *regs)
- {
-+	if ((current->ptrace & PT_SELF)
-+		&& (regs->orig_rax != __NR_rt_sigreturn)
-+		&& (regs->orig_rax != __NR_ptrace)) {
-+		regs->rax = -1 ;
-+		return; /* Skip system call. */
-+	}
- 	if (unlikely(current->audit_context))
- 		audit_syscall_exit(AUDITSC_RESULT(regs->ax), regs->ax);
- 
-Index: linux/arch/x86/kernel/signal_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/signal_32.c
-+++ linux/arch/x86/kernel/signal_32.c
-@@ -94,6 +94,11 @@ sys_sigaction(int sig, const struct old_
- 		__put_user(old_ka.sa.sa_mask.sig[0], &oact->sa_mask);
- 	}
- 
-+	if (current->ptrace & PT_SELF) {
-+		clear_thread_flag(TIF_SYSCALL_TRACE);
-+		current->ptrace &= ~PT_SELF;
-+	}
-+
- 	return ret;
- }
- 
-Index: linux/arch/x86/kernel/signal_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/signal_64.c
-+++ linux/arch/x86/kernel/signal_64.c
-@@ -402,6 +402,11 @@ handle_signal(unsigned long sig, siginfo
- 		spin_unlock_irq(&current->sighand->siglock);
- 	}
- 
-+	if (current->ptrace & PT_SELF) {
-+		clear_thread_flag(TIF_SYSCALL_TRACE);
-+		current->ptrace &= ~PT_SELF;
-+	}
-+
- 	return ret;
- }
- 
-Index: linux/include/asm-generic/siginfo.h
-===================================================================
---- linux.orig/include/asm-generic/siginfo.h
-+++ linux/include/asm-generic/siginfo.h
-@@ -224,6 +224,12 @@ typedef struct siginfo {
- #define NSIGPOLL	6
- 
++	return 0;
++}
  /*
-+ * SIGSYS si_codes
-+ */
-+#define SYS_SYSCALL    (__SI_FAULT|1)  /* system call notification */
-+#define NSIGSYS        1
-+
-+/*
-  * sigevent definitions
-  * 
-  * It seems likely that SIGEV_THREAD will have to be handled from 
-Index: linux/include/linux/ptrace.h
-===================================================================
---- linux.orig/include/linux/ptrace.h
-+++ linux/include/linux/ptrace.h
-@@ -27,6 +27,10 @@
- #define PTRACE_GETSIGINFO	0x4202
- #define PTRACE_SETSIGINFO	0x4203
- 
-+/* PTRACE SELF requests					*/
-+#define PTRACE_SELF_ON		0x4281
-+#define PTRACE_SELF_OFF		0x4282
-+
- /* options set using PTRACE_SETOPTIONS */
- #define PTRACE_O_TRACESYSGOOD	0x00000001
- #define PTRACE_O_TRACEFORK	0x00000002
-@@ -67,6 +71,7 @@
- #define PT_TRACE_EXEC	0x00000080
- #define PT_TRACE_VFORK_DONE	0x00000100
- #define PT_TRACE_EXIT	0x00000200
-+#define PT_SELF		0x00000400
- 
- #define PT_TRACE_MASK	0x000003f4
- 
-Index: linux/kernel/ptrace.c
-===================================================================
---- linux.orig/kernel/ptrace.c
-+++ linux/kernel/ptrace.c
-@@ -550,6 +550,23 @@ asmlinkage long sys_ptrace(long request,
- 		goto out;
- 	}
- 
-+	if (request == PTRACE_SELF_ON) {
-+		task_lock(current);
-+		set_thread_flag(TIF_SYSCALL_TRACE);
-+		current->ptrace |= PT_SELF;
-+		task_unlock(current);
-+		ret = 0;
-+		goto out;
-+	}
-+	if (request == PTRACE_SELF_OFF) {
-+		task_lock(current);
-+		clear_thread_flag(TIF_SYSCALL_TRACE);
-+		current->ptrace &= ~PT_SELF;
-+		task_unlock(current);
-+		ret = 0;
-+		goto out;
-+	}
-+
- 	child = ptrace_get_task_struct(pid);
- 	if (IS_ERR(child)) {
- 		ret = PTR_ERR(child);
-
---------------050608090503070103060105--
+  *  Handle resources of PCI devices.  If the world were perfect, we could
+  *  just allocate all the resource regions and do nothing more.  It isn't.
+@@ -128,6 +202,8 @@ static void __init pcibios_allocate_bus_resources(struct list_head *bus_list)
+ 				pr = pci_find_parent_resource(dev, r);
+ 				if (!r->start || !pr ||
+ 				    request_resource(pr, r) < 0) {
++					if (check_platform(dev, r))
++						continue;
+ 					dev_err(&dev->dev, "BAR %d: can't "
+ 						"allocate resource\n", idx);
+ 					/*
+@@ -171,6 +247,8 @@ static void __init pcibios_allocate_resources(int pass)
+ 					r->flags, disabled, pass);
+ 				pr = pci_find_parent_resource(dev, r);
+ 				if (!pr || request_resource(pr, r) < 0) {
++					if (check_platform(dev, r))
++						continue;
+ 					dev_err(&dev->dev, "BAR %d: can't "
+ 						"allocate resource\n", idx);
+ 					/* We'll assign a new address later */
