@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbYHYQiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbYHYQnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867AbYHYQiw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 12:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYHYQio
+	id S1754693AbYHYQnf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 12:43:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbYHYQn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 12:38:44 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:49193 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753500AbYHYQio (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 12:38:44 -0400
-Date: Mon, 25 Aug 2008 12:38:42 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch] Tracing/ftrace: Adds a marker to allow user comments
-In-Reply-To: <c62985530808250659w5b2a2f83u689987969a4cb53d@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0808251237340.23923@gandalf.stny.rr.com>
-References: <48B1D5CA.8000607@gmail.com> <20080825084405.GA29195@elte.hu> <c62985530808250659w5b2a2f83u689987969a4cb53d@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 25 Aug 2008 12:43:28 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:45235 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753129AbYHYQn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 12:43:27 -0400
+Date: Mon, 25 Aug 2008 11:43:26 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH] devcgroup: use kmemdup()
+Message-ID: <20080825164326.GB13583@us.ibm.com>
+References: <48B21756.4020208@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48B21756.4020208@cn.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 25 Aug 2008, Fr?d?ric Weisbecker wrote:
-
-> 2008/8/25 Ingo Molnar <mingo@elte.hu>:
-> >
-> > * Fr?d?ric Weisbecker <fweisbec@gmail.com> wrote:
-> >
-> >> The documentation of mmiotrace describes an unimplemented feature
-> >> which allows the user to write any comments on his trace by writing on
-> >> a tracing/marker file. Here is an implementation of this idea.
-> >>
-> >> It applies on last version of tip tree.
-> >
-> > hmm ... have you looked at the (recently implemented) ftrace_printk()
-> > facility?
-> >
-> >        Ingo
-> >
+Quoting Li Zefan (lizf@cn.fujitsu.com):
+> This saves 40 bytes on my x86_32 box.
 > 
-> Yes but I didn't want to use ftrace_printk() because it needs the "ip"
-> parameter. User messages doesn't need this. But I reuse a part of the
-> code of ftrace_printk and I splitted ftrace_printk() in two parts for
-> this purpose: __ftrace_printk() and trace_print().
-> I also reused the print_entry but with a new TRACE_MARK type to make
-> the difference when it is time to send the entry to the pipe because
-> user messages don't use ip.
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-Feel free to make TRACE_CONT work for you. I coupled it a little more than 
-I wanted to with the ftrace print. If you can find a nice way to make 
-TRACE_CONT a bit more generic, then feel free.
-
--- Steve
-
+> ---
+>  security/device_cgroup.c |    9 ++-------
+>  1 files changed, 2 insertions(+), 7 deletions(-)
+> 
+> diff --git a/security/device_cgroup.c b/security/device_cgroup.c
+> index 46f2397..9c625f6 100644
+> --- a/security/device_cgroup.c
+> +++ b/security/device_cgroup.c
+> @@ -84,13 +84,9 @@ static int dev_whitelist_copy(struct list_head *dest, struct list_head *orig)
+>  	struct dev_whitelist_item *wh, *tmp, *new;
+> 
+>  	list_for_each_entry(wh, orig, list) {
+> -		new = kmalloc(sizeof(*wh), GFP_KERNEL);
+> +		new = kmemdup(wh, sizeof(*wh), GFP_KERNEL);
+>  		if (!new)
+>  			goto free_and_exit;
+> -		new->major = wh->major;
+> -		new->minor = wh->minor;
+> -		new->type = wh->type;
+> -		new->access = wh->access;
+>  		list_add_tail(&new->list, dest);
+>  	}
+> 
+> @@ -114,11 +110,10 @@ static int dev_whitelist_add(struct dev_cgroup *dev_cgroup,
+>  {
+>  	struct dev_whitelist_item *whcopy, *walk;
+> 
+> -	whcopy = kmalloc(sizeof(*whcopy), GFP_KERNEL);
+> +	whcopy = kmemdup(wh, sizeof(*wh), GFP_KERNEL);
+>  	if (!whcopy)
+>  		return -ENOMEM;
+> 
+> -	memcpy(whcopy, wh, sizeof(*whcopy));
+>  	spin_lock(&dev_cgroup->lock);
+>  	list_for_each_entry(walk, &dev_cgroup->whitelist, list) {
+>  		if (walk->type != wh->type)
+> -- 
+> 1.5.4.rc3
