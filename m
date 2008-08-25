@@ -1,365 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbYHYVMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756676AbYHYVNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754737AbYHYVMI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 17:12:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbYHYVL4
+	id S1756676AbYHYVNr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 17:13:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbYHYVNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 17:11:56 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:55906 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753520AbYHYVLz (ORCPT
+	Mon, 25 Aug 2008 17:13:40 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:25984 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752961AbYHYVNj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 17:11:55 -0400
-To: randy.dunlap@oracle.com
-CC: hch@infradead.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       miklos@szeredi.hu
-In-reply-to: <20080818181409.f2861821.randy.dunlap@oracle.com> (message from
-	Randy Dunlap on Mon, 18 Aug 2008 18:14:09 -0700)
-Subject: Re: [PATCH v2] documentation: split and build smount.c
-References: <20080817214442.ca4345ce.randy.dunlap@oracle.com>
-	<20080818050431.GA20692@infradead.org> <20080818181409.f2861821.randy.dunlap@oracle.com>
-Message-Id: <E1KXjLj-0001FB-2h@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 25 Aug 2008 23:11:43 +0200
+	Mon, 25 Aug 2008 17:13:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=SLkmW6cbSZ5R2TmSoMwFnYJuzNSUveEkcrnyDAqjHtbnjkoaFKS2kjgqZm0Xmboo48
+         VwkYvkkh3QHHuGU+pWPf96LOiofDXUvSum1oIvlI5rdJ+D+XyB9mfKZaM4cvEUJVfCW6
+         gRRlEn0drAKMDacVx0hwhvOWuNsETuxqTRF2Q=
+Subject: Compile error in latest git v2.6.27-rc4-161-g426e1ea and fixlet
+From: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
+	<alejandro.riveira@gmail.com>
+Reply-To: alejandro.riveira@gmail.com
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 25 Aug 2008 23:13:33 +0200
+Message-Id: <1219698813.21407.4.camel@Varda>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Aug 2008, Randy Dunlap wrote:
-> On Mon, 18 Aug 2008 01:04:31 -0400 Christoph Hellwig wrote:
-> 
-> > Just remove it, and modern /bin/mount handles shared subtrees just fine
-> 
-> Miklos... ?
+sound/pci/ca0106/ca0106_main.c:263: error:
 
-Yes, ACK from me too.  Thanks Randy!
+v2.6.27-rc4-161-g426e1ea 
 
-Miklos
+fails for me at compile time. Fix included
 
-> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> mount(8) handles shared subtrees just fine, so remove the smount
-> program from Documentation/filesystems/sharedsubtree.txt.
-> 
-> Fix annoying "Lets" -> "Let's".
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> cc: Miklos Szeredi <miklos@szeredi.hu>
-> ---
->  Documentation/filesystems/sharedsubtree.txt |  192 +++-------------------------
->  1 file changed, 25 insertions(+), 167 deletions(-)
-> 
-> --- lin2627-rc3g4-kerndoc.orig/Documentation/filesystems/sharedsubtree.txt
-> +++ lin2627-rc3g4-kerndoc/Documentation/filesystems/sharedsubtree.txt
-> @@ -41,12 +41,11 @@ replicas continue to be exactly same.
->  
->  	Here is an example:
->  
-> -	Lets say /mnt has a mount that is shared.
-> +	Let's say /mnt has a mount that is shared.
->  	mount --make-shared /mnt
->  
-> -	note: mount command does not yet support the --make-shared flag.
-> -	I have included a small C program which does the same by executing
-> -	'smount /mnt shared'
-> +	Note: mount(8) command now supports the --make-shared flag,
-> +	so the sample 'smount' program is no longer needed.
->  
->  	#mount --bind /mnt /tmp
->  	The above command replicates the mount at /mnt to the mountpoint /tmp
-> @@ -58,7 +57,7 @@ replicas continue to be exactly same.
->  	#ls /tmp
->  	a b c
->  
-> -	Now lets say we mount a device at /tmp/a
-> +	Now let's say we mount a device at /tmp/a
->  	#mount /dev/sd0  /tmp/a
->  
->  	#ls /tmp/a
-> @@ -80,20 +79,19 @@ replicas continue to be exactly same.
->  
->  	Here is an example:
->  
-> -	Lets say /mnt has a mount which is shared.
-> +	Let's say /mnt has a mount which is shared.
->  	#mount --make-shared /mnt
->  
-> -	Lets bind mount /mnt to /tmp
-> +	Let's bind mount /mnt to /tmp
->  	#mount --bind /mnt /tmp
->  
->  	the new mount at /tmp becomes a shared mount and it is a replica of
->  	the mount at /mnt.
->  
-> -	Now lets make the mount at /tmp; a slave of /mnt
-> +	Now let's make the mount at /tmp; a slave of /mnt
->  	#mount --make-slave /tmp
-> -	[or smount /tmp slave]
->  
-> -	lets mount /dev/sd0 on /mnt/a
-> +	let's mount /dev/sd0 on /mnt/a
->  	#mount /dev/sd0 /mnt/a
->  
->  	#ls /mnt/a
-> @@ -104,7 +102,7 @@ replicas continue to be exactly same.
->  
->  	Note the mount event has propagated to the mount at /tmp
->  
-> -	However lets see what happens if we mount something on the mount at /tmp
-> +	However let's see what happens if we mount something on the mount at /tmp
->  
->  	#mount /dev/sd1 /tmp/b
->  
-> @@ -124,12 +122,11 @@ replicas continue to be exactly same.
->  
->  2d) A unbindable mount is a unbindable private mount
->  
-> -	lets say we have a mount at /mnt and we make is unbindable
-> +	let's say we have a mount at /mnt and we make is unbindable
->  
->  	#mount --make-unbindable /mnt
-> -	 [ smount /mnt  unbindable ]
->  
-> -	 Lets try to bind mount this mount somewhere else.
-> +	 Let's try to bind mount this mount somewhere else.
->  	 # mount --bind /mnt /tmp
->  	 mount: wrong fs type, bad option, bad superblock on /mnt,
->  	        or too many mounted file systems
-> @@ -139,147 +136,8 @@ replicas continue to be exactly same.
->  
->  3) smount command
->  
-> -	Currently the mount command is not aware of shared subtree features.
-> -	Work is in progress to add the support in mount ( util-linux package ).
-> -	Till then use the following program.
-> -
-> -	------------------------------------------------------------------------
-> -	//
-> -	//this code was developed my Miklos Szeredi <miklos@szeredi.hu>
-> -	//and modified by Ram Pai <linuxram@us.ibm.com>
-> -	// sample usage:
-> -	//              smount /tmp shared
-> -	//
-> -	#include <stdio.h>
-> -	#include <stdlib.h>
-> -	#include <unistd.h>
-> -	#include <string.h>
-> -	#include <sys/mount.h>
-> -	#include <sys/fsuid.h>
-> -
-> -	#ifndef MS_REC
-> -	#define MS_REC		0x4000	/* 16384: Recursive loopback */
-> -	#endif
-> -
-> -	#ifndef MS_SHARED
-> -	#define MS_SHARED		1<<20	/* Shared */
-> -	#endif
-> -
-> -	#ifndef MS_PRIVATE
-> -	#define MS_PRIVATE		1<<18	/* Private */
-> -	#endif
-> -
-> -	#ifndef MS_SLAVE
-> -	#define MS_SLAVE		1<<19	/* Slave */
-> -	#endif
-> -
-> -	#ifndef MS_UNBINDABLE
-> -	#define MS_UNBINDABLE		1<<17	/* Unbindable */
-> -	#endif
-> -
-> -	int main(int argc, char *argv[])
-> -	{
-> -		int type;
-> -		if(argc != 3) {
-> -			fprintf(stderr, "usage: %s dir "
-> -			"<rshared|rslave|rprivate|runbindable|shared|slave"
-> -			"|private|unbindable>\n" , argv[0]);
-> -			return 1;
-> -		}
-> -
-> -		fprintf(stdout, "%s %s %s\n", argv[0], argv[1], argv[2]);
-> -
-> -		if (strcmp(argv[2],"rshared")==0)
-> -			type=(MS_SHARED|MS_REC);
-> -		else if (strcmp(argv[2],"rslave")==0)
-> -			type=(MS_SLAVE|MS_REC);
-> -		else if (strcmp(argv[2],"rprivate")==0)
-> -			type=(MS_PRIVATE|MS_REC);
-> -		else if (strcmp(argv[2],"runbindable")==0)
-> -			type=(MS_UNBINDABLE|MS_REC);
-> -		else if (strcmp(argv[2],"shared")==0)
-> -			type=MS_SHARED;
-> -		else if (strcmp(argv[2],"slave")==0)
-> -			type=MS_SLAVE;
-> -		else if (strcmp(argv[2],"private")==0)
-> -			type=MS_PRIVATE;
-> -		else if (strcmp(argv[2],"unbindable")==0)
-> -			type=MS_UNBINDABLE;
-> -		else {
-> -			fprintf(stderr, "invalid operation: %s\n", argv[2]);
-> -			return 1;
-> -		}
-> -		setfsuid(getuid());
-> -
-> -		if(mount("", argv[1], "dontcare", type, "") == -1) {
-> -			perror("mount");
-> -			return 1;
-> -		}
-> -		return 0;
-> -	}
-> -	-----------------------------------------------------------------------
-> -
-> -	Copy the above code snippet into smount.c
-> -	gcc -o smount smount.c
-> -
-> -
-> -	(i) To mark all the mounts under /mnt as shared execute the following
-> -	command:
-> -
-> -	 	smount /mnt rshared
-> -		the corresponding syntax planned for mount command is
-> -		mount --make-rshared /mnt
-> -
-> -	    just to mark a mount /mnt as shared, execute the following
-> -	    command:
-> -	 	smount /mnt shared
-> -		the corresponding syntax planned for mount command is
-> -		mount --make-shared /mnt
-> -
-> -	(ii) To mark all the shared mounts under /mnt as slave execute the
-> -	following
-> -
-> -	     command:
-> -		smount /mnt rslave
-> -		the corresponding syntax planned for mount command is
-> -		mount --make-rslave /mnt
-> -
-> -	    just to mark a mount /mnt as slave, execute the following
-> -	    command:
-> -	 	smount /mnt slave
-> -		the corresponding syntax planned for mount command is
-> -		mount --make-slave /mnt
-> -
-> -	(iii) To mark all the mounts under /mnt as private execute the
-> -	following command:
-> -
-> -		smount /mnt rprivate
-> -		the corresponding syntax planned for mount command is
-> -		mount --make-rprivate /mnt
-> -
-> -	    just to mark a mount /mnt as private, execute the following
-> -	    command:
-> -	 	smount /mnt private
-> -		the corresponding syntax planned for mount command is
-> -		mount --make-private /mnt
-> -
-> -	      NOTE: by default all the mounts are created as private. But if
-> -	      you want to change some shared/slave/unbindable  mount as
-> -	      private at a later point in time, this command can help.
-> -
-> -	(iv) To mark all the mounts under /mnt as unbindable execute the
-> -	following
-> -
-> -	     command:
-> -		smount /mnt runbindable
-> -		the corresponding syntax planned for mount command is
-> -		mount --make-runbindable /mnt
-> -
-> -	    just to mark a mount /mnt as unbindable, execute the following
-> -	    command:
-> -	 	smount /mnt unbindable
-> -		the corresponding syntax planned for mount command is
-> -		mount --make-unbindable /mnt
-> +	Modern mount(8) command is aware of shared subtree features,
-> +	so use it instead of the 'smount' command. [source code removed]
->  
->  
->  4) Use cases
-> @@ -558,7 +416,7 @@ replicas continue to be exactly same.
->  	then the subtree under the unbindable mount is pruned in the new
->  	location.
->  
-> -	eg: lets say we have the following mount tree.
-> +	eg: let's say we have the following mount tree.
->  
->  		A
->  	      /   \
-> @@ -566,7 +424,7 @@ replicas continue to be exactly same.
->  	     / \ / \
->  	     D E F G
->  
-> -	     Lets say all the mount except the mount C in the tree are
-> +	     Let's say all the mount except the mount C in the tree are
->  	     of a type other than unbindable.
->  
->  	     If this tree is rbound to say Z
-> @@ -683,13 +541,13 @@ replicas continue to be exactly same.
->  	'b' on mounts that receive propagation from mount 'B' and does not have
->  	sub-mounts within them are unmounted.
->  
-> -	Example: Lets say 'B1', 'B2', 'B3' are shared mounts that propagate to
-> +	Example: Let's say 'B1', 'B2', 'B3' are shared mounts that propagate to
->  	each other.
->  
-> -	lets say 'A1', 'A2', 'A3' are first mounted at dentry 'b' on mount
-> +	let's say 'A1', 'A2', 'A3' are first mounted at dentry 'b' on mount
->  	'B1', 'B2' and 'B3' respectively.
->  
-> -	lets say 'C1', 'C2', 'C3' are next mounted at the same dentry 'b' on
-> +	let's say 'C1', 'C2', 'C3' are next mounted at the same dentry 'b' on
->  	mount 'B1', 'B2' and 'B3' respectively.
->  
->  	if 'C1' is unmounted, all the mounts that are most-recently-mounted on
-> @@ -710,7 +568,7 @@ replicas continue to be exactly same.
->  	A cloned namespace contains all the mounts as that of the parent
->  	namespace.
->  
-> -	Lets say 'A' and 'B' are the corresponding mounts in the parent and the
-> +	Let's say 'A' and 'B' are the corresponding mounts in the parent and the
->  	child namespace.
->  
->  	If 'A' is shared, then 'B' is also shared and 'A' and 'B' propagate to
-> @@ -759,11 +617,11 @@ replicas continue to be exactly same.
->  		mount --make-slave /mnt
->  
->  		At this point we have the first mount at /tmp and
-> -		its root dentry is 1. Lets call this mount 'A'
-> +		its root dentry is 1. Let's call this mount 'A'
->  		And then we have a second mount at /tmp1 with root
-> -		dentry 2. Lets call this mount 'B'
-> +		dentry 2. Let's call this mount 'B'
->  		Next we have a third mount at /mnt with root dentry
-> -		mnt. Lets call this mount 'C'
-> +		mnt. Let's call this mount 'C'
->  
->  		'B' is the slave of 'A' and 'C' is a slave of 'B'
->  		A -> B -> C
-> @@ -794,7 +652,7 @@ replicas continue to be exactly same.
->  
->  	Q3 Why is unbindable mount needed?
->  
-> -		Lets say we want to replicate the mount tree at multiple
-> +		Let's say we want to replicate the mount tree at multiple
->  		locations within the same subtree.
->  
->  		if one rbind mounts a tree within the same subtree 'n' times
-> @@ -803,7 +661,7 @@ replicas continue to be exactly same.
->  		mounts. Here is a example.
->  
->  		step 1:
-> -		   lets say the root tree has just two directories with
-> +		   let's say the root tree has just two directories with
->  		   one vfsmount.
->  				    root
->  				   /    \
-> @@ -875,7 +733,7 @@ replicas continue to be exactly same.
->  		Unclonable mounts come in handy here.
->  
->  		step 1:
-> -		   lets say the root tree has just two directories with
-> +		   let's say the root tree has just two directories with
->  		   one vfsmount.
->  				    root
->  				   /    \
-> 
+make -C /home/alex/kernel/linux-2.6 O=/home/alex/kernel/2.6.27/. 
+  Using /home/alex/kernel/linux-2.6 as source for kernel
+  GEN     /home/alex/kernel/2.6.27/Makefile
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CALL    /home/alex/kernel/linux-2.6/scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+  VDSOSYM arch/x86/vdso/vdso-syms.lds
+  VDSOSYM arch/x86/vdso/vdso32-int80-syms.lds
+  VDSOSYM arch/x86/vdso/vdso32-syscall-syms.lds
+  VDSOSYM arch/x86/vdso/vdso32-sysenter-syms.lds
+  VDSOSYM arch/x86/vdso/vdso32-syms.lds
+  LD      arch/x86/vdso/built-in.o
+  CC [M]  sound/pci/ca0106/ca0106_main.o
+/home/alex/kernel/linux-2.6/sound/pci/ca0106/ca0106_main.c:263: error:
+expected '}' before '{' token
+make[5]: *** [sound/pci/ca0106/ca0106_main.o] Error 1
+make[4]: *** [sound/pci/ca0106] Error 2
+make[3]: *** [sound/pci] Error 2
+make[2]: *** [sound] Error 2
+make[1]: *** [sub-make] Error 2
+make: *** [all] Error 2
+
+
+
+
+diff --git a/sound/pci/ca0106/ca0106_main.c b/sound/pci/ca0106/ca0106_main.c
+index 03a274b..a7d8966 100644
+--- a/sound/pci/ca0106/ca0106_main.c
++++ b/sound/pci/ca0106/ca0106_main.c
+@@ -254,7 +254,7 @@ static struct snd_ca0106_details ca0106_chip_details[] = {
+ 	   .name   = "MSI K8N Diamond MB",
+ 	   .gpio_type = 2,
+ 	   .i2c_adc = 1,
+-	   .spi_dac = 2 }
++	   .spi_dac = 2 } ,
+ 	 /* Shuttle XPC SD31P which has an onboard Creative Labs
+ 	  * Sound Blaster Live! 24-bit EAX
+ 	  * high-definition 7.1 audio processor".
+
+-- 
+The idea that Bill Gates has appeared like a knight in shining armour to
+lead all customers out of a mire of technological chaos neatly ignores
+the fact that it was he who, by peddling second-rate technology, led
+them into it in the first place. 
+                                     Douglas Adams
+
