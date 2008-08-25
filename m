@@ -1,75 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbYHXTXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbYHYMHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbYHXTXk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 15:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753155AbYHXTXb
+	id S1755790AbYHYMHo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 08:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbYHYMHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 15:23:31 -0400
-Received: from mail.ukfsn.org ([77.75.108.10]:57286 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753089AbYHXTXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 15:23:30 -0400
-Message-ID: <48B1B526.2030100@dgreaves.com>
-Date: Sun, 24 Aug 2008 20:23:18 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Mon, 25 Aug 2008 08:07:35 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:26973 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753253AbYHYMHf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 08:07:35 -0400
+Message-ID: <48B2A081.6010300@hp.com>
+Date: Mon, 25 Aug 2008 08:07:29 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <alpine.LFD.1.10.0808241030060.3363@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0808241030060.3363@nehalem.linux-foundation.org>
-X-Enigmail-Version: 0.95.0
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.q9H.6aGsIB@albercik> <alpine.LFD.1.10.0808231257310.3363@nehalem.linux-foundation.org> <48B06FE6.8060404@linux.intel.com>
+In-Reply-To: <48B06FE6.8060404@linux.intel.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Sat, 23 Aug 2008, Rafael J. Wysocki wrote:
->> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11405
->> Subject		: 2.6.27-rc3 segfault on cold boot; not on warm boot.
->> Submitter	: David Greaves <david@dgreaves.com>
->> Date		: 2008-08-21 9:45 (3 days old)
->> References	: http://marc.info/?l=linux-kernel&m=121931198904777&w=4
-> 
-> It would be good to have some kind of bisection of this one, because it 
-> looks pretty odd. Also, google doesn't find anybody else seeing that 
-> "segfault at ffffffbf", even though it seems to be very consistent for 
-> David. So I don't think we'll be able to even _guess_ where it is without 
-> some more information about exactly when it started happening.
-> 
-> Since it's present in 2.6.26 too, it's clearly not a regression from that 
-> one, but perhaps more importantly, since it's apparently an old one I'd 
-> have expected more reports like this if it was some common problem. And 
-> the warm-vs-cold-boot thing makes me think it's some hardware setup issue.
-> 
-> Possibly the disk controller, possibly the CPU (eg some MTRR/PAT 
-> setup issue or TLB thing). But the dmesg's are all from late enough at 
-> boot that I can't even tell what disk controller it is (except that it is 
-> SATA), nor can I tell what CPU it is.
-> 
-> But again, if it was some MTRR/PAT issue, I'd expect a _lot_ more reports 
-> of this. 
+Arjan van de Ven wrote:
 
-OK, that all makes sense.
+> 
+> Wonder what gcc is in use?
+> (newer ones tend to be a ton better... but maybe Alex is using a really
+> old one)
 
-Given that I'll manage at best 1 bisect/day with a reasonable chance of data
-corruption and hardware intermittency screwing it all up I thought it best to
-ask first in case there was another debug approach that could work. However
-since it does indeed sounds somewhat hardware related and it's an isolated
-problem for my wife (as opposed to a problem that others are having too) then I
-think she deserves a new machine...
+I'm running Ubuntu 8.04 w/ gcc:
 
-Thanks for the impetus to cheer her up ;)
+gcc (GCC) 4.2.3 (Ubuntu 4.2.3-2ubuntu7)
 
-David
-PS if anyone really is interested then I am happy to try the bisection once I've
-moved her to a new box; otherwise I'm happy to close this.
+Alan
