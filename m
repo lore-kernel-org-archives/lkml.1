@@ -1,100 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754287AbYHYVaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754735AbYHYVbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754287AbYHYVaU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 17:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750960AbYHYVaH
+	id S1754735AbYHYVbn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 17:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbYHYVbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 17:30:07 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:31575 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750750AbYHYVaG (ORCPT
+	Mon, 25 Aug 2008 17:31:33 -0400
+Received: from smtpauth.hypersurf.com ([209.237.0.8]:60392 "EHLO
+	smtpauth.hypersurf.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752441AbYHYVbc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 17:30:06 -0400
-Message-ID: <48B32458.5020104@hp.com>
-Date: Mon, 25 Aug 2008 17:30:00 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Mon, 25 Aug 2008 17:31:32 -0400
+Message-ID: <48B32468.7090601@hypersurf.com>
+Date: Mon, 25 Aug 2008 14:30:16 -0700
+From: Kevin Diggs <kevdig@hypersurf.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i486; en-US; rv:1.8b2) Gecko/20050724
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.q9H.6aGsIB@albercik> <alpine.LFD.1.10.0808231257310.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808231313170.3363@nehalem.linux-foundation.org> <48B29F7B.6080405@hp.com> <48B2A421.7080705@hp.com> <alpine.LFD.1.10.0808251019380.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251106270.3363@nehalem.linux-foundation.org> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] Add low level PLL config register interface module
+References: <48B28C62.2000600@hypersurf.com> <5430DEC7-39DB-4316-8E7E-949CA4280403@kernel.crashing.org>
+In-Reply-To: <5430DEC7-39DB-4316-8E7E-949CA4280403@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+Kumar Gala wrote:
 > 
-> On Mon, 25 Aug 2008, Linus Torvalds wrote:
->> But I'll look at your vmlinux, see what stands out.
+> On Aug 25, 2008, at 5:41 AM, Kevin Diggs wrote:
 > 
-> Oops. I already see the problem.
+>> This adds a small module to handle the low level details of dealing  
+>> with the
+>> PLL config register (HID1) found in the IBM 750GX. It provides 2  
+>> possible
+>> interfaces, both selectable via kernel config options. One is a  sysfs 
+>> attribute
+>> and the other is a normal function API. It is called pll_if.
+>>
+>> The determination of the bus frequency is what worked on a PowerMac  
+>> 8600. Any
+>> suggestions on a more general solution are welcome.
+>>
+>> WARNING - I used some #ifdefs - Let the fur fly!
+>>
+>> My name is Kevin Diggs and I approve this patch.
 > 
-> Your .config has soem _huge_ CPU count, doesn't it?
 > 
-> checkstack.pl shows these things as the top problems:
+> This really should be split into two patches.  One for the perl script  
+> and one for the actual kernel code.
 > 
-> 	0xffffffff80266234 smp_call_function_mask [vmlinux]:    2736
-> 	0xffffffff80234747 __build_sched_domains [vmlinux]:     2232
-> 	0xffffffff8023523f __build_sched_domains [vmlinux]:     2232
-> 	0xffffffff8021e884 setup_IO_APIC_irq [vmlinux]:         1616
-> 	0xffffffff8021ee24 arch_setup_ht_irq [vmlinux]:         1600
-> 	0xffffffff8021f144 arch_setup_msi_irq [vmlinux]:        1600
-> 	0xffffffff8021e3b0 __assign_irq_vector [vmlinux]:       1592
-> 	0xffffffff8021e626 __assign_irq_vector [vmlinux]:       1592
-> 	0xffffffff8023257e move_task_off_dead_cpu [vmlinux]:    1592
-> 	0xffffffff802326e8 move_task_off_dead_cpu [vmlinux]:    1592
-> 	0xffffffff8025dbc5 tick_handle_oneshot_broadcast [vmlinux]:1544
-> 	0xffffffff8025dcb4 tick_handle_oneshot_broadcast [vmlinux]:1544
-> 	0xffffffff803f3dc4 store_scaling_governor [vmlinux]:    1376
-> 	0xffffffff80279ef4 cpuset_write_resmask [vmlinux]:      1360
-> 	0xffffffff803f465d cpufreq_add_dev [vmlinux]:           1352
-> 	0xffffffff803f495b cpufreq_add_dev [vmlinux]:           1352
-> 	0xffffffff803f3fc4 store_scaling_max_freq [vmlinux]:    1328
-> 	0xffffffff803f4064 store_scaling_min_freq [vmlinux]:    1328
-> 	0xffffffff803f44c4 cpufreq_update_policy [vmlinux]:     1328
-> 	..
-> 
-> and sys_init_module is actually way way down the list. I bet the only 
-> reason it showed up at all was because dynamically it was such a deep 
-> callchain, and part of that callchain probably called some of those really 
-> nasty things.
-> 
-> Anyway, the reason smp_call_function_mask and friends have such _huge_ 
-> stack usages for you is that they contain a 'cpumask_t' on the stack.
-> 
-> For example, for me, usign a sane NR_CPU, the size of the stack frame for 
-> smp_call_function_mask is under 200 bytes.  For you, it's 2736 bytes.
-> 
-> How about you make CONFIG_NR_CPU's something _sane_? Like 16? Or do you 
-> really have four thousand CPU's in that system?
-> 
-> Oh, I guess you have the MAXSMP config enabled? I really think that was a 
-> bit too aggressive.
-> 
-> 		Linus
+First, thanks for taking the time for the review!
 
-This probably all started when I was working on a software tool (aiod)
-that was failing because somebody ELSE had 4,096 CPUs configured.
-[[Seems that gcc had/has? it's MAX CPU value set to 1,024 (bits/sched.h
-__CPU_SETSIZE), so when you issue system calls like sched_getaffinity,
-it will "fail" for systems configured w/ 4,096 CPUs. I worked around it
-by simply forgetting about the gcc values, and kept allocating larger
-CPU masks until it worked.]]
+I can do that. But how? Do I respin everything as x/5? Do I only send out
+the PERL script as 5/4? Do I redo patch 1 as 1a/4 and 1b/4 (or 1.1/4 and
+1.2/4)?
 
-I think you're right: the kernel as a whole may not be ready for 4,096
-CPUs apparently...
+> Scanning the actual kernel code you have a lot of #ifdef's that should  
+> be cleaned up:
+> 
+> Can't #ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_SYSFS just be #ifdef  
+> CONFIG_SYSFS and the same for CONFIG_PPC_750GX_DUAL_PLL_IF_HRTIMER &  
+> CONFIG_PPC_750GX_DUAL_PLL_IF_CPU_FREQ?
+> 
+I like flexibility. So I allow this module to be configured with either
+one or both (or none - if you just want some dead code!) of the available
+interfaces. As an example, CONFIG_..._PLL_IF_SYSFS adds the sysfs
+attribute to directly control the PLL from user space via writes to the
+attribute file under /sys. On my system, a PowerMac 8600, this shows up in
+/sys/devices/system/cpu/cpu0/ppc750gxpll. CONFIG_..._PLL_IF_CPU_FREQ adds
+the public API functions that are used by the cpufreq driver.
+CONFIG_..._PLL_IF_HRTIMER causes it to use the HR timer stuff. This
+results in MUCH lower latencies (102 usec vs 3900 usec (HZ=250)). But I
+did not want to REQUIRE HR timers (even though they are pretty cool!).
+Did I mention that I like flexibility?
 
-Thanks for taking the time to look into this...
+Seriously, should I add a check that at least one of ..._SYSFS or
+..._CPU_FREQ is defined and refuse to compile otherwise? Via a pragma
+or something?
 
-Alan
+> #ifdef CONFIG_PPC_OF seems unnecessary as all PPC always has this set.
+> 
+I ... uh ... have no idea? Should I remove it?
+
+> What's up with #define MULFIRST and the #if 0?
+> 
+This was just some goofing off in a debug message. I was playing around
+trying to see what effect various code arrangements had on accuracy.
+Since this is in debug code I was kinda hoping for some leniancy.
+
+The "#if 0" is removing code that ... prevented preemption between the
+processor speed switch and the changing of the loops_per_jiffy value.
+The idea was that I did not want to change any sleeps. I now think
+that processor speed is not a determining factor in delays. I think
+the time base register (or decrementer) are used. I don't even change
+the loops_per_jiffy any more (Maybe that is incorrect?). I left this
+code in there to potentially jog my memory if I find myself debugging
+some problem in the future? Would a comment be helpful?
+
+> - k
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> 
+At the tone the timebase will be 12499983. No trailing 0s. Very bad
+for accuracy.
