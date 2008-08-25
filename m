@@ -1,91 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbYHYTq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756372AbYHYTvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756903AbYHYTq6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 15:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYHYTqu
+	id S1756372AbYHYTvo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 15:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755028AbYHYTvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 15:46:50 -0400
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:50832 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753685AbYHYTqu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 15:46:50 -0400
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Sally-Anne Edwards <sallyanne.edwards@googlemail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <48B3099E.3060407@goop.org>
-References: <39fd98ca0808240801x7edbe0e6gf242f08de88cd92c@mail.gmail.com>
-	 <39fd98ca0808240804p454faff9u289abfc074dbea3@mail.gmail.com>
-	 <48B3099E.3060407@goop.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-L5jQEnYYhYFrV/62Dhuz"
-Date: Mon, 25 Aug 2008 20:46:41 +0100
-Message-Id: <1219693601.27921.172.camel@localhost.localdomain>
+	Mon, 25 Aug 2008 15:51:36 -0400
+Received: from main.gmane.org ([80.91.229.2]:53030 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754973AbYHYTvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 15:51:35 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: reiser4 for 2.6.27-rc1
+Date: Mon, 25 Aug 2008 16:04:46 -0400
+Message-ID: <g8v2fv$3lp$1@ger.gmane.org>
+References: <4896F56D.7080503@cubic.ch>	<20080813125807.GC6995@ucw.cz>	<20080813131839.GB26351@cs181140183.pp.htv.fi>	<37219a840808130624p3d4dca0bja2935d6f34beaf7e@mail.gmail.com>	<48A2E391.3080404@cubic.ch> <20080813143613.61101a5e@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-SA-Exim-Connect-IP: 192.168.1.5
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: Fwd: domU lenny not working: BUG: unable to handle kernel
-	paging request at e7437cc0
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: pool-71-245-142-197.albyny.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+In-Reply-To: <20080813143613.61101a5e@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox wrote:
+>> And yes, I think Hans lost his right to decide over the name because of 
+>> what he has done. That is no disrespect for his work, only for him as 
+>> person in general, and I do strongly disrespect him as a person.
+> 
+> So should ever reissue of a work by Gary Glitter have the name removed
+> from the cover, every opera by Wagner have the name removed for his
+> attitudes ?
+> 
+> History is a one way street, and you might as well have the fs known the
+> way it is so that people remember "reiser oh wasn't he the guy who.." -
+> unless you are trying to market the fs I guess.
+> 
+A one way street indeed, I see no reason to rename the f/s since the 
+association will remain. People who follow Linux will know anyway, and I 
+doubt most people will remember one more guy who killed his wife during 
+a nasty divorce. Sad to say there's a lot of that around.
 
---=-L5jQEnYYhYFrV/62Dhuz
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 2008-08-25 at 12:35 -0700, Jeremy Fitzhardinge wrote:
-> I haven't see this oops before, but I think the code in question
-> correlates to:
->=20
-> 	bret =3D RING_GET_RESPONSE(&info->ring, i);
-> 	id   =3D bret->id;
-> 	req  =3D (struct request *)info->shadow[id].request;
->=20
-> which suggests the backend driver is passing back a bogus request ID.
->=20
-> What's your host environment?
-
-I believe it's a 64 bit Etch kernel running on a Lenny domain 0. I
-wonder if that kernel doesn't write the protocol field in xenstore so
-the 64 bit backend Sally-Anne is using cannot talk to the 32 bit
-frontend correctly.
-
-Sally, can you run xenstore-ls on the domain's path
-(/local/domain/<domid>). Is there a protocol field in the vbd entry?
-If not can you try starting the domain in the paused state (xm create
--p) and use xenstore-write to fill in the protocol node in the frontend
-to "x86_32-abi". e.g.
-        xenstore write /local/domain/<domid>/device/vbd/<nr>/protocol x86_3=
-2-abi
-before unpausing.
-
-I thought the tools did this (so expected the Lenny tools to be correct)
-but looking at the code it seems it is the domain 0 kernel which does
-it.
-
-Ian.
-
---=20
-Ian Campbell
-
-Success is getting what you want; happiness is wanting what you get.
-
---=-L5jQEnYYhYFrV/62Dhuz
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkizDCAACgkQM0+0qS9rzVnjXwCgr7QSIyHIkN8ZZrkJp3ivQvb7
-8MsAoOjBsc+lJwZlaW/kl3+owJv511ia
-=Cbeq
------END PGP SIGNATURE-----
-
---=-L5jQEnYYhYFrV/62Dhuz--
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
