@@ -1,47 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbYHYHbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbYHYHYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755015AbYHYHbk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 03:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbYHYHbc
+	id S1754914AbYHYHYA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 03:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbYHYHXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 03:31:32 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:41090 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbYHYHbc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 03:31:32 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: "Justin Mattock" <justinmattock@gmail.com>
-Subject: Re: converting appletouch to usb autosuspend again...
-Date: Mon, 25 Aug 2008 09:32:38 +0200
-User-Agent: KMail/1.9.9
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-References: <dd18b0c30808242122h5b6dfc15tf86622595bd46461@mail.gmail.com> <200808250840.06477.oliver@neukum.org> <dd18b0c30808250008t342fad9fr1a54a0662473a38@mail.gmail.com>
-In-Reply-To: <dd18b0c30808250008t342fad9fr1a54a0662473a38@mail.gmail.com>
+	Mon, 25 Aug 2008 03:23:51 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:41471 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751549AbYHYHXu (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 03:23:50 -0400
+Date: Mon, 25 Aug 2008 09:23:46 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Will Marone <wjmarone@gmail.com>
+cc: Jared Hulbert <jaredeh@gmail.com>, Linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>, tim.bird@AM.SONY.COM
+Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
+In-Reply-To: <48AF3905.70304@gmail.com>
+Message-ID: <Pine.LNX.4.64.0808250922500.3893@vixen.sonytel.be>
+References: <48AD00C4.6060302@gmail.com> <Pine.LNX.4.64.0808221650500.17105@vixen.sonytel.be>
+ <48AF3905.70304@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808250932.39133.oliver@neukum.org>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1942548691-1219649026=:3893"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 25 August 2008 09:08:49 schrieb Justin Mattock:
-> Alright; as for the appletouch
-> not working upon wakeup, I just tried it to see,
-> and it is working...(can't explain why it wasn't, maybe a quirk somwhere);
-> Although; I am receiving an error, so maybe this has something to
-> do with it(heres the thread):
-> http://marc.info/?l=linux-kernel&m=121926203029380&q=raw
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-That's bluetooth. Totally unrelated.
+---584349381-1942548691-1219649026=:3893
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-So to summarize: suspend/resume has been tested and works.
-What about autosuspend? Did you test that?
+On Fri, 22 Aug 2008, Will Marone wrote:
+> Geert Uytterhoeven wrote:
+> > I gave AxFS a try on PS3 (ppc64, always use big-endian 64-bit for testing
+> > new
+> > code ;-).
+> > When mounting the image, I got the crash below:
+> >
+> > | attempt to access beyond end of device
+> > | loop0: rw=0, want=4920, limit=4912
+> > | Unable to handle kernel paging request for data at address 0x00000028
+> > | Faulting instruction address: 0xd000000000037988
+> > | Oops: Kernel access of bad area, sig: 11 [#1]
+> > | SMP NR_CPUS=2 PS3
+> >
+> > When mounting (also on PS3) an image created on ia32, I get a different
+> > crash:
+> >
+> > | axfs: wrong magic
+> >   ^^^^^^^^^^^^^^^^^
+> > | Unable to handle kernel paging request for data at address 0x000003a8
+> > | Faulting instruction address: 0xd0000000000355f0
+> > | Oops: Kernel access of bad area, sig: 11 [#1]
+> > | SMP NR_CPUS=2 PS
+> Geert,
+> 
+> Thanks for giving it a spin, especially on a platform as different from ours
+> as the PS3.
+> 
+> Before I dig more into what happened, I was wondering if you could tell me a
+> bit more
+> about your environment, particularly how you supplied the filesystem to the
+> kernel and
+> your mount commandline (also, if you used a boot commandline, what it was.)
+> 
+> My first guess would be a ppc64 compiled UML session, but I'd like to be a bit
+> more sure.
 
-	Regards
-		Oliver
+Nope, I just built axfs as a module and insmoded it. After that
 
+    mount image.axfs /mnt -o loop -t axfs
+
+So nothing fancy.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-1942548691-1219649026=:3893--
