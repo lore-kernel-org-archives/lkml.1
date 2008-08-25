@@ -1,99 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbYHYLBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbYHYIkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755425AbYHYLBZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 07:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757227AbYHYK7L
+	id S1754769AbYHYIkA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 04:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbYHYIjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 06:59:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51893 "EHLO hera.kernel.org"
+	Mon, 25 Aug 2008 04:39:51 -0400
+Received: from ns1.suse.de ([195.135.220.2]:47941 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756749AbYHYK7G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 06:59:06 -0400
-From: Tejun Heo <tj@kernel.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: James.Bottomley@HansenPartnership.com, bzolnier@gmail.com,
-       bharrosh@panasas.com, greg.freemyer@gmail.com,
-       linux-scsi@vger.kernel.org, brking@linux.vnet.ibm.com, liml@rtr.ca,
-       viro@ftp.linux.org.uk, linux-ide@vger.kernel.org, neilb@suse.de,
-       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
-Subject: [PATCH 05/13] block: unify sysfs size node handling
-Date: Mon, 25 Aug 2008 19:56:09 +0900
-Message-Id: <1219661777-17648-6-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1219661777-17648-1-git-send-email-tj@kernel.org>
-References: <1219661777-17648-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 Aug 2008 10:57:37 +0000 (UTC)
+	id S1752281AbYHYIjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 04:39:51 -0400
+Date: Mon, 25 Aug 2008 10:39:48 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Vivek Goyal <vgoyal@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: only put e820 ram entries in resource tree
+Message-ID: <20080825103948.6ba5757c@halley.suse.de>
+In-Reply-To: <1219617897-9870-1-git-send-email-yhlu.kernel@gmail.com>
+References: <1219617897-9870-1-git-send-email-yhlu.kernel@gmail.com>
+Organization: SUSE Linux Products GmbH
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that capacity and __dev are moved to part0, part0 and others can
-share the same method.
+* Yinghai Lu [2008-08-24 15:44]:
+>
+> may need user to have new kexec tools that could create e820 table
+> from /sys/firmware/memmap instead of /proc/iomem for second kernel
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
- block/genhd.c         |   10 +---------
- fs/partitions/check.c |    4 ++--
- include/linux/genhd.h |    3 +++
- 3 files changed, 6 insertions(+), 11 deletions(-)
+2.0.0 has that implemented.
 
-diff --git a/block/genhd.c b/block/genhd.c
-index aca135a..b560d71 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -761,14 +761,6 @@ static ssize_t disk_ro_show(struct device *dev,
- 	return sprintf(buf, "%d\n", disk->policy ? 1 : 0);
- }
- 
--static ssize_t disk_size_show(struct device *dev,
--			      struct device_attribute *attr, char *buf)
--{
--	struct gendisk *disk = dev_to_disk(dev);
--
--	return sprintf(buf, "%llu\n", (unsigned long long)get_capacity(disk));
--}
--
- static ssize_t disk_capability_show(struct device *dev,
- 				    struct device_attribute *attr, char *buf)
- {
-@@ -836,7 +828,7 @@ static DEVICE_ATTR(range, S_IRUGO, disk_range_show, NULL);
- static DEVICE_ATTR(ext_range, S_IRUGO, disk_ext_range_show, NULL);
- static DEVICE_ATTR(removable, S_IRUGO, disk_removable_show, NULL);
- static DEVICE_ATTR(ro, S_IRUGO, disk_ro_show, NULL);
--static DEVICE_ATTR(size, S_IRUGO, disk_size_show, NULL);
-+static DEVICE_ATTR(size, S_IRUGO, part_size_show, NULL);
- static DEVICE_ATTR(capability, S_IRUGO, disk_capability_show, NULL);
- static DEVICE_ATTR(stat, S_IRUGO, disk_stat_show, NULL);
- #ifdef CONFIG_FAIL_MAKE_REQUEST
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 540ef84..9ab3e64 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -208,8 +208,8 @@ static ssize_t part_start_show(struct device *dev,
- 	return sprintf(buf, "%llu\n",(unsigned long long)p->start_sect);
- }
- 
--static ssize_t part_size_show(struct device *dev,
--			      struct device_attribute *attr, char *buf)
-+ssize_t part_size_show(struct device *dev,
-+		       struct device_attribute *attr, char *buf)
- {
- 	struct hd_struct *p = dev_to_part(dev);
- 	return sprintf(buf, "%llu\n",(unsigned long long)p->nr_sects);
-diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index 242effa..e89559a 100644
---- a/include/linux/genhd.h
-+++ b/include/linux/genhd.h
-@@ -601,6 +601,9 @@ extern void blk_register_region(dev_t devt, unsigned long range,
- 			void *data);
- extern void blk_unregister_region(dev_t devt, unsigned long range);
- 
-+extern ssize_t part_size_show(struct device *dev,
-+			      struct device_attribute *attr, char *buf);
-+
- #else /* CONFIG_BLOCK */
- 
- static inline void printk_all_partitions(void) { }
+
+
+Bernhard
 -- 
-1.5.4.5
-
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
