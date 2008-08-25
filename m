@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbYHYWL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756304AbYHYWPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757379AbYHYWL3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 18:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYHYWLV
+	id S1756304AbYHYWPf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 18:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYHYWP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 18:11:21 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:37666 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753213AbYHYWLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 18:11:20 -0400
-Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Grant Coady <gcoady.lk@gmail.com>
-Cc: Ian Campbell <ijc@hellion.org.uk>, John Ronciak <john.ronciak@gmail.com>,
-       linux-kernel@vger.kernel.org, neilb@suse.de, bfields@fieldses.org,
-       linux-nfs@vger.kernel.org, Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       e1000-devel@lists.sourceforge.net
-In-Reply-To: <4156b4tgrrsflla1svmu4jl6j5sme4a715@4ax.com>
-References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com>
-	 <1219087258.7192.19.camel@localhost>
-	 <1219400624.18774.67.camel@zakaz.uk.xensource.com>
-	 <1219428489.6919.21.camel@localhost>
-	 <1219428818.27921.43.camel@localhost.localdomain>
-	 <56a8daef0808221233h68853587n6015ca7d809b17e1@mail.gmail.com>
-	 <1219435207.27921.51.camel@localhost.localdomain>
-	 <1219440202.9097.14.camel@localhost>
-	 <1219441041.27921.57.camel@localhost.localdomain>
-	 <1219442213.9097.25.camel@localhost>
-	 <4156b4tgrrsflla1svmu4jl6j5sme4a715@4ax.com>
-Content-Type: text/plain
-Date: Mon, 25 Aug 2008 18:11:12 -0400
-Message-Id: <1219702272.7665.56.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 25 Aug 2008 18:15:28 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:31976 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751173AbYHYWP1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 18:15:27 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 0/5] use lspci style for [%04x:%04x] vendor/device
+Date: Mon, 25 Aug 2008 16:15:24 -0600
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <20080825220137.19210.41857.stgit@tigger.helgaas> <20080825150525.6f1b5706@infradead.org>
+In-Reply-To: <20080825150525.6f1b5706@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 2FE36358C498F7801FB48D02F91D5F13464660AE
-X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 28 max/h 2 blacklist 0 greylist 0 ratelimit 0
+Content-Disposition: inline
+Message-Id: <200808251615.24785.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-26 at 06:23 +1000, Grant Coady wrote:
-> On Fri, 22 Aug 2008 14:56:53 -0700, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+On Monday 25 August 2008 04:05:25 pm Arjan van de Ven wrote:
+> On Mon, 25 Aug 2008 16:01:38 -0600
+> Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 > 
-> >On Fri, 2008-08-22 at 22:37 +0100, Ian Campbell wrote:
-> >> I can ssh to the server fine. The same server also serves my NFS home
-> >> directory to the box I'm writing this from and I've not seen any trouble
-> >> with this box at all, it's a 2.6.18-xen box.
-> >
-> >OK... Are you able to reproduce the problem reliably?
-> >
-> >If so, can you provide me with a binary tcpdump or wireshark dump? If
-> >using tcpdump, then please use something like
-> >
-> >   tcpdump -w /tmp/dump.out -s 90000 host myserver.foo.bar and port 2049
->                              ^^^^^^^^-->  typo?
+> > These patches change various debug messages to use "[%04x:%04x]" for
+> > PCI vendor/device IDs to follow the format used by lspci(8).
+> 
+> I hope you're adding a new whicked special format specifier for this
+> ... taking a PCI dev struct as argument.
+> 
+> That's be really nice to have;-)
 
-No. The intention was to record _all_ the info in the packet for
-analysis, not just random header info.
-
-Trond
-
+Huh, that's kind of a cool idea.  The %p<x> namespace is unlimited,
+right?  If it were only a single character specifier, this one doesn't
+seem common enough to eat 1/26 of the space.
