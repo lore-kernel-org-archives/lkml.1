@@ -1,86 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbYHYPE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbYHYPM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754690AbYHYPE1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 11:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYHYPES
+	id S1754530AbYHYPM0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 11:12:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYHYPMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 11:04:18 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39689 "EHLO mx2.suse.de"
+	Mon, 25 Aug 2008 11:12:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56994 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752027AbYHYPES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 11:04:18 -0400
-From: Oliver Neukum <oneukum@suse.de>
-Organization: Novell
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] Power management for SCSI
-Date: Mon, 25 Aug 2008 17:05:27 +0200
-User-Agent: KMail/1.9.9
-Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org,
-       James.Bottomley@hansenpartnership.com,
-       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
-References: <Pine.LNX.4.44L0.0808251033460.6462-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0808251033460.6462-100000@iolanthe.rowland.org>
+	id S1752740AbYHYPMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 11:12:16 -0400
+Date: Mon, 25 Aug 2008 10:19:01 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Bernhard Walle <bwalle@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: only put e820 ram entries in resource tree
+Message-ID: <20080825141901.GE18914@redhat.com>
+References: <1219617897-9870-1-git-send-email-yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808251705.28455.oneukum@suse.de>
+In-Reply-To: <1219617897-9870-1-git-send-email-yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 25 August 2008 16:45:20 schrieb Alan Stern:
-
-> You didn't answer my question: How does the HLD know whether it's okay 
-> to suspend the link without suspending the device?  I should think that 
-> it _doesn't_ know.
+On Sun, Aug 24, 2008 at 03:44:57PM -0700, Yinghai Lu wrote:
+> may need user to have new kexec tools that could create e820 table
+> from /sys/firmware/memmap instead of /proc/iomem for second kernel
 > 
-> The transport class code might know, or the link's driver -- but not
-> the HLD.  The HLD probably doesn't even know what type of transport is
-> being used!
-
-There's some truth to that. Unfortunately the transport does not know
-whether a device or link may be suspended. Take the case of a CD playing
-sound. The transport may know what the consequences of suspending
-a link will be to the devices, but only the devices know whether the
-consequences are acceptable.
-
-> > I am talking about correctness for controllers. So remote wakeup may or may not
-> > be available. Likewise the bus may be able to predict how long it'll be idle.
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> Cc: Bernhard Walle <bwalle@suse.de>
+> Cc: Vivek Goyal <vgoyal@redhat.com>
+> Cc: "Eric W. Biederman" <ebiederm@xmission.com>
 > 
-> I don't understand.  Are you saying that whether or not it's correct to
-> suspend a link depends on whether the device may need to talk to the
-> CPU at unpredictable times?  And if so, isn't that the same as saying
+> Index: linux-2.6/arch/x86/kernel/e820.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/e820.c
+> +++ linux-2.6/arch/x86/kernel/e820.c
+> @@ -1279,6 +1279,10 @@ void __init e820_reserve_resources(void)
+>  
+>  	res = alloc_bootmem_low(sizeof(struct resource) * e820.nr_map);
+>  	for (i = 0; i < e820.nr_map; i++) {
+> +		if (e820.map[i].type != E820_RAM) {
+> +			res++;
+> +			continue;
+> +		}
+>  		end = e820.map[i].addr + e820.map[i].size - 1;
+>  #ifndef CONFIG_RESOURCES_64BIT
+>  		if (end > 0x100000000ULL) {
 
-Yes.
+I think this will wipe out ACPI related entries also from /proc/iomem
+and kdump will be broken as second kernel needs to know about the ACPI
+areas.
 
-> that remote wakeup for the link can be enabled?
+Though, if all these entries are available in /sys/firmware/memap then
+probably one can modify kexec-tools to grep RAM entries from /proc/iomem and
+rest of the entries from /sys/firmware/memmap.
 
-Remote wakeup is a concept specific to USB. If you are writing for
-a generic system the question is indeed whether devices may want
-to talk to the host and whether they can.
-It seems to me that the ULD will know whether its devices will need
-to talk to the CPU.
- 
-> > That's the problem. You don't tell the children when the parent might want
-> > to suspend.
-> 
-> Why should the children need to know?
+I would not prefer doing that it makes the logic twisted.
 
-Because they'll want to do things like flushing caches.
- 
-> 	If the children are already suspended then we certainly don't
-> 	need to tell them the link is going down.
-
-Yes.
- 
-> 	If the children are active, then the link's driver or the
-> 	transport class must already have given the okay for
-> 	suspending the link while leaving the children active.
-
-Because the transport class may not know either.
-
-	Regards
-		Oliver
+Thanks
+Vivek
