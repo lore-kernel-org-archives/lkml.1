@@ -1,114 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbYHYElh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbYHYCF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754196AbYHYElh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 00:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbYHYEl3
+	id S1754352AbYHYCF0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 22:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbYHYCFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 00:41:29 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:14452 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750990AbYHYEl2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 00:41:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=GXYQImBwxzvpOJ42CXErOpe6egOKB1cjLPc4XhNpxuA6MmtmDuIqTxhhYMg9og4rac
-         Tf8EdrZOQzynbVoiLZqiZhG0hSbf4wrxZDk/BAJZGsScFkur1TEfl/CvCa35TRBNsjaQ
-         /igYa+fSj4Yczcc9+cnGPBoy0E2SLfaTpQJ+s=
-Message-ID: <86802c440808242141j716b5875s709dc56c1163a7d5@mail.gmail.com>
-Date: Sun, 24 Aug 2008 21:41:28 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "David Witbrodt" <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <914225.91320.qm@web82104.mail.mud.yahoo.com>
+	Sun, 24 Aug 2008 22:05:14 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:50375 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752731AbYHYCFN (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 22:05:13 -0400
+Message-ID: <48B21507.9050708@sgi.com>
+Date: Mon, 25 Aug 2008 12:12:23 +1000
+From: Lachlan McIlroy <lachlan@sgi.com>
+Reply-To: lachlan@sgi.com
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_41730_6380725.1219639288110"
-References: <914225.91320.qm@web82104.mail.mud.yahoo.com>
+To: Daniel J Blueman <daniel.blueman@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+       hch@lst.de
+Subject: Re: [2.6.27-rc4] XFS i_lock vs i_iolock...
+References: <6278d2220808221412x28f4ac5dl508884c8030b364a@mail.gmail.com> <20080825010213.GO5706@disturbed>
+In-Reply-To: <20080825010213.GO5706@disturbed>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_41730_6380725.1219639288110
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On Sun, Aug 24, 2008 at 7:00 PM, David Witbrodt <dawitbro@sbcglobal.net> wrote:
->
->
->> after discussing with Ingo, we have one more generic way to detect the
->> same situation.
+Dave Chinner wrote:
+> On Fri, Aug 22, 2008 at 10:12:59PM +0100, Daniel J Blueman wrote:
+>> On 2.6.27-rc4 with various debug options enabled, lockdep claims lock
+>> ordering issues with XFS [1] - easiest reproducer is just running
+>> xfs_fsr. Mount options I was using were
+>> 'nobarrier,noatime,nodiratime'.
 >>
->> please help to verify the attached patch. ( don't apply previous patch)
->
-> Geez, a guy tries to leave so he doesn't get banned because of his stupid
-> webmail client, and...  oh, never mind...  ;)
->
->
-> Results:
->
-> 1) patch applied perfectly to tip/master.
->
-> 2) patched file compiles without warning or error.
-> (I thought there would be a type mismatch -- the "base" variable in your
-> patch is unsigned long, while "res->start" is resource_size_t ==>
-> u64 ==> unsigned long long, but I must have been mistaken.)
->
-> 3) kernel builds fine
->
-> 4) reboot hangs at the familiar call of inet_init()
->
+>> Thanks,
+>>   Daniel
+>>
+>> --- [1]
+>>
+>> =======================================================
+>> [ INFO: possible circular locking dependency detected ]
+>> 2.6.27-rc4-224c #1
+>> -------------------------------------------------------
+>> xfs_fsr/5763 is trying to acquire lock:
+>>  (&(&ip->i_lock)->mr_lock/2){--..}, at: [<ffffffff803ad8fc>] xfs_ilock+0x8c/0xb0
+>>
+>> but task is already holding lock:
+>>  (&(&ip->i_iolock)->mr_lock/3){--..}, at: [<ffffffff803ad915>]
+>> xfs_ilock+0xa5/0xb0
+> 
+> False positive. We do:
+> 
+> 	xfs_lock_two_inodes(ip, tip, XFS_IOLOCK_EXCL | XFS_ILOCK_EXCL);
 
-this one should work. please apply this one only.
+Why not just change the above line to two lines:
+	xfs_lock_two_inodes(ip, tip, XFS_IOLOCK_EXCL);
+	xfs_lock_two_inodes(ip, tip, XFS_ILOCK_EXCL);
 
-YH
 
-------=_Part_41730_6380725.1219639288110
-Content-Type: text/x-patch; name=check_res_with_bar_v2.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fkaloxoc0
-Content-Disposition: attachment; filename=check_res_with_bar_v2.patch
-
-W1BBVENIXSB4ODY6IGNoZWNrIGhwZXQgd2l0aCBCQVIgdjIKCmluc2VydCBzb21lIHJlc291cmNl
-cyB0byByZXNvdXJjZSB0cmVlIGZvcmNpbHksIHNvIGNvdWxkIGF2b2lkIGtlcm5lbCB1cGRhdGUg
-dGhlCnJlc291cmNlcyBpbiBwY2kgZGV2aWNlLgoKc2hvdWxkIGNoZWNrIGluIGRldmljZSB0b28u
-CgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aGx1Lmtlcm5lbEBnbWFpbC5jb20+CgotLS0K
-IGFyY2gveDg2L3BjaS9pMzg2LmMgfCAgIDQzICsrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysKIDEgZmlsZSBjaGFuZ2VkLCA0MyBpbnNlcnRpb25zKCspCgpJbmRleDog
-bGludXgtMi42L2FyY2gveDg2L3BjaS9pMzg2LmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9y
-aWcvYXJjaC94ODYvcGNpL2kzODYuYworKysgbGludXgtMi42L2FyY2gveDg2L3BjaS9pMzg2LmMK
-QEAgLTMzLDYgKzMzLDcgQEAKICNpbmNsdWRlIDxsaW51eC9ib290bWVtLmg+CiAKICNpbmNsdWRl
-IDxhc20vcGF0Lmg+CisjaW5jbHVkZSA8YXNtL2hwZXQuaD4KIAogI2luY2x1ZGUgInBjaS5oIgog
-CkBAIC03Nyw2ICs3OCwzMCBAQCBwY2liaW9zX2FsaWduX3Jlc291cmNlKHZvaWQgKmRhdGEsIHN0
-cnVjCiB9CiBFWFBPUlRfU1lNQk9MKHBjaWJpb3NfYWxpZ25fcmVzb3VyY2UpOwogCitzdGF0aWMg
-aW50IGNoZWNrX3Jlc193aXRoX3ZhbGlkKHN0cnVjdCBwY2lfZGV2ICpkZXYsIHN0cnVjdCByZXNv
-dXJjZSAqcmVzKQoreworCXVuc2lnbmVkIGxvbmcgYmFzZTsKKwl1bnNpZ25lZCBsb25nIHNpemU7
-CisKKwliYXNlID0gcmVzLT5zdGFydDsKKwlzaXplID0gKHJlcy0+c3RhcnQgPT0gMCAmJiByZXMt
-PmVuZCA9PSByZXMtPnN0YXJ0KSA/IDAgOgorCQkgKHJlcy0+ZW5kIC0gcmVzLT5zdGFydCArIDEp
-OworCisJaWYgKCFiYXNlIHx8ICFzaXplKQorCQlyZXR1cm4gMDsKKworI2lmZGVmIENPTkZJR19I
-UEVUX1RJTUVSCisJLyogZm9yIGhwZXQgKi8KKwlpZiAoYmFzZSA9PSBocGV0X2FkZHJlc3MgJiYg
-KHJlcy0+ZmxhZ3MgJiBJT1JFU09VUkNFX01FTSkpIHsKKwkJZGV2X2luZm8oJmRldi0+ZGV2LCAi
-QkFSIGhhcyBIUEVUIGF0ICUwOGx4LSUwOGx4XG4iLAorCQkJCSBiYXNlLCBiYXNlICsgc2l6ZSAt
-IDEpOworCQlyZXR1cm4gMTsKKwl9CisjZW5kaWYKKworCXJldHVybiAwOworfQorCiAvKgogICog
-IEhhbmRsZSByZXNvdXJjZXMgb2YgUENJIGRldmljZXMuICBJZiB0aGUgd29ybGQgd2VyZSBwZXJm
-ZWN0LCB3ZSBjb3VsZAogICogIGp1c3QgYWxsb2NhdGUgYWxsIHRoZSByZXNvdXJjZSByZWdpb25z
-IGFuZCBkbyBub3RoaW5nIG1vcmUuICBJdCBpc24ndC4KQEAgLTE3MSw2ICsxOTYsMjIgQEAgc3Rh
-dGljIHZvaWQgX19pbml0IHBjaWJpb3NfYWxsb2NhdGVfcmVzbwogCQkJCQlyLT5mbGFncywgZGlz
-YWJsZWQsIHBhc3MpOwogCQkJCXByID0gcGNpX2ZpbmRfcGFyZW50X3Jlc291cmNlKGRldiwgcik7
-CiAJCQkJaWYgKCFwciB8fCByZXF1ZXN0X3Jlc291cmNlKHByLCByKSA8IDApIHsKKwkJCQkJaWYg
-KGNoZWNrX3Jlc193aXRoX3ZhbGlkKGRldiwgcikpIHsKKwkJCQkJCXN0cnVjdCByZXNvdXJjZSAq
-cm9vdCA9IE5VTEw7CisKKwkJCQkJCS8qCisJCQkJCQkgKiBmb3JjaWJseSBpbnNlcnQgaXQgaW50
-byB0aGUKKwkJCQkJCSAqIHJlc291cmNlIHRyZWUKKwkJCQkJCSAqLworCQkJCQkJaWYgKHItPmZs
-YWdzICYgSU9SRVNPVVJDRV9NRU0pCisJCQkJCQkJcm9vdCA9ICZpb21lbV9yZXNvdXJjZTsKKwkJ
-CQkJCWVsc2UgaWYgKHItPmZsYWdzICYgSU9SRVNPVVJDRV9JTykKKwkJCQkJCQlyb290ID0gJmlv
-cG9ydF9yZXNvdXJjZTsKKworCQkJCQkJaWYgKHJvb3QpCisJCQkJCQkJaW5zZXJ0X3Jlc291cmNl
-KHJvb3QsIHIpOworCQkJCQkJY29udGludWU7CisJCQkJCX0KIAkJCQkJZGV2X2VycigmZGV2LT5k
-ZXYsICJCQVIgJWQ6IGNhbid0ICIKIAkJCQkJCSJhbGxvY2F0ZSByZXNvdXJjZVxuIiwgaWR4KTsK
-IAkJCQkJLyogV2UnbGwgYXNzaWduIGEgbmV3IGFkZHJlc3MgbGF0ZXIgKi8K
-------=_Part_41730_6380725.1219639288110--
+> 	.....
+> 	xfs_iunlock(ip, XFS_ILOCK_EXCL);
+> 	xfs_iunlock(tip, XFS_ILOCK_EXCL);
+> 	.....
+> 	xfs_lock_two_inodes(ip, tip, XFS_ILOCK_EXCL);
+> 
+> Which is a perfectly valid thing to do.
+> 
+> The problem is that lockdep is complaining about the second call
+> to xfs_lock_two_inodes(), which uses the subclasses 2 and 3.
+> effectively it is seeing:
+> 
+> 	xfs_lock_two_inodes(ip, tip, XFS_IOLOCK_EXCL | XFS_ILOCK_EXCL);
+> 		iolock/2
+> 		ilock/2
+> 		iolock/3
+> 		ilock/3
+> 	.....
+> 	xfs_lock_two_inodes(ip, tip, XFS_ILOCK_EXCL);
+> 		ilock/2
+> 		ilock/3
+> 
+> 
+> But because the original lock order was ilock/2->iolock/3, the
+> second call to xfs_lock_two_inodes is seeing iolock/3->ilock/2
+> which it then complains about....
+> 
+> Christoph - I think we're going to need to pass a lockdep 'order'
+> flag into xfs_lock_two_inodes() to avoid this so the second call
+> can use different classes to the first call. Or perhaps a '_nested'
+> variant of the call...
+> 
+> Cheers,
+> 
+> Dave.
