@@ -1,1295 +1,892 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbYHYKy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbYHYLCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757050AbYHYKy6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 06:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753982AbYHYKyt
+	id S1758112AbYHYLCA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 07:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755545AbYHYK71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 06:54:49 -0400
-Received: from smtpauth.hypersurf.com ([209.237.0.8]:50341 "EHLO
-	smtpauth.hypersurf.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754134AbYHYKyq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 06:54:46 -0400
-Message-ID: <48B28F23.1000906@hypersurf.com>
-Date: Mon, 25 Aug 2008 03:53:23 -0700
-From: Kevin Diggs <kevdig@hypersurf.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i486; en-US; rv:1.8b2) Gecko/20050724
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] Add cpufreq driver for the IBM PowerPC 750GX
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Aug 2008 06:59:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51902 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757324AbYHYK7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 06:59:23 -0400
+From: Tejun Heo <tj@kernel.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: James.Bottomley@HansenPartnership.com, bzolnier@gmail.com,
+       bharrosh@panasas.com, greg.freemyer@gmail.com,
+       linux-scsi@vger.kernel.org, brking@linux.vnet.ibm.com, liml@rtr.ca,
+       viro@ftp.linux.org.uk, linux-ide@vger.kernel.org, neilb@suse.de,
+       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
+Subject: [PATCH 10/13] block: move stats from disk to part0
+Date: Mon, 25 Aug 2008 19:56:14 +0900
+Message-Id: <1219661777-17648-11-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <1219661777-17648-1-git-send-email-tj@kernel.org>
+References: <1219661777-17648-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 Aug 2008 10:57:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds the actual cpufreq driver for the 750GX. It supports all integer
-ratios that are valid for the processor model and bus frequency.
+Move stats related fields - stamp, in_flight, dkstats - from disk to
+part0 and unify stat handling such that...
 
-It has two modes of operation. Normal mode uses all valid frequencies. In
-minmaxmode, only the minimum and maximum are used. This provides the ability
-for very low latency frequency switches.
+* part_stat_*() now updates part0 together if the specified partition
+  is not part0.  ie. part_stat_*() are now essentially all_stat_*().
 
-There is also a sysfs attribute to have it switch off the unused PLL for
-additional power savings.
+* {disk|all}_stat_*() are gone.
 
-This does NOT support SMP.
+* part_round_stats() is updated similary.  It handles part0 stats
+  automatically and disk_round_stats() is killed.
 
-My name is Kevin Diggs and I approve this patch.
+* part_{inc|dec}_in_fligh() is implemented which automatically updates
+  part0 stats for parts other than part0.
 
-Signed-off-by: Kevin Diggs <kevdig@hypersurf.com>
-Index: Documentation/DocBook/cf750gx.tmpl
-===================================================================
---- /dev/null	2004-08-10 18:55:00.000000000 -0700
-+++ Documentation/DocBook/cf750gx.tmpl	2008-08-20 10:00:14.000000000 -0700
-@@ -0,0 +1,441 @@
-+<?xml version="1.0" encoding="UTF-8"?>
-+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-+	"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" []>
-+
-+<book id="ppc750gx-cpufreq-guide">
-+ <bookinfo>
-+  <title>PowerPC 750GX (and FX?) cpufreq driver guide</title>
-+
-+  <authorgroup>
-+   <author>
-+    <firstname>Kevin</firstname>
-+    <surname>Diggs</surname>
-+   </author>
-+  </authorgroup>
-+
-+    <revhistory>
-+      <revision>
-+	<revnumber>1.0&nbsp;</revnumber>
-+	<date>August 12, 2008</date>
-+	<revremark>Initial revision posted to linuxppc-dev</revremark>
-+      </revision>
-+    </revhistory>
-+
-+  <copyright>
-+   <year>2008</year>
-+   <holder>Kevin Diggs</holder>
-+  </copyright>
-+
-+  <legalnotice>
-+   <para>
-+    This documentation is free software; you can redistribute
-+    it and/or modify it under the terms of the GNU General Public
-+    License as published by the Free Software Foundation; either
-+    version 2 of the License, or (at your option) any later
-+    version.
-+   </para>
-+
-+   <para>
-+    This program is distributed in the hope that it will be
-+    useful, but WITHOUT ANY WARRANTY; without even the implied
-+    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+    See the GNU General Public License for more details.
-+   </para>
-+
-+   <para>
-+    You should have received a copy of the GNU General Public
-+    License along with this program; if not, write to the Free
-+    Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+    MA 02111-1307 USA
-+   </para>
-+
-+   <para>
-+    For more details see the file COPYING in the source
-+    distribution of Linux.
-+   </para>
-+  </legalnotice>
-+
-+  <releaseinfo>
-+   This is the first release of this document coincident with submission of the
-+   driver for inclusion in the kernel.
-+  </releaseinfo>
-+
-+ </bookinfo>
-+
-+ <toc></toc>
-+
-+ <chapter id="introduction">
-+  <title>Introduction</title>
-+  <para>
-+   This guide documents the cpufreq driver for the IBM PowerPC 750GX processor.
-+   It "should" also work with the 750FX but has not been tested.
-+  </para>
-+  <para>
-+   The driver is split into two main parts. The first provides the low level
-+   interface to the PLL configuration register (HID1 - SPR 1009). It is called
-+   pll_if. The second is the actual cpufreq driver, called cf750gx. The pll_if
-+   component handles the details of dealing with the PLL like PLL lock delay
-+   requirements and preventing illegal operations. The cf750gx driver provides
-+   the interface to the cpufreq subsystem. Under control of the specified
-+   governor it will generate the required commands to switch the processor
-+   frequency as requested and send them to pll_if to carry them out.
-+  </para>
-+ </chapter>
-+
-+ <chapter id="MajorComponents">
-+  <title>Major Components</title>
-+
-+  <para>
-+   The IBM 750GX (and FX) processor has a pair of PLLs that can be programmed to
-+   operate at a number of different frequencies. The frequencies are specified
-+   as ratios to the system bus and range from 2 to 20. From 2 to 10 it also
-+   supports half ratios (i.e. 2.5, 3.5) though they are not supported in the
-+   cpufreq driver due to a limitation of not being able to switch from one half
-+   ratio directly to another. It takes 100 usec for a PLL to relock to a
-+   new frequency before it can be used [750GX_ds2-17-05.pdf, Table 3-7,
-+   page 18]. It takes 3 bus clocks for the cpu to switch from one PLL to
-+   another [750GX_ds2-17-05.pdf, paragraph 3, page 44].
-+  </para>
-+
-+  <para>
-+   The cpufreq driver consists of two main parts:
-+  </para>
-+
-+  <itemizedlist>
-+   <listitem>
-+    <para>
-+     cf750gx - the cpufreq driver module
-+    </para>
-+   </listitem>
-+
-+   <listitem>
-+    <para>
-+     pll_if - a low level interface that encapsulates the details of dealing
-+     with the PLL register
-+    </para>
-+   </listitem>
-+  </itemizedlist>
-+
-+  <sect1 id="cf750gx">
-+   <title>cf750gx - The CPUFreq 750GX driver</title>
-+
-+   <para>
-+    cf750gx provides the standard entry points required of a cpufreq driver. They
-+    are:
-+
-+   <itemizedlist>
-+    <listitem>
-+     <para>
-+      cf750gx_verify - verify
-+     </para>
-+    </listitem>
-+
-+    <listitem>
-+     <para>
-+      cf750gx_target - target
-+     </para>
-+    </listitem>
-+
-+    <listitem>
-+     <para>
-+      cf750gx_cpu_init - cpu init
-+     </para>
-+    </listitem>
-+
-+    <listitem>
-+     <para>
-+      cf750gx_cpu_exit - cpu exit
-+     </para>
-+    </listitem>
-+   </itemizedlist>
-+
-+    These routines perform functions as required by the cpufreq subsystem.
-+   </para>
-+
-+   <para>
-+    The driver functions in one of 2 modes:  normal and minmax. In normal mode
-+    it switches between the available frequencies as requested by the current
-+    cpufreq subsystem governor. In minmax mode, it switches between the minimum
-+    and maximum frequencies only.
-+   </para>
-+
-+   <sect2 id="cf750gxModesNormal"><title>Normal Mode</title>
-+    <para>
-+     In normal mode the driver switches between all valid frequencies under
-+     control of the selected governor. The list of valid frequencies is
-+     determined at startup based on the cpu model (FX or GX) and the determined
-+     bus frequency. The cpu model determines the minimum and maximum core
-+     frequencies, though these can be overriden at start up via module
-+     parameters. See Module Parameters. The bus frequency is obtained from
-+     pll_if.
-+    </para>
-+   </sect2>
-+
-+   <sect2 id="cf750gxModesMinMax"><title>MinMax Mode</title>
-+    <para>
-+     In minmax mode the driver switches between the minimum and maximum core
-+     frequencies only. This provides the capability for very low latency
-+     frequency switches. See Module Parameters and sysfs Attributes.
-+    </para>
-+   </sect2>
-+
-+   <sect2 id="cf750gxModuleParameters"><title>Module Parameters</title>
-+    <para>
-+     cf750gx has 3 module parameters:
-+    </para>
-+
-+    <itemizedlist>
-+     <listitem>
-+      <para>
-+       override_max_core
-+      </para>
-+     </listitem>
-+     <listitem>
-+      <para>
-+       override_min_core
-+      </para>
-+     </listitem>
-+     <listitem>
-+      <para>
-+       minmaxmode
-+      </para>
-+     </listitem>
-+    </itemizedlist>
-+
-+    <sect3 id="cf750gxParamOverrideMaxCore"><title>override_max_core</title>
-+     <para>
-+      Normally the maximum frequency the cpu can be clocked is defined by the
-+      cpu model. For the FX it is 800 MHz and 1,000 MHz for the GX. This
-+      parameter allows you to override this maximum. It is specified in KHz.
-+     </para>
-+    </sect3>
-+
-+    <sect3 id="cf750gxParamOverrideMinCore"><title>override_min_core</title>
-+     <para>
-+      Likewise for cpu minimum frequency.
-+     </para>
-+
-+     <note>
-+      <para>
-+       The 750GX on my PowerForce 750GX cpu upgrade seems stable at 250 MHz.
-+       The spec says the minimum for the GX is 500 MHz.
-+      </para>
-+     </note>
-+    </sect3>
-+
-+    <sect3 id="cf750gxParamMinMaxMode"><title>minmaxmode</title>
-+     <para>
-+      This boolean parameter allows one to enable minmax mode on startup.
-+     </para>
-+    </sect3>
-+   </sect2>
-+
-+   <sect2 id="cf750gxsysfsAttributes"><title>sysfs Attributes</title>
-+    <para>
-+     cf750gx has 2 sysfs attributes that can be used to modify its operation.
-+     They are:
-+
-+     <itemizedlist>
-+      <listitem>
-+       <para>
-+	idle_pll_off
-+       </para>
-+      </listitem>
-+
-+      <listitem>
-+       <para>
-+        min_max_mode
-+       </para>
-+      </listitem>
-+     </itemizedlist>
-+
-+     Both are booleans.
-+    </para>
-+
-+    <sect3 id="IdlePllOffAttr"><title>idle_pll_off</title>
-+     <para>
-+      This boolean tells the driver to switch the idle PLL (the one NOT
-+      currently used to drive the cpu core clock) off. Turning the unused PLL
-+      off results in a modest power savings [750GX_ds2-17-05.pdf,
-+      section 5.2.1, page 44].
-+     </para>
-+    </sect3>
-+
-+    <sect3 id="MinMaxModeAttr"><title>min_max_mode</title>
-+     <para>
-+      This attribute controls the same feature as the similarly named module
-+      parameter.
-+     </para>
-+
-+     <note>
-+      <para>
-+       In order to get this to work with the conservative governor, the
-+       "freq_step" attribute must be set to a value that will pick the max
-+       frequency from the 2 element frequency table. A good value is 80 (which
-+       says to jump in frequency by 80% of the maximum on each change).
-+      </para>
-+     </note>
-+    </sect3>
-+   </sect2>
-+  </sect1>
-+
-+  <sect1 id="pll_if">
-+   <title>pll_if - The Low Level PLL Interface Module</title>
-+   <para>
-+    pll_if provides the choice of two interfaces to control the PLL register.
-+    One is via a sysfs attribute. The other is through an exported, public
-+    routine. At least one interface must be selected during kernel
-+    configuration.
-+   </para>
-+
-+   <sect2 id="sysfsInterface"><title>sysfs Interface - ppc750gxpll</title>
-+    <para>
-+     This interface provides a sysfs attribute that can be written to to
-+     directly control the PLL configuration register. The upper 8 or so bits of
-+     the PLL configuration register are read only. This interface takes
-+     advantage of this by using these bits to define which of the writeable
-+     bits contain valid data. The header file
-+     <filename class="headerfile">include/asm-powerpc/pll_if.h</filename>
-+     defines the following macros:
-+
-+     <itemizedlist>
-+      <listitem>
-+       <para>
-+        PLL0_DO_CFG - PLL 0 config (ratio) valid
-+       </para>
-+      </listitem>
-+
-+      <listitem>
-+       <para>
-+        PLL0_DO_RNG - PLL 0 range valid
-+       </para>
-+      </listitem>
-+
-+      <listitem>
-+       <para>
-+        PLL1_DO_CFG - PLL 1 config (ratio) valid
-+       </para>
-+      </listitem>
-+
-+      <listitem>
-+       <para>
-+        PLL1_DO_RNG - PLL 1 range valid
-+       </para>
-+      </listitem>
-+
-+      <listitem>
-+       <para>
-+        PLL_DO_SEL - PLL selection bit valid
-+       </para>
-+      </listitem>
-+     </itemizedlist>
-+
-+     See the PERL script pll.pl for an example of using the sysfs attribute.
-+    </para>
-+   </sect2>
-+
-+   <sect2 id="PublicAPI"><title>Exported, Public Functions Interface</title>
-+    <para>
-+     This interface provides a public API that other code can use. The list of
-+     functions is:
-+
-+     <itemizedlist>
-+      <listitem>
-+       <para>
-+        pllif_pack_state
-+       </para>
-+      </listitem>
-+
-+      <listitem>
-+       <para>
-+        pllif_get_latency
-+       </para>
-+      </listitem>
-+
-+      <listitem>
-+       <para>
-+        pllif_modify_PLL
-+       </para>
-+      </listitem>
-+
-+      <listitem>
-+       <para>
-+        pllif_get_bus_clock
-+       </para>
-+      </listitem>
-+
-+      <listitem>
-+       <para>
-+        pllif_cfg_to_freq
-+       </para>
-+      </listitem>
-+
-+      <listitem>
-+       <para>
-+        pllif_register_pll_switch_cb
-+       </para>
-+      </listitem>
-+
-+      <listitem>
-+       <para>
-+        pllif_unregister_pll_switch_cb
-+       </para>
-+      </listitem>
-+
-+      <listitem>
-+       <para>
-+        pllif_register_pll_lock_cb
-+       </para>
-+      </listitem>
-+
-+      <listitem>
-+       <para>
-+        pllif_unregister_pll_lock_cb
-+       </para>
-+      </listitem>
-+     </itemizedlist>
-+
-+
-+     The embedded documentation from
-+     <filename class="headerfile">include/asm-powerpc/pll_if.h</filename>
-+     and
-+     <filename class="headerfile">arch/powerpc/kernel/cpu/pll_if.c</filename>
-+     is included in the appendix.
-+
-+    </para>
-+   </sect2>
-+
-+   <sect2 id="pllifModuleParameters"><title>Module Parameters</title>
-+    <para>
-+     pll_if has one tunable parameter. override_bus_clock allows you to specify
-+     the bus frequency. This is useful if the code can not determine the value
-+     or gets it wrong. It is in KHz.
-+    </para>
-+
-+    <note>
-+     <para>
-+      This code was developed on a PowerMac 8600 with a PowerLogix 750GX
-+      upgrade card in it. The method used in the code to get the bus frequency
-+      is what worked on this system.
-+     </para>
-+    </note>
-+   </sect2>
-+  </sect1>
-+ </chapter>
-+
-+ <chapter id="Misc"><title>Misc</title>
-+  <sect1 id="pll.pl"><title>pll.pl - A User Friendly pll_if sysfs utility</title>
-+   <para>
-+    pll.pl is a PERL script that provides a user friendly interface to the
-+    pll_if sysfs attribute, cf750gxpll. It provides options to query the
-+    current PLL state, change the configuration of either PLL (when inactive),
-+    and to switch the PLL in use. See the embedded documentation in pll.pl
-+    for details.
-+   </para>
-+  </sect1>
-+ </chapter>
-+ <chapter id="Appendix"><title>Appendix</title>
-+!Finclude/asm-powerpc/pll_if.h pllifGetLatency pllifPackState
-+!Earch/powerpc/kernel/cpu/pll_if.c
-+ </chapter>
-+</book>
-Index: Documentation/DocBook/Makefile
-===================================================================
---- Documentation/DocBook/Makefile.orig	2008-08-13 02:18:51.000000000 -0700
-+++ Documentation/DocBook/Makefile	2008-08-14 02:47:33.000000000 -0700
-@@ -12,7 +12,7 @@ DOCBOOKS := wanbook.xml z8530book.xml mc
-  	    kernel-api.xml filesystems.xml lsm.xml usb.xml kgdb.xml \
-  	    gadget.xml libata.xml mtdnand.xml librs.xml rapidio.xml \
-  	    genericirq.xml s390-drivers.xml uio-howto.xml scsi.xml \
--	    mac80211.xml debugobjects.xml
-+	    mac80211.xml debugobjects.xml cf750gx.xml
+* disk_map_sector_rcu() is updated to return part0 if no part matches.
+  Combined with the above changes, this makes NULL special case
+  handling in callers unnecessary.
 
-  ###
-  # The build process is as follows (targets):
-Index: arch/powerpc/kernel/cpu/cpufreq/Kconfig
-===================================================================
---- /dev/null	2004-08-10 18:55:00.000000000 -0700
-+++ arch/powerpc/kernel/cpu/cpufreq/Kconfig	2008-08-19 00:24:15.000000000 -0700
-@@ -0,0 +1,33 @@
-+#
-+# CPU Frequency scaling
-+#
-+
-+menu "CPU Frequency scaling"
-+
-+source "drivers/cpufreq/Kconfig"
-+
-+if CPU_FREQ
-+
-+comment "CPUFreq processor drivers"
-+
-+config CPU_FREQ_PPC_750GX_DUAL_PLL
-+	tristate "PowerPC 750 FX/GX Dual PLL driver"
-+	depends on !SMP
-+	select PPC_750GX_DUAL_PLL_IF
-+	select CPU_FREQ_TABLE
-+	help
-+	  This driver adds a CPUFreq driver which utilizes the dual
-+	  PLLs found in the IBM 750 FX & GX cpus. This will automatically
-+	  select the pll_if module. It does NOT support SMP.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called cf750gx.
-+
-+	  For details, take a look at <file:Documentation/cpu-freq/> and also
-+	  see the cf750gx DocBook.
-+
-+	  If in doubt, say N.
-+
-+endif	# CPU_FREQ
-+
-+endmenu
-Index: arch/powerpc/kernel/cpu/cpufreq/Makefile
-===================================================================
---- /dev/null	2004-08-10 18:55:00.000000000 -0700
-+++ arch/powerpc/kernel/cpu/cpufreq/Makefile	2008-08-14 02:44:30.000000000 -0700
-@@ -0,0 +1 @@
-+obj-$(CONFIG_CPU_FREQ_PPC_750GX_DUAL_PLL)	+= cf750gx.o
-Index: arch/powerpc/kernel/cpu/cpufreq/cf750gx.c
-===================================================================
---- /dev/null	2004-08-10 18:55:00.000000000 -0700
-+++ arch/powerpc/kernel/cpu/cpufreq/cf750gx.c	2008-08-22 15:54:48.000000000 -0700
-@@ -0,0 +1,736 @@
-+/*
-+ * cf750gx.c - cpufreq driver for the dual PLLs in the 750gx
-+ *
-+ *  Copyright (C) 2008       kevin Diggs
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or (at
-+ *  your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful, but
-+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License along
-+ *  with this program; if not, write to the Free Software Foundation, Inc.,
-+ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/sched.h>
-+#include <linux/cpufreq.h>
-+#include <linux/compiler.h>
-+#include <linux/dmi.h>
-+#include <linux/delay.h>
-+#include "linux/completion.h"
-+
-+#include <asm/processor.h>
-+#include "asm/pll.h"
-+#include "asm/pll_if.h"
-+#include "asm/time.h"
-+
-+#define cf750gxmChangingPll		(0x80000000)
-+#define cf750gxmChangingPllBit		(31)
-+#define cf750gxmTurningIdlePllOff	(0x40000000)
-+#define cf750gxmTurningIdlePllOffBit	(30)
-+
-+struct pll_750fgx_t {
-+	unsigned short min_ratio;	/* min bus ratio */
-+	unsigned short max_ratio;	/* max bus ratio */
-+	unsigned int min_core;		/* min core frequency per spec (KHz) */
-+	unsigned int max_core;		/* max core frequency per spec (KHz) */
-+};
-+
-+#define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, \
-+	"ppc-750gx-cpufreq", msg)
-+
-+MODULE_AUTHOR("Kevin Diggs");
-+MODULE_DESCRIPTION("750GX Dual PLL cpufreq driver");
-+MODULE_LICENSE("GPL");
-+
-+struct cf750gx_t_call_data {
-+	struct cpufreq_freqs freqs;
-+	unsigned long current_pll;
-+	int idle_pll_off;
-+};
-+
-+static const struct pll_750fgx_t __initdata pll_750fx = {
-+	.min_ratio = 2,
-+	.max_ratio = 20,
-+	.min_core = 400000,
-+	.max_core = 800000,
-+};
-+
-+static const struct pll_750fgx_t __initdata pll_750gx = {
-+	.min_ratio = 2,
-+	.max_ratio = 20,
-+	.min_core = 500000,
-+	.max_core = 1000000,
-+};
-+
-+static DECLARE_COMPLETION(cf750gx_v_exit_completion);
-+
-+static unsigned int override_min_core = 0;
-+static unsigned int override_max_core = 0;
-+static unsigned int minmaxmode = 0;
-+
-+static unsigned int cf750gx_v_min_core = 0;
-+static unsigned int cf750gx_v_max_core = 0;
-+static int cf750gx_v_idle_pll_off = 0;
-+static int cf750gx_v_min_max_mode = 0;
-+static unsigned long cf750gx_v_state_bits = 0;
-+
-+static struct cpufreq_frequency_table *cf750gx_v_f_table;
-+static struct cpufreq_frequency_table *cf750gx_v_freq_table;
-+static struct cpufreq_frequency_table *cf750gx_v_min_max_freq_table;
-+
-+static struct cf750gx_t_call_data cf750gx_v_switch_call_data;
-+static struct cf750gx_t_call_data cf750gx_v_lock_call_data;
-+static struct notifier_block cf750gx_v_pll_switch_nb;
-+static struct notifier_block cf750gx_v_pll_lock_nb;
-+
-+static int cf750gx_pll_switch_cb(struct notifier_block *nb, unsigned long
-+	action, void *data)
+* Separate stats show code paths for disk are collapsed into part
+  stats show code paths.
+
+* Rename disk_stat_lock/unlock() to part_stat_lock/unlock()
+
+While at it, reposition stat handling macros a bit and add missing
+parentheses around macro parameters.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ block/blk-core.c           |   84 +++++++++--------------
+ block/blk-merge.c          |   12 +--
+ block/genhd.c              |   97 +++++++--------------------
+ drivers/block/aoe/aoecmd.c |   12 ++--
+ drivers/md/dm.c            |   27 ++++----
+ drivers/md/linear.c        |    9 ++-
+ drivers/md/md.c            |    4 +-
+ drivers/md/multipath.c     |    9 ++-
+ drivers/md/raid0.c         |    9 ++-
+ drivers/md/raid1.c         |    9 ++-
+ drivers/md/raid10.c        |    9 ++-
+ drivers/md/raid5.c         |    9 ++-
+ fs/partitions/check.c      |   12 ++--
+ include/linux/genhd.h      |  159 ++++++++++++-------------------------------
+ 14 files changed, 165 insertions(+), 296 deletions(-)
+
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 3a059cf..0f339ff 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -61,21 +61,17 @@ static void drive_stat_acct(struct request *rq, int new_io)
+ 	if (!blk_fs_request(rq) || !rq->rq_disk)
+ 		return;
+ 
+-	cpu = disk_stat_lock();
++	cpu = part_stat_lock();
+ 	part = disk_map_sector_rcu(rq->rq_disk, rq->sector);
+ 
+ 	if (!new_io)
+-		all_stat_inc(cpu, rq->rq_disk, part, merges[rw], rq->sector);
++		part_stat_inc(cpu, part, merges[rw]);
+ 	else {
+-		disk_round_stats(cpu, rq->rq_disk);
+-		rq->rq_disk->in_flight++;
+-		if (part) {
+-			part_round_stats(cpu, part);
+-			part->in_flight++;
+-		}
++		part_round_stats(cpu, part);
++		part_inc_in_flight(part);
+ 	}
+ 
+-	disk_stat_unlock();
++	part_stat_unlock();
+ }
+ 
+ void blk_queue_congestion_threshold(struct request_queue *q)
+@@ -981,8 +977,22 @@ static inline void add_request(struct request_queue *q, struct request *req)
+ 	__elv_add_request(q, req, ELEVATOR_INSERT_SORT, 0);
+ }
+ 
+-/*
+- * disk_round_stats()	- Round off the performance stats on a struct
++static void part_round_stats_single(int cpu, struct hd_struct *part,
++				    unsigned long now)
 +{
-+struct cf750gx_t_call_data *cd;
-+unsigned int idle_pll;
-+unsigned int pll_off_cmd;
-+unsigned int new_pll;
++	if (now == part->stamp)
++		return;
 +
-+	cd = (struct cf750gx_t_call_data *)data;
++	if (part->in_flight) {
++		__part_stat_add(cpu, part, time_in_queue,
++				part->in_flight * (now - part->stamp));
++		__part_stat_add(cpu, part, io_ticks, (now - part->stamp));
++	}
++	part->stamp = now;
++}
 +
-+	dprintk("%s():  cd->idle_pll_off is %d, new PLL is 0x%x"
-+		", Switched to  %d KHz\n", __func__, cd->idle_pll_off,
-+		cd->current_pll, cd->freqs.new);
-+
-+	cpufreq_notify_transition(&cd->freqs, CPUFREQ_POSTCHANGE);
-+
-+	if (cd->idle_pll_off) {
-+		/*
-+		 * Assemble call to turn idle PLL off. Use the value of
-+		 * current_pll in the call data thing.
-+		 */
-+		idle_pll = get_next_PLL(cd->current_pll)^0x1;
-+
-+		pll_off_cmd = pllif_pack_state(0, 2);
-+
-+		/*
-+		 * Put in correct spot
-+		 */
-+		if (idle_pll) {
-+			/*
-+			 * Use PLL 1
-+			 */
-+			new_pll = ((PLL1_DO_CFG|PLL1_DO_RNG)<<24);
-+		} else {
-+			/*
-+			 * Since active PLL is 1, switch off PLL 0
-+			 */
-+			pll_off_cmd = pll_off_cmd<<(PLL0_CFG_SHIFT-
-+				PLL1_CFG_SHIFT);
-+
-+			new_pll = (PLL0_DO_CFG|PLL0_DO_RNG)<<24;
++/**
++ * part_round_stats()	- Round off the performance stats on a struct
+  * disk_stats.
+  *
+  * The average IO queue length and utilisation statistics are maintained
+@@ -996,36 +1006,15 @@ static inline void add_request(struct request_queue *q, struct request *req)
+  * /proc/diskstats.  This accounts immediately for all queue usage up to
+  * the current jiffies and restarts the counters again.
+  */
+-void disk_round_stats(int cpu, struct gendisk *disk)
+-{
+-	unsigned long now = jiffies;
+-
+-	if (now == disk->stamp)
+-		return;
+-
+-	if (disk->in_flight) {
+-		disk_stat_add(cpu, disk, time_in_queue,
+-			      disk->in_flight * (now - disk->stamp));
+-		disk_stat_add(cpu, disk, io_ticks, (now - disk->stamp));
+-	}
+-	disk->stamp = now;
+-}
+-EXPORT_SYMBOL_GPL(disk_round_stats);
+-
+ void part_round_stats(int cpu, struct hd_struct *part)
+ {
+ 	unsigned long now = jiffies;
+ 
+-	if (now == part->stamp)
+-		return;
+-
+-	if (part->in_flight) {
+-		part_stat_add(cpu, part, time_in_queue,
+-			      part->in_flight * (now - part->stamp));
+-		part_stat_add(cpu, part, io_ticks, (now - part->stamp));
+-	}
+-	part->stamp = now;
++	if (part->partno)
++		part_round_stats_single(cpu, &part_to_disk(part)->part0, now);
++	part_round_stats_single(cpu, part, now);
+ }
++EXPORT_SYMBOL_GPL(part_round_stats);
+ 
+ /*
+  * queue lock must be held
+@@ -1565,11 +1554,10 @@ static int __end_that_request_first(struct request *req, int error,
+ 		struct hd_struct *part;
+ 		int cpu;
+ 
+-		cpu = disk_stat_lock();
++		cpu = part_stat_lock();
+ 		part = disk_map_sector_rcu(req->rq_disk, req->sector);
+-		all_stat_add(cpu, req->rq_disk, part, sectors[rw],
+-			     nr_bytes >> 9, req->sector);
+-		disk_stat_unlock();
++		part_stat_add(cpu, part, sectors[rw], nr_bytes >> 9);
++		part_stat_unlock();
+ 	}
+ 
+ 	total_bytes = bio_nbytes = 0;
+@@ -1756,19 +1744,15 @@ static void end_that_request_last(struct request *req, int error)
+ 		struct hd_struct *part;
+ 		int cpu;
+ 
+-		cpu = disk_stat_lock();
++		cpu = part_stat_lock();
+ 		part = disk_map_sector_rcu(disk, req->sector);
+ 
+-		all_stat_inc(cpu, disk, part, ios[rw], req->sector);
+-		all_stat_add(cpu, disk, part, ticks[rw], duration, req->sector);
+-		disk_round_stats(cpu, disk);
+-		disk->in_flight--;
+-		if (part) {
+-			part_round_stats(cpu, part);
+-			part->in_flight--;
+-		}
++		part_stat_inc(cpu, part, ios[rw]);
++		part_stat_add(cpu, part, ticks[rw], duration);
++		part_round_stats(cpu, part);
++		part_dec_in_flight(part);
+ 
+-		disk_stat_unlock();
++		part_stat_unlock();
+ 	}
+ 
+ 	if (req->end_io)
+diff --git a/block/blk-merge.c b/block/blk-merge.c
+index d926a24..c77196d 100644
+--- a/block/blk-merge.c
++++ b/block/blk-merge.c
+@@ -390,17 +390,13 @@ static int attempt_merge(struct request_queue *q, struct request *req,
+ 		struct hd_struct *part;
+ 		int cpu;
+ 
+-		cpu = disk_stat_lock();
++		cpu = part_stat_lock();
+ 		part = disk_map_sector_rcu(req->rq_disk, req->sector);
+ 
+-		disk_round_stats(cpu, req->rq_disk);
+-		req->rq_disk->in_flight--;
+-		if (part) {
+-			part_round_stats(cpu, part);
+-			part->in_flight--;
+-		}
++		part_round_stats(cpu, part);
++		part_dec_in_flight(part);
+ 
+-		disk_stat_unlock();
++		part_stat_unlock();
+ 	}
+ 
+ 	req->ioprio = ioprio_best(req->ioprio, next->ioprio);
+diff --git a/block/genhd.c b/block/genhd.c
+index b0a11c7..cf8d55e 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -176,7 +176,7 @@ EXPORT_SYMBOL_GPL(disk_part_iter_exit);
+  * while preemption is disabled.
+  *
+  * RETURNS:
+- * Found partition on success, NULL if there's no matching partition.
++ * Found partition on success, part0 is returned if no partition matches
+  */
+ struct hd_struct *disk_map_sector_rcu(struct gendisk *disk, sector_t sector)
+ {
+@@ -189,7 +189,7 @@ struct hd_struct *disk_map_sector_rcu(struct gendisk *disk, sector_t sector)
+ 		    sector < part->start_sect + part->nr_sects)
+ 			return part;
+ 	}
+-	return NULL;
++	return &disk->part0;
+ }
+ EXPORT_SYMBOL_GPL(disk_map_sector_rcu);
+ 
+@@ -582,24 +582,24 @@ void __init printk_all_partitions(void)
+ 		 * numbers in hex - the same format as the root=
+ 		 * option takes.
+ 		 */
+-		printk("%s %10llu %s",
+-		       bdevt_str(disk_devt(disk), devt_buf),
+-		       (unsigned long long)get_capacity(disk) >> 1,
+-		       disk_name(disk, 0, name_buf));
+-		if (disk->driverfs_dev != NULL &&
+-		    disk->driverfs_dev->driver != NULL)
+-			printk(" driver: %s\n",
+-			       disk->driverfs_dev->driver->name);
+-		else
+-			printk(" (driver?)\n");
++		disk_part_iter_init(&piter, disk, DISK_PITER_INCL_PART0);
++		while ((part = disk_part_iter_next(&piter))) {
++			bool is_part0 = part == &disk->part0;
+ 
+-		/* now show the partitions */
+-		disk_part_iter_init(&piter, disk, 0);
+-		while ((part = disk_part_iter_next(&piter)))
+-			printk("  %s %10llu %s\n",
++			printk("%s%s %10llu %s", is_part0 ? "" : "  ",
+ 			       bdevt_str(part_devt(part), devt_buf),
+ 			       (unsigned long long)part->nr_sects >> 1,
+ 			       disk_name(disk, part->partno, name_buf));
++			if (is_part0) {
++				if (disk->driverfs_dev != NULL &&
++				    disk->driverfs_dev->driver != NULL)
++					printk(" driver: %s\n",
++					      disk->driverfs_dev->driver->name);
++				else
++					printk(" (driver?)\n");
++			} else
++				printk("\n");
 +		}
-+
-+		new_pll = new_pll|pll_off_cmd;
-+
-+		set_bit(cf750gxmTurningIdlePllOffBit, &cf750gx_v_state_bits);
-+
-+		(void) pllif_modify_PLL(new_pll, 0);
-+	} else {
-+		clear_bit(cf750gxmChangingPllBit, &cf750gx_v_state_bits);
-+
-+		complete(&cf750gx_v_exit_completion);
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static int cf750gx_pll_lock_cb(struct notifier_block *nb, unsigned long action,
-+	void *data)
-+{
-+struct cf750gx_t_call_data *cd;
-+
-+	cd = (struct cf750gx_t_call_data *)data;
-+
-+	dprintk("%s():  cd->idle_pll_off is %d, new PLL is 0x%x"
-+		", Switched to  %d KHz\n", __func__, cd->idle_pll_off,
-+		cd->current_pll, cd->freqs.new);
-+
-+	if (cd->idle_pll_off) {
-+		/*
-+		 * We want to turn off the inactive (idle) pll. Use the state
-+		 * bits global to figure out whether this call back is for the
-+		 * original, cpufreq ordered frequency change or our turning
-+		 * off of the idle PLL.
-+		 */
-+		if (test_bit(cf750gxmTurningIdlePllOffBit,
-+			&cf750gx_v_state_bits)) {
-+			clear_bit(cf750gxmTurningIdlePllOffBit,
-+				&cf750gx_v_state_bits);
-+			clear_bit(cf750gxmChangingPllBit,
-+				&cf750gx_v_state_bits);
-+			complete(&cf750gx_v_exit_completion);
-+		}
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static inline const char *cf750gx_i_relation_str(unsigned int relation)
-+{
-+	switch (relation) {
-+	case CPUFREQ_RELATION_L:	return "CPUFREQ_RELATION_L";
-+	case CPUFREQ_RELATION_H:	return "CPUFREQ_RELATION_H";
-+	default:			return "relation ??";
-+	}
-+}
-+
-+static int cf750gx_target(struct cpufreq_policy *policy,
-+			       unsigned int target_freq, unsigned int relation)
-+{
-+unsigned int next_index = 0;		/* Index into freq_table */
-+unsigned int next_freq = 0;		/* next frequency from perf table */
-+unsigned int next_perf_state = 0;	/* Index from perf table */
-+int result = 0;
-+unsigned int pll;
-+unsigned int new_pll;
-+unsigned int active_pll;
-+struct cpufreq_freqs freqs;
-+struct cpufreq_frequency_table *ft = cf750gx_v_f_table;
-+
-+	dprintk(__FILE__">%s(, %u KHz, relation %u)-%d:  on cpu %d\n",
-+		__func__, target_freq, relation, __LINE__, policy->cpu);
-+
-+	if (test_and_set_bit(cf750gxmChangingPllBit, &cf750gx_v_state_bits))
-+		return -EAGAIN;
-+
-+	INIT_COMPLETION(cf750gx_v_exit_completion);
-+
-+	result = cpufreq_frequency_table_target(policy,
-+						ft,
-+						target_freq,
-+						relation, &next_index);
-+
-+	if (unlikely(result))
-+		goto cf750gxTargetNoFreq;
-+
-+	next_perf_state = ft[next_index].index;
-+	next_freq = ft[next_index].frequency;
-+	dprintk(__FILE__">%s()-%d:  %d KHz (state=%x) selected from table "
-+		"(%s)\n", __func__, __LINE__, next_freq, next_perf_state,
-+		cf750gx_i_relation_str(relation));
-+
-+	pll = get_PLL();
-+	active_pll = get_active_PLL(pll);
-+
-+#if 0
-+#ifdef CONFIG_HOTPLUG_CPU
-+	/* cpufreq holds the hotplug lock, so we are safe from here on */
-+	cpus_and(online_policy_cpus, cpu_online_map, policy->cpus);
-+#else
-+	online_policy_cpus = policy->cpus;
-+#endif
-+#endif
-+
-+	if (pllif_pack_state(get_PLL_ratio(active_pll, pll), get_PLL_range(
-+		active_pll, pll)) == next_perf_state) {
-+		dprintk("Already at target state (%x)\n",
-+			next_perf_state);
-+		goto cf750gxTargetFreqSet;
-+	}
-+
-+/*	cpus_clear(cmd.mask); */
-+
-+	dprintk(__FILE__">%s()-%d:  Current PLL:  0x%x\n", __func__, __LINE__,
-+		pll);
-+
-+	if (active_pll) {
-+	unsigned int current_state;
-+
-+		/*
-+		 * Since active PLL is 1, modify PLL 0. First see if it is
-+		 * already where we want it.
-+		 */
-+		current_state = pllif_pack_state(get_PLL_ratio(0, pll),
-+			get_PLL_range(0, pll));
-+
-+		dprintk(__FILE__">%s()-%d:  pll 0 current state:  0x%x\n",
-+			__func__, __LINE__, current_state);
-+
-+		if (current_state == next_perf_state) {
-+			new_pll = PLL_DO_SEL<<24;
-+			next_perf_state = 0;
-+		} else {
-+			next_perf_state = next_perf_state<<(PLL0_CFG_SHIFT-
-+				PLL1_CFG_SHIFT);
-+
-+			new_pll = (PLL0_DO_CFG|PLL0_DO_RNG|PLL_DO_SEL)<<24;
-+		}
-+	} else {
-+	unsigned int current_state;
-+
-+		/*
-+		 * Use PLL 1. Again, see if it is already at the desired
-+		 * configuration.
-+		 */
-+		current_state = pllif_pack_state(get_PLL_ratio(1, pll),
-+			get_PLL_range(1, pll));
-+
-+		dprintk(__FILE__">%s()-%d:  pll 1 current state:  0x%x\n",
-+			__func__, __LINE__, current_state);
-+
-+		if (current_state == next_perf_state) {
-+			new_pll = (PLL_DO_SEL<<24)|PLL_SEL_MASK;
-+			next_perf_state = 0;
-+		} else {
-+			new_pll = ((PLL1_DO_CFG|PLL1_DO_RNG|PLL_DO_SEL)<<24)|
-+				PLL_SEL_MASK;
-+		}
-+	}
-+
-+	new_pll = new_pll|next_perf_state;
-+
-+	dprintk(__FILE__">%s()-%d:  Modifying PLL:  0x%x\n", __func__, __LINE__,
-+		new_pll);
-+
-+	freqs.old = pllif_cfg_to_freq(get_PLL_ratio(active_pll, pll))/1000;
-+	freqs.new = ft[next_index].frequency;
-+	freqs.cpu = 0;
-+
-+	cf750gx_v_switch_call_data.freqs = freqs;
-+	cf750gx_v_switch_call_data.current_pll = new_pll;
-+	cf750gx_v_switch_call_data.idle_pll_off = cf750gx_v_idle_pll_off;
-+
-+	cf750gx_v_lock_call_data.freqs = freqs;
-+	cf750gx_v_lock_call_data.current_pll = new_pll;
-+	cf750gx_v_lock_call_data.idle_pll_off = cf750gx_v_switch_call_data.
-+		idle_pll_off;
-+
-+	dprintk(__FILE__">%s()-%d:  freqs.old=%d, freqs.new=%d\n", __func__,
-+		__LINE__, freqs.old, freqs.new);
-+
-+	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+
-+	result = pllif_modify_PLL(new_pll, 0);
-+
-+	if (result < 0)
-+		goto cf750gxTargetUnlock;
-+
-+cf750gxTargetOut:
-+	return result;
-+
-+cf750gxTargetNoFreq:
-+	result = -ENODEV;
-+
-+	goto cf750gxTargetUnlock;
-+cf750gxTargetFreqSet:
-+	result = 0;
-+
-+	goto cf750gxTargetUnlock;
-+cf750gxTargetUnlock:
-+	clear_bit(cf750gxmChangingPllBit, &cf750gx_v_state_bits);
-+	complete(&cf750gx_v_exit_completion);
-+
-+	goto cf750gxTargetOut;
-+}
-+
-+static int cf750gx_verify(struct cpufreq_policy *policy)
-+{
-+	dprintk("%s()\n", __func__);
-+
-+	return cpufreq_frequency_table_verify(policy, cf750gx_v_f_table);
-+}
-+
-+static int cf750gx_cpu_init(struct cpufreq_policy *policy)
-+{
-+unsigned int pll;
-+unsigned int result = 0;
-+
-+	dprintk("%s()\n", __func__);
-+
-+	dprintk("policy->policy is %s (%d)\n", (policy->policy ==
-+		CPUFREQ_POLICY_POWERSAVE || policy->policy ==
-+		CPUFREQ_POLICY_PERFORMANCE)?(policy->policy ==
-+		CPUFREQ_POLICY_POWERSAVE?"powersave":"performance"):
-+		"undefined", policy->policy);
-+
-+	pll = get_PLL();
-+
-+	policy->cur = pllif_cfg_to_freq(get_PLL_ratio(get_active_PLL(pll),
-+		pll))/1000;
-+
-+/*	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL; */
-+	policy->cpuinfo.transition_latency = pllif_get_latency();
-+
-+	result = cpufreq_frequency_table_cpuinfo(policy, cf750gx_v_f_table);
-+	if (result)
-+		goto err_freqfree;
-+
-+	cpufreq_frequency_table_get_attr(cf750gx_v_f_table, policy->cpu);
-+
-+	cf750gx_v_pll_switch_nb.notifier_call = cf750gx_pll_switch_cb;
-+	cf750gx_v_pll_switch_nb.next = (struct notifier_block *)
-+		&cf750gx_v_switch_call_data;
-+	cf750gx_v_pll_switch_nb.priority = 0;
-+
-+	result = pllif_register_pll_switch_cb(&cf750gx_v_pll_switch_nb);
-+
-+	cf750gx_v_pll_lock_nb.notifier_call = cf750gx_pll_lock_cb;
-+	cf750gx_v_pll_lock_nb.next =
-+		(struct notifier_block *)&cf750gx_v_lock_call_data;
-+	cf750gx_v_pll_lock_nb.priority = 0;
-+
-+	result = pllif_register_pll_lock_cb(&cf750gx_v_pll_lock_nb);
-+
-+	return result;
-+
-+err_freqfree:
-+	return result;
-+}
-+
-+static int cf750gx_cpu_exit(struct cpufreq_policy *policy)
-+{
-+	dprintk("%s()\n", __func__);
-+
-+	/*
-+	 * Wait for any active requests to ripple through before exiting
-+	 */
-+	wait_for_completion(&cf750gx_v_exit_completion);
-+
-+	cpufreq_frequency_table_put_attr(policy->cpu);
-+
-+	pllif_unregister_pll_switch_cb(&cf750gx_v_pll_switch_nb);
-+
-+	pllif_unregister_pll_lock_cb(&cf750gx_v_pll_lock_nb);
-+
-+	cf750gx_v_pll_switch_nb.notifier_call = NULL;
-+	cf750gx_v_pll_switch_nb.next = NULL;
-+
-+	cf750gx_v_pll_lock_nb.notifier_call = NULL;
-+	cf750gx_v_pll_lock_nb.next = NULL;
-+
-+	return 0;
-+}
-+
-+static int cf750gx_resume(struct cpufreq_policy *policy)
-+{
-+	return 0;
-+}
-+
-+/*
-+ * cf750gx_i_show_idle_pll_off - Show state of idle pll off boolean
-+ */
-+static ssize_t cf750gx_i_show_idle_pll_off(struct cpufreq_policy *policy,
-+	char *buf)
-+{
-+	return sprintf(buf, "%d\n", cf750gx_v_idle_pll_off);
-+}
-+
-+static ssize_t cf750gx_i_store_pll_off(struct cpufreq_policy *policy,
-+	const char *buf, size_t count)
-+{
-+	if (buf[0] == '0')
-+		cf750gx_v_idle_pll_off = 0;
-+	else if (buf[0] == '1')
-+		cf750gx_v_idle_pll_off = !0;
-+
-+	return 1;
-+}
-+
-+static struct freq_attr idle_pll_off = {
-+	.attr = { .name = "idle_pll_off",
-+		  .mode = 0644,
-+		},
-+	.show = cf750gx_i_show_idle_pll_off,
-+	.store = cf750gx_i_store_pll_off,
-+};
-+
-+/*
-+ * cf750gx_i_show_min_max_mode - Show state of min max mode boolean
-+ */
-+static ssize_t cf750gx_i_show_min_max_mode(struct cpufreq_policy *policy,
-+	char *buf)
-+{
-+	return sprintf(buf, "%d\n", cf750gx_v_min_max_mode);
-+}
-+
-+static ssize_t cf750gx_i_store_min_max_mode(struct cpufreq_policy *policy,
-+	const char *buf, size_t count)
-+{
-+int result;
-+
-+	if (buf[0] == '0') {
-+		cf750gx_v_min_max_mode = 0;
-+
-+		cf750gx_v_f_table = cf750gx_v_freq_table;
-+
-+		cpufreq_frequency_table_put_attr(policy->cpu);
-+
-+		cpufreq_frequency_table_get_attr(cf750gx_v_freq_table,
-+			policy->cpu);
-+
-+		result = cpufreq_frequency_table_cpuinfo(policy,
-+			cf750gx_v_freq_table);
-+	} else if (buf[0] == '1') {
-+		cf750gx_v_min_max_mode = !0;
-+
-+		cf750gx_v_f_table = cf750gx_v_min_max_freq_table;
-+
-+		cpufreq_frequency_table_put_attr(policy->cpu);
-+
-+		cpufreq_frequency_table_get_attr(cf750gx_v_min_max_freq_table,
-+			policy->cpu);
-+
-+		result = cpufreq_frequency_table_cpuinfo(policy,
-+			cf750gx_v_min_max_freq_table);
-+	}
-+
-+	return 1;
-+}
-+
-+static struct freq_attr min_max_mode = {
-+	.attr = { .name = "min_max_mode",
-+		  .mode = 0644,
-+		},
-+	.show = cf750gx_i_show_min_max_mode,
-+	.store = cf750gx_i_store_min_max_mode,
-+};
-+
-+
-+static struct freq_attr *cf750gxvAttr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	&idle_pll_off,
-+	&min_max_mode,
-+	NULL,
-+};
-+
-+static struct cpufreq_driver cf750gx_v_drv = {
-+	.verify = cf750gx_verify,
-+	.target = cf750gx_target,
-+	.init = cf750gx_cpu_init,
-+	.exit = cf750gx_cpu_exit,
-+	.resume = cf750gx_resume,
-+	.name = "ppc750gx-cpufreq",
-+	.owner = THIS_MODULE,
-+	.attr = cf750gxvAttr,
-+};
-+
-+static int __init cf750gx_init(void)
-+{
-+int ret;
-+unsigned int freq, i, j, rng, bus_clock;
-+unsigned short min_ratio, max_ratio;
-+struct cpufreq_frequency_table *tbp;
-+const struct pll_750fgx_t *pll_defaults;
-+
-+	dprintk("%s()\n", __func__);
-+
-+	if (!cpu_has_feature(CPU_FTR_DUAL_PLL_750FX))
+ 		disk_part_iter_exit(&piter);
+ 	}
+ 	class_dev_iter_exit(&iter);
+@@ -675,12 +675,7 @@ static int show_partition(struct seq_file *seqf, void *v)
+ 		return 0;
+ 
+ 	/* show the full disk and all non-0 size partitions of it */
+-	seq_printf(seqf, "%4d  %7d %10llu %s\n",
+-		MAJOR(disk_devt(sgp)), MINOR(disk_devt(sgp)),
+-		(unsigned long long)get_capacity(sgp) >> 1,
+-		disk_name(sgp, 0, buf));
+-
+-	disk_part_iter_init(&piter, sgp, 0);
++	disk_part_iter_init(&piter, sgp, DISK_PITER_INCL_PART0);
+ 	while ((part = disk_part_iter_next(&piter)))
+ 		seq_printf(seqf, "%4d  %7d %10llu %s\n",
+ 			   MAJOR(part_devt(part)), MINOR(part_devt(part)),
+@@ -769,40 +764,13 @@ static ssize_t disk_capability_show(struct device *dev,
+ 	return sprintf(buf, "%x\n", disk->flags);
+ }
+ 
+-static ssize_t disk_stat_show(struct device *dev,
+-			      struct device_attribute *attr, char *buf)
+-{
+-	struct gendisk *disk = dev_to_disk(dev);
+-	int cpu;
+-
+-	cpu = disk_stat_lock();
+-	disk_round_stats(cpu, disk);
+-	disk_stat_unlock();
+-	return sprintf(buf,
+-		"%8lu %8lu %8llu %8u "
+-		"%8lu %8lu %8llu %8u "
+-		"%8u %8u %8u"
+-		"\n",
+-		disk_stat_read(disk, ios[READ]),
+-		disk_stat_read(disk, merges[READ]),
+-		(unsigned long long)disk_stat_read(disk, sectors[READ]),
+-		jiffies_to_msecs(disk_stat_read(disk, ticks[READ])),
+-		disk_stat_read(disk, ios[WRITE]),
+-		disk_stat_read(disk, merges[WRITE]),
+-		(unsigned long long)disk_stat_read(disk, sectors[WRITE]),
+-		jiffies_to_msecs(disk_stat_read(disk, ticks[WRITE])),
+-		disk->in_flight,
+-		jiffies_to_msecs(disk_stat_read(disk, io_ticks)),
+-		jiffies_to_msecs(disk_stat_read(disk, time_in_queue)));
+-}
+-
+ static DEVICE_ATTR(range, S_IRUGO, disk_range_show, NULL);
+ static DEVICE_ATTR(ext_range, S_IRUGO, disk_ext_range_show, NULL);
+ static DEVICE_ATTR(removable, S_IRUGO, disk_removable_show, NULL);
+ static DEVICE_ATTR(ro, S_IRUGO, disk_ro_show, NULL);
+ static DEVICE_ATTR(size, S_IRUGO, part_size_show, NULL);
+ static DEVICE_ATTR(capability, S_IRUGO, disk_capability_show, NULL);
+-static DEVICE_ATTR(stat, S_IRUGO, disk_stat_show, NULL);
++static DEVICE_ATTR(stat, S_IRUGO, part_stat_show, NULL);
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
+ static struct device_attribute dev_attr_fail =
+ 	__ATTR(make-it-fail, S_IRUGO|S_IWUSR, part_fail_show, part_fail_store);
+@@ -837,7 +805,7 @@ static void disk_release(struct device *dev)
+ 
+ 	kfree(disk->random);
+ 	kfree(disk->__part);
+-	free_disk_stats(disk);
++	free_part_stats(&disk->part0);
+ 	kfree(disk);
+ }
+ struct class block_class = {
+@@ -874,28 +842,11 @@ static int diskstats_show(struct seq_file *seqf, void *v)
+ 				"\n\n");
+ 	*/
+  
+-	cpu = disk_stat_lock();
+-	disk_round_stats(cpu, gp);
+-	disk_stat_unlock();
+-	seq_printf(seqf, "%4d %7d %s %lu %lu %llu %u %lu %lu %llu %u %u %u %u\n",
+-		MAJOR(disk_devt(gp)), MINOR(disk_devt(gp)),
+-		disk_name(gp, 0, buf),
+-		disk_stat_read(gp, ios[0]), disk_stat_read(gp, merges[0]),
+-		(unsigned long long)disk_stat_read(gp, sectors[0]),
+-		jiffies_to_msecs(disk_stat_read(gp, ticks[0])),
+-		disk_stat_read(gp, ios[1]), disk_stat_read(gp, merges[1]),
+-		(unsigned long long)disk_stat_read(gp, sectors[1]),
+-		jiffies_to_msecs(disk_stat_read(gp, ticks[1])),
+-		gp->in_flight,
+-		jiffies_to_msecs(disk_stat_read(gp, io_ticks)),
+-		jiffies_to_msecs(disk_stat_read(gp, time_in_queue)));
+-
+-	/* now show all non-0 size partitions of it */
+-	disk_part_iter_init(&piter, gp, 0);
++	disk_part_iter_init(&piter, gp, DISK_PITER_INCL_PART0);
+ 	while ((hd = disk_part_iter_next(&piter))) {
+-		cpu = disk_stat_lock();
++		cpu = part_stat_lock();
+ 		part_round_stats(cpu, hd);
+-		disk_stat_unlock();
++		part_stat_unlock();
+ 		seq_printf(seqf, "%4d %7d %s %lu %lu %llu "
+ 			   "%u %lu %lu %llu %u %u %u %u\n",
+ 			   MAJOR(part_devt(hd)), MINOR(part_devt(hd)),
+@@ -1001,7 +952,7 @@ struct gendisk *alloc_disk_ext_node(int minors, int ext_minors, int node_id)
+ 		int tot_minors = minors + ext_minors;
+ 		int size = tot_minors * sizeof(struct hd_struct *);
+ 
+-		if (!init_disk_stats(disk)) {
++		if (!init_part_stats(&disk->part0)) {
+ 			kfree(disk);
+ 			return NULL;
+ 		}
+@@ -1009,7 +960,7 @@ struct gendisk *alloc_disk_ext_node(int minors, int ext_minors, int node_id)
+ 		disk->__part = kmalloc_node(size, GFP_KERNEL | __GFP_ZERO,
+ 					    node_id);
+ 		if (!disk->__part) {
+-			free_disk_stats(disk);
++				free_part_stats(&disk->part0);
+ 			kfree(disk);
+ 			return NULL;
+ 		}
+diff --git a/drivers/block/aoe/aoecmd.c b/drivers/block/aoe/aoecmd.c
+index 934800f..961d29a 100644
+--- a/drivers/block/aoe/aoecmd.c
++++ b/drivers/block/aoe/aoecmd.c
+@@ -758,15 +758,15 @@ diskstats(struct gendisk *disk, struct bio *bio, ulong duration, sector_t sector
+ 	struct hd_struct *part;
+ 	int cpu;
+ 
+-	cpu = disk_stat_lock();
++	cpu = part_stat_lock();
+ 	part = disk_map_sector_rcu(disk, sector);
+ 
+-	all_stat_inc(cpu, disk, part, ios[rw], sector);
+-	all_stat_add(cpu, disk, part, ticks[rw], duration, sector);
+-	all_stat_add(cpu, disk, part, sectors[rw], n_sect, sector);
+-	all_stat_add(cpu, disk, part, io_ticks, duration, sector);
++	part_stat_inc(cpu, part, ios[rw]);
++	part_stat_add(cpu, part, ticks[rw], duration);
++	part_stat_add(cpu, part, sectors[rw], n_sect);
++	part_stat_add(cpu, part, io_ticks, duration);
+ 
+-	disk_stat_unlock();
++	part_stat_unlock();
+ }
+ 
+ void
+diff --git a/drivers/md/dm.c b/drivers/md/dm.c
+index 7f8d6ff..8d40369 100644
+--- a/drivers/md/dm.c
++++ b/drivers/md/dm.c
+@@ -381,10 +381,10 @@ static void start_io_acct(struct dm_io *io)
+ 
+ 	io->start_time = jiffies;
+ 
+-	cpu = disk_stat_lock();
+-	disk_round_stats(cpu, dm_disk(md));
+-	disk_stat_unlock();
+-	dm_disk(md)->in_flight = atomic_inc_return(&md->pending);
++	cpu = part_stat_lock();
++	part_round_stats(cpu, &dm_disk(md)->part0);
++	part_stat_unlock();
++	dm_disk(md)->part0.in_flight = atomic_inc_return(&md->pending);
+ }
+ 
+ static int end_io_acct(struct dm_io *io)
+@@ -395,12 +395,13 @@ static int end_io_acct(struct dm_io *io)
+ 	int pending, cpu;
+ 	int rw = bio_data_dir(bio);
+ 
+-	cpu = disk_stat_lock();
+-	disk_round_stats(cpu, dm_disk(md));
+-	disk_stat_add(cpu, dm_disk(md), ticks[rw], duration);
+-	disk_stat_unlock();
++	cpu = part_stat_lock();
++	part_round_stats(cpu, &dm_disk(md)->part0);
++	part_stat_add(cpu, &dm_disk(md)->part0, ticks[rw], duration);
++	part_stat_unlock();
+ 
+-	dm_disk(md)->in_flight = pending = atomic_dec_return(&md->pending);
++	dm_disk(md)->part0.in_flight = pending =
++		atomic_dec_return(&md->pending);
+ 
+ 	return !pending;
+ }
+@@ -895,10 +896,10 @@ static int dm_request(struct request_queue *q, struct bio *bio)
+ 
+ 	down_read(&md->io_lock);
+ 
+-	cpu = disk_stat_lock();
+-	disk_stat_inc(cpu, dm_disk(md), ios[rw]);
+-	disk_stat_add(cpu, dm_disk(md), sectors[rw], bio_sectors(bio));
+-	disk_stat_unlock();
++	cpu = part_stat_lock();
++	part_stat_inc(cpu, &dm_disk(md)->part0, ios[rw]);
++	part_stat_add(cpu, &dm_disk(md)->part0, sectors[rw], bio_sectors(bio));
++	part_stat_unlock();
+ 
+ 	/*
+ 	 * If we're suspended we have to queue
+diff --git a/drivers/md/linear.c b/drivers/md/linear.c
+index 00cbc8e..c80ea90 100644
+--- a/drivers/md/linear.c
++++ b/drivers/md/linear.c
+@@ -325,10 +325,11 @@ static int linear_make_request (struct request_queue *q, struct bio *bio)
+ 		return 0;
+ 	}
+ 
+-	cpu = disk_stat_lock();
+-	disk_stat_inc(cpu, mddev->gendisk, ios[rw]);
+-	disk_stat_add(cpu, mddev->gendisk, sectors[rw], bio_sectors(bio));
+-	disk_stat_unlock();
++	cpu = part_stat_lock();
++	part_stat_inc(cpu, &mddev->gendisk->part0, ios[rw]);
++	part_stat_add(cpu, &mddev->gendisk->part0, sectors[rw],
++		      bio_sectors(bio));
++	part_stat_unlock();
+ 
+ 	tmp_dev = which_dev(mddev, bio->bi_sector);
+ 	block = bio->bi_sector >> 1;
+diff --git a/drivers/md/md.c b/drivers/md/md.c
+index 5d0cf63..607c302 100644
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -5548,8 +5548,8 @@ static int is_mddev_idle(mddev_t *mddev)
+ 	rcu_read_lock();
+ 	rdev_for_each_rcu(rdev, mddev) {
+ 		struct gendisk *disk = rdev->bdev->bd_contains->bd_disk;
+-		curr_events = disk_stat_read(disk, sectors[0]) + 
+-				disk_stat_read(disk, sectors[1]) - 
++		curr_events = part_stat_read(&disk->part0, sectors[0]) +
++				part_stat_read(&disk->part0, sectors[1]) -
+ 				atomic_read(&disk->sync_io);
+ 		/* sync IO will cause sync_io to increase before the disk_stats
+ 		 * as sync_io is counted when a request starts, and
+diff --git a/drivers/md/multipath.c b/drivers/md/multipath.c
+index 182f5a9..8bb8794 100644
+--- a/drivers/md/multipath.c
++++ b/drivers/md/multipath.c
+@@ -159,10 +159,11 @@ static int multipath_make_request (struct request_queue *q, struct bio * bio)
+ 	mp_bh->master_bio = bio;
+ 	mp_bh->mddev = mddev;
+ 
+-	cpu = disk_stat_lock();
+-	disk_stat_inc(cpu, mddev->gendisk, ios[rw]);
+-	disk_stat_add(cpu, mddev->gendisk, sectors[rw], bio_sectors(bio));
+-	disk_stat_unlock();
++	cpu = part_stat_lock();
++	part_stat_inc(cpu, &mddev->gendisk->part0, ios[rw]);
++	part_stat_add(cpu, &mddev->gendisk->part0, sectors[rw],
++		      bio_sectors(bio));
++	part_stat_unlock();
+ 
+ 	mp_bh->path = multipath_map(conf);
+ 	if (mp_bh->path < 0) {
+diff --git a/drivers/md/raid0.c b/drivers/md/raid0.c
+index e26030f..f52f442 100644
+--- a/drivers/md/raid0.c
++++ b/drivers/md/raid0.c
+@@ -406,10 +406,11 @@ static int raid0_make_request (struct request_queue *q, struct bio *bio)
+ 		return 0;
+ 	}
+ 
+-	cpu = disk_stat_lock();
+-	disk_stat_inc(cpu, mddev->gendisk, ios[rw]);
+-	disk_stat_add(cpu, mddev->gendisk, sectors[rw], bio_sectors(bio));
+-	disk_stat_unlock();
++	cpu = part_stat_lock();
++	part_stat_inc(cpu, &mddev->gendisk->part0, ios[rw]);
++	part_stat_add(cpu, &mddev->gendisk->part0, sectors[rw],
++		      bio_sectors(bio));
++	part_stat_unlock();
+ 
+ 	chunk_size = mddev->chunk_size >> 10;
+ 	chunk_sects = mddev->chunk_size >> 9;
+diff --git a/drivers/md/raid1.c b/drivers/md/raid1.c
+index babb130..b976442 100644
+--- a/drivers/md/raid1.c
++++ b/drivers/md/raid1.c
+@@ -804,10 +804,11 @@ static int make_request(struct request_queue *q, struct bio * bio)
+ 
+ 	bitmap = mddev->bitmap;
+ 
+-	cpu = disk_stat_lock();
+-	disk_stat_inc(cpu, mddev->gendisk, ios[rw]);
+-	disk_stat_add(cpu, mddev->gendisk, sectors[rw], bio_sectors(bio));
+-	disk_stat_unlock();
++	cpu = part_stat_lock();
++	part_stat_inc(cpu, &mddev->gendisk->part0, ios[rw]);
++	part_stat_add(cpu, &mddev->gendisk->part0, sectors[rw],
++		      bio_sectors(bio));
++	part_stat_unlock();
+ 
+ 	/*
+ 	 * make_request() can abort the operation when READA is being
+diff --git a/drivers/md/raid10.c b/drivers/md/raid10.c
+index 5ec80da..5f99013 100644
+--- a/drivers/md/raid10.c
++++ b/drivers/md/raid10.c
+@@ -844,10 +844,11 @@ static int make_request(struct request_queue *q, struct bio * bio)
+ 	 */
+ 	wait_barrier(conf);
+ 
+-	cpu = disk_stat_lock();
+-	disk_stat_inc(cpu, mddev->gendisk, ios[rw]);
+-	disk_stat_add(cpu, mddev->gendisk, sectors[rw], bio_sectors(bio));
+-	disk_stat_unlock();
++	cpu = part_stat_lock();
++	part_stat_inc(cpu, &mddev->gendisk->part0, ios[rw]);
++	part_stat_add(cpu, &mddev->gendisk->part0, sectors[rw],
++		      bio_sectors(bio));
++	part_stat_unlock();
+ 
+ 	r10_bio = mempool_alloc(conf->r10bio_pool, GFP_NOIO);
+ 
+diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+index 5899f21..ae16794 100644
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -3396,10 +3396,11 @@ static int make_request(struct request_queue *q, struct bio * bi)
+ 
+ 	md_write_start(mddev, bi);
+ 
+-	cpu = disk_stat_lock();
+-	disk_stat_inc(cpu, mddev->gendisk, ios[rw]);
+-	disk_stat_add(cpu, mddev->gendisk, sectors[rw], bio_sectors(bi));
+-	disk_stat_unlock();
++	cpu = part_stat_lock();
++	part_stat_inc(cpu, &mddev->gendisk->part0, ios[rw]);
++	part_stat_add(cpu, &mddev->gendisk->part0, sectors[rw],
++		      bio_sectors(bi));
++	part_stat_unlock();
+ 
+ 	if (rw == READ &&
+ 	     mddev->reshape_position == MaxSector &&
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index 88fcf5a..787dcd1 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -210,15 +210,15 @@ ssize_t part_size_show(struct device *dev,
+ 	return sprintf(buf, "%llu\n",(unsigned long long)p->nr_sects);
+ }
+ 
+-static ssize_t part_stat_show(struct device *dev,
+-			      struct device_attribute *attr, char *buf)
++ssize_t part_stat_show(struct device *dev,
++		       struct device_attribute *attr, char *buf)
+ {
+ 	struct hd_struct *p = dev_to_part(dev);
+ 	int cpu;
+ 
+-	cpu = disk_stat_lock();
++	cpu = part_stat_lock();
+ 	part_round_stats(cpu, p);
+-	disk_stat_unlock();
++	part_stat_unlock();
+ 	return sprintf(buf,
+ 		"%8lu %8lu %8llu %8u "
+ 		"%8lu %8lu %8llu %8u "
+@@ -575,8 +575,8 @@ void del_gendisk(struct gendisk *disk)
+ 	set_capacity(disk, 0);
+ 	disk->flags &= ~GENHD_FL_UP;
+ 	unlink_gendisk(disk);
+-	disk_stat_set_all(disk, 0);
+-	disk->stamp = 0;
++	part_stat_set_all(&disk->part0, 0);
++	disk->part0.stamp = 0;
+ 
+ 	kobject_put(disk->part0.holder_dir);
+ 	kobject_put(disk->slave_dir);
+diff --git a/include/linux/genhd.h b/include/linux/genhd.h
+index 46d2a6f..e02b09d 100644
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -155,13 +155,6 @@ struct gendisk {
+ 	struct timer_rand_state *random;
+ 
+ 	atomic_t sync_io;		/* RAID */
+-	unsigned long stamp;
+-	int in_flight;
+-#ifdef	CONFIG_SMP
+-	struct disk_stats *dkstats;
+-#else
+-	struct disk_stats dkstats;
+-#endif
+ 	struct work_struct async_notify;
+ #ifdef  CONFIG_BLK_DEV_INTEGRITY
+ 	struct blk_integrity *integrity;
+@@ -242,46 +235,18 @@ extern struct hd_struct *disk_map_sector_rcu(struct gendisk *disk,
+  * internal use only.
+  */
+ #ifdef	CONFIG_SMP
+-#define disk_stat_lock()	({ rcu_read_lock(); get_cpu(); })
+-#define disk_stat_unlock()	do { put_cpu(); rcu_read_unlock(); } while (0)
+-
+-#define disk_stat_add(cpu, gendiskp, field, addnd)			\
+-	(per_cpu_ptr(gendiskp->dkstats, cpu)->field += addnd)
+-
+-#define disk_stat_read(gendiskp, field)					\
+-({									\
+-	typeof(gendiskp->dkstats->field) res = 0;			\
+-	int i;								\
+-	for_each_possible_cpu(i)					\
+-		res += per_cpu_ptr(gendiskp->dkstats, i)->field;	\
+-	res;								\
+-})
+-
+-static inline void disk_stat_set_all(struct gendisk *gendiskp, int value)
+-{
+-	int i;
+-
+-	for_each_possible_cpu(i)
+-		memset(per_cpu_ptr(gendiskp->dkstats, i), value,
+-				sizeof(struct disk_stats));
+-}		
++#define part_stat_lock()	({ rcu_read_lock(); get_cpu(); })
++#define part_stat_unlock()	do { put_cpu(); rcu_read_unlock(); } while (0)
+ 
+-#define part_stat_add(cpu, part, field, addnd)				\
+-	(per_cpu_ptr(part->dkstats, cpu)->field += addnd)
+-
+-#define all_stat_add(cpu, gendiskp, part, field, addnd, sector)		\
+-({									\
+-	if (part)							\
+-		part_stat_add(cpu, part, field, addnd);			\
+-	disk_stat_add(cpu, gendiskp, field, addnd);			\
+-})
++#define __part_stat_add(cpu, part, field, addnd)			\
++	(per_cpu_ptr((part)->dkstats, (cpu))->field += (addnd))
+ 
+ #define part_stat_read(part, field)					\
+ ({									\
+-	typeof(part->dkstats->field) res = 0;				\
++	typeof((part)->dkstats->field) res = 0;				\
+ 	int i;								\
+ 	for_each_possible_cpu(i)					\
+-		res += per_cpu_ptr(part->dkstats, i)->field;		\
++		res += per_cpu_ptr((part)->dkstats, i)->field;		\
+ 	res;								\
+ })
+ 
+@@ -294,109 +259,73 @@ static inline void part_stat_set_all(struct hd_struct *part, int value)
+ 				sizeof(struct disk_stats));
+ }
+ 
+-#else /* !CONFIG_SMP */
+-#define disk_stat_lock()	({ rcu_read_lock(); 0; })
+-#define disk_stat_unlock()	rcu_read_unlock()
+-
+-#define disk_stat_add(cpu, gendiskp, field, addnd)			\
+-	(gendiskp->dkstats.field += addnd)
+-#define disk_stat_read(gendiskp, field)	(gendiskp->dkstats.field)
+-
+-static inline void disk_stat_set_all(struct gendisk *gendiskp, int value)
++static inline int init_part_stats(struct hd_struct *part)
+ {
+-	memset(&gendiskp->dkstats, value, sizeof (struct disk_stats));
++	part->dkstats = alloc_percpu(struct disk_stats);
++	if (!part->dkstats)
 +		return 0;
++	return 1;
+ }
+ 
+-#define part_stat_add(cpu, part, field, addnd)				\
+-	(part->dkstats.field += addnd)
+-
+-#define all_stat_add(cpu, gendiskp, part, field, addnd, sector)		\
+-({									\
+-	if (part)							\
+-		part_stat_add(cpu, part, field, addnd);			\
+-	disk_stat_add(cpu, gendiskp, field, addnd);			\
+-})
+-
+-#define part_stat_read(part, field)	(part->dkstats.field)
+-
+-static inline void part_stat_set_all(struct hd_struct *part, int value)
++static inline void free_part_stats(struct hd_struct *part)
+ {
+-	memset(&part->dkstats, value, sizeof(struct disk_stats));
++	free_percpu(part->dkstats);
+ }
+ 
+-#endif /* CONFIG_SMP */
+-
+-#define disk_stat_dec(cpu, gendiskp, field)				\
+-	disk_stat_add(cpu, gendiskp, field, -1)
+-#define disk_stat_inc(cpu, gendiskp, field)				\
+-	disk_stat_add(cpu, gendiskp, field, 1)
+-#define disk_stat_sub(cpu, gendiskp, field, subnd)			\
+-	disk_stat_add(cpu, gendiskp, field, -subnd)
+-
+-#define part_stat_dec(cpu, gendiskp, field)				\
+-	part_stat_add(cpu, gendiskp, field, -1)
+-#define part_stat_inc(cpu, gendiskp, field)				\
+-	part_stat_add(cpu, gendiskp, field, 1)
+-#define part_stat_sub(cpu, gendiskp, field, subnd)			\
+-	part_stat_add(cpu, gendiskp, field, -subnd)
++#else /* !CONFIG_SMP */
++#define part_stat_lock()	({ rcu_read_lock(); 0; })
++#define part_stat_unlock()	rcu_read_unlock()
+ 
+-#define all_stat_dec(cpu, gendiskp, field, sector)			\
+-	all_stat_add(cpu, gendiskp, field, -1, sector)
+-#define all_stat_inc(cpu, gendiskp, part, field, sector)		\
+-	all_stat_add(cpu, gendiskp, part, field, 1, sector)
+-#define all_stat_sub(cpu, gendiskp, part, field, subnd, sector)		\
+-	all_stat_add(cpu, gendiskp, part, field, -subnd, sector)
++#define __part_stat_add(cpu, part, field, addnd)				\
++	((part)->dkstats.field += addnd)
+ 
+-/* Inlines to alloc and free disk stats in struct gendisk */
+-#ifdef  CONFIG_SMP
+-static inline int init_disk_stats(struct gendisk *disk)
+-{
+-	disk->dkstats = alloc_percpu(struct disk_stats);
+-	if (!disk->dkstats)
+-		return 0;
+-	return 1;
+-}
++#define part_stat_read(part, field)	((part)->dkstats.field)
+ 
+-static inline void free_disk_stats(struct gendisk *disk)
++static inline void part_stat_set_all(struct hd_struct *part, int value)
+ {
+-	free_percpu(disk->dkstats);
++	memset(&part->dkstats, value, sizeof(struct disk_stats));
+ }
+ 
+ static inline int init_part_stats(struct hd_struct *part)
+ {
+-	part->dkstats = alloc_percpu(struct disk_stats);
+-	if (!part->dkstats)
+-		return 0;
+ 	return 1;
+ }
+ 
+ static inline void free_part_stats(struct hd_struct *part)
+ {
+-	free_percpu(part->dkstats);
+ }
+ 
+-#else	/* CONFIG_SMP */
+-static inline int init_disk_stats(struct gendisk *disk)
+-{
+-	return 1;
+-}
++#endif /* CONFIG_SMP */
+ 
+-static inline void free_disk_stats(struct gendisk *disk)
+-{
+-}
++#define part_stat_add(cpu, part, field, addnd)	do {			\
++	__part_stat_add((cpu), (part), field, addnd);			\
++	if ((part)->partno)						\
++		__part_stat_add((cpu), &part_to_disk((part))->part0,	\
++				field, addnd);				\
++} while (0)
+ 
+-static inline int init_part_stats(struct hd_struct *part)
++#define part_stat_dec(cpu, gendiskp, field)				\
++	part_stat_add(cpu, gendiskp, field, -1)
++#define part_stat_inc(cpu, gendiskp, field)				\
++	part_stat_add(cpu, gendiskp, field, 1)
++#define part_stat_sub(cpu, gendiskp, field, subnd)			\
++	part_stat_add(cpu, gendiskp, field, -subnd)
 +
-+	/*
-+	 * Get processor min and max core frequencies. If they have not been
-+	 * overriden, then get them from version defaults.
-+	 */
-+	if ((cur_cpu_spec->pvr_value>>16) == 0x7000)
-+		pll_defaults = &pll_750fx;
-+	else
-+		pll_defaults = &pll_750gx;
-+
-+	cf750gx_v_min_core = override_min_core?override_min_core:pll_defaults->
-+			min_core;
-+	cf750gx_v_max_core = override_max_core?override_max_core:pll_defaults->
-+			max_core;
-+
-+	dprintk(__FILE__">%s()-%d:  cf750gx_v_min_core is %u, "
-+		"cf750gx_v_max_core is %u\n", __func__, __LINE__,
-+		cf750gx_v_min_core, cf750gx_v_max_core);
-+	dprintk(__FILE__">%s()-%d:  pll_defaults:  min_ratio %d, max_ratio "
-+		"%d\n", __func__, __LINE__, pll_defaults->min_ratio,
-+		pll_defaults->max_ratio);
-+
-+	if (!cf750gx_v_min_core) {
-+		dprintk("Can't determine minimum core frequency\n");
-+		ret = -EINVAL;
-+		goto ErrSimple;
-+	}
-+
-+	if (!cf750gx_v_max_core) {
-+		dprintk("Can't determine maximum core frequency\n");
-+		ret = -EINVAL;
-+		goto ErrSimple;
-+	}
-+
-+	bus_clock = pllif_get_bus_clock()/1000;
-+
-+	/*
-+	 * Build maximum freq table. This will depend on the bus freq, the core
-+	 * frequency limits, and the ratios.
-+	 */
-+	min_ratio = pll_defaults->min_ratio;
-+	freq = min_ratio*bus_clock;
-+
-+	if (freq < cf750gx_v_min_core) {
-+		/*
-+		 * Core min is above min ratio and bus speed clock. Find min
-+		 * ratio such that min ratio * bus speed >= core min.
-+		 */
-+		min_ratio = cf750gx_v_min_core/bus_clock;
-+		j = cf750gx_v_min_core%bus_clock;
-+
-+		if (j)
-+			min_ratio++;
-+	} else {
-+		/*
-+		 * Core min is below min ratio and speed clock. Reset core min.
-+		 */
-+		cf750gx_v_min_core = freq;
-+	}
-+
-+	max_ratio = pll_defaults->max_ratio;
-+	freq = max_ratio*bus_clock;
-+
-+	if (freq > cf750gx_v_max_core) {
-+		/*
-+		 * Core max is below max ratio and bus speed. Find max ratio
-+		 * such that max ratio * bus speed <= core max.
-+		 */
-+		max_ratio = cf750gx_v_max_core/bus_clock;
-+	} else {
-+		/*
-+		 * Core max is above max ratio and bus speed clock. Reset core
-+		 * max.
-+		 */
-+		cf750gx_v_max_core = freq;
-+	}
-+
-+	dprintk(__FILE__">%s()-%d:  min_ratio is %d, max_ratio is %d\n",
-+		__func__, __LINE__, min_ratio, max_ratio);
-+
-+	/*
-+	 * Bus ratios for the GX range from 2-20 for 19 INTEGER frequencies.
-+	 * The above checks may have changed this. There are max_ratio -
-+	 * min_ratio + 1 different frequencies.
-+	 */
-+	j = max_ratio-min_ratio+1;
-+	cf750gx_v_freq_table = kmalloc(sizeof(struct cpufreq_frequency_table)*
-+		(j+5), GFP_KERNEL);
-+	if (cf750gx_v_freq_table == NULL) {
-+		ret = -ENOMEM;
-+		goto ErrSimple;
-+	}
-+
-+	dprintk(__FILE__">%s()-%d:  cf750gx_v_freq_table=%p\n", __func__,
-+		__LINE__, cf750gx_v_freq_table);
-+
-+	/*
-+	 * Use index of first entry to keep track of the count (one extra
-+	 * entry)
-+	 */
-+	cf750gx_v_freq_table[0].frequency = CPUFREQ_ENTRY_INVALID;
-+	cf750gx_v_freq_table[0].index = j;
-+
-+	/*
-+	 * Populate the table
-+	 */
-+	for (tbp = cf750gx_v_freq_table+1, i = min_ratio; i <= max_ratio;
-+		tbp++, i++) {
-+		tbp->frequency = i*bus_clock;
-+
-+		/*
-+		 * I really don't know what the proper range values for 600 MHz
-+		 * and 900 MHz are? (The processor may also get pretty mad if
-+		 * you muck these up!)
-+		 */
-+		if (tbp->frequency < 600000)
-+			rng = 2;
-+		else if (tbp->frequency < 900000)
-+			rng = 0;
-+		else
-+			rng = 1;
-+
-+		/*
-+		 * The computation in the first argument converts the bus
-+		 * ratio value to the PLL configuration value needed for the
-+		 * given ratio
-+		 */
-+		tbp->index = pllif_pack_state(i > 10?i+10:(i<<1), rng);
-+
-+		dprintk(__FILE__">%s()-%d:  p->index=%x, ratio=%u, rng=%u\n",
-+			__func__, __LINE__, tbp->index, i, rng);
-+	}
-+
-+	/*
-+	 * 2nd extra array member
-+	 */
-+	tbp->frequency = CPUFREQ_TABLE_END;
-+
-+	/*
-+	 * The other 3 extra array members are for the min max table.
-+	 */
-+	cf750gx_v_min_max_freq_table = cf750gx_v_freq_table+
-+		cf750gx_v_freq_table[0].index + 2;
-+
-+	cf750gx_v_min_max_freq_table[0] = cf750gx_v_freq_table[1];
-+	cf750gx_v_min_max_freq_table[1] = cf750gx_v_freq_table[
-+		cf750gx_v_freq_table[0].index];
-+	cf750gx_v_min_max_freq_table[2].frequency = CPUFREQ_TABLE_END;
-+
-+	cf750gx_v_f_table = minmaxmode?cf750gx_v_min_max_freq_table:
-+		cf750gx_v_freq_table;
-+
-+	ret = cpufreq_register_driver(&cf750gx_v_drv);
-+
-+	dprintk(__FILE__">%s()-%d:  return from cpufreq_register_driver() is "
-+		"%d\n", __func__, __LINE__, ret);
-+
-+	if (ret)
-+		goto ErrFreqTable;
-+
-+ErrSimple:
-+	return ret;
-+ErrFreqTable:
-+	kfree(cf750gx_v_freq_table);
-+	return ret;
-+}
-+
-+static void __exit cf750gx_exit(void)
-+{
-+	dprintk("%s()\n", __func__);
-+
-+	cpufreq_unregister_driver(&cf750gx_v_drv);
-+
-+	if (cf750gx_v_freq_table)
-+		kfree(cf750gx_v_freq_table);
-+
-+	cf750gx_v_freq_table = cf750gx_v_min_max_freq_table =
-+		cf750gx_v_f_table = NULL;
-+
-+	return;
-+}
-+
-+module_param(override_max_core, uint, 0644);
-+MODULE_PARM_DESC(override_max_core,
-+	"clock frequency in KHz.");
-+
-+module_param(override_min_core, uint, 0644);
-+MODULE_PARM_DESC(override_min_core,
-+	"clock frequency in KHz.");
-+
-+module_param(minmaxmode, uint, 0644);
-+MODULE_PARM_DESC(minmaxmode,
-+	"Use only the minimum and maximum frequencies.");
-+
-+late_initcall(cf750gx_init);
-+module_exit(cf750gx_exit);
-+
-+MODULE_ALIAS("dual-pll");
-Index: arch/powerpc/kernel/cpu/Makefile
-===================================================================
---- /dev/null	2004-08-10 18:55:00.000000000 -0700
-+++ arch/powerpc/kernel/cpu/Makefile	2008-08-14 02:44:30.000000000 -0700
-@@ -0,0 +1,6 @@
-+#
-+# Makefile for ppc CPU details and quirks
-+#
-+
-+obj-$(CONFIG_CPU_FREQ)	+= cpufreq/
-+obj-$(CONFIG_PPC_750GX_DUAL_PLL_IF)	+= pll_if.o
++static inline void part_inc_in_flight(struct hd_struct *part)
+ {
+-	return 1;
++	part->in_flight++;
++	if (part->partno)
++		part_to_disk(part)->part0.in_flight++;
+ }
+ 
+-static inline void free_part_stats(struct hd_struct *part)
++static inline void part_dec_in_flight(struct hd_struct *part)
+ {
++	part->in_flight--;
++	if (part->partno)
++		part_to_disk(part)->part0.in_flight--;
+ }
+-#endif	/* CONFIG_SMP */
+ 
+ /* drivers/block/ll_rw_blk.c */
+-extern void disk_round_stats(int cpu, struct gendisk *disk);
+ extern void part_round_stats(int cpu, struct hd_struct *part);
+ 
+ /* drivers/block/genhd.c */
+@@ -605,6 +534,8 @@ extern void blk_unregister_region(dev_t devt, unsigned long range);
+ 
+ extern ssize_t part_size_show(struct device *dev,
+ 			      struct device_attribute *attr, char *buf);
++extern ssize_t part_stat_show(struct device *dev,
++			      struct device_attribute *attr, char *buf);
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
+ extern ssize_t part_fail_show(struct device *dev,
+ 			      struct device_attribute *attr, char *buf);
+-- 
+1.5.4.5
+
