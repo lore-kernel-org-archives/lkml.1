@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbYHYKgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYHYKdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbYHYKgf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 06:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYHYKg1
+	id S1754898AbYHYKdV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 06:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbYHYKdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 06:36:27 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:43710 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753157AbYHYKg1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 06:36:27 -0400
-Subject: Re: Quad core CPUs loaded at only 50% when running a CPU and mmap
-	intensive multi-threaded task
-From: Peter Zijlstra <peterz@infradead.org>
-To: =?ISO-8859-1?Q?T=F6r=F6k?= Edwin <edwintorok@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, rml@tech9.net,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Thomas Gleixner mingo@redhat.com" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <48B287D8.1000000@gmail.com>
-References: <48B1CC15.2040006@gmail.com> <1219643476.20732.1.camel@twins>
-	 <48B25988.8040302@gmail.com> <1219656190.8515.7.camel@twins>
-	 <48B28015.3040602@gmail.com> <1219658527.8515.16.camel@twins>
-	 <48B287D8.1000000@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 25 Aug 2008 12:36:22 +0200
-Message-Id: <1219660582.8515.24.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 25 Aug 2008 06:33:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40567 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753467AbYHYKdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 06:33:08 -0400
+Date: Mon, 25 Aug 2008 12:32:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Avi Kivity <avi@qumranet.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [PATCH] x86: default to reboot via ACPI
+Message-ID: <20080825103257.GC15810@elte.hu>
+References: <1219659087-17536-1-git-send-email-avi@qumranet.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1219659087-17536-1-git-send-email-avi@qumranet.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-25 at 13:22 +0300, Török Edwin wrote:
 
-> Well, the real program (clamd) that this testprogram tries to simulate 
-> does an mmap for almost every file, and I have lots of small files.
-> 6.5G, 114122 files, average size 57k.
+* Avi Kivity <avi@qumranet.com> wrote:
+
+> Triple-fault and keyboard reset may assert INIT instead of RESET; 
+> however INIT is blocked when Intel VT is enabled.  This leads to a 
+> partially reset machine when invoking emergency_restart via sysrq-b: 
+> the processor is still working but other parts of the system are dead.
 > 
-> I'll run latencytop again, last time it has showed 100ms - 500ms latency 
-> for clamd, and it was about mmap, I'll provide you with the exact output.
+> Default to rebooting via ACPI, which correctly asserts RESET and 
+> reboots the machine.
+> 
+> This is safe since we will fall back to keyboard reset and triple 
+> fault if acpi is not enabled or if the reset is not successful.
+> 
+> Signed-off-by: Avi Kivity <avi@qumranet.com>
 
-Right - does it make sense to teach clamav about pread() ?
+applied to tip/x86/reboot - thanks Avi!
 
+	Ingo
