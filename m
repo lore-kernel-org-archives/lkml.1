@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbYHYNsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbYHYN7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756229AbYHYNsX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 09:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbYHYNsP
+	id S1755572AbYHYN7w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 09:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbYHYN7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 09:48:15 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:48742 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754057AbYHYNsP (ORCPT
+	Mon, 25 Aug 2008 09:59:43 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:35047 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753833AbYHYN7m convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 09:48:15 -0400
-Date: Mon, 25 Aug 2008 09:48:01 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: edwin <edwintorok@gmail.com>, Ingo Molnar <mingo@elte.hu>, rml@tech9.net,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Thomas Gleixner mingo@redhat.com" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Quad core CPUs loaded at only 50% when running a CPU and mmap
-	intensive multi-threaded task
-Message-ID: <20080825134801.GN1408@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Peter Zijlstra <peterz@infradead.org>, edwin <edwintorok@gmail.com>,
-	Ingo Molnar <mingo@elte.hu>, rml@tech9.net,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	"Thomas Gleixner mingo@redhat.com" <tglx@linutronix.de>,
-	"H. Peter Anvin" <hpa@zytor.com>
-References: <48B1CC15.2040006@gmail.com> <1219643476.20732.1.camel@twins> <48B25988.8040302@gmail.com> <1219656190.8515.7.camel@twins> <48B28015.3040602@gmail.com> <1219658527.8515.16.camel@twins> <48B287D8.1000000@gmail.com> <1219660582.8515.24.camel@twins> <48B290E7.4070805@gmail.com> <1219664477.8515.54.camel@twins>
+	Mon, 25 Aug 2008 09:59:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=MEnrw8eVBD4yhV0Zw85O6gegsHrawDVzti6n41iA9ByyAWhlaAXPHV2WW77y4RlamA
+         wX9VNyHM3grF+a5iVpzaMwhMq6YS8hNd0oztx6xWpZXnd5B93g0RhnbvFeujWoEGrwU+
+         JVtD6Rh15zCrhx4Z8kPSA+wq+eX/4OA9oo6oA=
+Message-ID: <c62985530808250659w5b2a2f83u689987969a4cb53d@mail.gmail.com>
+Date: Mon, 25 Aug 2008 14:59:41 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [Patch] Tracing/ftrace: Adds a marker to allow user comments
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080825084405.GA29195@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1219664477.8515.54.camel@twins>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <48B1D5CA.8000607@gmail.com> <20080825084405.GA29195@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 25, 2008 at 01:41:17PM +0200, Peter Zijlstra wrote:
-> 
-> I would certainly consider this for small (< 1M?) files. With mmap the
-> faults and pte overhead aren't free either, and the extra memcpy from
-> pread() isn't that much.
-> 
+2008/8/25 Ingo Molnar <mingo@elte.hu>:
+>
+> * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+>
+>> The documentation of mmiotrace describes an unimplemented feature
+>> which allows the user to write any comments on his trace by writing on
+>> a tracing/marker file. Here is an implementation of this idea.
+>>
+>> It applies on last version of tip tree.
+>
+> hmm ... have you looked at the (recently implemented) ftrace_printk()
+> facility?
+>
+>        Ingo
+>
 
-Even for very big files, if you're only doing a single sequential pass
-over a very large file (for example when converting a Canon raw image
-file to TIFF format --- I know because I was trying to optimize dcraw
-a while aback), you take the page fault for each 4k page, and so
-simply using read/pread is faster.  And that's on a single-threded
-program.  With a multithreaded program, the locking issues come on top
-of that.
-
-Maybe if I had used hugepages it would have been a win, I suppose, but
-I never tried the experiment.  And this was several years ago, on much
-older hardware, so maybe the relative times of doing the memory copy
-versus the page fault, but I wouldn't be surprised if it's even more
-expensive to do the mmap, relatively speaking.
-
-							- Ted
+Yes but I didn't want to use ftrace_printk() because it needs the "ip"
+parameter. User messages doesn't need this. But I reuse a part of the
+code of ftrace_printk and I splitted ftrace_printk() in two parts for
+this purpose: __ftrace_printk() and trace_print().
+I also reused the print_entry but with a new TRACE_MARK type to make
+the difference when it is time to send the entry to the pipe because
+user messages don't use ip.
