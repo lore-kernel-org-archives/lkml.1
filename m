@@ -1,130 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbYHYNqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbYHYNsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755820AbYHYNqF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 09:46:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbYHYNpu
+	id S1756229AbYHYNsX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 09:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbYHYNsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 09:45:50 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:59096 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753985AbYHYNps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 09:45:48 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -1.599
-Date: Mon, 25 Aug 2008 09:45:42 -0400
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Karen Xie <kxie@chelsio.com>, netdev@vger.kernel.org,
-       open-iscsi@googlegroups.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jgarzik@pobox.com, davem@davemloft.net,
-       michaelc@cs.wisc.edu, swise@opengridcomputing.com, rdreier@cisco.com,
-       daisyc@us.ibm.com, wenxiong@us.ibm.com, bhua@us.ibm.com,
-       divy@chelsio.com, dm@chelsio.com, leedom@chelsio.com
-Subject: Re: [PATCH 2/4 2.6.28] cxgb3 - handle ARP replies for private iSCSI
- IP address
-Message-ID: <20080825094542.27dbed2b@speedy>
-In-Reply-To: <20080822121250.55949d3d.akpm@linux-foundation.org>
-References: <200808221839.m7MId8Sq004410@localhost.localdomain>
-	<20080822121250.55949d3d.akpm@linux-foundation.org>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Aug 2008 09:48:15 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:48742 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754057AbYHYNsP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 09:48:15 -0400
+Date: Mon, 25 Aug 2008 09:48:01 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: edwin <edwintorok@gmail.com>, Ingo Molnar <mingo@elte.hu>, rml@tech9.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Thomas Gleixner mingo@redhat.com" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Quad core CPUs loaded at only 50% when running a CPU and mmap
+	intensive multi-threaded task
+Message-ID: <20080825134801.GN1408@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Peter Zijlstra <peterz@infradead.org>, edwin <edwintorok@gmail.com>,
+	Ingo Molnar <mingo@elte.hu>, rml@tech9.net,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	"Thomas Gleixner mingo@redhat.com" <tglx@linutronix.de>,
+	"H. Peter Anvin" <hpa@zytor.com>
+References: <48B1CC15.2040006@gmail.com> <1219643476.20732.1.camel@twins> <48B25988.8040302@gmail.com> <1219656190.8515.7.camel@twins> <48B28015.3040602@gmail.com> <1219658527.8515.16.camel@twins> <48B287D8.1000000@gmail.com> <1219660582.8515.24.camel@twins> <48B290E7.4070805@gmail.com> <1219664477.8515.54.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1219664477.8515.54.camel@twins>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Aug 2008 12:12:50 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Mon, Aug 25, 2008 at 01:41:17PM +0200, Peter Zijlstra wrote:
+> 
+> I would certainly consider this for small (< 1M?) files. With mmap the
+> faults and pte overhead aren't free either, and the extra memcpy from
+> pread() isn't that much.
+> 
 
-> On Fri, 22 Aug 2008 11:39:08 -0700
-> Karen Xie <kxie@chelsio.com> wrote:
-> 
-> > [PATCH 2/4 2.6.28] cxgb3 - handle ARP replies for private iSCSI IP address
-> > 
-> > From: Karen Xie <kxie@chelsio.com>
-> > 
-> > stg can be tricky ...
-> > [adding @adapter in cxgb3_arp_process doxygen header]
-> > The accelerated iSCSI traffic uses a private IP address unknown to the OS.
-> > The driver has to reply to ARP requests dedicated to the private IP address.
-> > 
-> > Signed-off-by: Divy Le Ray <divy@chelsio.com>
-> > ---
-> > 
-> >  drivers/net/cxgb3/sge.c |   71 ++++++++++++++++++++++++++++++++++++++++++++---
-> >  1 files changed, 66 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
-> > index 1b0861d..d2a9285 100644
-> > --- a/drivers/net/cxgb3/sge.c
-> > +++ b/drivers/net/cxgb3/sge.c
-> > @@ -36,6 +36,7 @@
-> >  #include <linux/ip.h>
-> >  #include <linux/tcp.h>
-> >  #include <linux/dma-mapping.h>
-> > +#include <net/arp.h>
-> >  #include "common.h"
-> >  #include "regs.h"
-> >  #include "sge_defs.h"
-> > @@ -1859,6 +1860,54 @@ static void restart_tx(struct sge_qset *qs)
-> >  }
-> >  
-> >  /**
-> > + *	cxgb3_arp_process - process an ARP request probing a private IP address
-> > + *	@adapter: the adapter
-> > + *	@skb: the skbuff containing the ARP request
-> > + *
-> > + *	Check if the ARP request is probing the private IP address
-> > + *	dedicated to iSCSI, generate an ARP reply if so.
-> > + */
-> > +static void cxgb3_arp_process(struct adapter *adapter, struct sk_buff *skb)
-> > +{
-> > +	struct net_device *dev = skb->dev;
-> > +	struct port_info *pi;
-> > +	struct arphdr *arp;
-> > +	unsigned char *arp_ptr;
-> > +	unsigned char *sha;
-> > +	u32 sip, tip;
-> > +
-> > +	if (!dev)
-> > +		return;
-> 
-> Can this happen?
-> 
-> > +	skb_reset_network_header(skb);
-> > +	arp = arp_hdr(skb);
-> > +
-> > +	if (arp->ar_op != htons(ARPOP_REQUEST))
-> > +		return;
-> > +
-> > +	arp_ptr = (unsigned char *)(arp + 1);
-> > +	sha = arp_ptr;
-> > +	arp_ptr += dev->addr_len;
-> > +	memcpy(&sip, arp_ptr, 4);
-> > +	arp_ptr += 4;
-> > +	arp_ptr += dev->addr_len;
-> > +	memcpy(&tip, arp_ptr, 4);
-> 
-> Should arp_hdr_len() be used here?
-> 
-> > +	pi = netdev_priv(dev);
-> > +	if (ntohl(tip) != pi->iscsi_ipaddr)
-> > +		return;
-> > +
-> > +	arp_send(ARPOP_REPLY, ETH_P_ARP, sip, dev, tip, sha,
-> > +		 dev->dev_addr, sha);
-> > +
-> > +}
-> > +
-> > +static inline int is_arp(struct sk_buff *skb)
-> > +{
-> > +	return skb->protocol == htons(ETH_P_ARP);
-> 
-> Other net code uses __constant_htons() for this.
+Even for very big files, if you're only doing a single sequential pass
+over a very large file (for example when converting a Canon raw image
+file to TIFF format --- I know because I was trying to optimize dcraw
+a while aback), you take the page fault for each 4k page, and so
+simply using read/pread is faster.  And that's on a single-threded
+program.  With a multithreaded program, the locking issues come on top
+of that.
 
-htons() goes through several levels of indirection to make sure
-that if argument is constant, no code is necessary. The practice is
-reserve __constant_htons() only for those cases like initialization and case
-statements where C won't allow it.
+Maybe if I had used hugepages it would have been a win, I suppose, but
+I never tried the experiment.  And this was several years ago, on much
+older hardware, so maybe the relative times of doing the memory copy
+versus the page fault, but I wouldn't be surprised if it's even more
+expensive to do the mmap, relatively speaking.
+
+							- Ted
