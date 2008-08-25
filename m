@@ -1,54 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbYHYLoG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbYHYLuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756559AbYHYLoG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 07:44:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbYHYLnx
+	id S1755590AbYHYLuA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 07:50:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbYHYLtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 07:43:53 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:38571 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751743AbYHYLnw (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 07:43:52 -0400
-Date: Mon, 25 Aug 2008 12:43:47 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Greg Ungerer <gerg@snapgear.com>
-Cc: Jared Hulbert <jaredeh@gmail.com>, Linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>, tim.bird@am.sony.com,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
-Message-ID: <20080825114346.GB20960@shareable.org>
-References: <48AD00C4.6060302@gmail.com> <20080821110749.GA1926@shareable.org> <6934efce0808210711t686a88eci6eb294dbb54d68fe@mail.gmail.com> <48AE0476.80109@snapgear.com> <6934efce0808211948kd12ba76k1ee847a0e08010e0@mail.gmail.com> <48B2529B.8030906@snapgear.com>
+	Mon, 25 Aug 2008 07:49:51 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:32350 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753434AbYHYLtu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 07:49:50 -0400
+Date: Mon, 25 Aug 2008 14:49:28 +0300
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: ext Bryan Wu <cooloney@kernel.org>
+Cc: felipe.balbi@nokia.com, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 1/2] usb: musb: fix bug - don't mess up count number
+	and CSR0 register value
+Message-ID: <20080825114928.GG20450@gandalf.research.nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <1219655621-18510-1-git-send-email-cooloney@kernel.org> <1219655621-18510-2-git-send-email-cooloney@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="Fba/0zbH8Xs+Fj9o"
 Content-Disposition: inline
-In-Reply-To: <48B2529B.8030906@snapgear.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1219655621-18510-2-git-send-email-cooloney@kernel.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 25 Aug 2008 11:49:28.0218 (UTC) FILETIME=[A10017A0:01C906A8]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg Ungerer wrote:
-> Sort of. It actually just uses a single ->read to bring in
-> the entire file contents. There is a few limitations on the use
-> of mmap() for non-mmu. Documentation/nommu-mmap.txt gives
-> more details. With no MMU it does rely on being able to kmalloc()
-> a single RAM region big enough to hold the entire file.
 
-That's unfortunate, if you're using FDPIC-ELF or BFLT-XIP, you really want
-to kmalloc() one region for code (i.e. mmap not the whole file), and
-one separate for data.  Asking for a single larger region sometimes
-creates much higher memory pressure while kmalloc() attempts to
-defragment by evicting everything.
+--Fba/0zbH8Xs+Fj9o
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-But that's fiddly to do right in general.
+On Mon, Aug 25, 2008 at 05:13:40PM +0800, ext Bryan Wu wrote:
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
 
-The natural thing for AXFS to do to support no-MMU FDPIC-ELF or
-BFLT-XIP is store the code segment uncompressed and contiguous, and
-the data segment however the filesystem prefers, and the profiling
-information to work out where these are is readily available from the
-mmap() calls, which are always the same when an executable is run.
+This patch looks ok, but doesn't apply on top of the previous series.
 
--- Jamie
+Greg, please apply the refreshed version attached.
+
+thanks,
+-- 
+balbi
+
+--Fba/0zbH8Xs+Fj9o
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="0001-usb-musb-do-not-mess-up-count-number-and-CSR0-regis.diff"
+
+>From efae64b5f222e1b57b354e8207c62975c5a7618b Mon Sep 17 00:00:00 2001
+From: Bryan Wu <cooloney@kernel.org>
+Date: Mon, 25 Aug 2008 14:39:39 +0300
+Subject: [PATCH] usb: musb: do not mess up count number and CSR0 register value
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/usb/musb/musb_gadget_ep0.c |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/usb/musb/musb_gadget_ep0.c b/drivers/usb/musb/musb_gadget_ep0.c
+index b50a30d..9b59824 100644
+--- a/drivers/usb/musb/musb_gadget_ep0.c
++++ b/drivers/usb/musb/musb_gadget_ep0.c
+@@ -437,7 +437,7 @@ static void ep0_rxstate(struct musb *musb)
+ {
+ 	void __iomem		*regs = musb->control_ep->regs;
+ 	struct usb_request	*req;
+-	u16			tmp;
++	u16			count, csr;
+ 
+ 	req = next_ep0_request(musb);
+ 
+@@ -449,34 +449,34 @@ static void ep0_rxstate(struct musb *musb)
+ 		unsigned	len = req->length - req->actual;
+ 
+ 		/* read the buffer */
+-		tmp = musb_readb(regs, MUSB_COUNT0);
+-		if (tmp > len) {
++		count = musb_readb(regs, MUSB_COUNT0);
++		if (count > len) {
+ 			req->status = -EOVERFLOW;
+-			tmp = len;
++			count = len;
+ 		}
+-		musb_read_fifo(&musb->endpoints[0], tmp, buf);
+-		req->actual += tmp;
+-		tmp = MUSB_CSR0_P_SVDRXPKTRDY;
+-		if (tmp < 64 || req->actual == req->length) {
++		musb_read_fifo(&musb->endpoints[0], count, buf);
++		req->actual += count;
++		csr = MUSB_CSR0_P_SVDRXPKTRDY;
++		if (count < 64 || req->actual == req->length) {
+ 			musb->ep0_state = MUSB_EP0_STAGE_STATUSIN;
+-			tmp |= MUSB_CSR0_P_DATAEND;
++			csr |= MUSB_CSR0_P_DATAEND;
+ 		} else
+ 			req = NULL;
+ 	} else
+-		tmp = MUSB_CSR0_P_SVDRXPKTRDY | MUSB_CSR0_P_SENDSTALL;
++		csr = MUSB_CSR0_P_SVDRXPKTRDY | MUSB_CSR0_P_SENDSTALL;
+ 
+ 
+ 	/* Completion handler may choose to stall, e.g. because the
+ 	 * message just received holds invalid data.
+ 	 */
+ 	if (req) {
+-		musb->ackpend = tmp;
++		musb->ackpend = csr;
+ 		musb_g_ep0_giveback(musb, req);
+ 		if (!musb->ackpend)
+ 			return;
+ 		musb->ackpend = 0;
+ 	}
+-	musb_writew(regs, MUSB_CSR0, tmp);
++	musb_writew(regs, MUSB_CSR0, csr);
+ }
+ 
+ /*
+-- 
+1.6.0.rc1.71.gfba5
+
+
+--Fba/0zbH8Xs+Fj9o--
