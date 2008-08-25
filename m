@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbYHYJRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbYHYJNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755870AbYHYJRS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 05:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbYHYJRD
+	id S1755927AbYHYJNP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 05:13:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYHYJM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 05:17:03 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53150 "EHLO hera.kernel.org"
+	Mon, 25 Aug 2008 05:12:59 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44908 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753629AbYHYJRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 05:17:01 -0400
-From: Tejun Heo <tj@kernel.org>
-To: Greg Kroah-Hartman <gregkh@suse.de>,
-       Abdel Benamrouche <draconux@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCHSET 1/3 blk-for-2.6.28] block: misc fixes and improvements
-Date: Mon, 25 Aug 2008 18:15:35 +0900
-Message-Id: <1219655740-11672-1-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.5.4.5
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 Aug 2008 09:16:56 +0000 (UTC)
+	id S1753236AbYHYJM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 05:12:59 -0400
+Date: Mon, 25 Aug 2008 11:12:38 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Jan Beulich <jbeulich@novell.com>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] x86: fix: make PCI ECS for AMD CPUs hotplug capable
+	(-v2)
+Message-ID: <20080825091238.GA9114@elte.hu>
+References: <20080823153725.GB16984@elte.hu> <1219654859-1010-1-git-send-email-robert.richter@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1219654859-1010-1-git-send-email-robert.richter@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-This patchset contains the following five patches containing misc
-fixes and improvements.
+* Robert Richter <robert.richter@amd.com> wrote:
 
-  0001-block-fix-partition-info-printouts.patch
-  0002-block-don-t-grab-block_class_lock-unnecessarily.patch
-  0003-block-use-class_dev_iterator-instead-of-class_for_e.patch
-  0004-block-allow-deleting-zero-length-partition.patch
-  0005-block-update-add_partition-error-handling.patch
+> Until now, PCI ECS setup was performed at boot time only and for cpus 
+> that are enabled then. This patch fixes this and adds cpu hotplug.
 
-Recent block_class iteration updates 5c6f35c5..27f3025 introduced a
-few bugs and trivial user visible behavior change.  0001-0003 update
-those issues and simplify related code using new class iterator.
+i already had v1 applied to tip/x86/urgent, so i took the -v2 delta and 
+queued it up in tip/x86/cleanups - see the commit below.
 
-0004 fixes deletion of zero sized partitions.
+	Ingo
 
-d805dda4 tried to fix error handling path in add_partition() but had a
-few problems.  0005 fixes those and moves busy partition check into
-add_partition().
+--------------->
+>From ed21763e7b0b3fb50e4efd9d4bc17ef5b035d304 Mon Sep 17 00:00:00 2001
+From: Robert Richter <robert.richter@amd.com>
+Date: Fri, 22 Aug 2008 20:23:38 +0200
+Subject: [PATCH] x86: cleanup in amd_cpu_notify()
 
-This patchset is against
+small coding style fix.
 
-  blk-for-2.6.28 (9abd7c437c02e7448fb1d2d3cfc0b9c1ab77cf2d)
-+ [1] klist-dont-iterate-over-deleted-entries
-+ [2] use-klist-for-class-device-list-and-implement-iterator
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/pci/amd_bus.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-and available in the following git tree.
-
-  http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=shortlog;h=block-misc-fixes
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-misc-fixes
-
-with the following combined diffstat
-
- block/genhd.c         |  246 +++++++++++++++++++-------------------------------
- block/ioctl.c         |    9 -
- fs/partitions/check.c |   42 ++++----
- 3 files changed, 121 insertions(+), 176 deletions(-)
-
-Thanks.
-
---
-tejun
-
-[1] http://article.gmane.org/gmane.linux.kernel/725706
-[2] http://article.gmane.org/gmane.linux.kernel/725708
+diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
+index 6a0fca7..22e0576 100644
+--- a/arch/x86/pci/amd_bus.c
++++ b/arch/x86/pci/amd_bus.c
+@@ -580,7 +580,7 @@ static int __cpuinit amd_cpu_notify(struct notifier_block *self,
+ 				    unsigned long action, void *hcpu)
+ {
+ 	int cpu = (long)hcpu;
+-	switch(action) {
++	switch (action) {
+ 	case CPU_ONLINE:
+ 	case CPU_ONLINE_FROZEN:
+ 		smp_call_function_single(cpu, enable_pci_io_ecs, NULL, 0);
