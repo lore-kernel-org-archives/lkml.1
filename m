@@ -1,98 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755782AbYHYSj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbYHYSkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755782AbYHYSj3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 14:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbYHYSjV
+	id S1756139AbYHYSkk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 14:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbYHYSkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 14:39:21 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:37073 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751173AbYHYSjU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 14:39:20 -0400
-Date: Mon, 25 Aug 2008 14:39:19 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Oliver Neukum <oneukum@suse.de>
-cc: Pavel Machek <pavel@suse.cz>, <linux-pm@lists.linux-foundation.org>,
-       <James.Bottomley@hansenpartnership.com>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>, <teheo@novell.com>
-Subject: Re: [linux-pm] Power management for SCSI
-In-Reply-To: <200808251934.03569.oneukum@suse.de>
-Message-ID: <Pine.LNX.4.44L0.0808251411420.6639-100000@iolanthe.rowland.org>
+	Mon, 25 Aug 2008 14:40:32 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:45126 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751144AbYHYSkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 14:40:32 -0400
+Message-ID: <48B2FC9D.3020300@sgi.com>
+Date: Mon, 25 Aug 2008 11:40:29 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: David Miller <davem@davemloft.net>
+CC: akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       cl@linux-foundation.org, tokunaga.keiich@jp.fujitsu.com
+Subject: Re: [RFC][PATCH 2/2] quicklist shouldn't be proportional to # of
+ CPUs
+References: <20080820195021.12E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>	<20080820200709.12F0.KOSAKI.MOTOHIRO@jp.fujitsu.com>	<20080820234615.258a9c04.akpm@linux-foundation.org> <20080821.001322.236658980.davem@davemloft.net>
+In-Reply-To: <20080821.001322.236658980.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Aug 2008, Oliver Neukum wrote:
-
-> > possible then the link would probably want to have remote wakeup 
-> > enabled before autosuspending, even if none of the devices currently 
-> > attached actually wants to use it.
+David Miller wrote:
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Wed, 20 Aug 2008 23:46:15 -0700
 > 
-> That supposes it doesn't matter in terms of power use. Is that true?
+>> On Wed, 20 Aug 2008 20:08:13 +0900 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+>>
+>>> +	num_cpus_per_node = cpus_weight_nr(node_to_cpumask(node));
 
-I don't know -- it would depend on the particular transport.  In any 
-case, it's a decision the transport class can make.
+I think the more correct usage would be:
 
-> > So sd.c might, in theory, want to respond in two different ways to an 
-> > autosuspend request:
-> > 
-> > 	(A) Drain the cache,
-> > 
-> > 	(B) Drain the cache and spin down the drive.
+	{
+		node_to_cpumask_ptr(v, node);
+		num_cpus_per_node = cpus_weight_nr(*v);
+		max /= num_cpus_per_node;
+
+		return max(max, min_pages);
+	}
+
+which should load 'v' with a pointer to the node_to_cpumask_map[node] entry
+[and avoid using stack space for the cpumask_t variable for those arch's
+that define a node_to_cpumask_map (or similar).]  Otherwise a local cpumask_t
+variable '_v' is created to which 'v' is pointing to and thus can be used
+directly as an arg to the cpu_xxx ops.
+
+Thanks,
+Mike
+
+
+>> sparc64 allmodconfig:
+>>
+>> mm/quicklist.c: In function `max_pages':
+>> mm/quicklist.c:44: error: invalid lvalue in unary `&'
+>>
+>> we seem to have a made a spectacular mess of cpumasks lately.
 > 
-> (C) Do nothing
-
-Possibly.
-
-> (D) Refuse (i.e. the user has opened a block device and used a vendor
-> specific command)
-
-Also possible, although I don't think your example is a good one since 
-sd.c wouldn't be aware of vendor-specific commands.
-
-> > How does it know which to do?  Ask the transport class for help 
-> > choosing?
+> It should explode similarly on x86, since it also defines node_to_cpumask()
+> as an inline function.
 > 
-> I see no other way.
-> 
-> > (A) would leave us in an awkward "half-suspended" state.  Is the device
-> > suspended or not?  It is, in the sense that now the link can safely be
-> > suspended.  But it isn't, in the sense that a system sleep would still
-> > require the drive to be spun down.
-> > 
-> > It's kind of like the state we have following a PMSG_FREEZE --
-> > quiescent but not suspended.  Somehow this extra state needs to be
-> > incorporated into the autosuspend framework.
-> 
-> Why? Unless the device can be skipped for purposes of autosuspend and
-> system sleep, isn't it active?
-
-To my mind, if the driver has to do something special to prepare for
-the link going down (such as draining the cache), then afterward the
-device is in a special state -- not the same as the active state.  The
-difference between the two states is that in one the link may be
-autosuspended and in the other it mustn't.
-
-I see the driver making the transition between these states in response 
-to autosuspend and autoresume calls.
-
-This means a driver such as sd.c has to respond in different sorts of
-ways to various autosuspend scenarios, either doing a real power-down
-or merely preparing for the link to go down.  The implication is that
-we might want to send the driver two different autosuspend calls: One
-to prepare for the link to go down (after, say, a couple of seconds of
-idleness) and another to power-down the device (after, say, 15 minutes
-of idleness).
-
-Thus, there would be two "autosuspended" states: a shallow autosuspend
-(cache is drained) and a deep autosuspend (disk is spun down).  Such an
-approach could be made to work, even though it seems slightly
-artificial.
-
-Alan Stern
+> IA64 seems to be one of the few platforms to define this as a macro
+> evaluating to the node-to-cpumask array entry, so it's clear what
+> platform Motohiro-san did build testing on :-)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
