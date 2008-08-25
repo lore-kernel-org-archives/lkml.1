@@ -1,90 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbYHYJL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbYHYJRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755858AbYHYJL5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 05:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYHYJLt
+	id S1755870AbYHYJRS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 05:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbYHYJRD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 05:11:49 -0400
-Received: from il.qumranet.com ([212.179.150.194]:57451 "EHLO il.qumranet.com"
+	Mon, 25 Aug 2008 05:17:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53150 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753167AbYHYJLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 05:11:48 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: [PATCH] Fix emergency_restart (sysrq-b) with kvm loaded on Intel hosts
-Date: Mon, 25 Aug 2008 12:11:46 +0300
-Message-Id: <1219655506-27418-1-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.6.0
+	id S1753629AbYHYJRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 05:17:01 -0400
+From: Tejun Heo <tj@kernel.org>
+To: Greg Kroah-Hartman <gregkh@suse.de>,
+       Abdel Benamrouche <draconux@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCHSET 1/3 blk-for-2.6.28] block: misc fixes and improvements
+Date: Mon, 25 Aug 2008 18:15:35 +0900
+Message-Id: <1219655740-11672-1-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.5.4.5
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 Aug 2008 09:16:56 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enabling Intel VT has the curious side effect whereby the INIT signal is
-blocked.  Rather than comment on the wisdom of this side effect, this patch
-adds an emergency restart reboot notifier, and modifies the kvm reboot
-notifier to disable VT on emergency reboot.
+Hello,
 
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- include/linux/notifier.h |    1 +
- kernel/sys.c             |    3 +++
- virt/kvm/kvm_main.c      |   10 ++++++++--
- 3 files changed, 12 insertions(+), 2 deletions(-)
+This patchset contains the following five patches containing misc
+fixes and improvements.
 
-diff --git a/include/linux/notifier.h b/include/linux/notifier.h
-index da2698b..59123e4 100644
---- a/include/linux/notifier.h
-+++ b/include/linux/notifier.h
-@@ -203,6 +203,7 @@ static inline int notifier_to_errno(int ret)
- #define SYS_RESTART	SYS_DOWN
- #define SYS_HALT	0x0002	/* Notify of system halt */
- #define SYS_POWER_OFF	0x0003	/* Notify of system power off */
-+#define SYS_EMERGENCY_RESTART 0x0004 /* sysrq-b; no locks taken */
- 
- #define NETLINK_URELEASE	0x0001	/* Unicast netlink socket released */
- 
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 038a7bc..289dba3 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -270,6 +270,9 @@ out_unlock:
-  */
- void emergency_restart(void)
- {
-+	struct raw_notifier_head list = { .head = reboot_notifier_list.head };
-+
-+	raw_notifier_call_chain(&list, SYS_EMERGENCY_RESTART, NULL);
- 	machine_emergency_restart();
- }
- EXPORT_SYMBOL_GPL(emergency_restart);
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 0309571..125041f 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -1550,14 +1550,20 @@ EXPORT_SYMBOL_GPL(kvm_handle_fault_on_reboot);
- static int kvm_reboot(struct notifier_block *notifier, unsigned long val,
- 		      void *v)
- {
--	if (val == SYS_RESTART) {
-+	switch (val) {
-+	case SYS_RESTART:
-+		printk(KERN_INFO "kvm: exiting hardware virtualization\n");
-+		/* coming through! */
-+	case SYS_EMERGENCY_RESTART:
- 		/*
- 		 * Some (well, at least mine) BIOSes hang on reboot if
- 		 * in vmx root mode.
- 		 */
--		printk(KERN_INFO "kvm: exiting hardware virtualization\n");
- 		kvm_rebooting = true;
- 		on_each_cpu(hardware_disable, NULL, 1);
-+		break;
-+	default:
-+		break;
- 	}
- 	return NOTIFY_OK;
- }
--- 
-1.6.0
+  0001-block-fix-partition-info-printouts.patch
+  0002-block-don-t-grab-block_class_lock-unnecessarily.patch
+  0003-block-use-class_dev_iterator-instead-of-class_for_e.patch
+  0004-block-allow-deleting-zero-length-partition.patch
+  0005-block-update-add_partition-error-handling.patch
 
+Recent block_class iteration updates 5c6f35c5..27f3025 introduced a
+few bugs and trivial user visible behavior change.  0001-0003 update
+those issues and simplify related code using new class iterator.
+
+0004 fixes deletion of zero sized partitions.
+
+d805dda4 tried to fix error handling path in add_partition() but had a
+few problems.  0005 fixes those and moves busy partition check into
+add_partition().
+
+This patchset is against
+
+  blk-for-2.6.28 (9abd7c437c02e7448fb1d2d3cfc0b9c1ab77cf2d)
++ [1] klist-dont-iterate-over-deleted-entries
++ [2] use-klist-for-class-device-list-and-implement-iterator
+
+and available in the following git tree.
+
+  http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=shortlog;h=block-misc-fixes
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-misc-fixes
+
+with the following combined diffstat
+
+ block/genhd.c         |  246 +++++++++++++++++++-------------------------------
+ block/ioctl.c         |    9 -
+ fs/partitions/check.c |   42 ++++----
+ 3 files changed, 121 insertions(+), 176 deletions(-)
+
+Thanks.
+
+--
+tejun
+
+[1] http://article.gmane.org/gmane.linux.kernel/725706
+[2] http://article.gmane.org/gmane.linux.kernel/725708
