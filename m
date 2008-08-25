@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbYHYUc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbYHYUeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756621AbYHYUc3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 16:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbYHYUcO
+	id S1754840AbYHYUeg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 16:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbYHYUe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 16:32:14 -0400
-Received: from gv-out-0910.google.com ([216.239.58.185]:58404 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752506AbYHYUcM (ORCPT
+	Mon, 25 Aug 2008 16:34:28 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39893 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751679AbYHYUe1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 16:32:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=dpb0cIrx3IlAwgTwXt7EV0PvlZEXNCx1m1dWR4MFzc5jBui+EA/ZpExJ1pBhLtgLNm
-         yRPEKRq1YDqEPSeUaViEsJC07Vk6eXgfzXxfA7o8lIUhkRiFu34R+kZc/zsSL+9eGkZd
-         MCXk5Hy7SVz3ahX8VuHNKm3iKaSMPNPJup+hI=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 2/9] ide-disk: set_addressing() fixes
-Date: Mon, 25 Aug 2008 22:23:54 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080817171454.27943.37234.sendpatchset@localhost.localdomain> <20080817171501.27943.57473.sendpatchset@localhost.localdomain> <48B0850D.4000105@ru.mvista.com>
-In-Reply-To: <48B0850D.4000105@ru.mvista.com>
-MIME-Version: 1.0
+	Mon, 25 Aug 2008 16:34:27 -0400
+Date: Mon, 25 Aug 2008 22:36:49 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Dave Jones <davej@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "H. Peter Anvin" <hpa@kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: latest -git: WARNING: at arch/x86/kernel/ipi.c:123 send_IPI_mask_bitmask+0xc3/0xe0()
+Message-ID: <20080825203649.GH26610@one.firstfloor.org>
+References: <48AE20B8.9000204@kernel.org> <19f34abd0808240220v77bcdd5di32f8f865b18fc49f@mail.gmail.com> <48B19799.6090703@kernel.org> <19f34abd0808241022j1ab6f3e6qd72b9acba5df4892@mail.gmail.com> <19f34abd0808241045r37eb8661h3cc688b6f0513777@mail.gmail.com> <20080824181304.GA5963@redhat.com> <20080825183611.GE26610@one.firstfloor.org> <20080825185450.GD11894@redhat.com> <20080825193926.GF26610@one.firstfloor.org> <20080825195029.GA27030@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808252223.54795.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20080825195029.GA27030@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 23 August 2008, Sergei Shtylyov wrote:
-> Hello.
-> 
-> Bartlomiej Zolnierkiewicz wrote:
-> 
-> > * Return -EIO if arg > 0 and LBA48 is unsupported.
-> >
-> > * No need to reset ->addressing.
-> >
-> > * Make ->addressing a single bit flag.
-> >
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> >   
-> [...]
-> > Index: b/include/linux/ide.h
-> > ===================================================================
-> > --- a/include/linux/ide.h
-> > +++ b/include/linux/ide.h
-> > @@ -507,7 +507,7 @@ struct ide_drive_s {
-> >  	unsigned sleeping	: 1;	/* 1=sleeping & sleep field valid */
-> >  	unsigned post_reset	: 1;
-> >  	unsigned udma33_warned	: 1;
-> > -	unsigned addressing	: 2;	/* 0=28-bit, 1=48-bit, 2=48-bit doing 28-bit */
-> > +	unsigned addressing	: 1;	/* 0=28-bit, 1=48-bit */
-> >  	unsigned wcache		: 1;	/* status of write cache */
-> >  	unsigned nowerr		: 1;	/* used for ignoring ATA_DF */
-> >   
-> 
->    Don't you want to get rid of things like:
-> 
->         u8 lba48 = (drive->addressing == 1) ? 1 : 0;
+> On some systems (for which there aren't BIOS updates) the trip points are
+> set too low.  
 
-This was dealt with in "[PATCH 5/9] ide: add device flags" - since patch
-#5/9 was going to touch the code anyway and there were no benefits besides
-aesthetics in doing it in #2/9 I optimized the development process a bit...
+There were patches floating to make this configurable. I was always
+a little sceptical of them, but they exist.
+
+> If we get a thermal event that was caused by temporary
+> increased workload, temperature will drop off again when that workload
+> is complete.
+
+But none of the cpufreq governours do this. They only care about
+load, not about temperature.
+
+> For sustained workloads we'd get additional thermal events, at which
+> time we make a decision "ok, we've throttled as far as we can, and
+> things are still going badly, power off".
+
+That is what the ACPI driver does when the trip point is reached.
+
+> In the event of a failed fan or similar, shutting down is obviously
+> the right thing to do, and we'd get further thermal events after
+> throttling which would allow us to do so.
+
+So you're saying processor_thermal should let the system cook
+for some time first before really taking action?
+
+-Andi
