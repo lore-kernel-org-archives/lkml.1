@@ -1,42 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbYHYPXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbYHYP06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754639AbYHYPXW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 11:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYHYPXN
+	id S1754954AbYHYP06 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 11:26:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYHYP0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 11:23:13 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54976 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752922AbYHYPXM (ORCPT
+	Mon, 25 Aug 2008 11:26:50 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60395 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753579AbYHYP0u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 11:23:12 -0400
-Subject: Re: [PATCH 2/2] smp_call_function: use rwlocks on queues rather
-	than rcu
+	Mon, 25 Aug 2008 11:26:50 -0400
+Subject: Re: [PATCH, RFC, tip/core/rcu] scalable classic RCU implementation
 From: Peter Zijlstra <peterz@infradead.org>
 To: paulmck@linux.vnet.ibm.com
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080825151220.GA6745@linux.vnet.ibm.com>
-References: <84144f020808220006n25d684b1n9db306ddc4f58c4c@mail.gmail.com>
-	 <48AEC6B2.1080701@linux-foundation.org>
-	 <20080822151156.GA6744@linux.vnet.ibm.com>
-	 <48AEF3FD.70906@linux-foundation.org>
-	 <20080822182915.GG6744@linux.vnet.ibm.com>
-	 <48AF0735.60402@linux-foundation.org>
-	 <20080822195226.GJ6744@linux.vnet.ibm.com>
-	 <48AF1B81.3050806@linux-foundation.org>
-	 <20080822205339.GK6744@linux.vnet.ibm.com> <1219660291.8515.20.camel@twins>
-	 <20080825151220.GA6745@linux.vnet.ibm.com>
+Cc: Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, mingo@elte.hu, akpm@linux-foundation.org,
+       manfred@colorfullife.com, dipankar@in.ibm.com, schamp@sgi.com,
+       niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org
+In-Reply-To: <20080825151645.GB6745@linux.vnet.ibm.com>
+References: <20080821234318.GA1754@linux.vnet.ibm.com>
+	 <1219447772.5197.98.camel@josh-work.beaverton.ibm.com>
+	 <1219660496.8515.22.camel@twins> <20080825151645.GB6745@linux.vnet.ibm.com>
 Content-Type: text/plain
-Date: Mon, 25 Aug 2008 17:22:16 +0200
-Message-Id: <1219677736.8515.69.camel@twins>
+Date: Mon, 25 Aug 2008 17:26:43 +0200
+Message-Id: <1219678003.8515.75.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -44,65 +32,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-25 at 08:12 -0700, Paul E. McKenney wrote:
-> On Mon, Aug 25, 2008 at 12:31:31PM +0200, Peter Zijlstra wrote:
-> > On Fri, 2008-08-22 at 13:53 -0700, Paul E. McKenney wrote:
-> > > On Fri, Aug 22, 2008 at 03:03:13PM -0500, Christoph Lameter wrote:
-> > > > Paul E. McKenney wrote:
-> > > > 
-> > > > > I was indeed thinking in terms of the free from RCU being specially marked.
-> > > > 
-> > > > Isnt there some way to shorten the rcu periods significantly? Critical
-> > > > sections do not take that long after all.
+On Mon, 2008-08-25 at 08:16 -0700, Paul E. McKenney wrote:
+> On Mon, Aug 25, 2008 at 12:34:56PM +0200, Peter Zijlstra wrote:
+> > On Fri, 2008-08-22 at 16:29 -0700, Josh Triplett wrote:
+> > 
+> > > > @@ -26,8 +27,10 @@
+> > > >   * http://lse.sourceforge.net/locking/rclock_OLS.2001.05.01c.sc.pdf (OLS2001)
+> > > >   *
+> > > >   * For detailed explanation of Read-Copy Update mechanism see -
+> > > > - * 		Documentation/RCU
+> > > > - *
+> > > > + * 	Documentation/RCU
+> > > > + * 	http://lwn.net/Articles/262464/ (What is RCU, Fundamentally?)
+> > > > + * 	http://lwn.net/Articles/263130/ (What is RCU's Usage?)
+> > > > + * 	http://lwn.net/Articles/264090/ (What is RCU's API? + references)
+> > > >   */
 > > > 
-> > > In theory, yes.  However, the shorter the grace period, the greater the
-> > > per-update overhead of grace-period detection -- the general approach
-> > > is to use a per-CPU high-resolution timer to force RCU grace period
-> > > processing every 100 microseconds or so.  
+> > > Why put these references here rather than in Documentation/RCU?  It
+> > > seems easier to keep documentation up to date in one place.  If you
+> > > think these represent a good "getting started" set of documents, how
+> > > about a Documentation/RCU/ReadTheseFirst with links to them, or how
+> > > about linking to them from whatisRCU.txt?
 > > 
-> > You could of course also drive the rcu state machine from
-> > rcu_read_unlock().
+> > I actually like in code comments and 'documentation' more than
+> > Documentation/ stuff. Mostly because Documentation/ is:
+> >  - far away from the code
+> >  - therefore, more easily bitrotted
+> >  - and easily forgotten
 > 
-> True, and Jim Houston implemented something similar to this some years
-> back: http://marc.theaimsgroup.com/?l=linux-kernel&m=109387402400673&w=2
+> I know!!!
 > 
-> This of course greatly increases rcu_read_unlock() overhead.  But
-> perhaps it is a good implementation for the workloads that Christoph is
-> thinking of.
+> #ifdef JOSH_TRIPLETT
+>  * 	Documentation/RCU
+>  * 	http://lwn.net/Articles/262464/ (What is RCU, Fundamentally?)
+>  * 	http://lwn.net/Articles/263130/ (What is RCU's Usage?)
+>  * 	http://lwn.net/Articles/264090/ (What is RCU's API? + references)
+> #elif PETER_ZIJLSTRA
+>  * 	Documentation/RCU
+> #endif
 > 
-> > > Also, by definition, the RCU
-> > > grace period can be no shorter than the longest active RCU read-side
-> > > critical section.  Nevertheless, I have designed my current hierarchical
-> > > RCU patch with expedited grace periods in mind, though more for the
-> > > purpose of reducing latency of long strings of operations that involve
-> > > synchronize_rcu() than for cache locality.
-> > 
-> > Another thing that could be done is more often force a grace period by
-> > flipping the counters.
-> 
-> Yep.  That is exactly what I was getting at with the high-resolution
-> timer point above.  This seems to be a reasonable compromise, as it
-> allows someone to specify how quickly the grace periods happen
-> dynamically.
-> 
-> But I am not sure that this gets the grace periods to go fast enough to
-> cover Christoph's use case -- he seems to be in a "faster is better"
-> space rather than in an "at least this fast" space.  Still, it would
-> likely help in some important cases.
+> (Sorry, couldn't resist!!!)
 
-If we combine these two cases, and flip the counter as soon as we've
-enqueued one callback, unless we're already waiting for a grace period
-to end - which gives us a longer window to collect callbacks.
+But but but, you got the cases the wrong way around.. ;-)
 
-And then the rcu_read_unlock() can do:
+> Seriously, I know where all the documentation is, as I wrote most of it.
+> These comments are for you guys.  So, any thoughts on how I should
+> resolve this?  My default is, as always, a coin flip.  ;-)
 
-  if (dec_and_zero(my_counter) && my_index == dying)
-    raise_softirq(RCU)
+I guess we could do the 'this is how the concept works and can be used
+like so and so' documentation in Documentation/
 
-to fire off the callback stuff.
+And the stuff that says 'this code does like so and so, because blah'
+should stay near the code.
 
-/me ponders - there must be something wrong with that...
+And in any case of doubt - stay near the code :-)
 
-Aaah, yes, the dec_and_zero is non trivial due to the fact that its a
-distributed counter. Bugger..
+I always view Documentation/ as end user stuff (be that a kernel
+programmer that needs to learn a new API, or userland folks or people
+wanting to know what a certain feature is about).
 
