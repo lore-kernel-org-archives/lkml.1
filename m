@@ -1,263 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754652AbYHYPcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYHYPjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754652AbYHYPcY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 11:32:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbYHYPcP
+	id S1754585AbYHYPjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 11:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYHYPjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 11:32:15 -0400
-Received: from ns1.suse.de ([195.135.220.2]:44158 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752027AbYHYPcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 11:32:15 -0400
-Message-ID: <48B2D037.1050403@suse.de>
-Date: Mon, 25 Aug 2008 17:31:03 +0200
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Mon, 25 Aug 2008 11:39:05 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:35681 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753242AbYHYPjE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 11:39:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=brklx5NhWVIstb+EEyb1bafgaGFK9TZnBq+v/5RkQXm0Yy6QDNt7+Zna0xDLEBEEza
+         WfLkDX/UInchEh8/jEtPkfjFBxlf8gqMcnAB04IBR8EJT4M7zU9rMOxIfIPN1uCU9AKg
+         6q5JVSQF74nR16DGEsDaL5M2569zV2Gd2vS4I=
+Message-ID: <6278d2220808250839j1dc25c02uda7bf8b6b150acb7@mail.gmail.com>
+Date: Mon, 25 Aug 2008 16:39:01 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Fabio Checconi" <fchecconi@gmail.com>
+Subject: Re: performance "regression" in cfq compared to anticipatory, deadline and noop
+Cc: "Jens Axboe" <jens.axboe@oracle.com>, Matthew <jackdachef@gmail.com>,
+       "Kasper Sandberg" <lkml@metanurb.dk>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080825202936.GA3608@gandalf.sssup.it>
 MIME-Version: 1.0
-To: Greg Kroah-Hartman <gregkh@suse.de>,
-       Alan Stern <stern@rowland.harvard.edu>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RESEND] klist: don't iterate over deleted entries
-References: <48B2756A.9060005@kernel.org>
-In-Reply-To: <48B2756A.9060005@kernel.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <e85b9d30805130842p3a34305l4ab1e7926e4b0dba@mail.gmail.com>
+	 <20080513184057.GU16217@kernel.dk>
+	 <6278d2220805140105x27292033u6a97dcf13ab54263@mail.gmail.com>
+	 <20080514082622.GA16217@kernel.dk>
+	 <6278d2220805141352s3624d7b7qc90567f6b7a410dc@mail.gmail.com>
+	 <e85b9d30805141437u6a4b4caby1712c6f04bd4cc05@mail.gmail.com>
+	 <20080515070127.GH16217@kernel.dk>
+	 <20080515122156.GA11600@gandalf.sssup.it>
+	 <6278d2220808241324j117725efq8e87025313fb025f@mail.gmail.com>
+	 <20080825202936.GA3608@gandalf.sssup.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A klist entry is kept on the list till all its current iterations are
-finished; however, a new iteration after deletion also iterates over
-deleted entries as long as their reference count stays above zero.
-This causes problems for cases where there are users which iterate
-over the list while synchronized against list manipulations and
-natuarally expect already deleted entries to not show up during
-iteration.
+On Mon, Aug 25, 2008 at 9:29 PM, Fabio Checconi <fchecconi@gmail.com> wrote:
+> Hi,
+>
+>> From: Daniel J Blueman <daniel.blueman@gmail.com>
+>> Date: Sun, Aug 24, 2008 09:24:37PM +0100
+>>
+>> Hi Fabio, Jens,
+>>
+> ...
+>> This was the last test I didn't get around to. Alas, is did help, but
+>> didn't give the merging required for full performance:
+>>
+>> # echo 1 >/proc/sys/vm/drop_caches; dd if=/dev/sda of=/dev/null
+>> bs=128k count=2000
+>> 262144000 bytes (262 MB) copied, 2.47787 s, 106 MB/s
+>>
+>> # echo 1 >/proc/sys/vm/drop_caches; hdparm -t /dev/sda
+>> Timing buffered disk reads:  308 MB in  3.01 seconds = 102.46 MB/sec
+>>
+>> It is an improvement over the baseline performance of 2.6.27-rc4:
+>>
+>> # echo 1 >/proc/sys/vm/drop_caches; dd if=/dev/sda of=/dev/null
+>> bs=128k count=2000
+>> 262144000 bytes (262 MB) copied, 2.56514 s, 102 MB/s
+>>
+>> # echo 1 >/proc/sys/vm/drop_caches; hdparm -t /dev/sda
+>> Timing buffered disk reads:  294 MB in  3.02 seconds =  97.33 MB/sec
+>>
+>> Note that platter speed is around 125MB/s (which I get near at smaller
+>> read sizes).
+>>
+>> I feel 128KB read requests are perhaps important, as this is a
+>> commonly-used RAID stripe size, and may explain the read-performance
+>> drop sometimes we see in hardware vs software RAID benchmarks.
+>>
+>> How can we generate some ideas or movement on fixing/improving this behaviour?
+>>
+>
+> Thank you for testing.  The blktrace output for this run should be
+> interesting, esp. to compare it with a blktrace obtained from anticipatory
+> with the same workload - IIRC anticipatory didn't suffer from the problem,
+> and anticipatory has a slightly different dispatching mechanism that
+> this patch tried to bring into cfq.
+>
+> Even if a proper fix may not belong to the elevator itself, I think
+> that this couple (this last test + anticipatory) of traces should help
+> in better understanding what is still going wrong.
+>
+> Thank you in advance.
 
-This patch implements dead flag which gets set on deletion so that
-iteration can skip already deleted entries.  The dead flag piggy backs
-on the lowest bit of knode->n_klist and only visible to klist
-implementation proper.
+See http://quora.org/blktrace-n.tar.bz2
 
-While at it, drop klist_iter->i_head as it's redundant and doesn't
-offer anything in semantics or performance wise as klist_iter->i_klist
-is dereferenced on every iteration anyway.
+Where n is:
+ 0 - 2.6.27-rc4 unpatched
+ 1 - 2.6.27-rc4 with your CFQ patch, CFQ scheduler
+ 2 - 2.6.27-rc4 with your CFQ patch, anticipatory scheduler
+ 3 - 2.6.27-rc4 with your CFQ patch, deadline scheduler
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jens Axboe <jens.axboe@oracle.com>
----
-The original post was line wrapped.  Re-sending.  Thanks.
+I have found it's not always possible to reproduce this issue, eg now,
+with stock CFQ, I'm seeing consistent 117-123MB/s with hdparm and dd
+(as above), whereas I was seeing a consistent 95-103MB/s, so the
+blktraces may not show the slower-performance pattern - even with
+precisely the same (controlled) environment.
 
- include/linux/klist.h |    3 +-
- lib/klist.c           |   96 +++++++++++++++++++++++++++++++++++-------------
- 2 files changed, 71 insertions(+), 28 deletions(-)
-
-diff --git a/include/linux/klist.h b/include/linux/klist.h
-index 06c338e..8ea98db 100644
---- a/include/linux/klist.h
-+++ b/include/linux/klist.h
-@@ -38,7 +38,7 @@ extern void klist_init(struct klist *k, void (*get)(struct klist_node *),
- 		       void (*put)(struct klist_node *));
- 
- struct klist_node {
--	struct klist		*n_klist;
-+	void			*n_klist;	/* never access directly */
- 	struct list_head	n_node;
- 	struct kref		n_ref;
- 	struct completion	n_removed;
-@@ -57,7 +57,6 @@ extern int klist_node_attached(struct klist_node *n);
- 
- struct klist_iter {
- 	struct klist		*i_klist;
--	struct list_head	*i_head;
- 	struct klist_node	*i_cur;
- };
- 
-diff --git a/lib/klist.c b/lib/klist.c
-index cca37f9..bbdd301 100644
---- a/lib/klist.c
-+++ b/lib/klist.c
-@@ -37,6 +37,37 @@
- #include <linux/klist.h>
- #include <linux/module.h>
- 
-+/*
-+ * Use the lowest bit of n_klist to mark deleted nodes and exclude
-+ * dead ones from iteration.
-+ */
-+#define KNODE_DEAD		1LU
-+#define KNODE_KLIST_MASK	~KNODE_DEAD
-+
-+static struct klist *knode_klist(struct klist_node *knode)
-+{
-+	return (struct klist *)
-+		((unsigned long)knode->n_klist & KNODE_KLIST_MASK);
-+}
-+
-+static bool knode_dead(struct klist_node *knode)
-+{
-+	return (unsigned long)knode->n_klist & KNODE_DEAD;
-+}
-+
-+static void knode_set_klist(struct klist_node *knode, struct klist *klist)
-+{
-+	knode->n_klist = klist;
-+	/* no knode deserves to start its life dead */
-+	WARN_ON(knode_dead(knode));
-+}
-+
-+static void knode_kill(struct klist_node *knode)
-+{
-+	/* and no knode should die twice ever either, see we're very humane */
-+	WARN_ON(knode_dead(knode));
-+	*(unsigned long *)&knode->n_klist |= KNODE_DEAD;
-+}
- 
- /**
-  * klist_init - Initialize a klist structure.
-@@ -79,7 +110,7 @@ static void klist_node_init(struct klist *k, struct klist_node *n)
- 	INIT_LIST_HEAD(&n->n_node);
- 	init_completion(&n->n_removed);
- 	kref_init(&n->n_ref);
--	n->n_klist = k;
-+	knode_set_klist(n, k);
- 	if (k->get)
- 		k->get(n);
- }
-@@ -115,7 +146,7 @@ EXPORT_SYMBOL_GPL(klist_add_tail);
-  */
- void klist_add_after(struct klist_node *n, struct klist_node *pos)
- {
--	struct klist *k = pos->n_klist;
-+	struct klist *k = knode_klist(pos);
- 
- 	klist_node_init(k, n);
- 	spin_lock(&k->k_lock);
-@@ -131,7 +162,7 @@ EXPORT_SYMBOL_GPL(klist_add_after);
-  */
- void klist_add_before(struct klist_node *n, struct klist_node *pos)
- {
--	struct klist *k = pos->n_klist;
-+	struct klist *k = knode_klist(pos);
- 
- 	klist_node_init(k, n);
- 	spin_lock(&k->k_lock);
-@@ -144,9 +175,10 @@ static void klist_release(struct kref *kref)
- {
- 	struct klist_node *n = container_of(kref, struct klist_node, n_ref);
- 
-+	WARN_ON(!knode_dead(n));
- 	list_del(&n->n_node);
- 	complete(&n->n_removed);
--	n->n_klist = NULL;
-+	knode_set_klist(n, NULL);
- }
- 
- static int klist_dec_and_del(struct klist_node *n)
-@@ -154,22 +186,29 @@ static int klist_dec_and_del(struct klist_node *n)
- 	return kref_put(&n->n_ref, klist_release);
- }
- 
--/**
-- * klist_del - Decrement the reference count of node and try to remove.
-- * @n: node we're deleting.
-- */
--void klist_del(struct klist_node *n)
-+static void klist_put(struct klist_node *n, bool kill)
- {
--	struct klist *k = n->n_klist;
-+	struct klist *k = knode_klist(n);
- 	void (*put)(struct klist_node *) = k->put;
- 
- 	spin_lock(&k->k_lock);
-+	if (kill)
-+		knode_kill(n);
- 	if (!klist_dec_and_del(n))
- 		put = NULL;
- 	spin_unlock(&k->k_lock);
- 	if (put)
- 		put(n);
- }
-+
-+/**
-+ * klist_del - Decrement the reference count of node and try to remove.
-+ * @n: node we're deleting.
-+ */
-+void klist_del(struct klist_node *n)
-+{
-+	klist_put(n, true);
-+}
- EXPORT_SYMBOL_GPL(klist_del);
- 
- /**
-@@ -206,7 +245,6 @@ void klist_iter_init_node(struct klist *k, struct klist_iter *i,
- 			  struct klist_node *n)
- {
- 	i->i_klist = k;
--	i->i_head = &k->k_list;
- 	i->i_cur = n;
- 	if (n)
- 		kref_get(&n->n_ref);
-@@ -237,7 +275,7 @@ EXPORT_SYMBOL_GPL(klist_iter_init);
- void klist_iter_exit(struct klist_iter *i)
- {
- 	if (i->i_cur) {
--		klist_del(i->i_cur);
-+		klist_put(i->i_cur, false);
- 		i->i_cur = NULL;
- 	}
- }
-@@ -258,27 +296,33 @@ static struct klist_node *to_klist_node(struct list_head *n)
-  */
- struct klist_node *klist_next(struct klist_iter *i)
- {
--	struct list_head *next;
--	struct klist_node *lnode = i->i_cur;
--	struct klist_node *knode = NULL;
- 	void (*put)(struct klist_node *) = i->i_klist->put;
-+	struct klist_node *last = i->i_cur;
-+	struct klist_node *next;
- 
- 	spin_lock(&i->i_klist->k_lock);
--	if (lnode) {
--		next = lnode->n_node.next;
--		if (!klist_dec_and_del(lnode))
-+
-+	if (last) {
-+		next = to_klist_node(last->n_node.next);
-+		if (!klist_dec_and_del(last))
- 			put = NULL;
- 	} else
--		next = i->i_head->next;
-+		next = to_klist_node(i->i_klist->k_list.next);
- 
--	if (next != i->i_head) {
--		knode = to_klist_node(next);
--		kref_get(&knode->n_ref);
-+	i->i_cur = NULL;
-+	while (next != to_klist_node(&i->i_klist->k_list)) {
-+		if (likely(!knode_dead(next))) {
-+			kref_get(&next->n_ref);
-+			i->i_cur = next;
-+			break;
-+		}
-+		next = to_klist_node(next->n_node.next);
- 	}
--	i->i_cur = knode;
-+
- 	spin_unlock(&i->i_klist->k_lock);
--	if (put && lnode)
--		put(lnode);
--	return knode;
-+
-+	if (put && last)
-+		put(last);
-+	return i->i_cur;
- }
- EXPORT_SYMBOL_GPL(klist_next);
+Thanks,
+  Daniel
 -- 
-1.5.4.5
-
+Daniel J Blueman
