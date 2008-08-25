@@ -1,127 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbYHYLuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbYHYLy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755590AbYHYLuA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 07:50:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbYHYLtv
+	id S1755290AbYHYLy0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 07:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbYHYLyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 07:49:51 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:32350 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753434AbYHYLtu (ORCPT
+	Mon, 25 Aug 2008 07:54:19 -0400
+Received: from ns.ariel-networks.com ([124.39.57.10]:35118 "EHLO
+	ns.ariel-networks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751845AbYHYLyS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 07:49:50 -0400
-Date: Mon, 25 Aug 2008 14:49:28 +0300
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext Bryan Wu <cooloney@kernel.org>
-Cc: felipe.balbi@nokia.com, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 1/2] usb: musb: fix bug - don't mess up count number
-	and CSR0 register value
-Message-ID: <20080825114928.GG20450@gandalf.research.nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <1219655621-18510-1-git-send-email-cooloney@kernel.org> <1219655621-18510-2-git-send-email-cooloney@kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="Fba/0zbH8Xs+Fj9o"
-Content-Disposition: inline
-In-Reply-To: <1219655621-18510-2-git-send-email-cooloney@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-OriginalArrivalTime: 25 Aug 2008 11:49:28.0218 (UTC) FILETIME=[A10017A0:01C906A8]
-X-Nokia-AV: Clean
+	Mon, 25 Aug 2008 07:54:18 -0400
+To: linux-kernel@vger.kernel.org
+Subject: Question : ext2 compatibility feature mechanism
+Message-Id: <20080825115417.E78F797800C@ns.ariel-networks.com>
+Date: Mon, 25 Aug 2008 20:54:17 +0900 (JST)
+From: ohyama_sec@ariel-networks.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Hiroyasu Ohyama.
 
---Fba/0zbH8Xs+Fj9o
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+I develop software that write format of ext2 to block device for enjoyment like 'mke2fs'.
 
-On Mon, Aug 25, 2008 at 05:13:40PM +0800, ext Bryan Wu wrote:
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+To develop this, I've read the book of 'Understanding Linux Kernel',  linux kernel document which is Documentation/filesystems/ext2.txt and source code of ext2fs which is 'http://e2fsprogs.sourceforge.net/'.
 
-This patch looks ok, but doesn't apply on top of the previous series.
+But I couldn't obtain some infomation about ext2 filesystem.
+That is compatibility feature mechanism which is supported by ext2 revision 1.
 
-Greg, please apply the refreshed version attached.
+Of course, the device file that is created by my program could be mounted on linux. But I really want to know these mechanism.
+To be more specific, I wnat to know what will happen, if I operate bitmap of super block parameter of s_feature_compat, s_feature_incompat and s_feature_ro_compat.
 
-thanks,
--- 
-balbi
+Could you please give me the documents that is written about ext2 filesystem at length, especially compatibility feature mechanism.
 
---Fba/0zbH8Xs+Fj9o
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="0001-usb-musb-do-not-mess-up-count-number-and-CSR0-regis.diff"
+Thank you.
 
->From efae64b5f222e1b57b354e8207c62975c5a7618b Mon Sep 17 00:00:00 2001
-From: Bryan Wu <cooloney@kernel.org>
-Date: Mon, 25 Aug 2008 14:39:39 +0300
-Subject: [PATCH] usb: musb: do not mess up count number and CSR0 register value
-
-Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
----
- drivers/usb/musb/musb_gadget_ep0.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/usb/musb/musb_gadget_ep0.c b/drivers/usb/musb/musb_gadget_ep0.c
-index b50a30d..9b59824 100644
---- a/drivers/usb/musb/musb_gadget_ep0.c
-+++ b/drivers/usb/musb/musb_gadget_ep0.c
-@@ -437,7 +437,7 @@ static void ep0_rxstate(struct musb *musb)
- {
- 	void __iomem		*regs = musb->control_ep->regs;
- 	struct usb_request	*req;
--	u16			tmp;
-+	u16			count, csr;
- 
- 	req = next_ep0_request(musb);
- 
-@@ -449,34 +449,34 @@ static void ep0_rxstate(struct musb *musb)
- 		unsigned	len = req->length - req->actual;
- 
- 		/* read the buffer */
--		tmp = musb_readb(regs, MUSB_COUNT0);
--		if (tmp > len) {
-+		count = musb_readb(regs, MUSB_COUNT0);
-+		if (count > len) {
- 			req->status = -EOVERFLOW;
--			tmp = len;
-+			count = len;
- 		}
--		musb_read_fifo(&musb->endpoints[0], tmp, buf);
--		req->actual += tmp;
--		tmp = MUSB_CSR0_P_SVDRXPKTRDY;
--		if (tmp < 64 || req->actual == req->length) {
-+		musb_read_fifo(&musb->endpoints[0], count, buf);
-+		req->actual += count;
-+		csr = MUSB_CSR0_P_SVDRXPKTRDY;
-+		if (count < 64 || req->actual == req->length) {
- 			musb->ep0_state = MUSB_EP0_STAGE_STATUSIN;
--			tmp |= MUSB_CSR0_P_DATAEND;
-+			csr |= MUSB_CSR0_P_DATAEND;
- 		} else
- 			req = NULL;
- 	} else
--		tmp = MUSB_CSR0_P_SVDRXPKTRDY | MUSB_CSR0_P_SENDSTALL;
-+		csr = MUSB_CSR0_P_SVDRXPKTRDY | MUSB_CSR0_P_SENDSTALL;
- 
- 
- 	/* Completion handler may choose to stall, e.g. because the
- 	 * message just received holds invalid data.
- 	 */
- 	if (req) {
--		musb->ackpend = tmp;
-+		musb->ackpend = csr;
- 		musb_g_ep0_giveback(musb, req);
- 		if (!musb->ackpend)
- 			return;
- 		musb->ackpend = 0;
- 	}
--	musb_writew(regs, MUSB_CSR0, tmp);
-+	musb_writew(regs, MUSB_CSR0, csr);
- }
- 
- /*
--- 
-1.6.0.rc1.71.gfba5
-
-
---Fba/0zbH8Xs+Fj9o--
