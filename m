@@ -1,138 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYHYLlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbYHYLlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbYHYLlS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 07:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYHYLkt
+	id S1756363AbYHYLlf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 07:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756122AbYHYLlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 07:40:49 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33937 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753373AbYHYLks (ORCPT
+	Mon, 25 Aug 2008 07:41:23 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:47992 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753530AbYHYLlW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 07:40:48 -0400
-Date: Mon, 25 Aug 2008 20:40:11 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Keiichiro Tokunaga <tokunaga.keiich@jp.fujitsu.com>
-Subject: [PATCH 1/2] Show quicklist at meminfo
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20080825203357.254D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Mon, 25 Aug 2008 07:41:22 -0400
+Subject: Re: Quad core CPUs loaded at only 50% when running a CPU and mmap
+	intensive multi-threaded task
+From: Peter Zijlstra <peterz@infradead.org>
+To: edwin <edwintorok@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, rml@tech9.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Thomas Gleixner mingo@redhat.com" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <48B290E7.4070805@gmail.com>
+References: <48B1CC15.2040006@gmail.com> <1219643476.20732.1.camel@twins>
+	 <48B25988.8040302@gmail.com> <1219656190.8515.7.camel@twins>
+	 <48B28015.3040602@gmail.com> <1219658527.8515.16.camel@twins>
+	 <48B287D8.1000000@gmail.com> <1219660582.8515.24.camel@twins>
+	 <48B290E7.4070805@gmail.com>
+Content-Type: text/plain
+Date: Mon, 25 Aug 2008 13:41:17 +0200
+Message-Id: <1219664477.8515.54.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Mon, 2008-08-25 at 14:00 +0300, edwin wrote:
+> Peter Zijlstra wrote:
 
-Today, I rebase quicklist fix to current mainline and tested it.
-Could you please pick it up.
+> > Right - does it make sense to teach clamav about pread() ?
+> 
+> If it is preferred over mmap, then maybe yes.
 
-
-Patch against: 2.6.27-rc4
-
-----------------
-Now, Quicklist can spent several GB memory.
-So, if end user can't know how much spent memory, he misunderstand to memory leak happend.
-
-after this patch applied, /proc/meminfo output following.
-
-% cat /proc/meminfo
-
-MemTotal:      7715392 kB
-MemFree:       5401600 kB
-Buffers:         80384 kB
-Cached:         300800 kB
-SwapCached:          0 kB
-Active:         235584 kB
-Inactive:       262656 kB
-SwapTotal:     2031488 kB
-SwapFree:      2031488 kB
-Dirty:            3520 kB
-Writeback:           0 kB
-AnonPages:      117696 kB
-Mapped:          38528 kB
-Slab:          1589952 kB
-SReclaimable:    23104 kB
-SUnreclaim:    1566848 kB
-PageTables:      14656 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-WritebackTmp:        0 kB
-CommitLimit:   5889152 kB
-Committed_AS:   393152 kB
-VmallocTotal: 17592177655808 kB
-VmallocUsed:     29056 kB
-VmallocChunk: 17592177626432 kB
-Quicklists:     130944 kB
-HugePages_Total:     0
-HugePages_Free:      0
-HugePages_Rsvd:      0
-HugePages_Surp:      0
-Hugepagesize:    262144 kB
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Christoph Lameter <cl@linux-foundation.org>
-CC: Keiichiro Tokunaga <tokunaga.keiich@jp.fujitsu.com>
-
----
- fs/proc/proc_misc.c       |    7 +++++--
- include/linux/quicklist.h |    7 +++++++
- 2 files changed, 12 insertions(+), 2 deletions(-)
-
-Index: b/fs/proc/proc_misc.c
-===================================================================
---- a/fs/proc/proc_misc.c
-+++ b/fs/proc/proc_misc.c
-@@ -24,6 +24,7 @@
- #include <linux/tty.h>
- #include <linux/string.h>
- #include <linux/mman.h>
-+#include <linux/quicklist.h>
- #include <linux/proc_fs.h>
- #include <linux/ioport.h>
- #include <linux/mm.h>
-@@ -189,7 +190,8 @@ static int meminfo_read_proc(char *page,
- 		"Committed_AS: %8lu kB\n"
- 		"VmallocTotal: %8lu kB\n"
- 		"VmallocUsed:  %8lu kB\n"
--		"VmallocChunk: %8lu kB\n",
-+		"VmallocChunk: %8lu kB\n"
-+		"Quicklists:   %8lu kB\n",
- 		K(i.totalram),
- 		K(i.freeram),
- 		K(i.bufferram),
-@@ -221,7 +223,8 @@ static int meminfo_read_proc(char *page,
- 		K(committed),
- 		(unsigned long)VMALLOC_TOTAL >> 10,
- 		vmi.used >> 10,
--		vmi.largest_chunk >> 10
-+		vmi.largest_chunk >> 10,
-+		K(quicklist_total_size())
- 		);
- 
- 		len += hugetlb_report_meminfo(page + len);
-Index: b/include/linux/quicklist.h
-===================================================================
---- a/include/linux/quicklist.h
-+++ b/include/linux/quicklist.h
-@@ -80,6 +80,13 @@ void quicklist_trim(int nr, void (*dtor)
- 
- unsigned long quicklist_total_size(void);
- 
-+#else
-+
-+static inline unsigned long quicklist_total_size(void)
-+{
-+	return 0;
-+}
-+
- #endif
- 
- #endif /* LINUX_QUICKLIST_H */
-
+I would certainly consider this for small (< 1M?) files. With mmap the
+faults and pte overhead aren't free either, and the extra memcpy from
+pread() isn't that much.
 
