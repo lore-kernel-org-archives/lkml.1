@@ -1,52 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbYHYG2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbYHYFmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755029AbYHYG2S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 02:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbYHYG1y
+	id S1754869AbYHYFmd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 01:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYHYFmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 02:27:54 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:19672 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753700AbYHYG1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 02:27:53 -0400
-Date: Mon, 25 Aug 2008 15:27:43 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] sh: fix ptrace_64.c:user_disable_single_step()
-Message-ID: <20080825062743.GB19834@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian Bunk <bunk@kernel.org>, linux-sh@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080822152036.GB26762@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080822152036.GB26762@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 25 Aug 2008 01:42:25 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:52981 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751788AbYHYFmY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 01:42:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=pwjS9IuchpXwZ0963oxSD0E5F9f4nMP+bbD6xjdmxMjYstqzgQLNxIW/VsheKAY3dp
+         Q0WBB1VpSr7kakB1+r61VVa7oFzt+fTE3APQQNIJhR/3hAgslIpBgsqLCGSLxoLFkaTl
+         Iwd2JvqmHeGSTSPLrmrW1/olgLx6dHAYkmvFo=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: let 64 bit to use 32 bit calibrate_apic_clock
+Date: Sun, 24 Aug 2008 22:41:26 -0700
+Message-Id: <1219642886-22030-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 22, 2008 at 06:20:36PM +0300, Adrian Bunk wrote:
-> This patch fixes the following compile error caused by
-> commit c459dbf294b4a3d70490a468a7ca3907fb2c2f57
-> (sh: ptrace single stepping cleanups.):
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      arch/sh/kernel/ptrace_64.o
-> arch/sh/kernel/ptrace_64.c: In function 'user_disable_single_step':
-> arch/sh/kernel/ptrace_64.c:134: error: 'regs' undeclared (first use in this function)
-> arch/sh/kernel/ptrace_64.c:134: error: (Each undeclared identifier is reported only once
-> arch/sh/kernel/ptrace_64.c:134: error: for each function it appears in.)
-> ...
-> make[2]: *** [arch/sh/kernel/ptrace_64.o] Error 1
-> 
-> <--  snip  -->
-> 
-> Reported-by: Adrian Bunk <bunk@kernel.org>
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-Applied, thanks.
+Signed-of-by: Yinghai Lu <yhlu.kernel@gmail.com>
+
+---
+ arch/x86/kernel/apic.c |   92 ++-----------------------------------------------
+ 1 file changed, 5 insertions(+), 87 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic.c
++++ linux-2.6/arch/x86/kernel/apic.c
+@@ -478,90 +478,6 @@ static void __cpuinit setup_APIC_timer(v
+ 	clockevents_register_device(levt);
+ }
+ 
+-#ifdef CONFIG_X86_64
+-/*
+- * In this function we calibrate APIC bus clocks to the external
+- * timer. Unfortunately we cannot use jiffies and the timer irq
+- * to calibrate, since some later bootup code depends on getting
+- * the first irq? Ugh.
+- *
+- * We want to do the calibration only once since we
+- * want to have local timer irqs syncron. CPUs connected
+- * by the same APIC bus have the very same bus frequency.
+- * And we want to have irqs off anyways, no accidental
+- * APIC irq that way.
+- */
+-
+-#define TICK_COUNT 100000000
+-
+-static int __init calibrate_APIC_clock(void)
+-{
+-	unsigned apic, apic_start;
+-	unsigned long tsc, tsc_start;
+-	int result;
+-
+-	local_irq_disable();
+-
+-	/*
+-	 * Put whatever arbitrary (but long enough) timeout
+-	 * value into the APIC clock, we just want to get the
+-	 * counter running for calibration.
+-	 *
+-	 * No interrupt enable !
+-	 */
+-	__setup_APIC_LVTT(250000000, 0, 0);
+-
+-	apic_start = apic_read(APIC_TMCCT);
+-#ifdef CONFIG_X86_PM_TIMER
+-	if (apic_calibrate_pmtmr && pmtmr_ioport) {
+-		pmtimer_wait(5000);  /* 5ms wait */
+-		apic = apic_read(APIC_TMCCT);
+-		result = (apic_start - apic) * 1000L / 5;
+-	} else
+-#endif
+-	{
+-		rdtscll(tsc_start);
+-
+-		do {
+-			apic = apic_read(APIC_TMCCT);
+-			rdtscll(tsc);
+-		} while ((tsc - tsc_start) < TICK_COUNT &&
+-				(apic_start - apic) < TICK_COUNT);
+-
+-		result = (apic_start - apic) * 1000L * tsc_khz /
+-					(tsc - tsc_start);
+-	}
+-
+-	local_irq_enable();
+-
+-	printk(KERN_DEBUG "APIC timer calibration result %d\n", result);
+-
+-	printk(KERN_INFO "Detected %d.%03d MHz APIC timer.\n",
+-		result / 1000 / 1000, result / 1000 % 1000);
+-
+-	/* Calculate the scaled math multiplication factor */
+-	lapic_clockevent.mult = div_sc(result, NSEC_PER_SEC,
+-				       lapic_clockevent.shift);
+-	lapic_clockevent.max_delta_ns =
+-		clockevent_delta2ns(0x7FFFFF, &lapic_clockevent);
+-	lapic_clockevent.min_delta_ns =
+-		clockevent_delta2ns(0xF, &lapic_clockevent);
+-
+-	calibration_result = (result * APIC_DIVISOR) / HZ;
+-
+-	/*
+-	 * Do a sanity check on the APIC calibration result
+-	 */
+-	if (calibration_result < (1000000 / HZ)) {
+-		printk(KERN_WARNING
+-			"APIC frequency too slow, disabling apic timer\n");
+-		return -1;
+-	}
+-
+-	return 0;
+-}
+-
+-#else
+ /*
+  * In this functions we calibrate APIC bus clocks to the external timer.
+  *
+@@ -659,6 +575,7 @@ static int __init calibrate_APIC_clock(v
+ 	delta = lapic_cal_t1 - lapic_cal_t2;
+ 	apic_printk(APIC_VERBOSE, "... lapic delta = %ld\n", delta);
+ 
++#ifdef CONFIG_X86_PM_TIMER
+ 	/* Check, if the PM timer is available */
+ 	deltapm = lapic_cal_pm2 - lapic_cal_pm1;
+ 	apic_printk(APIC_VERBOSE, "... PM timer delta = %ld\n", deltapm);
+@@ -687,6 +604,7 @@ static int __init calibrate_APIC_clock(v
+ 		}
+ 		pm_referenced = 1;
+ 	}
++#endif
+ 
+ 	/* Calculate the scaled math multiplication factor */
+ 	lapic_clockevent.mult = div_sc(delta, TICK_NSEC * LAPIC_CAL_LOOPS,
+@@ -773,8 +691,6 @@ static int __init calibrate_APIC_clock(v
+ 	return 0;
+ }
+ 
+-#endif
+-
+ /*
+  * Setup the boot APIC
+  *
