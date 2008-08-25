@@ -1,132 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbYHYRsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbYHYRtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229AbYHYRsV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 13:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbYHYRsN
+	id S1755762AbYHYRtc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 13:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbYHYRtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 13:48:13 -0400
-Received: from mlbe2k2.cs.myharris.net ([137.237.90.89]:34187 "EHLO
-	mlbe2k2.cs.myharris.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753925AbYHYRsM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 13:48:12 -0400
-X-Greylist: delayed 1250 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Aug 2008 13:48:12 EDT
-Message-ID: <48B2EB77.9000103@harris.com>
-Date: Mon, 25 Aug 2008 13:27:19 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 25 Aug 2008 13:49:24 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:43460 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753655AbYHYRtX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 13:49:23 -0400
+Message-ID: <48B2F0A1.4070205@sgi.com>
+Date: Mon, 25 Aug 2008 10:49:21 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [RFC] Driver for Real Time Clock chip ST M41T65
-Content-Type: text/plain; charset=UTF-8
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2/6] x86_64 UV: Use LED to indicate CPU is active
+References: <20080808005639.505189000@polaris-admin.engr.sgi.com> <20080808005649.986660000@polaris-admin.engr.sgi.com> <20080811155318.GB4524@elte.hu>
+In-Reply-To: <20080811155318.GB4524@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Aug 2008 17:27:20.0202 (UTC) FILETIME=[D40B5EA0:01C906D7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I will be using a Real Time Clock chip, ST M41T65, on a new embedded system.
-The chip is quite similar to the M41T8x family, which already has driver
-rtc-m41t80.c.
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
+> 
+>> +/*
+>> + * Illuminate "activity" LED when CPU is going "active",
+>> + * extinguish when going "idle".
+>> + */
+>> +static int uv_idle(struct notifier_block *nfb, unsigned long action, void *junk)
+>> +{
+>> +	if (action == IDLE_START)
+>> +		uv_set_led_bits(0, LED_CPU_ACTIVITY);
+>> +
+>> +	else if (action == IDLE_END)
+>> +		uv_set_led_bits(LED_CPU_ACTIVITY, LED_CPU_ACTIVITY);
+>> +
+>> +	return NOTIFY_OK;
+>> +}
+>> +
+>> +static struct notifier_block uv_idle_notifier = {
+>> +	.notifier_call = uv_idle,
+>> +};
+>>  
+>> +/*
+>> + * Initialize idle led callback function
+>> + */
+>> +static __init void uv_init_led_idle_display(void)
+>> +{
+>> +	/* initialize timer for activity monitor */
+>> +	idle_notifier_register(&uv_idle_notifier);
+>> +}
+> 
+> hm, i think this is a bad idea. While putting it into the go-to-idle 
+> codepath probably doesnt matter, putting anything into the idle wakeup 
+> path increases latency of a rather critical codepath. The MMR write that 
+> the LED driver is using will go out to the local bus, which, even if 
+> it's POST-ed, if it's done frequently enough will be the cost of an IO 
+> cycle.
+> 
+> No human needs to know the LED status at _that_ frequency anyway, so 
+> it's quite pointless as well.
+> 
+> A much better (and faster) approach would be to sample the utilization 
+> of the CPU and indicate that via the LED(s).
+> 
+> 	Ingo
 
-Would it be more acceptible to generalize rtc-m41t80.c (perhaps renaming it to
-rtc-m41txx.c) or would it be better to create a new rtc-m41t6x.c?
+Hi Ingo,
 
-The main differences I see between the M41T65 and M41T80 are that:
+I'll take a closer look at this.  The actual usage is more in line with
+an SNMP type system controller that has direct access to the BIOS registers
+including the "LED" register and is used mostly for diagnosing system
+problems.  The other research I need to do is how fast/slow is this path.
+It may be a simple memory write in our UV NUMA hub chip that's not directed
+to the general I/O bus and hence, negligible overhead.
 
-1) The M41T65 watchdog timer has three bits controlling resolution (versus two
-   for the M41T80).
+Looking at the IA64 code, it has a similar interface which uses a function
+pointer variable to set/reset "idle" state.  I just wish x86_64 had a similar
+common interface for the clock handler that would occur per cpu and not per
+group of cpus that clocksource_watchdog() currently uses.
 
-2) There is no register 0x13 for controlling square-wave output.
+The other architectural change I would like to make is to expose the necessary
+data/address via the pda (or something similar) and allow the complete write
+to be inlined to one or two instructions.
 
-Here is the patch I am currently using (on some prototype hardware), for
-reference.  I've introduced two new feature bits to cover the above
-differences.  I have not yet done any renaming, nor have I modified any of the
-defconfigs to account for a name change.
-
-	Steve Falco
-	sfalco@harris.com
-
-diff --git a/drivers/rtc/rtc-m41t80.c b/drivers/rtc/rtc-m41t80.c
-index a3e0880..4d9b1a9 100644
---- a/drivers/rtc/rtc-m41t80.c
-+++ b/drivers/rtc/rtc-m41t80.c
-@@ -58,18 +58,21 @@
- 
- #define M41T80_FEATURE_HT	(1 << 0)
- #define M41T80_FEATURE_BL	(1 << 1)
-+#define M41T80_FEATURE_SQ	(1 << 2)
-+#define M41T80_FEATURE_WD	(1 << 3)
- 
- #define DRV_VERSION "0.05"
- 
- static const struct i2c_device_id m41t80_id[] = {
--	{ "m41t80", 0 },
--	{ "m41t81", M41T80_FEATURE_HT },
--	{ "m41t81s", M41T80_FEATURE_HT | M41T80_FEATURE_BL },
--	{ "m41t82", M41T80_FEATURE_HT | M41T80_FEATURE_BL },
--	{ "m41t83", M41T80_FEATURE_HT | M41T80_FEATURE_BL },
--	{ "m41st84", M41T80_FEATURE_HT | M41T80_FEATURE_BL },
--	{ "m41st85", M41T80_FEATURE_HT | M41T80_FEATURE_BL },
--	{ "m41st87", M41T80_FEATURE_HT | M41T80_FEATURE_BL },
-+	{ "m41t65", M41T80_FEATURE_HT | M41T80_FEATURE_WD },
-+	{ "m41t80", M41T80_FEATURE_SQ },
-+	{ "m41t81", M41T80_FEATURE_HT | M41T80_FEATURE_SQ},
-+	{ "m41t81s", M41T80_FEATURE_HT | M41T80_FEATURE_BL | M41T80_FEATURE_SQ },
-+	{ "m41t82", M41T80_FEATURE_HT | M41T80_FEATURE_BL | M41T80_FEATURE_SQ },
-+	{ "m41t83", M41T80_FEATURE_HT | M41T80_FEATURE_BL | M41T80_FEATURE_SQ },
-+	{ "m41st84", M41T80_FEATURE_HT | M41T80_FEATURE_BL | M41T80_FEATURE_SQ },
-+	{ "m41st85", M41T80_FEATURE_HT | M41T80_FEATURE_BL | M41T80_FEATURE_SQ },
-+	{ "m41st87", M41T80_FEATURE_HT | M41T80_FEATURE_BL | M41T80_FEATURE_SQ },
- 	{ }
- };
- MODULE_DEVICE_TABLE(i2c, m41t80_id);
-@@ -385,8 +388,12 @@ static ssize_t m41t80_sysfs_show_sqwfreq(struct device *dev,
- 				struct device_attribute *attr, char *buf)
- {
- 	struct i2c_client *client = to_i2c_client(dev);
-+	struct m41t80_data *clientdata = i2c_get_clientdata(client);
- 	int val;
- 
-+	if (!(clientdata->features & M41T80_FEATURE_SQ))
-+		return -EINVAL;
-+
- 	val = i2c_smbus_read_byte_data(client, M41T80_REG_SQW);
- 	if (val < 0)
- 		return -EIO;
-@@ -407,9 +414,13 @@ static ssize_t m41t80_sysfs_set_sqwfreq(struct device *dev,
- 				const char *buf, size_t count)
- {
- 	struct i2c_client *client = to_i2c_client(dev);
-+	struct m41t80_data *clientdata = i2c_get_clientdata(client);
- 	int almon, sqw;
- 	int val = simple_strtoul(buf, NULL, 0);
- 
-+	if (!(clientdata->features & M41T80_FEATURE_SQ))
-+		return -EINVAL;
-+
- 	if (val) {
- 		if (!is_power_of_2(val))
- 			return -EINVAL;
-@@ -498,6 +509,8 @@ static void wdt_ping(void)
- 			.buf	= i2c_data,
- 		},
- 	};
-+	struct m41t80_data *clientdata = i2c_get_clientdata(save_client);
-+
- 	i2c_data[0] = 0x09;		/* watchdog register */
- 
- 	if (wdt_margin > 31)
-@@ -508,6 +521,12 @@ static void wdt_ping(void)
- 		 */
- 		i2c_data[1] = wdt_margin<<2 | 0x82;
- 
-+	/* M41T65 has three bits for resolution.  Don't set bit 7, as that would
-+	 * be an invalid resolution.
-+	 */
-+	if (clientdata->features & M41T80_FEATURE_WD)
-+		i2c_data[1] &= ~0x80;
-+
- 	i2c_transfer(save_client->adapter, msgs1, 1);
- }
- 
+Thanks,
+Mike
