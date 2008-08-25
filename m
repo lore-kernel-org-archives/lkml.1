@@ -1,61 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbYHYLk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYHYLlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755290AbYHYLk1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 07:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYHYLkT
+	id S1756051AbYHYLlS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 07:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYHYLkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 07:40:19 -0400
-Received: from gate.crashing.org ([63.228.1.57]:39013 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751106AbYHYLkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 07:40:18 -0400
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Message-Id: <5430DEC7-39DB-4316-8E7E-949CA4280403@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Kevin Diggs <kevdig@hypersurf.com>
-In-Reply-To: <48B28C62.2000600@hypersurf.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Mon, 25 Aug 2008 07:40:49 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33937 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753373AbYHYLks (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 07:40:48 -0400
+Date: Mon, 25 Aug 2008 20:40:11 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Keiichiro Tokunaga <tokunaga.keiich@jp.fujitsu.com>
+Subject: [PATCH 1/2] Show quicklist at meminfo
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20080825203357.254D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH 1/4] Add low level PLL config register interface module
-Date: Mon, 25 Aug 2008 06:40:00 -0500
-References: <48B28C62.2000600@hypersurf.com>
-X-Mailer: Apple Mail (2.926)
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andrew,
 
-On Aug 25, 2008, at 5:41 AM, Kevin Diggs wrote:
+Today, I rebase quicklist fix to current mainline and tested it.
+Could you please pick it up.
 
-> This adds a small module to handle the low level details of dealing  
-> with the
-> PLL config register (HID1) found in the IBM 750GX. It provides 2  
-> possible
-> interfaces, both selectable via kernel config options. One is a  
-> sysfs attribute
-> and the other is a normal function API. It is called pll_if.
->
-> The determination of the bus frequency is what worked on a PowerMac  
-> 8600. Any
-> suggestions on a more general solution are welcome.
->
-> WARNING - I used some #ifdefs - Let the fur fly!
->
-> My name is Kevin Diggs and I approve this patch.
 
-This really should be split into two patches.  One for the perl script  
-and one for the actual kernel code.
+Patch against: 2.6.27-rc4
 
-Scanning the actual kernel code you have a lot of #ifdef's that should  
-be cleaned up:
+----------------
+Now, Quicklist can spent several GB memory.
+So, if end user can't know how much spent memory, he misunderstand to memory leak happend.
 
-Can't #ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_SYSFS just be #ifdef  
-CONFIG_SYSFS and the same for CONFIG_PPC_750GX_DUAL_PLL_IF_HRTIMER &  
-CONFIG_PPC_750GX_DUAL_PLL_IF_CPU_FREQ?
+after this patch applied, /proc/meminfo output following.
 
-#ifdef CONFIG_PPC_OF seems unnecessary as all PPC always has this set.
+% cat /proc/meminfo
 
-What's up with #define MULFIRST and the #if 0?
+MemTotal:      7715392 kB
+MemFree:       5401600 kB
+Buffers:         80384 kB
+Cached:         300800 kB
+SwapCached:          0 kB
+Active:         235584 kB
+Inactive:       262656 kB
+SwapTotal:     2031488 kB
+SwapFree:      2031488 kB
+Dirty:            3520 kB
+Writeback:           0 kB
+AnonPages:      117696 kB
+Mapped:          38528 kB
+Slab:          1589952 kB
+SReclaimable:    23104 kB
+SUnreclaim:    1566848 kB
+PageTables:      14656 kB
+NFS_Unstable:        0 kB
+Bounce:              0 kB
+WritebackTmp:        0 kB
+CommitLimit:   5889152 kB
+Committed_AS:   393152 kB
+VmallocTotal: 17592177655808 kB
+VmallocUsed:     29056 kB
+VmallocChunk: 17592177626432 kB
+Quicklists:     130944 kB
+HugePages_Total:     0
+HugePages_Free:      0
+HugePages_Rsvd:      0
+HugePages_Surp:      0
+Hugepagesize:    262144 kB
 
-- k
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Christoph Lameter <cl@linux-foundation.org>
+CC: Keiichiro Tokunaga <tokunaga.keiich@jp.fujitsu.com>
+
+---
+ fs/proc/proc_misc.c       |    7 +++++--
+ include/linux/quicklist.h |    7 +++++++
+ 2 files changed, 12 insertions(+), 2 deletions(-)
+
+Index: b/fs/proc/proc_misc.c
+===================================================================
+--- a/fs/proc/proc_misc.c
++++ b/fs/proc/proc_misc.c
+@@ -24,6 +24,7 @@
+ #include <linux/tty.h>
+ #include <linux/string.h>
+ #include <linux/mman.h>
++#include <linux/quicklist.h>
+ #include <linux/proc_fs.h>
+ #include <linux/ioport.h>
+ #include <linux/mm.h>
+@@ -189,7 +190,8 @@ static int meminfo_read_proc(char *page,
+ 		"Committed_AS: %8lu kB\n"
+ 		"VmallocTotal: %8lu kB\n"
+ 		"VmallocUsed:  %8lu kB\n"
+-		"VmallocChunk: %8lu kB\n",
++		"VmallocChunk: %8lu kB\n"
++		"Quicklists:   %8lu kB\n",
+ 		K(i.totalram),
+ 		K(i.freeram),
+ 		K(i.bufferram),
+@@ -221,7 +223,8 @@ static int meminfo_read_proc(char *page,
+ 		K(committed),
+ 		(unsigned long)VMALLOC_TOTAL >> 10,
+ 		vmi.used >> 10,
+-		vmi.largest_chunk >> 10
++		vmi.largest_chunk >> 10,
++		K(quicklist_total_size())
+ 		);
+ 
+ 		len += hugetlb_report_meminfo(page + len);
+Index: b/include/linux/quicklist.h
+===================================================================
+--- a/include/linux/quicklist.h
++++ b/include/linux/quicklist.h
+@@ -80,6 +80,13 @@ void quicklist_trim(int nr, void (*dtor)
+ 
+ unsigned long quicklist_total_size(void);
+ 
++#else
++
++static inline unsigned long quicklist_total_size(void)
++{
++	return 0;
++}
++
+ #endif
+ 
+ #endif /* LINUX_QUICKLIST_H */
+
+
