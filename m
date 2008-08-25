@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754732AbYHYGjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbYHYFdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754732AbYHYGjE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 02:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbYHYGiy
+	id S1754818AbYHYFdf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 01:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbYHYFdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 02:38:54 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:48588 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751429AbYHYGix (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 02:38:53 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: "Justin Mattock" <justinmattock@gmail.com>
-Subject: Re: converting appletouch to usb autosuspend again...
-Date: Mon, 25 Aug 2008 08:40:06 +0200
-User-Agent: KMail/1.9.9
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-References: <dd18b0c30808242122h5b6dfc15tf86622595bd46461@mail.gmail.com>
-In-Reply-To: <dd18b0c30808242122h5b6dfc15tf86622595bd46461@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808250840.06477.oliver@neukum.org>
+	Mon, 25 Aug 2008 01:33:16 -0400
+Received: from sh.osrg.net ([192.16.179.4]:46142 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752460AbYHYFdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 01:33:15 -0400
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, nix@esperi.org.uk, adobriyan@gmail.com,
+       fujita.tomonori@lab.ntt.co.jp, stable@kernel.org
+Subject: [PATCH 2/2] bio: fix __bio_copy_iov() handling of bio->bv_len
+Date: Mon, 25 Aug 2008 14:22:53 +0900
+Message-Id: <1219641773-25856-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.5.GIT
+In-Reply-To: <1219641773-25856-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <871w0eb9nx.fsf@hades.wkstn.nix>
+ <1219641773-25856-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1219641773-25856-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 25 August 2008 06:22:45 schrieb Justin Mattock:
-> I've notice when letting the system rest for a few and then tapping the
-> touchpad I see this in dmesg:
-> appletouch: 17" model detected.
-> could this be suspend working?
+The commit c5dec1c3034f1ae3503efbf641ff3b0273b64797 introduced
+__bio_copy_iov() to add bounce support to blk_rq_map_user_iov.
 
-Yes.
+__bio_copy_iov() uses bio->bv_len to copy data for READ commands after
+the completion but it doesn't work with a request that partially
+completed. SCSI always completes a PC request as a whole but seems
+some don't.
 
-> As for appletouch surving suspend
-> I't seems to work i.g.
-> one tap, two tap, side scroll,
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: stable@kernel.org
+---
+ fs/bio.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-Good.
+diff --git a/fs/bio.c b/fs/bio.c
+index 8b1f5ee..3cba7ae 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -492,8 +492,8 @@ static struct bio_map_data *bio_alloc_map_data(int nr_segs, int iov_count,
+ 	return NULL;
+ }
+ 
+-static int __bio_copy_iov(struct bio *bio, struct sg_iovec *iov, int iov_count,
+-			  int uncopy)
++static int __bio_copy_iov(struct bio *bio, struct bio_vec *iovecs,
++			  struct sg_iovec *iov, int iov_count, int uncopy)
+ {
+ 	int ret = 0, i;
+ 	struct bio_vec *bvec;
+@@ -503,7 +503,7 @@ static int __bio_copy_iov(struct bio *bio, struct sg_iovec *iov, int iov_count,
+ 
+ 	__bio_for_each_segment(bvec, bio, i, 0) {
+ 		char *bv_addr = page_address(bvec->bv_page);
+-		unsigned int bv_len = bvec->bv_len;
++		unsigned int bv_len = iovecs[i].bv_len;
+ 
+ 		while (bv_len && iov_idx < iov_count) {
+ 			unsigned int bytes;
+@@ -555,7 +555,7 @@ int bio_uncopy_user(struct bio *bio)
+ 	struct bio_map_data *bmd = bio->bi_private;
+ 	int ret;
+ 
+-	ret = __bio_copy_iov(bio, bmd->sgvecs, bmd->nr_sgvecs, 1);
++	ret = __bio_copy_iov(bio, bmd->iovecs, bmd->sgvecs, bmd->nr_sgvecs, 1);
+ 
+ 	bio_free_map_data(bmd);
+ 	bio_put(bio);
+@@ -634,7 +634,7 @@ struct bio *bio_copy_user_iov(struct request_queue *q, struct sg_iovec *iov,
+ 	 * success
+ 	 */
+ 	if (!write_to_vm) {
+-		ret = __bio_copy_iov(bio, iov, iov_count, 0);
++		ret = __bio_copy_iov(bio, bio->bi_io_vec, iov, iov_count, 0);
+ 		if (ret)
+ 			goto cleanup;
+ 	}
+-- 
+1.5.5.GIT
 
-> although with the latest git
-> and the latest update from sid(of xserver);
-> I'm not seeing these functions work....
-
-Please post logs. Without logs nobody can help you.
-
-	Regards
-		Oliver
