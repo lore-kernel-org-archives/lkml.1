@@ -1,115 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYHYPjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbYHYPrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585AbYHYPjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 11:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYHYPjF
+	id S1754326AbYHYPrz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 11:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbYHYPrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 11:39:05 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:35681 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753242AbYHYPjE (ORCPT
+	Mon, 25 Aug 2008 11:47:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47894 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753097AbYHYPrr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 11:39:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=brklx5NhWVIstb+EEyb1bafgaGFK9TZnBq+v/5RkQXm0Yy6QDNt7+Zna0xDLEBEEza
-         WfLkDX/UInchEh8/jEtPkfjFBxlf8gqMcnAB04IBR8EJT4M7zU9rMOxIfIPN1uCU9AKg
-         6q5JVSQF74nR16DGEsDaL5M2569zV2Gd2vS4I=
-Message-ID: <6278d2220808250839j1dc25c02uda7bf8b6b150acb7@mail.gmail.com>
-Date: Mon, 25 Aug 2008 16:39:01 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Fabio Checconi" <fchecconi@gmail.com>
-Subject: Re: performance "regression" in cfq compared to anticipatory, deadline and noop
-Cc: "Jens Axboe" <jens.axboe@oracle.com>, Matthew <jackdachef@gmail.com>,
-       "Kasper Sandberg" <lkml@metanurb.dk>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080825202936.GA3608@gandalf.sssup.it>
+	Mon, 25 Aug 2008 11:47:47 -0400
+Message-ID: <48B2D3BE.40101@linux-foundation.org>
+Date: Mon, 25 Aug 2008 10:46:06 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: paulmck@linux.vnet.ibm.com, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] smp_call_function: use rwlocks on queues rather	than
+ rcu
+References: <84144f020808220006n25d684b1n9db306ddc4f58c4c@mail.gmail.com>	 <48AEC6B2.1080701@linux-foundation.org>	 <20080822151156.GA6744@linux.vnet.ibm.com>	 <48AEF3FD.70906@linux-foundation.org>	 <20080822182915.GG6744@linux.vnet.ibm.com>	 <48AF0735.60402@linux-foundation.org>	 <20080822195226.GJ6744@linux.vnet.ibm.com>	 <48AF1B81.3050806@linux-foundation.org>	 <20080822205339.GK6744@linux.vnet.ibm.com> <1219660291.8515.20.camel@twins>	 <20080825151220.GA6745@linux.vnet.ibm.com> <1219677736.8515.69.camel@twins>
+In-Reply-To: <1219677736.8515.69.camel@twins>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e85b9d30805130842p3a34305l4ab1e7926e4b0dba@mail.gmail.com>
-	 <20080513184057.GU16217@kernel.dk>
-	 <6278d2220805140105x27292033u6a97dcf13ab54263@mail.gmail.com>
-	 <20080514082622.GA16217@kernel.dk>
-	 <6278d2220805141352s3624d7b7qc90567f6b7a410dc@mail.gmail.com>
-	 <e85b9d30805141437u6a4b4caby1712c6f04bd4cc05@mail.gmail.com>
-	 <20080515070127.GH16217@kernel.dk>
-	 <20080515122156.GA11600@gandalf.sssup.it>
-	 <6278d2220808241324j117725efq8e87025313fb025f@mail.gmail.com>
-	 <20080825202936.GA3608@gandalf.sssup.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 25, 2008 at 9:29 PM, Fabio Checconi <fchecconi@gmail.com> wrote:
-> Hi,
+Peter Zijlstra wrote:
 >
->> From: Daniel J Blueman <daniel.blueman@gmail.com>
->> Date: Sun, Aug 24, 2008 09:24:37PM +0100
->>
->> Hi Fabio, Jens,
->>
-> ...
->> This was the last test I didn't get around to. Alas, is did help, but
->> didn't give the merging required for full performance:
->>
->> # echo 1 >/proc/sys/vm/drop_caches; dd if=/dev/sda of=/dev/null
->> bs=128k count=2000
->> 262144000 bytes (262 MB) copied, 2.47787 s, 106 MB/s
->>
->> # echo 1 >/proc/sys/vm/drop_caches; hdparm -t /dev/sda
->> Timing buffered disk reads:  308 MB in  3.01 seconds = 102.46 MB/sec
->>
->> It is an improvement over the baseline performance of 2.6.27-rc4:
->>
->> # echo 1 >/proc/sys/vm/drop_caches; dd if=/dev/sda of=/dev/null
->> bs=128k count=2000
->> 262144000 bytes (262 MB) copied, 2.56514 s, 102 MB/s
->>
->> # echo 1 >/proc/sys/vm/drop_caches; hdparm -t /dev/sda
->> Timing buffered disk reads:  294 MB in  3.02 seconds =  97.33 MB/sec
->>
->> Note that platter speed is around 125MB/s (which I get near at smaller
->> read sizes).
->>
->> I feel 128KB read requests are perhaps important, as this is a
->> commonly-used RAID stripe size, and may explain the read-performance
->> drop sometimes we see in hardware vs software RAID benchmarks.
->>
->> How can we generate some ideas or movement on fixing/improving this behaviour?
->>
->
-> Thank you for testing.  The blktrace output for this run should be
-> interesting, esp. to compare it with a blktrace obtained from anticipatory
-> with the same workload - IIRC anticipatory didn't suffer from the problem,
-> and anticipatory has a slightly different dispatching mechanism that
-> this patch tried to bring into cfq.
->
-> Even if a proper fix may not belong to the elevator itself, I think
-> that this couple (this last test + anticipatory) of traces should help
-> in better understanding what is still going wrong.
->
-> Thank you in advance.
+> If we combine these two cases, and flip the counter as soon as we've
+> enqueued one callback, unless we're already waiting for a grace period
+> to end - which gives us a longer window to collect callbacks.
+> 
+> And then the rcu_read_unlock() can do:
+> 
+>   if (dec_and_zero(my_counter) && my_index == dying)
+>     raise_softirq(RCU)
+> 
+> to fire off the callback stuff.
+> 
+> /me ponders - there must be something wrong with that...
+> 
+> Aaah, yes, the dec_and_zero is non trivial due to the fact that its a
+> distributed counter. Bugger..
 
-See http://quora.org/blktrace-n.tar.bz2
+Then lets make it per cpu. If we get the cpu ops in then dec_and_zero would be
+very cheap.
 
-Where n is:
- 0 - 2.6.27-rc4 unpatched
- 1 - 2.6.27-rc4 with your CFQ patch, CFQ scheduler
- 2 - 2.6.27-rc4 with your CFQ patch, anticipatory scheduler
- 3 - 2.6.27-rc4 with your CFQ patch, deadline scheduler
 
-I have found it's not always possible to reproduce this issue, eg now,
-with stock CFQ, I'm seeing consistent 117-123MB/s with hdparm and dd
-(as above), whereas I was seeing a consistent 95-103MB/s, so the
-blktraces may not show the slower-performance pattern - even with
-precisely the same (controlled) environment.
-
-Thanks,
-  Daniel
--- 
-Daniel J Blueman
