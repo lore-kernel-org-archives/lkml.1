@@ -1,62 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbYHYUua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbYHYUxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754384AbYHYUua (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 16:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYHYUuV
+	id S1755496AbYHYUxR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 16:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbYHYUxB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 16:50:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53279 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753232AbYHYUuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 16:50:20 -0400
-Date: Mon, 25 Aug 2008 16:47:02 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, "H. Peter Anvin" <hpa@kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
+	Mon, 25 Aug 2008 16:53:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41105 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752961AbYHYUxA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 16:53:00 -0400
+Date: Mon, 25 Aug 2008 13:52:23 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
        Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: latest -git: WARNING: at arch/x86/kernel/ipi.c:123
-	send_IPI_mask_bitmask+0xc3/0xe0()
-Message-ID: <20080825204700.GB27030@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	Vegard Nossum <vegard.nossum@gmail.com>,
-	"H. Peter Anvin" <hpa@kernel.org>,
-	the arch/x86 maintainers <x86@kernel.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Rusty Russell <rusty@rustcorp.com.au>
-References: <19f34abd0808240220v77bcdd5di32f8f865b18fc49f@mail.gmail.com> <48B19799.6090703@kernel.org> <19f34abd0808241022j1ab6f3e6qd72b9acba5df4892@mail.gmail.com> <19f34abd0808241045r37eb8661h3cc688b6f0513777@mail.gmail.com> <20080824181304.GA5963@redhat.com> <20080825183611.GE26610@one.firstfloor.org> <20080825185450.GD11894@redhat.com> <20080825193926.GF26610@one.firstfloor.org> <20080825195029.GA27030@redhat.com> <20080825203649.GH26610@one.firstfloor.org>
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
+ bisected
+In-Reply-To: <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.q9H.6aGsIB@albercik> <alpine.LFD.1.10.0808231257310.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808231313170.3363@nehalem.linux-foundation.org> <48B29F7B.6080405@hp.com> <48B2A421.7080705@hp.com>
+ <alpine.LFD.1.10.0808251019380.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251106270.3363@nehalem.linux-foundation.org> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080825203649.GH26610@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 25, 2008 at 10:36:49PM +0200, Andi Kleen wrote:
- 
- > > If we get a thermal event that was caused by temporary
- > > increased workload, temperature will drop off again when that workload
- > > is complete.
- > 
- > But none of the cpufreq governours do this. They only care about
- > load, not about temperature.
 
-Which is good enough to stop p4 laptops from shutting down as
-soon as they've finished booting up.
 
- > > For sustained workloads we'd get additional thermal events, at which
- > > time we make a decision "ok, we've throttled as far as we can, and
- > > things are still going badly, power off".
- > 
- > That is what the ACPI driver does when the trip point is reached.
+On Mon, 25 Aug 2008, Linus Torvalds wrote:
+> 
+> But I'll look at your vmlinux, see what stands out.
 
-yes, except for that "we've throttled" part.
- 
-	Dave
+Oops. I already see the problem.
 
--- 
-http://www.codemonkey.org.uk
+Your .config has soem _huge_ CPU count, doesn't it?
+
+checkstack.pl shows these things as the top problems:
+
+	0xffffffff80266234 smp_call_function_mask [vmlinux]:    2736
+	0xffffffff80234747 __build_sched_domains [vmlinux]:     2232
+	0xffffffff8023523f __build_sched_domains [vmlinux]:     2232
+	0xffffffff8021e884 setup_IO_APIC_irq [vmlinux]:         1616
+	0xffffffff8021ee24 arch_setup_ht_irq [vmlinux]:         1600
+	0xffffffff8021f144 arch_setup_msi_irq [vmlinux]:        1600
+	0xffffffff8021e3b0 __assign_irq_vector [vmlinux]:       1592
+	0xffffffff8021e626 __assign_irq_vector [vmlinux]:       1592
+	0xffffffff8023257e move_task_off_dead_cpu [vmlinux]:    1592
+	0xffffffff802326e8 move_task_off_dead_cpu [vmlinux]:    1592
+	0xffffffff8025dbc5 tick_handle_oneshot_broadcast [vmlinux]:1544
+	0xffffffff8025dcb4 tick_handle_oneshot_broadcast [vmlinux]:1544
+	0xffffffff803f3dc4 store_scaling_governor [vmlinux]:    1376
+	0xffffffff80279ef4 cpuset_write_resmask [vmlinux]:      1360
+	0xffffffff803f465d cpufreq_add_dev [vmlinux]:           1352
+	0xffffffff803f495b cpufreq_add_dev [vmlinux]:           1352
+	0xffffffff803f3fc4 store_scaling_max_freq [vmlinux]:    1328
+	0xffffffff803f4064 store_scaling_min_freq [vmlinux]:    1328
+	0xffffffff803f44c4 cpufreq_update_policy [vmlinux]:     1328
+	..
+
+and sys_init_module is actually way way down the list. I bet the only 
+reason it showed up at all was because dynamically it was such a deep 
+callchain, and part of that callchain probably called some of those really 
+nasty things.
+
+Anyway, the reason smp_call_function_mask and friends have such _huge_ 
+stack usages for you is that they contain a 'cpumask_t' on the stack.
+
+For example, for me, usign a sane NR_CPU, the size of the stack frame for 
+smp_call_function_mask is under 200 bytes.  For you, it's 2736 bytes.
+
+How about you make CONFIG_NR_CPU's something _sane_? Like 16? Or do you 
+really have four thousand CPU's in that system?
+
+Oh, I guess you have the MAXSMP config enabled? I really think that was a 
+bit too aggressive.
+
+		Linus
