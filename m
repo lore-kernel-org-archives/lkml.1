@@ -1,94 +1,378 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756325AbYHYJN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbYHYJJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756325AbYHYJN5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 05:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbYHYJNe
+	id S1755854AbYHYJJU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 05:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbYHYJJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 05:13:34 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:13209 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753976AbYHYJNc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 05:13:32 -0400
-X-IronPort-AV: E=Sophos;i="4.32,264,1217822400"; 
-   d="scan'208";a="58495743"
-From: Bryan Wu <cooloney@kernel.org>
-To: felipe.balbi@nokia.com, linux-usb@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/2] usb: musb: fix bug - don't mess up count number and CSR0 register value
-Date: Mon, 25 Aug 2008 17:13:40 +0800
-Message-Id: <1219655621-18510-2-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1219655621-18510-1-git-send-email-cooloney@kernel.org>
-References: <1219655621-18510-1-git-send-email-cooloney@kernel.org>
+	Mon, 25 Aug 2008 05:09:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40519 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753236AbYHYJJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 05:09:09 -0400
+Message-ID: <48B27632.7000704@kernel.org>
+Date: Mon, 25 Aug 2008 11:06:58 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Greg Kroah-Hartman <gregkh@suse.de>
+CC: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] driver-core: use klist for class device list and implement
+ iterator
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 Aug 2008 09:08:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/usb/musb/musb_gadget_ep0.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
+Iterating over entries using callback usually isn't too fun especially
+when the entry being iterated over can't be manipulated freely.  This
+patch converts class->p->class_devices to klist and implements class
+device iterator so that the users can freely build their own control
+structure.  The users are also free to call back into class code
+without worrying about locking.
 
-diff --git a/drivers/usb/musb/musb_gadget_ep0.c b/drivers/usb/musb/musb_gadget_ep0.c
-index a57652f..3f5e30d 100644
---- a/drivers/usb/musb/musb_gadget_ep0.c
-+++ b/drivers/usb/musb/musb_gadget_ep0.c
-@@ -437,7 +437,7 @@ static void ep0_rxstate(struct musb *musb)
- {
- 	void __iomem		*regs = musb->control_ep->regs;
- 	struct usb_request	*req;
--	u16			tmp;
-+	u16			count, csr;
- 
- 	req = next_ep0_request(musb);
- 
-@@ -449,35 +449,35 @@ static void ep0_rxstate(struct musb *musb)
- 		unsigned	len = req->length - req->actual;
- 
- 		/* read the buffer */
--		tmp = musb_readb(regs, MUSB_COUNT0);
--		if (tmp > len) {
-+		count = musb_readb(regs, MUSB_COUNT0);
-+		if (count > len) {
- 			req->status = -EOVERFLOW;
--			tmp = len;
-+			count = len;
- 		}
--		musb_read_fifo(&musb->endpoints[0], tmp, buf);
--		req->actual += tmp;
--		tmp = MUSB_CSR0_P_SVDRXPKTRDY;
--		if (tmp < 64 || req->actual == req->length) {
-+		musb_read_fifo(&musb->endpoints[0], count, buf);
-+		req->actual += count;
-+		csr = MUSB_CSR0_P_SVDRXPKTRDY;
-+		if (count < 64 || req->actual == req->length) {
- 			musb->ep0_state = MUSB_EP0_STAGE_STATUSIN;
--			tmp |= MUSB_CSR0_P_DATAEND;
-+			csr |= MUSB_CSR0_P_DATAEND;
- 		} else
- 			req = NULL;
- 	} else
--		tmp = MUSB_CSR0_P_SVDRXPKTRDY | MUSB_CSR0_P_SENDSTALL;
-+		csr = MUSB_CSR0_P_SVDRXPKTRDY | MUSB_CSR0_P_SENDSTALL;
- 
- 
- 	/* Completion handler may choose to stall, e.g. because the
- 	 * message just received holds invalid data.
- 	 */
- 	if (req) {
--		musb->ackpend = tmp;
-+		musb->ackpend = csr;
- 		musb_g_ep0_giveback(musb, req);
- 		if (!musb->ackpend)
- 			return;
- 		musb->ackpend = 0;
+class_for_each_device() and class_find_device() are converted to use
+the new iterators, so their users don't have to worry about locking
+anymore either.
+
+Note: This depends on klist-dont-iterate-over-deleted-entries patch
+because class_intf->add/remove_dev() depends on proper synchronization
+with device removal.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+---
+As noted above this patch depends on the following patch.
+
+  http://article.gmane.org/gmane.linux.kernel/725706
+
+As with the klist change, it would be most convenient to push this
+through blk-for-2.6.28.  Thanks.
+
+ drivers/base/base.h    |    2 +-
+ drivers/base/class.c   |  137 ++++++++++++++++++++++++++++++++++++------------
+ drivers/base/core.c    |    6 +-
+ include/linux/device.h |   14 +++++-
+ 4 files changed, 121 insertions(+), 38 deletions(-)
+
+diff --git a/drivers/base/base.h b/drivers/base/base.h
+index 31dc0cd..0a5f055 100644
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -54,7 +54,7 @@ struct driver_private {
+  */
+ struct class_private {
+ 	struct kset class_subsys;
+-	struct list_head class_devices;
++	struct klist class_devices;
+ 	struct list_head class_interfaces;
+ 	struct kset class_dirs;
+ 	struct mutex class_mutex;
+diff --git a/drivers/base/class.c b/drivers/base/class.c
+index 5667c2f..9686cf2 100644
+--- a/drivers/base/class.c
++++ b/drivers/base/class.c
+@@ -135,6 +135,20 @@ static void remove_class_attrs(struct class *cls)
  	}
- 	musb_ep_select(musb->mregs, 0);
--	musb_writew(regs, MUSB_CSR0, tmp);
-+	musb_writew(regs, MUSB_CSR0, csr);
  }
  
- /*
++static void klist_class_dev_get(struct klist_node *n)
++{
++	struct device *dev = container_of(n, struct device, knode_class);
++
++	get_device(dev);
++}
++
++static void klist_class_dev_put(struct klist_node *n)
++{
++	struct device *dev = container_of(n, struct device, knode_class);
++
++	put_device(dev);
++}
++
+ int __class_register(struct class *cls, struct lock_class_key *key)
+ {
+ 	struct class_private *cp;
+@@ -145,7 +159,7 @@ int __class_register(struct class *cls, struct lock_class_key *key)
+ 	cp = kzalloc(sizeof(*cp), GFP_KERNEL);
+ 	if (!cp)
+ 		return -ENOMEM;
+-	INIT_LIST_HEAD(&cp->class_devices);
++	klist_init(&cp->class_devices, klist_class_dev_get, klist_class_dev_put);
+ 	INIT_LIST_HEAD(&cp->class_interfaces);
+ 	kset_init(&cp->class_dirs);
+ 	__mutex_init(&cp->class_mutex, "struct class mutex", key);
+@@ -269,6 +283,71 @@ char *make_class_name(const char *name, struct kobject *kobj)
+ #endif
+ 
+ /**
++ * class_dev_iter_init - initialize class device iterator
++ * @iter: class iterator to initialize
++ * @class: the class we wanna iterate over
++ * @start: the device to start iterating from, if any
++ * @type: device_type of the devices to iterate over, NULL for all
++ *
++ * Initialize class iterator @iter such that it iterates over devices
++ * of @class.  If @start is set, the list iteration will start there,
++ * otherwise if it is NULL, the iteration starts at the beginning of
++ * the list.
++ */
++void class_dev_iter_init(struct class_dev_iter *iter, struct class *class,
++			 struct device *start, const struct device_type *type)
++{
++	struct klist_node *start_knode = NULL;
++
++	if (start)
++		start_knode = &start->knode_class;
++	klist_iter_init_node(&class->p->class_devices, &iter->ki, start_knode);
++	iter->type = type;
++}
++EXPORT_SYMBOL_GPL(class_dev_iter_init);
++
++/**
++ * class_dev_iter_next - iterate to the next device
++ * @iter: class iterator to proceed
++ *
++ * Proceed @iter to the next device and return it.  Returns NULL if
++ * iteration is complete.
++ *
++ * The returned device is referenced and won't be released till
++ * iterator is proceed to the next device or exited.  The caller is
++ * free to do whatever it wants to do with the device including
++ * calling back into class code.
++ */
++struct device *class_dev_iter_next(struct class_dev_iter *iter)
++{
++	struct klist_node *knode;
++	struct device *dev;
++
++	while (1) {
++		knode = klist_next(&iter->ki);
++		if (!knode)
++			return NULL;
++		dev = container_of(knode, struct device, knode_class);
++		if (!iter->type || iter->type == dev->type)
++			return dev;
++	}
++}
++EXPORT_SYMBOL_GPL(class_dev_iter_next);
++
++/**
++ * class_dev_iter_exit - finish iteration
++ * @iter: class iterator to finish
++ *
++ * Finish an iteration.  Always call this function after iteration is
++ * complete whether the iteration ran till the end or not.
++ */
++void class_dev_iter_exit(struct class_dev_iter *iter)
++{
++	klist_iter_exit(&iter->ki);
++}
++EXPORT_SYMBOL_GPL(class_dev_iter_exit);
++
++/**
+  * class_for_each_device - device iterator
+  * @class: the class we're iterating
+  * @start: the device to start with in the list, if any.
+@@ -283,32 +362,26 @@ char *make_class_name(const char *name, struct kobject *kobj)
+  * We check the return of @fn each time. If it returns anything
+  * other than 0, we break out and return that value.
+  *
+- * Note, we hold class->class_mutex in this function, so it can not be
+- * re-acquired in @fn, otherwise it will self-deadlocking. For
+- * example, calls to add or remove class members would be verboten.
++ * @fn is allowed to do anything including calling back into class
++ * code.  There's no locking restriction.
+  */
+ int class_for_each_device(struct class *class, struct device *start,
+ 			  void *data, int (*fn)(struct device *, void *))
+ {
++	struct class_dev_iter iter;
+ 	struct device *dev;
+ 	int error = 0;
+ 
+ 	if (!class)
+ 		return -EINVAL;
+-	mutex_lock(&class->p->class_mutex);
+-	list_for_each_entry(dev, &class->p->class_devices, node) {
+-		if (start) {
+-			if (start == dev)
+-				start = NULL;
+-			continue;
+-		}
+-		dev = get_device(dev);
++
++	class_dev_iter_init(&iter, class, start, NULL);
++	while ((dev = class_dev_iter_next(&iter))) {
+ 		error = fn(dev, data);
+-		put_device(dev);
+ 		if (error)
+ 			break;
+ 	}
+-	mutex_unlock(&class->p->class_mutex);
++	class_dev_iter_exit(&iter);
+ 
+ 	return error;
+ }
+@@ -331,43 +404,36 @@ EXPORT_SYMBOL_GPL(class_for_each_device);
+  *
+  * Note, you will need to drop the reference with put_device() after use.
+  *
+- * We hold class->class_mutex in this function, so it can not be
+- * re-acquired in @match, otherwise it will self-deadlocking. For
+- * example, calls to add or remove class members would be verboten.
++ * @fn is allowed to do anything including calling back into class
++ * code.  There's no locking restriction.
+  */
+ struct device *class_find_device(struct class *class, struct device *start,
+ 				 void *data,
+ 				 int (*match)(struct device *, void *))
+ {
++	struct class_dev_iter iter;
+ 	struct device *dev;
+-	int found = 0;
+ 
+ 	if (!class)
+ 		return NULL;
+ 
+-	mutex_lock(&class->p->class_mutex);
+-	list_for_each_entry(dev, &class->p->class_devices, node) {
+-		if (start) {
+-			if (start == dev)
+-				start = NULL;
+-			continue;
+-		}
+-		dev = get_device(dev);
++	class_dev_iter_init(&iter, class, start, NULL);
++	while ((dev = class_dev_iter_next(&iter))) {
+ 		if (match(dev, data)) {
+-			found = 1;
++			get_device(dev);
+ 			break;
+-		} else
+-			put_device(dev);
++		}
+ 	}
+-	mutex_unlock(&class->p->class_mutex);
++	class_dev_iter_exit(&iter);
+ 
+-	return found ? dev : NULL;
++	return dev;
+ }
+ EXPORT_SYMBOL_GPL(class_find_device);
+ 
+ int class_interface_register(struct class_interface *class_intf)
+ {
+ 	struct class *parent;
++	struct class_dev_iter iter;
+ 	struct device *dev;
+ 
+ 	if (!class_intf || !class_intf->class)
+@@ -380,8 +446,10 @@ int class_interface_register(struct class_interface *class_intf)
+ 	mutex_lock(&parent->p->class_mutex);
+ 	list_add_tail(&class_intf->node, &parent->p->class_interfaces);
+ 	if (class_intf->add_dev) {
+-		list_for_each_entry(dev, &parent->p->class_devices, node)
++		class_dev_iter_init(&iter, parent, NULL, NULL);
++		while ((dev = class_dev_iter_next(&iter)))
+ 			class_intf->add_dev(dev, class_intf);
++		class_dev_iter_exit(&iter);
+ 	}
+ 	mutex_unlock(&parent->p->class_mutex);
+ 
+@@ -391,6 +459,7 @@ int class_interface_register(struct class_interface *class_intf)
+ void class_interface_unregister(struct class_interface *class_intf)
+ {
+ 	struct class *parent = class_intf->class;
++	struct class_dev_iter iter;
+ 	struct device *dev;
+ 
+ 	if (!parent)
+@@ -399,8 +468,10 @@ void class_interface_unregister(struct class_interface *class_intf)
+ 	mutex_lock(&parent->p->class_mutex);
+ 	list_del_init(&class_intf->node);
+ 	if (class_intf->remove_dev) {
+-		list_for_each_entry(dev, &parent->p->class_devices, node)
++		class_dev_iter_init(&iter, parent, NULL, NULL);
++		while ((dev = class_dev_iter_next(&iter)))
+ 			class_intf->remove_dev(dev, class_intf);
++		class_dev_iter_exit(&iter);
+ 	}
+ 	mutex_unlock(&parent->p->class_mutex);
+ 
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 068aa1c..a77031a 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -536,7 +536,6 @@ void device_initialize(struct device *dev)
+ 	klist_init(&dev->klist_children, klist_children_get,
+ 		   klist_children_put);
+ 	INIT_LIST_HEAD(&dev->dma_pools);
+-	INIT_LIST_HEAD(&dev->node);
+ 	init_MUTEX(&dev->sem);
+ 	spin_lock_init(&dev->devres_lock);
+ 	INIT_LIST_HEAD(&dev->devres_head);
+@@ -908,7 +907,8 @@ int device_add(struct device *dev)
+ 	if (dev->class) {
+ 		mutex_lock(&dev->class->p->class_mutex);
+ 		/* tie the class to the device */
+-		list_add_tail(&dev->node, &dev->class->p->class_devices);
++		klist_add_tail(&dev->knode_class,
++			       &dev->class->p->class_devices);
+ 
+ 		/* notify any interfaces that the device is here */
+ 		list_for_each_entry(class_intf,
+@@ -1023,7 +1023,7 @@ void device_del(struct device *dev)
+ 			if (class_intf->remove_dev)
+ 				class_intf->remove_dev(dev, class_intf);
+ 		/* remove the device from the class list */
+-		list_del_init(&dev->node);
++		klist_del(&dev->knode_class);
+ 		mutex_unlock(&dev->class->p->class_mutex);
+ 	}
+ 	device_remove_file(dev, &uevent_attr);
+diff --git a/include/linux/device.h b/include/linux/device.h
+index d24a47f..4189044 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -199,6 +199,11 @@ struct class {
+ 	struct class_private *p;
+ };
+ 
++struct class_dev_iter {
++	struct klist_iter		ki;
++	const struct device_type	*type;
++};
++
+ extern struct kobject *sysfs_dev_block_kobj;
+ extern struct kobject *sysfs_dev_char_kobj;
+ extern int __must_check __class_register(struct class *class,
+@@ -213,6 +218,13 @@ extern void class_unregister(struct class *class);
+ 	__class_register(class, &__key);	\
+ })
+ 
++extern void class_dev_iter_init(struct class_dev_iter *iter,
++				struct class *class,
++				struct device *start,
++				const struct device_type *type);
++extern struct device *class_dev_iter_next(struct class_dev_iter *iter);
++extern void class_dev_iter_exit(struct class_dev_iter *iter);
++
+ extern int class_for_each_device(struct class *class, struct device *start,
+ 				 void *data,
+ 				 int (*fn)(struct device *dev, void *data));
+@@ -395,7 +407,7 @@ struct device {
+ 	spinlock_t		devres_lock;
+ 	struct list_head	devres_head;
+ 
+-	struct list_head	node;
++	struct klist_node	knode_class;
+ 	struct class		*class;
+ 	dev_t			devt;	/* dev_t, creates the sysfs "dev" */
+ 	struct attribute_group	**groups;	/* optional groups */
 -- 
-1.5.6
+1.5.4.5
+
