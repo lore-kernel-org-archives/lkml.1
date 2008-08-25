@@ -1,237 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbYHYCrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbYHYBhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420AbYHYCrp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 22:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbYHYCrh
+	id S1753947AbYHYBhz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 21:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbYHYBhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 22:47:37 -0400
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:58977 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751727AbYHYCrg (ORCPT
+	Sun, 24 Aug 2008 21:37:45 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:27205 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752056AbYHYBho (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 22:47:36 -0400
-Message-ID: <48B21D3C.8090601@cs.columbia.edu>
-Date: Sun, 24 Aug 2008 22:47:24 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Sun, 24 Aug 2008 21:37:44 -0400
+X-IronPort-AV: E=Sophos;i="4.32,264,1217808000"; 
+   d="scan'208";a="145586373"
+From: Roland Dreier <rdreier@cisco.com>
+To: David Vrabel <david.vrabel@csr.com>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       linux-usb <linux-usb@vger.kernel.org>, torvalds@linux-foundation.org
+Subject: Re: [patch] Add helper macros for little-endian bitfields
+References: <48AD6AF0.3050504@csr.com> <48AD6B93.7020702@csr.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Sun, 24 Aug 2008 18:37:43 -0700
+In-Reply-To: <48AD6B93.7020702@csr.com> (David Vrabel's message of "Thu, 21
+	Aug 2008 14:20:19 +0100")
+Message-ID: <adaprnxnac8.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Dave Hansen <dave@sr71.net>
-CC: containers@lists.linux-foundation.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       arnd@arndb.de
-Subject: Re: [RFC v2][PATCH 2/9] General infrastructure for checkpoint	restart
-References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>	 <Pine.LNX.4.64.0808202303460.17436@takamine.ncl.cs.columbia.edu> <1219435302.20559.121.camel@nimitz>
-In-Reply-To: <1219435302.20559.121.camel@nimitz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 25 Aug 2008 01:37:43.0826 (UTC) FILETIME=[2B7A5720:01C90653]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > + * NOTE: When using multibyte bitfields, you need to convert the data
+ > + *       from Little Endian to CPU before you can access the bitfield
+ > + *       (to make it simpler):
+ > + *
+ > + *       union something {
+ > + *               le16 value;
+ > + *               DECL_BF_LE3(
+ > + *                       u16  bf0:3,
+ > + *                       u16  bf1:10,
+ > + *                       u16  bf2:3
+ > + *               ) __attribute__((packed));
+ > + *       };
+ > + *
+ > + *       ...
+ > + *
+ > + *       union something s;
+ > + *
+ > + *       s.value = le16_to_cpu(something LE read from hw);
+ > + *       frame_count = s.bf1;
 
+I can't help thinking there's got to be a better way to do this... in
+particular having 16 DECL_BF_LEnn() macros (and needing to count the
+number of members every time you use one) is not particularly pretty.
 
-Dave Hansen wrote:
-> On Wed, 2008-08-20 at 23:04 -0400, Oren Laadan wrote:
->> diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
->> new file mode 100644
->> index 0000000..25343f5
->> --- /dev/null
->> +++ b/checkpoint/checkpoint.c
+In general the consensus with kernel code seems to be that you're better
+off avoiding bitfields in structures, and just using shift/mask
+operations to get at the data (with helper functions as needed).
 
-[...]
+However all of that is said without actually looking at the driver code
+that uses this.
 
->> +/* write the checkpoint header */
->> +static int cr_write_hdr(struct cr_ctx *ctx)
->> +{
->> +	struct cr_hdr h;
->> +	struct cr_hdr_head *hh = ctx->hbuf;
->> +	struct new_utsname *uts;
->> +	struct timeval ktv;
->> +
->> +	h.type = CR_HDR_HEAD;
->> +	h.len = sizeof(*hh);
->> +	h.ptag = 0;
->> +
->> +	do_gettimeofday(&ktv);
->> +
->> +	hh->magic = CR_MAGIC_HEAD;
->> +	hh->major = (LINUX_VERSION_CODE >> 16) & 0xff;
->> +	hh->minor = (LINUX_VERSION_CODE >> 8) & 0xff;
->> +	hh->patch = (LINUX_VERSION_CODE) & 0xff;
-> 
-> We at least neex EXTRAVERSION in there if we're going to even pretend
-> this is useful, right?  is this redundant with utsname() below?
-
-It isn't clear exactly what we need in the header in terms of version, config,
-and compile information. I put this as a starter, because it's obvious and
-because this info is likely to be useful even at the user/admin level. I don't
-expect this to remain as is as we continue development.
-
-[...]
-
->> +struct cr_ctx {
->> +	pid_t pid;		/* container identifier */
->> +	int crid;		/* unique checkpoint id */
->> +
->> +	unsigned long flags;
->> +	unsigned long oflags;	/* restart: old flags */
->> +
->> +	struct file *file;
->> +	int total;		/* total read/written */
->> +
->> +	void *tbuf;		/* temp: to avoid many alloc/dealloc */
->> +	void *hbuf;		/* header: to avoid many alloc/dealloc */
->> +	int hpos;
-> 
-> alloc/delloc is not a bad thing. :)  I think at least a few of these
-> should be moved over to stack or kmalloc()/kfree().
-
-Definitely the comment is misleading. See comment below.
-
-> 
->> +	struct path *vfsroot;	/* container root */
->> +};
-> 
-> Can a container only have one vfsroot?
-
-This is a temporary solution since this patchset doesn't really handle real
-containers yet. Will add a FIXME comment.
-
-> 
->> +
->> +/* cr_ctx: flags */
->> +#define CR_CTX_CKPT	0x1
->> +#define CR_CTX_RSTR	0x2
-> 
-> enum?
-
-These are flags (more will come later).
-
-[...]
-
->> +struct cr_hdr_task {
->> +	__u64 state;
->> +	__u32 exit_state;
->> +	__u32 exit_code, exit_signal;
->> +
->> +	__u64 utime, stime, utimescaled, stimescaled;
->> +	__u64 gtime;
->> +	__u64 prev_utime, prev_stime;
->> +	__u64 nvcsw, nivcsw;
->> +	__u64 start_time_sec, start_time_nsec;
->> +	__u64 real_start_time_sec, real_start_time_nsec;
->> +	__u64 min_flt, maj_flt;
->> +
->> +	__s16 task_comm_len;
->> +	char comm[TASK_COMM_LEN];
->> +} __attribute__ ((aligned (8)));
-> 
-> TASK_COMM_LEN might be subject to changing.  Can it be part of the
-> user<->kernel ABI?
-
-Good point. Having the 'task_comm_len' field there isn't enough because the
-size of the entire struct changes anyways.
-
-[...]
-
-> 
-> ...
->> +/*
->> + * During restart the code reads in data from the chekcpoint image into a
->> + * temporary buffer (ctx->hbuf). Because operations can be nested, one
->> + * should call cr_hbuf_get() to reserve space in the buffer, and then
->> + * cr_hbuf_put() when it no longer needs that space
->> + */
->> +
->> +#include <linux/version.h>
->> +#include <linux/sched.h>
->> +#include <linux/file.h>
->> +
->> +#include "ckpt.h"
->> +#include "ckpt_hdr.h"
->> +
->> +/**
->> + * cr_hbuf_get - reserve space on the hbuf
->> + * @ctx: checkpoint context
->> + * @n: number of bytes to reserve
->> + */
->> +void *cr_hbuf_get(struct cr_ctx *ctx, int n)
->> +{
->> +	void *ptr;
->> +
->> +	BUG_ON(ctx->hpos + n > CR_HBUF_TOTAL);
->> +	ptr = (void *) (((char *) ctx->hbuf) + ctx->hpos);
->> +	ctx->hpos += n;
->> +	return ptr;
->> +}
->> +
->> +/**
->> + * cr_hbuf_put - unreserve space on the hbuf
->> + * @ctx: checkpoint context
->> + * @n: number of bytes to reserve
->> + */
->> +void cr_hbuf_put(struct cr_ctx *ctx, int n)
->> +{
->> +	BUG_ON(ctx->hpos < n);
->> +	ctx->hpos -= n;
->> +}
-> 
-> I replaced all of the uses of these with kmalloc()/kfree() and stack
-> allocations.  I'm really not sure what these buy us since our allocators
-> are already so fast.  tbuf, especially, worries me if it gets used in
-> any kind of nested manner we're going to get some really fun bugs.
-
-I disagree with putting some of the cr_hdr_... on the stack: first, if they
-grow in size, it's easy to forget to change the allocation to stack. Second,
-using a standard code/handling for all cr_hdr_... makes the code more readable
-and easier for others to extend by simply following existing code.
-
-The main argument for ->hbuf is that eventually we would like to buffer
-data in the kernel to avoid potentially slow writing/reading when processes
-are frozen during checkpoint/restart. By using the simple cr_get_hbuf() and
-cr_put_hbuf() we prepare for that: now they just allocate room in ->hbuf,
-but later they will provide a pointer directly in the data buffer. Moreover,
-it simplifies the error path since cleanup (of ->hbuf) is implicit. Also,
-it is designed to allow checkpoint and restart function to be called in a
-nested manner, again simplifying the code. Finally, my experience was that
-it can impact performance if you are after very short downtimes, especially
-for the checkpoint.
-
-The use of ->tbuf is less critical and is mainly for performance and to
-simplify the error path, never to be called nested. I'm ok with removing
-it for now.
-
-[...]
-
->> +/* read the checkpoint header */
->> +static int cr_read_hdr(struct cr_ctx *ctx)
->> +{
->> +	struct cr_hdr_head *hh = cr_hbuf_get(ctx, sizeof(*hh));
->> +	int ret;
->> +
->> +	ret = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_HEAD);
->> +	if (ret < 0)
->> +		return ret;
->> +	else if (ret != 0)
->> +		return -EINVAL;
-> 
-> How about just making cr_read_obj_type() stop returning positive values?
-> Is it ever valid for it to return >0?
-
-The idea with cr_read_obj_type() is that it returns the 'ptag' - parent tag -
-field of the object that it reads in. The 'ptag' is the tag of the parent
-object, and is useful in several places. For instance, the 'ptag' of an MM
-header identifies (is equal to) the 'tag' of TASK to which it belongs. In
-this case, the 'ptag' should be zero because it has no parent object.
-
-I'll change the variable name from 'ret' to 'ptag' to make it more obvious.
-
-[...]
-
-> 
-> -- Dave
-> 
-
-Oren.
+ - R.
