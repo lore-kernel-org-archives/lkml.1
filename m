@@ -1,90 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbYHYJ2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbYHYLEJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756709AbYHYJ2b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 05:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbYHYJ2W
+	id S1758195AbYHYLEJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 07:04:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758055AbYHYLCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 05:28:22 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:50788 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753530AbYHYJ2V (ORCPT
+	Mon, 25 Aug 2008 07:02:10 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:37051 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757568AbYHYLCI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 05:28:21 -0400
-Date: Mon, 25 Aug 2008 10:27:39 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Harvey Harrison <harvey.harrison@gmail.com>
-cc: Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mm: hugetlb.c make functions static, use NULL rather
- than 0
-In-Reply-To: <1219445274.4493.10.camel@brick>
-Message-ID: <Pine.LNX.4.64.0808251023220.8672@blonde.site>
-References: <1219445274.4493.10.camel@brick>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 25 Aug 2008 07:02:08 -0400
+To: serue@us.ibm.com
+CC: ebiederm@xmission.com, miklos@szeredi.hu, akpm@linux-foundation.org,
+       hch@infradead.org, viro@ZenIV.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <20080808002537.GA5364@us.ibm.com> (serue@us.ibm.com)
+Subject: Re: unprivileged mounts git tree
+References: <E1JtiOX-0004Qg-1z@pomaz-ex.szeredi.hu> <20080807222751.GA28412@us.ibm.com> <m1prokgyje.fsf@frodo.ebiederm.org> <20080808002537.GA5364@us.ibm.com>
+Message-Id: <E1KXZpC-0008Ie-6w@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 25 Aug 2008 13:01:30 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Aug 2008, Harvey Harrison wrote:
-
-> mm/hugetlb.c:265:17: warning: symbol 'resv_map_alloc' was not declared. Should it be static?
-> mm/hugetlb.c:277:6: warning: symbol 'resv_map_release' was not declared. Should it be static?
-> mm/hugetlb.c:292:9: warning: Using plain integer as NULL pointer
-> mm/hugetlb.c:1750:5: warning: symbol 'unmap_ref_private' was not declared. Should it be static?
+On Thu, 7 Aug 2008, Serge E. Hallyn wrote:
+> Quoting Eric W. Biederman (ebiederm@xmission.com):
+> > "Serge E. Hallyn" <serue@us.ibm.com> writes:
+> > > so on the bright side I pulled this tree today and it compiled and
+> > > passed ltp with no problems.
+> > >
+> > > But then I played around a bit and found I could do the following:
+> > >
+> > > (hmm, i'm trying to remember the exact order :)
+> > >
+> > > as root:
+> > > 	mmount --bind -o user=500 /home/hallyn/etc/ /home/hallyn/etc/
+> > > 	mount --bind /mnt /mnt
+> > > 	mount --make-rshared /mnt
+> > > 	mount --bind /dev /mnt/dev
+> > >
+> > > as hallyn:
+> > > 	mmount --bind /mnt /home/hallyn/etc/mnt
+> > > 	/usr/src/mmount-0.3/mmount --bind mnt/dev mnt/src
+> > 
+> > You are using relative directory names here which makes it confusing.
+> > I'm assuming you in /home/hallyn/etc ?
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-
-This all looks good to me, but guess you sent it my way because
-you mistook it for mm/hughtlb.c?  Cc'ed Andy, he's the man here!
-
-Hugh
-
-> ---
->  mm/hugetlb.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
+> Sorry, yeah.
 > 
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index 67a7119..b548a94 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -262,7 +262,7 @@ struct resv_map {
->  	struct list_head regions;
->  };
->  
-> -struct resv_map *resv_map_alloc(void)
-> +static struct resv_map *resv_map_alloc(void)
->  {
->  	struct resv_map *resv_map = kmalloc(sizeof(*resv_map), GFP_KERNEL);
->  	if (!resv_map)
-> @@ -274,7 +274,7 @@ struct resv_map *resv_map_alloc(void)
->  	return resv_map;
->  }
->  
-> -void resv_map_release(struct kref *ref)
-> +static void resv_map_release(struct kref *ref)
->  {
->  	struct resv_map *resv_map = container_of(ref, struct resv_map, refs);
->  
-> @@ -289,7 +289,7 @@ static struct resv_map *vma_resv_map(struct vm_area_struct *vma)
->  	if (!(vma->vm_flags & VM_SHARED))
->  		return (struct resv_map *)(get_vma_private_data(vma) &
->  							~HPAGE_RESV_MASK);
-> -	return 0;
-> +	return NULL;
->  }
->  
->  static void set_vma_resv_map(struct vm_area_struct *vma, struct resv_map *map)
-> @@ -1747,7 +1747,7 @@ void unmap_hugepage_range(struct vm_area_struct *vma, unsigned long start,
->   * from other VMAs and let the children be SIGKILLed if they are faulting the
->   * same region.
->   */
-> -int unmap_ref_private(struct mm_struct *mm,
-> +static int unmap_ref_private(struct mm_struct *mm,
->  					struct vm_area_struct *vma,
->  					struct page *page,
->  					unsigned long address)
-> -- 
-> 1.6.0.340.g84854
+> > > Now /mnt/src contained /dev.
+> > >
+> > > Is this what we want?
+> > 
+> > I don't think so.
+> > 
+> > I think the simplest answer is to not allow mounting of shared
+> > subtrees controlled by a different user.
+> > 
+> > Serge I think you are right downgrading the mount from shared to slave
+> > looks like the sane thing to do if the mount owners match.
+> 
+> I assume you mean "if the mount owners don't match"?
+> 
+> Miklos, what do you think?
+
+Sorry about the late reply: I was on a long summer vacation...
+
+Serge, thanks for spotting this: it looks indeed a nasty hole!  I also
+agree about the solution.
+
+> The next question then becomes, how can we prove to ourselves that that
+> closes the last security hole with unprivileged mounts?  So long as
+> we treat each mount event as a piece of information and look at it as an
+> information flow problem, maybe we can actually come up with a good
+> description of the logic that is implemented and show that there is no
+> way a user can "leak" info...  (where a leak is a mount event, a
+> violation of intended DAC on open(file) or mkdir, etc)
+
+"Information flow problem" doesn't mean much to me (I'm actually an
+electric engineer, who ended up doing programming for living ;)
+
+But yeah, we should think this over very carefully.  Especially
+interaction with mount propagation, which has very complicated and
+sometimes rather counter-intuitive semantics.
+
+Thanks,
+Miklos
