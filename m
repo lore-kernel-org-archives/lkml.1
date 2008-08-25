@@ -1,239 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbYHYL1E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbYHYL2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbYHYL1E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 07:27:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbYHYL0y
+	id S1754827AbYHYL2t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 07:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbYHYL2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 07:26:54 -0400
-Received: from smtpauth.hypersurf.com ([209.237.0.8]:51662 "EHLO
-	smtpauth.hypersurf.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753361AbYHYL0x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 07:26:53 -0400
-Message-ID: <48B29696.3070808@hypersurf.com>
-Date: Mon, 25 Aug 2008 04:25:10 -0700
-From: Kevin Diggs <kevdig@hypersurf.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i486; en-US; rv:1.8b2) Gecko/20050724
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: [PATCH 4/4] Add kernel doc for the completion, fix kernel-doc-nano-HOWTO.txt
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 25 Aug 2008 07:28:41 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47013 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753315AbYHYL2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 07:28:40 -0400
+Date: Mon, 25 Aug 2008 21:28:33 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-next@vger.kernel.org, David Miller <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next:  build failure
+Message-Id: <20080825212833.38550575.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds kernel doc for the completion feature. It is in kernel/sched.c
-and include/linux/completion.h.
+Hi Ingo,
 
-An error in the split-man.pl PERL snippet in kernel-doc-nano-HOWTO.txt is
-also fixed.
+Today's linux-next build (sparc64 defconfig) failed like this:
 
-My name is Kevin Diggs and I approve this patch.
+ERROR: "__BUILD_BUG_ON_non_constant" [drivers/net/sunvnet.ko] undefined!
+ERROR: "__BUILD_BUG_ON_non_constant" [drivers/block/sunvdc.ko] undefined!
 
-Signed-off-by: Kevin Diggs <kevdig@hypersurf.com>
-Index: Documentation/kernel-doc-nano-HOWTO.txt
-===================================================================
---- Documentation/kernel-doc-nano-HOWTO.txt.orig	2008-08-13 02:18:53.000000000 -0700
-+++ Documentation/kernel-doc-nano-HOWTO.txt	2008-08-19 14:21:43.000000000 -0700
-@@ -168,10 +168,10 @@ if ($#ARGV < 0) {
-  mkdir $ARGV[0],0777;
-  $state = 0;
-  while (<STDIN>) {
--    if (/^\.TH \"[^\"]*\" 4 \"([^\"]*)\"/) {
-+    if (/^\.TH \"[^\"]*\" 9 \"([^\"]*)\"/) {
-  	if ($state == 1) { close OUT }
-  	$state = 1;
--	$fn = "$ARGV[0]/$1.4";
-+	$fn = "$ARGV[0]/$1.9";
-  	print STDERR "Creating $fn\n";
-  	open OUT, ">$fn" or die "can't open $fn: $!\n";
-  	print OUT $_;
-Index: include/linux/completion.h
-===================================================================
---- include/linux/completion.h.orig	2008-08-13 00:56:52.000000000 -0700
-+++ include/linux/completion.h	2008-08-20 01:47:21.000000000 -0700
-@@ -10,6 +10,18 @@
+Probably intorduced by commit f5b5d41dd51a31fe70e3a04fb80a3b90b84c6a4e
+("debug: fix BUILD_BUG_ON() for non-constant expressions").
 
-  #include <linux/wait.h>
+The preprocessed code looks like this:
 
-+/**
-+ * struct completion - structure used to maintain state for a "completion"
-+ *
-+ * This is the opaque structure used to maintain the state for a "completion".
-+ * Completions currently use a FIFO to queue threads that have to wait for
-+ * the "completion" event.
-+ *
-+ * See also:  complete(), wait_for_completion() (and friends _timeout,
-+ * _interruptible, _interruptible_timeout, and _killable), init_completion(),
-+ * and macros DECLARE_COMPLETION(), DECLARE_COMPLETION_ONSTACK(), and
-+ * INIT_COMPLETION().
-+ */
-  struct completion {
-  	unsigned int done;
-  	wait_queue_head_t wait;
-@@ -21,6 +33,14 @@ struct completion {
-  #define COMPLETION_INITIALIZER_ONSTACK(work) \
-  	({ init_completion(&work); work; })
+static inline __attribute__((always_inline)) u32 vio_dring_avail(struct vio_dring_state *dr,
+      unsigned int ring_size)
+{
+ do { (void)sizeof(char[1 - 2*!!(!is_power_of_2(ring_size))]); if (!__builtin_constant_p(!is_power_of_2(ring_size))) __BUILD_BUG_ON_non_constant++; } while (0);
 
-+/**
-+ * DECLARE_COMPLETION: - declare and initialize a completion structure
-+ * @work:  identifier for the completion structure
-+ *
-+ * This macro declares and initializes a completion structure. Generally used
-+ * for static declarations. You should use the _ONSTACK variant for automatic
-+ * variables.
-+ */
-  #define DECLARE_COMPLETION(work) \
-  	struct completion work = COMPLETION_INITIALIZER(work)
+ return (dr->pending -
+  ((dr->prod - dr->cons) & (ring_size - 1)));
+}
 
-@@ -29,6 +49,13 @@ struct completion {
-   * completions - so we use the _ONSTACK() variant for those that
-   * are on the kernel stack:
-   */
-+/**
-+ * DECLARE_COMPLETION_ONSTACK: - declare and initialize a completion structure
-+ * @work:  identifier for the completion structure
-+ *
-+ * This macro declares and initializes a completion structure on the kernel
-+ * stack.
-+ */
-  #ifdef CONFIG_LOCKDEP
-  # define DECLARE_COMPLETION_ONSTACK(work) \
-  	struct completion work = COMPLETION_INITIALIZER_ONSTACK(work)
-@@ -36,6 +63,13 @@ struct completion {
-  # define DECLARE_COMPLETION_ONSTACK(work) DECLARE_COMPLETION(work)
-  #endif
+I tried turning the above inline function into a macro to no avail.
 
-+/**
-+ * init_completion: - Initialize a dynamically allocated completion
-+ * @x:  completion structure that is to be initialized
-+ *
-+ * This inline function will initialize a dynamically created completion
-+ * structure.
-+ */
-  static inline void init_completion(struct completion *x)
-  {
-  	x->done = 0;
-@@ -53,6 +87,13 @@ extern unsigned long wait_for_completion
-  extern void complete(struct completion *);
-  extern void complete_all(struct completion *);
+I applied the following patch (which is probably not what is wanted, but
+puts back what was there before).
 
-+/**
-+ * INIT_COMPLETION: - reinitialize a completion structure
-+ * @x:  completion structure to be reinitialized
-+ *
-+ * This macro should be used to reinitialize a completion structure so it can
-+ * be reused. This is especially important after complete_all() is used.
-+ */
-  #define INIT_COMPLETION(x)	((x).done = 0)
+I see from LKML that this definition of BUILD_BUG_ON is to be replaced,
+so this is just a temporary measure.
 
-  #endif
-Index: kernel/sched.c
-===================================================================
---- kernel/sched.c.orig	2008-08-13 02:22:42.000000000 -0700
-+++ kernel/sched.c	2008-08-20 12:36:01.000000000 -0700
-@@ -4363,6 +4363,15 @@ __wake_up_sync(wait_queue_head_t *q, uns
-  }
-  EXPORT_SYMBOL_GPL(__wake_up_sync);	/* For internal use only */
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-+/**
-+ * complete: - signals a single thread waiting on this completion
-+ * @x:  holds the state of this particular completion
-+ *
-+ * This will wake up a single thread waiting on this completion. Threads will be
-+ * awakened in the same order in which they were queued.
-+ *
-+ * See also complete_all(), wait_for_completion() and related routines.
-+ */
-  void complete(struct completion *x)
-  {
-  	unsigned long flags;
-@@ -4374,6 +4383,12 @@ void complete(struct completion *x)
-  }
-  EXPORT_SYMBOL(complete);
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 25 Aug 2008 21:16:14 +1000
+Subject: [PATCH] revert BUILD_BUG_ON change
 
-+/**
-+ * complete_all: - signals all threads waiting on this completion
-+ * @x:  holds the state of this particular completion
-+ *
-+ * This will wake up all threads waiting on this particular completion event.
-+ */
-  void complete_all(struct completion *x)
-  {
-  	unsigned long flags;
-@@ -4425,12 +4440,31 @@ wait_for_common(struct completion *x, lo
-  	return timeout;
-  }
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/linux/compiler.h |    6 ------
+ 1 files changed, 0 insertions(+), 6 deletions(-)
 
-+/**
-+ * wait_for_completion: - waits for completion of a task
-+ * @x:  holds the state of this particular completion
-+ *
-+ * This waits to be signaled for completion of a specific task. It is NOT
-+ * interruptible and there is no timeout.
-+ *
-+ * See also similar routines (i.e. wait_for_completion_timeout()) with timeout
-+ * and interrupt capability. Also see complete().
-+ */
-  void __sched wait_for_completion(struct completion *x)
-  {
-  	wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_UNINTERRUPTIBLE);
-  }
-  EXPORT_SYMBOL(wait_for_completion);
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index d7d313b..a1c082d 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -206,15 +206,9 @@ extern void __chk_io_ptr(const volatile void __iomem *);
+  * ( The linker trick relies on gcc optimizing out a multiplication with
+  *   constant zero - which should be reasonable enough. )
+  */
+-#ifndef __ASSEMBLY__
+-extern unsigned int __BUILD_BUG_ON_non_constant;
+-#endif
+-
+ #define BUILD_BUG_ON(condition)					\
+ do {								\
+ 	(void)sizeof(char[1 - 2*!!(condition)]);		\
+-	if (!__builtin_constant_p(condition))			\
+-		__BUILD_BUG_ON_non_constant++;			\
+ } while (0)
+ 
+ /*
+-- 
+1.5.6.3
 
-+/**
-+ * wait_for_completion_timeout: - waits for completion of a task (w/timeout)
-+ * @x:  holds the state of this particular completion
-+ * @timeout:  timeout value in jiffies
-+ *
-+ * This waits for either a completion of a specific task to be signaled or for a
-+ * specified timeout to expire. The timeout is in jiffies. It is not
-+ * interruptible.
-+ */
-  unsigned long __sched
-  wait_for_completion_timeout(struct completion *x, unsigned long timeout)
-  {
-@@ -4438,6 +4472,13 @@ wait_for_completion_timeout(struct compl
-  }
-  EXPORT_SYMBOL(wait_for_completion_timeout);
 
-+/**
-+ * wait_for_completion_interruptible: - waits for completion of a task (w/intr)
-+ * @x:  holds the state of this particular completion
-+ *
-+ * This waits for completion of a specific task to be signaled. It is
-+ * interruptible.
-+ */
-  int __sched wait_for_completion_interruptible(struct completion *x)
-  {
-  	long t = wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_INTERRUPTIBLE);
-@@ -4447,6 +4488,14 @@ int __sched wait_for_completion_interrup
-  }
-  EXPORT_SYMBOL(wait_for_completion_interruptible);
-
-+/**
-+ * wait_for_completion_interruptible_timeout: - waits for completion (w/(to,intr))
-+ * @x:  holds the state of this particular completion
-+ * @timeout:  timeout value in jiffies
-+ *
-+ * This waits for either a completion of a specific task to be signaled or for a
-+ * specified timeout to expire. It is interruptible. The timeout is in jiffies.
-+ */
-  unsigned long __sched
-  wait_for_completion_interruptible_timeout(struct completion *x,
-  					  unsigned long timeout)
-@@ -4455,6 +4504,13 @@ wait_for_completion_interruptible_timeou
-  }
-  EXPORT_SYMBOL(wait_for_completion_interruptible_timeout);
-
-+/**
-+ * wait_for_completion_killable: - waits for completion of a task (killable)
-+ * @x:  holds the state of this particular completion
-+ *
-+ * This waits to be signaled for completion of a specific task. It can be
-+ * interrupted by a kill signal.
-+ */
-  int __sched wait_for_completion_killable(struct completion *x)
-  {
-  	long t = wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_KILLABLE);
