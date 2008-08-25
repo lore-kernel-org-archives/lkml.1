@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbYHYA3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbYHYAtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008AbYHYA3S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 20:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbYHYA3A
+	id S1753668AbYHYAtT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 20:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbYHYAtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 20:29:00 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58430 "EHLO smtps.tip.net.au"
+	Sun, 24 Aug 2008 20:49:06 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36389 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751805AbYHYA27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 20:28:59 -0400
-Date: Mon, 25 Aug 2008 10:28:48 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Johannes Berg <johannes@sipsolutions.net>, Takashi Iwai <tiwai@suse.de>,
-       linux-next@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       video4linux-list@redhat.com
-Subject: Re: CONFIG_KMOD breakage in next kernel
-Message-Id: <20080825102848.9b28da36.sfr@canb.auug.org.au>
-In-Reply-To: <200808251013.58975.rusty@rustcorp.com.au>
-References: <s5h3akzwtki.wl%tiwai@suse.de>
-	<1219256165.3502.10.camel@johannes.berg>
-	<200808251013.58975.rusty@rustcorp.com.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	id S1751731AbYHYAtF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 20:49:05 -0400
+Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+Content-Type: text/plain
+Date: Mon, 25 Aug 2008 10:48:21 +1000
+Message-Id: <1219625301.13162.2.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__25_Aug_2008_10_28_48_+1000_rMIZ0B7B=RBV.Dz/"
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__25_Aug_2008_10_28_48_+1000_rMIZ0B7B=RBV.Dz/
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Rusty,
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11414
+> Subject		: Random crashes with 2.6.27-rc3 on PPC
+> Submitter	: Michael Buesch <mb@bu3sch.de>
+> Date		: 2008-08-23 14:10 (1 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121950076812616&w=4
 
-On Mon, 25 Aug 2008 10:13:58 +1000 Rusty Russell <rusty@rustcorp.com.au> wr=
-ote:
->
-> For today, I'll pull out the CONFIG_KMOD removal.
+This appears to be a gcc bug when -fno-omit-stack-pointer is used (which
+we mostly don't need on ppc anyway except that another gcc stupidity makes
+it mandatory for -pg which ftrace needs).
 
-Does that mean you want me to revert "remove CONFIG_KMOD" from your tree
-for today's linux-next build?
+We're working on a two fold workaround: removing -fno-omit-stack-pointer
+in all the cases where we don't really need it, and for when we do (ie,
+CONFIG_FTRACE becaues of -pg), using -mno-sched-epilog which seems to
+work around it.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+The root cause in gcc hasn't been fully identified yet.
 
---Signature=_Mon__25_Aug_2008_10_28_48_+1000_rMIZ0B7B=RBV.Dz/
-Content-Type: application/pgp-signature
+Ben.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkix/MAACgkQjjKRsyhoI8yA5ACfVZAfQ2Zdbqg5kcNPnLfSGw9X
-9wkAoJZz9vHpyyGfUWiyRo3xCD54XvnW
-=mRl0
------END PGP SIGNATURE-----
-
---Signature=_Mon__25_Aug_2008_10_28_48_+1000_rMIZ0B7B=RBV.Dz/--
