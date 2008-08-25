@@ -1,172 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbYHYKta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757148AbYHYJSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755914AbYHYKta (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 06:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbYHYKtP
+	id S1757148AbYHYJSp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 05:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755654AbYHYJRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 06:49:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43995 "EHLO hera.kernel.org"
+	Mon, 25 Aug 2008 05:17:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53158 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753566AbYHYKtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 06:49:14 -0400
+	id S1754622AbYHYJRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 05:17:08 -0400
 From: Tejun Heo <tj@kernel.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: James.Bottomley@HansenPartnership.com, bzolnier@gmail.com,
-       bharrosh@panasas.com, greg.freemyer@gmail.com,
-       linux-scsi@vger.kernel.org, brking@linux.vnet.ibm.com, liml@rtr.ca,
-       viro@ftp.linux.org.uk, linux-ide@vger.kernel.org, neilb@suse.de,
-       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
-Subject: [PATCH 01/09] block: misc updates
-Date: Mon, 25 Aug 2008 19:47:17 +0900
-Message-Id: <1219661245-16055-2-git-send-email-tj@kernel.org>
+To: Greg Kroah-Hartman <gregkh@suse.de>,
+       Abdel Benamrouche <draconux@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Abdel Benamrouche <draconux@gmail.com>
+Subject: [PATCH] block: update add_partition() error handling
+Date: Mon, 25 Aug 2008 18:15:40 +0900
+Message-Id: <1219655740-11672-6-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1219661245-16055-1-git-send-email-tj@kernel.org>
-References: <1219661245-16055-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 Aug 2008 10:48:41 +0000 (UTC)
+In-Reply-To: <1219655740-11672-1-git-send-email-tj@kernel.org>
+References: <1219655740-11672-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 Aug 2008 09:17:05 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the following misc updates in preparation for
-disk->part dereference fix and extended block devt support.
+d805dda4 tried to fix error case handling in add_partition() but had a
+few problems.
 
-* implment part_to_disk()
+* disk->part[] entry is set early and left dangling if operation
+  fails.
 
-* fix comment about gendisk->part indexing
+* Once device initialized, the last put_device() is responsible for
+  freeing all the resources.  The failure path freed part_stats and p
+  regardless of put_device() causing double free.
 
-* rename get_part() to disk_map_sector()
+* holders subdir holds reference to the disk device, so failure path
+  should remove it to release resources properly which was missing.
 
-* don't use n which is always zero while printing disk information in
-  diskstats_show()
+This patch fixes the above problems and while at it move partition
+slot busy check into add_partition() for completeness and inlines
+holders subdirectory creation.  Using separate function for it just
+obfuscates the code.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Abdel Benamrouche <draconux@gmail.com>
 ---
- block/blk-core.c           |    7 ++++---
- block/blk-merge.c          |    4 ++--
- block/genhd.c              |    4 ++--
- drivers/block/aoe/aoecmd.c |    2 +-
- include/linux/genhd.h      |   13 ++++++++++---
- 5 files changed, 19 insertions(+), 11 deletions(-)
+ block/ioctl.c         |    7 ++-----
+ fs/partitions/check.c |   40 +++++++++++++++++++++-------------------
+ 2 files changed, 23 insertions(+), 24 deletions(-)
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index d785466..430b206 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -60,7 +60,7 @@ static void drive_stat_acct(struct request *rq, int new_io)
- 	if (!blk_fs_request(rq) || !rq->rq_disk)
- 		return;
- 
--	part = get_part(rq->rq_disk, rq->sector);
-+	part = disk_map_sector(rq->rq_disk, rq->sector);
- 	if (!new_io)
- 		__all_stat_inc(rq->rq_disk, part, merges[rw], rq->sector);
- 	else {
-@@ -1555,7 +1555,8 @@ static int __end_that_request_first(struct request *req, int error,
- 	}
- 
- 	if (blk_fs_request(req) && req->rq_disk) {
--		struct hd_struct *part = get_part(req->rq_disk, req->sector);
-+		struct hd_struct *part =
-+			disk_map_sector(req->rq_disk, req->sector);
- 		const int rw = rq_data_dir(req);
- 
- 		all_stat_add(req->rq_disk, part, sectors[rw],
-@@ -1743,7 +1744,7 @@ static void end_that_request_last(struct request *req, int error)
- 	if (disk && blk_fs_request(req) && req != &req->q->bar_rq) {
- 		unsigned long duration = jiffies - req->start_time;
- 		const int rw = rq_data_dir(req);
--		struct hd_struct *part = get_part(disk, req->sector);
-+		struct hd_struct *part = disk_map_sector(disk, req->sector);
- 
- 		__all_stat_inc(disk, part, ios[rw], req->sector);
- 		__all_stat_add(disk, part, ticks[rw], duration, req->sector);
-diff --git a/block/blk-merge.c b/block/blk-merge.c
-index d81d914..9b17da6 100644
---- a/block/blk-merge.c
-+++ b/block/blk-merge.c
-@@ -387,8 +387,8 @@ static int attempt_merge(struct request_queue *q, struct request *req,
- 	elv_merge_requests(q, req, next);
- 
- 	if (req->rq_disk) {
--		struct hd_struct *part
--			= get_part(req->rq_disk, req->sector);
-+		struct hd_struct *part =
-+			disk_map_sector(req->rq_disk, req->sector);
- 		disk_round_stats(req->rq_disk);
- 		req->rq_disk->in_flight--;
- 		if (part) {
-diff --git a/block/genhd.c b/block/genhd.c
-index e9d60fd..fe147bb 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -565,7 +565,7 @@ static int diskstats_show(struct seq_file *s, void *v)
- {
- 	struct gendisk *gp = v;
- 	char buf[BDEVNAME_SIZE];
--	int n = 0;
-+	int n;
- 
- 	/*
- 	if (&gp->dev.kobj.entry == block_class.devices.next)
-@@ -579,7 +579,7 @@ static int diskstats_show(struct seq_file *s, void *v)
- 	disk_round_stats(gp);
- 	preempt_enable();
- 	seq_printf(s, "%4d %4d %s %lu %lu %llu %u %lu %lu %llu %u %u %u %u\n",
--		gp->major, n + gp->first_minor, disk_name(gp, n, buf),
-+		gp->major, gp->first_minor, disk_name(gp, 0, buf),
- 		disk_stat_read(gp, ios[0]), disk_stat_read(gp, merges[0]),
- 		(unsigned long long)disk_stat_read(gp, sectors[0]),
- 		jiffies_to_msecs(disk_stat_read(gp, ticks[0])),
-diff --git a/drivers/block/aoe/aoecmd.c b/drivers/block/aoe/aoecmd.c
-index 2f17462..885d140 100644
---- a/drivers/block/aoe/aoecmd.c
-+++ b/drivers/block/aoe/aoecmd.c
-@@ -757,7 +757,7 @@ diskstats(struct gendisk *disk, struct bio *bio, ulong duration, sector_t sector
- 	const int rw = bio_data_dir(bio);
- 	struct hd_struct *part;
- 
--	part = get_part(disk, sector);
-+	part = disk_map_sector(disk, sector);
- 	all_stat_inc(disk, part, ios[rw], sector);
- 	all_stat_add(disk, part, ticks[rw], duration, sector);
- 	all_stat_add(disk, part, sectors[rw], n_sect, sector);
-diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index 118216f..f802961 100644
---- a/include/linux/genhd.h
-+++ b/include/linux/genhd.h
-@@ -125,7 +125,7 @@ struct gendisk {
- 	int minors;                     /* maximum number of minors, =1 for
-                                          * disks that can't be partitioned. */
- 	char disk_name[32];		/* name of major driver */
--	struct hd_struct **part;	/* [indexed by minor] */
-+	struct hd_struct **part;	/* [indexed by minor - 1] */
- 	struct block_device_operations *fops;
- 	struct request_queue *queue;
- 	struct blk_scsi_cmd_filter cmd_filter;
-@@ -155,14 +155,21 @@ struct gendisk {
- #endif
+diff --git a/block/ioctl.c b/block/ioctl.c
+index c722de0..eb046ae 100644
+--- a/block/ioctl.c
++++ b/block/ioctl.c
+@@ -43,12 +43,9 @@ static int blkpg_ioctl(struct block_device *bdev, struct blkpg_ioctl_arg __user
+ 				    || pstart < 0 || plength < 0)
+ 					return -EINVAL;
+ 			}
+-			/* partition number in use? */
++
+ 			mutex_lock(&bdev->bd_mutex);
+-			if (disk->part[part - 1]) {
+-				mutex_unlock(&bdev->bd_mutex);
+-				return -EBUSY;
+-			}
++
+ 			/* overlap? */
+ 			for (i = 0; i < disk->minors - 1; i++) {
+ 				struct hd_struct *s = disk->part[i];
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index 1b1808e..43dbfab 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -300,15 +300,6 @@ struct device_type part_type = {
+ 	.release	= part_release,
  };
  
-+static inline struct gendisk *part_to_disk(struct hd_struct *part)
-+{
-+	if (likely(part))
-+		return dev_to_disk((part)->dev.parent);
-+	return NULL;
-+}
-+
- /* 
-  * Macros to operate on percpu disk statistics:
-  *
-  * The __ variants should only be called in critical sections. The full
-  * variants disable/enable preemption.
-  */
--static inline struct hd_struct *get_part(struct gendisk *gendiskp,
--					 sector_t sector)
-+static inline struct hd_struct *disk_map_sector(struct gendisk *gendiskp,
-+						sector_t sector)
+-static inline void partition_sysfs_add_subdir(struct hd_struct *p)
+-{
+-	struct kobject *k;
+-
+-	k = kobject_get(&p->dev.kobj);
+-	p->holder_dir = kobject_create_and_add("holders", k);
+-	kobject_put(k);
+-}
+-
+ static inline void disk_sysfs_add_subdirs(struct gendisk *disk)
  {
- 	struct hd_struct *part;
- 	int i;
+ 	struct kobject *k;
+@@ -347,13 +338,16 @@ int add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
+ 	struct hd_struct *p;
+ 	int err;
+ 
++	if (disk->part[part - 1])
++		return -EBUSY;
++
+ 	p = kzalloc(sizeof(*p), GFP_KERNEL);
+ 	if (!p)
+ 		return -ENOMEM;
+ 
+ 	if (!init_part_stats(p)) {
+ 		err = -ENOMEM;
+-		goto out0;
++		goto out_free;
+ 	}
+ 	p->start_sect = start;
+ 	p->nr_sects = len;
+@@ -372,34 +366,42 @@ int add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
+ 	p->dev.class = &block_class;
+ 	p->dev.type = &part_type;
+ 	p->dev.parent = &disk->dev;
+-	disk->part[part-1] = p;
+ 
+ 	/* delay uevent until 'holders' subdir is created */
+ 	p->dev.uevent_suppress = 1;
+ 	err = device_add(&p->dev);
+ 	if (err)
+-		goto out1;
+-	partition_sysfs_add_subdir(p);
++		goto out_put;
++
++	err = -ENOMEM;
++	p->holder_dir = kobject_create_and_add("holders", &p->dev.kobj);
++	if (!p->holder_dir)
++		goto out_del;
++
+ 	p->dev.uevent_suppress = 0;
+ 	if (flags & ADDPART_FLAG_WHOLEDISK) {
+ 		err = device_create_file(&p->dev, &dev_attr_whole_disk);
+ 		if (err)
+-			goto out2;
++			goto out_del;
+ 	}
+ 
++	/* everything is up and running, commence */
++	disk->part[part - 1] = p;
++
+ 	/* suppress uevent if the disk supresses it */
+ 	if (!disk->dev.uevent_suppress)
+ 		kobject_uevent(&p->dev.kobj, KOBJ_ADD);
+ 
+ 	return 0;
+ 
+-out2:
++out_free:
++	kfree(p);
++	return err;
++out_del:
++	kobject_put(p->holder_dir);
+ 	device_del(&p->dev);
+-out1:
++out_put:
+ 	put_device(&p->dev);
+-	free_part_stats(p);
+-out0:
+-	kfree(p);
+ 	return err;
+ }
+ 
 -- 
 1.5.4.5
 
