@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbYHYNOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbYHYNRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756473AbYHYNOe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 09:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbYHYNOL
+	id S1755916AbYHYNRR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 09:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbYHYNRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 09:14:11 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:48447 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754111AbYHYNOJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 09:14:09 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Avi Kivity <avi@qumranet.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-References: <1219655506-27418-1-git-send-email-avi@qumranet.com>
-	<20080825091508.GC9114@elte.hu>
-Date: Mon, 25 Aug 2008 06:12:36 -0700
-In-Reply-To: <20080825091508.GC9114@elte.hu> (Ingo Molnar's message of "Mon,
-	25 Aug 2008 11:15:08 +0200")
-Message-ID: <m1y72lnsqj.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 25 Aug 2008 09:17:06 -0400
+Received: from mail.ku-gbr.de ([81.3.11.18]:59721 "EHLO ku-gbr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753434AbYHYNRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 09:17:05 -0400
+X-Greylist: delayed 2695 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Aug 2008 09:17:05 EDT
+Date: Mon, 25 Aug 2008 14:32:02 +0200
+From: Konstantin Kletschke <lists@ku-gbr.de>
+To: linux-kernel@vger.kernel.org
+Subject: nfs4v stalls transfering files, stalls
+Message-ID: <20080825123202.GC2497@anita>
+Mail-Followup-To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Ingo Molnar <mingo@elte.hu>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
-	*      [score: 0.3544]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] Fix emergency_restart (sysrq-b) with kvm loaded on Intel hosts
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+Recently I experience oddities with my home nfsv4 client/server
+connection which worked long very well. I don't know exactly with which
+version it begun. I experienced once in a while, that I delete files but
+after rebooting the computers the next day or after doing an ls on the
+directory, the files are still there. While I did not take this sriously
+first I now have the problem copying an ~600MB avi onto the nfs share.
+After 25M or 30M (each time after this amount already transferred) the
+connection stalls:
 
-> * Avi Kivity <avi@qumranet.com> wrote:
->
->> Enabling Intel VT has the curious side effect whereby the INIT signal 
->> is blocked.  Rather than comment on the wisdom of this side effect, 
->> this patch adds an emergency restart reboot notifier, and modifies the 
->> kvm reboot notifier to disable VT on emergency reboot.
+nfs: server 10.10.0.1 not responding, timed out
 
-Please no notifiers in emergency_restart.
+On my client I have 2.6.17_rc3 and this fstab entry:
 
-First emergency_restart is not supposed to work reliably it is a best effort tickle
-the hardware thing.
+10.10.0.1:/pub/ /pub nfs4 tcp,async,hard,intr,noauto,user,sec=sys 0 0
 
-Second and more importantly whenever someone adds a notifier instead of a proper hook
-to one a code path like this it seems like avoiding building a proper interface so
-and I believe keeps us from getting all of the logic and the heuristics right.
+this is only an example, I tried udp, soft and timeo=8 instead of hard
+and intr.
 
-Why not just add a disable intel_vt if it is enabled call?
+On server I had 2.6.25 with this exports:
 
-Eric
+/exports
+10.10.0.0/255.255.0.0(rw,fsid=0,insecure,no_subtree_check,sync)
+/exports/pub
+10.10.0.0/255.255.0.0(rw,nohide,insecure,no_subtree_check,async)
+
+When this happened, the server had this in dmesg:
+
+RPC: bad TCP reclen 0x0010011a (non-terminal)
+
+or:
+
+RPC: bad TCP reclen 0x3b468abe (large)
+
+In 2.6.27_rc (runnning now), the part in svchost.c was spelled other, it
+says now:
+
+RPC: fragment too large: 0x6be367a9
+or
+RPC: fragment too large: 0x1287087c
+
+Starting the nfs stuff yields into
+
+RPC: multiple fragments per record not supported
+
+with no other regression though.
+
+
+What can I do to narrow this down?
+
+Kind Regards, Konsti
+
+-- 
+GPG KeyID EF62FCEF
+Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
