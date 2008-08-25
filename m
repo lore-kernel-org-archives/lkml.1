@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbYHYOCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbYHYOEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756229AbYHYOCr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 10:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754391AbYHYOCi
+	id S1756237AbYHYOEd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 10:04:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754391AbYHYOEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 10:02:38 -0400
-Received: from hosted05.westnet.com.au ([203.10.1.219]:43029 "EHLO
-	hosted05.westnet.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753720AbYHYOCh (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 10:02:37 -0400
-Message-ID: <48B2BB71.3090803@snapgear.com>
-Date: Tue, 26 Aug 2008 00:02:25 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 25 Aug 2008 10:04:25 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:58639 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753480AbYHYOEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 10:04:25 -0400
+Date: Mon, 25 Aug 2008 17:03:43 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #11356] Linux 2.6.27-rc3 - build failure: undefined
+	reference to `.lockdep_count_forward_deps'
+Message-ID: <20080825140343.GA4875@cs181140183.pp.htv.fi>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.nrH.saGsIB@albercik> <200808240813.56525.elendil@planet.nl>
 MIME-Version: 1.0
-To: Jamie Lokier <jamie@shareable.org>
-CC: Jared Hulbert <jaredeh@gmail.com>, Linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@am.sony.com,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
-References: <48AD00C4.6060302@gmail.com> <20080821110749.GA1926@shareable.org> <6934efce0808210711t686a88eci6eb294dbb54d68fe@mail.gmail.com> <48AE0476.80109@snapgear.com> <6934efce0808211948kd12ba76k1ee847a0e08010e0@mail.gmail.com> <48B2529B.8030906@snapgear.com> <20080825114346.GB20960@shareable.org>
-In-Reply-To: <20080825114346.GB20960@shareable.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-PMX-Branch: TNG-Outgoing
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200808240813.56525.elendil@planet.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi Jamie,
-
-Jamie Lokier wrote:
-> Greg Ungerer wrote:
->> Sort of. It actually just uses a single ->read to bring in
->> the entire file contents. There is a few limitations on the use
->> of mmap() for non-mmu. Documentation/nommu-mmap.txt gives
->> more details. With no MMU it does rely on being able to kmalloc()
->> a single RAM region big enough to hold the entire file.
+On Sun, Aug 24, 2008 at 08:13:55AM +0200, Frans Pop wrote:
+> On Saturday 23 August 2008, Rafael J. Wysocki wrote:
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11356
+> > Subject	: Linux 2.6.27-rc3 - build failure: undefined reference to
+> > 		  `.lockdep_count_forward_deps'
+> > Submitter	: Frans Pop <elendil@planet.nl> 
+> > Date		: 2008-08-16 19:11 (8 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=121891396320127&w=4
 > 
-> That's unfortunate, if you're using FDPIC-ELF or BFLT-XIP, you really want
-> to kmalloc() one region for code (i.e. mmap not the whole file), and
-> one separate for data.
+> Fixed as per: http://marc.info/?l=linux-kernel&m=121898767530602&w=4
+> Adrian mentioned that he'd closed the bug, but apparently not.
 
-That is what the BFLT loader does. For the XIP case it mmap()s
-the text directly from the file, and then mmap()s a second region
-for the data/bss (reading the data into that region).
+Sorry, I missed that Rafael had opened two bugs for two people reporting 
+the same issue, and only closed the other one.
 
-I was referring to general mmap() of a file case above, not
-the exec path.
+cu
+Adrian
 
+-- 
 
->  Asking for a single larger region sometimes
-> creates much higher memory pressure while kmalloc() attempts to
-> defragment by evicting everything.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Sure.
-
-
-> But that's fiddly to do right in general.
-> 
-> The natural thing for AXFS to do to support no-MMU FDPIC-ELF or
-> BFLT-XIP is store the code segment uncompressed and contiguous, and
-> the data segment however the filesystem prefers, and the profiling
-> information to work out where these are is readily available from the
-> mmap() calls, which are always the same when an executable is run.
-
-Yep.
-
-Regards
-Greg
-
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
