@@ -1,67 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbYHYBhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbYHYDEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753947AbYHYBhz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 21:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbYHYBhp
+	id S1754096AbYHYDEW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 23:04:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbYHYDEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 21:37:45 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:27205 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752056AbYHYBho (ORCPT
+	Sun, 24 Aug 2008 23:04:12 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:39957 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752810AbYHYDEL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 21:37:44 -0400
-X-IronPort-AV: E=Sophos;i="4.32,264,1217808000"; 
-   d="scan'208";a="145586373"
-From: Roland Dreier <rdreier@cisco.com>
-To: David Vrabel <david.vrabel@csr.com>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       linux-usb <linux-usb@vger.kernel.org>, torvalds@linux-foundation.org
-Subject: Re: [patch] Add helper macros for little-endian bitfields
-References: <48AD6AF0.3050504@csr.com> <48AD6B93.7020702@csr.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Sun, 24 Aug 2008 18:37:43 -0700
-In-Reply-To: <48AD6B93.7020702@csr.com> (David Vrabel's message of "Thu, 21
-	Aug 2008 14:20:19 +0100")
-Message-ID: <adaprnxnac8.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Sun, 24 Aug 2008 23:04:11 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Bernhard Walle <bwalle@suse.de>, Vivek Goyal <vgoyal@redhat.com>
+References: <1219617897-9870-1-git-send-email-yhlu.kernel@gmail.com>
+Date: Sun, 24 Aug 2008 19:52:50 -0700
+In-Reply-To: <1219617897-9870-1-git-send-email-yhlu.kernel@gmail.com> (Yinghai
+	Lu's message of "Sun, 24 Aug 2008 15:44:57 -0700")
+Message-ID: <m14p59ztz1.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 25 Aug 2008 01:37:43.0826 (UTC) FILETIME=[2B7A5720:01C90653]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Yinghai Lu <yhlu.kernel@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] x86: only put e820 ram entries in resource tree
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > + * NOTE: When using multibyte bitfields, you need to convert the data
- > + *       from Little Endian to CPU before you can access the bitfield
- > + *       (to make it simpler):
- > + *
- > + *       union something {
- > + *               le16 value;
- > + *               DECL_BF_LE3(
- > + *                       u16  bf0:3,
- > + *                       u16  bf1:10,
- > + *                       u16  bf2:3
- > + *               ) __attribute__((packed));
- > + *       };
- > + *
- > + *       ...
- > + *
- > + *       union something s;
- > + *
- > + *       s.value = le16_to_cpu(something LE read from hw);
- > + *       frame_count = s.bf1;
+Yinghai Lu <yhlu.kernel@gmail.com> writes:
 
-I can't help thinking there's got to be a better way to do this... in
-particular having 16 DECL_BF_LEnn() macros (and needing to count the
-number of members every time you use one) is not particularly pretty.
+> may need user to have new kexec tools that could create e820 table
+> from /sys/firmware/memmap instead of /proc/iomem for second kernel
 
-In general the consensus with kernel code seems to be that you're better
-off avoiding bitfields in structures, and just using shift/mask
-operations to get at the data (with helper functions as needed).
+Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-However all of that is said without actually looking at the driver code
-that uses this.
+/proc/iomem is mostly about io resources which you have just removed.
+It is totally the wrong thing to only register RAM resource!
 
- - R.
+The use by kexec was and is just taking advantage of something that
+already existed.
+
+Eric
+
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> Cc: Bernhard Walle <bwalle@suse.de>
+> Cc: Vivek Goyal <vgoyal@redhat.com>
+> Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+>
+> Index: linux-2.6/arch/x86/kernel/e820.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/e820.c
+> +++ linux-2.6/arch/x86/kernel/e820.c
+> @@ -1279,6 +1279,10 @@ void __init e820_reserve_resources(void)
+>  
+>  	res = alloc_bootmem_low(sizeof(struct resource) * e820.nr_map);
+>  	for (i = 0; i < e820.nr_map; i++) {
+> +		if (e820.map[i].type != E820_RAM) {
+> +			res++;
+> +			continue;
+> +		}
+>  		end = e820.map[i].addr + e820.map[i].size - 1;
+>  #ifndef CONFIG_RESOURCES_64BIT
+>  		if (end > 0x100000000ULL) {
