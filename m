@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbYHYK6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbYHYLE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756918AbYHYK6c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 06:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYHYK6I
+	id S1758673AbYHYLE1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 07:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758032AbYHYLDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 06:58:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51794 "EHLO hera.kernel.org"
+	Mon, 25 Aug 2008 07:03:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33364 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752736AbYHYK6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 06:58:05 -0400
+	id S1758067AbYHYLDS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 07:03:18 -0400
 From: Tejun Heo <tj@kernel.org>
 To: Jens Axboe <jens.axboe@oracle.com>
 Cc: James.Bottomley@HansenPartnership.com, bzolnier@gmail.com,
@@ -16,133 +16,142 @@ Cc: James.Bottomley@HansenPartnership.com, bzolnier@gmail.com,
        linux-scsi@vger.kernel.org, brking@linux.vnet.ibm.com, liml@rtr.ca,
        viro@ftp.linux.org.uk, linux-ide@vger.kernel.org, neilb@suse.de,
        linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
-Subject: [PATCH 04/13] block: move __dev from disk to part0
-Date: Mon, 25 Aug 2008 19:56:08 +0900
-Message-Id: <1219661777-17648-5-git-send-email-tj@kernel.org>
+Subject: [PATCH 07/13] block: move holder_dir from disk to part0
+Date: Mon, 25 Aug 2008 19:56:11 +0900
+Message-Id: <1219661777-17648-8-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1219661777-17648-1-git-send-email-tj@kernel.org>
 References: <1219661777-17648-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 Aug 2008 10:57:35 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 Aug 2008 10:57:39 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move disk->__dev to part0->__dev.  This simplifies bdget_disk() and
-lookup_devt() and allows common sysfs attributes to be unified.
-part_to_disk() is updated to handle part0 -> disk.
+Move disk->holder_dir to part0->holder_dir.  Kill now mostly
+superflous bdev_get_holder().
+
+While at it, kill superflous kobject_get/put() around holder_dir,
+slave_dir and cmd_filter creation and collapse
+disk_sysfs_add_subdirs() into register_disk().  These serve no purpose
+but obfuscating the code.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- block/genhd.c         |   40 ++++++++++++----------------------------
- include/linux/genhd.h |   13 ++++++++-----
- 2 files changed, 20 insertions(+), 33 deletions(-)
+ block/cmd-filter.c    |   12 +++---------
+ fs/block_dev.c        |   10 +---------
+ fs/partitions/check.c |   15 +++------------
+ include/linux/genhd.h |    1 -
+ 4 files changed, 7 insertions(+), 31 deletions(-)
 
-diff --git a/block/genhd.c b/block/genhd.c
-index 092f18f..aca135a 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -539,22 +539,15 @@ struct gendisk *get_gendisk(dev_t devt, int *partno)
-  */
- extern struct block_device *bdget_disk(struct gendisk *disk, int partno)
+diff --git a/block/cmd-filter.c b/block/cmd-filter.c
+index eec4404..1ab98b2 100644
+--- a/block/cmd-filter.c
++++ b/block/cmd-filter.c
+@@ -309,14 +309,10 @@ int blk_register_filter(struct gendisk *disk)
  {
--	dev_t devt = MKDEV(0, 0);
-+	struct hd_struct *part;
-+	struct block_device *bdev = NULL;
- 
--	if (partno == 0)
--		devt = disk_devt(disk);
--	else {
--		struct hd_struct *part;
-+	part = disk_get_part(disk, partno);
-+	if (part && part->nr_sects)
-+		bdev = bdget(part_devt(part));
-+	disk_put_part(part);
- 
--		part = disk_get_part(disk, partno);
--		if (part && part->nr_sects)
--			devt = part_devt(part);
--		disk_put_part(part);
--	}
+ 	int ret;
+ 	struct blk_scsi_cmd_filter *filter = &disk->cmd_filter;
+-	struct kobject *parent = kobject_get(disk->holder_dir->parent);
 -
--	if (likely(devt != MKDEV(0, 0)))
--		return bdget(devt);
--	return NULL;
-+	return bdev;
+-	if (!parent)
+-		return -ENODEV;
+-
+-	ret = kobject_init_and_add(&filter->kobj, &rcf_ktype, parent,
+-				 "%s", "cmd_filter");
+ 
++	ret = kobject_init_and_add(&filter->kobj, &rcf_ktype,
++				   &disk_to_dev(disk)->kobj,
++				   "%s", "cmd_filter");
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -329,6 +325,4 @@ void blk_unregister_filter(struct gendisk *disk)
+ 	struct blk_scsi_cmd_filter *filter = &disk->cmd_filter;
+ 
+ 	kobject_put(&filter->kobj);
+-	kobject_put(disk->holder_dir->parent);
  }
- EXPORT_SYMBOL(bdget_disk);
- 
-@@ -1001,27 +994,18 @@ dev_t blk_lookup_devt(const char *name, int partno)
- 	class_dev_iter_init(&iter, &block_class, NULL, &disk_type);
- 	while ((dev = class_dev_iter_next(&iter))) {
- 		struct gendisk *disk = dev_to_disk(dev);
-+		struct hd_struct *part;
- 
- 		if (strcmp(dev->bus_id, name))
- 			continue;
--		if (partno < 0 || partno >= disk_max_parts(disk))
--			continue;
 -
--		if (partno == 0)
--			devt = disk_devt(disk);
--		else {
--			struct hd_struct *part;
--
--			part = disk_get_part(disk, partno);
--			if (!part || !part->nr_sects) {
--				disk_put_part(part);
--				continue;
--			}
+diff --git a/fs/block_dev.c b/fs/block_dev.c
+index c982a91..57d5726 100644
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -548,14 +548,6 @@ static struct kobject *bdev_get_kobj(struct block_device *bdev)
+ 		return kobject_get(&disk_to_dev(bdev->bd_disk)->kobj);
+ }
  
-+		part = disk_get_part(disk, partno);
-+		if (part && part->nr_sects) {
- 			devt = part_devt(part);
- 			disk_put_part(part);
-+			break;
- 		}
--		break;
-+		disk_put_part(part);
+-static struct kobject *bdev_get_holder(struct block_device *bdev)
+-{
+-	if (bdev->bd_contains != bdev)
+-		return kobject_get(bdev->bd_part->holder_dir);
+-	else
+-		return kobject_get(bdev->bd_disk->holder_dir);
+-}
+-
+ static int add_symlink(struct kobject *from, struct kobject *to)
+ {
+ 	if (!from || !to)
+@@ -608,7 +600,7 @@ static int bd_holder_grab_dirs(struct block_device *bdev,
+ 	if (!bo->sdev)
+ 		goto fail_put_hdev;
+ 
+-	bo->hdir = bdev_get_holder(bdev);
++	bo->hdir = kobject_get(bdev->bd_part->holder_dir);
+ 	if (!bo->hdir)
+ 		goto fail_put_sdev;
+ 
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index cb9ec77..7e4a7d4 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -305,16 +305,6 @@ struct device_type part_type = {
+ 	.release	= part_release,
+ };
+ 
+-static inline void disk_sysfs_add_subdirs(struct gendisk *disk)
+-{
+-	struct kobject *k;
+-
+-	k = kobject_get(&disk_to_dev(disk)->kobj);
+-	disk->holder_dir = kobject_create_and_add("holders", k);
+-	disk->slave_dir = kobject_create_and_add("slaves", k);
+-	kobject_put(k);
+-}
+-
+ static void delete_partition_rcu_cb(struct rcu_head *head)
+ {
+ 	struct hd_struct *part = container_of(head, struct hd_struct, rcu_head);
+@@ -464,7 +454,8 @@ void register_disk(struct gendisk *disk)
+ 		return;
  	}
- 	class_dev_iter_exit(&iter);
- 	return devt;
+ #endif
+-	disk_sysfs_add_subdirs(disk);
++	disk->part0.holder_dir = kobject_create_and_add("holders", &ddev->kobj);
++	disk->slave_dir = kobject_create_and_add("slaves", &ddev->kobj);
+ 
+ 	/* No minors to use for partitions */
+ 	if (!disk_partitionable(disk))
+@@ -592,7 +583,7 @@ void del_gendisk(struct gendisk *disk)
+ 	disk_stat_set_all(disk, 0);
+ 	disk->stamp = 0;
+ 
+-	kobject_put(disk->holder_dir);
++	kobject_put(disk->part0.holder_dir);
+ 	kobject_put(disk->slave_dir);
+ 	disk->driverfs_dev = NULL;
+ #ifndef CONFIG_SYSFS_DEPRECATED
 diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index c4490f2..242effa 100644
+index 461ba6d..a8573ba 100644
 --- a/include/linux/genhd.h
 +++ b/include/linux/genhd.h
-@@ -16,9 +16,9 @@
- #ifdef CONFIG_BLOCK
- 
- #define kobj_to_dev(k)		container_of((k), struct device, kobj)
--#define dev_to_disk(device)	container_of((device), struct gendisk, __dev)
-+#define dev_to_disk(device)	container_of((device), struct gendisk, part0.__dev)
- #define dev_to_part(device)	container_of((device), struct hd_struct, __dev)
--#define disk_to_dev(disk)	(&((disk)->__dev))
-+#define disk_to_dev(disk)	(&(disk)->part0.__dev)
- #define part_to_dev(part)	(&((part)->__dev))
- 
- extern struct device_type part_type;
 @@ -151,7 +151,6 @@ struct gendisk {
  
  	int flags;
  	struct device *driverfs_dev;  // FIXME: remove
--	struct device __dev;
- 	struct kobject *holder_dir;
+-	struct kobject *holder_dir;
  	struct kobject *slave_dir;
  
-@@ -174,8 +173,12 @@ struct gendisk {
- 
- static inline struct gendisk *part_to_disk(struct hd_struct *part)
- {
--	if (likely(part))
--		return dev_to_disk(part_to_dev(part)->parent);
-+	if (likely(part)) {
-+		if (part->partno)
-+			return dev_to_disk(part_to_dev(part)->parent);
-+		else
-+			return dev_to_disk(part_to_dev(part));
-+	}
- 	return NULL;
- }
- 
+ 	struct timer_rand_state *random;
 -- 
 1.5.4.5
 
