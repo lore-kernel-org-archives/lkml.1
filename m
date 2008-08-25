@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757595AbYHYWEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757519AbYHYWFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757595AbYHYWEo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 18:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753681AbYHYWEf
+	id S1757519AbYHYWFc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 18:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYHYWFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 18:04:35 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:47417 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1753507AbYHYWEf (ORCPT
+	Mon, 25 Aug 2008 18:05:24 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58644 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751734AbYHYWFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 18:04:35 -0400
-Date: Mon, 25 Aug 2008 18:04:06 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: "Theodore Ts'o" <tytso@mit.edu>
+	Mon, 25 Aug 2008 18:05:23 -0400
+Date: Mon, 25 Aug 2008 15:05:25 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: UML build failure in 2.6.27-rc3
-Message-ID: <20080825220406.GC12626@c2.user-mode-linux.org>
-References: <E1KWBwC-0002dN-KE@closure.thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <E1KWBwC-0002dN-KE@closure.thunk.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: Re: [PATCH 0/5] use lspci style for [%04x:%04x] vendor/device
+Message-ID: <20080825150525.6f1b5706@infradead.org>
+In-Reply-To: <20080825220137.19210.41857.stgit@tigger.helgaas>
+References: <20080825220137.19210.41857.stgit@tigger.helgaas>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 11:19:00AM -0400, Theodore Ts'o wrote:
-> Is this a known problem?
-> 
->   SYMLINK arch/um/include/kern_constants.h
->   SYMLINK arch/um/include/sysdep
-> make[2]: `arch/um/sys-i386/user-offsets.s' is up to date.
->   CHK     arch/um/include/user_constants.h
->   Using /usr/projects/linux/ext4 as source for kernel
->   GEN     /usr/projects/linux/uml/Makefile
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CALL    /usr/projects/linux/ext4/scripts/checksyscalls.sh
->   CHK     include/linux/compile.h
->   CC      arch/um/kernel/ptrace.o
-> /usr/projects/linux/ext4/arch/um/kernel/ptrace.c:230: error: static declaration of ‘send_sigtrap’ follows non-static declaration
-> include2/asm/ptrace-generic.h:51: error: previous declaration of ‘send_sigtrap’ was here
-> make[2]: *** [arch/um/kernel/ptrace.o] Error 1
-> make[1]: *** [arch/um/kernel] Error 2
-> make: *** [sub-make] Error 2
+On Mon, 25 Aug 2008 16:01:38 -0600
+Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 
-Are you sure you have a consistent tree?  I see no declaration of
-send_sigtrap in ptrace-generic.h.  There is one in asm-x86/ptrace.h
-but it's not at line 51.
+> These patches change various debug messages to use "[%04x:%04x]" for
+> PCI vendor/device IDs to follow the format used by lspci(8).
 
-			Jeff
+I hope you're adding a new whicked special format specifier for this
+... taking a PCI dev struct as argument.
+
+That's be really nice to have;-)
+
 
 -- 
-Work email - jdike at linux dot intel dot com
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
