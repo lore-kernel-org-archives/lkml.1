@@ -1,147 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbYHXNHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbYHYMEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755157AbYHXNHu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 09:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbYHXNHm
+	id S1755469AbYHYMEt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 08:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbYHYMEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 09:07:42 -0400
-Received: from mail.gmx.net ([213.165.64.20]:40044 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752722AbYHXNHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 09:07:41 -0400
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX1/+uYkDjFb+Qaj0tKEf5BAqOfkriIinIo9J/PI9SD
-	l2vGSzO7jw+0C5
-Date: Sun, 24 Aug 2008 15:07:36 +0200
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: zippel@linux-m68k.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [Patch] Fix Buffer overflow in hfsplus with a corrupted image
-Message-ID: <20080824130736.GA27742@alice>
+	Mon, 25 Aug 2008 08:04:40 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:46969 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752863AbYHYMEj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 08:04:39 -0400
+Message-ID: <48B29F7B.6080405@hp.com>
+Date: Mon, 25 Aug 2008 08:03:07 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.27-rc3 (x86_64)
-X-Uptime: 14:57:23 up 5 days,  5:06,  3 users,  load average: 0.17, 1.23,
-	1.69
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.47
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.q9H.6aGsIB@albercik> <alpine.LFD.1.10.0808231257310.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808231313170.3363@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0808231313170.3363@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
+Linus Torvalds wrote:
+> 
+> On Sat, 23 Aug 2008, Linus Torvalds wrote:
+>> This one makes no sense. It's triggering a BUG_ON(in_interrupt()), but 
+>> then the call chain shows that there is no interrupt going on.
+> 
+> Ahh, later in that thread there's another totally unrelated oops in 
+> debug_mutex_add_waiter().
+> 
+> I'd guess that it is really wild pointer corrupting memory, quite possibly 
+> due to a double free or something like that. Alan - it would be good to 
+> run with DEBUG_PAGE_ALLOC and SLUB debugging etc if you don't already do 
+> that?
+> 
+> 		Linus
+> 
 
-when an hfsplus image gets corrupted it might happen that the catalog
-namelength field gets b0rked. If we mount such an image
-the memcpy() in hfsplus_cat_build_key_uni() writes more than the 255
-that fit in the name field. Depending on the size of the overwritten
-data, we either only get memory corruption or also trigger an oops like
-this:
+I'll add those in - as to the repeatability: The "bad" kernels seem to
+repeat quite reliably - not only in terms of counts (5 or 6 times in a
+row before trying something else), but also in terms of the "what" -
+either the original issue () or the other kernel with the later issue
+(debug_mutex_add_waiter). That's /goodness/ in that it should help
+narrow it down.
 
+I'll make sure the kernel is still failing this morning, and then add in
+DEBUG_PAGE_ALLOC and if that doesn't help, SLUB debugging...
 
-[  221.628020] BUG: unable to handle kernel paging request at c82b0000
-[  221.629066] IP: [<c022d4b1>] hfsplus_find_cat+0x10d/0x151
-[  221.629066] *pde = 0ea29163 *pte = 082b0160
-[  221.629066] Oops: 0002 [#1] PREEMPT DEBUG_PAGEALLOC
-[  221.629066] Modules linked in:
-[  221.629066]
-[  221.629066] Pid: 4845, comm: mount Not tainted (2.6.27-rc4-00123-gd3ee1b4-dirty #28)
-[  221.629066] EIP: 0060:[<c022d4b1>] EFLAGS: 00010206 CPU: 0
-[  221.629066] EIP is at hfsplus_find_cat+0x10d/0x151
-[  221.629066] EAX: 00000029 EBX: 00016210 ECX: 000042c2 EDX: 00000002
-[  221.629066] ESI: c82d70ca EDI: c82b0000 EBP: c82d1bcc ESP: c82d199c
-[  221.629066]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-[  221.629066] Process mount (pid: 4845, ti=c82d1000 task=c8224060 task.ti=c82d1000)
-[  221.629066] Stack: c080b3c4 c82aa8f8 c82d19c2 00016210 c080b3be c82d1bd4 c82aa8f0 00000300
-[  221.629066]        01000000 750008b1 74006e00 74006900 65006c00 c82d6400 c013bd35 c8224060
-[  221.629066]        00000036 00000046 c82d19f0 00000082 c8224548 c8224060 00000036 c0d653cc
-[  221.629066] Call Trace:
-[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
-[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
-[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
-[  221.629066]  [<c01302d2>] ? __kernel_text_address+0x1b/0x27
-[  221.629066]  [<c010487a>] ? dump_trace+0xca/0xd6
-[  221.629066]  [<c0109e32>] ? save_stack_address+0x0/0x2c
-[  221.629066]  [<c0109eaf>] ? save_stack_trace+0x1c/0x3a
-[  221.629066]  [<c013b571>] ? save_trace+0x37/0x8d
-[  221.629066]  [<c013b62e>] ? add_lock_to_list+0x67/0x8d
-[  221.629066]  [<c013ea1c>] ? validate_chain+0x8a4/0x9f4
-[  221.629066]  [<c013553d>] ? down+0xc/0x2f
-[  221.629066]  [<c013f1f6>] ? __lock_acquire+0x68a/0x6e0
-[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
-[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
-[  221.629066]  [<c013da5d>] ? mark_held_locks+0x43/0x5a
-[  221.629066]  [<c013dc3a>] ? trace_hardirqs_on+0xb/0xd
-[  221.629066]  [<c013dbf4>] ? trace_hardirqs_on_caller+0xf4/0x12f
-[  221.629066]  [<c06abec8>] ? _spin_unlock_irqrestore+0x42/0x58
-[  221.629066]  [<c013555c>] ? down+0x2b/0x2f
-[  221.629066]  [<c022aa68>] ? hfsplus_iget+0xa0/0x154
-[  221.629066]  [<c022b0b9>] ? hfsplus_fill_super+0x280/0x447
-[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
-[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
-[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
-[  221.629066]  [<c013f1f6>] ? __lock_acquire+0x68a/0x6e0
-[  221.629066]  [<c041c9e4>] ? string+0x2b/0x74
-[  221.629066]  [<c041cd16>] ? vsnprintf+0x2e9/0x512
-[  221.629066]  [<c010487a>] ? dump_trace+0xca/0xd6
-[  221.629066]  [<c0109eaf>] ? save_stack_trace+0x1c/0x3a
-[  221.629066]  [<c0109eaf>] ? save_stack_trace+0x1c/0x3a
-[  221.629066]  [<c013b571>] ? save_trace+0x37/0x8d
-[  221.629066]  [<c013b62e>] ? add_lock_to_list+0x67/0x8d
-[  221.629066]  [<c013ea1c>] ? validate_chain+0x8a4/0x9f4
-[  221.629066]  [<c01354d3>] ? up+0xc/0x2f
-[  221.629066]  [<c013f1f6>] ? __lock_acquire+0x68a/0x6e0
-[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
-[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
-[  221.629066]  [<c041cfb7>] ? snprintf+0x1b/0x1d
-[  221.629066]  [<c01ba466>] ? disk_name+0x25/0x67
-[  221.629066]  [<c0183960>] ? get_sb_bdev+0xcd/0x10b
-[  221.629066]  [<c016ad92>] ? kstrdup+0x2a/0x4c
-[  221.629066]  [<c022a7b3>] ? hfsplus_get_sb+0x13/0x15
-[  221.629066]  [<c022ae39>] ? hfsplus_fill_super+0x0/0x447
-[  221.629066]  [<c0183583>] ? vfs_kern_mount+0x3b/0x76
-[  221.629066]  [<c0183602>] ? do_kern_mount+0x32/0xba
-[  221.629066]  [<c01960d4>] ? do_new_mount+0x46/0x74
-[  221.629066]  [<c0196277>] ? do_mount+0x175/0x193
-[  221.629066]  [<c013dbf4>] ? trace_hardirqs_on_caller+0xf4/0x12f
-[  221.629066]  [<c01663b2>] ? __get_free_pages+0x1e/0x24
-[  221.629066]  [<c06ac07b>] ? lock_kernel+0x19/0x8c
-[  221.629066]  [<c01962e6>] ? sys_mount+0x51/0x9b
-[  221.629066]  [<c01962f9>] ? sys_mount+0x64/0x9b
-[  221.629066]  [<c01038bd>] ? sysenter_do_call+0x12/0x31
-[  221.629066]  =======================
-[  221.629066] Code: 89 c2 c1 e2 08 c1 e8 08 09 c2 8b 85 e8 fd ff ff 66 89 50 06 89 c7 53 83 c7 08 56 57 68 c4 b3 80 c0 e8 8c 5c ef ff 89 d9 c1 e9 02 <f3> a5 89 d9 83 e1 03 74 02 f3 a4 83 c3 06 8b 95 e8 fd ff ff 0f
-[  221.629066] EIP: [<c022d4b1>] hfsplus_find_cat+0x10d/0x151 SS:ESP 0068:c82d199c
-[  221.629066] ---[ end trace e417a1d67f0d0066 ]---
-
-Since hfsplus_cat_build_key_uni() returns
-void and only has one callsite, the check is performed at the callsite.
-
-Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
-
-
---- linux/fs/hfsplus/catalog.c.orig	2008-08-24 14:52:03.000000000 +0200
-+++ linux/fs/hfsplus/catalog.c	2008-08-24 14:54:15.000000000 +0200
-@@ -168,6 +168,11 @@ int hfsplus_find_cat(struct super_block 
- 		return -EIO;
- 	}
- 
-+	if (be16_to_cpu(tmp.thread.nodeName.length) >= 127) {
-+		printk(KERN_ERR "hfs: catalog name length corrupted\n");
-+		return -EIO;
-+	}
-+
- 	hfsplus_cat_build_key_uni(fd->search_key, be32_to_cpu(tmp.thread.parentID),
- 				 &tmp.thread.nodeName);
- 	return hfs_brec_find(fd);
+Alan
