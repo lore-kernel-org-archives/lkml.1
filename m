@@ -1,147 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbYHYB7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbYHYCX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754135AbYHYB7q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 21:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbYHYB7g
+	id S1754009AbYHYCX2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Aug 2008 22:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYHYCXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 21:59:36 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:36202 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751752AbYHYB7f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 21:59:35 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmkDAMOusUh5LD0wiGdsb2JhbACSLQEBAQ8gn3mBaw
-X-IronPort-AV: E=Sophos;i="4.32,264,1217773800"; 
-   d="scan'208";a="179453348"
-Date: Mon, 25 Aug 2008 11:59:22 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: gus3 <musicman529@yahoo.com>, Szabolcs Szakacsits <szaka@ntfs-3g.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Subject: Re: XFS vs Elevators (was Re: [PATCH RFC] nilfs2: continuous
-	snapshotting file system)
-Message-ID: <20080825015922.GP5706@disturbed>
-Mail-Followup-To: Nick Piggin <nickpiggin@yahoo.com.au>,
-	gus3 <musicman529@yahoo.com>,
-	Szabolcs Szakacsits <szaka@ntfs-3g.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	xfs@oss.sgi.com
-References: <20080821051508.GB5706@disturbed> <200808211933.34565.nickpiggin@yahoo.com.au> <20080821170854.GJ5706@disturbed> <200808221229.11069.nickpiggin@yahoo.com.au>
+	Sun, 24 Aug 2008 22:23:19 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:51658 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751752AbYHYCXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Aug 2008 22:23:18 -0400
+Message-ID: <48B21756.4020208@cn.fujitsu.com>
+Date: Mon, 25 Aug 2008 10:22:14 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808221229.11069.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>, Paul Menage <menage@google.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: [PATCH] devcgroup: use kmemdup()
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 22, 2008 at 12:29:10PM +1000, Nick Piggin wrote:
-> On Friday 22 August 2008 03:08, Dave Chinner wrote:
-> > On Thu, Aug 21, 2008 at 07:33:34PM +1000, Nick Piggin wrote:
-> 
-> > > I don't really see it as too complex. If you know how you want the
-> > > request to be handled, then it should be possible to implement.
-> >
-> > That is the problem in a nutshell. Nobody can keep up with all
-> > the shiny new stuff that is being implemented,let alone the
-> > subtle behavioural differences that accumulate through such
-> > change...
-> 
-> I'm not sure exactly what you mean.. I certainly have not been keeping
-> up with all the changes here as I'm spending most of my time on other
-> things lately...
-> 
-> But from what I see, you've got a fairly good handle on analysing the
-> elevator behaviour (if only the end result).
+This saves 40 bytes on my x86_32 box.
 
-Only from having to do this analysis over and over again trying to
-understand what has changed in the elevator that has negated the
-effect of some previous optimisation....
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ security/device_cgroup.c |    9 ++-------
+ 1 files changed, 2 insertions(+), 7 deletions(-)
 
-> So if you were to tell
-> Jens that "these blocks" need more priority, or not to contribute to
-> a process's usage quota, etc. then I'm sure improvements could be
-> made.
-
-It's exactly this sort of complexity that is the problem. When the
-behaviour of such things change, filesystems that are optimised for
-the previous behaviour are not updated - we're not even aware that
-the elevator has been changed in some subtle manner that breaks
-the optimisations that have been done.
-
-To keep on top of this, we keep adding new variations and types and
-expect the filesystems to make best use of them (without
-documentation) to optimise for certain situations. Example - the
-new(ish) BIO_META tag that only CFQ understands. I can change the
-way XFS issues bios to use this tag to make CFQ behave the same way
-it used to w.r.t. metadata I/O from XFS, but then the deadline and
-AS will probably regress because they don't understand that tag and
-still need the old optimisations that just got removed. Ditto for
-prioritised bio dispatch - CFQ supports it but none of the others
-do.
-
-IOWs, I am left with a choice - optimise for a specific elevator
-(CFQ) to the detriment of all others (noop, as, deadline), or make
-the filesystem work best with the simple elevator (noop) and
-consider the smarter schedulers deficient if they are slower than
-the noop elevator....
-
-> Or am I completely misunderstanding you? :)
-
-You're suggesting that I add complexity to solve the too much complexity
-problem.... ;)
-
-> > > > With the way the elevators have been regressing,
-> > > > improving and changing behaviour,
-> > >
-> > > AFAIK deadline, AS, and noop haven't significantly changed for years.
-> >
-> > Yet they've regularly shown performance regressions because other
-> > stuff has been changing around them, right?
-> 
-> Is this rhetorical? Because I don't see how *they* could be showing
-> regular performance regressions.
-
-I get private email fairly often asking questions as to why XFS is
-slower going from, say, 2.6.23 to 2.6.24 and then speeds back up in
-2.6.25. I seen a number of cases where the answer to this was that
-elevator 'x' with XFS in 2.6.x because for some reason it is much,
-much slower than the others on that workload on that hardware.
-
-As seen earlier in this thread, this can be caused by a problem with
-the hardware, firmware, configuration, driver bugs, etc - there are
-so many combinations of variables that can cause performance issues
-that often the only 'macro' level change that you can make to avoid
-them is to switch schedulers. IOWs, while a specific scheduler has
-not changed, the code around it has changed sufficiently for a
-specific elevator to show a regression compared to the otherr
-elevators.....
-
-Basically, the complexity of the interactions between the
-filesystems, elevators and the storage devices is such that there
-are transient second order effects occurring that are not reported
-widely because they are easily worked around by switching elevators.
-
-> Deadline literally had its last
-> behaviour change nearly a year ago, and before that was before
-> recorded (git) history.
-> 
-> AS hasn't changed much more frequently, although I will grant that it
-> and CFS add a lot more complexity. So I would always compare results
-> with deadline or noop.
-
-Which can still change by things like changing merging behaviour.
-Granted, it is less complex, but still we can have subtle changes
-having major impact in less commonly run workloads...
-
-Cheers,
-
-Dave.
+diff --git a/security/device_cgroup.c b/security/device_cgroup.c
+index 46f2397..9c625f6 100644
+--- a/security/device_cgroup.c
++++ b/security/device_cgroup.c
+@@ -84,13 +84,9 @@ static int dev_whitelist_copy(struct list_head *dest, struct list_head *orig)
+ 	struct dev_whitelist_item *wh, *tmp, *new;
+ 
+ 	list_for_each_entry(wh, orig, list) {
+-		new = kmalloc(sizeof(*wh), GFP_KERNEL);
++		new = kmemdup(wh, sizeof(*wh), GFP_KERNEL);
+ 		if (!new)
+ 			goto free_and_exit;
+-		new->major = wh->major;
+-		new->minor = wh->minor;
+-		new->type = wh->type;
+-		new->access = wh->access;
+ 		list_add_tail(&new->list, dest);
+ 	}
+ 
+@@ -114,11 +110,10 @@ static int dev_whitelist_add(struct dev_cgroup *dev_cgroup,
+ {
+ 	struct dev_whitelist_item *whcopy, *walk;
+ 
+-	whcopy = kmalloc(sizeof(*whcopy), GFP_KERNEL);
++	whcopy = kmemdup(wh, sizeof(*wh), GFP_KERNEL);
+ 	if (!whcopy)
+ 		return -ENOMEM;
+ 
+-	memcpy(whcopy, wh, sizeof(*whcopy));
+ 	spin_lock(&dev_cgroup->lock);
+ 	list_for_each_entry(walk, &dev_cgroup->whitelist, list) {
+ 		if (walk->type != wh->type)
 -- 
-Dave Chinner
-david@fromorbit.com
+1.5.4.rc3
