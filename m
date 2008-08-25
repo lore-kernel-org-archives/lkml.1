@@ -1,71 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbYHXSir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755678AbYHYMLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756499AbYHXSir (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 14:38:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYHXSii
+	id S1755678AbYHYMLP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 08:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbYHYMK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 14:38:38 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:50409 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752599AbYHXSii (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 14:38:38 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: converting appletouch to usb autosuspend again...
-Date: Sun, 24 Aug 2008 20:39:48 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Jiri Kosina <jikos@jikos.cz>
-References: <1219525218.8221.31.camel@localhost>
-In-Reply-To: <1219525218.8221.31.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Mon, 25 Aug 2008 08:10:59 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:53031 "EHLO mummy.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753150AbYHYMK6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 08:10:58 -0400
+Subject: Re: [PATCH 1/1] selinux: add support for installing a dummy policy
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: James Morris <jmorris@namei.org>, lkml <linux-kernel@vger.kernel.org>,
+       SELinux <selinux@tycho.nsa.gov>,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>
+In-Reply-To: <20080823023812.GA30915@us.ibm.com>
+References: <20080822193413.GA8401@us.ibm.com>
+	 <alpine.LRH.1.10.0808230852320.24779@tundra.namei.org>
+	 <20080823023812.GA30915@us.ibm.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Mon, 25 Aug 2008 08:10:01 -0400
+Message-Id: <1219666201.2721.29.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808242039.48701.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag 23 August 2008 23:00:18 schrieb Soeren Sonnenburg:
-> Dear all,
-> 
-> I wonder whether anyone else tried to get appletouch usb autosuspend to
-> work. I've seen Oliver's patch but as it kept oopsing on me and I
 
-You might post the oops. I haven't seen it.
+On Fri, 2008-08-22 at 21:38 -0500, Serge E. Hallyn wrote:
+> --- /dev/null
+> +++ b/scripts/selinux/install_policy.sh
+> @@ -0,0 +1,44 @@
+> +#!/bin/sh
+> +if [ `id -u` -ne 0 ]; then
+> +	echo "$0: must be root to install the selinux policy"
+> +	exit 1
+> +fi
+> +SF=`which setfiles`
+> +if [ $? -eq 1 ]; then
+> +	if [ -f /usr/sbin/setfiles ]; then
+> +		SF="/usr/sbin/setfiles"
 
-> couldn't parse the usb_mark_last_busy logic I came up with the attached
-> patch against (current git; at least didn't oops for me over the last
-> several days and suspend/resume cycles).
-> 
-> However things I don't understand, 
-> 
-> a) is autosuspend on the appletouch driver used at all (how can I find
-> out)
+/sbin/setfiles on modern Fedora releases.
 
-Compile your kernel with CONFIG_USB_DEBUG and autosuspend will be logged.
-You need to activate autosuspend via sysfs.
+> +	else
+> +		echo "no selinux tools installed: setfiles"
+> +		exit 1
+> +	fi
+> +fi
+> +
+> +cd mdp
+> +
+> +CP=`which checkpolicy`
+> +./mdp policy.conf file_contexts
+> +$CP -o policy.`checkpolicy -V | awk '{print $1}'` policy.conf
 
-> b) do I need dev->intf->needs_remote_wakeup = 1; ?
+Save version to a variable and reuse below.
 
-Yes.
+> +
+> +mkdir -p /etc/selinux/dummy/policy
+> +mkdir -p /etc/selinux/dummy/contexts/files
+> +
+> +cp file_contexts /etc/selinux/dummy/contexts/files
+> +cp dbus_contexts /etc/selinux/dummy/contexts
+> +cp policy.`checkpolicy -V | awk '{print $1}'` /etc/selinux/dummy/policy
+> +FC_FILE=/etc/selinux/dummy/contexts/files/file_contexts
+> +
+> +cd /etc/selinux/dummy/contexts/files
+> +$SF file_contexts /
+> +
+> +mounts=`cat /proc/$$/mounts | egrep "ext2|ext3|xfs|jfs" | awk '{ print $2 '}`
 
-> c) is line 33 in the patch safe to do ?
+ext4, ext4dev, gfs2 too.
+See /sbin/fixfiles for an example.  Or run it.
 
-Why do you want to add it?
+> +for line in $mounts; do
+> +	$SF file_contexts $line
+> +done
 
-> And while we are at it I am still seeing these X falls back to hid mouse
-> mode, only switching to console and back resolves this (looks like this
-> only worked in previous kernels as resume from s2ram took a lot longer
-> due to the IDE driver doing a couple of resets) - is there anything one
-> could do about it?
+You can pass them all to setfiles at once; it takes a list of mount
+points after the file_contexts file. Or run fixfiles instead as it does
+much the same.
 
-Post a log.
+However, I don't believe this step will work if you are doing this on an
+existing SELinux-enabled system - the kernel will check the contexts
+upon setxattr against the active policy and reject them, and you haven't
+loaded the new policy yet.  Also, this is a "destructive" operation,
+i.e. if they were running SELinux before, they are hereby clobbering all
+their file labels.  Possibly you should bail out if selinuxenabled
+(utility that can be used as a boolean in shell conditionals).
+if /usr/sbin/selinuxenabled; then
+	echo"SELinux already enabled with a policy loaded; exiting."
+	exit 1
+fi
 
-	Regards
-		Oliver
+> +
+> +dodev=`cat /proc/$$/mounts | grep "/dev "`
+> +if [ "eq$dodev" != "eq" ]; then
+> +	mount --move /dev /mnt
+> +	$SF file_contexts /dev
+> +	mount --move /mnt /dev
+> +fi
+
+Not sure what you are doing here.  If /dev is udev-managed, then it will
+handle labeling at boot.  But it still shows up as a tmpfs mount
+in /proc/self/mounts.
+
+Where do you set up /etc/selinux/config to refer to this dummy policy so
+it will get loaded at boot?
+
+-- 
+Stephen Smalley
+National Security Agency
 
