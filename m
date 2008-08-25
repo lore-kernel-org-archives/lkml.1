@@ -1,81 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbYHYSC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756615AbYHYSDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755977AbYHYSC7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 14:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbYHYSCu
+	id S1756615AbYHYSDZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 14:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYHYSDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 14:02:50 -0400
-Received: from cpsmtpo-eml06.kpnxchange.com ([213.75.38.155]:10723 "EHLO
-	cpsmtpo-eml06.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753551AbYHYSCt (ORCPT
+	Mon, 25 Aug 2008 14:03:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52013 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753685AbYHYSDO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 14:02:49 -0400
-From: Frans Pop <elendil@planet.nl>
-To: netdev@vger.kernel.org
-Subject: [PATCH] e1000e: Avoid duplicated output of device name in kernel warning
-Date: Mon, 25 Aug 2008 20:02:46 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <200808181219.39921.elendil@planet.nl>
-In-Reply-To: <200808181219.39921.elendil@planet.nl>
+	Mon, 25 Aug 2008 14:03:14 -0400
+Date: Mon, 25 Aug 2008 11:02:33 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
+ bisected
+In-Reply-To: <48B2A91F.8000302@hp.com>
+Message-ID: <alpine.LFD.1.10.0808251100500.3363@nehalem.linux-foundation.org>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.q9H.6aGsIB@albercik> <alpine.LFD.1.10.0808231257310.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808231313170.3363@nehalem.linux-foundation.org> <48B2A91F.8000302@hp.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808252002.46585.elendil@planet.nl>
-X-OriginalArrivalTime: 25 Aug 2008 18:02:46.0918 (UTC) FILETIME=[C7AA7A60:01C906DC]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 August 2008, Frans Pop wrote:
-> With 2.6.27-rc3 I noticed the following messages in my boot log:
-> 0000:01:00.0: 0000:01:00.0: Warning: detected DSPD enabled in EEPROM
-> 0000:01:00.0: eth0: (PCI Express:2.5GB/s:Width x1) 00:16:76:04:ff:09
->
-> The second seems correct, but the first has a silly repetition of the
-> PCI device before the actual message. The message originates from
-> e1000_eeprom_checks in e1000e/netdev.c.
 
-With the patch below the first message becomes
-  e1000e 0000:01:00.0: Warning: detected DSPD enabled in EEPROM
-which makes it similar to directly preceding messages.
 
-> Other question is why this is a "Warning"? Isn't "Deep Smart Power
-> Down" a desirable feature to have?
+On Mon, 25 Aug 2008, Alan D. Brunelle wrote:
+> 
+> With /just/ DEBUG_PAGE_ALLOC defined, I have seen two general panic types:
+> 
+> o  A new double fault w/ SMP_DEBUG_PAGEALLOC problem (prob4.txt)
 
-I'm still wondering about this...
-Same goes for the "warning" about ASPM.
+Yeah, that's a stack overflow.
 
----
-From: Frans Pop <elendil@planet.nl>
+Confirmed.
 
-Use dev_warn instead of e_warn in e1000_eeprom_checks() as the
-interface name has not yet been assigned at that point.
-    
-Signed-off-by: Frans Pop <elendil@planet.nl>
-
-diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-index d266510..d02a659 100644
---- a/drivers/net/e1000e/netdev.c
-+++ b/drivers/net/e1000e/netdev.c
-@@ -4335,13 +4335,15 @@ static void e1000_eeprom_checks(struct 
-e1000_adapter *adapter)
- 	ret_val = e1000_read_nvm(hw, NVM_INIT_CONTROL2_REG, 1, &buf);
- 	if (!(le16_to_cpu(buf) & (1 << 0))) {
- 		/* Deep Smart Power Down (DSPD) */
--		e_warn("Warning: detected DSPD enabled in EEPROM\n");
-+		dev_warn(&adapter->pdev->dev,
-+			 "Warning: detected DSPD enabled in EEPROM\n");
- 	}
- 
- 	ret_val = e1000_read_nvm(hw, NVM_INIT_3GIO_3, 1, &buf);
- 	if (le16_to_cpu(buf) & (3 << 2)) {
- 		/* ASPM enable */
--		e_warn("Warning: detected ASPM enabled in EEPROM\n");
-+		dev_warn(&adapter->pdev->dev,
-+			 "Warning: detected ASPM enabled in EEPROM\n");
- 	}
- }
- 
+			Linus
