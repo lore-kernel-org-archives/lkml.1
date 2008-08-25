@@ -1,91 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYHYOuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbYHYOui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754809AbYHYOuL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 10:50:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbYHYOt6
+	id S1756164AbYHYOui (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 10:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754987AbYHYOuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 10:49:58 -0400
-Received: from il.qumranet.com ([212.179.150.194]:26377 "EHLO il.qumranet.com"
+	Mon, 25 Aug 2008 10:50:13 -0400
+Received: from mx2.suse.de ([195.135.220.15]:38104 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753038AbYHYOt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 10:49:57 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: [GIT PULL] KVM fixes for 2.6.27-rc4
-Date: Mon, 25 Aug 2008 17:49:55 +0300
-Message-Id: <1219675795-3303-1-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.6.0
+	id S1754845AbYHYOuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 10:50:12 -0400
+Date: Mon, 25 Aug 2008 07:47:14 -0700
+From: Greg KH <gregkh@suse.de>
+To: Tejun Heo <tj@kernel.org>, Jens Axboe <jens.axboe@oracle.com>
+Cc: Abdel Benamrouche <draconux@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET 1/3 blk-for-2.6.28] block: misc fixes and
+	improvements
+Message-ID: <20080825144714.GA20813@suse.de>
+References: <1219655740-11672-1-git-send-email-tj@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1219655740-11672-1-git-send-email-tj@kernel.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, the repo and branch
+On Mon, Aug 25, 2008 at 06:15:35PM +0900, Tejun Heo wrote:
+> Hello,
+> 
+> This patchset contains the following five patches containing misc
+> fixes and improvements.
+> 
+>   0001-block-fix-partition-info-printouts.patch
+>   0002-block-don-t-grab-block_class_lock-unnecessarily.patch
+>   0003-block-use-class_dev_iterator-instead-of-class_for_e.patch
+>   0004-block-allow-deleting-zero-length-partition.patch
+>   0005-block-update-add_partition-error-handling.patch
+> 
+> Recent block_class iteration updates 5c6f35c5..27f3025 introduced a
+> few bugs and trivial user visible behavior change.  0001-0003 update
+> those issues and simplify related code using new class iterator.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git kvm-updates-2.6.27
+The bugs should now be fixed in Linus's tree due to a fix from Kay,
+right?
 
-await your pulling pleasure.  There's a fix for the kvmtrace ABI, a race
-plugged in smp guests on i386 hosts, and a fix for the placement of
-exception handlers used during host reboot.
+The user visable behavior change, I missed that, sorry, that is a
+regression, do you think it's a big deal to fix in 2.6.27?
 
-Shortlog, diffstat, and diff follow.
+> 0004 fixes deletion of zero sized partitions.
+> 
+> d805dda4 tried to fix error handling path in add_partition() but had a
+> few problems.  0005 fixes those and moves busy partition check into
+> add_partition().
+> 
+> This patchset is against
+> 
+>   blk-for-2.6.28 (9abd7c437c02e7448fb1d2d3cfc0b9c1ab77cf2d)
+> + [1] klist-dont-iterate-over-deleted-entries
+> + [2] use-klist-for-class-device-list-and-implement-iterator
+> 
+> and available in the following git tree.
+> 
+>   http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=shortlog;h=block-misc-fixes
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-misc-fixes
+> 
+> with the following combined diffstat
 
-Adrian Bunk (1):
-      KVM: fix userspace ABI breakage
+I have no problem taking all of these patches as I did this original
+work and don't want to burden Jens with this.  Also, I'd like to work
+off of the klist changes and class changes as that can be used in other
+work that I want to do in the driver core.
 
-Avi Kivity (1):
-      KVM: MMU: Fix torn shadow pte
+Jens any objection to me taking them?  Do you also have changes in this
+area that this needs to be merged with?
 
-Eduardo Habkost (1):
-      KVM: Use .fixup instead of .text.fixup on __kvm_handle_fault_on_reboot
+thanks,
 
- arch/x86/kvm/paging_tmpl.h |    2 +-
- include/asm-x86/kvm_host.h |    2 +-
- include/linux/kvm.h        |    4 ++--
- 3 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
-index f72ac1f..4a814bf 100644
---- a/arch/x86/kvm/paging_tmpl.h
-+++ b/arch/x86/kvm/paging_tmpl.h
-@@ -345,7 +345,7 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
- 		shadow_addr = __pa(shadow_page->spt);
- 		shadow_pte = shadow_addr | PT_PRESENT_MASK | PT_ACCESSED_MASK
- 			| PT_WRITABLE_MASK | PT_USER_MASK;
--		*shadow_ent = shadow_pte;
-+		set_shadow_pte(shadow_ent, shadow_pte);
- 	}
- 
- 	mmu_set_spte(vcpu, shadow_ent, access, walker->pte_access & access,
-diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
-index 0f3c531..c2e34c2 100644
---- a/include/asm-x86/kvm_host.h
-+++ b/include/asm-x86/kvm_host.h
-@@ -722,7 +722,7 @@ asmlinkage void kvm_handle_fault_on_reboot(void);
- 
- #define __kvm_handle_fault_on_reboot(insn) \
- 	"666: " insn "\n\t" \
--	".pushsection .text.fixup, \"ax\" \n" \
-+	".pushsection .fixup, \"ax\" \n" \
- 	"667: \n\t" \
- 	KVM_EX_PUSH " $666b \n\t" \
- 	"jmp kvm_handle_fault_on_reboot \n\t" \
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 69511f7..70a3065 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -320,12 +320,12 @@ struct kvm_trace_rec {
- 		struct {
- 			__u64 cycle_u64;
- 			__u32 extra_u32[KVM_TRC_EXTRA_MAX];
--		} cycle;
-+		} __attribute__((packed)) cycle;
- 		struct {
- 			__u32 extra_u32[KVM_TRC_EXTRA_MAX];
- 		} nocycle;
- 	} u;
--} __attribute__((packed));
-+};
- 
- #define KVMIO 0xAE
- 
+greg k-h
