@@ -1,53 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbYHYKNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbYHYKvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756031AbYHYKNZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 06:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbYHYKNR
+	id S1757213AbYHYKvF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 06:51:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbYHYKtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 06:13:17 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:47738 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752736AbYHYKNQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 06:13:16 -0400
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, adobriyan@gmail.com
-Subject: Re: Writable packet CD-RW mounting broken in 2.6.26 by your commit 68154e90c9d1492d570671ae181d9a8f8530da55
-References: <8763pr1jy0.fsf_-_@hades.wkstn.nix>
-	<20080824144827R.fujita.tomonori@lab.ntt.co.jp>
-	<871w0eb9nx.fsf@hades.wkstn.nix>
-	<20080825143125M.fujita.tomonori@lab.ntt.co.jp>
-From: Nix <nix@esperi.org.uk>
-Emacs: the Swiss Army of Editors.
-Date: Mon, 25 Aug 2008 11:12:09 +0100
-In-Reply-To: <20080825143125M.fujita.tomonori@lab.ntt.co.jp> (FUJITA Tomonori's message of "Mon, 25 Aug 2008 14:32:51 +0900")
-Message-ID: <87wsi5769y.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-sonic.net-Metrics: hades 1156; Body=4 Fuz1=4 Fuz2=4
+	Mon, 25 Aug 2008 06:49:47 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44044 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756344AbYHYKto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 06:49:44 -0400
+From: Tejun Heo <tj@kernel.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: James.Bottomley@HansenPartnership.com, bzolnier@gmail.com,
+       bharrosh@panasas.com, greg.freemyer@gmail.com,
+       linux-scsi@vger.kernel.org, brking@linux.vnet.ibm.com, liml@rtr.ca,
+       viro@ftp.linux.org.uk, linux-ide@vger.kernel.org, neilb@suse.de,
+       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
+Subject: [PATCH 09/09] block: implement CONFIG_DEBUG_BLOCK_EXT_DEVT
+Date: Mon, 25 Aug 2008 19:47:25 +0900
+Message-Id: <1219661245-16055-10-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <1219661245-16055-1-git-send-email-tj@kernel.org>
+References: <1219661245-16055-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 Aug 2008 10:48:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25 Aug 2008, FUJITA Tomonori verbalised:
+Extended devt introduces non-contiguos device numbers.  This patch
+implements a debug option which forces most devt allocations to be
+from the extended area and spreads them out.  This is enabled by
+default if DEBUG_KERNEL is set and achieves...
 
-> On Sun, 24 Aug 2008 18:33:06 +0100
-> Nix <nix@esperi.org.uk> wrote:
->> I suspect this is -stable material, right?
->
-> Yes, there are the same bugs in 2.6.26.
+1. Detects code paths in kernel or userland which expect predetermined
+   consecutive device numbers.
 
-I was testing in 2.6.26, so yes, they're definitely there.
+2. When something goes wrong, avoid corruption as adding to the minor
+   of earlier partition won't lead to the wrong but valid device.
 
-> I added the Cc: stable tag on the patches so they will go to the
-> stable tree as soon as they get merged into mainline, I think.
->
-> Again, sorry about these bugs and thanks for the investigation.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ block/genhd.c          |   38 +++++++++++++++++++++++++++++++++++---
+ drivers/ide/ide-disk.c |    6 ++++++
+ drivers/scsi/sd.c      |    6 ++++++
+ lib/Kconfig.debug      |   16 ++++++++++++++++
+ 4 files changed, 63 insertions(+), 3 deletions(-)
 
-Hey, everyone has bugs. Not everyone can get them fixed in ~6hrs
-in the early morning .jp time :) so I think you come out ahead on
-this one.
-
+diff --git a/block/genhd.c b/block/genhd.c
+index 93ebc6c..dbfae29 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -299,6 +299,38 @@ EXPORT_SYMBOL(unregister_blkdev);
+ static struct kobj_map *bdev_map;
+ 
+ /**
++ * blk_mangle_minor - scatter minor numbers apart
++ * @minor: minor number to mangle
++ *
++ * Scatter consecutively allocated @minor number apart if MANGLE_DEVT
++ * is enabled.  Mangling twice gives the original value.
++ *
++ * RETURNS:
++ * Mangled value.
++ *
++ * CONTEXT:
++ * Don't care.
++ */
++static int blk_mangle_minor(int minor)
++{
++#ifdef CONFIG_DEBUG_BLOCK_EXT_DEVT
++	int i;
++
++	for (i = 0; i < MINORBITS / 2; i++) {
++		int low = minor & (1 << i);
++		int high = minor & (1 << (MINORBITS - 1 - i));
++		int distance = MINORBITS - 1 - 2 * i;
++
++		minor ^= low | high;	/* clear both bits */
++		low <<= distance;	/* swap the positions */
++		high >>= distance;
++		minor |= low | high;	/* and set */
++	}
++#endif
++	return minor;
++}
++
++/**
+  * blk_alloc_devt - allocate a dev_t for a partition
+  * @part: partition to allocate dev_t for
+  * @gfp_mask: memory allocation flag
+@@ -339,7 +371,7 @@ int blk_alloc_devt(struct hd_struct *part, dev_t *devt)
+ 		return -EBUSY;
+ 	}
+ 
+-	*devt = MKDEV(BLOCK_EXT_MAJOR, idx);
++	*devt = MKDEV(BLOCK_EXT_MAJOR, blk_mangle_minor(idx));
+ 	return 0;
+ }
+ 
+@@ -361,7 +393,7 @@ void blk_free_devt(dev_t devt)
+ 
+ 	if (MAJOR(devt) == BLOCK_EXT_MAJOR) {
+ 		mutex_lock(&ext_devt_mutex);
+-		idr_remove(&ext_devt_idr, MINOR(devt));
++		idr_remove(&ext_devt_idr, blk_mangle_minor(MINOR(devt)));
+ 		mutex_unlock(&ext_devt_mutex);
+ 	}
+ }
+@@ -475,7 +507,7 @@ struct gendisk *get_gendisk(dev_t devt, int *partno)
+ 		struct hd_struct *part;
+ 
+ 		mutex_lock(&ext_devt_mutex);
+-		part = idr_find(&ext_devt_idr, MINOR(devt));
++		part = idr_find(&ext_devt_idr, blk_mangle_minor(MINOR(devt)));
+ 		if (part && get_disk(part_to_disk(part))) {
+ 			*partno = part->partno;
+ 			disk = part_to_disk(part);
+diff --git a/drivers/ide/ide-disk.c b/drivers/ide/ide-disk.c
+index ce24caf..b4cc1ce 100644
+--- a/drivers/ide/ide-disk.c
++++ b/drivers/ide/ide-disk.c
+@@ -42,7 +42,13 @@
+ #include <asm/div64.h>
+ 
+ #define IDE_DISK_PARTS		(1 << PARTN_BITS)
++
++#if !defined(CONFIG_DEBUG_BLOCK_EXT_DEVT)
+ #define IDE_DISK_MINORS		IDE_DISK_PARTS
++#else
++#define IDE_DISK_MINORS		1
++#endif
++
+ #define IDE_DISK_EXT_MINORS	(IDE_DISK_PARTS - IDE_DISK_MINORS)
+ 
+ struct ide_disk_obj {
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index d1bb0e1..280d231 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -87,7 +87,13 @@ MODULE_ALIAS_SCSI_DEVICE(TYPE_MOD);
+ MODULE_ALIAS_SCSI_DEVICE(TYPE_RBC);
+ 
+ #define SD_PARTS	64
++
++#if !defined(CONFIG_DEBUG_BLOCK_EXT_DEVT)
+ #define SD_MINORS	16
++#else
++#define SD_MINORS	1
++#endif
++
+ #define SD_EXT_MINORS	(SD_PARTS - SD_MINORS)
+ 
+ static int  sd_revalidate_disk(struct gendisk *);
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 8b5a7d3..1bc3c07 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -624,6 +624,22 @@ config BACKTRACE_SELF_TEST
+ 
+ 	  Say N if you are unsure.
+ 
++config DEBUG_BLOCK_EXT_DEVT
++        bool "Force extended block device numbers and spread them"
++	depends on DEBUG_KERNEL
++	depends on BLOCK
++	default y
++	help
++	  Conventionally, block device numbers are allocated from
++	  predetermined contiguous area.  However, extended block area
++	  may introduce non-contiguous block device numbers.  This
++	  option forces most block device numbers to be allocated from
++	  the extended space and spreads them to discover kernel or
++	  userland code paths which assume predetermined contiguous
++	  device number allocation.
++
++	  Say N if you are unsure.
++
+ config LKDTM
+ 	tristate "Linux Kernel Dump Test Tool Module"
+ 	depends on DEBUG_KERNEL
 -- 
-`Not even vi uses vi key bindings for its command line.' --- PdS
+1.5.4.5
+
