@@ -1,131 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbYHYJCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbYHYH5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755530AbYHYJCt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 05:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbYHYJCl
+	id S1754305AbYHYH5z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 03:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbYHYH5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 05:02:41 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:18148 "EHLO
-	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753601AbYHYJCk (ORCPT
+	Mon, 25 Aug 2008 03:57:45 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41012 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753158AbYHYH5p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 05:02:40 -0400
-X-BigFish: VPS5(zzzz10d3izz5a6ciz32i43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K65FS4-02-DA7-01
-From: Robert Richter <robert.richter@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Robert Richter <robert.richter@amd.com>,
-       Jan Beulich <jbeulich@novell.com>, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] x86: fix: make PCI ECS for AMD CPUs hotplug capable (-v2)
-Date: Mon, 25 Aug 2008 11:00:59 +0200
-Message-ID: <1219654859-1010-1-git-send-email-robert.richter@amd.com>
-X-Mailer: git-send-email 1.5.6.4
-In-Reply-To: <20080823153725.GB16984@elte.hu>
-References: <20080823153725.GB16984@elte.hu>
-X-OriginalArrivalTime: 25 Aug 2008 09:02:22.0345 (UTC) FILETIME=[491D4790:01C90691]
-MIME-Version: 1.0
+	Mon, 25 Aug 2008 03:57:45 -0400
+Subject: Re: [git pull] drm patches for 2.6.27 final
+From: Peter Zijlstra <peterz@infradead.org>
+To: Dave Airlie <airlied@linux.ie>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net
+In-Reply-To: <1219646946.20732.14.camel@twins>
+References: <alpine.DEB.0.82.0808240809170.15834@skynet.skynet.ie>
+	 <alpine.LFD.1.10.0808241013510.3363@nehalem.linux-foundation.org>
+	 <alpine.DEB.0.82.0808242145350.15834@skynet.skynet.ie>
+	 <1219646946.20732.14.camel@twins>
 Content-Type: text/plain
+Date: Mon, 25 Aug 2008 09:57:31 +0200
+Message-Id: <1219651051.8283.1.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Until now, PCI ECS setup was performed at boot time only and for cpus
-that are enabled then. This patch fixes this and adds cpu hotplug.
+On Mon, 2008-08-25 at 08:49 +0200, Peter Zijlstra wrote:
+> On Sun, 2008-08-24 at 21:57 +0100, Dave Airlie wrote:
+> > > Quite frankly, I'm not going to take this.
+> > > 
+> > > None of what you describe sounds like regressions, and this is just TOO 
+> > > F*CKING LATE to take big changes like this, to a fragile subsystem that 
+> > > has historically easily introduced new regressions.
+> > > 
+> > > Can you please make a branch with ONLY REGRESSIONS, or fixes for major 
+> > > problems that don't introduce several thousand lines of new code?
+> > > 
+> > > Because you seem to be constantly unable to understand what "merge window" 
+> > > means. And I'm not going to take this kind of crap.
+> > 
+> > I thought you might say that, I'll re-send with just the ones that fix the 
+> > major issues, instead of ones that fix issues people wanted fixed. Most of 
+> > the real bits were in Rawhide kernels for a few weeks, which tbh kicks the 
+> > ass outta a linux-next/linux-mm test cycle.
+> > 
+> > Your reply now serves as place to point people at when they ask why Red 
+> > Hat/Fedora ships features that they can't get for 1-6 months, and I'm fine 
+> > with that.
+> 
+> 6 months sounds too long, there's at least one merge window in such a
+> time-frame.
 
-Tests sequence (check if ECS bit is set when bringing cpu online again):
+Right - just realized its 2*cycle for max latency here. The next cycle
+also needs to finish before Joe User gets it.
 
- # ( perl -e 'sysseek(STDIN, 0xC001001F, 0)'; hexdump -n 8 -e '2/4 "%08x " "\n"' )   < /dev/cpu/1/msr
- 00000008 00404010
- # ( perl -e 'sysseek(STDOUT, 0xC001001F, 0); print pack "l*", 8, 0x00400010' ) > /dev/cpu/1/msr
- # ( perl -e 'sysseek(STDIN, 0xC001001F, 0)'; hexdump -n 8 -e '2/4 "%08x " "\n"' )   < /dev/cpu/1/msr
- 00000008 00400010
- # echo 0 > /sys/devices/system/cpu/cpu1/online
- # echo 1 > /sys/devices/system/cpu/cpu1/online
- # ( perl -e 'sysseek(STDIN, 0xC001001F, 0)'; hexdump -n 8 -e '2/4 "%08x " "\n"' )   < /dev/cpu/1/msr
- 00000008 00404010
-
-Cc: Jan Beulich <jbeulich@novell.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>
-Signed-off-by: Robert Richter <robert.richter@amd.com>
----
- arch/x86/pci/amd_bus.c |   35 +++++++++++++++++++++++++++++++----
- 1 files changed, 31 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
-index 4a6f1a6..22e0576 100644
---- a/arch/x86/pci/amd_bus.c
-+++ b/arch/x86/pci/amd_bus.c
-@@ -1,6 +1,7 @@
- #include <linux/init.h>
- #include <linux/pci.h>
- #include <linux/topology.h>
-+#include <linux/cpu.h>
- #include "pci.h"
- 
- #ifdef CONFIG_X86_64
-@@ -565,7 +566,7 @@ static int __init early_fill_mp_bus_info(void) { return 0; }
- 
- #define ENABLE_CF8_EXT_CFG      (1ULL << 46)
- 
--static void enable_pci_io_ecs_per_cpu(void *unused)
-+static void enable_pci_io_ecs(void *unused)
- {
- 	u64 reg;
- 	rdmsrl(MSR_AMD64_NB_CFG, reg);
-@@ -575,13 +576,39 @@ static void enable_pci_io_ecs_per_cpu(void *unused)
- 	}
- }
- 
--static int __init enable_pci_io_ecs(void)
-+static int __cpuinit amd_cpu_notify(struct notifier_block *self,
-+				    unsigned long action, void *hcpu)
- {
-+	int cpu = (long)hcpu;
-+	switch (action) {
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+		smp_call_function_single(cpu, enable_pci_io_ecs, NULL, 0);
-+		break;
-+	default:
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block __cpuinitdata amd_cpu_notifier = {
-+	.notifier_call	= amd_cpu_notify,
-+};
-+
-+static int __init pci_io_ecs_init(void)
-+{
-+	int cpu;
-+
- 	/* assume all cpus from fam10h have IO ECS */
-         if (boot_cpu_data.x86 < 0x10)
- 		return 0;
--	on_each_cpu(enable_pci_io_ecs_per_cpu, NULL, 1);
-+
-+	register_cpu_notifier(&amd_cpu_notifier);
-+	for_each_online_cpu(cpu)
-+		amd_cpu_notify(&amd_cpu_notifier, (unsigned long)CPU_ONLINE,
-+			       (void *)(long)cpu);
- 	pci_probe |= PCI_HAS_IO_ECS;
-+
- 	return 0;
- }
- 
-@@ -591,7 +618,7 @@ static int __init amd_postcore_init(void)
- 		return 0;
- 
- 	early_fill_mp_bus_info();
--	enable_pci_io_ecs();
-+	pci_io_ecs_init();
- 
- 	return 0;
- }
--- 
-1.5.6.4
-
+/me now goes fetch a nice hot cup of tea and wake up..
 
