@@ -1,93 +1,263 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbYHYP06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754652AbYHYPcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754954AbYHYP06 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 11:26:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYHYP0u
+	id S1754652AbYHYPcY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 11:32:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbYHYPcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 11:26:50 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60395 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753579AbYHYP0u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 11:26:50 -0400
-Subject: Re: [PATCH, RFC, tip/core/rcu] scalable classic RCU implementation
-From: Peter Zijlstra <peterz@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org, mingo@elte.hu, akpm@linux-foundation.org,
-       manfred@colorfullife.com, dipankar@in.ibm.com, schamp@sgi.com,
-       niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org
-In-Reply-To: <20080825151645.GB6745@linux.vnet.ibm.com>
-References: <20080821234318.GA1754@linux.vnet.ibm.com>
-	 <1219447772.5197.98.camel@josh-work.beaverton.ibm.com>
-	 <1219660496.8515.22.camel@twins> <20080825151645.GB6745@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Mon, 25 Aug 2008 17:26:43 +0200
-Message-Id: <1219678003.8515.75.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 25 Aug 2008 11:32:15 -0400
+Received: from ns1.suse.de ([195.135.220.2]:44158 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752027AbYHYPcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 11:32:15 -0400
+Message-ID: <48B2D037.1050403@suse.de>
+Date: Mon, 25 Aug 2008 17:31:03 +0200
+From: Tejun Heo <teheo@suse.de>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Greg Kroah-Hartman <gregkh@suse.de>,
+       Alan Stern <stern@rowland.harvard.edu>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RESEND] klist: don't iterate over deleted entries
+References: <48B2756A.9060005@kernel.org>
+In-Reply-To: <48B2756A.9060005@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-25 at 08:16 -0700, Paul E. McKenney wrote:
-> On Mon, Aug 25, 2008 at 12:34:56PM +0200, Peter Zijlstra wrote:
-> > On Fri, 2008-08-22 at 16:29 -0700, Josh Triplett wrote:
-> > 
-> > > > @@ -26,8 +27,10 @@
-> > > >   * http://lse.sourceforge.net/locking/rclock_OLS.2001.05.01c.sc.pdf (OLS2001)
-> > > >   *
-> > > >   * For detailed explanation of Read-Copy Update mechanism see -
-> > > > - * 		Documentation/RCU
-> > > > - *
-> > > > + * 	Documentation/RCU
-> > > > + * 	http://lwn.net/Articles/262464/ (What is RCU, Fundamentally?)
-> > > > + * 	http://lwn.net/Articles/263130/ (What is RCU's Usage?)
-> > > > + * 	http://lwn.net/Articles/264090/ (What is RCU's API? + references)
-> > > >   */
-> > > 
-> > > Why put these references here rather than in Documentation/RCU?  It
-> > > seems easier to keep documentation up to date in one place.  If you
-> > > think these represent a good "getting started" set of documents, how
-> > > about a Documentation/RCU/ReadTheseFirst with links to them, or how
-> > > about linking to them from whatisRCU.txt?
-> > 
-> > I actually like in code comments and 'documentation' more than
-> > Documentation/ stuff. Mostly because Documentation/ is:
-> >  - far away from the code
-> >  - therefore, more easily bitrotted
-> >  - and easily forgotten
-> 
-> I know!!!
-> 
-> #ifdef JOSH_TRIPLETT
->  * 	Documentation/RCU
->  * 	http://lwn.net/Articles/262464/ (What is RCU, Fundamentally?)
->  * 	http://lwn.net/Articles/263130/ (What is RCU's Usage?)
->  * 	http://lwn.net/Articles/264090/ (What is RCU's API? + references)
-> #elif PETER_ZIJLSTRA
->  * 	Documentation/RCU
-> #endif
-> 
-> (Sorry, couldn't resist!!!)
+A klist entry is kept on the list till all its current iterations are
+finished; however, a new iteration after deletion also iterates over
+deleted entries as long as their reference count stays above zero.
+This causes problems for cases where there are users which iterate
+over the list while synchronized against list manipulations and
+natuarally expect already deleted entries to not show up during
+iteration.
 
-But but but, you got the cases the wrong way around.. ;-)
+This patch implements dead flag which gets set on deletion so that
+iteration can skip already deleted entries.  The dead flag piggy backs
+on the lowest bit of knode->n_klist and only visible to klist
+implementation proper.
 
-> Seriously, I know where all the documentation is, as I wrote most of it.
-> These comments are for you guys.  So, any thoughts on how I should
-> resolve this?  My default is, as always, a coin flip.  ;-)
+While at it, drop klist_iter->i_head as it's redundant and doesn't
+offer anything in semantics or performance wise as klist_iter->i_klist
+is dereferenced on every iteration anyway.
 
-I guess we could do the 'this is how the concept works and can be used
-like so and so' documentation in Documentation/
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+---
+The original post was line wrapped.  Re-sending.  Thanks.
 
-And the stuff that says 'this code does like so and so, because blah'
-should stay near the code.
+ include/linux/klist.h |    3 +-
+ lib/klist.c           |   96 +++++++++++++++++++++++++++++++++++-------------
+ 2 files changed, 71 insertions(+), 28 deletions(-)
 
-And in any case of doubt - stay near the code :-)
-
-I always view Documentation/ as end user stuff (be that a kernel
-programmer that needs to learn a new API, or userland folks or people
-wanting to know what a certain feature is about).
+diff --git a/include/linux/klist.h b/include/linux/klist.h
+index 06c338e..8ea98db 100644
+--- a/include/linux/klist.h
++++ b/include/linux/klist.h
+@@ -38,7 +38,7 @@ extern void klist_init(struct klist *k, void (*get)(struct klist_node *),
+ 		       void (*put)(struct klist_node *));
+ 
+ struct klist_node {
+-	struct klist		*n_klist;
++	void			*n_klist;	/* never access directly */
+ 	struct list_head	n_node;
+ 	struct kref		n_ref;
+ 	struct completion	n_removed;
+@@ -57,7 +57,6 @@ extern int klist_node_attached(struct klist_node *n);
+ 
+ struct klist_iter {
+ 	struct klist		*i_klist;
+-	struct list_head	*i_head;
+ 	struct klist_node	*i_cur;
+ };
+ 
+diff --git a/lib/klist.c b/lib/klist.c
+index cca37f9..bbdd301 100644
+--- a/lib/klist.c
++++ b/lib/klist.c
+@@ -37,6 +37,37 @@
+ #include <linux/klist.h>
+ #include <linux/module.h>
+ 
++/*
++ * Use the lowest bit of n_klist to mark deleted nodes and exclude
++ * dead ones from iteration.
++ */
++#define KNODE_DEAD		1LU
++#define KNODE_KLIST_MASK	~KNODE_DEAD
++
++static struct klist *knode_klist(struct klist_node *knode)
++{
++	return (struct klist *)
++		((unsigned long)knode->n_klist & KNODE_KLIST_MASK);
++}
++
++static bool knode_dead(struct klist_node *knode)
++{
++	return (unsigned long)knode->n_klist & KNODE_DEAD;
++}
++
++static void knode_set_klist(struct klist_node *knode, struct klist *klist)
++{
++	knode->n_klist = klist;
++	/* no knode deserves to start its life dead */
++	WARN_ON(knode_dead(knode));
++}
++
++static void knode_kill(struct klist_node *knode)
++{
++	/* and no knode should die twice ever either, see we're very humane */
++	WARN_ON(knode_dead(knode));
++	*(unsigned long *)&knode->n_klist |= KNODE_DEAD;
++}
+ 
+ /**
+  * klist_init - Initialize a klist structure.
+@@ -79,7 +110,7 @@ static void klist_node_init(struct klist *k, struct klist_node *n)
+ 	INIT_LIST_HEAD(&n->n_node);
+ 	init_completion(&n->n_removed);
+ 	kref_init(&n->n_ref);
+-	n->n_klist = k;
++	knode_set_klist(n, k);
+ 	if (k->get)
+ 		k->get(n);
+ }
+@@ -115,7 +146,7 @@ EXPORT_SYMBOL_GPL(klist_add_tail);
+  */
+ void klist_add_after(struct klist_node *n, struct klist_node *pos)
+ {
+-	struct klist *k = pos->n_klist;
++	struct klist *k = knode_klist(pos);
+ 
+ 	klist_node_init(k, n);
+ 	spin_lock(&k->k_lock);
+@@ -131,7 +162,7 @@ EXPORT_SYMBOL_GPL(klist_add_after);
+  */
+ void klist_add_before(struct klist_node *n, struct klist_node *pos)
+ {
+-	struct klist *k = pos->n_klist;
++	struct klist *k = knode_klist(pos);
+ 
+ 	klist_node_init(k, n);
+ 	spin_lock(&k->k_lock);
+@@ -144,9 +175,10 @@ static void klist_release(struct kref *kref)
+ {
+ 	struct klist_node *n = container_of(kref, struct klist_node, n_ref);
+ 
++	WARN_ON(!knode_dead(n));
+ 	list_del(&n->n_node);
+ 	complete(&n->n_removed);
+-	n->n_klist = NULL;
++	knode_set_klist(n, NULL);
+ }
+ 
+ static int klist_dec_and_del(struct klist_node *n)
+@@ -154,22 +186,29 @@ static int klist_dec_and_del(struct klist_node *n)
+ 	return kref_put(&n->n_ref, klist_release);
+ }
+ 
+-/**
+- * klist_del - Decrement the reference count of node and try to remove.
+- * @n: node we're deleting.
+- */
+-void klist_del(struct klist_node *n)
++static void klist_put(struct klist_node *n, bool kill)
+ {
+-	struct klist *k = n->n_klist;
++	struct klist *k = knode_klist(n);
+ 	void (*put)(struct klist_node *) = k->put;
+ 
+ 	spin_lock(&k->k_lock);
++	if (kill)
++		knode_kill(n);
+ 	if (!klist_dec_and_del(n))
+ 		put = NULL;
+ 	spin_unlock(&k->k_lock);
+ 	if (put)
+ 		put(n);
+ }
++
++/**
++ * klist_del - Decrement the reference count of node and try to remove.
++ * @n: node we're deleting.
++ */
++void klist_del(struct klist_node *n)
++{
++	klist_put(n, true);
++}
+ EXPORT_SYMBOL_GPL(klist_del);
+ 
+ /**
+@@ -206,7 +245,6 @@ void klist_iter_init_node(struct klist *k, struct klist_iter *i,
+ 			  struct klist_node *n)
+ {
+ 	i->i_klist = k;
+-	i->i_head = &k->k_list;
+ 	i->i_cur = n;
+ 	if (n)
+ 		kref_get(&n->n_ref);
+@@ -237,7 +275,7 @@ EXPORT_SYMBOL_GPL(klist_iter_init);
+ void klist_iter_exit(struct klist_iter *i)
+ {
+ 	if (i->i_cur) {
+-		klist_del(i->i_cur);
++		klist_put(i->i_cur, false);
+ 		i->i_cur = NULL;
+ 	}
+ }
+@@ -258,27 +296,33 @@ static struct klist_node *to_klist_node(struct list_head *n)
+  */
+ struct klist_node *klist_next(struct klist_iter *i)
+ {
+-	struct list_head *next;
+-	struct klist_node *lnode = i->i_cur;
+-	struct klist_node *knode = NULL;
+ 	void (*put)(struct klist_node *) = i->i_klist->put;
++	struct klist_node *last = i->i_cur;
++	struct klist_node *next;
+ 
+ 	spin_lock(&i->i_klist->k_lock);
+-	if (lnode) {
+-		next = lnode->n_node.next;
+-		if (!klist_dec_and_del(lnode))
++
++	if (last) {
++		next = to_klist_node(last->n_node.next);
++		if (!klist_dec_and_del(last))
+ 			put = NULL;
+ 	} else
+-		next = i->i_head->next;
++		next = to_klist_node(i->i_klist->k_list.next);
+ 
+-	if (next != i->i_head) {
+-		knode = to_klist_node(next);
+-		kref_get(&knode->n_ref);
++	i->i_cur = NULL;
++	while (next != to_klist_node(&i->i_klist->k_list)) {
++		if (likely(!knode_dead(next))) {
++			kref_get(&next->n_ref);
++			i->i_cur = next;
++			break;
++		}
++		next = to_klist_node(next->n_node.next);
+ 	}
+-	i->i_cur = knode;
++
+ 	spin_unlock(&i->i_klist->k_lock);
+-	if (put && lnode)
+-		put(lnode);
+-	return knode;
++
++	if (put && last)
++		put(last);
++	return i->i_cur;
+ }
+ EXPORT_SYMBOL_GPL(klist_next);
+-- 
+1.5.4.5
 
