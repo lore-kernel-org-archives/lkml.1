@@ -1,83 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbYHYJuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbYHYJhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756544AbYHYJuR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 05:50:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753600AbYHYJuF
+	id S1756156AbYHYJhp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 05:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151AbYHYJhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 05:50:05 -0400
-Received: from main.gmane.org ([80.91.229.2]:37579 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753554AbYHYJuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 05:50:03 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Jari Aalto <jari.aalto@tamk.fi>
-Subject: Re: 2.6.25 DMA: Out of SW-IOMMU space - Asus M2N32 AMD 8GB memory
-Date: Sat, 23 Aug 2008 18:23:12 +0300
-Organization: Private
-Message-ID: <87r68f21sv.fsf@jondo.cante.net>
-References: <87od3k2egi.fsf@jondo.cante.net>
-	<m3vdxrhq0o.fsf@maximus.localdomain>
-	<200808231458.39206.alistair@devzero.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: a91-155-179-127.elisa-laajakaista.fi
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/22.2 (gnu/linux)
-Cancel-Lock: sha1:OSAsP8wmUSXGW7VbEQnM4XjvIzM=
+	Mon, 25 Aug 2008 05:37:36 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:43714 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754117AbYHYJhf (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 05:37:35 -0400
+Date: Mon, 25 Aug 2008 11:37:34 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Jared Hulbert <jaredeh@gmail.com>
+cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       =?UTF-8?Q?J=C3=B6rn_Engel?= <joern@logfs.org>, tim.bird@am.sony.com,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
+In-Reply-To: <6934efce0808220951i5a2cd6f9t70f9c522eae6f1d6@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0808251136140.3893@vixen.sonytel.be>
+References: <48AD00C4.6060302@gmail.com> <Pine.LNX.4.64.0808221650500.17105@vixen.sonytel.be>
+ <6934efce0808220951i5a2cd6f9t70f9c522eae6f1d6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-351044936-1219657054=:3893"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alistair John Strachan <alistair@devzero.co.uk> writes:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> On Saturday 23 August 2008 13:31:03 Krzysztof Halasa wrote:
->
->> Jari Aalto <jari.aalto@cante.net> writes:
->> >         [1] Aug 21 11:01:19 jondo kernel: [174628.275859] DMA: Out of
->> > SW-IOMMU space for 65536 bytes at device 0000:00:0d.0 model name      :
->> > AMD Athlon(tm) X2 Dual Core Processor
->> >         BE-2400
->
-> Agreed, you shouldn't be using the SW-IOMMU on this processor.
+---584349381-351044936-1219657054=:3893
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-So the correct boot paramer is?
+On Fri, 22 Aug 2008, Jared Hulbert wrote:
+> > The version in SVN seems to be slightly older than the one you submitted?
+> 
+> Oops.  Okay I must have neglected to sync at the very end.  Thanks.
+> 
+> I forgot, there is also a git repo at
+> 
+> git://git.infradead.org/users/jehulber/axfs.git
+> 
+> > Which platform(s) do you use for testing?
+> 
+> ARM, x86
 
-  imoou=off,noagp,noaperture
+Ah, little endian.
 
-no swiotlb setting at all?
+>From your good relationship with the s390 developers, I had hoped you would
+have done some tests on s390 ;-)
 
-> That said, do you use the r8169 driver with jumbo frames enabled? Francois
-> Romieu just fixed a leak in it that affected Intel platforms (because some
-> have no hardware IOMMU).
+> > I gave AxFS a try on PS3 (ppc64, always use big-endian 64-bit for testing new
+> > code ;-).
+> 
+> Smart.  Hmmm, If only I had a PS3....
+> 
+> > When mounting the image, I got the crash below:
+> 
+> > When mounting (also on PS3) an image created on ia32, I get a different crash:
+> >
+> > | axfs: wrong magic
+> >
+> > So I guess some parts are not yet 64-bit or endian clean.
+> 
+> Can you run mkfs.axfs on the same trivial directory on both ia32 and
+> PPC64 and then get me the resulting images?
 
-I'm using the onboard WiFi:
+I'll send them by private email.
 
-$ lsmod | grep rtl
-rtl8187                39424  0
+With kind regards,
 
-$ dmesg ...
+Geert Uytterhoeven
+Software Architect
 
-[    2.758861] usb 1-9: new full speed USB device using ohci_hcd and address 4
-[    2.978258] usb 1-9: configuration #1 chosen from 1 choice
-[    2.985369] usb 1-9: New USB device found, idVendor=0bda, idProduct=8187
-[    2.985372] usb 1-9: New USB device strings: Mfr=1, Product=2, SerialNumber=3
-[    2.985374] usb 1-9: Product: RTL8187_Wireless
-[    2.985376] usb 1-9: Manufacturer: Manufacturer_Realtek_RTL8187_
-[    2.985378] usb 1-9: SerialNumber: 0015AF0B59A6
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-I'm not sure how it maps to pci -nn:
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-00:04.0 PCI bridge [0604]: nVidia Corporation C51 PCI Express Bridge [10de:02fb] (rev a1)
-00:09.0 ISA bridge [0601]: nVidia Corporation MCP55 LPC Bridge [10de:0360] (rev a2)
-00:09.1 SMBus [0c05]: nVidia Corporation MCP55 SMBus [10de:0368] (rev a2)
-00:0a.0 USB Controller [0c03]: nVidia Corporation MCP55 USB Controller [10de:036c] (rev a1)
-00:0a.1 USB Controller [0c03]: nVidia Corporation MCP55 USB Controller [10de:036d] (rev a2)
-00:0e.0 PCI bridge [0604]: nVidia Corporation MCP55 PCI bridge [10de:0370] (rev a2)
-00:10.0 Bridge [0680]: nVidia Corporation MCP55 Ethernet [10de:0373] (rev a2)
-00:11.0 Bridge [0680]: nVidia Corporation MCP55 Ethernet [10de:0373] (rev a2)
-00:16.0 PCI bridge [0604]: nVidia Corporation MCP55 PCI Express bridge [10de:0375] (rev a2)
-
-Thank you,
-Jari
-
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-351044936-1219657054=:3893--
