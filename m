@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754943AbYHYNOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbYHYNOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754943AbYHYNOU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 09:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbYHYNOG
+	id S1756473AbYHYNOe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 09:14:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbYHYNOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 09:14:06 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:7975 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753655AbYHYNOF (ORCPT
+	Mon, 25 Aug 2008 09:14:11 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:48447 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754111AbYHYNOJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 09:14:05 -0400
-Message-ID: <48B2B017.1040302@hp.com>
-Date: Mon, 25 Aug 2008 09:13:59 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Mon, 25 Aug 2008 09:14:09 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Avi Kivity <avi@qumranet.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+References: <1219655506-27418-1-git-send-email-avi@qumranet.com>
+	<20080825091508.GC9114@elte.hu>
+Date: Mon, 25 Aug 2008 06:12:36 -0700
+In-Reply-To: <20080825091508.GC9114@elte.hu> (Ingo Molnar's message of "Mon,
+	25 Aug 2008 11:15:08 +0200")
+Message-ID: <m1y72lnsqj.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.q9H.6aGsIB@albercik> <alpine.LFD.1.10.0808231257310.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808231313170.3363@nehalem.linux-foundation.org> <48B2A91F.8000302@hp.com>
-In-Reply-To: <48B2A91F.8000302@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Ingo Molnar <mingo@elte.hu>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
+	*      [score: 0.3544]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] Fix emergency_restart (sysrq-b) with kvm loaded on Intel hosts
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding in SLUB debugging doesn't show anything new (I think). Example
-boot log (w/ initcall_debug enabled) is at:
+Ingo Molnar <mingo@elte.hu> writes:
 
-http://free.linux.hp.com/~adb/bug.11342/prob5.txt
+> * Avi Kivity <avi@qumranet.com> wrote:
+>
+>> Enabling Intel VT has the curious side effect whereby the INIT signal 
+>> is blocked.  Rather than comment on the wisdom of this side effect, 
+>> this patch adds an emergency restart reboot notifier, and modifies the 
+>> kvm reboot notifier to disable VT on emergency reboot.
 
-This has happened 3 times in a row as well. Whilst this is being looked
-at, I'm going to fast-forward ahead to the latest in Linus' tree, and
-see if the problem is still occurring (I think Linus' point earlier
-about some sort of rogue timing and/or corruption bug is spot on, but
-it's probably better to see how close to "today's tree" I can reproduce
-this). I'll also try kernels w/ the problematic merge patch backed out
-to see if that still "fixes" (or more likely(?) just patches over the
-real problem).
+Please no notifiers in emergency_restart.
 
-Alan
+First emergency_restart is not supposed to work reliably it is a best effort tickle
+the hardware thing.
+
+Second and more importantly whenever someone adds a notifier instead of a proper hook
+to one a code path like this it seems like avoiding building a proper interface so
+and I believe keeps us from getting all of the logic and the heuristics right.
+
+Why not just add a disable intel_vt if it is enabled call?
+
+Eric
