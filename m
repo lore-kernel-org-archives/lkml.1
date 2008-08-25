@@ -1,97 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbYHYCF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbYHYFdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754352AbYHYCF0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Aug 2008 22:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbYHYCFO
+	id S1755162AbYHYFdu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 01:33:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbYHYFdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Aug 2008 22:05:14 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:50375 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752731AbYHYCFN (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Sun, 24 Aug 2008 22:05:13 -0400
-Message-ID: <48B21507.9050708@sgi.com>
-Date: Mon, 25 Aug 2008 12:12:23 +1000
-From: Lachlan McIlroy <lachlan@sgi.com>
-Reply-To: lachlan@sgi.com
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
-MIME-Version: 1.0
-To: Daniel J Blueman <daniel.blueman@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
-       hch@lst.de
-Subject: Re: [2.6.27-rc4] XFS i_lock vs i_iolock...
-References: <6278d2220808221412x28f4ac5dl508884c8030b364a@mail.gmail.com> <20080825010213.GO5706@disturbed>
-In-Reply-To: <20080825010213.GO5706@disturbed>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Aug 2008 01:33:17 -0400
+Received: from sh.osrg.net ([192.16.179.4]:46144 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752460AbYHYFdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 01:33:17 -0400
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, nix@esperi.org.uk, adobriyan@gmail.com,
+       fujita.tomonori@lab.ntt.co.jp, stable@kernel.org
+Subject: [PATCH 1/2] bio: fix bio_copy_kern() handling of bio->bv_len
+Date: Mon, 25 Aug 2008 14:22:52 +0900
+Message-Id: <1219641773-25856-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.5.GIT
+In-Reply-To: <1219641773-25856-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <871w0eb9nx.fsf@hades.wkstn.nix>
+ <1219641773-25856-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Chinner wrote:
-> On Fri, Aug 22, 2008 at 10:12:59PM +0100, Daniel J Blueman wrote:
->> On 2.6.27-rc4 with various debug options enabled, lockdep claims lock
->> ordering issues with XFS [1] - easiest reproducer is just running
->> xfs_fsr. Mount options I was using were
->> 'nobarrier,noatime,nodiratime'.
->>
->> Thanks,
->>   Daniel
->>
->> --- [1]
->>
->> =======================================================
->> [ INFO: possible circular locking dependency detected ]
->> 2.6.27-rc4-224c #1
->> -------------------------------------------------------
->> xfs_fsr/5763 is trying to acquire lock:
->>  (&(&ip->i_lock)->mr_lock/2){--..}, at: [<ffffffff803ad8fc>] xfs_ilock+0x8c/0xb0
->>
->> but task is already holding lock:
->>  (&(&ip->i_iolock)->mr_lock/3){--..}, at: [<ffffffff803ad915>]
->> xfs_ilock+0xa5/0xb0
-> 
-> False positive. We do:
-> 
-> 	xfs_lock_two_inodes(ip, tip, XFS_IOLOCK_EXCL | XFS_ILOCK_EXCL);
+The commit 68154e90c9d1492d570671ae181d9a8f8530da55 introduced
+bio_copy_kern() to add bounce support to blk_rq_map_kern.
 
-Why not just change the above line to two lines:
-	xfs_lock_two_inodes(ip, tip, XFS_IOLOCK_EXCL);
-	xfs_lock_two_inodes(ip, tip, XFS_ILOCK_EXCL);
+bio_copy_kern() uses bio->bv_len to copy data for READ commands after
+the completion but it doesn't work with a request that partially
+completed. SCSI always completes a PC request as a whole but seems
+some don't.
 
+This patch fixes bio_copy_kern to handle the above case. As
+bio_copy_user does, bio_copy_kern uses struct bio_map_data to store
+struct bio_vec.
 
-> 	.....
-> 	xfs_iunlock(ip, XFS_ILOCK_EXCL);
-> 	xfs_iunlock(tip, XFS_ILOCK_EXCL);
-> 	.....
-> 	xfs_lock_two_inodes(ip, tip, XFS_ILOCK_EXCL);
-> 
-> Which is a perfectly valid thing to do.
-> 
-> The problem is that lockdep is complaining about the second call
-> to xfs_lock_two_inodes(), which uses the subclasses 2 and 3.
-> effectively it is seeing:
-> 
-> 	xfs_lock_two_inodes(ip, tip, XFS_IOLOCK_EXCL | XFS_ILOCK_EXCL);
-> 		iolock/2
-> 		ilock/2
-> 		iolock/3
-> 		ilock/3
-> 	.....
-> 	xfs_lock_two_inodes(ip, tip, XFS_ILOCK_EXCL);
-> 		ilock/2
-> 		ilock/3
-> 
-> 
-> But because the original lock order was ilock/2->iolock/3, the
-> second call to xfs_lock_two_inodes is seeing iolock/3->ilock/2
-> which it then complains about....
-> 
-> Christoph - I think we're going to need to pass a lockdep 'order'
-> flag into xfs_lock_two_inodes() to avoid this so the second call
-> can use different classes to the first call. Or perhaps a '_nested'
-> variant of the call...
-> 
-> Cheers,
-> 
-> Dave.
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Reported-by: Nix <nix@esperi.org.uk>
+Tested-by: Nix <nix@esperi.org.uk>
+Cc: stable@kernel.org
+---
+ fs/bio.c |   38 ++++++++++++++++++++++++++++----------
+ 1 files changed, 28 insertions(+), 10 deletions(-)
+
+diff --git a/fs/bio.c b/fs/bio.c
+index 8000e2f..8b1f5ee 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -469,20 +469,21 @@ static void bio_free_map_data(struct bio_map_data *bmd)
+ 	kfree(bmd);
+ }
+ 
+-static struct bio_map_data *bio_alloc_map_data(int nr_segs, int iov_count)
++static struct bio_map_data *bio_alloc_map_data(int nr_segs, int iov_count,
++					       gfp_t gfp_mask)
+ {
+-	struct bio_map_data *bmd = kmalloc(sizeof(*bmd), GFP_KERNEL);
++	struct bio_map_data *bmd = kmalloc(sizeof(*bmd), gfp_mask);
+ 
+ 	if (!bmd)
+ 		return NULL;
+ 
+-	bmd->iovecs = kmalloc(sizeof(struct bio_vec) * nr_segs, GFP_KERNEL);
++	bmd->iovecs = kmalloc(sizeof(struct bio_vec) * nr_segs, gfp_mask);
+ 	if (!bmd->iovecs) {
+ 		kfree(bmd);
+ 		return NULL;
+ 	}
+ 
+-	bmd->sgvecs = kmalloc(sizeof(struct sg_iovec) * iov_count, GFP_KERNEL);
++	bmd->sgvecs = kmalloc(sizeof(struct sg_iovec) * iov_count, gfp_mask);
+ 	if (bmd->sgvecs)
+ 		return bmd;
+ 
+@@ -596,7 +597,7 @@ struct bio *bio_copy_user_iov(struct request_queue *q, struct sg_iovec *iov,
+ 		len += iov[i].iov_len;
+ 	}
+ 
+-	bmd = bio_alloc_map_data(nr_pages, iov_count);
++	bmd = bio_alloc_map_data(nr_pages, iov_count, GFP_KERNEL);
+ 	if (!bmd)
+ 		return ERR_PTR(-ENOMEM);
+ 
+@@ -942,19 +943,22 @@ static void bio_copy_kern_endio(struct bio *bio, int err)
+ {
+ 	struct bio_vec *bvec;
+ 	const int read = bio_data_dir(bio) == READ;
+-	char *p = bio->bi_private;
++	struct bio_map_data *bmd = bio->bi_private;
+ 	int i;
++	char *p = bmd->sgvecs[0].iov_base;
+ 
+ 	__bio_for_each_segment(bvec, bio, i, 0) {
+ 		char *addr = page_address(bvec->bv_page);
++		int len = bmd->iovecs[i].bv_len;
+ 
+ 		if (read && !err)
+-			memcpy(p, addr, bvec->bv_len);
++			memcpy(p, addr, len);
+ 
+ 		__free_page(bvec->bv_page);
+-		p += bvec->bv_len;
++		p += len;
+ 	}
+ 
++	bio_free_map_data(bmd);
+ 	bio_put(bio);
+ }
+ 
+@@ -978,11 +982,21 @@ struct bio *bio_copy_kern(struct request_queue *q, void *data, unsigned int len,
+ 	const int nr_pages = end - start;
+ 	struct bio *bio;
+ 	struct bio_vec *bvec;
++	struct bio_map_data *bmd;
+ 	int i, ret;
++	struct sg_iovec iov;
++
++	iov.iov_base = data;
++	iov.iov_len = len;
++
++	bmd = bio_alloc_map_data(nr_pages, 1, gfp_mask);
++	if (!bmd)
++		return ERR_PTR(-ENOMEM);
+ 
++	ret = -ENOMEM;
+ 	bio = bio_alloc(gfp_mask, nr_pages);
+ 	if (!bio)
+-		return ERR_PTR(-ENOMEM);
++		goto out_bmd;
+ 
+ 	while (len) {
+ 		struct page *page;
+@@ -1016,14 +1030,18 @@ struct bio *bio_copy_kern(struct request_queue *q, void *data, unsigned int len,
+ 		}
+ 	}
+ 
+-	bio->bi_private = data;
++	bio->bi_private = bmd;
+ 	bio->bi_end_io = bio_copy_kern_endio;
++
++	bio_set_map_data(bmd, bio, &iov, 1);
+ 	return bio;
+ cleanup:
+ 	bio_for_each_segment(bvec, bio, i)
+ 		__free_page(bvec->bv_page);
+ 
+ 	bio_put(bio);
++out_bmd:
++	bio_free_map_data(bmd);
+ 
+ 	return ERR_PTR(ret);
+ }
+-- 
+1.5.5.GIT
+
