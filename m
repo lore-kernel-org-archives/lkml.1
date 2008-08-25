@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbYHYXac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbYHYXbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754507AbYHYXac (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 19:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbYHYXaX
+	id S1756010AbYHYXbf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 19:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbYHYXb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 19:30:23 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:43922 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752306AbYHYXaX (ORCPT
+	Mon, 25 Aug 2008 19:31:27 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38759 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753157AbYHYXb0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 19:30:23 -0400
-Date: Mon, 25 Aug 2008 19:30:20 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: UML build failure in 2.6.27-rc3
-Message-ID: <20080825233020.GD9454@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org
-References: <E1KWBwC-0002dN-KE@closure.thunk.org> <20080825220406.GC12626@c2.user-mode-linux.org>
+	Mon, 25 Aug 2008 19:31:26 -0400
+Date: Tue, 26 Aug 2008 08:31:02 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mike Travis <travis@sgi.com>
+Subject: Re: [RFC][PATCH 2/2] quicklist shouldn't be proportional to # of CPUs
+Cc: kosaki.motohiro@jp.fujitsu.com, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, cl@linux-foundation.org,
+       tokunaga.keiich@jp.fujitsu.com
+In-Reply-To: <48B2FC9D.3020300@sgi.com>
+References: <20080821.001322.236658980.davem@davemloft.net> <48B2FC9D.3020300@sgi.com>
+Message-Id: <20080826082756.232C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080825220406.GC12626@c2.user-mode-linux.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 25, 2008 at 06:04:06PM -0400, Jeff Dike wrote:
-> Are you sure you have a consistent tree?  I see no declaration of
-> send_sigtrap in ptrace-generic.h.  There is one in asm-x86/ptrace.h
-> but it's not at line 51.
+Hi Mike, 
 
-Now I see what happened.  I did have a consistent tree, but I was
-doing a build via "make ARCH=um O=/usr/projects/linux/uml" --- and I
-had previously built a UML tree from another source tree without doing
-a "make mrproper", so /usr/projects/linux/uml/include2/asm was a
-symlink to another kernel tree's include/asm directory.
+> >>> +	num_cpus_per_node = cpus_weight_nr(node_to_cpumask(node));
+> 
+> I think the more correct usage would be:
+> 
+> 	{
+> 		node_to_cpumask_ptr(v, node);
+> 		num_cpus_per_node = cpus_weight_nr(*v);
+> 		max /= num_cpus_per_node;
+> 
+> 		return max(max, min_pages);
+> 	}
+> 
+> which should load 'v' with a pointer to the node_to_cpumask_map[node] entry
+> [and avoid using stack space for the cpumask_t variable for those arch's
+> that define a node_to_cpumask_map (or similar).]  Otherwise a local cpumask_t
+> variable '_v' is created to which 'v' is pointing to and thus can be used
+> directly as an arg to the cpu_xxx ops.
 
-It might be nice if kbuild caught the inconsistency, but this was my
-bad.
+Thank you for your attension.
+please see my latest patch (http://marc.info/?l=linux-mm&m=121966459713193&w=2)
+it do that.
 
-							- Ted
+
+
