@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbYHYKvF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbYHYLBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbYHYKvF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 06:51:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbYHYKtr
+	id S1755425AbYHYLBZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 07:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757227AbYHYK7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 06:49:47 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44044 "EHLO hera.kernel.org"
+	Mon, 25 Aug 2008 06:59:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51893 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756344AbYHYKto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 06:49:44 -0400
+	id S1756749AbYHYK7G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 06:59:06 -0400
 From: Tejun Heo <tj@kernel.org>
 To: Jens Axboe <jens.axboe@oracle.com>
 Cc: James.Bottomley@HansenPartnership.com, bzolnier@gmail.com,
@@ -16,169 +16,84 @@ Cc: James.Bottomley@HansenPartnership.com, bzolnier@gmail.com,
        linux-scsi@vger.kernel.org, brking@linux.vnet.ibm.com, liml@rtr.ca,
        viro@ftp.linux.org.uk, linux-ide@vger.kernel.org, neilb@suse.de,
        linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
-Subject: [PATCH 09/09] block: implement CONFIG_DEBUG_BLOCK_EXT_DEVT
-Date: Mon, 25 Aug 2008 19:47:25 +0900
-Message-Id: <1219661245-16055-10-git-send-email-tj@kernel.org>
+Subject: [PATCH 05/13] block: unify sysfs size node handling
+Date: Mon, 25 Aug 2008 19:56:09 +0900
+Message-Id: <1219661777-17648-6-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1219661245-16055-1-git-send-email-tj@kernel.org>
-References: <1219661245-16055-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 Aug 2008 10:48:52 +0000 (UTC)
+In-Reply-To: <1219661777-17648-1-git-send-email-tj@kernel.org>
+References: <1219661777-17648-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 25 Aug 2008 10:57:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Extended devt introduces non-contiguos device numbers.  This patch
-implements a debug option which forces most devt allocations to be
-from the extended area and spreads them out.  This is enabled by
-default if DEBUG_KERNEL is set and achieves...
-
-1. Detects code paths in kernel or userland which expect predetermined
-   consecutive device numbers.
-
-2. When something goes wrong, avoid corruption as adding to the minor
-   of earlier partition won't lead to the wrong but valid device.
+Now that capacity and __dev are moved to part0, part0 and others can
+share the same method.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- block/genhd.c          |   38 +++++++++++++++++++++++++++++++++++---
- drivers/ide/ide-disk.c |    6 ++++++
- drivers/scsi/sd.c      |    6 ++++++
- lib/Kconfig.debug      |   16 ++++++++++++++++
- 4 files changed, 63 insertions(+), 3 deletions(-)
+ block/genhd.c         |   10 +---------
+ fs/partitions/check.c |    4 ++--
+ include/linux/genhd.h |    3 +++
+ 3 files changed, 6 insertions(+), 11 deletions(-)
 
 diff --git a/block/genhd.c b/block/genhd.c
-index 93ebc6c..dbfae29 100644
+index aca135a..b560d71 100644
 --- a/block/genhd.c
 +++ b/block/genhd.c
-@@ -299,6 +299,38 @@ EXPORT_SYMBOL(unregister_blkdev);
- static struct kobj_map *bdev_map;
- 
- /**
-+ * blk_mangle_minor - scatter minor numbers apart
-+ * @minor: minor number to mangle
-+ *
-+ * Scatter consecutively allocated @minor number apart if MANGLE_DEVT
-+ * is enabled.  Mangling twice gives the original value.
-+ *
-+ * RETURNS:
-+ * Mangled value.
-+ *
-+ * CONTEXT:
-+ * Don't care.
-+ */
-+static int blk_mangle_minor(int minor)
-+{
-+#ifdef CONFIG_DEBUG_BLOCK_EXT_DEVT
-+	int i;
-+
-+	for (i = 0; i < MINORBITS / 2; i++) {
-+		int low = minor & (1 << i);
-+		int high = minor & (1 << (MINORBITS - 1 - i));
-+		int distance = MINORBITS - 1 - 2 * i;
-+
-+		minor ^= low | high;	/* clear both bits */
-+		low <<= distance;	/* swap the positions */
-+		high >>= distance;
-+		minor |= low | high;	/* and set */
-+	}
-+#endif
-+	return minor;
-+}
-+
-+/**
-  * blk_alloc_devt - allocate a dev_t for a partition
-  * @part: partition to allocate dev_t for
-  * @gfp_mask: memory allocation flag
-@@ -339,7 +371,7 @@ int blk_alloc_devt(struct hd_struct *part, dev_t *devt)
- 		return -EBUSY;
- 	}
- 
--	*devt = MKDEV(BLOCK_EXT_MAJOR, idx);
-+	*devt = MKDEV(BLOCK_EXT_MAJOR, blk_mangle_minor(idx));
- 	return 0;
+@@ -761,14 +761,6 @@ static ssize_t disk_ro_show(struct device *dev,
+ 	return sprintf(buf, "%d\n", disk->policy ? 1 : 0);
  }
  
-@@ -361,7 +393,7 @@ void blk_free_devt(dev_t devt)
- 
- 	if (MAJOR(devt) == BLOCK_EXT_MAJOR) {
- 		mutex_lock(&ext_devt_mutex);
--		idr_remove(&ext_devt_idr, MINOR(devt));
-+		idr_remove(&ext_devt_idr, blk_mangle_minor(MINOR(devt)));
- 		mutex_unlock(&ext_devt_mutex);
- 	}
+-static ssize_t disk_size_show(struct device *dev,
+-			      struct device_attribute *attr, char *buf)
+-{
+-	struct gendisk *disk = dev_to_disk(dev);
+-
+-	return sprintf(buf, "%llu\n", (unsigned long long)get_capacity(disk));
+-}
+-
+ static ssize_t disk_capability_show(struct device *dev,
+ 				    struct device_attribute *attr, char *buf)
+ {
+@@ -836,7 +828,7 @@ static DEVICE_ATTR(range, S_IRUGO, disk_range_show, NULL);
+ static DEVICE_ATTR(ext_range, S_IRUGO, disk_ext_range_show, NULL);
+ static DEVICE_ATTR(removable, S_IRUGO, disk_removable_show, NULL);
+ static DEVICE_ATTR(ro, S_IRUGO, disk_ro_show, NULL);
+-static DEVICE_ATTR(size, S_IRUGO, disk_size_show, NULL);
++static DEVICE_ATTR(size, S_IRUGO, part_size_show, NULL);
+ static DEVICE_ATTR(capability, S_IRUGO, disk_capability_show, NULL);
+ static DEVICE_ATTR(stat, S_IRUGO, disk_stat_show, NULL);
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index 540ef84..9ab3e64 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -208,8 +208,8 @@ static ssize_t part_start_show(struct device *dev,
+ 	return sprintf(buf, "%llu\n",(unsigned long long)p->start_sect);
  }
-@@ -475,7 +507,7 @@ struct gendisk *get_gendisk(dev_t devt, int *partno)
- 		struct hd_struct *part;
  
- 		mutex_lock(&ext_devt_mutex);
--		part = idr_find(&ext_devt_idr, MINOR(devt));
-+		part = idr_find(&ext_devt_idr, blk_mangle_minor(MINOR(devt)));
- 		if (part && get_disk(part_to_disk(part))) {
- 			*partno = part->partno;
- 			disk = part_to_disk(part);
-diff --git a/drivers/ide/ide-disk.c b/drivers/ide/ide-disk.c
-index ce24caf..b4cc1ce 100644
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -42,7 +42,13 @@
- #include <asm/div64.h>
+-static ssize_t part_size_show(struct device *dev,
+-			      struct device_attribute *attr, char *buf)
++ssize_t part_size_show(struct device *dev,
++		       struct device_attribute *attr, char *buf)
+ {
+ 	struct hd_struct *p = dev_to_part(dev);
+ 	return sprintf(buf, "%llu\n",(unsigned long long)p->nr_sects);
+diff --git a/include/linux/genhd.h b/include/linux/genhd.h
+index 242effa..e89559a 100644
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -601,6 +601,9 @@ extern void blk_register_region(dev_t devt, unsigned long range,
+ 			void *data);
+ extern void blk_unregister_region(dev_t devt, unsigned long range);
  
- #define IDE_DISK_PARTS		(1 << PARTN_BITS)
++extern ssize_t part_size_show(struct device *dev,
++			      struct device_attribute *attr, char *buf);
 +
-+#if !defined(CONFIG_DEBUG_BLOCK_EXT_DEVT)
- #define IDE_DISK_MINORS		IDE_DISK_PARTS
-+#else
-+#define IDE_DISK_MINORS		1
-+#endif
-+
- #define IDE_DISK_EXT_MINORS	(IDE_DISK_PARTS - IDE_DISK_MINORS)
+ #else /* CONFIG_BLOCK */
  
- struct ide_disk_obj {
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index d1bb0e1..280d231 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -87,7 +87,13 @@ MODULE_ALIAS_SCSI_DEVICE(TYPE_MOD);
- MODULE_ALIAS_SCSI_DEVICE(TYPE_RBC);
- 
- #define SD_PARTS	64
-+
-+#if !defined(CONFIG_DEBUG_BLOCK_EXT_DEVT)
- #define SD_MINORS	16
-+#else
-+#define SD_MINORS	1
-+#endif
-+
- #define SD_EXT_MINORS	(SD_PARTS - SD_MINORS)
- 
- static int  sd_revalidate_disk(struct gendisk *);
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 8b5a7d3..1bc3c07 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -624,6 +624,22 @@ config BACKTRACE_SELF_TEST
- 
- 	  Say N if you are unsure.
- 
-+config DEBUG_BLOCK_EXT_DEVT
-+        bool "Force extended block device numbers and spread them"
-+	depends on DEBUG_KERNEL
-+	depends on BLOCK
-+	default y
-+	help
-+	  Conventionally, block device numbers are allocated from
-+	  predetermined contiguous area.  However, extended block area
-+	  may introduce non-contiguous block device numbers.  This
-+	  option forces most block device numbers to be allocated from
-+	  the extended space and spreads them to discover kernel or
-+	  userland code paths which assume predetermined contiguous
-+	  device number allocation.
-+
-+	  Say N if you are unsure.
-+
- config LKDTM
- 	tristate "Linux Kernel Dump Test Tool Module"
- 	depends on DEBUG_KERNEL
+ static inline void printk_all_partitions(void) { }
 -- 
 1.5.4.5
 
