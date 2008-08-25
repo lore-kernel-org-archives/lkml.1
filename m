@@ -1,97 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbYHYHYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbYHYH5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754914AbYHYHYA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 03:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbYHYHXv
+	id S1754811AbYHYH5T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 03:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbYHYH5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 03:23:51 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:41471 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751549AbYHYHXu (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 03:23:50 -0400
-Date: Mon, 25 Aug 2008 09:23:46 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Will Marone <wjmarone@gmail.com>
-cc: Jared Hulbert <jaredeh@gmail.com>, Linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>, tim.bird@AM.SONY.COM
-Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
-In-Reply-To: <48AF3905.70304@gmail.com>
-Message-ID: <Pine.LNX.4.64.0808250922500.3893@vixen.sonytel.be>
-References: <48AD00C4.6060302@gmail.com> <Pine.LNX.4.64.0808221650500.17105@vixen.sonytel.be>
- <48AF3905.70304@gmail.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1942548691-1219649026=:3893"
+	Mon, 25 Aug 2008 03:57:09 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:7392 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752004AbYHYH5G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 03:57:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=Z04N0AQr3yMMqnitqYKjQCxhL7i3oqusDndqHWhnhCN12H3smwfCsVWv6iZyVnc+F9
+         eO5nkdHHZO14uVAKdaKuqiBRNmoc7ElFdK4nevrGbulffihoUHIQqjO3LpRPB0omlfiN
+         0YlURvbdhs6KptcQnUFVUILI1At85xvK5hbDw=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: check hpet with BAR v3
+Date: Mon, 25 Aug 2008 00:56:08 -0700
+Message-Id: <1219650968-3534-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+insert some resources to resource tree forcily, so could avoid kernel update the
+resources in pci device.
 
----584349381-1942548691-1219649026=:3893
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+should check in device too.
 
-On Fri, 22 Aug 2008, Will Marone wrote:
-> Geert Uytterhoeven wrote:
-> > I gave AxFS a try on PS3 (ppc64, always use big-endian 64-bit for testing
-> > new
-> > code ;-).
-> > When mounting the image, I got the crash below:
-> >
-> > | attempt to access beyond end of device
-> > | loop0: rw=0, want=4920, limit=4912
-> > | Unable to handle kernel paging request for data at address 0x00000028
-> > | Faulting instruction address: 0xd000000000037988
-> > | Oops: Kernel access of bad area, sig: 11 [#1]
-> > | SMP NR_CPUS=2 PS3
-> >
-> > When mounting (also on PS3) an image created on ia32, I get a different
-> > crash:
-> >
-> > | axfs: wrong magic
-> >   ^^^^^^^^^^^^^^^^^
-> > | Unable to handle kernel paging request for data at address 0x000003a8
-> > | Faulting instruction address: 0xd0000000000355f0
-> > | Oops: Kernel access of bad area, sig: 11 [#1]
-> > | SMP NR_CPUS=2 PS
-> Geert,
-> 
-> Thanks for giving it a spin, especially on a platform as different from ours
-> as the PS3.
-> 
-> Before I dig more into what happened, I was wondering if you could tell me a
-> bit more
-> about your environment, particularly how you supplied the filesystem to the
-> kernel and
-> your mount commandline (also, if you used a boot commandline, what it was.)
-> 
-> My first guess would be a ppc64 compiled UML session, but I'd like to be a bit
-> more sure.
+add check for ioapic and mmconfig
 
-Nope, I just built axfs as a module and insmoded it. After that
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-    mount image.axfs /mnt -o loop -t axfs
+---
+ arch/x86/pci/i386.c |   78 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 78 insertions(+)
 
-So nothing fancy.
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-1942548691-1219649026=:3893--
+Index: linux-2.6/arch/x86/pci/i386.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/i386.c
++++ linux-2.6/arch/x86/pci/i386.c
+@@ -31,8 +31,11 @@
+ #include <linux/ioport.h>
+ #include <linux/errno.h>
+ #include <linux/bootmem.h>
++#include <linux/acpi.h>
+ 
+ #include <asm/pat.h>
++#include <asm/hpet.h>
++#include <asm/io_apic.h>
+ 
+ #include "pci.h"
+ 
+@@ -77,6 +80,77 @@ pcibios_align_resource(void *data, struc
+ }
+ EXPORT_SYMBOL(pcibios_align_resource);
+ 
++static int check_res_with_valid(struct pci_dev *dev, struct resource *res)
++{
++	unsigned long base;
++	unsigned long size;
++	int i;
++
++	base = res->start;
++	size = (res->start == 0 && res->end == res->start) ? 0 :
++		 (res->end - res->start + 1);
++
++	if (!base || !size)
++		return 0;
++
++#ifdef CONFIG_HPET_TIMER
++	/* for hpet */
++	if (base == hpet_address && (res->flags & IORESOURCE_MEM)) {
++		dev_info(&dev->dev, "BAR has HPET at %08lx-%08lx\n",
++				 base, base + size - 1);
++		return 1;
++	}
++#endif
++
++#ifdef CONFIG_X86_IO_APIC
++	for (i = 0; i < nr_ioapics; i++) {
++		unsigned long ioapic_phys = mp_ioapics[i].mp_apicaddr;
++
++		if (base == ioapic_phys && (res->flags & IORESOURCE_MEM)) {
++			dev_info(&dev->dev, "BAR has ioapic at %08lx-%08lx\n",
++					 base, base + size - 1);
++			return 1;
++		}
++	}
++#endif
++
++#ifdef CONFIG_PCI_MMCONFIG
++	for (i = 0; i < pci_mmcfg_config_num; i++) {
++		unsigned long addr;
++
++		addr = pci_mmcfg_config[i].address;
++		if (base == addr && (res->flags & IORESOURCE_MEM)) {
++			dev_info(&dev->dev, "BAR has MMCONFIG at %08lx-%08lx\n",
++					 base, base + size - 1);
++			return 1;
++		}
++	}
++#endif
++
++	return 0;
++}
++
++static int check_platform(struct pci_dev *dev, struct resource *res)
++{
++	struct resource *root = NULL;
++
++	/*
++	 * forcibly insert it into the
++	 * resource tree
++	 */
++	if (res->flags & IORESOURCE_MEM)
++		root = &iomem_resource;
++	else if (res->flags & IORESOURCE_IO)
++		root = &ioport_resource;
++
++	if (root && check_res_with_valid(dev, res)) {
++		insert_resource(root, res);
++
++		return 1;
++	}
++
++	return 0;
++}
+ /*
+  *  Handle resources of PCI devices.  If the world were perfect, we could
+  *  just allocate all the resource regions and do nothing more.  It isn't.
+@@ -128,6 +202,8 @@ static void __init pcibios_allocate_bus_
+ 				pr = pci_find_parent_resource(dev, r);
+ 				if (!r->start || !pr ||
+ 				    request_resource(pr, r) < 0) {
++					if (check_platform(dev, r))
++						continue;
+ 					dev_err(&dev->dev, "BAR %d: can't "
+ 						"allocate resource\n", idx);
+ 					/*
+@@ -171,6 +247,8 @@ static void __init pcibios_allocate_reso
+ 					r->flags, disabled, pass);
+ 				pr = pci_find_parent_resource(dev, r);
+ 				if (!pr || request_resource(pr, r) < 0) {
++					if (check_platform(dev, r))
++						continue;
+ 					dev_err(&dev->dev, "BAR %d: can't "
+ 						"allocate resource\n", idx);
+ 					/* We'll assign a new address later */
