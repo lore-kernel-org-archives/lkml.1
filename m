@@ -1,347 +1,433 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbYHYRuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbYHYRvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbYHYRuU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 13:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754186AbYHYRuG
+	id S1756007AbYHYRvU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 13:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbYHYRvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 13:50:06 -0400
-Received: from n6.bullet.mail.ac4.yahoo.com ([76.13.13.234]:25949 "HELO
-	n6.bullet.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752835AbYHYRuE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 13:50:04 -0400
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 109018.62812.bm@omp104.mail.ac4.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=Jx/rII1Xjj2arG/zAyBvQ+CCKNCGaFkpWZiKoksgJzWMrZgh9u4syvdaJw8fCS+sez+OHKukziZbZOFKLVYgztdSqdb783Ge28328cJDf1doqHWOfh7PVe7wzk7csFamWBPsDKRhJjljcnsifvEE93cOJiqjt8CIsWtBYowuW+s=;
-X-Mailer: YahooMailWebService/0.7.218.2
-Date: Mon, 25 Aug 2008 10:50:01 -0700 (PDT)
-From: amruth <amruth_pv@yahoo.com>
-Reply-To: amruth_pv@yahoo.com
-Subject: USB Serial device disconnect causes IRQ disable not working after patch
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <685308.61820.qm@web45211.mail.sp1.yahoo.com>
+	Mon, 25 Aug 2008 13:51:11 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47779 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753468AbYHYRvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 13:51:10 -0400
+Date: Mon, 25 Aug 2008 19:50:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [git pull] x86 fixes
+Message-ID: <20080825175051.GA7101@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <334606.17794.qm@web45209.mail.sp1.yahoo.com>
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-Alan
-The patch suggested by you did not work. I tried in another computer and found same issue. I have detailed log below.
+Linus,
+
+Please pull the latest x86-fixes-for-linus git tree from:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+
+I'd like to highlight this commit:
+
+   x86: fix HPET regression in 2.6.26 versus 2.6.25, check hpet against BAR, v3
+
+... which solves the bug for v2.6.27 but the long-term solution would 
+IMO be to:
+
+  1) convert all x86 platform device support to the generic struct 
+     platform_device abstraction
+
+  2) and to extend the resource manager in kernel/resource.c with the 
+     ability to make resources registered by a platform device 
+     'sticky/aliasable'.
+
+That way platform devices would run first and register their resources, 
+and the PCI code would then later on automatically recognize a resource 
+already registered by a platform driver and would not re-allocate that 
+PCI BAR and thus confuse the platform driver into not working. I havent 
+seen such current capability/flag in kernel/resource.c - but i might 
+have overlooked it.
+
+We can delay that commit/fix if you can see a better solution for 
+v2.6.27.
+
+	Ingo
+
+------------------>
+Austin Zhang (1):
+      x86: add X86_FEATURE_XMM4_2 definitions
+
+Linus Torvalds (1):
+      x86: do not enable TSC notifier if we don't need it
+
+Peter Zijlstra (1):
+      x86: fix cpufreq + sched_clock() regression
+
+Rafael J. Wysocki (1):
+      x86 MCE: Fix CPU hotplug problem with multiple multicore AMD CPUs
+
+Robert Richter (2):
+      x86: fix: do not run code in amd_bus.c on non-AMD CPUs
+      x86: fix: make PCI ECS for AMD CPUs hotplug capable
+
+Yinghai Lu (1):
+      x86: fix HPET regression in 2.6.26 versus 2.6.25, check hpet against BAR, v3
 
 
-[   44.761371] uhci_hcd 0000:00:1d.1: release dev 3 ep81-INT, period 8, phase 4, 93 us
-[   46.568107] uhci_hcd 0000:00:1d.1: reserve dev 3 ep81-INT, period 8, phase 4, 93 us
-[   46.569949] uhci_hcd 0000:00:1d.1: release dev 3 ep81-INT, period 8, phase 4, 93 us
-[   46.570174] uhci_hcd 0000:00:1d.1: reserve dev 3 ep81-INT, period 8, phase 4, 93 us
-[   46.570942] uhci_hcd 0000:00:1d.1: release dev 3 ep81-INT, period 8, phase 4, 93 us
-[   47.576006] uhci_hcd 0000:00:1d.1: reserve dev 3 ep81-INT, period 8, phase 4, 93 us
-[  112.460694] usbserial: USB Serial support registered for Magtek 75/Excella USB card reader
-[  112.462710] usbcore: registered new interface driver magtek
-[  112.463185] magtek: v1.01 Amruth Vamadev
-[  112.463192] magtek: MAGTEK 75/Excella check USB Chipcard Reader Driver
-[  143.041808] hub 1-0:1.0: state 7 ports 6 chg 0000 evt 0002
-[  143.041808] ehci_hcd 0000:00:1d.7: GetStatus port 1 status 001803 POWER sig=j CSC CONNECT
-[  143.041808] hub 1-0:1.0: port 1, status 0501, change 0001, 480 Mb/s
-[  143.168024] hub 1-0:1.0: debounce: port 1: total 100ms stable 100ms status 0x501
-[  143.224309] ehci_hcd 0000:00:1d.7: port 1 high speed
-[  143.224323] ehci_hcd 0000:00:1d.7: GetStatus port 1 status 001005 POWER sig=se0 PE CONNECT
-[  143.280021] usb 1-1: new high speed USB device using ehci_hcd and address 4
-[  143.336281] ehci_hcd 0000:00:1d.7: port 1 high speed
-[  143.336292] ehci_hcd 0000:00:1d.7: GetStatus port 1 status 001005 POWER sig=se0 PE CONNECT
-[  143.412650] usb 1-1: default language 0x0409
-[  143.413121] usb 1-1: uevent
-[  143.417056] usb 1-1: usb_probe_device
-[  143.417068] usb 1-1: configuration #1 chosen from 1 choice
-[  143.417361] usb 1-1: adding 1-1:1.0 (config #1, interface 0)
-[  143.417422] usb 1-1:1.0: uevent
-[  143.417622] usbserial_generic 1-1:1.0: usb_probe_interface
-[  143.417627] usbserial_generic 1-1:1.0: usb_probe_interface - got id
-[  143.417646] magtek 1-1:1.0: usb_probe_interface
-[  143.417650] magtek 1-1:1.0: usb_probe_interface - got id
-[  143.417659] magtek 1-1:1.0: Magtek 75/Excella USB card reader converter detected
-[  143.417669] drivers/usb/serial/magtek.c: magtek_startup
-[  143.417800] usb 1-1: link qh0-00ff/df91b100 start 0 [1/0 us]
-[  143.417865] drivers/usb/serial/magtek.c: magtek_startup - usb_submit_urb(int urb)
-[  143.418108] usb 1-1: Magtek 75/Excella USB card reader converter now attached to ttyUSB0
-[  143.418874] drivers/usb/core/inode.c: creating file '004'
-[  143.419046] usb 1-1: New USB device found, idVendor=0801, idProduct=2231
-[  143.419052] usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
-[  143.419056] usb 1-1: Product: STX
-[  143.419059] usb 1-1: Manufacturer: MagTek
-[  143.419062] usb 1-1: SerialNumber: STX001
-[  148.765273] hub 1-0:1.0: state 7 ports 6 chg 0000 evt 0004
-[  148.765273] ehci_hcd 0000:00:1d.7: GetStatus port 2 status 001803 POWER sig=j CSC CONNECT
-[  148.765273] hub 1-0:1.0: port 2, status 0501, change 0001, 480 Mb/s
-[  148.892021] hub 1-0:1.0: debounce: port 2: total 100ms stable 100ms status 0x501
-[  148.948172] ehci_hcd 0000:00:1d.7: port 2 full speed --> companion
-[  148.948184] ehci_hcd 0000:00:1d.7: GetStatus port 2 status 003801 POWER OWNER sig=j CONNECT
-[  148.948201] usb usb2: wakeup_rh (auto-start)
-[  148.948222] hub 1-0:1.0: port 2 not reset yet, waiting 50ms
-[  149.004019] ehci_hcd 0000:00:1d.7: GetStatus port 2 status 003002 POWER OWNER sig=se0 CSC
-[  149.004054] hub 2-0:1.0: state 7 ports 2 chg 0000 evt 0004
-[  149.004065] uhci_hcd 0000:00:1d.0: port 2 portsc 0093,00
-[  149.004075] hub 2-0:1.0: port 2, status 0101, change 0001, 12 Mb/s
-[  149.132021] hub 2-0:1.0: debounce: port 2: total 100ms stable 100ms status 0x101
-[  149.244042] usb 2-2: new full speed USB device using uhci_hcd and address 2
-[  149.376015] usb 2-2: ep0 maxpacket = 8
-[  149.399097] usb 2-2: default language 0x0409
-[  149.408004] usb 2-2: uevent
-[  149.418007] usb 2-2: usb_probe_device
-[  149.418019] usb 2-2: configuration #1 chosen from 1 choice
-[  149.421042] usb 2-2: adding 2-2:1.0 (config #1, interface 0)
-[  149.421112] usb 2-2:1.0: uevent
-[  149.421158] usbserial_generic 2-2:1.0: usb_probe_interface
-[  149.421163] usbserial_generic 2-2:1.0: usb_probe_interface - got id
-[  149.421182] magtek 2-2:1.0: usb_probe_interface
-[  149.421186] magtek 2-2:1.0: usb_probe_interface - got id
-[  149.421193] magtek 2-2:1.0: Magtek 75/Excella USB card reader converter detected
-[  149.421201] drivers/usb/serial/magtek.c: magtek_startup
-[  149.421219] uhci_hcd 0000:00:1d.0: reserve dev 2 ep81-INT, period 8, phase 4, 61 us
-[  149.421224] drivers/usb/serial/magtek.c: magtek_startup - usb_submit_urb(int urb)
-[  149.421453] usb 2-2: Magtek 75/Excella USB card reader converter now attached to ttyUSB1
-[  149.421595] drivers/usb/core/inode.c: creating file '002'
-[  149.421662] usb 2-2: New USB device found, idVendor=0801, idProduct=000a
-[  149.421668] usb 2-2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
-[  149.421672] usb 2-2: Product: IntelliStripe 65
-[  149.421675] usb 2-2: Manufacturer: MagTek
-[  149.421683] hub 1-0:1.0: state 7 ports 6 chg 0000 evt 0004
-[  167.564004] hub 1-0:1.0: state 7 ports 6 chg 0000 evt 0002
-[  167.564004] ehci_hcd 0000:00:1d.7: GetStatus port 1 status 001002 POWER sig=se0 CSC
-[  167.564004] hub 1-0:1.0: port 1, status 0100, change 0001, 12 Mb/s
-[  167.564004] usb 1-1: USB disconnect, address 4
-[  167.564004] usb 1-1: unregistering device
-[  167.564004] usb 1-1: usb_disable_device nuking all URBs
-[  167.564004] usb 1-1: unlink qh0-00ff/df91b100 start 0 [1/0 us]
-[  167.564004] drivers/usb/serial/magtek.c: magtek_read_int_callback - port 0
-[  167.564004] ehci_hcd 0000:00:1d.7: shutdown urb df794600 ep2in-intr
-[  167.564004] usb 1-1: unregistering interface 1-1:1.0
-[  167.564004] drivers/usb/serial/magtek.c: magtek_shutdown
-[  167.571167] magtek ttyUSB0: Magtek 75/Excella USB card reader converter now disconnected from ttyUSB0
-[  167.571226] magtek 1-1:1.0: device disconnected
-[  167.571241] usb 1-1:1.0: uevent
-[  167.571640] usb 1-1: uevent
-[  167.696020] hub 1-0:1.0: debounce: port 1: total 100ms stable 100ms status 0x100
-[  170.949363] usb 2-2: uhci_result_common: failed with status 440000
-[  170.949363] drivers/usb/serial/magtek.c: magtek_read_int_callback - port 1
-[  170.949363] uhci_hcd 0000:00:1d.0: release dev 2 ep81-INT, period 8, phase 4, 61 us
-[  171.024049] hub 2-0:1.0: state 7 ports 2 chg 0000 evt 0004
-[  171.024068] uhci_hcd 0000:00:1d.0: port 2 portsc 008a,00
-[  171.024083] hub 2-0:1.0: port 2, status 0100, change 0003, 12 Mb/s
-[  171.024089] usb 2-2: USB disconnect, address 2
-[  171.024092] usb 2-2: unregistering device
-[  171.024096] usb 2-2: usb_disable_device nuking all URBs
-[  171.024105] usb 2-2: unregistering interface 2-2:1.0
-[  171.024196] drivers/usb/serial/magtek.c: magtek_shutdown
-[  171.028630] magtek ttyUSB1: Magtek 75/Excella USB card reader converter now disconnected from ttyUSB1
-[  171.028695] magtek 2-2:1.0: device disconnected
-[  171.028710] usb 2-2:1.0: uevent
-[  171.029093] usb 2-2: uevent
-[  171.156020] hub 2-0:1.0: debounce: port 2: total 100ms stable 100ms status 0x100
-[  172.512024] usb usb2: suspend_rh (auto-stop)
-[  175.874728] hub 1-0:1.0: state 7 ports 6 chg 0000 evt 0004
-[  175.874728] ehci_hcd 0000:00:1d.7: GetStatus port 2 status 001803 POWER sig=j CSC CONNECT
-[  175.874728] hub 1-0:1.0: port 2, status 0501, change 0001, 480 Mb/s
-[  176.004020] hub 1-0:1.0: debounce: port 2: total 100ms stable 100ms status 0x501
-[  176.060196] ehci_hcd 0000:00:1d.7: port 2 full speed --> companion
-[  176.060207] ehci_hcd 0000:00:1d.7: GetStatus port 2 status 003801 POWER OWNER sig=j CONNECT
-[  176.060222] usb usb2: wakeup_rh (auto-start)
-[  176.060235] hub 1-0:1.0: port 2 not reset yet, waiting 50ms
-[  176.116022] ehci_hcd 0000:00:1d.7: GetStatus port 2 status 003002 POWER OWNER sig=se0 CSC
-[  176.116057] hub 2-0:1.0: state 7 ports 2 chg 0000 evt 0004
-[  176.116068] uhci_hcd 0000:00:1d.0: port 2 portsc 0093,00
-[  176.116078] hub 2-0:1.0: port 2, status 0101, change 0001, 12 Mb/s
-[  176.244020] hub 2-0:1.0: debounce: port 2: total 100ms stable 100ms status 0x101
-[  176.356016] usb 2-2: new full speed USB device using uhci_hcd and address 3
-[  176.488015] usb 2-2: ep0 maxpacket = 8
-[  176.500004] usb 2-2: default language 0x0409
-[  176.504004] usb 2-2: uevent
-[  176.529878] usb 2-2: usb_probe_device
-[  176.529887] usb 2-2: configuration #1 chosen from 1 choice
-[  176.533029] usb 2-2: adding 2-2:1.0 (config #1, interface 0)
-[  176.533102] usb 2-2:1.0: uevent
-[  176.533148] usbserial_generic 2-2:1.0: usb_probe_interface
-[  176.533153] usbserial_generic 2-2:1.0: usb_probe_interface - got id
-[  176.533172] magtek 2-2:1.0: usb_probe_interface
-[  176.533176] magtek 2-2:1.0: usb_probe_interface - got id
-[  176.533183] magtek 2-2:1.0: Magtek 75/Excella USB card reader converter detected
-[  176.533192] drivers/usb/serial/magtek.c: magtek_startup
-[  176.533211] uhci_hcd 0000:00:1d.0: reserve dev 3 ep81-INT, period 8, phase 4, 61 us
-[  176.533217] drivers/usb/serial/magtek.c: magtek_startup - usb_submit_urb(int urb)
-[  176.533438] usb 2-2: Magtek 75/Excella USB card reader converter now attached to ttyUSB0
-[  176.533595] drivers/usb/core/inode.c: creating file '003'
-[  176.533663] usb 2-2: New USB device found, idVendor=0801, idProduct=000a
-[  176.533668] usb 2-2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
-[  176.533672] usb 2-2: Product: IntelliStripe 65
-[  176.533675] usb 2-2: Manufacturer: MagTek
-[  176.533684] hub 1-0:1.0: state 7 ports 6 chg 0000 evt 0004
-[  182.697945] hub 1-0:1.0: state 7 ports 6 chg 0000 evt 0002
-[  182.697966] ehci_hcd 0000:00:1d.7: GetStatus port 1 status 001803 POWER sig=j CSC CONNECT
-[  182.697980] hub 1-0:1.0: port 1, status 0501, change 0001, 480 Mb/s
-[  182.824020] hub 1-0:1.0: debounce: port 1: total 100ms stable 100ms status 0x501
-[  182.880323] ehci_hcd 0000:00:1d.7: port 1 high speed
-[  182.880333] ehci_hcd 0000:00:1d.7: GetStatus port 1 status 001005 POWER sig=se0 PE CONNECT
-[  182.936025] usb 1-1: new high speed USB device using ehci_hcd and address 7
-[  182.992298] ehci_hcd 0000:00:1d.7: port 1 high speed
-[  182.992312] ehci_hcd 0000:00:1d.7: GetStatus port 1 status 001005 POWER sig=se0 PE CONNECT
-[  183.068539] usb 1-1: default language 0x0409
-[  183.068999] usb 1-1: uevent
-[  183.073134] usb 1-1: usb_probe_device
-[  183.073148] usb 1-1: configuration #1 chosen from 1 choice
-[  183.073452] usb 1-1: adding 1-1:1.0 (config #1, interface 0)
-[  183.073511] usb 1-1:1.0: uevent
-[  183.073580] usbserial_generic 1-1:1.0: usb_probe_interface
-[  183.073585] usbserial_generic 1-1:1.0: usb_probe_interface - got id
-[  183.073605] magtek 1-1:1.0: usb_probe_interface
-[  183.073609] magtek 1-1:1.0: usb_probe_interface - got id
-[  183.073617] magtek 1-1:1.0: Magtek 75/Excella USB card reader converter detected
-[  183.073624] drivers/usb/serial/magtek.c: magtek_startup
-[  183.073752] usb 1-1: link qh0-00ff/df91b080 start 0 [1/0 us]
-[  183.076223] magtek:  usb_submit_urb(read int) failed
-[  183.076231] drivers/usb/serial/magtek.c: magtek_startup - usb_submit_urb(int urb)
-[  183.076461] usb 1-1: Magtek 75/Excella USB card reader converter now attached to ttyUSB1
-[  183.076599] drivers/usb/core/inode.c: creating file '007'
-[  183.076669] usb 1-1: New USB device found, idVendor=0801, idProduct=2231
-[  183.076674] usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
-[  183.076678] usb 1-1: Product: STX
-[  183.076681] usb 1-1: Manufacturer: MagTek
-[  183.076684] usb 1-1: SerialNumber: STX001
-[  185.704529] irq 23: nobody cared (try booting with the "irqpoll" option)
-[  185.704529] Pid: 3505, comm: automount Not tainted 2.6.26-KGDB #1
-[  185.704529]  [<c013fe84>] __report_bad_irq+0x2e/0x6f
-[  185.704529]  [<c0140098>] note_interrupt+0x1d3/0x207
-[  185.704529]  [<c013f60e>] ? handle_IRQ_event+0x21/0x48
-[  185.704529]  [<c01407c0>] handle_fasteoi_irq+0x8a/0xaa
-[  185.704529]  [<c01056f2>] do_IRQ+0x71/0x8b
-[  185.704529]  [<c010416b>] common_interrupt+0x23/0x28
-[  185.704529]  [<c012007b>] ? prof_cpu_mask_write_proc+0xf/0x2f
-[  185.704529]  [<c0103747>] ? sysenter_past_esp+0x38/0x91
-[  185.704529]  =======================
-[  185.704529] handlers:
-[  185.704529] [<c03428d9>] (usb_hcd_irq+0x0/0x58)
+ arch/x86/kernel/cpu/mcheck/mce_64.c     |    5 ++
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c |   18 ++-----
+ arch/x86/kernel/tsc.c                   |    6 ++-
+ arch/x86/pci/amd_bus.c                  |   52 ++++++++++++++++++--
+ arch/x86/pci/i386.c                     |   78 +++++++++++++++++++++++++++++++
+ include/asm-x86/cpufeature.h            |    2 +
+ include/asm-x86/mce.h                   |    1 +
+ 7 files changed, 142 insertions(+), 20 deletions(-)
 
-
-Thanks
-Amruth p.v
-
-
---- On Thu, 8/21/08, amruth <amruth_pv@yahoo.com> wrote:
-
-> From: amruth <amruth_pv@yahoo.com>
-> Subject: USB Serial device disconnect causes IRQ disable details captured
-> To: "Alan Stern" <stern@rowland.harvard.edu>
-> Cc: "Oliver Neukum" <oliver@neukum.org>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-> Date: Thursday, August 21, 2008, 4:52 PM
-> Thanks Alan. I will test in another computers with the new
-> patch and let you know if I again find the issue.
-> 
-> Thanks
-> Amruth p.v
-> 
-> 
-> --- On Thu, 8/21/08, Alan Stern
-> <stern@rowland.harvard.edu> wrote:
-> 
-> > From: Alan Stern <stern@rowland.harvard.edu>
-> > Subject: Re: USB Serial device disconnect causes IRQ
-> disable details captured
-> > To: "amruth" <amruth_pv@yahoo.com>
-> > Cc: "Oliver Neukum"
-> <oliver@neukum.org>, linux-usb@vger.kernel.org,
-> linux-kernel@vger.kernel.org
-> > Date: Thursday, August 21, 2008, 4:20 PM
-> > On Thu, 21 Aug 2008, amruth wrote:
-> > 
-> > > Hi
-> > > Oliver
-> > > I got the same issue once again. I have captured
-> > detail log and lusb -t with interrupts.
-> > > cat /proc/interrupts:
-> > 
-> > > dmesg:
-> > > sb 1-5: Magtek 75/Excella USB card reader
-> converter
-> > now attached to ttyUSB1
-> > > drivers/usb/core/inode.c: creating file
-> '012'
-> > > usb 1-5: New USB device found, idVendor=0801,
-> > idProduct=2231
-> > > usb 1-5: New USB device strings: Mfr=1,
-> Product=2,
-> > SerialNumber=3
-> > > usb 1-5: Product: STX
-> > > usb 1-5: Manufacturer: MagTek
-> > > usb 1-5: SerialNumber: STX001
-> > > usb 2-2: uhci_result_common: failed with status
-> 440000
-> > >
-> /home/amr/linux-2.6.26/drivers/usb/serial/magtek.c:
-> > magtek_read_int_callback - p
-> > > ort 0
-> > > uhci_hcd 0000:00:1d.0: release dev 6 ep81-INT,
-> period
-> > 8, phase 4, 61 us
-> > > hub 2-0:1.0: state 7 ports 2 chg 0000 evt 0004
-> > > uhci_hcd 0000:00:1d.0: port 2 portsc 008a,00
-> > > hub 2-0:1.0: port 2, status 0100, change 0003, 12
-> Mb/s
-> > > usb 2-2: USB disconnect, address 6
-> > > usb 2-2: unregistering device
-> > > usb 2-2: usb_disable_device nuking all URBs
-> > > usb 2-2: unregistering interface 2-2:1.0
-> > >
-> /home/amr/linux-2.6.26/drivers/usb/serial/magtek.c:
-> > magtek_shutdown
-> > > magtek ttyUSB0: Magtek 75/Excella USB card reader
-> > converter now disconnected from ttyUSB0
-> > > magtek 2-2:1.0: device disconnected
-> > > usb 2-2:1.0: uevent
-> > > usb 2-2: uevent
-> > > hub 2-0:1.0: debounce: port 2: total 100ms stable
-> > 100ms status 0x100
-> > > usb usb2: suspend_rh (auto-stop)
-> > > ehci_hcd 0000:00:1d.7: devpath 5 ep2in 3strikes
-> > >
-> /home/amr/linux-2.6.26/drivers/usb/serial/magtek.c:
-> > magtek_read_int_callback - port 1
-> > > usb 1-5: unlink qh0-00ff/dec56380 start 0 [1/0
-> us]
-> > > usb 1-5: link qh0-00ff/dec56380 start 0 [1/0 us]
-> > > usb 1-5: unlink qh0-00ff/dec56380 start 0 [1/0
-> us]
-> > > ehci_hcd 0000:00:1d.7: HC died; cleaning up
-> > 
-> > You should try using the patch in this message:
-> > 
-> >
-> 	http://marc.info/?l=linux-usb&m=121848784300960&w=2
-> > 
-> > If that doesn't help, can you test this on another
-> > computer to see if
-> > the same thing happens?
-> > 
-> > For future testing, it would help if you enable
-> > CONFIG_PRINTK_TIME.
-> > 
-> > Alan Stern
-> 
-> 
->       
-> 
-> --
-> To unsubscribe from this list: send the line
-> "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at 
-> http://vger.kernel.org/majordomo-info.html
-
-
-      
-
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c b/arch/x86/kernel/cpu/mcheck/mce_64.c
+index 65a3396..726a5fc 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_64.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
+@@ -759,6 +759,7 @@ static struct sysdev_class mce_sysclass = {
+ };
+ 
+ DEFINE_PER_CPU(struct sys_device, device_mce);
++void (*threshold_cpu_callback)(unsigned long action, unsigned int cpu) __cpuinitdata;
+ 
+ /* Why are there no generic functions for this? */
+ #define ACCESSOR(name, var, start) \
+@@ -883,9 +884,13 @@ static int __cpuinit mce_cpu_callback(struct notifier_block *nfb,
+ 	case CPU_ONLINE:
+ 	case CPU_ONLINE_FROZEN:
+ 		mce_create_device(cpu);
++		if (threshold_cpu_callback)
++			threshold_cpu_callback(action, cpu);
+ 		break;
+ 	case CPU_DEAD:
+ 	case CPU_DEAD_FROZEN:
++		if (threshold_cpu_callback)
++			threshold_cpu_callback(action, cpu);
+ 		mce_remove_device(cpu);
+ 		break;
+ 	}
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_amd_64.c b/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+index 88736ca..5eb390a 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+@@ -628,6 +628,7 @@ static void threshold_remove_bank(unsigned int cpu, int bank)
+ 	deallocate_threshold_block(cpu, bank);
+ 
+ free_out:
++	kobject_del(b->kobj);
+ 	kobject_put(b->kobj);
+ 	kfree(b);
+ 	per_cpu(threshold_banks, cpu)[bank] = NULL;
+@@ -645,14 +646,11 @@ static void threshold_remove_device(unsigned int cpu)
+ }
+ 
+ /* get notified when a cpu comes on/off */
+-static int __cpuinit threshold_cpu_callback(struct notifier_block *nfb,
+-					    unsigned long action, void *hcpu)
++static void __cpuinit amd_64_threshold_cpu_callback(unsigned long action,
++						     unsigned int cpu)
+ {
+-	/* cpu was unsigned int to begin with */
+-	unsigned int cpu = (unsigned long)hcpu;
+-
+ 	if (cpu >= NR_CPUS)
+-		goto out;
++		return;
+ 
+ 	switch (action) {
+ 	case CPU_ONLINE:
+@@ -666,14 +664,8 @@ static int __cpuinit threshold_cpu_callback(struct notifier_block *nfb,
+ 	default:
+ 		break;
+ 	}
+-      out:
+-	return NOTIFY_OK;
+ }
+ 
+-static struct notifier_block threshold_cpu_notifier __cpuinitdata = {
+-	.notifier_call = threshold_cpu_callback,
+-};
+-
+ static __init int threshold_init_device(void)
+ {
+ 	unsigned lcpu = 0;
+@@ -684,7 +676,7 @@ static __init int threshold_init_device(void)
+ 		if (err)
+ 			return err;
+ 	}
+-	register_hotcpu_notifier(&threshold_cpu_notifier);
++	threshold_cpu_callback = amd_64_threshold_cpu_callback;
+ 	return 0;
+ }
+ 
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 46af716..8e786b0 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -314,7 +314,7 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+ 			mark_tsc_unstable("cpufreq changes");
+ 	}
+ 
+-	set_cyc2ns_scale(tsc_khz_ref, freq->cpu);
++	set_cyc2ns_scale(tsc_khz, freq->cpu);
+ 
+ 	return 0;
+ }
+@@ -325,6 +325,10 @@ static struct notifier_block time_cpufreq_notifier_block = {
+ 
+ static int __init cpufreq_tsc(void)
+ {
++	if (!cpu_has_tsc)
++		return 0;
++	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
++		return 0;
+ 	cpufreq_register_notifier(&time_cpufreq_notifier_block,
+ 				CPUFREQ_TRANSITION_NOTIFIER);
+ 	return 0;
+diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
+index dbf5323..6a0fca7 100644
+--- a/arch/x86/pci/amd_bus.c
++++ b/arch/x86/pci/amd_bus.c
+@@ -1,6 +1,7 @@
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <linux/topology.h>
++#include <linux/cpu.h>
+ #include "pci.h"
+ 
+ #ifdef CONFIG_X86_64
+@@ -555,15 +556,17 @@ static int __init early_fill_mp_bus_info(void)
+ 	return 0;
+ }
+ 
+-postcore_initcall(early_fill_mp_bus_info);
++#else  /* !CONFIG_X86_64 */
+ 
+-#endif
++static int __init early_fill_mp_bus_info(void) { return 0; }
++
++#endif /* !CONFIG_X86_64 */
+ 
+ /* common 32/64 bit code */
+ 
+ #define ENABLE_CF8_EXT_CFG      (1ULL << 46)
+ 
+-static void enable_pci_io_ecs_per_cpu(void *unused)
++static void enable_pci_io_ecs(void *unused)
+ {
+ 	u64 reg;
+ 	rdmsrl(MSR_AMD64_NB_CFG, reg);
+@@ -573,14 +576,51 @@ static void enable_pci_io_ecs_per_cpu(void *unused)
+ 	}
+ }
+ 
+-static int __init enable_pci_io_ecs(void)
++static int __cpuinit amd_cpu_notify(struct notifier_block *self,
++				    unsigned long action, void *hcpu)
+ {
++	int cpu = (long)hcpu;
++	switch(action) {
++	case CPU_ONLINE:
++	case CPU_ONLINE_FROZEN:
++		smp_call_function_single(cpu, enable_pci_io_ecs, NULL, 0);
++		break;
++	default:
++		break;
++	}
++	return NOTIFY_OK;
++}
++
++static struct notifier_block __cpuinitdata amd_cpu_notifier = {
++	.notifier_call	= amd_cpu_notify,
++};
++
++static int __init pci_io_ecs_init(void)
++{
++	int cpu;
++
+ 	/* assume all cpus from fam10h have IO ECS */
+         if (boot_cpu_data.x86 < 0x10)
+ 		return 0;
+-	on_each_cpu(enable_pci_io_ecs_per_cpu, NULL, 1);
++
++	register_cpu_notifier(&amd_cpu_notifier);
++	for_each_online_cpu(cpu)
++		amd_cpu_notify(&amd_cpu_notifier, (unsigned long)CPU_ONLINE,
++			       (void *)(long)cpu);
+ 	pci_probe |= PCI_HAS_IO_ECS;
++
++	return 0;
++}
++
++static int __init amd_postcore_init(void)
++{
++	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
++		return 0;
++
++	early_fill_mp_bus_info();
++	pci_io_ecs_init();
++
+ 	return 0;
+ }
+ 
+-postcore_initcall(enable_pci_io_ecs);
++postcore_initcall(amd_postcore_init);
+diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
+index 5807d1b..d765da9 100644
+--- a/arch/x86/pci/i386.c
++++ b/arch/x86/pci/i386.c
+@@ -31,8 +31,11 @@
+ #include <linux/ioport.h>
+ #include <linux/errno.h>
+ #include <linux/bootmem.h>
++#include <linux/acpi.h>
+ 
+ #include <asm/pat.h>
++#include <asm/hpet.h>
++#include <asm/io_apic.h>
+ 
+ #include "pci.h"
+ 
+@@ -77,6 +80,77 @@ pcibios_align_resource(void *data, struct resource *res,
+ }
+ EXPORT_SYMBOL(pcibios_align_resource);
+ 
++static int check_res_with_valid(struct pci_dev *dev, struct resource *res)
++{
++	unsigned long base;
++	unsigned long size;
++	int i;
++
++	base = res->start;
++	size = (res->start == 0 && res->end == res->start) ? 0 :
++		 (res->end - res->start + 1);
++
++	if (!base || !size)
++		return 0;
++
++#ifdef CONFIG_HPET_TIMER
++	/* for hpet */
++	if (base == hpet_address && (res->flags & IORESOURCE_MEM)) {
++		dev_info(&dev->dev, "BAR has HPET at %08lx-%08lx\n",
++				 base, base + size - 1);
++		return 1;
++	}
++#endif
++
++#ifdef CONFIG_X86_IO_APIC
++	for (i = 0; i < nr_ioapics; i++) {
++		unsigned long ioapic_phys = mp_ioapics[i].mp_apicaddr;
++
++		if (base == ioapic_phys && (res->flags & IORESOURCE_MEM)) {
++			dev_info(&dev->dev, "BAR has ioapic at %08lx-%08lx\n",
++					 base, base + size - 1);
++			return 1;
++		}
++	}
++#endif
++
++#ifdef CONFIG_PCI_MMCONFIG
++	for (i = 0; i < pci_mmcfg_config_num; i++) {
++		unsigned long addr;
++
++		addr = pci_mmcfg_config[i].address;
++		if (base == addr && (res->flags & IORESOURCE_MEM)) {
++			dev_info(&dev->dev, "BAR has MMCONFIG at %08lx-%08lx\n",
++					 base, base + size - 1);
++			return 1;
++		}
++	}
++#endif
++
++	return 0;
++}
++
++static int check_platform(struct pci_dev *dev, struct resource *res)
++{
++	struct resource *root = NULL;
++
++	/*
++	 * forcibly insert it into the
++	 * resource tree
++	 */
++	if (res->flags & IORESOURCE_MEM)
++		root = &iomem_resource;
++	else if (res->flags & IORESOURCE_IO)
++		root = &ioport_resource;
++
++	if (root && check_res_with_valid(dev, res)) {
++		insert_resource(root, res);
++
++		return 1;
++	}
++
++	return 0;
++}
+ /*
+  *  Handle resources of PCI devices.  If the world were perfect, we could
+  *  just allocate all the resource regions and do nothing more.  It isn't.
+@@ -128,6 +202,8 @@ static void __init pcibios_allocate_bus_resources(struct list_head *bus_list)
+ 				pr = pci_find_parent_resource(dev, r);
+ 				if (!r->start || !pr ||
+ 				    request_resource(pr, r) < 0) {
++					if (check_platform(dev, r))
++						continue;
+ 					dev_err(&dev->dev, "BAR %d: can't "
+ 						"allocate resource\n", idx);
+ 					/*
+@@ -171,6 +247,8 @@ static void __init pcibios_allocate_resources(int pass)
+ 					r->flags, disabled, pass);
+ 				pr = pci_find_parent_resource(dev, r);
+ 				if (!pr || request_resource(pr, r) < 0) {
++					if (check_platform(dev, r))
++						continue;
+ 					dev_err(&dev->dev, "BAR %d: can't "
+ 						"allocate resource\n", idx);
+ 					/* We'll assign a new address later */
+diff --git a/include/asm-x86/cpufeature.h b/include/asm-x86/cpufeature.h
+index 2f5a792..762f6a6 100644
+--- a/include/asm-x86/cpufeature.h
++++ b/include/asm-x86/cpufeature.h
+@@ -91,6 +91,7 @@
+ #define X86_FEATURE_CX16	(4*32+13) /* CMPXCHG16B */
+ #define X86_FEATURE_XTPR	(4*32+14) /* Send Task Priority Messages */
+ #define X86_FEATURE_DCA		(4*32+18) /* Direct Cache Access */
++#define X86_FEATURE_XMM4_2	(4*32+20) /* Streaming SIMD Extensions-4.2 */
+ 
+ /* VIA/Cyrix/Centaur-defined CPU features, CPUID level 0xC0000001, word 5 */
+ #define X86_FEATURE_XSTORE	(5*32+ 2) /* on-CPU RNG present (xstore insn) */
+@@ -189,6 +190,7 @@ extern const char * const x86_power_flags[32];
+ #define cpu_has_gbpages		boot_cpu_has(X86_FEATURE_GBPAGES)
+ #define cpu_has_arch_perfmon	boot_cpu_has(X86_FEATURE_ARCH_PERFMON)
+ #define cpu_has_pat		boot_cpu_has(X86_FEATURE_PAT)
++#define cpu_has_xmm4_2		boot_cpu_has(X86_FEATURE_XMM4_2)
+ 
+ #if defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_64)
+ # define cpu_has_invlpg		1
+diff --git a/include/asm-x86/mce.h b/include/asm-x86/mce.h
+index 94f1fd7..531eaa5 100644
+--- a/include/asm-x86/mce.h
++++ b/include/asm-x86/mce.h
+@@ -92,6 +92,7 @@ extern int mce_disabled;
+ 
+ void mce_log(struct mce *m);
+ DECLARE_PER_CPU(struct sys_device, device_mce);
++extern void (*threshold_cpu_callback)(unsigned long action, unsigned int cpu);
+ 
+ #ifdef CONFIG_X86_MCE_INTEL
+ void mce_intel_feature_init(struct cpuinfo_x86 *c);
