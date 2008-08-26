@@ -1,42 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760214AbYHZTOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760580AbYHZTP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760214AbYHZTOy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 15:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758813AbYHZTOp
+	id S1760580AbYHZTP2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 15:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758956AbYHZTPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 15:14:45 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:34629 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757160AbYHZTOo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 15:14:44 -0400
-Date: Tue, 26 Aug 2008 13:13:35 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Andi Kleen <ak@linux.intel.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Len Brown <len.brown@intel.com>, Robert Moore <robert.moore@intel.com>,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/4] acpi: semaphore removal
-Message-ID: <20080826191335.GE23698@parisc-linux.org>
-References: <1219777186-4787-1-git-send-email-dwalker@mvista.com> <1219777186-4787-2-git-send-email-dwalker@mvista.com> <1219777186-4787-3-git-send-email-dwalker@mvista.com> <1219777186-4787-4-git-send-email-dwalker@mvista.com>
+	Tue, 26 Aug 2008 15:15:12 -0400
+Received: from mail.ccur.com ([12.192.68.12]:52817 "EHLO mail.ccur.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759055AbYHZTPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 15:15:11 -0400
+X-Greylist: delayed 325 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Aug 2008 15:15:11 EDT
+Message-ID: <48B454F7.5060106@ccur.com>
+Date: Tue, 26 Aug 2008 15:09:43 -0400
+From: John Blackwood <john.blackwood@ccur.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1219777186-4787-4-git-send-email-dwalker@mvista.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sched_rt_rq_enqueue() resched idle
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 11:59:49AM -0700, Daniel Walker wrote:
-> The semaphore usage in ACPI is more like completions. The ASL
+Hi Peter,
 
-Huh?  They are semaphores.  They're not 'more like completions' at all.
+When sysctl_sched_rt_runtime is set to something other than -1 and the
+CONFIG_RT_GROUP_SCHED kernel parameter is NOT enabled, we get into a state
+where we see one or more CPUs idling forvever even though there are
+real-time
+tasks in their rt runqueue that are able to run (no longer throttled).
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+The sequence is:
+
+- A real-time task is running when the timer sets the rt runqueue
+    to throttled, and the rt task is resched_task()ed and switched
+    out, and idle is switched in since there are no non-rt tasks to
+    run on that cpu.
+
+- Eventually the do_sched_rt_period_timer() runs and un-throttles
+    the rt runqueue, but we just exit the timer interrupt and go back
+    to executing the idle task in the idle loop forever.
+
+If we change the sched_rt_rq_enqueue() routine to use some of the code
+from the CONFIG_RT_GROUP_SCHED enabled version of this same routine and
+resched_task() the currently executing task (idle in our case) if it is
+a lower priority task than the higher rt task in the now un-throttled
+runqueue, the problem is no longer observed.
+
+Thank you for your time and consideration.
+
+Signed-off-by: John Blackwood <john.blackwood@ccur.com>
+
+Index: a/kernel/sched_rt.c
+===================================================================
+--- a.orig/kernel/sched_rt.c    2008-08-22 15:11:31.000000000 -0400
++++ a/kernel/sched_rt.c 2008-08-22 15:12:36.000000000 -0400
+@@ -193,6 +193,12 @@
+
+   static inline void sched_rt_rq_enqueue(struct rt_rq *rt_rq)
+   {
++       if (rt_rq->rt_nr_running) {
++               struct task_struct *curr = rq_of_rt_rq(rt_rq)->curr;
++
++               if (rt_rq->highest_prio < curr->prio)
++                       resched_task(curr);
++       }
+   }
+
+   static inline void sched_rt_rq_dequeue(struct rt_rq *rt_rq)
+
