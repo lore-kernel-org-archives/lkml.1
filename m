@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbYHZTwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbYHZTxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753590AbYHZTwl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 15:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYHZTwb
+	id S1758251AbYHZTxn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 15:53:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbYHZTxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 15:52:31 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:52712 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750769AbYHZTwa (ORCPT
+	Tue, 26 Aug 2008 15:53:35 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48540 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752584AbYHZTxe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 15:52:30 -0400
-Date: Tue, 26 Aug 2008 13:50:51 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Andi Kleen <ak@linux.intel.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Len Brown <len.brown@intel.com>, Robert Moore <robert.moore@intel.com>,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/4] acpi: semaphore removal
-Message-ID: <20080826195051.GF23698@parisc-linux.org>
-References: <1219777186-4787-1-git-send-email-dwalker@mvista.com> <1219777186-4787-2-git-send-email-dwalker@mvista.com> <1219777186-4787-3-git-send-email-dwalker@mvista.com> <1219777186-4787-4-git-send-email-dwalker@mvista.com> <20080826191335.GE23698@parisc-linux.org> <1219779046.3797.12.camel@dhcp32.mvista.com>
+	Tue, 26 Aug 2008 15:53:34 -0400
+Message-ID: <48B45F16.7080203@zytor.com>
+Date: Tue, 26 Aug 2008 12:52:54 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1219779046.3797.12.camel@dhcp32.mvista.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       Gerhard Brauer <gerhard.brauer@web.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
+References: <20080822132948.57e47076@doriath.conectiva> <20080822163520.GA9860@Krystal> <20080822142054.403cbdef@doriath.conectiva> <20080822175741.6bc83dc8@doriath.conectiva> <48AF2ABD.9070100@zytor.com> <20080826141851.GA5300@tux1.brauer.lan> <20080826145338.GA8601@Krystal> <20080826131354.356ae11d@doriath.conectiva> <20080826171822.GB14906@Krystal> <20080826150222.0cf1542c@doriath.conectiva> <20080826181558.GA16887@Krystal>
+In-Reply-To: <20080826181558.GA16887@Krystal>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 12:30:46PM -0700, Daniel Walker wrote:
-> On Tue, 2008-08-26 at 13:13 -0600, Matthew Wilcox wrote:
-> > On Tue, Aug 26, 2008 at 11:59:49AM -0700, Daniel Walker wrote:
-> > > The semaphore usage in ACPI is more like completions. The ASL
-> > 
-> > Huh?  They are semaphores.  They're not 'more like completions' at all.
-> 
-> You can clearly make a completion out of a semaphore, but we have a
-> completion API .. ACPI is using locked semaphores, and essentially
-> re-making completions with the semaphore API..
+One thing that I think really needs to be considered is that the current 
+PV stubs are (a) large, and (b) non-atomic.
 
-What makes you think that?
+In the case at hand we have:
 
-executer/excreate.c:    status = acpi_os_create_semaphore(ACPI_NO_UNIT_LIMIT, 0,
-executer/exsystem.c:        acpi_os_create_semaphore(ACPI_NO_UNIT_LIMIT, 0, &temp_semaphore);
-namespace/nsaccess.c:                                       acpi_os_create_semaphore(1, 0,
-osl.c:acpi_os_create_semaphore(u32 max_units, u32 initial_units, acpi_handle * handle)
+c012fc69:       51                      push   %ecx
+c012fc6a:       52                      push   %edx
+c012fc6b:       ff 15 40 b9 41 c0       call   *0xc041b940
+c012fc71:       5a                      pop    %edx
+c012fc72:       59                      pop    %ecx
 
-All users set 'initial_units' to 0.
+Ten bytes replacing a two-byte native sequence.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+If this was done as a call to an out-of-line stub, it would be only five 
+bytes, which would reduce native icache overhead from 400% to 150%, but 
+perhaps more importantly, it would not be subject to returns inside the 
+sequence itself (since the out-of-line stub would still exist.)  As an 
+optional bonus, at least on 32 bits the indirect call could be replaced 
+with a direct call in the out-of-line stub.
+
+	-hpa
