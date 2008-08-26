@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbYHZVj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbYHZVnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758257AbYHZVj1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 17:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYHZVjT
+	id S1756108AbYHZVnT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 17:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYHZVnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 17:39:19 -0400
-Received: from mout3.freenet.de ([195.4.92.93]:57847 "EHLO mout3.freenet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752207AbYHZVjS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 17:39:18 -0400
-X-Greylist: delayed 805 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Aug 2008 17:39:18 EDT
-Date: Tue, 26 Aug 2008 23:25:50 +0200
-From: Gerhard Brauer <gerhard.brauer@web.de>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
-Message-ID: <20080826212549.GE5300@tux1.brauer.lan>
-References: <20080822175741.6bc83dc8@doriath.conectiva> <48AF2ABD.9070100@zytor.com> <20080826141851.GA5300@tux1.brauer.lan> <20080826145338.GA8601@Krystal> <20080826131354.356ae11d@doriath.conectiva> <20080826171822.GB14906@Krystal> <20080826150222.0cf1542c@doriath.conectiva> <20080826181558.GA16887@Krystal> <20080826203449.GD5300@tux1.brauer.lan> <20080826204814.GB23544@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Aug 2008 17:43:10 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:47155 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751952AbYHZVnJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 17:43:09 -0400
+Date: Tue, 26 Aug 2008 14:43:07 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] rcu: spinlocks take an unsigned long flags
+Message-ID: <20080826214307.GK6656@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1219780844.6069.5.camel@brick> <20080826204534.GJ6656@linux.vnet.ibm.com> <1219783931.6069.31.camel@brick>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080826204814.GB23544@Krystal>
-User-Agent: Mutt/1.5.18-muttng (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1219783931.6069.31.camel@brick>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 04:48:14PM -0400, Mathieu Desnoyers wrote:
+On Tue, Aug 26, 2008 at 01:52:11PM -0700, Harvey Harrison wrote:
+> On Tue, 2008-08-26 at 13:45 -0700, Paul E. McKenney wrote:
+> > On Tue, Aug 26, 2008 at 01:00:44PM -0700, Harvey Harrison wrote:
+> > > Noticed by sparse:
+> > > kernel/rcuclassic.c:719:2: error: incompatible types in comparison expression (different signedness)
+> > > kernel/rcuclassic.c:727:2: error: incompatible types in comparison expression (different signedness)
+> > > kernel/rcuclassic.c: In function ‘rcu_init_percpu_data’:
+> > > kernel/rcuclassic.c:719: warning: comparison of distinct pointer types lacks a cast
+> > > kernel/rcuclassic.c:727: warning: comparison of distinct pointer types lacks a cast
+> > 
+> > This is a duplicate of http://lkml.org/lkml/2008/8/18/497, sent in
+> > by Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>.
+> > 
 > 
-> OK, so we have a problem with interrupts coming while we are doing the
-> alternatives patching.
-> 
-> First thing, I wonder if Virtualbox expects the OS to patch all its
-> paravirt instructions in one go ?
-> 
-> Also, could you then try to :
-> - to revert all those changes
-> - Do this to text_poke_early and text_poke :
-> 
-> - put the sync_core() within the irq off critical section
-> (test)
+> Ok, what tree is it going in through, this was from today's linux-next.
 
-Could you please explain more what to change? I don't see where to put
-sync_core(), i not found this section in both functions. (I'm not a developer)
+Good question -- my guess would be tip/core/rcu, but either way, it
+should be added somewhere.  ;-)
 
-> - add a wbinvd();  just after the sync_core() in both functions
-> (test).
-
-Also verbose please...
-
-> Thanks,
-> 
-> Mathieu
-
-Thank you
-	Gerhard
-
+							Thanx, Paul
