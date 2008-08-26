@@ -1,121 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbYHZJ20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbYHZJ3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757272AbYHZJ20 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 05:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbYHZJ2R
+	id S1757562AbYHZJ3h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 05:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbYHZJ33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 05:28:17 -0400
-Received: from mxpdbe2.wincor-nixdorf.com ([80.154.98.130]:58433 "EHLO
-	mxpdbe2.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752410AbYHZJ2Q (ORCPT
+	Tue, 26 Aug 2008 05:29:29 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:58356 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752632AbYHZJ32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 05:28:16 -0400
-X-Greylist: delayed 391 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Aug 2008 05:28:16 EDT
-Message-ID: <48B3CAA2.5040207@wincor-nixdorf.com>
-Date: Tue, 26 Aug 2008 11:19:30 +0200
-From: Niels de Vos <niels.devos@wincor-nixdorf.com>
-Organization: Wincor Nixdorf International
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Tue, 26 Aug 2008 05:29:28 -0400
+Date: Tue, 26 Aug 2008 10:29:29 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Adam Litke <agl@us.ibm.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       linux-mm <linux-mm@kvack.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       nacc <nacc@linux.vnet.ibm.com>, agl <agl@linux.vnet.ibm.com>
+Subject: Re: [BUG] [PATCH v2] Make setup_zone_migrate_reserve() aware of
+	overlapping nodes
+Message-ID: <20080826092929.GD29207@brain>
+References: <1218837685.12953.11.camel@localhost.localdomain> <1219252134.13885.25.camel@localhost.localdomain> <1219255911.8960.41.camel@nimitz> <1219262152.13885.27.camel@localhost.localdomain> <20080821113338.GA29950@csn.ul.ie>
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: linux-input@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] POSKeyboard driver for exclusive keyboard access
-References: <1b51b6f80808220917t20fdb09el78b117c5ba5b7f7c@mail.gmail.com> <20080822135507.ZZRA012@mailhub.coreip.homeip.net>
-In-Reply-To: <20080822135507.ZZRA012@mailhub.coreip.homeip.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig5F5CAF4660E6F2FF8572A796"
-X-OriginalArrivalTime: 26 Aug 2008 09:20:54.0045 (UTC) FILETIME=[0A26FCD0:01C9075D]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080821113338.GA29950@csn.ul.ie>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig5F5CAF4660E6F2FF8572A796
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thu, Aug 21, 2008 at 12:33:39PM +0100, Mel Gorman wrote:
+> On (20/08/08 14:55), Adam Litke didst pronounce:
+> >     Changes since V1
+> >      - Fix build for !NUMA
+> >      - Add VM_BUG_ON() to catch this problem at the source
+> >     
+> >     I have gotten to the root cause of the hugetlb badness I reported back on
+> >     August 15th.  My system has the following memory topology (note the
+> >     overlapping node):
+> >     
+> >             Node 0 Memory: 0x8000000-0x44000000
+> >             Node 1 Memory: 0x0-0x8000000 0x44000000-0x80000000
+> >     
+> >     setup_zone_migrate_reserve() scans the address range 0x0-0x8000000 looking
+> >     for a pageblock to move onto the MIGRATE_RESERVE list.  Finding no
+> >     candidates, it happily continues the scan into 0x8000000-0x44000000.  When
+> >     a pageblock is found, the pages are moved to the MIGRATE_RESERVE list on
+> >     the wrong zone.  Oops.
+> >     
+> >     (Andrew: once the proper fix is agreed upon, this should also be a
+> >     candidate for -stable.)
+> >     
+> >     setup_zone_migrate_reserve() should skip pageblocks in overlapping nodes.
+> >     
+> >     Signed-off-by: Adam Litke <agl@us.ibm.com>
+> > 
+> 
+> zone_to_nid(zone) is called every time in the loop even though it will never
+> change. This is less than optimal but setup_zone_migrate_reserve() is only
+> called during init and when min_free_kbytes is adjusted so it's not worth
+> worrying about. Otherwise it looks good.
+> 
+> Acked-by: Mel Gorman <mel@csn.ul.ie>
+> 
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index af982f7..feb7916 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -694,6 +694,9 @@ static int move_freepages(struct zone *zone,
+> >  #endif
+> >  
+> >  	for (page = start_page; page <= end_page;) {
+> > +		/* Make sure we are not inadvertently changing nodes */
+> > +		VM_BUG_ON(page_to_nid(page) != zone_to_nid(zone));
+> > +
+> >  		if (!pfn_valid_within(page_to_pfn(page))) {
+> >  			page++;
+> >  			continue;
+> > @@ -2516,6 +2519,10 @@ static void setup_zone_migrate_reserve(struct zone *zone)
+> >  			continue;
+> >  		page = pfn_to_page(pfn);
+> >  
+> > +		/* Watch out for overlapping nodes */
+> > +		if (page_to_nid(page) != zone_to_nid(zone))
+> > +			continue;
+> > +
+> >  		/* Blocks with reserved pages will never free, skip them. */
+> >  		if (PageReserved(page))
+> >  			continue;
 
-Hello Dmitry,
+This patch looks sane.  I do note that we have a config option to tell
+us whether we have any possibility of overlapping nodes, and we have an
+early version of a check for this early_pfn_in_nid() in mm.h.  You might
+consider having a non-early variant of this which could be optimised
+away for those arches which do not have CONFIG_NODES_SPAN_OTHER_NODES.
 
-Dmitry Torokhov wrote:
-> Hi Niels,
->=20
-> On Fri, Aug 22, 2008 at 06:17:28PM +0200, Niels de Vos wrote:
->> This new driver makes it possible for middleware like JavaPOS to use
->> a POSKeyboard (connected to PS/2) with exclusive access. This is
->> required by the UnifiedPOS Specification which is available from
->> http://www.nrf-arts.org/UnifiedPOS. Any middleware using this driver
->> should implement the full exception-handling in user-space. Therefor
->> it is possible to use specific POS-extensions of POSKeyboards, without=
+In 'unearlifying' this to pfn_in_nid() I think we have a small naming
+issue with these function as they are only valid for use with pfns within
+an existing node.  They should probabally both be *pfn_in_nid_within()
+or something in line with pfn_valid_within().
 
->> abusing other keyboard-drivers.
->>
->> Opening /dev/poskeyboard will route all scancodes to this device. The
->> scancodes will not be processes by the input-subsystem anymore. Readin=
-g
->> /dev/poskeyboard results in receiving the scancodes as raw data for
->> further processing by the reader. Sending commands to the hardware can=
-
->> be done by writing to /dev/poskeyboard.
->>
->> If the driver is loaded and /dev/poskeyboard is not opened, all
->> scancodes are given to the input-subsystem. This allows 'normal' use o=
-f
->> the keyboard.
->>
->> Making the driver active involves some commands like the following:
->>    echo -n serio1 > /sys/bus/serio/drivers/atkbd/unbind
->>    echo -n serio1 > /sys/bus/serio/drivers/poskbd/bind
->>
->=20
-> It seems you have just reimplemented serio_raw driver, therefore NAK.
-> Right now serio_raw is limited to untranslated ports but adding
-> SERIO_I8042XL signature should be easy.
-
-Okay, thanks for pointing this out, I'll look into using serio_raw
-instead. If a patch is needed I'll send you one.
-
-
->> Open questions:
->> - How to achieve the same with USB-HID complaint keyboards?
->=20
-> Thsi is probably is the candidate for legitimate use of EVIOCGRAB.
-> Just grab device for exclusive access and do your processing, probably
-> looking at MSC_SCAN (or KEY_*, depends on how hardware-sepcific this
-> thing is). This approach shoudl work equally well for HID, PS/2,
-> serial or any other kind of keyboard/input device actually. You can
-> also re-inject the keystrokes you are not interested in back into
-> input core via uinput.
-
-Great. I already saw input_dev->grab but never really understood what
-it would do or how it could be used. Tried it with a small test and
-should be sufficient for the UnifiedPOS requirements.
-
-
->> - Does serio_unregister_port() a kfree() on the port?
->=20
-> Eventually, after the last user drops off.
-
-Okay, so the driver allocates it, but never needs to do a kfree() on
-it, because the serio-layer takes care of it.
-
-Thanks for the infos,
-Niels
-
-
---------------enig5F5CAF4660E6F2FF8572A796
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFIs8qi5KAkGQPO/QoRAqrCAKCtdEAH+uSNK16z1cdfE1kYAIHNNACfSq5K
-OpqWPtOuOAhVMjll8DqjGx4=
-=alLi
------END PGP SIGNATURE-----
-
---------------enig5F5CAF4660E6F2FF8572A796--
+-apw
