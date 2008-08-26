@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbYHZUBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758869AbYHZUDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759429AbYHZUBa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 16:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758985AbYHZUBG
+	id S1758869AbYHZUDf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 16:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYHZUD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 16:01:06 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:42485 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758943AbYHZUBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 16:01:05 -0400
-Message-ID: <48B460FE.2020100@sgi.com>
-Date: Tue, 26 Aug 2008 13:01:02 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>,
+	Tue, 26 Aug 2008 16:03:26 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:16526 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753302AbYHZUDZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 16:03:25 -0400
+Subject: Re: [PATCH 4/4] acpi: semaphore removal
+From: Daniel Walker <dwalker@mvista.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Andi Kleen <ak@linux.intel.com>, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Mike Travis <travis@sgi.com>, "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Luck, Tony" <tony.luck@intel.com>, Jack Steiner <steiner@sgi.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -	bisected
-References: <48B29F7B.6080405@hp.com> <48B2A421.7080705@hp.com> <alpine.LFD.1.10.0808251019380.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251106270.3363@nehalem.linux-foundation.org> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251401590.3363@nehalem.linux-foundation.org> <48B452F3.9040304@sgi.com> <alpine.LFD.1.10.0808261205530.3363@nehalem.linux-foundation.org> <20080826192848.GA20653@redhat.com>
-In-Reply-To: <20080826192848.GA20653@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Len Brown <len.brown@intel.com>, Robert Moore <robert.moore@intel.com>,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <20080826195051.GF23698@parisc-linux.org>
+References: <1219777186-4787-1-git-send-email-dwalker@mvista.com>
+	 <1219777186-4787-2-git-send-email-dwalker@mvista.com>
+	 <1219777186-4787-3-git-send-email-dwalker@mvista.com>
+	 <1219777186-4787-4-git-send-email-dwalker@mvista.com>
+	 <20080826191335.GE23698@parisc-linux.org>
+	 <1219779046.3797.12.camel@dhcp32.mvista.com>
+	 <20080826195051.GF23698@parisc-linux.org>
+Content-Type: text/plain
+Date: Tue, 26 Aug 2008 13:03:21 -0700
+Message-Id: <1219781001.3797.31.camel@dhcp32.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
+On Tue, 2008-08-26 at 13:50 -0600, Matthew Wilcox wrote:
+> On Tue, Aug 26, 2008 at 12:30:46PM -0700, Daniel Walker wrote:
+> > On Tue, 2008-08-26 at 13:13 -0600, Matthew Wilcox wrote:
+> > > On Tue, Aug 26, 2008 at 11:59:49AM -0700, Daniel Walker wrote:
+> > > > The semaphore usage in ACPI is more like completions. The ASL
+> > > 
+> > > Huh?  They are semaphores.  They're not 'more like completions' at all.
+> > 
+> > You can clearly make a completion out of a semaphore, but we have a
+> > completion API .. ACPI is using locked semaphores, and essentially
+> > re-making completions with the semaphore API..
+> 
+> What makes you think that?
+> 
+> executer/excreate.c:    status = acpi_os_create_semaphore(ACPI_NO_UNIT_LIMIT, 0,
+> executer/exsystem.c:        acpi_os_create_semaphore(ACPI_NO_UNIT_LIMIT, 0, &temp_semaphore);
+> namespace/nsaccess.c:                                       acpi_os_create_semaphore(1, 0,
+> osl.c:acpi_os_create_semaphore(u32 max_units, u32 initial_units, acpi_handle * handle)
+> 
+> All users set 'initial_units' to 0.
+> 
+
+We have from ACPI,
+
+acpi_status
+acpi_os_create_semaphore(u32 max_units, u32 initial_units, acpi_handle * handle)
+{
+        struct semaphore *sem = NULL;
 ...
-> 
-> But yes, for this to be even remotely feasible, there has to be a negligable
-> performance cost associated with it, which right now, we clearly don't have.
-> Given that the number of people running 4096 CPU boxes even in a few years time
-> will still be tiny, punishing the common case is obviously absurd.
-> 
-> 	Dave
-> 
+        sema_init(sem, initial_units);
 
-I did do some fairly extensive benchmarking between configs of NR_CPUS = 128 and
-4096 and most performance hits were in the neighborhood of < 5% on systems with
-8 cpus and 4GB of memory (our most common test system).  [But changing cpumask_t's
-to be pointers instead of values will likely increase this.]  I've tried to be
-very sensitive to this issue with all my previous changes, so convincing the distros
-to set NR_CPUS=4096 would be as painless for them as possible. ;-)
 
-Btw, huge count cpu systems I don't think are that far away.  I believe the nextgen
-Larabbee chips will be geared towards HPC applications [instead of just GFX apps],
-and putting 4 of these chips on a motherboard would add up to 512 cpu threads (1024
-if they support hyperthreading.)
 
-Thanks,
-Mike
+Then from semaphore.h,
+
+#define init_MUTEX(sem)         sema_init(sem, 1)
+#define init_MUTEX_LOCKED(sem)  sema_init(sem, 0)
+
+So initial units of 0 means make it locked initially .. Initialize to 1
+would be a regular unlocked mutex ..
+
+Daniel
+
