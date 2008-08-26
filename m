@@ -1,82 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbYHZNZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758535AbYHZNZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758012AbYHZNZk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 09:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbYHZNZb
+	id S1758535AbYHZNZy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 09:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758260AbYHZNZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 09:25:31 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:53506 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753139AbYHZNZa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 09:25:30 -0400
-Date: Tue, 26 Aug 2008 14:25:25 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] hp-wmi: Add proper hotkey support
-Message-ID: <20080826132525.GA29293@srcf.ucam.org>
+	Tue, 26 Aug 2008 09:25:43 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61605 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757820AbYHZNZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 09:25:40 -0400
+Date: Tue, 26 Aug 2008 14:24:20 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Avi Kivity <avi@qumranet.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [PATCH] x86: default to reboot via ACPI
+In-Reply-To: <48B3F3A9.8030709@qumranet.com>
+Message-ID: <Pine.LNX.4.55.0808261406330.28361@cliff.in.clinika.pl>
+References: <1219659087-17536-1-git-send-email-avi@qumranet.com>
+ <20080826095032.GA309@elf.ucw.cz> <48B3D579.40502@qumranet.com>
+ <20080826113317.520cbab1@lxorguk.ukuu.org.uk> <48B3F3A9.8030709@qumranet.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It turns out that event 0x4 merely indcates that a hotkey has been 
-pressed, not which one. A further query is required in order to 
-determine the actual keypress. The following patch adds support for that 
-along with the known keycodes.
+On Tue, 26 Aug 2008, Avi Kivity wrote:
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> Most machines are recent machines.
 
----
+ This is a bold statement I would say.  Any numbers to back it up?
 
-diff --git a/drivers/misc/hp-wmi.c b/drivers/misc/hp-wmi.c
-index bc6ccfb..0968304 100644
---- a/drivers/misc/hp-wmi.c
-+++ b/drivers/misc/hp-wmi.c
-@@ -49,6 +49,7 @@ MODULE_ALIAS("wmi:5FB7F034-2C63-45e9-BE91-3D44E2C707E4");
- #define HPWMI_ALS_QUERY 0x3
- #define HPWMI_DOCK_QUERY 0x4
- #define HPWMI_WIRELESS_QUERY 0x5
-+#define HPWMI_HOTKEY_QUERY 0xc
- 
- static int __init hp_wmi_bios_setup(struct platform_device *device);
- static int __exit hp_wmi_bios_remove(struct platform_device *device);
-@@ -69,7 +70,7 @@ struct bios_return {
- 
- struct key_entry {
- 	char type;		/* See KE_* below */
--	u8 code;
-+	u16 code;
- 	u16 keycode;
- };
- 
-@@ -79,7 +80,9 @@ static struct key_entry hp_wmi_keymap[] = {
- 	{KE_SW, 0x01, SW_DOCK},
- 	{KE_KEY, 0x02, KEY_BRIGHTNESSUP},
- 	{KE_KEY, 0x03, KEY_BRIGHTNESSDOWN},
--	{KE_KEY, 0x04, KEY_HELP},
-+	{KE_KEY, 0x20e6, KEY_PROG1},
-+	{KE_KEY, 0x2142, KEY_MEDIA},
-+	{KE_KEY, 0x231b, KEY_HELP},
- 	{KE_END, 0}
- };
- 
-@@ -318,6 +321,9 @@ void hp_wmi_notify(u32 value, void *context)
- 
- 	if (obj && obj->type == ACPI_TYPE_BUFFER && obj->buffer.length == 8) {
- 		int eventcode = *((u8 *) obj->buffer.pointer);
-+		if (eventcode == 0x4)
-+			eventcode = hp_wmi_perform_query(HPWMI_HOTKEY_QUERY, 0,
-+							 0);
- 		key = hp_wmi_get_entry_by_scancode(eventcode);
- 		if (key) {
- 			switch (key->type) {
+> If a machine doesn't have acpi, this change is safe.
+> 
+> If a machine has acpi, but doesn't have the reset register set in the 
+> FADT, this change is safe.
+> 
+> If a machine has acpi, and the reset register is set incorrectly, this 
+> change is safe.
+> 
+> If a machine has acpi, and the reset register is wired to the launch 
+> controller, then perhaps this change is unsafe.  Don't issue sysrq-b on 
+> such machines.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+ If a machine has ACPI and it is broken randomly, then the results can be
+arbitrary.  Hopefully not destructively.  If even such a simple thing as
+wiring the reset line so that it functions correctly can be got wrong,
+more so can be more complex matters.
+
+ Failing a better alternative, I suppose the change has to go in though.
+
+  Maciej
