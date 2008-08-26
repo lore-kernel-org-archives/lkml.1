@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752097AbYHZUn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbYHZUp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752097AbYHZUn7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 16:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbYHZUnt
+	id S1755541AbYHZUp3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 16:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbYHZUpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 16:43:49 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:46458 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753305AbYHZUns (ORCPT
+	Tue, 26 Aug 2008 16:45:09 -0400
+Received: from smtp2e.orange.fr ([80.12.242.113]:44390 "EHLO smtp2e.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751053AbYHZUpI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 16:43:48 -0400
-Date: Tue, 26 Aug 2008 13:43:33 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] rcu: fix sparse shadowed variable warning
-Message-ID: <20080826204333.GI6656@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1219780844.6069.6.camel@brick>
+	Tue, 26 Aug 2008 16:45:08 -0400
+X-ME-UUID: 20080826204506745.B5EF4700008F@mwinf2e19.orange.fr
+Message-ID: <48B46B48.7030609@cosmosbay.com>
+Date: Tue, 26 Aug 2008 22:44:56 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1219780844.6069.6.camel@brick>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Denys Fedoryshchenko <denys@visp.net.lb>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+References: <200808220457.40892.denys@visp.net.lb> <20080826201406.GA24827@2ka.mipt.ru>
+In-Reply-To: <20080826201406.GA24827@2ka.mipt.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 01:00:44PM -0700, Harvey Harrison wrote:
-> kernel/rcuclassic.c:564:18: warning: symbol 'flags' shadows an earlier one
-> kernel/rcuclassic.c:527:16: originally declared here
+Evgeniy Polyakov a écrit :
+> On Fri, Aug 22, 2008 at 04:57:40AM +0300, Denys Fedoryshchenko (denys@visp.net.lb) wrote:
+>> I have loaded router (~650 Mbps In+Out), based on 2xAMD Opteron 248, Sun Fire 
+>> X4100. HPET timer available (TSC seems not available on this platform).
+>> Network interfaces is onboard, connected over PCI-X.
+>>
+>> Right now i am using only one processor, cause using only one interface and 
+>> interrupts stick to it. Other is almost not used.
+>> At peak time i notice in mpstat, that this processor is almost "dead", and if 
+>> i run minor application consuming resources - ping over this router will be 
+>> terrible. For me it is clear - system overloaded. I did oprofile, and here is 
+>> result (at low load time, but at peak time it is very similar).
+> 
+> Do you have any packet sockets in this system? Like running dhcp daemon?
+> 
 
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Another way to see this problem can be to start a sniffer on the machine, even with a 
+restrictive pcap filter, to check if performance change or not. (It should decrease)
 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
-> It would be safe in this case to just remove the second declaration of flags
-> and reuse it as it is outside the local_irq_save/restore pair.  I did it this
-> way in case there are future changes that might mix up the use of flags.
-> 
-> Feel free to just remove the second flags declaration if you'd rather do it
-> that way.
-> 
->  kernel/rcuclassic.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-> index 743cf05..ed15128 100644
-> --- a/kernel/rcuclassic.c
-> +++ b/kernel/rcuclassic.c
-> @@ -561,15 +561,15 @@ static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp,
->  		local_irq_restore(flags);
-> 
->  		if (rcu_batch_after(rdp->batch, rcp->pending)) {
-> -			unsigned long flags;
-> +			unsigned long flags2;
-> 
->  			/* and start it/schedule start if it's a new batch */
-> -			spin_lock_irqsave(&rcp->lock, flags);
-> +			spin_lock_irqsave(&rcp->lock, flags2);
->  			if (rcu_batch_after(rdp->batch, rcp->pending)) {
->  				rcp->pending = rdp->batch;
->  				rcu_start_batch(rcp);
->  			}
-> -			spin_unlock_irqrestore(&rcp->lock, flags);
-> +			spin_unlock_irqrestore(&rcp->lock, flags2);
->  		}
->  	}
-> 
-> -- 
-> 1.6.0.340.g84854
-> 
+For example, I believe that running "ping" could have the same effect
+(increasing netstamp_needed variable : every incoming packet has to be timestamped)
+
+So beware of pings, traceroute and other networking tools...
+
+
+
