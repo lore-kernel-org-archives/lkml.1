@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757873AbYHZQOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbYHZQRH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757873AbYHZQOT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 12:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbYHZQOJ
+	id S1758264AbYHZQRH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 12:17:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbYHZQQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 12:14:09 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:47659 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752303AbYHZQOI (ORCPT
+	Tue, 26 Aug 2008 12:16:55 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:51284 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753661AbYHZQQy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 12:14:08 -0400
-Date: Tue, 26 Aug 2008 13:13:54 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Gerhard Brauer <gerhard.brauer@web.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
-Message-ID: <20080826131354.356ae11d@doriath.conectiva>
-In-Reply-To: <20080826145338.GA8601@Krystal>
-References: <48AE5FCF.6030103@zytor.com>
-	<20080822065012.GV14110@elte.hu>
-	<20080822113941.147a1db0@doriath.conectiva>
-	<20080822153451.GA8390@Krystal>
-	<20080822132948.57e47076@doriath.conectiva>
-	<20080822163520.GA9860@Krystal>
-	<20080822142054.403cbdef@doriath.conectiva>
-	<20080822175741.6bc83dc8@doriath.conectiva>
-	<48AF2ABD.9070100@zytor.com>
-	<20080826141851.GA5300@tux1.brauer.lan>
-	<20080826145338.GA8601@Krystal>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Aug 2008 12:16:54 -0400
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Avi Kivity <avi@qumranet.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [PATCH] x86: default to reboot via ACPI
+From: Andi Kleen <andi@firstfloor.org>
+References: <1219659087-17536-1-git-send-email-avi@qumranet.com>
+	<20080826095032.GA309@elf.ucw.cz> <48B3D579.40502@qumranet.com>
+	<20080826113317.520cbab1@lxorguk.ukuu.org.uk>
+	<48B3F3A9.8030709@qumranet.com>
+	<Pine.LNX.4.55.0808261406330.28361@cliff.in.clinika.pl>
+Date: Tue, 26 Aug 2008 18:16:42 +0200
+In-Reply-To: <Pine.LNX.4.55.0808261406330.28361@cliff.in.clinika.pl> (Maciej W. Rozycki's message of "Tue, 26 Aug 2008 14:24:20 +0100 (BST)")
+Message-ID: <87fxorsqdx.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Tue, 26 Aug 2008 10:53:38 -0400
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> escreveu:
+"Maciej W. Rozycki" <macro@linux-mips.org> writes:
 
-| Then, after having tested (2), try this on top of it :
-| 
-| In arch/x86/kernel/alternative.c, alternatives_smp_switch()
-| 
-| Add   unsigned long flags;
-| Change 
-| spin_lock -> spin_lock_irqsave(&smp_alt, flags);
-| spin_unlock(&smp_alt); -> spin_unlock_irqrestore(&smp_alt, flags);
+> On Tue, 26 Aug 2008, Avi Kivity wrote:
+>
+>> Most machines are recent machines.
+>
+>  This is a bold statement I would say.  Any numbers to back it up?
 
- Hmm, I can't find spin_lock functions in alternatives_smp_switch()
-looks like the current implementation is now using mutexes.
+You can do the math. Reasonable assumptions are ~10% growth rate
+in year-by-year units shipment (that's conservative, usually it is higher) 
+and that most systems are only used for 4-5 years (on commercial servers 
+it's typically 4 years, on privately used systems perhaps a bit more,
+laptops certainly less because they tend to break earlier). That 
+is the average, of course there are systems which are used much
+longer (or much shorter), but I would expect them to be the minority.
 
- What tree are you referring to?
+Also laptops are growing more and more compared to desktops (iirc the
+cross over of more laptops than desktops shipping happened recently)
+and if the assumption that they break earlier is true (it is
+definitely in my experience) so it's likely that the average system
+live time shrinks in the future.
 
--- 
-Luiz Fernando N. Capitulino
+With that it's reasonably easy to show that most systems are recent,
+if you define recent as 1-3 years. The "ACPI is the standard validated
+mode of operation" window is more like 7-8 years by now. With that
+I would expect the systems with very poor ACPI implementation to
+be a small minority by now.
+
+-Andi
