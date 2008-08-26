@@ -1,67 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759000AbYHZR4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759226AbYHZR6M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759000AbYHZR4M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 13:56:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757191AbYHZRz6
+	id S1759226AbYHZR6M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 13:58:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757678AbYHZR56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 13:55:58 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:34506 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755085AbYHZRz5 (ORCPT
+	Tue, 26 Aug 2008 13:57:58 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:14107 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752309AbYHZR55 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 13:55:57 -0400
-Date: Tue, 26 Aug 2008 13:55:31 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
-Message-ID: <20080826175531.GG8720@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Stefani Seibold <stefani@seibold.net>,
-	Nick Piggin <nickpiggin@yahoo.com.au>,
-	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel@vger.kernel.org, Dario Faggioli <raistlin@linux.it>,
-	Max Krasnyansky <maxk@qualcomm.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <20080819103301.787700742@chello.nl> <200808261954.47987.nickpiggin@yahoo.com.au> <alpine.LFD.1.10.0808261219050.3243@apollo.tec.linutronix.de> <200808262127.26803.nickpiggin@yahoo.com.au> <20080826125057.GC8720@mit.edu> <1219757487.31371.19.camel@matrix>
+	Tue, 26 Aug 2008 13:57:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type;
+        b=rskeuwKJWgf1iIWThyTZLOzQPl+8DGNEatLJYioQ65Ns6KG6BhdM1IzOPlXSV+GAsy
+         feUMj/sVoCwy+JcJnx+c3ruvg3fY7eYwLA4oBXrAikqXiH97CAN/4IAGld8T5LorWHnE
+         Lbg0jPNqEEUsQEnXpETLz3yLZokfgjtfxL1UQ=
+Message-ID: <48B4441E.5030108@gmail.com>
+Date: Tue, 26 Aug 2008 20:57:50 +0300
+From: "Volodymyr G. Lukiianyk" <volodymyrgl@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1219757487.31371.19.camel@matrix>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Greg Ungerer <gerg@uclinux.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] uclinux: fix gzip header parsing in binfmt_flat.c
+References: <48B442C3.2000309@gmail.com>
+In-Reply-To: <48B442C3.2000309@gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------070402020902060502000308"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 03:31:27PM +0200, Stefani Seibold wrote:
-> 
-> Sorry, the world of embedded programming is sometime stranger than in
-> theory. Normally it would not happen that a real-time process locks the
-> CPU for more than 1 sec. But in some circumstances, especially FPGA
-> initialisation and long term measurements it is possible that the
-> real-time process locks the cpu for more than a, sometime for more than
-> 10 sec. If the embedded program has designed it in that way, this
-> behaviour is desired.
-> 
+This is a multi-part message in MIME format.
+--------------070402020902060502000308
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-And if that's true, the embedded program can adjust the ulimit to
-change the priority levels as appropriately.  Real-time programming
-will always required a bit more configuration, such as what priority
-various hard and soft interrupt routines will run it.  This is just
-one more configuration option. 
+There are off-by-one errors in decompress_exec() when calculating the length of
+optional "original file name" and "comment" fields: the "ret" index is not
+incremented when terminating '\0' character is reached. The check of the buffer
+overflow (after an "extra-field" length was taken into account) is also fixed.
 
-> What coming at next? A device driver manager, which kills any driver
-> which use to much CPU resource? Or throttle/kicks off the responsible
-> driver if the hardware generates to many interrupts?
+Signed-off-by: Volodymyr G Lukiianyk <volodymyrgl@gmail.com>
+---
+Sorry for repost, looks like I forgot to remove "--color" when saved diff
+attached to the previous e-mail.
 
-Actually, we have both of these already.  :-)
+I've encountered this off-by-one error when tried to reuse gzip-header-parsing
+part of the decompress_exec() function. There was an "original file name" field
+in the payload (with miscalculated length) and zlib_inflate() returned
+Z_DATA_ERROR. But after the fix similar to this one all worked fine.
 
-						- Ted
+WARNING: the proposed patch wasn't properly tested.
+
+--------------070402020902060502000308
+Content-Type: text/x-patch;
+ name="binfmt_flat_decompress_fix.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="binfmt_flat_decompress_fix.diff"
+
+diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
+index dfc0197..ccb781a 100644
+--- a/fs/binfmt_flat.c
++++ b/fs/binfmt_flat.c
+@@ -229,13 +229,13 @@ static int decompress_exec(
+ 	ret = 10;
+ 	if (buf[3] & EXTRA_FIELD) {
+ 		ret += 2 + buf[10] + (buf[11] << 8);
+-		if (unlikely(LBUFSIZE == ret)) {
++		if (unlikely(LBUFSIZE <= ret)) {
+ 			DBG_FLT("binfmt_flat: buffer overflow (EXTRA)?\n");
+ 			goto out_free_buf;
+ 		}
+ 	}
+ 	if (buf[3] & ORIG_NAME) {
+-		for (; ret < LBUFSIZE && (buf[ret] != 0); ret++)
++		while (ret < LBUFSIZE && buf[ret++] != 0)
+ 			;
+ 		if (unlikely(LBUFSIZE == ret)) {
+ 			DBG_FLT("binfmt_flat: buffer overflow (ORIG_NAME)?\n");
+@@ -243,7 +243,7 @@ static int decompress_exec(
+ 		}
+ 	}
+ 	if (buf[3] & COMMENT) {
+-		for (;  ret < LBUFSIZE && (buf[ret] != 0); ret++)
++		while (ret < LBUFSIZE && buf[ret++] != 0)
+ 			;
+ 		if (unlikely(LBUFSIZE == ret)) {
+ 			DBG_FLT("binfmt_flat: buffer overflow (COMMENT)?\n");
+
+--------------070402020902060502000308--
