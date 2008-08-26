@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbYHZLAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbYHZLDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757939AbYHZLAo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 07:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbYHZLAg
+	id S1758076AbYHZLDd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 07:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbYHZLDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 07:00:36 -0400
-Received: from mx1.suse.de ([195.135.220.2]:49318 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753180AbYHZLAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 07:00:36 -0400
-From: Oliver Neukum <oneukum@suse.de>
-Organization: Novell
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: autosuspend for SCSI devices
-Date: Tue, 26 Aug 2008 13:01:43 +0200
-User-Agent: KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
-       James.Bottomley@hansenpartnership.com, linux-kernel@vger.kernel.org,
-       teheo@novell.com, stefanr@s5r6.in-berlin.de, Martin.Leisner@xerox.com
-References: <20080822105626.GA9475@elf.ucw.cz> <200808251055.45582.oneukum@suse.de> <20080826094355.GA30062@elf.ucw.cz>
-In-Reply-To: <20080826094355.GA30062@elf.ucw.cz>
+	Tue, 26 Aug 2008 07:03:24 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:14526 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753606AbYHZLDX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 07:03:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=QutgI3z5aTgtZzHCqXYE/ImKm4DhzBZZ7KsD9wIC0h6JziSQQQ0u+4DFKPY7u332ga
+         4a9zCldcVYceS4GdDpLrGEpLLmU4U7uLgZ52OUlhVRq2m0Nnm/NTQShvTS8BE0kgghky
+         DTOmDEXBHTrVNbyssgYgfcTUjy+7gKRJqSo4c=
+Message-ID: <ac9c93b10808260403ga9f6e13v4792bb2c13dfc2bf@mail.gmail.com>
+Date: Tue, 26 Aug 2008 13:03:21 +0200
+From: "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>
+To: "Avi Kivity" <avi@qumranet.com>
+Subject: Re: [PATCH] x86: default to reboot via ACPI
+Cc: "Pavel Machek" <pavel@suse.cz>, "Ingo Molnar" <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+In-Reply-To: <48B3D579.40502@qumranet.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808261301.45167.oneukum@suse.de>
+References: <1219659087-17536-1-git-send-email-avi@qumranet.com>
+	 <20080826095032.GA309@elf.ucw.cz> <48B3D579.40502@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 26 August 2008 11:43:55 schrieb Pavel Machek:
-> > firstly, it doesn't consider error handling before suspending.
-> 
-> What problems do you see with error handling? This patch does not
-> touch the error handling, and I do not think it needs to touch it.
+2008/8/26 Avi Kivity <avi@qumranet.com>:
 
-You'd make scsi driver writers' life easier if you made sure no autosuspends
-happen while they recover from errors. After all, you have no idea which
-commands will get through while the bus is in disarray.
+> It seems excessive.  Most machines will hardly run without acpi.
 
-	Regards
-		Oliver
+Well, I'm fairly sure that most of the systems running linux (or some
+variant like uclinux), do not support acpi.
 
+Linux is used a lot in embedded systems (like routers and NAS-es and
+probably set-top boxes). I guess the # of embedded systems with some
+linux flavour on it is substantially bigger than the desktop systems.
+Most of these are ARM or MIPS based and do not support ACPI.
+
+Frans.
