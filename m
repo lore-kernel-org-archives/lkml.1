@@ -1,101 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757863AbYHZVOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbYHZVZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757863AbYHZVOW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 17:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYHZVOK
+	id S1753160AbYHZVZk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 17:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbYHZVZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 17:14:10 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:46941 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751726AbYHZVOI (ORCPT
+	Tue, 26 Aug 2008 17:25:31 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:46673 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751530AbYHZVZa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 17:14:08 -0400
-Date: Tue, 26 Aug 2008 17:14:07 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Karsten Wiese <fzu@wemgehoertderstaat.de>,
-       David Brownell <david-b@pacbell.net>, amruth <amruth_pv@yahoo.com>
-cc: Oliver Neukum <oliver@neukum.org>, USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: USB Serial device disconnect causes IRQ disable after using ehci
- controller halted
-In-Reply-To: <214918.92613.qm@web45204.mail.sp1.yahoo.com>
-Message-ID: <Pine.LNX.4.44L0.0808261707090.2139-100000@iolanthe.rowland.org>
+	Tue, 26 Aug 2008 17:25:30 -0400
+Date: Tue, 26 Aug 2008 16:25:26 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Robert Rex <robert.rex@exasol.com>,
+       Roland McGrath <roland@redhat.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] pid_ns: zap_pid_ns_processes: fix the
+	->child_reaper changing
+Message-ID: <20080826212526.GA12230@us.ibm.com>
+References: <20080824154911.GA3777@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080824154911.GA3777@tv-sign.ru>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karsten and Dave:
+Quoting Oleg Nesterov (oleg@tv-sign.ru):
+> zap_pid_ns_processes() sets pid_ns->child_reaper = NULL, this is wrong.
+> 
+> Yes, we have already killed all tasks in this namespace, and sys_wait4()
+> doesn't see any child. But this doesn't mean ->children list is empty,
+> we may have EXIT_DEAD tasks which are not visible to do_wait(). In that
+> case the subsequent forget_original_parent() will crash the kernel because
+> it will try to re-parent these tasks to the NULL reaper.
+> 
+> Even if there are no childs, it is not good that forget_original_parent()
+> uses reaper == NULL.
+> 
+> Change the code to set ->child_reaper = init_pid_ns.child_reaper instead.
+> We could use pid_ns->parent->child_reaper as well, I think this does not
+> really matter. These EXIT_DEAD tasks are not visible to the new ->parent
+> after re-parenting, they will silently do release_task() eventually.
+> 
+> Note that we must change ->child_reaper, otherwise forget_original_parent()
+> will use reaper == father, and in that case we will hit the (correct)
+> BUG_ON(!list_empty(&father->children)).
+> 
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-It looks like the logic in ehci-hcd's handshake_on_error_set_halt() 
-needs to be revisited.
+Well while it looked correct to me all along, I couldn't get the
+testcase to cause an oops.  But I see where do_exit() calls
+zap_pid_ns_processes() (through group_exit()) before
+forget_original_parent(), which can/should end up dereferencing
+the null pid_ns, so clearly this is needed and correct.
 
-On Tue, 26 Aug 2008, amruth wrote:
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-> Hi
-> Alan
-> I am posting below detail log after adding debug messages
+Thanks, Oleg.
 
-...
-> [  308.850665] ehci_hcd 0000:00:1d.7: devpath 1 ep2in 3strikes
-> [  308.850670] drivers/usb/serial/magtek.c: magtek_read_int_callback - port 0
-> [  308.850683] usb 5-1: unlink qh0-00ff/ded67080 start 0 [1/0 us]
-> [  308.850846] usb 5-1: link qh0-00ff/ded67080 start 0 [1/0 us]
-> [  308.851537] usb 5-1: unlink qh0-00ff/ded67080 start 0 [1/0 us]
-> [  308.853487] ehci_hcd 0000:00:1d.7: handshake failed: controller halted
+-serge
 
-The line above was a debugging message added specially for this test.  
-The controller wasn't really halted, but hcd->state was set to 
-HC_STATE_HALTED.
+> --- 2.6.27-rc4/kernel/pid_namespace.c~1_ZAP_DONT_CLEAR_REAPER	2008-07-30 13:12:49.000000000 +0400
+> +++ 2.6.27-rc4/kernel/pid_namespace.c	2008-08-24 17:22:59.000000000 +0400
+> @@ -179,9 +179,12 @@ void zap_pid_ns_processes(struct pid_nam
+>  		rc = sys_wait4(-1, NULL, __WALL, NULL);
+>  	} while (rc != -ECHILD);
+> 
+> -
+> -	/* Child reaper for the pid namespace is going away */
+> -	pid_ns->child_reaper = NULL;
+> +	/*
+> +	 * We can not clear ->child_reaper or leave it alone.
+> +	 * There may by stealth EXIT_DEAD tasks on ->children,
+> +	 * forget_original_parent() must move them somewhere.
 
-> [  308.853487] Pid: 0, comm: swapper Not tainted 2.6.26EHCIDBG #3
-> [  308.853487]  [<e08405aa>] handshake_on_error_set_halt+0x45/0x51 [ehci_hcd]
-> [  308.853487]  [<e08405d6>] disable_periodic+0x20/0x40 [ehci_hcd]
-> [  308.853487]  [<e0841fb4>] ehci_work+0x5e6/0x6ad [ehci_hcd]
-> [  308.853487]  [<c0424230>] ? printk+0x15/0x17
-> [  308.853487]  [<e0845c7e>] ehci_irq+0x28a/0x2fd [ehci_hcd]
-> [  308.853487]  [<e090005d>] ? cdrom_newpc_intr+0x52e/0x544 [ide_cd_mod]
-> [  308.853487]  [<c042addd>] ? lock_timer_base+0x1f/0x3e
-> [  308.853487]  [<c05764c4>] usb_hcd_irq+0x27/0x58
-> [  308.853487]  [<c044b852>] handle_IRQ_event+0x21/0x48
-> [  308.853487]  [<c044c9fb>] handle_fasteoi_irq+0x77/0xac
-> [  308.853487]  [<c044c984>] ? handle_fasteoi_irq+0x0/0xac
-> [  308.853487]  [<c040598c>] do_IRQ+0xa9/0xd1
-> [  308.853487]  [<c04025f2>] ? default_idle+0x0/0x42
-> [  308.853487]  [<c040429b>] common_interrupt+0x23/0x28
-> [  308.853487]  [<c04025f2>] ? default_idle+0x0/0x42
-> [  308.853487]  [<c041007b>] ? acpi_save_state_mem+0xa/0x12b
-> [  308.853487]  [<c040261f>] ? default_idle+0x2d/0x42
-> [  308.853487]  [<c040256d>] cpu_idle+0x8b/0x9f
-> [  308.853487]  [<c061f329>] start_secondary+0x156/0x15b
-> [  308.853487]  =======================
-> [  308.853487] ehci_hcd 0000:00:1d.7: hcd state 0
-> [  308.853487] ehci_hcd 0000:00:1d.7: hcd state 0
-> [  308.853487] ehci_hcd 0000:00:1d.7: HC died; cleaning up
-> [  308.854983] hub 5-0:1.0: state 0 ports 8 chg 0000 evt 0000
-> [  308.854983] usb 5-1: USB disconnect, address 6
-> [  308.854983] usb 5-1: unregistering device
-> [  308.854983] usb 5-1: usb_disable_device nuking all URBs
-> [  308.854983] usb 5-1: unregistering interface 5-1:1.0
-> [  308.854983] drivers/usb/serial/magtek.c: magtek_shutdown
-> [  308.854983] magtek ttyUSB0: Magtek 75/Excella USB card reader converter now disconnected from ttyUSB0
-> [  308.854983] magtek 5-1:1.0: device disconnected
-> [  308.854983] usb 5-1:1.0: uevent
-> [  308.854983] usb 5-1: uevent
-> [  309.153998] irq 23: nobody cared (try booting with the "irqpoll" option)
+Actually this comment is a little bit misleading - the null
+deref will happen regardless of whether there are children,
+right?
 
-Simply setting hcd->state to HC_STATE_HALTED isn't a good idea,
-especially in cases like this where the controller really _isn't_
-halted.  Here it was still generating IRQs, leading to the "nobody
-cared" problem on the last line of the log.
-
-While it certainly would be a good idea to prevent the handshake 
-failures from occurring in the first place -- Dave, aren't you working 
-on a patch for that? -- we should also make sure that when they do 
-occur, the controller gets reset properly.  And an error message should 
-be printed in the log.
-
-Alan Stern
-
+> +	 */
+> +	pid_ns->child_reaper = init_pid_ns.child_reaper;
+>  	acct_exit_ns(pid_ns);
+>  	return;
+>  }
