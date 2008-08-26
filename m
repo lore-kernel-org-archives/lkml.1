@@ -1,99 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758180AbYHZOIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbYHZOJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758180AbYHZOIn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 10:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbYHZOIW
+	id S1757876AbYHZOJp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 10:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbYHZOJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 10:08:22 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:43490 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754161AbYHZOIV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 10:08:21 -0400
-Subject: Re: [PATCH 2/2] smp_call_function: use rwlocks on queues rather
-	than rcu
-From: Peter Zijlstra <peterz@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080826134348.GE7097@linux.vnet.ibm.com>
-References: <20080822182915.GG6744@linux.vnet.ibm.com>
-	 <48AF0735.60402@linux-foundation.org>
-	 <20080822195226.GJ6744@linux.vnet.ibm.com>
-	 <48AF1B81.3050806@linux-foundation.org>
-	 <20080822205339.GK6744@linux.vnet.ibm.com> <1219660291.8515.20.camel@twins>
-	 <20080825151220.GA6745@linux.vnet.ibm.com> <1219677736.8515.69.camel@twins>
-	 <48B2D3BE.40101@linux-foundation.org> <1219679492.8515.77.camel@twins>
-	 <20080826134348.GE7097@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 26 Aug 2008 16:07:00 +0200
-Message-Id: <1219759620.6462.9.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Aug 2008 10:09:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35569 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753956AbYHZOJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 10:09:36 -0400
+Date: Tue, 26 Aug 2008 16:09:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, hch@infradead.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Van Hensbergen <ericvh@gmail.com>,
+       Ron Minnich <rminnich@sandia.gov>, v9fs-developer@lists.sourceforge.net
+Subject: Re: [PATCH 1/2] wait: kill is_sync_wait()
+Message-ID: <20080826140900.GA13062@elte.hu>
+References: <48B40BD4.7040004@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48B40BD4.7040004@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-26 at 06:43 -0700, Paul E. McKenney wrote:
-> On Mon, Aug 25, 2008 at 05:51:32PM +0200, Peter Zijlstra wrote:
-> > On Mon, 2008-08-25 at 10:46 -0500, Christoph Lameter wrote:
-> > > Peter Zijlstra wrote:
-> > > >
-> > > > If we combine these two cases, and flip the counter as soon as we've
-> > > > enqueued one callback, unless we're already waiting for a grace period
-> > > > to end - which gives us a longer window to collect callbacks.
-> > > > 
-> > > > And then the rcu_read_unlock() can do:
-> > > > 
-> > > >   if (dec_and_zero(my_counter) && my_index == dying)
-> > > >     raise_softirq(RCU)
-> > > > 
-> > > > to fire off the callback stuff.
-> > > > 
-> > > > /me ponders - there must be something wrong with that...
-> > > > 
-> > > > Aaah, yes, the dec_and_zero is non trivial due to the fact that its a
-> > > > distributed counter. Bugger..
-> > > 
-> > > Then lets make it per cpu. If we get the cpu ops in then dec_and_zero would be
-> > > very cheap.
-> > 
-> > Hmm, perhaps that might work for classic RCU, as that disables
-> > preemption and thus the counters should always be balanced.
+
+* Tejun Heo <tj@kernel.org> wrote:
+
+> is_sync_wait() is used to distinguish between sync and async waits.
+> Basically sync waits are the ones initialized with
+> init_waitqueue_entry() and async ones with init_waitqueue_func_entry().
+> The sync/async distinction is used only in prepare_to_wait[_exclusive]()
+> and its only function is to skip setting the current task state if the
+> wait is async.  This has a few problems.
 > 
-> Unless you use a pair of global counters (like QRCU), you will still
-> need to check a large number of counters for zero.  I suppose that one
-> approach would be to do something like QRCU, but with some smallish
-> number of counter pairs, each of which is shared by a moderate group of
-> CPUs.  For example, for 4,096 CPUs, use 64 pairs of counters, each
-> shared by 64 CPUs.  My guess is that the rcu_read_lock() overhead would
-> make this be a case of "Holy overhead, Batman!!!", but then again, I
-> cannot claim to be an expert on 4,096-CPU machines.
+> * No one uses it.  None of func_entry users use prepare_to_wait()
+>   functions, so the code path never gets executed.
+> 
+> * The distinction is bogus.  Maybe back when func_entry is used only
+>   by aio but it's now also used by epoll and in future possibly by 9p
+>   and poll/select.
+> 
+> * Taking @state as argument and ignoring it silenly depending on how
+>   @wait is initialized is just a bad error-prone API.
+> 
+> * It prevents func_entry waits from using wait->private for no good
+>   reason.
+> 
+> This patch kills is_sync_wait() and the associated code paths from
+> prepare_to_wait[_exclusive]().  As there was no user of these code
+> paths, this patch doesn't cause any behavior difference.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
 
-right - while the local count will be balanced and will always end up on
-zero, you have to check remote counts for zero as well.
+good spotting.
 
-But after a counter flip, the dying counter will only reach zero once
-per cpu.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-So each cpu gets to tickle a softirq once per cycle. That softirq can
-then check all remote counters, and kick off the callback list when it
-finds them all zero.
-
-Of course, this scan is very expensive, n^2 at worst, each cpu
-triggering a full scan, until finally the last cpu is done.
-
-We could optimize this by keeping cpu masks of cpus found to have !0
-counts - those who were found to have 0, will always stay zero, so we'll
-not have to look at them again.
-
-Another is making use of a scanning hierarchy.
-
+	Ingo
