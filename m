@@ -1,131 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758796AbYHZQJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758881AbYHZQJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758796AbYHZQJh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 12:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbYHZQJ3
+	id S1758881AbYHZQJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 12:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755853AbYHZQJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 12:09:29 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:51179 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754338AbYHZQJ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 12:09:28 -0400
-Date: Tue, 26 Aug 2008 13:09:15 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Gerhard Brauer <gerhard.brauer@web.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
-Message-ID: <20080826130915.6fd85e34@doriath.conectiva>
-In-Reply-To: <20080826145338.GA8601@Krystal>
-References: <48AE5FCF.6030103@zytor.com>
-	<20080822065012.GV14110@elte.hu>
-	<20080822113941.147a1db0@doriath.conectiva>
-	<20080822153451.GA8390@Krystal>
-	<20080822132948.57e47076@doriath.conectiva>
-	<20080822163520.GA9860@Krystal>
-	<20080822142054.403cbdef@doriath.conectiva>
-	<20080822175741.6bc83dc8@doriath.conectiva>
-	<48AF2ABD.9070100@zytor.com>
-	<20080826141851.GA5300@tux1.brauer.lan>
-	<20080826145338.GA8601@Krystal>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Aug 2008 12:09:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49636 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755006AbYHZQJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 12:09:49 -0400
+Date: Tue, 26 Aug 2008 12:08:26 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Paul Menage <menage@google.com>, righi.andrea@gmail.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Graf <tgraf@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Steve Olivieri <solivier@redhat.com>
+Subject: Re: [RFC] [PATCH -mm] cgroup: uid-based rules to add processes
+	efficiently in the right cgroup
+Message-ID: <20080826160826.GF30312@redhat.com>
+References: <20080711095501.cefff6df.kamezawa.hiroyu@jp.fujitsu.com> <20080714135719.GE16673@redhat.com> <487B665B.9080205@sun.com> <20080714152142.GJ16673@redhat.com> <48A7FE7B.3060309@gmail.com> <6599ad830808181405i3ec1f9fdp4d8ca7ab675b2c5f@mail.gmail.com> <20080819125710.GA18972@redhat.com> <6599ad830808251754l146588dax65aeff2cc22ac0c1@mail.gmail.com> <20080826134127.GA30312@redhat.com> <48B414A0.9000504@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48B414A0.9000504@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Tue, 26 Aug 2008 10:53:38 -0400
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> escreveu:
+On Tue, Aug 26, 2008 at 08:05:12PM +0530, Balbir Singh wrote:
+> Vivek Goyal wrote:
+> > On Mon, Aug 25, 2008 at 05:54:39PM -0700, Paul Menage wrote:
+> >> On Tue, Aug 19, 2008 at 5:57 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> >>> Same thing will happen if we implement the daemon in user space. A task
+> >>> who does seteuid(), can be swept away to a different cgroup based on
+> >>> rules specified in /etc/cgrules.conf.
+> >> Yes, I'm not so keen on a daemon magically pulling things into a
+> >> cgroup based on uid either, for the same reasons.
+> >>
+> >> But a user-space based solution can be much more flexible (e.g. easier
+> >> to configure it to only move tasks from certain source cgroups).
+> >>
+> >>> What do you mean by risk? This is the policy set up by system admin and
+> >>> behaviour would seem consistent as per the policy. If an admin decides
+> >>> that tasks of user "apache" should run into /container/cpu/apache cgroup and
+> >>> if a "root" tasks does seteuid(apache), then it manes sense to move task
+> >>> to /container/cpu/apache.
+> >> The kind of unexpected behaviour I was imagining was when some other
+> >> daemon (e.g. ftpd?) unexpectedly does a setuid to one of the
+> >> magically-controlled users, and results in that daemon being pulled
+> >> into the specified cgroup. For something like cpu maybe that's mostly
+> >> benign (but what moves it back into its original group after it
+> >> switches back to root?)
+> > 
+> > Once ftpd does seteuid() or setreuid() again to switch effective user to
+> > "root", it will be moved back to original group (root's group).
+> > 
+> > So basic question is if a program changes its effective user id temporarily
+> > to user B than all the resource consumption should take place from the
+> > resources of user B or should continue to take place from original cgroup.
+> > 
+> > I would think that we should move the task temporarily to B's cgroup and
+> > bring back again upon identity change.
+> > 
+> > At the same time I can also understand that this behavior can probably
+> > be considered over-intrusive and some people might want to avoid that.
+> > 
+> > Two things come to my mind.
+> > 
+> > - Users who find it too intrusive, can just shut down the rules based
+> >   daemon.
+> > 
+> 
+> Yes, I would say administrators should do that. Classification via setuid(),
+> does make a lot of sense, but at the same time it might be too aggressive if an
+> application frequently uses setuid()
+> 
 
-| * Gerhard Brauer (gerhard.brauer@web.de) wrote:
-| > On Fri, Aug 22, 2008 at 02:08:13PM -0700, H. Peter Anvin wrote:
-| > > Luiz Fernando N. Capitulino wrote:
-| > >>
-| > >>  I have asked Mandriva and Ubuntu users to test this and all of
-| > >> them so far are saying that noreplace-paravirt works.
-| > >>
-| > >>  It makes the system slower, but it works.
-| > >>
-| > >
-| > > Yes, the big issue is exactly what VirtualBox screws up in this matter,  
-| > > how to detect it, and how to work around it.
-| > >
-| > > It's pretty clear it's a VirtualBox f*ckup at this point, but the failure 
-| > > mechanism isn't at all obvious and so far the workaround is elusive.
-| > >
-| > > I'm strongly suspect this is a VirtualBox tcache management failure, but  
-| > > that doesn't help the situation without knowing how it happens.
-| > 
-| > On Archlinux we have the same problem. We have a bugreport here:
-| > http://bugs.archlinux.org/task/11141
-| > 
-| > Myself test it with a LiveCD/Install-ISO which has 2.6.26 as install
-| > kernel. We have the guest oops on virtualbox-ose, virtualbox-sun and both on
-| > i686 or x86_64 hosts.
-| > 
-| > Some things i noticed:
-| > - The system boots always when i either enable VT-x in guest settings or
-| >   disable acpi and run the guest with acpi=off.
-| > - The oops occurs always on (disk)-io, no matter which file system i
-| >   use.
-| > - When the oops has occured and the guest has to close and restart then,
-| >   if i don't use VT-x or acpi=off, i always get an oops directly when
-| >   initrd/kernel is starting. Last screen message before the oops then is
-| >   "Freeing SMP alternatives".
-| > 
-| > Here is also an archive with guest dmesg and messages.log from such an
-| > oops when heavy disk io leads to the oops:
-| > http://bugs.archlinux.org/task/11141?getfile=2445
-| > 
-| 
-| Hrm, can you try this ?
-| 
-| 1 - Make sure you kernel is not CONFIG_DEBUG_RODATA
+Just minor clarification. Right now all the classification is being done
+based on effective uid and effective gid.
 
-"""
-$ grep CONFIG_DEBUG_RODATA .config
-# CONFIG_DEBUG_RODATA is not set
-$
-"""
+[..]
+> >>> Exactly what kind of scenario do you have in mind when you want the policy
+> >>> to be enforced selectively based on task (tid)?
+> >> I was thinking of something like possibly a per-cgroup file (that also
+> >> affected child cgroups) rather than a global file. That would also
+> >> automatically handle multiple hierarchies.
+> >>
+> > 
+> > So there can be two kind of controls.
+> > 
+> > - Create a per cgroup file say "group_pinned", where if 1 is written to
+> >   "group_pinned" that means daemon will not move tasks from this cgroup upon
+> >   effective uid/gid changes.
+> > 
+> > - Provide more fine grained control where task movement is not controlled
+> >   per cgroup, rather per thread id. In that case every cgroup will contain
+> >   another file "tasks_pinned" which will contain all the tids which cannot
+> >   be moved from this cgroup by daemon. By default this file will be empty
+> >   and all the tids are movable.
+> > 
+> > I think initially we can keep things simple and implement "group_pinned" 
+> > which provides coarse control on the whole group and pins all the tasks
+> > in that cgroup.
+> > 
+> 
+> Hmm... I wonder if we are providing too many knobs. Can't we do something simpler?
 
-| 2 - Change the whole text_poke implementation in
-| arch/x86/kernel/alternative.c to this :
-| 
-| void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
-| {
-|   return text_poke_early(addr, opcode, len);
-| }
-| 
-| If this works, I suspect that the problem comes from a vmap/vunmap
-| problem. If it still fails, the problem would likely come from a race
-| with interrupt disabling probably due to missing data/instruction cache
-| flush.
+I also fear that we are probably providing too many knobs. Until we get
+a strong use case, to keep things simple I recommend that for the time
+being let us stick to simple user space daemon and user can turn it on
+or off based on his needs (whether user wants a cgroup change upon seteuid()
+related events). No controls based on group_pinned or tasks_pinned
+etc. It is all or none.
 
- I still get the oops with this change. :((
-
-| Then, after having tested (2), try this on top of it :
-| 
-| In arch/x86/kernel/alternative.c, alternatives_smp_switch()
-| 
-| Add   unsigned long flags;
-| Change 
-| spin_lock -> spin_lock_irqsave(&smp_alt, flags);
-| spin_unlock(&smp_alt); -> spin_unlock_irqrestore(&smp_alt, flags);
-| 
-| This will help testing if there is a problem with interrupts coming
-| shortly after the modification. If it fixes the problem, my guess is
-| that we should flush the instruction cache (and maybe the data cache ?)
-| in text_poke and text_poke early when interrupts are off.
-
- By 'on top of it' you mean I should make these changes with the
-text_poke() version above right?
-
- By the way, I have added a comment in the virtualbox's bugzilla
-pointing out this thread but no feedback from them so far.
-
--- 
-Luiz Fernando N. Capitulino
+Thanks
+Vivek
