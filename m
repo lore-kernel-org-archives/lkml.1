@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757703AbYHZQCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbYHZQDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757703AbYHZQCn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 12:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755857AbYHZQCf
+	id S1758473AbYHZQDT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 12:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755648AbYHZQDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 12:02:35 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:43508 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755799AbYHZQCf (ORCPT
+	Tue, 26 Aug 2008 12:03:09 -0400
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:34870 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755857AbYHZQDI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 12:02:35 -0400
-Date: Tue, 26 Aug 2008 13:02:16 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: Gerhard Brauer <gerhard.brauer@web.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
-Message-ID: <20080826130216.4d723b0a@doriath.conectiva>
-In-Reply-To: <20080826141851.GA5300@tux1.brauer.lan>
-References: <48ADDF4F.2020401@zytor.com>
-	<48AE5FCF.6030103@zytor.com>
-	<20080822065012.GV14110@elte.hu>
-	<20080822113941.147a1db0@doriath.conectiva>
-	<20080822153451.GA8390@Krystal>
-	<20080822132948.57e47076@doriath.conectiva>
-	<20080822163520.GA9860@Krystal>
-	<20080822142054.403cbdef@doriath.conectiva>
-	<20080822175741.6bc83dc8@doriath.conectiva>
-	<48AF2ABD.9070100@zytor.com>
-	<20080826141851.GA5300@tux1.brauer.lan>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
+	Tue, 26 Aug 2008 12:03:08 -0400
+X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.25.15 bug?
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Date: Tue, 26 Aug 2008 18:03:02 +0200
+From: Anders Eriksson <aeriksson@fastmail.fm>
+Message-Id: <20080826160303.BA84E93CB6E@tippex.mynet.homeunix.org>
+X-Originating-IP: 83.252.237.76
+X-Scan-Result: No virus found in message 1KY10c-00036O-9T.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KY10c-00036O-9T a9b4861a65808014bea69c86a9afba3e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Tue, 26 Aug 2008 16:18:51 +0200
-Gerhard Brauer <gerhard.brauer@web.de> escreveu:
 
-| On Fri, Aug 22, 2008 at 02:08:13PM -0700, H. Peter Anvin wrote:
-| > Luiz Fernando N. Capitulino wrote:
-| >>
-| >>  I have asked Mandriva and Ubuntu users to test this and all of
-| >> them so far are saying that noreplace-paravirt works.
-| >>
-| >>  It makes the system slower, but it works.
-| >>
-| >
-| > Yes, the big issue is exactly what VirtualBox screws up in this matter,  
-| > how to detect it, and how to work around it.
-| >
-| > It's pretty clear it's a VirtualBox f*ckup at this point, but the failure 
-| > mechanism isn't at all obvious and so far the workaround is elusive.
-| >
-| > I'm strongly suspect this is a VirtualBox tcache management failure, but  
-| > that doesn't help the situation without knowing how it happens.
-| 
-| On Archlinux we have the same problem. We have a bugreport here:
-| http://bugs.archlinux.org/task/11141
-| 
-| Myself test it with a LiveCD/Install-ISO which has 2.6.26 as install
-| kernel. We have the guest oops on virtualbox-ose, virtualbox-sun and both on
-| i686 or x86_64 hosts.
-| 
-| Some things i noticed:
-| - The system boots always when i either enable VT-x in guest settings or
-|   disable acpi and run the guest with acpi=off.
+Trying to track down a hard freeze bug, I enabled various hacker options. This 
+one turned up in dmesg. I'm pretty sure it souldn't be there. 
 
- Yes, lots of ubuntu users have reported the same but another "lots"
-of them have reported that the trick didn't work.
+This on seems to be unrealted to the bug I'm hunting though...
 
- Thanks for joining!
 
--- 
-Luiz Fernando N. Capitulino
+kobject: 'vcsa11' (d643fed8): kobject_uevent_env
+kobject: 'vcsa11' (d643fed8): fill_kobj_path: path = '/class/vc/vcsa11'
+IRQ handler type mismatch for IRQ 3
+current handler: MPU401 UART
+Pid: 4799, comm: hald-probe-seri Not tainted 2.6.25.15 #30
+ [<c013d4e7>] setup_irq+0x1a4/0x1bc
+ [<c013d644>] request_irq+0xc7/0xe5
+ [<c023a18f>] ? serial8250_interrupt+0x0/0x114
+ [<c0239f9d>] serial8250_startup+0x3b6/0x50d
+ [<c02360c0>] uart_startup+0x70/0x125
+ [<c023766d>] uart_open+0x158/0x390
+ [<c0399705>] ? _spin_unlock+0x27/0x3c
+ [<c02257e1>] ? check_tty_count+0x3b/0x8a
+ [<c0228df9>] tty_open+0x164/0x2a9
+ [<c015e60c>] chrdev_open+0x140/0x18c
+ [<c015ad28>] __dentry_open+0xfb/0x1ad
+ [<c015adf9>] nameidata_to_filp+0x1f/0x33
+ [<c015e4cc>] ? chrdev_open+0x0/0x18c
+ [<c015ae3b>] do_filp_open+0x2e/0x35
+ [<c015ac17>] ? get_unused_fd_flags+0xcc/0xd6
+ [<c0399705>] ? _spin_unlock+0x27/0x3c
+ [<c015ae84>] do_sys_open+0x42/0xbc
+ [<c015af40>] sys_open+0x1e/0x26
+ [<c0102aba>] sysenter_past_esp+0x5f/0xa5
+ =======================
+kobject: 'microcode' (dc839e28): kobject_add_internal: parent: 'module', set: 'module'
+kobject: 'holders' (d6072c30): kobject_add_internal: parent: 'microcode', set: '<NULL>'
+kobject: 'microcode' (dc839e28): kobject_uevent_env
+kobject: 'microcode' (dc839e28): fill_kobj_path: path = '/module/microcode'
+
+
