@@ -1,120 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752117AbYHZXYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753513AbYHZXZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752117AbYHZXYH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 19:24:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbYHZXXl
+	id S1753513AbYHZXZQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 19:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYHZXZB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 19:23:41 -0400
-Received: from quackingmoose.com ([63.73.180.143]:49178 "EHLO
-	penguin.merfinllc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750990AbYHZXXk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 19:23:40 -0400
-X-Greylist: delayed 1457 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Aug 2008 19:23:40 EDT
-Date: Tue, 26 Aug 2008 16:04:12 -0700
-From: Aaron Straus <aaron@merfinllc.com>
-To: linux-kernel@vger.kernel.org, raven@themaw.net
-Subject: autofs graft_tree panic
-Message-ID: <20080826230412.GD5452@merfinllc.com>
+	Tue, 26 Aug 2008 19:25:01 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:58621 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751844AbYHZXZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 19:25:00 -0400
+Date: Wed, 27 Aug 2008 02:24:11 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-embedded@vger.kernel.org
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
+	bisected
+Message-ID: <20080826232411.GC11734@cs181140183.pp.htv.fi>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org> <200808261111.19205.rusty@rustcorp.com.au> <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org> <20080826183051.GB10925@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org> <20080826205916.GB11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="t0UkRYy7tHLRMCai"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 26, 2008 at 02:04:57PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Tue, 26 Aug 2008, Adrian Bunk wrote:
+> > 
+> > If you think we have too many stacksize problems I'd suggest to consider 
+> > removing the choice of 4k stacks on i386, sh and m68knommu instead of 
+> > using -fno-inline-functions-called-once:
+> 
+> Don't be silly. That makes the problem _worse_.
+> 
+> We're much better off with a 1% code-size reduction than forcing big 
+> stacks on people. The 4kB stack option is also a good way of saying "if it 
+> works with this, then 8kB is certainly safe".
+>...
 
---t0UkRYy7tHLRMCai
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+You implicitely assume both would solve the same problem.
 
-Hi,
+While 4kB stacks are something we anyway never got 100% working, the 
+cases where gcc inlining functions causes a critical increase in stack 
+usage are usually not that hard to find, and once found the fix is 
+trivial.
 
-I just wanted to mention we still see this panic in 2.6.26.3.
+We should anyway monitor stack usages better since we have frequent 
+programming errors in this area, and problems caused by gcc can this
+way be detected en passant.
 
-Seems to be a known problem that became less probable in 2.6.26?
+You have a good point that aiming at 4kB makes 8kB a very safe choice.
 
-Thanks!
+But I do not think the problem you'd solve with 
+-fno-inline-functions-called-once is big enough to warrant the size 
+increase it causes.
 
-				=3Da=3D
- =20
-Aug 26 08:02:47 catfish kernel: PGD cbb7c067 PUD cbb8a067 PMD 0=20
-Aug 26 08:02:47 catfish kernel: CPU 1=20
-Aug 26 08:02:47 catfish kernel: Modules linked in: tun nfsd exportfs kvm au=
-tofs4 acpi_cpufreq cpufreq_ondemand cpufreq_conservative cpufreq_powersave =
-cpufreq_userspace cpufreq_stats freq_table container battery nfs lockd sunr=
-pc bridge llc iptable_filter ip_tables x_tables ac snd_hda_intel snd_pcm_os=
-s snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi =
-snd_seq_midi_event snd_seq evdev psmouse rtc button snd_timer e1000e snd_se=
-q_device snd soundcore snd_page_alloc usbhid sr_mod cdrom sd_mod sg ehci_hc=
-d uhci_hcd usbcore thermal processor fan fuse
-Aug 26 08:02:47 catfish kernel: Pid: 25973, comm: mount.nfs Not tainted 2.6=
-=2E26.3-asb #24
-Aug 26 08:02:47 catfish kernel: RIP: 0010:[<ffffffff8028cb1b>]  [<ffffffff8=
-028cb1b>] graft_tree+0x2e/0xbc
-Aug 26 08:02:47 catfish kernel: RSP: 0018:ffff8100cbc61df8  EFLAGS: 00010246
-Aug 26 08:02:47 catfish kernel: RAX: ffff8100cedd2c80 RBX: 00000000ffffffec=
- RCX: 0000000000000000
-Aug 26 08:02:47 catfish kernel: RDX: ffff810126b8ef00 RSI: ffff8100cbc61e58=
- RDI: ffff810126567100
-Aug 26 08:02:47 catfish kernel: RBP: ffff8100cbc61e58 R08: 0000000100000002=
- R09: ffffffff80508228
-Aug 26 08:02:47 catfish kernel: R10: ffff81012647b7c0 R11: ffff8100cbbb6000=
- R12: ffff810126567100
-Aug 26 08:02:47 catfish kernel: R13: ffff8100cbc61e60 R14: 0000000000000000=
- R15: ffff8100cbd21000
-Aug 26 08:02:47 catfish kernel: FS:  0000000000000000(0000) GS:ffff810127c0=
-5480(0063) knlGS:00000000f7e0f6b0
-Aug 26 08:02:47 catfish kernel: CS:  0010 DS: 002b ES: 002b CR0: 0000000080=
-05003b
-Aug 26 08:02:47 catfish kernel: CR2: 00000000000000b2 CR3: 00000000cbb94000=
- CR4: 00000000000006e0
-Aug 26 08:02:47 catfish kernel: DR0: 0000000000000000 DR1: 0000000000000000=
- DR2: 0000000000000000
-Aug 26 08:02:47 catfish kernel: DR3: 0000000000000000 DR6: 00000000ffff4ff0=
- DR7: 0000000000000400
-Aug 26 08:02:47 catfish kernel: Process mount.nfs (pid: 25973, threadinfo f=
-fff8100cbc60000, task ffff810120ed5190)
-Aug 26 08:02:47 catfish kernel: Stack:  ffff810126567100 ffff8100cbc61e58 0=
-000000000000000 ffffffff8028cdbf
-Aug 26 08:02:47 catfish kernel:  0000000000000000 0000000000000000 ffff8100=
-cbc61e58 ffff8101270f5000
-Aug 26 08:02:47 catfish kernel:  ffff8100cc739000 ffffffff8028eab6 00000000=
-00000292 ffff8100cbbb6000
-Aug 26 08:02:47 catfish kernel: Call Trace:
-Aug 26 08:02:47 catfish kernel:  [<ffffffff8028cdbf>] ? do_add_mount+0xa5/0=
-x10d
-Aug 26 08:02:47 catfish kernel:  [<ffffffff8028eab6>] ? do_mount+0x189/0x1b6
-Aug 26 08:02:47 catfish kernel:  [<ffffffff8028c620>] ? copy_mount_options+=
-0xc7/0x12e
-Aug 26 08:02:47 catfish kernel:  [<ffffffff802a4fba>] ? compat_sys_mount+0x=
-1fc/0x24a
-Aug 26 08:02:47 catfish kernel:  [<ffffffff80220062>] ? sysenter_do_call+0x=
-1b/0x66
-Aug 26 08:02:47 catfish kernel:=20
-Aug 26 08:02:47 catfish kernel:=20
-Aug 26 08:02:47 catfish kernel:  RSP <ffff8100cbc61df8>
-Aug 26 08:02:47 catfish kernel: ---[ end trace e90fc77bb0c12e25 ]---
+> 		Linus
 
---=20
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-Aaron Straus
-aaron@merfinllc.com
+cu
+Adrian
 
---t0UkRYy7tHLRMCai
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+-- 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-iD8DBQFItIvsr/o4YuvB+jgRArSJAJ0VDot4YM11xqZI36BJqNk2ezSyjwCfS06E
-2nXjO/L4tn7Zw8z3J6NnuNc=
-=amXQ
------END PGP SIGNATURE-----
-
---t0UkRYy7tHLRMCai--
