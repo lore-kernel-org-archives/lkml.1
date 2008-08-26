@@ -1,114 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbYHZXPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752903AbYHZXXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752723AbYHZXPo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 19:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbYHZXPf
+	id S1752903AbYHZXXu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 19:23:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYHZXXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 19:15:35 -0400
-Received: from vena.lwn.net ([206.168.112.25]:55774 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751801AbYHZXPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 19:15:34 -0400
-Date: Tue, 26 Aug 2008 17:15:32 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Greg KH <greg@kroah.com>, hjk@linutronix.de
-Subject: [PATCH, RFC] uio BKL removal
-Message-ID: <20080826171532.2414c7a2@bike.lwn.net>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.6; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	Tue, 26 Aug 2008 19:23:41 -0400
+Received: from quackingmoose.com ([63.73.180.143]:49180 "EHLO
+	penguin.merfinllc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751824AbYHZXXk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 19:23:40 -0400
+Date: Tue, 26 Aug 2008 15:59:19 -0700
+From: Aaron Straus <aaron@merfinllc.com>
+To: mpm@selenic.com, LKML <linux-kernel@vger.kernel.org>
+Subject: drivers/char/random.c line 728 BUG
+Message-ID: <20080826225918.GC5452@merfinllc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I had a moment to dedicate to the BKL removal cause, so I went for the
-UIO driver, which seemed simple.  The main thing I found was that there
-was locking around some idr accesses, but not all, so I filled that
-in.  With that in place, removing the BKL from uio_open() seems safe,
-especially since none of the in-tree UIO drivers have open() or
-release() methods.  
+Hi,
 
-(Incidentally, I don't see how uio_pdrv.c could ever work - who initializes
-uioinfo?)
+We saw this oops.  Kernel is vanilla 2.6.26.2.  Machine is Dell
+PowerEdge 1750.
 
-If there's no complaints, I'll feed this into linux-next via the
-bkl-removal tree.
+I saw one other instance mentioned on kerneloops but the link didn't
+seem to go to the proper place.
 
-Thanks,
+Let me know if you need more information.
 
-jon
+					Thanks,
+					=a=
 
----
-UIO: BKL removal
+------------[ cut here ]------------
+kernel BUG at drivers/char/random.c:728!
+invalid opcode: 0000 [#1] PREEMPT SMP 
+Modules linked in: nfs lockd autofs4 sunrpc firmware_class ohci_hcd usbcore tg3 [last unloaded: x_tables]
 
-Remove the BKL from the UIO driver, and add complete locking where needed
-to serialize idr accesses.
+Pid: 31251, comm: python Not tainted (2.6.26.2-asb #18)
+EIP: 0060:[<c0219cd7>] EFLAGS: 00010206 CPU: 1
+EIP is at account+0x1f/0xca
+EAX: 00000400 EBX: c03c2f98 ECX: 00000000 EDX: 00001000
+ESI: c03c2f98 EDI: 00001000 EBP: 00000000 ESP: f6b8ff38
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process python (pid: 31251, ti=f6b8e000 task=f790c6c0 task.ti=f6b8e000)
+Stack: 3e2efd76 00000000 1ff38c67 32a39c7a 00001000 c03c2f98 c021a215 b76a6000 
+       c021a183 00000000 00000001 b76a6000 c014f8ed 00000000 f71e7a80 b76a6000 
+       c021a215 00001000 c015d9e3 f6b8ffa0 f71e7a80 fffffff7 00000000 f6b8e000 
+Call Trace:
+ [<c021a215>] urandom_read+0x0/0xa
+ [<c021a183>] extract_entropy_user+0x21/0xb3
+ [<c014f8ed>] do_mmap_pgoff+0x1e7/0x232
+ [<c021a215>] urandom_read+0x0/0xa
+ [<c015d9e3>] vfs_read+0x81/0xf4
+ [<c015dd96>] sys_read+0x3c/0x63
+ [<c0102bf1>] sysenter_past_esp+0x6a/0x91
+ [<c0300000>] native_cpu_up+0x2ee/0x63d
+ =======================
+Code: 5f 5d e9 b5 a3 0e 00 5b 5e 5f 5d c3 55 57 56 53 83 ec 10 89 c3 89 d7 89 4c 24 04 8b 6c 24 24 8b 00 8b 00 c1 e0 05 39 43 1c 7e 04 <0f> 0b eb fe 8d 43 14 89 44 24 08 e8 39 a1 0e 00 89 44 24 0c 8b 
+EIP: [<c0219cd7>] account+0x1f/0xca SS:ESP 0068:f6b8ff38
+---[ end trace 275ff84df4f1fc30 ]---
 
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
-
-diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
-index 3a6934b..4f28f4b 100644
---- a/drivers/uio/uio.c
-+++ b/drivers/uio/uio.c
-@@ -47,6 +47,9 @@ static struct uio_class {
- 	struct class *class;
- } *uio_class;
- 
-+/* Protect idr accesses */
-+static DEFINE_MUTEX(minor_lock);
-+
- /*
-  * attributes
-  */
-@@ -231,7 +234,6 @@ static void uio_dev_del_attributes(struct uio_device *idev)
- 
- static int uio_get_minor(struct uio_device *idev)
- {
--	static DEFINE_MUTEX(minor_lock);
- 	int retval = -ENOMEM;
- 	int id;
- 
-@@ -253,7 +255,9 @@ exit:
- 
- static void uio_free_minor(struct uio_device *idev)
- {
-+	mutex_lock(&minor_lock);
- 	idr_remove(&uio_idr, idev->minor);
-+	mutex_unlock(&minor_lock);
- }
- 
- /**
-@@ -297,8 +301,9 @@ static int uio_open(struct inode *inode, struct file *filep)
- 	struct uio_listener *listener;
- 	int ret = 0;
- 
--	lock_kernel();
-+	mutex_lock(&minor_lock);
- 	idev = idr_find(&uio_idr, iminor(inode));
-+	mutex_unlock(&minor_lock);
- 	if (!idev) {
- 		ret = -ENODEV;
- 		goto out;
-@@ -324,18 +329,15 @@ static int uio_open(struct inode *inode, struct file *filep)
- 		if (ret)
- 			goto err_infoopen;
- 	}
--	unlock_kernel();
- 	return 0;
- 
- err_infoopen:
--
- 	kfree(listener);
--err_alloc_listener:
- 
-+err_alloc_listener:
- 	module_put(idev->owner);
- 
- out:
--	unlock_kernel();
- 	return ret;
- }
- 
+-- 
+===================
+Aaron Straus
+aaron@merfinllc.com
