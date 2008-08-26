@@ -1,81 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758989AbYHZQny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbYHZQtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758989AbYHZQny (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 12:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757365AbYHZQnq
+	id S1758590AbYHZQtP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 12:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755869AbYHZQs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 12:43:46 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:39760 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757205AbYHZQnq (ORCPT
+	Tue, 26 Aug 2008 12:48:58 -0400
+Received: from tama500.ecl.ntt.co.jp ([129.60.39.148]:45762 "EHLO
+	tama500.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755799AbYHZQs5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 12:43:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=g/YdSuOQPI7ubt1NC2NOh5se2hQwBjj2xBfykNFYgR9qa3mKu+lq6LJ2ohxedniolM
-         OzTvFyDZhBPM/qHF1apcUlb+QJvpNVbDKez/iw+14kKEayKn/pgF2Sqv4oiBP9lyHFg5
-         3Mkfs6RJHnzTOyZva0Nfyu1fcxtfAoq3haPxs=
-Message-ID: <86802c440808260943k210be3edp54aebc9fea5366f5@mail.gmail.com>
-Date: Tue, 26 Aug 2008 09:43:44 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Helge Hafting" <helge.hafting@aitel.hist.no>
-Subject: Re: 2.6.27 mtrr fixes do not work when X starts
-Cc: "Alexander Huemer" <alexander.huemer@sbg.ac.at>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Andi Kleen" <andi@firstfloor.org>
-In-Reply-To: <48B3CDAF.604@aitel.hist.no>
+	Tue, 26 Aug 2008 12:48:57 -0400
+Message-Id: <200808261654.AA00216@capsicum.lab.ntt.co.jp>
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Date: Wed, 27 Aug 2008 01:54:30 +0900
+To: Jorn Engel <joern@logfs.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
+In-Reply-To: <20080826101618.GA17261@logfs.org>
+References: <20080826101618.GA17261@logfs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4899AF8E.20105@sbg.ac.at> <48A43CB5.8010709@sbg.ac.at>
-	 <86802c440808141031p2712976cqe2c34d3b986ad810@mail.gmail.com>
-	 <48AD8125.7050104@sbg.ac.at>
-	 <86802c440808210827y72bb1ec0ndcb97b00d6af3a9c@mail.gmail.com>
-	 <48AE90BB.5090800@aitel.hist.no>
-	 <86802c440808221024u1f152a73hf060f70e1b16dccb@mail.gmail.com>
-	 <48B29320.5070903@aitel.hist.no>
-	 <86802c440808251308i609a1c8ay6a7300bf4d0e0758@mail.gmail.com>
-	 <48B3CDAF.604@aitel.hist.no>
+X-Mailer: AL-Mail32 Version 1.13
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 2:32 AM, Helge Hafting
-<helge.hafting@aitel.hist.no> wrote:
-> Yinghai Lu wrote:
+On Tue, 26 Aug 2008 12:16:19 +0200, Jorn Engel wrote:
+>On Thu, 21 August 2008 01:13:45 +0900, Ryusuke Konishi wrote:
+>> 
+>> 4. To make disk blocks relocatable, NILFS2 maintains a table file (called DAT)
+>>    which maps virtual disk blocks addresses to usual block addresses.
+>>    The lifetime information is recorded in the DAT per virtual block address.
 >
->> please use "mtrr_spare_reg_nr=3 debug"
->>
->> you missed _nr.
->>
-> Sorry. I got it right this time, and mtrr setup succeeded:
+>Interesting approach.  Does that mean that every block lookup involves
+>two disk accesses, one for the DAT and one for the actual block?
+
+Simply stated, it's Yes.
+
+But the actual number of disk accesses will become fewer because the DAT is 
+cached like regular files and read-ahead is also applied.
+The cache for the DAT works well enough.
+
+>> The current NILFS2 GC simply reclaims from the oldest segment, so the disk
+>> partition acts like a ring buffer. (this behaviour can be changed by 
+>> replacing userland daemon).
 >
-..
-> $ cat /proc/mtrr
-> reg00: base=0x00000000 (   0MB), size=1024MB: write-back, count=1
-> reg01: base=0x40000000 (1024MB), size= 512MB: write-back, count=1
-> reg02: base=0x60000000 (1536MB), size= 256MB: write-back, count=1
-> reg03: base=0x70000000 (1792MB), size= 256MB: write-back, count=1
-> reg04: base=0x7ff00000 (2047MB), size=   1MB: uncachable, count=1
-> reg05: base=0xf3c00000 (3900MB), size=   2MB: write-combining, count=1
-> reg06: base=0xf3800000 (3896MB), size=   4MB: write-combining, count=1
-> reg07: base=0xf3000000 (3888MB), size=   8MB: write-combining, count=1
+>Is this userland daemon really necessary?  I do all that stuff in
+>kernelspace and the amount of code I have is likely less than would be
+>necessary for the userspace interface alone.  Apart from creating a
+>plethora of research papers, I never saw much use for pluggable
+>cleaners.
+
+Well, that sounds reasonable.
+Still I cannot say which is better for now.
+My colleague has intention to develop other type of cleaners, and another
+colleague experimentally made a cleaner with GUI.
+In addition, there are possibilities to integrate attractive features
+like defragmentation, background data verification, or remote backups.
+
+>Did you encounter any nasty deadlocks and how did you solve them?
+>Finding deadlocks in the vfs-interaction became a hobby of mine when
+>testing logfs and at least one other lfs seems to have had similar
+>problems - they exported the inode_lock in their patch. ;)
 >
-> This time X got its 3 regions, and no sluggishness when moving
-> opaque windows. :-)
+>Jorn
 
-good.
+Yeah, it was very tough battle :)
+Read is OK.  But write was hard.  I looked at the vfs code over again and
+again.
+We've implemented NILFS without bringing specific changes into vfs.
+However, if we can find common basis for LFSes, I'm grad to cooperate 
+with you.
+Though I don't know whether exporting inode_lock is the case or not ;)
 
->
-> I hope this helps so the extra bootup parameters can be avoided in the
-> release kernel.
-
-that is a little bit hard.
-
-YH
+Regards,
+Ryusuke Konishi
