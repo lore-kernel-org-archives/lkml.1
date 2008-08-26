@@ -1,53 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbYHZI1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbYHZIab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757417AbYHZI1R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 04:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbYHZI1E
+	id S1756903AbYHZIab (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 04:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbYHZIaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 04:27:04 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43572 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbYHZI1C (ORCPT
+	Tue, 26 Aug 2008 04:30:24 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:30981 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752660AbYHZIaX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 04:27:02 -0400
-To: jmerkey@wolfmountaingroup.com
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       paulmck@linux.vnet.ibm.com, "Peter Zijlstra" <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, "David Howells" <dhowells@redhat.com>
-Subject: Re: [ANNOUNCE] mdb: Merkey's Linux Kernel Debugger  2.6.27-rc4  released
-From: Andi Kleen <andi@firstfloor.org>
-References: <200808210250.m7L2obNX028353@wolfmountaingroup.com>
-	<48AD5A21.7020801@s5r6.in-berlin.de>
-	<43593.166.70.238.46.1219321595.squirrel@webmail.wolfmountaingroup.com>
-	<200808212337.38626.nickpiggin@yahoo.com.au>
-	<48ADD8DE.3010209@goop.org>
-	<alpine.LFD.1.10.0808211415410.3487@nehalem.linux-foundation.org>
-	<51467.166.70.238.43.1219551931.squirrel@webmail.wolfmountaingroup.com>
-Date: Tue, 26 Aug 2008 10:26:57 +0200
-In-Reply-To: <51467.166.70.238.43.1219551931.squirrel@webmail.wolfmountaingroup.com> (jmerkey@wolfmountaingroup.com's message of "Sat, 23 Aug 2008 22:25:31 -0600 (MDT)")
-Message-ID: <87prnw9o6m.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Tue, 26 Aug 2008 04:30:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=gQGnwMszeXGRZtIkjsmHSV0qGFMw/OkCkiNqtZqz5kdatwBeWKHBmwtVI49Ch848z7
+         2pmsILJq8Wv686z0m89Y6W3B/zYII/7dGxJOQzK9pGEFzJD1gXp4qip7r3FaR/9gfE9j
+         i0XrDM/S+G6bZKEb0htLz9nj3jP080cQggCJo=
+Message-ID: <87a5b0800808260130i383ec8d0y45690f85366c5059@mail.gmail.com>
+Date: Tue, 26 Aug 2008 09:30:22 +0100
+From: "Will Newton" <will.newton@gmail.com>
+To: "Steven A. Falco" <sfalco@harris.com>
+Subject: Re: [RFC] Driver for Real Time Clock chip ST M41T65
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <48B2EB77.9000103@harris.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48B2EB77.9000103@harris.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jmerkey@wolfmountaingroup.com writes:
+On Mon, Aug 25, 2008 at 6:27 PM, Steven A. Falco <sfalco@harris.com> wrote:
+> I will be using a Real Time Clock chip, ST M41T65, on a new embedded system.
+> The chip is quite similar to the M41T8x family, which already has driver
+> rtc-m41t80.c.
+>
+> Would it be more acceptible to generalize rtc-m41t80.c (perhaps renaming it to
+> rtc-m41txx.c) or would it be better to create a new rtc-m41t6x.c?
+>
+> The main differences I see between the M41T65 and M41T80 are that:
+>
+> 1) The M41T65 watchdog timer has three bits controlling resolution (versus two
+>   for the M41T80).
+>
+> 2) There is no register 0x13 for controlling square-wave output.
+>
+> Here is the patch I am currently using (on some prototype hardware), for
+> reference.  I've introduced two new feature bits to cover the above
+> differences.  I have not yet done any renaming, nor have I modified any of the
+> defconfigs to account for a name change.
+>
+>        Steve Falco
+>        sfalco@harris.com
+>
+> diff --git a/drivers/rtc/rtc-m41t80.c b/drivers/rtc/rtc-m41t80.c
+> index a3e0880..4d9b1a9 100644
+> --- a/drivers/rtc/rtc-m41t80.c
+> +++ b/drivers/rtc/rtc-m41t80.c
+> @@ -58,18 +58,21 @@
+>
+>  #define M41T80_FEATURE_HT      (1 << 0)
+>  #define M41T80_FEATURE_BL      (1 << 1)
+> +#define M41T80_FEATURE_SQ      (1 << 2)
+> +#define M41T80_FEATURE_WD      (1 << 3)
 
-> Results from Analysis of GCC volatile/memory barriers
+Perhaps these feature flags should be documented with a comment?
 
-So the result was that barrier()s actually worked? Great.
+>  #define DRV_VERSION "0.05"
+>
+>  static const struct i2c_device_id m41t80_id[] = {
+> -       { "m41t80", 0 },
+> -       { "m41t81", M41T80_FEATURE_HT },
+> -       { "m41t81s", M41T80_FEATURE_HT | M41T80_FEATURE_BL },
+> -       { "m41t82", M41T80_FEATURE_HT | M41T80_FEATURE_BL },
+> -       { "m41t83", M41T80_FEATURE_HT | M41T80_FEATURE_BL },
+> -       { "m41st84", M41T80_FEATURE_HT | M41T80_FEATURE_BL },
+> -       { "m41st85", M41T80_FEATURE_HT | M41T80_FEATURE_BL },
+> -       { "m41st87", M41T80_FEATURE_HT | M41T80_FEATURE_BL },
+> +       { "m41t65", M41T80_FEATURE_HT | M41T80_FEATURE_WD },
+> +       { "m41t80", M41T80_FEATURE_SQ },
+> +       { "m41t81", M41T80_FEATURE_HT | M41T80_FEATURE_SQ},
+> +       { "m41t81s", M41T80_FEATURE_HT | M41T80_FEATURE_BL | M41T80_FEATURE_SQ },
+> +       { "m41t82", M41T80_FEATURE_HT | M41T80_FEATURE_BL | M41T80_FEATURE_SQ },
+> +       { "m41t83", M41T80_FEATURE_HT | M41T80_FEATURE_BL | M41T80_FEATURE_SQ },
+> +       { "m41st84", M41T80_FEATURE_HT | M41T80_FEATURE_BL | M41T80_FEATURE_SQ },
+> +       { "m41st85", M41T80_FEATURE_HT | M41T80_FEATURE_BL | M41T80_FEATURE_SQ },
+> +       { "m41st87", M41T80_FEATURE_HT | M41T80_FEATURE_BL | M41T80_FEATURE_SQ },
+>        { }
+>  };
+>  MODULE_DEVICE_TABLE(i2c, m41t80_id);
+> @@ -385,8 +388,12 @@ static ssize_t m41t80_sysfs_show_sqwfreq(struct device *dev,
+>                                struct device_attribute *attr, char *buf)
+>  {
+>        struct i2c_client *client = to_i2c_client(dev);
+> +       struct m41t80_data *clientdata = i2c_get_clientdata(client);
+>        int val;
+>
+> +       if (!(clientdata->features & M41T80_FEATURE_SQ))
+> +               return -EINVAL;
+> +
+>        val = i2c_smbus_read_byte_data(client, M41T80_REG_SQW);
+>        if (val < 0)
+>                return -EIO;
+> @@ -407,9 +414,13 @@ static ssize_t m41t80_sysfs_set_sqwfreq(struct device *dev,
+>                                const char *buf, size_t count)
+>  {
+>        struct i2c_client *client = to_i2c_client(dev);
+> +       struct m41t80_data *clientdata = i2c_get_clientdata(client);
+>        int almon, sqw;
+>        int val = simple_strtoul(buf, NULL, 0);
+>
+> +       if (!(clientdata->features & M41T80_FEATURE_SQ))
+> +               return -EINVAL;
+> +
+>        if (val) {
+>                if (!is_power_of_2(val))
+>                        return -EINVAL;
+> @@ -498,6 +509,8 @@ static void wdt_ping(void)
+>                        .buf    = i2c_data,
+>                },
+>        };
+> +       struct m41t80_data *clientdata = i2c_get_clientdata(save_client);
+> +
+>        i2c_data[0] = 0x09;             /* watchdog register */
+>
+>        if (wdt_margin > 31)
+> @@ -508,6 +521,12 @@ static void wdt_ping(void)
+>                 */
+>                i2c_data[1] = wdt_margin<<2 | 0x82;
+>
+> +       /* M41T65 has three bits for resolution.  Don't set bit 7, as that would
+> +        * be an invalid resolution.
+> +        */
 
-BTW if you did this work it might be worthwhile to go one further
-step: gcc has a test suite where they run small programs and have a
-simple facility to scan the resulting assembler code for specific
-patterns. If you could bring your examples into that format (as in
-being stand alone compiled and have a simple "yes/no" pattern to
-check) and let it be included there that might make sure this always
-keeps working in the future.
+I believe the kernel comment style would be:
 
--Andi
+/*
+ * M41T65 has three bits for resolution.  Don't set bit 7, as that would
+ * be an invalid resolution.
+ */
+
+> +       if (clientdata->features & M41T80_FEATURE_WD)
+> +               i2c_data[1] &= ~0x80;
+
+Could this magic constant be moved to a #define?
+
+> +
+>        i2c_transfer(save_client->adapter, msgs1, 1);
+>  }
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
