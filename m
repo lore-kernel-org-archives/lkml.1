@@ -1,439 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbYHZIyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbYHZJA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758054AbYHZIyP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 04:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbYHZIwZ
+	id S1757578AbYHZJA1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 05:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYHZJAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 04:52:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46732 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754507AbYHZIwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 04:52:23 -0400
-From: Tejun Heo <tj@kernel.org>
-To: ericvh@gmail.com, rminnich@sandia.gov,
-       v9fs-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 6/6] 9p-trans_fd: use single poller
-Date: Tue, 26 Aug 2008 17:50:56 +0900
-Message-Id: <1219740656-26458-7-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1219740656-26458-1-git-send-email-tj@kernel.org>
-References: <1219740656-26458-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 26 Aug 2008 08:52:20 +0000 (UTC)
+	Tue, 26 Aug 2008 05:00:17 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:38903 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752356AbYHZJAQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 05:00:16 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=KYnZ38+uME3scW0XFW/o2NnNJwz4WOzOZVUE7a/rrpK6zbjXjoRd0db7lG4B7+6Mik/susGwYq2sV5j9HjbGfGU7yo8pi2vHEMTmPakMXCArN/eY6H25f4s2UY2gCxhobflJ57mjQGIiE4apbI8Dh3i9nVODnCyiZ48A2SER9c8=  ;
+X-YMail-OSG: p4ihVwAVM1mJGC80usyqOnA9d1nyxFUH2c_eFP2IbevOqy0aSMo3t37M0N6KDyXuGJ7vY6P7u0BT1zXW9Gx5HHU_BsQMP0CjzhEHo8qssbLT6zocSbI13owCnrJkLpOv3WvbYinH_WUvDTuUMmIjBcM7sRqnuSGKNddnP_yI2WMyN7qjCwGaKcIQbfMknDyS
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
+Date: Tue, 26 Aug 2008 19:00:07 +1000
+User-Agent: KMail/1.9.5
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Stefani Seibold <stefani@seibold.net>,
+       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20080819103301.787700742@chello.nl> <20080819125954.GA20210@elte.hu> <200808202156.05024.nickpiggin@yahoo.com.au>
+In-Reply-To: <200808202156.05024.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808261900.07383.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-trans_fd used pool of upto 100 pollers to monitor the r/w fds.  The
-approach makes sense in userspace back when the only available
-interfaces were poll(2) and select(2).  As each event monitor -
-trigger - handling iteration took O(n) where `n' is the number of
-watched fds, it makes sense to spread them to many pollers such that
-the `n' can be divided by the number of pollers.  However, this
-doesn't make any sense in kernel because persistent edge triggered
-event monitoring is how the whole thing is implemented in the kernel
-in the first place.
+So... no reply to this? I'm really wondering how it's OK to break documented
+standards and previous Linux behaviour by default for something that it is
+trivial to solve in userspace? All the arguments for it IMO are weak, and
+the argument against is obviously pretty strong but doesn't seem to have
+been acknolwedged.
 
-This patch converts trans_fd to use single poller which watches all
-the fds instead of the poll of pollers approach.  All the fds are
-registered for monitoring on creation and only the fds with pending
-events are scanned when something happens much like how epoll is
-implemented.
-
-This change makes trans_fd fd monitoring more efficient and simpler.
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
- net/9p/trans_fd.c |  252 ++++++++++++++++++-----------------------------------
- 1 files changed, 86 insertions(+), 166 deletions(-)
-
-diff --git a/net/9p/trans_fd.c b/net/9p/trans_fd.c
-index 0b4eb5f..6866131 100644
---- a/net/9p/trans_fd.c
-+++ b/net/9p/trans_fd.c
-@@ -44,7 +44,6 @@
- #define P9_PORT 564
- #define MAX_SOCK_BUF (64*1024)
- #define ERREQFLUSH	1
--#define SCHED_TIMEOUT	10
- #define MAXPOLLWADDR	2
- 
- /**
-@@ -135,17 +134,16 @@ struct p9_req {
- 	struct list_head req_list;
- };
- 
--struct p9_mux_poll_task {
--	struct task_struct *task;
--	struct list_head mux_list;
--	int muxnum;
-+struct p9_poll_wait {
-+	struct p9_conn *conn;
-+	wait_queue_t wait;
-+	wait_queue_head_t *wait_addr;
- };
- 
- /**
-  * struct p9_conn - fd mux connection state information
-  * @lock: protects mux_list (?)
-  * @mux_list: list link for mux to manage multiple connections (?)
-- * @poll_task: task polling on this connection
-  * @msize: maximum size for connection (dup)
-  * @extended: 9p2000.u flag (dup)
-  * @trans: reference to transport instance for this connection
-@@ -171,7 +169,6 @@ struct p9_mux_poll_task {
- struct p9_conn {
- 	spinlock_t lock; /* protect lock structure */
- 	struct list_head mux_list;
--	struct p9_mux_poll_task *poll_task;
- 	int msize;
- 	unsigned char extended;
- 	struct p9_trans *trans;
-@@ -185,8 +182,8 @@ struct p9_conn {
- 	int wpos;
- 	int wsize;
- 	char *wbuf;
--	wait_queue_t poll_wait[MAXPOLLWADDR];
--	wait_queue_head_t *poll_waddr[MAXPOLLWADDR];
-+	struct list_head poll_pending_link;
-+	struct p9_poll_wait poll_wait[MAXPOLLWADDR];
- 	poll_table pt;
- 	struct work_struct rq;
- 	struct work_struct wq;
-@@ -220,12 +217,10 @@ static void p9_pollwait(struct file *filp, wait_queue_head_t *wait_address,
- static int p9_fd_write(struct p9_trans *trans, void *v, int len);
- static int p9_fd_read(struct p9_trans *trans, void *v, int len);
- 
--static DEFINE_MUTEX(p9_mux_task_lock);
-+static DEFINE_SPINLOCK(p9_poll_lock);
-+static LIST_HEAD(p9_poll_pending_list);
- static struct workqueue_struct *p9_mux_wq;
--
--static int p9_mux_num;
--static int p9_mux_poll_task_num;
--static struct p9_mux_poll_task p9_mux_poll_tasks[100];
-+static struct task_struct *p9_poll_task;
- 
- static void p9_conn_destroy(struct p9_conn *);
- static unsigned int p9_fd_poll(struct p9_trans *trans,
-@@ -255,130 +250,23 @@ static void p9_mux_put_tag(struct p9_conn *m, u16 tag)
- 		p9_idpool_put(tag, m->tagpool);
- }
- 
--/**
-- * p9_mux_calc_poll_procs - calculates the number of polling procs
-- * @muxnum: number of mounts
-- *
-- * Calculation is based on the number of mounted v9fs filesystems.
-- * The current implementation returns sqrt of the number of mounts.
-- */
--
--static int p9_mux_calc_poll_procs(int muxnum)
--{
--	int n;
--
--	if (p9_mux_poll_task_num)
--		n = muxnum / p9_mux_poll_task_num +
--		    (muxnum % p9_mux_poll_task_num ? 1 : 0);
--	else
--		n = 1;
--
--	if (n > ARRAY_SIZE(p9_mux_poll_tasks))
--		n = ARRAY_SIZE(p9_mux_poll_tasks);
--
--	return n;
--}
--
--static int p9_mux_poll_start(struct p9_conn *m)
-+static void p9_mux_poll_stop(struct p9_conn *m)
- {
--	int i, n;
--	struct p9_mux_poll_task *vpt, *vptlast;
--	struct task_struct *pproc;
--
--	P9_DPRINTK(P9_DEBUG_MUX, "mux %p muxnum %d procnum %d\n", m, p9_mux_num,
--		p9_mux_poll_task_num);
--	mutex_lock(&p9_mux_task_lock);
--
--	n = p9_mux_calc_poll_procs(p9_mux_num + 1);
--	if (n > p9_mux_poll_task_num) {
--		for (i = 0; i < ARRAY_SIZE(p9_mux_poll_tasks); i++) {
--			if (p9_mux_poll_tasks[i].task == NULL) {
--				vpt = &p9_mux_poll_tasks[i];
--				P9_DPRINTK(P9_DEBUG_MUX, "create proc %p\n",
--									vpt);
--				pproc = kthread_create(p9_poll_proc, vpt,
--								"v9fs-poll");
--
--				if (!IS_ERR(pproc)) {
--					vpt->task = pproc;
--					INIT_LIST_HEAD(&vpt->mux_list);
--					vpt->muxnum = 0;
--					p9_mux_poll_task_num++;
--					wake_up_process(vpt->task);
--				}
--				break;
--			}
--		}
--
--		if (i >= ARRAY_SIZE(p9_mux_poll_tasks))
--			P9_DPRINTK(P9_DEBUG_ERROR,
--					"warning: no free poll slots\n");
--	}
-+	unsigned long flags;
-+	int i;
- 
--	n = (p9_mux_num + 1) / p9_mux_poll_task_num +
--	    ((p9_mux_num + 1) % p9_mux_poll_task_num ? 1 : 0);
--
--	vptlast = NULL;
--	for (i = 0; i < ARRAY_SIZE(p9_mux_poll_tasks); i++) {
--		vpt = &p9_mux_poll_tasks[i];
--		if (vpt->task != NULL) {
--			vptlast = vpt;
--			if (vpt->muxnum < n) {
--				P9_DPRINTK(P9_DEBUG_MUX, "put in proc %d\n", i);
--				list_add(&m->mux_list, &vpt->mux_list);
--				vpt->muxnum++;
--				m->poll_task = vpt;
--				memset(&m->poll_waddr, 0,
--							sizeof(m->poll_waddr));
--				init_poll_funcptr(&m->pt, p9_pollwait);
--				break;
--			}
--		}
--	}
-+	for (i = 0; i < ARRAY_SIZE(m->poll_wait); i++) {
-+		struct p9_poll_wait *pwait = &m->poll_wait[i];
- 
--	if (i >= ARRAY_SIZE(p9_mux_poll_tasks)) {
--		if (vptlast == NULL) {
--			mutex_unlock(&p9_mux_task_lock);
--			return -ENOMEM;
-+		if (pwait->wait_addr) {
-+			remove_wait_queue(pwait->wait_addr, &pwait->wait);
-+			pwait->wait_addr = NULL;
- 		}
--
--		P9_DPRINTK(P9_DEBUG_MUX, "put in proc %d\n", i);
--		list_add(&m->mux_list, &vptlast->mux_list);
--		vptlast->muxnum++;
--		m->poll_task = vptlast;
--		memset(&m->poll_waddr, 0, sizeof(m->poll_waddr));
--		init_poll_funcptr(&m->pt, p9_pollwait);
- 	}
- 
--	p9_mux_num++;
--	mutex_unlock(&p9_mux_task_lock);
--
--	return 0;
--}
--
--static void p9_mux_poll_stop(struct p9_conn *m)
--{
--	int i;
--	struct p9_mux_poll_task *vpt;
--
--	mutex_lock(&p9_mux_task_lock);
--	vpt = m->poll_task;
--	list_del(&m->mux_list);
--	for (i = 0; i < ARRAY_SIZE(m->poll_waddr); i++) {
--		if (m->poll_waddr[i] != NULL) {
--			remove_wait_queue(m->poll_waddr[i], &m->poll_wait[i]);
--			m->poll_waddr[i] = NULL;
--		}
--	}
--	vpt->muxnum--;
--	if (!vpt->muxnum) {
--		P9_DPRINTK(P9_DEBUG_MUX, "destroy proc %p\n", vpt);
--		kthread_stop(vpt->task);
--		vpt->task = NULL;
--		p9_mux_poll_task_num--;
--	}
--	p9_mux_num--;
--	mutex_unlock(&p9_mux_task_lock);
-+	spin_lock_irqsave(&p9_poll_lock, flags);
-+	list_del_init(&m->poll_pending_link);
-+	spin_unlock_irqrestore(&p9_poll_lock, flags);
- }
- 
- /**
-@@ -414,11 +302,8 @@ static struct p9_conn *p9_conn_create(struct p9_trans *trans)
- 	INIT_LIST_HEAD(&m->unsent_req_list);
- 	INIT_WORK(&m->rq, p9_read_work);
- 	INIT_WORK(&m->wq, p9_write_work);
--	n = p9_mux_poll_start(m);
--	if (n) {
--		kfree(m);
--		return ERR_PTR(n);
--	}
-+	INIT_LIST_HEAD(&m->poll_pending_link);
-+	init_poll_funcptr(&m->pt, p9_pollwait);
- 
- 	n = p9_fd_poll(trans, &m->pt);
- 	if (n & POLLIN) {
-@@ -431,11 +316,12 @@ static struct p9_conn *p9_conn_create(struct p9_trans *trans)
- 		set_bit(Wpending, &m->wsched);
- 	}
- 
--	for (i = 0; i < ARRAY_SIZE(m->poll_waddr); i++) {
--		if (IS_ERR(m->poll_waddr[i])) {
-+	for (i = 0; i < ARRAY_SIZE(m->poll_wait); i++) {
-+		if (IS_ERR(m->poll_wait[i].wait_addr)) {
- 			p9_mux_poll_stop(m);
- 			kfree(m);
--			return (void *)m->poll_waddr;	/* the error code */
-+			/* return the error code */
-+			return (void *)m->poll_wait[i].wait_addr;
- 		}
- 	}
- 
-@@ -464,6 +350,23 @@ static void p9_conn_destroy(struct p9_conn *m)
- 	kfree(m);
- }
- 
-+static int p9_pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
-+{
-+	struct p9_poll_wait *pwait =
-+		container_of(wait, struct p9_poll_wait, wait);
-+	struct p9_conn *m = pwait->conn;
-+	unsigned long flags;
-+	DECLARE_WAITQUEUE(dummy_wait, p9_poll_task);
-+
-+	spin_lock_irqsave(&p9_poll_lock, flags);
-+	if (list_empty(&m->poll_pending_link))
-+		list_add_tail(&m->poll_pending_link, &p9_poll_pending_list);
-+	spin_unlock_irqrestore(&p9_poll_lock, flags);
-+
-+	/* perform the default wake up operation */
-+	return default_wake_function(&dummy_wait, mode, sync, key);
-+}
-+
- /**
-  * p9_pollwait - add poll task to the wait queue
-  * @filp: file pointer being polled
-@@ -476,29 +379,32 @@ static void p9_conn_destroy(struct p9_conn *m)
- static void
- p9_pollwait(struct file *filp, wait_queue_head_t *wait_address, poll_table *p)
- {
-+	struct p9_conn *m = container_of(p, struct p9_conn, pt);
-+	struct p9_poll_wait *pwait = NULL;
- 	int i;
--	struct p9_conn *m;
- 
--	m = container_of(p, struct p9_conn, pt);
--	for (i = 0; i < ARRAY_SIZE(m->poll_waddr); i++)
--		if (m->poll_waddr[i] == NULL)
-+	for (i = 0; i < ARRAY_SIZE(m->poll_wait); i++) {
-+		if (m->poll_wait[i].wait_addr == NULL) {
-+			pwait = &m->poll_wait[i];
- 			break;
-+		}
-+	}
- 
--	if (i >= ARRAY_SIZE(m->poll_waddr)) {
-+	if (!pwait) {
- 		P9_DPRINTK(P9_DEBUG_ERROR, "not enough wait_address slots\n");
- 		return;
- 	}
- 
--	m->poll_waddr[i] = wait_address;
--
- 	if (!wait_address) {
- 		P9_DPRINTK(P9_DEBUG_ERROR, "no wait_address\n");
--		m->poll_waddr[i] = ERR_PTR(-EIO);
-+		pwait->wait_addr = ERR_PTR(-EIO);
- 		return;
- 	}
- 
--	init_waitqueue_entry(&m->poll_wait[i], m->poll_task->task);
--	add_wait_queue(wait_address, &m->poll_wait[i]);
-+	pwait->conn = m;
-+	pwait->wait_addr = wait_address;
-+	init_waitqueue_func_entry(&pwait->wait, p9_pollwake);
-+	add_wait_queue(wait_address, &pwait->wait);
- }
- 
- /**
-@@ -553,23 +459,34 @@ static void p9_poll_mux(struct p9_conn *m)
- 
- static int p9_poll_proc(void *a)
- {
--	struct p9_conn *m, *mtmp;
--	struct p9_mux_poll_task *vpt;
-+	unsigned long flags;
- 
--	vpt = a;
--	P9_DPRINTK(P9_DEBUG_MUX, "start %p %p\n", current, vpt);
--	while (!kthread_should_stop()) {
--		set_current_state(TASK_INTERRUPTIBLE);
-+	P9_DPRINTK(P9_DEBUG_MUX, "start %p\n", current);
-+ repeat:
-+	spin_lock_irqsave(&p9_poll_lock, flags);
-+	while (!list_empty(&p9_poll_pending_list)) {
-+		struct p9_conn *conn = list_first_entry(&p9_poll_pending_list,
-+							struct p9_conn,
-+							poll_pending_link);
-+		list_del_init(&conn->poll_pending_link);
-+		spin_unlock_irqrestore(&p9_poll_lock, flags);
- 
--		list_for_each_entry_safe(m, mtmp, &vpt->mux_list, mux_list) {
--			p9_poll_mux(m);
--		}
-+		p9_poll_mux(conn);
- 
--		P9_DPRINTK(P9_DEBUG_MUX, "sleeping...\n");
--		schedule_timeout(SCHED_TIMEOUT * HZ);
-+		spin_lock_irqsave(&p9_poll_lock, flags);
- 	}
-+	spin_unlock_irqrestore(&p9_poll_lock, flags);
- 
-+	set_current_state(TASK_INTERRUPTIBLE);
-+	if (list_empty(&p9_poll_pending_list)) {
-+		P9_DPRINTK(P9_DEBUG_MUX, "sleeping...\n");
-+		schedule();
-+	}
- 	__set_current_state(TASK_RUNNING);
-+
-+	if (!kthread_should_stop())
-+		goto repeat;
-+
- 	P9_DPRINTK(P9_DEBUG_MUX, "finish\n");
- 	return 0;
- }
-@@ -1600,17 +1517,19 @@ static struct p9_trans_module p9_fd_trans = {
- 
- int p9_trans_fd_init(void)
- {
--	int i;
--
--	for (i = 0; i < ARRAY_SIZE(p9_mux_poll_tasks); i++)
--		p9_mux_poll_tasks[i].task = NULL;
--
- 	p9_mux_wq = create_workqueue("v9fs");
- 	if (!p9_mux_wq) {
- 		printk(KERN_WARNING "v9fs: mux: creating workqueue failed\n");
- 		return -ENOMEM;
- 	}
- 
-+	p9_poll_task = kthread_run(p9_poll_proc, NULL, "v9fs-poll");
-+	if (IS_ERR(p9_poll_task)) {
-+		destroy_workqueue(p9_mux_wq);
-+		printk(KERN_WARNING "v9fs: mux: creating poll task failed\n");
-+		return PTR_ERR(p9_poll_task);
-+	}
-+
- 	v9fs_register_trans(&p9_tcp_trans);
- 	v9fs_register_trans(&p9_unix_trans);
- 	v9fs_register_trans(&p9_fd_trans);
-@@ -1620,6 +1539,7 @@ int p9_trans_fd_init(void)
- 
- void p9_trans_fd_exit(void)
- {
-+	kthread_stop(p9_poll_task);
- 	v9fs_unregister_trans(&p9_tcp_trans);
- 	v9fs_unregister_trans(&p9_unix_trans);
- 	v9fs_unregister_trans(&p9_fd_trans);
--- 
-1.5.4.5
-
+On Wednesday 20 August 2008 21:56, Nick Piggin wrote:
+> On Tuesday 19 August 2008 22:59, Ingo Molnar wrote:
+> > * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > > [...] Let's retain our API specifications and backwards compatibilty
+> > > by default. [...]
+> >
+> > I agree with you that the 1 second default was a bit too tight - and we
+> > should definitely change that (and it's changed already).
+>
+> I do not agree that it is too tight, it is just plain wrong.
+>
+> > So changing the "allow RT tasks up to 10 seconds uninterrupted CPU
+> > monopolization" is OK to me - it still keeps runaway CPU loops (which
+> > are in the vast majority) debuggable, while allowing common-sense RT
+> > task usage.
+>
+> RT tasks have always been debuggable by using a simple watchdog thread.
+> As I said before, someone who develops a non-trivial RT app without a
+> watchdog thread or isolated CPU basically doesn't deserve the honour of
+> us breaking our API to cater for their idiocity.
+>
+> But even for those people, we now have the sysrq trigger too. And also
+> we'll still have the rt throttle sysctl that can be changed at runtime.
+>
+> There are so many options... "oh but maybe they didn't research the
+> options either so let's break our APIs instead" is not common sense
+> IMO.
+>
+> > But changing that back to the other extreme: "allow lockups by default"
+> > is unreasonable IMO - especially in the face of rtlimit that allows
+> > unprivileged tasks to gain RT privileges.
+>
+> No, it's not "allow lockups by default". It is "follow the API and
+> backwards compatibility by default".
+>
+> If some distro has gone and given all users RTPRIO rlimit by default
+> and allowed unprivileged users to lock up the system, it is not the
+> problem of the upstream kernel. That distro can set the rt throttle
+> default if it wants to. Or provide a watchdog thread for debugging
+> RT tasks.
+>
+> > As an experiment try running a 100% CPU using SCHED_FIFO:99 RT task. It
+> > does not result in a usable Linux system - it interacts with too many
+> > normal system activities. It is a very, very special mode of operation
+> > and anyone using Linux in such a way has to take precautions and has to
+> > tune things specially anyway. (has to turn off the softlockup watchdog,
+> > has to make sure IO requests do not time out artificially, etc.) You
+> > wont even get normal keyboard or console behavior in most cases.
+>
+> This is exactly what *real* RT app/system developers do. I'm not
+> talking about an untuned desktop system!!
+>
+> > Furthermore, if by "API specifications" you mean POSIX - to get a
+> > conformant POSIX run one has to change a lot of things on a typical
+> > Linux system anyway. APIs and utilities have to be crippled to be "POSIX
+> > compliant".
+>
+> By that argument we can break any userspace API for any reason.
+>
+> > In other words: we use common sense when thinking about specifications.
+> > The kernel's defaults are about being reasonable by default.
+>
+> It's not common sense to change this. It would be perfectly valid to
+> engineer a realtime process that uses a peak of say 90% of the CPU with
+> a 10% margin for safety and other services. Now they only have 5%.
+>
+> Or a realtime app could definitely use the CPU adaptively up to 100% but
+> still unable to tolerate an unexpected preemption.
+>
+> I don't know how you can change this so significantly and be so sure of
+> yourself that you won't break anything (actually you already have one
+> reported breakage in this thread).
+>
+> > I have no _strong_ feelings about it, but i dont see the practical value
+> > in going beyond 10 seconds - as it turns a rather useful robustness
+> > feature off by default (and keeps it untested, etc.).
+>
+> I feel strongly about it.
+>
+> The primary issue is that we have broken the API from both specification
+> and previous implementation, the answer is yes. That *you* can't see any
+> reason to use the API in that way kind of pales in comparison with all
+> due respect. Especially as you already got a counter example of someone's
+> app that broke.
