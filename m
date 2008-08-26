@@ -1,102 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbYHZHGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbYHZHGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756763AbYHZHGA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 03:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYHZHFw
+	id S1752886AbYHZHGu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 03:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYHZHGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 03:05:52 -0400
-Received: from wr-out-0506.google.com ([64.233.184.236]:7582 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751568AbYHZHFv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 03:05:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=WsKPcYkOXwMjRdSaBOe4+3ai3VmIo4kYOVFiYjf14A5t83y3h1sHQSEEJyJ3E2eTL8
-         A8w214Jb2XyWnWf6c46NyDEZ3M+dnpXB5NYHlqCqxeJzA3/n5ycdDFRmsZDcDz2cn1K5
-         ysQvuT7zpXAVtxS1H6hbvwORtlU0e3WUZvu+E=
-Message-ID: <21d7e9970808260005g14ec71e9xfa584780498a86e7@mail.gmail.com>
-Date: Tue, 26 Aug 2008 17:05:48 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: venkatesh.pallipadi@intel.com
-Subject: Re: [patch 3/4] x86: PAT Update validate_pat_support for intel CPUs
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
-In-Reply-To: <20080820234604.592277000@intel.com>
+	Tue, 26 Aug 2008 03:06:43 -0400
+Received: from [93.163.65.50] ([93.163.65.50]:26471 "EHLO kernel.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752002AbYHZHGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 03:06:42 -0400
+Date: Tue, 26 Aug 2008 09:06:41 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PULL] block bits
+Message-ID: <20080826070640.GR20055@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080820234550.923970000@intel.com>
-	 <20080820234604.592277000@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 9:45 AM,  <venkatesh.pallipadi@intel.com> wrote:
-> Pentium III and Core Solo/Duo CPUs have an erratum
-> " Page with PAT set to WC while associated MTRR is UC may consolidate to UC "
-> which can result in WC setting in PAT to be ineffective. We will disable
-> PAT on such CPUs, so that we can continue to use MTRR WC setting.
->
+Hi Linus,
 
-IMHO this seems like a bit hammer with which to squash this nut.
+A small collection of fixes for 2.6.27, please apply.
 
-I really need PAT support for upcoming GPU stuff, esp where I have
-pages of RAM allocated into a
-GART and I want write-combined access to them. These pages will
-physically me under a write-back MTRR, with a WC PAT entry
-on the PTE mappings.
+  git://git.kernel.dk/linux-2.6-block.git for-linus
 
-Can we not just be smarter and fix this when we know we have a UC MTRR
-and a WC PAT mapping inside it?
+Adel Gadllah (1):
+      block: clean up cmdfilter sysfs interface
 
-Dave.
+FUJITA Tomonori (5):
+      block: move cmdfilter from gendisk to request_queue
+      sg: restore command permission for TYPE_SCANNER
+      block: rename blk_scsi_cmd_filter to blk_cmd_filter
+      bio: fix bio_copy_kern() handling of bio->bv_len
+      bio: fix __bio_copy_iov() handling of bio->bv_len
 
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->
-> ---
->  arch/x86/kernel/cpu/addon_cpuid_features.c |   17 +++++++++++++++--
->  1 file changed, 15 insertions(+), 2 deletions(-)
->
-> Index: tip/arch/x86/kernel/cpu/addon_cpuid_features.c
-> ===================================================================
-> --- tip.orig/arch/x86/kernel/cpu/addon_cpuid_features.c 2008-08-20 14:25:18.000000000 -0700
-> +++ tip/arch/x86/kernel/cpu/addon_cpuid_features.c      2008-08-20 14:26:39.000000000 -0700
-> @@ -56,9 +56,22 @@ void __cpuinit validate_pat_support(stru
->
->        switch (c->x86_vendor) {
->        case X86_VENDOR_INTEL:
-> -               if (c->x86 == 0xF || (c->x86 == 6 && c->x86_model >= 15))
-> +               /*
-> +                * There is a known erratum on Pentium III and Core Solo
-> +                * and Core Duo CPUs.
-> +                * " Page with PAT set to WC while associated MTRR is UC
-> +                *   may consolidate to UC "
-> +                * Because of this erratum, it is better to stick with
-> +                * setting WC in MTRR rather than using PAT on these CPUs.
-> +                *
-> +                * Enable PAT WC only on P4, Core 2 or later CPUs.
-> +                */
-> +               if (c->x86 > 0x6 || (c->x86 == 6 && c->x86_model >= 15))
->                        return;
-> -               break;
-> +
-> +               pat_disable("PAT WC disabled due to known CPU erratum.");
-> +               return;
-> +
->        case X86_VENDOR_AMD:
->        case X86_VENDOR_CENTAUR:
->        case X86_VENDOR_TRANSMETA:
->
-> --
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Jens Axboe (2):
+      block: submit_bh() inadvertently discards barrier flag on a sync write
+      block: remove blk_queue_tag_depth() and blk_queue_tag_queue()
+
+Matthew Wilcox (1):
+      block: remove unused ->busy part of the block queue tag map
+
+xiphmont@xiph.org (1):
+      SG_IO block filter whitelist missing MMC SET READ AHEAD command
+
+ block/blk-core.c       |    2 +
+ block/blk-tag.c        |    6 +-
+ block/bsg.c            |   44 +++--------
+ block/cmd-filter.c     |  196 ++++++++++++------------------------------------
+ block/scsi_ioctl.c     |   95 ++++++++++++++++++++++-
+ drivers/scsi/sg.c      |   17 ++++-
+ fs/bio.c               |   48 ++++++++----
+ fs/buffer.c            |   13 ++-
+ include/linux/blkdev.h |   18 +++-
+ include/linux/genhd.h  |   10 ---
+ 10 files changed, 224 insertions(+), 225 deletions(-)
+
+-- 
+Jens Axboe
+
