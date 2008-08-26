@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbYHZQiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758863AbYHZQku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758185AbYHZQiU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 12:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920AbYHZQiB
+	id S1758863AbYHZQku (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 12:40:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbYHZQkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 12:38:01 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:63538 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756817AbYHZQh7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 12:37:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=eMQfWHKIVbvHJVmWmG08Vfdk+FdO7nbGbHwNjxbl7OH8A1Kxr1AW2gsZFxSbRzYx6B
-         XC75YU/33rRIcX4cL/dt8pEmVTIq2sZozwhMWjG8XRgXcurbsX+dWkndHfR2mwcn9/Li
-         6eUE2wZCdqhb5K8xdFqDAiSP8lQ5J9c6Nl1sA=
-Message-ID: <86802c440808260937y4a3e87dt4a897a05dc7fa7b@mail.gmail.com>
-Date: Tue, 26 Aug 2008 09:37:59 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
-Subject: Re: skbuff bug?
-Cc: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       "David Miller" <davem@davemloft.net>, "Jeff Garzik" <jeff@garzik.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Bruce Allan" <bruce.w.allan@intel.com>,
-       netdev <netdev@vger.kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <9929d2390808260317l2fb17bcxe099e85fcf5bb939@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 26 Aug 2008 12:40:43 -0400
+Received: from mout2.freenet.de ([195.4.92.92]:54283 "EHLO mout2.freenet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757134AbYHZQkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 12:40:42 -0400
+Date: Tue, 26 Aug 2008 18:40:39 +0200
+From: Gerhard Brauer <gerhard.brauer@web.de>
+To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
+Message-ID: <20080826164039.GB5300@tux1.brauer.lan>
+References: <20080822065012.GV14110@elte.hu> <20080822113941.147a1db0@doriath.conectiva> <20080822153451.GA8390@Krystal> <20080822132948.57e47076@doriath.conectiva> <20080822163520.GA9860@Krystal> <20080822142054.403cbdef@doriath.conectiva> <20080822175741.6bc83dc8@doriath.conectiva> <48AF2ABD.9070100@zytor.com> <20080826141851.GA5300@tux1.brauer.lan> <20080826130216.4d723b0a@doriath.conectiva>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <86802c440808202056j6cfe5ca0v6284140ae4b9b8cd@mail.gmail.com>
-	 <86802c440808211646y758cfdd7n505777b2b8b58c9a@mail.gmail.com>
-	 <20080826091752.GB5822@2ka.mipt.ru>
-	 <9929d2390808260317l2fb17bcxe099e85fcf5bb939@mail.gmail.com>
+In-Reply-To: <20080826130216.4d723b0a@doriath.conectiva>
+User-Agent: Mutt/1.5.18-muttng (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 3:17 AM, Jeff Kirsher
-<jeffrey.t.kirsher@intel.com> wrote:
-> On Tue, Aug 26, 2008 at 2:17 AM, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
->> Hi.
->>
->> On Thu, Aug 21, 2008 at 04:46:49PM -0700, Yinghai Lu (yhlu.kernel@gmail.com) wrote:
->>> it seems caused by
->>>
->>> commit f8d59f7826aa73c5e7682fbed6db38020635d466
->>> Author: Bruce Allan <bruce.w.allan@intel.com>
->>> Date:   Fri Aug 8 18:36:11 2008 -0700
->>>
->>>     e1000e: test for unusable MSI support
->>
->> Intel folks seems to be on vacations or whatever else without access to
->> the mail. Can you confirm that bug still exists in the latest tree and
->> reverting this commit fixes the problem?
->>
->> --
->>        Evgeniy Polyakov
->> --
->
-> We are looking into the issue, I am sorry there has been no response until now.
->
-> I am still curious if you still see the issue with all the recent
-> changes.  Please provide the device id you are using and system info
-> so that we can try and reproduce the issue, if the issue persists with
-> the latest git tree.
+On Tue, Aug 26, 2008 at 01:02:16PM -0300, Luiz Fernando N. Capitulino wrote:
+> Em Tue, 26 Aug 2008 16:18:51 +0200
+> Gerhard Brauer <gerhard.brauer@web.de> escreveu:
+> 
+> | Some things i noticed:
+> | - The system boots always when i either enable VT-x in guest settings or
+> |   disable acpi and run the guest with acpi=off.
+> 
+>  Yes, lots of ubuntu users have reported the same but another "lots"
+> of them have reported that the trick didn't work.
 
-can not duplicate any more...
+I must relativate above: i have two test enviroments, one is our
+LiveCD/Install-ISO with 2.6.26 which we made special for a linux
+conference last weekend (our official iso comes still with 2.6.25). With
+this iso the "trick" with VT-x or noacpi works.
+But on an installed archlinux (with distribution kernel 2.6.26) this
+does'nt work. Sometimes it works when i restart the virtualbox
+application, but mostly not. So on this installed guest system the only
+working solution seems to add noreplace-paravirt as kernel parameter.
+But this makes the system terrible slow (mostly on udev things).
 
-YH
+I try Mathieu's hints currently by building a new distribution kernel
+with the changes.
+But i think the biggest problem to maybe solve this from the sight of
+kernel devs is that we all have different "test" enviroments (vbox
+versions, architectures, distribution kernels,...) where the oops (i
+think) not appears for all on the same place.
+On the other hand, the more we we try such patches in different
+enviroments there is a better chance to get a real fix - from kernel dev
+side or from virtualbox/Sun side...
+
+>  Thanks for joining!
+> Luiz Fernando N. Capitulino
+
+Gerhard
+
+-- 
+www,archlinux.de
