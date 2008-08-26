@@ -1,151 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753372AbYHZXEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbYHZXPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753372AbYHZXEX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 19:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbYHZXEQ
+	id S1752723AbYHZXPo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 19:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbYHZXPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 19:04:16 -0400
-Received: from mga09.intel.com ([134.134.136.24]:5485 "EHLO mga09.intel.com"
+	Tue, 26 Aug 2008 19:15:35 -0400
+Received: from vena.lwn.net ([206.168.112.25]:55774 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751688AbYHZXEP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 19:04:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,273,1217833200"; 
-   d="scan'208";a="329396961"
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Dave Airlie <airlied@gmail.com>
-CC: "mingo@elte.hu" <mingo@elte.hu>, "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Date: Tue, 26 Aug 2008 16:03:31 -0700
-Subject: RE: [patch 3/4] x86: PAT Update validate_pat_support for intel CPUs
-Thread-Topic: [patch 3/4] x86: PAT Update validate_pat_support for intel CPUs
-Thread-Index: AckHSjRuvtUIM4T/Q0iDafM7SOC68wAXU7wg
-Message-ID: <7E82351C108FA840AB1866AC776AEC460B68CC5F@orsmsx505.amr.corp.intel.com>
-References: <20080820234550.923970000@intel.com>
-	 <20080820234604.592277000@intel.com>
- <21d7e9970808260005g14ec71e9xfa584780498a86e7@mail.gmail.com>
-In-Reply-To: <21d7e9970808260005g14ec71e9xfa584780498a86e7@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1751801AbYHZXPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 19:15:34 -0400
+Date: Tue, 26 Aug 2008 17:15:32 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Greg KH <greg@kroah.com>, hjk@linutronix.de
+Subject: [PATCH, RFC] uio BKL removal
+Message-ID: <20080826171532.2414c7a2@bike.lwn.net>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.6; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I had a moment to dedicate to the BKL removal cause, so I went for the
+UIO driver, which seemed simple.  The main thing I found was that there
+was locking around some idr accesses, but not all, so I filled that
+in.  With that in place, removing the BKL from uio_open() seems safe,
+especially since none of the in-tree UIO drivers have open() or
+release() methods.  
 
+(Incidentally, I don't see how uio_pdrv.c could ever work - who initializes
+uioinfo?)
 
-The problem here is both with MTRR entry of UC and even with
-default MTRR being UC.
-
-Default MTRR being UC for all reserved regions and drivers
-wanting WC is very common situation and performance will be
-affected when that ends up being UC access.
-With pat disabled, drivers can set MTRR with WC in this case
-and get the expected performance.
-
-Yes. We can still allow WC mappings only for the RAM
-regions and disable PAT WC for all the reserved regions. I will
-take a look at that option and see how cleanly we can
-enable pat only for set_memory_wc and disable PAT for
-ioremap_wc and pci regions.
+If there's no complaints, I'll feed this into linux-next via the
+bkl-removal tree.
 
 Thanks,
-Venki
 
+jon
 
+---
+UIO: BKL removal
 
->-----Original Message-----
->From: Dave Airlie [mailto:airlied@gmail.com]
->Sent: Tuesday, August 26, 2008 12:06 AM
->To: Pallipadi, Venkatesh
->Cc: mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com;
->linux-kernel@vger.kernel.org; Siddha, Suresh B
->Subject: Re: [patch 3/4] x86: PAT Update validate_pat_support
->for intel CPUs
->
->On Thu, Aug 21, 2008 at 9:45 AM,
-><venkatesh.pallipadi@intel.com> wrote:
->> Pentium III and Core Solo/Duo CPUs have an erratum
->> " Page with PAT set to WC while associated MTRR is UC may
->consolidate to UC "
->> which can result in WC setting in PAT to be ineffective. We
->will disable
->> PAT on such CPUs, so that we can continue to use MTRR WC setting.
->>
->
->IMHO this seems like a bit hammer with which to squash this nut.
->
->I really need PAT support for upcoming GPU stuff, esp where I have
->pages of RAM allocated into a
->GART and I want write-combined access to them. These pages will
->physically me under a write-back MTRR, with a WC PAT entry
->on the PTE mappings.
->
->Can we not just be smarter and fix this when we know we have a UC MTRR
->and a WC PAT mapping inside it?
->
->Dave.
->
->> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->>
->> ---
->>  arch/x86/kernel/cpu/addon_cpuid_features.c |   17 +++++++++++++++--
->>  1 file changed, 15 insertions(+), 2 deletions(-)
->>
->> Index: tip/arch/x86/kernel/cpu/addon_cpuid_features.c
->> ===================================================================
->> --- tip.orig/arch/x86/kernel/cpu/addon_cpuid_features.c
->2008-08-20 14:25:18.000000000 -0700
->> +++ tip/arch/x86/kernel/cpu/addon_cpuid_features.c
->2008-08-20 14:26:39.000000000 -0700
->> @@ -56,9 +56,22 @@ void __cpuinit validate_pat_support(stru
->>
->>        switch (c->x86_vendor) {
->>        case X86_VENDOR_INTEL:
->> -               if (c->x86 == 0xF || (c->x86 == 6 &&
->c->x86_model >= 15))
->> +               /*
->> +                * There is a known erratum on Pentium III
->and Core Solo
->> +                * and Core Duo CPUs.
->> +                * " Page with PAT set to WC while
->associated MTRR is UC
->> +                *   may consolidate to UC "
->> +                * Because of this erratum, it is better to
->stick with
->> +                * setting WC in MTRR rather than using PAT
->on these CPUs.
->> +                *
->> +                * Enable PAT WC only on P4, Core 2 or later CPUs.
->> +                */
->> +               if (c->x86 > 0x6 || (c->x86 == 6 &&
->c->x86_model >= 15))
->>                        return;
->> -               break;
->> +
->> +               pat_disable("PAT WC disabled due to known
->CPU erratum.");
->> +               return;
->> +
->>        case X86_VENDOR_AMD:
->>        case X86_VENDOR_CENTAUR:
->>        case X86_VENDOR_TRANSMETA:
->>
->> --
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe
->linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->
+Remove the BKL from the UIO driver, and add complete locking where needed
+to serialize idr accesses.
+
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+
+diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
+index 3a6934b..4f28f4b 100644
+--- a/drivers/uio/uio.c
++++ b/drivers/uio/uio.c
+@@ -47,6 +47,9 @@ static struct uio_class {
+ 	struct class *class;
+ } *uio_class;
+ 
++/* Protect idr accesses */
++static DEFINE_MUTEX(minor_lock);
++
+ /*
+  * attributes
+  */
+@@ -231,7 +234,6 @@ static void uio_dev_del_attributes(struct uio_device *idev)
+ 
+ static int uio_get_minor(struct uio_device *idev)
+ {
+-	static DEFINE_MUTEX(minor_lock);
+ 	int retval = -ENOMEM;
+ 	int id;
+ 
+@@ -253,7 +255,9 @@ exit:
+ 
+ static void uio_free_minor(struct uio_device *idev)
+ {
++	mutex_lock(&minor_lock);
+ 	idr_remove(&uio_idr, idev->minor);
++	mutex_unlock(&minor_lock);
+ }
+ 
+ /**
+@@ -297,8 +301,9 @@ static int uio_open(struct inode *inode, struct file *filep)
+ 	struct uio_listener *listener;
+ 	int ret = 0;
+ 
+-	lock_kernel();
++	mutex_lock(&minor_lock);
+ 	idev = idr_find(&uio_idr, iminor(inode));
++	mutex_unlock(&minor_lock);
+ 	if (!idev) {
+ 		ret = -ENODEV;
+ 		goto out;
+@@ -324,18 +329,15 @@ static int uio_open(struct inode *inode, struct file *filep)
+ 		if (ret)
+ 			goto err_infoopen;
+ 	}
+-	unlock_kernel();
+ 	return 0;
+ 
+ err_infoopen:
+-
+ 	kfree(listener);
+-err_alloc_listener:
+ 
++err_alloc_listener:
+ 	module_put(idev->owner);
+ 
+ out:
+-	unlock_kernel();
+ 	return ret;
+ }
+ 
