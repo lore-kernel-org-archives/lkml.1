@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757246AbYHZIUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757006AbYHZIYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757246AbYHZIUi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 04:20:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYHZIU3
+	id S1757006AbYHZIYm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 04:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYHZIYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 04:20:29 -0400
-Received: from mail.suse.de ([195.135.220.2]:57879 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752200AbYHZIU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 04:20:28 -0400
-Date: Tue, 26 Aug 2008 10:20:23 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Vivek Goyal" <vgoyal@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86: only put e820 ram entries in resource tree
-Message-ID: <20080826102023.2d7cd1c3@halley.suse.de>
-In-Reply-To: <86802c440808251013u20533707w692b5ba94e32e9c9@mail.gmail.com>
-References: <1219617897-9870-1-git-send-email-yhlu.kernel@gmail.com>
-	<20080825103948.6ba5757c@halley.suse.de>
-	<86802c440808251013u20533707w692b5ba94e32e9c9@mail.gmail.com>
-Organization: SUSE Linux Products GmbH
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
- D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
- vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
- pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Aug 2008 04:24:35 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43562 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750954AbYHZIYe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 04:24:34 -0400
+To: jassi_singh_brar@yahoo.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: An idea .... with code
+From: Andi Kleen <andi@firstfloor.org>
+References: <801995.65435.qm@web33201.mail.mud.yahoo.com>
+Date: Tue, 26 Aug 2008 10:24:30 +0200
+In-Reply-To: <801995.65435.qm@web33201.mail.mud.yahoo.com> (jassi brar's message of "Sun, 24 Aug 2008 01:53:20 -0700 (PDT)")
+Message-ID: <87tzd89oap.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Yinghai Lu [2008-08-25 10:13]:
->
-> On Mon, Aug 25, 2008 at 1:39 AM, Bernhard Walle <bwalle@suse.de> wrote:
-> > * Yinghai Lu [2008-08-24 15:44]:
-> >>
-> >> may need user to have new kexec tools that could create e820 table
-> >> from /sys/firmware/memmap instead of /proc/iomem for second kernel
-> >
-> > 2.0.0 has that implemented.
->
-> Yes
-> 
-> can you guys make kexec-tools 2.0.0 can be complied to static as one option?
+jassi brar <jassi_singh_brar@yahoo.com> writes:
 
-See http://article.gmane.org/gmane.linux.kernel.kexec/2223.
+>   Lately a question has been bugging me: Why do we keep complicated(specific ioctls to set up and set free) 
 
+Can you please expand a bit why you think losetup is that complicated
+and what the problem is with it?
 
+AFAIK you're essentially just moving a minimal version of losetup
+(with missing features like no offsets etc.) into the kernel and
+frankly I fail to see the beauty in that. Or rather if you start with
+losetup, why stop at mount, modprobe, ifconfig, mkfs, fsck, ls[1], ...?
 
-Bernhard
--- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
+For me it seems more that most of the file system based command
+interfaces (/proc/mtrr comes to mind) are quite hard to use and
+I prefer a proper command line tool with a manpage and --help
+and a real parser any day.
+
+-Andi
+
+[1] I'm sure someone could come up with some scheme to do ls using sysfs 
+and you could find someone on this list who said "cool" :)
+
