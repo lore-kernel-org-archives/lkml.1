@@ -1,135 +1,1344 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758419AbYHZM7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757932AbYHZNSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758419AbYHZM7T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 08:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbYHZM7L
+	id S1757932AbYHZNSA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 09:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbYHZNRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 08:59:11 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49347 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752983AbYHZM7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 08:59:09 -0400
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX1+T+7NiQeiTT3sDtLxNJPXNEunuoxRyOiRRlPKizM
-	lUeIjOxXkBg6aX
-Date: Tue, 26 Aug 2008 14:59:09 +0200
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: zippel@linux-m68k.org, linux-kernel@vger.kernel.org
-Subject: [Patch] Fix another bug in hfsplus when reading a corrupted image
-Message-ID: <20080826125909.GA21266@alice>
+	Tue, 26 Aug 2008 09:17:52 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:57991 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752983AbYHZNRu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 09:17:50 -0400
+Date: Tue, 26 Aug 2008 14:17:36 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Claudio Scordino <claudio@evidence.eu.com>
+Cc: lg@denx.de, rmk+kernel@arm.linux.org.uk,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [ARM] Regression ? at91rm9200 machine-type
+Message-ID: <20080826131736.GA1916@fluff.org.uk>
+References: <48B3DB29.5070409@evidence.eu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.27-rc3 (x86_64)
-X-Uptime: 14:53:58 up 7 days,  5:03,  4 users,  load average: 0.13, 0.44,
-	0.37
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46
+In-Reply-To: <48B3DB29.5070409@evidence.eu.com>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
+On Tue, Aug 26, 2008 at 12:30:01PM +0200, Claudio Scordino wrote:
+> Hi,
+>
+>    I have a custom board equivalent to AT91RM9200DK.
 
-another bug that popped up when testing hfsplus with corrupted images.
+Is that exactly the same, or does it have changes?
 
-[  144.632017] BUG: unable to handle kernel NULL pointer dereference at 00000034
-[  144.633047] IP: [<c0230c55>] hfsplus_find_init+0x24/0x5a
-[  144.633047] *pde = 00000000
-[  144.633047] Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
-[  144.633047] Modules linked in:
-[  144.633047]
-[  144.633047] Pid: 4845, comm: mount Not tainted (2.6.27-rc4-00131-g83097ac-dirty #32)
-[  144.633047] EIP: 0060:[<c0230c55>] EFLAGS: 00010202 CPU: 0
-[  144.633047] EIP is at hfsplus_find_init+0x24/0x5a
-[  144.633047] EAX: 0000001d EBX: c6eaca84 ECX: c011bf0c EDX: 000000d0
-[  144.633047] ESI: 00000000 EDI: c6eb810c EBP: c6eaca74 ESP: c6eaca60
-[  144.633047]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-[  144.633047] Process mount (pid: 4845, ti=c6eac000 task=c6e80000 task.ti=c6eac000)
-[  144.633047] Stack: c0801a93 00000000 c6eaca84 c6eaca84 c6eb8000 c6eacab4 c022c900 00000000
-[  144.633047]        c022ce68 00000000 c6eb8004 00000000 00000000 22222222 22222222 22222222
-[  144.633047]        22222222 22222222 00000000 c1098a40 c6eb8000 c6eacae0 c022ce72 c6eb82ac
-[  144.633047] Call Trace:
-[  144.633047]  [<c022c900>] ? hfsplus_ext_read_extent+0x47/0x12a
-[  144.633047]  [<c022ce68>] ? hfsplus_get_block+0xb3/0x19d
-[  144.633047]  [<c022ce72>] ? hfsplus_get_block+0xbd/0x19d
-[  144.633047]  [<c01a042d>] ? block_read_full_page+0x172/0x2b4
-[  144.633047]  [<c022cdb5>] ? hfsplus_get_block+0x0/0x19d
-[  144.633047]  [<c0161899>] ? add_to_page_cache_locked+0xa9/0xc4
-[  144.633047]  [<c0168922>] ? lru_cache_add+0x53/0x69
-[  144.633047]  [<c022b737>] ? hfsplus_readpage+0xf/0x11
-[  144.633047]  [<c0161ad5>] ? read_cache_page_async+0x79/0x108
-[  144.633047]  [<c022b728>] ? hfsplus_readpage+0x0/0x11
-[  144.633048]  [<c0162d59>] ? read_cache_page+0xc/0x3f
-[  144.633048]  [<c022e85b>] ? hfsplus_btree_open+0x104/0x267
-[  144.633048]  [<c022b04a>] ? hfsplus_fill_super+0x211/0x447
-[  144.633048]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
-[  144.633048]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  144.633048]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
-[  144.633048]  [<c013dc3a>] ? trace_hardirqs_on+0xb/0xd
-[  144.633048]  [<c013dc3a>] ? trace_hardirqs_on+0xb/0xd
-[  144.633048]  [<c013dbf4>] ? trace_hardirqs_on_caller+0xf4/0x12f
-[  144.633048]  [<c013dc3a>] ? trace_hardirqs_on+0xb/0xd
-[  144.633048]  [<c06aa5c6>] ? mutex_unlock+0x8/0xa
-[  144.633048]  [<c01a28da>] ? do_open+0x20b/0x280
-[  144.633048]  [<c01a29cc>] ? __blkdev_get+0x7d/0x88
-[  144.633048]  [<c041c9c4>] ? string+0x2b/0x74
-[  144.633048]  [<c041ccf6>] ? vsnprintf+0x2e9/0x512
-[  144.633048]  [<c010487a>] ? dump_trace+0xca/0xd6
-[  144.633048]  [<c0109eaf>] ? save_stack_trace+0x1c/0x3a
-[  144.633048]  [<c0109eaf>] ? save_stack_trace+0x1c/0x3a
-[  144.633048]  [<c013b571>] ? save_trace+0x37/0x8d
-[  144.633048]  [<c013b62e>] ? add_lock_to_list+0x67/0x8d
-[  144.633048]  [<c013ea1c>] ? validate_chain+0x8a4/0x9f4
-[  144.633048]  [<c01354d3>] ? up+0xc/0x2f
-[  144.633048]  [<c013f1f6>] ? __lock_acquire+0x68a/0x6e0
-[  144.633048]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  144.633048]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
-[  144.633048]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  144.633048]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
-[  144.633048]  [<c041cf97>] ? snprintf+0x1b/0x1d
-[  144.633048]  [<c01ba466>] ? disk_name+0x25/0x67
-[  144.633048]  [<c0183960>] ? get_sb_bdev+0xcd/0x10b
-[  144.633048]  [<c016ad92>] ? kstrdup+0x2a/0x4c
-[  144.633048]  [<c022a7b3>] ? hfsplus_get_sb+0x13/0x15
-[  144.633048]  [<c022ae39>] ? hfsplus_fill_super+0x0/0x447
-[  144.633048]  [<c0183583>] ? vfs_kern_mount+0x3b/0x76
-[  144.633048]  [<c0183602>] ? do_kern_mount+0x32/0xba
-[  144.633048]  [<c01960d4>] ? do_new_mount+0x46/0x74
-[  144.633048]  [<c0196277>] ? do_mount+0x175/0x193
-[  144.633048]  [<c013dbf4>] ? trace_hardirqs_on_caller+0xf4/0x12f
-[  144.633048]  [<c01663b2>] ? __get_free_pages+0x1e/0x24
-[  144.633048]  [<c06ac09b>] ? lock_kernel+0x19/0x8c
-[  144.633048]  [<c01962e6>] ? sys_mount+0x51/0x9b
-[  144.633048]  [<c01962f9>] ? sys_mount+0x64/0x9b
-[  144.633048]  [<c01038bd>] ? sysenter_do_call+0x12/0x31
-[  144.633048]  =======================
-[  144.633048] Code: 00 00 00 00 5b 5d c3 55 89 e5 56 89 c6 53 89 d3 52 50 68 93 1a 80 c0 e8 f2 24 ef ff
-ba d0 00 00 00 89 73 08 c7 43 0c 00 00 00 00 <8b> 46 34 8d 44 00 04 e8 f9 e0 f4 ff ba f4 ff ff ff 83 c4 0
-c 85
-[  144.633048] EIP: [<c0230c55>] hfsplus_find_init+0x24/0x5a SS:ESP 0068:c6eaca60
-[  144.659114] ---[ end trace 3e5c566484eaaae5 ]---
+Note, this should have been sent to the linux-arm-kernel list, where
+it will be read by more of the developers who work on ARM, we don't
+all have time to sit on linux-kernel.
+
+> After commit
+>
+> 87fee013a23ad02821699aef5b76891b42959182
+>
+> [ARM] 4647/1: at91rm9200: Remove redundant machine-type verification
+> and manipulation
+>
+> I cannot boot my board anymore.
+
+Hmm, having looked at this, it would be very probably that your
+u-boot is not passing the right boot information to the kernel.
+
+> Some more details:
+>  - I tried booting from both U-Boot 1.1.6 and U-Boot 1.3.4
+>  - I compiled U-Boot using "at91rm9200dk_config"
+>  - On U-Boot bootargs=console=ttyS0,115200 mem=32M
+> mtdparts=AT45DB642.spi0:-(filesystem) rootfstype=jffs2 root=/dev/mtdblock0
+>  - The .config of the kernel is in attachment
+
+I suggest checking uboot to see if there is any way of using the uboot
+command line to change the machine ID being passed to the kernel, otherwise
+you'll need to change uboot to cope.
+
+Note, it isn't as if the following documents have been around for a time
+describing how the ARM/Linux boot process works:
+
+http://www.arm.linux.org.uk/developer/booting.php
+http://www.simtec.co.uk/products/SWLINUX/files/booting_article.pdf
+
+> I don't know if this is an actual regression or not (I'm not much
+> skilled in machine-types/boot process).
+>
+> However, it seems that the commit above, besides removing redundant  
+> machine type verification, removed the default machine type for unknown 
+> boards as well.
+>
+> I send in attachment a patch which fixes the problem (i.e. it just
+> restores the default machine type for unknown boards) but I don't know  
+> if restoring the default value is the right way to fix the problem.
+>
+> Let me know if it's ok or if the problem should be fixed in some
+> different way.
+>
+> Thanks,
+>
+>         Claudio
+>
+> -- 
+> Ing. Claudio Scordino		
+> Software Engineer, PhD
+> Tel. +39-050-5492050
+> http://retis.sssup.it/~scordino/
+>
+> Evidence Srl
+> Embedded Real-Time Solutions
+> http://www.evidence.eu.com
+>
+>
+>
+>
+>
+>
+>
+
+> >From 4f6485eac11ba0f8ef694f476cf8c3762188b805 Mon Sep 17 00:00:00 2001
+> From: Claudio Scordino <claudio@evidence.eu.com>
+> Date: Tue, 26 Aug 2008 11:07:11 +0200
+> Subject: [PATCH] Fix regression for commit 87fee013a23ad02821699aef5b76891b42959182
+> 
+> Commit [87fee013a23ad02821699aef5b76891b42959182] removed "redundant"
+> machine-type verification and manipulation, but it also removed default board
+> (i.e. AT91RM9200DK) when the board is unknown.
+> 
+> This patch just restores the default board.
+> 
+> Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
+> ---
+>  arch/arm/boot/compressed/Makefile          |    4 ++++
+>  arch/arm/boot/compressed/head-at91rm9200.S |   21 +++++++++++++++++++++
+>  2 files changed, 25 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/arm/boot/compressed/head-at91rm9200.S
+> 
+> diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
+> index 94462a0..a5252fc 100644
+> --- a/arch/arm/boot/compressed/Makefile
+> +++ b/arch/arm/boot/compressed/Makefile
+> @@ -44,6 +44,10 @@ ifeq ($(CONFIG_PXA_SHARPSL),y)
+>  OBJS		+= head-sharpsl.o
+>  endif
+>  
+> +ifeq ($(CONFIG_ARCH_AT91RM9200),y)
+> +OBJS		+= head-at91rm9200.o
+> +endif
+> +
+>  ifeq ($(CONFIG_CPU_BIG_ENDIAN),y)
+>  ifeq ($(CONFIG_CPU_CP15),y)
+>  OBJS		+= big-endian.o
+> diff --git a/arch/arm/boot/compressed/head-at91rm9200.S b/arch/arm/boot/compressed/head-at91rm9200.S
+> new file mode 100644
+> index 0000000..2c2c186
+> --- /dev/null
+> +++ b/arch/arm/boot/compressed/head-at91rm9200.S
+> @@ -0,0 +1,21 @@
+> +/*
+> + * linux/arch/arm/boot/compressed/head-at91rm9200.S
+> + *
+> + *  Copyright (C) 2003 SAN People
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + */
+> +#include <asm/mach-types.h>
+> +
+> +		.section	".start", "ax"
+> +
+> +		@ Unknown board, use the AT91RM9200DK board
+> +		@ mov	r7, #MACH_TYPE_AT91RM9200
+> +		mov	r7,	#(MACH_TYPE_AT91RM9200DK & 0xff)
+> +		orr	r7, r7, #(MACH_TYPE_AT91RM9200DK & 0xff00)
+> +
+> +99:
+> -- 
+> 1.5.4.3
+> 
+
+That will just end up squashing any passed in machine type, replacing
+it with MACH_TYPE_AT91RM9200.
+
+> #
+> # Automatically generated make config: don't edit
+> # Linux kernel version: 2.6.27-rc3
+> # Tue Aug 26 10:56:47 2008
+> #
+> CONFIG_ARM=y
+> CONFIG_SYS_SUPPORTS_APM_EMULATION=y
+> CONFIG_GENERIC_GPIO=y
+> CONFIG_GENERIC_TIME=y
+> CONFIG_GENERIC_CLOCKEVENTS=y
+> CONFIG_MMU=y
+> # CONFIG_NO_IOPORT is not set
+> CONFIG_GENERIC_HARDIRQS=y
+> CONFIG_STACKTRACE_SUPPORT=y
+> CONFIG_HAVE_LATENCYTOP_SUPPORT=y
+> CONFIG_LOCKDEP_SUPPORT=y
+> CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+> CONFIG_HARDIRQS_SW_RESEND=y
+> CONFIG_GENERIC_IRQ_PROBE=y
+> CONFIG_RWSEM_GENERIC_SPINLOCK=y
+> # CONFIG_ARCH_HAS_ILOG2_U32 is not set
+> # CONFIG_ARCH_HAS_ILOG2_U64 is not set
+> CONFIG_GENERIC_HWEIGHT=y
+> CONFIG_GENERIC_CALIBRATE_DELAY=y
+> CONFIG_ARCH_SUPPORTS_AOUT=y
+> CONFIG_ZONE_DMA=y
+> CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
+> CONFIG_VECTORS_BASE=0xffff0000
+> CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+> 
+> #
+> # General setup
+> #
+> CONFIG_EXPERIMENTAL=y
+> CONFIG_BROKEN_ON_SMP=y
+> CONFIG_INIT_ENV_ARG_LIMIT=32
+> CONFIG_LOCALVERSION=""
+> CONFIG_LOCALVERSION_AUTO=y
+> # CONFIG_SWAP is not set
+> CONFIG_SYSVIPC=y
+> CONFIG_SYSVIPC_SYSCTL=y
+> # CONFIG_POSIX_MQUEUE is not set
+> # CONFIG_BSD_PROCESS_ACCT is not set
+> # CONFIG_TASKSTATS is not set
+> # CONFIG_AUDIT is not set
+> # CONFIG_IKCONFIG is not set
+> CONFIG_LOG_BUF_SHIFT=14
+> # CONFIG_CGROUPS is not set
+> # CONFIG_GROUP_SCHED is not set
+> CONFIG_SYSFS_DEPRECATED=y
+> CONFIG_SYSFS_DEPRECATED_V2=y
+> # CONFIG_RELAY is not set
+> # CONFIG_NAMESPACES is not set
+> CONFIG_BLK_DEV_INITRD=y
+> CONFIG_INITRAMFS_SOURCE=""
+> CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+> CONFIG_SYSCTL=y
+> CONFIG_EMBEDDED=y
+> CONFIG_UID16=y
+> CONFIG_SYSCTL_SYSCALL=y
+> CONFIG_KALLSYMS=y
+> # CONFIG_KALLSYMS_EXTRA_PASS is not set
+> CONFIG_HOTPLUG=y
+> CONFIG_PRINTK=y
+> CONFIG_BUG=y
+> CONFIG_ELF_CORE=y
+> CONFIG_COMPAT_BRK=y
+> CONFIG_BASE_FULL=y
+> CONFIG_FUTEX=y
+> CONFIG_ANON_INODES=y
+> CONFIG_EPOLL=y
+> CONFIG_SIGNALFD=y
+> CONFIG_TIMERFD=y
+> CONFIG_EVENTFD=y
+> CONFIG_SHMEM=y
+> # CONFIG_VM_EVENT_COUNTERS is not set
+> CONFIG_SLAB=y
+> # CONFIG_SLUB is not set
+> # CONFIG_SLOB is not set
+> # CONFIG_PROFILING is not set
+> # CONFIG_MARKERS is not set
+> CONFIG_HAVE_OPROFILE=y
+> # CONFIG_KPROBES is not set
+> # CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS is not set
+> # CONFIG_HAVE_IOREMAP_PROT is not set
+> CONFIG_HAVE_KPROBES=y
+> CONFIG_HAVE_KRETPROBES=y
+> # CONFIG_HAVE_ARCH_TRACEHOOK is not set
+> # CONFIG_HAVE_DMA_ATTRS is not set
+> # CONFIG_USE_GENERIC_SMP_HELPERS is not set
+> CONFIG_HAVE_CLK=y
+> CONFIG_PROC_PAGE_MONITOR=y
+> CONFIG_HAVE_GENERIC_DMA_COHERENT=y
+> CONFIG_SLABINFO=y
+> CONFIG_RT_MUTEXES=y
+> # CONFIG_TINY_SHMEM is not set
+> CONFIG_BASE_SMALL=0
+> CONFIG_MODULES=y
+> # CONFIG_MODULE_FORCE_LOAD is not set
+> CONFIG_MODULE_UNLOAD=y
+> # CONFIG_MODULE_FORCE_UNLOAD is not set
+> # CONFIG_MODVERSIONS is not set
+> # CONFIG_MODULE_SRCVERSION_ALL is not set
+> CONFIG_KMOD=y
+> CONFIG_BLOCK=y
+> # CONFIG_LBD is not set
+> # CONFIG_BLK_DEV_IO_TRACE is not set
+> # CONFIG_LSF is not set
+> # CONFIG_BLK_DEV_BSG is not set
+> # CONFIG_BLK_DEV_INTEGRITY is not set
+> 
+> #
+> # IO Schedulers
+> #
+> CONFIG_IOSCHED_NOOP=y
+> CONFIG_IOSCHED_AS=y
+> # CONFIG_IOSCHED_DEADLINE is not set
+> # CONFIG_IOSCHED_CFQ is not set
+> CONFIG_DEFAULT_AS=y
+> # CONFIG_DEFAULT_DEADLINE is not set
+> # CONFIG_DEFAULT_CFQ is not set
+> # CONFIG_DEFAULT_NOOP is not set
+> CONFIG_DEFAULT_IOSCHED="anticipatory"
+> CONFIG_CLASSIC_RCU=y
+> 
+> #
+> # System Type
+> #
+> # CONFIG_ARCH_AAEC2000 is not set
+> # CONFIG_ARCH_INTEGRATOR is not set
+> # CONFIG_ARCH_REALVIEW is not set
+> # CONFIG_ARCH_VERSATILE is not set
+> CONFIG_ARCH_AT91=y
+> # CONFIG_ARCH_CLPS7500 is not set
+> # CONFIG_ARCH_CLPS711X is not set
+> # CONFIG_ARCH_EBSA110 is not set
+> # CONFIG_ARCH_EP93XX is not set
+> # CONFIG_ARCH_FOOTBRIDGE is not set
+> # CONFIG_ARCH_NETX is not set
+> # CONFIG_ARCH_H720X is not set
+> # CONFIG_ARCH_IMX is not set
+> # CONFIG_ARCH_IOP13XX is not set
+> # CONFIG_ARCH_IOP32X is not set
+> # CONFIG_ARCH_IOP33X is not set
+> # CONFIG_ARCH_IXP23XX is not set
+> # CONFIG_ARCH_IXP2000 is not set
+> # CONFIG_ARCH_IXP4XX is not set
+> # CONFIG_ARCH_L7200 is not set
+> # CONFIG_ARCH_KIRKWOOD is not set
+> # CONFIG_ARCH_KS8695 is not set
+> # CONFIG_ARCH_NS9XXX is not set
+> # CONFIG_ARCH_LOKI is not set
+> # CONFIG_ARCH_MV78XX0 is not set
+> # CONFIG_ARCH_MXC is not set
+> # CONFIG_ARCH_ORION5X is not set
+> # CONFIG_ARCH_PNX4008 is not set
+> # CONFIG_ARCH_PXA is not set
+> # CONFIG_ARCH_RPC is not set
+> # CONFIG_ARCH_SA1100 is not set
+> # CONFIG_ARCH_S3C2410 is not set
+> # CONFIG_ARCH_SHARK is not set
+> # CONFIG_ARCH_LH7A40X is not set
+> # CONFIG_ARCH_DAVINCI is not set
+> # CONFIG_ARCH_OMAP is not set
+> # CONFIG_ARCH_MSM7X00A is not set
+> 
+> #
+> # Boot options
+> #
+> 
+> #
+> # Power management
+> #
+> 
+> #
+> # Atmel AT91 System-on-Chip
+> #
+> CONFIG_ARCH_AT91RM9200=y
+> # CONFIG_ARCH_AT91SAM9260 is not set
+> # CONFIG_ARCH_AT91SAM9261 is not set
+> # CONFIG_ARCH_AT91SAM9263 is not set
+> # CONFIG_ARCH_AT91SAM9RL is not set
+> # CONFIG_ARCH_AT91SAM9G20 is not set
+> # CONFIG_ARCH_AT91CAP9 is not set
+> # CONFIG_ARCH_AT91X40 is not set
+> CONFIG_AT91_PMC_UNIT=y
+> 
+> #
+> # AT91RM9200 Board Type
+> #
+> # CONFIG_MACH_ONEARM is not set
+> CONFIG_ARCH_AT91RM9200DK=y
+> # CONFIG_MACH_AT91RM9200EK is not set
+> # CONFIG_MACH_CSB337 is not set
+> # CONFIG_MACH_CSB637 is not set
+> # CONFIG_MACH_CARMEVA is not set
+> # CONFIG_MACH_ATEB9200 is not set
+> # CONFIG_MACH_KB9200 is not set
+> # CONFIG_MACH_PICOTUX2XX is not set
+> # CONFIG_MACH_KAFA is not set
+> # CONFIG_MACH_ECBAT91 is not set
+> # CONFIG_MACH_YL9200 is not set
+> 
+> #
+> # AT91 Board Options
+> #
+> # CONFIG_MTD_AT91_DATAFLASH_CARD is not set
+> 
+> #
+> # AT91 Feature Selections
+> #
+> # CONFIG_AT91_PROGRAMMABLE_CLOCKS is not set
+> CONFIG_AT91_TIMER_HZ=128
+> CONFIG_AT91_EARLY_DBGU=y
+> # CONFIG_AT91_EARLY_USART0 is not set
+> # CONFIG_AT91_EARLY_USART1 is not set
+> # CONFIG_AT91_EARLY_USART2 is not set
+> # CONFIG_AT91_EARLY_USART3 is not set
+> # CONFIG_AT91_EARLY_USART4 is not set
+> # CONFIG_AT91_EARLY_USART5 is not set
+> 
+> #
+> # Processor Type
+> #
+> CONFIG_CPU_32=y
+> CONFIG_CPU_ARM920T=y
+> CONFIG_CPU_32v4T=y
+> CONFIG_CPU_ABRT_EV4T=y
+> CONFIG_CPU_PABRT_NOIFAR=y
+> CONFIG_CPU_CACHE_V4WT=y
+> CONFIG_CPU_CACHE_VIVT=y
+> CONFIG_CPU_COPY_V4WB=y
+> CONFIG_CPU_TLB_V4WBI=y
+> CONFIG_CPU_CP15=y
+> CONFIG_CPU_CP15_MMU=y
+> 
+> #
+> # Processor Features
+> #
+> CONFIG_ARM_THUMB=y
+> # CONFIG_CPU_ICACHE_DISABLE is not set
+> # CONFIG_CPU_DCACHE_DISABLE is not set
+> # CONFIG_CPU_DCACHE_WRITETHROUGH is not set
+> # CONFIG_OUTER_CACHE is not set
+> 
+> #
+> # Bus support
+> #
+> # CONFIG_PCI_SYSCALL is not set
+> # CONFIG_ARCH_SUPPORTS_MSI is not set
+> # CONFIG_PCCARD is not set
+> 
+> #
+> # Kernel Features
+> #
+> # CONFIG_TICK_ONESHOT is not set
+> # CONFIG_NO_HZ is not set
+> # CONFIG_HIGH_RES_TIMERS is not set
+> CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+> # CONFIG_PREEMPT is not set
+> CONFIG_HZ=128
+> # CONFIG_AEABI is not set
+> # CONFIG_ARCH_DISCONTIGMEM_ENABLE is not set
+> CONFIG_SELECT_MEMORY_MODEL=y
+> CONFIG_FLATMEM_MANUAL=y
+> # CONFIG_DISCONTIGMEM_MANUAL is not set
+> # CONFIG_SPARSEMEM_MANUAL is not set
+> CONFIG_FLATMEM=y
+> CONFIG_FLAT_NODE_MEM_MAP=y
+> # CONFIG_SPARSEMEM_STATIC is not set
+> # CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
+> CONFIG_PAGEFLAGS_EXTENDED=y
+> CONFIG_SPLIT_PTLOCK_CPUS=4096
+> # CONFIG_RESOURCES_64BIT is not set
+> CONFIG_ZONE_DMA_FLAG=1
+> CONFIG_BOUNCE=y
+> CONFIG_VIRT_TO_BUS=y
+> # CONFIG_LEDS is not set
+> CONFIG_ALIGNMENT_TRAP=y
+> 
+> #
+> # Boot options
+> #
+> CONFIG_ZBOOT_ROM_TEXT=0x0
+> CONFIG_ZBOOT_ROM_BSS=0x0
+> CONFIG_CMDLINE=""
+> # CONFIG_XIP_KERNEL is not set
+> # CONFIG_KEXEC is not set
+> 
+> #
+> # Floating point emulation
+> #
+> 
+> #
+> # At least one emulation must be selected
+> #
+> CONFIG_FPE_NWFPE=y
+> # CONFIG_FPE_NWFPE_XP is not set
+> # CONFIG_FPE_FASTFPE is not set
+> 
+> #
+> # Userspace binary formats
+> #
+> CONFIG_BINFMT_ELF=y
+> # CONFIG_BINFMT_AOUT is not set
+> # CONFIG_BINFMT_MISC is not set
+> # CONFIG_ARTHUR is not set
+> 
+> #
+> # Power management options
+> #
+> # CONFIG_PM is not set
+> CONFIG_ARCH_SUSPEND_POSSIBLE=y
+> CONFIG_NET=y
+> 
+> #
+> # Networking options
+> #
+> CONFIG_PACKET=y
+> # CONFIG_PACKET_MMAP is not set
+> CONFIG_UNIX=y
+> CONFIG_XFRM=y
+> # CONFIG_XFRM_USER is not set
+> # CONFIG_XFRM_SUB_POLICY is not set
+> # CONFIG_XFRM_MIGRATE is not set
+> # CONFIG_XFRM_STATISTICS is not set
+> CONFIG_NET_KEY=y
+> # CONFIG_NET_KEY_MIGRATE is not set
+> CONFIG_INET=y
+> # CONFIG_IP_MULTICAST is not set
+> # CONFIG_IP_ADVANCED_ROUTER is not set
+> CONFIG_IP_FIB_HASH=y
+> CONFIG_IP_PNP=y
+> CONFIG_IP_PNP_DHCP=y
+> CONFIG_IP_PNP_BOOTP=y
+> # CONFIG_IP_PNP_RARP is not set
+> # CONFIG_NET_IPIP is not set
+> # CONFIG_NET_IPGRE is not set
+> # CONFIG_ARPD is not set
+> # CONFIG_SYN_COOKIES is not set
+> # CONFIG_INET_AH is not set
+> # CONFIG_INET_ESP is not set
+> # CONFIG_INET_IPCOMP is not set
+> # CONFIG_INET_XFRM_TUNNEL is not set
+> # CONFIG_INET_TUNNEL is not set
+> # CONFIG_INET_XFRM_MODE_TRANSPORT is not set
+> # CONFIG_INET_XFRM_MODE_TUNNEL is not set
+> # CONFIG_INET_XFRM_MODE_BEET is not set
+> # CONFIG_INET_LRO is not set
+> CONFIG_INET_DIAG=y
+> CONFIG_INET_TCP_DIAG=y
+> # CONFIG_TCP_CONG_ADVANCED is not set
+> CONFIG_TCP_CONG_CUBIC=y
+> CONFIG_DEFAULT_TCP_CONG="cubic"
+> # CONFIG_TCP_MD5SIG is not set
+> # CONFIG_IPV6 is not set
+> # CONFIG_NETWORK_SECMARK is not set
+> # CONFIG_NETFILTER is not set
+> # CONFIG_IP_DCCP is not set
+> # CONFIG_IP_SCTP is not set
+> # CONFIG_TIPC is not set
+> # CONFIG_ATM is not set
+> # CONFIG_BRIDGE is not set
+> # CONFIG_VLAN_8021Q is not set
+> # CONFIG_DECNET is not set
+> # CONFIG_LLC2 is not set
+> # CONFIG_IPX is not set
+> # CONFIG_ATALK is not set
+> # CONFIG_X25 is not set
+> # CONFIG_LAPB is not set
+> # CONFIG_ECONET is not set
+> # CONFIG_WAN_ROUTER is not set
+> # CONFIG_NET_SCHED is not set
+> 
+> #
+> # Network testing
+> #
+> # CONFIG_NET_PKTGEN is not set
+> # CONFIG_HAMRADIO is not set
+> # CONFIG_CAN is not set
+> # CONFIG_IRDA is not set
+> # CONFIG_BT is not set
+> # CONFIG_AF_RXRPC is not set
+> 
+> #
+> # Wireless
+> #
+> # CONFIG_CFG80211 is not set
+> # CONFIG_WIRELESS_EXT is not set
+> # CONFIG_MAC80211 is not set
+> # CONFIG_IEEE80211 is not set
+> # CONFIG_RFKILL is not set
+> # CONFIG_NET_9P is not set
+> 
+> #
+> # Device Drivers
+> #
+> 
+> #
+> # Generic Driver Options
+> #
+> CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+> CONFIG_STANDALONE=y
+> CONFIG_PREVENT_FIRMWARE_BUILD=y
+> CONFIG_FW_LOADER=y
+> CONFIG_FIRMWARE_IN_KERNEL=y
+> CONFIG_EXTRA_FIRMWARE=""
+> # CONFIG_SYS_HYPERVISOR is not set
+> # CONFIG_CONNECTOR is not set
+> CONFIG_MTD=y
+> CONFIG_MTD_DEBUG=y
+> CONFIG_MTD_DEBUG_VERBOSE=3
+> # CONFIG_MTD_CONCAT is not set
+> CONFIG_MTD_PARTITIONS=y
+> # CONFIG_MTD_REDBOOT_PARTS is not set
+> CONFIG_MTD_CMDLINE_PARTS=y
+> # CONFIG_MTD_AFS_PARTS is not set
+> # CONFIG_MTD_AR7_PARTS is not set
+> 
+> #
+> # User Modules And Translation Layers
+> #
+> CONFIG_MTD_CHAR=y
+> CONFIG_MTD_BLKDEVS=y
+> CONFIG_MTD_BLOCK=y
+> # CONFIG_FTL is not set
+> # CONFIG_NFTL is not set
+> # CONFIG_INFTL is not set
+> # CONFIG_RFD_FTL is not set
+> # CONFIG_SSFDC is not set
+> # CONFIG_MTD_OOPS is not set
+> 
+> #
+> # RAM/ROM/Flash chip drivers
+> #
+> CONFIG_MTD_CFI=y
+> # CONFIG_MTD_JEDECPROBE is not set
+> CONFIG_MTD_GEN_PROBE=y
+> # CONFIG_MTD_CFI_ADV_OPTIONS is not set
+> CONFIG_MTD_MAP_BANK_WIDTH_1=y
+> CONFIG_MTD_MAP_BANK_WIDTH_2=y
+> CONFIG_MTD_MAP_BANK_WIDTH_4=y
+> # CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
+> # CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
+> # CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
+> CONFIG_MTD_CFI_I1=y
+> CONFIG_MTD_CFI_I2=y
+> # CONFIG_MTD_CFI_I4 is not set
+> # CONFIG_MTD_CFI_I8 is not set
+> # CONFIG_MTD_CFI_INTELEXT is not set
+> # CONFIG_MTD_CFI_AMDSTD is not set
+> # CONFIG_MTD_CFI_STAA is not set
+> # CONFIG_MTD_RAM is not set
+> # CONFIG_MTD_ROM is not set
+> # CONFIG_MTD_ABSENT is not set
+> 
+> #
+> # Mapping drivers for chip access
+> #
+> # CONFIG_MTD_COMPLEX_MAPPINGS is not set
+> CONFIG_MTD_PHYSMAP=y
+> CONFIG_MTD_PHYSMAP_START=0x8000000
+> CONFIG_MTD_PHYSMAP_LEN=0x0
+> CONFIG_MTD_PHYSMAP_BANKWIDTH=2
+> # CONFIG_MTD_ARM_INTEGRATOR is not set
+> # CONFIG_MTD_PLATRAM is not set
+> 
+> #
+> # Self-contained MTD device drivers
+> #
+> # CONFIG_MTD_SLRAM is not set
+> # CONFIG_MTD_PHRAM is not set
+> # CONFIG_MTD_MTDRAM is not set
+> # CONFIG_MTD_BLOCK2MTD is not set
+> 
+> #
+> # Disk-On-Chip Device Drivers
+> #
+> # CONFIG_MTD_DOC2000 is not set
+> # CONFIG_MTD_DOC2001 is not set
+> # CONFIG_MTD_DOC2001PLUS is not set
+> # CONFIG_MTD_NAND is not set
+> # CONFIG_MTD_ONENAND is not set
+> 
+> #
+> # UBI - Unsorted block images
+> #
+> # CONFIG_MTD_UBI is not set
+> # CONFIG_PARPORT is not set
+> CONFIG_BLK_DEV=y
+> # CONFIG_BLK_DEV_COW_COMMON is not set
+> CONFIG_BLK_DEV_LOOP=m
+> # CONFIG_BLK_DEV_CRYPTOLOOP is not set
+> # CONFIG_BLK_DEV_NBD is not set
+> # CONFIG_BLK_DEV_UB is not set
+> CONFIG_BLK_DEV_RAM=y
+> CONFIG_BLK_DEV_RAM_COUNT=16
+> CONFIG_BLK_DEV_RAM_SIZE=8192
+> # CONFIG_BLK_DEV_XIP is not set
+> # CONFIG_CDROM_PKTCDVD is not set
+> # CONFIG_ATA_OVER_ETH is not set
+> CONFIG_MISC_DEVICES=y
+> # CONFIG_ATMEL_PWM is not set
+> # CONFIG_ATMEL_TCLIB is not set
+> # CONFIG_EEPROM_93CX6 is not set
+> # CONFIG_ATMEL_SSC is not set
+> # CONFIG_ENCLOSURE_SERVICES is not set
+> CONFIG_HAVE_IDE=y
+> # CONFIG_IDE is not set
+> 
+> #
+> # SCSI device support
+> #
+> # CONFIG_RAID_ATTRS is not set
+> CONFIG_SCSI=y
+> CONFIG_SCSI_DMA=y
+> # CONFIG_SCSI_TGT is not set
+> # CONFIG_SCSI_NETLINK is not set
+> CONFIG_SCSI_PROC_FS=y
+> 
+> #
+> # SCSI support type (disk, tape, CD-ROM)
+> #
+> CONFIG_BLK_DEV_SD=y
+> # CONFIG_CHR_DEV_ST is not set
+> # CONFIG_CHR_DEV_OSST is not set
+> # CONFIG_BLK_DEV_SR is not set
+> # CONFIG_CHR_DEV_SG is not set
+> # CONFIG_CHR_DEV_SCH is not set
+> 
+> #
+> # Some SCSI devices (e.g. CD jukebox) support multiple LUNs
+> #
+> # CONFIG_SCSI_MULTI_LUN is not set
+> # CONFIG_SCSI_CONSTANTS is not set
+> # CONFIG_SCSI_LOGGING is not set
+> # CONFIG_SCSI_SCAN_ASYNC is not set
+> CONFIG_SCSI_WAIT_SCAN=m
+> 
+> #
+> # SCSI Transports
+> #
+> # CONFIG_SCSI_SPI_ATTRS is not set
+> # CONFIG_SCSI_FC_ATTRS is not set
+> # CONFIG_SCSI_ISCSI_ATTRS is not set
+> # CONFIG_SCSI_SAS_LIBSAS is not set
+> # CONFIG_SCSI_SRP_ATTRS is not set
+> CONFIG_SCSI_LOWLEVEL=y
+> # CONFIG_ISCSI_TCP is not set
+> # CONFIG_SCSI_DEBUG is not set
+> # CONFIG_SCSI_DH is not set
+> # CONFIG_ATA is not set
+> # CONFIG_MD is not set
+> CONFIG_NETDEVICES=y
+> # CONFIG_DUMMY is not set
+> # CONFIG_BONDING is not set
+> # CONFIG_MACVLAN is not set
+> # CONFIG_EQUALIZER is not set
+> # CONFIG_TUN is not set
+> # CONFIG_VETH is not set
+> CONFIG_PHYLIB=y
+> 
+> #
+> # MII PHY device drivers
+> #
+> # CONFIG_MARVELL_PHY is not set
+> CONFIG_DAVICOM_PHY=y
+> # CONFIG_QSEMI_PHY is not set
+> # CONFIG_LXT_PHY is not set
+> # CONFIG_CICADA_PHY is not set
+> # CONFIG_VITESSE_PHY is not set
+> # CONFIG_SMSC_PHY is not set
+> # CONFIG_BROADCOM_PHY is not set
+> # CONFIG_ICPLUS_PHY is not set
+> # CONFIG_REALTEK_PHY is not set
+> # CONFIG_FIXED_PHY is not set
+> # CONFIG_MDIO_BITBANG is not set
+> CONFIG_NET_ETHERNET=y
+> CONFIG_MII=y
+> CONFIG_ARM_AT91_ETHER=y
+> # CONFIG_AX88796 is not set
+> # CONFIG_SMC91X is not set
+> # CONFIG_DM9000 is not set
+> # CONFIG_IBM_NEW_EMAC_ZMII is not set
+> # CONFIG_IBM_NEW_EMAC_RGMII is not set
+> # CONFIG_IBM_NEW_EMAC_TAH is not set
+> # CONFIG_IBM_NEW_EMAC_EMAC4 is not set
+> # CONFIG_B44 is not set
+> # CONFIG_NETDEV_1000 is not set
+> # CONFIG_NETDEV_10000 is not set
+> 
+> #
+> # Wireless LAN
+> #
+> # CONFIG_WLAN_PRE80211 is not set
+> # CONFIG_WLAN_80211 is not set
+> # CONFIG_IWLWIFI_LEDS is not set
+> 
+> #
+> # USB Network Adapters
+> #
+> # CONFIG_USB_CATC is not set
+> # CONFIG_USB_KAWETH is not set
+> # CONFIG_USB_PEGASUS is not set
+> # CONFIG_USB_RTL8150 is not set
+> # CONFIG_USB_USBNET is not set
+> # CONFIG_WAN is not set
+> # CONFIG_PPP is not set
+> # CONFIG_SLIP is not set
+> # CONFIG_NETCONSOLE is not set
+> # CONFIG_NETPOLL is not set
+> # CONFIG_NET_POLL_CONTROLLER is not set
+> # CONFIG_ISDN is not set
+> 
+> #
+> # Input device support
+> #
+> CONFIG_INPUT=y
+> # CONFIG_INPUT_FF_MEMLESS is not set
+> # CONFIG_INPUT_POLLDEV is not set
+> 
+> #
+> # Userland interfaces
+> #
+> # CONFIG_INPUT_MOUSEDEV is not set
+> # CONFIG_INPUT_JOYDEV is not set
+> # CONFIG_INPUT_EVDEV is not set
+> # CONFIG_INPUT_EVBUG is not set
+> 
+> #
+> # Input Device Drivers
+> #
+> # CONFIG_INPUT_KEYBOARD is not set
+> # CONFIG_INPUT_MOUSE is not set
+> # CONFIG_INPUT_JOYSTICK is not set
+> # CONFIG_INPUT_TABLET is not set
+> # CONFIG_INPUT_TOUCHSCREEN is not set
+> # CONFIG_INPUT_MISC is not set
+> 
+> #
+> # Hardware I/O ports
+> #
+> CONFIG_SERIO=y
+> CONFIG_SERIO_SERPORT=y
+> # CONFIG_SERIO_LIBPS2 is not set
+> # CONFIG_SERIO_RAW is not set
+> # CONFIG_GAMEPORT is not set
+> 
+> #
+> # Character devices
+> #
+> CONFIG_VT=y
+> CONFIG_CONSOLE_TRANSLATIONS=y
+> CONFIG_VT_CONSOLE=y
+> CONFIG_HW_CONSOLE=y
+> # CONFIG_VT_HW_CONSOLE_BINDING is not set
+> CONFIG_DEVKMEM=y
+> # CONFIG_SERIAL_NONSTANDARD is not set
+> 
+> #
+> # Serial drivers
+> #
+> # CONFIG_SERIAL_8250 is not set
+> 
+> #
+> # Non-8250 serial port support
+> #
+> CONFIG_SERIAL_ATMEL=y
+> CONFIG_SERIAL_ATMEL_CONSOLE=y
+> CONFIG_SERIAL_ATMEL_PDC=y
+> # CONFIG_SERIAL_ATMEL_TTYAT is not set
+> CONFIG_SERIAL_CORE=y
+> CONFIG_SERIAL_CORE_CONSOLE=y
+> CONFIG_UNIX98_PTYS=y
+> CONFIG_LEGACY_PTYS=y
+> CONFIG_LEGACY_PTY_COUNT=256
+> # CONFIG_IPMI_HANDLER is not set
+> # CONFIG_HW_RANDOM is not set
+> # CONFIG_NVRAM is not set
+> # CONFIG_R3964 is not set
+> # CONFIG_RAW_DRIVER is not set
+> # CONFIG_TCG_TPM is not set
+> # CONFIG_I2C is not set
+> # CONFIG_SPI is not set
+> # CONFIG_W1 is not set
+> # CONFIG_POWER_SUPPLY is not set
+> # CONFIG_HWMON is not set
+> # CONFIG_WATCHDOG is not set
+> 
+> #
+> # Sonics Silicon Backplane
+> #
+> CONFIG_SSB_POSSIBLE=y
+> # CONFIG_SSB is not set
+> 
+> #
+> # Multifunction device drivers
+> #
+> # CONFIG_MFD_CORE is not set
+> # CONFIG_MFD_SM501 is not set
+> # CONFIG_HTC_PASIC3 is not set
+> # CONFIG_MFD_TMIO is not set
+> # CONFIG_MFD_T7L66XB is not set
+> # CONFIG_MFD_TC6387XB is not set
+> 
+> #
+> # Multimedia devices
+> #
+> 
+> #
+> # Multimedia core support
+> #
+> # CONFIG_VIDEO_DEV is not set
+> # CONFIG_DVB_CORE is not set
+> # CONFIG_VIDEO_MEDIA is not set
+> 
+> #
+> # Multimedia drivers
+> #
+> # CONFIG_DAB is not set
+> 
+> #
+> # Graphics support
+> #
+> # CONFIG_VGASTATE is not set
+> CONFIG_VIDEO_OUTPUT_CONTROL=m
+> # CONFIG_FB is not set
+> # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+> 
+> #
+> # Display device support
+> #
+> # CONFIG_DISPLAY_SUPPORT is not set
+> 
+> #
+> # Console display driver support
+> #
+> # CONFIG_VGA_CONSOLE is not set
+> CONFIG_DUMMY_CONSOLE=y
+> # CONFIG_SOUND is not set
+> CONFIG_HID_SUPPORT=y
+> # CONFIG_HID is not set
+> 
+> #
+> # USB Input Devices
+> #
+> # CONFIG_USB_HID is not set
+> 
+> #
+> # USB HID Boot Protocol drivers
+> #
+> # CONFIG_USB_KBD is not set
+> # CONFIG_USB_MOUSE is not set
+> CONFIG_USB_SUPPORT=y
+> CONFIG_USB_ARCH_HAS_HCD=y
+> CONFIG_USB_ARCH_HAS_OHCI=y
+> # CONFIG_USB_ARCH_HAS_EHCI is not set
+> CONFIG_USB=y
+> CONFIG_USB_DEBUG=y
+> # CONFIG_USB_ANNOUNCE_NEW_DEVICES is not set
+> 
+> #
+> # Miscellaneous USB options
+> #
+> CONFIG_USB_DEVICEFS=y
+> # CONFIG_USB_DEVICE_CLASS is not set
+> # CONFIG_USB_DYNAMIC_MINORS is not set
+> # CONFIG_USB_OTG is not set
+> # CONFIG_USB_OTG_WHITELIST is not set
+> # CONFIG_USB_OTG_BLACKLIST_HUB is not set
+> # CONFIG_USB_MON is not set
+> 
+> #
+> # USB Host Controller Drivers
+> #
+> # CONFIG_USB_C67X00_HCD is not set
+> # CONFIG_USB_ISP116X_HCD is not set
+> # CONFIG_USB_ISP1760_HCD is not set
+> CONFIG_USB_OHCI_HCD=y
+> # CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
+> # CONFIG_USB_OHCI_BIG_ENDIAN_MMIO is not set
+> CONFIG_USB_OHCI_LITTLE_ENDIAN=y
+> # CONFIG_USB_SL811_HCD is not set
+> # CONFIG_USB_R8A66597_HCD is not set
+> # CONFIG_USB_MUSB_HDRC is not set
+> 
+> #
+> # USB Device Class drivers
+> #
+> # CONFIG_USB_ACM is not set
+> # CONFIG_USB_PRINTER is not set
+> # CONFIG_USB_WDM is not set
+> 
+> #
+> # NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
+> #
+> 
+> #
+> # may also be needed; see USB_STORAGE Help for more information
+> #
+> CONFIG_USB_STORAGE=y
+> CONFIG_USB_STORAGE_DEBUG=y
+> # CONFIG_USB_STORAGE_DATAFAB is not set
+> # CONFIG_USB_STORAGE_FREECOM is not set
+> # CONFIG_USB_STORAGE_ISD200 is not set
+> # CONFIG_USB_STORAGE_DPCM is not set
+> # CONFIG_USB_STORAGE_USBAT is not set
+> # CONFIG_USB_STORAGE_SDDR09 is not set
+> # CONFIG_USB_STORAGE_SDDR55 is not set
+> # CONFIG_USB_STORAGE_JUMPSHOT is not set
+> # CONFIG_USB_STORAGE_ALAUDA is not set
+> # CONFIG_USB_STORAGE_ONETOUCH is not set
+> # CONFIG_USB_STORAGE_KARMA is not set
+> # CONFIG_USB_STORAGE_SIERRA is not set
+> # CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
+> # CONFIG_USB_LIBUSUAL is not set
+> 
+> #
+> # USB Imaging devices
+> #
+> # CONFIG_USB_MDC800 is not set
+> # CONFIG_USB_MICROTEK is not set
+> 
+> #
+> # USB port drivers
+> #
+> # CONFIG_USB_SERIAL is not set
+> 
+> #
+> # USB Miscellaneous drivers
+> #
+> # CONFIG_USB_EMI62 is not set
+> # CONFIG_USB_EMI26 is not set
+> # CONFIG_USB_ADUTUX is not set
+> # CONFIG_USB_RIO500 is not set
+> # CONFIG_USB_LEGOTOWER is not set
+> # CONFIG_USB_LCD is not set
+> # CONFIG_USB_BERRY_CHARGE is not set
+> # CONFIG_USB_LED is not set
+> # CONFIG_USB_CYPRESS_CY7C63 is not set
+> # CONFIG_USB_CYTHERM is not set
+> # CONFIG_USB_PHIDGET is not set
+> # CONFIG_USB_IDMOUSE is not set
+> # CONFIG_USB_FTDI_ELAN is not set
+> # CONFIG_USB_APPLEDISPLAY is not set
+> # CONFIG_USB_LD is not set
+> # CONFIG_USB_TRANCEVIBRATOR is not set
+> # CONFIG_USB_IOWARRIOR is not set
+> # CONFIG_USB_TEST is not set
+> # CONFIG_USB_ISIGHTFW is not set
+> # CONFIG_USB_GADGET is not set
+> # CONFIG_MMC is not set
+> # CONFIG_NEW_LEDS is not set
+> CONFIG_RTC_LIB=y
+> CONFIG_RTC_CLASS=y
+> # CONFIG_RTC_HCTOSYS is not set
+> # CONFIG_RTC_DEBUG is not set
+> 
+> #
+> # RTC interfaces
+> #
+> CONFIG_RTC_INTF_SYSFS=y
+> CONFIG_RTC_INTF_PROC=y
+> CONFIG_RTC_INTF_DEV=y
+> # CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
+> # CONFIG_RTC_DRV_TEST is not set
+> 
+> #
+> # SPI RTC drivers
+> #
+> 
+> #
+> # Platform RTC drivers
+> #
+> # CONFIG_RTC_DRV_CMOS is not set
+> # CONFIG_RTC_DRV_DS1511 is not set
+> # CONFIG_RTC_DRV_DS1553 is not set
+> # CONFIG_RTC_DRV_DS1742 is not set
+> # CONFIG_RTC_DRV_STK17TA8 is not set
+> # CONFIG_RTC_DRV_M48T86 is not set
+> # CONFIG_RTC_DRV_M48T59 is not set
+> # CONFIG_RTC_DRV_V3020 is not set
+> 
+> #
+> # on-CPU RTC drivers
+> #
+> CONFIG_RTC_DRV_AT91RM9200=y
+> # CONFIG_DMADEVICES is not set
+> 
+> #
+> # Voltage and Current regulators
+> #
+> # CONFIG_REGULATOR is not set
+> # CONFIG_REGULATOR_FIXED_VOLTAGE is not set
+> # CONFIG_REGULATOR_VIRTUAL_CONSUMER is not set
+> # CONFIG_REGULATOR_BQ24022 is not set
+> # CONFIG_UIO is not set
+> 
+> #
+> # File systems
+> #
+> CONFIG_EXT2_FS=y
+> # CONFIG_EXT2_FS_XATTR is not set
+> # CONFIG_EXT2_FS_XIP is not set
+> # CONFIG_EXT3_FS is not set
+> # CONFIG_EXT4DEV_FS is not set
+> # CONFIG_REISERFS_FS is not set
+> # CONFIG_JFS_FS is not set
+> # CONFIG_FS_POSIX_ACL is not set
+> # CONFIG_XFS_FS is not set
+> # CONFIG_OCFS2_FS is not set
+> # CONFIG_DNOTIFY is not set
+> # CONFIG_INOTIFY is not set
+> # CONFIG_QUOTA is not set
+> # CONFIG_AUTOFS_FS is not set
+> # CONFIG_AUTOFS4_FS is not set
+> # CONFIG_FUSE_FS is not set
+> 
+> #
+> # CD-ROM/DVD Filesystems
+> #
+> # CONFIG_ISO9660_FS is not set
+> # CONFIG_UDF_FS is not set
+> 
+> #
+> # DOS/FAT/NT Filesystems
+> #
+> CONFIG_FAT_FS=y
+> CONFIG_MSDOS_FS=y
+> CONFIG_VFAT_FS=y
+> CONFIG_FAT_DEFAULT_CODEPAGE=437
+> CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
+> # CONFIG_NTFS_FS is not set
+> 
+> #
+> # Pseudo filesystems
+> #
+> CONFIG_PROC_FS=y
+> CONFIG_PROC_SYSCTL=y
+> CONFIG_SYSFS=y
+> CONFIG_TMPFS=y
+> # CONFIG_TMPFS_POSIX_ACL is not set
+> # CONFIG_HUGETLB_PAGE is not set
+> # CONFIG_CONFIGFS_FS is not set
+> 
+> #
+> # Miscellaneous filesystems
+> #
+> # CONFIG_ADFS_FS is not set
+> # CONFIG_AFFS_FS is not set
+> # CONFIG_HFS_FS is not set
+> # CONFIG_HFSPLUS_FS is not set
+> # CONFIG_BEFS_FS is not set
+> # CONFIG_BFS_FS is not set
+> # CONFIG_EFS_FS is not set
+> CONFIG_JFFS2_FS=y
+> CONFIG_JFFS2_FS_DEBUG=0
+> CONFIG_JFFS2_FS_WRITEBUFFER=y
+> # CONFIG_JFFS2_FS_WBUF_VERIFY is not set
+> # CONFIG_JFFS2_SUMMARY is not set
+> # CONFIG_JFFS2_FS_XATTR is not set
+> CONFIG_JFFS2_COMPRESSION_OPTIONS=y
+> CONFIG_JFFS2_ZLIB=y
+> # CONFIG_JFFS2_LZO is not set
+> CONFIG_JFFS2_RTIME=y
+> # CONFIG_JFFS2_RUBIN is not set
+> # CONFIG_JFFS2_CMODE_NONE is not set
+> CONFIG_JFFS2_CMODE_PRIORITY=y
+> # CONFIG_JFFS2_CMODE_SIZE is not set
+> # CONFIG_JFFS2_CMODE_FAVOURLZO is not set
+> CONFIG_CRAMFS=y
+> # CONFIG_VXFS_FS is not set
+> # CONFIG_MINIX_FS is not set
+> # CONFIG_OMFS_FS is not set
+> # CONFIG_HPFS_FS is not set
+> # CONFIG_QNX4FS_FS is not set
+> # CONFIG_ROMFS_FS is not set
+> # CONFIG_SYSV_FS is not set
+> # CONFIG_UFS_FS is not set
+> CONFIG_NETWORK_FILESYSTEMS=y
+> # CONFIG_NFS_FS is not set
+> # CONFIG_NFSD is not set
+> # CONFIG_SMB_FS is not set
+> # CONFIG_CIFS is not set
+> # CONFIG_NCP_FS is not set
+> # CONFIG_CODA_FS is not set
+> # CONFIG_AFS_FS is not set
+> 
+> #
+> # Partition Types
+> #
+> # CONFIG_PARTITION_ADVANCED is not set
+> CONFIG_MSDOS_PARTITION=y
+> CONFIG_NLS=y
+> CONFIG_NLS_DEFAULT="iso8859-1"
+> CONFIG_NLS_CODEPAGE_437=y
+> # CONFIG_NLS_CODEPAGE_737 is not set
+> # CONFIG_NLS_CODEPAGE_775 is not set
+> CONFIG_NLS_CODEPAGE_850=y
+> # CONFIG_NLS_CODEPAGE_852 is not set
+> # CONFIG_NLS_CODEPAGE_855 is not set
+> # CONFIG_NLS_CODEPAGE_857 is not set
+> # CONFIG_NLS_CODEPAGE_860 is not set
+> # CONFIG_NLS_CODEPAGE_861 is not set
+> # CONFIG_NLS_CODEPAGE_862 is not set
+> # CONFIG_NLS_CODEPAGE_863 is not set
+> # CONFIG_NLS_CODEPAGE_864 is not set
+> # CONFIG_NLS_CODEPAGE_865 is not set
+> # CONFIG_NLS_CODEPAGE_866 is not set
+> # CONFIG_NLS_CODEPAGE_869 is not set
+> # CONFIG_NLS_CODEPAGE_936 is not set
+> # CONFIG_NLS_CODEPAGE_950 is not set
+> # CONFIG_NLS_CODEPAGE_932 is not set
+> # CONFIG_NLS_CODEPAGE_949 is not set
+> # CONFIG_NLS_CODEPAGE_874 is not set
+> # CONFIG_NLS_ISO8859_8 is not set
+> # CONFIG_NLS_CODEPAGE_1250 is not set
+> # CONFIG_NLS_CODEPAGE_1251 is not set
+> CONFIG_NLS_ASCII=m
+> CONFIG_NLS_ISO8859_1=y
+> # CONFIG_NLS_ISO8859_2 is not set
+> # CONFIG_NLS_ISO8859_3 is not set
+> # CONFIG_NLS_ISO8859_4 is not set
+> # CONFIG_NLS_ISO8859_5 is not set
+> # CONFIG_NLS_ISO8859_6 is not set
+> # CONFIG_NLS_ISO8859_7 is not set
+> # CONFIG_NLS_ISO8859_9 is not set
+> # CONFIG_NLS_ISO8859_13 is not set
+> # CONFIG_NLS_ISO8859_14 is not set
+> CONFIG_NLS_ISO8859_15=m
+> # CONFIG_NLS_KOI8_R is not set
+> # CONFIG_NLS_KOI8_U is not set
+> CONFIG_NLS_UTF8=m
+> # CONFIG_DLM is not set
+> 
+> #
+> # Kernel hacking
+> #
+> # CONFIG_PRINTK_TIME is not set
+> CONFIG_ENABLE_WARN_DEPRECATED=y
+> # CONFIG_ENABLE_MUST_CHECK is not set
+> CONFIG_FRAME_WARN=1024
+> # CONFIG_MAGIC_SYSRQ is not set
+> # CONFIG_UNUSED_SYMBOLS is not set
+> # CONFIG_DEBUG_FS is not set
+> # CONFIG_HEADERS_CHECK is not set
+> # CONFIG_DEBUG_KERNEL is not set
+> # CONFIG_DEBUG_BUGVERBOSE is not set
+> # CONFIG_DEBUG_MEMORY_INIT is not set
+> CONFIG_FRAME_POINTER=y
+> # CONFIG_LATENCYTOP is not set
+> # CONFIG_SYSCTL_SYSCALL_CHECK is not set
+> CONFIG_HAVE_FTRACE=y
+> CONFIG_HAVE_DYNAMIC_FTRACE=y
+> # CONFIG_FTRACE is not set
+> # CONFIG_IRQSOFF_TRACER is not set
+> # CONFIG_SCHED_TRACER is not set
+> # CONFIG_CONTEXT_SWITCH_TRACER is not set
+> # CONFIG_SAMPLES is not set
+> CONFIG_HAVE_ARCH_KGDB=y
+> # CONFIG_DEBUG_USER is not set
+> 
+> #
+> # Security options
+> #
+> # CONFIG_KEYS is not set
+> # CONFIG_SECURITY is not set
+> # CONFIG_SECURITY_FILE_CAPABILITIES is not set
+> CONFIG_CRYPTO=y
+> 
+> #
+> # Crypto core or helper
+> #
+> # CONFIG_CRYPTO_MANAGER is not set
+> # CONFIG_CRYPTO_GF128MUL is not set
+> # CONFIG_CRYPTO_NULL is not set
+> # CONFIG_CRYPTO_CRYPTD is not set
+> # CONFIG_CRYPTO_AUTHENC is not set
+> # CONFIG_CRYPTO_TEST is not set
+> 
+> #
+> # Authenticated Encryption with Associated Data
+> #
+> # CONFIG_CRYPTO_CCM is not set
+> # CONFIG_CRYPTO_GCM is not set
+> # CONFIG_CRYPTO_SEQIV is not set
+> 
+> #
+> # Block modes
+> #
+> # CONFIG_CRYPTO_CBC is not set
+> # CONFIG_CRYPTO_CTR is not set
+> # CONFIG_CRYPTO_CTS is not set
+> # CONFIG_CRYPTO_ECB is not set
+> # CONFIG_CRYPTO_LRW is not set
+> # CONFIG_CRYPTO_PCBC is not set
+> # CONFIG_CRYPTO_XTS is not set
+> 
+> #
+> # Hash modes
+> #
+> # CONFIG_CRYPTO_HMAC is not set
+> # CONFIG_CRYPTO_XCBC is not set
+> 
+> #
+> # Digest
+> #
+> # CONFIG_CRYPTO_CRC32C is not set
+> # CONFIG_CRYPTO_MD4 is not set
+> # CONFIG_CRYPTO_MD5 is not set
+> # CONFIG_CRYPTO_MICHAEL_MIC is not set
+> # CONFIG_CRYPTO_RMD128 is not set
+> # CONFIG_CRYPTO_RMD160 is not set
+> # CONFIG_CRYPTO_RMD256 is not set
+> # CONFIG_CRYPTO_RMD320 is not set
+> # CONFIG_CRYPTO_SHA1 is not set
+> # CONFIG_CRYPTO_SHA256 is not set
+> # CONFIG_CRYPTO_SHA512 is not set
+> # CONFIG_CRYPTO_TGR192 is not set
+> # CONFIG_CRYPTO_WP512 is not set
+> 
+> #
+> # Ciphers
+> #
+> # CONFIG_CRYPTO_AES is not set
+> # CONFIG_CRYPTO_ANUBIS is not set
+> # CONFIG_CRYPTO_ARC4 is not set
+> # CONFIG_CRYPTO_BLOWFISH is not set
+> # CONFIG_CRYPTO_CAMELLIA is not set
+> # CONFIG_CRYPTO_CAST5 is not set
+> # CONFIG_CRYPTO_CAST6 is not set
+> # CONFIG_CRYPTO_DES is not set
+> # CONFIG_CRYPTO_FCRYPT is not set
+> # CONFIG_CRYPTO_KHAZAD is not set
+> # CONFIG_CRYPTO_SALSA20 is not set
+> # CONFIG_CRYPTO_SEED is not set
+> # CONFIG_CRYPTO_SERPENT is not set
+> # CONFIG_CRYPTO_TEA is not set
+> # CONFIG_CRYPTO_TWOFISH is not set
+> 
+> #
+> # Compression
+> #
+> # CONFIG_CRYPTO_DEFLATE is not set
+> # CONFIG_CRYPTO_LZO is not set
+> CONFIG_CRYPTO_HW=y
+> 
+> #
+> # Library routines
+> #
+> CONFIG_BITREVERSE=y
+> # CONFIG_GENERIC_FIND_FIRST_BIT is not set
+> # CONFIG_GENERIC_FIND_NEXT_BIT is not set
+> # CONFIG_CRC_CCITT is not set
+> # CONFIG_CRC16 is not set
+> CONFIG_CRC_T10DIF=y
+> # CONFIG_CRC_ITU_T is not set
+> CONFIG_CRC32=y
+> # CONFIG_CRC7 is not set
+> # CONFIG_LIBCRC32C is not set
+> CONFIG_ZLIB_INFLATE=y
+> CONFIG_ZLIB_DEFLATE=y
+> CONFIG_PLIST=y
+> CONFIG_HAS_IOMEM=y
+> CONFIG_HAS_IOPORT=y
+> CONFIG_HAS_DMA=y
 
 
-Problem is that there is no ext_tree, causing the NULL-pointer
-dereference in hfsplus_init(). This fixes the issue by checking the ext_tree in
-hfsplus_get_block() and aborting early enoug.
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
-
-
---- linux/fs/hfsplus/extents.orig	2008-08-26 14:51:08.000000000 +0200
-+++ linux/fs/hfsplus/extents.c	2008-08-26 14:51:48.000000000 +0200
-@@ -199,6 +199,9 @@ int hfsplus_get_block(struct inode *inod
- 		goto done;
- 	}
- 
-+	if (HFSPLUS_SB(inode->i_sb).ext_tree == NULL)
-+		return -EIO;
-+
- 	mutex_lock(&HFSPLUS_I(inode).extents_lock);
- 	res = hfsplus_ext_read_extent(inode, ablock);
- 	if (!res) {
+  'a smiley only costs 4 bytes'
