@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760056AbYHZTfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759769AbYHZThe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760056AbYHZTfl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 15:35:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759072AbYHZTfU
+	id S1759769AbYHZThe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 15:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756515AbYHZTh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 15:35:20 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44077 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758956AbYHZTfS (ORCPT
+	Tue, 26 Aug 2008 15:37:26 -0400
+Received: from harold.telenet-ops.be ([195.130.133.65]:50195 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754746AbYHZThZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 15:35:18 -0400
-Message-ID: <48B45AF4.8040101@sgi.com>
-Date: Tue, 26 Aug 2008 12:35:16 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 26 Aug 2008 15:37:25 -0400
+Date: Tue, 26 Aug 2008 21:37:21 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Magnus Damm <magnus.damm@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+cc: Paul Mundt <lethal@linux-sh.org>, video4linux-list@redhat.com,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] VIDEO_SH_MOBILE_CEU should depend on HAS_DMA (was: Re: m68k
+ allmodconfig)
+In-Reply-To: <20080814195522.ad74990c.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0808262035310.7910@anakin>
+References: <20080814195522.ad74990c.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "Alan D. Brunelle" <Alan.Brunelle@hp.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Luck, Tony" <tony.luck@intel.com>, Jack Steiner <steiner@sgi.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.q9H.6aGsIB@albercik> <alpine.LFD.1.10.0808231257310.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808231313170.3363@nehalem.linux-foundation.org> <48B29F7B.6080405@hp.com> <48B2A421.7080705@hp.com> <alpine.LFD.1.10.0808251019380.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251106270.3363@nehalem.linux-foundation.org> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251401590.3363@nehalem.linux-foundation.org> <48B452F3.9040304@sgi.com> <alpine.LFD.1.10.0808261205530.3363@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0808261205530.3363@nehalem.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Tue, 26 Aug 2008, Mike Travis wrote:
->> The need to allow distros to set NR_CPUS=4096 (and NODES_SHIFT=9) is
->> critical to our upcoming SGI systems using what we have been calling
->> "UV".
-> 
-> That's fine. You can do it. The default kernel will not, because it's 
-> clearly not safe.
-> 
-> I really don't care what you do to _your_ images. But I will not 
-> distribute a known-broken kernel, and I will not debug random stack 
-> overflows that happen in it.
-> 
-> If you want the default kernel to support 4k cores, we'll need to fix the 
-> stack usage.  I don't think that is impossible, but IT IS NOT GOING TO 
-> HAPPEN for 2.6.27.
-> 
-> And quite frankly, if some vendor like RedHat enables NR_CPUS=4096 by 
-> default, they are totally and utterly crazy.
-> 
-> But some SGI-specific binary that is meant for SGI machines only, and has 
-> been extensively tested with the setup used on SGI machines is a different 
-> thing.
-> 
-> 			Linus
+	Hi Andrew,
 
-Ok, thanks for the reply, and looking into this issue.  We will "strongly
-encourage" our distros to base the relevant releases on 2.6.28. :-)  
+On Thu, 14 Aug 2008, Andrew Morton wrote:
+> ERROR: "dma_alloc_coherent" [drivers/media/video/videobuf-dma-contig.ko] undefined!
+> ERROR: "dma_sync_single_for_cpu" [drivers/media/video/videobuf-dma-contig.ko] undefined!
+> ERROR: "dma_free_coherent" [drivers/media/video/videobuf-dma-contig.ko] undefined!
 
-[Supplying an SGI-specific kernel would not be acceptable to many of our
-customers because of the certification issues I mentioned.] 
+M68k allmodconfig still selects Sun-3, which sets NO_DMA.
+I guess you're also seeing this on the other NO_DMA platforms (h8300, m32r,
+s390, and PCI-less SPARC)?
 
-Mike
+Below is a patch.
+
+Shouldn't it also (or instead) depend on SUPERH or some SuperH platform?
+Or is this not done to have more compile-coverage?
+
+Subject: [PATCH] VIDEO_SH_MOBILE_CEU should depend on HAS_DMA
+
+commit 0d3244d6439c8c31d2a29efd587c7aca9042c8aa ("V4L/DVB (8342):
+sh_mobile_ceu_camera: Add SuperH Mobile CEU driver V3") introduced
+VIDEO_SH_MOBILE_CEU, which selects VIDEOBUF_DMA_CONTIG. This circumvents the
+dependency on HAS_DMA of VIDEOBUF_DMA_CONTIG.
+
+Add a dependency on HAS_DMA to VIDEO_SH_MOBILE_CEU to fix this.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/media/video/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/media/video/Kconfig
++++ b/drivers/media/video/Kconfig
+@@ -968,7 +968,7 @@ config VIDEO_PXA27x
+ 
+ config VIDEO_SH_MOBILE_CEU
+ 	tristate "SuperH Mobile CEU Interface driver"
+-	depends on VIDEO_DEV
++	depends on VIDEO_DEV && HAS_DMA
+ 	select SOC_CAMERA
+ 	select VIDEOBUF_DMA_CONTIG
+ 	---help---
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
