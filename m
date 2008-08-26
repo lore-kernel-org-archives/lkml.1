@@ -1,105 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbYHZJ3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757867AbYHZJaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757562AbYHZJ3h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 05:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbYHZJ33
+	id S1757867AbYHZJaG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 05:30:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbYHZJ3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 05:29:29 -0400
-Received: from bigben2.bytemark.co.uk ([80.68.81.132]:58356 "EHLO
-	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752632AbYHZJ32 (ORCPT
+	Tue, 26 Aug 2008 05:29:53 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:25466 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754065AbYHZJ3w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 05:29:28 -0400
-Date: Tue, 26 Aug 2008 10:29:29 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Adam Litke <agl@us.ibm.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       linux-mm <linux-mm@kvack.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       nacc <nacc@linux.vnet.ibm.com>, agl <agl@linux.vnet.ibm.com>
-Subject: Re: [BUG] [PATCH v2] Make setup_zone_migrate_reserve() aware of
-	overlapping nodes
-Message-ID: <20080826092929.GD29207@brain>
-References: <1218837685.12953.11.camel@localhost.localdomain> <1219252134.13885.25.camel@localhost.localdomain> <1219255911.8960.41.camel@nimitz> <1219262152.13885.27.camel@localhost.localdomain> <20080821113338.GA29950@csn.ul.ie>
+	Tue, 26 Aug 2008 05:29:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=mcVms9OdFIKQHtQQ/5jIjGA25Ixex8LUq8iCTX1D7+4m9ZVxr0RXfQxrnb7z3UeWhg
+         SMK6riR7CjAnXCXnqlzPlTQEror7jgDhzaHt1HktZhNpIouk63G1JmFHm41a88euYqwR
+         HZffRkTVuqu9rFQWL/KkLu6lNvA5RNL7nJ00o=
+Message-ID: <9f8af95f0808260229p2fa3cdddy1aa713e0610a9710@mail.gmail.com>
+Date: Tue, 26 Aug 2008 05:29:51 -0400
+From: "james toy" <unk.nown@unix.net>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [-mmotm] BUG: scheduling while atomic: swapper
+In-Reply-To: <9f8af95f0808260225u162da49aj1d6f6fd9db79499f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080821113338.GA29950@csn.ul.ie>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <48f7fe350808251909g26207e7agdda6408c0b46a1ed@mail.gmail.com>
+	 <b647ffbd0808260111r2aed706cvc4c5d483912ec8c2@mail.gmail.com>
+	 <20080826012458.abe3bbba.akpm@linux-foundation.org>
+	 <9f8af95f0808260225u162da49aj1d6f6fd9db79499f@mail.gmail.com>
+X-Google-Sender-Auth: d5865f1baf061a1a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 21, 2008 at 12:33:39PM +0100, Mel Gorman wrote:
-> On (20/08/08 14:55), Adam Litke didst pronounce:
-> >     Changes since V1
-> >      - Fix build for !NUMA
-> >      - Add VM_BUG_ON() to catch this problem at the source
-> >     
-> >     I have gotten to the root cause of the hugetlb badness I reported back on
-> >     August 15th.  My system has the following memory topology (note the
-> >     overlapping node):
-> >     
-> >             Node 0 Memory: 0x8000000-0x44000000
-> >             Node 1 Memory: 0x0-0x8000000 0x44000000-0x80000000
-> >     
-> >     setup_zone_migrate_reserve() scans the address range 0x0-0x8000000 looking
-> >     for a pageblock to move onto the MIGRATE_RESERVE list.  Finding no
-> >     candidates, it happily continues the scan into 0x8000000-0x44000000.  When
-> >     a pageblock is found, the pages are moved to the MIGRATE_RESERVE list on
-> >     the wrong zone.  Oops.
-> >     
-> >     (Andrew: once the proper fix is agreed upon, this should also be a
-> >     candidate for -stable.)
-> >     
-> >     setup_zone_migrate_reserve() should skip pageblocks in overlapping nodes.
-> >     
-> >     Signed-off-by: Adam Litke <agl@us.ibm.com>
-> > 
-> 
-> zone_to_nid(zone) is called every time in the loop even though it will never
-> change. This is less than optimal but setup_zone_migrate_reserve() is only
-> called during init and when min_free_kbytes is adjusted so it's not worth
-> worrying about. Otherwise it looks good.
-> 
-> Acked-by: Mel Gorman <mel@csn.ul.ie>
-> 
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index af982f7..feb7916 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -694,6 +694,9 @@ static int move_freepages(struct zone *zone,
-> >  #endif
-> >  
-> >  	for (page = start_page; page <= end_page;) {
-> > +		/* Make sure we are not inadvertently changing nodes */
-> > +		VM_BUG_ON(page_to_nid(page) != zone_to_nid(zone));
-> > +
-> >  		if (!pfn_valid_within(page_to_pfn(page))) {
-> >  			page++;
-> >  			continue;
-> > @@ -2516,6 +2519,10 @@ static void setup_zone_migrate_reserve(struct zone *zone)
-> >  			continue;
-> >  		page = pfn_to_page(pfn);
-> >  
-> > +		/* Watch out for overlapping nodes */
-> > +		if (page_to_nid(page) != zone_to_nid(zone))
-> > +			continue;
-> > +
-> >  		/* Blocks with reserved pages will never free, skip them. */
-> >  		if (PageReserved(page))
-> >  			continue;
+Andrew,
 
-This patch looks sane.  I do note that we have a config option to tell
-us whether we have any possibility of overlapping nodes, and we have an
-early version of a check for this early_pfn_in_nid() in mm.h.  You might
-consider having a non-early variant of this which could be optimised
-away for those arches which do not have CONFIG_NODES_SPAN_OTHER_NODES.
+Yes, ours does look like this -- however when i checked the git diff
+on git web i found:
 
-In 'unearlifying' this to pfn_in_nid() I think we have a small naming
-issue with these function as they are only valid for use with pfns within
-an existing node.  They should probabally both be *pfn_in_nid_within()
-or something in line with pfn_valid_within().
+index d2d9d74..6dd8907 100644 (file)
+--- a/arch/x86/kernel/microcode_intel.c
++++ b/arch/x86/kernel/microcode_intel.c
+@@ -531,12 +531,14 @@ static struct microcode_ops microcode_intel_ops = {
 
--apw
+ static int __init microcode_intel_module_init(void)
+ {
+-       struct cpuinfo_x86 *c = &cpu_data(get_cpu());
++       struct cpuinfo_x86 *c = &cpu_data(0);
+
+-       if (c->x86_vendor == X86_VENDOR_INTEL)
+-               return microcode_init(&microcode_intel_ops, THIS_MODULE);
+-       else
++       if (c->x86_vendor != X86_VENDOR_INTEL) {
++                printk(KERN_ERR "microcode: CPU platform is not
+Intel-capable\n");
+                return -ENODEV;
++       }
++
++       return microcode_init(&microcode_intel_ops, THIS_MODULE);
+ }
+
+ static void __exit microcode_intel_module_exit(void)
+
+am I missing something?  It seems that the code you requested to be
+checked is being nixed in the diff (i could be wrong it is 0500 EST
+here)
+
+again to confirm -- we have what you initially posted if that _is_ the
+fixed version.
+
+respectfully,
+
+/jT
+
+
+On Tue, Aug 26, 2008 at 4:24 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+>
+> On Tue, 26 Aug 2008 10:11:24 +0200 "Dmitry Adamushko" <dmitry.adamushko@gmail.com> wrote:
+>
+> > 2008/8/26 Ryan Hope <rmh3093@gmail.com>:
+> > > BUG: scheduling while atomic: swapper/1/0x00000002
+> > > Modules linked in:
+> > > Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc4-zenmmotm1 #4
+> > >  [<c057a0c7>] schedule+0x287/0x6d0
+> > >  [<c03672e6>] vsnprintf+0x3a6/0x6c0
+> > >  [<c057a92d>] schedule_timeout+0x7d/0xb0
+> > >  [<c021e0c8>] __wake_up+0x38/0x50
+> > >  [<c057a74a>] wait_for_common+0x8a/0x130
+> > >  [<c0220ab0>] default_wake_function+0x0/0x10
+> > >  [<c0237743>] call_usermodehelper_exec+0xc3/0xf0
+> > >  [<c0362ede>] kobject_uevent_env+0x37e/0x3a0
+> > >  [<c03d5921>] device_add+0x551/0x630
+> > >  [<c03d5ac3>] device_create_vargs+0xb3/0xd0
+> > >  [<c06ccc47>] microcode_intel_module_init+0x0/0x39
+> >
+> > It doesn't look like Linus's tree... there is no
+> > microcode_intel_module_init() in .27+. So what is it?
+>
+> mmotm is linux-next plus -mm stuff
+>
+> > Anyway, your trace might be explained by a bug that has been already
+> > fixed in Ingo's -tip.
+> >
+> > Here is the commit:
+> > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=commit;h=8343ef2437c599d30568e6b5a257a40bf2f4902b
+>
+> Yes, an unbalanced get_cpu() would explain it.
+>
+> However that patch is already in current -mm.  Ryan, can you please
+> check to see if it's in the version you tested?  The "fixed" version
+> looks like this:
+>
+> static int __init microcode_intel_module_init(void)
+> {
+>        struct cpuinfo_x86 *c = &cpu_data(get_cpu());
+>
+>        if (c->x86_vendor == X86_VENDOR_INTEL)
+>                return microcode_init(&microcode_intel_ops, THIS_MODULE);
+>        else
+>                return -ENODEV;
+> }
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
