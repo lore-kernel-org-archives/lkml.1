@@ -1,54 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758524AbYHZQ23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbYHZQbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758524AbYHZQ23 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 12:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbYHZQ2U
+	id S1758264AbYHZQbN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 12:31:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbYHZQa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 12:28:20 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60011 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752642AbYHZQ2T (ORCPT
+	Tue, 26 Aug 2008 12:30:58 -0400
+Received: from brmea-mail-3.Sun.COM ([192.18.98.34]:42866 "EHLO
+	brmea-mail-3.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753373AbYHZQa6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 12:28:19 -0400
-Date: Tue, 26 Aug 2008 17:10:51 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Avi Kivity <avi@qumranet.com>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, Pavel Machek <pavel@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [PATCH] x86: default to reboot via ACPI
-Message-ID: <20080826171051.778bc9be@lxorguk.ukuu.org.uk>
-In-Reply-To: <48B40631.5090007@qumranet.com>
-References: <1219659087-17536-1-git-send-email-avi@qumranet.com>
-	<20080826095032.GA309@elf.ucw.cz>
-	<48B3D579.40502@qumranet.com>
-	<20080826113317.520cbab1@lxorguk.ukuu.org.uk>
-	<48B3F3A9.8030709@qumranet.com>
-	<Pine.LNX.4.55.0808261406330.28361@cliff.in.clinika.pl>
-	<48B40631.5090007@qumranet.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Aug 2008 12:30:58 -0400
+Date: Tue, 26 Aug 2008 12:32:26 -0400
+From: David Collier-Brown <davecb@sun.com>
+Subject: Re: [RFC] [PATCH -mm] cgroup: uid-based rules to add processes
+	efficiently in the right cgroup
+In-reply-to: <20080826160007.GE30312@redhat.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: balbir@linux.vnet.ibm.com, Paul Menage <menage@google.com>,
+       righi.andrea@gmail.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Graf <tgraf@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Steve Olivieri <solivier@redhat.com>
+Reply-to: davecb@sun.com
+Message-id: <48B4301A.5010600@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=us-ascii
+Content-transfer-encoding: 7BIT
+X-Accept-Language: en-us, en
+References: <20080714135719.GE16673@redhat.com> <487B665B.9080205@sun.com>
+ <20080714152142.GJ16673@redhat.com> <48A7FE7B.3060309@gmail.com>
+ <6599ad830808181405i3ec1f9fdp4d8ca7ab675b2c5f@mail.gmail.com>
+ <20080819125710.GA18972@redhat.com>
+ <6599ad830808251754l146588dax65aeff2cc22ac0c1@mail.gmail.com>
+ <20080826134127.GA30312@redhat.com> <48B414A0.9000504@linux.vnet.ibm.com>
+ <48B41B8A.70301@sun.com> <20080826160007.GE30312@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; SunOS sun4u; en-US; rv:1.7) Gecko/20041221
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Only common sense.  Non-recent machines are barely usable these days.  
-> Sure they work well as a firewall or server-in-a-closet, but if you run 
-> a desktop or a server that actually does useful work, you're running a 
-> relatively recent machine.
 
-Or a properly written desktop, or a thin client for desktop or ...
 
-The really old boxes are actually not the problem, we don't try and use
-ACPI on them so we won't try ACPI reboot. For those later ones it is
-probably worth trying anyway - we might end up with a different blacklist
-to before but there are multiple servers that really don't like old style
-reboot nowdays.
+Vivek Goyal wrote:
+> Who executes default rules? IOW, how do you make sure tasks of user.davecb
+> end up in project 101 only and not outside?
 
-Alan
+A classifier at login/connect starts each new process off in the correct group.
+New processes inherit their parent's group unless you use newtask or su.
+
+> So by default all the tasks of user.davecb will run into project 101 until
+> user davecb decides to launch some background jobs in project 100 using
+> newtask?
+
+That's right, the and cgexec-like "newtask" is what I use
+to script things: for example, my background script says
+
+       case "$1" in
+        [0-9]*) # It's a pid
+                newtask -p bg -c $1
+                ;;
+        *) # It's a command-line
+                newtask -p bg "$@" &
+                ;;
+        esac
+
+There's also an -F option to put a process into a cgroup
+and never let it newtask itself or it's children to another one,
+so that software from Dr Evil, Inc. can't do privilege 
+escalation (;-))
+
+--dave
+-- 
+David Collier-Brown            | Always do right. This will gratify
+Sun Microsystems, Toronto      | some people and astonish the rest
+davecb@sun.com                 |                      -- Mark Twain
+cell: (647) 833-9377, bridge: (877) 385-4099 code: 506 9191#
