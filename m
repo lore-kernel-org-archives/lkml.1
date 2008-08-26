@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758518AbYHZLIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758413AbYHZLK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758518AbYHZLIJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 07:08:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757037AbYHZLHy
+	id S1758413AbYHZLK1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 07:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756403AbYHZLKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 07:07:54 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:15809 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756834AbYHZLHx (ORCPT
+	Tue, 26 Aug 2008 07:10:14 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56812 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755457AbYHZLKN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 07:07:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=JsY680FG46+UbnVGWanNVWUfOdblHDHai9+UGbp6RpRrfcWjKhbEtWDyiQt7B1h4jf
-         a/FEILdqsJP9PPZJAfyYxBz6UciqT4Hy+LIeEFjKuweeGiFpoGsgtqIaCWUT1mo2hQuZ
-         7VMi9vxZn/PwmxH7CoYhQg228ECdlL5ZJiEw0=
-Date: Tue, 26 Aug 2008 11:07:46 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Denys Fedoryshchenko <denys@visp.net.lb>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-Message-ID: <20080826110746.GC2609@ff.dom.local>
-References: <20080826095126.GA2609@ff.dom.local> <200808261329.53741.denys@visp.net.lb> <20080826104717.GB2609@ff.dom.local> <200808261349.09820.denys@visp.net.lb>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808261349.09820.denys@visp.net.lb>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 26 Aug 2008 07:10:13 -0400
+Date: Tue, 26 Aug 2008 11:52:50 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>
+Cc: "Avi Kivity" <avi@qumranet.com>, "Pavel Machek" <pavel@suse.cz>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [PATCH] x86: default to reboot via ACPI
+Message-ID: <20080826115250.02004aea@lxorguk.ukuu.org.uk>
+In-Reply-To: <ac9c93b10808260403ga9f6e13v4792bb2c13dfc2bf@mail.gmail.com>
+References: <1219659087-17536-1-git-send-email-avi@qumranet.com>
+	<20080826095032.GA309@elf.ucw.cz>
+	<48B3D579.40502@qumranet.com>
+	<ac9c93b10808260403ga9f6e13v4792bb2c13dfc2bf@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 01:49:09PM +0300, Denys Fedoryshchenko wrote:
-> On Tuesday 26 August 2008, Jarek Poplawski wrote:
-> > The question is if you really need so exact shaping at a cost of
-> > higher system load.
-> Thats maybe another reason to have your patch in mainline :-)
 
-We should be first sure when it's really needed.
+> Linux is used a lot in embedded systems (like routers and NAS-es and
+> probably set-top boxes). I guess the # of embedded systems with some
+> linux flavour on it is substantially bigger than the desktop systems.
+> Most of these are ARM or MIPS based and do not support ACPI.
 
-> I will try it today with this case, if it will help.
-> 
-> Maybe it can be optional, and enabled via kernel parameter and /sys , so it 
-> can be useful in case of crashes when TSC used and when timer is too slow.
-> Because it is not so useful just to disable hrtimers completely, if you need 
-> them for some other task...
-
-Maybe it could be enough to use current parameters like: "highres=off"
-according to Documentation/kernel-parameters.txt?
-
-Jarek P.
+They also don't support VT and are not x86 boxes so the code area
+involved doesn't even get compiled on them.
