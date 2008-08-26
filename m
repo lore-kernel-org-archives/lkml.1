@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758265AbYHZLHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758518AbYHZLIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758265AbYHZLHi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 07:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbYHZLH3
+	id S1758518AbYHZLIJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 07:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757037AbYHZLHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 07:07:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48203 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753231AbYHZLH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 07:07:29 -0400
-Date: Tue, 26 Aug 2008 13:07:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frans Meulenbroeks <fransmeulenbroeks@gmail.com>
-Cc: Avi Kivity <avi@qumranet.com>, Pavel Machek <pavel@suse.cz>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [PATCH] x86: default to reboot via ACPI
-Message-ID: <20080826110715.GA26204@elte.hu>
-References: <1219659087-17536-1-git-send-email-avi@qumranet.com> <20080826095032.GA309@elf.ucw.cz> <48B3D579.40502@qumranet.com> <ac9c93b10808260403ga9f6e13v4792bb2c13dfc2bf@mail.gmail.com>
+	Tue, 26 Aug 2008 07:07:54 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:15809 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756834AbYHZLHx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 07:07:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=JsY680FG46+UbnVGWanNVWUfOdblHDHai9+UGbp6RpRrfcWjKhbEtWDyiQt7B1h4jf
+         a/FEILdqsJP9PPZJAfyYxBz6UciqT4Hy+LIeEFjKuweeGiFpoGsgtqIaCWUT1mo2hQuZ
+         7VMi9vxZn/PwmxH7CoYhQg228ECdlL5ZJiEw0=
+Date: Tue, 26 Aug 2008 11:07:46 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Denys Fedoryshchenko <denys@visp.net.lb>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+Message-ID: <20080826110746.GC2609@ff.dom.local>
+References: <20080826095126.GA2609@ff.dom.local> <200808261329.53741.denys@visp.net.lb> <20080826104717.GB2609@ff.dom.local> <200808261349.09820.denys@visp.net.lb>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ac9c93b10808260403ga9f6e13v4792bb2c13dfc2bf@mail.gmail.com>
+In-Reply-To: <200808261349.09820.denys@visp.net.lb>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 26, 2008 at 01:49:09PM +0300, Denys Fedoryshchenko wrote:
+> On Tuesday 26 August 2008, Jarek Poplawski wrote:
+> > The question is if you really need so exact shaping at a cost of
+> > higher system load.
+> Thats maybe another reason to have your patch in mainline :-)
 
-* Frans Meulenbroeks <fransmeulenbroeks@gmail.com> wrote:
+We should be first sure when it's really needed.
 
-> 2008/8/26 Avi Kivity <avi@qumranet.com>:
+> I will try it today with this case, if it will help.
 > 
-> > It seems excessive.  Most machines will hardly run without acpi.
-> 
-> Well, I'm fairly sure that most of the systems running linux (or some 
-> variant like uclinux), do not support acpi.
-> 
-> Linux is used a lot in embedded systems (like routers and NAS-es and 
-> probably set-top boxes). I guess the # of embedded systems with some 
-> linux flavour on it is substantially bigger than the desktop systems. 
-> Most of these are ARM or MIPS based and do not support ACPI.
+> Maybe it can be optional, and enabled via kernel parameter and /sys , so it 
+> can be useful in case of crashes when TSC used and when timer is too slow.
+> Because it is not so useful just to disable hrtimers completely, if you need 
+> them for some other task...
 
-... which is not an issue in this particular discussion, which was about 
-x86 with ACPI support enabled and available, whether in that case (and 
-only in that case) we should first try the ACPI reboot ports (that the 
-ACPI descriptors advertise) before also trying the other methods (kdb, 
-bios, triple fault, etc.) to reboot the box.
+Maybe it could be enough to use current parameters like: "highres=off"
+according to Documentation/kernel-parameters.txt?
 
-	Ingo
+Jarek P.
