@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753330AbYHZXzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbYHZX5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753330AbYHZXzv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 19:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbYHZXzn
+	id S1753660AbYHZX5h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 19:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbYHZX53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 19:55:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37036 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751887AbYHZXzm (ORCPT
+	Tue, 26 Aug 2008 19:57:29 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:11773 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751887AbYHZX53 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 19:55:42 -0400
-Date: Tue, 26 Aug 2008 16:55:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bruce Leonard <brucle@earthlink.net>
-Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-       linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 2/2][MTD] Add support for > 2GiB MTD devices
-Message-Id: <20080826165536.61c25a67.akpm@linux-foundation.org>
-In-Reply-To: <25387440.1219370455174.JavaMail.root@elwamui-cypress.atl.sa.earthlink.net>
-References: <25387440.1219370455174.JavaMail.root@elwamui-cypress.atl.sa.earthlink.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 26 Aug 2008 19:57:29 -0400
+Message-ID: <48B4984A.6090508@ct.jp.nec.com>
+Date: Tue, 26 Aug 2008 16:56:58 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH -next] initramfs: fix compilation warning
+References: <20080826184008.6be39f19.sfr@canb.auug.org.au>
+In-Reply-To: <20080826184008.6be39f19.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Aug 2008 19:00:55 -0700 (GMT-07:00)
-Bruce Leonard <brucle@earthlink.net> wrote:
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-> --- a/include/mtd/mtd-abi.h
-> +++ b/include/mtd/mtd-abi.h
-> @@ -6,7 +6,7 @@
->  #define __MTD_ABI_H__
->  
->  struct erase_info_user {
-> -	uint32_t start;
-> +	uint64_t start;
->  	uint32_t length;
->  };
->  
-> @@ -50,7 +50,7 @@ struct mtd_oob_buf {
->  struct mtd_info_user {
->  	uint8_t type;
->  	uint32_t flags;
-> -	uint32_t size;	 // Total size of the MTD
-> +	uint64_t size;	 // Total size of the MTD
->  	uint32_t erasesize;
->  	uint32_t writesize;
->  	uint32_t oobsize;   // Amount of OOB data per block (e.g. 16)
+  CC      init/initramfs.o
+init/initramfs.c:517: warning: 'clean_rootfs' defined but not used
 
-This changes the kernel<->userspace ABI and is hence a big no-no.  I
-assume that this change will cause old userspace to malfunction on new
-kernels, and vice versa.
+clean_rootfs is not used when CONFIG_BLK_DEV_RAM disabled.
 
-Supporting >2Gb MTD devices sounds useful (I'm surprised that we don't
-already do so).
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ init/initramfs.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Please cc linux-mtd@lists.infradead.org (at least) on MTD-related
-patches, thanks.
+diff --git a/init/initramfs.c b/init/initramfs.c
+index da8d030..2f056e2 100644
+--- a/init/initramfs.c
++++ b/init/initramfs.c
+@@ -512,6 +512,7 @@ skip:
+ 	initrd_end = 0;
+ }
+ 
++#ifdef CONFIG_BLK_DEV_RAM
+ #define BUF_SIZE 1024
+ static void __init clean_rootfs(void)
+ {
+@@ -558,6 +559,7 @@ static void __init clean_rootfs(void)
+ 	sys_close(fd);
+ 	kfree(buf);
+ }
++#endif
+ 
+ static int __init populate_rootfs(void)
+ {
+-- 
+1.5.6
 
