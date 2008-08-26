@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758496AbYHZOPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbYHZOTG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758496AbYHZOPg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 10:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbYHZOP2
+	id S1757842AbYHZOTG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 10:19:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbYHZOSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 10:15:28 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:50570 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754317AbYHZOP1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 10:15:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=FF5SRw7AeupPfnErI21AMpuIpyDEP4y0q2TAzohKjYhiGxHICW8m3pCjJK5F3gR8Al
-         rV0aTxAnJkxNw8c9cd7iTVKaopDdz2bv0ewxnznWSCxKn6jDZxtcIyw2C9zAVBF9MKlL
-         aDWVVYZaieD9hsMOxpeiKo+E9cPlCjIlP6eWM=
-Message-ID: <48f7fe350808260715y30ef89a1le7f8abdf0be61351@mail.gmail.com>
-Date: Tue, 26 Aug 2008 10:15:25 -0400
-From: "Ryan Hope" <rmh3093@gmail.com>
-To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-Subject: Re: [-mmotm] BUG: scheduling while atomic: swapper
-Cc: "james toy" <unk.nown@unix.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>
-In-Reply-To: <b647ffbd0808260302r1d50dbacr3595d160e0203ce3@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 26 Aug 2008 10:18:55 -0400
+Received: from mout0.freenet.de ([195.4.92.90]:57028 "EHLO mout0.freenet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754093AbYHZOSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 10:18:54 -0400
+Date: Tue, 26 Aug 2008 16:18:51 +0200
+From: Gerhard Brauer <gerhard.brauer@web.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
+Message-ID: <20080826141851.GA5300@tux1.brauer.lan>
+References: <48ADDF4F.2020401@zytor.com> <48AE5FCF.6030103@zytor.com> <20080822065012.GV14110@elte.hu> <20080822113941.147a1db0@doriath.conectiva> <20080822153451.GA8390@Krystal> <20080822132948.57e47076@doriath.conectiva> <20080822163520.GA9860@Krystal> <20080822142054.403cbdef@doriath.conectiva> <20080822175741.6bc83dc8@doriath.conectiva> <48AF2ABD.9070100@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <48f7fe350808251909g26207e7agdda6408c0b46a1ed@mail.gmail.com>
-	 <b647ffbd0808260111r2aed706cvc4c5d483912ec8c2@mail.gmail.com>
-	 <20080826012458.abe3bbba.akpm@linux-foundation.org>
-	 <9f8af95f0808260225u162da49aj1d6f6fd9db79499f@mail.gmail.com>
-	 <b647ffbd0808260302r1d50dbacr3595d160e0203ce3@mail.gmail.com>
+In-Reply-To: <48AF2ABD.9070100@zytor.com>
+User-Agent: Mutt/1.5.18-muttng (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for getting back to me on this guys.  Yes I am using mmotm, the
-daily -mm broken out tree... THe bug happens while booting, and it
-shows up many times. Anyway I checked microcode_intel.c and the
-function in question looks like this:
-
-static int __init microcode_intel_module_init(void)
-{
-       struct cpuinfo_x86 *c = &cpu_data(get_cpu());
-
-       if (c->x86_vendor == X86_VENDOR_INTEL)
-               return microcode_init(&microcode_intel_ops, THIS_MODULE);
-       else
-               return -ENODEV;
-}
-
-I will try the changes in he patch in Jame's post.... and report back. THanks.
-
--Ryan
-
-On Tue, Aug 26, 2008 at 6:02 AM, Dmitry Adamushko
-<dmitry.adamushko@gmail.com> wrote:
-> 2008/8/26 james toy <unk.nown@unix.net>:
->> Andrew,
+On Fri, Aug 22, 2008 at 02:08:13PM -0700, H. Peter Anvin wrote:
+> Luiz Fernando N. Capitulino wrote:
 >>
->> Yes, ours does look like this -- however when i checked the git diff on git
->> web i found:
+>>  I have asked Mandriva and Ubuntu users to test this and all of
+>> them so far are saying that noreplace-paravirt works.
 >>
->> index d2d9d74..6dd8907 100644 (file)
->> --- a/arch/x86/kernel/microcode_intel.c
->> +++ b/arch/x86/kernel/microcode_intel.c
->> @@ -531,12 +531,14 @@ static struct microcode_ops microcode_intel_ops = {
+>>  It makes the system slower, but it works.
 >>
->>  static int __init microcode_intel_module_init(void)
->>  {
->> -       struct cpuinfo_x86 *c = &cpu_data(get_cpu());
->> +       struct cpuinfo_x86 *c = &cpu_data(0);
 >
-> (err... I'm a bit confused by the use of "fixed" here. The snippet
-> posted by Andrew illustrates how it was _before_ the fix,
-> i.e. it's the version that causes the "scheduling while atomic" bug).
+> Yes, the big issue is exactly what VirtualBox screws up in this matter,  
+> how to detect it, and how to work around it.
 >
-> IOW, If your local version has cpu_data(get_cpu()) in
-> microcode_intel_module_init(), then it explains the trace you have
-> observed. That also means you are not up-to-date with -next.
+> It's pretty clear it's a VirtualBox f*ckup at this point, but the failure 
+> mechanism isn't at all obvious and so far the workaround is elusive.
 >
->
-> --
-> Best regards,
-> Dmitry Adamushko
->
+> I'm strongly suspect this is a VirtualBox tcache management failure, but  
+> that doesn't help the situation without knowing how it happens.
+
+On Archlinux we have the same problem. We have a bugreport here:
+http://bugs.archlinux.org/task/11141
+
+Myself test it with a LiveCD/Install-ISO which has 2.6.26 as install
+kernel. We have the guest oops on virtualbox-ose, virtualbox-sun and both on
+i686 or x86_64 hosts.
+
+Some things i noticed:
+- The system boots always when i either enable VT-x in guest settings or
+  disable acpi and run the guest with acpi=off.
+- The oops occurs always on (disk)-io, no matter which file system i
+  use.
+- When the oops has occured and the guest has to close and restart then,
+  if i don't use VT-x or acpi=off, i always get an oops directly when
+  initrd/kernel is starting. Last screen message before the oops then is
+  "Freeing SMP alternatives".
+
+Here is also an archive with guest dmesg and messages.log from such an
+oops when heavy disk io leads to the oops:
+http://bugs.archlinux.org/task/11141?getfile=2445
+
+
+> 	-hpa
+
+Gerhard
+
+-- 
+Standards sind eine tolle Sache.
+Ich finde, jeder sollte einen haben.
