@@ -1,106 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758922AbYHZQml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758989AbYHZQny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758922AbYHZQml (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 12:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757205AbYHZQmd
+	id S1758989AbYHZQny (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 12:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757365AbYHZQnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 12:42:33 -0400
-Received: from blackbird.sr71.net ([64.146.134.44]:50567 "EHLO
-	blackbird.sr71.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754662AbYHZQmc (ORCPT
+	Tue, 26 Aug 2008 12:43:46 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:39760 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757205AbYHZQnq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 12:42:32 -0400
-Subject: Re: [RFC v2][PATCH 2/9] General infrastructure for checkpoint
-	restart
-From: Dave Hansen <dave@sr71.net>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: containers@lists.linux-foundation.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>, arnd@arndb.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <48B21D3C.8090601@cs.columbia.edu>
-References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>
-	 <Pine.LNX.4.64.0808202303460.17436@takamine.ncl.cs.columbia.edu>
-	 <1219435302.20559.121.camel@nimitz>  <48B21D3C.8090601@cs.columbia.edu>
-Content-Type: text/plain
-Date: Tue, 26 Aug 2008 09:42:29 -0700
-Message-Id: <1219768949.8680.26.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 26 Aug 2008 12:43:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=g/YdSuOQPI7ubt1NC2NOh5se2hQwBjj2xBfykNFYgR9qa3mKu+lq6LJ2ohxedniolM
+         OzTvFyDZhBPM/qHF1apcUlb+QJvpNVbDKez/iw+14kKEayKn/pgF2Sqv4oiBP9lyHFg5
+         3Mkfs6RJHnzTOyZva0Nfyu1fcxtfAoq3haPxs=
+Message-ID: <86802c440808260943k210be3edp54aebc9fea5366f5@mail.gmail.com>
+Date: Tue, 26 Aug 2008 09:43:44 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Helge Hafting" <helge.hafting@aitel.hist.no>
+Subject: Re: 2.6.27 mtrr fixes do not work when X starts
+Cc: "Alexander Huemer" <alexander.huemer@sbg.ac.at>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Andi Kleen" <andi@firstfloor.org>
+In-Reply-To: <48B3CDAF.604@aitel.hist.no>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4899AF8E.20105@sbg.ac.at> <48A43CB5.8010709@sbg.ac.at>
+	 <86802c440808141031p2712976cqe2c34d3b986ad810@mail.gmail.com>
+	 <48AD8125.7050104@sbg.ac.at>
+	 <86802c440808210827y72bb1ec0ndcb97b00d6af3a9c@mail.gmail.com>
+	 <48AE90BB.5090800@aitel.hist.no>
+	 <86802c440808221024u1f152a73hf060f70e1b16dccb@mail.gmail.com>
+	 <48B29320.5070903@aitel.hist.no>
+	 <86802c440808251308i609a1c8ay6a7300bf4d0e0758@mail.gmail.com>
+	 <48B3CDAF.604@aitel.hist.no>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-08-24 at 22:47 -0400, Oren Laadan wrote:
-> > I replaced all of the uses of these with kmalloc()/kfree() and stack
-> > allocations.  I'm really not sure what these buy us since our allocators
-> > are already so fast.  tbuf, especially, worries me if it gets used in
-> > any kind of nested manner we're going to get some really fun bugs.
-> 
-> I disagree with putting some of the cr_hdr_... on the stack: first, if they
-> grow in size, it's easy to forget to change the allocation to stack.
+On Tue, Aug 26, 2008 at 2:32 AM, Helge Hafting
+<helge.hafting@aitel.hist.no> wrote:
+> Yinghai Lu wrote:
+>
+>> please use "mtrr_spare_reg_nr=3 debug"
+>>
+>> you missed _nr.
+>>
+> Sorry. I got it right this time, and mtrr setup succeeded:
+>
+..
+> $ cat /proc/mtrr
+> reg00: base=0x00000000 (   0MB), size=1024MB: write-back, count=1
+> reg01: base=0x40000000 (1024MB), size= 512MB: write-back, count=1
+> reg02: base=0x60000000 (1536MB), size= 256MB: write-back, count=1
+> reg03: base=0x70000000 (1792MB), size= 256MB: write-back, count=1
+> reg04: base=0x7ff00000 (2047MB), size=   1MB: uncachable, count=1
+> reg05: base=0xf3c00000 (3900MB), size=   2MB: write-combining, count=1
+> reg06: base=0xf3800000 (3896MB), size=   4MB: write-combining, count=1
+> reg07: base=0xf3000000 (3888MB), size=   8MB: write-combining, count=1
+>
+> This time X got its 3 regions, and no sluggishness when moving
+> opaque windows. :-)
 
-I can buy that. 
+good.
 
-> Second,
-> using a standard code/handling for all cr_hdr_... makes the code more readable
-> and easier for others to extend by simply following existing code.
+>
+> I hope this helps so the extra bootup parameters can be avoided in the
+> release kernel.
 
-It actually makes it harder for others to jump into because they see
-something which is basically a kmalloc() to the rest of the kernel.  We
-don't have ext2_alloc() or usb_alloc(), so I'm not sure we should have
-cr_alloc(), effectively.
+that is a little bit hard.
 
-> The main argument for ->hbuf is that eventually we would like to buffer
-> data in the kernel to avoid potentially slow writing/reading when processes
-> are frozen during checkpoint/restart.
-
-Um, we're writing to a file descriptor and kmap()'ing.  Those can both
-potentially be very, very slow.  I don't think that a few kmalloc()s
-thrown in there are going to be noticeable.
-
-> By using the simple cr_get_hbuf() and
-> cr_put_hbuf() we prepare for that: now they just allocate room in ->hbuf,
-> but later they will provide a pointer directly in the data buffer. Moreover,
-> it simplifies the error path since cleanup (of ->hbuf) is implicit.
-
-It simplifies *one* error path.  But, it complicates the ctx creation
-and makes *that* error path more complex.  Pick your poison, I guess.
-
-> Also,
-> it is designed to allow checkpoint and restart function to be called in a
-> nested manner, again simplifying the code. Finally, my experience was that
-> it can impact performance if you are after very short downtimes, especially
-> for the checkpoint.
-
-Right, but I'm comparing it to kmalloc()  Certainly kmalloc()s can be
-used in a nested manner.
-
-> >> +/* read the checkpoint header */
-> >> +static int cr_read_hdr(struct cr_ctx *ctx)
-> >> +{
-> >> +	struct cr_hdr_head *hh = cr_hbuf_get(ctx, sizeof(*hh));
-> >> +	int ret;
-> >> +
-> >> +	ret = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_HEAD);
-> >> +	if (ret < 0)
-> >> +		return ret;
-> >> +	else if (ret != 0)
-> >> +		return -EINVAL;
-> > 
-> > How about just making cr_read_obj_type() stop returning positive values?
-> > Is it ever valid for it to return >0?
-> 
-> The idea with cr_read_obj_type() is that it returns the 'ptag' - parent tag -
-> field of the object that it reads in. The 'ptag' is the tag of the parent
-> object, and is useful in several places. For instance, the 'ptag' of an MM
-> header identifies (is equal to) the 'tag' of TASK to which it belongs. In
-> this case, the 'ptag' should be zero because it has no parent object.
-> 
-> I'll change the variable name from 'ret' to 'ptag' to make it more obvious.
-
-Since this ptag isn't actually used, I can't really offer a suggestion.
-I don't see the whole picture.
-
--- Dave
-
+YH
