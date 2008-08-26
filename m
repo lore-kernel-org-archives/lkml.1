@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759619AbYHZTf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760056AbYHZTfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759619AbYHZTf1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 15:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbYHZTfN
+	id S1760056AbYHZTfl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 15:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759072AbYHZTfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 15:35:13 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:43471 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756032AbYHZTfM (ORCPT
+	Tue, 26 Aug 2008 15:35:20 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44077 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758956AbYHZTfS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 15:35:12 -0400
-Date: Tue, 26 Aug 2008 15:35:08 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Christoph Hellwig <hch@lst.de>, Peter Zijlstra <peterz@infradead.org>,
-       Lachlan McIlroy <lachlan@sgi.com>,
-       Daniel J Blueman <daniel.blueman@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
-Subject: Re: [2.6.27-rc4] XFS i_lock vs i_iolock...
-Message-ID: <20080826193508.GA17542@infradead.org>
-References: <6278d2220808221412x28f4ac5dl508884c8030b364a@mail.gmail.com> <20080825010213.GO5706@disturbed> <48B21507.9050708@sgi.com> <20080825035542.GR5706@disturbed> <1219647573.20732.28.camel@twins> <20080825215532.GB28188@lst.de> <20080826024547.GX5706@disturbed>
+	Tue, 26 Aug 2008 15:35:18 -0400
+Message-ID: <48B45AF4.8040101@sgi.com>
+Date: Tue, 26 Aug 2008 12:35:16 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080826024547.GX5706@disturbed>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: "Alan D. Brunelle" <Alan.Brunelle@hp.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Luck, Tony" <tony.luck@intel.com>, Jack Steiner <steiner@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <VSpL6AnBTS.A.q9H.6aGsIB@albercik> <alpine.LFD.1.10.0808231257310.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808231313170.3363@nehalem.linux-foundation.org> <48B29F7B.6080405@hp.com> <48B2A421.7080705@hp.com> <alpine.LFD.1.10.0808251019380.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251106270.3363@nehalem.linux-foundation.org> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251401590.3363@nehalem.linux-foundation.org> <48B452F3.9040304@sgi.com> <alpine.LFD.1.10.0808261205530.3363@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0808261205530.3363@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 12:45:47PM +1000, Dave Chinner wrote:
-> XFS: prevent lockdep false positives when locking two inodes
+Linus Torvalds wrote:
 > 
-> If we call xfs_lock_two_inodes() to grab both the iolock and
-> the ilock, then drop the ilocks on both inodes, then grab
-> them again (as xfs_swap_extents() does) then lockdep will
-> report a locking order problem. This is a false positive.
+> On Tue, 26 Aug 2008, Mike Travis wrote:
+>> The need to allow distros to set NR_CPUS=4096 (and NODES_SHIFT=9) is
+>> critical to our upcoming SGI systems using what we have been calling
+>> "UV".
 > 
-> To avoid this, disallow xfs_lock_two_inodes() fom locking both
-> inode locks at once - force calers to make two separate calls.
-> This means that nested dropping and regaining of the ilocks
-> will retain the same lockdep subclass and so lockdep will
-> not see anything wrong with this code.
+> That's fine. You can do it. The default kernel will not, because it's 
+> clearly not safe.
+> 
+> I really don't care what you do to _your_ images. But I will not 
+> distribute a known-broken kernel, and I will not debug random stack 
+> overflows that happen in it.
+> 
+> If you want the default kernel to support 4k cores, we'll need to fix the 
+> stack usage.  I don't think that is impossible, but IT IS NOT GOING TO 
+> HAPPEN for 2.6.27.
+> 
+> And quite frankly, if some vendor like RedHat enables NR_CPUS=4096 by 
+> default, they are totally and utterly crazy.
+> 
+> But some SGI-specific binary that is meant for SGI machines only, and has 
+> been extensively tested with the setup used on SGI machines is a different 
+> thing.
+> 
+> 			Linus
 
-Looks good.  We probably don't need the #ifdef DEBUG as ASSERT is
-debug-only anyway.
+Ok, thanks for the reply, and looking into this issue.  We will "strongly
+encourage" our distros to base the relevant releases on 2.6.28. :-)  
 
+[Supplying an SGI-specific kernel would not be acceptable to many of our
+customers because of the certification issues I mentioned.] 
+
+Mike
