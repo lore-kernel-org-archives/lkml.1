@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759079AbYHZRii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759565AbYHZRjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759079AbYHZRii (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 13:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758878AbYHZRhZ
+	id S1759565AbYHZRjW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 13:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759237AbYHZRhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 13:37:25 -0400
-Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:54182
+	Tue, 26 Aug 2008 13:37:52 -0400
+Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:54202
 	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758759AbYHZRhX (ORCPT
+	with ESMTP id S1759220AbYHZRhu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 13:37:23 -0400
+	Tue, 26 Aug 2008 13:37:50 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH v2 4/6] sched: add sched_class->needs_post_schedule() member
+Subject: [PATCH v2 6/6] sched: create "pushable_tasks" list to limit pushing
+	to one attempt
 To: mingo@elte.hu
 Cc: srostedt@redhat.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
        linux-rt-users@vger.kernel.org, npiggin@suse.de,
        gregory.haskins@gmail.com
-Date: Tue, 26 Aug 2008 13:35:05 -0400
-Message-ID: <20080826173505.16413.97897.stgit@dev.haskins.net>
+Date: Tue, 26 Aug 2008 13:35:15 -0400
+Message-ID: <20080826173515.16413.39166.stgit@dev.haskins.net>
 In-Reply-To: <20080826173131.16413.17862.stgit@dev.haskins.net>
 References: <20080826173131.16413.17862.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.2
@@ -28,112 +29,356 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We currently run class->post_schedule() outside of the rq->lock, which
-means that we need to test for the need to post_schedule outside of
-the lock to avoid a forced reacquistion.  This is currently not a problem
-as we only look at rq->rt.overloaded.  However, we want to enhance this
-going forward to look at more state to reduce the need to post_schedule to
-a bare minimum set.  Therefore, we introduce a new member-func called
-needs_post_schedule() which tests for the post_schedule condtion without
-actually performing the work.  Therefore it is safe to call this
-function before the rq->lock is released, because we are guaranteed not
-to drop the lock at an intermediate point (such as what post_schedule()
-may do).
+The RT scheduler employs a "push/pull" design to actively balance tasks
+within the system (on a per disjoint cpuset basis).  When a task is
+awoken, it is immediately determined if there are any lower priority
+cpus which should be preempted.  This is opposed to the way normal
+SCHED_OTHER tasks behave, which will wait for a periodic rebalancing
+operation to occur before spreading out load.
 
-We will use this later in the series
+When a particular RQ has more than 1 active RT task, it is said to
+be in an "overloaded" state.  Once this occurs, the system enters
+the active balancing mode, where it will try to push the task away,
+or persuade a different cpu to pull it over.  The system will stay
+in this state until the system falls back below the <= 1 queued RT
+task per RQ.
+
+However, the current implementation suffers from a limitation in the
+push logic.  Once overloaded, all tasks (other than current) on the
+RQ are analyzed on every push operation, even if it was previously
+unpushable (due to affinity, etc).  Whats more, the operation stops
+at the first task that is unpushable and will not look at items
+lower in the queue.  This causes two problems:
+
+1) We can have the same tasks analyzed over and over again during each
+   push, which extends out the fast path in the scheduler for no
+   gain.  Consider a RQ that has dozens of tasks that are bound to a
+   core.  Each one of those tasks will be encountered and skipped
+   for each push operation while they are queued.
+
+2) There may be lower-priority tasks under the unpushable task that
+   could have been successfully pushed, but will never be considered
+   until either the unpushable task is cleared, or a pull operation
+   succeeds.  The net result is a potential latency source for mid
+   priority tasks.
+
+This patch aims to rectify these two conditions by introducing a new
+priority sorted list: "pushable_tasks".  A task is added to the list
+each time a task is activated or preempted.  It is removed from the
+list any time it is deactivated, made current, or fails to push.
+
+This works because a task only needs to be attempted to push once.
+After an initial failure to push, the other cpus will eventually try to
+pull the task when the conditions are proper.  This also solves the
+problem that we don't completely analyze all tasks due to encountering
+an unpushable tasks.  Now every task will have a push attempted (when
+appropriate).
+
+This reduces latency both by shorting the critical section of the
+rq->lock for certain workloads, and by making sure the algorithm
+considers all eligible tasks in the system.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+CC: Steven Rostedt <srostedt@redhat.com>
 ---
 
- include/linux/sched.h |    1 +
- kernel/sched.c        |   10 +++++++++-
- kernel/sched_rt.c     |   24 ++++++++++++++----------
- 3 files changed, 24 insertions(+), 11 deletions(-)
+ include/linux/init_task.h |    1 
+ include/linux/sched.h     |    1 
+ kernel/sched.c            |    4 ++
+ kernel/sched_rt.c         |  111 +++++++++++++++++++++++++++++++++++++++++----
+ 4 files changed, 107 insertions(+), 10 deletions(-)
 
+diff --git a/include/linux/init_task.h b/include/linux/init_task.h
+index 021d8e7..7f910f4 100644
+--- a/include/linux/init_task.h
++++ b/include/linux/init_task.h
+@@ -140,6 +140,7 @@ extern struct group_info init_groups;
+ 		.nr_cpus_allowed = NR_CPUS,				\
+ 	},								\
+ 	.tasks		= LIST_HEAD_INIT(tsk.tasks),			\
++	.pushable_tasks = PLIST_NODE_INIT(tsk.pushable_tasks, MAX_PRIO), \
+ 	.ptraced	= LIST_HEAD_INIT(tsk.ptraced),			\
+ 	.ptrace_entry	= LIST_HEAD_INIT(tsk.ptrace_entry),		\
+ 	.real_parent	= &tsk,						\
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 08a87b5..cf8cd8c 100644
+index cf8cd8c..3480c8a 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
-@@ -912,6 +912,7 @@ struct sched_class {
- 			      struct rq *busiest, struct sched_domain *sd,
- 			      enum cpu_idle_type idle);
- 	void (*pre_schedule) (struct rq *this_rq, struct task_struct *task);
-+	int (*needs_post_schedule) (struct rq *this_rq);
- 	void (*post_schedule) (struct rq *this_rq);
- 	void (*task_wake_up) (struct rq *this_rq, struct task_struct *task);
+@@ -1078,6 +1078,7 @@ struct task_struct {
  #endif
+ 
+ 	struct list_head tasks;
++	struct plist_node pushable_tasks;
+ 
+ 	struct mm_struct *mm, *active_mm;
+ 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 850b454..c5b4459 100644
+index c5b4459..d0b189d 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -2525,6 +2525,14 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
- {
- 	struct mm_struct *mm = rq->prev_mm;
- 	long prev_state;
-+#ifdef CONFIG_SMP
-+	int post_schedule = 0;
-+
-+	if (current->sched_class->needs_post_schedule) {
-+		BUG_ON(!current->sched_class->post_schedule);
-+		post_schedule = current->sched_class->needs_post_schedule(rq);
-+	}
-+#endif
- 
- 	rq->prev_mm = NULL;
- 
-@@ -2543,7 +2551,7 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
- 	finish_arch_switch(prev);
- 	finish_lock_switch(rq, prev);
+@@ -447,6 +447,7 @@ struct rt_rq {
  #ifdef CONFIG_SMP
--	if (current->sched_class->post_schedule)
-+	if (post_schedule)
- 		current->sched_class->post_schedule(rq);
+ 	unsigned long rt_nr_migratory;
+ 	int overloaded;
++	struct plist_head pushable_tasks;
  #endif
- 
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 196c024..a3d695b 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -1212,20 +1212,23 @@ static void pre_schedule_rt(struct rq *rq, struct task_struct *prev)
- 		pull_rt_task(rq);
+ 	int rt_throttled;
+ 	u64 rt_time;
+@@ -2383,6 +2384,8 @@ void sched_fork(struct task_struct *p, int clone_flags)
+ 	/* Want to start with kernel preemption disabled. */
+ 	task_thread_info(p)->preempt_count = 1;
+ #endif
++	plist_node_init(&p->pushable_tasks, MAX_PRIO);
++
+ 	put_cpu();
  }
  
-+/*
-+ * assumes rq->lock is held
-+ */
-+static int needs_post_schedule_rt(struct rq *rq)
+@@ -7905,6 +7908,7 @@ static void init_rt_rq(struct rt_rq *rt_rq, struct rq *rq)
+ #ifdef CONFIG_SMP
+ 	rt_rq->rt_nr_migratory = 0;
+ 	rt_rq->overloaded = 0;
++	plist_head_init(&rq->rt.pushable_tasks, &rq->lock);
+ #endif
+ 
+ 	rt_rq->rt_time = 0;
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index a3d695b..19cbbe4 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -49,6 +49,25 @@ static void update_rt_migration(struct rq *rq)
+ 		rq->rt.overloaded = 0;
+ 	}
+ }
++
++static void enqueue_pushable_task(struct rq *rq, struct task_struct *p)
 +{
-+	return rq->rt.overloaded ? 1 : 0;
++	BUG_ON(!plist_node_empty(&p->pushable_tasks));
++
++	plist_node_init(&p->pushable_tasks, p->prio);
++	plist_add(&p->pushable_tasks, &rq->rt.pushable_tasks);
 +}
 +
- static void post_schedule_rt(struct rq *rq)
++static void dequeue_pushable_task(struct rq *rq, struct task_struct *p)
++{
++	plist_del(&p->pushable_tasks, &rq->rt.pushable_tasks);
++}
++
++#else
++
++#define enqueue_pushable_task(rq, p) do { } while (0)
++#define dequeue_pushable_task(rq, p) do { } while (0)
++
+ #endif /* CONFIG_SMP */
+ 
+ static inline struct task_struct *rt_task_of(struct sched_rt_entity *rt_se)
+@@ -669,6 +688,9 @@ static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int wakeup)
+ 
+ 	enqueue_rt_entity(rt_se);
+ 
++	if (!task_current(rq, p) && p->rt.nr_cpus_allowed > 1)
++		enqueue_pushable_task(rq, p);
++
+ 	inc_cpu_load(rq, p->se.load.weight);
+ }
+ 
+@@ -679,6 +701,8 @@ static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int sleep)
+ 	update_curr_rt(rq);
+ 	dequeue_rt_entity(rt_se);
+ 
++	dequeue_pushable_task(rq, p);
++
+ 	dec_cpu_load(rq, p->se.load.weight);
+ }
+ 
+@@ -824,7 +848,7 @@ static struct sched_rt_entity *pick_next_rt_entity(struct rq *rq,
+ 	return next;
+ }
+ 
+-static struct task_struct *pick_next_task_rt(struct rq *rq)
++static struct task_struct *_pick_next_task_rt(struct rq *rq)
  {
- 	/*
--	 * If we have more than one rt_task queued, then
--	 * see if we can push the other rt_tasks off to other CPUS.
--	 * Note we may release the rq lock, and since
--	 * the lock was owned by prev, we need to release it
--	 * first via finish_lock_switch and then reaquire it here.
-+	 * This is only called if needs_post_schedule_rt() indicates that
-+	 * we need to push tasks away
- 	 */
--	if (unlikely(rq->rt.overloaded)) {
--		spin_lock_irq(&rq->lock);
--		push_rt_tasks(rq);
--		spin_unlock_irq(&rq->lock);
--	}
-+	spin_lock_irq(&rq->lock);
-+	push_rt_tasks(rq);
-+	spin_unlock_irq(&rq->lock);
+ 	struct sched_rt_entity *rt_se;
+ 	struct task_struct *p;
+@@ -846,6 +870,18 @@ static struct task_struct *pick_next_task_rt(struct rq *rq)
+ 
+ 	p = rt_task_of(rt_se);
+ 	p->se.exec_start = rq->clock;
++
++	return p;
++}
++
++static struct task_struct *pick_next_task_rt(struct rq *rq)
++{
++	struct task_struct *p = _pick_next_task_rt(rq);
++
++	/* The running task is never eligible for pushing */
++	if (p)
++		dequeue_pushable_task(rq, p);
++
+ 	return p;
+ }
+ 
+@@ -853,6 +889,13 @@ static void put_prev_task_rt(struct rq *rq, struct task_struct *p)
+ {
+ 	update_curr_rt(rq);
+ 	p->se.exec_start = 0;
++
++	/*
++	 * The previous task needs to be made eligible for pushing
++	 * if it is still active
++	 */
++	if (p->se.on_rq && p->rt.nr_cpus_allowed > 1)
++		enqueue_pushable_task(rq, p);
+ }
+ 
+ #ifdef CONFIG_SMP
+@@ -1031,6 +1074,28 @@ static struct rq *find_lock_lowest_rq(struct task_struct *task, struct rq *rq)
+ 	return lowest_rq;
+ }
+ 
++static inline int has_pushable_tasks(struct rq *rq)
++{
++	return !plist_head_empty(&rq->rt.pushable_tasks);
++}
++
++static struct task_struct *pick_next_pushable_task(struct rq *rq)
++{
++	struct task_struct *p;
++
++	if (!has_pushable_tasks(rq))
++		return NULL;
++
++	p = plist_first_entry(&rq->rt.pushable_tasks,
++			      struct task_struct, pushable_tasks);
++
++	BUG_ON(rq->cpu != task_cpu(p));
++	BUG_ON(task_current(rq, p));
++	BUG_ON(p->rt.nr_cpus_allowed <= 1);
++
++	return p;
++}
++
+ /*
+  * If the current CPU has more than one RT task, see if the non
+  * running task can migrate over to a CPU that is running a task
+@@ -1040,13 +1105,12 @@ static int push_rt_task(struct rq *rq)
+ {
+ 	struct task_struct *next_task;
+ 	struct rq *lowest_rq;
+-	int ret = 0;
+ 	int paranoid = RT_MAX_TRIES;
+ 
+ 	if (!rq->rt.overloaded)
+ 		return 0;
+ 
+-	next_task = pick_next_highest_task_rt(rq, -1);
++	next_task = pick_next_pushable_task(rq);
+ 	if (!next_task)
+ 		return 0;
+ 
+@@ -1078,12 +1142,19 @@ static int push_rt_task(struct rq *rq)
+ 		 * so it is possible that next_task has changed.
+ 		 * If it has, then try again.
+ 		 */
+-		task = pick_next_highest_task_rt(rq, -1);
++		task = pick_next_pushable_task(rq);
+ 		if (unlikely(task != next_task) && task && paranoid--) {
+ 			put_task_struct(next_task);
+ 			next_task = task;
+ 			goto retry;
+ 		}
++
++		/*
++		 * Once we have failed to push this task, we will not
++		 * try again, since the other cpus will pull from us
++		 * when they are ready
++		 */
++		dequeue_pushable_task(rq, next_task);
+ 		goto out;
+ 	}
+ 
+@@ -1095,11 +1166,10 @@ static int push_rt_task(struct rq *rq)
+ 
+ 	double_unlock_balance(rq, lowest_rq);
+ 
+-	ret = 1;
+ out:
+ 	put_task_struct(next_task);
+ 
+-	return ret;
++	return 1;
  }
  
  /*
-@@ -1473,6 +1476,7 @@ static const struct sched_class rt_sched_class = {
- 	.rq_online              = rq_online_rt,
- 	.rq_offline             = rq_offline_rt,
- 	.pre_schedule		= pre_schedule_rt,
-+	.needs_post_schedule	= needs_post_schedule_rt,
- 	.post_schedule		= post_schedule_rt,
- 	.task_wake_up		= task_wake_up_rt,
- 	.switched_from		= switched_from_rt,
+@@ -1128,7 +1198,7 @@ static int pull_rt_task(struct rq *this_rq)
+ 	if (likely(!rt_overloaded(this_rq)))
+ 		return 0;
+ 
+-	next = pick_next_task_rt(this_rq);
++	next = _pick_next_task_rt(this_rq);
+ 
+ 	for_each_cpu_mask_nr(cpu, this_rq->rd->rto_mask) {
+ 		if (this_cpu == cpu)
+@@ -1145,7 +1215,7 @@ static int pull_rt_task(struct rq *this_rq)
+ 		if (double_lock_balance(this_rq, src_rq)) {
+ 			struct task_struct *old_next = next;
+ 
+-			next = pick_next_task_rt(this_rq);
++			next = _pick_next_task_rt(this_rq);
+ 			if (next != old_next)
+ 				ret = 1;
+ 		}
+@@ -1217,7 +1287,7 @@ static void pre_schedule_rt(struct rq *rq, struct task_struct *prev)
+  */
+ static int needs_post_schedule_rt(struct rq *rq)
+ {
+-	return rq->rt.overloaded ? 1 : 0;
++	return has_pushable_tasks(rq);
+ }
+ 
+ static void post_schedule_rt(struct rq *rq)
+@@ -1240,7 +1310,7 @@ static void task_wake_up_rt(struct rq *rq, struct task_struct *p)
+ {
+ 	if (!task_running(rq, p) &&
+ 	    !test_tsk_need_resched(rq->curr) &&
+-	    rq->rt.overloaded &&
++	    has_pushable_tasks(rq) &&
+ 	    p->rt.nr_cpus_allowed > 1)
+ 		push_rt_tasks(rq);
+ }
+@@ -1277,6 +1347,24 @@ static void set_cpus_allowed_rt(struct task_struct *p,
+ 	if (p->se.on_rq && (weight != p->rt.nr_cpus_allowed)) {
+ 		struct rq *rq = task_rq(p);
+ 
++		if (!task_current(rq, p)) {
++			/*
++			 * Make sure we dequeue this task from the pushable list
++			 * before going further.  It will either remain off of
++			 * the list because we are no longer pushable, or it
++			 * will be requeued.
++			 */
++			if (p->rt.nr_cpus_allowed > 1)
++				dequeue_pushable_task(rq, p);
++
++			/*
++			 * Requeue if our weight is changing and still > 1
++			 */
++			if (weight > 1)
++				enqueue_pushable_task(rq, p);
++
++		}
++
+ 		if ((p->rt.nr_cpus_allowed <= 1) && (weight > 1)) {
+ 			rq->rt.rt_nr_migratory++;
+ 		} else if ((p->rt.nr_cpus_allowed > 1) && (weight <= 1)) {
+@@ -1453,6 +1541,9 @@ static void set_curr_task_rt(struct rq *rq)
+ 	struct task_struct *p = rq->curr;
+ 
+ 	p->se.exec_start = rq->clock;
++
++	/* The running task is never eligible for pushing */
++	dequeue_pushable_task(rq, p);
+ }
+ 
+ static const struct sched_class rt_sched_class = {
 
