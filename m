@@ -1,155 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755766AbYHZVgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756830AbYHZVhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755766AbYHZVgR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 17:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbYHZVgE
+	id S1756830AbYHZVhx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 17:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYHZVhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 17:36:04 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:49522 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751085AbYHZVgD (ORCPT
+	Tue, 26 Aug 2008 17:37:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43338 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751668AbYHZVhp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 17:36:03 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhwFAMEOtEhMRKxB/2dsb2JhbACBZbkfgWs
-Date: Tue, 26 Aug 2008 17:35:59 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Gerhard Brauer <gerhard.brauer@web.de>
-Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+	Tue, 26 Aug 2008 17:37:45 -0400
+Date: Tue, 26 Aug 2008 14:36:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: vegard.nossum@gmail.com, zdenek.kabelac@gmail.com, hmh@hmh.eng.br,
        linux-kernel@vger.kernel.org
-Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
-Message-ID: <20080826213559.GA27498@Krystal>
-References: <48AF2ABD.9070100@zytor.com> <20080826141851.GA5300@tux1.brauer.lan> <20080826145338.GA8601@Krystal> <20080826131354.356ae11d@doriath.conectiva> <20080826171822.GB14906@Krystal> <20080826150222.0cf1542c@doriath.conectiva> <20080826181558.GA16887@Krystal> <20080826203449.GD5300@tux1.brauer.lan> <20080826204814.GB23544@Krystal> <20080826212549.GE5300@tux1.brauer.lan>
+Subject: Re: [RESEND][RFC][PATCH] leds: fix oops race in led trigger
+ registration
+Message-Id: <20080826143657.7192afdf.akpm@linux-foundation.org>
+In-Reply-To: <1219306014.5385.9.camel@dax.rpnet.com>
+References: <20080821071750.GA8046@localhost.localdomain>
+	<1219306014.5385.9.camel@dax.rpnet.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080826212549.GE5300@tux1.brauer.lan>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:34:31 up 83 days,  2:14,  6 users,  load average: 0.33, 0.42,
-	0.56
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Gerhard Brauer (gerhard.brauer@web.de) wrote:
-> On Tue, Aug 26, 2008 at 04:48:14PM -0400, Mathieu Desnoyers wrote:
+On Thu, 21 Aug 2008 09:06:54 +0100
+Richard Purdie <rpurdie@rpsys.net> wrote:
+
+> Hi,
+> 
+> On Thu, 2008-08-21 at 09:17 +0200, Vegard Nossum wrote:
+> > I resubmit this, which was posted a month ago, with no responses from
+> > the maintainer (and no recent fixes in this area either). I have not
+> > tested it myself, but I am reasonably confident that this is an
+> > obviously correct fix. I guess it would not hurt to exercise it as well.
 > > 
-> > OK, so we have a problem with interrupts coming while we are doing the
-> > alternatives patching.
+> > Zdenek: Have recent kernels also been showing this behaviour? Did the
+> > patch fix the problem for you? You said something about a new issue
+> > showing up, do you think that was related to this patch?
 > > 
-> > First thing, I wonder if Virtualbox expects the OS to patch all its
-> > paravirt instructions in one go ?
-> > 
-> > Also, could you then try to :
-> > - to revert all those changes
-> > - Do this to text_poke_early and text_poke :
-> > 
-> > - put the sync_core() within the irq off critical section
-> > (test)
+> > Also, just one question (since I'm newbie at this): Is it dangerous to
+> > register the &dev_attr_trigger device file before we put the device on
+> > the list or initialize it completely? If so, the initialization should
+> > probably be moved all to the top before the file is made public.
 > 
-> Could you please explain more what to change? I don't see where to put
-> sync_core(), i not found this section in both functions. (I'm not a developer)
+> This patch isn't quite right since whilst it fixes one race, it opens up
+> a number of other potential problems. We definitely should have the led
+> listed in leds_list before calling the various functions and the
+> existing init order is correct in that sense.
 > 
-
-Sure,
-
-First patch to test :
-
-x86 alternative text_poke move sync_core
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- arch/x86/kernel/alternative.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6-lttng/arch/x86/kernel/alternative.c
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/alternative.c	2008-08-26 17:26:41.000000000 -0400
-+++ linux-2.6-lttng/arch/x86/kernel/alternative.c	2008-08-26 17:26:58.000000000 -0400
-@@ -488,8 +488,8 @@ void *text_poke_early(void *addr, const 
- 	unsigned long flags;
- 	local_irq_save(flags);
- 	memcpy(addr, opcode, len);
--	local_irq_restore(flags);
- 	sync_core();
-+	local_irq_restore(flags);
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
- 	   that causes hangs on some VIA CPUs. */
- 	return addr;
-@@ -529,9 +529,9 @@ void *__kprobes text_poke(void *addr, co
- 	BUG_ON(!vaddr);
- 	local_irq_save(flags);
- 	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
-+	sync_core();
- 	local_irq_restore(flags);
- 	vunmap(vaddr);
--	sync_core();
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
- 	   that causes hangs on some VIA CPUs. */
- 	for (i = 0; i < len; i++)
-
-
-> > - add a wbinvd();  just after the sync_core() in both functions
-> > (test).
+> I suspect your problem is caused by something calling a trigger
+> registration between the point its added to the list and the
+> init_rwsem(). The best solution is to move the init_rwsem() to earlier
+> in the function. Yes, that means some ifdef ugliness but so be it. Could
+> you see whether you still see the problem with the patch below?
 > 
-> Also verbose please...
+> Cheers,
+> 
+> Richard
+> 
+> 
+> diff --git a/drivers/leds/led-class.c b/drivers/leds/led-class.c
+> index 559a408..c9d8219 100644
+> --- a/drivers/leds/led-class.c
+> +++ b/drivers/leds/led-class.c
+> @@ -113,6 +113,9 @@ int led_classdev_register(struct device *parent, struct led_classdev *led_cdev)
+>  	if (rc)
+>  		goto err_out;
+>  
+> +#ifdef CONFIG_LEDS_TRIGGERS
+> +	init_rwsem(&led_cdev->trigger_lock);
+> +#endif
+>  	/* add to the list of leds */
+>  	down_write(&leds_list_lock);
+>  	list_add_tail(&led_cdev->node, &leds_list);
+> @@ -121,8 +124,6 @@ int led_classdev_register(struct device *parent, struct led_classdev *led_cdev)
+>  	led_update_brightness(led_cdev);
+>  
+>  #ifdef CONFIG_LEDS_TRIGGERS
+> -	init_rwsem(&led_cdev->trigger_lock);
+> -
+>  	rc = device_create_file(led_cdev->dev, &dev_attr_trigger);
+>  	if (rc)
+>  		goto err_out_led_list;
 > 
 
-Second patch to apply on top of the first one :
+??
 
-
-x86 alternative text_poke add wbinvd
-
-Add a cache flush instruction before reenabling interrupts in text_poke.
-
-If this works, we could use clflush() (which is sadly buggy on some archs) which
-is faster since it only clear a cacheline instead of the entire cache.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- arch/x86/kernel/alternative.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux-2.6-lttng/arch/x86/kernel/alternative.c
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/alternative.c	2008-08-26 17:27:33.000000000 -0400
-+++ linux-2.6-lttng/arch/x86/kernel/alternative.c	2008-08-26 17:27:53.000000000 -0400
-@@ -489,6 +489,7 @@ void *text_poke_early(void *addr, const 
- 	local_irq_save(flags);
- 	memcpy(addr, opcode, len);
- 	sync_core();
-+	wbinvd();
- 	local_irq_restore(flags);
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
- 	   that causes hangs on some VIA CPUs. */
-@@ -530,6 +531,7 @@ void *__kprobes text_poke(void *addr, co
- 	local_irq_save(flags);
- 	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
- 	sync_core();
-+	wbinvd();
- 	local_irq_restore(flags);
- 	vunmap(vaddr);
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
-
-
-
-Thanks,
-
-Mathieu
-
-> > Thanks,
-> > 
-> > Mathieu
-> 
-> Thank you
-> 	Gerhard
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
