@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757836AbYHZJzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbYHZJz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757836AbYHZJzA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 05:55:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbYHZJyv
+	id S1758035AbYHZJz0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 05:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755457AbYHZJyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 05:54:51 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43547 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751144AbYHZJyu (ORCPT
+	Tue, 26 Aug 2008 05:54:55 -0400
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:37867 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755044AbYHZJyy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 05:54:50 -0400
-Message-Id: <20080826095524.294452330@bull.net>
-References: <20080826095427.460892713@bull.net>
-User-Agent: quilt/0.46-1
-Date: Tue, 26 Aug 2008 11:54:28 +0200
-From: Nadia.Derbey@bull.net
-To: akpm@linux-foundation.org
-Cc: matthltc@us.ibm.com, Solofo.Ramangalahy@bull.net,
-       linux-kernel@vger.kernel.org, Nadia.Derbey@bull.net
-Subject: [PATCH 1/1] IPC - Document the new auto_msgmni proc file
-Content-Disposition: inline; filename=auto_msgmni_doc.patch
+	Tue, 26 Aug 2008 05:54:54 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=D/rPnHhb2+U+8umYAMMUBlQGIOdFhONLkovPwtEOTgE19ioUHAO1WXwjSoRll/2VwLSeKOHZAaAYZQ0MCpZUW7hV3bRYHcmcfolTKlIONpNdMtThOaP478OQZFm9EGugxa6+mrj68hbyS3YvsPwkZsuZN3YVF5b+QLx5PJA71PQ=  ;
+X-YMail-OSG: O0xnhhgVM1mQTzES0LxY7DTFZEwXo2wvkLEe12H3OfWRsO4HBkqAccUDZJ_JJQz3oB.3diMxtrwsfvlzxJNyKNfEeVmpRjR8fCV7_HyWBVxySYQX2qr6cUMXLEPFC.9t8hV_7nCCwyshC8s9p7BZzcz3
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
+Date: Tue, 26 Aug 2008 19:54:47 +1000
+User-Agent: KMail/1.9.5
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Stefani Seibold <stefani@seibold.net>,
+       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20080819103301.787700742@chello.nl> <200808261900.07383.nickpiggin@yahoo.com.au> <20080826093059.GA471@elte.hu>
+In-Reply-To: <20080826093059.GA471@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808261954.47987.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for the delay but this message has been queued for 5 days (my sendmail
-was not correclty configured) - resending.
+On Tuesday 26 August 2008 19:30, Ingo Molnar wrote:
+> * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > So... no reply to this? I'm really wondering how it's OK to break
+> > documented standards and previous Linux behaviour by default for
+> > something that it is trivial to solve in userspace? [...]
+>
+> I disagree
 
-[PATCH 01/01]
+Your arguments were along the line of:
 
-This patch updates Documentation/filesystems/proc.txt: it describes the file
-auto_msgmni intoduced to enable/disable msgmni automatic recomputing upon
-memory add/remove (see thread http://lkml.org/lkml/2008/7/4/27).
-Also added a description for msgmni (this filex is only listed in
-Documentation/sysctl/kernel.txt).
+* It probably doesn't break anything (except we had somebody report
+  that it breaks their app)
 
-Applies to 2.6.27-rc1-mm1.
+* If it does break something then they must be doing something stupid
+  (I refuted that because there are several legitimate ways to use rt
+  scheduling that is broken by this)
 
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
+* We have many other APIs and tools that don't conform to posix (why
+  is that a reason to break this one?)
 
----
- Documentation/filesystems/proc.txt |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+* We should break the API to cater for stupid users and distros who
+  create local DoS and/or lock up their boxes (except this is trivial
+  to solve by setting sysctls or having a watchdog or using sysrq)
 
-Index: linux-2.6.27-rc1-mm1/Documentation/filesystems/proc.txt
-===================================================================
---- linux-2.6.27-rc1-mm1.orig/Documentation/filesystems/proc.txt	2008-08-21 09:43:36.000000000 +0200
-+++ linux-2.6.27-rc1-mm1/Documentation/filesystems/proc.txt	2008-08-21 10:17:28.000000000 +0200
-@@ -1339,6 +1339,25 @@ Enables/Disables the protection of the p
- "smaps".  When enabled, the contents of these files are visible only to
- readers that are allowed to ptrace() the given process.
- 
-+msgmni
-+------
-+
-+Maximum number of message queue ids on the system.
-+This value scales to the amount of lowmem. It is automatically recomputed
-+upon memory add/remove or ipc namespace creation/removal.
-+When a value is written into this file, msgmni's value becomes fixed, i.e. it
-+is not recomputed anymore when one of the above events occurs.
-+Use auto_msgmni to change this behavior.
-+
-+auto_msgmni
-+-----------
-+
-+Enables/Disables automatic recomputing of msgmni upon memory add/remove or
-+upon ipc namespace creation/removal (see the msgmni description above).
-+Echoing "1" into this file enables msgmni automatic recomputing.
-+Echoing "0" turns it off.
-+auto_msgmni default value is 1.
-+
- 
- 2.4 /proc/sys/vm - The virtual memory subsystem
- -----------------------------------------------
+So did I miss some really good argument, or do you really think the
+above arguments are a good reason to break the API? If the latter,
+then we have to just agree to disagree and I'll ask Linus to arbitrate.
+OK?
 
--- 
+
