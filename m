@@ -1,37 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbYHZVsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866AbYHZVwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755558AbYHZVsN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 17:48:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYHZVr7
+	id S1756866AbYHZVwE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 17:52:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbYHZVvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 17:47:59 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40655 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750990AbYHZVr6 (ORCPT
+	Tue, 26 Aug 2008 17:51:54 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58992 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751668AbYHZVvx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 17:47:58 -0400
-Date: Tue, 26 Aug 2008 22:08:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, zohar@us.ibm.com, dvelarde@us.ibm.com,
-       serue@us.ibm.com, safford@us.ibm.com
-Subject: Re: [PATCH][resubmit] TPM: update char dev BKL pushdown
-Message-ID: <20080826220823.509571fd@lxorguk.ukuu.org.uk>
-In-Reply-To: <1219784185.4768.6.camel@blackbox>
-References: <1219784185.4768.6.camel@blackbox>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 26 Aug 2008 17:51:53 -0400
+Message-ID: <48B47AD2.5080609@zytor.com>
+Date: Tue, 26 Aug 2008 14:51:14 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Gerhard Brauer <gerhard.brauer@web.de>,
+       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
+References: <48AF2ABD.9070100@zytor.com> <20080826141851.GA5300@tux1.brauer.lan> <20080826145338.GA8601@Krystal> <20080826131354.356ae11d@doriath.conectiva> <20080826171822.GB14906@Krystal> <20080826150222.0cf1542c@doriath.conectiva> <20080826181558.GA16887@Krystal> <20080826203449.GD5300@tux1.brauer.lan> <20080826204814.GB23544@Krystal> <20080826212549.GE5300@tux1.brauer.lan> <20080826213559.GA27498@Krystal>
+In-Reply-To: <20080826213559.GA27498@Krystal>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	atomic_set(&chip->is_open, 1);
-> +	get_device(chip->dev); /* protect from chip disappearing */
+Mathieu Desnoyers wrote:
+> 
+> x86 alternative text_poke add wbinvd
+> 
+> Add a cache flush instruction before reenabling interrupts in text_poke.
+> 
+> If this works, we could use clflush() (which is sadly buggy on some archs) which
+> is faster since it only clear a cacheline instead of the entire cache.
+> 
 
-Why not just use test_and_set_bit() ? You seem to be abusing atomic_t to
-achieve this.
+Well, in this case it's VirtualBox we're talking about, a virtual 
+architecture.  It's hard to know what it will do under *any* circumstances.
+
+	-hpa
