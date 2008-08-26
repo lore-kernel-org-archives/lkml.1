@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbYHZXsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbYHZXua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752591AbYHZXsd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 19:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYHZXsY
+	id S1753352AbYHZXua (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 19:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbYHZXuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 19:48:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51204 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752045AbYHZXsX (ORCPT
+	Tue, 26 Aug 2008 19:50:20 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:8216 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751068AbYHZXuT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 19:48:23 -0400
-Date: Tue, 26 Aug 2008 16:47:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Parag Warudkar <parag.lkml@gmail.com>
-cc: Adrian Bunk <bunk@stusta.de>, Rusty Russell <rusty@rustcorp.com.au>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-embedded@vger.kernel.org
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
- bisected
-In-Reply-To: <f7848160808261554j2f4eaaa6i1ee8801ae75ca7bf@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0808261644260.3363@nehalem.linux-foundation.org>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <48B313E0.1000501@hp.com>  <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org>  <200808261111.19205.rusty@rustcorp.com.au>  <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org> 
- <20080826183051.GB10925@cs181140183.pp.htv.fi>  <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org>  <20080826205916.GB11734@cs181140183.pp.htv.fi>  <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org>
- <f7848160808261554j2f4eaaa6i1ee8801ae75ca7bf@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 26 Aug 2008 19:50:19 -0400
+Message-ID: <48B4969C.60707@ct.jp.nec.com>
+Date: Tue, 26 Aug 2008 16:49:48 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: [PATCH -next] net: fix compilation NG when !CONFIG_MODULE
+References: <20080826184008.6be39f19.sfr@canb.auug.org.au>
+In-Reply-To: <20080826184008.6be39f19.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+
+  CC      net/core/dev.o
+net/core/dev.c:1001: error: redefinition of 'dev_load'
+include/linux/netdevice.h:1645: error: previous definition of 'dev_load' was here
+make[2]: *** [net/core/dev.o] Error 1
+
+dev_load() is not used when CONFIG_MODULE disabled.
+
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ net/core/dev.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/net/core/dev.c b/net/core/dev.c
+index b0a1ee8..bde9790 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -996,7 +996,7 @@ EXPORT_SYMBOL(netdev_bonding_change);
+  *	privileges this function loads the module. If module loading is not
+  *	available in this kernel then it becomes a nop.
+  */
+-
++#ifdef CONFIG_MODULES
+ void dev_load(struct net *net, const char *name)
+ {
+ 	struct net_device *dev;
+@@ -1008,6 +1008,7 @@ void dev_load(struct net *net, const char *name)
+ 	if (!dev && capable(CAP_SYS_MODULE))
+ 		request_module("%s", name);
+ }
++#endif
+ 
+ /**
+  *	dev_open	- prepare an interface for use.
+-- 
+1.5.6
 
 
-On Tue, 26 Aug 2008, Parag Warudkar wrote:
-> 
-> This is something I never understood - embedded devices are not going
-> to run more than a few processes and 4K*(Few Processes)
->  IMHO is not worth a saving now a days even in embedded world given
-> falling memory prices. Or do I misunderstand?
-
-Well, by that argument, 1% of kernel size doesn't matter either..
-
-1% of a kernel for an embedded device is roughly 10-30kB or so depending 
-on how small you make the configuration. 
-
-If that matters, then so should the difference of 3-8 processes' kernel 
-stack usage when you have a 4k/8k stack choice.
-
-And they _all_ will have at least 3-8 processes on them. Even the simplest 
-ones will tend to have many more.
-
-			Linus
