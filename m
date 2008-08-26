@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759148AbYHZUBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbYHZUBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759148AbYHZUBO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 16:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755717AbYHZUAt
+	id S1759429AbYHZUBa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 16:01:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758985AbYHZUBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 16:00:49 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:2886 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755402AbYHZUAs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 16:00:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=Hl4lP0Ibh6gZHP+ts+Yr5bN5BhrrDP9Qk27Gg2073KMYf26jP/np98xu0P4QOWIB/Y
-         l9EICpmatuikkZZye3lATam5qtnehP+pbCkIPjta/t6nHRc6s6g1jF9zxejSEXsQphiG
-         8GbHDUE6u+pbo6epXC+W1JQeS9C+ogrhhMlUk=
-Subject: [PATCH 2/2] rcu: fix sparse shadowed variable warning
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "Paul E. McKenney" <paulmck@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 26 Aug 2008 13:00:44 -0700
-Message-Id: <1219780844.6069.6.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 26 Aug 2008 16:01:06 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:42485 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758943AbYHZUBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 16:01:05 -0400
+Message-ID: <48B460FE.2020100@sgi.com>
+Date: Tue, 26 Aug 2008 13:01:02 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Dave Jones <davej@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mike Travis <travis@sgi.com>, "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Luck, Tony" <tony.luck@intel.com>, Jack Steiner <steiner@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -	bisected
+References: <48B29F7B.6080405@hp.com> <48B2A421.7080705@hp.com> <alpine.LFD.1.10.0808251019380.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251106270.3363@nehalem.linux-foundation.org> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251401590.3363@nehalem.linux-foundation.org> <48B452F3.9040304@sgi.com> <alpine.LFD.1.10.0808261205530.3363@nehalem.linux-foundation.org> <20080826192848.GA20653@redhat.com>
+In-Reply-To: <20080826192848.GA20653@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel/rcuclassic.c:564:18: warning: symbol 'flags' shadows an earlier one
-kernel/rcuclassic.c:527:16: originally declared here
+Dave Jones wrote:
+...
+> 
+> But yes, for this to be even remotely feasible, there has to be a negligable
+> performance cost associated with it, which right now, we clearly don't have.
+> Given that the number of people running 4096 CPU boxes even in a few years time
+> will still be tiny, punishing the common case is obviously absurd.
+> 
+> 	Dave
+> 
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-It would be safe in this case to just remove the second declaration of flags
-and reuse it as it is outside the local_irq_save/restore pair.  I did it this
-way in case there are future changes that might mix up the use of flags.
+I did do some fairly extensive benchmarking between configs of NR_CPUS = 128 and
+4096 and most performance hits were in the neighborhood of < 5% on systems with
+8 cpus and 4GB of memory (our most common test system).  [But changing cpumask_t's
+to be pointers instead of values will likely increase this.]  I've tried to be
+very sensitive to this issue with all my previous changes, so convincing the distros
+to set NR_CPUS=4096 would be as painless for them as possible. ;-)
 
-Feel free to just remove the second flags declaration if you'd rather do it
-that way.
+Btw, huge count cpu systems I don't think are that far away.  I believe the nextgen
+Larabbee chips will be geared towards HPC applications [instead of just GFX apps],
+and putting 4 of these chips on a motherboard would add up to 512 cpu threads (1024
+if they support hyperthreading.)
 
- kernel/rcuclassic.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-index 743cf05..ed15128 100644
---- a/kernel/rcuclassic.c
-+++ b/kernel/rcuclassic.c
-@@ -561,15 +561,15 @@ static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp,
- 		local_irq_restore(flags);
- 
- 		if (rcu_batch_after(rdp->batch, rcp->pending)) {
--			unsigned long flags;
-+			unsigned long flags2;
- 
- 			/* and start it/schedule start if it's a new batch */
--			spin_lock_irqsave(&rcp->lock, flags);
-+			spin_lock_irqsave(&rcp->lock, flags2);
- 			if (rcu_batch_after(rdp->batch, rcp->pending)) {
- 				rcp->pending = rdp->batch;
- 				rcu_start_batch(rcp);
- 			}
--			spin_unlock_irqrestore(&rcp->lock, flags);
-+			spin_unlock_irqrestore(&rcp->lock, flags2);
- 		}
- 	}
- 
--- 
-1.6.0.340.g84854
-
+Thanks,
+Mike
