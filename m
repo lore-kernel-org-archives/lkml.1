@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758863AbYHZRfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbYHZRh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758863AbYHZRfh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 13:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757245AbYHZRf3
+	id S1758927AbYHZRh1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 13:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757245AbYHZRhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 13:35:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56081 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757226AbYHZRf2 (ORCPT
+	Tue, 26 Aug 2008 13:37:11 -0400
+Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:54150
+	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756686AbYHZRhK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 13:35:28 -0400
-Date: Tue, 26 Aug 2008 10:35:05 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
- bisected
-In-Reply-To: <200808261111.19205.rusty@rustcorp.com.au>
-Message-ID: <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org> <200808261111.19205.rusty@rustcorp.com.au>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 26 Aug 2008 13:37:10 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH v2 1/6] sched: only try to push a task on wakeup if it is
+	migratable
+To: mingo@elte.hu
+Cc: srostedt@redhat.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, npiggin@suse.de,
+       gregory.haskins@gmail.com
+Date: Tue, 26 Aug 2008 13:34:49 -0400
+Message-ID: <20080826173449.16413.89611.stgit@dev.haskins.net>
+In-Reply-To: <20080826173131.16413.17862.stgit@dev.haskins.net>
+References: <20080826173131.16413.17862.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+There is no sense in wasting time trying to push a task away that
+cannot move anywhere else.  We gain no benefit from trying to push
+other tasks at this point, so if the task being woken up is non
+migratable, just skip the whole operation.  This reduces overhead
+in the wakeup path for certain tasks.
 
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
-On Tue, 26 Aug 2008, Rusty Russell wrote:
-> 
-> Your workaround is very random, and that scares me.  I think a huge number of 
-> CPUs needs a real solution (an actual cpumask allocator, then do something 
-> clever if we come across an actual fastpath).
+ kernel/sched_rt.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-The thing is, the inlining thing is a separate issue.
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 6163e4c..196c024 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -1229,14 +1229,16 @@ static void post_schedule_rt(struct rq *rq)
+ }
+ 
+ /*
+- * If we are not running and we are not going to reschedule soon, we should
+- * try to push tasks away now
++ * If we are not running, we are not going to reschedule soon,
++ * and we have tasks that could be pushed, we should try to push tasks
++ * away now
+  */
+ static void task_wake_up_rt(struct rq *rq, struct task_struct *p)
+ {
+ 	if (!task_running(rq, p) &&
+ 	    !test_tsk_need_resched(rq->curr) &&
+-	    rq->rt.overloaded)
++	    rq->rt.overloaded &&
++	    p->rt.nr_cpus_allowed > 1)
+ 		push_rt_tasks(rq);
+ }
+ 
 
-Yes, the cpumasks were what made stack pressure so critical to begin with, 
-but no, a 400-byte stack frame in a deep callchain isn't acceptable 
-_regardless_ of any cpumask_t issues.
-
-Gcc inlining is a total and utter pile of shit. And _that_ is the problem. 
-I seriously think we shouldn't allow gcc to inline anything at all unless 
-we tell it to. That's how it used to work, and quite frankly, that's how 
-it _should_ work.
-
-The downsides of inlining are big enough from both a debugging and a real 
-code generation angle (eg stack usage like this), that the upsides 
-(_somesimes_ smaller kernel, possibly slightly faster code) simply aren't 
-relevant.
-
-So the "noinline" was random, yes, but this is a real issue. Looking at 
-checkstack output for a saner config (NR_CPUS=16), the top entries for me 
-are things like
-
-	ide_generic_init [vmlinux]:             1384
-	idefloppy_ioctl [vmlinux]:              1208
-	e1000_check_options [vmlinux]:  	1152
-	...
-
-which are "leaf" functions. They are broken as hell (the e1000 is 
-apparently because it builds structs on the stack that should all be 
-"static const", for example), but they are different from something like 
-the module init sequence in that they are not going to affect anything 
-else.
-
-It would be interesting to see what "-fno-default-inline" does to the 
-kernel. It really would get rid of a _lot_ of gcc version issues too. 
-Inlining behavior of gcc has long been a problem for us.
-
-			Linus
