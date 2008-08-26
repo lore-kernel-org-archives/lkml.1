@@ -1,105 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757591AbYHZMgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757690AbYHZMlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757591AbYHZMgy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 08:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbYHZMgq
+	id S1757690AbYHZMlj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 08:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbYHZMlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 08:36:46 -0400
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:57105 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753844AbYHZMgp (ORCPT
+	Tue, 26 Aug 2008 08:41:31 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:40509 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753844AbYHZMlb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 08:36:45 -0400
-Message-ID: <48B3F81C.2010803@linux.vnet.ibm.com>
-Date: Tue, 26 Aug 2008 14:33:32 +0200
-From: Pierre Morel <pmorel@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+	Tue, 26 Aug 2008 08:41:31 -0400
+Message-ID: <48B3F9F7.2050503@skyrush.com>
+Date: Tue, 26 Aug 2008 06:41:27 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080727)
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Roland McGrath <roland@redhat.com>,
-       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
-       sameske@linux.vnet.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [RFC] [Patch 1/1] [Self Ptrace] System call notification with
- self_ptrace
-References: <48B26083.8080506@linux.vnet.ibm.com> <1219681992.20559.196.camel@nimitz>
-In-Reply-To: <1219681992.20559.196.camel@nimitz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: akpm@linux-foundation.org
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] TTY: Fix loss of echoed characters
+References: <200807252257.m6PMvieO003213@imap1.linux-foundation.org> <48AC3A16.4080209@skyrush.com>
+In-Reply-To: <48AC3A16.4080209@skyrush.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/mixed;
+ boundary="------------020701060407040402010508"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This is a multi-part message in MIME format.
+--------------020701060407040402010508
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Dave Hansen wrote:
-> On Mon, 2008-08-25 at 09:34 +0200, Pierre Morel wrote:
->   
->> +       if ((current->ptrace & PT_SELF)
->> +               && (regs->orig_ax != __NR_rt_sigreturn)
->> +               && (regs->orig_ax != __NR_ptrace)) {
->> +               if (!entryexit) {
->> +               struct siginfo info;
->> +
->> +               memset(&info, 0, sizeof(struct siginfo));
->> +               info.si_signo = SIGSYS;
->> +               info.si_code = SYS_SYSCALL;
->> +               info.si_addr = (void *) regs->orig_ax;
->> +               send_sig_info(SIGSYS, &info, current);
->> +               }
->> +               return 1; /* Skip system call, deliver signal. */
->> +       }
->>     
->
-> The indenting here looks messed up.
->   
-You are right, I will rework the patch and send it again, it has a lot of
-formating errors indeed.
-> Also, there looks to be a pretty substantial amount of copy-and-paste
-> code in those little if()s.  It's only going to get worse as we add more
-> architectures.  If there's ever a little buglet in that bit of code, or
-> we need to tweak it it some way, it'll be a bitch to fix.
->
-> For instance, if you have a little arch-independent helper like this:
->
-> static inline int is_self_ptracing(unsigned long syscall_reg)
-> {
-> 	if (!(current->ptrace & PT_SELF))
-> 		return 0;
-> 	if (syscall_reg == __NR_rt_sigreturn)
-> 		return 0;
-> 	if (syscall_reg == __NR_ptrace)
-> 		return 0;
-> 	return 1;
-> }
->
-> You can call it like this:
->
-> 	if (is_self_ptracing(regs->gprs[2]))
-> ...
-> 	if (is_self_ptracing(regs->orig_ax))
-> ...
-> 	if (is_self_ptracing(regs->orig_rax))
->
-> Something similar can probably be done for the siginfo construction.
->   
-Yes, thank you it is a good tip.
-> You should basically try and think of ways to abstract this stuff every
-> single time you touch arch code.  
->
-> Why don't you also mention why you really want this feature.  That's
-> missing from the description. 
->   
-Yes, you are right too, I will rework the patch description too.
-> -- Dave
->
->   
-Thanks for the comments, I rework the patch.
+Joe Peterson wrote:
+> Andrew, attached is a patch that fixes the loss of echoed characters in
+> two common cases: 1) tty output buffer is full due to lots of output and
+> 2) tty is stopped.
 
-Pierre
+Attached is a follow-on patch.  It just does some code style cleanup and
+minor code efficiency tweaks.  Please apply it after the main patch
+(probably should be combined into one patch).
 
--- 
-=============
-Pierre Morel
-RTOS and Embedded Linux
+						Thanks, Joe
 
+--------------020701060407040402010508
+Content-Type: text/plain;
+ name="tty-fix-loss-of-echoed-characters-cleanup.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="tty-fix-loss-of-echoed-characters-cleanup.patch"
+
+Minor code efficiency and style cleanup.  No behavior changes.
+Apply after tty-fix-loss-of-echoed-characters.patch.
+
+Signed-off-by: Joe Peterson <joe@skyrush.com>
+---
+
+--- linux/drivers/char/n_tty.c.orig	2008-08-20 18:19:06.000000000 -0600
++++ linux/drivers/char/n_tty.c	2008-08-25 13:41:30.000000000 -0600
+@@ -446,8 +446,6 @@ static ssize_t process_output_block(stru
+ 		}
+ 	}
+ break_out:
+-	//if (tty->ops->flush_chars)
+-	//	tty->ops->flush_chars(tty);
+ 	i = tty->ops->write(tty, buf, i);
+ 
+ 	unlock_kernel();
+@@ -455,11 +453,11 @@ break_out:
+ }
+ 
+ /**
+- *	process_echoes	-	write pending echoed characters
++ *	process_echoes	-	write pending echo characters
+  *	@tty: terminal device
+  *
+- *	Write echoed (and other ldisc-generated) characters to the
+- *	tty that have been stored previously in the echo buffer.
++ *	Write previously buffered echo (and other ldisc-generated)
++ *	characters to the tty.
+  *
+  *	Characters generated by the ldisc (including echoes) need to
+  *	be buffered because the driver's write buffer can fill during
+@@ -488,11 +486,11 @@ break_out:
+ 
+ static void process_echoes(struct tty_struct *tty)
+ {
+-	int	space, num, nr;
++	int	space, nr;
+ 	unsigned char c;
+ 	unsigned char *cp, *buf_end;
+ 
+-	if (!(num = tty->echo_cnt))
++	if (!tty->echo_cnt)
+ 		return;
+ 
+ 	lock_kernel();
+@@ -501,7 +499,7 @@ static void process_echoes(struct tty_st
+ 
+ 	buf_end = tty->echo_buf + N_TTY_BUF_SIZE;
+ 	cp = tty->echo_buf + tty->echo_pos;
+-	nr = num;
++	nr = tty->echo_cnt;
+ 	while (nr > 0) {
+ 		c = *cp;
+ 		if (c == ECHO_OP_START) {
+@@ -635,14 +633,15 @@ static void process_echoes(struct tty_st
+ 			cp -= N_TTY_BUF_SIZE;
+ 	}
+ 
+-	tty->echo_cnt = nr;
+-	if (tty->echo_cnt == 0) {
++	if (nr == 0) {
+ 		tty->echo_pos = 0;
++		tty->echo_cnt = 0;
+ 		tty->echo_overrun = 0;
+ 	} else {
+-		int num_processed = (num - nr);
++		int num_processed = tty->echo_cnt - nr;
+ 		tty->echo_pos += num_processed;
+-		tty->echo_pos &= (N_TTY_BUF_SIZE - 1);
++		tty->echo_pos &= N_TTY_BUF_SIZE - 1;
++		tty->echo_cnt = nr;
+ 		if (num_processed > 0)
+ 			tty->echo_overrun = 0;
+ 	}
+@@ -663,42 +662,43 @@ static void process_echoes(struct tty_st
+ 
+ static void add_echo_byte(unsigned char c, struct tty_struct *tty)
+ {
+-	int 	add_char_pos;
++	int	new_byte_pos;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&tty->echo_lock, flags);
+ 
+-	add_char_pos = tty->echo_pos + tty->echo_cnt;
+-	if (add_char_pos >= N_TTY_BUF_SIZE)
+-		add_char_pos -= N_TTY_BUF_SIZE;
+-
+-	/* Detect overrun */
+ 	if (tty->echo_cnt == N_TTY_BUF_SIZE) {
++		/* Circular buffer is already at capacity */
++		new_byte_pos = tty->echo_pos;
++
+ 		/*
+-		 * If the start position pointer needs to be advanced
+-		 * due to running out of buffer space, be sure it is
+-		 * done in such a way as to remove whole
+-		 * operation byte groups.
++		 * Since the buffer start position needs to be advanced,
++		 * be sure to step by a whole operation byte group.
+ 		 */
+-		if (*(tty->echo_buf +
+-		      (tty->echo_pos & (N_TTY_BUF_SIZE - 1))) == ECHO_OP_START)
++		if (tty->echo_buf[tty->echo_pos] == ECHO_OP_START)
+ 		{
+-			if (*(tty->echo_buf +
+-			      ((tty->echo_pos + 1) & (N_TTY_BUF_SIZE - 1))) == ECHO_OP_TAB_ERASE) {
++			if (tty->echo_buf[(tty->echo_pos + 1) &
++					  (N_TTY_BUF_SIZE - 1)] ==
++						ECHO_OP_TAB_ERASE) {
+ 				tty->echo_pos += 4;
+ 				tty->echo_cnt -= 3;
+ 			} else {
+ 				tty->echo_pos += 2;
+ 				tty->echo_cnt -= 1;
+ 			}
+-		} else
++		} else {
+ 			tty->echo_pos++;
+-		tty->echo_pos &= (N_TTY_BUF_SIZE - 1);
++		}
++		tty->echo_pos &= N_TTY_BUF_SIZE - 1;
++
+ 		tty->echo_overrun = 1;
+-	} else
++	} else {
++		new_byte_pos = tty->echo_pos + tty->echo_cnt;
++		new_byte_pos &= N_TTY_BUF_SIZE - 1;
+ 		tty->echo_cnt++;
++	}
+ 
+-	tty->echo_buf[add_char_pos] = c;
++	tty->echo_buf[new_byte_pos] = c;
+ 
+ 	spin_unlock_irqrestore(&tty->echo_lock, flags);
+ }
+@@ -762,8 +762,9 @@ static void echo_char_raw(unsigned char 
+ 	if (c == ECHO_OP_START) {
+ 		add_echo_byte(ECHO_OP_START, tty);
+ 		add_echo_byte(ECHO_OP_START, tty);
+-	} else
++	} else {
+ 		add_echo_byte(c, tty);
++	}
+ }
+ 
+ /**
+
+--------------020701060407040402010508--
