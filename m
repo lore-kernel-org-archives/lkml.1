@@ -1,198 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758921AbYHZSxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758323AbYHZSyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758921AbYHZSxv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 14:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756453AbYHZSxn
+	id S1758323AbYHZSyM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 14:54:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758813AbYHZSxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 14:53:43 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:54234 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756171AbYHZSxn (ORCPT
+	Tue, 26 Aug 2008 14:53:50 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:54187 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758702AbYHZSxt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 14:53:43 -0400
-Date: Tue, 26 Aug 2008 13:53:41 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 1/3] user namespaces: introduce user_struct->user_namespace
-	relationship
-Message-ID: <20080826185341.GA338@us.ibm.com>
+	Tue, 26 Aug 2008 14:53:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=NY+jZq44Alhmf3CGUULeLkty7bz6uWcEg4fDUpc7krfLYaYv/SolQhJk+4TUNEW0LZ
+         GWjB27VmItavNV3GqprKKDOf+MNyccihxbpFyTBfipyfWuyWt1CygkQFNZRHFRV7QvYo
+         VumswMJ+5BcYlCv3TbNRoHeBV492BaclJ0Bgc=
+Message-ID: <f158dc670808261153l218dca95t9e68cabbd85ac68@mail.gmail.com>
+Date: Tue, 26 Aug 2008 12:53:48 -0600
+From: "Latchesar Ionkov" <lucho@ionkov.net>
+To: "Abhishek Kulkarni" <kulkarni@lanl.gov>
+Subject: Re: [V9fs-developer] [PATCH] 9p bug fix: return non-zero error value in p9_put_data
+Cc: v9fs-developer@lists.sourceforge.net, ericvh@gmail.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1219771831.16125.12.camel@blender>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <1219771831.16125.12.camel@blender>
+X-Google-Sender-Auth: 1247290aea140a10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following 3 patches are a small start to the long task of fleshing
-out user namespace support.  These three patches just clear up the
-relationship of struct user_struct to struct user_namespace (patch 1),
-fix up the refcounting (patch 2), and complete the action of switching
-users when cloning a new user_namespace (patch 3).
+Acked-by: Latchesar Ionkov <lucho@ionkov.net>
 
-Patch 1:
-
-When a task does clone(CLONE_NEWNS), the task's user is the 'creator' of the
-new user_namespace, and the user_namespace is tacked onto a list of those
-created by this user.
-
-Changelog:
-	Aug 25: make free_user not inlined as it's not trivial.  (Eric
-		Biederman suggestion)
-	Aug 1: renamed user->user_namespace to user_ns, as the next
-		patch did anyway.
-	Aug 1: move put_user_ns call in one free_user() definition
-		to move it outside the lock in free_user.  put_user_ns
-		calls free_user on the user_ns->creator, which in
-		turn would grab the lock again.
-
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
----
- include/linux/sched.h          |    1 +
- include/linux/user_namespace.h |    1 +
- kernel/user.c                  |   11 +++++++++--
- kernel/user_namespace.c        |   20 +++++++++++---------
- 4 files changed, 22 insertions(+), 11 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index cfb0d87..9bebf95 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -601,6 +601,7 @@ struct user_struct {
- 	/* Hash table maintenance information */
- 	struct hlist_node uidhash_node;
- 	uid_t uid;
-+	struct user_namespace *user_ns;
- 
- #ifdef CONFIG_USER_SCHED
- 	struct task_group *tg;
-diff --git a/include/linux/user_namespace.h b/include/linux/user_namespace.h
-index b5f41d4..f9477c3 100644
---- a/include/linux/user_namespace.h
-+++ b/include/linux/user_namespace.h
-@@ -13,6 +13,7 @@ struct user_namespace {
- 	struct kref		kref;
- 	struct hlist_head	uidhash_table[UIDHASH_SZ];
- 	struct user_struct	*root_user;
-+	struct user_struct	*creator;
- };
- 
- extern struct user_namespace init_user_ns;
-diff --git a/kernel/user.c b/kernel/user.c
-index 865ecf5..ee841c7 100644
---- a/kernel/user.c
-+++ b/kernel/user.c
-@@ -22,6 +22,7 @@ struct user_namespace init_user_ns = {
- 		.refcount	= ATOMIC_INIT(2),
- 	},
- 	.root_user = &root_user,
-+	.creator = &root_user,
- };
- EXPORT_SYMBOL_GPL(init_user_ns);
- 
-@@ -53,6 +54,7 @@ struct user_struct root_user = {
- 	.files		= ATOMIC_INIT(0),
- 	.sigpending	= ATOMIC_INIT(0),
- 	.locked_shm     = 0,
-+	.user_ns	= &init_user_ns,
- #ifdef CONFIG_USER_SCHED
- 	.tg		= &init_task_group,
- #endif
-@@ -319,12 +321,13 @@ done:
-  * IRQ state (as stored in flags) is restored and uidhash_lock released
-  * upon function exit.
-  */
--static inline void free_user(struct user_struct *up, unsigned long flags)
-+static void free_user(struct user_struct *up, unsigned long flags)
- {
- 	/* restore back the count */
- 	atomic_inc(&up->__count);
- 	spin_unlock_irqrestore(&uidhash_lock, flags);
- 
-+	put_user_ns(up->user_ns);
- 	INIT_WORK(&up->work, remove_user_sysfs_dir);
- 	schedule_work(&up->work);
- }
-@@ -340,13 +343,14 @@ static inline void uids_mutex_unlock(void) { }
-  * IRQ state (as stored in flags) is restored and uidhash_lock released
-  * upon function exit.
-  */
--static inline void free_user(struct user_struct *up, unsigned long flags)
-+static void free_user(struct user_struct *up, unsigned long flags)
- {
- 	uid_hash_remove(up);
- 	spin_unlock_irqrestore(&uidhash_lock, flags);
- 	sched_destroy_user(up);
- 	key_put(up->uid_keyring);
- 	key_put(up->session_keyring);
-+	put_user_ns(up->user_ns);
- 	kmem_cache_free(uid_cachep, up);
- }
- 
-@@ -409,6 +413,8 @@ struct user_struct *alloc_uid(struct user_namespace *ns, uid_t uid)
- 		if (sched_create_user(new) < 0)
- 			goto out_free_user;
- 
-+		new->user_ns = get_user_ns(ns);
-+
- 		if (uids_user_create(new))
- 			goto out_destoy_sched;
- 
-@@ -441,6 +447,7 @@ struct user_struct *alloc_uid(struct user_namespace *ns, uid_t uid)
- 
- out_destoy_sched:
- 	sched_destroy_user(new);
-+	put_user_ns(new->user_ns);
- out_free_user:
- 	kmem_cache_free(uid_cachep, new);
- out_unlock:
-diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
-index 532858f..f9f7ad7 100644
---- a/kernel/user_namespace.c
-+++ b/kernel/user_namespace.c
-@@ -18,7 +18,6 @@
- static struct user_namespace *clone_user_ns(struct user_namespace *old_ns)
- {
- 	struct user_namespace *ns;
--	struct user_struct *new_user;
- 	int n;
- 
- 	ns = kmalloc(sizeof(struct user_namespace), GFP_KERNEL);
-@@ -37,15 +36,17 @@ static struct user_namespace *clone_user_ns(struct user_namespace *old_ns)
- 		return ERR_PTR(-ENOMEM);
- 	}
- 
--	/* Reset current->user with a new one */
--	new_user = alloc_uid(ns, current->uid);
--	if (!new_user) {
--		free_uid(ns->root_user);
--		kfree(ns);
--		return ERR_PTR(-ENOMEM);
--	}
-+	/* pin the creating user */
-+	ns->creator = current->user;
-+	atomic_inc(&ns->creator->__count);
-+
-+	/*
-+	 * The alloc_uid() incremented the userns refcount,
-+	 * so drop it again
-+	 */
-+	put_user_ns(ns);
- 
--	switch_uid(new_user);
-+	switch_uid(ns->root_user);
- 	return ns;
- }
- 
-@@ -71,6 +72,7 @@ void free_user_ns(struct kref *kref)
- 
- 	ns = container_of(kref, struct user_namespace, kref);
- 	release_uids(ns);
-+	free_uid(ns->creator);
- 	kfree(ns);
- }
- EXPORT_SYMBOL(free_user_ns);
--- 
-1.5.4.3
-
+On Tue, Aug 26, 2008 at 11:30 AM, Abhishek Kulkarni <kulkarni@lanl.gov> wrote:
+> p9_put_data is called by p9_create_twrite which expects it to return a
+> non-zero value on error. This was the reason why every p9_client_write
+> was failing. This patch also adds a check for buffer overflow in
+> p9_put_data.
+>
+> Signed-off-by: Abhishek Kulkarni <kulkarni@lanl.gov>
+> ---
+>  net/9p/conv.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+> diff --git a/net/9p/conv.c b/net/9p/conv.c
+> index 4454720..7f6db15 100644
+> --- a/net/9p/conv.c
+> +++ b/net/9p/conv.c
+> @@ -451,8 +451,11 @@ p9_put_data(struct cbuf *bufp, const char *data,
+> int count,
+>                   unsigned char **pdata)
+>  {
+>        *pdata = buf_alloc(bufp, count);
+> +       if (buf_check_overflow(bufp))
+> +               return -EIO;
+> +
+>        memmove(*pdata, data, count);
+> -       return count;
+> +       return 0;
+>  }
+>
+>  static int
+>
+>
+> Thanks,
+>  -- Abhishek
+>
+>
+> -------------------------------------------------------------------------
+> This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+> Build the coolest Linux based applications with Moblin SDK & win great prizes
+> Grand prize is a trip for two to an Open Source event anywhere in the world
+> http://moblin-contest.org/redirect.php?banner_id=100&url=/
+> _______________________________________________
+> V9fs-developer mailing list
+> V9fs-developer@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/v9fs-developer
+>
