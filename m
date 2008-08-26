@@ -1,145 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbYHZQW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758819AbYHZQXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753825AbYHZQW3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 12:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbYHZQWV
+	id S1758819AbYHZQXY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 12:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbYHZQXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 12:22:21 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48843 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752642AbYHZQWV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 12:22:21 -0400
-Date: Tue, 26 Aug 2008 09:22:20 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Tony Luck" <tony.luck@intel.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: PATCH] debug: add notifier chain debugging
-Message-ID: <20080826092220.66290440@infradead.org>
-In-Reply-To: <12c511ca0808252208n29043ab0lf9e56f94d5e4cb37@mail.gmail.com>
-References: <20080815152938.4bc9d48c@infradead.org>
-	<12c511ca0808251539w6f00a216s86a09a532c553a34@mail.gmail.com>
-	<20080825215555.2331f2cc@infradead.org>
-	<12c511ca0808252208n29043ab0lf9e56f94d5e4cb37@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Tue, 26 Aug 2008 12:23:16 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:51958 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753716AbYHZQXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 12:23:16 -0400
+Date: Tue, 26 Aug 2008 20:27:50 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Pierre Morel <pmorel@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Roland McGrath <roland@redhat.com>,
+       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
+       sameske@linux.vnet.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [RFC] [Patch 1/1] [Self Ptrace] System call notification with self_ptrace
+Message-ID: <20080826162750.GA406@tv-sign.ru>
+References: <48B26083.8080506@linux.vnet.ibm.com> <20080825165403.GA604@tv-sign.ru> <48B40D5F.3020705@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48B40D5F.3020705@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Aug 2008 22:08:00 -0700
-"Tony Luck" <tony.luck@intel.com> wrote:
-
-> >> This breaks on ia64 (and pa-risc I think) where function pointers
-> >> don't point directly at the code, they point to a {code,data}
-> >> structure which is itself located in data space, not text space.
+On 08/26, Pierre Morel wrote:
+>
+> Oleg Nesterov wrote:
+> >We have some "->ptrace != 0" checks which can misunderstand this. Just
+> >for example, suppose that the task does sys_ptrace(PTRACE_SELF_ON) and
+> >then its parent dies. I guess in that case forget_original_parent()
+> >will hit BUG_ON(p->ptrace), no?
 > >
-> > is there a way to go to the actual address? I'm sure this is a bit
-> > more common.... (like kallsyms!)
-> 
-> See dereference_function_descriptor() in lib/vsprintf.c (where it will
-> be clear that my memory was wrong and that PPC64 is the other
-> architecture that needs this).
-> 
+> >
+> Yes you are right, I will take care of those cases.
+> I have the choice between:
+>
+> - tracking all references to the ptrace flags and add a test for PT_SELF
+> or a mask.
+>
+> - add a dedicated task_struct entry to hold the PT_SELF flag
 
-The patch below fixes this;
-Ingo, please replace the patch with this one.
+Well, given that PT_SELF is exotic, neither choice looks very good, imho.
+But I am not expert and maintainer is cc'ed ;)
+
+I don't understand why this patch changes the x86's sys_sigaction().
+On s390 the patch changes handle_signal(), this is not clear to me too.
+do_syscall_trace() filters out __NR_ptrace, this afaics means that the
+handler for SIGSYS can happily call sys_ptrace(PTRACE_SELF_OFF) and
+clear PT_SELF/TIF_SYSCALL_TRACE.
+
+I must admit, personally I don't think the whole idea is good...
+And what if the user of PT_SELF is ptraced? The usage of TIF_SYSCALL_TRACE
+doesn't look "safe" in that case.
 
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH] debug: add notifier chain debugging
+Isn't it possible to implement this behaviour in the user space? If the
+task needs the PT_SELF behaviour, it can fork another process which will
+do PTRACE_ATTACH and then send the notifications to the task. We can use
+signals or something else.
 
-during some development we suspected a case where we left something
-in a notifier chain that was from a module that was unloaded already...
-and that sort of thing is rather hard to track down.
-
-This patch adds a very simple sanity check (which isn't all that
-expensive) to make sure the notifier we're about to call is
-actually from either the kernel itself of from a still-loaded
-module, avoiding a hard-to-chase-down crash.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Acked-by: Tony Luck <tony.luck@intel.com>
----
- include/linux/kernel.h |    3 +++
- kernel/extable.c       |   16 ++++++++++++++++
- kernel/notifier.c      |    6 ++++++
- lib/vsprintf.c         |    2 +-
- 4 files changed, 26 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 2651f80..4e1366b 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -187,6 +187,9 @@ extern unsigned long long memparse(char *ptr, char **retptr);
- extern int core_kernel_text(unsigned long addr);
- extern int __kernel_text_address(unsigned long addr);
- extern int kernel_text_address(unsigned long addr);
-+extern int func_ptr_is_kernel_text(void *ptr);
-+extern void *dereference_function_descriptor(void *ptr);
-+
- struct pid;
- extern struct pid *session_of_pgrp(struct pid *pgrp);
- 
-diff --git a/kernel/extable.c b/kernel/extable.c
-index a26cb2e..adf0cc9 100644
---- a/kernel/extable.c
-+++ b/kernel/extable.c
-@@ -66,3 +66,19 @@ int kernel_text_address(unsigned long addr)
- 		return 1;
- 	return module_text_address(addr) != NULL;
- }
-+
-+/*
-+ * On some architectures (PPC64, IA64) function pointers
-+ * are actually only tokens to some data that then holds the
-+ * real function address. As a result, to find if a function
-+ * pointer is part of the kernel text, we need to do some
-+ * special dereferencing first.
-+ */
-+int func_ptr_is_kernel_text(void *ptr)
-+{
-+	unsigned long addr;
-+	addr = (unsigned long) dereference_function_descriptor(ptr);
-+	if (core_kernel_text(addr))
-+		return 1;
-+	return module_text_address(addr) != NULL;
-+}
-diff --git a/kernel/notifier.c b/kernel/notifier.c
-index 823be11..522277c 100644
---- a/kernel/notifier.c
-+++ b/kernel/notifier.c
-@@ -82,6 +82,12 @@ static int __kprobes notifier_call_chain(struct notifier_block **nl,
- 
- 	while (nb && nr_to_call) {
- 		next_nb = rcu_dereference(nb->next);
-+		if (!func_ptr_is_kernel_text(nb->notifier_call)) {
-+			WARN(1, "Invalid notifier called!");
-+			nb = next_nb;
-+			continue;
-+		}
-+
- 		ret = nb->notifier_call(nb, val, v);
- 
- 		if (nr_calls)
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index d8d1d11..f5e5ffb 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -513,7 +513,7 @@ static char *string(char *buf, char *end, char *s, int field_width, int precisio
- 	return buf;
- }
- 
--static inline void *dereference_function_descriptor(void *ptr)
-+void *dereference_function_descriptor(void *ptr)
- {
- #if defined(CONFIG_IA64) || defined(CONFIG_PPC64)
- 	void *p;
--- 
-1.5.5.1
+Oleg.
 
