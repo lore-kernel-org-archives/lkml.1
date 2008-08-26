@@ -1,219 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbYHZW4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbYHZXAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753426AbYHZW4X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 18:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYHZW4O
+	id S1753408AbYHZXAd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 19:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYHZXAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 18:56:14 -0400
-Received: from n4b.bullet.mail.ac4.yahoo.com ([76.13.13.74]:40618 "HELO
-	n4b.bullet.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751641AbYHZW4N (ORCPT
+	Tue, 26 Aug 2008 19:00:24 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:33157 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbYHZXAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 18:56:13 -0400
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 237336.64873.bm@omp120.mail.ac4.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=doGZluWmddklxYSK754zYh2NNrwYxcQMGndVl2/HAk9nEbaLYAxcBXG1DyvPZUMdpLz//wmHjWNOpuszJxm6Fw7puO4FWrupykhsJShJHXdN3dJOq6gEDAjZ+Xf9zkCNy+TbHKaG2xOe1dNd6tgmWuUFSLoz43wnYAIQYV9Femo=;
-X-YMail-OSG: X.QxZ1MVM1mLLNZ.Q9JbKHMJ4enMpkiE.BYmQoPjMBK3KcfTZ27SBCY_reum_5Xvsg2Ho_.7w0h1T.eTyVlfrUDHXO9S9Y10YvOni.MrPNBOc_UH2RdAxReixXx.e_pPFh9QCIbaWUQ8zvRD1q6LUog-
-X-Mailer: YahooMailWebService/0.7.218.2
-Date: Tue, 26 Aug 2008 15:56:11 -0700 (PDT)
-From: amruth <amruth_pv@yahoo.com>
-Reply-To: amruth_pv@yahoo.com
-Subject: USB Serial device disconnect causes IRQ disable after using ehci controller halted
-To: Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>
-Cc: Karsten Wiese <fzu@wemgehoertderstaat.de>,
-       Oliver Neukum <oliver@neukum.org>, USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>
-In-Reply-To: <200808261443.47064.david-b@pacbell.net>
+	Tue, 26 Aug 2008 19:00:24 -0400
+Date: Tue, 26 Aug 2008 19:00:21 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Mark Hounschell <markh@compro.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Stefani Seibold <stefani@seibold.net>,
+       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
+Message-ID: <20080826230021.GB31444@goodmis.org>
+References: <20080819103301.787700742@chello.nl> <200808261900.07383.nickpiggin@yahoo.com.au> <20080826093059.GA471@elte.hu> <200808261954.47987.nickpiggin@yahoo.com.au> <alpine.LFD.1.10.0808261219050.3243@apollo.tec.linutronix.de> <48B40975.7080803@compro.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <434860.93444.qm@web45203.mail.sp1.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <48B40975.7080803@compro.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-Alan/David
-This patch below does not fix the issue it just stops IRQ being disabled but still ehci hcd crashes. Please let me know what could be causing the issue.Is the hardware having any issue.
-The log is below
-[  552.905001] magtek 5-2:1.0: Magtek 75/Excella USB card reader converter detected
-[  552.905001] /usr/src/linux-2.6.26/drivers/usb/serial/magtek.c: magtek_startup
-[  552.905001] usb 5-2: link qh0-00ff/d8f44080 start 0 [1/0 us]
-[  552.905001] /usr/src/linux-2.6.26/drivers/usb/serial/magtek.c: magtek_startup - usb_submit_urb(int urb)
-[  552.905001] usb 5-2: Magtek 75/Excella USB card reader converter now attached to ttyUSB0
-[  552.905001] drivers/usb/core/inode.c: creating file '006'
-[  552.905001] usb 5-2: New USB device found, idVendor=0801, idProduct=2231
-[  552.905001] usb 5-2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
-[  552.905025] usb 5-2: Product: STX
-[  552.905030] usb 5-2: Manufacturer: MagTek
-[  552.905035] usb 5-2: SerialNumber: STX001
-[  552.909786] ehci_hcd 0000:00:1d.7: irq status c028 masked 20
-[  552.909793] ehci_hcd 0000:00:1d.7: hcd state 1
-[  552.909796] ehci_hcd 0000:00:1d.7: hcd state 1
-[  552.909799] ehci_hcd 0000:00:1d.7: hcd state 1
-[  558.654520] ehci_hcd 0000:00:1d.7: irq status 600f masked 7
-[  558.654520] ehci_hcd 0000:00:1d.7: hcd state 1
-[  558.654520] ehci_hcd 0000:00:1d.7: devpath 2 ep2in 3strikes
-[  558.654520] /usr/src/linux-2.6.26/drivers/usb/serial/magtek.c: magtek_read_int_callback - port 0
-[  558.654520] /usr/src/linux-2.6.26/drivers/usb/serial/magtek.c: return!!
-[  558.654520] /usr/src/linux-2.6.26/drivers/usb/serial/magtek.c: urb status is -71
-[  558.654520] usb 5-2: unlink qh0-00ff/d8f44080 start 0 [1/0 us]
-[  558.654520] usb 5-2: link qh0-00ff/d8f44080 start 0 [1/0 us]
-[  558.654520] usb 5-2: unlink qh0-00ff/d8f44080 start 0 [1/0 us]
-[  558.656520] ehci_hcd 0000:00:1d.7: handshake failed: controller halted
-[  558.656520] ehci_hcd 0000:00:1d.7: force halt; handshake e0840824 00004000 00004000 -> -110
-[  558.656520] Pid: 0, comm: swapper Not tainted 2.6.26patched #2
-[  558.656520]  [<e0b1e5e7>] handshake_on_error_set_halt+0x82/0x8c [ehci_hcd]
-[  558.656520]  [<e0b1e611>] disable_periodic+0x20/0x40 [ehci_hcd]
-[  558.656520]  [<e0b1ffef>] ehci_work+0x5e6/0x6ad [ehci_hcd]
-[  558.656520]  [<c0424230>] ? printk+0x15/0x17
-[  558.656520]  [<e0b23cb9>] ehci_irq+0x28a/0x2fd [ehci_hcd]
-[  558.656520]  [<e096905d>] ? cdrom_newpc_intr+0x52e/0x544 [ide_cd_mod]
-[  558.656520]  [<c042addd>] ? lock_timer_base+0x1f/0x3e
-[  558.656520]  [<c05764c4>] usb_hcd_irq+0x27/0x58
-[  558.656520]  [<c044b852>] handle_IRQ_event+0x21/0x48
-[  558.656520]  [<c044c9fb>] handle_fasteoi_irq+0x77/0xac
-[  558.656520]  [<c044c984>] ? handle_fasteoi_irq+0x0/0xac
-[  558.656520]  [<c040598c>] do_IRQ+0xa9/0xd1
-[  558.656520]  [<c04025f2>] ? default_idle+0x0/0x42
-[  558.656520]  [<c040429b>] common_interrupt+0x23/0x28
-[  558.656520]  [<c04025f2>] ? default_idle+0x0/0x42
-[  558.656520]  [<c041007b>] ? acpi_save_state_mem+0xa/0x12b
-[  558.656520]  [<c040261f>] ? default_idle+0x2d/0x42
-[  558.656520]  [<c040256d>] cpu_idle+0x8b/0x9f
-[  558.656520]  [<c061f329>] start_secondary+0x156/0x15b
-[  558.656520]  =======================
-[  558.656520] ehci_hcd 0000:00:1d.7: hcd state 0
-[  558.656520] ehci_hcd 0000:00:1d.7: hcd state 0
-[  558.656520] ehci_hcd 0000:00:1d.7: HC died; cleaning up
-[  558.657583] hub 5-0:1.0: state 0 ports 8 chg 0000 evt 0000
-[  558.657583] usb 5-2: USB disconnect, address 6
-[  558.657583] usb 5-2: unregistering device
-[  558.657583] usb 5-2: usb_disable_device nuking all URBs
-[  558.657583] usb 5-2: unregistering interface 5-2:1.0
-[  558.657583] /usr/src/linux-2.6.26/drivers/usb/serial/magtek.c: magtek_shutdown
-[  558.657583] magtek ttyUSB0: Magtek 75/Excella USB card reader converter now disconnected from ttyUSB0
-[  558.657584] magtek 5-2:1.0: device disconnected
-[  558.657584] usb 5-2:1.0: uevent
-[  558.658057] usb 5-2: uevent
+On Tue, Aug 26, 2008 at 09:47:33AM -0400, Mark Hounschell wrote:
+> Thomas Gleixner wrote:
+>> On Tue, 26 Aug 2008, Nick Piggin wrote:
+>>
+>>> On Tuesday 26 August 2008 19:30, Ingo Molnar wrote:
+>>>> * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+>>>>> So... no reply to this? I'm really wondering how it's OK to break
+>>>>> documented standards and previous Linux behaviour by default for
+>>>>> something that it is trivial to solve in userspace? [...]
+>>>> I disagree
+>>> Your arguments were along the line of:
+>>>
+>>> * It probably doesn't break anything (except we had somebody report
+>>>   that it breaks their app)
+>>
+>> I'm a real-time oldtimer. An application which hogs the CPU for 9.9
+>> seconds with SCHED_FIFO priority is just broken. It's broken beyond
+>> all limits, whether POSIX allows to do that or Linux obeyed the
+>> request of the braindamaged application design.
+>>
+>
+> Well, I've been working on RT hardware (mostly) and software since 1977.
+> With all due respect, thats crapola. I for one have this requirement and
+> there is _no_ way around it in my world. In fact it's the kernel thats broke
+> by stealing precious usecs from me.
 
-Thanks
-Amruth p.v
+I'm sorry, but I need to agree with this. I've been focused more on RT
+and in military apps since 1991 (not as long as 77 though :-)
+
+There's two issues here.
+
+1) What FIFO means
+
+2) Protecting the 99% of the users
 
 
---- On Tue, 8/26/08, David Brownell <david-b@pacbell.net> wrote:
+What most real RT centric folks will want is the true meaning of FIFO.
+That is, a FIFO task can run as long as it wants using as much CPU as it
+wants until a) a higher RT task preempts it, or b) it voluntarily
+releases the CPU.
 
-> From: David Brownell <david-b@pacbell.net>
-> Subject: Re: USB Serial device disconnect causes IRQ disable after using ehci controller halted
-> To: "Alan Stern" <stern@rowland.harvard.edu>
-> Cc: "Karsten Wiese" <fzu@wemgehoertderstaat.de>, "amruth" <amruth_pv@yahoo.com>, "Oliver Neukum" <oliver@neukum.org>, "USB list" <linux-usb@vger.kernel.org>, "Kernel development list" <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>
-> Date: Tuesday, August 26, 2008, 4:43 PM
-> On Tuesday 26 August 2008, Alan Stern wrote:
-> > While it certainly would be a good idea to prevent the
-> handshake 
-> > failures from occurring in the first place -- Dave,
-> aren't you working 
-> > on a patch for that? -- we should also make sure that
-> when they do 
-> > occur, the controller gets reset properly.  And an
-> error message should 
-> > be printed in the log.
-> 
-> Like this?
-> 
-> Greg, please queue for 2.6.27 unless someone finds a
-> problem with this patch.
-> 
-> 
-> =========	SNIP!  SNIP!  SNIPPITY SNIP!
-> From: David Brownell
-> <dbrownell@users.sourceforge.net>
-> 
-> I noticed that the "Refactor "if (handshake())
-> state = HC_STATE_HALT"
-> patch from earlier this year perpetuated a potential
-> problem:  it can
-> mark the controller as halted when it's still running
-> (but not acting
-> as, perhaps wrongly, expected).
-> 
-> That caused some hangs and crashes, rather than more polite
-> failure
-> modes of a truly halted controller.  This patch forces a
-> true halt,
-> and emits a (previously missing) diagnostic.
-> 
-> Signed-off-by: David Brownell
-> <dbrownell@users.sourceforge.net>
-> ---
->  drivers/usb/host/ehci-hcd.c |   26
-> ++++++++++++++++----------
->  1 file changed, 16 insertions(+), 10 deletions(-)
-> 
-> --- a/drivers/usb/host/ehci-hcd.c	2008-08-15
-> 14:04:27.000000000 -0700
-> +++ b/drivers/usb/host/ehci-hcd.c	2008-08-15
-> 14:04:36.000000000 -0700
-> @@ -145,16 +145,6 @@ static int handshake (struct ehci_hcd
-> *e
->  	return -ETIMEDOUT;
->  }
->  
-> -static int handshake_on_error_set_halt(struct ehci_hcd
-> *ehci, void __iomem *ptr,
-> -				       u32 mask, u32 done, int usec)
-> -{
-> -	int error = handshake(ehci, ptr, mask, done, usec);
-> -	if (error)
-> -		ehci_to_hcd(ehci)->state = HC_STATE_HALT;
-> -
-> -	return error;
-> -}
-> -
->  /* force HC to halt state from unknown (EHCI spec section
-> 2.3) */
->  static int ehci_halt (struct ehci_hcd *ehci)
->  {
-> @@ -173,6 +163,22 @@ static int ehci_halt (struct ehci_hcd
-> *e
->  			  STS_HALT, STS_HALT, 16 * 125);
->  }
->  
-> +static int handshake_on_error_set_halt(struct ehci_hcd
-> *ehci, void __iomem *ptr,
-> +				       u32 mask, u32 done, int usec)
-> +{
-> +	int error;
-> +
-> +	error = handshake(ehci, ptr, mask, done, usec);
-> +	if (error) {
-> +		ehci_halt(ehci);
-> +		ehci_to_hcd(ehci)->state = HC_STATE_HALT;
-> +		ehci_err(ehci, "force halt; handhake %p %08x %08x
-> -> %d\n",
-> +			ptr, mask, done, error);
-> +	}
-> +
-> +	return error;
-> +}
-> +
->  /* put TDI/ARC silicon into EHCI mode */
->  static void tdi_reset (struct ehci_hcd *ehci)
->  {
-> 
-> 
-> --
-> To unsubscribe from this list: send the line
-> "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at 
-> http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+This change, without doubt, breaks the definition of what a FIFO task
+is. This is the kernel imposing policy onto userspace.
 
+What Thomas Gleixner and Ingo Molnar are doing, is focusing on 2 above.
+(protecting the 99% of users).  This is reasonable, since thats who will
+bug them the most when things break.
 
-      
+The problem I have, is that this is breaking a defined user API. A
+default that is well known within the RT community. The simple
+definition of FIFO.
+
+What I would suggest is this.
+
+1) Keep the default as the infinite for those that know what they are
+   doing.
+
+2) Change the sysctl scripts in the distros to set the default to a sane
+  time that will protect the users.
+
+An RT app that would break the 10s limit would probably be using busybox
+anyway, so the default for that would be what the kernel comes up with.
+
+The default the 99% of users would have, is what the distro set it to
+for them.
+
+This seems like a sane solution to satisfy both camps.
+
+-- Steve
 
