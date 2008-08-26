@@ -1,42 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758163AbYHZKus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758337AbYHZKvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758163AbYHZKus (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 06:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbYHZKui
+	id S1758337AbYHZKvL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 06:51:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbYHZKu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 06:50:38 -0400
-Received: from relay2.globalproof.net ([194.146.153.25]:56550 "EHLO
-	relay2.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753606AbYHZKuh (ORCPT
+	Tue, 26 Aug 2008 06:50:56 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41038 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758137AbYHZKuz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 06:50:37 -0400
-From: Denys Fedoryshchenko <denys@visp.net.lb>
-Organization: Virtual ISP
-To: Jarek Poplawski <jarkao2@gmail.com>
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-Date: Tue, 26 Aug 2008 13:49:09 +0300
-User-Agent: KMail/1.9.9
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080826095126.GA2609@ff.dom.local> <200808261329.53741.denys@visp.net.lb> <20080826104717.GB2609@ff.dom.local>
-In-Reply-To: <20080826104717.GB2609@ff.dom.local>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 26 Aug 2008 06:50:55 -0400
+Date: Tue, 26 Aug 2008 11:33:17 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [PATCH] x86: default to reboot via ACPI
+Message-ID: <20080826113317.520cbab1@lxorguk.ukuu.org.uk>
+In-Reply-To: <48B3D579.40502@qumranet.com>
+References: <1219659087-17536-1-git-send-email-avi@qumranet.com>
+	<20080826095032.GA309@elf.ucw.cz>
+	<48B3D579.40502@qumranet.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808261349.09820.denys@visp.net.lb>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 August 2008, Jarek Poplawski wrote:
-> The question is if you really need so exact shaping at a cost of
-> higher system load.
-Thats maybe another reason to have your patch in mainline :-)
-I will try it today with this case, if it will help.
+> It seems excessive.  Most machines will hardly run without acpi.
 
-Maybe it can be optional, and enabled via kernel parameter and /sys , so it 
-can be useful in case of crashes when TSC used and when timer is too slow.
-Because it is not so useful just to disable hrtimers completely, if you need 
-them for some other task...
-
+*Recent* machines.
