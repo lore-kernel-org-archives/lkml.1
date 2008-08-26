@@ -1,73 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760580AbYHZTP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759993AbYHZTQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760580AbYHZTP2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 15:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758956AbYHZTPM
+	id S1759993AbYHZTQe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 15:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757458AbYHZTQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 15:15:12 -0400
-Received: from mail.ccur.com ([12.192.68.12]:52817 "EHLO mail.ccur.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759055AbYHZTPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 15:15:11 -0400
-X-Greylist: delayed 325 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Aug 2008 15:15:11 EDT
-Message-ID: <48B454F7.5060106@ccur.com>
-Date: Tue, 26 Aug 2008 15:09:43 -0400
-From: John Blackwood <john.blackwood@ccur.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Tue, 26 Aug 2008 15:16:25 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:57836 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753931AbYHZTQY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 15:16:24 -0400
+Date: Tue, 26 Aug 2008 14:16:23 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: James Morris <jmorris@namei.org>, lkml <linux-kernel@vger.kernel.org>,
+       SELinux <selinux@tycho.nsa.gov>,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>
+Subject: Re: [PATCH 1/1] selinux: add support for installing a dummy policy
+Message-ID: <20080826191623.GA1956@us.ibm.com>
+References: <20080822193413.GA8401@us.ibm.com> <alpine.LRH.1.10.0808230852320.24779@tundra.namei.org> <20080823023812.GA30915@us.ibm.com> <1219666201.2721.29.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sched_rt_rq_enqueue() resched idle
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1219666201.2721.29.camel@moss-spartans.epoch.ncsc.mil>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+Quoting Stephen Smalley (sds@tycho.nsa.gov):
+> 
+> On Fri, 2008-08-22 at 21:38 -0500, Serge E. Hallyn wrote:
+> > --- /dev/null
+> > +++ b/scripts/selinux/install_policy.sh
+> > @@ -0,0 +1,44 @@
+> > +#!/bin/sh
+> > +if [ `id -u` -ne 0 ]; then
+> > +	echo "$0: must be root to install the selinux policy"
+> > +	exit 1
+> > +fi
+> > +SF=`which setfiles`
+> > +if [ $? -eq 1 ]; then
+> > +	if [ -f /usr/sbin/setfiles ]; then
+> > +		SF="/usr/sbin/setfiles"
+> 
+> /sbin/setfiles on modern Fedora releases.
 
-When sysctl_sched_rt_runtime is set to something other than -1 and the
-CONFIG_RT_GROUP_SCHED kernel parameter is NOT enabled, we get into a state
-where we see one or more CPUs idling forvever even though there are
-real-time
-tasks in their rt runqueue that are able to run (no longer throttled).
+Thanks for reviewing, Stephen.
 
-The sequence is:
+Changed this to /sbin.
 
-- A real-time task is running when the timer sets the rt runqueue
-    to throttled, and the rt task is resched_task()ed and switched
-    out, and idle is switched in since there are no non-rt tasks to
-    run on that cpu.
+> > +	else
+> > +		echo "no selinux tools installed: setfiles"
+> > +		exit 1
+> > +	fi
+> > +fi
+> > +
+> > +cd mdp
+> > +
+> > +CP=`which checkpolicy`
+> > +./mdp policy.conf file_contexts
+> > +$CP -o policy.`checkpolicy -V | awk '{print $1}'` policy.conf
+> 
+> Save version to a variable and reuse below.
+> 
+> > +
+> > +mkdir -p /etc/selinux/dummy/policy
+> > +mkdir -p /etc/selinux/dummy/contexts/files
+> > +
+> > +cp file_contexts /etc/selinux/dummy/contexts/files
+> > +cp dbus_contexts /etc/selinux/dummy/contexts
+> > +cp policy.`checkpolicy -V | awk '{print $1}'` /etc/selinux/dummy/policy
+> > +FC_FILE=/etc/selinux/dummy/contexts/files/file_contexts
+> > +
+> > +cd /etc/selinux/dummy/contexts/files
+> > +$SF file_contexts /
+> > +
+> > +mounts=`cat /proc/$$/mounts | egrep "ext2|ext3|xfs|jfs" | awk '{ print $2 '}`
+> 
+> ext4, ext4dev, gfs2 too.
+> See /sbin/fixfiles for an example.  Or run it.
 
-- Eventually the do_sched_rt_period_timer() runs and un-throttles
-    the rt runqueue, but we just exit the timer interrupt and go back
-    to executing the idle task in the idle loop forever.
+I'm testing a version which uses fixfiles, but it complains about
+the fact that selinux is not loaded.  Using setfiles seemed
+more robust.  So I guess I'll go back to that for now.  Someone
+else can always update it later.
 
-If we change the sched_rt_rq_enqueue() routine to use some of the code
-from the CONFIG_RT_GROUP_SCHED enabled version of this same routine and
-resched_task() the currently executing task (idle in our case) if it is
-a lower priority task than the higher rt task in the now un-throttled
-runqueue, the problem is no longer observed.
+> > +for line in $mounts; do
+> > +	$SF file_contexts $line
+> > +done
+> 
+> You can pass them all to setfiles at once; it takes a list of mount
+> points after the file_contexts file. Or run fixfiles instead as it does
+> much the same.
+> 
+> However, I don't believe this step will work if you are doing this on an
+> existing SELinux-enabled system - the kernel will check the contexts
+> upon setxattr against the active policy and reject them, and you haven't
+> loaded the new policy yet.  Also, this is a "destructive" operation,
+> i.e. if they were running SELinux before, they are hereby clobbering all
+> their file labels.  Possibly you should bail out if selinuxenabled
+> (utility that can be used as a boolean in shell conditionals).
+> if /usr/sbin/selinuxenabled; then
+> 	echo"SELinux already enabled with a policy loaded; exiting."
+> 	exit 1
+> fi
 
-Thank you for your time and consideration.
+Done in my new version (which I'll send out once I re-create
+it using setfiles again), along with most of your other
+suggestions.
 
-Signed-off-by: John Blackwood <john.blackwood@ccur.com>
+> > +
+> > +dodev=`cat /proc/$$/mounts | grep "/dev "`
+> > +if [ "eq$dodev" != "eq" ]; then
+> > +	mount --move /dev /mnt
+> > +	$SF file_contexts /dev
+> > +	mount --move /mnt /dev
+> > +fi
+> 
+> Not sure what you are doing here.  If /dev is udev-managed, then it will
 
-Index: a/kernel/sched_rt.c
-===================================================================
---- a.orig/kernel/sched_rt.c    2008-08-22 15:11:31.000000000 -0400
-+++ a/kernel/sched_rt.c 2008-08-22 15:12:36.000000000 -0400
-@@ -193,6 +193,12 @@
+This (like the whole file) came from David, but nevertheless it's
+something I've had to do many times to get a system booted.  Maybe the
+new fedora initrd way of enabling selinux changes that, but it would
+still be needed for older distros.
 
-   static inline void sched_rt_rq_enqueue(struct rt_rq *rt_rq)
-   {
-+       if (rt_rq->rt_nr_running) {
-+               struct task_struct *curr = rq_of_rt_rq(rt_rq)->curr;
-+
-+               if (rt_rq->highest_prio < curr->prio)
-+                       resched_task(curr);
-+       }
-   }
+> handle labeling at boot.  But it still shows up as a tmpfs mount
+> in /proc/self/mounts.
+> 
+> Where do you set up /etc/selinux/config to refer to this dummy policy so
+> it will get loaded at boot?
 
-   static inline void sched_rt_rq_dequeue(struct rt_rq *rt_rq)
+I was going to just explain how to do it in the documentation, but went
+ahead and modified install_policy.sh to do it.
 
+New version coming soon.
+
+thanks,
+-serge
