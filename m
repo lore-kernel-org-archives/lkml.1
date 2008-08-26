@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbYHZUp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756931AbYHZUpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755541AbYHZUp3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 16:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbYHZUpJ
+	id S1756931AbYHZUpw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 16:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYHZUpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 16:45:09 -0400
-Received: from smtp2e.orange.fr ([80.12.242.113]:44390 "EHLO smtp2e.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751053AbYHZUpI convert rfc822-to-8bit (ORCPT
+	Tue, 26 Aug 2008 16:45:41 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35385
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751819AbYHZUpk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 16:45:08 -0400
-X-ME-UUID: 20080826204506745.B5EF4700008F@mwinf2e19.orange.fr
-Message-ID: <48B46B48.7030609@cosmosbay.com>
-Date: Tue, 26 Aug 2008 22:44:56 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Denys Fedoryshchenko <denys@visp.net.lb>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-References: <200808220457.40892.denys@visp.net.lb> <20080826201406.GA24827@2ka.mipt.ru>
-In-Reply-To: <20080826201406.GA24827@2ka.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Tue, 26 Aug 2008 16:45:40 -0400
+Date: Tue, 26 Aug 2008 13:45:35 -0700 (PDT)
+Message-Id: <20080826.134535.193703558.davem@davemloft.net>
+To: travis@sgi.com
+Cc: mingo@elte.hu, torvalds@linux-foundation.org, Alan.Brunelle@hp.com,
+       tglx@linutronix.de, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, akpm@linux-foundation.org,
+       arjan@linux.intel.com, rusty@rustcorp.com.au
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
+ bisected
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <48B4542A.1050004@sgi.com>
+References: <20080826072220.GB31876@elte.hu>
+	<20080826.004607.253712060.davem@davemloft.net>
+	<48B4542A.1050004@sgi.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov a écrit :
-> On Fri, Aug 22, 2008 at 04:57:40AM +0300, Denys Fedoryshchenko (denys@visp.net.lb) wrote:
->> I have loaded router (~650 Mbps In+Out), based on 2xAMD Opteron 248, Sun Fire 
->> X4100. HPET timer available (TSC seems not available on this platform).
->> Network interfaces is onboard, connected over PCI-X.
->>
->> Right now i am using only one processor, cause using only one interface and 
->> interrupts stick to it. Other is almost not used.
->> At peak time i notice in mpstat, that this processor is almost "dead", and if 
->> i run minor application consuming resources - ping over this router will be 
->> terrible. For me it is clear - system overloaded. I did oprofile, and here is 
->> result (at low load time, but at peak time it is very similar).
+From: Mike Travis <travis@sgi.com>
+Date: Tue, 26 Aug 2008 12:06:18 -0700
+
+> David Miller wrote:
+> > The only case that didn't work was due to a limitation in
+> > arch interfaces for the new generic smp_call_function() code.
+> > It passes a cpumask_t instead of a pointer to one via
+> > arch_send_call_function_ipi().
+> > 
+> > But other than that, the whole sparc64 SMP stuff uses cpumask_t
+> > pointers only.
+> > 
+> > What it comes down to is that you have to do the "self cpu"
+> > and other tests in the cross-call dispatch routines themselves,
+> > instead of at the top-level working on cpumask_t objects.
+> > 
+> > Otherwise you have to modify cpumask_t objects and thus pluck
+> > them onto the stack where they take up silly amounts of space.
 > 
-> Do you have any packet sockets in this system? Like running dhcp daemon?
-> 
+> Yes, I had proposed either modifying, or supplementing a new
+> smp_call function to pass the cpumask_t as a pointer (similar
+> to set_cpus_allowed_ptr.)  But an ABI change such as this was
+> not well received at the time.
 
-Another way to see this problem can be to start a sniffer on the machine, even with a 
-restrictive pcap filter, to check if performance change or not. (It should decrease)
+What it seems to come down to is that any cpumask_t not inside of
+a dynamically allocated object should be marked const.
 
-For example, I believe that running "ping" could have the same effect
-(increasing netstamp_needed variable : every incoming packet has to be timestamped)
+And that is something we can enforce at compile time.
 
-So beware of pings, traceroute and other networking tools...
+Linus has just suggested dynamically allocating cpumask_t's
+for such cases but I don't see that as the fix either.
 
+Just mark them const and enforce that cpumask_t objects can only
+be modified when they appear in dynamically allocated objects.
 
+You really don't need to modify the ones that passed around functions
+anyways.  The only code that wants to change bits in these things is
+the cpu cross-call dispatch stuff, and that cpu choice logic can just
+live where it belongs down in the cross-call dispatch code.
 
