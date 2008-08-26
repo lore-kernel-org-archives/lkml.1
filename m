@@ -1,203 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757690AbYHZMlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758114AbYHZMnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757690AbYHZMlj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 08:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbYHZMlb
+	id S1758114AbYHZMnY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 08:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbYHZMnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 08:41:31 -0400
-Received: from shadow.wildlava.net ([67.40.138.81]:40509 "EHLO
-	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753844AbYHZMlb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 08:41:31 -0400
-Message-ID: <48B3F9F7.2050503@skyrush.com>
-Date: Tue, 26 Aug 2008 06:41:27 -0600
-From: Joe Peterson <joe@skyrush.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080727)
-MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Tue, 26 Aug 2008 08:43:16 -0400
+Received: from mail.hevs.ch ([153.109.23.10]:46773 "EHLO mail.hevs.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754354AbYHZMnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 08:43:15 -0400
+From: Marc Pignat <marc.pignat@hevs.ch>
+Organization: HEVs
+To: Claudio Scordino <claudio@evidence.eu.com>
+Subject: Re: [ARM] Regression ? at91rm9200 machine-type
+Date: Tue, 26 Aug 2008 14:43:12 +0200
+User-Agent: KMail/1.9.9
+Cc: lg@denx.de, rmk+kernel@arm.linux.org.uk,
        Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] TTY: Fix loss of echoed characters
-References: <200807252257.m6PMvieO003213@imap1.linux-foundation.org> <48AC3A16.4080209@skyrush.com>
-In-Reply-To: <48AC3A16.4080209@skyrush.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/mixed;
- boundary="------------020701060407040402010508"
+References: <48B3DB29.5070409@evidence.eu.com>
+In-Reply-To: <48B3DB29.5070409@evidence.eu.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808261443.12638.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020701060407040402010508
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Hi!
 
-Joe Peterson wrote:
-> Andrew, attached is a patch that fixes the loss of echoed characters in
-> two common cases: 1) tty output buffer is full due to lots of output and
-> 2) tty is stopped.
+On Tuesday 26 August 2008, you wrote:
+> Hi,
+> 
+>     I have a custom board equivalent to AT91RM9200DK.
+If it is really equivalent, you can use the same MACH_TYPE, else you should
+register another.
 
-Attached is a follow-on patch.  It just does some code style cleanup and
-minor code efficiency tweaks.  Please apply it after the main patch
-(probably should be combined into one patch).
+> 
+> After commit
+> 
+> 87fee013a23ad02821699aef5b76891b42959182
+> 
+> [ARM] 4647/1: at91rm9200: Remove redundant machine-type verification
+> and manipulation
+> 
+> I cannot boot my board anymore.
+> 
+> Some more details:
+>   - I tried booting from both U-Boot 1.1.6 and U-Boot 1.3.4
+>   - I compiled U-Boot using "at91rm9200dk_config"
+>   - On U-Boot bootargs=console=ttyS0,115200 mem=32M
+> mtdparts=AT45DB642.spi0:-(filesystem) rootfstype=jffs2 root=/dev/mtdblock0
+>   - The .config of the kernel is in attachment
+> 
+> I don't know if this is an actual regression or not (I'm not much
+> skilled in machine-types/boot process).
 
-						Thanks, Joe
+The "default machine" selection is a *hack* for machines with a bootloader too
+old, buggy or closed source.
 
---------------020701060407040402010508
-Content-Type: text/plain;
- name="tty-fix-loss-of-echoed-characters-cleanup.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="tty-fix-loss-of-echoed-characters-cleanup.patch"
+The right fix is to change the MACH_TYPE that you've compiled in u-boot.
 
-Minor code efficiency and style cleanup.  No behavior changes.
-Apply after tty-fix-loss-of-echoed-characters.patch.
+> 
+> However, it seems that the commit above, besides removing redundant 
+> machine type verification, removed the default machine type for 
+> unknown boards as well.
 
-Signed-off-by: Joe Peterson <joe@skyrush.com>
----
+This is a cleanup patch, if the hack is not removed, bootloaders will *never*
+be fixed...
 
---- linux/drivers/char/n_tty.c.orig	2008-08-20 18:19:06.000000000 -0600
-+++ linux/drivers/char/n_tty.c	2008-08-25 13:41:30.000000000 -0600
-@@ -446,8 +446,6 @@ static ssize_t process_output_block(stru
- 		}
- 	}
- break_out:
--	//if (tty->ops->flush_chars)
--	//	tty->ops->flush_chars(tty);
- 	i = tty->ops->write(tty, buf, i);
- 
- 	unlock_kernel();
-@@ -455,11 +453,11 @@ break_out:
- }
- 
- /**
-- *	process_echoes	-	write pending echoed characters
-+ *	process_echoes	-	write pending echo characters
-  *	@tty: terminal device
-  *
-- *	Write echoed (and other ldisc-generated) characters to the
-- *	tty that have been stored previously in the echo buffer.
-+ *	Write previously buffered echo (and other ldisc-generated)
-+ *	characters to the tty.
-  *
-  *	Characters generated by the ldisc (including echoes) need to
-  *	be buffered because the driver's write buffer can fill during
-@@ -488,11 +486,11 @@ break_out:
- 
- static void process_echoes(struct tty_struct *tty)
- {
--	int	space, num, nr;
-+	int	space, nr;
- 	unsigned char c;
- 	unsigned char *cp, *buf_end;
- 
--	if (!(num = tty->echo_cnt))
-+	if (!tty->echo_cnt)
- 		return;
- 
- 	lock_kernel();
-@@ -501,7 +499,7 @@ static void process_echoes(struct tty_st
- 
- 	buf_end = tty->echo_buf + N_TTY_BUF_SIZE;
- 	cp = tty->echo_buf + tty->echo_pos;
--	nr = num;
-+	nr = tty->echo_cnt;
- 	while (nr > 0) {
- 		c = *cp;
- 		if (c == ECHO_OP_START) {
-@@ -635,14 +633,15 @@ static void process_echoes(struct tty_st
- 			cp -= N_TTY_BUF_SIZE;
- 	}
- 
--	tty->echo_cnt = nr;
--	if (tty->echo_cnt == 0) {
-+	if (nr == 0) {
- 		tty->echo_pos = 0;
-+		tty->echo_cnt = 0;
- 		tty->echo_overrun = 0;
- 	} else {
--		int num_processed = (num - nr);
-+		int num_processed = tty->echo_cnt - nr;
- 		tty->echo_pos += num_processed;
--		tty->echo_pos &= (N_TTY_BUF_SIZE - 1);
-+		tty->echo_pos &= N_TTY_BUF_SIZE - 1;
-+		tty->echo_cnt = nr;
- 		if (num_processed > 0)
- 			tty->echo_overrun = 0;
- 	}
-@@ -663,42 +662,43 @@ static void process_echoes(struct tty_st
- 
- static void add_echo_byte(unsigned char c, struct tty_struct *tty)
- {
--	int 	add_char_pos;
-+	int	new_byte_pos;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&tty->echo_lock, flags);
- 
--	add_char_pos = tty->echo_pos + tty->echo_cnt;
--	if (add_char_pos >= N_TTY_BUF_SIZE)
--		add_char_pos -= N_TTY_BUF_SIZE;
--
--	/* Detect overrun */
- 	if (tty->echo_cnt == N_TTY_BUF_SIZE) {
-+		/* Circular buffer is already at capacity */
-+		new_byte_pos = tty->echo_pos;
-+
- 		/*
--		 * If the start position pointer needs to be advanced
--		 * due to running out of buffer space, be sure it is
--		 * done in such a way as to remove whole
--		 * operation byte groups.
-+		 * Since the buffer start position needs to be advanced,
-+		 * be sure to step by a whole operation byte group.
- 		 */
--		if (*(tty->echo_buf +
--		      (tty->echo_pos & (N_TTY_BUF_SIZE - 1))) == ECHO_OP_START)
-+		if (tty->echo_buf[tty->echo_pos] == ECHO_OP_START)
- 		{
--			if (*(tty->echo_buf +
--			      ((tty->echo_pos + 1) & (N_TTY_BUF_SIZE - 1))) == ECHO_OP_TAB_ERASE) {
-+			if (tty->echo_buf[(tty->echo_pos + 1) &
-+					  (N_TTY_BUF_SIZE - 1)] ==
-+						ECHO_OP_TAB_ERASE) {
- 				tty->echo_pos += 4;
- 				tty->echo_cnt -= 3;
- 			} else {
- 				tty->echo_pos += 2;
- 				tty->echo_cnt -= 1;
- 			}
--		} else
-+		} else {
- 			tty->echo_pos++;
--		tty->echo_pos &= (N_TTY_BUF_SIZE - 1);
-+		}
-+		tty->echo_pos &= N_TTY_BUF_SIZE - 1;
-+
- 		tty->echo_overrun = 1;
--	} else
-+	} else {
-+		new_byte_pos = tty->echo_pos + tty->echo_cnt;
-+		new_byte_pos &= N_TTY_BUF_SIZE - 1;
- 		tty->echo_cnt++;
-+	}
- 
--	tty->echo_buf[add_char_pos] = c;
-+	tty->echo_buf[new_byte_pos] = c;
- 
- 	spin_unlock_irqrestore(&tty->echo_lock, flags);
- }
-@@ -762,8 +762,9 @@ static void echo_char_raw(unsigned char 
- 	if (c == ECHO_OP_START) {
- 		add_echo_byte(ECHO_OP_START, tty);
- 		add_echo_byte(ECHO_OP_START, tty);
--	} else
-+	} else {
- 		add_echo_byte(c, tty);
-+	}
- }
- 
- /**
+Best regards
 
---------------020701060407040402010508--
+
+Marc
+
