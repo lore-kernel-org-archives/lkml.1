@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759511AbYHZTcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759619AbYHZTf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759511AbYHZTcd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 15:32:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756278AbYHZTcY
+	id S1759619AbYHZTf1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 15:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbYHZTfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 15:32:24 -0400
-Received: from mga09.intel.com ([134.134.136.24]:51692 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753844AbYHZTcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 15:32:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,272,1217833200"; 
-   d="scan'208";a="432403030"
-Message-ID: <48B45A48.6080604@linux.intel.com>
-Date: Tue, 26 Aug 2008 21:32:24 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Tue, 26 Aug 2008 15:35:13 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43471 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756032AbYHZTfM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 15:35:12 -0400
+Date: Tue, 26 Aug 2008 15:35:08 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Christoph Hellwig <hch@lst.de>, Peter Zijlstra <peterz@infradead.org>,
+       Lachlan McIlroy <lachlan@sgi.com>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+Subject: Re: [2.6.27-rc4] XFS i_lock vs i_iolock...
+Message-ID: <20080826193508.GA17542@infradead.org>
+References: <6278d2220808221412x28f4ac5dl508884c8030b364a@mail.gmail.com> <20080825010213.GO5706@disturbed> <48B21507.9050708@sgi.com> <20080825035542.GR5706@disturbed> <1219647573.20732.28.camel@twins> <20080825215532.GB28188@lst.de> <20080826024547.GX5706@disturbed>
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-CC: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Matthew Wilcox <matthew@wil.cx>, Len Brown <len.brown@intel.com>,
-       Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 1/4] mutex: add mutex_lock_timeout()
-References: <1219777186-4787-1-git-send-email-dwalker@mvista.com>
-In-Reply-To: <1219777186-4787-1-git-send-email-dwalker@mvista.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080826024547.GX5706@disturbed>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 26, 2008 at 12:45:47PM +1000, Dave Chinner wrote:
+> XFS: prevent lockdep false positives when locking two inodes
+> 
+> If we call xfs_lock_two_inodes() to grab both the iolock and
+> the ilock, then drop the ilocks on both inodes, then grab
+> them again (as xfs_swap_extents() does) then lockdep will
+> report a locking order problem. This is a false positive.
+> 
+> To avoid this, disallow xfs_lock_two_inodes() fom locking both
+> inode locks at once - force calers to make two separate calls.
+> This means that nested dropping and regaining of the ilocks
+> will retain the same lockdep subclass and so lockdep will
+> not see anything wrong with this code.
 
-Daniel,
+Looks good.  We probably don't need the #ifdef DEBUG as ASSERT is
+debug-only anyway.
 
-My decision on this patchkit is to reject it for now, because:
-
-- I'm worried about the long term maintenance impact of doing full
-lockdep checking on AML controlled locks. Since I'm keeping ACPI
-only temporarily I don't want to leave an potentially problematic
-legacy.
-- I fail to see the advantage of implementing semaphores using conditions.
-
-However what you can do is to ask Len again when he's back. Ultimately
-it is his decision and he might decide that he can deal with AML lockdep
-issues longer term.
-
-Don't think it makes all that much sense to resubmit the completion
-patch though. It's unrelated to the other patches anyways (not sure
-why you mix them together)
-
--Andi
