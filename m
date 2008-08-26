@@ -1,104 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758258AbYHZUKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758303AbYHZULh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758258AbYHZUKQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 16:10:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbYHZUKE
+	id S1758303AbYHZULh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 16:11:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753210AbYHZUL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 16:10:04 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:37428 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752967AbYHZUKD (ORCPT
+	Tue, 26 Aug 2008 16:11:28 -0400
+Received: from edna.telenet-ops.be ([195.130.132.58]:56520 "EHLO
+	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752881AbYHZUL2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 16:10:03 -0400
-Date: Tue, 26 Aug 2008 21:09:59 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: cbou@mail.ru
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] power-supply: Add function to return system-wide power state
-Message-ID: <20080826200959.GB26114@srcf.ucam.org>
-References: <20080826200849.GA26114@srcf.ucam.org>
+	Tue, 26 Aug 2008 16:11:28 -0400
+Date: Tue, 26 Aug 2008 22:11:25 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-parisc@vger.kernel.org
+cc: Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: __kernel_suseconds_t is int on PA-RISC (and SPARC64)?
+Message-ID: <Pine.LNX.4.64.0808262207450.7910@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080826200849.GA26114@srcf.ucam.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(resend, I screwed up the Cc)
+Apparently __kernel_suseconds_t is `int' on PA-RISC (and on SPARC64),
+while it's `long' on all other platforms.
 
-Certain drivers benefit from knowing whether the system is on ac or 
-battery, for instance when determining which backlight registers to 
-read. This adds a simple call to determine whether there's an online 
-power supply other than any batteries.
+Is there a specific reason for that?
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+This causes compiler warnings in the HP SDC Real Time Clock driver,
+which is shared between PA-RISC and m68k:
 
----
+drivers/input/misc/hp_sdc_rtc.c:461: warning: format '%02d' expects type 'int', but argument 4 has type 'long int'
+drivers/input/misc/hp_sdc_rtc.c:461: warning: format '%02d' expects type 'int', but argument 4 has type 'long int'
+drivers/input/misc/hp_sdc_rtc.c:468: warning: format '%02d' expects type 'int', but argument 4 has type 'long int'
+drivers/input/misc/hp_sdc_rtc.c:468: warning: format '%02d' expects type 'int', but argument 4 has type 'long int'
+drivers/input/misc/hp_sdc_rtc.c:475: warning: format '%02d' expects type 'int', but argument 4 has type 'long int'
+drivers/input/misc/hp_sdc_rtc.c:475: warning: format '%02d' expects type 'int', but argument 4 has type 'long int'
+drivers/input/misc/hp_sdc_rtc.c:482: warning: format '%02d' expects type 'int', but argument 4 has type 'long int'
+drivers/input/misc/hp_sdc_rtc.c:482: warning: format '%02d' expects type 'int', but argument 4 has type 'long int'
+drivers/input/misc/hp_sdc_rtc.c:489: warning: format '%02d' expects type 'int', but argument 4 has type 'long int'
+drivers/input/misc/hp_sdc_rtc.c:489: warning: format '%02d' expects type 'int', but argument 4 has type 'long int'
 
-The name is a bit odd, but seems to fit in with the existing naming 
-scheme.
+Gr{oetje,eeting}s,
 
-diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
-index cb1ccb4..6a687da 100644
---- a/drivers/power/power_supply_core.c
-+++ b/drivers/power/power_supply_core.c
-@@ -87,6 +87,31 @@ int power_supply_am_i_supplied(struct power_supply *psy)
- 	return error;
- }
- 
-+static int __power_supply_is_system_supplied(struct device *dev, void *data)
-+{
-+	union power_supply_propval ret = {0,};
-+	struct power_supply *psy = dev_get_drvdata(dev);
-+
-+	if (psy->type != POWER_SUPPLY_TYPE_BATTERY) {
-+		if (psy->get_property(psy,
-+				       POWER_SUPPLY_PROP_ONLINE, &ret))
-+			return 0;
-+		if (ret.intval)
-+			return ret.intval;
-+	}
-+	return 0;
-+}
-+
-+int power_supply_is_system_supplied()
-+{
-+	int error;
-+
-+	error = class_for_each_device(power_supply_class, NULL, NULL,
-+				      __power_supply_is_system_supplied);
-+
-+	return error;
-+}
-+
- int power_supply_register(struct device *parent, struct power_supply *psy)
- {
- 	int rc = 0;
-@@ -148,6 +173,7 @@ static void __exit power_supply_class_exit(void)
- 
- EXPORT_SYMBOL_GPL(power_supply_changed);
- EXPORT_SYMBOL_GPL(power_supply_am_i_supplied);
-+EXPORT_SYMBOL_GPL(power_supply_is_system_supplied);
- EXPORT_SYMBOL_GPL(power_supply_register);
- EXPORT_SYMBOL_GPL(power_supply_unregister);
- 
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index ea96ead..3e67d0c 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -164,6 +164,7 @@ struct power_supply_info {
- 
- extern void power_supply_changed(struct power_supply *psy);
- extern int power_supply_am_i_supplied(struct power_supply *psy);
-+extern int power_supply_is_system_supplied(void);
- 
- extern int power_supply_register(struct device *parent,
- 				 struct power_supply *psy);
+						Geert
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
