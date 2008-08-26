@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbYHZRjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759079AbYHZRii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759504AbYHZRjA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 13:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758955AbYHZRh3
+	id S1759079AbYHZRii (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 13:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758878AbYHZRhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 13:37:29 -0400
-Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:54193
+	Tue, 26 Aug 2008 13:37:25 -0400
+Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:54182
 	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758934AbYHZRh2 (ORCPT
+	with ESMTP id S1758759AbYHZRhX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 13:37:28 -0400
+	Tue, 26 Aug 2008 13:37:23 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH v2 5/6] plist: fix PLIST_NODE_INIT to work with debug enabled
+Subject: [PATCH v2 4/6] sched: add sched_class->needs_post_schedule() member
 To: mingo@elte.hu
 Cc: srostedt@redhat.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
        linux-rt-users@vger.kernel.org, npiggin@suse.de,
        gregory.haskins@gmail.com
-Date: Tue, 26 Aug 2008 13:35:10 -0400
-Message-ID: <20080826173510.16413.45136.stgit@dev.haskins.net>
+Date: Tue, 26 Aug 2008 13:35:05 -0400
+Message-ID: <20080826173505.16413.97897.stgit@dev.haskins.net>
 In-Reply-To: <20080826173131.16413.17862.stgit@dev.haskins.net>
 References: <20080826173131.16413.17862.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.2
@@ -28,49 +28,112 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems that PLIST_NODE_INIT breaks if used and DEBUG_PI_LIST is defined.
-Since there are no current users of PLIST_NODE_INIT, this has gone
-undetected.  This patch fixes the build issue that enables the
-DEBUG_PI_LIST later in the series when we use it in init_task.h
+We currently run class->post_schedule() outside of the rq->lock, which
+means that we need to test for the need to post_schedule outside of
+the lock to avoid a forced reacquistion.  This is currently not a problem
+as we only look at rq->rt.overloaded.  However, we want to enhance this
+going forward to look at more state to reduce the need to post_schedule to
+a bare minimum set.  Therefore, we introduce a new member-func called
+needs_post_schedule() which tests for the post_schedule condtion without
+actually performing the work.  Therefore it is safe to call this
+function before the rq->lock is released, because we are guaranteed not
+to drop the lock at an intermediate point (such as what post_schedule()
+may do).
+
+We will use this later in the series
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- include/linux/plist.h |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
+ include/linux/sched.h |    1 +
+ kernel/sched.c        |   10 +++++++++-
+ kernel/sched_rt.c     |   24 ++++++++++++++----------
+ 3 files changed, 24 insertions(+), 11 deletions(-)
 
-diff --git a/include/linux/plist.h b/include/linux/plist.h
-index 85de2f0..2b65483 100644
---- a/include/linux/plist.h
-+++ b/include/linux/plist.h
-@@ -96,6 +96,10 @@ struct plist_node {
- # define PLIST_HEAD_LOCK_INIT(_lock)
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 08a87b5..cf8cd8c 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -912,6 +912,7 @@ struct sched_class {
+ 			      struct rq *busiest, struct sched_domain *sd,
+ 			      enum cpu_idle_type idle);
+ 	void (*pre_schedule) (struct rq *this_rq, struct task_struct *task);
++	int (*needs_post_schedule) (struct rq *this_rq);
+ 	void (*post_schedule) (struct rq *this_rq);
+ 	void (*task_wake_up) (struct rq *this_rq, struct task_struct *task);
+ #endif
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 850b454..c5b4459 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2525,6 +2525,14 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
+ {
+ 	struct mm_struct *mm = rq->prev_mm;
+ 	long prev_state;
++#ifdef CONFIG_SMP
++	int post_schedule = 0;
++
++	if (current->sched_class->needs_post_schedule) {
++		BUG_ON(!current->sched_class->post_schedule);
++		post_schedule = current->sched_class->needs_post_schedule(rq);
++	}
++#endif
+ 
+ 	rq->prev_mm = NULL;
+ 
+@@ -2543,7 +2551,7 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
+ 	finish_arch_switch(prev);
+ 	finish_lock_switch(rq, prev);
+ #ifdef CONFIG_SMP
+-	if (current->sched_class->post_schedule)
++	if (post_schedule)
+ 		current->sched_class->post_schedule(rq);
  #endif
  
-+#define _PLIST_HEAD_INIT(head)				\
-+	.prio_list = LIST_HEAD_INIT((head).prio_list),	\
-+	.node_list = LIST_HEAD_INIT((head).node_list)
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 196c024..a3d695b 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -1212,20 +1212,23 @@ static void pre_schedule_rt(struct rq *rq, struct task_struct *prev)
+ 		pull_rt_task(rq);
+ }
+ 
++/*
++ * assumes rq->lock is held
++ */
++static int needs_post_schedule_rt(struct rq *rq)
++{
++	return rq->rt.overloaded ? 1 : 0;
++}
 +
- /**
-  * PLIST_HEAD_INIT - static struct plist_head initializer
-  * @head:	struct plist_head variable name
-@@ -103,8 +107,7 @@ struct plist_node {
-  */
- #define PLIST_HEAD_INIT(head, _lock)			\
- {							\
--	.prio_list = LIST_HEAD_INIT((head).prio_list),	\
--	.node_list = LIST_HEAD_INIT((head).node_list),	\
-+	_PLIST_HEAD_INIT(head),                         \
- 	PLIST_HEAD_LOCK_INIT(&(_lock))			\
+ static void post_schedule_rt(struct rq *rq)
+ {
+ 	/*
+-	 * If we have more than one rt_task queued, then
+-	 * see if we can push the other rt_tasks off to other CPUS.
+-	 * Note we may release the rq lock, and since
+-	 * the lock was owned by prev, we need to release it
+-	 * first via finish_lock_switch and then reaquire it here.
++	 * This is only called if needs_post_schedule_rt() indicates that
++	 * we need to push tasks away
+ 	 */
+-	if (unlikely(rq->rt.overloaded)) {
+-		spin_lock_irq(&rq->lock);
+-		push_rt_tasks(rq);
+-		spin_unlock_irq(&rq->lock);
+-	}
++	spin_lock_irq(&rq->lock);
++	push_rt_tasks(rq);
++	spin_unlock_irq(&rq->lock);
  }
  
-@@ -116,7 +119,7 @@ struct plist_node {
- #define PLIST_NODE_INIT(node, __prio)			\
- {							\
- 	.prio  = (__prio),				\
--	.plist = PLIST_HEAD_INIT((node).plist, NULL),	\
-+	.plist = { _PLIST_HEAD_INIT((node).plist) }, 	\
- }
- 
- /**
+ /*
+@@ -1473,6 +1476,7 @@ static const struct sched_class rt_sched_class = {
+ 	.rq_online              = rq_online_rt,
+ 	.rq_offline             = rq_offline_rt,
+ 	.pre_schedule		= pre_schedule_rt,
++	.needs_post_schedule	= needs_post_schedule_rt,
+ 	.post_schedule		= post_schedule_rt,
+ 	.task_wake_up		= task_wake_up_rt,
+ 	.switched_from		= switched_from_rt,
 
