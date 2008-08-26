@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757729AbYHZKkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbYHZKne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757729AbYHZKkS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 06:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbYHZKkG
+	id S1757958AbYHZKne (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 06:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbYHZKn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 06:40:06 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60451 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752936AbYHZKkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 06:40:04 -0400
-Date: Tue, 26 Aug 2008 12:39:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       Mikael Pettersson <mikpe@it.uu.se>, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Re: [BUG] get_rtc_time() triggers NMI watchdog in
-	hpet_rtc_interrupt()
-Message-ID: <20080826103921.GB10144@elte.hu>
-References: <200808230948.m7N9mUc1016360@harpo.it.uu.se> <19f34abd0808240214o22748804s45e8487d62b34cb8@mail.gmail.com> <18609.14516.873317.52292@harpo.it.uu.se> <19f34abd0808240448w5facaee2gec77662c14b9364f@mail.gmail.com> <48B3DA02.9080002@tuffmail.co.uk>
+	Tue, 26 Aug 2008 06:43:26 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:10390 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753851AbYHZKnZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 06:43:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MrWC8e6CSJjXEUollSFaljoWoG4q5hdzzt3YKcPIzpBegsFDhD5XxutECma53VR4Ub
+         IyFzXVmfiJL2qWQTmwaqCrfoOIwnGaM12z2C8ALRgjCKg9+jNnL6LBIT6GGjOPGF+VG2
+         sEEwlxOp99yVvQ8i8uFubEfDLuafrwj4Qwlbs=
+Date: Tue, 26 Aug 2008 14:44:54 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: jassi_singh_brar@yahoo.com, linux-kernel@vger.kernel.org
+Subject: Re: An idea .... with code
+Message-ID: <20080826104454.GA13455@x200.localdomain>
+References: <801995.65435.qm@web33201.mail.mud.yahoo.com> <87tzd89oap.fsf@basil.nowhere.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48B3DA02.9080002@tuffmail.co.uk>
+In-Reply-To: <87tzd89oap.fsf@basil.nowhere.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
-
-> I beat you :-).  I noticed the problem myself.  It does trigger if I 
-> run hwclock in a loop.
+On Tue, Aug 26, 2008 at 10:24:30AM +0200, Andi Kleen wrote:
+> jassi brar <jassi_singh_brar@yahoo.com> writes:
 > 
-> while true; do hwclock; done
+> >   Lately a question has been bugging me: Why do we keep complicated(specific ioctls to set up and set free) 
 > 
-> However it is fine in latest git.  Looks like Ingo's patch has been 
-> merged, and has fixed it.
+> Can you please expand a bit why you think losetup is that complicated
+> and what the problem is with it?
+> 
+> AFAIK you're essentially just moving a minimal version of losetup
+> (with missing features like no offsets etc.) into the kernel and
+> frankly I fail to see the beauty in that. Or rather if you start with
+> losetup, why stop at mount, modprobe, ifconfig, mkfs, fsck, ls[1], ...?
+> 
+> For me it seems more that most of the file system based command
+> interfaces (/proc/mtrr comes to mind) are quite hard to use
 
-ah, good - thanks for testing it. I havent seen a lockup on the T60 
-either - but it was very sporadic to begin with. (and now we understand 
-why: hwclock is running only once per reboot.)
+Name four.
 
-Plus, the real bug has to be found as well: who in the rtc ioctl path 
-calls this code with irqs disabled - it's not nice.
+> and I prefer a proper command line tool with a manpage and --help
+> and a real parser any day.
 
-	Ingo
+Go write mtrrctl(1) and a manpage. You'll need it in case of
+ioctl-based interface anyway.
+
