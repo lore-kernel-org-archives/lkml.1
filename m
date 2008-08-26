@@ -1,39 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbYHZHky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756336AbYHZHqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754670AbYHZHky (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 03:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYHZHkn
+	id S1756336AbYHZHqU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 03:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYHZHqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 03:40:43 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:58046 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752140AbYHZHkm (ORCPT
+	Tue, 26 Aug 2008 03:46:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47646
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751392AbYHZHqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 03:40:42 -0400
-Message-ID: <48B3B375.8050407@davidnewall.com>
-Date: Tue, 26 Aug 2008 17:10:37 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Joe Peterson <joe@skyrush.com>
-CC: Willy Tarreau <w@1wt.eu>, Chris Frey <cdfrey@foursquare.net>,
-       Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Visible Ctrl-C in latest kernels
-References: <20080822201537.GA18242@foursquare.net> <19f34abd0808230253w663722dcwde1303998e194ddf@mail.gmail.com> <48B04E42.3030405@skyrush.com> <20080824010231.GA26030@foursquare.net> <20080825122024.GA19337@1wt.eu> <48B2EDC2.1020608@davidnewall.com> <48B2F3E9.5020804@skyrush.com> <48B35788.4020008@skyrush.com>
-In-Reply-To: <48B35788.4020008@skyrush.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 26 Aug 2008 03:46:11 -0400
+Date: Tue, 26 Aug 2008 00:46:07 -0700 (PDT)
+Message-Id: <20080826.004607.253712060.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: torvalds@linux-foundation.org, Alan.Brunelle@hp.com, travis@sgi.com,
+       tglx@linutronix.de, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, akpm@linux-foundation.org,
+       arjan@linux.intel.com, rusty@rustcorp.com.au
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
+ bisected
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080826072220.GB31876@elte.hu>
+References: <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org>
+	<alpine.LFD.1.10.0808251401590.3363@nehalem.linux-foundation.org>
+	<20080826072220.GB31876@elte.hu>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Peterson wrote:
-> When I run your program, foreground or background, it always completes
-> (i.e. 5 "." chars) - i.e., I cannot interrupt it before it finishes.
->   
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 26 Aug 2008 09:22:20 +0200
 
-This is what should occur and what I originally expected to see.  I
-can't explain why it works (slightly) differently on my machine, but
-that's probably unimportant.  My thinking is that the issue reported as
-^C being delayed could be caused for this sort of reason; it could be a
-shell bug, and not a kernel bug.
+> And i guess the next generation of 4K CPUs support should just get away 
+> from cpumask_t-on-kernel-stack model altogether, as the current model is 
+> not maintainable. We tried the on-kernel-stack variant, and it really 
+> does not work reliably. We can fix this in v2.6.28.
+
+I recenetly did some work on sparc64 to use cpumask pointers
+as much as possible.
+
+The only case that didn't work was due to a limitation in
+arch interfaces for the new generic smp_call_function() code.
+It passes a cpumask_t instead of a pointer to one via
+arch_send_call_function_ipi().
+
+But other than that, the whole sparc64 SMP stuff uses cpumask_t
+pointers only.
+
+What it comes down to is that you have to do the "self cpu"
+and other tests in the cross-call dispatch routines themselves,
+instead of at the top-level working on cpumask_t objects.
+
+Otherwise you have to modify cpumask_t objects and thus pluck
+them onto the stack where they take up silly amounts of space.
