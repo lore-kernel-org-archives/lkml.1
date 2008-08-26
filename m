@@ -1,39 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759883AbYHZTIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759743AbYHZTKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759883AbYHZTIn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 15:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757592AbYHZTIe
+	id S1759743AbYHZTKf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 15:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757592AbYHZTK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 15:08:34 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:36018 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753231AbYHZTIe (ORCPT
+	Tue, 26 Aug 2008 15:10:28 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33071 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757591AbYHZTK1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 15:08:34 -0400
-Date: Tue, 26 Aug 2008 20:08:33 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Rufus & Azrael <rufus-azrael@numericable.fr>
-Cc: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [2.6.27-rc4-git5] ipv4: sysctl fixes causes "cannot open
-	/proc/sys/net/ipv4/route/flush"
-Message-ID: <20080826190833.GA28946@ZenIV.linux.org.uk>
-References: <48B43562.20602@numericable.fr> <48B43A0A.5060406@numericable.fr> <20080826190515.GY28946@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080826190515.GY28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 26 Aug 2008 15:10:27 -0400
+Date: Tue, 26 Aug 2008 19:52:47 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: torvalds@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] tty: TIOCGSOFTCAR/SSOFTCAR on pty is wron
+Message-ID: <20080826195247.55a91d76@lxorguk.ukuu.org.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 08:05:15PM +0100, Al Viro wrote:
+The termios settings ioctls on a pty should affect the bound tty side not
+the pty. The SOFTCAR ioctls use the wrong device file.
 
-> I'm just about to fall down at the moment, will look into that once I get
-> some sleep.  In the meanwhile, .config might be useful...
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
 
-See Subject: [PATCH] ipv4: mode 0555 in ipv4_skeleton.  That's practically
-certain to be the fix for the same bug.
+ drivers/char/tty_ioctl.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-Now, where was that brown paperbag...
+
+diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
+index ea9fc5d..bf34e45 100644
+--- a/drivers/char/tty_ioctl.c
++++ b/drivers/char/tty_ioctl.c
+@@ -937,12 +937,14 @@ int tty_mode_ioctl(struct tty_struct *tty, struct file *file,
+ 			return 0;
+ #endif
+ 	case TIOCGSOFTCAR:
+-		return put_user(C_CLOCAL(tty) ? 1 : 0,
++		/* FIXME: for correctness we may need to take the termios
++		   lock here - review */
++		return put_user(C_CLOCAL(real_tty) ? 1 : 0,
+ 						(int __user *)arg);
+ 	case TIOCSSOFTCAR:
+ 		if (get_user(arg, (unsigned int __user *) arg))
+ 			return -EFAULT;
+-		return tty_change_softcar(tty, arg);
++		return tty_change_softcar(real_tty, arg);
+ 	default:
+ 		return -ENOIOCTLCMD;
+ 	}
