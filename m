@@ -1,58 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757553AbYHZCen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbYHZCqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757553AbYHZCen (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 22:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbYHZCed
+	id S1756453AbYHZCqM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 22:46:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbYHZCp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 22:34:33 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:52099 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754371AbYHZCec (ORCPT
+	Mon, 25 Aug 2008 22:45:56 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:9453 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753721AbYHZCpx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 22:34:32 -0400
-Date: Mon, 25 Aug 2008 22:34:29 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ftrace: objcopy version test for local symbols
-In-Reply-To: <20080826115113.806cfe23.sfr@canb.auug.org.au>
-Message-ID: <alpine.DEB.1.10.0808252233530.966@gandalf.stny.rr.com>
-References: <20080825130117.33fe34bc.sfr@canb.auug.org.au> <20080825060934.GB14993@elte.hu> <alpine.DEB.1.10.0808251434000.23923@gandalf.stny.rr.com> <20080825190103.GA24029@elte.hu> <20080826094627.5d627b5b.sfr@canb.auug.org.au>
- <20080826115113.806cfe23.sfr@canb.auug.org.au>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 25 Aug 2008 22:45:53 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtACAAwLs0h5LD0wiGdsb2JhbACSLAEBAQ8gpCWBaw
+X-IronPort-AV: E=Sophos;i="4.32,267,1217773800"; 
+   d="scan'208";a="180334682"
+Date: Tue, 26 Aug 2008 12:45:47 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Lachlan McIlroy <lachlan@sgi.com>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+Subject: Re: [2.6.27-rc4] XFS i_lock vs i_iolock...
+Message-ID: <20080826024547.GX5706@disturbed>
+Mail-Followup-To: Christoph Hellwig <hch@lst.de>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Lachlan McIlroy <lachlan@sgi.com>,
+	Daniel J Blueman <daniel.blueman@gmail.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+References: <6278d2220808221412x28f4ac5dl508884c8030b364a@mail.gmail.com> <20080825010213.GO5706@disturbed> <48B21507.9050708@sgi.com> <20080825035542.GR5706@disturbed> <1219647573.20732.28.camel@twins> <20080825215532.GB28188@lst.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080825215532.GB28188@lst.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 26 Aug 2008, Stephen Rothwell wrote:
-
-> Hi Ingo, Steve,
+On Mon, Aug 25, 2008 at 11:55:32PM +0200, Christoph Hellwig wrote:
+> On Mon, Aug 25, 2008 at 08:59:33AM +0200, Peter Zijlstra wrote:
+> > How can you take two locks in one go? It seems to me you always need to
+> > take them one after another, and as soon as you do that, you have
+> > ordering constraints.
 > 
-> On Tue, 26 Aug 2008 09:46:27 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > On Mon, 25 Aug 2008 21:01:03 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-> > >
-> > > applied to tip/tracing/ftrace, also have integrated it into 
-> > > auto-ftrace-next. (without much testing - i hope it goes well)
-> > 
-> > Looks ok at a first glance, but it may spam my build logs a bit ...
-> > Anyway, we will see.
+> Yes, you would.  Except that in all other places we only have a single
+> iolock involved, so the ordering of the second iolock and second ilock
+> don't matter.
 > 
-> I was right, it produces way to many messages :-(
+> Because of that I think declaring that xfs_lock_two_inodes can just
+> lock on lock type at a time might be the better solution.
 
-I was afraid of that :-(
+Agreed. Patch below.
 
-> 
-> I applied the following patch for now.  It would be nice if this check
-> could be done once per build and warned about once as well.
+Cheers,
 
-Actually, there is a way. I'll write one up and send it out.
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
 
--- Steve
+XFS: prevent lockdep false positives when locking two inodes
 
+If we call xfs_lock_two_inodes() to grab both the iolock and
+the ilock, then drop the ilocks on both inodes, then grab
+them again (as xfs_swap_extents() does) then lockdep will
+report a locking order problem. This is a false positive.
+
+To avoid this, disallow xfs_lock_two_inodes() fom locking both
+inode locks at once - force calers to make two separate calls.
+This means that nested dropping and regaining of the ilocks
+will retain the same lockdep subclass and so lockdep will
+not see anything wrong with this code.
+
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ fs/xfs/xfs_dfrag.c    |    9 ++++++++-
+ fs/xfs/xfs_vnodeops.c |   10 ++++++++++
+ 2 files changed, 18 insertions(+), 1 deletions(-)
+
+diff --git a/fs/xfs/xfs_dfrag.c b/fs/xfs/xfs_dfrag.c
+index 760f4c5..75b0cd4 100644
+--- a/fs/xfs/xfs_dfrag.c
++++ b/fs/xfs/xfs_dfrag.c
+@@ -149,7 +149,14 @@ xfs_swap_extents(
+ 
+ 	sbp = &sxp->sx_stat;
+ 
+-	xfs_lock_two_inodes(ip, tip, lock_flags);
++	/*
++	 * we have to do two separate lock calls here to keep lockdep
++	 * happy. If we try to get all the locks in one call, lock will
++	 * report false positives when we drop the ILOCK and regain them
++	 * below.
++	 */
++	xfs_lock_two_inodes(ip, tip, XFS_IOLOCK_EXCL);
++	xfs_lock_two_inodes(ip, tip, XFS_ILOCK_EXCL);
+ 	locked = 1;
+ 
+ 	/* Verify that both files have the same format */
+diff --git a/fs/xfs/xfs_vnodeops.c b/fs/xfs/xfs_vnodeops.c
+index f108102..cb1b5fd 100644
+--- a/fs/xfs/xfs_vnodeops.c
++++ b/fs/xfs/xfs_vnodeops.c
+@@ -1836,6 +1836,12 @@ again:
+ #endif
+ }
+ 
++/*
++ * xfs_lock_two_inodes() can only be used to lock one type of lock
++ * at a time - the iolock or the ilock, but not both at once. If
++ * we lock both at once, lockdep will report false positives saying
++ * we have violated locking orders.
++ */
+ void
+ xfs_lock_two_inodes(
+ 	xfs_inode_t		*ip0,
+@@ -1846,7 +1852,11 @@ xfs_lock_two_inodes(
+ 	int			attempts = 0;
+ 	xfs_log_item_t		*lp;
+ 
++#ifdef DEBUG
++	if (lock_mode & (XFS_IOLOCK_SHARED|XFS_IOLOCK_EXCL))
++		ASSERT((lock_mode & (XFS_ILOCK_SHARED|XFS_ILOCK_EXCL)) == 0);
+ 	ASSERT(ip0->i_ino != ip1->i_ino);
++#endif
+ 
+ 	if (ip0->i_ino > ip1->i_ino) {
+ 		temp = ip0;
