@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757073AbYHZTtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbYHZTvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757073AbYHZTtS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 15:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbYHZTtC
+	id S1756709AbYHZTvj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 15:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYHZTvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 15:49:02 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:47774 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751931AbYHZTtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 15:49:00 -0400
-Message-ID: <48B45E2A.6090102@sgi.com>
-Date: Tue, 26 Aug 2008 12:48:58 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Christoph Lameter <cl@linux-foundation.org>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Tue, 26 Aug 2008 15:51:31 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43822 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753084AbYHZTva (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 15:51:30 -0400
+Date: Tue, 26 Aug 2008 15:51:14 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Tejun Heo <htejun@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Al Viro <viro@ZenIV.linux.org.uk>, hch@infradead.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Jack Steiner <steiner@sgi.com>
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -	bisected
-References: <alpine.LFD.1.10.0808231313170.3363@nehalem.linux-foundation.org> <48B29F7B.6080405@hp.com> <48B2A421.7080705@hp.com> <alpine.LFD.1.10.0808251019380.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251106270.3363@nehalem.linux-foundation.org> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org> <48B32458.5020104@hp.com> <48B32D39.5040709@linux-foundation.org> <20080826075937.GB7596@elte.hu>
-In-Reply-To: <20080826075937.GB7596@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Eric Van Hensbergen <ericvh@gmail.com>,
+       Ron Minnich <rminnich@sandia.gov>, v9fs-developer@lists.sourceforge.net,
+       cbe-oss-dev@ozlabs.org
+Subject: Re: [PATCH 2/2] poll: allow f_op->poll to sleep
+Message-ID: <20080826195114.GB19297@infradead.org>
+References: <48B40BD4.7040004@kernel.org> <48B40C2F.3050700@gmail.com> <alpine.LFD.1.10.0808260954040.3363@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0808260954040.3363@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Christoph Lameter <cl@linux-foundation.org> wrote:
+On Tue, Aug 26, 2008 at 09:58:14AM -0700, Linus Torvalds wrote:
+> I don't really see the point.
 > 
->> Alan D. Brunelle wrote:
->>
->>> I think you're right: the kernel as a whole may not be ready for 4,096
->>> CPUs apparently...
->> Mike has been working diligently on getting all these cpumasks off the 
->> stack for the last months and has created an infrastructure to do 
->> this. So I think we are close. It might just be a matter of merging 
->> some more patches that are still left in Ingo's tree.
+> poll() isn't allowed to sleep for many reasons. Some are technical. But 
+> the most obvious one is that a sleeping "poll()" is totally against the 
+> whole point of polling in the first place!
 > 
-> hm, there are no such patches left that i know of - the only bits in 
-> -tip are the zero-based percpu, which was found to be a bit fragile in 
-> testing:
+> So is there some big conceptual reason to change how poll() has always 
+> worked?
 
-Yes, it's just a case of new changes abusing the stack.
-> 
->  earth4:~/tip> git-log-line --author=Travis linus..
->  d379497: Zero based percpu: infrastructure to rebase the per cpu area to zero
->  b3a0cb4: x86: extend percpu ops to 64 bit
-> 
-> [and it has no relevance to stack footprint.]
-> 
-> So i dont think the current cpumask_t approach will work. We simply 
-> should not get into an endless fight against the windmills that 
-> introduce on-stack cpumask_t again and again. We should just take the 
-> plunge once and do a clean alloc/free cpumask model. Most of the hotpath 
-> cpumasks are constant or pre-constructed, so they are not a real issue.
-
-It would have been nice to know this 9 months ago... ;-)
-> 
-> Plus, on the general question of stack footprint problems and the 
-> difficulty of debugging them, the worst-case stack footprint tracer i 
-> wrote for -rt some time ago should be dusted off as well and put into 
-> ftrace. David has something quite close to that for Sparc64 already.
-> 
-> 	Ingo
-
-I'll start experimenting with globally changing cpumask_t to be a pointer,
-and see what falls out.
-
-Thanks,
-Mike
+Just as a little sidenote most files on spufs have a ->poll that sleeps,
+and currently we don't have any debugging to catch this, I just noticed
+this by accident.  The reason that it sleeps is because it needs to grab
+a sleping lock, and as that lock protects against a rather complicate
+type of hardware context switch it's not possible to replace it with
+a spinlock.
 
