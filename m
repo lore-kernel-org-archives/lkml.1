@@ -1,61 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbYHZNUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbYHZNZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758185AbYHZNUB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 09:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbYHZNTx
+	id S1758012AbYHZNZk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 09:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbYHZNZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 09:19:53 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56674 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752983AbYHZNTw (ORCPT
+	Tue, 26 Aug 2008 09:25:31 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:53506 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753139AbYHZNZa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 09:19:52 -0400
-Date: Tue, 26 Aug 2008 14:19:32 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Marc Pignat <marc.pignat@hevs.ch>
-Cc: Claudio Scordino <claudio@evidence.eu.com>, lg@denx.de,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [ARM] Regression ? at91rm9200 machine-type
-Message-ID: <20080826131932.GA24119@flint.arm.linux.org.uk>
-References: <48B3DB29.5070409@evidence.eu.com> <200808261443.12638.marc.pignat@hevs.ch>
-Mime-Version: 1.0
+	Tue, 26 Aug 2008 09:25:30 -0400
+Date: Tue, 26 Aug 2008 14:25:25 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] hp-wmi: Add proper hotkey support
+Message-ID: <20080826132525.GA29293@srcf.ucam.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200808261443.12638.marc.pignat@hevs.ch>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 02:43:12PM +0200, Marc Pignat wrote:
-> > After commit
-> > 
-> > 87fee013a23ad02821699aef5b76891b42959182
-> > 
-> > [ARM] 4647/1: at91rm9200: Remove redundant machine-type verification
-> > and manipulation
-> > 
-> > I cannot boot my board anymore.
-> > 
-> > Some more details:
-> >   - I tried booting from both U-Boot 1.1.6 and U-Boot 1.3.4
-> >   - I compiled U-Boot using "at91rm9200dk_config"
-> >   - On U-Boot bootargs=console=ttyS0,115200 mem=32M
-> > mtdparts=AT45DB642.spi0:-(filesystem) rootfstype=jffs2 root=/dev/mtdblock0
-> >   - The .config of the kernel is in attachment
-> > 
-> > I don't know if this is an actual regression or not (I'm not much
-> > skilled in machine-types/boot process).
+It turns out that event 0x4 merely indcates that a hotkey has been 
+pressed, not which one. A further query is required in order to 
+determine the actual keypress. The following patch adds support for that 
+along with the known keycodes.
 
-Thankfully, the recent uboot versions now allow the ID passed to be
-configurable via its scripts, rather than being compiled in, so this
-means compile time mistakes can be easily corrected without reflashing
-the boot loader.  I'm not involved with uboot at all, so I couldn't
-tell you which versions are what.
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
-But everything Marc says in his reply is correct.
+---
+
+diff --git a/drivers/misc/hp-wmi.c b/drivers/misc/hp-wmi.c
+index bc6ccfb..0968304 100644
+--- a/drivers/misc/hp-wmi.c
++++ b/drivers/misc/hp-wmi.c
+@@ -49,6 +49,7 @@ MODULE_ALIAS("wmi:5FB7F034-2C63-45e9-BE91-3D44E2C707E4");
+ #define HPWMI_ALS_QUERY 0x3
+ #define HPWMI_DOCK_QUERY 0x4
+ #define HPWMI_WIRELESS_QUERY 0x5
++#define HPWMI_HOTKEY_QUERY 0xc
+ 
+ static int __init hp_wmi_bios_setup(struct platform_device *device);
+ static int __exit hp_wmi_bios_remove(struct platform_device *device);
+@@ -69,7 +70,7 @@ struct bios_return {
+ 
+ struct key_entry {
+ 	char type;		/* See KE_* below */
+-	u8 code;
++	u16 code;
+ 	u16 keycode;
+ };
+ 
+@@ -79,7 +80,9 @@ static struct key_entry hp_wmi_keymap[] = {
+ 	{KE_SW, 0x01, SW_DOCK},
+ 	{KE_KEY, 0x02, KEY_BRIGHTNESSUP},
+ 	{KE_KEY, 0x03, KEY_BRIGHTNESSDOWN},
+-	{KE_KEY, 0x04, KEY_HELP},
++	{KE_KEY, 0x20e6, KEY_PROG1},
++	{KE_KEY, 0x2142, KEY_MEDIA},
++	{KE_KEY, 0x231b, KEY_HELP},
+ 	{KE_END, 0}
+ };
+ 
+@@ -318,6 +321,9 @@ void hp_wmi_notify(u32 value, void *context)
+ 
+ 	if (obj && obj->type == ACPI_TYPE_BUFFER && obj->buffer.length == 8) {
+ 		int eventcode = *((u8 *) obj->buffer.pointer);
++		if (eventcode == 0x4)
++			eventcode = hp_wmi_perform_query(HPWMI_HOTKEY_QUERY, 0,
++							 0);
+ 		key = hp_wmi_get_entry_by_scancode(eventcode);
+ 		if (key) {
+ 			switch (key->type) {
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Matthew Garrett | mjg59@srcf.ucam.org
