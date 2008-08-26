@@ -1,82 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754403AbYHZAh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754568AbYHZAy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754403AbYHZAh2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 20:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbYHZAhP
+	id S1754568AbYHZAy5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 20:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbYHZAys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 20:37:15 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:57503 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752740AbYHZAhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 20:37:14 -0400
-Date: Tue, 26 Aug 2008 10:37:08 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Travis Place <wishie@wishie.net>, Takashi Iwai <tiwai@suse.de>
-Cc: linux-next@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: origin tree build failure
-Message-Id: <20080826103708.3b4c3269.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 25 Aug 2008 20:54:48 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:19584 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753200AbYHZAyr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 20:54:47 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=gXVKsLqLF4DDtoTVIFltxNsM2r+12SChEvnijPjelGFXqKqdqUmxMHtRiC4eTwCtA
+	kcCWbVFWxqcZ4zVyaU4WA==
+Message-ID: <6599ad830808251754l146588dax65aeff2cc22ac0c1@mail.gmail.com>
+Date: Mon, 25 Aug 2008 17:54:39 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Vivek Goyal" <vgoyal@redhat.com>
+Subject: Re: [RFC] [PATCH -mm] cgroup: uid-based rules to add processes efficiently in the right cgroup
+Cc: righi.andrea@gmail.com,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Kazunaga Ikeno" <k-ikeno@ak.jp.nec.com>,
+       "Morton Andrew Morton" <akpm@linux-foundation.org>,
+       "Thomas Graf" <tgraf@redhat.com>, "Ulrich Drepper" <drepper@redhat.com>
+In-Reply-To: <20080819125710.GA18972@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080703155446.GB9275@redhat.com>
+	 <20080710104852.797fe79c@cuia.bos.redhat.com>
+	 <20080710154035.GA12043@redhat.com>
+	 <20080711095501.cefff6df.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20080714135719.GE16673@redhat.com> <487B665B.9080205@sun.com>
+	 <20080714152142.GJ16673@redhat.com> <48A7FE7B.3060309@gmail.com>
+	 <6599ad830808181405i3ec1f9fdp4d8ca7ab675b2c5f@mail.gmail.com>
+	 <20080819125710.GA18972@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Tue, Aug 19, 2008 at 5:57 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+>
+> Same thing will happen if we implement the daemon in user space. A task
+> who does seteuid(), can be swept away to a different cgroup based on
+> rules specified in /etc/cgrules.conf.
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+Yes, I'm not so keen on a daemon magically pulling things into a
+cgroup based on uid either, for the same reasons.
 
-sound/pci/ca0106/ca0106_main.c:263: error: syntax error before '{' token
-sound/pci/ca0106/ca0106_main.c:264: error: field name not in record or union initializer
-sound/pci/ca0106/ca0106_main.c:264: error: (near initialization for 'ca0106_chip_details')
-sound/pci/ca0106/ca0106_main.c:264: warning: missing braces around initializer
-sound/pci/ca0106/ca0106_main.c:264: warning: (near initialization for 'ca0106_chip_details[10]')
-sound/pci/ca0106/ca0106_main.c:264: warning: initialization makes integer from pointer without a cast
-sound/pci/ca0106/ca0106_main.c:264: error: initializer element is not computable at load time
-sound/pci/ca0106/ca0106_main.c:264: error: (near initialization for 'ca0106_chip_details[10].serial')
-sound/pci/ca0106/ca0106_main.c:265: error: field name not in record or union initializer
-sound/pci/ca0106/ca0106_main.c:265: error: (near initialization for 'ca0106_chip_details')
-sound/pci/ca0106/ca0106_main.c:266: error: field name not in record or union initializer
-sound/pci/ca0106/ca0106_main.c:266: error: (near initialization for 'ca0106_chip_details')
-sound/pci/ca0106/ca0106_main.c:272: error: syntax error before '{' token
+But a user-space based solution can be much more flexible (e.g. easier
+to configure it to only move tasks from certain source cgroups).
 
-This is just Linus' tree (head commit
-d25e26b61d59370eee8b7f2634641eb0fa76e952 "[x86] Clean up MAXSMP Kconfig,
-and limit NR_CPUS to 512").
+>
+> What do you mean by risk? This is the policy set up by system admin and
+> behaviour would seem consistent as per the policy. If an admin decides
+> that tasks of user "apache" should run into /container/cpu/apache cgroup and
+> if a "root" tasks does seteuid(apache), then it manes sense to move task
+> to /container/cpu/apache.
 
-Introduced by commit c5d44423d55e3abca7b1d544af9e4c97ec203999 ("ALSA:
-CA0106 on MSI K8N Diamond PLUS Motherboard").
+The kind of unexpected behaviour I was imagining was when some other
+daemon (e.g. ftpd?) unexpectedly does a setuid to one of the
+magically-controlled users, and results in that daemon being pulled
+into the specified cgroup. For something like cpu maybe that's mostly
+benign (but what moves it back into its original group after it
+switches back to root?) but for other subsystems it could be more
+painful (memory, device access, etc).
 
-I added the following patch.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+>
+> Exactly what kind of scenario do you have in mind when you want the policy
+> to be enforced selectively based on task (tid)?
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 26 Aug 2008 10:33:32 +1000
-Subject: [PATCH] ALSA: fix for CA0106 on MSI K8N Diamond PLUS Motherboard
+I was thinking of something like possibly a per-cgroup file (that also
+affected child cgroups) rather than a global file. That would also
+automatically handle multiple hierarchies.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- sound/pci/ca0106/ca0106_main.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/sound/pci/ca0106/ca0106_main.c b/sound/pci/ca0106/ca0106_main.c
-index 03a274b..6abe8a3 100644
---- a/sound/pci/ca0106/ca0106_main.c
-+++ b/sound/pci/ca0106/ca0106_main.c
-@@ -254,7 +254,7 @@ static struct snd_ca0106_details ca0106_chip_details[] = {
- 	   .name   = "MSI K8N Diamond MB",
- 	   .gpio_type = 2,
- 	   .i2c_adc = 1,
--	   .spi_dac = 2 }
-+	   .spi_dac = 2 },
- 	 /* Shuttle XPC SD31P which has an onboard Creative Labs
- 	  * Sound Blaster Live! 24-bit EAX
- 	  * high-definition 7.1 audio processor".
--- 
-1.5.6.3
-
+Paul
