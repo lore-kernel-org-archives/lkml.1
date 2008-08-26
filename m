@@ -1,149 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYHZVev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755766AbYHZVgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754809AbYHZVev (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 17:34:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbYHZVem
+	id S1755766AbYHZVgR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 17:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbYHZVgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 17:34:42 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:51729 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750990AbYHZVel (ORCPT
+	Tue, 26 Aug 2008 17:36:04 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:49522 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751085AbYHZVgD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 17:34:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=UamrfNCDxrfFHJCUTcBir5AW+2d9yVVOvsjP5ziI3vTpzL5uF1FCgSmjsvBKAESjEl
-         UqpNoD4p469ENnEgHhmkvm3jR5uRGpkjz0tvsYhz/URj/RSxKf2embLR+LBa0FjgwQG6
-         PwjGvPHdODRphRXawbBoTt1LTL7Nqb4X6Bitw=
-Message-ID: <6278d2220808261434o15dcbbfbge8138098bf453c0b@mail.gmail.com>
-Date: Tue, 26 Aug 2008 22:34:40 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Dave Chinner" <david@fromorbit.com>
-Subject: Re: [2.6.27-rc4] XFS i_lock vs i_iolock...
-Cc: "Christoph Hellwig" <hch@lst.de>, "Peter Zijlstra" <peterz@infradead.org>,
-       "Lachlan McIlroy" <lachlan@sgi.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
-In-Reply-To: <6278d2220808261313ve58a692r38c913356ee135e2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 26 Aug 2008 17:36:03 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhwFAMEOtEhMRKxB/2dsb2JhbACBZbkfgWs
+Date: Tue, 26 Aug 2008 17:35:59 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Gerhard Brauer <gerhard.brauer@web.de>
+Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
+Message-ID: <20080826213559.GA27498@Krystal>
+References: <48AF2ABD.9070100@zytor.com> <20080826141851.GA5300@tux1.brauer.lan> <20080826145338.GA8601@Krystal> <20080826131354.356ae11d@doriath.conectiva> <20080826171822.GB14906@Krystal> <20080826150222.0cf1542c@doriath.conectiva> <20080826181558.GA16887@Krystal> <20080826203449.GD5300@tux1.brauer.lan> <20080826204814.GB23544@Krystal> <20080826212549.GE5300@tux1.brauer.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <6278d2220808221412x28f4ac5dl508884c8030b364a@mail.gmail.com>
-	 <20080825010213.GO5706@disturbed> <48B21507.9050708@sgi.com>
-	 <20080825035542.GR5706@disturbed> <1219647573.20732.28.camel@twins>
-	 <20080825215532.GB28188@lst.de> <20080826024547.GX5706@disturbed>
-	 <6278d2220808261313ve58a692r38c913356ee135e2@mail.gmail.com>
+In-Reply-To: <20080826212549.GE5300@tux1.brauer.lan>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 17:34:31 up 83 days,  2:14,  6 users,  load average: 0.33, 0.42,
+	0.56
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 9:13 PM, Daniel J Blueman
-<daniel.blueman@gmail.com> wrote:
-> Hi Dave,
->
-> On Tue, Aug 26, 2008 at 3:45 AM, Dave Chinner <david@fromorbit.com> wrote:
->> On Mon, Aug 25, 2008 at 11:55:32PM +0200, Christoph Hellwig wrote:
->>> On Mon, Aug 25, 2008 at 08:59:33AM +0200, Peter Zijlstra wrote:
->>> > How can you take two locks in one go? It seems to me you always need to
->>> > take them one after another, and as soon as you do that, you have
->>> > ordering constraints.
->>>
->>> Yes, you would.  Except that in all other places we only have a single
->>> iolock involved, so the ordering of the second iolock and second ilock
->>> don't matter.
->>>
->>> Because of that I think declaring that xfs_lock_two_inodes can just
->>> lock on lock type at a time might be the better solution.
->>
->> Agreed. Patch below.
->>
->> Cheers,
->>
->> Dave.
->> --
->> Dave Chinner
->> david@fromorbit.com
->>
->> XFS: prevent lockdep false positives when locking two inodes
->>
->> If we call xfs_lock_two_inodes() to grab both the iolock and
->> the ilock, then drop the ilocks on both inodes, then grab
->> them again (as xfs_swap_extents() does) then lockdep will
->> report a locking order problem. This is a false positive.
->>
->> To avoid this, disallow xfs_lock_two_inodes() fom locking both
->> inode locks at once - force calers to make two separate calls.
->> This means that nested dropping and regaining of the ilocks
->> will retain the same lockdep subclass and so lockdep will
->> not see anything wrong with this code.
->>
->> Signed-off-by: Dave Chinner <david@fromorbit.com>
->> ---
->>  fs/xfs/xfs_dfrag.c    |    9 ++++++++-
->>  fs/xfs/xfs_vnodeops.c |   10 ++++++++++
->>  2 files changed, 18 insertions(+), 1 deletions(-)
->>
->> diff --git a/fs/xfs/xfs_dfrag.c b/fs/xfs/xfs_dfrag.c
->> index 760f4c5..75b0cd4 100644
->> --- a/fs/xfs/xfs_dfrag.c
->> +++ b/fs/xfs/xfs_dfrag.c
->> @@ -149,7 +149,14 @@ xfs_swap_extents(
->>
->>        sbp = &sxp->sx_stat;
->>
->> -       xfs_lock_two_inodes(ip, tip, lock_flags);
->> +       /*
->> +        * we have to do two separate lock calls here to keep lockdep
->> +        * happy. If we try to get all the locks in one call, lock will
->> +        * report false positives when we drop the ILOCK and regain them
->> +        * below.
->> +        */
->> +       xfs_lock_two_inodes(ip, tip, XFS_IOLOCK_EXCL);
->> +       xfs_lock_two_inodes(ip, tip, XFS_ILOCK_EXCL);
->>        locked = 1;
->>
->>        /* Verify that both files have the same format */
->> diff --git a/fs/xfs/xfs_vnodeops.c b/fs/xfs/xfs_vnodeops.c
->> index f108102..cb1b5fd 100644
->> --- a/fs/xfs/xfs_vnodeops.c
->> +++ b/fs/xfs/xfs_vnodeops.c
->> @@ -1836,6 +1836,12 @@ again:
->>  #endif
->>  }
->>
->> +/*
->> + * xfs_lock_two_inodes() can only be used to lock one type of lock
->> + * at a time - the iolock or the ilock, but not both at once. If
->> + * we lock both at once, lockdep will report false positives saying
->> + * we have violated locking orders.
->> + */
->>  void
->>  xfs_lock_two_inodes(
->>        xfs_inode_t             *ip0,
->> @@ -1846,7 +1852,11 @@ xfs_lock_two_inodes(
->>        int                     attempts = 0;
->>        xfs_log_item_t          *lp;
->>
->> +#ifdef DEBUG
->> +       if (lock_mode & (XFS_IOLOCK_SHARED|XFS_IOLOCK_EXCL))
->> +               ASSERT((lock_mode & (XFS_ILOCK_SHARED|XFS_ILOCK_EXCL)) == 0);
->>        ASSERT(ip0->i_ino != ip1->i_ino);
->> +#endif
->>
->>        if (ip0->i_ino > ip1->i_ino) {
->>                temp = ip0;
->
-> Good to get your patch and HCH's ack...thanks!
->
-> I'll pursue testing and touchdown in < 24 hrs.
+* Gerhard Brauer (gerhard.brauer@web.de) wrote:
+> On Tue, Aug 26, 2008 at 04:48:14PM -0400, Mathieu Desnoyers wrote:
+> > 
+> > OK, so we have a problem with interrupts coming while we are doing the
+> > alternatives patching.
+> > 
+> > First thing, I wonder if Virtualbox expects the OS to patch all its
+> > paravirt instructions in one go ?
+> > 
+> > Also, could you then try to :
+> > - to revert all those changes
+> > - Do this to text_poke_early and text_poke :
+> > 
+> > - put the sync_core() within the irq off critical section
+> > (test)
+> 
+> Could you please explain more what to change? I don't see where to put
+> sync_core(), i not found this section in both functions. (I'm not a developer)
+> 
 
-Excellent - confirmed it addresses the lockdep report I was seeing
-before and doesn't introduce any regressions.
+Sure,
+
+First patch to test :
+
+x86 alternative text_poke move sync_core
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ arch/x86/kernel/alternative.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6-lttng/arch/x86/kernel/alternative.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86/kernel/alternative.c	2008-08-26 17:26:41.000000000 -0400
++++ linux-2.6-lttng/arch/x86/kernel/alternative.c	2008-08-26 17:26:58.000000000 -0400
+@@ -488,8 +488,8 @@ void *text_poke_early(void *addr, const 
+ 	unsigned long flags;
+ 	local_irq_save(flags);
+ 	memcpy(addr, opcode, len);
+-	local_irq_restore(flags);
+ 	sync_core();
++	local_irq_restore(flags);
+ 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+ 	   that causes hangs on some VIA CPUs. */
+ 	return addr;
+@@ -529,9 +529,9 @@ void *__kprobes text_poke(void *addr, co
+ 	BUG_ON(!vaddr);
+ 	local_irq_save(flags);
+ 	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
++	sync_core();
+ 	local_irq_restore(flags);
+ 	vunmap(vaddr);
+-	sync_core();
+ 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+ 	   that causes hangs on some VIA CPUs. */
+ 	for (i = 0; i < len; i++)
+
+
+> > - add a wbinvd();  just after the sync_core() in both functions
+> > (test).
+> 
+> Also verbose please...
+> 
+
+Second patch to apply on top of the first one :
+
+
+x86 alternative text_poke add wbinvd
+
+Add a cache flush instruction before reenabling interrupts in text_poke.
+
+If this works, we could use clflush() (which is sadly buggy on some archs) which
+is faster since it only clear a cacheline instead of the entire cache.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ arch/x86/kernel/alternative.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: linux-2.6-lttng/arch/x86/kernel/alternative.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86/kernel/alternative.c	2008-08-26 17:27:33.000000000 -0400
++++ linux-2.6-lttng/arch/x86/kernel/alternative.c	2008-08-26 17:27:53.000000000 -0400
+@@ -489,6 +489,7 @@ void *text_poke_early(void *addr, const 
+ 	local_irq_save(flags);
+ 	memcpy(addr, opcode, len);
+ 	sync_core();
++	wbinvd();
+ 	local_irq_restore(flags);
+ 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+ 	   that causes hangs on some VIA CPUs. */
+@@ -530,6 +531,7 @@ void *__kprobes text_poke(void *addr, co
+ 	local_irq_save(flags);
+ 	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
+ 	sync_core();
++	wbinvd();
+ 	local_irq_restore(flags);
+ 	vunmap(vaddr);
+ 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+
+
 
 Thanks,
-  Daniel
+
+Mathieu
+
+> > Thanks,
+> > 
+> > Mathieu
+> 
+> Thank you
+> 	Gerhard
+> 
+
 -- 
-Daniel J Blueman
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
