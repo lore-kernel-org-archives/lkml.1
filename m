@@ -1,137 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758153AbYHZPXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYHZPYD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758153AbYHZPXs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 11:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbYHZPXj
+	id S1754538AbYHZPYD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 11:24:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757128AbYHZPXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 11:23:39 -0400
-Received: from ns2.suse.de ([195.135.220.15]:56949 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753915AbYHZPXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 11:23:39 -0400
-Date: Tue, 26 Aug 2008 08:20:34 -0700
-From: Greg KH <gregkh@suse.de>
-To: Rufus & Azrael <rufus-azrael@numericable.fr>
-Cc: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [2.6.27-rc4-git4] compilation warnings
-Message-ID: <20080826152034.GA6593@suse.de>
-References: <48B3CEEA.90400@numericable.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <48B3CEEA.90400@numericable.fr>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 26 Aug 2008 11:23:44 -0400
+Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:35207 "EHLO
+	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756604AbYHZPXn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 11:23:43 -0400
+Subject: [PATCH] NFS: remove 8 bytes of padding from struct nfs_fattr on 64
+	bit builds
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Trond.Myklebust@netapp.com
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 26 Aug 2008 16:23:20 +0100
+Message-Id: <1219764200.3018.16.camel@castor.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 11:37:46AM +0200, Rufus & Azrael wrote:
-> Hello all,
->
-> Fresh 2.6.27-rc4-git4 causes these compilation warnings on my amd64 box 
-> with gcc-4.3.1 :
->
-> drivers/pci/search.c: In function ‘pci_get_dev_by_id’:
-> drivers/pci/search.c:284: attention : passing argument 1 of 
-> ‘pci_dev_put’ discards qualifiers from pointer target type
->
-> following this commit : ebca4f1bce1eb7b91a63c515db66316db9391221 PCI: fix 
-> reference leak in pci_get_dev_by_id()
+remove 8 bytes of padding from struct nfs_fattr on 64 bit builds
 
-Ick, sorry about that, I said my fix was not even build tested :)
+This also removes padding from several nfs structures, including
+16 bytes from  nfs4_opendata, nfs4_createdata,nfs3_createdata
+& 8 bytes from nfs_read_data,nfs_write_data,nfs_removeres,nfs4_closedata
 
-Here's a fix for this, Jesse, care to forward this on?
+This also reduces the reported stack usage of many nfs functions (30+).
+    
+Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+----
 
-thanks,
+This patch is against the latest git 2.6.27-rc4.
+I've built & run this on my AMD64 desktop, & successfully run _simple_
+tests with a  64 bit client => 32 bit server & 32 bit client to 64 bit
+server.
 
-greg k-h
+On fedora with gcc (GCC) 4.3.0 20080428 (Red Hat 4.3.0-8) checkpatch
+reports 33 functions with reduced stack usage.
+e.g.
+__nfs_revalidate_inode [nfs] 216 => 200
+_nfs4_proc_access [nfs] 304 => 288
+_nfs4_proc_link [nfs] 536 => 504
+_nfs4_proc_remove [nfs] 304 => 288
+_nfs4_proc_rename [nfs] 584 => 552
+nfs3_proc_access [nfs] 272 => 256
+nfs3_proc_getacl [nfs] 384 => 368
+nfs3_proc_link [nfs] 496 => 464
+etc
+I can supply the complete list if anyone is interested.
 
---------------
+regards
+Richard
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: PCI: fix compiler warnings in pci_get_subsys()
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
 
-pci_get_subsys() changed in 2.6.26 so that the from pointer is modified when
-the call is being invoked, so fix up the 'const' marking of it that the
-compiler is complaining about.
+diff --git a/include/linux/nfs_xdr.h b/include/linux/nfs_xdr.h
+index 8c77c11..9cabbb3 100644
+--- a/include/linux/nfs_xdr.h
++++ b/include/linux/nfs_xdr.h
+@@ -36,6 +36,7 @@ struct nfs_fattr {
+ 	__u32			nlink;
+ 	__u32			uid;
+ 	__u32			gid;
++	dev_t			rdev;
+ 	__u64			size;
+ 	union {
+ 		struct {
+@@ -46,7 +47,6 @@ struct nfs_fattr {
+ 			__u64	used;
+ 		} nfs3;
+ 	} du;
+-	dev_t			rdev;
+ 	struct nfs_fsid		fsid;
+ 	__u64			fileid;
+ 	struct timespec		atime;
 
-Reported-by: Rufus & Azrael <rufus-azrael@numericable.fr>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- drivers/pci/search.c |    6 +++---
- include/linux/pci.h  |    8 ++++----
- 2 files changed, 7 insertions(+), 7 deletions(-)
-
---- a/drivers/pci/search.c
-+++ b/drivers/pci/search.c
-@@ -162,7 +162,7 @@ EXPORT_SYMBOL(pci_find_slot);
-  * time.
-  */
- struct pci_dev *pci_find_device(unsigned int vendor, unsigned int device,
--				const struct pci_dev *from)
-+				struct pci_dev *from)
- {
- 	struct pci_dev *pdev;
- 
-@@ -263,7 +263,7 @@ static int match_pci_dev_by_id(struct de
-  * this file.
-  */
- static struct pci_dev *pci_get_dev_by_id(const struct pci_device_id *id,
--					 const struct pci_dev *from)
-+					 struct pci_dev *from)
- {
- 	struct device *dev;
- 	struct device *dev_start = NULL;
-@@ -303,7 +303,7 @@ static struct pci_dev *pci_get_dev_by_id
-  */
- struct pci_dev *pci_get_subsys(unsigned int vendor, unsigned int device,
- 			       unsigned int ss_vendor, unsigned int ss_device,
--			       const struct pci_dev *from)
-+			       struct pci_dev *from)
- {
- 	struct pci_dev *pdev;
- 	struct pci_device_id *id;
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -534,7 +534,7 @@ extern void pci_sort_breadthfirst(void);
- #ifdef CONFIG_PCI_LEGACY
- struct pci_dev __deprecated *pci_find_device(unsigned int vendor,
- 					     unsigned int device,
--					     const struct pci_dev *from);
-+					     struct pci_dev *from);
- struct pci_dev __deprecated *pci_find_slot(unsigned int bus,
- 					   unsigned int devfn);
- #endif /* CONFIG_PCI_LEGACY */
-@@ -550,7 +550,7 @@ struct pci_dev *pci_get_device(unsigned 
- 				struct pci_dev *from);
- struct pci_dev *pci_get_subsys(unsigned int vendor, unsigned int device,
- 				unsigned int ss_vendor, unsigned int ss_device,
--				const struct pci_dev *from);
-+				struct pci_dev *from);
- struct pci_dev *pci_get_slot(struct pci_bus *bus, unsigned int devfn);
- struct pci_dev *pci_get_bus_and_slot(unsigned int bus, unsigned int devfn);
- struct pci_dev *pci_get_class(unsigned int class, struct pci_dev *from);
-@@ -816,7 +816,7 @@ _PCI_NOP_ALL(write,)
- 
- static inline struct pci_dev *pci_find_device(unsigned int vendor,
- 					      unsigned int device,
--					      const struct pci_dev *from)
-+					      struct pci_dev *from)
- {
- 	return NULL;
- }
-@@ -838,7 +838,7 @@ static inline struct pci_dev *pci_get_su
- 					     unsigned int device,
- 					     unsigned int ss_vendor,
- 					     unsigned int ss_device,
--					     const struct pci_dev *from)
-+					     struct pci_dev *from)
- {
- 	return NULL;
- }
