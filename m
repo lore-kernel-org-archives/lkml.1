@@ -1,55 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759169AbYHZSsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758921AbYHZSxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759169AbYHZSsV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 14:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbYHZSsF
+	id S1758921AbYHZSxv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 14:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756453AbYHZSxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 14:48:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55953 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757870AbYHZSsD (ORCPT
+	Tue, 26 Aug 2008 14:53:43 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:54234 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756171AbYHZSxn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 14:48:03 -0400
-Date: Tue, 26 Aug 2008 11:47:01 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-cc: Rusty Russell <rusty@rustcorp.com.au>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-embedded@vger.kernel.org
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
- bisected
-In-Reply-To: <20080826183051.GB10925@cs181140183.pp.htv.fi>
-Message-ID: <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org> <200808261111.19205.rusty@rustcorp.com.au> <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org>
- <20080826183051.GB10925@cs181140183.pp.htv.fi>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 26 Aug 2008 14:53:43 -0400
+Date: Tue, 26 Aug 2008 13:53:41 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@osdl.org>
+Subject: [PATCH 1/3] user namespaces: introduce user_struct->user_namespace
+	relationship
+Message-ID: <20080826185341.GA338@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The following 3 patches are a small start to the long task of fleshing
+out user namespace support.  These three patches just clear up the
+relationship of struct user_struct to struct user_namespace (patch 1),
+fix up the refcounting (patch 2), and complete the action of switching
+users when cloning a new user_namespace (patch 3).
 
+Patch 1:
 
-On Tue, 26 Aug 2008, Adrian Bunk wrote:
-> 
-> I added "-fno-inline-functions-called-once -fno-early-inlining" to 
-> KBUILD_CFLAGS, and (with gcc 4.3) that increased the size of my kernel 
-> image by 2%.
+When a task does clone(CLONE_NEWNS), the task's user is the 'creator' of the
+new user_namespace, and the user_namespace is tacked onto a list of those
+created by this user.
 
-Btw, did you check with just "-fno-inline-functions-called-once"?
+Changelog:
+	Aug 25: make free_user not inlined as it's not trivial.  (Eric
+		Biederman suggestion)
+	Aug 1: renamed user->user_namespace to user_ns, as the next
+		patch did anyway.
+	Aug 1: move put_user_ns call in one free_user() definition
+		to move it outside the lock in free_user.  put_user_ns
+		calls free_user on the user_ns->creator, which in
+		turn would grab the lock again.
 
-The -fearly-inlining decisions _should_ be mostly right. If gcc sees early 
-that a function is so small (even without any constant propagation etc) 
-that it can be inlined, it's probably right. 
+Signed-off-by: Serge Hallyn <serue@us.ibm.com>
+---
+ include/linux/sched.h          |    1 +
+ include/linux/user_namespace.h |    1 +
+ kernel/user.c                  |   11 +++++++++--
+ kernel/user_namespace.c        |   20 +++++++++++---------
+ 4 files changed, 22 insertions(+), 11 deletions(-)
 
-The inline-functions-called-once thing is what causes even big functions 
-to be inlined, and that's where you find the big downsides too (eg the 
-stack usage).
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index cfb0d87..9bebf95 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -601,6 +601,7 @@ struct user_struct {
+ 	/* Hash table maintenance information */
+ 	struct hlist_node uidhash_node;
+ 	uid_t uid;
++	struct user_namespace *user_ns;
+ 
+ #ifdef CONFIG_USER_SCHED
+ 	struct task_group *tg;
+diff --git a/include/linux/user_namespace.h b/include/linux/user_namespace.h
+index b5f41d4..f9477c3 100644
+--- a/include/linux/user_namespace.h
++++ b/include/linux/user_namespace.h
+@@ -13,6 +13,7 @@ struct user_namespace {
+ 	struct kref		kref;
+ 	struct hlist_head	uidhash_table[UIDHASH_SZ];
+ 	struct user_struct	*root_user;
++	struct user_struct	*creator;
+ };
+ 
+ extern struct user_namespace init_user_ns;
+diff --git a/kernel/user.c b/kernel/user.c
+index 865ecf5..ee841c7 100644
+--- a/kernel/user.c
++++ b/kernel/user.c
+@@ -22,6 +22,7 @@ struct user_namespace init_user_ns = {
+ 		.refcount	= ATOMIC_INIT(2),
+ 	},
+ 	.root_user = &root_user,
++	.creator = &root_user,
+ };
+ EXPORT_SYMBOL_GPL(init_user_ns);
+ 
+@@ -53,6 +54,7 @@ struct user_struct root_user = {
+ 	.files		= ATOMIC_INIT(0),
+ 	.sigpending	= ATOMIC_INIT(0),
+ 	.locked_shm     = 0,
++	.user_ns	= &init_user_ns,
+ #ifdef CONFIG_USER_SCHED
+ 	.tg		= &init_task_group,
+ #endif
+@@ -319,12 +321,13 @@ done:
+  * IRQ state (as stored in flags) is restored and uidhash_lock released
+  * upon function exit.
+  */
+-static inline void free_user(struct user_struct *up, unsigned long flags)
++static void free_user(struct user_struct *up, unsigned long flags)
+ {
+ 	/* restore back the count */
+ 	atomic_inc(&up->__count);
+ 	spin_unlock_irqrestore(&uidhash_lock, flags);
+ 
++	put_user_ns(up->user_ns);
+ 	INIT_WORK(&up->work, remove_user_sysfs_dir);
+ 	schedule_work(&up->work);
+ }
+@@ -340,13 +343,14 @@ static inline void uids_mutex_unlock(void) { }
+  * IRQ state (as stored in flags) is restored and uidhash_lock released
+  * upon function exit.
+  */
+-static inline void free_user(struct user_struct *up, unsigned long flags)
++static void free_user(struct user_struct *up, unsigned long flags)
+ {
+ 	uid_hash_remove(up);
+ 	spin_unlock_irqrestore(&uidhash_lock, flags);
+ 	sched_destroy_user(up);
+ 	key_put(up->uid_keyring);
+ 	key_put(up->session_keyring);
++	put_user_ns(up->user_ns);
+ 	kmem_cache_free(uid_cachep, up);
+ }
+ 
+@@ -409,6 +413,8 @@ struct user_struct *alloc_uid(struct user_namespace *ns, uid_t uid)
+ 		if (sched_create_user(new) < 0)
+ 			goto out_free_user;
+ 
++		new->user_ns = get_user_ns(ns);
++
+ 		if (uids_user_create(new))
+ 			goto out_destoy_sched;
+ 
+@@ -441,6 +447,7 @@ struct user_struct *alloc_uid(struct user_namespace *ns, uid_t uid)
+ 
+ out_destoy_sched:
+ 	sched_destroy_user(new);
++	put_user_ns(new->user_ns);
+ out_free_user:
+ 	kmem_cache_free(uid_cachep, new);
+ out_unlock:
+diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
+index 532858f..f9f7ad7 100644
+--- a/kernel/user_namespace.c
++++ b/kernel/user_namespace.c
+@@ -18,7 +18,6 @@
+ static struct user_namespace *clone_user_ns(struct user_namespace *old_ns)
+ {
+ 	struct user_namespace *ns;
+-	struct user_struct *new_user;
+ 	int n;
+ 
+ 	ns = kmalloc(sizeof(struct user_namespace), GFP_KERNEL);
+@@ -37,15 +36,17 @@ static struct user_namespace *clone_user_ns(struct user_namespace *old_ns)
+ 		return ERR_PTR(-ENOMEM);
+ 	}
+ 
+-	/* Reset current->user with a new one */
+-	new_user = alloc_uid(ns, current->uid);
+-	if (!new_user) {
+-		free_uid(ns->root_user);
+-		kfree(ns);
+-		return ERR_PTR(-ENOMEM);
+-	}
++	/* pin the creating user */
++	ns->creator = current->user;
++	atomic_inc(&ns->creator->__count);
++
++	/*
++	 * The alloc_uid() incremented the userns refcount,
++	 * so drop it again
++	 */
++	put_user_ns(ns);
+ 
+-	switch_uid(new_user);
++	switch_uid(ns->root_user);
+ 	return ns;
+ }
+ 
+@@ -71,6 +72,7 @@ void free_user_ns(struct kref *kref)
+ 
+ 	ns = container_of(kref, struct user_namespace, kref);
+ 	release_uids(ns);
++	free_uid(ns->creator);
+ 	kfree(ns);
+ }
+ EXPORT_SYMBOL(free_user_ns);
+-- 
+1.5.4.3
 
-			Linus
