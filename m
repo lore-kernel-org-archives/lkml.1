@@ -1,91 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbYHZVZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbYHZV3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753160AbYHZVZk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 17:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbYHZVZb
+	id S1753918AbYHZV3z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 17:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbYHZV3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 17:25:31 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:46673 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751530AbYHZVZa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 17:25:30 -0400
-Date: Tue, 26 Aug 2008 16:25:26 -0500
+	Tue, 26 Aug 2008 17:29:47 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:47793 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751573AbYHZV3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 17:29:46 -0400
+Date: Tue, 26 Aug 2008 16:29:45 -0500
 From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Robert Rex <robert.rex@exasol.com>,
-       Roland McGrath <roland@redhat.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] pid_ns: zap_pid_ns_processes: fix the
-	->child_reaper changing
-Message-ID: <20080826212526.GA12230@us.ibm.com>
-References: <20080824154911.GA3777@tv-sign.ru>
+To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, zohar@us.ibm.com, dvelarde@us.ibm.com,
+       safford@us.ibm.com
+Subject: Re: [PATCH][resubmit] TPM: update char dev BKL pushdown
+Message-ID: <20080826212945.GA13435@us.ibm.com>
+References: <1219784185.4768.6.camel@blackbox>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080824154911.GA3777@tv-sign.ru>
+In-Reply-To: <1219784185.4768.6.camel@blackbox>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oleg Nesterov (oleg@tv-sign.ru):
-> zap_pid_ns_processes() sets pid_ns->child_reaper = NULL, this is wrong.
+Quoting Rajiv Andrade (srajiv@linux.vnet.ibm.com):
+> Now considering the num_opens to is_open change and the use of atomic_set
+> instead of atomic_dec and atomic_inc. This also includes additional comments on
+> tpm_open.
 > 
-> Yes, we have already killed all tasks in this namespace, and sys_wait4()
-> doesn't see any child. But this doesn't mean ->children list is empty,
-> we may have EXIT_DEAD tasks which are not visible to do_wait(). In that
-> case the subsequent forget_original_parent() will crash the kernel because
-> it will try to re-parent these tasks to the NULL reaper.
-> 
-> Even if there are no childs, it is not good that forget_original_parent()
-> uses reaper == NULL.
-> 
-> Change the code to set ->child_reaper = init_pid_ns.child_reaper instead.
-> We could use pid_ns->parent->child_reaper as well, I think this does not
-> really matter. These EXIT_DEAD tasks are not visible to the new ->parent
-> after re-parenting, they will silently do release_task() eventually.
-> 
-> Note that we must change ->child_reaper, otherwise forget_original_parent()
-> will use reaper == father, and in that case we will hit the (correct)
-> BUG_ON(!list_empty(&father->children)).
-> 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
-Well while it looked correct to me all along, I couldn't get the
-testcase to cause an oops.  But I see where do_exit() calls
-zap_pid_ns_processes() (through group_exit()) before
-forget_original_parent(), which can/should end up dereferencing
-the null pid_ns, so clearly this is needed and correct.
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+> Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
 
 Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-Thanks, Oleg.
+In the future, though, please do keep a more complete intro that
+you always send with patch resends - because not everyone will
+know the history - and a detailed changelog - since some people
+do.
 
+thanks,
 -serge
 
-> --- 2.6.27-rc4/kernel/pid_namespace.c~1_ZAP_DONT_CLEAR_REAPER	2008-07-30 13:12:49.000000000 +0400
-> +++ 2.6.27-rc4/kernel/pid_namespace.c	2008-08-24 17:22:59.000000000 +0400
-> @@ -179,9 +179,12 @@ void zap_pid_ns_processes(struct pid_nam
->  		rc = sys_wait4(-1, NULL, __WALL, NULL);
->  	} while (rc != -ECHILD);
+> ---
+>  drivers/char/tpm/tpm.c |   35 ++++++++++++++++++-----------------
+>  drivers/char/tpm/tpm.h |    2 +-
+>  2 files changed, 19 insertions(+), 18 deletions(-)
 > 
-> -
-> -	/* Child reaper for the pid namespace is going away */
-> -	pid_ns->child_reaper = NULL;
-> +	/*
-> +	 * We can not clear ->child_reaper or leave it alone.
-> +	 * There may by stealth EXIT_DEAD tasks on ->children,
-> +	 * forget_original_parent() must move them somewhere.
-
-Actually this comment is a little bit misleading - the null
-deref will happen regardless of whether there are children,
-right?
-
-> +	 */
-> +	pid_ns->child_reaper = init_pid_ns.child_reaper;
->  	acct_exit_ns(pid_ns);
->  	return;
+> diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
+> index ae766d8..09829f3 100644
+> --- a/drivers/char/tpm/tpm.c
+> +++ b/drivers/char/tpm/tpm.c
+> @@ -954,13 +954,16 @@ EXPORT_SYMBOL_GPL(tpm_store_cancel);
+> 
+>  /*
+>   * Device file system interface to the TPM
+> + *
+> + * It's assured that the chip will be opened just once,
+> + * by the check of is_open variable, which is protected
+> + * by driver_lock.
+>   */
+>  int tpm_open(struct inode *inode, struct file *file)
+>  {
+>  	int rc = 0, minor = iminor(inode);
+>  	struct tpm_chip *chip = NULL, *pos;
+> 
+> -	lock_kernel();
+>  	spin_lock(&driver_lock);
+> 
+>  	list_for_each_entry(pos, &tpm_chip_list, list) {
+> @@ -975,34 +978,31 @@ int tpm_open(struct inode *inode, struct file *file)
+>  		goto err_out;
+>  	}
+> 
+> -	if (chip->num_opens) {
+> +	if (atomic_read(&chip->is_open)) {
+>  		dev_dbg(chip->dev, "Another process owns this TPM\n");
+>  		rc = -EBUSY;
+>  		goto err_out;
+>  	}
+> 
+> -	chip->num_opens++;
+> -	get_device(chip->dev);
+> +	atomic_set(&chip->is_open, 1);
+> +	get_device(chip->dev); /* protect from chip disappearing */
+> 
+>  	spin_unlock(&driver_lock);
+> 
+>  	chip->data_buffer = kmalloc(TPM_BUFSIZE * sizeof(u8), GFP_KERNEL);
+>  	if (chip->data_buffer == NULL) {
+> -		chip->num_opens--;
+> +		atomic_set(&chip->is_open, 0);
+>  		put_device(chip->dev);
+> -		unlock_kernel();
+>  		return -ENOMEM;
+>  	}
+> 
+>  	atomic_set(&chip->data_pending, 0);
+> 
+>  	file->private_data = chip;
+> -	unlock_kernel();
+>  	return 0;
+> 
+>  err_out:
+>  	spin_unlock(&driver_lock);
+> -	unlock_kernel();
+>  	return rc;
 >  }
+>  EXPORT_SYMBOL_GPL(tpm_open);
+> @@ -1016,7 +1016,7 @@ int tpm_release(struct inode *inode, struct file *file)
+>  	file->private_data = NULL;
+>  	del_singleshot_timer_sync(&chip->user_read_timer);
+>  	atomic_set(&chip->data_pending, 0);
+> -	chip->num_opens--;
+> +	atomic_set(&chip->is_open, 0);
+>  	put_device(chip->dev);
+>  	kfree(chip->data_buffer);
+>  	spin_unlock(&driver_lock);
+> @@ -1082,7 +1082,12 @@ ssize_t tpm_read(struct file *file, char __user *buf,
+>  	return ret_size;
+>  }
+>  EXPORT_SYMBOL_GPL(tpm_read);
+> -
+> +/*
+> + *   Called on unloading the driver.
+> + *
+> + *   First part unloading the chip is done here. The remainder
+> + *   is done, when the device count reaches 0, in tpm_dev_release().
+> + */
+>  void tpm_remove_hardware(struct device *dev)
+>  {
+>  	struct tpm_chip *chip = dev_get_drvdata(dev);
+> @@ -1231,20 +1236,16 @@ struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vend
+>  		return NULL;
+>  	}
+> 
+> -	spin_lock(&driver_lock);
+> -
+> -	list_add(&chip->list, &tpm_chip_list);
+> -
+> -	spin_unlock(&driver_lock);
+> -
+>  	if (sysfs_create_group(&dev->kobj, chip->vendor.attr_group)) {
+> -		list_del(&chip->list);
+>  		misc_deregister(&chip->vendor.miscdev);
+>  		put_device(chip->dev);
+>  		return NULL;
+>  	}
+> 
+>  	chip->bios_dir = tpm_bios_log_setup(devname);
+> +	spin_lock(&driver_lock);
+> +	list_add(&chip->list, &tpm_chip_list);
+> +	spin_unlock(&driver_lock);
+> 
+>  	return chip;
+>  }
+> diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
+> index e885148..7e0d3fb 100644
+> --- a/drivers/char/tpm/tpm.h
+> +++ b/drivers/char/tpm/tpm.h
+> @@ -90,7 +90,7 @@ struct tpm_chip {
+>  	struct device *dev;	/* Device stuff */
+> 
+>  	int dev_num;		/* /dev/tpm# */
+> -	int num_opens;		/* only one allowed */
+> +	atomic_t is_open;	/* only one allowed */
+>  	int time_expired;
+> 
+>  	/* Data passed to and from the tpm via the read/write calls */
+> -- 
+> 1.5.4.5
+> 
+> 
