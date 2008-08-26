@@ -1,97 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760694AbYHZTMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760102AbYHZTNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760694AbYHZTMZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 15:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759347AbYHZTLu
+	id S1760102AbYHZTNp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 15:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756171AbYHZTNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 15:11:50 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43123 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758960AbYHZTLs (ORCPT
+	Tue, 26 Aug 2008 15:13:37 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44336 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754012AbYHZTNg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 15:11:48 -0400
-Message-ID: <48B45572.1090904@sgi.com>
-Date: Tue, 26 Aug 2008 12:11:46 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       Alan.Brunelle@hp.com, tglx@linutronix.de, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       akpm@linux-foundation.org, arjan@linux.intel.com, rusty@rustcorp.com.au
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -	bisected
-References: <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251401590.3363@nehalem.linux-foundation.org> <20080826072220.GB31876@elte.hu> <20080826.004607.253712060.davem@davemloft.net> <20080826075355.GA7596@elte.hu>
-In-Reply-To: <20080826075355.GA7596@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 26 Aug 2008 15:13:36 -0400
+Date: Tue, 26 Aug 2008 19:55:58 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: torvalds@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] tty: Fix termios tty window resize race with pty/tty
+ pair
+Message-ID: <20080826195558.309f8163@lxorguk.ukuu.org.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * David Miller <davem@davemloft.net> wrote:
-> 
->> From: Ingo Molnar <mingo@elte.hu>
->> Date: Tue, 26 Aug 2008 09:22:20 +0200
->>
->>> And i guess the next generation of 4K CPUs support should just get away 
->>> from cpumask_t-on-kernel-stack model altogether, as the current model is 
->>> not maintainable. We tried the on-kernel-stack variant, and it really 
->>> does not work reliably. We can fix this in v2.6.28.
->> I recenetly did some work on sparc64 to use cpumask pointers as much 
->> as possible.
->>
->> The only case that didn't work was due to a limitation in arch 
->> interfaces for the new generic smp_call_function() code. It passes a 
->> cpumask_t instead of a pointer to one via 
->> arch_send_call_function_ipi().
->>
->> But other than that, the whole sparc64 SMP stuff uses cpumask_t 
->> pointers only.
-> 
-> nice!
-> 
->> What it comes down to is that you have to do the "self cpu" and other 
->> tests in the cross-call dispatch routines themselves, instead of at 
->> the top-level working on cpumask_t objects.
->>
->> Otherwise you have to modify cpumask_t objects and thus pluck them 
->> onto the stack where they take up silly amounts of space.
-> 
-> What we did was this: we added MAXSMP which just revs up all the SMP 
-> tunables to the maximum, so that we can see any problems early in 
-> testing.
-> 
-> And we triggered problems, and we fixed a couple of regressions all 
-> around stack footprint. But we didnt catch all of them - some were gcc 
-> version dependent and configuration dependent. So i think it's safe to 
-> say that the whole concept of allowing such a large cpumask_t to be on 
-> the stack is fragile.
+Kanru Chen posted a patch versus the old code which deals with the case
+where you resize the pty side of a pty/tty pair. In that situation the
+termios data is updated for both pty and tty but the locks are not held
+for the right side.
 
-Iirc, it was the problem of basing percpu variables at zero that hit
-problems with various gcc toolset versions.  I don't remember any
-version problems with cpumask's on the stack, they all failed the
-same way... :-)
-> 
-> Hence, i think the best way forward is to change the whole cpumask_t 
-> concept and disallow explicit masks altogether. It's so easy to smack a 
-> cpumask_t variable on the stack and nothing really warns about it, and 
-> any function can become part of a nested call sequence.
+This implements the fix differently against the updated tty code. Patch
+by self but the hard bit (noticing and fixing the bug) is thanks to Kanru
+Chen.
 
-This is a great idea!
-> 
-> So i think the dynamics of it has to be changed: we need a get/put API 
-> and we need to make on-stack cpumask illegal on the build level (in 
-> generic code at least). This has been Rusty's main argument early on i 
-> think, and i now concur.
-> 
-> 	Ingo
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
 
-Removing cpumask_t's from the stack is fairly straight forward.  The
-problem of changing all functions to expect a cpumask pointer via a
-global change is much more problematic.  And of course all those
-functions that return a cpumask value would need to be addressed.
+ drivers/char/tty_io.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-Thanks,
-Mike
+
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index a27160b..daeb8f7 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -2498,7 +2498,7 @@ static int tiocgwinsz(struct tty_struct *tty, struct winsize __user *arg)
+ /**
+  *	tty_do_resize		-	resize event
+  *	@tty: tty being resized
+- *	@real_tty: real tty (if using a pty/tty pair)
++ *	@real_tty: real tty (not the same as tty if using a pty/tty pair)
+  *	@rows: rows (character)
+  *	@cols: cols (character)
+  *
+@@ -2512,7 +2512,8 @@ int tty_do_resize(struct tty_struct *tty, struct tty_struct *real_tty,
+ 	struct pid *pgrp, *rpgrp;
+ 	unsigned long flags;
+ 
+-	mutex_lock(&tty->termios_mutex);
++	/* For a PTY we need to lock the tty side */
++	mutex_lock(&real_tty->termios_mutex);
+ 	if (!memcmp(ws, &tty->winsize, sizeof(*ws)))
+ 		goto done;
+ 	/* Get the PID values and reference them so we can
+@@ -2533,7 +2534,7 @@ int tty_do_resize(struct tty_struct *tty, struct tty_struct *real_tty,
+ 	tty->winsize = *ws;
+ 	real_tty->winsize = *ws;
+ done:
+-	mutex_unlock(&tty->termios_mutex);
++	mutex_unlock(&real_tty->termios_mutex);
+ 	return 0;
+ }
+ 
