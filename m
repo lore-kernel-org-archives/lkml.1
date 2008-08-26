@@ -1,77 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbYHZOTG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbYHZOZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757842AbYHZOTG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 10:19:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbYHZOSz
+	id S1758601AbYHZOZI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 10:25:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbYHZOY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 10:18:55 -0400
-Received: from mout0.freenet.de ([195.4.92.90]:57028 "EHLO mout0.freenet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754093AbYHZOSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 10:18:54 -0400
-Date: Tue, 26 Aug 2008 16:18:51 +0200
-From: Gerhard Brauer <gerhard.brauer@web.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
-Message-ID: <20080826141851.GA5300@tux1.brauer.lan>
-References: <48ADDF4F.2020401@zytor.com> <48AE5FCF.6030103@zytor.com> <20080822065012.GV14110@elte.hu> <20080822113941.147a1db0@doriath.conectiva> <20080822153451.GA8390@Krystal> <20080822132948.57e47076@doriath.conectiva> <20080822163520.GA9860@Krystal> <20080822142054.403cbdef@doriath.conectiva> <20080822175741.6bc83dc8@doriath.conectiva> <48AF2ABD.9070100@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <48AF2ABD.9070100@zytor.com>
-User-Agent: Mutt/1.5.18-muttng (2008-05-17)
+	Tue, 26 Aug 2008 10:24:56 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:63311 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754877AbYHZOYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 10:24:55 -0400
+Date: Tue, 26 Aug 2008 15:24:21 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Avi Kivity <avi@qumranet.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [PATCH] x86: default to reboot via ACPI
+In-Reply-To: <48B40631.5090007@qumranet.com>
+Message-ID: <Pine.LNX.4.55.0808261451160.28361@cliff.in.clinika.pl>
+References: <1219659087-17536-1-git-send-email-avi@qumranet.com>
+ <20080826095032.GA309@elf.ucw.cz> <48B3D579.40502@qumranet.com>
+ <20080826113317.520cbab1@lxorguk.ukuu.org.uk> <48B3F3A9.8030709@qumranet.com>
+ <Pine.LNX.4.55.0808261406330.28361@cliff.in.clinika.pl> <48B40631.5090007@qumranet.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 22, 2008 at 02:08:13PM -0700, H. Peter Anvin wrote:
-> Luiz Fernando N. Capitulino wrote:
->>
->>  I have asked Mandriva and Ubuntu users to test this and all of
->> them so far are saying that noreplace-paravirt works.
->>
->>  It makes the system slower, but it works.
->>
->
-> Yes, the big issue is exactly what VirtualBox screws up in this matter,  
-> how to detect it, and how to work around it.
->
-> It's pretty clear it's a VirtualBox f*ckup at this point, but the failure 
-> mechanism isn't at all obvious and so far the workaround is elusive.
->
-> I'm strongly suspect this is a VirtualBox tcache management failure, but  
-> that doesn't help the situation without knowing how it happens.
+On Tue, 26 Aug 2008, Avi Kivity wrote:
 
-On Archlinux we have the same problem. We have a bugreport here:
-http://bugs.archlinux.org/task/11141
+> Only common sense.  Non-recent machines are barely usable these days.  
+> Sure they work well as a firewall or server-in-a-closet, but if you run 
+> a desktop or a server that actually does useful work, you're running a 
+> relatively recent machine.
 
-Myself test it with a LiveCD/Install-ISO which has 2.6.26 as install
-kernel. We have the guest oops on virtualbox-ose, virtualbox-sun and both on
-i686 or x86_64 hosts.
+ Hmm, it may have been true not so long ago, though not necessarily so
+because of less affordability.  These days hardware is more and more
+affordable, but for several years the performance of hardware increased at
+a rate substantially higher than the demand for resources from software
+did.  Therefore unless you are into HPC or use some inferior pieces of
+software beyond the scope of this mailing list, older pieces of hardware
+are often more than adequate to get your work done, so for some there is
+little incentive to upgrade.  Especially as upgrades are not necessarily
+convenient for example because suddenly you lose something you have got
+used to with your older equipment which the new one does not have.
 
-Some things i noticed:
-- The system boots always when i either enable VT-x in guest settings or
-  disable acpi and run the guest with acpi=off.
-- The oops occurs always on (disk)-io, no matter which file system i
-  use.
-- When the oops has occured and the guest has to close and restart then,
-  if i don't use VT-x or acpi=off, i always get an oops directly when
-  initrd/kernel is starting. Last screen message before the oops then is
-  "Freeing SMP alternatives".
+ My old x86 laptop I scrapped earlier this year was eight years old and
+still up to its task and working fine except its enclosure fell apart.  
+The new one has the graphic driver barely working (no resolution switching
+for example, the text mode gets garbled upon switching occasionally and
+sometimes the console goes off entirely), plus a number of less annoying
+issues I was not really eager to have.  I would have kept the old gear if
+I had had a way to replace the enclosure.
 
-Here is also an archive with guest dmesg and messages.log from such an
-oops when heavy disk io leads to the oops:
-http://bugs.archlinux.org/task/11141?getfile=2445
+ My best MIPS64 box is five years old and still decent enough to get its
+work done.  I do not seek a replacement.
 
+ Overall I am afraid common sense can sometimes be misleading, especially
+as it varies from person to person.
 
-> 	-hpa
+> If we find that the reset was wired to the launch controller after all, 
+> we can back out the change (after we re-evolve technology and Linux; 
+> after all we are doomed to keep reinventing it, aren't we?).
 
-Gerhard
+ The problem is it will work for us and then hit an unsuspecting innocent
+user out there, someone not competent enough in the area of computer
+hardware to have an idea what may be going wrong.  And most certainly it
+won't be the launch controller (whatever the thing is -- some military
+equipment?), but some other random piece of hardware it will have been
+wired to by someone on a whim.
 
--- 
-Standards sind eine tolle Sache.
-Ich finde, jeder sollte einen haben.
+> Let's see what breaks, if any.  I understand the disgust people feel 
+> when ACPI is mentioned, but we can't ignore reality.
+
+ The disgust is expressed for future generations to get a lesson or
+perish.
+
+  Maciej
