@@ -1,140 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759993AbYHZTQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbYHZTUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759993AbYHZTQe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 15:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757458AbYHZTQZ
+	id S1759622AbYHZTUS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 15:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbYHZTUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 15:16:25 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:57836 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753931AbYHZTQY (ORCPT
+	Tue, 26 Aug 2008 15:20:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60275 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753844AbYHZTUA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 15:16:24 -0400
-Date: Tue, 26 Aug 2008 14:16:23 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: James Morris <jmorris@namei.org>, lkml <linux-kernel@vger.kernel.org>,
-       SELinux <selinux@tycho.nsa.gov>,
-       "David P. Quigley" <dpquigl@tycho.nsa.gov>
-Subject: Re: [PATCH 1/1] selinux: add support for installing a dummy policy
-Message-ID: <20080826191623.GA1956@us.ibm.com>
-References: <20080822193413.GA8401@us.ibm.com> <alpine.LRH.1.10.0808230852320.24779@tundra.namei.org> <20080823023812.GA30915@us.ibm.com> <1219666201.2721.29.camel@moss-spartans.epoch.ncsc.mil>
+	Tue, 26 Aug 2008 15:20:00 -0400
+Date: Tue, 26 Aug 2008 12:18:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jamie Lokier <jamie@shareable.org>
+cc: Adrian Bunk <bunk@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-embedded@vger.kernel.org
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
+ bisected
+In-Reply-To: <20080826190213.GA30255@shareable.org>
+Message-ID: <alpine.LFD.1.10.0808261212530.3363@nehalem.linux-foundation.org>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org> <200808261111.19205.rusty@rustcorp.com.au> <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org>
+ <20080826183051.GB10925@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org> <20080826190213.GA30255@shareable.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1219666201.2721.29.camel@moss-spartans.epoch.ncsc.mil>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Stephen Smalley (sds@tycho.nsa.gov):
+
+
+On Tue, 26 Aug 2008, Jamie Lokier wrote:
 > 
-> On Fri, 2008-08-22 at 21:38 -0500, Serge E. Hallyn wrote:
-> > --- /dev/null
-> > +++ b/scripts/selinux/install_policy.sh
-> > @@ -0,0 +1,44 @@
-> > +#!/bin/sh
-> > +if [ `id -u` -ne 0 ]; then
-> > +	echo "$0: must be root to install the selinux policy"
-> > +	exit 1
-> > +fi
-> > +SF=`which setfiles`
-> > +if [ $? -eq 1 ]; then
-> > +	if [ -f /usr/sbin/setfiles ]; then
-> > +		SF="/usr/sbin/setfiles"
-> 
-> /sbin/setfiles on modern Fedora releases.
+> A function which is only called from one place should, if everything
+> made sense, _never_ use more stack through being inlined.
 
-Thanks for reviewing, Stephen.
+But that's simply not true.
 
-Changed this to /sbin.
+See the whole discussion.
 
-> > +	else
-> > +		echo "no selinux tools installed: setfiles"
-> > +		exit 1
-> > +	fi
-> > +fi
-> > +
-> > +cd mdp
-> > +
-> > +CP=`which checkpolicy`
-> > +./mdp policy.conf file_contexts
-> > +$CP -o policy.`checkpolicy -V | awk '{print $1}'` policy.conf
-> 
-> Save version to a variable and reuse below.
-> 
-> > +
-> > +mkdir -p /etc/selinux/dummy/policy
-> > +mkdir -p /etc/selinux/dummy/contexts/files
-> > +
-> > +cp file_contexts /etc/selinux/dummy/contexts/files
-> > +cp dbus_contexts /etc/selinux/dummy/contexts
-> > +cp policy.`checkpolicy -V | awk '{print $1}'` /etc/selinux/dummy/policy
-> > +FC_FILE=/etc/selinux/dummy/contexts/files/file_contexts
-> > +
-> > +cd /etc/selinux/dummy/contexts/files
-> > +$SF file_contexts /
-> > +
-> > +mounts=`cat /proc/$$/mounts | egrep "ext2|ext3|xfs|jfs" | awk '{ print $2 '}`
-> 
-> ext4, ext4dev, gfs2 too.
-> See /sbin/fixfiles for an example.  Or run it.
+The problem is that if you inline that function, the stack usage of the 
+newly inlined function is now added to ALL THE OTHER paths too!
 
-I'm testing a version which uses fixfiles, but it complains about
-the fact that selinux is not loaded.  Using setfiles seemed
-more robust.  So I guess I'll go back to that for now.  Someone
-else can always update it later.
+So the case we had in module loading was that yes, we had a function with 
+a big stack footprint, but it was NOT in the deep path.
 
-> > +for line in $mounts; do
-> > +	$SF file_contexts $line
-> > +done
-> 
-> You can pass them all to setfiles at once; it takes a list of mount
-> points after the file_contexts file. Or run fixfiles instead as it does
-> much the same.
-> 
-> However, I don't believe this step will work if you are doing this on an
-> existing SELinux-enabled system - the kernel will check the contexts
-> upon setxattr against the active policy and reject them, and you haven't
-> loaded the new policy yet.  Also, this is a "destructive" operation,
-> i.e. if they were running SELinux before, they are hereby clobbering all
-> their file labels.  Possibly you should bail out if selinuxenabled
-> (utility that can be used as a boolean in shell conditionals).
-> if /usr/sbin/selinuxenabled; then
-> 	echo"SELinux already enabled with a policy loaded; exiting."
-> 	exit 1
-> fi
+But by inlining it, it now moved the stack footprint "up" one level to 
+another function, and now the big stack footprint really _was_ in the deep 
+path, because the caller was involved in a much deeper chain. 
 
-Done in my new version (which I'll send out once I re-create
-it using setfiles again), along with most of your other
-suggestions.
+So inlining moves the code up the callchain, and that is a problem for the 
+backtrace, but that's "just" a debugging issue. But it also moves the 
+stack footprint up the callchain, and that can actually be a correctness 
+issue.
 
-> > +
-> > +dodev=`cat /proc/$$/mounts | grep "/dev "`
-> > +if [ "eq$dodev" != "eq" ]; then
-> > +	mount --move /dev /mnt
-> > +	$SF file_contexts /dev
-> > +	mount --move /mnt /dev
-> > +fi
-> 
-> Not sure what you are doing here.  If /dev is udev-managed, then it will
+Of course, a compiler doesn't _have_ to do that. A compiler _could_ have 
+multiple different stack footprints for a single function, and do liveness 
+analysis etc. But no sane compiler probably does that, because it's very 
+painful indeed, and it's not even an issue if you aren't stack-limited 
+(and being stack-limited is really just a kernel thing).
 
-This (like the whole file) came from David, but nevertheless it's
-something I've had to do many times to get a system booted.  Maybe the
-new fedora initrd way of enabling selinux changes that, but it would
-still be needed for older distros.
+(Yeah, it can be an issue even if you have a big stack, in that you get 
+worse cache behaviour, so a dense stack footprint _would_ help. But the 
+complexity of stack liveness analysis is almost certainly not worth the 
+relatively small gains it would get on some odd cases).
 
-> handle labeling at boot.  But it still shows up as a tmpfs mount
-> in /proc/self/mounts.
-> 
-> Where do you set up /etc/selinux/config to refer to this dummy policy so
-> it will get loaded at boot?
-
-I was going to just explain how to do it in the documentation, but went
-ahead and modified install_policy.sh to do it.
-
-New version coming soon.
-
-thanks,
--serge
+			Linus
