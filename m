@@ -1,88 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbYHZUyG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759276AbYHZUye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753112AbYHZUyG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 16:54:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbYHZUxu
+	id S1759276AbYHZUye (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 16:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758947AbYHZUx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 16:53:50 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:38111 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758368AbYHZUxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 16:53:49 -0400
-Message-ID: <48B46D5C.5020504@sgi.com>
-Date: Tue, 26 Aug 2008 13:53:48 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 26 Aug 2008 16:53:58 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:42806 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758859AbYHZUx5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 16:53:57 -0400
+Date: Tue, 26 Aug 2008 16:53:54 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ftrace: only warn once on old objcopy and local
+ functions
+In-Reply-To: <20080826154721.9416e2e9.sfr@canb.auug.org.au>
+Message-ID: <alpine.DEB.1.10.0808261652470.17093@gandalf.stny.rr.com>
+References: <20080825130117.33fe34bc.sfr@canb.auug.org.au> <20080825060934.GB14993@elte.hu> <alpine.DEB.1.10.0808251434000.23923@gandalf.stny.rr.com> <20080825190103.GA24029@elte.hu> <20080826094627.5d627b5b.sfr@canb.auug.org.au> <20080826115113.806cfe23.sfr@canb.auug.org.au>
+ <alpine.DEB.1.10.0808252324050.966@gandalf.stny.rr.com> <20080826154721.9416e2e9.sfr@canb.auug.org.au>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 3/6] x86_64 UV: Use blinking LED for heartbeat display
-References: <20080808005639.505189000@polaris-admin.engr.sgi.com> <20080808005652.543469000@polaris-admin.engr.sgi.com> <20080811160235.GC4524@elte.hu> <20080813095715.GB27074@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20080813095715.GB27074@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
->> * Mike Travis <travis@sgi.com> wrote:
->>
->>> +#ifdef CONFIG_CLOCKSOURCE_WATCHDOG
->>> +static void uv_display_heartbeat(void)
->>> +{
->>> +	int cpu;
->>> +
->>> +	uv_hub_info->led_heartbeat_count = nr_cpu_ids;
->>> +
->>> +	for_each_online_cpu(cpu) {
->>> +		struct uv_hub_info_s *hub = uv_cpu_hub_info(cpu);
->>> +
->>> +		if (hub->led_heartbeat_count > 0) {
->>> +			uv_set_led_bits_on(cpu, LED_CPU_BLINK,
->>> +						LED_CPU_HEARTBEAT);
->>> +			--hub->led_heartbeat_count;
->>> +		}
->> this too is a bad idea. Imagine 16K cores and assume that each such 
->> iteration takes a few usecs (we write cross CPU) and you've got a 
->> GHz-ish CPU. That can easily be _milliseconds_ of delay (or more) - and 
->> in a function (the clocksource watchdog) that is all about precise 
->> timings.
->>
->> It is also very non-preemptable.
+
+On Tue, 26 Aug 2008, Stephen Rothwell wrote:
+
+> Hi Steve,
 > 
-> LED subsystem already has nice heartbeat trigger.
-> 									Pavel
+> On Mon, 25 Aug 2008 23:25:25 -0400 (EDT) Steven Rostedt <rostedt@goodmis.org> wrote:
+> >
+> >   Stephen, can you try to see if this works for you, with the
+> >   issue of spamming warnings?
+> 
+> I get no warnings at all.  I think this is because I always build with
+> O=... so that the way you find $topdir (and therefore the .version file)
+> does not work.
 
->From Documentation/leds-class.txt:
+Hmm, Well we don't need the warning, although it would be nice to give. 
+There seems to be a lot of hacking to get a warning for this. Perhaps
+we just ignore the local functions and not warn at all?
 
+-- Steve
 
-Future Development
-==================
-
-At the moment, a trigger can't be created specifically for a single LED.
-There are a number of cases where a trigger might only be mappable to a
-particular LED (ACPI?). The addition of triggers provided by the LED driver
-should cover this option and be possible to add without breaking the
-current interface.
-
---
-The SGI system has a set of leds per cpu, and the goal is that the leds
-display heartbeat and "idle-ness" information specific to that cpu.  At
-first glance I don't see this capability in the LED subsystem.  Am I
-missing something?
-
-Additionally, the 8 leds are written as one byte with each led being
-full on or full off.  It seems to be a big overhead to support the led
-class  since I'd have to kluge together some means of sharing the current
-led register value [we really don't want to have to read the current reg
-value before updating a single led.]
-
-But I will definitely look at the led_heartbeat_function more closely.
-
-Any advice gladly welcomed!
-
-Thanks!
-Mike
