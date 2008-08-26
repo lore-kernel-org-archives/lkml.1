@@ -1,67 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758314AbYHZN2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758401AbYHZNaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758314AbYHZN2l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 09:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbYHZN2d
+	id S1758401AbYHZNaW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 09:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbYHZNaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 09:28:33 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55130 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754577AbYHZN2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 09:28:33 -0400
-Date: Tue, 26 Aug 2008 15:28:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Witbrodt <dawitbro@sbcglobal.net>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>, stable@kernel.org
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user
-	with the same regression
-Message-ID: <20080826132815.GA2427@elte.hu>
-References: <444229.17503.qm@web82104.mail.mud.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <444229.17503.qm@web82104.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 26 Aug 2008 09:30:08 -0400
+Received: from server03.ke-net.com ([84.19.168.8]:38032 "EHLO
+	server03.ke-net.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753838AbYHZNaH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 09:30:07 -0400
+Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
+From: Stefani Seibold <stefani@seibold.net>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20080826125057.GC8720@mit.edu>
+References: <20080819103301.787700742@chello.nl>
+	 <200808261954.47987.nickpiggin@yahoo.com.au>
+	 <alpine.LFD.1.10.0808261219050.3243@apollo.tec.linutronix.de>
+	 <200808262127.26803.nickpiggin@yahoo.com.au>
+	 <20080826125057.GC8720@mit.edu>
+Content-Type: text/plain
+Date: Tue, 26 Aug 2008 15:31:27 +0200
+Message-Id: <1219757487.31371.19.camel@matrix>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Witbrodt <dawitbro@sbcglobal.net> wrote:
 
-> > Note that the hpet fix is now upstream  [...]
+Am Dienstag, den 26.08.2008, 08:50 -0400 schrieb Theodore Tso:
+> On Tue, Aug 26, 2008 at 09:27:26PM +1000, Nick Piggin wrote:
+> > 
+> > Oh with this much handwaving from you old timers I feel much better
+> > about it ;) I bet before the bug report and change to 10s, any
+> > application that hogged the CPU for more than 0.9 seconds was just
+> > broken too, right? But 10s is more than enough for everybody?
+> > 
+
+Sorry, the world of embedded programming is sometime stranger than in
+theory. Normally it would not happen that a real-time process locks the
+CPU for more than 1 sec. But in some circumstances, especially FPGA
+initialisation and long term measurements it is possible that the
+real-time process locks the cpu for more than a, sometime for more than
+10 sec. If the embedded program has designed it in that way, this
+behaviour is desired.
+
+
+> Actually, any real-time application which hogs the CPU at a high
+> real-time priority for more than one second is probably doing
+> something broken.  The whole point of high real-time priorities is to
+> do something really fast, get in and get out.  Usually such routines
+> are measured in milliseconds or microseconds.
+
+
+> Think about it *this* way --- what would you think of some device
+> driver which hogged an interrupt for a full second, never mind 10
+> seconds.  You'd say it was broken, right?  Now consider that a high
+> real-time priority thread might be running at a higher priority than
+> interrupt handlers, and in fact could preempt interrupt handlers....
 > 
-> Any chance this can be applied to stable 2.6.26.x?
+> > > Simply because we use common sense instead of following every single
+> > > POSIX brainfart by the letter.
+> > 
+> > How is that a brainfart? It is simple, relatively unambiguous, and not
+> > arbitrary. You really say the POSIX specified behaviour is "a brainfart",
+> > but adding an arbitrary 10s throttle "but the process might be preempted
+> > and lose the CPU to a lower priority task if it uses 10s of consecutive
+> > CPU time" would eliminate that brainfart? I have to laugh.
 > 
-> Half of my agenda was selfish (to be sure future kernels would not 
-> hang on my 2 home servers), but the other half was to ensure that 
-> Debian would not have hanging kernels in their next stable release.
+> We've not followed POSIX before when it hasn't made sense.  For
+> example, "df" and "du" report its output in kilobytes, instead of 512
+> byte sectors, per POSIX's demands.
+> 
 
-it's a backport candidate, but i think we should wait a bit with that, 
-until after .27-rc5 or -rc6, to make sure there are no side-effects.
+This has nothing to do with POSIX. It is standard real time behaviour.
+RT Programming is a job like writing device drivers. U must know what
+you do. 
 
-The upstream commit is:
+Modify the scheduler in that way that a realtime process will give away
+the CPU after a given time will certain break some embedded application.
 
- commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
- Author: Yinghai Lu <yhlu.kernel@gmail.com>
- Date:   Mon Aug 25 00:56:08 2008 -0700
+Don't think only in desktop or enterprise LINUX boxes, there a much more
+LINUX embedded devices on this planet and not less of them rely on the
+old scheduler behaviour.
+ 
+The LINUX base guideline is simple in that way, that the kernel will
+never break userland applications.
 
-    x86: fix HPET regression in 2.6.26 versus 2.6.25, check hpet against BAR, v3
+> > root is allowed to shoot themselves in the foot. root is the safeguard.
+> 
+> We've done things before to make things harder for root; for example
+> we've restricted what /dev/mem can do.  And root can always lift the
+> ulimit.
+> 
+> 						- Ted
 
-btw., are both of your systems that were hanging fixed by this commit?
+What coming at next? A device driver manager, which kills any driver
+which use to much CPU resource? Or throttle/kicks off the responsible
+driver if the hardware generates to many interrupts?
 
-> Thanks again for all the hard work,
+Kernel and embedded real time programmer should know what there do.
 
-you are welcome!
+Stefani
 
-	Ingo
+
