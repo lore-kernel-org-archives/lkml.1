@@ -1,100 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758629AbYHZO2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758722AbYHZO3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758629AbYHZO2v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 10:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756812AbYHZO2n
+	id S1758722AbYHZO3h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 10:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756354AbYHZO33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 10:28:43 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:43356 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756465AbYHZO2m (ORCPT
+	Tue, 26 Aug 2008 10:29:29 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59744 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755648AbYHZO33 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 10:28:42 -0400
-Date: Tue, 26 Aug 2008 15:28:25 +0100
-From: Andy Whitcroft <andyw@uk.ibm.com>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, davej@codemonkey.org.uk,
-       jschopp@austin.ibm.com, David Woodhouse <dwmw2@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: BUG: checkpatch
-Message-ID: <20080826142825.GG29207@brain>
-References: <1219069200.3208.4.camel@jaswinder.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1219069200.3208.4.camel@jaswinder.satnam>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 26 Aug 2008 10:29:29 -0400
+Subject: Re: flag parameters: socket and socketpair
+From: David Woodhouse <dwmw2@infradead.org>
+To: torvalds@linux-foundation.org, drepper@redhat.com
+Cc: sgrubb@redhat.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200807242308.m6ON8mRV023925@hera.kernel.org>
+References: <200807242308.m6ON8mRV023925@hera.kernel.org>
+Content-Type: text/plain
+Date: Tue, 26 Aug 2008 15:29:22 +0100
+Message-Id: <1219760962.7107.68.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 18, 2008 at 07:50:00PM +0530, Jaswinder Singh wrote:
-> [jsr@jaswinder jaswinder-git]$ cat test.c
-> void test(int i, int j, int k)
-> {
-> 	printk(KERN_INFO "/* Testing i, j, k */\n");
-> 	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
-> }
-> [jsr@jaswinder jaswinder-git]$ ./linux-2.6/scripts/checkpatch.pl --file test.c
-> ERROR: spaces required around that ':' (ctx:VxW)
-> #4: FILE: test.c:4:
-> +	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
->  	                   ^
-> 
-> ERROR: need consistent spacing around '%' (ctx:WxV)
-> #4: FILE: test.c:4:
-> +	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
->  	                     ^
-> 
-> ERROR: spaces required around that ':' (ctx:VxW)
-> #4: FILE: test.c:4:
-> +	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
->  	                         ^
-> 
-> ERROR: need consistent spacing around '%' (ctx:WxV)
-> #4: FILE: test.c:4:
-> +	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
->  	                           ^
-> 
-> ERROR: spaces required around that ':' (ctx:VxO)
-> #4: FILE: test.c:4:
-> +	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
->  	                               ^
-> 
-> total: 5 errors, 0 warnings, 5 lines checked
-> 
-> test.c has style problems, please review.  If any of these errors
-> are false positives report them to the maintainer, see
-> CHECKPATCH in MAINTAINERS.
-> [jsr@jaswinder jaswinder-git]$ cat test_working.c 
-> void test(int i, int j, int k)
-> {
-> 	printk(KERN_INFO "/* Testing i, j, k * /\n");
-> 	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
-> }
-> [jsr@jaswinder jaswinder-git]$ ./linux-2.6/scripts/checkpatch.pl --file test_working.c 
-> total: 0 errors, 0 warnings, 5 lines checked
-> 
-> test_working.c has no obvious style problems and is ready for submission.
-> [jsr@jaswinder jaswinder-git]$ diff -uN test.c test_working.c 
-> --- test.c	2008-08-18 19:38:32.000000000 +0530
-> +++ test_working.c	2008-08-18 19:38:37.000000000 +0530
-> @@ -1,5 +1,5 @@
->  void test(int i, int j, int k)
->  {
-> -	printk(KERN_INFO "/* Testing i, j, k */\n");
-> +	printk(KERN_INFO "/* Testing i, j, k * /\n");
->  	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
->  }
-> [jsr@jaswinder jaswinder-git]$ cp test.c test
-> [jsr@jaswinder jaswinder-git]$ ./linux-2.6/scripts/checkpatch.pl --file test
-> total: 0 errors, 0 warnings, 5 lines checked
-> 
-> test has no obvious style problems and is ready for submission.
-> [jsr@jaswinder jaswinder-git]$ 
+On Thu, 2008-07-24 at 23:08 +0000, Linux Kernel Mailing List wrote:
+> Commit:     a677a039be7243357d93502bff2b40850c942e2d
 
-Bah, a trivial bug in the comments/quote matcher leading to the apparent
-close comment taking effect when quoted.  Should be fixed in my next
-batch of updates to akpm (0.23).
+> diff --git a/include/linux/net.h b/include/linux/net.h
+> index 150a48c..8b5383c 100644
+> --- a/include/linux/net.h
+> +++ b/include/linux/net.h
+> @@ -20,6 +20,7 @@
+>  
+>  #include <linux/wait.h>
+>  #include <linux/socket.h>
+> +#include <linux/fcntl.h>       /* For O_CLOEXEC */
+>  #include <asm/socket.h>
+>  
+>  struct poll_table_struct;
 
--apw
+Hm. This leads to errors such as the ones shown at
+http://koji.fedoraproject.org/koji/getfile?taskID=785282&name=build.log
+
+In file included from /usr/include/asm/fcntl.h:1,
+                 from /usr/include/linux/fcntl.h:4,
+                 from /usr/include/linux/net.h:23,
+                 from gen_tables.c:28:
+/usr/include/asm-generic/fcntl.h:120: error: expected specifier-qualifier-list before 'off_t'
+/usr/include/asm-generic/fcntl.h:143: error: expected specifier-qualifier-list before 'loff_t'
+
+You don't need to include <linux/fcntl.h> in the !__KERNEL__ case, so
+that inclusion should probably live within the existing #ifdef
+__KERNEL__, so we don't pull <linux/fcntl.h> in where it's not needed.
+
+-----
+Subject: Fix userspace export of <linux/net.h>
+
+Including <linux/fcntl.h> in the user-visible part of this header has
+caused build regressions with headers from 2.6.27-rc. Move it down to
+the #ifdef __KERNEL__ part, which is the only place it's needed. Move
+some other kernel-only things down there too, while we're at it.
+
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+
+diff --git a/include/linux/net.h b/include/linux/net.h
+index 4a9a30f..6dc14a2 100644
+--- a/include/linux/net.h
++++ b/include/linux/net.h
+@@ -18,16 +18,9 @@
+ #ifndef _LINUX_NET_H
+ #define _LINUX_NET_H
+ 
+-#include <linux/wait.h>
+ #include <linux/socket.h>
+-#include <linux/fcntl.h>	/* For O_CLOEXEC and O_NONBLOCK */
+ #include <asm/socket.h>
+ 
+-struct poll_table_struct;
+-struct pipe_inode_info;
+-struct inode;
+-struct net;
+-
+ #define NPROTO		AF_MAX
+ 
+ #define SYS_SOCKET	1		/* sys_socket(2)		*/
+@@ -62,6 +55,13 @@ typedef enum {
+ #ifdef __KERNEL__
+ #include <linux/stringify.h>
+ #include <linux/random.h>
++#include <linux/wait.h>
++#include <linux/fcntl.h>	/* For O_CLOEXEC and O_NONBLOCK */
++
++struct poll_table_struct;
++struct pipe_inode_info;
++struct inode;
++struct net;
+ 
+ #define SOCK_ASYNC_NOSPACE	0
+ #define SOCK_ASYNC_WAITDATA	1
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+
+
