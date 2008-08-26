@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759298AbYHZSlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759136AbYHZSma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759298AbYHZSlU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 14:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757547AbYHZSlJ
+	id S1759136AbYHZSma (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 14:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756639AbYHZSmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 14:41:09 -0400
-Received: from mga01.intel.com ([192.55.52.88]:44272 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757614AbYHZSlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 14:41:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,272,1217833200"; 
-   d="scan'208";a="373837422"
-Message-Id: <20080826183910.047665000@linux-os.sc.intel.com>
-References: <20080826183909.887903000@linux-os.sc.intel.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 26 Aug 2008 11:38:07 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 2/2] x2apic: use x2apic id reported by cpuid during topology discovery
-Content-Disposition: inline; filename=use_initial_apicid_x2apic.patch
+	Tue, 26 Aug 2008 14:42:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53593 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754829AbYHZSmT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 14:42:19 -0400
+Date: Tue, 26 Aug 2008 11:40:10 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Rusty Russell <rusty@rustcorp.com.au>,
+       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-embedded@vger.kernel.org
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
+ bisected
+In-Reply-To: <20080826183051.GB10925@cs181140183.pp.htv.fi>
+Message-ID: <alpine.LFD.1.10.0808261134530.3363@nehalem.linux-foundation.org>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org> <200808261111.19205.rusty@rustcorp.com.au> <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org>
+ <20080826183051.GB10925@cs181140183.pp.htv.fi>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-use x2apic id reported by cpuid during topology discovery, instead of the
-apic id configured in the APIC. For most of the systems, x2apic id
-reported by cpuid leaf 0xb will be same as the physical apic id reported
-by the APIC_ID register of the APIC. We follow the suggested guidelines
-and use the apic id reported by the cpuid.
-
-No change to non-generic UV platforms, will use the apic id reported in the
-APIC_ID register as the cpuid reported apic id's may not be unique.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
 
 
-Index: tip/arch/x86/kernel/genx2apic_cluster.c
-===================================================================
---- tip.orig/arch/x86/kernel/genx2apic_cluster.c	2008-08-25 11:25:47.000000000 -0700
-+++ tip/arch/x86/kernel/genx2apic_cluster.c	2008-08-25 13:15:45.000000000 -0700
-@@ -120,14 +120,9 @@
- 	return x;
- }
- 
--static unsigned int x2apic_read_id(void)
--{
--	return apic_read(APIC_ID);
--}
--
- static unsigned int phys_pkg_id(int index_msb)
- {
--	return x2apic_read_id() >> index_msb;
-+	return current_cpu_data.initial_apicid >> index_msb;
- }
- 
- static void x2apic_send_IPI_self(int vector)
-Index: tip/arch/x86/kernel/genx2apic_phys.c
-===================================================================
---- tip.orig/arch/x86/kernel/genx2apic_phys.c	2008-08-25 11:25:47.000000000 -0700
-+++ tip/arch/x86/kernel/genx2apic_phys.c	2008-08-25 13:15:45.000000000 -0700
-@@ -118,14 +118,9 @@
- 	return x;
- }
- 
--static unsigned int x2apic_read_id(void)
--{
--	return apic_read(APIC_ID);
--}
--
- static unsigned int phys_pkg_id(int index_msb)
- {
--	return x2apic_read_id() >> index_msb;
-+	return current_cpu_data.initial_apicid >> index_msb;
- }
- 
- void x2apic_send_IPI_self(int vector)
+On Tue, 26 Aug 2008, Adrian Bunk wrote:
+> 
+> A debugging option (for better traces) to disallow gcc some inlining 
+> might make sense (and might even make sense for distributions to 
+> enable in their kernels), but when you go to use cases that require
+> really small kernels the cost is too high.
 
--- 
+You ignore the fact that it's really not just about debugging.
 
+Inlining really isn't the great tool some people think it is. Especially 
+not since gcc stack allocation is so horrid that it won't re-use stack 
+slots etc (which I don't disagree with per se - it's _hard_ to re-use 
+stack slots while still allowing code scheduling).
+
+NOTE! I also would never claim that _our_ choices of "inline" are all that 
+great, and we've often inlined too much or not inlined things that really 
+could be inlined. But at least when a developer says "inline" (or forgets 
+to say it), we have somebody to blame. When the compiler does insane 
+things that doesn't suit us, we're just screwed.
+
+> But if you don't trust gcc's inlining you should revert
+> commit 3f9b5cc018566ad9562df0648395649aebdbc5e0 that increases gcc's 
+> freedom regarding what to inline in 2.6.27
+
+Actually, that just allows gcc to _not_ inline. Which is probably ok.
+
+(Well, it would be ok if gcc did it well enough, it obviously has some 
+problems at times).
+
+			Linus
