@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbYHZJdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757484AbYHZJhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757952AbYHZJdm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 05:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbYHZJdf
+	id S1757484AbYHZJhz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 05:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbYHZJhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 05:33:35 -0400
-Received: from bigben2.bytemark.co.uk ([80.68.81.132]:58443 "EHLO
-	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752915AbYHZJde (ORCPT
+	Tue, 26 Aug 2008 05:37:48 -0400
+Received: from smtp1.tech.numericable.fr ([82.216.111.37]:35021 "EHLO
+	smtp1.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbYHZJhs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 05:33:34 -0400
-Date: Tue, 26 Aug 2008 10:33:35 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Mel Gorman <mel@csn.ul.ie>, wli@holomorphy.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] mm/hugetlb.c: make resv_map_{alloc,release}()
-	static
-Message-ID: <20080826093335.GE29207@brain>
-References: <20080819134657.GD8852@cs181140183.pp.htv.fi>
+	Tue, 26 Aug 2008 05:37:48 -0400
+Message-ID: <48B3CEEA.90400@numericable.fr>
+Date: Tue, 26 Aug 2008 11:37:46 +0200
+From: Rufus & Azrael <rufus-azrael@numericable.fr>
+User-Agent: Thunderbird/3.0a2 (X11; 2008082610)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080819134657.GD8852@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [2.6.27-rc4-git4] compilation warnings
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 19, 2008 at 04:46:57PM +0300, Adrian Bunk wrote:
-> This patch makes the needlessly global resv_map_{alloc,release}()
-> static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Hello all,
 
-Acked-by: Andy Whitcroft <apw@shadowen.org>
+Fresh 2.6.27-rc4-git4 causes these compilation warnings on my amd64 box 
+with gcc-4.3.1 :
 
-> 99bcfd48d93a0c6286b6345f52d10a0a1a43f8c4 
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index 28a2980..c3bb4d6 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -262,7 +262,7 @@ struct resv_map {
->  	struct list_head regions;
->  };
->  
-> -struct resv_map *resv_map_alloc(void)
-> +static struct resv_map *resv_map_alloc(void)
->  {
->  	struct resv_map *resv_map = kmalloc(sizeof(*resv_map), GFP_KERNEL);
->  	if (!resv_map)
-> @@ -274,7 +274,7 @@ struct resv_map *resv_map_alloc(void)
->  	return resv_map;
->  }
->  
-> -void resv_map_release(struct kref *ref)
-> +static void resv_map_release(struct kref *ref)
->  {
->  	struct resv_map *resv_map = container_of(ref, struct resv_map, refs);
+drivers/pci/search.c: In function ‘pci_get_dev_by_id’:
+drivers/pci/search.c:284: attention : passing argument 1 of 
+‘pci_dev_put’ discards qualifiers from pointer target type
 
--apw
+following this commit : ebca4f1bce1eb7b91a63c515db66316db9391221 
+PCI: fix reference leak in pci_get_dev_by_id()
+---
+drivers/video/aty/aty128fb.c: In function ‘aty128_decode_var’:
+drivers/video/aty/aty128fb.c:1520: attention : ‘pll.post_divider’ may be 
+used uninitialized in this function
+
+Regards.
+
