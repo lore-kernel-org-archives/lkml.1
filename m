@@ -1,78 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbYHZIA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbYHZILk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754507AbYHZIA1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 04:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYHZIAO
+	id S1754284AbYHZILk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 04:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbYHZIL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 04:00:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41898 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751936AbYHZIAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 04:00:12 -0400
-Date: Tue, 26 Aug 2008 09:59:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
-	bisected
-Message-ID: <20080826075937.GB7596@elte.hu>
-References: <alpine.LFD.1.10.0808231313170.3363@nehalem.linux-foundation.org> <48B29F7B.6080405@hp.com> <48B2A421.7080705@hp.com> <alpine.LFD.1.10.0808251019380.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251106270.3363@nehalem.linux-foundation.org> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org> <48B32458.5020104@hp.com> <48B32D39.5040709@linux-foundation.org>
+	Tue, 26 Aug 2008 04:11:26 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:23323 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752056AbYHZILZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 04:11:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=sohD4EzP2xqC3nD0zumUNoa/YSWEAgKaJ+xsfiCe35IFAKPHzdaPdFfAG9htOs+lyJ
+         MRqQKo5qAeFBIbXw86dNEAx2Eb4td/eTDDja+I/bbC9B5PDC56xF44KPJCxjbiyKNZSC
+         nuXuGeS52qZG1NP+lnOvemC+f4+2kier0qlac=
+Message-ID: <b647ffbd0808260111r2aed706cvc4c5d483912ec8c2@mail.gmail.com>
+Date: Tue, 26 Aug 2008 10:11:24 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Ryan Hope" <rmh3093@gmail.com>
+Subject: Re: [-mmotm] BUG: scheduling while atomic: swapper
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Vegard Nossum" <vegard.nossum@gmail.com>
+In-Reply-To: <48f7fe350808251909g26207e7agdda6408c0b46a1ed@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48B32D39.5040709@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <48f7fe350808251909g26207e7agdda6408c0b46a1ed@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2008/8/26 Ryan Hope <rmh3093@gmail.com>:
+> BUG: scheduling while atomic: swapper/1/0x00000002
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc4-zenmmotm1 #4
+>  [<c057a0c7>] schedule+0x287/0x6d0
+>  [<c03672e6>] vsnprintf+0x3a6/0x6c0
+>  [<c057a92d>] schedule_timeout+0x7d/0xb0
+>  [<c021e0c8>] __wake_up+0x38/0x50
+>  [<c057a74a>] wait_for_common+0x8a/0x130
+>  [<c0220ab0>] default_wake_function+0x0/0x10
+>  [<c0237743>] call_usermodehelper_exec+0xc3/0xf0
+>  [<c0362ede>] kobject_uevent_env+0x37e/0x3a0
+>  [<c03d5921>] device_add+0x551/0x630
+>  [<c03d5ac3>] device_create_vargs+0xb3/0xd0
+>  [<c06ccc47>] microcode_intel_module_init+0x0/0x39
 
-* Christoph Lameter <cl@linux-foundation.org> wrote:
+It doesn't look like Linus's tree... there is no
+microcode_intel_module_init() in .27+. So what is it?
 
-> Alan D. Brunelle wrote:
-> 
-> > I think you're right: the kernel as a whole may not be ready for 4,096
-> > CPUs apparently...
-> 
-> Mike has been working diligently on getting all these cpumasks off the 
-> stack for the last months and has created an infrastructure to do 
-> this. So I think we are close. It might just be a matter of merging 
-> some more patches that are still left in Ingo's tree.
+Anyway, your trace might be explained by a bug that has been already
+fixed in Ingo's -tip.
 
-hm, there are no such patches left that i know of - the only bits in 
--tip are the zero-based percpu, which was found to be a bit fragile in 
-testing:
+Here is the commit:
+http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=commit;h=8343ef2437c599d30568e6b5a257a40bf2f4902b
 
- earth4:~/tip> git-log-line --author=Travis linus..
- d379497: Zero based percpu: infrastructure to rebase the per cpu area to zero
- b3a0cb4: x86: extend percpu ops to 64 bit
 
-[and it has no relevance to stack footprint.]
-
-So i dont think the current cpumask_t approach will work. We simply 
-should not get into an endless fight against the windmills that 
-introduce on-stack cpumask_t again and again. We should just take the 
-plunge once and do a clean alloc/free cpumask model. Most of the hotpath 
-cpumasks are constant or pre-constructed, so they are not a real issue.
-
-Plus, on the general question of stack footprint problems and the 
-difficulty of debugging them, the worst-case stack footprint tracer i 
-wrote for -rt some time ago should be dusted off as well and put into 
-ftrace. David has something quite close to that for Sparc64 already.
-
-	Ingo
+-- 
+Best regards,
+Dmitry Adamushko
