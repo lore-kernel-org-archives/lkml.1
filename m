@@ -1,81 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758869AbYHZUDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbYHZUD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758869AbYHZUDf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 16:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYHZUD0
+	id S1759301AbYHZUD7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 16:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758759AbYHZUDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 16:03:26 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:16526 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753302AbYHZUDZ (ORCPT
+	Tue, 26 Aug 2008 16:03:47 -0400
+Received: from gv-out-0910.google.com ([216.239.58.186]:54338 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755763AbYHZUDp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 16:03:25 -0400
-Subject: Re: [PATCH 4/4] acpi: semaphore removal
-From: Daniel Walker <dwalker@mvista.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Andi Kleen <ak@linux.intel.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Len Brown <len.brown@intel.com>, Robert Moore <robert.moore@intel.com>,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <20080826195051.GF23698@parisc-linux.org>
-References: <1219777186-4787-1-git-send-email-dwalker@mvista.com>
-	 <1219777186-4787-2-git-send-email-dwalker@mvista.com>
-	 <1219777186-4787-3-git-send-email-dwalker@mvista.com>
-	 <1219777186-4787-4-git-send-email-dwalker@mvista.com>
-	 <20080826191335.GE23698@parisc-linux.org>
-	 <1219779046.3797.12.camel@dhcp32.mvista.com>
-	 <20080826195051.GF23698@parisc-linux.org>
-Content-Type: text/plain
-Date: Tue, 26 Aug 2008 13:03:21 -0700
-Message-Id: <1219781001.3797.31.camel@dhcp32.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Tue, 26 Aug 2008 16:03:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=GoRsoZa3zWDn5Ms7FvfF3e19qsLv1z1PxC6veE6tGH0SsrYZCb/76vEo4lar6tqpKJ
+         5OwULZE9IxXe/xBcm5rBiB2JjkkZ5pmtNUTJqvqjJvGqdV8BuRT1o8ALHLNXY5BlYp1w
+         eOadxsQamVxinYdHeI3v5ub/EVdSqxMqGfOds=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH] 2.6.27-rc4-git3: make section names compatible with -ffunction-sections -fdata-sections
+Date: Tue, 26 Aug 2008 22:05:32 +0200
+User-Agent: KMail/1.8.2
+Cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu, x86@kernel.org,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       David Howells <dhowells@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Lennert Buytenhek <kernel@wantstofly.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Paul Mackerras <paulus@samba.org>,
+       David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       torvalds@linux-foundation.org,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tim Bird <tim.bird@am.sony.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Dave Miller <davem@davemloft.net>
+References: <200808250118.08406.vda.linux@googlemail.com> <1219775585.3797.2.camel@dhcp32.mvista.com>
+In-Reply-To: <1219775585.3797.2.camel@dhcp32.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="koi8-r"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808262205.32222.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-26 at 13:50 -0600, Matthew Wilcox wrote:
-> On Tue, Aug 26, 2008 at 12:30:46PM -0700, Daniel Walker wrote:
-> > On Tue, 2008-08-26 at 13:13 -0600, Matthew Wilcox wrote:
-> > > On Tue, Aug 26, 2008 at 11:59:49AM -0700, Daniel Walker wrote:
-> > > > The semaphore usage in ACPI is more like completions. The ASL
-> > > 
-> > > Huh?  They are semaphores.  They're not 'more like completions' at all.
+On Tuesday 26 August 2008 20:33, Daniel Walker wrote:
+> On Mon, 2008-08-25 at 01:18 +0200, Denys Vlasenko wrote:
+> > Hi Andrew,
 > > 
-> > You can clearly make a completion out of a semaphore, but we have a
-> > completion API .. ACPI is using locked semaphores, and essentially
-> > re-making completions with the semaphore API..
+> > You asked me to maintain it and resubmit when
+> > merge frenzy is over.
+> > 
+> > Here is the update against current Linus tree
+> > (which is 2.6.27-rc4-git3), rolled up into one patch.
 > 
-> What makes you think that?
 > 
-> executer/excreate.c:    status = acpi_os_create_semaphore(ACPI_NO_UNIT_LIMIT, 0,
-> executer/exsystem.c:        acpi_os_create_semaphore(ACPI_NO_UNIT_LIMIT, 0, &temp_semaphore);
-> namespace/nsaccess.c:                                       acpi_os_create_semaphore(1, 0,
-> osl.c:acpi_os_create_semaphore(u32 max_units, u32 initial_units, acpi_handle * handle)
-> 
-> All users set 'initial_units' to 0.
-> 
+> Do you have the patches that actually use
+> -ffunction-sections,-fdata-sections updated someplace?
 
-We have from ACPI,
-
-acpi_status
-acpi_os_create_semaphore(u32 max_units, u32 initial_units, acpi_handle * handle)
-{
-        struct semaphore *sem = NULL;
-...
-        sema_init(sem, initial_units);
-
-
-
-Then from semaphore.h,
-
-#define init_MUTEX(sem)         sema_init(sem, 1)
-#define init_MUTEX_LOCKED(sem)  sema_init(sem, 0)
-
-So initial units of 0 means make it locked initially .. Initialize to 1
-would be a regular unlocked mutex ..
-
-Daniel
-
+I had, but it's a PITA to maintain and rediff them.
+My current plan is to get this merged first,
+and then introduce another change which actually
+puts -ffunction-sections,-fdata-sections to use.
+It will be much easier to review this way.
+--
+vda
