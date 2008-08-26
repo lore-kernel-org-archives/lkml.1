@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760002AbYHZTFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759320AbYHZTGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760002AbYHZTFd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 15:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758445AbYHZTFT
+	id S1759320AbYHZTGb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 15:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758966AbYHZTGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 15:05:19 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:38751 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758304AbYHZTFR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 15:05:17 -0400
-Date: Tue, 26 Aug 2008 20:05:15 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Rufus & Azrael <rufus-azrael@numericable.fr>
-Cc: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [2.6.27-rc4-git5] ipv4: sysctl fixes causes "cannot open
-	/proc/sys/net/ipv4/route/flush"
-Message-ID: <20080826190515.GY28946@ZenIV.linux.org.uk>
-References: <48B43562.20602@numericable.fr> <48B43A0A.5060406@numericable.fr>
+	Tue, 26 Aug 2008 15:06:21 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:33570 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758684AbYHZTGU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 15:06:20 -0400
+Message-ID: <48B4542A.1050004@sgi.com>
+Date: Tue, 26 Aug 2008 12:06:18 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48B43A0A.5060406@numericable.fr>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: David Miller <davem@davemloft.net>
+CC: mingo@elte.hu, torvalds@linux-foundation.org, Alan.Brunelle@hp.com,
+       tglx@linutronix.de, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, akpm@linux-foundation.org,
+       arjan@linux.intel.com, rusty@rustcorp.com.au
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
+References: <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org>	<alpine.LFD.1.10.0808251401590.3363@nehalem.linux-foundation.org>	<20080826072220.GB31876@elte.hu> <20080826.004607.253712060.davem@davemloft.net>
+In-Reply-To: <20080826.004607.253712060.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 07:14:50PM +0200, Rufus & Azrael wrote:
-> Rufus & Azrael wrote:
->> Hi Al and David,
->>
->>
->> After building the fresh 2.6.27-rc4-git5 kernel with your patch in commit 
->> 2f4520d35d89ca6c5cd129c38e3b11f0283b7d1b, I have this error on boot :
->>
->>> Cannot open "/proc/sys/net/ipv4/route/flush"
->> but networking works fine.
->>
->> Do I modify something in my sysctl.conf file ? (see attached).
->>
->> Thanks for your explanations,
->>
->> Regards.
->>
->>
->>
-> Ok, perhaps is it a regression of your previous patches in commits 
-> eeb61f719c00c626115852bbc91189dc3011a844 and 
-> 6f9f489a4eeaa3c8a8618e078a5270d2c4872b67 (
-> net: missing bits of net-namespace / sysctl)
+David Miller wrote:
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Tue, 26 Aug 2008 09:22:20 +0200
+> 
+>> And i guess the next generation of 4K CPUs support should just get away 
+>> from cpumask_t-on-kernel-stack model altogether, as the current model is 
+>> not maintainable. We tried the on-kernel-stack variant, and it really 
+>> does not work reliably. We can fix this in v2.6.28.
+> 
+> I recently did some work on sparc64 to use cpumask pointers
+> as much as possible.
+> 
+> The only case that didn't work was due to a limitation in
+> arch interfaces for the new generic smp_call_function() code.
+> It passes a cpumask_t instead of a pointer to one via
+> arch_send_call_function_ipi().
+> 
+> But other than that, the whole sparc64 SMP stuff uses cpumask_t
+> pointers only.
+> 
+> What it comes down to is that you have to do the "self cpu"
+> and other tests in the cross-call dispatch routines themselves,
+> instead of at the top-level working on cpumask_t objects.
+> 
+> Otherwise you have to modify cpumask_t objects and thus pluck
+> them onto the stack where they take up silly amounts of space.
 
-I'm just about to fall down at the moment, will look into that once I get
-some sleep.  In the meanwhile, .config might be useful...
+Yes, I had proposed either modifying, or supplementing a new
+smp_call function to pass the cpumask_t as a pointer (similar
+to set_cpus_allowed_ptr.)  But an ABI change such as this was
+not well received at the time.
+
+Thanks,
+Mike
