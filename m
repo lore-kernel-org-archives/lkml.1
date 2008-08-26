@@ -1,65 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbYHZQDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758706AbYHZQDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758473AbYHZQDT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 12:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755648AbYHZQDJ
+	id S1758706AbYHZQDb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 12:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758577AbYHZQDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 12:03:09 -0400
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:34870 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755857AbYHZQDI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 12:03:08 -0400
-X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.25.15 bug?
-Mime-Version: 1.0
+	Tue, 26 Aug 2008 12:03:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46734 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758506AbYHZQDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 12:03:20 -0400
+Date: Tue, 26 Aug 2008 12:00:07 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: David Collier-Brown <davecb@sun.com>
+Cc: balbir@linux.vnet.ibm.com, Paul Menage <menage@google.com>,
+       righi.andrea@gmail.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Graf <tgraf@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Steve Olivieri <solivier@redhat.com>
+Subject: Re: [RFC] [PATCH -mm] cgroup: uid-based rules to add processes
+	efficiently in the right cgroup
+Message-ID: <20080826160007.GE30312@redhat.com>
+References: <20080714135719.GE16673@redhat.com> <487B665B.9080205@sun.com> <20080714152142.GJ16673@redhat.com> <48A7FE7B.3060309@gmail.com> <6599ad830808181405i3ec1f9fdp4d8ca7ab675b2c5f@mail.gmail.com> <20080819125710.GA18972@redhat.com> <6599ad830808251754l146588dax65aeff2cc22ac0c1@mail.gmail.com> <20080826134127.GA30312@redhat.com> <48B414A0.9000504@linux.vnet.ibm.com> <48B41B8A.70301@sun.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Date: Tue, 26 Aug 2008 18:03:02 +0200
-From: Anders Eriksson <aeriksson@fastmail.fm>
-Message-Id: <20080826160303.BA84E93CB6E@tippex.mynet.homeunix.org>
-X-Originating-IP: 83.252.237.76
-X-Scan-Result: No virus found in message 1KY10c-00036O-9T.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KY10c-00036O-9T a9b4861a65808014bea69c86a9afba3e
+Content-Disposition: inline
+In-Reply-To: <48B41B8A.70301@sun.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 26, 2008 at 11:04:42AM -0400, David Collier-Brown wrote:
+> Balbir Singh wrote:
+>> Applications that really care about moving should use cgroup_attach_task* and
+>> move back otherwise with cgrules parsing turned off.
+>>
+>> I see control as a two level hierarchy, automatic and controlled, how do we make
+>> sure that they don't conflict is something I have not thought about yet.
+> [...]
+>
+>> Hmm... I wonder if we are providing too many knobs. Can't we do something simpler?
+>
+> Solaris doesn't try to change cgroup ("project") on a setuid call, assuming
+> the program is in the proper cgroup initially.  For most cases this is
+> trivially true under the very simple default rules, and for the rest one
+> can create a rule or a startup script that sets it with newtask".
+>
 
-Trying to track down a hard freeze bug, I enabled various hacker options. This 
-one turned up in dmesg. I'm pretty sure it souldn't be there. 
+Who executes default rules? IOW, how do you make sure tasks of user.davecb
+end up in project 101 only and not outside?
 
-This on seems to be unrealted to the bug I'm hunting though...
+> The Sun default is
+> 	$ cat /etc/project
+> 	system:0::::
+> 	user.root:1::::
+> 	noproject:2::::
+> 	default:3::::
+> 	group.staff:10::::
+>
+> Which means that root users are distinguished from users in
+> the staff group, and they are distinguished from daemons
+> and everyone else.
+>
 
+Now Linux also will allow admin to specify simple rules in
+/etc/cgrules.conf. Rules are based basically on premise that users/groups
+own resources in a particular cgroup and one can specify which cgroup
+the task should run in. For ex.
 
-kobject: 'vcsa11' (d643fed8): kobject_uevent_env
-kobject: 'vcsa11' (d643fed8): fill_kobj_path: path = '/class/vc/vcsa11'
-IRQ handler type mismatch for IRQ 3
-current handler: MPU401 UART
-Pid: 4799, comm: hald-probe-seri Not tainted 2.6.25.15 #30
- [<c013d4e7>] setup_irq+0x1a4/0x1bc
- [<c013d644>] request_irq+0xc7/0xe5
- [<c023a18f>] ? serial8250_interrupt+0x0/0x114
- [<c0239f9d>] serial8250_startup+0x3b6/0x50d
- [<c02360c0>] uart_startup+0x70/0x125
- [<c023766d>] uart_open+0x158/0x390
- [<c0399705>] ? _spin_unlock+0x27/0x3c
- [<c02257e1>] ? check_tty_count+0x3b/0x8a
- [<c0228df9>] tty_open+0x164/0x2a9
- [<c015e60c>] chrdev_open+0x140/0x18c
- [<c015ad28>] __dentry_open+0xfb/0x1ad
- [<c015adf9>] nameidata_to_filp+0x1f/0x33
- [<c015e4cc>] ? chrdev_open+0x0/0x18c
- [<c015ae3b>] do_filp_open+0x2e/0x35
- [<c015ac17>] ? get_unused_fd_flags+0xcc/0xd6
- [<c0399705>] ? _spin_unlock+0x27/0x3c
- [<c015ae84>] do_sys_open+0x42/0xbc
- [<c015af40>] sys_open+0x1e/0x26
- [<c0102aba>] sysenter_past_esp+0x5f/0xa5
- =======================
-kobject: 'microcode' (dc839e28): kobject_add_internal: parent: 'module', set: 'module'
-kobject: 'holders' (d6072c30): kobject_add_internal: parent: 'microcode', set: '<NULL>'
-kobject: 'microcode' (dc839e28): kobject_uevent_env
-kobject: 'microcode' (dc839e28): fill_kobj_path: path = '/module/microcode'
+#john          cpu              usergroup/faculty/john/
+#@student      cpu,memory       usergroup/student/
+#@root          *               admingroup/
+#*              *               default/
 
+This simply means which user/group's tasks should run in what cgroup for
+which controller. (There are some wild cards also). For details, you can
+check out libcg-devel source tree and documentation files.
 
+> Personally, I add
+> 	user.davecb:101::davecb::
+> 	bg:100:Background jobs:davecb::
+> which puts me in a separate cgroup, and provides another one
+> for me to put background tasks into.  The latter allows
+> me to keep them from reducing the interactive performance of
+> my laptop. 
+
+So by default all the tasks of user.davecb will run into project 101 until
+user davecb decides to launch some background jobs in project 100 using
+newtask?
+
+"newtask" like functionality is being provided by a new command line tool
+"cgexec" which will allow launching of a new task in specific cgroup
+(project).
+
+Thanks
+Vivek
