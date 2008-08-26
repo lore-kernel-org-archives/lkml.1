@@ -1,91 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbYHZBvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYHZB4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756517AbYHZBvd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Aug 2008 21:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbYHZBvZ
+	id S1756075AbYHZB4E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Aug 2008 21:56:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbYHZBzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Aug 2008 21:51:25 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:37308 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753577AbYHZBvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Aug 2008 21:51:25 -0400
-Date: Tue, 26 Aug 2008 11:51:13 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ftrace: objcopy version test for local symbols
-Message-Id: <20080826115113.806cfe23.sfr@canb.auug.org.au>
-In-Reply-To: <20080826094627.5d627b5b.sfr@canb.auug.org.au>
-References: <20080825130117.33fe34bc.sfr@canb.auug.org.au>
-	<20080825060934.GB14993@elte.hu>
-	<alpine.DEB.1.10.0808251434000.23923@gandalf.stny.rr.com>
-	<20080825190103.GA24029@elte.hu>
-	<20080826094627.5d627b5b.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Aug 2008 21:55:54 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:13717 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753831AbYHZBzx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Aug 2008 21:55:53 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtACAPz8skh5LD0wiGdsb2JhbACSLAEBAQ8gpC+Baw
+X-IronPort-AV: E=Sophos;i="4.32,266,1217773800"; 
+   d="scan'208";a="180299290"
+Date: Tue, 26 Aug 2008 11:55:49 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Lachlan McIlroy <lachlan@sgi.com>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+       hch@lst.de
+Subject: Re: [2.6.27-rc4] XFS i_lock vs i_iolock...
+Message-ID: <20080826015549.GT5706@disturbed>
+Mail-Followup-To: Peter Zijlstra <peterz@infradead.org>,
+	Lachlan McIlroy <lachlan@sgi.com>,
+	Daniel J Blueman <daniel.blueman@gmail.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+	hch@lst.de
+References: <6278d2220808221412x28f4ac5dl508884c8030b364a@mail.gmail.com> <20080825010213.GO5706@disturbed> <48B21507.9050708@sgi.com> <20080825035542.GR5706@disturbed> <1219647573.20732.28.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1219647573.20732.28.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo, Steve,
-
-On Tue, 26 Aug 2008 09:46:27 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->
-> On Mon, 25 Aug 2008 21:01:03 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > applied to tip/tracing/ftrace, also have integrated it into 
-> > auto-ftrace-next. (without much testing - i hope it goes well)
+On Mon, Aug 25, 2008 at 08:59:33AM +0200, Peter Zijlstra wrote:
+> On Mon, 2008-08-25 at 13:55 +1000, Dave Chinner wrote:
+> > On Mon, Aug 25, 2008 at 12:12:23PM +1000, Lachlan McIlroy wrote:
+> > > Dave Chinner wrote:
+> > >> On Fri, Aug 22, 2008 at 10:12:59PM +0100, Daniel J Blueman wrote:
+> > >>> =======================================================
+> > >>> [ INFO: possible circular locking dependency detected ]
+> > >>> 2.6.27-rc4-224c #1
+> > >>> -------------------------------------------------------
+> > >>> xfs_fsr/5763 is trying to acquire lock:
+> > >>>  (&(&ip->i_lock)->mr_lock/2){--..}, at: [<ffffffff803ad8fc>] xfs_ilock+0x8c/0xb0
+> > >>>
+> > >>> but task is already holding lock:
+> > >>>  (&(&ip->i_iolock)->mr_lock/3){--..}, at: [<ffffffff803ad915>]
+> > >>> xfs_ilock+0xa5/0xb0
+> > >>
+> > >> False positive. We do:
+> > >>
+> > >> 	xfs_lock_two_inodes(ip, tip, XFS_IOLOCK_EXCL | XFS_ILOCK_EXCL);
+> > >
+> > > Why not just change the above line to two lines:
+> > > 	xfs_lock_two_inodes(ip, tip, XFS_IOLOCK_EXCL);
+> > > 	xfs_lock_two_inodes(ip, tip, XFS_ILOCK_EXCL);
+> > 
+> > Yeah, that'd work, but it implllies that we no longer allow
+> > xfs_lock_two_inodes() to take both inode locks at once. 
 > 
-> Looks ok at a first glance, but it may spam my build logs a bit ...
-> Anyway, we will see.
+> How can you take two locks in one go? It seems to me you always need to
+> take them one after another, and as soon as you do that, you have
+> ordering constraints.
 
-I was right, it produces way to many messages :-(
+It doesn't take them both inode locks in one go - it does them
+separately in a given order via xfs_ilock(). Basically there are two
+layers of constraints here - xfs_ilock() handles the order
+withing a given inode, xfs_lock_two_inodes() handles order and
+deadlock prevention between inodes.
 
-I applied the following patch for now.  It would be nice if this check
-could be done once per build and warned about once as well.
+What lockdep is complaining about is a difference in the lock
+order between different locks in different inodes - a situation
+that does not result in a deadlock...
 
--- 
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
->From 54bc3035c76a242d14df554966110e5964b3eac3 Mon Sep 17 00:00:00 2001
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 26 Aug 2008 11:45:01 +1000
-Subject: [PATCH] ftrace: silence overly verbose warning
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- scripts/recordmcount.pl |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index ee9e126..ef0c6db 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -262,12 +262,12 @@ sub update_funcs
- 
- 	# only use locals if objcopy supports globalize-symbols
- 	if (!$use_locals) {
--	    print STDERR
--		"$inputfile: WARNING: referencing local function " .
--		"$ref_func for mcount\n" .
--		"\tConsider upgrading objcopy to support the globalize-" .
--		"symbols option.\n"
--		if (!$local_warn_once++);
-+#	    print STDERR
-+#		"$inputfile: WARNING: referencing local function " .
-+#		"$ref_func for mcount\n" .
-+#		"\tConsider upgrading objcopy to support the globalize-" .
-+#		"symbols option.\n"
-+#		if (!$local_warn_once++);
- 	    return;
- 	}
- 	$convert{$ref_func} = 1;
+Dave.
 -- 
-1.5.6.3
-
+Dave Chinner
+david@fromorbit.com
