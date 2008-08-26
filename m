@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbYHZUD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759542AbYHZUET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759301AbYHZUD7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 16:03:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758759AbYHZUDr
+	id S1759542AbYHZUET (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 16:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbYHZUD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 16:03:47 -0400
-Received: from gv-out-0910.google.com ([216.239.58.186]:54338 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755763AbYHZUDp (ORCPT
+	Tue, 26 Aug 2008 16:03:58 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:4957 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759287AbYHZUD4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 16:03:45 -0400
+	Tue, 26 Aug 2008 16:03:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=GoRsoZa3zWDn5Ms7FvfF3e19qsLv1z1PxC6veE6tGH0SsrYZCb/76vEo4lar6tqpKJ
-         5OwULZE9IxXe/xBcm5rBiB2JjkkZ5pmtNUTJqvqjJvGqdV8BuRT1o8ALHLNXY5BlYp1w
-         eOadxsQamVxinYdHeI3v5ub/EVdSqxMqGfOds=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH] 2.6.27-rc4-git3: make section names compatible with -ffunction-sections -fdata-sections
-Date: Tue, 26 Aug 2008 22:05:32 +0200
-User-Agent: KMail/1.8.2
-Cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu, x86@kernel.org,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Russell King <rmk@arm.linux.org.uk>,
-       David Howells <dhowells@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Lennert Buytenhek <kernel@wantstofly.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Paul Mackerras <paulus@samba.org>,
-       David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       torvalds@linux-foundation.org,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tim Bird <tim.bird@am.sony.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Dave Miller <davem@davemloft.net>
-References: <200808250118.08406.vda.linux@googlemail.com> <1219775585.3797.2.camel@dhcp32.mvista.com>
-In-Reply-To: <1219775585.3797.2.camel@dhcp32.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="koi8-r"
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=i2ebOhE0nmYNXr4nevOIQS4NEGa5ZXeZo45lmXWmA4WrCMQzMM/qCETiS0JWLOpzBi
+         kApioRagUjBJFjkn0U4uwv+cD1E5YtV9S6u2BtzdEwGEwINCDQ9rCNhNW+2KRNbUS1tx
+         ygtro3x5762ydWK/Lf6iu828rdSp47HieCWkI=
+Subject: [PATCH] acpi: toshiba_acpi.c fix sparse signedness mismatch
+	warnings
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 26 Aug 2008 13:03:54 -0700
+Message-Id: <1219781034.6069.8.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808262205.32222.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 August 2008 20:33, Daniel Walker wrote:
-> On Mon, 2008-08-25 at 01:18 +0200, Denys Vlasenko wrote:
-> > Hi Andrew,
-> > 
-> > You asked me to maintain it and resubmit when
-> > merge frenzy is over.
-> > 
-> > Here is the update against current Linus tree
-> > (which is 2.6.27-rc4-git3), rolled up into one patch.
-> 
-> 
-> Do you have the patches that actually use
-> -ffunction-sections,-fdata-sections updated someplace?
+set_bit expects unsigned int, and we start with a u32 anyway.
+drivers/acpi/toshiba_acpi.c:397:14: warning: incorrect type in argument 1 (different signedness)
+drivers/acpi/toshiba_acpi.c:397:14:    expected unsigned int [usertype] *word
+drivers/acpi/toshiba_acpi.c:397:14:    got int *<noident>
+drivers/acpi/toshiba_acpi.c:399:14: warning: incorrect type in argument 1 (different signedness)
+drivers/acpi/toshiba_acpi.c:399:14:    expected unsigned int [usertype] *word
+drivers/acpi/toshiba_acpi.c:399:14:    got int *<noident>
+drivers/acpi/toshiba_acpi.c:401:14: warning: incorrect type in argument 1 (different signedness)
+drivers/acpi/toshiba_acpi.c:401:14:    expected unsigned int [usertype] *word
+drivers/acpi/toshiba_acpi.c:401:14:    got int *<noident>
 
-I had, but it's a PITA to maintain and rediff them.
-My current plan is to get this merged first,
-and then introduce another change which actually
-puts -ffunction-sections,-fdata-sections to use.
-It will be much easier to review this way.
---
-vda
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ drivers/acpi/toshiba_acpi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/acpi/toshiba_acpi.c b/drivers/acpi/toshiba_acpi.c
+index 0a43c8e..4172d29 100644
+--- a/drivers/acpi/toshiba_acpi.c
++++ b/drivers/acpi/toshiba_acpi.c
+@@ -392,7 +392,7 @@ static unsigned long write_video(const char *buffer, unsigned long count)
+ 
+ 	hci_read1(HCI_VIDEO_OUT, &video_out, &hci_result);
+ 	if (hci_result == HCI_SUCCESS) {
+-		int new_video_out = video_out;
++		unsigned int new_video_out = video_out;
+ 		if (lcd_out != -1)
+ 			_set_bit(&new_video_out, HCI_VIDEO_OUT_LCD, lcd_out);
+ 		if (crt_out != -1)
+-- 
+1.6.0.340.g84854
+
+
+
