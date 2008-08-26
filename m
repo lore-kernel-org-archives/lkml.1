@@ -1,93 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759562AbYHZR7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759364AbYHZSCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759562AbYHZR7j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 13:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759368AbYHZR7S
+	id S1759364AbYHZSCm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 14:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758323AbYHZSCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 13:59:18 -0400
-Received: from mx2.compro.net ([216.54.166.4]:16132 "EHLO mx2.compro.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759364AbYHZR7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 13:59:16 -0400
-X-Greylist: delayed 852 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Aug 2008 13:59:16 EDT
-X-IronPort-AV: E=Sophos;i="4.32,271,1217822400"; 
-   d="scan'208";a="2742356"
-Message-ID: <48B40975.7080803@compro.net>
-Date: Tue, 26 Aug 2008 09:47:33 -0400
-From: Mark Hounschell <markh@compro.net>
-Reply-To: markh@compro.net
-Organization: Compro Computer Svcs.
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Stefani Seibold <stefani@seibold.net>,
-       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
-References: <20080819103301.787700742@chello.nl> <200808261900.07383.nickpiggin@yahoo.com.au> <20080826093059.GA471@elte.hu> <200808261954.47987.nickpiggin@yahoo.com.au> <alpine.LFD.1.10.0808261219050.3243@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0808261219050.3243@apollo.tec.linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 26 Aug 2008 14:02:35 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:35655 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754124AbYHZSCe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 14:02:34 -0400
+Date: Tue, 26 Aug 2008 15:02:22 -0300
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Gerhard Brauer <gerhard.brauer@web.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
+Message-ID: <20080826150222.0cf1542c@doriath.conectiva>
+In-Reply-To: <20080826171822.GB14906@Krystal>
+References: <20080822113941.147a1db0@doriath.conectiva>
+	<20080822153451.GA8390@Krystal>
+	<20080822132948.57e47076@doriath.conectiva>
+	<20080822163520.GA9860@Krystal>
+	<20080822142054.403cbdef@doriath.conectiva>
+	<20080822175741.6bc83dc8@doriath.conectiva>
+	<48AF2ABD.9070100@zytor.com>
+	<20080826141851.GA5300@tux1.brauer.lan>
+	<20080826145338.GA8601@Krystal>
+	<20080826131354.356ae11d@doriath.conectiva>
+	<20080826171822.GB14906@Krystal>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Tue, 26 Aug 2008, Nick Piggin wrote:
-> 
->> On Tuesday 26 August 2008 19:30, Ingo Molnar wrote:
->>> * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
->>>> So... no reply to this? I'm really wondering how it's OK to break
->>>> documented standards and previous Linux behaviour by default for
->>>> something that it is trivial to solve in userspace? [...]
->>> I disagree
->> Your arguments were along the line of:
->>
->> * It probably doesn't break anything (except we had somebody report
->>   that it breaks their app)
-> 
-> I'm a real-time oldtimer. An application which hogs the CPU for 9.9
-> seconds with SCHED_FIFO priority is just broken. It's broken beyond
-> all limits, whether POSIX allows to do that or Linux obeyed the
-> request of the braindamaged application design.
-> 
+Em Tue, 26 Aug 2008 13:18:22 -0400
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> escreveu:
 
-Well, I've been working on RT hardware (mostly) and software since 1977.
-With all due respect, thats crapola. I for one have this requirement and
-there is _no_ way around it in my world. In fact it's the kernel thats broke
-by stealing precious usecs from me.
+| * Luiz Fernando N. Capitulino (lcapitulino@mandriva.com.br) wrote:
+| > Em Tue, 26 Aug 2008 10:53:38 -0400
+| > Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> escreveu:
+| > 
+| > | Then, after having tested (2), try this on top of it :
+| > | 
+| > | In arch/x86/kernel/alternative.c, alternatives_smp_switch()
+| > | 
+| > | Add   unsigned long flags;
+| > | Change 
+| > | spin_lock -> spin_lock_irqsave(&smp_alt, flags);
+| > | spin_unlock(&smp_alt); -> spin_unlock_irqrestore(&smp_alt, flags);
+| > 
+| >  Hmm, I can't find spin_lock functions in alternatives_smp_switch()
+| > looks like the current implementation is now using mutexes.
+| > 
+| 
+| Sorry, I was looking directly at the commit which caused the problem.
+| Yes, these modif should go on top of the text_poke -> text_poke_early.
+| 
+| So in current mainline, change, in alternatives_smp_switch() :
+| 
+| mutex_lock(&smp_alt);
+| ...
+| 
+| mutex_unlock(&smp_alt);
+| 
+| to
+| 
+| mutex_lock(&smp_alt);
+| local_irq_save(flags);
+| ...
+| 
+| local_irq_restore(flags);
+| mutex_unlock(&smp_alt);
 
->From my point of view, as an RT user, any kernel that supports SMP yet can't 
-guarantee me %100 of even one _my_ processors is just a plainly broken kernel. 
+ Did not help, same oops here.
 
->> * If it does break something then they must be doing something stupid
->>   (I refuted that because there are several legitimate ways to use rt
->>   scheduling that is broken by this)
->>
->> * We have many other APIs and tools that don't conform to posix (why
->>   is that a reason to break this one?)
-> 
-> Simply because we use common sense instead of following every single
-> POSIX brainfart by the letter.
-> 
->> * We should break the API to cater for stupid users and distros who
->>   create local DoS and/or lock up their boxes (except this is trivial
->>   to solve by setting sysctls or having a watchdog or using sysrq)
-> 
-> For the vast majority of users and RT developers a sane default of
-> sanity measures is useful and sensible. 
-> 
-> If someone wants to shoot himself in the foot then it's not an
-> unreasonable request that he needs to disable the safety guards before
-> pulling the trigger.
-> 
-
-Again that is also crapola. If i want to shoot myself in the foot, it's
-none of your concern. I know perfectly well what will happen when 
-I pull the trigger. 
-
-My 2 cents
-Regards
-Mark
+-- 
+Luiz Fernando N. Capitulino
