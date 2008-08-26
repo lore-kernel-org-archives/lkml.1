@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbYHZILk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbYHZINT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754284AbYHZILk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 04:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbYHZIL0
+	id S1755648AbYHZINT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 04:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbYHZINH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 04:11:26 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:23323 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752056AbYHZILZ (ORCPT
+	Tue, 26 Aug 2008 04:13:07 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41045 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752089AbYHZING (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 04:11:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=sohD4EzP2xqC3nD0zumUNoa/YSWEAgKaJ+xsfiCe35IFAKPHzdaPdFfAG9htOs+lyJ
-         MRqQKo5qAeFBIbXw86dNEAx2Eb4td/eTDDja+I/bbC9B5PDC56xF44KPJCxjbiyKNZSC
-         nuXuGeS52qZG1NP+lnOvemC+f4+2kier0qlac=
-Message-ID: <b647ffbd0808260111r2aed706cvc4c5d483912ec8c2@mail.gmail.com>
-Date: Tue, 26 Aug 2008 10:11:24 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Ryan Hope" <rmh3093@gmail.com>
-Subject: Re: [-mmotm] BUG: scheduling while atomic: swapper
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>
-In-Reply-To: <48f7fe350808251909g26207e7agdda6408c0b46a1ed@mail.gmail.com>
+	Tue, 26 Aug 2008 04:13:06 -0400
+To: Theodore Tso <tytso@mit.edu>
+Cc: Peter Zijlstra <peterz@infradead.org>, edwin <edwintorok@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, rml@tech9.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Thomas Gleixner mingo@redhat.com" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Quad core CPUs loaded at only 50% when running a CPU and mmap intensive multi-threaded task
+From: Andi Kleen <andi@firstfloor.org>
+References: <48B1CC15.2040006@gmail.com> <1219643476.20732.1.camel@twins>
+	<48B25988.8040302@gmail.com> <1219656190.8515.7.camel@twins>
+	<48B28015.3040602@gmail.com> <1219658527.8515.16.camel@twins>
+	<48B287D8.1000000@gmail.com> <1219660582.8515.24.camel@twins>
+	<48B290E7.4070805@gmail.com> <1219664477.8515.54.camel@twins>
+	<20080825134801.GN1408@mit.edu>
+Date: Tue, 26 Aug 2008 10:12:59 +0200
+In-Reply-To: <20080825134801.GN1408@mit.edu> (Theodore Tso's message of "Mon, 25 Aug 2008 09:48:01 -0400")
+Message-ID: <87y72k9otw.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48f7fe350808251909g26207e7agdda6408c0b46a1ed@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/26 Ryan Hope <rmh3093@gmail.com>:
-> BUG: scheduling while atomic: swapper/1/0x00000002
-> Modules linked in:
-> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc4-zenmmotm1 #4
->  [<c057a0c7>] schedule+0x287/0x6d0
->  [<c03672e6>] vsnprintf+0x3a6/0x6c0
->  [<c057a92d>] schedule_timeout+0x7d/0xb0
->  [<c021e0c8>] __wake_up+0x38/0x50
->  [<c057a74a>] wait_for_common+0x8a/0x130
->  [<c0220ab0>] default_wake_function+0x0/0x10
->  [<c0237743>] call_usermodehelper_exec+0xc3/0xf0
->  [<c0362ede>] kobject_uevent_env+0x37e/0x3a0
->  [<c03d5921>] device_add+0x551/0x630
->  [<c03d5ac3>] device_create_vargs+0xb3/0xd0
->  [<c06ccc47>] microcode_intel_module_init+0x0/0x39
+Theodore Tso <tytso@mit.edu> writes:
 
-It doesn't look like Linus's tree... there is no
-microcode_intel_module_init() in .27+. So what is it?
+As a general comment it still sounds there is a regression here?
+If the workload was faster in an earlier kernel and is now slow
+clearly something got slower? And that might be fixable. 
+Perhaps something for Rafael's list?
 
-Anyway, your trace might be explained by a bug that has been already
-fixed in Ingo's -tip.
+> Maybe if I had used hugepages it would have been a win, 
 
-Here is the commit:
-http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=commit;h=8343ef2437c599d30568e6b5a257a40bf2f4902b
+hugepages do not support arbitary file backing.
 
+-Andi
 
 -- 
-Best regards,
-Dmitry Adamushko
+ak@linux.intel.com
