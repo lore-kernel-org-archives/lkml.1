@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbYHZToR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbYHZTog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753551AbYHZToR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 15:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755842AbYHZTn7
+	id S1753472AbYHZTog (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 15:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755870AbYHZToA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 15:43:59 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:49633 "EHLO
+	Tue, 26 Aug 2008 15:44:00 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:58442 "EHLO
 	camus.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755735AbYHZTn6 (ORCPT
+	with ESMTP id S1755760AbYHZTn6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 26 Aug 2008 15:43:58 -0400
 From: Eric Anholt <eric@anholt.net>
 To: linux-kernel@vger.kernel.org
-Cc: Eric Anholt <eric@anholt.net>
-Subject: [PATCH] Export kmap_atomic_pfn for DRM-GEM.
-Date: Tue, 26 Aug 2008 12:43:08 -0700
-Message-Id: <1219779789-8368-3-git-send-email-eric@anholt.net>
+Cc: Keith Packard <keithp@keithp.com>, Eric Anholt <eric@anholt.net>
+Subject: [PATCH] Export shmem_file_setup for DRM-GEM
+Date: Tue, 26 Aug 2008 12:43:07 -0700
+Message-Id: <1219779789-8368-2-git-send-email-eric@anholt.net>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1219779789-8368-2-git-send-email-eric@anholt.net>
+In-Reply-To: <1219779789-8368-1-git-send-email-eric@anholt.net>
 References: <1219779789-8368-1-git-send-email-eric@anholt.net>
- <1219779789-8368-2-git-send-email-eric@anholt.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The driver would like to map IO space directly for copying data in when
-appropriate, to avoid CPU cache flushing for streaming writes.
-kmap_atomic_pfn lets us avoid IPIs associated with ioremap for this process.
+From: Keith Packard <keithp@keithp.com>
+
+GEM needs to create shmem files to back buffer objects.  Though currently
+creation of files for objects could have been driven from userland, the
+modesetting work will require allocation of buffer objects before userland
+is running, for boot-time message display.
 
 Signed-off-by: Eric Anholt <eric@anholt.net>
 ---
- arch/x86/mm/highmem_32.c |    1 +
+ mm/shmem.c |    1 +
  1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
-index 165c871..d52e91d 100644
---- a/arch/x86/mm/highmem_32.c
-+++ b/arch/x86/mm/highmem_32.c
-@@ -137,6 +137,7 @@ void *kmap_atomic_pfn(unsigned long pfn, enum km_type type)
- 
- 	return (void*) vaddr;
+diff --git a/mm/shmem.c b/mm/shmem.c
+index 04fb4f1..515909d 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -2582,6 +2582,7 @@ put_memory:
+ 	shmem_unacct_size(flags, size);
+ 	return ERR_PTR(error);
  }
-+EXPORT_SYMBOL(kmap_atomic_pfn);
++EXPORT_SYMBOL(shmem_file_setup);
  
- struct page *kmap_atomic_to_page(void *ptr)
- {
+ /**
+  * shmem_zero_setup - setup a shared anonymous mapping
 -- 
 1.5.6.3
 
