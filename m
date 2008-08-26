@@ -1,49 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758754AbYHZQIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758796AbYHZQJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758754AbYHZQIx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 12:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755853AbYHZQIp
+	id S1758796AbYHZQJh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 12:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbYHZQJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 12:08:45 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:55180 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756149AbYHZQIo (ORCPT
+	Tue, 26 Aug 2008 12:09:29 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:51179 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754338AbYHZQJ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 12:08:44 -0400
-Date: Tue, 26 Aug 2008 09:08:38 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC, PATCH] state machine based rcu
-Message-ID: <20080826160838.GA11279@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <48AD8969.7060900@colorfullife.com> <20080822190250.GH6744@linux.vnet.ibm.com> <48AFC751.2020806@colorfullife.com> <20080824170949.GG6851@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080824170949.GG6851@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 26 Aug 2008 12:09:28 -0400
+Date: Tue, 26 Aug 2008 13:09:15 -0300
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Gerhard Brauer <gerhard.brauer@web.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
+Message-ID: <20080826130915.6fd85e34@doriath.conectiva>
+In-Reply-To: <20080826145338.GA8601@Krystal>
+References: <48AE5FCF.6030103@zytor.com>
+	<20080822065012.GV14110@elte.hu>
+	<20080822113941.147a1db0@doriath.conectiva>
+	<20080822153451.GA8390@Krystal>
+	<20080822132948.57e47076@doriath.conectiva>
+	<20080822163520.GA9860@Krystal>
+	<20080822142054.403cbdef@doriath.conectiva>
+	<20080822175741.6bc83dc8@doriath.conectiva>
+	<48AF2ABD.9070100@zytor.com>
+	<20080826141851.GA5300@tux1.brauer.lan>
+	<20080826145338.GA8601@Krystal>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 24, 2008 at 10:09:49AM -0700, Paul E. McKenney wrote:
-> On Sat, Aug 23, 2008 at 10:16:17AM +0200, Manfred Spraul wrote:
-> > Btw, does STP still exist? I'd like to do some testing on real SMP 
-> > hardware. http://stp.testing.osdl.org/ appears to be dead.
-> 
-> I believe that it has indeed passed on.
-> 
-> I have occasional access to some 128-CPU machines, but they both
-> currently being used for a week-long test sequence, so I won't have
-> access to them for some time.  Once they free up, I would be happy to
-> run some short (a few hours) tests on them, given a patch stack starting
-> from a Linux release (e.g., 2.6.27-rc1).  Given such a patch stack, I
-> can simply point the machine at it.  The automated test system doesn't
-> yet understand git trees.  :-/
+Em Tue, 26 Aug 2008 10:53:38 -0400
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> escreveu:
 
-The big long test is over, so if you can send me a patch against some
-Linus tree, I will see about testing your code.  Assuming someone else
-doesn't jump on the machines first, that is...  :-/
+| * Gerhard Brauer (gerhard.brauer@web.de) wrote:
+| > On Fri, Aug 22, 2008 at 02:08:13PM -0700, H. Peter Anvin wrote:
+| > > Luiz Fernando N. Capitulino wrote:
+| > >>
+| > >>  I have asked Mandriva and Ubuntu users to test this and all of
+| > >> them so far are saying that noreplace-paravirt works.
+| > >>
+| > >>  It makes the system slower, but it works.
+| > >>
+| > >
+| > > Yes, the big issue is exactly what VirtualBox screws up in this matter,  
+| > > how to detect it, and how to work around it.
+| > >
+| > > It's pretty clear it's a VirtualBox f*ckup at this point, but the failure 
+| > > mechanism isn't at all obvious and so far the workaround is elusive.
+| > >
+| > > I'm strongly suspect this is a VirtualBox tcache management failure, but  
+| > > that doesn't help the situation without knowing how it happens.
+| > 
+| > On Archlinux we have the same problem. We have a bugreport here:
+| > http://bugs.archlinux.org/task/11141
+| > 
+| > Myself test it with a LiveCD/Install-ISO which has 2.6.26 as install
+| > kernel. We have the guest oops on virtualbox-ose, virtualbox-sun and both on
+| > i686 or x86_64 hosts.
+| > 
+| > Some things i noticed:
+| > - The system boots always when i either enable VT-x in guest settings or
+| >   disable acpi and run the guest with acpi=off.
+| > - The oops occurs always on (disk)-io, no matter which file system i
+| >   use.
+| > - When the oops has occured and the guest has to close and restart then,
+| >   if i don't use VT-x or acpi=off, i always get an oops directly when
+| >   initrd/kernel is starting. Last screen message before the oops then is
+| >   "Freeing SMP alternatives".
+| > 
+| > Here is also an archive with guest dmesg and messages.log from such an
+| > oops when heavy disk io leads to the oops:
+| > http://bugs.archlinux.org/task/11141?getfile=2445
+| > 
+| 
+| Hrm, can you try this ?
+| 
+| 1 - Make sure you kernel is not CONFIG_DEBUG_RODATA
 
-							Thanx, Paul
+"""
+$ grep CONFIG_DEBUG_RODATA .config
+# CONFIG_DEBUG_RODATA is not set
+$
+"""
+
+| 2 - Change the whole text_poke implementation in
+| arch/x86/kernel/alternative.c to this :
+| 
+| void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
+| {
+|   return text_poke_early(addr, opcode, len);
+| }
+| 
+| If this works, I suspect that the problem comes from a vmap/vunmap
+| problem. If it still fails, the problem would likely come from a race
+| with interrupt disabling probably due to missing data/instruction cache
+| flush.
+
+ I still get the oops with this change. :((
+
+| Then, after having tested (2), try this on top of it :
+| 
+| In arch/x86/kernel/alternative.c, alternatives_smp_switch()
+| 
+| Add   unsigned long flags;
+| Change 
+| spin_lock -> spin_lock_irqsave(&smp_alt, flags);
+| spin_unlock(&smp_alt); -> spin_unlock_irqrestore(&smp_alt, flags);
+| 
+| This will help testing if there is a problem with interrupts coming
+| shortly after the modification. If it fixes the problem, my guess is
+| that we should flush the instruction cache (and maybe the data cache ?)
+| in text_poke and text_poke early when interrupts are off.
+
+ By 'on top of it' you mean I should make these changes with the
+text_poke() version above right?
+
+ By the way, I have added a comment in the virtualbox's bugzilla
+pointing out this thread but no feedback from them so far.
+
+-- 
+Luiz Fernando N. Capitulino
