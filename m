@@ -1,176 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbYHZV3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYHZVev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918AbYHZV3z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 17:29:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbYHZV3r
+	id S1754809AbYHZVev (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 17:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbYHZVem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 17:29:47 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:47793 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751573AbYHZV3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 17:29:46 -0400
-Date: Tue, 26 Aug 2008 16:29:45 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, zohar@us.ibm.com, dvelarde@us.ibm.com,
-       safford@us.ibm.com
-Subject: Re: [PATCH][resubmit] TPM: update char dev BKL pushdown
-Message-ID: <20080826212945.GA13435@us.ibm.com>
-References: <1219784185.4768.6.camel@blackbox>
+	Tue, 26 Aug 2008 17:34:42 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:51729 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750990AbYHZVel (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 17:34:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=UamrfNCDxrfFHJCUTcBir5AW+2d9yVVOvsjP5ziI3vTpzL5uF1FCgSmjsvBKAESjEl
+         UqpNoD4p469ENnEgHhmkvm3jR5uRGpkjz0tvsYhz/URj/RSxKf2embLR+LBa0FjgwQG6
+         PwjGvPHdODRphRXawbBoTt1LTL7Nqb4X6Bitw=
+Message-ID: <6278d2220808261434o15dcbbfbge8138098bf453c0b@mail.gmail.com>
+Date: Tue, 26 Aug 2008 22:34:40 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Dave Chinner" <david@fromorbit.com>
+Subject: Re: [2.6.27-rc4] XFS i_lock vs i_iolock...
+Cc: "Christoph Hellwig" <hch@lst.de>, "Peter Zijlstra" <peterz@infradead.org>,
+       "Lachlan McIlroy" <lachlan@sgi.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+In-Reply-To: <6278d2220808261313ve58a692r38c913356ee135e2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1219784185.4768.6.camel@blackbox>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <6278d2220808221412x28f4ac5dl508884c8030b364a@mail.gmail.com>
+	 <20080825010213.GO5706@disturbed> <48B21507.9050708@sgi.com>
+	 <20080825035542.GR5706@disturbed> <1219647573.20732.28.camel@twins>
+	 <20080825215532.GB28188@lst.de> <20080826024547.GX5706@disturbed>
+	 <6278d2220808261313ve58a692r38c913356ee135e2@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Rajiv Andrade (srajiv@linux.vnet.ibm.com):
-> Now considering the num_opens to is_open change and the use of atomic_set
-> instead of atomic_dec and atomic_inc. This also includes additional comments on
-> tpm_open.
-> 
-> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
-> Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+On Tue, Aug 26, 2008 at 9:13 PM, Daniel J Blueman
+<daniel.blueman@gmail.com> wrote:
+> Hi Dave,
+>
+> On Tue, Aug 26, 2008 at 3:45 AM, Dave Chinner <david@fromorbit.com> wrote:
+>> On Mon, Aug 25, 2008 at 11:55:32PM +0200, Christoph Hellwig wrote:
+>>> On Mon, Aug 25, 2008 at 08:59:33AM +0200, Peter Zijlstra wrote:
+>>> > How can you take two locks in one go? It seems to me you always need to
+>>> > take them one after another, and as soon as you do that, you have
+>>> > ordering constraints.
+>>>
+>>> Yes, you would.  Except that in all other places we only have a single
+>>> iolock involved, so the ordering of the second iolock and second ilock
+>>> don't matter.
+>>>
+>>> Because of that I think declaring that xfs_lock_two_inodes can just
+>>> lock on lock type at a time might be the better solution.
+>>
+>> Agreed. Patch below.
+>>
+>> Cheers,
+>>
+>> Dave.
+>> --
+>> Dave Chinner
+>> david@fromorbit.com
+>>
+>> XFS: prevent lockdep false positives when locking two inodes
+>>
+>> If we call xfs_lock_two_inodes() to grab both the iolock and
+>> the ilock, then drop the ilocks on both inodes, then grab
+>> them again (as xfs_swap_extents() does) then lockdep will
+>> report a locking order problem. This is a false positive.
+>>
+>> To avoid this, disallow xfs_lock_two_inodes() fom locking both
+>> inode locks at once - force calers to make two separate calls.
+>> This means that nested dropping and regaining of the ilocks
+>> will retain the same lockdep subclass and so lockdep will
+>> not see anything wrong with this code.
+>>
+>> Signed-off-by: Dave Chinner <david@fromorbit.com>
+>> ---
+>>  fs/xfs/xfs_dfrag.c    |    9 ++++++++-
+>>  fs/xfs/xfs_vnodeops.c |   10 ++++++++++
+>>  2 files changed, 18 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/fs/xfs/xfs_dfrag.c b/fs/xfs/xfs_dfrag.c
+>> index 760f4c5..75b0cd4 100644
+>> --- a/fs/xfs/xfs_dfrag.c
+>> +++ b/fs/xfs/xfs_dfrag.c
+>> @@ -149,7 +149,14 @@ xfs_swap_extents(
+>>
+>>        sbp = &sxp->sx_stat;
+>>
+>> -       xfs_lock_two_inodes(ip, tip, lock_flags);
+>> +       /*
+>> +        * we have to do two separate lock calls here to keep lockdep
+>> +        * happy. If we try to get all the locks in one call, lock will
+>> +        * report false positives when we drop the ILOCK and regain them
+>> +        * below.
+>> +        */
+>> +       xfs_lock_two_inodes(ip, tip, XFS_IOLOCK_EXCL);
+>> +       xfs_lock_two_inodes(ip, tip, XFS_ILOCK_EXCL);
+>>        locked = 1;
+>>
+>>        /* Verify that both files have the same format */
+>> diff --git a/fs/xfs/xfs_vnodeops.c b/fs/xfs/xfs_vnodeops.c
+>> index f108102..cb1b5fd 100644
+>> --- a/fs/xfs/xfs_vnodeops.c
+>> +++ b/fs/xfs/xfs_vnodeops.c
+>> @@ -1836,6 +1836,12 @@ again:
+>>  #endif
+>>  }
+>>
+>> +/*
+>> + * xfs_lock_two_inodes() can only be used to lock one type of lock
+>> + * at a time - the iolock or the ilock, but not both at once. If
+>> + * we lock both at once, lockdep will report false positives saying
+>> + * we have violated locking orders.
+>> + */
+>>  void
+>>  xfs_lock_two_inodes(
+>>        xfs_inode_t             *ip0,
+>> @@ -1846,7 +1852,11 @@ xfs_lock_two_inodes(
+>>        int                     attempts = 0;
+>>        xfs_log_item_t          *lp;
+>>
+>> +#ifdef DEBUG
+>> +       if (lock_mode & (XFS_IOLOCK_SHARED|XFS_IOLOCK_EXCL))
+>> +               ASSERT((lock_mode & (XFS_ILOCK_SHARED|XFS_ILOCK_EXCL)) == 0);
+>>        ASSERT(ip0->i_ino != ip1->i_ino);
+>> +#endif
+>>
+>>        if (ip0->i_ino > ip1->i_ino) {
+>>                temp = ip0;
+>
+> Good to get your patch and HCH's ack...thanks!
+>
+> I'll pursue testing and touchdown in < 24 hrs.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+Excellent - confirmed it addresses the lockdep report I was seeing
+before and doesn't introduce any regressions.
 
-In the future, though, please do keep a more complete intro that
-you always send with patch resends - because not everyone will
-know the history - and a detailed changelog - since some people
-do.
-
-thanks,
--serge
-
-> ---
->  drivers/char/tpm/tpm.c |   35 ++++++++++++++++++-----------------
->  drivers/char/tpm/tpm.h |    2 +-
->  2 files changed, 19 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
-> index ae766d8..09829f3 100644
-> --- a/drivers/char/tpm/tpm.c
-> +++ b/drivers/char/tpm/tpm.c
-> @@ -954,13 +954,16 @@ EXPORT_SYMBOL_GPL(tpm_store_cancel);
-> 
->  /*
->   * Device file system interface to the TPM
-> + *
-> + * It's assured that the chip will be opened just once,
-> + * by the check of is_open variable, which is protected
-> + * by driver_lock.
->   */
->  int tpm_open(struct inode *inode, struct file *file)
->  {
->  	int rc = 0, minor = iminor(inode);
->  	struct tpm_chip *chip = NULL, *pos;
-> 
-> -	lock_kernel();
->  	spin_lock(&driver_lock);
-> 
->  	list_for_each_entry(pos, &tpm_chip_list, list) {
-> @@ -975,34 +978,31 @@ int tpm_open(struct inode *inode, struct file *file)
->  		goto err_out;
->  	}
-> 
-> -	if (chip->num_opens) {
-> +	if (atomic_read(&chip->is_open)) {
->  		dev_dbg(chip->dev, "Another process owns this TPM\n");
->  		rc = -EBUSY;
->  		goto err_out;
->  	}
-> 
-> -	chip->num_opens++;
-> -	get_device(chip->dev);
-> +	atomic_set(&chip->is_open, 1);
-> +	get_device(chip->dev); /* protect from chip disappearing */
-> 
->  	spin_unlock(&driver_lock);
-> 
->  	chip->data_buffer = kmalloc(TPM_BUFSIZE * sizeof(u8), GFP_KERNEL);
->  	if (chip->data_buffer == NULL) {
-> -		chip->num_opens--;
-> +		atomic_set(&chip->is_open, 0);
->  		put_device(chip->dev);
-> -		unlock_kernel();
->  		return -ENOMEM;
->  	}
-> 
->  	atomic_set(&chip->data_pending, 0);
-> 
->  	file->private_data = chip;
-> -	unlock_kernel();
->  	return 0;
-> 
->  err_out:
->  	spin_unlock(&driver_lock);
-> -	unlock_kernel();
->  	return rc;
->  }
->  EXPORT_SYMBOL_GPL(tpm_open);
-> @@ -1016,7 +1016,7 @@ int tpm_release(struct inode *inode, struct file *file)
->  	file->private_data = NULL;
->  	del_singleshot_timer_sync(&chip->user_read_timer);
->  	atomic_set(&chip->data_pending, 0);
-> -	chip->num_opens--;
-> +	atomic_set(&chip->is_open, 0);
->  	put_device(chip->dev);
->  	kfree(chip->data_buffer);
->  	spin_unlock(&driver_lock);
-> @@ -1082,7 +1082,12 @@ ssize_t tpm_read(struct file *file, char __user *buf,
->  	return ret_size;
->  }
->  EXPORT_SYMBOL_GPL(tpm_read);
-> -
-> +/*
-> + *   Called on unloading the driver.
-> + *
-> + *   First part unloading the chip is done here. The remainder
-> + *   is done, when the device count reaches 0, in tpm_dev_release().
-> + */
->  void tpm_remove_hardware(struct device *dev)
->  {
->  	struct tpm_chip *chip = dev_get_drvdata(dev);
-> @@ -1231,20 +1236,16 @@ struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vend
->  		return NULL;
->  	}
-> 
-> -	spin_lock(&driver_lock);
-> -
-> -	list_add(&chip->list, &tpm_chip_list);
-> -
-> -	spin_unlock(&driver_lock);
-> -
->  	if (sysfs_create_group(&dev->kobj, chip->vendor.attr_group)) {
-> -		list_del(&chip->list);
->  		misc_deregister(&chip->vendor.miscdev);
->  		put_device(chip->dev);
->  		return NULL;
->  	}
-> 
->  	chip->bios_dir = tpm_bios_log_setup(devname);
-> +	spin_lock(&driver_lock);
-> +	list_add(&chip->list, &tpm_chip_list);
-> +	spin_unlock(&driver_lock);
-> 
->  	return chip;
->  }
-> diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
-> index e885148..7e0d3fb 100644
-> --- a/drivers/char/tpm/tpm.h
-> +++ b/drivers/char/tpm/tpm.h
-> @@ -90,7 +90,7 @@ struct tpm_chip {
->  	struct device *dev;	/* Device stuff */
-> 
->  	int dev_num;		/* /dev/tpm# */
-> -	int num_opens;		/* only one allowed */
-> +	atomic_t is_open;	/* only one allowed */
->  	int time_expired;
-> 
->  	/* Data passed to and from the tpm via the read/write calls */
-> -- 
-> 1.5.4.5
-> 
-> 
+Thanks,
+  Daniel
+-- 
+Daniel J Blueman
