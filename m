@@ -1,38 +1,285 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754257AbYH0IMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbYH0IPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754257AbYH0IMJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 04:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYH0ILz
+	id S1754123AbYH0IPL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 04:15:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbYH0IOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 04:11:55 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:60325 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752234AbYH0ILx (ORCPT
+	Wed, 27 Aug 2008 04:14:51 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:37436 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752432AbYH0IOt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 04:11:53 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] USB: add USB test and measurement class driver
-Date: Wed, 27 Aug 2008 10:13:06 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-usb@vger.kernel.org, Stefan Kopp <stefan_kopp@agilent.com>,
-       Marcel Janssen <korgull@home.nl>, Felipe Balbi <me@felipebalbi.com>,
-       linux-kernel@vger.kernel.org
-References: <20080827000501.GA29570@kroah.com>
-In-Reply-To: <20080827000501.GA29570@kroah.com>
+	Wed, 27 Aug 2008 04:14:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:subject:to:cc:date:message-id:user-agent:mime-version
+         :content-type:content-transfer-encoding:sender;
+        b=RPQr1jsAZ7/AEvBVwe8t2fvX27ioNKQvC6QETKbhauFJLYKSLQxPEm1kwgpaXUklF8
+         xovih0OmL+ur6uF7auOtsD7UjEC7X9pt0sd7ON1AbJnCyDM0BFPO/f1zPuKxet+aOB9p
+         T4Ee1Kn+NmG/1fiRPyRIppn3FoIPHEMT68LbI=
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: [PATCH] e1000: fix stack size
+To: jeff@garzik.org
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, davem@davemloft.net,
+       akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 27 Aug 2008 01:14:46 -0700
+Message-ID: <20080827081446.9269.19136.stgit@jtkirshe-mobile.jf.intel.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Disposition: inline
-Message-Id: <200808271013.07561.oliver@neukum.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m7R8CDdq018130
 
-Am Mittwoch 27 August 2008 02:05:01 schrieb Greg KH:> +static ssize_t usbtmc_read(struct file *filp, char __user *buf,> +††††††††††††††††††††††† † size_t count, loff_t *f_pos)> +{> +†††††††struct usbtmc_device_data *data;> +†††††††struct device *dev;> +†††††††unsigned long int n_characters;> +†††††††u8 *buffer;> +†††††††int actual;> +†††††††int done;> +†††††††int remaining;> +†††††††int retval;> +†††††††int this_part;> +> +†††††††/* Get pointer to private data structure */> +†††††††data = filp->private_data;> +†††††††dev = &data->intf->dev;> +†††††††buffer = data->buffer;> +> +†††††††remaining = count;> +†††††††done = 0;> +> +†††††††while (remaining > 0) {> +†††††††††††††††if (remaining > USBTMC_SIZE_IOBUFFER - 12 - 3)> +†††††††††††††††††††††††this_part = USBTMC_SIZE_IOBUFFER - 12 - 3;> +†††††††††††††††else> +†††††††††††††††††††††††this_part = remaining;> +> +†††††††††††††††/* Setup IO buffer for DEV_DEP_MSG_IN message> +††††††††††††††† * Refer to class specs for details> +††††††††††††††† */> +†††††††††††††††buffer[0] = 2;> +†††††††††††††††buffer[1] = data->bTag;> +†††††††††††††††buffer[2] = ~(data->bTag);> +†††††††††††††††buffer[3] = 0; /* Reserved */> +†††††††††††††††buffer[4] = (this_part - 12 - 3) & 255;> +†††††††††††††††buffer[5] = ((this_part - 12 - 3) >> 8) & 255;> +†††††††††††††††buffer[6] = ((this_part - 12 - 3) >> 16) & 255;> +†††††††††††††††buffer[7] = ((this_part - 12 - 3) >> 24) & 255;> +†††††††††††††††buffer[8] = data->TermCharEnabled * 2;> +†††††††††††††††/* Use term character? */> +†††††††††††††††buffer[9] = data->TermChar;> +†††††††††††††††buffer[10] = 0; /* Reserved */> +†††††††††††††††buffer[11] = 0; /* Reserved */
-This function will go bad if concurrent readers enter, yet it has no locking.
-	Regards		Oliver
-ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+From: Linus Torvalds <torvalds@linux-foundation.org>
+
+Here's the patch. It shrinks the stack from 1152 bytes to 192 bytes (the
+first version, that only did the e1000_option part, got it down to 600
+bytes). About half comes from not using multiple "e1000_option"
+structures, the other half comes from turning the "e1000_opt_list[]"
+arrays into "static const" instead, so that gcc doesn't copy them onto the
+stack.
+
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Reveiewed-by: Auke Kok <auke-jan.h.kok@intel.com>
+Tested-by: Emil Tantilov <emil.s.tantilov@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+---
+
+ drivers/net/e1000/e1000_param.c |   81 ++++++++++++++++++++++-----------------
+ 1 files changed, 45 insertions(+), 36 deletions(-)
+
+diff --git a/drivers/net/e1000/e1000_param.c b/drivers/net/e1000/e1000_param.c
+index b9f90a5..213437d 100644
+--- a/drivers/net/e1000/e1000_param.c
++++ b/drivers/net/e1000/e1000_param.c
+@@ -208,7 +208,7 @@ struct e1000_option {
+ 		} r;
+ 		struct { /* list_option info */
+ 			int nr;
+-			struct e1000_opt_list { int i; char *str; } *p;
++			const struct e1000_opt_list { int i; char *str; } *p;
+ 		} l;
+ 	} arg;
+ };
+@@ -242,7 +242,7 @@ static int __devinit e1000_validate_option(unsigned int *value,
+ 		break;
+ 	case list_option: {
+ 		int i;
+-		struct e1000_opt_list *ent;
++		const struct e1000_opt_list *ent;
+ 
+ 		for (i = 0; i < opt->arg.l.nr; i++) {
+ 			ent = &opt->arg.l.p[i];
+@@ -279,7 +279,9 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter);
+ 
+ void __devinit e1000_check_options(struct e1000_adapter *adapter)
+ {
++	struct e1000_option opt;
+ 	int bd = adapter->bd_number;
++
+ 	if (bd >= E1000_MAX_NIC) {
+ 		DPRINTK(PROBE, NOTICE,
+ 		       "Warning: no configuration for board #%i\n", bd);
+@@ -287,19 +289,21 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
+ 	}
+ 
+ 	{ /* Transmit Descriptor Count */
+-		struct e1000_option opt = {
++		struct e1000_tx_ring *tx_ring = adapter->tx_ring;
++		int i;
++		e1000_mac_type mac_type = adapter->hw.mac_type;
++
++		opt = (struct e1000_option) {
+ 			.type = range_option,
+ 			.name = "Transmit Descriptors",
+ 			.err  = "using default of "
+ 				__MODULE_STRING(E1000_DEFAULT_TXD),
+ 			.def  = E1000_DEFAULT_TXD,
+-			.arg  = { .r = { .min = E1000_MIN_TXD }}
++			.arg  = { .r = {
++				.min = E1000_MIN_TXD,
++				.max = mac_type < e1000_82544 ? E1000_MAX_TXD : E1000_MAX_82544_TXD
++				}}
+ 		};
+-		struct e1000_tx_ring *tx_ring = adapter->tx_ring;
+-		int i;
+-		e1000_mac_type mac_type = adapter->hw.mac_type;
+-		opt.arg.r.max = mac_type < e1000_82544 ?
+-			E1000_MAX_TXD : E1000_MAX_82544_TXD;
+ 
+ 		if (num_TxDescriptors > bd) {
+ 			tx_ring->count = TxDescriptors[bd];
+@@ -313,19 +317,21 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
+ 			tx_ring[i].count = tx_ring->count;
+ 	}
+ 	{ /* Receive Descriptor Count */
+-		struct e1000_option opt = {
++		struct e1000_rx_ring *rx_ring = adapter->rx_ring;
++		int i;
++		e1000_mac_type mac_type = adapter->hw.mac_type;
++
++		opt = (struct e1000_option) {
+ 			.type = range_option,
+ 			.name = "Receive Descriptors",
+ 			.err  = "using default of "
+ 				__MODULE_STRING(E1000_DEFAULT_RXD),
+ 			.def  = E1000_DEFAULT_RXD,
+-			.arg  = { .r = { .min = E1000_MIN_RXD }}
++			.arg  = { .r = {
++				.min = E1000_MIN_RXD,
++				.max = mac_type < e1000_82544 ? E1000_MAX_RXD : E1000_MAX_82544_RXD
++			}}
+ 		};
+-		struct e1000_rx_ring *rx_ring = adapter->rx_ring;
+-		int i;
+-		e1000_mac_type mac_type = adapter->hw.mac_type;
+-		opt.arg.r.max = mac_type < e1000_82544 ? E1000_MAX_RXD :
+-			E1000_MAX_82544_RXD;
+ 
+ 		if (num_RxDescriptors > bd) {
+ 			rx_ring->count = RxDescriptors[bd];
+@@ -339,7 +345,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
+ 			rx_ring[i].count = rx_ring->count;
+ 	}
+ 	{ /* Checksum Offload Enable/Disable */
+-		struct e1000_option opt = {
++		opt = (struct e1000_option) {
+ 			.type = enable_option,
+ 			.name = "Checksum Offload",
+ 			.err  = "defaulting to Enabled",
+@@ -363,7 +369,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
+ 			 { E1000_FC_FULL,    "Flow Control Enabled" },
+ 			 { E1000_FC_DEFAULT, "Flow Control Hardware Default" }};
+ 
+-		struct e1000_option opt = {
++		opt = (struct e1000_option) {
+ 			.type = list_option,
+ 			.name = "Flow Control",
+ 			.err  = "reading default settings from EEPROM",
+@@ -381,7 +387,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
+ 		}
+ 	}
+ 	{ /* Transmit Interrupt Delay */
+-		struct e1000_option opt = {
++		opt = (struct e1000_option) {
+ 			.type = range_option,
+ 			.name = "Transmit Interrupt Delay",
+ 			.err  = "using default of " __MODULE_STRING(DEFAULT_TIDV),
+@@ -399,7 +405,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
+ 		}
+ 	}
+ 	{ /* Transmit Absolute Interrupt Delay */
+-		struct e1000_option opt = {
++		opt = (struct e1000_option) {
+ 			.type = range_option,
+ 			.name = "Transmit Absolute Interrupt Delay",
+ 			.err  = "using default of " __MODULE_STRING(DEFAULT_TADV),
+@@ -417,7 +423,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
+ 		}
+ 	}
+ 	{ /* Receive Interrupt Delay */
+-		struct e1000_option opt = {
++		opt = (struct e1000_option) {
+ 			.type = range_option,
+ 			.name = "Receive Interrupt Delay",
+ 			.err  = "using default of " __MODULE_STRING(DEFAULT_RDTR),
+@@ -435,7 +441,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
+ 		}
+ 	}
+ 	{ /* Receive Absolute Interrupt Delay */
+-		struct e1000_option opt = {
++		opt = (struct e1000_option) {
+ 			.type = range_option,
+ 			.name = "Receive Absolute Interrupt Delay",
+ 			.err  = "using default of " __MODULE_STRING(DEFAULT_RADV),
+@@ -453,7 +459,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
+ 		}
+ 	}
+ 	{ /* Interrupt Throttling Rate */
+-		struct e1000_option opt = {
++		opt = (struct e1000_option) {
+ 			.type = range_option,
+ 			.name = "Interrupt Throttling Rate (ints/sec)",
+ 			.err  = "using default of " __MODULE_STRING(DEFAULT_ITR),
+@@ -497,7 +503,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
+ 		}
+ 	}
+ 	{ /* Smart Power Down */
+-		struct e1000_option opt = {
++		opt = (struct e1000_option) {
+ 			.type = enable_option,
+ 			.name = "PHY Smart Power Down",
+ 			.err  = "defaulting to Disabled",
+@@ -513,7 +519,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
+ 		}
+ 	}
+ 	{ /* Kumeran Lock Loss Workaround */
+-		struct e1000_option opt = {
++		opt = (struct e1000_option) {
+ 			.type = enable_option,
+ 			.name = "Kumeran Lock Loss Workaround",
+ 			.err  = "defaulting to Enabled",
+@@ -578,16 +584,18 @@ static void __devinit e1000_check_fiber_options(struct e1000_adapter *adapter)
+ 
+ static void __devinit e1000_check_copper_options(struct e1000_adapter *adapter)
+ {
++	struct e1000_option opt;
+ 	unsigned int speed, dplx, an;
+ 	int bd = adapter->bd_number;
+ 
+ 	{ /* Speed */
+-		struct e1000_opt_list speed_list[] = {{          0, "" },
+-						      {   SPEED_10, "" },
+-						      {  SPEED_100, "" },
+-						      { SPEED_1000, "" }};
++		static const struct e1000_opt_list speed_list[] = {
++			{          0, "" },
++			{   SPEED_10, "" },
++			{  SPEED_100, "" },
++			{ SPEED_1000, "" }};
+ 
+-		struct e1000_option opt = {
++		opt = (struct e1000_option) {
+ 			.type = list_option,
+ 			.name = "Speed",
+ 			.err  = "parameter ignored",
+@@ -604,11 +612,12 @@ static void __devinit e1000_check_copper_options(struct e1000_adapter *adapter)
+ 		}
+ 	}
+ 	{ /* Duplex */
+-		struct e1000_opt_list dplx_list[] = {{           0, "" },
+-						     { HALF_DUPLEX, "" },
+-						     { FULL_DUPLEX, "" }};
++		static const struct e1000_opt_list dplx_list[] = {
++			{           0, "" },
++			{ HALF_DUPLEX, "" },
++			{ FULL_DUPLEX, "" }};
+ 
+-		struct e1000_option opt = {
++		opt = (struct e1000_option) {
+ 			.type = list_option,
+ 			.name = "Duplex",
+ 			.err  = "parameter ignored",
+@@ -637,7 +646,7 @@ static void __devinit e1000_check_copper_options(struct e1000_adapter *adapter)
+ 		       "parameter ignored\n");
+ 		adapter->hw.autoneg_advertised = AUTONEG_ADV_DEFAULT;
+ 	} else { /* Autoneg */
+-		struct e1000_opt_list an_list[] =
++		static const struct e1000_opt_list an_list[] =
+ 			#define AA "AutoNeg advertising "
+ 			{{ 0x01, AA "10/HD" },
+ 			 { 0x02, AA "10/FD" },
+@@ -671,7 +680,7 @@ static void __devinit e1000_check_copper_options(struct e1000_adapter *adapter)
+ 			 { 0x2e, AA "1000/FD, 100/FD, 100/HD, 10/FD" },
+ 			 { 0x2f, AA "1000/FD, 100/FD, 100/HD, 10/FD, 10/HD" }};
+ 
+-		struct e1000_option opt = {
++		opt = (struct e1000_option) {
+ 			.type = list_option,
+ 			.name = "AutoNeg",
+ 			.err  = "parameter ignored",
+
