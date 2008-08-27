@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758034AbYH0OMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbYH0OVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758034AbYH0OMt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 10:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756196AbYH0OMh
+	id S1754004AbYH0OVz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 10:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbYH0OVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 10:12:37 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:48837 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755997AbYH0OMf (ORCPT
+	Wed, 27 Aug 2008 10:21:46 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:49531 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752486AbYH0OVp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 10:12:35 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: David Howells <dhowells@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Serge Hallyn <serue@us.ibm.com>
-Subject: Re: [PATCH 26/59] CRED: Wrap task credential accesses in the FAT filesystem
-References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
-	<20080827134756.19980.73543.stgit@warthog.procyon.org.uk>
-Date: Wed, 27 Aug 2008 23:12:29 +0900
-In-Reply-To: <20080827134756.19980.73543.stgit@warthog.procyon.org.uk> (David
-	Howells's message of "Wed, 27 Aug 2008 14:47:56 +0100")
-Message-ID: <87d4ju8s36.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 27 Aug 2008 10:21:45 -0400
+Date: Wed, 27 Aug 2008 08:21:39 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Greg KH <greg@kroah.com>
+Cc: Alex Chiang <achiang@hp.com>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, v2] PCI: create function symlinks in /sys/bus/pci/slots/N/
+Message-ID: <20080827142139.GB19788@parisc-linux.org>
+References: <20080822162048.GA20820@ldl.fc.hp.com> <20080822182317.GW8318@parisc-linux.org> <20080822195358.GC20820@ldl.fc.hp.com> <20080823154450.GA27985@kroah.com> <20080823200446.GA24936@ldl.fc.hp.com> <20080825040713.GE3128@kroah.com> <20080827035003.GA25140@ldl.fc.hp.com> <20080827040135.GA23547@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Disposition: inline
+In-Reply-To: <20080827040135.GA23547@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells <dhowells@redhat.com> writes:
+On Tue, Aug 26, 2008 at 09:01:35PM -0700, Greg KH wrote:
+> On Tue, Aug 26, 2008 at 09:50:03PM -0600, Alex Chiang wrote:
+> > * Greg KH <greg@kroah.com>:
+> > > And thanks for the other documentation as well, if you want,
+> > > you could split that out as a different patch and odds are
+> > > Jesse could get that into the tree before 2.6.27 comes out :)
+> > 
+> > Hrm, given the harder line Linus has taken against "regression
+> > only" patches lately, it can probably wait another release cycle.
+> 
+> Documentation updates and new stand-alone drivers are ok at all times :)
 
-> Wrap access to task credentials so that they can be separated more easily from
-> the task_struct during the introduction of COW creds.
->
-> Change most current->(|e|s|fs)[ug]id to current_(|e|s|fs)[ug]id().
->
-> Change some task->e?[ug]id to task_e?[ug]id().  In some places it makes more
-> sense to use RCU directly rather than a convenient wrapper; these will be
-> addressed by later patches.
->
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> Reviewed-by: James Morris <jmorris@namei.org>
-> Acked-by: Serge Hallyn <serue@us.ibm.com>
-> Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+You're clearly not hanging on every word of our Dear Leader:
 
-Thanks. Acked-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+http://marc.info/?l=linux-kernel&m=121924636529367&w=2
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
