@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbYH0XX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbYH0X1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756006AbYH0XX3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 19:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYH0XXV
+	id S1756202AbYH0X1U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 19:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753760AbYH0X1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 19:23:21 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:60807 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753149AbYH0XXU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 19:23:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=SRqs3pAMO/Py5Duk55xO19hoaswGNsPjVB/KroIcoMLKkIG+ZQgfi5B+8PegZzUmkO
-         lDg0i2nx9RyEwdirn8J1kaV6zLXCk0RFSWbOjD3pBftGKKW2qM6/5w6eTUZJYcwZ4zC4
-         EJPU/z6RpMhaLR6gIbYsprxKVEkEpTG6Ayx1w=
-Message-ID: <86802c440808271623oc1ed5f1n8519fa7be9d1e301@mail.gmail.com>
-Date: Wed, 27 Aug 2008 16:23:18 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jesse Barnes" <jbarnes@virtuousgeek.org>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
-Cc: "Ingo Molnar" <mingo@elte.hu>, "David Witbrodt" <dawitbro@sbcglobal.net>,
-       "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <200808271541.11546.jbarnes@virtuousgeek.org>
+	Wed, 27 Aug 2008 19:27:04 -0400
+Received: from gw.goop.org ([64.81.55.164]:32777 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753149AbYH0X1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 19:27:03 -0400
+Message-ID: <48B5E2C4.7060803@goop.org>
+Date: Wed, 27 Aug 2008 16:27:00 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: /proc/acpi/ibm/wan stopped appearing
+References: <48B5D11E.5090209@goop.org> <20080827231223.GB18081@khazad-dum.debian.net>
+In-Reply-To: <20080827231223.GB18081@khazad-dum.debian.net>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <914225.91320.qm@web82104.mail.mud.yahoo.com>
-	 <20080825073125.GA27950@elte.hu>
-	 <86802c440808250100g15b056e0l359e83c6a8ee488b@mail.gmail.com>
-	 <200808271541.11546.jbarnes@virtuousgeek.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 3:41 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> On Monday, August 25, 2008 1:00 am Yinghai Lu wrote:
->> On Mon, Aug 25, 2008 at 12:31 AM, Ingo Molnar <mingo@elte.hu> wrote:
->> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->> >> this one should work. please apply this one only.
->> >>
->> >> YH
->> >>
->> >> [PATCH] x86: check hpet with BAR v2
->> > - plus a more highlevel approach would be nice as well i think - making
->> >  sure that the hpet driver runs before any of the PCI code, and
->> >  inserting a special "sticky" resource there which would keep any
->> >  potential followup generic PCI resource that overlaps this resource
->> >  untouched. (with a proper kernel warning emitted as well - such
->> >  situations are likely BIOS bugs.)
->>
->> yes, can remove that late_initcall tricky code to insert resource for
->> lapic and ioapic, and mmconfig etc.
->
-> I agree, a higher level way of dealing with resource reservation might be
-> nice.
+Henrique de Moraes Holschuh wrote:
+> 2. The proper way to control ANY radio's rfkill functions is through the
+> rfkill sysfs interface.  That includes thinkpad-acpi's  bluetooth and WWAN.
+>   
 
-1. insert the lapic, ioapic, mmconf mmio address into resource tree at first...
-2. later when we fail to request_resource for one BAR res of pci dev,
-call check_resource(.., res) to see if could find some res with the
-same range and the sticky flag.
-if so will insert BAR resource for the device forcibly.
+Do you know what UI-level programs make use of these interfaces now?
 
-that should be for 2.6.28.
+> IOW, we may have a regression here.  Please compile thinkpad-acpi with debug
+> mode enabled, load it with the "debug=0xffff" and "experimental=1"
+> parameters (as far as I remember, WWAN requires "experimental=1" to work,
+> without that it will NOT load, and you will NOT get /proc/acpi/ibm/wan or
+> anything else WWAN related from thinkpad-acpi), and send me the resulting
+> log output from thinkpad-acpi.
 
-> I'm hoping to polish up TJ's PCI allocation code
-> (http://tjworld.net/wiki/Linux/PCIDynamicResourceAllocationManagement) for
-> 2.6.28; it may have some stuff that can help.
+Actually, that may be it.  I think I used to load it as a module, and
+modprobe.conf set experimental=1, but I don't have an equivalent on the
+kernel command line.
 
-not sure. actually we should rely on BIOS to allocate ioport/mmio for
-us. and only do some minor adjust to BAR
-that is obvious wrong. so have list for gap seems overkilling.
-for Hotplug, the acpi code in dst should (pre)allocate the resource
-for new insert devices.
+I think I'll submit a patch to remove the need for experimental; it's
+been working fine for me for 3 years now.
 
-YH
+    J
