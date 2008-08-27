@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbYH0Jbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbYH0Jfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754636AbYH0Jbe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 05:31:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYH0Jb0
+	id S1754925AbYH0Jfm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 05:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbYH0Jfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 05:31:26 -0400
-Received: from burp.tkv.asdf.org ([212.16.99.49]:50265 "EHLO
-	cs181073102.pp.htv.fi" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753147AbYH0Jb0 (ORCPT
+	Wed, 27 Aug 2008 05:35:32 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42549
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753566AbYH0Jfb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 05:31:26 -0400
-To: linux-kernel@vger.kernel.org
-Subject: Frustrated with capabilities..
-From: Markku Savela <msa@moth.iki.fi>
-Date: Wed, 27 Aug 2008 12:31:10 +0300
-Message-ID: <87hc96by8x.fsf@burp.tkv.asdf.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 27 Aug 2008 05:35:31 -0400
+Date: Wed, 27 Aug 2008 02:35:26 -0700 (PDT)
+Message-Id: <20080827.023526.246070710.davem@davemloft.net>
+To: viro@ZenIV.linux.org.uk
+Cc: hugh@veritas.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] ipv4: mode 0555 in ipv4_skeleton
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080826190639.GZ28946@ZenIV.linux.org.uk>
+References: <Pine.LNX.4.64.0808261950390.4716@blonde.site>
+	<20080826190639.GZ28946@ZenIV.linux.org.uk>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just want to run an exectable with limited capabilities and assumed
-the following approach would work fine:
+From: Al Viro <viro@ZenIV.linux.org.uk>
+Date: Tue, 26 Aug 2008 20:06:39 +0100
 
- 1) fork process
- 2) in child
+> On Tue, Aug 26, 2008 at 08:00:03PM +0100, Hugh Dickins wrote:
+> > vpnc on today's kernel says Cannot open "/proc/sys/net/ipv4/route/flush":
+> > d--------- 0 root root 0 2008-08-26 11:32 /proc/sys/net/ipv4/route
+> > d--------- 0 root root 0 2008-08-26 19:16 /proc/sys/net/ipv4/neigh
+> > 
+> > Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> 
+> Acked-by: Al Viro <viro@zeniv.linux.org.uk>
 
-    2.1 set current capabilities (eip) using cap_set_proc
-    2.2 execve the executable.
-
-But it frigging does not work! Just before the execve, the result of
-cap_to_text is
-
-    = cap_net_bind_service+eip
-
-but, in the execve executable, the result is suddenly
-
-    = cap_net_bind_service+i
-
-Why does the execve clear the effective and permitted capabities,
-against my clear instructions? (I also have the prctl KEEP_CAPS set,
-though in this case it should be irrelevant).
-
-- The kernel is from ubuntu distro, 2.6.24.
-
-- the executable *does* *not* have any setuid/setgid bits
-
-- the upcoming file capabities will not be any help, because I will
-  need to start the same executable with different capabilities
-  depending on context.
-
-If this is not a bug in kernel, it is a misdesign, which makes the
-obvious use of cap_set_proc rather useless...
-
--- 
-Markku Savela
+Applied, thanks everyone.
