@@ -1,70 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbYH0QRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbYH0QSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758674AbYH0QRX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 12:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755632AbYH0QRK
+	id S1758561AbYH0QSo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 12:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755745AbYH0QSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 12:17:10 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:36005 "EHLO mail.vyatta.com"
+	Wed, 27 Aug 2008 12:18:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51715 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755091AbYH0QRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 12:17:09 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -1.467
-Date: Wed, 27 Aug 2008 09:17:06 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Eric Dumazet <dada1@cosmosbay.com>,
-       Denys Fedoryshchenko <denys@visp.net.lb>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-Message-ID: <20080827091706.574f2fae@extreme>
-In-Reply-To: <87vdxmr53f.fsf@basil.nowhere.org>
-References: <200808220457.40892.denys@visp.net.lb>
-	<20080826201406.GA24827@2ka.mipt.ru>
-	<48B46B48.7030609@cosmosbay.com>
-	<20080826205158.GA15266@2ka.mipt.ru>
-	<87vdxmr53f.fsf@basil.nowhere.org>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1755422AbYH0QSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 12:18:36 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080827160439.GA12085@us.ibm.com>
+References: <20080827160439.GA12085@us.ibm.com> <200808262057.51606.agruen@suse.de> <20080827135206.GA12919@us.ibm.com> <200808271729.18220.agruen@suse.de>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: dhowells@redhat.com, Andreas Gruenbacher <agruen@suse.de>,
+       "Andrew G. Morgan" <morgan@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] file capabilities: Add no_file_caps switch
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Wed, 27 Aug 2008 17:13:24 +0100
+Message-ID: <26995.1219853604@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Aug 2008 14:54:12 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
+Serge E. Hallyn <serue@us.ibm.com> wrote:
 
-> Evgeniy Polyakov <johnpol@2ka.mipt.ru> writes:
-> >
-> > Yup, this innocent toys can end up with this such behaviour on modern
-> > highly loaded machines.
-> 
-> I and also other people had some patches to move the time stamp
-> measuring into the socket. This way the time stamping didn't need to
-> be enabled on all packets, only on those that actually end up at a
-> socket that requires the time stamp.
-> 
-> Unfortunately DaveM didn't like it because some bank wanted
-> different semantics, see the discussion in 
-> http://thread.gmane.org/gmane.linux.network/91679
-> 
-> Perhaps you can find out which bank it was and send them a bill for
-> your CPU time ;-)
-> 
-> -Andi
-> 
+> (Also note that if you have such users, you'll want to ask David Howells not
+> to push the patch he has floated removing the ability to pass caps to
+> another task altogether when CONFIG_SECURITY_FILE_CAPABILITIES=n :)
 
-Look at /proc/net/ptype to see if any AF_PACKET sockets are open.
-There are several causes of this:
-   * Applications like DHCP use AF_PACKET when they could use something else
-   * AF_PACKET API was poorly designed and always has timestamps
-   * The choice was made to get more accurate timestamps by stamping early in
-     receive code. A better alternative would be to do it in protocol handler
-     after the socket filter. Sorry, Andi socket layer is too late.
-   * No driver is using hardware mechanisms to get accurate/free timestamps.
-     I was working on sky2, but never was stable/complete.
+Ugh.  My patch removes the ability to pass caps to another task under all
+circumstances because to do otherwise means that I have to make the kernel use
+RCU locking for a task to access its own creds.  If you want this, I'll have
+to redo all my later patches.
 
-Easist advice now is to fix userspace.
+David
