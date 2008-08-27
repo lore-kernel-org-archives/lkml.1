@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbYH0Se7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbYH0Sgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754907AbYH0Se7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 14:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYH0Sev
+	id S1755690AbYH0Sgq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 14:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbYH0Sgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 14:34:51 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:54356 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751844AbYH0Seu (ORCPT
+	Wed, 27 Aug 2008 14:36:37 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:35789 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751844AbYH0Sgg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 14:34:50 -0400
-Date: Wed, 27 Aug 2008 11:34:46 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Josh Triplett <josht@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, manfred@colorfullife.com,
-       dipankar@in.ibm.com, schamp@sgi.com, niv@us.ibm.com, dvhltc@us.ibm.com,
-       ego@in.ibm.com, laijs@cn.fujitsu.com, rostedt@goodmis.org
-Subject: Re: [PATCH, RFC, tip/core/rcu] scalable classic RCU implementation
-Message-ID: <20080827183446.GL6711@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080821234318.GA1754@linux.vnet.ibm.com> <1219447772.5197.98.camel@josh-work.beaverton.ibm.com> <20080823015336.GP6744@linux.vnet.ibm.com> <1219701750.12334.29.camel@josh-work.beaverton.ibm.com> <20080826160530.GB6656@linux.vnet.ibm.com> <1219797516.6911.6.camel@josh-work.beaverton.ibm.com>
+	Wed, 27 Aug 2008 14:36:36 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] USB: add USB test and measurement class driver - round 2
+Date: Wed, 27 Aug 2008 20:37:48 +0200
+User-Agent: KMail/1.9.9
+Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+       Stefan Kopp <stefan_kopp@agilent.com>, Marcel Janssen <korgull@home.nl>,
+       Felipe Balbi <me@felipebalbi.com>, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.0808271423030.17568-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808271423030.17568-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1219797516.6911.6.camel@josh-work.beaverton.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200808272037.49258.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 05:38:36PM -0700, Josh Triplett wrote:
-> On Tue, 2008-08-26 at 09:05 -0700, Paul E. McKenney wrote:
-> > On Mon, Aug 25, 2008 at 03:02:30PM -0700, Josh Triplett wrote:
-> > > On Fri, 2008-08-22 at 18:53 -0700, Paul E. McKenney wrote:
-> > > > On Fri, Aug 22, 2008 at 04:29:32PM -0700, Josh Triplett wrote:
-> > > > > On Thu, 2008-08-21 at 16:43 -0700, Paul E. McKenney wrote:
-> > > > > > @@ -658,14 +806,19 @@ int rcu_needs_cpu(int cpu)
-> > > > > >  	struct rcu_data *rdp = &per_cpu(rcu_data, cpu);
-> > > > > >  	struct rcu_data *rdp_bh = &per_cpu(rcu_bh_data, cpu);
-> > > > > > 
-> > > > > > -	return !!rdp->nxtlist || !!rdp_bh->nxtlist || rcu_pending(cpu);
-> > > > > > +	return !!*rdp->nxttail[RCU_DONE_TAIL] ||
-> > > > > > +	       !!*rdp_bh->nxttail[RCU_DONE_TAIL] ||
-> > > > > > +	       rcu_pending(cpu);
-> > > > > 
-> > > > > !! seems unnecessary here.
-> > > > 
-> > > > Someone once told me why this was necessary, but I forget.  It was in the
-> > > > original, and I didn't put it there.  Some weirdness about conversion
-> > > > to 32-bit integer when the lower 32 bits of the pointer was zero or
-> > > > some such.  So if your pointer value was 0x100000000, for example,
-> > > > so that conversion to int gives zero.
-> > > 
-> > > Good point!  That doesn't apply if you use ||, though.  If you just did
-> > > "return somepointer" that could potentially cause the problem you
-> > > describe.  In any case, it can't *hurt* to have it; GCC should do the
-> > > sane thing.
-> > 
-> > OK.  I will review this towards the end, leaving it there to remind me
-> > in the meantime.
-> > 
-> > So, would I need the !! on the left-hand operand of the first || due
-> > to short-circuiting?
+Am Mittwoch 27 August 2008 20:28:22 schrieb Alan Stern:
+> On Wed, 27 Aug 2008, Greg KH wrote:
 > 
-> No.  || will always return 1 or 0.  You only need the !! if you want to
-> directly return the boolean value of a potentially 64-bit pointer.
+> > Here's an updated version of the usbtmc driver, with all of the
+> > different issues that have been raised, hopefully addressed.
+> 
+> This is an example of what I was discussing with Oliver.  In all 
+> likelihood you simply don't need usbtmc_mutex, and using it will cause 
+> a lockdep violation.
+> 
+> That's why so many of the other USB class drivers don't have an 
+> analogous static mutex.
+> 
+> > +static int usbtmc_open(struct inode *inode, struct file *filp)
+> > +{
+> > +     struct usb_interface *intf;
+> > +     struct usbtmc_device_data *data;
+> > +     int retval = -ENODEV;
+> > +
+> > +     mutex_lock(&usbtmc_mutex);
+> 
+> You must never acquire a lock in your open method if it will be held
+> by your disconnect method while unregistering the minor.
 
-Even if one argument of || is long and the other int or some fool thing
-like that?  (What, me paranoid???)
+And this rule depends on sharing the USB major or not. This needs
+a big fat mention in Documentation.
 
-							Thanx, Paul
+	Regards
+		Oliver
+
