@@ -1,38 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759556AbYH0Q0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759639AbYH0Q0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759556AbYH0Q0L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 12:26:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756609AbYH0QZG
+	id S1759639AbYH0Q0a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 12:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756698AbYH0QZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 12:25:06 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:50266 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756857AbYH0QZE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 12:25:04 -0400
-Date: Wed, 27 Aug 2008 18:27:35 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Rick Jones <rick.jones2@hp.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Denys Fedoryshchenko <denys@visp.net.lb>, netdev@vger.kernel.org,
+	Wed, 27 Aug 2008 12:25:40 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62883 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759152AbYH0QZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 12:25:38 -0400
+Date: Wed, 27 Aug 2008 17:25:03 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+cc: sfalco@harris.com, alessandro.zummo@towertech.it,
+       rtc-linux@googlegroups.com, will.newton@gmail.com,
        linux-kernel@vger.kernel.org
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-Message-ID: <20080827162735.GW26610@one.firstfloor.org>
-References: <200808220457.40892.denys@visp.net.lb> <20080826201406.GA24827@2ka.mipt.ru> <48B46B48.7030609@cosmosbay.com> <20080826205158.GA15266@2ka.mipt.ru> <87vdxmr53f.fsf@basil.nowhere.org> <48B57BD3.5050206@hp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48B57BD3.5050206@hp.com>
-User-Agent: Mutt/1.4.2.1i
+Subject: Re: [rtc-linux] Re: [RFC] Driver for Real Time Clock chip ST M41T65
+In-Reply-To: <20080827.225323.118975574.anemo@mba.ocn.ne.jp>
+Message-ID: <Pine.LNX.4.55.0808271717110.5930@cliff.in.clinika.pl>
+References: <48B4159A.9070907@harris.com> <20080827.213551.72707274.anemo@mba.ocn.ne.jp>
+ <48B55788.5050306@harris.com> <20080827.225323.118975574.anemo@mba.ocn.ne.jp>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Those banks really want to crank down on latency - to the point they 
-> start disabling interrupt coalescing.  I bet they'd toss anything out 
-> they could to shave another microsecond.
+On Wed, 27 Aug 2008, Atsushi Nemoto wrote:
 
-This change would actually likely lower their latency.
+> > Ok - here is a respin with the Kconfig modded to indicate support for
+> > the M41T65.
+> 
+> Thanks, looks fine for me.
 
--Andi
+ Not for me though -- the names should be sorted alphabetically as this is
+how the reader will look for the right one (assuming they do not get fed
+up and resort to `grep').  There is virtually no chance to notice this one 
+among the plethora of chip variations supported.
+
+  Maciej
