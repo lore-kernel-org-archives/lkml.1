@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754853AbYH0U5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbYH0VCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754853AbYH0U5w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 16:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbYH0U5n
+	id S1755147AbYH0VCI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 17:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750811AbYH0VB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 16:57:43 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:43003 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752635AbYH0U5m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 16:57:42 -0400
-Subject: Re: [RFC v2][PATCH 4/9] Memory management - dump state
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: containers@lists.linux-foundation.org, jeremy@goop.org, arnd@arndb.de,
+	Wed, 27 Aug 2008 17:01:56 -0400
+Received: from viefep32-int.chello.at ([62.179.121.50]:43104 "EHLO
+	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750784AbYH0VBz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 17:01:55 -0400
+Subject: Re: [PATCH -V3 01/11] percpu_counters: make fbc->count read atomic
+	on 32 bit architecture
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, cmm@us.ibm.com,
+       tytso@mit.edu, sandeen@redhat.com, linux-ext4@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20080827204853.GA4189@us.ibm.com>
-References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>
-	 <Pine.LNX.4.64.0808202304490.17436@takamine.ncl.cs.columbia.edu>
-	 <1219437422.20559.146.camel@nimitz> <48B0F449.2000006@cs.columbia.edu>
-	 <1219768406.8680.17.camel@nimitz> <48B49C61.1040003@cs.columbia.edu>
-	 <1219851696.8680.67.camel@nimitz> <20080827203427.GA1158@us.ibm.com>
-	 <1219869510.8680.90.camel@nimitz>  <20080827204853.GA4189@us.ibm.com>
+In-Reply-To: <20080827120553.9c9d6690.akpm@linux-foundation.org>
+References: <1219850916-8986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+	 <20080827120553.9c9d6690.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Wed, 27 Aug 2008 13:56:16 -0700
-Message-Id: <1219870576.8680.96.camel@nimitz>
+Date: Wed, 27 Aug 2008 23:01:52 +0200
+Message-Id: <1219870912.6395.45.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -31,33 +30,132 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-08-27 at 15:48 -0500, Serge E. Hallyn wrote:
-> Quoting Dave Hansen (dave@linux.vnet.ibm.com):
-> > On Wed, 2008-08-27 at 15:34 -0500, Serge E. Hallyn wrote:
-> > > (Or, is that too much effort required on your part to try and
-> > > cherrypick bits of Oren's changes back into your tree?)
-> > 
-> > That would probably work as long as Oren is working on top of what I
-> > have.  It's going to be a lot harder if I have to repeat the same
-> > break-out process for each iteration of Oren's patches, though.
+On Wed, 2008-08-27 at 12:05 -0700, Andrew Morton wrote:
+> On Wed, 27 Aug 2008 20:58:26 +0530
+> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+> 
+> > fbc->count is of type s64. The change was introduced by
+> > 0216bfcffe424a5473daa4da47440881b36c1f4 which changed the type
+> > from long to s64. Moving to s64 also means on 32 bit architectures
+> > we can get wrong values on fbc->count. Since fbc->count is read
+> > more frequently and updated rarely use seqlocks. This should
+> > reduce the impact of locking in the read path for 32bit arch.
 > > 
 > 
-> If Oren's purpose is not quite to create a upstreamable patchset,
-> then it would make more sense for him to keep a git tree and
-> put new patches on top of his existing ones (within reaason as he
-> rebases).  Then you'd at least be able to trivially look at the latest
-> deltas.
+> So...  yesterday's suggestionm to investigate implementing this at a
+> lower level wasn't popular?
 
-The trick would be compromising on things that I, for instance, think
-need to be rewritten or removed.
+I think its a good idea to investigate a generic atomic64_t type.
 
-Oren would have to rebase his work against what I do.  I guess you could
-think about it like me being upstream from Oren.  Anything that I would
-change, Oren would need to rebase on top of.
+i386 could possibly use cmpxchg8 if and when available, although using
+that to read might be rather too expensive.
 
-Oren, are you willing to keep a set of patches that add functionality on
-top of a minimal set that I'm keeping?  Mine being the set that we're
-trying to push into mainline as soon as possible.
+Doing something like:
 
--- Dave
+struct atomic64_t {
+	seqlock_t lock;
+	s64 val;
+};
+
+might be somewhat unexpected from the sizeof() angle of things. Then
+there is of course the possiblity of hashing the locks...
+
+
+
+> >  include/linux/percpu_counter.h |   28 ++++++++++++++++++++++++----
+> >  lib/percpu_counter.c           |   20 ++++++++++----------
+> >  2 files changed, 34 insertions(+), 14 deletions(-)
+> > 
+> > diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
+> > index 9007ccd..1b711a1 100644
+> > --- a/include/linux/percpu_counter.h
+> > +++ b/include/linux/percpu_counter.h
+> > @@ -6,7 +6,7 @@
+> >   * WARNING: these things are HUGE.  4 kbytes per counter on 32-way P4.
+> >   */
+> >  
+> > -#include <linux/spinlock.h>
+> > +#include <linux/seqlock.h>
+> >  #include <linux/smp.h>
+> >  #include <linux/list.h>
+> >  #include <linux/threads.h>
+> > @@ -16,7 +16,7 @@
+> >  #ifdef CONFIG_SMP
+> >  
+> >  struct percpu_counter {
+> > -	spinlock_t lock;
+> > +	seqlock_t lock;
+> >  	s64 count;
+> >  #ifdef CONFIG_HOTPLUG_CPU
+> >  	struct list_head list;	/* All percpu_counters are on a list */
+> > @@ -53,10 +53,30 @@ static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
+> >  	return __percpu_counter_sum(fbc);
+> >  }
+> >  
+> > -static inline s64 percpu_counter_read(struct percpu_counter *fbc)
+> > +#if BITS_PER_LONG == 64
+> > +static inline s64 fbc_count(struct percpu_counter *fbc)
+> >  {
+> >  	return fbc->count;
+> >  }
+> > +#else
+> > +/* doesn't have atomic 64 bit operation */
+> > +static inline s64 fbc_count(struct percpu_counter *fbc)
+> > +{
+> > +	s64 ret;
+> > +	unsigned seq;
+> > +	do {
+> > +		seq = read_seqbegin(&fbc->lock);
+> > +		ret = fbc->count;
+> > +	} while (read_seqretry(&fbc->lock, seq));
+> > +	return ret;
+> > +
+> 
+> Please don't put unneeded blank lines into random places.
+> 
+> > +}
+> > +#endif
+> 
+> This is now too large to be inlined.
+> 
+> > +static inline s64 percpu_counter_read(struct percpu_counter *fbc)
+> > +{
+> > +	return fbc_count(fbc);
+> > +}
+> 
+> This change means that a percpu_counter_read() from interrupt context
+> on a 32-bit machine is now deadlockable, whereas it previously was not
+> deadlockable on either 32-bit or 64-bit.
+> 
+> This flows on to the lib/proportions.c, which uses
+> percpu_counter_read() and also does spin_lock_irqsave() internally,
+> indicating that it is (or was) designed to be used in IRQ contexts.
+
+percpu_counter() never was irq safe, which is why the proportion stuff
+does all the irq disabling bits by hand.
+
+> It means that bdi_stat() can no longer be used from interrupt context.
+
+Actually, as long as the write side of the seqlock usage is done with
+IRQs disabled, the read side should be good.
+
+If the read loop gets preempted by a write action, the seq count will
+not match up and we'll just try again.
+
+The only lethal combination is trying to do the read loop while inside
+the write side.
+
+If you look at backing-dev.h, you'll see that all modifying operations
+disable IRQs.
+
+> So a whole lot of thought and review and checking is needed here.  It
+> should all be spelled out in the changelog.  This will be a horridly
+> rare deadlock, so suitable WARN_ON()s should be added to detect when
+> callers are vulnerable to it.
+> 
+> Or we make the whole thing irq-safe.
+
+That'd rather substantially penalize those cases where we don't need it.
+>From what I understood this whole pushf/popf stuff is insanely expensive
+on a few archs.
 
