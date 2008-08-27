@@ -1,94 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754853AbYH0UYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755132AbYH0UZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754853AbYH0UYg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 16:24:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYH0UY2
+	id S1755132AbYH0UZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 16:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbYH0UZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 16:24:28 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:31080 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbYH0UY1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 16:24:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=nTkLgV4Ln5FAlWhc/OsyyKbccxwS8GGeQk0TF2OBt0M6zN18oFeP5CFmJv7ptbdtWk
-         2Ia9Gi0N338c9BpD/lYR/Net4EkaJFdd/BS2cl2HLv3H3vz0Dsmem0iMPvrKmC5qLc9z
-         FrGWQjSnYl2h3aheeJn+doZqE18Wb6ZthjC/w=
-Subject: [PATCH] block: kmalloc args reversed, small function definition
-	fixes
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 27 Aug 2008 13:24:29 -0700
-Message-Id: <1219868669.6069.53.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 27 Aug 2008 16:25:44 -0400
+Received: from bu3sch.de ([62.75.166.246]:41550 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752425AbYH0UZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 16:25:43 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: "Tomas Winkler" <tomasw@gmail.com>
+Subject: Re: pull request: wireless-2.6 2008-08-26
+Date: Wed, 27 Aug 2008 22:25:09 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "John W. Linville" <linville@tuxdriver.com>, davem@davemloft.net,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20080827013009.GA15781@tuxdriver.com> <1ba2fa240808271226i95a7789k481a68b09dc60164@mail.gmail.com>
+In-Reply-To: <1ba2fa240808271226i95a7789k481a68b09dc60164@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808272225.10557.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Noticed by sparse:
-block/blk-softirq.c:156:12: warning: symbol 'blk_softirq_init' was not declared. Should it be static?
-block/genhd.c:583:28: warning: function 'bdget_disk' with external linkage has definition
-block/genhd.c:659:17: warning: incorrect type in argument 1 (different base types)
-block/genhd.c:659:17:    expected unsigned int [unsigned] [usertype] size
-block/genhd.c:659:17:    got restricted gfp_t
-block/genhd.c:659:29: warning: incorrect type in argument 2 (different base types)
-block/genhd.c:659:29:    expected restricted gfp_t [usertype] flags
-block/genhd.c:659:29:    got unsigned int
-block: kmalloc args reversed
+On Wednesday 27 August 2008, Tomas Winkler wrote:
+> > John W. Linville (1):
+> >      mac80211: quiet chatty IBSS merge message
+> 
+> This patch is correct yet it suppresses an important warning, meaning
+> that you have constant IBSS reconnection, remove all connected station
+> and adding them again, This greatly degraded performance. This is
+> caused by inability to adjust to TSF of the IBSS leader
+> 
+> <snipt>
+> static int ieee80211_sta_join_ibss(struct net_device *dev,
+> 				   struct ieee80211_if_sta *ifsta,
+> 				   struct ieee80211_sta_bss *bss)
+> .....
+> /* Remove possible STA entries from other IBSS networks. */
+> 	sta_info_flush_delayed(sdata);
+> </snip>
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-new in next-20080827
+I fail to see how the TSF could be related to an ever reconnecting
+station. Can you elaborate on what happens?
 
- block/blk-settings.c |    2 +-
- block/genhd.c        |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+I was under the impression that the firmware would handle TSF stuff.
+Also the "IBSS leader" is a new thing to me. I remember from the specs
+that the device should accept the TSF from _any_ beacon. Not just a
+"leader". Am I mislead? :)
 
-diff --git a/block/blk-settings.c b/block/blk-settings.c
-index a60e959..d70692b 100644
---- a/block/blk-settings.c
-+++ b/block/blk-settings.c
-@@ -443,7 +443,7 @@ void blk_queue_update_dma_alignment(struct request_queue *q, int mask)
- }
- EXPORT_SYMBOL(blk_queue_update_dma_alignment);
- 
--int __init blk_settings_init(void)
-+static int __init blk_settings_init(void)
- {
- 	blk_max_low_pfn = max_low_pfn - 1;
- 	blk_max_pfn = max_pfn - 1;
-diff --git a/block/genhd.c b/block/genhd.c
-index a189358..e2eaaa3 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -580,7 +580,7 @@ struct gendisk *get_gendisk(dev_t devt, int *partno)
-  * RETURNS:
-  * Resulting block_device on success, NULL on failure.
-  */
--extern struct block_device *bdget_disk(struct gendisk *disk, int partno)
-+struct block_device *bdget_disk(struct gendisk *disk, int partno)
- {
- 	struct hd_struct *part;
- 	struct block_device *bdev = NULL;
-@@ -656,7 +656,7 @@ static void *disk_seqf_start(struct seq_file *seqf, loff_t *pos)
- 	struct class_dev_iter *iter;
- 	struct device *dev;
- 
--	iter = kmalloc(GFP_KERNEL, sizeof(*iter));
-+	iter = kmalloc(sizeof(*iter), GFP_KERNEL);
- 	if (!iter)
- 		return ERR_PTR(-ENOMEM);
- 
--- 
-1.6.0.366.gf9ffa8
+I also fail to see how we could _ever_ set the TSF to something remotely
+correct from the driver because of the FIFO delay.
 
+> 
+> > Assaf Krauss (1):
+> >      iwlwifi: W/A for the TSF correction in IBSS
 
-
+I cannot find this patch in wireless-testing and I don't
+have a copy of wireless-2.6 here. Can you send me the patch, or
+explain what it does?
