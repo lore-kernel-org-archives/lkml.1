@@ -1,54 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbYH0TH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbYH0THm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbYH0TH0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 15:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbYH0THM
+	id S1757040AbYH0THm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 15:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756732AbYH0TH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 15:07:12 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:40417 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752518AbYH0THL (ORCPT
+	Wed, 27 Aug 2008 15:07:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58063 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756474AbYH0THZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 15:07:11 -0400
-Date: Wed, 27 Aug 2008 15:06:55 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Is SKAS still required for UML
-Message-ID: <20080827190655.GB12522@c2.user-mode-linux.org>
-References: <alpine.LNX.1.10.0808271251170.1378@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0808271251170.1378@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 27 Aug 2008 15:07:25 -0400
+Date: Wed, 27 Aug 2008 12:05:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: cmm@us.ibm.com, tytso@mit.edu, sandeen@redhat.com,
+       linux-ext4@vger.kernel.org, aneesh.kumar@linux.vnet.ibm.com,
+       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -V3 01/11] percpu_counters: make fbc->count read atomic
+ on 32 bit architecture
+Message-Id: <20080827120553.9c9d6690.akpm@linux-foundation.org>
+In-Reply-To: <1219850916-8986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1219850916-8986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 12:57:53PM -0400, Jan Engelhardt wrote:
-> the UML page at http://user-mode-linux.sourceforge.net/old/skas.html 
-> mentions that "The UML kernel is present in the address space of each of 
-> its processes, and, by default, is writeable".
+On Wed, 27 Aug 2008 20:58:26 +0530
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
 
-That stuff, as you can see by the "old" in the URL, is old.
-
-Since skas0 became the default, that statement is no longer true.
+> fbc->count is of type s64. The change was introduced by
+> 0216bfcffe424a5473daa4da47440881b36c1f4 which changed the type
+> from long to s64. Moving to s64 also means on 32 bit architectures
+> we can get wrong values on fbc->count. Since fbc->count is read
+> more frequently and updated rarely use seqlocks. This should
+> reduce the impact of locking in the read path for 32bit arch.
 > 
-> I tried to put this to a test, and actually failed to modify the 
-> UML kernel/memory image from within it. I had a simple kernel module 
-> with 'int val = 2;' and upon loading this, done printk("Val is at %p\n", 
-> &val); to get to know the address. A userspace program inside the UML 
-> then tried to dereference that address and read the value, but that 
-> ended in a segfault. /proc/xxx/maps also does not show the UML kernel 
-> being mapped in any process inside the UML. Note that I was running in 
-> SKAS0 mode, both host and guest are all 64-bit. Is the NX bit of the 
-> 64-bit platform securing things off, or has SKAS3 become sort of 
-> obsolete?
 
-SKAS3 is still a significant performance boost.
+So...  yesterday's suggestionm to investigate implementing this at a
+lower level wasn't popular?
 
-      	       		     Jeff
+>  include/linux/percpu_counter.h |   28 ++++++++++++++++++++++++----
+>  lib/percpu_counter.c           |   20 ++++++++++----------
+>  2 files changed, 34 insertions(+), 14 deletions(-)
+> 
+> diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
+> index 9007ccd..1b711a1 100644
+> --- a/include/linux/percpu_counter.h
+> +++ b/include/linux/percpu_counter.h
+> @@ -6,7 +6,7 @@
+>   * WARNING: these things are HUGE.  4 kbytes per counter on 32-way P4.
+>   */
+>  
+> -#include <linux/spinlock.h>
+> +#include <linux/seqlock.h>
+>  #include <linux/smp.h>
+>  #include <linux/list.h>
+>  #include <linux/threads.h>
+> @@ -16,7 +16,7 @@
+>  #ifdef CONFIG_SMP
+>  
+>  struct percpu_counter {
+> -	spinlock_t lock;
+> +	seqlock_t lock;
+>  	s64 count;
+>  #ifdef CONFIG_HOTPLUG_CPU
+>  	struct list_head list;	/* All percpu_counters are on a list */
+> @@ -53,10 +53,30 @@ static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
+>  	return __percpu_counter_sum(fbc);
+>  }
+>  
+> -static inline s64 percpu_counter_read(struct percpu_counter *fbc)
+> +#if BITS_PER_LONG == 64
+> +static inline s64 fbc_count(struct percpu_counter *fbc)
+>  {
+>  	return fbc->count;
+>  }
+> +#else
+> +/* doesn't have atomic 64 bit operation */
+> +static inline s64 fbc_count(struct percpu_counter *fbc)
+> +{
+> +	s64 ret;
+> +	unsigned seq;
+> +	do {
+> +		seq = read_seqbegin(&fbc->lock);
+> +		ret = fbc->count;
+> +	} while (read_seqretry(&fbc->lock, seq));
+> +	return ret;
+> +
 
--- 
-Work email - jdike at linux dot intel dot com
+Please don't put unneeded blank lines into random places.
+
+> +}
+> +#endif
+
+This is now too large to be inlined.
+
+> +static inline s64 percpu_counter_read(struct percpu_counter *fbc)
+> +{
+> +	return fbc_count(fbc);
+> +}
+
+This change means that a percpu_counter_read() from interrupt context
+on a 32-bit machine is now deadlockable, whereas it previously was not
+deadlockable on either 32-bit or 64-bit.
+
+This flows on to the lib/proportions.c, which uses
+percpu_counter_read() and also does spin_lock_irqsave() internally,
+indicating that it is (or was) designed to be used in IRQ contexts.
+
+It means that bdi_stat() can no longer be used from interrupt context.
+
+So a whole lot of thought and review and checking is needed here.  It
+should all be spelled out in the changelog.  This will be a horridly
+rare deadlock, so suitable WARN_ON()s should be added to detect when
+callers are vulnerable to it.
+
+Or we make the whole thing irq-safe.
+
