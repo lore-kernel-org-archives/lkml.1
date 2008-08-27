@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753848AbYH0AzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbYH0A4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753848AbYH0AzP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 20:55:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbYH0AzD
+	id S1754106AbYH0A4K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 20:56:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbYH0Azz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 20:55:03 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43674 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751953AbYH0AzB (ORCPT
+	Tue, 26 Aug 2008 20:55:55 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:34721 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752414AbYH0Azy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 20:55:01 -0400
-Date: Tue, 26 Aug 2008 17:53:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Cc: eparis@redhat.com, linux-kernel@vger.kernel.org, debora@linux.vnet.ibm.com,
-       tpm@selhorst.net
-Subject: Re: [PATCH] TPM: include subscribers-only notation in MAINTAINERS
-Message-Id: <20080826175339.bb3b0e15.akpm@linux-foundation.org>
-In-Reply-To: <1219423872.4765.14.camel@blackbox>
-References: <1219420519.3613.16.camel@localhost.localdomain>
-	<1219423872.4765.14.camel@blackbox>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 26 Aug 2008 20:55:54 -0400
+Message-ID: <48B4A577.3020303@snapgear.com>
+Date: Wed, 27 Aug 2008 10:53:11 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Parag Warudkar <parag.lkml@gmail.com>, Adrian Bunk <bunk@stusta.de>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-embedded@vger.kernel.org
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <48B313E0.1000501@hp.com>  <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org>  <200808261111.19205.rusty@rustcorp.com.au>  <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org>  <20080826183051.GB10925@cs181140183.pp.htv.fi>  <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org>  <20080826205916.GB11734@cs181140183.pp.htv.fi>  <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org> <f7848160808261554j2f4eaaa6i1ee8801ae75ca7bf@mail.gmail.com> <alpine.LFD.1.10.0808261644260.3363@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0808261644260.3363@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Aug 2008 13:51:12 -0300
-Rajiv Andrade <srajiv@linux.vnet.ibm.com> wrote:
 
-> ---
->  MAINTAINERS |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+Linus Torvalds wrote:
+> On Tue, 26 Aug 2008, Parag Warudkar wrote:
+>> This is something I never understood - embedded devices are not going
+>> to run more than a few processes and 4K*(Few Processes)
+>>  IMHO is not worth a saving now a days even in embedded world given
+>> falling memory prices. Or do I misunderstand?
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 28c69aa..71bd3cb 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -4057,7 +4057,7 @@ W:	http://tpmdd.sourceforge.net
->  P:	Marcel Selhorst
->  M:	tpm@selhorst.net
->  W:	http://www.prosec.rub.de/tpm/
-> -L:	tpmdd-devel@lists.sourceforge.net
-> +L:	tpmdd-devel@lists.sourceforge.net (moderated for non-subscribers)
->  S:	Maintained
->
+> Well, by that argument, 1% of kernel size doesn't matter either..
+> 
+> 1% of a kernel for an embedded device is roughly 10-30kB or so depending 
+> on how small you make the configuration. 
+> 
+> If that matters, then so should the difference of 3-8 processes' kernel 
+> stack usage when you have a 4k/8k stack choice.
+> 
+> And they _all_ will have at least 3-8 processes on them. Even the simplest 
+> ones will tend to have many more.
 
-- patch title ("TPM: include subscribers-only notation in
-  MAINTAINERS) is now wrong.
+I have some simple devices (network access/routers) with 8MB of RAM,
+at power up not really being configured to do anything running 25
+processes. (Heck there is over 10 kernel processes running!). Configure
+some interfaces and services and that will easily push past 40.
+I'd be happy with a 160k saving :-)
 
-- patch has no changelog
+The init memory being freed at the end of the kernel boot is 88k,
+4k stacks could save more than that.
 
-- patch has no signoff.
+Regards
+Greg
 
-I can (and often do) fix the first two things, and sometimes I'll even
-fix the third, while notifying the submitter.
 
-I would prefer to not have to do so though.
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+Secure Computing Corporation                PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
