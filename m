@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYH0Qy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757171AbYH0Q4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbYH0Qy1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 12:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755212AbYH0QyG
+	id S1757171AbYH0Q4w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 12:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYH0Q4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 12:54:06 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:56256 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755013AbYH0QyD (ORCPT
+	Wed, 27 Aug 2008 12:56:40 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35585 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752724AbYH0Q4j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 12:54:03 -0400
-Date: Wed, 27 Aug 2008 18:56:35 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Rick Jones <rick.jones2@hp.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Denys Fedoryshchenko <denys@visp.net.lb>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-Message-ID: <20080827165635.GY26610@one.firstfloor.org>
-References: <200808220457.40892.denys@visp.net.lb> <20080826201406.GA24827@2ka.mipt.ru> <48B46B48.7030609@cosmosbay.com> <20080826205158.GA15266@2ka.mipt.ru> <87vdxmr53f.fsf@basil.nowhere.org> <48B57BD3.5050206@hp.com> <20080827162735.GW26610@one.firstfloor.org> <48B58586.3080806@hp.com>
+	Wed, 27 Aug 2008 12:56:39 -0400
+Date: Wed, 27 Aug 2008 17:37:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Denis Joseph Barrow <D.Barow@option.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, greg@kroah.com,
+       Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: question wrt /drivers/char/tty_io.c in pre 2.6.16 code
+Message-ID: <20080827173746.11b91c07@lxorguk.ukuu.org.uk>
+In-Reply-To: <48B578F3.1050908@option.com>
+References: <20080820010353.593820280@mini.kroah.org>
+	<20080820010752.GB3365@kroah.com>
+	<48B52064.9070700@pobox.com>
+	<48B578F3.1050908@option.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48B58586.3080806@hp.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 09:49:10AM -0700, Rick Jones wrote:
-> Andi Kleen wrote:
-> >>Those banks really want to crank down on latency - to the point they 
-> >>start disabling interrupt coalescing.  I bet they'd toss anything out 
-> >>they could to shave another microsecond.
-> >
-> >
-> >This change would actually likely lower their latency.
-> 
-> I'm guessing you mean increase their latency?  I agree, it could - 
-> depends entirely on the PPS in production I suspect.
+> The new tty_insert_flip_string returns the
+> number of bytes successfully copied to tty recieve buffers
+> how do I implement this functionality in pre 2.6.16 code,
+> can it be done?
 
-No, moving the time stamps into the socket decreases latency
-for all packets that don't need time stamps. And they likely 
-have some packets which don't need time stamps too.
+Probably but it'll be really ugly. You need to stick your nose into the
+innards of struct tty_struct and check the space left in the current flip
+buffer entry.
 
-As a secondary effect if they use a RT kernel it might
-be also beneficial to do the (depending on the platform)
-costly time stamp in the lower priority socket context
-than in the high priority interrupt thread.
+What you do if it is full is another question.
 
--Andi
-
+Alan.
