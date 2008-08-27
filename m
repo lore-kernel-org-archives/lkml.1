@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbYH0TsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbYH0TvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753227AbYH0TsZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 15:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbYH0TsQ
+	id S1753792AbYH0TvA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 15:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbYH0Tuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 15:48:16 -0400
-Received: from gv-out-0910.google.com ([216.239.58.184]:40399 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750811AbYH0TsP (ORCPT
+	Wed, 27 Aug 2008 15:50:52 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:65460 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751118AbYH0Tuw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 15:48:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=u5GfTcr+GO4pFLsrLNQy0TqTMWz8pftGyZKVJdCGmBjGpSIA2FbA4xathMVoorx2G/
-         u/4OvRIC29FQsjpK/yhAoLtFpJVRxbXNw0pWon/TCLdrO6KEGRpoQheDCbNHg6FUgu4I
-         peXSXZHtfYxGykGMgzTALcs4kVfvbpUUAVG68=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: linux-next: Tree for August 27
-Date: Wed, 27 Aug 2008 21:45:20 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>, dm-devel@redhat.com
-References: <20080827183453.eb651f50.sfr@canb.auug.org.au> <200808271206.48370.bzolnier@gmail.com> <58cb370e0808270757k583c0fc2oc659bc8e2dd6c21e@mail.gmail.com>
-In-Reply-To: <58cb370e0808270757k583c0fc2oc659bc8e2dd6c21e@mail.gmail.com>
+	Wed, 27 Aug 2008 15:50:52 -0400
+Date: Wed, 27 Aug 2008 12:44:35 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+X-X-Sender: xyzzy@t2.domain.actdsltmp
+To: Artem Bityutskiy <dedekind@infradead.org>
+cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       linux-mtd-bounces@lists.infradead.org,
+       "'Bruce Leonard'" <brucle@earthlink.net>, Bruce_Leonard@selinc.com,
+       linux-kernel@vger.kernel.org, Tim Anderson <tanderson@mvista.com>,
+       linux-mtd@lists.infradead.org,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 2/2][MTD] Add support for > 2GiB MTD devices
+In-Reply-To: <1219848463.18027.166.camel@sauron>
+Message-ID: <Pine.LNX.4.64.0808271243200.3610@t2.domain.actdsltmp>
+References: <1219817017.18027.149.camel@sauron> <000201c9080d$0bce0d20$6b01a8c0@mvista.com>
+ <20080827093920.1bdb44c2@lxorguk.ukuu.org.uk> <1219827692.7107.170.camel@pmac.infradead.org>
+ <20080827143416.GA1371@logfs.org> <1219848463.18027.166.camel@sauron>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200808272145.20627.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463811584-1580885661-1219866275=:3610"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 August 2008, Bartlomiej Zolnierkiewicz wrote:
-> On Wed, Aug 27, 2008 at 12:06 PM, Bartlomiej Zolnierkiewicz
-> <bzolnier@gmail.com> wrote:
-> >
-> > Hi,
-> >
-> > On Wednesday 27 August 2008, Stephen Rothwell wrote:
-> >> Hi all,
-> >>
-> >> Changes since next-20080826:
-> >
-> > it fails to build here with:
-> >
-> > arch/x86/kernel/cpu/addon_cpuid_features.c: In function 'detect_extended_topology':
-> > arch/x86/kernel/cpu/addon_cpuid_features.c:119: error: 'struct cpuinfo_x86' hasno member named 'cpu_core_id'
-> > arch/x86/kernel/cpu/addon_cpuid_features.c:121: error: 'struct cpuinfo_x86' hasno member named 'phys_proc_id'
-> > arch/x86/kernel/cpu/addon_cpuid_features.c:130: error: 'struct cpuinfo_x86' hasno member named 'phys_proc_id'
-> > arch/x86/kernel/cpu/addon_cpuid_features.c:133: error: 'struct cpuinfo_x86' hasno member named 'cpu_core_id'
-> > make[2]: *** [arch/x86/kernel/cpu/addon_cpuid_features.o] Error 1
-> > make[1]: *** [arch/x86/kernel/cpu] Error 2
-> > make: *** [arch/x86/kernel] Error 2
-> 
-> which is most likely already fixed in x86 tree by
-> 
-> http://lkml.org/lkml/2008/8/27/34
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Confirmed.
+---1463811584-1580885661-1219866275=:3610
+Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-However now I'm getting device-mapper errors on 'cryptsetup create':
+On Wed, 27 Aug 2008, Artem Bityutskiy wrote:
+> > On Wed, 2008-08-27 at 16:34 +0200, J=C3=B6rn Engel wrote:
+> > They certainly can, but should they?  There may be some reason to prefe=
+r
+> > sysfs that should be self-evident - except that I'm a bit thick and see=
+m
+> > to need it spelled out.  Or maybe I've just become disillusioned with
+> > the practice of replacing crappy interfaces (ioctl here) with other
+> > crappy interfaces (sysfs here) and having to support both for all
+> > eternity.  sysctl, ioctl, proc, sysfs, debugfs, netlink, ... -
+> > individually they all suck in their own peculiar way.  But together the=
+y
+> > create a mess I no longer dare to name.
+>=20
+> The plus of sysfs I see is that I can add more files to expose more
+> information in sysfs, while I can not change MEMGETINFO ioctl. E.g., I
+> need to expose sub-page size to user-space, and I cannot do this with
+> MEMGETINFO.
 
-dmesg:
-...
-device-mapper: core: bdget failed in dm_suspend
-device-mapper: ioctl: device doesn't appear to be in the dev hash table.
-...
-
-cryptsetup:
-...
-Command failed: device-mapper: resume ioctl failed: Invalid argument
-...
-
-next-20080826 is fine
-
-BTW it also seems that certain people need some encouragement
-to fix the nasty warning first reported by Randy two weeks ago
-(http://lkml.org/lkml/2008/8/14/207) and later addressed by
-Rusty (http://lkml.org/lkml/2008/8/16/40) (the solution is said
-to be fragile but there doesn't seem to be any better one on
-the horizon so...)
+You can do this with ioctls, if you designed them with extra space and
+versioning from the beginning.
+---1463811584-1580885661-1219866275=:3610--
