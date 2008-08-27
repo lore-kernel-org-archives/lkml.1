@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbYH0UAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbYH0UCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753227AbYH0UAe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 16:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYH0UA0
+	id S1754059AbYH0UCu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 16:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYH0UCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 16:00:26 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:58528 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbYH0UAZ (ORCPT
+	Wed, 27 Aug 2008 16:02:42 -0400
+Received: from gv-out-0910.google.com ([216.239.58.185]:42916 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751118AbYH0UCl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 16:00:25 -0400
-Date: Wed, 27 Aug 2008 16:00:24 -0400 (EDT)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Jeff Dike <jdike@addtoit.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Is SKAS still required for UML
-In-Reply-To: <20080827190655.GB12522@c2.user-mode-linux.org>
-Message-ID: <alpine.LNX.1.10.0808271551270.1378@fbirervta.pbzchgretzou.qr>
-References: <alpine.LNX.1.10.0808271251170.1378@fbirervta.pbzchgretzou.qr> <20080827190655.GB12522@c2.user-mode-linux.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 27 Aug 2008 16:02:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=BxmyjEelF9iI3yRoGo2JJAwqRUdBcGvVGD2ZLJvbLuRiHUqz+C36mClAckS1DMQ+E9
+         FdxORN3W0gl6qAtlVhOPHdKA7+8O0OGWl0vwNZD/QMX/Ny/M3++DD5tKJ83NSgOOW6/z
+         QfVI3F9zqeCsTT/hcbqLp2ab/WreuUSxbOmhI=
+Date: Thu, 28 Aug 2008 00:04:13 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] utrace core
+Message-ID: <20080827200413.GA31324@x200.localdomain>
+References: <20080826220102.89635154233@magilla.localdomain> <20080826220157.397C7154233@magilla.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080826220157.397C7154233@magilla.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+1. UTRACE_ATTACH_MATCH_DATA is not used.
 
-On Wednesday 2008-08-27 15:06, Jeff Dike wrote:
->On Wed, Aug 27, 2008 at 12:57:53PM -0400, Jan Engelhardt wrote:
->> 
->> I tried to put this to a test, and actually failed to modify the 
->> UML kernel/memory image from within it. I had a simple kernel module 
->> with 'int val = 2;' and upon loading this, done printk("Val is at %p\n", 
->> &val); to get to know the address. A userspace program inside the UML 
->> then tried to dereference that address and read the value, but that 
->> ended in a segfault. /proc/xxx/maps also does not show the UML kernel 
->> being mapped in any process inside the UML. Note that I was running in 
->> SKAS0 mode, both host and guest are all 64-bit. Is the NX bit of the 
->> 64-bit platform securing things off, or has SKAS3 become sort of 
->> obsolete?
->
->SKAS3 is still a significant performance boost.
+2. s/utrace_attached_engine/utrace_engine/g
 
-In tests of mine, oggenc in SKAS0 mode ran at 95% of native speed, which 
-is pretty good.
+   Engine which is not attached is either just allocated or scheduled
+   for freeing
+
+3. get_utrace_lock() is funny.
+
+   From name one should get valid struct utrace or -E depending only on
+   task, why engine matters is a mystery.
+
+4. subsys_initcall
+
+   Just use module_init() or comment why it's needed.
+
+5. Dummy in examiner -- not used (of course!)
+
