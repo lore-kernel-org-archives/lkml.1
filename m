@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760909AbYH0OGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760959AbYH0OGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760909AbYH0OGN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 10:06:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757695AbYH0Nxi
+	id S1760959AbYH0OGc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 10:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757441AbYH0Nyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 09:53:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59554 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758377AbYH0Nxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 09:53:35 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 51/59] CRED: Wrap task credential accesses in the IPv6 protocol
-To: linux-kernel@vger.kernel.org
-Cc: linux-security-module@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Serge Hallyn <serue@us.ibm.com>, netdev@vger.kernel.org
-Date: Wed, 27 Aug 2008 14:50:05 +0100
-Message-ID: <20080827135005.19980.38281.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
-References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Wed, 27 Aug 2008 09:54:31 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:50657 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756880AbYH0Ny2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 09:54:28 -0400
+Date: Wed, 27 Aug 2008 14:54:18 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Cc: Sven Wegener <sven.wegener@stealer.net>,
+       Bob Moore <robert.moore@intel.com>, Andi Kleen <ak@linux.intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: acer-wmi broken in latest git kernel on TravelMate 6492 (Insufficient arguments - method [WQAA])
+Message-ID: <20080827135418.GB7162@srcf.ucam.org>
+References: <alpine.LNX.1.10.0808021640310.2294@titan.stealer.net> <200808021728.46046.carlos@strangeworlds.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808021728.46046.carlos@strangeworlds.co.uk>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wrap access to task credentials so that they can be separated more easily from
-the task_struct during the introduction of COW creds.
+On Sat, Aug 02, 2008 at 05:28:45PM +0100, Carlos Corbacho wrote:
+> ACPI: WMI: Set instance for query block calls
+> 
+> From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+> 
+> Although the necessary data structure was set up, it was never actually
+> passed in, so data block calls have only been working by sheer chance.
 
-Change most current->(|e|s|fs)[ug]id to current_(|e|s|fs)[ug]id().
+Hm. Has this gone upstream? Looks pretty important for .27.
 
-Change some task->e?[ug]id to task_e?[ug]id().  In some places it makes more
-sense to use RCU directly rather than a convenient wrapper; these will be
-addressed by later patches.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
-Reviewed-by: James Morris <jmorris@namei.org>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Cc: netdev@vger.kernel.org
----
-
- net/ipv6/ip6_flowlabel.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-
-diff --git a/net/ipv6/ip6_flowlabel.c b/net/ipv6/ip6_flowlabel.c
-index 37a4e77..bd3c7b9 100644
---- a/net/ipv6/ip6_flowlabel.c
-+++ b/net/ipv6/ip6_flowlabel.c
-@@ -388,7 +388,7 @@ fl_create(struct net *net, struct in6_flowlabel_req *freq, char __user *optval,
- 		fl->owner = current->pid;
- 		break;
- 	case IPV6_FL_S_USER:
--		fl->owner = current->euid;
-+		fl->owner = current_euid();
- 		break;
- 	default:
- 		err = -EINVAL;
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
