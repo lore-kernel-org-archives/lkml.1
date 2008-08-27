@@ -1,53 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbYH0NA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbYH0NFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755625AbYH0NA4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 09:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbYH0NAs
+	id S1755478AbYH0NFr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 09:05:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbYH0NFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 09:00:48 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:41003 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753974AbYH0NAr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 09:00:47 -0400
-Date: Wed, 27 Aug 2008 15:03:18 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Alexander Huemer <alexander.huemer@sbg.ac.at>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: 2.6.27 mtrr fixes do not work when X starts
-Message-ID: <20080827130318.GU26610@one.firstfloor.org>
-References: <86802c440808141031p2712976cqe2c34d3b986ad810@mail.gmail.com> <48AD8125.7050104@sbg.ac.at> <86802c440808210827y72bb1ec0ndcb97b00d6af3a9c@mail.gmail.com> <48AE90BB.5090800@aitel.hist.no> <86802c440808221024u1f152a73hf060f70e1b16dccb@mail.gmail.com> <48B29320.5070903@aitel.hist.no> <86802c440808251308i609a1c8ay6a7300bf4d0e0758@mail.gmail.com> <48B3CDAF.604@aitel.hist.no> <86802c440808260943k210be3edp54aebc9fea5366f5@mail.gmail.com> <48B54E45.6020206@aitel.hist.no>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48B54E45.6020206@aitel.hist.no>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 27 Aug 2008 09:05:39 -0400
+Received: from mail.ccur.com ([12.192.68.12]:8778 "EHLO mail.ccur.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754217AbYH0NFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 09:05:38 -0400
+Message-ID: <48B55122.6080807@ccur.com>
+Date: Wed, 27 Aug 2008 09:05:38 -0400
+From: John Blackwood <john.blackwood@ccur.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH] sched_rt_rq_enqueue() resched idle
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 02:53:25PM +0200, Helge Hafting wrote:
-> Yinghai Lu wrote:
-> >On Tue, Aug 26, 2008 at 2:32 AM, Helge Hafting
-> ><helge.hafting@aitel.hist.no> wrote:
-> 
-> >>I hope this helps so the extra bootup parameters can be avoided in the
-> >>release kernel.
-> >
-> >that is a little bit hard.
-> 
-> Well, perhaps not 2.6.27, but I hope I won't need
-> "mtrr_spare_reg_nr=3" forever. Or is my machine a strange
-> corner case as far as mtrr's are concerned?
+ > On Tue, 2008-08-26 at 15:09 -0400, John Blackwood wrote:
+ > > > Hi Peter,
+ > > >
+ > > > When sysctl_sched_rt_runtime is set to something other than -1 
+and the
+ > > > CONFIG_RT_GROUP_SCHED kernel parameter is NOT enabled, we get 
+into a state
+ > > > where we see one or more CPUs idling forvever even though there are
+ > > > real-time
+ > > > tasks in their rt runqueue that are able to run (no longer 
+throttled).
+ > > >
+ > > > The sequence is:
+ > > >
+ > > > - A real-time task is running when the timer sets the rt runqueue
+ > > >     to throttled, and the rt task is resched_task()ed and switched
+ > > >     out, and idle is switched in since there are no non-rt tasks to
+ > > >     run on that cpu.
+ > > >
+ > > > - Eventually the do_sched_rt_period_timer() runs and un-throttles
+ > > >     the rt runqueue, but we just exit the timer interrupt and go back
+ > > >     to executing the idle task in the idle loop forever.
+ > > >
+ > > > If we change the sched_rt_rq_enqueue() routine to use some of the 
+code
+ > > > from the CONFIG_RT_GROUP_SCHED enabled version of this same 
+routine and
+ > > > resched_task() the currently executing task (idle in our case) if 
+it is
+ > > > a lower priority task than the higher rt task in the now un-throttled
+ > > > runqueue, the problem is no longer observed.
+ >
+ > Very good spotting, Thanks!
 
-It's just a side effect of having far too much BIOS code 
-in the kernel. These basic MTRRs should be set up by the BIOS and when
-the kernel starts to think it knows better it ultimatively ends up
-being far more platform dependent than it should be.
+You're welcome.
 
--Andi
+ > However I think the patch isn't quite good, as highest_prio is only
+ > available on SMP || RT_GROUP_SCHED.
+ >
+ > Furthermore, on !RT_GROUP_SCHED any RT task will be higher than current,
+ > so we can do the below, do you agree?
+
+Yes, I see what you are saying.
+The patch version below looks good.
+I re-tested with it and it works fine.
+
+Thanks!
+
+ > diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+ > index 94daace..f672aee 100644
+ > --- a/kernel/sched_rt.c
+ > +++ b/kernel/sched_rt.c
+ > @@ -199,6 +199,8 @@ static inline struct rt_rq *group_rt_rq(struct 
+sched_rt_entity *rt_se)
+ >
+ >  static inline void sched_rt_rq_enqueue(struct rt_rq *rt_rq)
+ >  {
+ > +       if (rt_rq->rt_nr_running)
+ > +               resched_task(rq_of_rt_rq(rt_rq)->curr);
+ >  }
+ >
+ >  static inline void sched_rt_rq_dequeue(struct rt_rq *rt_rq)
+ >
+ >
