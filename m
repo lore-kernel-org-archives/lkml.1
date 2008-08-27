@@ -1,52 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbYH0QHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758249AbYH0QIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757376AbYH0QHJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 12:07:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbYH0QGy
+	id S1758249AbYH0QIA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 12:08:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbYH0QHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 12:06:54 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:58431 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755422AbYH0QGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 12:06:53 -0400
-Date: Wed, 27 Aug 2008 20:11:41 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steve VanDeBogart <vandebo-lkml@NerdBox.Net>, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] exit signals: use of uninitialized field notify_count
-Message-ID: <20080827161141.GA97@tv-sign.ru>
-References: <alpine.DEB.1.00.0808261505550.15543@abydos.NerdBox.Net> <20080827080136.GA4453@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080827080136.GA4453@elte.hu>
-User-Agent: Mutt/1.5.11
+	Wed, 27 Aug 2008 12:07:47 -0400
+Received: from gv-out-0910.google.com ([216.239.58.186]:24012 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755105AbYH0QHq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 12:07:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=JsttQs9gdh8dAWRd/7K9KikUQqr/jwExnJz0snyeCAZ5UFfUm5R4PsubqFQEFA2KXS
+         UUrA3ojgC52w6tQOUw8JlscCp+u3jInMdqgpj68EwfC8F+wxmNveXrQXLkUl6RKnAbfh
+         bJrvsvM2652x3vJbbs0Z6dlb62ktSi76htHtI=
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>
+Cc: agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
+       baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
+       Marco Innocenti <m.innocenti@cineca.it>, matt@bluehost.com,
+       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
+       Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [RFC][PATCH -mm 0/5] cgroup: block device i/o controller (v9)
+Date: Wed, 27 Aug 2008 18:07:32 +0200
+Message-Id: <1219853257-11052-1-git-send-email-righi.andrea@gmail.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/27, Ingo Molnar wrote:
-> 
-> * Steve VanDeBogart <vandebo-lkml@NerdBox.Net> wrote:
-> 
-> > task->signal->notify_count is only initialized if
-> > task->signal->group_exit_task is not NULL.  Reorder a conditional so
-> > that uninitialised memory is not used.  Found by Valgrind.
-> >
-> > Signed-off-by: Steve VanDeBogart <vandebo-lkml@nerdbox.net>
-> 
-> Applied the commit below to tip/core/urgent, thanks. Roland/Oleg, do you 
-> concur with the fix?
 
-Inho, very nice cleanup.
+The objective of the i/o controller is to improve i/o performance
+predictability of different cgroups sharing the same block devices.
 
-Minor comment. As Roland pointed out, it makes sense to initialize
-the whole signal_struct explicitely, perhaps copy_signal() should
-just use zalloc. In that case we don't need to check ->group_exit_task
-at all, the same for __exit_signal().
+Respect to other priority/weight-based solutions the approach used by this
+controller is to explicitly choke applications' requests that directly (or
+indirectly) generate i/o activity in the system.
 
-Thanks Steve! and what do you think about the above?
+The direct bandwidth and/or iops limiting method has the advantage of improving
+the performance predictability at the cost of reducing, in general, the overall
+performance of the system (in terms of throughput).
 
-Oleg.
+Detailed informations about design, its goal and usage are described in the
+documentation.
 
+Patchset against 2.6.27-rc1-mm1.
+
+The all-in-one patch (and previous versions) can be found at:
+http://download.systemimager.org/~arighi/linux/patches/io-throttle/
+
+This patchset is an experimental implementation, it includes functional
+differences respect to the previous versions (see the changelog below), and I
+haven't done much testing yet. So, comments are really welcome.
+
+Changelog: (v8 -> v9)
+
+* introduce struct res_counter_ratelimit as a generic structure to implement
+  throttling-based cgroup subsystems
+* removed the throttling hooks from the page cache (set_page_dirty): set a
+  single throttling hook in submit_bio() both for read and write operations; a
+  generic process that is dirtying pages on a limited block device (for the
+  cgroup it belongs to) is forced to flush the same amount of pages back to the
+  block device (in this way write operations are forced to occur in the same IO
+  context of the process that actually generated the IO)
+* collect per cgroup, block device and task throttling statistics (throttle
+  counter and total time slept for throttling) and export them to userspace
+  through blockio.throttlcnt (in the cgroup filesystem) and
+  /proc/PID/io-throttle-stat (per-task statistics)
+* fair throttling: simple attempt to distribute the sleeps equally among all
+  the tasks belonging to the same cgroup; instead of imposing a sleep to the
+  first task that exceeds the IO limits, the time to sleep is divided by the
+  number of tasks present in the same cgroup
+
+TODO:
+
+* Try to push down the throttling and implement it directly in the I/O
+  schedulers, using bio-cgroup (http://people.valinux.co.jp/~ryov/bio-cgroup/)
+  to keep track of the right cgroup context. This approach could lead to more
+  memory consumption and increases the number of dirty pages (hard/slow to
+  reclaim pages) in the system, since dirty-page ratio in memory is not
+  limited. This could even lead to potential OOM conditions, but these problems
+  can be resolved directly into the memory cgroup subsystem
+
+* Handle I/O generated by kswapd: at the moment there's no control on the I/O
+  generated by kswapd; try to use the page_cgroup functionality of the memory
+  cgroup controller to track this kind of I/O and charge the right cgroup when
+  pages are swapped in/out
+
+* Improve fair throttling: distribute the time to sleep among all the tasks of
+  a cgroup that exceeded the I/O limits, depending of the amount of IO activity
+  generated in the past by each task (see task_io_accounting)
+
+* Try to reduce the cost of calling cgroup_io_throttle() on every submit_bio();
+  this is not too much expensive, but the call of task_subsys_state() has
+  surely a cost. A possible solution could be to temporarily account I/O in the
+  current task_struct and call cgroup_io_throttle() only on each X MB of I/O.
+  Or on each Y number of I/O requests as well. Better if both X and/or Y can be
+  tuned at runtime by a userspace tool
+
+* Think an alternative design for general purpose usage; special purpose usage
+  right now is restricted to improve I/O performance predictability and
+  evaluate more precise response timings for applications doing I/O. To a large
+  degree the block I/O bandwidth controller should implement a more complex
+  logic to better evaluate real I/O operations cost, depending also on the
+  particular block device profile (i.e. USB stick, optical drive, hard disk,
+  etc.). This would also allow to appropriately account I/O cost for seeky
+  workloads, respect to large stream workloads. Instead of looking at the
+  request stream and try to predict how expensive the I/O cost will be, a
+  totally different approach could be to collect request timings (start time /
+  elapsed time) and based on collected informations, try to estimate the I/O
+  cost and usage
+
+-Andrea
