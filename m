@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbYH0SwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755981AbYH0S4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754957AbYH0SwK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 14:52:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbYH0Sv5
+	id S1755981AbYH0S4T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 14:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYH0S4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 14:51:57 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:37247 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752184AbYH0Sv5 (ORCPT
+	Wed, 27 Aug 2008 14:56:11 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:53991 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752178AbYH0S4K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 14:51:57 -0400
-Date: Wed, 27 Aug 2008 19:51:42 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Bruce_Leonard@selinc.com
-Cc: dedekind@infradead.org, linux-mtd-bounces@lists.infradead.org,
-       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Bruce Leonard <brucle@earthlink.net>
-Subject: Re: [PATCH 2/2] Add support for > 2GiB MTD devices
-Message-ID: <20080827185142.GE27491@shareable.org>
-References: <1219815617.18027.132.camel@sauron> <OF5BDBDD21.E5375C78-ON882574B2.0061B127-882574B2.00648B63@selinc.com>
+	Wed, 27 Aug 2008 14:56:10 -0400
+Message-ID: <48B5A33A.507@nortel.com>
+Date: Wed, 27 Aug 2008 12:55:54 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <OF5BDBDD21.E5375C78-ON882574B2.0061B127-882574B2.00648B63@selinc.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Mark Hounschell <markh@compro.net>, Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Stefani Seibold <stefani@seibold.net>,
+       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
+References: <20080819103301.787700742@chello.nl> <200808261900.07383.nickpiggin@yahoo.com.au> <20080826093059.GA471@elte.hu> <200808261954.47987.nickpiggin@yahoo.com.au> <alpine.LFD.1.10.0808261219050.3243@apollo.tec.linutronix.de> <48B40975.7080803@compro.net> <20080826230021.GB31444@goodmis.org>
+In-Reply-To: <20080826230021.GB31444@goodmis.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Aug 2008 18:55:59.0220 (UTC) FILETIME=[8B409B40:01C90876]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bruce_Leonard@selinc.com wrote:
-> I'm still reluctant to change size to a 64-bit value.  There's a vague 
-> recolection of early conversations on the list that there would be little 
-> acceptance for that.  And that probably has to do with the ongoing 
-> conversation about ABI changes.  What I could do to eliminate the 
-> multiplication is introduce the same concept that the NAND layer uses, 
-> shift values.  After all, erasesize should always be a power of 2, making 
-> that a power of 2 multiplication which can be done via shifts.  By 
-> changing erasesize to erasesize_shift, I'd get something like this:
+Steven Rostedt wrote:
+
+> What I would suggest is this.
 > 
-> return a->num_eraseblocks == 0 ? a->size : a->num_eraseblocks << 
-> a->erasesize_shift
+> 1) Keep the default as the infinite for those that know what they are
+>    doing.
 > 
-> How would that suit you?
+> 2) Change the sysctl scripts in the distros to set the default to a sane
+>   time that will protect the users.
+> 
+> An RT app that would break the 10s limit would probably be using busybox
+> anyway, so the default for that would be what the kernel comes up with.
+> 
+> The default the 99% of users would have, is what the distro set it to
+> for them.
+> 
+> This seems like a sane solution to satisfy both camps.
 
-Are you sure it's always going to be a power of 2?
 
-What if someone targets a board with 3 chips wired to shared address
-and parallel data buses?
+Makes sense to me.  It could even get sent out to users about as fast as 
+a new kernel by itself, since they could just add a package dependency 
+to update the init scripts when the end-user installs the new kernel 
+package.
 
-Or if someone makes a weird chip?  Or if you can format it in
-different ways according to desired ECC level (like you can with CDs)?
+Anyone messing with the kernel directly is likely 1) smart enough to 
+deal with existing FIFO semantics, and 2) able to modify their own init 
+scripts to get some additional security if they so desire.
 
-If there's ongoing conversation about ABI changes, it sounds like it
-would be good for this change to be done together that, instead of
-doing this change then changing the ABI _again_ shortly after and
-having to support 3 different ABIs in tools instead of 2.
-
--- Jamie
+Chris
