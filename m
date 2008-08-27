@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbYH0JTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754787AbYH0JYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755038AbYH0JTu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 05:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbYH0JTh
+	id S1754787AbYH0JYR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 05:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbYH0JYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 05:19:37 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:45270 "EHLO mail.dvmed.net"
+	Wed, 27 Aug 2008 05:24:04 -0400
+Received: from mailtp.via.com.tw ([61.66.243.2]:28913 "EHLO mailtp.via.com.tw"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753830AbYH0JTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 05:19:36 -0400
-Message-ID: <48B51C19.9050800@pobox.com>
-Date: Wed, 27 Aug 2008 05:19:21 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1753354AbYH0JYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 05:24:03 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>, rdunlap@xenotime.net,
-       toralf.foerster@gmx.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: build issue #564 for v2.6.27-rc4 : undefined reference to `NS8390p_init'
-References: <200808221033.46997.toralf.foerster@gmx.de> <Pine.LNX.4.64.0808221025070.6100@shark.he.net> <20080822181234.2f33e993@lxorguk.ukuu.org.uk> <20080822110902.432dd99e.akpm@linux-foundation.org> <20080822192415.1984d1c2@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080822192415.1984d1c2@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: [PATCH 1/1] MAINTAINERS:
+Date: Wed, 27 Aug 2008 17:23:54 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB807A7759A@exchtp03.taipei.via.com.tw>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] MAINTAINERS:
+Thread-Index: AckIJqAspHglm5QDRYeIP29blaL/og==
+From: <JosephChan@via.com.tw>
+To: <linux-fbdev-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>
+Cc: <akpm@linux-foundation.org>, <geert@linux-m68k.org>,
+       <JosephChan@via.com.tw>, <ScottFang@viatech.com.cn>
+X-OriginalArrivalTime: 27 Aug 2008 09:23:56.0670 (UTC) FILETIME=[A16B19E0:01C90826]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m7R9OKdq018637
 
-Alan Cox wrote:
->> For the record, and from memory, there were three patches.
-> 
-> I would go take a look at the archive if I was you: there were bits from
-> Ingo and others too.
-> 
-> The diff you are looking for however appears to be this, which reverts part
-> of the follow on patches to the correct original. I shall however refrain
-> from looking smug because while the original wd patch was right I'm also the
-> idiot who put the bug back into the tree.
-> 
-> Signed-off-by: Alan 'pass the paper bags' Cox <alan@redhat.com>
-> 
-> --- drivers/net/wd.c~	2008-08-22 19:17:01.000000000 +0100
-> +++ drivers/net/wd.c	2008-08-22 19:17:01.000000000 +0100
-> @@ -337,7 +337,7 @@
->  #ifdef CONFIG_NET_POLL_CONTROLLER
->  	dev->poll_controller = ei_poll;
->  #endif
-> -	NS8390p_init(dev, 0);
-> +	NS8390_init(dev, 0);
->  
->  #if 1
-
-applied
+Add maintainers for VIA UniChrome(Pro)/Chrome9 Framebuffer driver
 
 
+Signed-off-by: Joseph Chan <josephchan@via.com.tw>
+Signed-off-by: Scott Fang <ScottFang@viatech.com.cn>
+
+--- a/MAINTAINERS	2008-08-27 16:41:42.000000000 +0800
++++ b/MAINTAINERS	2008-08-27 16:56:36.000000000 +0800
+@@ -4441,6 +4441,14 @@
+ L:	i2c@lm-sensors.org
+ S:	Maintained
+ 
++VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER DRIVER
++P:	Joseph Chan
++M:	JosephChan@via.com.tw
++P:	Scott Fang
++M:	ScottFang@viatech.com.cn
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
++S:	Maintained
++
+ VIA VELOCITY NETWORK DRIVER
+ P:	Francois Romieu
+ M:	romieu@fr.zoreil.com
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
