@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbYH0I1B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbYH0Idy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754082AbYH0I1B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 04:27:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbYH0I0x
+	id S1754052AbYH0Idy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 04:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbYH0Idp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 04:26:53 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:56421 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752462AbYH0I0w (ORCPT
+	Wed, 27 Aug 2008 04:33:45 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58037 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752944AbYH0Ido (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 04:26:52 -0400
-Date: Wed, 27 Aug 2008 10:26:50 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: containers@lists.linux-foundation.org, jeremy@goop.org, arnd@arndb.de,
-       linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>
-Subject: Re: [RFC v2][PATCH 7/9] Infrastructure for shared objects
-Message-ID: <20080827082650.GF4784@hawkmoon.kerlabs.com>
-Reply-To: Louis.Rilling@kerlabs.com
-References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu> <Pine.LNX.4.64.0808202306170.17436@takamine.ncl.cs.columbia.edu> <20080821104016.GJ581@hawkmoon.kerlabs.com> <1219770064.8680.28.camel@nimitz>
+	Wed, 27 Aug 2008 04:33:44 -0400
+Subject: Re: [PATCH v2 0/6] Series short description
+From: Peter Zijlstra <peterz@infradead.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: mingo@elte.hu, srostedt@redhat.com, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, npiggin@suse.de,
+       gregory.haskins@gmail.com
+In-Reply-To: <20080826173131.16413.17862.stgit@dev.haskins.net>
+References: <20080825200852.23217.13842.stgit@dev.haskins.net>
+	 <20080826173131.16413.17862.stgit@dev.haskins.net>
+Content-Type: text/plain
+Date: Wed, 27 Aug 2008 10:33:24 +0200
+Message-Id: <1219826004.6462.57.camel@twins>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-9067-1219825479-0001-2"
-Content-Disposition: inline
-In-Reply-To: <1219770064.8680.28.camel@nimitz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Tue, 2008-08-26 at 13:34 -0400, Gregory Haskins wrote:
+> Hi Ingo,
+> 
+> The following repositories
+> 
+>      git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/linux-2.6-hacks.git tip/sched/devel/rtbalance 
+> 
+>      ftp://ftp.novell.com/dev/ghaskins/tip-rt-fixes.tar.bz2
+> 
+> apply to tip/sched/devel to pick up fixes for the RT scheduler. 
+> 
+> [
+> 	Changelog:
+> 	
+> 	v2: 
+> 	    *) predicated newidle and double_lock changes on
+> 	       CONFIG_PREEMPT to address a concern by Nick Piggin
+> 
+> 	    *) fixed a build issue when DEBUG_PI_LIST is defined 
+> 
+> 	v1:
+> 	    *) initial release
+> ]
+> 
+> These patches were developed in the interest of shorting latencies in
+> PREEMPT_RT, but they apply to the mainline scheduler as well, so I am
+> offering them here first.
+> 
+> This has been tested under both 26.3-rt3 and tip/sched/devel on x86_64 for
+> both CONFIG_SMP and !CONFIG_SMP.
+> 
+> Comments/bug-fixes welcome!
 
---=_bohort-9067-1219825479-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Looks good to me,
 
-On Tue, Aug 26, 2008 at 10:01:04AM -0700, Dave Hansen wrote:
-> On Thu, 2008-08-21 at 12:40 +0200, Louis Rilling wrote:
-> >=20
-> > > +struct cr_objhash {
-> > > +     struct cr_obj **hash;
-> > > +     int next_tag;
-> > > +};
-> > > +
-> > > +#define CR_OBJHASH_NBITS  10 /* 10 bits =3D 1K buckets */
-> > > +#define CR_OBJHASH_ORDER  0  /* 1K buckets * 4 bytes/bucket =3D 1
-> > page */
-> >=20
-> > Only true when PAGE_SIZE =3D=3D 4K and in 32bits. Perhaps like below?
-> >=20
-> > #define CR_OBJHASH_BUCKET_NBITS (BITS_PER_LONG =3D=3D 64 ? 3 : 2)
-> > #define CR_MIN_OBJHASH_NBITS ((PAGE_SHIFT - CR_OBJHASH_BUCKET_NBITS)
-> > #define CR_OBJHASH_NBITS (CR_MIN_OBJHASH_NBITS >=3D 10 ?
-> > CR_MIN_OBJHASH_NBITS : 10)
-> > #define CR_OBJHASH_ORDER (CR_OBJHASH_NBITS + CR_OBJHASH_BUCKET_NBITS -
-> > PAGE_SHIFT)
->=20
-> Gah.  Can't we just use the existing radix tree or hash implementations
-> we already have?
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-AFAICS, all hash implementations work like this (I'm referring to pid hashes
-and compat_ioctl hashes for instance). The only common code is the hash
-functions, which Oren seems to have used.
+Ingo please consider.
 
-Radix trees may be an alternative, given that object tags are sequentially
-generated in some way. I have no idea about the simplicity we can gain thou=
-gh.
+> ---
+> 
+> Gregory Haskins (6):
+>       sched: create "pushable_tasks" list to limit pushing to one attempt
+>       plist: fix PLIST_NODE_INIT to work with debug enabled
+>       sched: add sched_class->needs_post_schedule() member
+>       sched: make double-lock-balance fair
+>       sched: pull only one task during NEWIDLE balancing to limit critical section
+>       sched: only try to push a task on wakeup if it is migratable
+> 
+> 
+>  include/linux/init_task.h |    1 
+>  include/linux/plist.h     |    9 ++-
+>  include/linux/sched.h     |    2 +
+>  kernel/sched.c            |   84 ++++++++++++++++++++++++---
+>  kernel/sched_rt.c         |  139 ++++++++++++++++++++++++++++++++++++++-------
+>  5 files changed, 202 insertions(+), 33 deletions(-)
+> 
+> 
 
-Louis
-
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
-
---=_bohort-9067-1219825479-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFItQ/KVKcRuvQ9Q1QRAnP8AJ9KgIcf0TwVw0PGVAX7Y0SEFx0B/gCcD3CW
-Qa6rZQy8I8WhtpOU2iwcMmY=
-=wYLg
------END PGP SIGNATURE-----
-
---=_bohort-9067-1219825479-0001-2--
