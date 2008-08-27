@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbYH0Ntk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbYH0NuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756860AbYH0Ntk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 09:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756803AbYH0Nrl
+	id S1757466AbYH0NuA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 09:50:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbYH0Nrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 09:47:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49048 "EHLO mx1.redhat.com"
+	Wed, 27 Aug 2008 09:47:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49069 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756793AbYH0Nrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 09:47:39 -0400
+	id S1756800AbYH0Nrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 09:47:45 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 14/59] CRED: Wrap task credential accesses in 9P2000 filesystem
+Subject: [PATCH 22/59] CRED: Wrap task credential accesses in the eCryptFS
+	filesystem
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Serge Hallyn <serue@us.ibm.com>, Eric Van Hensbergen <ericvh@gmail.com>,
-       Ron Minnich <rminnich@sandia.gov>, Latchesar Ionkov <lucho@ionkov.net>,
-       v9fs-developer@lists.sourceforge.net
-Date: Wed, 27 Aug 2008 14:46:54 +0100
-Message-ID: <20080827134654.19980.45849.stgit@warthog.procyon.org.uk>
+       Serge Hallyn <serue@us.ibm.com>, Mike Halcrow <mhalcrow@us.ibm.com>,
+       Phillip Hellewell <phillip@hellewell.homeip.net>,
+       ecryptfs-devel@lists.sourceforge.net
+Date: Wed, 27 Aug 2008 14:47:35 +0100
+Message-ID: <20080827134735.19980.88570.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
 References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -44,73 +45,175 @@ addressed by later patches.
 Signed-off-by: David Howells <dhowells@redhat.com>
 Reviewed-by: James Morris <jmorris@namei.org>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
-Cc: Eric Van Hensbergen <ericvh@gmail.com>
-Cc: Ron Minnich <rminnich@sandia.gov>
-Cc: Latchesar Ionkov <lucho@ionkov.net>
-Cc: v9fs-developer@lists.sourceforge.net
+Cc: Mike Halcrow <mhalcrow@us.ibm.com>
+Cc: Phillip Hellewell <phillip@hellewell.homeip.net>
+Cc: ecryptfs-devel@lists.sourceforge.net
 ---
 
- fs/9p/fid.c       |    2 +-
- fs/9p/vfs_inode.c |    4 ++--
- fs/9p/vfs_super.c |    4 ++--
- net/9p/client.c   |    2 +-
- 4 files changed, 6 insertions(+), 6 deletions(-)
+ fs/ecryptfs/messaging.c |   18 ++++++++++--------
+ fs/ecryptfs/miscdev.c   |   20 ++++++++++++--------
+ 2 files changed, 22 insertions(+), 16 deletions(-)
 
 
-diff --git a/fs/9p/fid.c b/fs/9p/fid.c
-index 3031e32..a43e4ab 100644
---- a/fs/9p/fid.c
-+++ b/fs/9p/fid.c
-@@ -120,7 +120,7 @@ struct p9_fid *v9fs_fid_lookup(struct dentry *dentry)
- 	switch (access) {
- 	case V9FS_ACCESS_SINGLE:
- 	case V9FS_ACCESS_USER:
--		uid = current->fsuid;
-+		uid = current_fsuid();
- 		any = 0;
- 		break;
+diff --git a/fs/ecryptfs/messaging.c b/fs/ecryptfs/messaging.c
+index 1b5c200..92bf606 100644
+--- a/fs/ecryptfs/messaging.c
++++ b/fs/ecryptfs/messaging.c
+@@ -377,6 +377,7 @@ int ecryptfs_process_response(struct ecryptfs_message *msg, uid_t euid,
+ 	size_t msg_size;
+ 	struct nsproxy *nsproxy;
+ 	struct user_namespace *current_user_ns;
++	uid_t ctx_euid;
+ 	int rc;
  
-diff --git a/fs/9p/vfs_inode.c b/fs/9p/vfs_inode.c
-index c95295c..517dd27 100644
---- a/fs/9p/vfs_inode.c
-+++ b/fs/9p/vfs_inode.c
-@@ -215,8 +215,8 @@ struct inode *v9fs_get_inode(struct super_block *sb, int mode)
- 	inode = new_inode(sb);
- 	if (inode) {
- 		inode->i_mode = mode;
--		inode->i_uid = current->fsuid;
--		inode->i_gid = current->fsgid;
-+		inode->i_uid = current_fsuid();
-+		inode->i_gid = current_fsgid();
- 		inode->i_blocks = 0;
- 		inode->i_rdev = 0;
- 		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
-diff --git a/fs/9p/vfs_super.c b/fs/9p/vfs_super.c
-index bf59c39..f59ffcd 100644
---- a/fs/9p/vfs_super.c
-+++ b/fs/9p/vfs_super.c
-@@ -113,8 +113,8 @@ static int v9fs_get_sb(struct file_system_type *fs_type, int flags,
- 	struct v9fs_session_info *v9ses = NULL;
- 	struct p9_stat *st = NULL;
- 	int mode = S_IRWXUGO | S_ISVTX;
--	uid_t uid = current->fsuid;
--	gid_t gid = current->fsgid;
-+	uid_t uid = current_fsuid();
-+	gid_t gid = current_fsgid();
- 	struct p9_fid *fid;
- 	int retval = 0;
+ 	if (msg->index >= ecryptfs_message_buf_len) {
+@@ -401,8 +402,8 @@ int ecryptfs_process_response(struct ecryptfs_message *msg, uid_t euid,
+ 		goto wake_up;
+ 	}
+ 	current_user_ns = nsproxy->user_ns;
+-	rc = ecryptfs_find_daemon_by_euid(&daemon, msg_ctx->task->euid,
+-					  current_user_ns);
++	ctx_euid = task_euid(msg_ctx->task);
++	rc = ecryptfs_find_daemon_by_euid(&daemon, ctx_euid, current_user_ns);
+ 	rcu_read_unlock();
+ 	mutex_unlock(&ecryptfs_daemon_hash_mux);
+ 	if (rc) {
+@@ -410,14 +411,14 @@ int ecryptfs_process_response(struct ecryptfs_message *msg, uid_t euid,
+ 		printk(KERN_WARNING "%s: User [%d] received a "
+ 		       "message response from process [0x%p] but does "
+ 		       "not have a registered daemon\n", __func__,
+-		       msg_ctx->task->euid, pid);
++		       ctx_euid, pid);
+ 		goto wake_up;
+ 	}
+-	if (msg_ctx->task->euid != euid) {
++	if (ctx_euid != euid) {
+ 		rc = -EBADMSG;
+ 		printk(KERN_WARNING "%s: Received message from user "
+ 		       "[%d]; expected message from user [%d]\n", __func__,
+-		       euid, msg_ctx->task->euid);
++		       euid, ctx_euid);
+ 		goto unlock;
+ 	}
+ 	if (current_user_ns != user_ns) {
+@@ -431,7 +432,7 @@ int ecryptfs_process_response(struct ecryptfs_message *msg, uid_t euid,
+ 		rc = -EBADMSG;
+ 		printk(KERN_ERR "%s: User [%d] sent a message response "
+ 		       "from an unrecognized process [0x%p]\n",
+-		       __func__, msg_ctx->task->euid, pid);
++		       __func__, ctx_euid, pid);
+ 		goto unlock;
+ 	}
+ 	if (msg_ctx->state != ECRYPTFS_MSG_CTX_STATE_PENDING) {
+@@ -482,14 +483,15 @@ ecryptfs_send_message_locked(unsigned int transport, char *data, int data_len,
+ 			     u8 msg_type, struct ecryptfs_msg_ctx **msg_ctx)
+ {
+ 	struct ecryptfs_daemon *daemon;
++	uid_t euid = current_euid();
+ 	int rc;
  
-diff --git a/net/9p/client.c b/net/9p/client.c
-index 2ffe40c..a5dfc17 100644
---- a/net/9p/client.c
-+++ b/net/9p/client.c
-@@ -1049,7 +1049,7 @@ static struct p9_fid *p9_fid_create(struct p9_client *clnt)
- 	fid->rdir_fpos = 0;
- 	fid->rdir_pos = 0;
- 	fid->rdir_fcall = NULL;
--	fid->uid = current->fsuid;
-+	fid->uid = current_fsuid();
- 	fid->clnt = clnt;
- 	fid->aux = NULL;
+-	rc = ecryptfs_find_daemon_by_euid(&daemon, current->euid,
++	rc = ecryptfs_find_daemon_by_euid(&daemon, euid,
+ 					  current->nsproxy->user_ns);
+ 	if (rc || !daemon) {
+ 		rc = -ENOTCONN;
+ 		printk(KERN_ERR "%s: User [%d] does not have a daemon "
+-		       "registered\n", __func__, current->euid);
++		       "registered\n", __func__, euid);
+ 		goto out;
+ 	}
+ 	mutex_lock(&ecryptfs_msg_ctx_lists_mux);
+diff --git a/fs/ecryptfs/miscdev.c b/fs/ecryptfs/miscdev.c
+index b484792..047ac60 100644
+--- a/fs/ecryptfs/miscdev.c
++++ b/fs/ecryptfs/miscdev.c
+@@ -42,11 +42,12 @@ ecryptfs_miscdev_poll(struct file *file, poll_table *pt)
+ {
+ 	struct ecryptfs_daemon *daemon;
+ 	unsigned int mask = 0;
++	uid_t euid = current_euid();
+ 	int rc;
  
+ 	mutex_lock(&ecryptfs_daemon_hash_mux);
+ 	/* TODO: Just use file->private_data? */
+-	rc = ecryptfs_find_daemon_by_euid(&daemon, current->euid,
++	rc = ecryptfs_find_daemon_by_euid(&daemon, euid,
+ 					  current->nsproxy->user_ns);
+ 	BUG_ON(rc || !daemon);
+ 	mutex_lock(&daemon->mux);
+@@ -83,6 +84,7 @@ static int
+ ecryptfs_miscdev_open(struct inode *inode, struct file *file)
+ {
+ 	struct ecryptfs_daemon *daemon = NULL;
++	uid_t euid = current_euid();
+ 	int rc;
+ 
+ 	mutex_lock(&ecryptfs_daemon_hash_mux);
+@@ -93,10 +95,10 @@ ecryptfs_miscdev_open(struct inode *inode, struct file *file)
+ 		       "count; rc = [%d]\n", __func__, rc);
+ 		goto out_unlock_daemon_list;
+ 	}
+-	rc = ecryptfs_find_daemon_by_euid(&daemon, current->euid,
++	rc = ecryptfs_find_daemon_by_euid(&daemon, euid,
+ 					  current->nsproxy->user_ns);
+ 	if (rc || !daemon) {
+-		rc = ecryptfs_spawn_daemon(&daemon, current->euid,
++		rc = ecryptfs_spawn_daemon(&daemon, euid,
+ 					   current->nsproxy->user_ns,
+ 					   task_pid(current));
+ 		if (rc) {
+@@ -147,10 +149,11 @@ static int
+ ecryptfs_miscdev_release(struct inode *inode, struct file *file)
+ {
+ 	struct ecryptfs_daemon *daemon = NULL;
++	uid_t euid = current_euid();
+ 	int rc;
+ 
+ 	mutex_lock(&ecryptfs_daemon_hash_mux);
+-	rc = ecryptfs_find_daemon_by_euid(&daemon, current->euid,
++	rc = ecryptfs_find_daemon_by_euid(&daemon, euid,
+ 					  current->nsproxy->user_ns);
+ 	BUG_ON(rc || !daemon);
+ 	mutex_lock(&daemon->mux);
+@@ -246,11 +249,12 @@ ecryptfs_miscdev_read(struct file *file, char __user *buf, size_t count,
+ 	char packet_length[3];
+ 	size_t i;
+ 	size_t total_length;
++	uid_t euid = current_euid();
+ 	int rc;
+ 
+ 	mutex_lock(&ecryptfs_daemon_hash_mux);
+ 	/* TODO: Just use file->private_data? */
+-	rc = ecryptfs_find_daemon_by_euid(&daemon, current->euid,
++	rc = ecryptfs_find_daemon_by_euid(&daemon, euid,
+ 					  current->nsproxy->user_ns);
+ 	BUG_ON(rc || !daemon);
+ 	mutex_lock(&daemon->mux);
+@@ -290,7 +294,7 @@ check_list:
+ 		 * message from the queue; try again */
+ 		goto check_list;
+ 	}
+-	BUG_ON(current->euid != daemon->euid);
++	BUG_ON(euid != daemon->euid);
+ 	BUG_ON(current->nsproxy->user_ns != daemon->user_ns);
+ 	BUG_ON(task_pid(current) != daemon->pid);
+ 	msg_ctx = list_first_entry(&daemon->msg_ctx_out_queue,
+@@ -414,6 +418,7 @@ ecryptfs_miscdev_write(struct file *file, const char __user *buf,
+ 	size_t packet_size, packet_size_length, i;
+ 	ssize_t sz = 0;
+ 	char *data;
++	uid_t euid = current_euid();
+ 	int rc;
+ 
+ 	if (count == 0)
+@@ -463,8 +468,7 @@ ecryptfs_miscdev_write(struct file *file, const char __user *buf,
+ 			goto out_free;
+ 		}
+ 		rc = ecryptfs_miscdev_response(&data[i], packet_size,
+-					       current->euid,
+-					       current->nsproxy->user_ns,
++					       euid, current->nsproxy->user_ns,
+ 					       task_pid(current), seq);
+ 		if (rc)
+ 			printk(KERN_WARNING "%s: Failed to deliver miscdev "
 
