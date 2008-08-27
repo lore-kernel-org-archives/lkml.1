@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756066AbYH0WTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbYH0WX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756066AbYH0WTf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 18:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbYH0WT0
+	id S1754811AbYH0WX1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 18:23:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbYH0WXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 18:19:26 -0400
-Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:37335 "EHLO
-	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753416AbYH0WTZ (ORCPT
+	Wed, 27 Aug 2008 18:23:20 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49795
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752813AbYH0WXT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 18:19:25 -0400
-Date: Wed, 27 Aug 2008 18:19:24 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: David Howells <dhowells@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Serge Hallyn <serue@us.ibm.com>, Kyle McMartin <kyle@mcmartin.ca>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       linux-parisc@vger.kernel.org
-Subject: Re: [PATCH 03/59] CRED: Wrap task credential accesses in the
-	PA-RISC arch
-Message-ID: <20080827221924.GA6298@phobos.i.cabal.ca>
-References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk> <20080827134557.19980.40787.stgit@warthog.procyon.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080827134557.19980.40787.stgit@warthog.procyon.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 27 Aug 2008 18:23:19 -0400
+Date: Wed, 27 Aug 2008 15:23:14 -0700 (PDT)
+Message-Id: <20080827.152314.218610441.davem@davemloft.net>
+To: andi@firstfloor.org
+Cc: dada1@cosmosbay.com, rick.jones2@hp.com, johnpol@2ka.mipt.ru,
+       denys@visp.net.lb, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: loaded router, excessive getnstimeofday in oprofile\
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080827183216.GZ26610@one.firstfloor.org>
+References: <20080827165635.GY26610@one.firstfloor.org>
+	<48B58E6B.1030302@cosmosbay.com>
+	<20080827183216.GZ26610@one.firstfloor.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 02:45:57PM +0100, David Howells wrote:
-> Wrap access to task credentials so that they can be separated more easily from
-> the task_struct during the introduction of COW creds.
-> 
-> Change most current->(|e|s|fs)[ug]id to current_(|e|s|fs)[ug]id().
-> 
-> Change some task->e?[ug]id to task_e?[ug]id().  In some places it makes more
-> sense to use RCU directly rather than a convenient wrapper; these will be
-> addressed by later patches.
-> 
+From: Andi Kleen <andi@firstfloor.org>
+Date: Wed, 27 Aug 2008 20:32:16 +0200
 
-OK.
+> > Doing the expensive timestamping in a possibly delayed thread (ie some 
+> > milliseconds
+> > after hardware notification) is wrong/useless.
+> 
+> We had this discussion earlier, please review the thread I linked to. 
+> 
+> Note that interrupts can be arbitarily delayed too (both by cli
+> and by interrupt mitigation), even on a non RT kernel.
 
-Feel free to push this with the rest of them, if you haven't already,
-with my blessing.
+This is a much different kind of delay compared to sleeping for seconds
+or longer on the socket lock while a GFP_KERNEL allocation is being
+satisfied by swapping tons of crap out to disk.
 
-r, Kyle
+Your socket solution is not a workable scheme.
