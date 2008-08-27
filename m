@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761421AbYH0OIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759474AbYH0OJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761421AbYH0OIh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 10:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759000AbYH0N4b
+	id S1759474AbYH0OJU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 10:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759290AbYH0N5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 09:56:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59726 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756802AbYH0N43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 09:56:29 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 43/59] CRED: Wrap task credential accesses in the SYSV
-	filesystem
-To: linux-kernel@vger.kernel.org
-Cc: linux-security-module@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Serge Hallyn <serue@us.ibm.com>, Christoph Hellwig <hch@infradead.org>
-Date: Wed, 27 Aug 2008 14:49:24 +0100
-Message-ID: <20080827134924.19980.31246.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
-References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Wed, 27 Aug 2008 09:57:15 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59174 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759175AbYH0N5N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 09:57:13 -0400
+Date: Wed, 27 Aug 2008 06:57:11 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+To: "Tomas Winkler" <tomasw@gmail.com>
+Cc: "Marcel Holtmann" <holtmann@linux.intel.com>,
+       "David Miller" <davem@davemloft.net>, linville@tuxdriver.com,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-08-26
+Message-ID: <20080827065711.20a3de1c@linux.intel.com>
+In-Reply-To: <1ba2fa240808270305m7f505efak9fd0d36d5db09a1e@mail.gmail.com>
+References: <20080827013009.GA15781@tuxdriver.com>
+	<1ba2fa240808270038r24d5eeb9l36fd70ef5ae904f5@mail.gmail.com>
+	<20080827.014041.230100807.davem@davemloft.net>
+	<1219835410.5359.24.camel@californication>
+	<1ba2fa240808270305m7f505efak9fd0d36d5db09a1e@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wrap access to task credentials so that they can be separated more easily from
-the task_struct during the introduction of COW creds.
+On Wed, 27 Aug 2008 13:05:23 +0300
+"Tomas Winkler" <tomasw@gmail.com> wrote:
 
-Change most current->(|e|s|fs)[ug]id to current_(|e|s|fs)[ug]id().
-
-Change some task->e?[ug]id to task_e?[ug]id().  In some places it makes more
-sense to use RCU directly rather than a convenient wrapper; these will be
-addressed by later patches.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
-Reviewed-by: James Morris <jmorris@namei.org>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
----
-
- fs/sysv/ialloc.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> There is a central problem here, since I cannot really adjust driver
+> development progress from obvious reason with Linux merging window.
+> Upstream kernel is unfortunately not the only customer I report to. 
 
 
-diff --git a/fs/sysv/ialloc.c b/fs/sysv/ialloc.c
-index 115ab0d..241e976 100644
---- a/fs/sysv/ialloc.c
-+++ b/fs/sysv/ialloc.c
-@@ -165,9 +165,9 @@ struct inode * sysv_new_inode(const struct inode * dir, mode_t mode)
- 		if (S_ISDIR(mode))
- 			mode |= S_ISGID;
- 	} else
--		inode->i_gid = current->fsgid;
-+		inode->i_gid = current_fsgid();
- 
--	inode->i_uid = current->fsuid;
-+	inode->i_uid = current_fsuid();
- 	inode->i_ino = fs16_to_cpu(sbi, ino);
- 	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
- 	inode->i_blocks = 0;
+yes it is. You really don't have any other customers of this driver...
+kernel.org kernel is *it*.
 
+(if you're talking about backporting this to distros.. that's the
+distros problem ;-)
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
