@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbYH0BrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbYH0BuD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754169AbYH0BrX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 21:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbYH0BrP
+	id S1754350AbYH0BuD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 21:50:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbYH0Bty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 21:47:15 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:46077 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751003AbYH0BrO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 21:47:14 -0400
-Date: Tue, 26 Aug 2008 18:43:49 -0700
-From: sukadev@us.ibm.com
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Robert Rex <robert.rex@exasol.com>,
-       Roland McGrath <roland@redhat.com>, Serge Hallyn <serue@us.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] pid_ns: zap_pid_ns_processes: fix the
-	->child_reaper changing
-Message-ID: <20080827014348.GA23474@us.ibm.com>
-References: <20080824154911.GA3777@tv-sign.ru>
+	Tue, 26 Aug 2008 21:49:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38582 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751339AbYH0Btx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 21:49:53 -0400
+Date: Tue, 26 Aug 2008 18:49:19 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Parag Warudkar <parag.lkml@gmail.com>
+cc: Adrian Bunk <bunk@stusta.de>, Rusty Russell <rusty@rustcorp.com.au>,
+       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-embedded@vger.kernel.org
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
+ bisected
+In-Reply-To: <f7848160808261758q7b84aab1m188c1ebb59304818@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0808261837530.3363@nehalem.linux-foundation.org>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>  <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org>  <200808261111.19205.rusty@rustcorp.com.au>  <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org>  <20080826183051.GB10925@cs181140183.pp.htv.fi>
+  <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org>  <20080826205916.GB11734@cs181140183.pp.htv.fi>  <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org>  <f7848160808261554j2f4eaaa6i1ee8801ae75ca7bf@mail.gmail.com> 
+ <alpine.LFD.1.10.0808261644260.3363@nehalem.linux-foundation.org> <f7848160808261758q7b84aab1m188c1ebb59304818@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080824154911.GA3777@tv-sign.ru>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov [oleg@tv-sign.ru] wrote:
-| zap_pid_ns_processes() sets pid_ns->child_reaper = NULL, this is wrong.
-| 
-| Yes, we have already killed all tasks in this namespace, and sys_wait4()
-| doesn't see any child. But this doesn't mean ->children list is empty,
-| we may have EXIT_DEAD tasks which are not visible to do_wait(). In that
-| case the subsequent forget_original_parent() will crash the kernel because
-| it will try to re-parent these tasks to the NULL reaper.
-| 
-| Even if there are no childs, it is not good that forget_original_parent()
-| uses reaper == NULL.
-| 
-| Change the code to set ->child_reaper = init_pid_ns.child_reaper instead.
-| We could use pid_ns->parent->child_reaper as well, I think this does not
-| really matter. These EXIT_DEAD tasks are not visible to the new ->parent
-| after re-parenting, they will silently do release_task() eventually.
-| 
-| Note that we must change ->child_reaper, otherwise forget_original_parent()
-| will use reaper == father, and in that case we will hit the (correct)
-| BUG_ON(!list_empty(&father->children)).
-| 
-| Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Acked-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-| 
-| --- 2.6.27-rc4/kernel/pid_namespace.c~1_ZAP_DONT_CLEAR_REAPER	2008-07-30 13:12:49.000000000 +0400
-| +++ 2.6.27-rc4/kernel/pid_namespace.c	2008-08-24 17:22:59.000000000 +0400
-| @@ -179,9 +179,12 @@ void zap_pid_ns_processes(struct pid_nam
-|  		rc = sys_wait4(-1, NULL, __WALL, NULL);
-|  	} while (rc != -ECHILD);
-| 
-| -
-| -	/* Child reaper for the pid namespace is going away */
-| -	pid_ns->child_reaper = NULL;
-| +	/*
-| +	 * We can not clear ->child_reaper or leave it alone.
-| +	 * There may by stealth EXIT_DEAD tasks on ->children,
-| +	 * forget_original_parent() must move them somewhere.
-| +	 */
-| +	pid_ns->child_reaper = init_pid_ns.child_reaper;
-|  	acct_exit_ns(pid_ns);
-|  	return;
-|  }
-| 
-| --
-| To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-| the body of a message to majordomo@vger.kernel.org
-| More majordomo info at  http://vger.kernel.org/majordomo-info.html
-| Please read the FAQ at  http://www.tux.org/lkml/
+On Tue, 26 Aug 2008, Parag Warudkar wrote:
+>
+> And although you said in your later reply that Linux x86 with 4K
+> stacks should be more than usable - my experiences running a untainted
+> desktop/file server with 4K stack have been always disastrous XFS or
+> not.  It _might_ work for some well defined workloads but you would
+> not want to risk 4K stacks otherwise.
+
+Umm. How long?
+
+4kB used to be the _only_ choice. And no, there weren't even irq stacks. 
+So that 4kB was not just the whole kernel call-chain, it was also all the 
+irq nesting above it.
+
+And yes, we've gotten much worse over time, and no, I can't really suggest 
+going back to that in general. The code bloat has certainly been 
+accompanied by a stack bloat too.
+
+But part of it is definitely gcc. Some versions of gcc used to be 
+absolutely _horrid_ when it came to stack usage, especially with some 
+flags, and especially with the crazy inlining that module-at-a-time 
+caused.
+
+But I'd be really happy if some embedded people tried to take some of that 
+bloat back, and aim for 4kB stacks. Because it's definitely not 
+unrealistic. At least it _shouldn't_ be. And a lot of the cases of us 
+having structures on the stack is actually not worth it, and tends to be 
+about being lazy rather than anything else.
+
+			Linus
