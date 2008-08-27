@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbYH0TBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756649AbYH0TCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756472AbYH0TBT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 15:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbYH0TBK
+	id S1756649AbYH0TCa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 15:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbYH0TCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 15:01:10 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:33705 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751964AbYH0TBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 15:01:09 -0400
-Date: Wed, 27 Aug 2008 21:01:05 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>,
-       David Brownell <david-b@pacbell.net>,
-       Nicolas Ferre <nicolas.ferre@atmel.com>,
-       lkml <linux-kernel@vger.kernel.org>, Andrew Victor <linux@maxim.org.za>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [patch 2.6.27-rc3] at91_mci: don't use coherent dma buffers
-Message-ID: <20080827210105.43d5aed2@mjolnir.drzeus.cx>
-In-Reply-To: <48AE7B7E.1010503@atmel.com>
-References: <200808181607.21516.david-b@pacbell.net>
-	<48AE6D50.4030609@atmel.com>
-	<48AE7B7E.1010503@atmel.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 27 Aug 2008 15:02:22 -0400
+Received: from gw.goop.org ([64.81.55.164]:38947 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751726AbYH0TCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 15:02:21 -0400
+Message-ID: <48B5A4B0.9050308@goop.org>
+Date: Wed, 27 Aug 2008 12:02:08 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Ingo Molnar <mingo@elte.hu>, Hugh Dickens <hugh@veritas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Definition of x86 _PAGE_SPECIAL and sharing _PAGE_UNUSED1
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Aug 2008 10:40:30 +0200
-Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+_PAGE_SPECIAL is overloading _PAGE_UNUSED1.  Does it really leave
+_PAGE_UNUSED1 available for other uses, or does it become an exclusive
+user of that flag.  Under what circumstances can they be shared?
 
-> >>
-> >> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> > 
-> > ...
-> 
-> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> 
+arch/x86/mm/pageattr-test.c is now using _PAGE_UNUSED1 as the flag used
+to make sure that huge pages are shattered properly (previously it used
+_PAGE_GLOBAL).  Is that going to clash with _PAGE_SPECIAL?
 
-I have nothing else in my queue, so Andrew, as I suspect you have other
-things going to Linus, if you could please include this one as well. :)
+In other words, should we drop _PAGE_UNUSED1 altogether, or at least
+define how the its different users can coexist?
 
-Acked-by: Pierre Ossman <drzeus@drzeus.cx>
+Am I right in supposing that _PAGE_SPECIAL can only be set on user pages?
 
-Rgds
--- 
-     -- Pierre Ossman
+(Also, "SPECIAL" is awfully generic.  Was there really no more
+descriptive name for this?)
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+    J
