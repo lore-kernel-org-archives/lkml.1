@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755263AbYH0KzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbYH0K40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755263AbYH0KzP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 06:55:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbYH0KzE
+	id S1755361AbYH0K40 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 06:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbYH0K4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 06:55:04 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38953 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753855AbYH0KzD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 06:55:03 -0400
-Date: Wed, 27 Aug 2008 03:55:01 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: PATCH] debug: add notifier chain debugging
-Message-ID: <20080827035501.4b8cc732@infradead.org>
-In-Reply-To: <20080827063915.GC6255@elte.hu>
-References: <20080815152938.4bc9d48c@infradead.org>
-	<12c511ca0808251539w6f00a216s86a09a532c553a34@mail.gmail.com>
-	<20080825215555.2331f2cc@infradead.org>
-	<12c511ca0808252208n29043ab0lf9e56f94d5e4cb37@mail.gmail.com>
-	<20080826092220.66290440@infradead.org>
-	<20080827063915.GC6255@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Wed, 27 Aug 2008 06:56:17 -0400
+Received: from mx2.suse.de ([195.135.220.15]:52848 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753465AbYH0K4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 06:56:16 -0400
+Date: Wed, 27 Aug 2008 12:56:15 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu, srostedt@redhat.com,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       gregory.haskins@gmail.com
+Subject: Re: [PATCH v2 3/6] sched: make double-lock-balance fair
+Message-ID: <20080827105615.GB5818@wotan.suse.de>
+References: <20080826173131.16413.17862.stgit@dev.haskins.net> <20080826173500.16413.40514.stgit@dev.haskins.net> <1219825295.6462.54.camel@twins> <20080827102646.GA5818@wotan.suse.de> <1219833668.6462.72.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1219833668.6462.72.camel@twins>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Aug 2008 08:39:15 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
-
+On Wed, Aug 27, 2008 at 12:41:08PM +0200, Peter Zijlstra wrote:
+> On Wed, 2008-08-27 at 12:26 +0200, Nick Piggin wrote:
+> > On Wed, Aug 27, 2008 at 10:21:35AM +0200, Peter Zijlstra wrote:
 > 
-> * Arjan van de Ven <arjan@infradead.org> wrote:
+> > > I suppose one could then write it like:
+> > > 
+> > >   if (spin_is_contended(&this_rq->lock) || !spin_trylock(&busiest->lock)) {
+> > >     spin_unlock(&this_rq->lock);
+> > >     double_rq_lock(this_rq, busiest);
+> > >   }
+> > > 
+> > > But, I'm not sure that's worth the effort at that point..
+> > 
+> > Yeah, that could work, but hmm it might cause 2 cache coherency transactions
+> > anyway even in the fastpath, so it might even be slower than just unlocking
+> > unconditionally and taking both locks :(
 > 
-> > The patch below fixes this;
-> > Ingo, please replace the patch with this one.
+> right,..
+ 
+
+Although I guess we could prefetch it... But OTOH I don't know exactly
+what Intel CPUs do with prefetch -- I don't think they have a prefetchw.
+
+I would support your idea if it is faster, of course ;)
+
+
+> > > Anyway - I think all this is utterly defeated on CONFIG_PREEMPT by the
+> > > spin with IRQs enabled logic in kernel/spinlock.c.
+> > > 
+> > > Making this an -rt only patch...
+> > 
+> > Hmm, and also on x86 with ticket locks we don't spin with preempt or
+> > interrupts enabled any more (although we still do of course on other
+> > architectures)
 > 
-> well, this one is now less than cheap on x86:
-
-really it isn't; dereference_function_descriptor is a fall through and
-basically free.
-
-> 
-> as it's rather large. So i kept the config option, and it defaults to 
-> off.
-
-huh? the consensus was that the config needed to go ... nothing changed
-on that front. I agree absolutely with not introducing config options
-for things that don't need it; we have too many already anyway.
+> Aah, we don't do CONFIG_GENERIC_LOCKBREAK anymore?
+ 
+Right. My reasoning said that if our critical sections are short enough,
+*and not subject to starvation*, then we should not really need it, and
+at any rate often it is just luck if it helps because in other cases
+we might be taking the lock under an irq save region so it wouldn't help
+there...
 
 
-> 
-> > +		if (!func_ptr_is_kernel_text(nb->notifier_call)) {
-> > +			WARN(1, "Invalid notifier called!");
-> > +			nb = next_nb;
-> > +			continue;
-> > +		}
-> 
-> and that should be an unlikely() too i guess.
+> Does it make sense to make this _double_lock_balance() thing depend on
+> that too?
 
-please do not add new unlikely()'s to the kernel.. not on non-hotpaths
-at least
+Hmm, you might have a good point there. Greg?
+
+BTW. I wonder about other architectures that are of interest to -rt? Like
+mips or arm perhaps... Any plans to implement ticket locks on those, or
+do they not tend to be used in SMP configurations on -rt yte?
 
