@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbYH0Ivk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbYH0IyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754513AbYH0Ivk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 04:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbYH0Iva
+	id S1754676AbYH0IyZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 04:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbYH0IyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 04:51:30 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47471 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753067AbYH0Iv3 (ORCPT
+	Wed, 27 Aug 2008 04:54:16 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:37598 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752741AbYH0IyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 04:51:29 -0400
-Date: Wed, 27 Aug 2008 09:32:51 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Parag Warudkar" <parag.lkml@gmail.com>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Adrian Bunk" <bunk@stusta.de>, "Rusty Russell" <rusty@rustcorp.com.au>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Arjan van de Ven" <arjan@linux.intel.com>,
-       "Ingo Molnar" <mingo@elte.hu>, linux-embedded@vger.kernel.org
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
- bisected
-Message-ID: <20080827093251.41b6b3eb@lxorguk.ukuu.org.uk>
-In-Reply-To: <f7848160808261936m18c69dc0r26f41850efae4b91@mail.gmail.com>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
-	<alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org>
-	<20080826183051.GB10925@cs181140183.pp.htv.fi>
-	<alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org>
-	<20080826205916.GB11734@cs181140183.pp.htv.fi>
-	<alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org>
-	<f7848160808261554j2f4eaaa6i1ee8801ae75ca7bf@mail.gmail.com>
-	<alpine.LFD.1.10.0808261644260.3363@nehalem.linux-foundation.org>
-	<f7848160808261758q7b84aab1m188c1ebb59304818@mail.gmail.com>
-	<alpine.LFD.1.10.0808261837530.3363@nehalem.linux-foundation.org>
-	<f7848160808261936m18c69dc0r26f41850efae4b91@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 27 Aug 2008 04:54:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=DwKuo2H+PrsbiqsfEkyt7eRI/WwpEeMbR6jE5CHQ/fq/vAvKRlqsSrcHKbpLHk55kh
+         7CRlDLdFFs7FYGoAhJPfnyaXeu5Kow4ZFi9C+7p39077v9IDW+FZbaTm3SlWWg0zK8f/
+         46VFovAWjL44B0O+SbNefF+6oKMESGfd9cCts=
+Message-ID: <48B51631.5020309@tuffmail.co.uk>
+Date: Wed, 27 Aug 2008 09:54:09 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Vegard Nossum <vegard.nossum@gmail.com>,
+       Mikael Pettersson <mikpe@it.uu.se>, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] get_rtc_time() triggers NMI watchdog in hpet_rtc_interrupt()
+References: <200808230948.m7N9mUc1016360@harpo.it.uu.se> <19f34abd0808240214o22748804s45e8487d62b34cb8@mail.gmail.com> <18609.14516.873317.52292@harpo.it.uu.se> <19f34abd0808240448w5facaee2gec77662c14b9364f@mail.gmail.com> <48B3DA02.9080002@tuffmail.co.uk> <20080826103921.GB10144@elte.hu>
+In-Reply-To: <20080826103921.GB10144@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What about deep call chains? The problem with the uptake of 4K stacks
-> seems to be that is not reliably provable that it will work under all
-> circumstances.
+Ingo Molnar wrote:
+> * Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
+>
+>   
+>> I beat you :-).  I noticed the problem myself.  It does trigger if I 
+>> run hwclock in a loop.
+>>
+>> while true; do hwclock; done
+>>
+>> However it is fine in latest git.  Looks like Ingo's patch has been 
+>> merged, and has fixed it.
+>>     
+>
+> ah, good - thanks for testing it. I havent seen a lockup on the T60 
+> either - but it was very sporadic to begin with. (and now we understand 
+> why: hwclock is running only once per reboot.)
+>
+> Plus, the real bug has to be found as well: who in the rtc ioctl path 
+> calls this code with irqs disabled - it's not nice.
+>   
 
-On x86-32 with 8K stacks your IRQ paths share them so that is even harder
-to prove (not that you can prove any of them) and the bugs are more
-obscure and random.
+Isn't the problem that it gets called from a timer IRQ?  So irqs are
+enabled globally, but the timer IRQ is masked.
+
+ [<c0139cc0>] hrtimer_run_pending+0x20/0x90
+ [<c01478a8>] handle_IRQ_event+0x28/0x50
+ [<c0148f71>] handle_edge_irq+0xa1/0x120
+ [<c010615b>] do_IRQ+0x3b/0x70
+ [<c0113225>] smp_apic_timer_interrupt+0x55/0x80
+ [<c0103c4f>] common_interrupt+0x23/0x28
+
+Which in turn is probably because the userspace "RTC interrupt"
+interface is emulated using RTC reads within the main timer interrupt
+handler.
+
+Alan
