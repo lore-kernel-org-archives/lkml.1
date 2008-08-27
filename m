@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbYH0HRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbYH0HYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754599AbYH0HRl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 03:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbYH0HRe
+	id S1753343AbYH0HYT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 03:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbYH0HYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 03:17:34 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:45810 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752927AbYH0HRd (ORCPT
+	Wed, 27 Aug 2008 03:24:09 -0400
+Received: from web33204.mail.mud.yahoo.com ([209.191.69.152]:44516 "HELO
+	web33204.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751476AbYH0HYI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 03:17:33 -0400
-Message-ID: <48B4FD5E.8000103@yandex.ru>
-Date: Wed, 27 Aug 2008 10:08:14 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 27 Aug 2008 03:24:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=Jqf5t77XaYLugr61mWYfFpYw1AqXVtetrHHLL0tvSH1HUCP8DN/cabhHi7iA2igQvn9wlpIqJtca6ibBws5E7cEXHAnVA8GtpCst7qlBI34zhx/tVzOVwTdOc3CBogvz8bUi/05UM0/TewDoshBPgChIJSrdn2D/4c42NklbqLY=;
+X-YMail-OSG: ZylV4pcVM1nQ3.idFEWnqCv6JEQ4Q059IBrehwcGp_9sysYN5t_TivaLilDCi6ndOBo0sqyEMYnyN3tN4Dsw7PW6vEWcn9rWd4ZlBISERHtuAXtFoKDU2BQJe0GuBnYlrq4-
+X-Mailer: YahooMailWebService/0.7.218.2
+Date: Wed, 27 Aug 2008 00:24:07 -0700 (PDT)
+From: jassi brar <jassi_singh_brar@yahoo.com>
+Reply-To: jassi_singh_brar@yahoo.com
+Subject: Re: An idea .... with code
+To: linux-kernel@vger.kernel.org
+Cc: Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <87tzd89oap.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-To: Ricard Wanderlof <ricard.wanderlof@axis.com>
-CC: David Woodhouse <dwmw2@infradead.org>, Tim Anderson <tanderson@mvista.com>,
-       "linux-mtd-bounces@lists.infradead.org" 
-	<linux-mtd-bounces@lists.infradead.org>,
-       "'Bruce Leonard'" <brucle@earthlink.net>,
-       "Bruce_Leonard@selinc.com" <Bruce_Leonard@selinc.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2][MTD] Add support for > 2GiB MTD devices
-References: <000201c9080d$0bce0d20$6b01a8c0@mvista.com> <1219818923.7107.106.camel@pmac.infradead.org> <Pine.LNX.4.64.0808270847350.17432@lnxricardw.se.axis.com>
-In-Reply-To: <Pine.LNX.4.64.0808270847350.17432@lnxricardw.se.axis.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 27 Aug 2008 07:11:19.0743 (UTC) FILETIME=[1AB864F0:01C90814]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <348573.4171.qm@web33204.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ricard Wanderlof wrote:
->> I'm not sure I'd say I _vetoed_ new ioctls, but I certainly expressed a
->> desire to do all the information stuff through sysfs. We would need a
->> new MEMERASE64 ioctl though.
-> 
-> If the (lack of) sysfs stuff is standing between us and a nice >4GiB mtd 
-> I for one would think that a set of 64-bit ioctls would be a reasonable 
-> halfway house.
+Hi Andi,
 
-On the other hand we'll stay with half-solutions forever if we allow them.
+Before starting i would like to point out the 'philosophy' behind the idea.
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Exceptions(special cases) make for entropy and hence complexity. Generalization keeps uniformity and hences Order and Ease.
+We can't escape 'entropy' when emulating something that it is actually not, nevertheless we can minimize it by introducing as least and as localized changes as possible.
+My idea congregates only determining changes at the lowest level(driver), unlike the respectable LOOP driver which hardcodes limits and adds to the entropy(new ioctls, special utilities etc). I am sure you, being a vetran, understand the point well.
+
+I am not for discarding features from the system, but for implementing them in a way that is lesser intrusive.
+
+> Can you please expand a bit why you think losetup is that complicated
+> and what the problem is with it?
+Sir, i don't object to losetup as such. It is a utility made(specifically?) for LOOP devices: which implements unnecessary gears and switches to operate.
+I object only to what could be done without using ioctls and not to features that losetup provides for devices other than Loop(are there any?)
+
+> AFAIK you're essentially just moving a minimal version of losetup
+> (with missing features like no offsets etc.) into the kernel
+Its simpler than that :)
+All i do is implement non-ioctl method to load/unload a file as a (emulated)block device. And alloc/free resources for them on need basis rather than limiting them at driver-module load-time.
+
+Further about some features of LOOP drivers like encryption: i think they are better done at filesystem level.
+I believe any operation that could be done on a real block device shud be possible on an emulated one. And exactly that.
+If there is any need to do some stuff(offsets, encryption etc) then that cud be done on a real block and we would surely already have utilities for doing that on real devices(and hences on a transparent emulated device).
+I am unable to think of something practical that can _only_ be done using the 'offset feature' of losetup on /dev/loop AND which can not be accomplished for (emulated or not)block devices.
+The point is to only make least intrusive and most generic code, for making easy the inheritance of standard system-wide features, utilities and usages.
+
+LOOP driver was a brilliant idea for the early days of Linux. The days when one could relatively easily define new syscalls/ioctls.
+
+> Or rather if you start with losetup, why stop at mount, modprobe, ifconfig, mkfs, fsck, ls[1], ...?
+I am not starting with any application.
+I start with removing redundancy in a driver(LOOP), if by doing that i make obsolete an application... am for it.
+
+>[1] I'm sure someone could come up with some scheme to do ls using sysfs
+> and you could find someone on this list who said "cool" :)
+It would indeed be cool if the one doesn't make use of 'cat' 'grep' et al and the method is more efficient.
+Otherwise it would just be four motobikes tugging a car :)
+
+Regards,
+Jassi
+
+
+      
