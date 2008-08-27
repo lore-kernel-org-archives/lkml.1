@@ -1,44 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760846AbYH0OFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759875AbYH0OFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760846AbYH0OFf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 10:05:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756700AbYH0NxZ
+	id S1759875AbYH0OFF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 10:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758064AbYH0Nwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 09:53:25 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:59567 "EHLO smtp.mba.ocn.ne.jp"
+	Wed, 27 Aug 2008 09:52:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59497 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758270AbYH0NxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 09:53:24 -0400
-Date: Wed, 27 Aug 2008 22:53:23 +0900 (JST)
-Message-Id: <20080827.225323.118975574.anemo@mba.ocn.ne.jp>
-To: sfalco@harris.com
-Cc: alessandro.zummo@towertech.it, rtc-linux@googlegroups.com,
-       will.newton@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [rtc-linux] Re: [RFC] Driver for Real Time Clock chip ST M41T65
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <48B55788.5050306@harris.com>
-References: <48B4159A.9070907@harris.com>
-	<20080827.213551.72707274.anemo@mba.ocn.ne.jp>
-	<48B55788.5050306@harris.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1758058AbYH0Nwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 09:52:36 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 52/59] CRED: Wrap task credential accesses in the netrom
+	protocol
+To: linux-kernel@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org, David Howells <dhowells@redhat.com>,
+       Serge Hallyn <serue@us.ibm.com>, Ralf Baechle <ralf@linux-mips.org>,
+       linux-hams@vger.kernel.org
+Date: Wed, 27 Aug 2008 14:50:10 +0100
+Message-ID: <20080827135010.19980.95710.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
+References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Aug 2008 09:32:56 -0400, "Steven A. Falco" <sfalco@harris.com> wrote:
-> Add support for M41T65 Real Time Clock chip.
-> 
-> Signed-off-by: Steven A. Falco <sfalco@harris.com>
-> ---
-> 
-> Ok - here is a respin with the Kconfig modded to indicate support for
-> the M41T65.
+Wrap access to task credentials so that they can be separated more easily from
+the task_struct during the introduction of COW creds.
 
-Thanks, looks fine for me.
+Change most current->(|e|s|fs)[ug]id to current_(|e|s|fs)[ug]id().
 
-Acked-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Change some task->e?[ug]id to task_e?[ug]id().  In some places it makes more
+sense to use RCU directly rather than a convenient wrapper; these will be
+addressed by later patches.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+Reviewed-by: James Morris <jmorris@namei.org>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-hams@vger.kernel.org
+---
+
+ net/netrom/af_netrom.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+
+diff --git a/net/netrom/af_netrom.c b/net/netrom/af_netrom.c
+index 532e4fa..a75e072 100644
+--- a/net/netrom/af_netrom.c
++++ b/net/netrom/af_netrom.c
+@@ -609,7 +609,7 @@ static int nr_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len)
+ 	} else {
+ 		source = &addr->fsa_ax25.sax25_call;
+ 
+-		user = ax25_findbyuid(current->euid);
++		user = ax25_findbyuid(current_euid());
+ 		if (user) {
+ 			nr->user_addr   = user->call;
+ 			ax25_uid_put(user);
+@@ -683,7 +683,7 @@ static int nr_connect(struct socket *sock, struct sockaddr *uaddr,
+ 		}
+ 		source = (ax25_address *)dev->dev_addr;
+ 
+-		user = ax25_findbyuid(current->euid);
++		user = ax25_findbyuid(current_euid());
+ 		if (user) {
+ 			nr->user_addr   = user->call;
+ 			ax25_uid_put(user);
+
