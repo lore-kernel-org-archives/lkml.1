@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756506AbYH0Od2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbYH0Oey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756506AbYH0Od2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 10:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbYH0OdU
+	id S1756654AbYH0Oey (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 10:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754791AbYH0Oep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 10:33:20 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:52621 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754004AbYH0OdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 10:33:19 -0400
-Date: Thu, 28 Aug 2008 00:33:08 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       mingo@elte.hu, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUG] linux-next: Tree for August 26 - Badness at
- kernel/notifier.c:25
-Message-Id: <20080828003308.400038e0.sfr@canb.auug.org.au>
-In-Reply-To: <48B55B16.7060804@linux.intel.com>
-References: <20080826184008.6be39f19.sfr@canb.auug.org.au>
-	<48B44B2D.8070809@linux.vnet.ibm.com>
-	<48B46610.1010809@linux.intel.com>
-	<48B53695.3020703@linux.vnet.ibm.com>
-	<48B55B16.7060804@linux.intel.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__28_Aug_2008_00_33_08_+1000_YX5+22H_Giwkidmk"
+	Wed, 27 Aug 2008 10:34:45 -0400
+Received: from lazybastard.de ([212.112.238.170]:59758 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754783AbYH0Oeo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 10:34:44 -0400
+Date: Wed, 27 Aug 2008 16:34:16 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-mtd-bounces@lists.infradead.org,
+       "'Bruce Leonard'" <brucle@earthlink.net>, Bruce_Leonard@selinc.com,
+       linux-kernel@vger.kernel.org, Tim Anderson <tanderson@mvista.com>,
+       linux-mtd@lists.infradead.org,
+       "'Andrew Morton'" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2][MTD] Add support for > 2GiB MTD devices
+Message-ID: <20080827143416.GA1371@logfs.org>
+References: <1219817017.18027.149.camel@sauron> <000201c9080d$0bce0d20$6b01a8c0@mvista.com> <20080827093920.1bdb44c2@lxorguk.ukuu.org.uk> <1219827692.7107.170.camel@pmac.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1219827692.7107.170.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__28_Aug_2008_00_33_08_+1000_YX5+22H_Giwkidmk
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 27 August 2008 10:01:32 +0100, David Woodhouse wrote:
+> 
+> True, and we'll definitely need a new MEMERASE64 ioctl. But for the
+> _informational_ parts, those can happily be done through sysfs.
 
-Hi Arjan,
+They certainly can, but should they?  There may be some reason to prefer
+sysfs that should be self-evident - except that I'm a bit thick and seem
+to need it spelled out.  Or maybe I've just become disillusioned with
+the practice of replacing crappy interfaces (ioctl here) with other
+crappy interfaces (sysfs here) and having to support both for all
+eternity.  sysctl, ioctl, proc, sysfs, debugfs, netlink, ... -
+individually they all suck in their own peculiar way.  But together they
+create a mess I no longer dare to name.
 
-On Wed, 27 Aug 2008 06:48:06 -0700 Arjan van de Ven <arjan@linux.intel.com>=
- wrote:
->
-> Kamalesh Babulal wrote:
-> >=20
-> > Thanks for reference of the patch, After replacing the patch with the l=
-atest=20
-> > one above on the powerpc, the warning still remains
-> >=20
-> > Badness at kernel/notifier.c:86
->=20
-> sadly you have something going on that doesn't list the modules loaded et=
-c...
->=20
-> is this during boot or way later?
-> (because if it's the later, you might be hitting a legitimate bug ;-)
+So what was the reason again why mtd needs two userspace interfaces
+instead of just one?
 
-The original reported trace was during setup_system which is very early in
-the boot.
+Jörn
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__28_Aug_2008_00_33_08_+1000_YX5+22H_Giwkidmk
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAki1ZaQACgkQjjKRsyhoI8z5vwCgl4ClHwY0QMDLBsBxl3/sIoe7
-m9IAnA/GYD5p9M+lO0PUllTxajVvzhOC
-=UinA
------END PGP SIGNATURE-----
-
---Signature=_Thu__28_Aug_2008_00_33_08_+1000_YX5+22H_Giwkidmk--
+-- 
+It does not require a majority to prevail, but rather an irate,
+tireless minority keen to set brush fires in people's minds.
+-- Samuel Adams
