@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbYH0Fbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbYH0FdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753302AbYH0Fbj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 01:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYH0Fbb
+	id S1753457AbYH0FdV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 01:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYH0FdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 01:31:31 -0400
-Received: from mailbox2.myri.com ([64.172.73.26]:1995 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751690AbYH0Fba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 01:31:30 -0400
-Message-ID: <48B4E66C.2080806@myri.com>
-Date: Wed, 27 Aug 2008 07:30:20 +0200
-From: Brice Goglin <brice@myri.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-CC: Dave Airlie <airlied@gmail.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: [patch 3/4] x86: PAT Update validate_pat_support for intel CPUs
-References: <20080820234550.923970000@intel.com>	 <20080820234604.592277000@intel.com> <21d7e9970808260005g14ec71e9xfa584780498a86e7@mail.gmail.com> <7E82351C108FA840AB1866AC776AEC460B68CC5F@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <7E82351C108FA840AB1866AC776AEC460B68CC5F@orsmsx505.amr.corp.intel.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Aug 2008 01:33:12 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:55100 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751547AbYH0FdK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 01:33:10 -0400
+Subject: Re: [PATCH 1/2] Clean up of code found when adding support for >
+	2GiB MTD devices
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Bruce Leonard <brucle@earthlink.net>
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <48AB3AAC.7030900@earthlink.net>
+References: <48AB3AAC.7030900@earthlink.net>
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 27 Aug 2008 08:29:40 +0300
+Message-Id: <1219814980.18027.123.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 27 Aug 2008 05:32:47.0991 (UTC) FILETIME=[570AA070:01C90806]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pallipadi, Venkatesh wrote:
-> Default MTRR being UC for all reserved regions and drivers
-> wanting WC is very common situation and performance will be
-> affected when that ends up being UC access.
-> With pat disabled, drivers can set MTRR with WC in this case
-> and get the expected performance.
->   
+Hi,
 
-Are you saying that drivers are supposed to check if PAT is disabled
-before deciding whether they need to setup a MTRR WC? If so, how to do
-we check that? Unless we get a way to know whether ioremap_wc() returned
-WC or UC, I will always keep the MTRR WC in myri10ge.
+On Tue, 2008-08-19 at 14:27 -0700, Bruce Leonard wrote:
+> These are just some code cleanups that I found while working on the MTD sub-system.
+> From: brucle <brucle@selinc.com>
+> Date: Wed, 13 Aug 2008 17:16:48 -0700
+> Subject: [PATCH] Code clean up preping for support of > 2GiB MTD devices
+> 
+> Signed-off-by: Bruce D. Leonard <brucle@selinc.com>
 
-Brice
+For this clean-up patch,
+
+Acked-by: Artem Bityutskiy <dedekind@infradead.org>
+
+However, are you shure it is against the mtd-2.6.git tree?
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
