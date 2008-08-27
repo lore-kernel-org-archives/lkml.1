@@ -1,99 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbYH0Xdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbYH0Xd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbYH0Xdj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 19:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbYH0Xdb
+	id S1754597AbYH0Xd5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 19:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755729AbYH0Xdq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 19:33:31 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:55411 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753857AbYH0Xda (ORCPT
+	Wed, 27 Aug 2008 19:33:46 -0400
+Received: from outbound-mail-137.bluehost.com ([67.222.39.27]:35336 "HELO
+	outbound-mail-137.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755578AbYH0Xdq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 19:33:30 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsIEACB8tUhMRKxB/2dsb2JhbACBZbgxgWg
-Date: Wed, 27 Aug 2008 19:33:28 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-Cc: Gerhard Brauer <gerhard.brauer@web.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
-Message-ID: <20080827233328.GC25531@Krystal>
-References: <20080822175741.6bc83dc8@doriath.conectiva> <48AF2ABD.9070100@zytor.com> <20080826141851.GA5300@tux1.brauer.lan> <20080826145338.GA8601@Krystal> <20080826131354.356ae11d@doriath.conectiva> <20080826171822.GB14906@Krystal> <20080826150222.0cf1542c@doriath.conectiva> <20080826181558.GA16887@Krystal> <20080826203449.GD5300@tux1.brauer.lan> <20080827161346.35b48d75@doriath.conectiva>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 27 Aug 2008 19:33:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=AfBI6qN9PYVJCLegSL6ResLC0hDcPx3I2a8y4dQOJm6Wi2SF9zO7xr2aSH8MgFFg6+d3BLlaFGQ6odNHoNiER3mm2MTUtAzmEVAjAHJvM1ux1YTZwq0re1g1eM2wINTo;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Thomas Petazzoni <thomas.petazzoni@enix.org>
+Subject: Re: [PCI] Configure out PCI quirks
+Date: Wed, 27 Aug 2008 16:33:35 -0700
+User-Agent: KMail/1.9.9
+Cc: thomas.petazzoni@free-electrons.com, michael@free-electrons.com,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <E1KVMZk-0004qG-W9@surf>
+In-Reply-To: <E1KVMZk-0004qG-W9@surf>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080827161346.35b48d75@doriath.conectiva>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 19:31:34 up 84 days,  4:11,  5 users,  load average: 0.20, 0.48,
-	0.41
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200808271633.36450.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Luiz Fernando N. Capitulino (lcapitulino@mandriva.com.br) wrote:
-> Em Tue, 26 Aug 2008 22:34:49 +0200
-> Gerhard Brauer <gerhard.brauer@web.de> escreveu:
-> 
-> | On Tue, Aug 26, 2008 at 02:15:58PM -0400, Mathieu Desnoyers wrote:
-> | > 
-> | > Ok, it might still be caused by paravirt and alternatives instruction
-> | > patching. What if you also do :
-> | > 
-> | > alternative_instructions()
-> | > 
-> | > +        unsigned long flags;
-> | >         /* The patching is not fully atomic, so try to avoid local interruptions
-> | >            that might execute the to be patched code.
-> | >            Other CPUs are not running. */
-> | >         stop_nmi();
-> | > #ifdef CONFIG_X86_MCE
-> | >         stop_mce();
-> | > #endif
-> | > +        local_irq_save(flags);
-> | > 
-> | > 
-> | > ...
-> | > +        local_irq_restore(flags);
-> | >         restart_nmi();
-> | > #ifdef CONFIG_X86_MCE
-> | >         restart_mce();
-> | > #endif
-> | > 
-> | > ?
-> | 
-> | Hej! This last changes (in addition to the others you mentioned) seems
-> | to be a good shot. I could reboot 8 times the guest, compile several
-> | packages (something which always leeds to the oops) and currently i
-> | build two big packages simultan. So this is heavy IO.
-> 
->  Yeah, it works for me too and it's good to know that you are doing
-> additional tests. I'm doing only boot tests... I was testing lots of
-> kernels and doing additional tests would take a lot of time.
-> 
->  Now, what does this mean? Is VirtualBox issuing interrupts when it
-> shouldn't or should this section of the code be better protected?
-> 
+On Tuesday, August 19, 2008 1:28 am Thomas Petazzoni wrote:
+> [PCI] Configure out PCI quirks
+>
+> This patch adds the CONFIG_PCI_QUIRKS option which allows to remove
+> all the PCI quirks, not necessarly used on embedded systems when PCI
+> is working properly. As this is a size-reduction option, it depends on
+> CONFIG_EMBEDDED. It allows to save almost 12 kilobytes of kernel code:
+>
+>    text	   data	    bss	    dec	    hex	filename
+> 1287806	 123596	 212992	1624394	 18c94a	vmlinux.old
+> 1275854	 123596	 212992	1612442	 189a9a	vmlinux
+>  -11952       0       0  -11952   -2EB0 +/-
+>
+> This patch has originally been written by Zwane Mwaikambo
+> <zwane@arm.linux.org.uk> and is part of the Linux Tiny project.
+>
+> Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-Since this problem appears while we are using a simple memcpy (the
-text_poke_early version), but disappears when we disable interrupts for
-a longer period of this, I suspect a problem with irq disabling in
-Virtualbox.
+12k's not to shabby.  I put this in linux-next, thanks Thomas.
 
-We could try to add some nsleep() or msleep() calls within text_poke and
-text_poke_early before and after the code modificatoin to see if the
-problem disappears. If it does, then that would somewhat confirm the
-racy irq disable thesis.
-
-Mathieu
-
-> -- 
-> Luiz Fernando N. Capitulino
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Jesse
