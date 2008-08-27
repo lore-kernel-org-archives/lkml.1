@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbYH0Q7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbYH0RCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757251AbYH0Q7K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 12:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759281AbYH0Q6o
+	id S1752138AbYH0RCT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 13:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbYH0RCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 12:58:44 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:55091 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759269AbYH0Q6m (ORCPT
+	Wed, 27 Aug 2008 13:02:06 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:50214 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750765AbYH0RCF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 12:58:42 -0400
-Date: Wed, 27 Aug 2008 12:58:42 -0400
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: task blocked for more than 120 seconds - 2.6.26.1
-Message-ID: <20080827165842.GE12476@csclub.uwaterloo.ca>
-References: <15219.195.41.66.226.1219844762.squirrel@mail.jabbernet.dk>
+	Wed, 27 Aug 2008 13:02:05 -0400
+Date: Wed, 27 Aug 2008 13:02:01 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ftrace: remove warning of old objcopy and local functions
+In-Reply-To: <20080826154721.9416e2e9.sfr@canb.auug.org.au>
+Message-ID: <alpine.DEB.1.10.0808271300540.16904@gandalf.stny.rr.com>
+References: <20080825130117.33fe34bc.sfr@canb.auug.org.au> <20080825060934.GB14993@elte.hu> <alpine.DEB.1.10.0808251434000.23923@gandalf.stny.rr.com> <20080825190103.GA24029@elte.hu> <20080826094627.5d627b5b.sfr@canb.auug.org.au> <20080826115113.806cfe23.sfr@canb.auug.org.au>
+ <alpine.DEB.1.10.0808252324050.966@gandalf.stny.rr.com> <20080826154721.9416e2e9.sfr@canb.auug.org.au>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <15219.195.41.66.226.1219844762.squirrel@mail.jabbernet.dk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 03:46:02PM +0200, Jesper Krogh wrote:
-> I seem to be getting these more frequently on 2.6.26.1
-> 
-> 16 core Sun X4600 amd64 with 60GB memory.
 
-My Q6600 amd64 mythtv box has been hanging for minutes at a time before
-simply returning to normal quite a few times under 2.6.26, while 2.6.25
-shows no issues at all.  I have seen the same message as you about a
-task being blocked or stuck as well when this happens.
+The warning messages about old objcopy and local functions spam the
+user quite drastically.  Remove the warning until we can find a nicer
+way of tell the user to upgrade their objcopy.
 
-I didn't want to complain about it since I run tainted with the nvidia
-driver and without the nvidia driver I wouldn't be able to use it and
-reproduce the problem, so I figured there was no point.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ scripts/recordmcount.pl |    6 ------
+ 1 file changed, 6 deletions(-)
 
--- 
-Len Sorensen
+Index: linux-tip.git/scripts/recordmcount.pl
+===================================================================
+--- linux-tip.git.orig/scripts/recordmcount.pl	2008-08-27 12:57:40.000000000 -0400
++++ linux-tip.git/scripts/recordmcount.pl	2008-08-27 12:58:03.000000000 -0400
+@@ -262,12 +262,6 @@ sub update_funcs
+ 
+ 	# only use locals if objcopy supports globalize-symbols
+ 	if (!$use_locals) {
+-	    print STDERR
+-		"$inputfile: WARNING: referencing local function " .
+-		"$ref_func for mcount\n" .
+-		"\tConsider upgrading objcopy to support the globalize-" .
+-		"symbols option.\n"
+-		if (!$local_warn_once++);
+ 	    return;
+ 	}
+ 	$convert{$ref_func} = 1;
