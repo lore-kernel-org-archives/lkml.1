@@ -1,71 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbYH0CQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbYH0CYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754534AbYH0CQu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 22:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbYH0CQl
+	id S1753798AbYH0CYT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 22:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbYH0CYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 22:16:41 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:44501 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754114AbYH0CQk (ORCPT
+	Tue, 26 Aug 2008 22:24:07 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:55223 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751003AbYH0CYE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 22:16:40 -0400
-Message-ID: <36126.166.70.238.46.1219801758.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <87prnw9o6m.fsf@basil.nowhere.org>
-References: <200808210250.m7L2obNX028353@wolfmountaingroup.com>
-    <48AD5A21.7020801@s5r6.in-berlin.de>
-    <43593.166.70.238.46.1219321595.squirrel@webmail.wolfmountaingroup.com>
-    <200808212337.38626.nickpiggin@yahoo.com.au>
-    <48ADD8DE.3010209@goop.org>
-    <alpine.LFD.1.10.0808211415410.3487@nehalem.linux-foundation.org>
-    <51467.166.70.238.43.1219551931.squirrel@webmail.wolfmountaingroup.com>
-    <87prnw9o6m.fsf@basil.nowhere.org>
-Date: Tue, 26 Aug 2008 19:49:18 -0600 (MDT)
-Subject: Re: [ANNOUNCE] mdb: Merkey's Linux Kernel Debugger  2.6.27-rc4  
-     released
-From: jmerkey@wolfmountaingroup.com
-To: "Andi Kleen" <andi@firstfloor.org>
-Cc: jmerkey@wolfmountaingroup.com,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       paulmck@linux.vnet.ibm.com, "Peter Zijlstra" <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, "David Howells" <dhowells@redhat.com>
-User-Agent: SquirrelMail/1.4.6
+	Tue, 26 Aug 2008 22:24:04 -0400
+Date: Tue, 26 Aug 2008 21:24:03 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Robert Rex <robert.rex@exasol.com>,
+       Roland McGrath <roland@redhat.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] pid_ns: (BUG 11391) change ->child_reaper when
+	init->group_leader exits
+Message-ID: <20080827022403.GA2320@us.ibm.com>
+References: <20080824154912.GA3780@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080824154912.GA3780@tv-sign.ru>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> jmerkey@wolfmountaingroup.com writes:
->
->> Results from Analysis of GCC volatile/memory barriers
->
-> So the result was that barrier()s actually worked? Great.
->
+Quoting Oleg Nesterov (oleg@tv-sign.ru):
+> We don't change pid_ns->child_reaper when the main thread of the
+> subnamespace init exits. As Robert Rex <robert.rex@exasol.com>
+> pointed out this is wrong.
 
-yes.
+I think there was another way that could go wrong as well - if the main
+thread exited but sighand had another user, then the child_reaper would
+not be changed, zap_pid_ns_processes() would not be called, and children
+would continue to run and at death try to signal the dead main thread.
 
-> BTW if you did this work it might be worthwhile to go one further
-> step: gcc has a test suite where they run small programs and have a
-> simple facility to scan the resulting assembler code for specific
-> patterns. If you could bring your examples into that format (as in
-> being stand alone compiled and have a simple "yes/no" pattern to
-> check) and let it be included there that might make sure this always
-> keeps working in the future.
+> Yes, the re-parenting itself works correctly, but if the reparented
+> task exits it needs ->parent->nsproxy->pid_ns in do_notify_parent(),
+> and if the main thread is zombie its ->nsproxy was already cleared
+> by exit_task_namespaces().
+> 
+> Introduce the new function, find_new_reaper(), which finds the new
+> ->parent for the re-parenting and changes ->child_reaper if needed.
+> Kill the now unneeded exit_child_reaper().
+> 
+> Also move the changing of ->child_reaper from zap_pid_ns_processes()
+> to find_new_reaper(), this consolidates the games with ->child_reaper
+> and makes it stable under tasklist_lock.
+> 
+> Reported-by: Robert Rex <robert.rex@exasol.com>
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Yep.
+Sat on this for a bit - the only thing about this that worried me was
+that zap_pid_ns_processes() is moved much further down in do_exit().
+After looking I see no reason why that would be a problem, though.
 
->
-> -Andi
->
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-ok.
+Thanks, Oleg.
 
-Jeff
-
+> 
+>  kernel/pid_namespace.c |    6 ---
+>  kernel/exit.c          |   78 +++++++++++++++++++++----------------------------
+>  2 files changed, 34 insertions(+), 50 deletions(-)
+> 
+> --- 2.6.27-rc4/kernel/pid_namespace.c~2_SWITCH_REAPER	2008-08-24 17:22:59.000000000 +0400
+> +++ 2.6.27-rc4/kernel/pid_namespace.c	2008-08-24 18:22:44.000000000 +0400
+> @@ -179,12 +179,6 @@ void zap_pid_ns_processes(struct pid_nam
+>  		rc = sys_wait4(-1, NULL, __WALL, NULL);
+>  	} while (rc != -ECHILD);
+> 
+> -	/*
+> -	 * We can not clear ->child_reaper or leave it alone.
+> -	 * There may by stealth EXIT_DEAD tasks on ->children,
+> -	 * forget_original_parent() must move them somewhere.
+> -	 */
+> -	pid_ns->child_reaper = init_pid_ns.child_reaper;
+>  	acct_exit_ns(pid_ns);
+>  	return;
+>  }
+> --- 2.6.27-rc4/kernel/exit.c~2_SWITCH_REAPER	2008-08-24 16:46:51.000000000 +0400
+> +++ 2.6.27-rc4/kernel/exit.c	2008-08-24 18:22:37.000000000 +0400
+> @@ -831,26 +831,50 @@ static void reparent_thread(struct task_
+>   * the child reaper process (ie "init") in our pid
+>   * space.
+>   */
+> +static struct task_struct *find_new_reaper(struct task_struct *father)
+> +{
+> +	struct pid_namespace *pid_ns = task_active_pid_ns(father);
+> +	struct task_struct *thread;
+> +
+> +	thread = father;
+> +	while_each_thread(father, thread) {
+> +		if (thread->flags & PF_EXITING)
+> +			continue;
+> +		if (unlikely(pid_ns->child_reaper == father))
+> +			pid_ns->child_reaper = thread;
+> +		return thread;
+> +	}
+> +
+> +	if (unlikely(pid_ns->child_reaper == father)) {
+> +		write_unlock_irq(&tasklist_lock);
+> +		if (unlikely(pid_ns == &init_pid_ns))
+> +			panic("Attempted to kill init!");
+> +
+> +		zap_pid_ns_processes(pid_ns);
+> +		write_lock_irq(&tasklist_lock);
+> +		/*
+> +		 * We can not clear ->child_reaper or leave it alone.
+> +		 * There may by stealth EXIT_DEAD tasks on ->children,
+> +		 * forget_original_parent() must move them somewhere.
+> +		 */
+> +		pid_ns->child_reaper = init_pid_ns.child_reaper;
+> +	}
+> +
+> +	return pid_ns->child_reaper;
+> +}
+> +
+>  static void forget_original_parent(struct task_struct *father)
+>  {
+> -	struct task_struct *p, *n, *reaper = father;
+> +	struct task_struct *p, *n, *reaper;
+>  	LIST_HEAD(ptrace_dead);
+> 
+>  	write_lock_irq(&tasklist_lock);
+> -
+> +	reaper = find_new_reaper(father);
+>  	/*
+>  	 * First clean up ptrace if we were using it.
+>  	 */
+>  	ptrace_exit(father, &ptrace_dead);
+> 
+> -	do {
+> -		reaper = next_thread(reaper);
+> -		if (reaper == father) {
+> -			reaper = task_child_reaper(father);
+> -			break;
+> -		}
+> -	} while (reaper->flags & PF_EXITING);
+> -
+>  	list_for_each_entry_safe(p, n, &father->children, sibling) {
+>  		p->real_parent = reaper;
+>  		if (p->parent == father) {
+> @@ -959,39 +983,6 @@ static void check_stack_usage(void)
+>  static inline void check_stack_usage(void) {}
+>  #endif
+> 
+> -static inline void exit_child_reaper(struct task_struct *tsk)
+> -{
+> -	if (likely(tsk->group_leader != task_child_reaper(tsk)))
+> -		return;
+> -
+> -	if (tsk->nsproxy->pid_ns == &init_pid_ns)
+> -		panic("Attempted to kill init!");
+> -
+> -	/*
+> -	 * @tsk is the last thread in the 'cgroup-init' and is exiting.
+> -	 * Terminate all remaining processes in the namespace and reap them
+> -	 * before exiting @tsk.
+> -	 *
+> -	 * Note that @tsk (last thread of cgroup-init) may not necessarily
+> -	 * be the child-reaper (i.e main thread of cgroup-init) of the
+> -	 * namespace i.e the child_reaper may have already exited.
+> -	 *
+> -	 * Even after a child_reaper exits, we let it inherit orphaned children,
+> -	 * because, pid_ns->child_reaper remains valid as long as there is
+> -	 * at least one living sub-thread in the cgroup init.
+> -
+> -	 * This living sub-thread of the cgroup-init will be notified when
+> -	 * a child inherited by the 'child-reaper' exits (do_notify_parent()
+> -	 * uses __group_send_sig_info()). Further, when reaping child processes,
+> -	 * do_wait() iterates over children of all living sub threads.
+> -
+> -	 * i.e even though 'child_reaper' thread is listed as the parent of the
+> -	 * orphaned children, any living sub-thread in the cgroup-init can
+> -	 * perform the role of the child_reaper.
+> -	 */
+> -	zap_pid_ns_processes(tsk->nsproxy->pid_ns);
+> -}
+> -
+>  NORET_TYPE void do_exit(long code)
+>  {
+>  	struct task_struct *tsk = current;
+> @@ -1051,7 +1042,6 @@ NORET_TYPE void do_exit(long code)
+>  	}
+>  	group_dead = atomic_dec_and_test(&tsk->signal->live);
+>  	if (group_dead) {
+> -		exit_child_reaper(tsk);
+>  		hrtimer_cancel(&tsk->signal->real_timer);
+>  		exit_itimers(tsk->signal);
+>  	}
