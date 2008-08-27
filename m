@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbYH0Ebj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752939AbYH0Eq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753762AbYH0Ebj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 00:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbYH0Eb3
+	id S1752939AbYH0Eq4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 00:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750944AbYH0Eqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 00:31:29 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62343 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750904AbYH0Eb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 00:31:28 -0400
-Message-ID: <48B4D81D.2040200@cn.fujitsu.com>
-Date: Wed, 27 Aug 2008 12:29:17 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH] cgroup(fix critical bug): new handling for tasks file
-References: <48B360CE.2010501@cn.fujitsu.com>	 <6599ad830808251929p10dfc9d2ub11e4db0cd4f9f3@mail.gmail.com>	 <48B39319.7070403@cn.fujitsu.com> <6599ad830808261544w308a850m865ac0c0a1552c77@mail.gmail.com>
-In-Reply-To: <6599ad830808261544w308a850m865ac0c0a1552c77@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 27 Aug 2008 00:46:47 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:41101 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750802AbYH0Eqq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 00:46:46 -0400
+Date: Wed, 27 Aug 2008 06:53:03 +0200
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: <JosephChan@via.com.tw>
+Cc: <linux-kernel@vger.kernel.org>, <linux-fbdev-devel@lists.sourceforge.net>,
+       akpm@linux-foundation.org, geert@linux-m68k.org
+Subject: Re: [Linux-fbdev-devel] [Patch 3/13 v3] viafb: accel.c & accel.h
+Message-Id: <20080827065303.50e7a6ae.krzysztof.h1@poczta.fm>
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB807A42C05@exchtp03.taipei.via.com.tw>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB807A42C05@exchtp03.taipei.via.com.tw>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-EMID: 5ae2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Mon, Aug 25, 2008 at 10:22 PM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
->> It's complicated than necessary and change too much code IMO.
+On Tue, 26 Aug 2008 17:51:46 +0800
+<JosephChan@via.com.tw> wrote:
+
+> Remove the marco MMIO_OUT32, and replace it with writel() function.
 > 
-> What about the problem that maintaining a single pid array can still
-> fail for a really large cgroup? I guess we could just say "don't
-> create such large cgroups" but someone's bound to want to do that.
-> Perhaps use an array of pages rather than a single large kmalloc?
+> 
+> Signed-off-by: Joseph Chan <josephchan@via.com.tw>
 > 
 
-Actually, I had a plan to write such a patch:
-[RFC PATCH] cgroup,cpuset: use alternative malloc instead of kmalloc
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-The main idea is: when allocate size >= PAGE_SIZE, vmalloc will be used
-instead. This will reduce the stress when continuous pages are few.
-Alternative malloc is used for cgroup_tasks_open() and update_tasks_nodemask().
-
-
-And vmalloc can malloc larger memory than kmalloc, is vmalloc() enough?
-If not, I think using an array of pages is the best choice.
-
-[There are several subsystem who use alternative malloc. kernel/relay.c
-for example. relay.c is also using an array of pages for relay buffer. ]
-
-
-   Lai
+----------------------------------------------------------------------
+Tylko u nas - swieza krew w rozsadnych cenach!
+>> http://link.interia.pl/f1eed
 
