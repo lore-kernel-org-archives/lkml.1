@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbYH0O3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbYH0Oaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756018AbYH0O3W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 10:29:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYH0O3O
+	id S1756185AbYH0Oaf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 10:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYH0OaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 10:29:14 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:54382 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753120AbYH0O3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 10:29:13 -0400
-Date: Wed, 27 Aug 2008 23:29:13 +0900 (JST)
-Message-Id: <20080827.232913.119238767.anemo@mba.ocn.ne.jp>
-To: Henk.Vergonet@gmail.com
-Cc: dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] input: Move map_to_7segment.h to include/linux
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Aug 2008 10:30:25 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:57986 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753436AbYH0OaY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 10:30:24 -0400
+Date: Wed, 27 Aug 2008 16:28:10 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+Subject: [GIT PULL] 2.6.27-rc5 updates for s390
+Message-ID: <20080827142809.GA10087@osiris.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The map_to_7segment.h provides generic 7segment LED mappings and is
-designed to be used by other drivers.  Moving it to common area will
-make it more usable.
+Hi Linus,
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
-This is renaming patch.  I can send no-rename patch if requested.
+please pull from 'for-linus' branch of
 
- drivers/input/misc/yealink.c                       |    2 +-
- .../input/misc => include/linux}/map_to_7segment.h |    2 --
- 2 files changed, 1 insertions(+), 3 deletions(-)
- rename {drivers/input/misc => include/linux}/map_to_7segment.h (99%)
+	git://git390.osdl.marist.edu/pub/scm/linux-2.6.git for-linus
 
-diff --git a/drivers/input/misc/yealink.c b/drivers/input/misc/yealink.c
-index facefd3..11b5c7e 100644
---- a/drivers/input/misc/yealink.c
-+++ b/drivers/input/misc/yealink.c
-@@ -52,8 +52,8 @@
- #include <linux/module.h>
- #include <linux/rwsem.h>
- #include <linux/usb/input.h>
-+#include <linux/map_to_7segment.h>
+This contains just two s390 specific build fixes.
+
+Heiko Carstens (2):
+      [S390] Fix linker script.
+      [S390] dcss: fix build bug.
+
+ arch/s390/kernel/vmlinux.lds.S |    2 +-
+ drivers/s390/block/dcssblk.c   |    5 +++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
+index 76c1e60..607bd67 100644
+--- a/arch/s390/kernel/vmlinux.lds.S
++++ b/arch/s390/kernel/vmlinux.lds.S
+@@ -55,7 +55,7 @@ SECTIONS
+ 		__start___ex_table = .;
+ 		*(__ex_table)
+ 		__stop___ex_table = .;
+-	}
++	} :data
  
--#include "map_to_7segment.h"
- #include "yealink.h"
- 
- #define DRIVER_VERSION "yld-20051230"
-diff --git a/drivers/input/misc/map_to_7segment.h b/include/linux/map_to_7segment.h
-similarity index 99%
-rename from drivers/input/misc/map_to_7segment.h
-rename to include/linux/map_to_7segment.h
-index a424094..db45f7c 100644
---- a/drivers/input/misc/map_to_7segment.h
-+++ b/include/linux/map_to_7segment.h
-@@ -1,6 +1,4 @@
- /*
-- * drivers/usb/input/map_to_7segment.h
-- *
-  * Copyright (c) 2005 Henk Vergonet <Henk.Vergonet@gmail.com>
-  *
-  * This program is free software; you can redistribute it and/or
--- 
-1.5.6.3
-
+ 	.data : {		/* Data */
+ 		DATA_DATA
+diff --git a/drivers/s390/block/dcssblk.c b/drivers/s390/block/dcssblk.c
+index db85f1f..711b300 100644
+--- a/drivers/s390/block/dcssblk.c
++++ b/drivers/s390/block/dcssblk.c
+@@ -384,9 +384,10 @@ dcssblk_add_store(struct device *dev, struct device_attribute *attr, const char
+ 	 * get minor, add to list
+ 	 */
+ 	down_write(&dcssblk_devices_sem);
+-	if (dcssblk_get_segment_by_name(local_buf)) {
++	if (dcssblk_get_device_by_name(local_buf)) {
++		up_write(&dcssblk_devices_sem);
+ 		rc = -EEXIST;
+-		goto release_gd;
++		goto unload_seg;
+ 	}
+ 	rc = dcssblk_assign_free_minor(dev_info);
+ 	if (rc) {
