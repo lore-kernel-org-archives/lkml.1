@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757546AbYH0Xrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbYH0XuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757546AbYH0Xrd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 19:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755523AbYH0XrW
+	id S1756833AbYH0XuY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 19:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbYH0XuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 19:47:22 -0400
-Received: from mga09.intel.com ([134.134.136.24]:47885 "EHLO mga09.intel.com"
+	Wed, 27 Aug 2008 19:50:09 -0400
+Received: from gate.crashing.org ([63.228.1.57]:43335 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754962AbYH0XrV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 19:47:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,283,1217833200"; 
-   d="scan'208";a="329729503"
-From: Seth Heasley <seth.heasley@intel.com>
-To: linux-kernel@vger.kernel.org, khali@linux-fr.org, i2c@lm-sensors.org,
-       linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org
-Subject: [PATCH 2.6.27-rc4] i2c-i801: SMBus patch for Intel Ibex Peak DeviceIDs
-Date: Wed, 27 Aug 2008 16:52:37 -0700
-User-Agent: KMail/1.9.1
-Cc: seth.heasley@intel.com
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	id S1754470AbYH0XuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 19:50:08 -0400
+Subject: Re: [PATCH 04/59] CRED: Wrap task credential accesses in the
+	PowerPC arch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: David Howells <dhowells@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Serge Hallyn <serue@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
+       linuxppc-dev@ozlabs.org
+In-Reply-To: <20080827134602.19980.59222.stgit@warthog.procyon.org.uk>
+References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
+	 <20080827134602.19980.59222.stgit@warthog.procyon.org.uk>
+Content-Type: text/plain
+Date: Thu, 28 Aug 2008 09:45:33 +1000
+Message-Id: <1219880733.13162.220.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808271652.37597.seth.heasley@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the Intel Ibex Peak (PCH) SMBus Controller DeviceIDs.
+On Wed, 2008-08-27 at 14:46 +0100, David Howells wrote:
+> Wrap access to task credentials so that they can be separated more easily from
+> the task_struct during the introduction of COW creds.
+> 
+> Change most current->(|e|s|fs)[ug]id to current_(|e|s|fs)[ug]id().
+> 
+> Change some task->e?[ug]id to task_e?[ug]id().  In some places it makes more
+> sense to use RCU directly rather than a convenient wrapper; these will be
+> addressed by later patches.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> Reviewed-by: James Morris <jmorris@namei.org>
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: linuxppc-dev@ozlabs.org
+> ---
 
-Signed-off-by: Seth Heasley <seth.heasley@intel.com>
+Ack.
 
---- linux-2.6/drivers/i2c/busses/Kconfig.orig	2008-08-27 12:11:03.000000000 -0700
-+++ linux-2.6/drivers/i2c/busses/Kconfig	2008-08-27 12:11:24.000000000 -0700
-@@ -97,6 +97,7 @@
- 	    ICH9
- 	    Tolapai
- 	    ICH10
-+	    PCH
- 
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called i2c-i801.
---- linux-2.6/drivers/i2c/busses/i2c-i801.c.orig	2008-08-27 11:52:45.000000000 -0700
-+++ linux-2.6/drivers/i2c/busses/i2c-i801.c	2008-08-27 12:10:50.000000000 -0700
-@@ -577,6 +577,7 @@
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TOLAPAI_1) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_4) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_5) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_PCH_32) },
- 	{ 0, }
- };
- 
-@@ -600,6 +601,7 @@
- 	case PCI_DEVICE_ID_INTEL_TOLAPAI_1:
- 	case PCI_DEVICE_ID_INTEL_ICH10_4:
- 	case PCI_DEVICE_ID_INTEL_ICH10_5:
-+	case PCI_DEVICE_ID_INTEL_PCH_32:
- 		i801_features |= FEATURE_I2C_BLOCK_READ;
- 		/* fall through */
- 	case PCI_DEVICE_ID_INTEL_82801DB_3:
+Ben.
+
+
