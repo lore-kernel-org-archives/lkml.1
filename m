@@ -1,43 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbYH0Pn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbYH0Ppw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757118AbYH0Pn0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 11:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbYH0PnQ
+	id S1757606AbYH0Ppw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 11:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbYH0Ppk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 11:43:16 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:53953 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753165AbYH0PnQ (ORCPT
+	Wed, 27 Aug 2008 11:45:40 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:33921 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755422AbYH0Ppi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 11:43:16 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] USB: add USB test and measurement class driver
-Date: Wed, 27 Aug 2008 17:44:26 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-usb@vger.kernel.org, Stefan Kopp <stefan_kopp@agilent.com>,
-       Marcel Janssen <korgull@home.nl>, Felipe Balbi <me@felipebalbi.com>,
+	Wed, 27 Aug 2008 11:45:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=eOCSEQQIz/7AKr4K9M9Dwh23OJniwhSkROQ1rBkkBJVuBZBES6EghKtpf14AWv+XFg
+         d/5WcyNsJgFopzo+GxYXQor86zpdLt0zdOrTkk5c9fMO6TKMEZdEhpOZSSNhB9V88lVb
+         juehJlDBFKayV6/SJr/vpLHVXmsFgVhH4R0/A=
+Message-ID: <1ba2fa240808270845k6000cb68o382111122ad3d069@mail.gmail.com>
+Date: Wed, 27 Aug 2008 18:45:36 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: pull request: wireless-2.6 2008-08-26
+Cc: "Johannes Berg" <johannes@sipsolutions.net>,
+       "Marcel Holtmann" <holtmann@linux.intel.com>,
+       "David Miller" <davem@davemloft.net>, linville@tuxdriver.com,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-References: <20080827000501.GA29570@kroah.com> <200808271056.37159.oliver@neukum.org> <20080827152848.GA19710@kroah.com>
-In-Reply-To: <20080827152848.GA19710@kroah.com>
+In-Reply-To: <200808271722.55627.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808271744.27967.oliver@neukum.org>
+References: <20080827013009.GA15781@tuxdriver.com>
+	 <200808271510.35950.mb@bu3sch.de>
+	 <1ba2fa240808270755t2f3d0c28rcb874011f5540ef3@mail.gmail.com>
+	 <200808271722.55627.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch 27 August 2008 17:28:48 schrieb Greg KH:
-> On Wed, Aug 27, 2008 at 10:56:36AM +0200, Oliver Neukum wrote:
+On Wed, Aug 27, 2008 at 6:22 PM, Michael Buesch <mb@bu3sch.de> wrote:
+> On Wednesday 27 August 2008 16:55:15 Tomas Winkler wrote:
+>> I'm not sure what you are taking about, we did post patches to
+>> wireless-testing, the driver for 5000 HW  is working in 2.6.27-rc4 I
+>> personally use it every day.  I'm sending bug fixes, like this seris
+>> of patches is direct answer to bugs that were discovered very
+>> recently, I'm not sure what's everybody problem here.
+>
+> The problem is that these patches are posted in huge batches.
+> There are three problems (probably more) with that:
+> 1) "Oh, one of these 15 patches recently merged broke my hw"
+>   instead of
+>   "This patch XXX recently merged broke my hw"
+> 2) It's a _lot_ harder to review. I do not have the time to review
+>   a lot of patches at once. I bet other people won't either.
+> 3) If somebody has any objections against one patch, you'll probably
+>   have to rebase them all (See recent pull request vs cleanups).
+>   That's additional work for you.
+>
+> What's the problem with sending patches upstream as soon as you finished
+> them, instead of piling them up locally and sending them alltogether?
 
-> So?  What difference does this really matter at normal USB speeds?
+First of all, mac patches are send immediately to wireless-dev for
+review just because we don't want to break anyone works (just look at
+the archives).  iwlwifi patches are sent first to internal mailing
+list for review and internal testing because nobody is really
+reviewing these patches in wireless-dev and this is common practices
+(see latest orinoco 19 patches dump) Internal mailing list is
+really the only place I'm getting any feedback on iwlwifi code, they
+are few exception of course.
+Second I'm not sure why Yi is sending them only once a week I thought
+he had some agreement with John, really don't know.
 
-It doesn't matter in terms of speed for you, but it's nice to be nice
-to the rest of the system.
+>> We fixed bugs in wireless-testing/mac80211 that were there for months
+>> just because we are only one that do any comprehensive validation. I
+>> don't  want insult anyone and I really exaggeration here but
+>> sometimes I have feeling that more people are breaking the code.
+>
+> If you work directly upstream, you will discover these bugs even faster.
+> If you maintain your local fork of mac80211, you will have a delay. But
+> you will have to handle them _anyway_. It's just delayed.
 
-	Regards
-		Oliver
+For exact reason we delay patches to 2.6.28, too keep stable.
+
+>
+> And please, don't act like you don't add bugs to mac80211. There were several
+> bugs that broke connections on b43 (and probably other hw, too) in the past.
+
+Not sure what exact patches are you referring to but I do a lot of
+bugs no doubt and I really test only iwlwifi but we do broad features
+testing  IIRC I did IBSS test with b43 it's broken same way is iwlwifi
+(look for TSF bug fix)
+Thanks
+Tomas
