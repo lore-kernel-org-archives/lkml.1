@@ -1,94 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbYH0M0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbYH0MaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755404AbYH0M0a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 08:26:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbYH0M0U
+	id S1755565AbYH0MaS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 08:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbYH0MaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 08:26:20 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:23993 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754796AbYH0M0T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 08:26:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=qBp/yDiaRBRvwDfAgt+qmIu/l/otNUUGeZBtENrGCwJPBOxrIA7lLjxuogNPbxnV9h
-         qT1tfNneg9pj7zb4zsUs3QwDpeaKV0hJ4lZnwu2ohKEddB27mCuReIvLEA0hb7fX5yFa
-         2KzxU/u58ghiGFWaTYGWld6i3rPok9bKc46/I=
-Message-ID: <1ba2fa240808270526g163f8c0an3c5d220cce69466c@mail.gmail.com>
-Date: Wed, 27 Aug 2008 15:26:17 +0300
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: pull request: wireless-2.6 2008-08-26
-Cc: johannes@sipsolutions.net, holtmann@linux.intel.com,
-       linville@tuxdriver.com, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080827.044551.102233262.davem@davemloft.net>
+	Wed, 27 Aug 2008 08:30:06 -0400
+Received: from mx1.suse.de ([195.135.220.2]:49435 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754820AbYH0MaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 08:30:04 -0400
+Message-ID: <48B548CA.8040503@suse.de>
+Date: Wed, 27 Aug 2008 14:30:02 +0200
+From: Hannes Reinecke <hare@suse.de>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1ba2fa240808270305m7f505efak9fd0d36d5db09a1e@mail.gmail.com>
-	 <1219831828.3891.3.camel@johannes.berg>
-	 <1ba2fa240808270434y1589761xd2ff0a48c2e99033@mail.gmail.com>
-	 <20080827.044551.102233262.davem@davemloft.net>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Disable partition scan
+References: <48B52D0B.2090104@suse.de>
+In-Reply-To: <48B52D0B.2090104@suse.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/mixed;
+ boundary="------------090205060400010001050901"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 2:45 PM, David Miller <davem@davemloft.net> wrote:
-> From: "Tomas Winkler" <tomasw@gmail.com>
-> Date: Wed, 27 Aug 2008 14:34:28 +0300
->
->> Unfortunately fixing bugs on stable branch take precedence  of
->> adjusting to new API on development branch that someone decided to do.
->>  I wanted to work directly on wireless testing but it was broken over
->> an over and I have only limited resources more in testing then in
->> development I just had to branch out to be ready with the driver when
->> HW is out. People just check the immediate impact of they fix the
->> don't test for collateral damage and this is understandable an
->> individual developer doesn't have lab with IBSS, BSS, AP, etc setups.
->
-> But think about this from the other perspective.
->
-> When you queue up tons of things, especially in infrastructure level
-> code such as mac80211, and on top of it you do your work on the stable
-> branch and do not do you work against the development tree, guess what
-> happens?
+This is a multi-part message in MIME format.
+--------------090205060400010001050901
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 
-> You show up with accumulated piles of non-trivial patches for people
-> to review.  And then you'll get upset when they suggest that things be
-> implemented differently.
+Hi all again,
 
-I never worked that way I've published immediately what I had. I don't
-know where  did you get this impression
- If I didn't publish something it's just too reasons.
-The code was made dirty and I didn't like design myself (for example
-our 11h implementation), even though it's publicly available.
-or just simply didn't have time because I have to satisfy first thous
-who pays my check ( everybody to feed their children after all:) )
-(e.g. rfkill fixes)
-Almost every driver has it's own development branch, we didn't do
-something different here, this is just classical divide and conquer
-strategy.
+Hannes Reinecke wrote:
+> Hi all,
+> 
+> for some setups (eg dmraid or multipathing) the in-kernel partition scan
+> is pointless; the (block) partitions won't be used anywhere. Instead the
+> system will be using kpartx-generated device-mapper devices.
+> Worse, on some setups (RAID0 dmraid or active/passive multipath devices)
+> the in-kernel partition scan will generate plenty of I/O errors as the
+> partitions table might not be accessible or invalid for this device.
+> 
+> This patch implements a new kernel command-line option 'no_partition_scan'
+> which will switch off the partition scan globally. The partition scan can
+> be re-enabled for individual devices by echoing any positive number smaller
+> than the number of minors into
+> /sys/class/block/XXX/range
+> 
+> and rescanning the device.
+> 
+> Please apply.
+> 
+Yeah, cool. One should take care not to mangle to patches.
+Should teach me to use git properly. Oh well.
 
-> It's all because of the gap in time.
->
-> And during this time, if you had submitted earlier, you would end up
-> doing smaller and mode gradual modifications to your design.  And
-> you'd take care of them before they effect subsequent pieces of work
-> you want to do which depend upon the earlier bits.
->
-> The longer you queue stuff up, the more painful having to change stuff
-> at the beginning of that queue becomes.  It can invalidate everything
-> else you worked on.
->
-> The only sane way to operate is to post your work early and often, or
-> else you'll live in a world of hurt, and it will be nobody's fault but
-> your own.
+Corrected patch attached.
 
-This is all understood and this would be indeed the ideal case.
-Tomas
+Cheers,
+
+Hannes
+
+-- 
+Dr. Hannes Reinecke		      zSeries & Storage
+hare@suse.de			      +49 911 74053 688
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Markus Rex, HRB 16746 (AG Nürnberg)
+
+--------------090205060400010001050901
+Content-Type: text/plain;
+ name="no-partition-scan"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="no-partition-scan"
+
+Disable partition scan
+
+For some setups (multipath or dmraid) the in-kernel partition scan
+is pointless as the (block) partitions won't be used anywhere.
+Worse, it might trigger I/O errors as the partition table might not
+be accessible (eg for the passive path of a multipath device) or
+even invalid (eg for RAID0 dmraid).
+This patch allows to switch off the in-kernel partition scan by adding
+'no_partition_scan' to the kernel commandline. Partitions scan can be
+allowed for individual disk by echoing a positive number into
+/sys/block/XXX/range and rescan the disk.
+
+Signed-off-by: Hannes Reinecke <hare@suse.de>
+
+diff --git a/block/genhd.c b/block/genhd.c
+index 656c2c7..3d6a53b 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -173,6 +173,18 @@ static int exact_lock(dev_t devt, void *data)
+ 	return 0;
+ }
+ 
++static int __read_mostly no_partition_scan;
++
++static int __init no_partition_scan_setup(char *str)
++{
++	no_partition_scan = 1;
++	printk(KERN_INFO "genhd: omit partition scan.\n");
++
++	return 1;
++}
++
++__setup("no_partition_scan", no_partition_scan_setup);
++
+ /**
+  * add_disk - add partitioning information to kernel list
+  * @disk: per-device partitioning information
+@@ -186,6 +198,8 @@ void add_disk(struct gendisk *disk)
+ 	int retval;
+ 
+ 	disk->flags |= GENHD_FL_UP;
++	if (no_partition_scan)
++		disk->flags |= GENHD_FL_NO_PARTITION_SCAN;
+ 	blk_register_region(MKDEV(disk->major, disk->first_minor),
+ 			    disk->minors, NULL, exact_match, exact_lock, disk);
+ 	register_disk(disk);
+@@ -419,7 +433,27 @@ static ssize_t disk_range_show(struct device *dev,
+ {
+ 	struct gendisk *disk = dev_to_disk(dev);
+ 
+-	return sprintf(buf, "%d\n", disk->minors);
++	return sprintf(buf, "%d\n",
++		       (disk->flags & GENHD_FL_NO_PARTITION_SCAN ? 0 : disk->minors));
++}
++
++static ssize_t disk_range_store(struct device *dev,
++				struct device_attribute *attr,
++				const char *buf, size_t count)
++{
++	struct gendisk *disk = dev_to_disk(dev);
++	int i;
++
++	if (count > 0 && sscanf(buf, "%d", &i) > 0) {
++		if (i == 0)
++			disk->flags |= GENHD_FL_NO_PARTITION_SCAN;
++		else if (i <= disk->minors)
++			disk->flags &= ~GENHD_FL_NO_PARTITION_SCAN;
++		else
++			count = -EINVAL;
++	}
++
++	return count;
+ }
+ 
+ static ssize_t disk_removable_show(struct device *dev,
+@@ -509,7 +543,7 @@ static ssize_t disk_fail_store(struct device *dev,
+ 
+ #endif
+ 
+-static DEVICE_ATTR(range, S_IRUGO, disk_range_show, NULL);
++static DEVICE_ATTR(range, S_IRUGO|S_IWUSR, disk_range_show, disk_range_store);
+ static DEVICE_ATTR(removable, S_IRUGO, disk_removable_show, NULL);
+ static DEVICE_ATTR(ro, S_IRUGO, disk_ro_show, NULL);
+ static DEVICE_ATTR(size, S_IRUGO, disk_size_show, NULL);
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index 7d6b34e..a73f6dc 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -485,6 +485,8 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
+ 		delete_partition(disk, p);
+ 	if (disk->fops->revalidate_disk)
+ 		disk->fops->revalidate_disk(disk);
++	if (disk->flags & GENHD_FL_NO_PARTITION_SCAN)
++		return 0;
+ 	if (!get_capacity(disk) || !(state = check_partition(disk, bdev)))
+ 		return 0;
+ 	if (IS_ERR(state))	/* I/O error reading the partition table */
+diff --git a/include/linux/genhd.h b/include/linux/genhd.h
+index 118216f..87c45ad 100644
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -109,6 +109,7 @@ struct hd_struct {
+ #define GENHD_FL_UP				16
+ #define GENHD_FL_SUPPRESS_PARTITION_INFO	32
+ #define GENHD_FL_FAIL				64
++#define GENHD_FL_NO_PARTITION_SCAN		128
+ 
+ #define BLK_SCSI_MAX_CMDS	(256)
+ #define BLK_SCSI_CMD_PER_LONG	(BLK_SCSI_MAX_CMDS / (sizeof(long) * 8))
+diff --git a/include/linux/virtio_blk.h b/include/linux/virtio_blk.h
+
+--------------090205060400010001050901--
