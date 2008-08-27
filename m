@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755788AbYH0Mgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbYH0MhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755788AbYH0Mgv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 08:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbYH0Mgn
+	id S1755989AbYH0MhV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 08:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbYH0MhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 08:36:43 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:58776 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754177AbYH0Mgm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 08:36:42 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=U+15ga7RpUVGyvQZDE4Bfy2uopJg1MBosKs/skAjkwmuK0O95Hvz3ZYjbs6KW/mJO
-	Hr1fYx4QOXObEvdqSdwug==
-Message-ID: <6599ad830808270536i353e1807kaac4e9fb74301bb0@mail.gmail.com>
-Date: Wed, 27 Aug 2008 05:36:32 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Lai Jiangshan" <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH] cgroup(fix critical bug): new handling for tasks file
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linux Containers" <containers@lists.linux-foundation.org>
-In-Reply-To: <48B4D81D.2040200@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Aug 2008 08:37:03 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:48299 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753802AbYH0MhA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 08:37:00 -0400
+Date: Wed, 27 Aug 2008 16:36:35 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Denys Fedoryshchenko <denys@visp.net.lb>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+Message-ID: <20080827123635.GA25321@2ka.mipt.ru>
+References: <200808220457.40892.denys@visp.net.lb> <48B46B48.7030609@cosmosbay.com> <20080826205158.GA15266@2ka.mipt.ru> <200808271509.18529.denys@visp.net.lb>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48B360CE.2010501@cn.fujitsu.com>
-	 <6599ad830808251929p10dfc9d2ub11e4db0cd4f9f3@mail.gmail.com>
-	 <48B39319.7070403@cn.fujitsu.com>
-	 <6599ad830808261544w308a850m865ac0c0a1552c77@mail.gmail.com>
-	 <48B4D81D.2040200@cn.fujitsu.com>
+In-Reply-To: <200808271509.18529.denys@visp.net.lb>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 9:29 PM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
->
-> And vmalloc can malloc larger memory than kmalloc, is vmalloc() enough?
-> If not, I think using an array of pages is the best choice.
+On Wed, Aug 27, 2008 at 03:09:17PM +0300, Denys Fedoryshchenko (denys@visp.net.lb) wrote:
+> On Tuesday 26 August 2008, Evgeniy Polyakov wrote:
+> > On Tue, Aug 26, 2008 at 10:44:56PM +0200, Eric Dumazet (dada1@cosmosbay.com) 
+> wrote:
+> > > >Do you have any packet sockets in this system? Like running dhcp daemon?
+> No, nothing at all.
 
-vmalloc would be simpler, certainly, but it has a higher overhead. And
-since we're dealing with arrays of integers here, it's not too hard to
-manage multiple arrays. Oh, except for sorting them, which would be
-more of a pain. So yes, maybe vmalloc() would be a better choice at
-first.
+Can you put debug print into
+net_enable_timestamp()/net_disable_timestamp() to determine if someone
+enabled timestamp socket option?
 
-Paul
+> tcp        0      0 127.0.0.1:2600          0.0.0.0:*               LISTEN     3167/zebra
+> tcp        0      0 0.0.0.0:2601            0.0.0.0:*               LISTEN     3167/zebra
+> tcp        0      0 0.0.0.0:2602            0.0.0.0:*               LISTEN     3174/ripd
+> tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN     3549/sshd
+> tcp        0      0 194.146.153.17:22       194.146.154.161:37549   ESTABLISHED11593/sshd
+> tcp        0      0 194.146.153.17:22       192.168.0.92:45891      ESTABLISHED11803/sshd
+> tcp        0      0 127.0.0.1:42537         127.0.0.1:2600          ESTABLISHED3174/ripd
+> tcp        0      0 194.146.153.17:22       194.146.153.18:51810    ESTABLISHED11799/sshd
+> tcp        0      0 127.0.0.1:2600          127.0.0.1:42537         ESTABLISHED3167/zebra
+> udp        0      0 0.0.0.0:520             0.0.0.0:*                          3174/ripd
+> udp        0      0 0.0.0.0:161             0.0.0.0:*                          3194/snmpd
+> udp        0      0 0.0.0.0:67              0.0.0.0:*                          3207/udhcpd
+
+This one looks suspicious                                                        ^^^^^^^^^^
+
+> udp   111360      0 0.0.0.0:49619           0.0.0.0:*                          2449/syslogd
+
+
+-- 
+	Evgeniy Polyakov
