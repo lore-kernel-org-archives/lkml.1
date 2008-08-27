@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760564AbYH0ODU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbYH0OD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760564AbYH0ODU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 10:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757934AbYH0Nv4
+	id S1760693AbYH0OD5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 10:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756601AbYH0NwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 09:51:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49588 "EHLO mx1.redhat.com"
+	Wed, 27 Aug 2008 09:52:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49598 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757923AbYH0Nvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 09:51:53 -0400
+	id S1756944AbYH0NwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 09:52:03 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 47/59] CRED: Wrap task credential accesses in the XFS
-	filesystem
+Subject: [PATCH 58/59] CRED: Wrap task credential accesses in the capabilities
+	code
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Serge Hallyn <serue@us.ibm.com>, xfs@oss.sgi.com
-Date: Wed, 27 Aug 2008 14:49:44 +0100
-Message-ID: <20080827134944.19980.51300.stgit@warthog.procyon.org.uk>
+       Serge Hallyn <serue@us.ibm.com>, "Andrew G. Morgan" <morgan@kernel.org>
+Date: Wed, 27 Aug 2008 14:50:41 +0100
+Message-ID: <20080827135041.19980.81278.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
 References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -43,54 +43,105 @@ addressed by later patches.
 Signed-off-by: David Howells <dhowells@redhat.com>
 Reviewed-by: James Morris <jmorris@namei.org>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
-Cc: xfs@oss.sgi.com
+Cc: Andrew G. Morgan <morgan@kernel.org>
 ---
 
- fs/xfs/linux-2.6/xfs_cred.h |    2 +-
- fs/xfs/xfs_acl.c            |    6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ security/commoncap.c |   31 +++++++++++++++++++------------
+ 1 files changed, 19 insertions(+), 12 deletions(-)
 
 
-diff --git a/fs/xfs/linux-2.6/xfs_cred.h b/fs/xfs/linux-2.6/xfs_cred.h
-index 652721c..293043a 100644
---- a/fs/xfs/linux-2.6/xfs_cred.h
-+++ b/fs/xfs/linux-2.6/xfs_cred.h
-@@ -24,7 +24,7 @@
-  * Credentials
-  */
- typedef struct cred {
--	/* EMPTY */
-+       /* EMPTY */
- } cred_t;
+diff --git a/security/commoncap.c b/security/commoncap.c
+index e4c4b3f..583cfc3 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -345,7 +345,7 @@ int cap_bprm_set_security (struct linux_binprm *bprm)
+ 		 * If only the real uid is 0, we do not set the effective
+ 		 * bit.
+ 		 */
+-		if (bprm->e_uid == 0 || current->uid == 0) {
++		if (bprm->e_uid == 0 || current_uid() == 0) {
+ 			/* pP' = (cap_bset & ~0) | (pI & ~0) */
+ 			bprm->cap_post_exec_permitted = cap_combine(
+ 				current->cap_bset, current->cap_inheritable
+@@ -360,7 +360,12 @@ int cap_bprm_set_security (struct linux_binprm *bprm)
  
- extern struct cred *sys_cred;
-diff --git a/fs/xfs/xfs_acl.c b/fs/xfs/xfs_acl.c
-index b2f639a..91d6933 100644
---- a/fs/xfs/xfs_acl.c
-+++ b/fs/xfs/xfs_acl.c
-@@ -366,7 +366,7 @@ xfs_acl_allow_set(
- 		return ENOTDIR;
- 	if (vp->i_sb->s_flags & MS_RDONLY)
- 		return EROFS;
--	if (XFS_I(vp)->i_d.di_uid != current->fsuid && !capable(CAP_FOWNER))
-+	if (XFS_I(vp)->i_d.di_uid != current_fsuid() && !capable(CAP_FOWNER))
- 		return EPERM;
- 	return 0;
+ void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
+ {
+-	if (bprm->e_uid != current->uid || bprm->e_gid != current->gid ||
++	uid_t uid;
++	gid_t gid;
++
++	current_uid_gid(&uid, &gid);
++
++	if (bprm->e_uid != uid || bprm->e_gid != gid ||
+ 	    !cap_issubset(bprm->cap_post_exec_permitted,
+ 			  current->cap_permitted)) {
+ 		set_dumpable(current->mm, suid_dumpable);
+@@ -368,8 +373,8 @@ void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
+ 
+ 		if (unsafe & ~LSM_UNSAFE_PTRACE_CAP) {
+ 			if (!capable(CAP_SETUID)) {
+-				bprm->e_uid = current->uid;
+-				bprm->e_gid = current->gid;
++				bprm->e_uid = uid;
++				bprm->e_gid = gid;
+ 			}
+ 			if (cap_limit_ptraced_target()) {
+ 				bprm->cap_post_exec_permitted = cap_intersect(
+@@ -400,15 +405,15 @@ void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
+ 
+ int cap_bprm_secureexec (struct linux_binprm *bprm)
+ {
+-	if (current->uid != 0) {
++	if (current_uid() != 0) {
+ 		if (bprm->cap_effective)
+ 			return 1;
+ 		if (!cap_isclear(bprm->cap_post_exec_permitted))
+ 			return 1;
+ 	}
+ 
+-	return (current->euid != current->uid ||
+-		current->egid != current->gid);
++	return (current_euid() != current_uid() ||
++		current_egid() != current_gid());
  }
-@@ -413,13 +413,13 @@ xfs_acl_access(
- 		switch (fap->acl_entry[i].ae_tag) {
- 		case ACL_USER_OBJ:
- 			seen_userobj = 1;
--			if (fuid != current->fsuid)
-+			if (fuid != current_fsuid())
- 				continue;
- 			matched.ae_tag = ACL_USER_OBJ;
- 			matched.ae_perm = allows;
- 			break;
- 		case ACL_USER:
--			if (fap->acl_entry[i].ae_id != current->fsuid)
-+			if (fap->acl_entry[i].ae_id != current_fsuid())
- 				continue;
- 			matched.ae_tag = ACL_USER;
- 			matched.ae_perm = allows;
+ 
+ int cap_inode_setxattr(struct dentry *dentry, const char *name,
+@@ -471,16 +476,18 @@ int cap_inode_removexattr(struct dentry *dentry, const char *name)
+ static inline void cap_emulate_setxuid (int old_ruid, int old_euid,
+ 					int old_suid)
+ {
++	uid_t euid = current_euid();
++
+ 	if ((old_ruid == 0 || old_euid == 0 || old_suid == 0) &&
+-	    (current->uid != 0 && current->euid != 0 && current->suid != 0) &&
++	    (current_uid()  != 0 && euid != 0 && current_suid() != 0) &&
+ 	    !issecure(SECURE_KEEP_CAPS)) {
+ 		cap_clear (current->cap_permitted);
+ 		cap_clear (current->cap_effective);
+ 	}
+-	if (old_euid == 0 && current->euid != 0) {
++	if (old_euid == 0 && euid != 0) {
+ 		cap_clear (current->cap_effective);
+ 	}
+-	if (old_euid != 0 && current->euid == 0) {
++	if (old_euid != 0 && euid == 0) {
+ 		current->cap_effective = current->cap_permitted;
+ 	}
+ }
+@@ -509,12 +516,12 @@ int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid,
+ 			 */
+ 
+ 			if (!issecure (SECURE_NO_SETUID_FIXUP)) {
+-				if (old_fsuid == 0 && current->fsuid != 0) {
++				if (old_fsuid == 0 && current_fsuid() != 0) {
+ 					current->cap_effective =
+ 						cap_drop_fs_set(
+ 						    current->cap_effective);
+ 				}
+-				if (old_fsuid != 0 && current->fsuid == 0) {
++				if (old_fsuid != 0 && current_fsuid() == 0) {
+ 					current->cap_effective =
+ 						cap_raise_fs_set(
+ 						    current->cap_effective,
 
