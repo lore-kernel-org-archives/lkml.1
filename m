@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbYH0LB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbYH0LDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755319AbYH0LB4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 07:01:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbYH0LBs
+	id S1755553AbYH0LDZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 07:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbYH0LDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 07:01:48 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:4205 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753465AbYH0LBs (ORCPT
+	Wed, 27 Aug 2008 07:03:17 -0400
+Received: from fw-sth.ingate.se ([62.181.225.250]:63352 "EHLO
+	kokeicha.ingate.se" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753465AbYH0LDQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 07:01:48 -0400
-X-Greylist: delayed 403 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Aug 2008 07:01:48 EDT
-Date: Wed, 27 Aug 2008 12:01:44 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: perex@perex.cz, lrg@kernel.org, Cliff Cai <cliff.cai@analog.com>,
-       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-Subject: Re: [alsa-devel] [PATCH 3/4] ASOC: WM8731 codec: add SPI support as well as I2C
-Message-ID: <20080827110143.GB10834@sirena.org.uk>
-Mail-Followup-To: Bryan Wu <cooloney@kernel.org>, perex@perex.cz,
-	lrg@kernel.org, Cliff Cai <cliff.cai@analog.com>,
-	alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-References: <1219829968-6431-1-git-send-email-cooloney@kernel.org> <1219829968-6431-4-git-send-email-cooloney@kernel.org>
+	Wed, 27 Aug 2008 07:03:16 -0400
+X-Greylist: delayed 1496 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Aug 2008 07:03:16 EDT
+Message-ID: <48B52E8C.40605@ingate.com>
+Date: Wed, 27 Aug 2008 12:38:04 +0200
+From: Marcus Sundberg <marcus@ingate.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080716 Fedora/1.1.11-1.fc9 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1219829968-6431-4-git-send-email-cooloney@kernel.org>
-X-Cookie: Those who can't write, write manuals.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+To: Pascal Terjan <pterjan@mandriva.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: r8169 regression in 2.6.26.3 vs 2.6.26.2
+References: <1219828800.30098.7.camel@plop>
+In-Reply-To: <1219828800.30098.7.camel@plop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (kokeicha.ingate.se [10.48.254.3]); Wed, 27 Aug 2008 12:38:05 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 05:39:27PM +0800, Bryan Wu wrote:
+Pascal Terjan wrote:
+> Since updating to 2.6.26.3, networking no longer works on Acer Aspire
+> One.
+> 
+> PCI config is now always filled with ones.
+> 
+> Reverting "r8169: avoid thrashing PCI conf space above
+> RTL_GIGA_MAC_VER_06" makes it work again.
+> 
+> The device is 10ec:8136
 
-This looks good, thanks but...
+Ok, that's obviously not good. I checked the Realtek driver for
+8101E (version r8101-1.009.00) and while it doesn't do any
+8-bit writes to register 0x82 it does perform 32-bit writes to
+register 0x80 (EPHYAR) to communicate with the PHY. I have no
+idea what that 8-bit write does except it breaks the chipset in
+my LG P300...
 
-> -#if defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE)
-> +#if defined (CONFIG_I2C) || defined (CONFIG_I2C_MODULE) && !defined (CONFIG_SND_SOC_WM8731_SPI)
->  	if (setup->i2c_address) {
->  		normal_i2c[0] = setup->i2c_address;
->  		codec->hw_write = (hw_write_t)i2c_master_send;
-> @@ -688,8 +745,14 @@ static int wm8731_probe(struct platform_device *pdev)
->  		if (ret != 0)
->  			printk(KERN_ERR "can't add i2c driver");
->  	}
-> +#elif defined (CONFIG_SPI_MASTER) && defined (CONFIG_SND_SOC_WM8731_SPI)
-> +	codec->hw_write = (hw_write_t)wm8731_spi_write;
-> +	ret = spi_register_driver(&wm8731_spi_driver);
-> +	if (ret != 0)
-> +		printk(KERN_ERR "can't add spi driver");
+How does the kernel identify your chipset upon driver load?
+(grep for XID)
 
-...as for the SSM2602 it'd be good if it were possible to build a kernel
-which supports both I2C and SPI.  If you like I could do this for you -
-there's likely to be merge issues due to the update to the new I2C API
-anyway?
+//Marcus
+-- 
+---------------------------------------+--------------------------
+   Marcus Sundberg <marcus@ingate.com>  | Firewalls with SIP & NAT
+  Software Developer, Ingate Systems AB |  http://www.ingate.com/
