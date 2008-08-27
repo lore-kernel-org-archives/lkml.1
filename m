@@ -1,60 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756052AbYH0L7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbYH0MCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756052AbYH0L7v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 07:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbYH0L7k
+	id S1755848AbYH0MCf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 08:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754406AbYH0MC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 07:59:40 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:34060 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753717AbYH0L7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 07:59:39 -0400
-Date: Wed, 27 Aug 2008 14:58:47 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Parag Warudkar <parag.lkml@gmail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-embedded@vger.kernel.org
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
-	bisected
-Message-ID: <20080827115847.GG11734@cs181140183.pp.htv.fi>
-References: <200808261111.19205.rusty@rustcorp.com.au> <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org> <20080826183051.GB10925@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org> <20080826205916.GB11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org> <f7848160808261554j2f4eaaa6i1ee8801ae75ca7bf@mail.gmail.com> <alpine.LFD.1.10.0808261644260.3363@nehalem.linux-foundation.org> <f7848160808261758q7b84aab1m188c1ebb59304818@mail.gmail.com> <alpine.LFD.1.10.0808261837530.3363@nehalem.linux-foundation.org>
+	Wed, 27 Aug 2008 08:02:26 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:36874 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754126AbYH0MC0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 08:02:26 -0400
+Message-ID: <48B541C3.1090901@novell.com>
+Date: Wed, 27 Aug 2008 08:00:03 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0808261837530.3363@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Nick Piggin <npiggin@suse.de>, mingo@elte.hu, srostedt@redhat.com,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       gregory.haskins@gmail.com, Russell King <rmk+lkml@arm.linux.org.uk>,
+       ralf@linux-mips.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v2 3/6] sched: make double-lock-balance fair
+References: <20080826173131.16413.17862.stgit@dev.haskins.net>	 <20080826173500.16413.40514.stgit@dev.haskins.net>	 <1219825295.6462.54.camel@twins> <20080827102646.GA5818@wotan.suse.de>	 <1219833668.6462.72.camel@twins>  <20080827105615.GB5818@wotan.suse.de> <1219835224.6462.81.camel@twins>
+In-Reply-To: <1219835224.6462.81.camel@twins>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigFB6ECC11701E4AF6000D3CA0"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 06:49:19PM -0700, Linus Torvalds wrote:
->...
-> But part of it is definitely gcc. Some versions of gcc used to be 
-> absolutely _horrid_ when it came to stack usage, especially with some 
-> flags, and especially with the crazy inlining that module-at-a-time 
-> caused.
->...
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigFB6ECC11701E4AF6000D3CA0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-That was gcc 3.4.
+Peter Zijlstra wrote:
+> On Wed, 2008-08-27 at 12:56 +0200, Nick Piggin wrote:
+>
+>  =20
+>> BTW. I wonder about other architectures that are of interest to -rt? L=
+ike
+>> mips or arm perhaps... Any plans to implement ticket locks on those, o=
+r
+>> do they not tend to be used in SMP configurations on -rt yte?
+>>    =20
+>
+> I think both are starting to show more and more SMP machines, so yes,
+> eventually we'll want ticket locks for them too.
+>
+> That said, I'm not aware of anyone working on it - I suppose we could
+> poke the regular arch maintainers.. Ralf, Russell ?
+>
+>  =20
+As an aside:  I have an implementation of C-based ticket lock
+replacements for raw_spinlock_t that I could post.  I never posted them
+because I mostly care about x86 and Nick's solution is superior there
+since its hand-tuned asm.  But mine could be used in places that have
+not yet written arch support but need FIFO.  I basically have it as a
+config option to enable "generic fifo spinlocks" or something like that.
 
-And due to that we disable unit-at-a-time for gcc 3.4 on 32bit x86.
+-Greg
 
-> 			Linus
 
-cu
-Adrian
+--------------enigFB6ECC11701E4AF6000D3CA0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
--- 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+iEYEARECAAYFAki1QcMACgkQlOSOBdgZUxk2ZQCeMrc93DQBBS6zcAX8OODNsWIJ
+Ah4Anjz8/a7S9yLWWeN15toq525hS0QQ
+=zTo3
+-----END PGP SIGNATURE-----
 
+--------------enigFB6ECC11701E4AF6000D3CA0--
