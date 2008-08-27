@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751823AbYH0REq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbYH0RFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751823AbYH0REq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 13:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012AbYH0REg
+	id S1753215AbYH0RFA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 13:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYH0REk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 13:04:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53866 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750931AbYH0REf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 13:04:35 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200808271857.48651.agruen@suse.de>
-References: <200808271857.48651.agruen@suse.de> <200808262057.51606.agruen@suse.de> <200808271729.18220.agruen@suse.de> <20080827160439.GA12085@us.ibm.com>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: dhowells@redhat.com, "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] file capabilities: Add no_file_caps switch
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
-Date: Wed, 27 Aug 2008 18:04:12 +0100
-Message-ID: <27765.1219856652@redhat.com>
+	Wed, 27 Aug 2008 13:04:40 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:41915 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751371AbYH0REj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 13:04:39 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] USB: add USB test and measurement class driver
+Date: Wed, 27 Aug 2008 19:05:51 +0200
+User-Agent: KMail/1.9.9
+Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+       Stefan Kopp <stefan_kopp@agilent.com>, Marcel Janssen <korgull@home.nl>,
+       Felipe Balbi <me@felipebalbi.com>, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.0808271203150.2498-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808271203150.2498-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808271905.51825.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Gruenbacher <agruen@suse.de> wrote:
-
-> > (Also note that if you have such users, you'll want to ask David
-> > Howells not to push the patch he has floated removing the ability to
-> > pass caps to another task altogether when
-> > CONFIG_SECURITY_FILE_CAPABILITIES=n :)
+Am Mittwoch 27 August 2008 18:06:23 schrieb Alan Stern:
+> On Wed, 27 Aug 2008, Oliver Neukum wrote:
 > 
-> I was actually about to ask for making this behavior change pertinent instead 
-> of having it depend on CONFIG_SECURITY_FILE_CAPABILITIES :)
+> > This is a race condition.
+> > 
+> > CPU A					CPU B
+> > open()
+> > usb_find_interface()
+> > 						disconnect()
+> > 						kref_put()
+> > 						usbtmc_delete()
+> > 						kfree()
+> > kref_get()
+> > 
+> > You can write to free memory. You must use a static mutex for
+> > mutual exclusion between open() and disconnect()
+> 
+> Is that necessary?  usbcore includes its own mutual exclusion now.  
+> Look in file.c at how minor_rwsem is used.
 
-Do you mean 'permanent' rather than 'pertinent'?
+This is interesting, the driver simply doesn't  unregister the device.
+So it would be needed if the code could be left as it is. As not unregistering
+the device is wrong, this will fix the bug.
 
-David
+	Thanks
+		Oliver
