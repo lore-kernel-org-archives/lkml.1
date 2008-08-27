@@ -1,34 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754912AbYH0WLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbYH0WRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754912AbYH0WLx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 18:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbYH0WLp
+	id S1754312AbYH0WRW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 18:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbYH0WRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 18:11:45 -0400
-Received: from gw.goop.org ([64.81.55.164]:44890 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752639AbYH0WLo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 18:11:44 -0400
-Message-ID: <48B5D11E.5090209@goop.org>
-Date: Wed, 27 Aug 2008 15:11:42 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 27 Aug 2008 18:17:15 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:33678 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752064AbYH0WRO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 18:17:14 -0400
+Date: Wed, 27 Aug 2008 23:17:11 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org
+Subject: Re: C language lawyers needed
+Message-ID: <20080827221711.GE28946@ZenIV.linux.org.uk>
+References: <adaod3ef82e.fsf@cisco.com> <48B5CE61.8020809@zytor.com>
 MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: /proc/acpi/ibm/wan stopped appearing
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48B5CE61.8020809@zytor.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-/proc/acpi/ibm/wan stopped appearing for me at some point recently
-(bluetooth is still there).  I guess this has something to do with the
-RFKILL changes, but I haven't looked at them in detail.  I guess my
-question is: is this expected, and what's the "proper" way to control
-the WWAN radio now?
+On Wed, Aug 27, 2008 at 03:00:01PM -0700, H. Peter Anvin wrote:
+> Looks like a gcc bug to me.
+>
+> 0xff000000 is unsigned, like any hexadecimal constant.
 
-Thanks,
-    J
+Not any.  Ones that do not fit into range of int but do fit into the range
+of unsigned are.
+
+Really, folks, it's not _that_ hard:
+
+Type sequence: int, unsigned int, long, unsigned long, long long,
+unsigned long long.
+With U suffix => don't bother with signed types
+Without U suffix, decimal => don't bother with _un_signed types
+With L suffix => don't bother with anything earlier than long
+With LL suffix => don't bother with anything earlier than long long
+Pick the first type that covers your value; that will be it.
+
+In particular, 0x[0-9A-Fa-f]+ == try *everything*.
