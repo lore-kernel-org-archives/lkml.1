@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755719AbYH0S35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbYH0Se7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755719AbYH0S35 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 14:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbYH0S3p
+	id S1754907AbYH0Se7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 14:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYH0Sev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 14:29:45 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:56460 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752263AbYH0S3o (ORCPT
+	Wed, 27 Aug 2008 14:34:51 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:54356 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751844AbYH0Seu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 14:29:44 -0400
-Date: Wed, 27 Aug 2008 20:32:16 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Rick Jones <rick.jones2@hp.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Denys Fedoryshchenko <denys@visp.net.lb>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: loaded router, excessive getnstimeofday in oprofile\
-Message-ID: <20080827183216.GZ26610@one.firstfloor.org>
-References: <200808220457.40892.denys@visp.net.lb> <20080826201406.GA24827@2ka.mipt.ru> <48B46B48.7030609@cosmosbay.com> <20080826205158.GA15266@2ka.mipt.ru> <87vdxmr53f.fsf@basil.nowhere.org> <48B57BD3.5050206@hp.com> <20080827162735.GW26610@one.firstfloor.org> <48B58586.3080806@hp.com> <20080827165635.GY26610@one.firstfloor.org> <48B58E6B.1030302@cosmosbay.com>
-Mime-Version: 1.0
+	Wed, 27 Aug 2008 14:34:50 -0400
+Date: Wed, 27 Aug 2008 11:34:46 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Josh Triplett <josht@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, manfred@colorfullife.com,
+       dipankar@in.ibm.com, schamp@sgi.com, niv@us.ibm.com, dvhltc@us.ibm.com,
+       ego@in.ibm.com, laijs@cn.fujitsu.com, rostedt@goodmis.org
+Subject: Re: [PATCH, RFC, tip/core/rcu] scalable classic RCU implementation
+Message-ID: <20080827183446.GL6711@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080821234318.GA1754@linux.vnet.ibm.com> <1219447772.5197.98.camel@josh-work.beaverton.ibm.com> <20080823015336.GP6744@linux.vnet.ibm.com> <1219701750.12334.29.camel@josh-work.beaverton.ibm.com> <20080826160530.GB6656@linux.vnet.ibm.com> <1219797516.6911.6.camel@josh-work.beaverton.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48B58E6B.1030302@cosmosbay.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1219797516.6911.6.camel@josh-work.beaverton.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Doing the expensive timestamping in a possibly delayed thread (ie some 
-> milliseconds
-> after hardware notification) is wrong/useless.
+On Tue, Aug 26, 2008 at 05:38:36PM -0700, Josh Triplett wrote:
+> On Tue, 2008-08-26 at 09:05 -0700, Paul E. McKenney wrote:
+> > On Mon, Aug 25, 2008 at 03:02:30PM -0700, Josh Triplett wrote:
+> > > On Fri, 2008-08-22 at 18:53 -0700, Paul E. McKenney wrote:
+> > > > On Fri, Aug 22, 2008 at 04:29:32PM -0700, Josh Triplett wrote:
+> > > > > On Thu, 2008-08-21 at 16:43 -0700, Paul E. McKenney wrote:
+> > > > > > @@ -658,14 +806,19 @@ int rcu_needs_cpu(int cpu)
+> > > > > >  	struct rcu_data *rdp = &per_cpu(rcu_data, cpu);
+> > > > > >  	struct rcu_data *rdp_bh = &per_cpu(rcu_bh_data, cpu);
+> > > > > > 
+> > > > > > -	return !!rdp->nxtlist || !!rdp_bh->nxtlist || rcu_pending(cpu);
+> > > > > > +	return !!*rdp->nxttail[RCU_DONE_TAIL] ||
+> > > > > > +	       !!*rdp_bh->nxttail[RCU_DONE_TAIL] ||
+> > > > > > +	       rcu_pending(cpu);
+> > > > > 
+> > > > > !! seems unnecessary here.
+> > > > 
+> > > > Someone once told me why this was necessary, but I forget.  It was in the
+> > > > original, and I didn't put it there.  Some weirdness about conversion
+> > > > to 32-bit integer when the lower 32 bits of the pointer was zero or
+> > > > some such.  So if your pointer value was 0x100000000, for example,
+> > > > so that conversion to int gives zero.
+> > > 
+> > > Good point!  That doesn't apply if you use ||, though.  If you just did
+> > > "return somepointer" that could potentially cause the problem you
+> > > describe.  In any case, it can't *hurt* to have it; GCC should do the
+> > > sane thing.
+> > 
+> > OK.  I will review this towards the end, leaving it there to remind me
+> > in the meantime.
+> > 
+> > So, would I need the !! on the left-hand operand of the first || due
+> > to short-circuiting?
+> 
+> No.  || will always return 1 or 0.  You only need the !! if you want to
+> directly return the boolean value of a potentially 64-bit pointer.
 
-We had this discussion earlier, please review the thread I linked to. 
+Even if one argument of || is long and the other int or some fool thing
+like that?  (What, me paranoid???)
 
-Note that interrupts can be arbitarily delayed too (both by cli
-and by interrupt mitigation), even on a non RT kernel.
-
-If you want exact notification (packet arriving at your NIC's buffers) you 
-need NIC hardware support (and more and more NICs have it[1]). 
-If you do it in software then even the interrupt is at the end of a long 
-queue with a pretty much arbitary delay. Doing it in socket context is 
-just one queue more. It's pretty much all arbitary.
-
-The argument for doing it as late as possible is the prohibitive 
-cost on some systems as people notice all the time.
-
--Andi
-
-[1] Unfortunately not necessarily synchronized with system time.
+							Thanx, Paul
