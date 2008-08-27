@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbYH0THm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755735AbYH0TMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757040AbYH0THm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 15:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756732AbYH0TH1
+	id S1755735AbYH0TMi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 15:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbYH0TM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 15:07:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58063 "EHLO
+	Wed, 27 Aug 2008 15:12:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42632 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756474AbYH0THZ (ORCPT
+	by vger.kernel.org with ESMTP id S1751053AbYH0TM3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 15:07:25 -0400
-Date: Wed, 27 Aug 2008 12:05:53 -0700
+	Wed, 27 Aug 2008 15:12:29 -0400
+Date: Wed, 27 Aug 2008 12:11:26 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: cmm@us.ibm.com, tytso@mit.edu, sandeen@redhat.com,
-       linux-ext4@vger.kernel.org, aneesh.kumar@linux.vnet.ibm.com,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -V3 01/11] percpu_counters: make fbc->count read atomic
- on 32 bit architecture
-Message-Id: <20080827120553.9c9d6690.akpm@linux-foundation.org>
-In-Reply-To: <1219850916-8986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1219850916-8986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: nicolas.ferre@atmel.com, david-b@pacbell.net, linux-kernel@vger.kernel.org,
+       linux@maxim.org.za, rmk@arm.linux.org.uk
+Subject: Re: [patch 2.6.27-rc3] at91_mci: don't use coherent dma buffers
+Message-Id: <20080827121126.9676a4eb.akpm@linux-foundation.org>
+In-Reply-To: <20080827210105.43d5aed2@mjolnir.drzeus.cx>
+References: <200808181607.21516.david-b@pacbell.net>
+	<48AE6D50.4030609@atmel.com>
+	<48AE7B7E.1010503@atmel.com>
+	<20080827210105.43d5aed2@mjolnir.drzeus.cx>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,95 +30,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Aug 2008 20:58:26 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+On Wed, 27 Aug 2008 21:01:05 +0200
+Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
 
-> fbc->count is of type s64. The change was introduced by
-> 0216bfcffe424a5473daa4da47440881b36c1f4 which changed the type
-> from long to s64. Moving to s64 also means on 32 bit architectures
-> we can get wrong values on fbc->count. Since fbc->count is read
-> more frequently and updated rarely use seqlocks. This should
-> reduce the impact of locking in the read path for 32bit arch.
+> On Fri, 22 Aug 2008 10:40:30 +0200
+> Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
 > 
-
-So...  yesterday's suggestionm to investigate implementing this at a
-lower level wasn't popular?
-
->  include/linux/percpu_counter.h |   28 ++++++++++++++++++++++++----
->  lib/percpu_counter.c           |   20 ++++++++++----------
->  2 files changed, 34 insertions(+), 14 deletions(-)
+> > >>
+> > >> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> > > 
+> > > ...
+> > 
+> > Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> > 
 > 
-> diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
-> index 9007ccd..1b711a1 100644
-> --- a/include/linux/percpu_counter.h
-> +++ b/include/linux/percpu_counter.h
-> @@ -6,7 +6,7 @@
->   * WARNING: these things are HUGE.  4 kbytes per counter on 32-way P4.
->   */
->  
-> -#include <linux/spinlock.h>
-> +#include <linux/seqlock.h>
->  #include <linux/smp.h>
->  #include <linux/list.h>
->  #include <linux/threads.h>
-> @@ -16,7 +16,7 @@
->  #ifdef CONFIG_SMP
->  
->  struct percpu_counter {
-> -	spinlock_t lock;
-> +	seqlock_t lock;
->  	s64 count;
->  #ifdef CONFIG_HOTPLUG_CPU
->  	struct list_head list;	/* All percpu_counters are on a list */
-> @@ -53,10 +53,30 @@ static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
->  	return __percpu_counter_sum(fbc);
->  }
->  
-> -static inline s64 percpu_counter_read(struct percpu_counter *fbc)
-> +#if BITS_PER_LONG == 64
-> +static inline s64 fbc_count(struct percpu_counter *fbc)
->  {
->  	return fbc->count;
->  }
-> +#else
-> +/* doesn't have atomic 64 bit operation */
-> +static inline s64 fbc_count(struct percpu_counter *fbc)
-> +{
-> +	s64 ret;
-> +	unsigned seq;
-> +	do {
-> +		seq = read_seqbegin(&fbc->lock);
-> +		ret = fbc->count;
-> +	} while (read_seqretry(&fbc->lock, seq));
-> +	return ret;
-> +
+> I have nothing else in my queue, so Andrew, as I suspect you have other
+> things going to Linus, if you could please include this one as well. :)
 
-Please don't put unneeded blank lines into random places.
-
-> +}
-> +#endif
-
-This is now too large to be inlined.
-
-> +static inline s64 percpu_counter_read(struct percpu_counter *fbc)
-> +{
-> +	return fbc_count(fbc);
-> +}
-
-This change means that a percpu_counter_read() from interrupt context
-on a 32-bit machine is now deadlockable, whereas it previously was not
-deadlockable on either 32-bit or 64-bit.
-
-This flows on to the lib/proportions.c, which uses
-percpu_counter_read() and also does spin_lock_irqsave() internally,
-indicating that it is (or was) designed to be used in IRQ contexts.
-
-It means that bdi_stat() can no longer be used from interrupt context.
-
-So a whole lot of thought and review and checking is needed here.  It
-should all be spelled out in the changelog.  This will be a horridly
-rare deadlock, so suitable WARN_ON()s should be added to detect when
-callers are vulnerable to it.
-
-Or we make the whole thing irq-safe.
+No probs, thanks.
 
