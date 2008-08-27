@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYH0SqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbYH0Sta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756073AbYH0SqU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 14:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbYH0SqH
+	id S1754908AbYH0Sta (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 14:49:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYH0StW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 14:46:07 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:44418 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751768AbYH0SqG (ORCPT
+	Wed, 27 Aug 2008 14:49:22 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:53679 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752178AbYH0StV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 14:46:06 -0400
-Date: Wed, 27 Aug 2008 13:46:00 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: ebiederm@xmission.com, akpm@linux-foundation.org, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: unprivileged mounts git tree
-Message-ID: <20080827184600.GA8069@us.ibm.com>
-References: <E1JtiOX-0004Qg-1z@pomaz-ex.szeredi.hu> <20080807222751.GA28412@us.ibm.com> <m1prokgyje.fsf@frodo.ebiederm.org> <20080808002537.GA5364@us.ibm.com> <E1KXZpC-0008Ie-6w@pomaz-ex.szeredi.hu> <20080827153628.GA11242@us.ibm.com> <E1KYNMl-0000TG-Qs@pomaz-ex.szeredi.hu>
+	Wed, 27 Aug 2008 14:49:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ISh+0zAUoIZ3GLbPdj8vX9oJuh/fEc9drt9AMqaLjBxbMxsbdxTAlvKEOHSH6S2m6b
+         dkwkR8rKuzRq/10NMVsuKSIl2IunJS29LYAKzE++gWZmVc4r/KxpfkOShsbhoEQHKNQj
+         XHQUMFk+dE6JCDxRoHJHEnOCCX6zWUnjEzkBs=
+Date: Wed, 27 Aug 2008 22:50:54 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] utrace
+Message-ID: <20080827185054.GA30943@x200.localdomain>
+References: <20080826220102.89635154233@magilla.localdomain> <20080826223402.GB27724@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1KYNMl-0000TG-Qs@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080826223402.GB27724@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> On Wed, 27 Aug 2008, Serge E. Hallyn wrote:
-> > Quoting Miklos Szeredi (miklos@szeredi.hu):
-> > > Serge, thanks for spotting this: it looks indeed a nasty hole!  I also
-> > > agree about the solution.
+On Wed, Aug 27, 2008 at 02:34:02AM +0400, Alexey Dobriyan wrote:
+> On Tue, Aug 26, 2008 at 03:01:02PM -0700, Roland McGrath wrote:
+> > utrace is a new kernel-side API for kernel modules, intended to make it
+> > tractable to work on novel ways to trace and debug user-mode tasks.
+> 
+> Finally! Familiar code! :^)
+> 
+> > A previous utrace prototype was in all Fedora kernels since Fedora Core 6.
+> > Some substantial implementation and API details in the current code are
+> > different from those past versions.
+> 
+> And some internal details still horrible and overdesigned just like at
+> the very beginning.
+> 
+> > Please look freshly at these patches.
+> 
+> Well, all comments on tracehook patches were ignored.
+> 
+> > This code cannot be enabled without CONFIG_HAVE_ARCH_TRACEHOOK and the arch
+> > details it indicates.  In Linus's tree as of v2.6.27-rc4, only powerpc and
+> > sparc64 have that support.  The x86 support is available by merging in the
+> > tip/x86/tracehook branch.  For working on other arch support, there are some
+> > more details at http://sourceware.org/systemtap/wiki/utrace/arch/HowTo and
+> > these are mentioned in the comments in arch/Kconfig too (in v2.6.27-rc4).
 > > 
-> > Are you implementing it, or did you want me to?
-> 
-> I'll implement it.
-
-Ok, thanks.  I look forward to playing around with it when you publish
-the resulting git tree  :)
-
-> > > But yeah, we should think this over very carefully.  Especially
-> > > interaction with mount propagation, which has very complicated and
-> > > sometimes rather counter-intuitive semantics.
+> > The first patch adds the utrace kernel API (if CONFIG_UTRACE=y is set).
+> > There is no change at all without the config option, and with it there is
+> > no effect on anything at all until a kernel module using the utrace API is
+> > loaded.  There is detailed documentation on the API in DocBook form.
 > > 
-> > I know we discussed before about whether a propagated mount from a
-> > non-user mount to a user mount should end up being owned by the user
-> > or not.  I don't recall (and am not checking the code at the moment
-> > as your tree is sitting elsewhere) whether we mark the propagated
-> > tree with the right nosuid and nodev flags, or whether we call it
-> > a user mount or not.
+> > The second patch adds the CONFIG_UTRACE_PTRACE option.
 > 
-> If the destination is a user mount, then
-> 
->  - the propagated mount(s) will be owned by the same user as the destination
->  - the propagated mount(s) will inherit 'nosuid' from the destination
-> 
-> I remember also thinking about 'nodev' and why it doesn't need similar
-> treatment to 'nosuid'.  The reasoning was that 'nodev' is safe as long
-> as permissions are enforced, namespace shuffling cannot make it
-> insecure.  Does that sound correct?
+> If config option for ptrace is fine, please name it CONFIG_PTRACE.
+> For one, there will be no second tracing infrastracture. For two, nobody
+> but one man on the planet really cares how ptrace(2) is implemented.
 
-Yes that sounds correct, thanks for the refresher.
+Oh, I totally misread what this potion is about.
 
--serge
+Of course, it shouldn't exist at all.
+
