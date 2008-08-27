@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbYH0FOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbYH0Fbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753149AbYH0FOT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 01:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbYH0FOK
+	id S1753302AbYH0Fbj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 01:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYH0Fbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 01:14:10 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:55806 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751525AbYH0FOJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 01:14:09 -0400
-Subject: Re: [PATCH] virtio_blk: use noop elevator by default
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
-In-Reply-To: <20080826143900.GM20055@kernel.dk>
-References: <1219754894.7235.44.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20080826143900.GM20055@kernel.dk>
-Content-Type: text/plain; charset=utf-8
-Organization: NTT Open Source Software Center
-Date: Wed, 27 Aug 2008 14:14:07 +0900
-Message-Id: <1219814047.18991.52.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 27 Aug 2008 01:31:31 -0400
+Received: from mailbox2.myri.com ([64.172.73.26]:1995 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751690AbYH0Fba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 01:31:30 -0400
+Message-ID: <48B4E66C.2080806@myri.com>
+Date: Wed, 27 Aug 2008 07:30:20 +0200
+From: Brice Goglin <brice@myri.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+CC: Dave Airlie <airlied@gmail.com>, "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: [patch 3/4] x86: PAT Update validate_pat_support for intel CPUs
+References: <20080820234550.923970000@intel.com>	 <20080820234604.592277000@intel.com> <21d7e9970808260005g14ec71e9xfa584780498a86e7@mail.gmail.com> <7E82351C108FA840AB1866AC776AEC460B68CC5F@orsmsx505.amr.corp.intel.com>
+In-Reply-To: <7E82351C108FA840AB1866AC776AEC460B68CC5F@orsmsx505.amr.corp.intel.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-26 at 16:39 +0200, Jens Axboe wrote: 
-> On Tue, Aug 26 2008, Fernando Luis Vázquez Cao wrote:
-> > Hi Rusty,
-> > 
-> > Would it make sense to use noop by default? After all we do not know
-> > what is behind the backend driver and the hypervisor is likely to do its
-> > own scheduling anyway. I guess this is the reason the Xen guys took this
-> > approach.
-> > 
-> > What do you think about the patch below?
-> 
-> I plan to include some variant of disk profiling for 2.6.28 which will
-> let eg CFQ turn off idling for such device types, I think that is a
-> better solution.
+Pallipadi, Venkatesh wrote:
+> Default MTRR being UC for all reserved regions and drivers
+> wanting WC is very common situation and performance will be
+> affected when that ends up being UC access.
+> With pat disabled, drivers can set MTRR with WC in this case
+> and get the expected performance.
+>   
 
-Hi Jens,
+Are you saying that drivers are supposed to check if PAT is disabled
+before deciding whether they need to setup a MTRR WC? If so, how to do
+we check that? Unless we get a way to know whether ioremap_wc() returned
+WC or UC, I will always keep the MTRR WC in myri10ge.
 
-That is good news. With the proliferation of intelligent disk
-controllers and SSDs, the disk profiling approach seems to be the right
-way to go in general and I think it was badly needed.
-
->From your example my wild guess is that disk profiling will be a I/O
-controller-specific auto-tuning feature, not a new functionality of the
-generic elevator layer. Is this interpretation correct? Would it make
-sense in some cases to change elevators automatically depending on the
-characteristics of the underlying device instead (e.g. we might not need
-any of the extra features CFQ provides, for example)?
-
-I would like to take a look at those patches so I peeked into your git
-tree, but I could not find them (I probably chose the wrong branches).
-Are they accessible through your kernel.org's git repository?
-
-Thanks!
-
-Fernando
+Brice
 
