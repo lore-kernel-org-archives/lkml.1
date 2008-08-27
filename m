@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753690AbYH0ICR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbYH0IDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753690AbYH0ICR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 04:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbYH0IB6
+	id S1754082AbYH0IDW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 04:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYH0IDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 04:01:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37479 "EHLO mx2.mail.elte.hu"
+	Wed, 27 Aug 2008 04:03:03 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37899 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752414AbYH0IB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 04:01:57 -0400
-Date: Wed, 27 Aug 2008 10:01:36 +0200
+	id S1751476AbYH0IDB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 04:03:01 -0400
+Date: Wed, 27 Aug 2008 10:02:38 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Steve VanDeBogart <vandebo-lkml@NerdBox.Net>
-Cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH] exit signals: use of uninitialized field notify_count
-Message-ID: <20080827080136.GA4453@elte.hu>
-References: <alpine.DEB.1.00.0808261505550.15543@abydos.NerdBox.Net>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: printk_time to use tsc before cpu_clock is ready
+Message-ID: <20080827080238.GC4453@elte.hu>
+References: <1219822736-18628-1-git-send-email-yhlu.kernel@gmail.com> <1219822736-18628-2-git-send-email-yhlu.kernel@gmail.com> <20080827074230.GA20993@elte.hu> <1219823233.6462.38.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.00.0808261505550.15543@abydos.NerdBox.Net>
+In-Reply-To: <1219823233.6462.38.camel@twins>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,17 +36,31 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steve VanDeBogart <vandebo-lkml@NerdBox.Net> wrote:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-> task->signal->notify_count is only initialized if
-> task->signal->group_exit_task is not NULL.  Reorder a conditional so
-> that uninitialised memory is not used.  Found by Valgrind.
->
-> Signed-off-by: Steve VanDeBogart <vandebo-lkml@nerdbox.net>
+> On Wed, 2008-08-27 at 09:42 +0200, Ingo Molnar wrote:
+> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> > 
+> > > +static unsigned long long tsc_clock(int cpu)
+> > > +{
+> > > +	unsigned long long t;
+> > > +
+> > > +	rdtscll(t);
+> > > +
+> > > +	return t;
+> > > +}
+> > 
+> > hm, i'm not sure i like the whole direction - this reintroduces 
+> > printk_clock in essence.
+> > 
+> > how about initializing cpu_clock() sooner, so that printk timestamps 
+> > start ticking as soon as possible?
+> 
+> which will make some archs quite unhappy iirc, see those arm and ia64 
+> bugs I caused the other day.
 
-Applied the commit below to tip/core/urgent, thanks. Roland/Oleg, do you 
-concur with the fix?
-
-nice find btw. - are you running Valgrind on UML?
+that's OK - that still allows arches to start their clocks whenever they 
+want to. But also add the possibility for architectures to initialize 
+things even sooner.
 
 	Ingo
