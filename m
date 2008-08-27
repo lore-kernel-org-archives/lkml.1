@@ -1,93 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbYH0MLB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbYH0MNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbYH0MLB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 08:11:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYH0MKu
+	id S1755925AbYH0MNS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 08:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYH0MNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 08:10:50 -0400
-Received: from relay2.globalproof.net ([194.146.153.25]:56466 "EHLO
-	relay2.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754565AbYH0MKt (ORCPT
+	Wed, 27 Aug 2008 08:13:06 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:42947 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754573AbYH0MNE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 08:10:49 -0400
-From: Denys Fedoryshchenko <denys@visp.net.lb>
-Organization: Virtual ISP
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-Date: Wed, 27 Aug 2008 15:09:17 +0300
-User-Agent: KMail/1.9.9
-Cc: Eric Dumazet <dada1@cosmosbay.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200808220457.40892.denys@visp.net.lb> <48B46B48.7030609@cosmosbay.com> <20080826205158.GA15266@2ka.mipt.ru>
-In-Reply-To: <20080826205158.GA15266@2ka.mipt.ru>
+	Wed, 27 Aug 2008 08:13:04 -0400
+Message-ID: <48B54443.3000001@novell.com>
+Date: Wed, 27 Aug 2008 08:10:43 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_uPUtIK8vFW3CqnH"
-Message-Id: <200808271509.18529.denys@visp.net.lb>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: mingo@elte.hu, srostedt@redhat.com, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       npiggin@suse.de, gregory.haskins@gmail.com
+Subject: Re: [PATCH 3/5] sched: make double-lock-balance fair
+References: <20080825200852.23217.13842.stgit@dev.haskins.net> <200808271636.09243.nickpiggin@yahoo.com.au> <48B53D86.8080806@novell.com> <200808272153.32007.nickpiggin@yahoo.com.au>
+In-Reply-To: <200808272153.32007.nickpiggin@yahoo.com.au>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig53EFEF0AF747B58B8D1A1A42"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_uPUtIK8vFW3CqnH
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig53EFEF0AF747B58B8D1A1A42
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On Tuesday 26 August 2008, Evgeniy Polyakov wrote:
-> On Tue, Aug 26, 2008 at 10:44:56PM +0200, Eric Dumazet (dada1@cosmosbay.com) 
-wrote:
-> > >Do you have any packet sockets in this system? Like running dhcp daemon?
-No, nothing at all.
-> >
-> > Another way to see this problem can be to start a sniffer on the machine,
-> > even with a restrictive pcap filter, to check if performance change or
-> > not. (It should decrease)
-Yes, when i run tcpdump even without promisc at peak time, machine will be 
-almost dead. Transit traffic will be 100ms+. I know that it is timestamping 
-packets. Same almost for any libpcap app.
+Nick Piggin wrote:
+> On Wednesday 27 August 2008 21:41, Gregory Haskins wrote:
+>  =20
+>> Nick Piggin wrote:
+>>    =20
+>>> On Tuesday 26 August 2008 22:23, Gregory Haskins wrote:
+>>>      =20
+>>>> Nick Piggin wrote:
+>>>>        =20
+>>>>> On Tuesday 26 August 2008 06:15, Gregory Haskins wrote:
+>>>>>          =20
+>>>>>> double_lock balance() currently favors logically lower cpus since =
+they
+>>>>>> often do not have to release their own lock to acquire a second lo=
+ck.
+>>>>>> The result is that logically higher cpus can get starved when ther=
+e is
+>>>>>> a lot of pressure on the RQs.  This can result in higher latencies=
+ on
+>>>>>> higher cpu-ids.
+>>>>>>
+>>>>>> This patch makes the algorithm more fair by forcing all paths to h=
+ave
+>>>>>> to release both locks before acquiring them again.  Since callsite=
+s to
+>>>>>> double_lock_balance already consider it a potential
+>>>>>> preemption/reschedule point, they have the proper logic to recheck=
+ for
+>>>>>> atomicity violations.
+>>>>>>
+>>>>>> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+>>>>>> ---
+>>>>>>
+>>>>>>  kernel/sched.c |   17 +++++------------
+>>>>>>  1 files changed, 5 insertions(+), 12 deletions(-)
+>>>>>>
+>>>>>> diff --git a/kernel/sched.c b/kernel/sched.c
+>>>>>> index 6e0bde6..b7326cd 100644
+>>>>>> --- a/kernel/sched.c
+>>>>>> +++ b/kernel/sched.c
+>>>>>> @@ -2790,23 +2790,16 @@ static int double_lock_balance(struct rq
+>>>>>> *this_rq, struct rq *busiest) __acquires(busiest->lock)
+>>>>>>  	__acquires(this_rq->lock)
+>>>>>>  {
+>>>>>> -	int ret =3D 0;
+>>>>>> -
+>>>>>>  	if (unlikely(!irqs_disabled())) {
+>>>>>>  		/* printk() doesn't work good under rq->lock */
+>>>>>>  		spin_unlock(&this_rq->lock);
+>>>>>>  		BUG_ON(1);
+>>>>>>  	}
+>>>>>> -	if (unlikely(!spin_trylock(&busiest->lock))) {
+>>>>>> -		if (busiest < this_rq) {
+>>>>>> -			spin_unlock(&this_rq->lock);
+>>>>>> -			spin_lock(&busiest->lock);
+>>>>>> -			spin_lock_nested(&this_rq->lock, SINGLE_DEPTH_NESTING);
+>>>>>> -			ret =3D 1;
+>>>>>> -		} else
+>>>>>> -			spin_lock_nested(&busiest->lock, SINGLE_DEPTH_NESTING);
+>>>>>> -	}
+>>>>>> -	return ret;
+>>>>>> +
+>>>>>> +	spin_unlock(&this_rq->lock);
+>>>>>> +	double_rq_lock(this_rq, busiest);
+>>>>>>            =20
+>>>>> Rather than adding the extra atomic operation, can't you just put t=
+his
+>>>>> into the unlikely spin_trylock failure path rather than the unfair
+>>>>> logic there?
+>>>>>          =20
+>>>> The trick is that we *must* first release this_rq before proceeding =
+or
+>>>> the new proposal doesn't work as intended.  This patch effectively
+>>>> breaks up the this_rq->lock critical section evenly across all CPUs =
+as
+>>>> if it hit the case common for higher cpus.
+>>>>        =20
+>>> I don't exactly see why my proposal would introduce any more latency,=
 
+>>> because we only trylock while holding the existing lock -- this is wi=
+ll
+>>> only ever add a small ~constant time to the critical section, regardl=
+ess
+>>> of whether it is a high or low CPU runqueue.
+>>>      =20
+>> Its because we are trying to create a break in the critical section of=
+
+>> this_rq->lock, not improve the acquisition of busiest->lock.  So wheth=
+er
+>> you do spin_lock or spin_trylock on busiest does not matter.  Busiest
+>> will not be contended in the case that I am concerned with.  If you us=
+e
+>> my example below: rq[N] will not be contended because cpuN is blocked =
+on
+>> rq[0] after already having released rq[N].  So its the contention
+>> against this_rq that is the problem.
+>>
+>> Or am I missing your point completely?
+>>    =20
 >
-> Or just check /proc/net/packet iirc.
-> Anyway, having at least one packet socket ends up with timestamping of
-> each packet, so you will get fair load of getnstimeofday() in that case.
-There is very short list of tasks. Attached. 
-/proc/net/packet clean, nothing there.
-
+> Well my point is just that after my change, there may be some windows
+> of "unfair" behaviour where one CPU gets to go ahead early, but AFAIKS
+> now there is no systemic bias against higher numbered CPUs (except the
+> small issue of taking lowered numbered locks first which is also presen=
+t
+> in any solution).
 >
-> > For example, I believe that running "ping" could have the same effect
-> > (increasing netstamp_needed variable : every incoming packet has to be
-> > timestamped)
-Even answering icmp timestamp request will take resources.
-> >
-> > So beware of pings, traceroute and other networking tools...
-When i am measuring performance - they are all off.
+> As such, I would actually like to see my proposal implemented in the
+> !lowlatency case as well... unless my reasoning has a hole in it?
 >
-> Yup, this innocent toys can end up with this such behaviour on modern
-> highly loaded machines.
+> But if you are _also_ wanting to eliminate the long lock hold time and
+> strictly improve fairness for lowlatency kernels, then I agree that you=
+r
+> patch goes much further than mine, so I don't object to putting that
+> under CONFIG_PREEMPT.
+>  =20
+
+Ok, I understand what you are saying now, and that makes sense.
+
+-Greg
 
 
+--------------enig53EFEF0AF747B58B8D1A1A42
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
---Boundary-00=_uPUtIK8vFW3CqnH
-Content-Type: text/plain;
-  charset="iso-8859-1";
-  name="tasks.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="tasks.txt"
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-tcp        0      0 127.0.0.1:2600          0.0.0.0:*               LISTEN     3167/zebra
-tcp        0      0 0.0.0.0:2601            0.0.0.0:*               LISTEN     3167/zebra
-tcp        0      0 0.0.0.0:2602            0.0.0.0:*               LISTEN     3174/ripd
-tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN     3549/sshd
-tcp        0      0 194.146.153.17:22       194.146.154.161:37549   ESTABLISHED11593/sshd
-tcp        0      0 194.146.153.17:22       192.168.0.92:45891      ESTABLISHED11803/sshd
-tcp        0      0 127.0.0.1:42537         127.0.0.1:2600          ESTABLISHED3174/ripd
-tcp        0      0 194.146.153.17:22       194.146.153.18:51810    ESTABLISHED11799/sshd
-tcp        0      0 127.0.0.1:2600          127.0.0.1:42537         ESTABLISHED3167/zebra
-udp        0      0 0.0.0.0:520             0.0.0.0:*                          3174/ripd
-udp        0      0 0.0.0.0:161             0.0.0.0:*                          3194/snmpd
-udp        0      0 0.0.0.0:67              0.0.0.0:*                          3207/udhcpd
-udp   111360      0 0.0.0.0:49619           0.0.0.0:*                          2449/syslogd
+iEYEARECAAYFAki1REMACgkQlOSOBdgZUxkq7wCgiR0WYe1fY7jYWc8SgaOCK/E3
+YqoAn3xSe/1ocYEgs4VygiwF4L88ChMs
+=QnvT
+-----END PGP SIGNATURE-----
 
---Boundary-00=_uPUtIK8vFW3CqnH--
+--------------enig53EFEF0AF747B58B8D1A1A42--
