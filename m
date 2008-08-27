@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760422AbYH0OIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761678AbYH0OJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760422AbYH0OIy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 10:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759224AbYH0N4y
+	id S1761678AbYH0OJx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 10:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757266AbYH0OBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 09:56:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59741 "EHLO mx1.redhat.com"
+	Wed, 27 Aug 2008 10:01:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46588 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759216AbYH0N4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 09:56:52 -0400
+	id S1760129AbYH0OBi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 10:01:38 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 57/59] CRED: Wrap task credential accesses in the key
-	management code
+Subject: [PATCH 38/59] CRED: Wrap task credential accesses in the OCFS2
+	filesystem
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Serge Hallyn <serue@us.ibm.com>
-Date: Wed, 27 Aug 2008 14:50:36 +0100
-Message-ID: <20080827135036.19980.8006.stgit@warthog.procyon.org.uk>
+       Serge Hallyn <serue@us.ibm.com>, Mark Fasheh <mfasheh@suse.com>,
+       Joel Becker <joel.becker@oracle.com>, ocfs2-devel@oss.oracle.com
+Date: Wed, 27 Aug 2008 14:48:58 +0100
+Message-ID: <20080827134858.19980.65277.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
 References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -43,94 +44,60 @@ addressed by later patches.
 Signed-off-by: David Howells <dhowells@redhat.com>
 Reviewed-by: James Morris <jmorris@namei.org>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
+Cc: Mark Fasheh <mfasheh@suse.com>
+Cc: Joel Becker <joel.becker@oracle.com>
+Cc: ocfs2-devel@oss.oracle.com
 ---
 
- security/keys/key.c              |    2 +-
- security/keys/keyctl.c           |    2 +-
- security/keys/request_key.c      |   10 +++++-----
- security/keys/request_key_auth.c |    2 +-
- 4 files changed, 8 insertions(+), 8 deletions(-)
+ fs/ocfs2/dlm/dlmfs.c |    8 ++++----
+ fs/ocfs2/namei.c     |    4 ++--
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
 
-diff --git a/security/keys/key.c b/security/keys/key.c
-index 14948cf..a6ca39e 100644
---- a/security/keys/key.c
-+++ b/security/keys/key.c
-@@ -802,7 +802,7 @@ key_ref_t key_create_or_update(key_ref_t keyring_ref,
- 	}
+diff --git a/fs/ocfs2/dlm/dlmfs.c b/fs/ocfs2/dlm/dlmfs.c
+index 533a789..3516d8a 100644
+--- a/fs/ocfs2/dlm/dlmfs.c
++++ b/fs/ocfs2/dlm/dlmfs.c
+@@ -339,8 +339,8 @@ static struct inode *dlmfs_get_root_inode(struct super_block *sb)
+ 		ip = DLMFS_I(inode);
  
- 	/* allocate a new key */
--	key = key_alloc(ktype, description, current->fsuid, current->fsgid,
-+	key = key_alloc(ktype, description, current_fsuid(), current_fsgid(),
- 			current, perm, flags);
- 	if (IS_ERR(key)) {
- 		key_ref = ERR_CAST(key);
-diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
-index acc9c89..3f09e5b 100644
---- a/security/keys/keyctl.c
-+++ b/security/keys/keyctl.c
-@@ -817,7 +817,7 @@ long keyctl_setperm_key(key_serial_t id, key_perm_t perm)
- 	down_write(&key->sem);
+ 		inode->i_mode = mode;
+-		inode->i_uid = current->fsuid;
+-		inode->i_gid = current->fsgid;
++		inode->i_uid = current_fsuid();
++		inode->i_gid = current_fsgid();
+ 		inode->i_blocks = 0;
+ 		inode->i_mapping->backing_dev_info = &dlmfs_backing_dev_info;
+ 		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+@@ -365,8 +365,8 @@ static struct inode *dlmfs_get_inode(struct inode *parent,
+ 		return NULL;
  
- 	/* if we're not the sysadmin, we can only change a key that we own */
--	if (capable(CAP_SYS_ADMIN) || key->uid == current->fsuid) {
-+	if (capable(CAP_SYS_ADMIN) || key->uid == current_fsuid()) {
- 		key->perm = perm;
- 		ret = 0;
- 	}
-diff --git a/security/keys/request_key.c b/security/keys/request_key.c
-index ba32ca6..a8ebc95 100644
---- a/security/keys/request_key.c
-+++ b/security/keys/request_key.c
-@@ -77,7 +77,7 @@ static int call_sbin_request_key(struct key_construction *cons,
- 	/* allocate a new session keyring */
- 	sprintf(desc, "_req.%u", key->serial);
- 
--	keyring = keyring_alloc(desc, current->fsuid, current->fsgid, current,
-+	keyring = keyring_alloc(desc, current_fsuid(), current_fsgid(), current,
- 				KEY_ALLOC_QUOTA_OVERRUN, NULL);
- 	if (IS_ERR(keyring)) {
- 		ret = PTR_ERR(keyring);
-@@ -90,8 +90,8 @@ static int call_sbin_request_key(struct key_construction *cons,
- 		goto error_link;
- 
- 	/* record the UID and GID */
--	sprintf(uid_str, "%d", current->fsuid);
--	sprintf(gid_str, "%d", current->fsgid);
-+	sprintf(uid_str, "%d", current_fsuid());
-+	sprintf(gid_str, "%d", current_fsgid());
- 
- 	/* we say which key is under construction */
- 	sprintf(key_str, "%d", key->serial);
-@@ -279,7 +279,7 @@ static int construct_alloc_key(struct key_type *type,
- 	mutex_lock(&user->cons_lock);
- 
- 	key = key_alloc(type, description,
--			current->fsuid, current->fsgid, current, KEY_POS_ALL,
-+			current_fsuid(), current_fsgid(), current, KEY_POS_ALL,
- 			flags);
- 	if (IS_ERR(key))
- 		goto alloc_failed;
-@@ -342,7 +342,7 @@ static struct key *construct_key_and_link(struct key_type *type,
- 	struct key *key;
- 	int ret;
- 
--	user = key_user_lookup(current->fsuid);
-+	user = key_user_lookup(current_fsuid());
- 	if (!user)
- 		return ERR_PTR(-ENOMEM);
- 
-diff --git a/security/keys/request_key_auth.c b/security/keys/request_key_auth.c
-index bd237b0..729156b 100644
---- a/security/keys/request_key_auth.c
-+++ b/security/keys/request_key_auth.c
-@@ -195,7 +195,7 @@ struct key *request_key_auth_new(struct key *target, const void *callout_info,
- 	sprintf(desc, "%x", target->serial);
- 
- 	authkey = key_alloc(&key_type_request_key_auth, desc,
--			    current->fsuid, current->fsgid, current,
-+			    current_fsuid(), current_fsgid(), current,
- 			    KEY_POS_VIEW | KEY_POS_READ | KEY_POS_SEARCH |
- 			    KEY_USR_VIEW, KEY_ALLOC_NOT_IN_QUOTA);
- 	if (IS_ERR(authkey)) {
+ 	inode->i_mode = mode;
+-	inode->i_uid = current->fsuid;
+-	inode->i_gid = current->fsgid;
++	inode->i_uid = current_fsuid();
++	inode->i_gid = current_fsgid();
+ 	inode->i_blocks = 0;
+ 	inode->i_mapping->backing_dev_info = &dlmfs_backing_dev_info;
+ 	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+diff --git a/fs/ocfs2/namei.c b/fs/ocfs2/namei.c
+index 76d1d13..ef14614 100644
+--- a/fs/ocfs2/namei.c
++++ b/fs/ocfs2/namei.c
+@@ -426,13 +426,13 @@ static int ocfs2_mknod_locked(struct ocfs2_super *osb,
+ 	fe->i_blkno = cpu_to_le64(fe_blkno);
+ 	fe->i_suballoc_bit = cpu_to_le16(suballoc_bit);
+ 	fe->i_suballoc_slot = cpu_to_le16(inode_ac->ac_alloc_slot);
+-	fe->i_uid = cpu_to_le32(current->fsuid);
++	fe->i_uid = cpu_to_le32(current_fsuid());
+ 	if (dir->i_mode & S_ISGID) {
+ 		fe->i_gid = cpu_to_le32(dir->i_gid);
+ 		if (S_ISDIR(mode))
+ 			mode |= S_ISGID;
+ 	} else
+-		fe->i_gid = cpu_to_le32(current->fsgid);
++		fe->i_gid = cpu_to_le32(current_fsgid());
+ 	fe->i_mode = cpu_to_le16(mode);
+ 	if (S_ISCHR(mode) || S_ISBLK(mode))
+ 		fe->id1.dev1.i_rdev = cpu_to_le64(huge_encode_dev(dev));
 
