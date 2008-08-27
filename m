@@ -1,161 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbYH0VCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbYH0VDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755147AbYH0VCI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 17:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750811AbYH0VB4
+	id S1756104AbYH0VDU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 17:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbYH0VDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 17:01:56 -0400
-Received: from viefep32-int.chello.at ([62.179.121.50]:43104 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750784AbYH0VBz (ORCPT
+	Wed, 27 Aug 2008 17:03:12 -0400
+Received: from smtpauth.hypersurf.com ([209.237.0.8]:64628 "EHLO
+	smtpauth.hypersurf.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750811AbYH0VDL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 17:01:55 -0400
-Subject: Re: [PATCH -V3 01/11] percpu_counters: make fbc->count read atomic
-	on 32 bit architecture
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, cmm@us.ibm.com,
-       tytso@mit.edu, sandeen@redhat.com, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080827120553.9c9d6690.akpm@linux-foundation.org>
-References: <1219850916-8986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-	 <20080827120553.9c9d6690.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 27 Aug 2008 23:01:52 +0200
-Message-Id: <1219870912.6395.45.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 27 Aug 2008 17:03:11 -0400
+Message-ID: <48B5C0AD.9040006@hypersurf.com>
+Date: Wed, 27 Aug 2008 14:01:33 -0700
+From: Kevin Diggs <kevdig@hypersurf.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i486; en-US; rv:1.8b2) Gecko/20050724
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] Add cpufreq driver for the IBM PowerPC 750GX
+References: <48B28F23.1000906@hypersurf.com> <200808261329.22699.arnd@arndb.de> <48B51A31.8090909@hypersurf.com> <200808271334.16712.arnd@arndb.de>
+In-Reply-To: <200808271334.16712.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-08-27 at 12:05 -0700, Andrew Morton wrote:
-> On Wed, 27 Aug 2008 20:58:26 +0530
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+Arnd Bergmann wrote:
+> On Wednesday 27 August 2008, Kevin Diggs wrote:
 > 
-> > fbc->count is of type s64. The change was introduced by
-> > 0216bfcffe424a5473daa4da47440881b36c1f4 which changed the type
-> > from long to s64. Moving to s64 also means on 32 bit architectures
-> > we can get wrong values on fbc->count. Since fbc->count is read
-> > more frequently and updated rarely use seqlocks. This should
-> > reduce the impact of locking in the read path for 32bit arch.
-> > 
+>>Arnd Bergmann wrote:
 > 
-> So...  yesterday's suggestionm to investigate implementing this at a
-> lower level wasn't popular?
-
-I think its a good idea to investigate a generic atomic64_t type.
-
-i386 could possibly use cmpxchg8 if and when available, although using
-that to read might be rather too expensive.
-
-Doing something like:
-
-struct atomic64_t {
-	seqlock_t lock;
-	s64 val;
-};
-
-might be somewhat unexpected from the sizeof() angle of things. Then
-there is of course the possiblity of hashing the locks...
-
-
-
-> >  include/linux/percpu_counter.h |   28 ++++++++++++++++++++++++----
-> >  lib/percpu_counter.c           |   20 ++++++++++----------
-> >  2 files changed, 34 insertions(+), 14 deletions(-)
-> > 
-> > diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
-> > index 9007ccd..1b711a1 100644
-> > --- a/include/linux/percpu_counter.h
-> > +++ b/include/linux/percpu_counter.h
-> > @@ -6,7 +6,7 @@
-> >   * WARNING: these things are HUGE.  4 kbytes per counter on 32-way P4.
-> >   */
-> >  
-> > -#include <linux/spinlock.h>
-> > +#include <linux/seqlock.h>
-> >  #include <linux/smp.h>
-> >  #include <linux/list.h>
-> >  #include <linux/threads.h>
-> > @@ -16,7 +16,7 @@
-> >  #ifdef CONFIG_SMP
-> >  
-> >  struct percpu_counter {
-> > -	spinlock_t lock;
-> > +	seqlock_t lock;
-> >  	s64 count;
-> >  #ifdef CONFIG_HOTPLUG_CPU
-> >  	struct list_head list;	/* All percpu_counters are on a list */
-> > @@ -53,10 +53,30 @@ static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
-> >  	return __percpu_counter_sum(fbc);
-> >  }
-> >  
-> > -static inline s64 percpu_counter_read(struct percpu_counter *fbc)
-> > +#if BITS_PER_LONG == 64
-> > +static inline s64 fbc_count(struct percpu_counter *fbc)
-> >  {
-> >  	return fbc->count;
-> >  }
-> > +#else
-> > +/* doesn't have atomic 64 bit operation */
-> > +static inline s64 fbc_count(struct percpu_counter *fbc)
-> > +{
-> > +	s64 ret;
-> > +	unsigned seq;
-> > +	do {
-> > +		seq = read_seqbegin(&fbc->lock);
-> > +		ret = fbc->count;
-> > +	} while (read_seqretry(&fbc->lock, seq));
-> > +	return ret;
-> > +
 > 
-> Please don't put unneeded blank lines into random places.
+>>>Ok, thanks for the explanation. I now saw that you also
+>>>use '_v' for variables (I guess). These should probably
+>>>go the same way.
+>>>
+>>
+>>Actually the _v means global variable. I would prefer to keep it.
 > 
-> > +}
-> > +#endif
 > 
-> This is now too large to be inlined.
+> The reasoning on Linux is that you can tell from the declaration
+> whether something is global or automatic. In fact, functions should
+> be so short that you can always see all automatic declarations
+> when you look at some code.
 > 
-> > +static inline s64 percpu_counter_read(struct percpu_counter *fbc)
-> > +{
-> > +	return fbc_count(fbc);
-> > +}
+> If you use nonstandard variable naming, people will never stop
+> asking you about that, so it's easier to just to the same as
+> everyone else.
 > 
-> This change means that a percpu_counter_read() from interrupt context
-> on a 32-bit machine is now deadlockable, whereas it previously was not
-> deadlockable on either 32-bit or 64-bit.
+I will remove the "_v".
 > 
-> This flows on to the lib/proportions.c, which uses
-> percpu_counter_read() and also does spin_lock_irqsave() internally,
-> indicating that it is (or was) designed to be used in IRQ contexts.
-
-percpu_counter() never was irq safe, which is why the proportion stuff
-does all the irq disabling bits by hand.
-
-> It means that bdi_stat() can no longer be used from interrupt context.
-
-Actually, as long as the write side of the seqlock usage is done with
-IRQs disabled, the read side should be good.
-
-If the read loop gets preempted by a write action, the seq count will
-not match up and we'll just try again.
-
-The only lethal combination is trying to do the read loop while inside
-the write side.
-
-If you look at backing-dev.h, you'll see that all modifying operations
-disable IRQs.
-
-> So a whole lot of thought and review and checking is needed here.  It
-> should all be spelled out in the changelog.  This will be a horridly
-> rare deadlock, so suitable WARN_ON()s should be added to detect when
-> callers are vulnerable to it.
+>>>Then at least for the first two, the common coding style would
+>>>be to leave out the '= 0'. For minmaxmode, the most expressive
+>>>way would be to define an enum, like
+>>>
+>>>enum {
+>>>	MODE_NORMAL,
+>>>	MODE_MINMAX,
+>>>};
+>>>
+>>>int minmaxmode = MODE_NORMAL;
+>>>
+>>
+>>Since this is a boolean parameter I don't know? What if I change the
+>>name to enable_minmax. And actually use the "bool" module parameter
+>>type?
 > 
-> Or we make the whole thing irq-safe.
+> 
+> Module parameter names should be short, so just "minmax" would
+> be a good name, but better put the module_param() line right
+> after that. If it's a bool type, I would just leave out the
+> initialization.
+> 
+Ok. But leaving out the initialization will make me itch. Should I
+also replace "override_min_core" with "mincore" (or "min_core")? And
+"override_max_core" with "maxcore" (or "max_core")?
 
-That'd rather substantially penalize those cases where we don't need it.
->From what I understood this whole pushf/popf stuff is insanely expensive
-on a few archs.
+Leaving out the initializations makes me ... uneasy. It's ok to leave
+them out if they are 0?
+> 
+>>>>..._min_max_mode is a boolean to hold the state of
+>>>>minmaxmode. Seems to be only used to print the current
+>>>>value.
+>>>
+>>>
+>>>this looks like a duplicate then. why would you need both?
+>>>It seems really confusing to have both a cpufreq attribute
+>>>and a module attribute with the same name, writing to
+>>>different variables. 
+>>>
+>>
+>>I probably don't need both? I kinda treat the variables tied to module
+>>parameters as read only.
+> 
+> 
+> But you have marked as read/write in the module_param line.
+> 
+> I would prefer to just have the module parameter and have
+> a tool to modify that one.
+> 
+> If a module parameter only makes sense as read-only, you
+> should mark it as 0444 instead of 0644, but this one looks
+> like it can be writable.
+> 
+I meant I treat them as read only from the code. That is why I have a
+separate variable to change from the sysfs routines. I'll eliminate it
+if you like. I have removed the auto added sysfs attributes.
+> 
+>>>The completion would certainly be better than the sleep here, but
+>>>I think you shouldn't need that in the first place. AFAICT, you
+>>>have three different kinds of events that you need to protect
+>>>against, when some other code can call into your module:
+>>>
+>>>1. timer function,
+>>>2. cpufreq notifier, and
+>>>3. sysfs attribute.
+>>>
+>>>In each case, the problem is a race between two threads that you
+>>>need to close. In case of the timer, you need to call del_timer_sync
+>>>because the timers already have this method builtin. For the other
+>>>two, you already unregister the interfaces, which ought to be enough.
+>>>
+>>
+>>The choice I made here was to wait for the timer to fire rather than
+>>to delete it. I think it is easier to just wait for it than to delete
+>>it and try to get things back in order. Though since this is in a
+>>module exit routine it probably does not matter. Also I would have to
+>>check whether there was an analogous HRTimer call and call the right
+>>one.
+> 
+> 
+> I think the module_exit() function should leave the frequency in a
+> well-defined state, so the easiest way to get there is probably
+> to delete the timer, and then manually set the frequency.
+> 
+I really don't follow you here? If I let the timer fire then the cpu
+(and the cpufreq sub-system) will be left in a well-defined state. I
+don't understand why you want me to delete the timer and then
+basically do manually what it was going to do anyway. There are two
+calls to cpufreq_notify_transition(). One just before the modify_PLL()
+call, with CPUFREQ_PRECHANGE as an argument, and one in the
+pll_switch_cb() routine, with CPUFREQ_POSTCHANGE as an argument. I
+would need to make sure that these are matched up.
 
+Even without the HRTimer stuff being used the timer fires in less than
+4 ms (@ 250 HZ). So I can't see the user actually trying to interrupt
+a frequency change. With HRTimers it is 100 us.
+
+Can we please, please leave this part as is?
+> 
+> 	Arnd <><
+> 
