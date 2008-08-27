@@ -1,94 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755782AbYH0Tbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbYH0Tof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755782AbYH0Tbi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 15:31:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbYH0Tba
+	id S1752980AbYH0Tof (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 15:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbYH0To0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 15:31:30 -0400
-Received: from ns.firmix.at ([62.141.48.66]:2858 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752794AbYH0Tb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 15:31:29 -0400
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
-	bisected
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Parag Warudkar <parag.lkml@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Rusty Russell <rusty@rustcorp.com.au>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-embedded@vger.kernel.org
-In-Reply-To: <20080827175152.GA27491@shareable.org>
-References: <20080826205916.GB11734@cs181140183.pp.htv.fi>
-	 <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org>
-	 <f7848160808261554j2f4eaaa6i1ee8801ae75ca7bf@mail.gmail.com>
-	 <alpine.LFD.1.10.0808261644260.3363@nehalem.linux-foundation.org>
-	 <f7848160808261758q7b84aab1m188c1ebb59304818@mail.gmail.com>
-	 <1219827609.30209.29.camel@spike.firmix.at>
-	 <f7848160808270556q54c36270ye6a465d2ca123cc@mail.gmail.com>
-	 <1219843032.30209.51.camel@spike.firmix.at>
-	 <20080827154805.GA25387@shareable.org>
-	 <1219855121.30209.112.camel@spike.firmix.at>
-	 <20080827175152.GA27491@shareable.org>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Wed, 27 Aug 2008 21:30:31 +0200
-Message-Id: <1219865431.3475.3.camel@gimli.at.home>
+	Wed, 27 Aug 2008 15:44:26 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:45632 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750765AbYH0To0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 15:44:26 -0400
+Date: Wed, 27 Aug 2008 21:44:22 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: "Steven A. Falco" <sfalco@harris.com>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Atsushi Nemoto <anemo@mba.ocn.ne.jp>, rtc-linux@googlegroups.com,
+       will.newton@gmail.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [rtc-linux] Re: [RFC] Driver for Real Time Clock chip ST M41T65
+Message-ID: <20080827214422.6f4c1877@i1501.lan.towertech.it>
+In-Reply-To: <48B58D3D.6030808@harris.com>
+References: <48B4159A.9070907@harris.com>
+	<20080827.213551.72707274.anemo@mba.ocn.ne.jp>
+	<48B55788.5050306@harris.com>
+	<20080827.225323.118975574.anemo@mba.ocn.ne.jp>
+	<Pine.LNX.4.55.0808271717110.5930@cliff.in.clinika.pl>
+	<48B58D3D.6030808@harris.com>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.345 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.345 required=5
-X-Spam-Score: -2.345 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mit, 2008-08-27 at 18:51 +0100, Jamie Lokier wrote:
-> Bernd Petrovitsch wrote:
-[...]
-> It is, but the idea that small embedded systems go through a 'all
-> components are known, drivers are known, test and if it passes it's
-> shippable' does not always apply.
+On Wed, 27 Aug 2008 13:22:05 -0400
+"Steven A. Falco" <sfalco@harris.com> wrote:
 
-Not always but often enough. And yes, there is ARM-based embedded
-hardware with 1GB Flash-RAM and 128MB RAM.
-
-> > > I'm seriously thinking of forwarding porting the 4 year old firmware
-> > > from 2.4.26 to 2.6.current, just to get new drivers and capabilities.
-> > 
-> > That sounds reasonable (and I never meant maintaining the old system
-> > infinitely.
+> Add support for M41T65 Real Time Clock chip
 > 
-> Sounds reasonable, but it's vetoed for anticipated time and cost,
+> Signed-off-by: Steven A. Falco <sfalco@harris.com>
 
-That is to be expected;-)
 
-[....]
-> > ACK. We avoid MMU-less hardware too - especially since there is enough
-> > hardware with a MMU around.
-> 
-> I can't emphasise enough how much difference MMU makes to Linux userspace.
-> 
-> It's practically: MMU = standard Linux (with less RAM), have everything.
-> No-MMU = lots of familiar 'Linux' things not available or break.
+ Acked-by: Alessandro Zummo <a.zummo@towertech.it>
 
-ACK. And tell that a customer that everything is more effort and more
-risk and not just "simply cross-compile it as it runs on my desktop
-too".
-
-	Bernd
 -- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
 
