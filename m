@@ -1,198 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbYH0CYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbYH0C2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753798AbYH0CYT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 22:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbYH0CYH
+	id S1754307AbYH0C2L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 22:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYH0C15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 22:24:07 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:55223 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbYH0CYE (ORCPT
+	Tue, 26 Aug 2008 22:27:57 -0400
+Received: from web33202.mail.mud.yahoo.com ([209.191.69.150]:44693 "HELO
+	web33202.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751807AbYH0C15 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 22:24:04 -0400
-Date: Tue, 26 Aug 2008 21:24:03 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Robert Rex <robert.rex@exasol.com>,
-       Roland McGrath <roland@redhat.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] pid_ns: (BUG 11391) change ->child_reaper when
-	init->group_leader exits
-Message-ID: <20080827022403.GA2320@us.ibm.com>
-References: <20080824154912.GA3780@tv-sign.ru>
+	Tue, 26 Aug 2008 22:27:57 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=nnLsE9/i6xD4Vic1uQ97G8yaXyjStajDJwRxMlufeGIgNnqBps0/A1eZpdUc+EGZC/4c3TvxZxD5m6jBjbhvxXxprQhynFm4Sr27ck8ScNletjGwusK6IULOgfTKsokuw2piWc59dPUMA/P26RTUplrbRUBWHy4YkTN5T72IhSo=;
+X-YMail-OSG: E_b4DssVM1lHdap9L571n0RF29at.kM3NAWiT0QCKzLTSE1mcLHqvjLSywddQIXXizs6_SoKf9S8urgaaYiUoNEcLBAC8mWtEJHWt2UCS4a4RPpoy7_Ji1u1VYqh7XvXf1c-
+X-Mailer: YahooMailWebService/0.7.218.2
+Date: Tue, 26 Aug 2008 19:27:56 -0700 (PDT)
+From: jassi brar <jassi_singh_brar@yahoo.com>
+Reply-To: jassi_singh_brar@yahoo.com
+Subject: Re: An idea .... with code
+To: andi@firstfloor.org
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080824154912.GA3780@tv-sign.ru>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-ID: <274005.57526.qm@web33202.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oleg Nesterov (oleg@tv-sign.ru):
-> We don't change pid_ns->child_reaper when the main thread of the
-> subnamespace init exits. As Robert Rex <robert.rex@exasol.com>
-> pointed out this is wrong.
+Hi Andi,
 
-I think there was another way that could go wrong as well - if the main
-thread exited but sighand had another user, then the child_reaper would
-not be changed, zap_pid_ns_processes() would not be called, and children
-would continue to run and at death try to signal the dead main thread.
+Before starting i would like to point out the 'philosophy' behind the idea.
 
-> Yes, the re-parenting itself works correctly, but if the reparented
-> task exits it needs ->parent->nsproxy->pid_ns in do_notify_parent(),
-> and if the main thread is zombie its ->nsproxy was already cleared
-> by exit_task_namespaces().
-> 
-> Introduce the new function, find_new_reaper(), which finds the new
-> ->parent for the re-parenting and changes ->child_reaper if needed.
-> Kill the now unneeded exit_child_reaper().
-> 
-> Also move the changing of ->child_reaper from zap_pid_ns_processes()
-> to find_new_reaper(), this consolidates the games with ->child_reaper
-> and makes it stable under tasklist_lock.
-> 
-> Reported-by: Robert Rex <robert.rex@exasol.com>
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+ Exceptions(special cases) make for entropy and hence complexity. Generalization keeps uniformity and hences Order and Ease.
+ We can't escape 'entropy' when emulating something that it is actually not, nevertheless we can minimize it by introducing as least and as localized changes as possible. 
+ My idea congregates only determining changes at the lowest level(driver), unlike the respectable LOOP driver which hardcodes limits and adds to the entropy(new ioctls, special utilities etc). I am sure you, being a vetran, understand the point well.
+ 
+ I am not for discarding features from the system, but for implementing them in a way that is lesser intrusive.
+ 
+> Can you please expand a bit why you think losetup is that complicated
+> and what the problem is with it?
+ Sir, i don't object to losetup as such. It is a utility made(specifically?) for LOOP devices: which implements unnecessary gears and switches to operate.
+ I object only to what could be done without using ioctls and not to features that losetup provides for devices other than Loop(are there any?)
 
-Sat on this for a bit - the only thing about this that worried me was
-that zap_pid_ns_processes() is moved much further down in do_exit().
-After looking I see no reason why that would be a problem, though.
+> AFAIK you're essentially just moving a minimal version of losetup
+> (with missing features like no offsets etc.) into the kernel 
+ Its simpler than that :)
+ All i do is implement non-ioctl method to load/unload a file as a (emulated)block device. And alloc/free resources for them on need basis rather than limiting them at driver-module load-time.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+ Further about some features of LOOP drivers like encryption: i think they are better done at filesystem level.
+ I believe any operation that could be done on a real block device shud be possible on an emulated one. And exactly that.
+ If there is any need to do some stuff(offsets, encryption etc) then that cud be done on a real block and we would surely already have utilities for doing that on real devices(and hences on a transparent emulated device).
+ I am unable to think of something practical that can _only_ be done using the 'offset feature' of losetup on /dev/loop AND which can not be accomplished for (emulated or not)block devices.
+ The point is to only make least intrusive and most generic code, for making easy the inheritance of standard system-wide features, utilities and usages.
 
-Thanks, Oleg.
+ LOOP driver was a brilliant idea for the early days of Linux. The days when one could relatively easily define new syscalls/ioctls.
+ 
+> Or rather if you start with losetup, why stop at mount, modprobe, ifconfig, mkfs, fsck, ls[1], ...?
+ I am not starting with any application.
+ I start with removing redundancy in a driver(LOOP), if by doing that i make obsolete an application... am for it.
 
-> 
->  kernel/pid_namespace.c |    6 ---
->  kernel/exit.c          |   78 +++++++++++++++++++++----------------------------
->  2 files changed, 34 insertions(+), 50 deletions(-)
-> 
-> --- 2.6.27-rc4/kernel/pid_namespace.c~2_SWITCH_REAPER	2008-08-24 17:22:59.000000000 +0400
-> +++ 2.6.27-rc4/kernel/pid_namespace.c	2008-08-24 18:22:44.000000000 +0400
-> @@ -179,12 +179,6 @@ void zap_pid_ns_processes(struct pid_nam
->  		rc = sys_wait4(-1, NULL, __WALL, NULL);
->  	} while (rc != -ECHILD);
-> 
-> -	/*
-> -	 * We can not clear ->child_reaper or leave it alone.
-> -	 * There may by stealth EXIT_DEAD tasks on ->children,
-> -	 * forget_original_parent() must move them somewhere.
-> -	 */
-> -	pid_ns->child_reaper = init_pid_ns.child_reaper;
->  	acct_exit_ns(pid_ns);
->  	return;
->  }
-> --- 2.6.27-rc4/kernel/exit.c~2_SWITCH_REAPER	2008-08-24 16:46:51.000000000 +0400
-> +++ 2.6.27-rc4/kernel/exit.c	2008-08-24 18:22:37.000000000 +0400
-> @@ -831,26 +831,50 @@ static void reparent_thread(struct task_
->   * the child reaper process (ie "init") in our pid
->   * space.
->   */
-> +static struct task_struct *find_new_reaper(struct task_struct *father)
-> +{
-> +	struct pid_namespace *pid_ns = task_active_pid_ns(father);
-> +	struct task_struct *thread;
-> +
-> +	thread = father;
-> +	while_each_thread(father, thread) {
-> +		if (thread->flags & PF_EXITING)
-> +			continue;
-> +		if (unlikely(pid_ns->child_reaper == father))
-> +			pid_ns->child_reaper = thread;
-> +		return thread;
-> +	}
-> +
-> +	if (unlikely(pid_ns->child_reaper == father)) {
-> +		write_unlock_irq(&tasklist_lock);
-> +		if (unlikely(pid_ns == &init_pid_ns))
-> +			panic("Attempted to kill init!");
-> +
-> +		zap_pid_ns_processes(pid_ns);
-> +		write_lock_irq(&tasklist_lock);
-> +		/*
-> +		 * We can not clear ->child_reaper or leave it alone.
-> +		 * There may by stealth EXIT_DEAD tasks on ->children,
-> +		 * forget_original_parent() must move them somewhere.
-> +		 */
-> +		pid_ns->child_reaper = init_pid_ns.child_reaper;
-> +	}
-> +
-> +	return pid_ns->child_reaper;
-> +}
-> +
->  static void forget_original_parent(struct task_struct *father)
->  {
-> -	struct task_struct *p, *n, *reaper = father;
-> +	struct task_struct *p, *n, *reaper;
->  	LIST_HEAD(ptrace_dead);
-> 
->  	write_lock_irq(&tasklist_lock);
-> -
-> +	reaper = find_new_reaper(father);
->  	/*
->  	 * First clean up ptrace if we were using it.
->  	 */
->  	ptrace_exit(father, &ptrace_dead);
-> 
-> -	do {
-> -		reaper = next_thread(reaper);
-> -		if (reaper == father) {
-> -			reaper = task_child_reaper(father);
-> -			break;
-> -		}
-> -	} while (reaper->flags & PF_EXITING);
-> -
->  	list_for_each_entry_safe(p, n, &father->children, sibling) {
->  		p->real_parent = reaper;
->  		if (p->parent == father) {
-> @@ -959,39 +983,6 @@ static void check_stack_usage(void)
->  static inline void check_stack_usage(void) {}
->  #endif
-> 
-> -static inline void exit_child_reaper(struct task_struct *tsk)
-> -{
-> -	if (likely(tsk->group_leader != task_child_reaper(tsk)))
-> -		return;
-> -
-> -	if (tsk->nsproxy->pid_ns == &init_pid_ns)
-> -		panic("Attempted to kill init!");
-> -
-> -	/*
-> -	 * @tsk is the last thread in the 'cgroup-init' and is exiting.
-> -	 * Terminate all remaining processes in the namespace and reap them
-> -	 * before exiting @tsk.
-> -	 *
-> -	 * Note that @tsk (last thread of cgroup-init) may not necessarily
-> -	 * be the child-reaper (i.e main thread of cgroup-init) of the
-> -	 * namespace i.e the child_reaper may have already exited.
-> -	 *
-> -	 * Even after a child_reaper exits, we let it inherit orphaned children,
-> -	 * because, pid_ns->child_reaper remains valid as long as there is
-> -	 * at least one living sub-thread in the cgroup init.
-> -
-> -	 * This living sub-thread of the cgroup-init will be notified when
-> -	 * a child inherited by the 'child-reaper' exits (do_notify_parent()
-> -	 * uses __group_send_sig_info()). Further, when reaping child processes,
-> -	 * do_wait() iterates over children of all living sub threads.
-> -
-> -	 * i.e even though 'child_reaper' thread is listed as the parent of the
-> -	 * orphaned children, any living sub-thread in the cgroup-init can
-> -	 * perform the role of the child_reaper.
-> -	 */
-> -	zap_pid_ns_processes(tsk->nsproxy->pid_ns);
-> -}
-> -
->  NORET_TYPE void do_exit(long code)
->  {
->  	struct task_struct *tsk = current;
-> @@ -1051,7 +1042,6 @@ NORET_TYPE void do_exit(long code)
->  	}
->  	group_dead = atomic_dec_and_test(&tsk->signal->live);
->  	if (group_dead) {
-> -		exit_child_reaper(tsk);
->  		hrtimer_cancel(&tsk->signal->real_timer);
->  		exit_itimers(tsk->signal);
->  	}
+>[1] I'm sure someone could come up with some scheme to do ls using sysfs 
+> and you could find someone on this list who said "cool" :)
+ It would indeed be cool if the one doesn't make use of 'cat' 'grep' et al and the method is more efficient. 
+ Otherwise it would just be four motobikes tugging a car :)
+
+Regards,
+Jassi
+
+
+
+      
