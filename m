@@ -1,106 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbYH0Hkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbYH0HmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754299AbYH0Hkf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 03:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYH0Hj4
+	id S1754249AbYH0HmH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 03:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbYH0Hlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 03:39:56 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:17782 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752620AbYH0Hjz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 03:39:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=cNsCw2qHSj3Svgv7yKI8SEeYtzSerbTG1QNcur9/S4QTn6IGspp967YFK3MOL2lT/g
-         /Tw7corGZYxKtGBgNYaIxEAvncYJugVdBifrXsGuZfYKZxZhGNChB+b+sazfTjczi3yC
-         Mo5P48jsrl602w8h4aShwL5gKzlz5+k0hCXUo=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	Wed, 27 Aug 2008 03:41:55 -0400
+Received: from gate.crashing.org ([63.228.1.57]:50962 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752018AbYH0Hlz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 03:41:55 -0400
+Subject: Re: RFC [PATCH] x86/pci: reserve extra page to avoid error caused
+	by P2P pref DMA reads
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] x86: printk_time to use tsc before cpu_clock is ready
-Date: Wed, 27 Aug 2008 00:38:56 -0700
-Message-Id: <1219822736-18628-2-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1219822736-18628-1-git-send-email-yhlu.kernel@gmail.com>
-References: <1219822736-18628-1-git-send-email-yhlu.kernel@gmail.com>
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@suse.cz>, Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <1219822159-17245-1-git-send-email-yhlu.kernel@gmail.com>
+References: <1219822159-17245-1-git-send-email-yhlu.kernel@gmail.com>
+Content-Type: text/plain
+Date: Wed, 27 Aug 2008 17:40:40 +1000
+Message-Id: <1219822840.13162.184.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so can get tsc value on printk at first.
+On Wed, 2008-08-27 at 00:29 -0700, Yinghai Lu wrote:
+> Diag guys, found one system when loading is high, will have gart wark error.
+> root cause is P2P bridge try to prefetch for several intel e1000 under
+> it. and that skb is near GART iommu area.
+> 
+> try to reserve page in the boundary at first.
+> last page near TOM2, and last page near MMIO
+> also gart first and last page.
+> 
+> need one better way for all arch support PCI and memory with a lot of holes etc.
 
-for debug delay with big system with a lot of memory.
+Sounds like a similar problem for which we don't unmap GART pages,
+just map them read-only and route them to a dummy page. In that
+case, the right approach is to write the last page of the GART
+to the dummy page as well and mark it occupied. That shouldn't
+involve actually reserving memory.
 
-need to apply after
-	[PATCH] printk_time: prepare stub for using other than cpu_clock
+I'm not familiar with the x86 PCI DMA code but afaik, it's fairly
+similar to ours (powerpc) in that area.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Ben.
+ 
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> Cc: Pavel Machek <pavel@suse.cz>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Jesse Barnes<jbarnes@virtuousgeek.org>
+> 
+> ---
+>  arch/x86/kernel/pci-dma.c     |   28 ++++++++++++++++++++++++++++
+>  arch/x86/kernel/pci-gart_64.c |    6 ++++++
+>  2 files changed, 34 insertions(+)
+> 
+> Index: linux-2.6/arch/x86/kernel/pci-dma.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/pci-dma.c
+> +++ linux-2.6/arch/x86/kernel/pci-dma.c
+> @@ -72,12 +72,40 @@ static int __init parse_dma32_size_opt(c
+>  }
+>  early_param("dma32_size", parse_dma32_size_opt);
+>  
+> +static void __init reserve_last_page(unsigned long pfn)
+> +{
+> +	unsigned long phys;
+> +	void *ptr;
+> +
+> +	phys = (pfn - 1)<<PAGE_SHIFT;
+> +	ptr = __alloc_bootmem_nopanic(PAGE_SIZE, PAGE_SIZE, phys);
+> +
+> +	if (!ptr || virt_to_phys(ptr) != phys)
+> +		printk(KERN_WARNING "Can not hold last page near %lx for workaround P2P pref DMA reads!\n", phys);
+> +	else
+> +		printk(KERN_WARNING "Last page is reserved near %lx for workaround P2P pref DMA reads!\n", phys);
+> +}
+>  void __init dma32_reserve_bootmem(void)
+>  {
+>  	unsigned long size, align;
+> +
+> +	/*
+> +	 * try to reserve last page to workaround P2P bridge pref DMA reads
+> +	 * normally don't need to reserve the page near mmio,
+> +	 * because always has acpi etc sit there.
+> +	 * but some system has that acpi in the middle of ram below 4g
+> +	 * so just reserve it.
+> +	 */
+> +	if (max_low_pfn_mapped < max_pfn_mapped)
+> +		reserve_last_page(max_low_pfn_mapped);
+> +
+> +	/* less than 4G, don't need iommu */
+>  	if (max_pfn <= MAX_DMA32_PFN)
+>  		return;
+>  
+> +	/* try to reserve last page to workaround P2P bridge pref DMA reads */
+> +	reserve_last_page(max_pfn);
+> +
+>  	/*
+>  	 * check aperture_64.c allocate_aperture() for reason about
+>  	 * using 512M as goal
+> Index: linux-2.6/arch/x86/kernel/pci-gart_64.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/pci-gart_64.c
+> +++ linux-2.6/arch/x86/kernel/pci-gart_64.c
+> @@ -826,6 +826,9 @@ void __init gart_iommu_init(void)
+>  	 */
+>  	set_bit_string(iommu_gart_bitmap, 0, EMERGENCY_PAGES);
+>  
+> +	/* reserve one page at tail, for P2P bridge pref DMA reads */
+> +	set_bit_string(iommu_gart_bitmap, iommu_pages - 1, 1);
+> +
+>  	agp_memory_reserved = iommu_size;
+>  	printk(KERN_INFO
+>  	       "PCI-DMA: Reserving %luMB of IOMMU area in the AGP aperture\n",
+> @@ -870,6 +873,9 @@ void __init gart_iommu_init(void)
+>  	for (i = EMERGENCY_PAGES; i < iommu_pages; i++)
+>  		iommu_gatt_base[i] = gart_unmapped_entry;
+>  
+> +	/* we need set unmapped on head too, for P2P bridge pref DMA reads */
+> +	iommu_gatt_base[0] = gart_unmapped_entry;
+> +
+>  	flush_gart();
+>  	dma_ops = &gart_dma_ops;
+>  }
 
----
- arch/x86/kernel/cpu/common.c    |   11 +++++++++++
- arch/x86/kernel/cpu/common_64.c |   12 ++++++++++++
- 2 files changed, 23 insertions(+)
-
-Index: linux-2.6/arch/x86/kernel/cpu/common.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/common.c
-+++ linux-2.6/arch/x86/kernel/cpu/common.c
-@@ -647,6 +647,15 @@ __setup("clearcpuid=", setup_disablecpui
- 
- cpumask_t cpu_initialized __cpuinitdata = CPU_MASK_NONE;
- 
-+static unsigned long long tsc_clock(int cpu)
-+{
-+	unsigned long long t;
-+
-+	rdtscll(t);
-+
-+	return t;
-+}
-+
- void __init early_cpu_init(void)
- {
- 	struct cpu_vendor_dev *cvdev;
-@@ -657,6 +666,8 @@ void __init early_cpu_init(void)
- 		cpu_devs[cvdev->vendor] = cvdev->cpu_dev;
- 
- 	early_cpu_detect();
-+	if (cpu_has_tsc)
-+		set_printk_time_clock(tsc_clock);
- 	validate_pat_support(&boot_cpu_data);
- }
- 
-Index: linux-2.6/arch/x86/kernel/cpu/common_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/common_64.c
-+++ linux-2.6/arch/x86/kernel/cpu/common_64.c
-@@ -249,6 +249,15 @@ static void __cpuinit detect_nopl(struct
- 	}
- }
- 
-+static unsigned long long tsc_clock(int cpu)
-+{
-+	unsigned long long t;
-+
-+	rdtscll(t);
-+
-+	return t;
-+}
-+
- static void __cpuinit early_identify_cpu(struct cpuinfo_x86 *c);
- 
- void __init early_cpu_init(void)
-@@ -261,6 +270,9 @@ void __init early_cpu_init(void)
-                 cpu_devs[cvdev->vendor] = cvdev->cpu_dev;
- 	early_cpu_support_print();
- 	early_identify_cpu(&boot_cpu_data);
-+
-+	if (cpu_has_tsc)
-+		set_printk_time_clock(tsc_clock);
- }
- 
- /* Do some early cpuid on the boot CPU to get some parameter that are
