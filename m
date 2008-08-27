@@ -1,124 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758249AbYH0QIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758611AbYH0QI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758249AbYH0QIA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 12:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbYH0QHr
+	id S1758611AbYH0QI3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 12:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbYH0QHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 12:07:47 -0400
-Received: from gv-out-0910.google.com ([216.239.58.186]:24012 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755105AbYH0QHq (ORCPT
+	Wed, 27 Aug 2008 12:07:53 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:30684 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758152AbYH0QHw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 12:07:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=JsttQs9gdh8dAWRd/7K9KikUQqr/jwExnJz0snyeCAZ5UFfUm5R4PsubqFQEFA2KXS
-         UUrA3ojgC52w6tQOUw8JlscCp+u3jInMdqgpj68EwfC8F+wxmNveXrQXLkUl6RKnAbfh
-         bJrvsvM2652x3vJbbs0Z6dlb62ktSi76htHtI=
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>
-Cc: agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-       baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
-       dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
-       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
-       Marco Innocenti <m.innocenti@cineca.it>, matt@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+	Wed, 27 Aug 2008 12:07:52 -0400
+Message-ID: <48B57BD3.5050206@hp.com>
+Date: Wed, 27 Aug 2008 09:07:47 -0700
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Eric Dumazet <dada1@cosmosbay.com>,
+       Denys Fedoryshchenko <denys@visp.net.lb>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH -mm 0/5] cgroup: block device i/o controller (v9)
-Date: Wed, 27 Aug 2008 18:07:32 +0200
-Message-Id: <1219853257-11052-1-git-send-email-righi.andrea@gmail.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+References: <200808220457.40892.denys@visp.net.lb>	<20080826201406.GA24827@2ka.mipt.ru> <48B46B48.7030609@cosmosbay.com>	<20080826205158.GA15266@2ka.mipt.ru> <87vdxmr53f.fsf@basil.nowhere.org>
+In-Reply-To: <87vdxmr53f.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+> Evgeniy Polyakov <johnpol@2ka.mipt.ru> writes:
+> 
+>>Yup, this innocent toys can end up with this such behaviour on modern
+>>highly loaded machines.
+> 
+> 
+> I and also other people had some patches to move the time stamp
+> measuring into the socket. This way the time stamping didn't need to
+> be enabled on all packets, only on those that actually end up at a
+> socket that requires the time stamp.
+> 
+> Unfortunately DaveM didn't like it because some bank wanted
+> different semantics, see the discussion in 
+> http://thread.gmane.org/gmane.linux.network/91679
+> 
+> Perhaps you can find out which bank it was and send them a bill for
+> your CPU time ;-)
 
-The objective of the i/o controller is to improve i/o performance
-predictability of different cgroups sharing the same block devices.
+Those banks really want to crank down on latency - to the point they 
+start disabling interrupt coalescing.  I bet they'd toss anything out 
+they could to shave another microsecond.
 
-Respect to other priority/weight-based solutions the approach used by this
-controller is to explicitly choke applications' requests that directly (or
-indirectly) generate i/o activity in the system.
-
-The direct bandwidth and/or iops limiting method has the advantage of improving
-the performance predictability at the cost of reducing, in general, the overall
-performance of the system (in terms of throughput).
-
-Detailed informations about design, its goal and usage are described in the
-documentation.
-
-Patchset against 2.6.27-rc1-mm1.
-
-The all-in-one patch (and previous versions) can be found at:
-http://download.systemimager.org/~arighi/linux/patches/io-throttle/
-
-This patchset is an experimental implementation, it includes functional
-differences respect to the previous versions (see the changelog below), and I
-haven't done much testing yet. So, comments are really welcome.
-
-Changelog: (v8 -> v9)
-
-* introduce struct res_counter_ratelimit as a generic structure to implement
-  throttling-based cgroup subsystems
-* removed the throttling hooks from the page cache (set_page_dirty): set a
-  single throttling hook in submit_bio() both for read and write operations; a
-  generic process that is dirtying pages on a limited block device (for the
-  cgroup it belongs to) is forced to flush the same amount of pages back to the
-  block device (in this way write operations are forced to occur in the same IO
-  context of the process that actually generated the IO)
-* collect per cgroup, block device and task throttling statistics (throttle
-  counter and total time slept for throttling) and export them to userspace
-  through blockio.throttlcnt (in the cgroup filesystem) and
-  /proc/PID/io-throttle-stat (per-task statistics)
-* fair throttling: simple attempt to distribute the sleeps equally among all
-  the tasks belonging to the same cgroup; instead of imposing a sleep to the
-  first task that exceeds the IO limits, the time to sleep is divided by the
-  number of tasks present in the same cgroup
-
-TODO:
-
-* Try to push down the throttling and implement it directly in the I/O
-  schedulers, using bio-cgroup (http://people.valinux.co.jp/~ryov/bio-cgroup/)
-  to keep track of the right cgroup context. This approach could lead to more
-  memory consumption and increases the number of dirty pages (hard/slow to
-  reclaim pages) in the system, since dirty-page ratio in memory is not
-  limited. This could even lead to potential OOM conditions, but these problems
-  can be resolved directly into the memory cgroup subsystem
-
-* Handle I/O generated by kswapd: at the moment there's no control on the I/O
-  generated by kswapd; try to use the page_cgroup functionality of the memory
-  cgroup controller to track this kind of I/O and charge the right cgroup when
-  pages are swapped in/out
-
-* Improve fair throttling: distribute the time to sleep among all the tasks of
-  a cgroup that exceeded the I/O limits, depending of the amount of IO activity
-  generated in the past by each task (see task_io_accounting)
-
-* Try to reduce the cost of calling cgroup_io_throttle() on every submit_bio();
-  this is not too much expensive, but the call of task_subsys_state() has
-  surely a cost. A possible solution could be to temporarily account I/O in the
-  current task_struct and call cgroup_io_throttle() only on each X MB of I/O.
-  Or on each Y number of I/O requests as well. Better if both X and/or Y can be
-  tuned at runtime by a userspace tool
-
-* Think an alternative design for general purpose usage; special purpose usage
-  right now is restricted to improve I/O performance predictability and
-  evaluate more precise response timings for applications doing I/O. To a large
-  degree the block I/O bandwidth controller should implement a more complex
-  logic to better evaluate real I/O operations cost, depending also on the
-  particular block device profile (i.e. USB stick, optical drive, hard disk,
-  etc.). This would also allow to appropriately account I/O cost for seeky
-  workloads, respect to large stream workloads. Instead of looking at the
-  request stream and try to predict how expensive the I/O cost will be, a
-  totally different approach could be to collect request timings (start time /
-  elapsed time) and based on collected informations, try to estimate the I/O
-  cost and usage
-
--Andrea
+rick jones
