@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbYH0HEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbYH0HF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753844AbYH0HEz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 03:04:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbYH0HEq
+	id S1753344AbYH0HF3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 03:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYH0HFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 03:04:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38341 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752053AbYH0HEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 03:04:45 -0400
-Date: Wed, 27 Aug 2008 09:04:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       yhlu.kernel@gmail.com
-Subject: Re: [patch 2/2] x2apic: use x2apic id reported by cpuid during
-	topology discovery
-Message-ID: <20080827070427.GH6255@elte.hu>
-References: <20080826183909.887903000@linux-os.sc.intel.com> <20080826183910.047665000@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080826183910.047665000@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 27 Aug 2008 03:05:13 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50206
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752796AbYH0HFM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 03:05:12 -0400
+Date: Wed, 27 Aug 2008 00:05:06 -0700 (PDT)
+Message-Id: <20080827.000506.177643294.davem@davemloft.net>
+To: nickpiggin@yahoo.com.au
+Cc: travis@sgi.com, davej@redhat.com, torvalds@linux-foundation.org,
+       Alan.Brunelle@hp.com, mingo@elte.hu, tglx@linutronix.de, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       akpm@linux-foundation.org, arjan@linux.intel.com, rusty@rustcorp.com.au,
+       suresh.b.siddha@intel.com, tony.luck@intel.com, steiner@sgi.com,
+       cl@linux-foundation.org
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
+ bisected
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200808271654.32721.nickpiggin@yahoo.com.au>
+References: <20080826192848.GA20653@redhat.com>
+	<48B460FE.2020100@sgi.com>
+	<200808271654.32721.nickpiggin@yahoo.com.au>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+Date: Wed, 27 Aug 2008 16:54:32 +1000
 
-applied the delta patch below to tip/x86/x2apic - thanks Suresh.
+> 5% is a pretty nasty performance hit... what sort of benchmarks are we
+> talking about here?
+> 
+> I just made some pretty crazy changes to the VM to get "only" around 5
+> or so % performance improvement in some workloads.
+> 
+> What places are making heavy use of cpumasks that causes such a slowdown?
+> Hopefully callers can mostly be improved so they don't need to use cpumasks
+> for common cases.
 
-	Ingo
+It's almost certainly from the cross-call dispatch call chain.
 
->From 11c231a962c740b3216eb6565149ae5a7944cba7 Mon Sep 17 00:00:00 2001
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Date: Sat, 23 Aug 2008 17:47:11 +0200
-Subject: [PATCH] x86: use x2apic id reported by cpuid during topology discovery, fix
+As just one example, just to do a TLB flush mm->cpu_vm_mask probably
+gets passed around as an aggregate two or three times on the way down
+to the APIC programming code on x86.  That's two or three 512 byte
+copies on the stack :)
 
-v2: Fix for !SMP build
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/cpu/addon_cpuid_features.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/addon_cpuid_features.c b/arch/x86/kernel/cpu/addon_cpuid_features.c
-index aa9641a..a2d1a54 100644
---- a/arch/x86/kernel/cpu/addon_cpuid_features.c
-+++ b/arch/x86/kernel/cpu/addon_cpuid_features.c
-@@ -69,6 +69,7 @@ void __cpuinit init_scattered_cpuid_features(struct cpuinfo_x86 *c)
-  */
- void __cpuinit detect_extended_topology(struct cpuinfo_x86 *c)
- {
-+#ifdef CONFIG_SMP
- 	unsigned int eax, ebx, ecx, edx, sub_index;
- 	unsigned int ht_mask_width, core_plus_mask_width;
- 	unsigned int core_select_mask, core_level_siblings;
-@@ -132,6 +133,7 @@ void __cpuinit detect_extended_topology(struct cpuinfo_x86 *c)
- 		printk(KERN_INFO  "CPU: Processor Core ID: %d\n",
- 		       c->cpu_core_id);
- 	return;
-+#endif
- }
- 
- #ifdef CONFIG_X86_PAT
+Look at the sparc64 SMP code for how I solved the problem there.
