@@ -1,74 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbYH0Oaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbYH0Ob6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756185AbYH0Oaf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 10:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYH0OaZ
+	id S1756303AbYH0Ob6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 10:31:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbYH0Obs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 10:30:25 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:57986 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753436AbYH0OaY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 10:30:24 -0400
-Date: Wed, 27 Aug 2008 16:28:10 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-Subject: [GIT PULL] 2.6.27-rc5 updates for s390
-Message-ID: <20080827142809.GA10087@osiris.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 27 Aug 2008 10:31:48 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:51940 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754121AbYH0Obr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 10:31:47 -0400
+Subject: Re: [PATCH 34/59] CRED: Wrap task credential accesses in the JFS
+	filesystem
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Serge Hallyn <serue@us.ibm.com>, jfs-discussion@lists.sourceforge.net
+In-Reply-To: <20080827134837.19980.65940.stgit@warthog.procyon.org.uk>
+References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
+	 <20080827134837.19980.65940.stgit@warthog.procyon.org.uk>
+Content-Type: text/plain
+Date: Wed, 27 Aug 2008 09:31:44 -0500
+Message-Id: <1219847504.32515.1.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Wed, 2008-08-27 at 14:48 +0100, David Howells wrote:
+> Wrap access to task credentials so that they can be separated more easily from
+> the task_struct during the introduction of COW creds.
+> 
+> Change most current->(|e|s|fs)[ug]id to current_(|e|s|fs)[ug]id().
+> 
+> Change some task->e?[ug]id to task_e?[ug]id().  In some places it makes more
+> sense to use RCU directly rather than a convenient wrapper; these will be
+> addressed by later patches.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> Reviewed-by: James Morris <jmorris@namei.org>
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-please pull from 'for-linus' branch of
+Acked-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 
-	git://git390.osdl.marist.edu/pub/scm/linux-2.6.git for-linus
+> Cc: jfs-discussion@lists.sourceforge.net
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
-This contains just two s390 specific build fixes.
-
-Heiko Carstens (2):
-      [S390] Fix linker script.
-      [S390] dcss: fix build bug.
-
- arch/s390/kernel/vmlinux.lds.S |    2 +-
- drivers/s390/block/dcssblk.c   |    5 +++--
- 2 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
-index 76c1e60..607bd67 100644
---- a/arch/s390/kernel/vmlinux.lds.S
-+++ b/arch/s390/kernel/vmlinux.lds.S
-@@ -55,7 +55,7 @@ SECTIONS
- 		__start___ex_table = .;
- 		*(__ex_table)
- 		__stop___ex_table = .;
--	}
-+	} :data
- 
- 	.data : {		/* Data */
- 		DATA_DATA
-diff --git a/drivers/s390/block/dcssblk.c b/drivers/s390/block/dcssblk.c
-index db85f1f..711b300 100644
---- a/drivers/s390/block/dcssblk.c
-+++ b/drivers/s390/block/dcssblk.c
-@@ -384,9 +384,10 @@ dcssblk_add_store(struct device *dev, struct device_attribute *attr, const char
- 	 * get minor, add to list
- 	 */
- 	down_write(&dcssblk_devices_sem);
--	if (dcssblk_get_segment_by_name(local_buf)) {
-+	if (dcssblk_get_device_by_name(local_buf)) {
-+		up_write(&dcssblk_devices_sem);
- 		rc = -EEXIST;
--		goto release_gd;
-+		goto unload_seg;
- 	}
- 	rc = dcssblk_assign_free_minor(dev_info);
- 	if (rc) {
