@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756471AbYH0TEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbYH0TH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756471AbYH0TEq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 15:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYH0TEh
+	id S1756705AbYH0TH0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 15:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbYH0THM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 15:04:37 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:55937 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751909AbYH0TEg convert rfc822-to-8bit (ORCPT
+	Wed, 27 Aug 2008 15:07:12 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:40417 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752518AbYH0THL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 15:04:36 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] USB: add USB test and measurement class driver - round 2
-Date: Wed, 27 Aug 2008 21:05:49 +0200
-User-Agent: KMail/1.9.9
-Cc: Greg KH <greg@kroah.com>, USB list <linux-usb@vger.kernel.org>,
-       Stefan Kopp <stefan_kopp@agilent.com>, Marcel Janssen <korgull@home.nl>,
-       Felipe Balbi <me@felipebalbi.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0808271451550.17771-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0808271451550.17771-100000@iolanthe.rowland.org>
+	Wed, 27 Aug 2008 15:07:11 -0400
+Date: Wed, 27 Aug 2008 15:06:55 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Is SKAS still required for UML
+Message-ID: <20080827190655.GB12522@c2.user-mode-linux.org>
+References: <alpine.LNX.1.10.0808271251170.1378@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808272105.50169.oliver@neukum.org>
+In-Reply-To: <alpine.LNX.1.10.0808271251170.1378@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch 27 August 2008 20:58:08 schrieb Alan Stern:
-> > And this rule depends on sharing the USB major or not. This needs
-> > a big fat mention in Documentation.
+On Wed, Aug 27, 2008 at 12:57:53PM -0400, Jan Engelhardt wrote:
+> the UML page at http://user-mode-linux.sourceforge.net/old/skas.html 
+> mentions that "The UML kernel is present in the address space of each of 
+> its processes, and, by default, is writeable".
+
+That stuff, as you can see by the "old" in the URL, is old.
+
+Since skas0 became the default, that statement is no longer true.
 > 
-> You mean that the open/disconnect locking rule applies only to drivers 
-> that call usb_register_dev, i.e, drivers using the USB major.  Right?
+> I tried to put this to a test, and actually failed to modify the 
+> UML kernel/memory image from within it. I had a simple kernel module 
+> with 'int val = 2;' and upon loading this, done printk("Val is at %p\n", 
+> &val); to get to know the address. A userspace program inside the UML 
+> then tried to dereference that address and read the value, but that 
+> ended in a segfault. /proc/xxx/maps also does not show the UML kernel 
+> being mapped in any process inside the UML. Note that I was running in 
+> SKAS0 mode, both host and guest are all 64-bit. Is the NX bit of the 
+> 64-bit platform securing things off, or has SKAS3 become sort of 
+> obsolete?
 
-Yes. In fact drivers not using the USB major but their own char devices
-will need such a lock. This is tricky.
+SKAS3 is still a significant performance boost.
 
-> I agree that it deserves to be mentioned in the documentation 
-> somewhere.  Where would be a good place?  None of the existing files in 
-> Documentation/usb seem appropriate.
+      	       		     Jeff
 
-The USB major merits a file of its own.
-
-	Regards
-		Oliver
+-- 
+Work email - jdike at linux dot intel dot com
