@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbYH0Qt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbYH0QwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756245AbYH0Qt1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 12:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbYH0QtQ
+	id S1756681AbYH0QwR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 12:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYH0QwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 12:49:16 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:13775 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753252AbYH0QtP (ORCPT
+	Wed, 27 Aug 2008 12:52:05 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52958 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752675AbYH0QwE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 12:49:15 -0400
-Message-ID: <48B58586.3080806@hp.com>
-Date: Wed, 27 Aug 2008 09:49:10 -0700
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Eric Dumazet <dada1@cosmosbay.com>,
-       Denys Fedoryshchenko <denys@visp.net.lb>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-References: <200808220457.40892.denys@visp.net.lb>	<20080826201406.GA24827@2ka.mipt.ru>	<48B46B48.7030609@cosmosbay.com>	<20080826205158.GA15266@2ka.mipt.ru>	<87vdxmr53f.fsf@basil.nowhere.org> <48B57BD3.5050206@hp.com> <20080827162735.GW26610@one.firstfloor.org>
-In-Reply-To: <20080827162735.GW26610@one.firstfloor.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 27 Aug 2008 12:52:04 -0400
+Date: Wed, 27 Aug 2008 17:32:36 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Howells <dhowells@redhat.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, dhowells@redhat.com,
+       Andreas Gruenbacher <agruen@suse.de>,
+       "Andrew G. Morgan" <morgan@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] file capabilities: Add no_file_caps switch
+Message-ID: <20080827173236.2198786e@lxorguk.ukuu.org.uk>
+In-Reply-To: <26995.1219853604@redhat.com>
+References: <20080827160439.GA12085@us.ibm.com>
+	<200808262057.51606.agruen@suse.de>
+	<20080827135206.GA12919@us.ibm.com>
+	<200808271729.18220.agruen@suse.de>
+	<26995.1219853604@redhat.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->>Those banks really want to crank down on latency - to the point they 
->>start disabling interrupt coalescing.  I bet they'd toss anything out 
->>they could to shave another microsecond.
+On Wed, 27 Aug 2008 17:13:24 +0100
+David Howells <dhowells@redhat.com> wrote:
+
+> Serge E. Hallyn <serue@us.ibm.com> wrote:
 > 
+> > (Also note that if you have such users, you'll want to ask David Howells not
+> > to push the patch he has floated removing the ability to pass caps to
+> > another task altogether when CONFIG_SECURITY_FILE_CAPABILITIES=n :)
 > 
-> This change would actually likely lower their latency.
+> Ugh.  My patch removes the ability to pass caps to another task under all
+> circumstances because to do otherwise means that I have to make the kernel use
+> RCU locking for a task to access its own creds.  If you want this, I'll have
+> to redo all my later patches.
 
-I'm guessing you mean increase their latency?  I agree, it could - 
-depends entirely on the PPS in production I suspect.
-
-rick jones
-
-ftp://ftp.cup.hp.com/dist/networking/briefs/nic_latency_vs_tput.txt
-
-I should probably refresh/update that one of these days
+That gets foul in another way - bounding the worst case RCU
+memory utilisation if someone is sitting doing things like while(1)
+change_credentials();
