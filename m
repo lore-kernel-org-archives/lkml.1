@@ -1,78 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbYH0HiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754050AbYH0HjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753435AbYH0HiV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 03:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbYH0HiM
+	id S1754050AbYH0HjT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 03:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbYH0HjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 03:38:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56406 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752234AbYH0HiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 03:38:11 -0400
-Date: Wed, 27 Aug 2008 09:37:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@suse.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: RFC [PATCH] x86/pci: reserve extra page to avoid error caused
-	by P2P pref DMA reads
-Message-ID: <20080827073752.GD12191@elte.hu>
-References: <1219822159-17245-1-git-send-email-yhlu.kernel@gmail.com>
+	Wed, 27 Aug 2008 03:39:00 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:17217 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752234AbYH0Hi6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 03:38:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=vnAAdEYGSEx/STtk6441y1CKpJMgvFCOcxWWE2tBDrUDCeDiRv6Gh4Eh1pew9hGgY6
+         hQr7m8W5KPyKUM+zMlAfXcHw2KjbONka6qJVUZo/wuZwYRp7c9H9Fepeu1STDaXXh6sc
+         Wma79+hzaR6dkp2N4K/yMhs/DUEQCr3kRdzIA=
+Message-ID: <1ba2fa240808270038r24d5eeb9l36fd70ef5ae904f5@mail.gmail.com>
+Date: Wed, 27 Aug 2008 10:38:56 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: pull request: wireless-2.6 2008-08-26
+Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080827013009.GA15781@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1219822159-17245-1-git-send-email-yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080827013009.GA15781@tuxdriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Aug 27, 2008 at 4:30 AM, John W. Linville
+<linville@tuxdriver.com> wrote:
+> Dave,
+>
+> Here is the latest round of fixes intended for 2.6.27.  I think
+> the non-iwlwifi ones are pretty solid.  As for the iwlwifi ones,
+> the Intel guys assure me that these are important changes.
+>
+> You will notice that (despite my exhortations) no less than two of
+> the iwlwifi patches declare themselves as cleanups.  I have included
+> them anyway because the later fixes depend on them and they seemed
+> harmless enough.  Plus, they were posted (or at least written) before
+> the recent fireworks about what we should be merging after -rc1...
+>
+PCI cleanup patch is badly named. It fixes PCI registers sizes and ads
+one forgotten hw workaround
+I called it cleanup because it went through all PCI accesses we have
+in the driver.
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+Scan cleanup was requested because of dependencies but it's harmless,
+we can rebase the patches
+prefer not it's just waste of time. Afther massive ath9k merge I
+didn't see it was a conceptual problem.
 
-> Diag guys, found one system when loading is high, will have gart wark 
-> error. root cause is P2P bridge try to prefetch for several intel 
-> e1000 under it. and that skb is near GART iommu area.
-> 
-> try to reserve page in the boundary at first. last page near TOM2, and 
-> last page near MMIO also gart first and last page.
-> 
-> need one better way for all arch support PCI and memory with a lot of 
-> holes etc.
-
->  void __init dma32_reserve_bootmem(void)
->  {
->  	unsigned long size, align;
-> +
-> +	/*
-> +	 * try to reserve last page to workaround P2P bridge pref DMA reads
-> +	 * normally don't need to reserve the page near mmio,
-> +	 * because always has acpi etc sit there.
-> +	 * but some system has that acpi in the middle of ram below 4g
-> +	 * so just reserve it.
-> +	 */
-
-Nice! Could this be the root cause of those skb corruptions and e1000 
-crashes you've been reporting? So the _usual_ setup accidentally 
-protects us from these prefetch induced failures.
-
-I think your patch is fine for the iommu bits, but the 
-reserve_last_page() thing should be done in a cleaner way. Cannot we 
-just reserve it all at the e820 stage, before passing that RAM to the 
-bootmem allocator?
-
-Also, what is the guarantee that 4K of a space is enough to stop all 
-prefetching across that boundary?
-
-	Ingo
+Thanks
+Tomas
