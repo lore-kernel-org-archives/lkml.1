@@ -1,57 +1,436 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758611AbYH0QI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758714AbYH0QIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758611AbYH0QI3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 12:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbYH0QHx
+	id S1758714AbYH0QIz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 12:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754748AbYH0QH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 12:07:53 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:30684 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758152AbYH0QHw (ORCPT
+	Wed, 27 Aug 2008 12:07:58 -0400
+Received: from gv-out-0910.google.com ([216.239.58.186]:24012 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758161AbYH0QHx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 12:07:52 -0400
-Message-ID: <48B57BD3.5050206@hp.com>
-Date: Wed, 27 Aug 2008 09:07:47 -0700
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Eric Dumazet <dada1@cosmosbay.com>,
-       Denys Fedoryshchenko <denys@visp.net.lb>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-References: <200808220457.40892.denys@visp.net.lb>	<20080826201406.GA24827@2ka.mipt.ru> <48B46B48.7030609@cosmosbay.com>	<20080826205158.GA15266@2ka.mipt.ru> <87vdxmr53f.fsf@basil.nowhere.org>
-In-Reply-To: <87vdxmr53f.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Wed, 27 Aug 2008 12:07:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=kt4x2QvJ477kQDCL+/6aOzrlHvNO7HPYoY4s6GdYsrvTftHu3uUFAP/USx46K3NrRQ
+         4aM//jLRf4O3m+IknZYFTGPpekAj6dv/4nRRdLsE/yqvNoEYA5+aJ1J0/iDuCo6t2QEl
+         y4VmaIKmQXKKe8Lge2ZJOdajfocQ221OoD0tU=
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>
+Cc: agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
+       baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
+       Marco Innocenti <m.innocenti@cineca.it>, matt@bluehost.com,
+       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
+       Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
+Subject: [RFC][PATCH -mm 1/5] i/o controller documentation
+Date: Wed, 27 Aug 2008 18:07:33 +0200
+Message-Id: <1219853257-11052-2-git-send-email-righi.andrea@gmail.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Evgeniy Polyakov <johnpol@2ka.mipt.ru> writes:
-> 
->>Yup, this innocent toys can end up with this such behaviour on modern
->>highly loaded machines.
-> 
-> 
-> I and also other people had some patches to move the time stamp
-> measuring into the socket. This way the time stamping didn't need to
-> be enabled on all packets, only on those that actually end up at a
-> socket that requires the time stamp.
-> 
-> Unfortunately DaveM didn't like it because some bank wanted
-> different semantics, see the discussion in 
-> http://thread.gmane.org/gmane.linux.network/91679
-> 
-> Perhaps you can find out which bank it was and send them a bill for
-> your CPU time ;-)
+Documentation of the block device I/O controller: description, usage,
+advantages and design.
 
-Those banks really want to crank down on latency - to the point they 
-start disabling interrupt coalescing.  I bet they'd toss anything out 
-they could to shave another microsecond.
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+---
+ Documentation/controllers/io-throttle.txt |  377 +++++++++++++++++++++++++++++
+ 1 files changed, 377 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/controllers/io-throttle.txt
 
-rick jones
+diff --git a/Documentation/controllers/io-throttle.txt b/Documentation/controllers/io-throttle.txt
+new file mode 100644
+index 0000000..09df0af
+--- /dev/null
++++ b/Documentation/controllers/io-throttle.txt
+@@ -0,0 +1,377 @@
++
++               Block device I/O bandwidth controller
++
++----------------------------------------------------------------------
++1. DESCRIPTION
++
++This controller allows to limit the I/O bandwidth of specific block devices for
++specific process containers (cgroups) imposing additional delays on I/O
++requests for those processes that exceed the limits defined in the control
++group filesystem.
++
++Bandwidth limiting rules offer better control over QoS with respect to priority
++or weight-based solutions that only give information about applications'
++relative performance requirements. Nevertheless, priority based solutions are
++affected by performance bursts, when only low-priority requests are submitted
++to a general purpose resource dispatcher.
++
++The goal of the I/O bandwidth controller is to improve performance
++predictability from the applications' point of view and provide performance
++isolation of different control groups sharing the same block devices.
++
++NOTE #1: If you're looking for a way to improve the overall throughput of the
++system probably you should use a different solution.
++
++NOTE #2: The current implementation does not guarantee minimum bandwidth
++levels, the QoS is implemented only slowing down I/O "traffic" that exceeds the
++limits specified by the user; minimum I/O rate thresholds are supposed to be
++guaranteed if the user configures a proper I/O bandwidth partitioning of the
++block devices shared among the different cgroups (theoretically if the sum of
++all the single limits defined for a block device doesn't exceed the total I/O
++bandwidth of that device).
++
++----------------------------------------------------------------------
++2. USER INTERFACE
++
++A new I/O limitation rule is described using the files:
++- blockio.bandwidth-max
++- blockio.iops-max
++
++The I/O bandwidth (blockio.bandwidth-max) can be used to limit the throughput
++of a certain cgroup, while blockio.iops-max can be used to throttle cgroups
++containing applications doing a sparse/seeky I/O workload. Any combination of
++them can be used to define more complex I/O limiting rules, expressed both in
++terms of iops/s and bandwidth.
++
++The same files can be used to set multiple rules for different block devices
++relative to the same cgroup.
++
++The following syntax can be used to configure any limiting rule:
++
++# /bin/echo DEV:LIMIT:STRATEGY:BUCKET_SIZE > CGROUP/FILE
++
++- DEV is the name of the device the limiting rule is applied to.
++
++- LIMIT is the maximum I/O activity allowed on DEV by CGROUP; LIMIT can
++  represent a bandwidth limitation (expressed in bytes/s) when writing to
++  blockio.bandwidth-max, or a limitation to the maximum I/O operations per
++  second (expressed in iops/s) issued by CGROUP.
++
++  A generic I/O limiting rule for a block device DEV can be removed setting the
++  LIMIT to 0.
++
++- STRATEGY is the throttling strategy used to throttle the applications' I/O
++  requests from/to device DEV. At the moment two different strategies can be
++  used:
++
++  0 = leaky bucket: the controller accepts at most B bytes (B = LIMIT * time)
++		    or O operations (O = LIMIT * time); further I/O requests
++		    are delayed scheduling a timeout for the tasks that made
++		    those requests.
++
++            Different I/O flow
++               | | |
++               | v |
++               |   v
++               v
++              .......
++              \     /
++               \   /  leaky-bucket
++                ---
++                |||
++                vvv
++             Smoothed I/O flow
++
++  1 = token bucket: LIMIT tokens are added to the bucket every seconds; the
++		    bucket can hold at the most BUCKET_SIZE tokens; I/O
++		    requests are accepted if there are available tokens in the
++		    bucket; when a request of N bytes arrives N tokens are
++		    removed from the bucket; if fewer than N tokens are
++		    available the request is delayed until a sufficient amount
++		    of token is available in the bucket.
++
++            Tokens (I/O rate)
++                o
++                o
++                o
++              ....... <--.
++              \     /    | Bucket size (burst limit)
++               \ooo/     |
++                ---   <--'
++                 |ooo
++    Incoming --->|---> Conforming
++    I/O          |oo   I/O
++    requests  -->|-->  requests
++                 |
++            ---->|
++
++  Leaky bucket is more precise than token bucket to respect the limits, because
++  bursty workloads are always smoothed. Token bucket, instead, allows a small
++  irregularity degree in the I/O flows (burst limit), and, for this, it is
++  better in terms of efficiency (bursty workloads are not smoothed when there
++  are sufficient tokens in the bucket).
++
++- BUCKET_SIZE is used only with token bucket (STRATEGY == 1) and defines the
++  size of the bucket in bytes (blockio.bandwidth-max) or in I/O operations
++  (blockio.iops-max).
++
++- CGROUP is the name of the limited process container.
++
++Also the following syntaxes are allowed:
++
++- remove an I/O bandwidth limiting rule
++# /bin/echo DEV:0 > CGROUP/blockio.bandwidth-max
++
++- configure a limiting rule using leaky bucket throttling (ignore bucket size):
++# /bin/echo DEV:LIMIT:0 > CGROUP/blockio.bandwidth-max
++
++- configure a limiting rule using token bucket throttling
++  (with bucket size == LIMIT):
++# /bin/echo DEV:LIMIT:1 > CGROUP/blockio.bandwidth-max
++
++2.2. Show I/O limiting rules
++
++All the defined rules and statistics for a specific cgroup can be shown reading
++the files blockio.bandwidth-max for bandwidth constraints and blockio.iops-max
++for I/O operations per second constraints.
++
++The following syntax is used:
++
++$ cat CGROUP/blockio.bandwidth-max
++MAJOR MINOR LIMIT STRATEGY LEAKY_STAT BUCKET_SIZE BUCKET_FILL TIME_DELTA
++
++- MAJOR is the major device number of DEV (defined above)
++
++- MINOR is the minor device number of DEV (defined above)
++
++- LIMIT, STRATEGY and BUCKET_SIZE are the same parameters defined above
++
++- LEAKY_STAT is the amount of bytes (blockio.bandwidth-max) or I/O operations
++  (blockio.iops-max) currently allowed by the I/O controller (only used with
++  leaky bucket strategy - STRATEGY == 0)
++
++- BUCKET_FILL represents the amount of tokens present in the bucket (only used
++  with token bucket strategy - STRATEGY == 1)
++
++- TIME_DELTA can be one of the following:
++  - the amount of jiffies elapsed from the last I/O request (token bucket)
++  - the amount of jiffies during which the bytes or the number of I/O
++    operations given by LEAKY_STAT have been accumulated (leaky bucket)
++
++Multiple per-block device rules are reported in multiple rows
++(DEVi, i = 1 ..  n):
++
++$ cat CGROUP/blockio.bandwidth-max
++MAJOR1 MINOR1 BW1 STRATEGY1 LEAKY_STAT1 BUCKET_SIZE1 BUCKET_FILL1 TIME_DELTA1
++MAJOR1 MINOR1 BW2 STRATEGY2 LEAKY_STAT2 BUCKET_SIZE2 BUCKET_FILL2 TIME_DELTA2
++...
++MAJORn MINORn BWn STRATEGYn LEAKY_STATn BUCKET_SIZEn BUCKET_FILLn TIME_DELTAn
++
++The same fields are used to describe I/O operations/sec rules. The only
++difference is that the cost of each I/O operation is scaled up by a factor of
++1000. This allows to apply better fine grained sleeps and provide a more
++precise throttling.
++
++$ cat CGROUP/blockio.iops-max
++MAJOR MINOR LIMITx1000 STRATEGY LEAKY_STATx1000 BUCKET_SIZEx1000 BUCKET_FILLx1000 TIME_DELTA
++...
++
++2.3. Additional I/O statistics
++
++Additional cgroup I/O throttling statistics are reported in
++blockio.throttlecnt:
++
++$ cat CGROUP/blockio.throttlecnt
++MAJOR MINOR THROTTLE_COUNTER THROTTLE_SLEEP
++
++ - MAJOR, MINOR are respectively the major and the minor number of the device
++   the following statistics refer to
++ - THROTTLE_COUNTER gives the number of times that the cgroup limits of this
++   particular device was exceeded
++ - THROTTLE_SLEEP is the amount of sleep time (in jiffies) imposed to the
++   processes of this cgroup that exceeded the limits for this particular device
++
++Example:
++$ cat CGROUP/blockio.throttlecnt
++8 0 2067 3486
++^ ^    ^    ^
++ \ \    \    \_____ total amount of time (in jiffies) imposed to the delayed
++  \ \    \          I/O requests for this cgroup on /dev/sda
++   \ \    \
++    \ \    \______ total number of delayed I/O requests on /dev/sda
++     \ \
++      \_\_ target block device: /dev/sda
++
++Distinct statistics for each process are reported in
++/proc/PID/io-throttle-stat:
++
++$ cat /proc/PID/io-throttle-stat
++THROTTLE_COUNTER THROTTLE_SLEEP
++
++2.4. Examples
++
++* Mount the cgroup filesystem (blockio subsystem):
++  # mkdir /mnt/cgroup
++  # mount -t cgroup -oblockio blockio /mnt/cgroup
++
++* Instantiate the new cgroup "foo":
++  # mkdir /mnt/cgroup/foo
++  --> the cgroup foo has been created
++
++* Add the current shell process to the cgroup "foo":
++  # /bin/echo $$ > /mnt/cgroup/foo/tasks
++  --> the current shell has been added to the cgroup "foo"
++
++* Give maximum 1MiB/s of I/O bandwidth on /dev/sda for the cgroup "foo", using
++  leaky bucket throttling strategy:
++  # /bin/echo /dev/sda:$((1024 * 1024)):0:0 > \
++  > /mnt/cgroup/foo/blockio.bandwidth-max
++  # sh
++  --> the subshell 'sh' is running in cgroup "foo" and it can use a maximum I/O
++      bandwidth of 1MiB/s on /dev/sda
++
++* Give maximum 8MiB/s of I/O bandwidth on /dev/sdb for the cgroup "foo", using
++  token bucket throttling strategy, bucket size = 8MiB:
++  # /bin/echo /dev/sdb:$((8 * 1024 * 1024)):1:$((8 * 1024 * 1024)) > \
++  > /mnt/cgroup/foo/blockio.bandwidth-max
++  # sh
++  --> the subshell 'sh' is running in cgroup "foo" and it can use a maximum I/O
++      bandwidth of 1MiB/s on /dev/sda (controlled by leaky bucket throttling)
++      and 8MiB/s on /dev/sdb (controlled by token bucket throttling)
++
++* Run a benchmark doing I/O on /dev/sda and /dev/sdb; I/O limits and usage
++  defined for cgroup "foo" can be shown as following:
++  # cat /mnt/cgroup/foo/blockio.bandwidth-max
++  8 16 8388608 1 0 8388608 -522560 48
++  8 0 1048576 0 737280 0 0 216
++
++* Extend the maximum I/O bandwidth for the cgroup "foo" to 16MiB/s on /dev/sda:
++  # /bin/echo /dev/sda:$((16 * 1024 * 1024)):0:0 > \
++  > /mnt/cgroup/foo/blockio.bandwidth-max
++  # cat /mnt/cgroup/foo/blockio.bandwidth-max
++  8 16 8388608 1 0 8388608 -84432 206436
++  8 0 16777216 0 0 0 0 15212
++
++* Remove limiting rule on /dev/sdb for cgroup "foo":
++  # /bin/echo /dev/sdb:0:0:0 > /mnt/cgroup/foo/blockio.bandwidth-max
++  # cat /mnt/cgroup/foo/blockio.bandwidth-max
++  8 0 16777216 0 0 0 0 110388
++
++* Set a maximum of 100 I/O operations/sec (leaky bucket strategy) to /dev/sdc
++  for cgroup "foo":
++  # /bin/echo /dev/sdc:100:0 > /mnt/cgroup/foo/blockio.iops-max
++  # cat /mnt/cgroup/foo/blockio.iops-max
++  8 32 100000 0 846000 0 2113
++          ^        ^
++         /________/
++        /
++  Remember: these values are scaled up by a factor of 1000 to apply a fine
++  grained throttling (i.e. LIMIT == 100000 means a maximum of 100 I/O operation
++  per second)
++
++* Remove limiting rule for I/O operations from /dev/sdc for cgroup "foo":
++  # /bin/echo /dev/sdc:0 > /mnt/cgroup/foo/blockio.iops-max
++
++----------------------------------------------------------------------
++3. ADVANTAGES OF PROVIDING THIS FEATURE
++
++* Allow I/O traffic shaping for block device shared among different cgroups
++* Improve I/O performance predictability on block devices shared between
++  different cgroups
++* Limiting rules do not depend of the particular I/O scheduler (anticipatory,
++  deadline, CFQ, noop) and/or the type of the underlying block devices
++* The bandwidth limitations are guaranteed both for synchronous and
++  asynchronous operations, even the I/O passing through the page cache or
++  buffers and not only direct I/O (see below for details)
++* It is possible to implement a simple user-space application to dynamically
++  adjust the I/O workload of different process containers at run-time,
++  according to the particular users' requirements and applications' performance
++  constraints
++
++----------------------------------------------------------------------
++4. DESIGN
++
++The I/O throttling is performed imposing an explicit timeout, via
++schedule_timeout_killable() on the processes that exceed the I/O limits
++dedicated to the cgroup they belong to. I/O accounting happens per cgroup.
++
++It just works as expected for read operations: the real I/O activity is reduced
++synchronously according to the defined limitations.
++
++Multiple re-reads of pages already present in the page cache are not considered
++to account the I/O activity, since they actually don't generate any real I/O
++operation.
++
++This means that a process that re-reads multiple times the same blocks of a
++file is affected by the I/O limitations only for the actual I/O performed from
++the underlying block devices.
++
++For write operations the scenario is a bit more complex, because the writes in
++the page cache are processed asynchronously by kernel threads (pdflush), using
++a write-back policy. So the real writes to the underlying block devices occur
++in a different I/O context respect to the task that originally generated the
++dirty pages.
++
++For this reason, the I/O bandwidth controller uses a workaround: a process that
++is dirtying some pages on a limited block device is forced to directly flush
++the same amount of pages back to the same block device (only for limited
++processes). In this way, write operations can be throttled as well as read
++operations, since they occur in the same I/O context of the process that
++actually generated the I/O activity.
++
++Multiple rules for different block devices are stored in a linked list, using
++the dev_t number of each block device as key to uniquely identify each element
++of the list. RCU synchronization is used to protect the whole list structure,
++since the elements in the list are not supposed to change frequently (they
++change only when a new rule is defined or an old rule is removed or updated),
++while the reads in the list occur at each operation that generates I/O. This
++allows to provide zero overhead for cgroups that do not use any limitation.
++
++WARNING: per-block device limiting rules always refer to the dev_t device
++number. If a block device is unplugged (i.e. a USB device) the limiting rules
++defined for that device persist and they are still valid if a new device is
++plugged in the system and it uses the same major and minor numbers.
++
++NOTE: explicit sleeps are *not* imposed on tasks doing asynchronous I/O (AIO)
++operations; AIO throttling is performed returning -EAGAIN from sys_io_submit().
++Userspace applications must be able to handle this error code opportunely.
++
++----------------------------------------------------------------------
++5. TODO
++
++* Try to push down the throttling and implement it directly in the I/O
++  schedulers, using bio-cgroup (http://people.valinux.co.jp/~ryov/bio-cgroup/)
++  to keep track of the right cgroup context. This approach could lead to more
++  memory consumption and increases the number of dirty pages (hard/slow to
++  reclaim pages) in the system, since dirty-page ratio in memory is not
++  limited. This could even lead to potential OOM conditions, but these problems
++  can be resolved directly into the memory cgroup subsystem
++
++* Handle I/O generated by kswapd: at the moment there's no control on the I/O
++  generated by kswapd; try to use the page_cgroup functionality of the memory
++  cgroup controller to track this kind of I/O and charge the right cgroup when
++  pages are swapped in/out
++
++* Improve fair throttling: distribute the time to sleep among all the tasks of
++  a cgroup that exceeded the I/O limits, depending of the amount of IO activity
++  previously generated in the past by each task (see task_io_accounting)
++
++* Try to reduce the cost of calling cgroup_io_throttle() on every submit_bio();
++  this is not too much expensive, but the call of task_subsys_state() has
++  surely a cost. A possible solution could be to temporarily account I/O in the
++  current task_struct and call cgroup_io_throttle() only on each X MB of I/O.
++  Or on each Y number of I/O requests as well. Better if both X and/or Y can be
++  tuned at runtime by a userspace tool
++
++* Think an alternative design for general purpose usage; special purpose usage
++  right now is restricted to improve I/O performance predictability and
++  evaluate more precise response timings for applications doing I/O. To a large
++  degree the block I/O bandwidth controller should implement a more complex
++  logic to better evaluate real I/O operations cost, depending also on the
++  particular block device profile (i.e. USB stick, optical drive, hard disk,
++  etc.). This would also allow to appropriately account I/O cost for seeky
++  workloads, respect to large stream workloads. Instead of looking at the
++  request stream and try to predict how expensive the I/O cost will be, a
++  totally different approach could be to collect request timings (start time /
++  elapsed time) and based on collected informations, try to estimate the I/O
++  cost and usage
+-- 
+1.5.4.3
+
