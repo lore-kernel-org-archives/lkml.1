@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbYH0VTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753614AbYH0VWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754502AbYH0VTq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 17:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbYH0VTg
+	id S1753614AbYH0VWt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 17:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYH0VWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 17:19:36 -0400
-Received: from gw.goop.org ([64.81.55.164]:36907 "EHLO mail.goop.org"
+	Wed, 27 Aug 2008 17:22:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34094 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751683AbYH0VTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 17:19:35 -0400
-Message-ID: <48B5C4E3.3000002@goop.org>
-Date: Wed, 27 Aug 2008 14:19:31 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: David Vrabel <david.vrabel@csr.com>
-CC: Al Viro <viro@ZenIV.linux.org.uk>, Roland Dreier <rdreier@cisco.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       linux-usb <linux-usb@vger.kernel.org>, torvalds@linux-foundation.org
-Subject: Re: [patch] Add helper macros for little-endian bitfields
-References: <48AD6AF0.3050504@csr.com> <48AD6B93.7020702@csr.com> <adaprnxnac8.fsf@cisco.com> <20080825014311.GS28946@ZenIV.linux.org.uk> <48B570D6.7070301@csr.com>
-In-Reply-To: <48B570D6.7070301@csr.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1752095AbYH0VWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 17:22:40 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080827185845.GA25669@us.ibm.com>
+References: <20080827185845.GA25669@us.ibm.com> <200808262057.51606.agruen@suse.de> <200808271729.18220.agruen@suse.de> <20080827160439.GA12085@us.ibm.com> <200808271857.48651.agruen@suse.de>
+To: "Serge E. Hallyn" <serue@us.ibm.com>, jmorris@namei.org
+Cc: dhowells@redhat.com, Andreas Gruenbacher <agruen@suse.de>,
+       "Andrew G. Morgan" <morgan@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] file capabilities: Add no_file_caps switch
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Wed, 27 Aug 2008 22:14:46 +0100
+Message-ID: <31237.1219871686@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Vrabel wrote:
-> Al Viro wrote:
->   
->> On Sun, Aug 24, 2008 at 06:37:43PM -0700, Roland Dreier wrote:
->>     
->>>  > + * NOTE: When using multibyte bitfields, you need to convert the data
->>>  > + *       from Little Endian to CPU before you can access the bitfield
->>>  > + *       (to make it simpler):
->>>       
->> NOTE: When tempted to use multibyte bitfields on fixed-layout data, you
->> need to look in the mirror, ask yourself "what will they do to me during
->> code review for that?", shudder and decide that some temptations are
->> just not worth the pain.
->>     
->
-> But why is this worthy of a crispy flaming?  I've not seen anything
-> definite beyond a somewhat vague 'some compilers don't optimize
-> bitfields very well'.
->
-> The structure definition and the DECL_BF_LEx() macros might be ugly but
-> the code using the structures is clearer.  For example,
->
->     get_random_bytes(&tiebreaker, sizeof(unsigned));
->     drp_ie->tiebreaker = tiebreaker & 1;
->
-> versus
->
->     get_random_bytes(&tiebreaker, sizeof(unsigned));
->     drp_ie->drp_control |= (tiebreaker & 1)
->             ? UWB_DRP_IE_DRP_CTRL_TIEBREAKER : 0;
->   
+Serge E. Hallyn <serue@us.ibm.com> wrote:
 
-Why not just
+> Ok, cool.  In that case - David I was a little surprised to find that
+> patch not applied in Linus' tree.  You sent it quite some time ago,
+> didn't you?  Were you planning on trying again to push it soon?
 
-	drp_ie->drp_control |= tiebreaker & UWB_DRP_IE_DRP_CTRL_TIEBREAKER;
+I think you were getting my patches confused.
 
-then?  Doesn't matter which random bit you pick, does it?
+I had two patches of note:
 
-    J
+ (1) Fix PF_SUPERPRIV that I was pushing to get upstream, and is now upstream.
+
+ (2) Neuter sys_capset().  I've been holding this off for the next merge
+     window as it isn't a bugfix, unlike (1).  Perhaps I should ask James to
+     push it to Linus.  James?
+
+David
