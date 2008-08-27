@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbYH0OWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbYH0OXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753945AbYH0OWQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 10:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbYH0OV4
+	id S1754667AbYH0OXz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 10:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbYH0OXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 10:21:56 -0400
-Received: from vpnflf.ccur.com ([12.192.68.2]:32068 "EHLO gamx.iccur.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753960AbYH0OVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 10:21:55 -0400
-Date: Wed, 27 Aug 2008 10:21:36 -0400
-From: Joe Korty <joe.korty@ccur.com>
-To: Ayaz Abdulla <aabdulla@nvidia.com>
-Cc: Jeff Garzik <jgarzik@redhat.com>,
-       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [ETH] forcdeth: increase max_interrupt_work
-Message-ID: <20080827142136.GA22262@tsunami.ccur.com>
-Reply-To: Joe Korty <joe.korty@ccur.com>
+	Wed, 27 Aug 2008 10:23:44 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:55522 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752737AbYH0OXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 10:23:43 -0400
+Date: Wed, 27 Aug 2008 18:23:19 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Denys Fedoryshchenko <denys@visp.net.lb>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+Message-ID: <20080827142319.GA4676@2ka.mipt.ru>
+References: <200808220457.40892.denys@visp.net.lb> <200808271509.18529.denys@visp.net.lb> <20080827123635.GA25321@2ka.mipt.ru> <200808271700.36029.denys@visp.net.lb>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200808271700.36029.denys@visp.net.lb>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forcedeth: increase max_interrupt_work
+On Wed, Aug 27, 2008 at 05:00:35PM +0300, Denys Fedoryshchenko (denys@visp.net.lb) wrote:
+> > > 0.0.0.0:*                          3207/udhcpd
+> >
+> > This one looks suspicious                                                  
+> >      ^^^^^^^^^^
+> It is busybox udhcpd... i guess it is innocent. Even i kill it - it doesn't 
+> change anything at all. 
+> Only who possible listen multicast socket - it is ripd, i cannot kill him. But 
+> i think it doesn't matter much too...
 
-This eliminates the following often-generated warning from
-my 64 bit Opteron SMP test stand:
+It depends... If it turns timestamps on, then you will have this
+behaviour. Please check if timestamps are actually enabled, so we could
+remove one (im)possible case.
 
-	eth0: too many iterations (6) in nv_nic_irq
-
-According to the web, the problem is that the forcedeth
-driver has a too-low value for max_interrupt_work.
-Grepping the kernel I see that forcedeth has the second
-lowest value of all ethernet drivers (ie, 6).  Most are
-in the 20-40 range.  So this patch increases this a bit,
-from 6 to 15 (at 15 forcedeth becomes the driver with
-third-lowest max_interrupt_work value).
-
-My test stand, which used to print out the above warnings
-repetitively whenever it was under heavy net load, no
-longer does so.
-
-Signed-off-by: Joe Korty <joe.korty@ccur.com>
-
-Index: 2.6.27-rc4-git4/drivers/net/forcedeth.c
-===================================================================
---- 2.6.27-rc4-git4.orig/drivers/net/forcedeth.c	2008-08-27 09:49:13.000000000 -0400
-+++ 2.6.27-rc4-git4/drivers/net/forcedeth.c	2008-08-27 10:02:40.000000000 -0400
-@@ -818,7 +818,7 @@
-  * Maximum number of loops until we assume that a bit in the irq mask
-  * is stuck. Overridable with module param.
-  */
--static int max_interrupt_work = 5;
-+static int max_interrupt_work = 15;
- 
- /*
-  * Optimization can be either throuput mode or cpu mode
+-- 
+	Evgeniy Polyakov
