@@ -1,121 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757475AbYH0Oht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbYH0Oij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757475AbYH0Oht (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 10:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756769AbYH0OhJ
+	id S1757445AbYH0Oij (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 10:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbYH0Oia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 10:37:09 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:23749 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755474AbYH0OhG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 10:37:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:subject:content-type
-         :content-transfer-encoding:from;
-        b=Lhux9TLdpjMWK1WeiosrrWNf2GnJFpL39PVvFTfda383q1OUCkCCCBjDJyV4qJMmdM
-         0vd7oHJ8VbFl3Zr29iw2Xeq1zIzRQDZKl2xXpOm+EVkLhzCb77B7DsZHTk8vpdBJYxOI
-         xCEqCAXp+5uTULTYE8WVdtkToTXIlnZaP+kLw=
-Message-ID: <48B56594.6040807@gmail.com>
-Date: Wed, 27 Aug 2008 16:32:52 +0200
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: man-pages-3.08 is released
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
+	Wed, 27 Aug 2008 10:38:30 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:56792 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753874AbYH0Oi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 10:38:29 -0400
+Date: Thu, 28 Aug 2008 00:38:21 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       mingo@elte.hu, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUG] linux-next: Tree for August 26 - Badness at
+ kernel/notifier.c:25
+Message-Id: <20080828003821.d29d2a03.sfr@canb.auug.org.au>
+In-Reply-To: <20080828003308.400038e0.sfr@canb.auug.org.au>
+References: <20080826184008.6be39f19.sfr@canb.auug.org.au>
+	<48B44B2D.8070809@linux.vnet.ibm.com>
+	<48B46610.1010809@linux.intel.com>
+	<48B53695.3020703@linux.vnet.ibm.com>
+	<48B55B16.7060804@linux.intel.com>
+	<20080828003308.400038e0.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__28_Aug_2008_00_38_21_+1000_JuofXQY0VMBWRnyG"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday
+--Signature=_Thu__28_Aug_2008_00_38_21_+1000_JuofXQY0VMBWRnyG
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I've released man-pages-3.08.
+Hi Arjan,
 
-This release is now available for download at:
+On Thu, 28 Aug 2008 00:33:08 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> The original reported trace was during setup_system which is very early in
+> the boot.
 
-     http://www.kernel.org/pub/linux/docs/man-pages
-     or ftp://ftp.kernel.org/pub/linux/docs/man-pages
+But, of course, that version didn't have the necessary extra dereference
+of the function address ...
 
-This release is now available for download at:
+And the later debug patch did not check the address at register time,
+only at notify time.
 
-     http://www.kernel.org/pub/linux/docs/man-pages
-     or ftp://ftp.kernel.org/pub/linux/docs/man-pages
-
-The online changelog is available at
-http://www.kernel.org/doc/man-pages/changelog.html
-(blogged at
-http://linux-man-pages.blogspot.com/2008/08/man-pages-308-is-released.html)
-and the current version of the pages is browsable at
-http://www.kernel.org/doc/man-pages/
-
-An abridged version of the changes in this release that may be of
-interest to readers of this list is provided below.
-
+The later trace also looks to be early in the boot.
+--=20
 Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Michael
+--Signature=_Thu__28_Aug_2008_00_38_21_+1000_JuofXQY0VMBWRnyG
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-==================== Changes in man-pages-3.08 ====================
+iEYEARECAAYFAki1Zt0ACgkQjjKRsyhoI8zpLgCfarrleKfgA2cCG2ehQzSc2xXT
++jQAoIZUgAZcVwpfLDg2WzTl38oq9z16
+=WTqy
+-----END PGP SIGNATURE-----
 
-Released: 2008-08-27, Zurich
-
-
-New and rewritten pages
------------------------
-
-getnetent_r.3
-     mtk
-         Documents getnetent_r(), getnetbyname_r(),
-         and getnetbyaddr_r(), the reentrant equivalents of
-         getnetent(), getnetbyname(), and getnetbyaddr().
-
-getprotoent_r.3
-      mtk
-         Documents getprotoent_r(), getprotobyname_r(), and
-         getprotobynumber_r(), the reentrant equivalents of
-         getprotoent(), getprotobyname(), and getprotobynumber().
-
-getrpcent_r.3
-      mtk
-         Documents getrpcent_r(), getrpcbyname_r(), and
-         getrpcbynumber_r(), the reentrant equivalents of
-         getrpcent(), getrpcbyname(), and getrpcbynumber().
-
-getservent_r.3
-      mtk
-         Documents getservent_r(), getservbyname_r(), and
-         getservbyport_r(), the reentrant equivalents of
-         getservent(), getservbyname(), and getservbyport().
-
-numa.7
-     mtk
-         A new page giving overview details for the Linux NUMA interfaces.
-         Incorporates some material from mbind.2, and the description
-         of /proc/PID/numa_maps from proc.5.
-
-
-Changes to individual pages
----------------------------
-
-link.2
-     mtk
-         Note kernel version where Linux stopped following symbolic
-         links in 'oldpath'; see also http://lwn.net/Articles/294667.
-         POSIX.1-2008 makes it implementation-dependent whether or not
-         'oldpath' is dereferenced if it is a symbolic link.
-         Add a reference to linkat(2) for an interface that allows
-         precise control of the treatment of symbolic links.
-
-pthreads.7
-     mtk
-         Update thread-safe functions list with changes in POSIX.1-2008.
-         SEE ALSO: add proc(5).
-
-signal.7
-     mtk
-         Update list of async-sygnal-safe functions for POSIX.1-2008.
-
+--Signature=_Thu__28_Aug_2008_00_38_21_+1000_JuofXQY0VMBWRnyG--
