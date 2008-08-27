@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbYH0Woh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbYH0Wqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755355AbYH0Woh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 18:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756334AbYH0WoZ
+	id S1755977AbYH0Wqh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 18:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYH0Wq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 18:44:25 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:13863 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756231AbYH0WoY (ORCPT
+	Wed, 27 Aug 2008 18:46:28 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34116 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752437AbYH0Wq1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 18:44:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ph6FzrykRf4C6wHNC9WMCS/odxQiI2M2Z3zMGtK1b6HbQOG7GvwNY/gS7P2woqcYxX
-         JmaAAy1D0BrI5gxF4Vo9BAEm7ankI9gkwNyMPPkq+qwyXxhYLkj4YzKRf6ZVMT37yFOU
-         0YNon8nznQLDttZGGny1095AJEjaVRs5WdDrU=
-Date: Thu, 28 Aug 2008 02:45:56 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
+	Wed, 27 Aug 2008 18:46:27 -0400
+Date: Wed, 27 Aug 2008 23:28:03 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Peter Osterlund <petero2@telia.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Cox <alan@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
+Cc: Peter Osterlund <petero2@telia.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alan Cox <alan@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Adrian Bunk <bunk@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Natalie Protasevich <protasnb@gmail.com>,
        Kernel Testers List <kernel-testers@vger.kernel.org>
 Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
-Message-ID: <20080827224556.GA2361@x200.localdomain>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <alpine.LFD.1.10.0808241120460.3363@nehalem.linux-foundation.org> <m3k5e2qkk2.fsf@telia.com> <20080827230828.4285022b@lxorguk.ukuu.org.uk> <alpine.LFD.1.10.0808271530350.3419@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Message-ID: <20080827232803.2ba8dd96@lxorguk.ukuu.org.uk>
 In-Reply-To: <alpine.LFD.1.10.0808271530350.3419@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+	<alpine.LFD.1.10.0808241120460.3363@nehalem.linux-foundation.org>
+	<m3k5e2qkk2.fsf@telia.com>
+	<20080827230828.4285022b@lxorguk.ukuu.org.uk>
+	<alpine.LFD.1.10.0808271530350.3419@nehalem.linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 03:38:16PM -0700, Linus Torvalds wrote:
-> On Wed, 27 Aug 2008, Alan Cox wrote:
-> > 
-> > Easier just to fix it. Its a case of building everything until it
-> > compiles with the prototype change. Almost all stuff  will just take the
-> > argument initially and not use it.
-> > 
-> > Anyone else plan to do it or shall I hit all the x86 cases and post a
-> > patch ?
-> 
-> Well, I alrady reverted it, but if you actually fix unlocked_ioctl() to 
-> have the same calling convention as regular ioctl() then a lot of the 
-> noise from ioctl conversion goes away, and all that remains is literally 
-> just the BKL part.
-> 
 > Btw, why is unlocked_ioctl returning "long"? Does anybody depend on that 
 > too? That's another difference between the "unlocked" and the traditional 
 > version..
+
+I don't know - a lot of syscall returns got defined as long and I guess
+someone thought propogating the right type was a good diea ?
 > 
 > As to the "x86 cases", I think you should try to hit them all. Doing a 
 > "git grep unlocked_ioctl" gets 185 entries, and it looks like only 
@@ -71,8 +58,7 @@ On Wed, Aug 27, 2008 at 03:38:16PM -0700, Linus Torvalds wrote:
 > leave it until the next merge window, but if you do it and it's obviously 
 > totally mechanical, I'd be likely to just let it slip in early.
 
-Anybody doing this, don't forget to actually use "inode" instead of all those
-dereferences:
+I'll take a crack at it tomorrow - but if its 185 entries then it
+probably wants to go into -next instead.
 
-	struct inode *inode = filp->f_path.dentry->d_inode;
-
+Alan
