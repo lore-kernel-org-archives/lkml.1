@@ -1,131 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbYH0OnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757006AbYH0Oou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756779AbYH0OnT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 10:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbYH0OnE
+	id S1757006AbYH0Oou (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 10:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYH0Ook
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 10:43:04 -0400
-Received: from smtp.opengridcomputing.com ([209.198.142.2]:39295 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752675AbYH0OnD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 10:43:03 -0400
-Message-ID: <48B567F5.2090605@opengridcomputing.com>
-Date: Wed, 27 Aug 2008 09:43:01 -0500
-From: Tom Tucker <tom@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Wed, 27 Aug 2008 10:44:40 -0400
+Received: from styx.suse.cz ([82.119.242.94]:36225 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753133AbYH0Ooj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 10:44:39 -0400
+Date: Wed, 27 Aug 2008 16:44:37 +0200
+From: Jan Kara <jack@suse.cz>
+To: David Howells <dhowells@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Serge Hallyn <serue@us.ibm.com>, Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH 45/59] CRED: Wrap task credential accesses in the UDF
+	filesystem
+Message-ID: <20080827144437.GD14046@duck.suse.cz>
+References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk> <20080827134934.19980.69154.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Ian Campbell <ijc@hellion.org.uk>,
-       John Ronciak <john.ronciak@gmail.com>,
-       Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
-       neilb@suse.de, linux-nfs@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       e1000-devel@lists.sourceforge.net
-Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
-References: <1219435207.27921.51.camel@localhost.localdomain> <1219440202.9097.14.camel@localhost> <1219441041.27921.57.camel@localhost.localdomain> <1219442213.9097.25.camel@localhost> <1219603981.27921.145.camel@localhost.localdomain> <1219605422.14389.2.camel@localhost> <1219605596.14389.5.camel@localhost> <1219615789.27921.152.camel@localhost.localdomain> <1219616136.14389.12.camel@localhost> <48B2D7F8.5020206@opengridcomputing.com> <20080826192711.GJ4380@fieldses.org>
-In-Reply-To: <20080826192711.GJ4380@fieldses.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080827134934.19980.69154.stgit@warthog.procyon.org.uk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields wrote:
-> On Mon, Aug 25, 2008 at 11:04:08AM -0500, Tom Tucker wrote:
->> Trond Myklebust wrote:
->>> On Sun, 2008-08-24 at 23:09 +0100, Ian Campbell wrote:
->>>> (added some quoting from previous mail to save replying twice)
->>>>
->>>> On Sun, 2008-08-24 at 15:19 -0400, Trond Myklebust wrote:
->>>>> On Sun, 2008-08-24 at 15:17 -0400, Trond Myklebust wrote:
->>>>>> >From the tcpdump, it looks as if the NFS server is failing to close the
->>>>>> socket, when the client closes its side. You therefore end up getting
->>>>>> stuck in the FIN_WAIT2 state (as netstat clearly shows above).
->>>>>>
->>>>>> Is the server keeping the client in this state for a very long
->>>>>> period?
->>>> Well, it had been around an hour and a half on this occasion. Next time
->>>> it happens I can wait longer but I'm pretty sure I've come back from
->>>> time away and it's been wedged for at least a day. How long would you
->>>> expect it to remain in this state for?
->>> The server should ideally start to close the socket as soon as it
->>> receives the FIN from the client. I'll have a look at the code.
->>>
->> I don't think it should matter how long the connection stays in FIN WAIT,
->> the client should reconnect anyway.
->>
->> Since the client seems to be the variable, I would think it might be an
->> issue with the client reconnect logic?
->>
->> That said, 2.6.25 is when the server side transport switch logic went in.
+On Wed 27-08-08 14:49:34, David Howells wrote:
+> Wrap access to task credentials so that they can be separated more easily from
+> the task_struct during the introduction of COW creds.
 > 
-> Any chance you could help Trond figure out why the server might be doing
-> this?
+> Change most current->(|e|s|fs)[ug]id to current_(|e|s|fs)[ug]id().
 > 
-> If not, I'll get to it, but not as soon as I should.
+> Change some task->e?[ug]id to task_e?[ug]id().  In some places it makes more
+> sense to use RCU directly rather than a convenient wrapper; these will be
+> addressed by later patches.
 > 
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> Reviewed-by: James Morris <jmorris@namei.org>
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
+> Cc: Jan Kara <jack@suse.cz>
+  Acked-by: Jan Kara <jack@suse.cz>
 
-Sure. I've actually tried to reproduce it here unsuccessfully.
-
-As a starter, I would suggest turning on transport debugging:
-
-# echo 256 > /proc/sys/sunrpc/rpc_debug
-
-Here are my thoughts on how it is supposed to work. Trond if this doesn't match
-your understanding, please let me know.
-
-For the case where the client closes the connection first
-because it's timeout is shorter (5min vs. 6), the sequence of events should be:
-
-
-client					server
-
-close
-sends FIN goes to FIN-WAIT-1
-					receives FIN replies with ACK
-					and goes to CLOSE-WAIT
-receives ACK goes to FIN-WAIT-2
-					calls tcp_state_change callback on socket
-					svc_tcp_state_change sets XPT_CLOSE on
-					the transport and enqueues transport for
-					servicing by svc thread.
-
-					thread gets dequeued, calls svc_recv
-					svc_recv sees XPT_CLOSE and calls
-					svc_xprt_destroy that closes the socket
-
-					TCP sends FIN/ACK after close
-receives FIN/ACK goes to TIME-WAIT
-
-since state is TIME-WAIT and
-reuse port is set, we can re-connect
-
-There's a couple places we could be getting stuck:
-
-- The state-change callback never gets called.
-- The state-change callback gets called but svsk is null and it ignores the event
-- svc_tcp_state_change enqueues the transport, but due to a race bug, the transport
-   doesn't actually get queued and since there is no activity it never closes
-- something else
-
-The message log with RPCDBG_SVCXPRT (256) enabled as shown above would help figure
-out where it's happening.
-
-If Ian is willing to create the log (or already has one), I'm certainly willing to
-look at it.
-
-Tom
-
-
-> --b.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+> ---
+> 
+>  fs/udf/ialloc.c |    4 ++--
+>  fs/udf/namei.c  |    2 +-
+>  2 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> 
+> diff --git a/fs/udf/ialloc.c b/fs/udf/ialloc.c
+> index a4f2b3c..31fc842 100644
+> --- a/fs/udf/ialloc.c
+> +++ b/fs/udf/ialloc.c
+> @@ -126,13 +126,13 @@ struct inode *udf_new_inode(struct inode *dir, int mode, int *err)
+>  	}
+>  	mutex_unlock(&sbi->s_alloc_mutex);
+>  	inode->i_mode = mode;
+> -	inode->i_uid = current->fsuid;
+> +	inode->i_uid = current_fsuid();
+>  	if (dir->i_mode & S_ISGID) {
+>  		inode->i_gid = dir->i_gid;
+>  		if (S_ISDIR(mode))
+>  			mode |= S_ISGID;
+>  	} else {
+> -		inode->i_gid = current->fsgid;
+> +		inode->i_gid = current_fsgid();
+>  	}
+>  
+>  	iinfo->i_location.logicalBlockNum = block;
+> diff --git a/fs/udf/namei.c b/fs/udf/namei.c
+> index 7578fae..869c982 100644
+> --- a/fs/udf/namei.c
+> +++ b/fs/udf/namei.c
+> @@ -605,7 +605,7 @@ static int udf_mknod(struct inode *dir, struct dentry *dentry, int mode,
+>  		goto out;
+>  
+>  	iinfo = UDF_I(inode);
+> -	inode->i_uid = current->fsuid;
+> +	inode->i_uid = current_fsuid();
+>  	init_special_inode(inode, mode, rdev);
+>  	fi = udf_add_entry(dir, dentry, &fibh, &cfi, &err);
+>  	if (!fi) {
+> 
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
