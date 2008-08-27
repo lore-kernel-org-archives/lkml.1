@@ -1,77 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbYH0Cx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbYH0DM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753691AbYH0Cx4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 22:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbYH0Cxq
+	id S1753902AbYH0DM1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 23:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbYH0DMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 22:53:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43479 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752075AbYH0Cxp (ORCPT
+	Tue, 26 Aug 2008 23:12:17 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46603 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752388AbYH0DMR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 22:53:45 -0400
-Date: Tue, 26 Aug 2008 19:52:26 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Parag Warudkar <parag.lkml@gmail.com>
-cc: Adrian Bunk <bunk@stusta.de>, Rusty Russell <rusty@rustcorp.com.au>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-embedded@vger.kernel.org
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
- bisected
-In-Reply-To: <f7848160808261936m18c69dc0r26f41850efae4b91@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0808261942100.3363@nehalem.linux-foundation.org>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>  <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org>  <20080826183051.GB10925@cs181140183.pp.htv.fi>  <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org>  <20080826205916.GB11734@cs181140183.pp.htv.fi>
-  <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org>  <f7848160808261554j2f4eaaa6i1ee8801ae75ca7bf@mail.gmail.com>  <alpine.LFD.1.10.0808261644260.3363@nehalem.linux-foundation.org>  <f7848160808261758q7b84aab1m188c1ebb59304818@mail.gmail.com>
-  <alpine.LFD.1.10.0808261837530.3363@nehalem.linux-foundation.org> <f7848160808261936m18c69dc0r26f41850efae4b91@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 26 Aug 2008 23:12:17 -0400
+Date: Tue, 26 Aug 2008 20:12:05 -0700
+From: Greg KH <greg@kroah.com>
+To: linux-usb@vger.kernel.org
+Cc: Stefan Kopp <stefan_kopp@agilent.com>, Marcel Janssen <korgull@home.nl>,
+       Felipe Balbi <me@felipebalbi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: add USB test and measurement class driver
+Message-ID: <20080827031205.GA22912@kroah.com>
+References: <20080827000501.GA29570@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080827000501.GA29570@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 26, 2008 at 05:05:01PM -0700, Greg KH wrote:
+> I've now added this to my tree, and any review comments are greatly
+> welcome.
 
+Heck, I'll review my own patch, as I noticed I forgot some things:
 
-On Tue, 26 Aug 2008, Parag Warudkar wrote:
-> 
-> What about deep call chains? The problem with the uptake of 4K stacks
-> seems to be that is not reliably provable that it will work under all
-> circumstances.
+> ---
+>  drivers/usb/class/Kconfig  |   10 
+>  drivers/usb/class/Makefile |    1 
+>  drivers/usb/class/usbtmc.c | 1058 +++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/usb/class/usbtmc.h |   24 +
+>  include/linux/usb/tmc.h    |   27 +
+>  5 files changed, 1120 insertions(+)
 
-Umm. Neither is 8k stacks. Nobody "proved" anything.
+needs Documentation/ABI description of new sysfs files
 
-But yes, some subsystems have insanely deep call chains. And yes, things 
-like the VFS recursion (for symlinks) makes that deeper yet for 
-filesystems, although only on the lookup path. And that is exactly the 
-kind of thing that can exacerbate the problem of the compiler artificially 
-making for a bigger stack footprint of a function (*).
+> +/*
+> + * This structure is the capabilities for the device
+> + * See section 4.2.1.8 of the USBTMC specification for details.
+> + */
+> +struct usbtmc_dev_capabilities {
+> +	__u8 interface_capabilities;
+> +	__u8 device_capabilities;
+> +	__u8 usb488_interface_capabilities;
+> +	__u8 usb488_device_capabilities;
+> +};
 
-For things like the VFS layer, right now we allow a nesting level of 8, I 
-think. If I remember correctly, it was 5 historically. Part of raising 
-that depth, though, was that we actually moved the recursive part into 
-fs/namei.c, and the nesting stack-depth was something pretty damn small 
-when the filesystem used "follow_link" properly and let the VFS do it for 
-it (ie the callchain to actually look up the link could be deep, but it 
-would not recurse back, and instead just return a pointer, so that the 
-actual _recursive_ part was just __do_follow_link() and is just a few 
-words on the stack).
+These should match the usbif description names to make it easier to
+understand.
 
-So yes, we do have some deep callchains, but they tend to be pretty well 
-managed for _good_ code. The problems tend to be the areas with lots of 
-indirection layers, and yeah, XFS, MD and ACPI all have those kinds of 
-things.
+> +	/* USBTMC devices have only one setting, so use that */
+> +	iface_desc = data->intf->cur_altsetting;
+> +
+> +	/* Find bulk in endpoint */
+> +	for (n = 0; n < iface_desc->desc.bNumEndpoints; n++) {
+> +		endpoint = &iface_desc->endpoint[n].desc;
+> +
+> +		if (usb_endpoint_is_bulk_in(endpoint)) {
+> +			data->bulk_in = endpoint->bEndpointAddress;
+> +			dev_dbg(dev, "Found bulk in endpoint at %u\n",
+> +				data->bulk_in);
+> +			break;
+> +		}
+> +	}
+> +
+> +	/* Find bulk out endpoint */
+> +	for (n = 0; n < iface_desc->desc.bNumEndpoints; n++) {
+> +		endpoint = &iface_desc->endpoint[n].desc;
+> +
+> +		if (usb_endpoint_is_bulk_out(endpoint)) {
+> +			data->bulk_out = endpoint->bEndpointAddress;
+> +			dev_dbg(dev, "Found Bulk out endpoint at %u\n",
+> +				data->bulk_out);
+> +			break;
+> +		}
+> +	}
 
-In an embdedded world, many of those should be a non-issue, though. 
+This can all be done at probe() time, no need to wait until open().
 
-			Linus
+> +static ssize_t usbtmc_write(struct file *filp, const char __user *buf,
+> +			    size_t count, loff_t *f_pos)
+> +{
+> +	struct usbtmc_device_data *data;
+> +	u8 *buffer;
+> +	int retval;
+> +	int actual;
+> +	unsigned long int n_bytes;
+> +	int n;
+> +	int remaining;
+> +	int done;
+> +	int this_part;
+> +
+> +	data = filp->private_data;
+> +	buffer = data->buffer;
 
-(*) ie the function that _is_ on the deep chain doesn't actually need much 
-of a stack footprint at all itself, but it may call a helper function that 
-is _not_ in the deep chain, and if it gets inlined it may give its 
-excessive stack footprint to the deep chain - and this is _exactly_ the 
-problem that happened with inlining "load_module()".
+This buffer should be local to the function, and not the device as we
+could overlap reads and writes.  It should be removed from the device
+itself to make sure everything is correct.  The ioctls already have
+their own local buffers, fixing a bug in the original driver which used
+1! buffer for all devices and all commands...
+
+thanks,
+
+greg k-h
