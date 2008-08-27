@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbYH0PH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbYH0PJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756042AbYH0PH2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 11:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYH0PHS
+	id S1756391AbYH0PJV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 11:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754835AbYH0PJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 11:07:18 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52149 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752683AbYH0PHR (ORCPT
+	Wed, 27 Aug 2008 11:09:08 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:21549 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753652AbYH0PJG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 11:07:17 -0400
-Date: Wed, 27 Aug 2008 08:04:38 -0700
-From: Greg KH <greg@kroah.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Alex Chiang <achiang@hp.com>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, v2] PCI: create function symlinks in
-	/sys/bus/pci/slots/N/
-Message-ID: <20080827150438.GA30929@kroah.com>
-References: <20080822162048.GA20820@ldl.fc.hp.com> <20080822182317.GW8318@parisc-linux.org> <20080822195358.GC20820@ldl.fc.hp.com> <20080823154450.GA27985@kroah.com> <20080823200446.GA24936@ldl.fc.hp.com> <20080825040713.GE3128@kroah.com> <20080827035003.GA25140@ldl.fc.hp.com> <20080827040135.GA23547@kroah.com> <20080827142139.GB19788@parisc-linux.org>
+	Wed, 27 Aug 2008 11:09:06 -0400
+Message-ID: <48B56ADA.8010808@yandex.ru>
+Date: Wed, 27 Aug 2008 17:55:22 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080827142139.GB19788@parisc-linux.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: David Howells <dhowells@redhat.com>
+CC: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Serge Hallyn <serue@us.ibm.com>, Tony Luck <tony.luck@intel.com>,
+       linux-ia64@vger.kernel.org
+Subject: Re: [PATCH 01/59] CRED: Wrap task credential accesses in the IA64
+ arch
+References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk> <20080827134547.19980.38813.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080827134547.19980.38813.stgit@warthog.procyon.org.uk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 27 Aug 2008 14:58:32.0727 (UTC) FILETIME=[5FAE4A70:01C90855]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 08:21:39AM -0600, Matthew Wilcox wrote:
-> On Tue, Aug 26, 2008 at 09:01:35PM -0700, Greg KH wrote:
-> > On Tue, Aug 26, 2008 at 09:50:03PM -0600, Alex Chiang wrote:
-> > > * Greg KH <greg@kroah.com>:
-> > > > And thanks for the other documentation as well, if you want,
-> > > > you could split that out as a different patch and odds are
-> > > > Jesse could get that into the tree before 2.6.27 comes out :)
-> > > 
-> > > Hrm, given the harder line Linus has taken against "regression
-> > > only" patches lately, it can probably wait another release cycle.
-> > 
-> > Documentation updates and new stand-alone drivers are ok at all times :)
+David Howells wrote:
+> Wrap access to task credentials so that they can be separated more easily from
+> the task_struct during the introduction of COW creds.
 > 
-> You're clearly not hanging on every word of our Dear Leader:
+> Change most current->(|e|s|fs)[ug]id to current_(|e|s|fs)[ug]id().
 > 
-> http://marc.info/?l=linux-kernel&m=121924636529367&w=2
+> Change some task->e?[ug]id to task_e?[ug]id().  In some places it makes more
+> sense to use RCU directly rather than a convenient wrapper; these will be
+> addressed by later patches.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> Reviewed-by: James Morris <jmorris@namei.org>
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
+> Cc: Tony Luck <tony.luck@intel.com>
+> Cc: linux-ia64@vger.kernel.org
 
-I read that, and parsed:
-	I generally won't complain about them, but I also don't see the
-	point.
+Fine with me. Do you want us to put this patch to ubifs-2.6.git or you
+prefer to make it go together with the rest of the CRED patches?
 
-as being up to the maintainer's judgement.
-
-So in this case, it's up to Jesse :)
-
-thanks,
-
-greg k-h
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
