@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbYH0V2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbYH0V24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754181AbYH0V2X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 17:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbYH0V2O
+	id S1754574AbYH0V24 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 17:28:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbYH0V2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 17:28:14 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:34828 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752396AbYH0V2N (ORCPT
+	Wed, 27 Aug 2008 17:28:46 -0400
+Received: from pne-smtpout2-sn2.hy.skanova.net ([81.228.8.164]:41127 "EHLO
+	pne-smtpout2-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752064AbYH0V2p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 17:28:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Ih1+A3eADEIq2y4fLrs4BZQi6d2sDGSSeQdtgSvYhBaL5HOKJxsLOCnLk3uSKb0nJj
-         06N0mlKY9ahUGM2shIVl3g8Hh+aZYHSC7CicFWOvNT5Xjm1DiFM05Z9C6nKf4FJDBx01
-         BAQoTCXqU6gPQl6XHpAKcg7z5hOPyN4Wvpkuk=
-Date: Wed, 27 Aug 2008 23:27:25 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Wed, 27 Aug 2008 17:28:45 -0400
+X-Greylist: delayed 4243 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Aug 2008 17:28:45 EDT
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Cox <alan@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] ftrace: disable tracing for suspend to ram
-Message-ID: <20080827212719.GA5531@joi>
-References: <alpine.DEB.1.10.0808211139420.3947@gandalf.stny.rr.com> <20080822104610.GA3482@elf.ucw.cz> <alpine.DEB.1.10.0808221632410.14231@gandalf.stny.rr.com> <200808222252.12547.rjw@sisk.pl> <alpine.DEB.1.10.0808221651350.15941@gandalf.stny.rr.com> <alpine.DEB.1.10.0808270844500.7871@gandalf.stny.rr.com>
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+	<alpine.LFD.1.10.0808241120460.3363@nehalem.linux-foundation.org>
+From: Peter Osterlund <petero2@telia.com>
+Date: Wed, 27 Aug 2008 22:17:49 +0200
+In-Reply-To: <alpine.LFD.1.10.0808241120460.3363@nehalem.linux-foundation.org> (Linus Torvalds's message of "Sun\, 24 Aug 2008 11\:34\:32 -0700 \(PDT\)")
+Message-ID: <m3k5e2qkk2.fsf@telia.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0808270844500.7871@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 09:14:40AM -0400, Steven Rostedt wrote:
-> 
-> I've been painstakingly debugging the issue with suspend to ram and 
-> ftraced. The 2.6.28 code does not have this issue, but since the mcount 
-> recording is not going to be in 27, this must be solved for the ftrace 
-> daemon version.
-> 
-> The resume from suspend to ram would reboot because it was triple 
-> faulting. Debugging further, I found that calling the mcount function 
-> itself was not an issue, but it would fault when it incremented 
-> preempt_count. preempt_count is on the tasks info structure that is on the 
-> low memory address of the task's stack.  For some reason, it could not 
-> write to it. Resuming out of suspend to ram does quite a lot of funny 
-> tricks to get to work, so it is not surprising at all that simply doing a 
-> preempt_disable() would cause a fault.
-> 
-> Thanks to Rafael for suggesting to add a "while (1);" to find the place in 
-> resuming that is causing the fault. I would place the loop somewhere in 
-> the code, compile and reboot and see if it would either reboot (hit the 
-> fault) or simply hang (hit the loop).  Doing this over and over again, I 
-> narrowed it down that it was happening in enable_nonboot_cpus.
-> 
-> At this point, I found that it is easier to simply disable tracing around 
-> the suspend code, instead of searching for the particular function that 
-> can not handle doing a preempt_disable.
-> 
-> This patch disables the tracer as it suspends and reenables it on resume.
-> 
-> I tested this patch on my Laptop, and it can resume fine with the patch.
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-You can add my:
-Tested-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> On Sat, 23 Aug 2008, Rafael J. Wysocki wrote:
+>> 
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11401
+>> Subject		: pktcdvd: BUG, NULL pointer dereference in pkt_ioctl, bisected
+>> Submitter	: Laurent Riffard <laurent.riffard@free.fr>
+>> Date		: 2008-08-22 08:16 (2 days old)
+>
+> This one looks irritating.
+>
+> It's bisected to 5b6155ee70e9c4d2ad7e6f514c8eee06e2711c3a ("pktcdvd: push 
+> BKL down into driver"), but the problem goes deeper than that.
+...
+> Grr.
+...
+> Double grr.
+...
+> Hmm?
+>
+> We need to fix this.
 
-Thanks!
+Why not just revert the offending change and try again during the next
+merge window, assuming someone has figured out an acceptable way to
+handle this mess by then?
 
-Marcin
+-- 
+Peter Osterlund - petero2@telia.com
+http://web.telia.com/~u89404340
