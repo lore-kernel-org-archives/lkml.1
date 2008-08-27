@@ -1,115 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbYH0AeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753950AbYH0AiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753722AbYH0AeJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 20:34:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbYH0Adz
+	id S1753950AbYH0AiT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 20:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbYH0AiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 20:33:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38373 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752431AbYH0Adz (ORCPT
+	Tue, 26 Aug 2008 20:38:09 -0400
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:63443 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750933AbYH0AiI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 20:33:55 -0400
-Date: Tue, 26 Aug 2008 17:26:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: cmm@us.ibm.com, tytso@mit.edu, sandeen@redhat.com,
-       linux-ext4@vger.kernel.org, aneesh.kumar@linux.vnet.ibm.com,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH -v2] percpu_counters: make fbc->count read atomic on
- 32 bit architecture
-Message-Id: <20080826172658.120144fa.akpm@linux-foundation.org>
-In-Reply-To: <1219663233-21849-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1219663233-21849-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 26 Aug 2008 20:38:08 -0400
+Message-ID: <48B4A1EF.2090606@cs.columbia.edu>
+Date: Tue, 26 Aug 2008 20:38:07 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Dave Hansen <dave@sr71.net>
+CC: containers@lists.linux-foundation.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>, arnd@arndb.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC v2][PATCH 2/9] General infrastructure for checkpoint	restart
+References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>	 <Pine.LNX.4.64.0808202303460.17436@takamine.ncl.cs.columbia.edu>	 <1219435302.20559.121.camel@nimitz>  <48B21D3C.8090601@cs.columbia.edu> <1219768949.8680.26.camel@nimitz>
+In-Reply-To: <1219768949.8680.26.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Aug 2008 16:50:28 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
 
-> fbc->count is of type s64. The change was introduced by
-> 0216bfcffe424a5473daa4da47440881b36c1f4 which changed the type
-> from long to s64. Moving to s64 also means on 32 bit architectures
-> we can get wrong values on fbc->count. Since fbc->count is read
-> more frequently and updated rarely use seqlocks. This should
-> reduce the impact of locking in the read path for 32bit arch.
+
+Dave Hansen wrote:
+> On Sun, 2008-08-24 at 22:47 -0400, Oren Laadan wrote:
+>>> I replaced all of the uses of these with kmalloc()/kfree() and stack
+>>> allocations.  I'm really not sure what these buy us since our allocators
+>>> are already so fast.  tbuf, especially, worries me if it gets used in
+>>> any kind of nested manner we're going to get some really fun bugs.
+>> I disagree with putting some of the cr_hdr_... on the stack: first, if they
+>> grow in size, it's easy to forget to change the allocation to stack.
 > 
-> percpu_counter_read is used within interrupt context also. So
-> use the irq safe version of seqlock while reading
+> I can buy that. 
 > 
+>> Second,
+>> using a standard code/handling for all cr_hdr_... makes the code more readable
+>> and easier for others to extend by simply following existing code.
+> 
+> It actually makes it harder for others to jump into because they see
+> something which is basically a kmalloc() to the rest of the kernel.  We
+> don't have ext2_alloc() or usb_alloc(), so I'm not sure we should have
+> cr_alloc(), effectively.
 
-The linux-ext4 list is not an appropriate place for discussing a
-kernel-wide change.
+I disagree. It's more than "allocate memory", it's: "give me some room on
+the buffer". When we don't care about downtime (like now), it's enough to
+kmalloc a temporary buffer and flush (write to the FD) immediately.
 
->  include/linux/percpu_counter.h |   29 +++++++++++++++++++++++++----
->  lib/percpu_counter.c           |   20 ++++++++++----------
->  2 files changed, 35 insertions(+), 14 deletions(-)
+But when we will care about downtime, "the buffer" will be memory in kernel
+where the entire checkpoint image data will be kept while the container is
+frozen (memory contents need only be marked copy-on-write, not explicitly
+buffered).
 
-Which this one surely is.  I added linux-kernel to cc.
+In this setting, cr_kwrite() will not really write the data to the FD, but
+only record somewhere that the data exists. Only after the container resumes
+execution will we eventually write the data to the FD and free the buffer.
 
-> diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
-> index 9007ccd..36f3d2d 100644
-> --- a/include/linux/percpu_counter.h
-> +++ b/include/linux/percpu_counter.h
-> @@ -6,7 +6,7 @@
->   * WARNING: these things are HUGE.  4 kbytes per counter on 32-way P4.
->   */
->  
-> -#include <linux/spinlock.h>
-> +#include <linux/seqlock.h>
->  #include <linux/smp.h>
->  #include <linux/list.h>
->  #include <linux/threads.h>
-> @@ -16,7 +16,7 @@
->  #ifdef CONFIG_SMP
->  
->  struct percpu_counter {
-> -	spinlock_t lock;
-> +	seqlock_t lock;
->  	s64 count;
->  #ifdef CONFIG_HOTPLUG_CPU
->  	struct list_head list;	/* All percpu_counters are on a list */
-> @@ -53,10 +53,31 @@ static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
->  	return __percpu_counter_sum(fbc);
->  }
->  
-> -static inline s64 percpu_counter_read(struct percpu_counter *fbc)
-> +#if BITS_PER_LONG == 64
-> +static inline s64 fbc_count(struct percpu_counter *fbc)
->  {
->  	return fbc->count;
->  }
-> +#else
-> +/* doesn't have atomic 64 bit operation */
-> +static inline s64 fbc_count(struct percpu_counter *fbc)
-> +{
-> +	s64 ret;
-> +	unsigned seq;
-> +	unsigned long flags;
-> +	do {
-> +		seq = read_seqbegin_irqsave(&fbc->lock, flags);
-> +		ret = fbc->count;
-> +	} while(read_seqretry_irqrestore(&fbc->lock, seq, flags));
-> +	return ret;
-> +
-> +}
-> +#endif
+(This is also useful in case you want to keep the checkpoint image entirely
+in memory without flushing to any FD; and yes, there are use-cases for that).
 
-The problem of atomically handling 64-bit quantities on 32-bit machines
-is by no means unique to percpu_counters.  We sorta-solved it for
-i_size and we continue to sorta-not-solve it for loff_t and surely
-there are other places which already sorta-solve it and which will be
-sorta-solved in the future.
+So for this, instead of using kmalloc() to allocate a temp-buf, fill it with
+data, and then copy that data to the actual (big) buffer, the mechanism
+provides a shortcut to allocate space directly on the buffer, and save the
+copy.
 
-All of which tells us that we need a real solution, at a lower level.
+> 
+>> The main argument for ->hbuf is that eventually we would like to buffer
+>> data in the kernel to avoid potentially slow writing/reading when processes
+>> are frozen during checkpoint/restart.
+> 
+> Um, we're writing to a file descriptor and kmap()'ing.  Those can both
+> potentially be very, very slow.  I don't think that a few kmalloc()s
+> thrown in there are going to be noticeable.
 
-We already have a suitable type, really: atomic64_t.  But it's an
-arch-private thing and is only implemented on 64-bit architectures.
+But you miss the point: the writing to the file descriptor in the (future)
+optimized version will _not_ happen while the container is frozen. Only
+much later after the container resumes, so at the end it will be:
+(1) freeze container (2) dump data to in-kernel buffer (mark dirty pages
+copy-on-write) (3) unfreeze container (4) write in-kernel buffer to FD.
 
-Perhaps atomic64_t should be promoted to being a kernel-wide facility?
+By deferring step #4 until after the freeze-period, you can save tens and
+hundreds of milliseconds, and seconds. Now the goal is to make step #2 be
+as fast as possible, and every millisecond (and less) counts, e.g. to take
+fast checkpoints of interactive desktops. And my experience is that in
+such "workload" repetitive kmalloc/kfree inside that dump loop has a
+measurable impact on performance (of course, for those objects which are
+abundant).
+
+> 
+>> By using the simple cr_get_hbuf() and
+>> cr_put_hbuf() we prepare for that: now they just allocate room in ->hbuf,
+>> but later they will provide a pointer directly in the data buffer. Moreover,
+>> it simplifies the error path since cleanup (of ->hbuf) is implicit.
+> 
+> It simplifies *one* error path.  But, it complicates the ctx creation
+> and makes *that* error path more complex.  Pick your poison, I guess.
+
+Actually it simplifies *many* error paths -- in *all* cr_write_...()
+functions - including the future ones (and there are many to come).
+
+> 
+>> Also,
+>> it is designed to allow checkpoint and restart function to be called in a
+>> nested manner, again simplifying the code. Finally, my experience was that
+>> it can impact performance if you are after very short downtimes, especially
+>> for the checkpoint.
+> 
+> Right, but I'm comparing it to kmalloc()  Certainly kmalloc()s can be
+> used in a nested manner.
+> 
+>>>> +/* read the checkpoint header */
+>>>> +static int cr_read_hdr(struct cr_ctx *ctx)
+>>>> +{
+>>>> +	struct cr_hdr_head *hh = cr_hbuf_get(ctx, sizeof(*hh));
+>>>> +	int ret;
+>>>> +
+>>>> +	ret = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_HEAD);
+>>>> +	if (ret < 0)
+>>>> +		return ret;
+>>>> +	else if (ret != 0)
+>>>> +		return -EINVAL;
+>>> How about just making cr_read_obj_type() stop returning positive values?
+>>> Is it ever valid for it to return >0?
+>> The idea with cr_read_obj_type() is that it returns the 'ptag' - parent tag -
+>> field of the object that it reads in. The 'ptag' is the tag of the parent
+>> object, and is useful in several places. For instance, the 'ptag' of an MM
+>> header identifies (is equal to) the 'tag' of TASK to which it belongs. In
+>> this case, the 'ptag' should be zero because it has no parent object.
+>>
+>> I'll change the variable name from 'ret' to 'ptag' to make it more obvious.
+> 
+> Since this ptag isn't actually used, I can't really offer a suggestion.
+> I don't see the whole picture.
+
+You can see how it's used in the code that dumps files. Or look at the next
+incarnation of the patch.
+
+Oren.
 
