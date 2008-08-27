@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757697AbYH0N7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759902AbYH0N7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757697AbYH0N7V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 09:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757683AbYH0NvH
+	id S1759902AbYH0N7y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 09:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757149AbYH0NvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 09:51:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49471 "EHLO mx1.redhat.com"
+	Wed, 27 Aug 2008 09:51:13 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49480 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757653AbYH0Nu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 09:50:58 -0400
+	id S1755670AbYH0NvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 09:51:04 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 01/59] CRED: Wrap task credential accesses in the IA64 arch
+Subject: [PATCH 23/59] CRED: Wrap task credential accesses in the Ext2
+	filesystem
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Serge Hallyn <serue@us.ibm.com>, Tony Luck <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org
-Date: Wed, 27 Aug 2008 14:45:47 +0100
-Message-ID: <20080827134547.19980.38813.stgit@warthog.procyon.org.uk>
+       Serge Hallyn <serue@us.ibm.com>, linux-ext4@vger.kernel.org
+Date: Wed, 27 Aug 2008 14:47:40 +0100
+Message-ID: <20080827134740.19980.64489.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
 References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -43,98 +43,47 @@ addressed by later patches.
 Signed-off-by: David Howells <dhowells@redhat.com>
 Reviewed-by: James Morris <jmorris@namei.org>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: linux-ia64@vger.kernel.org
+Cc: linux-ext4@vger.kernel.org
 ---
 
- arch/ia64/kernel/mca_drv.c |    2 +-
- arch/ia64/kernel/perfmon.c |   23 +++++++++++++----------
- arch/ia64/kernel/signal.c  |    4 ++--
- 3 files changed, 16 insertions(+), 13 deletions(-)
+ fs/ext2/balloc.c |    2 +-
+ fs/ext2/ialloc.c |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
 
-diff --git a/arch/ia64/kernel/mca_drv.c b/arch/ia64/kernel/mca_drv.c
-index fab1d21..f94aaa8 100644
---- a/arch/ia64/kernel/mca_drv.c
-+++ b/arch/ia64/kernel/mca_drv.c
-@@ -158,7 +158,7 @@ mca_handler_bh(unsigned long paddr, void *iip, unsigned long ipsr)
- 	ia64_mlogbuf_dump();
- 	printk(KERN_ERR "OS_MCA: process [cpu %d, pid: %d, uid: %d, "
- 		"iip: %p, psr: 0x%lx,paddr: 0x%lx](%s) encounters MCA.\n",
--		raw_smp_processor_id(), current->pid, current->uid,
-+	       raw_smp_processor_id(), current->pid, current_uid(),
- 		iip, ipsr, paddr, current->comm);
+diff --git a/fs/ext2/balloc.c b/fs/ext2/balloc.c
+index 10bb02c..8c59a60 100644
+--- a/fs/ext2/balloc.c
++++ b/fs/ext2/balloc.c
+@@ -1193,7 +1193,7 @@ static int ext2_has_free_blocks(struct ext2_sb_info *sbi)
+ 	free_blocks = percpu_counter_read_positive(&sbi->s_freeblocks_counter);
+ 	root_blocks = le32_to_cpu(sbi->s_es->s_r_blocks_count);
+ 	if (free_blocks < root_blocks + 1 && !capable(CAP_SYS_RESOURCE) &&
+-		sbi->s_resuid != current->fsuid &&
++		sbi->s_resuid != current_fsuid() &&
+ 		(sbi->s_resgid == 0 || !in_group_p (sbi->s_resgid))) {
+ 		return 0;
+ 	}
+diff --git a/fs/ext2/ialloc.c b/fs/ext2/ialloc.c
+index f597413..8d0add6 100644
+--- a/fs/ext2/ialloc.c
++++ b/fs/ext2/ialloc.c
+@@ -550,7 +550,7 @@ got:
  
- 	spin_lock(&mca_bh_lock);
-diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
-index fc8f350..ffe6de0 100644
---- a/arch/ia64/kernel/perfmon.c
-+++ b/arch/ia64/kernel/perfmon.c
-@@ -2224,8 +2224,8 @@ pfm_alloc_file(pfm_context_t *ctx)
- 	DPRINT(("new inode ino=%ld @%p\n", inode->i_ino, inode));
+ 	sb->s_dirt = 1;
+ 	mark_buffer_dirty(bh2);
+-	inode->i_uid = current->fsuid;
++	inode->i_uid = current_fsuid();
+ 	if (test_opt (sb, GRPID))
+ 		inode->i_gid = dir->i_gid;
+ 	else if (dir->i_mode & S_ISGID) {
+@@ -558,7 +558,7 @@ got:
+ 		if (S_ISDIR(mode))
+ 			mode |= S_ISGID;
+ 	} else
+-		inode->i_gid = current->fsgid;
++		inode->i_gid = current_fsgid();
+ 	inode->i_mode = mode;
  
- 	inode->i_mode = S_IFCHR|S_IRUGO;
--	inode->i_uid  = current->fsuid;
--	inode->i_gid  = current->fsgid;
-+	inode->i_uid  = current_fsuid();
-+	inode->i_gid  = current_fsgid();
- 
- 	sprintf(name, "[%lu]", inode->i_ino);
- 	this.name = name;
-@@ -2403,22 +2403,25 @@ error_kmem:
- static int
- pfm_bad_permissions(struct task_struct *task)
- {
-+	uid_t uid = current_uid();
-+	gid_t gid = current_gid();
-+
- 	/* inspired by ptrace_attach() */
- 	DPRINT(("cur: uid=%d gid=%d task: euid=%d suid=%d uid=%d egid=%d sgid=%d\n",
--		current->uid,
--		current->gid,
-+		uid,
-+		gid,
- 		task->euid,
- 		task->suid,
- 		task->uid,
- 		task->egid,
- 		task->sgid));
- 
--	return ((current->uid != task->euid)
--	    || (current->uid != task->suid)
--	    || (current->uid != task->uid)
--	    || (current->gid != task->egid)
--	    || (current->gid != task->sgid)
--	    || (current->gid != task->gid)) && !capable(CAP_SYS_PTRACE);
-+	return (uid != task->euid)
-+	    || (uid != task->suid)
-+	    || (uid != task->uid)
-+	    || (gid != task->egid)
-+	    || (gid != task->sgid)
-+	    || (gid != task->gid)) && !capable(CAP_SYS_PTRACE);
- }
- 
- static int
-diff --git a/arch/ia64/kernel/signal.c b/arch/ia64/kernel/signal.c
-index 19c5a78..434e93e 100644
---- a/arch/ia64/kernel/signal.c
-+++ b/arch/ia64/kernel/signal.c
-@@ -228,7 +228,7 @@ ia64_rt_sigreturn (struct sigscratch *scr)
- 	si.si_errno = 0;
- 	si.si_code = SI_KERNEL;
- 	si.si_pid = task_pid_vnr(current);
--	si.si_uid = current->uid;
-+	si.si_uid = current_uid();
- 	si.si_addr = sc;
- 	force_sig_info(SIGSEGV, &si, current);
- 	return retval;
-@@ -325,7 +325,7 @@ force_sigsegv_info (int sig, void __user *addr)
- 	si.si_errno = 0;
- 	si.si_code = SI_KERNEL;
- 	si.si_pid = task_pid_vnr(current);
--	si.si_uid = current->uid;
-+	si.si_uid = current_uid();
- 	si.si_addr = addr;
- 	force_sig_info(SIGSEGV, &si, current);
- 	return 0;
+ 	inode->i_ino = ino;
 
