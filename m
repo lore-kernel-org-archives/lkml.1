@@ -1,41 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbYH0QSo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758833AbYH0QTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758561AbYH0QSo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 12:18:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755745AbYH0QSg
+	id S1758833AbYH0QTY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 12:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866AbYH0QTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 12:18:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51715 "EHLO mx1.redhat.com"
+	Wed, 27 Aug 2008 12:19:16 -0400
+Received: from gw.goop.org ([64.81.55.164]:46585 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755422AbYH0QSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 12:18:36 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080827160439.GA12085@us.ibm.com>
-References: <20080827160439.GA12085@us.ibm.com> <200808262057.51606.agruen@suse.de> <20080827135206.GA12919@us.ibm.com> <200808271729.18220.agruen@suse.de>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: dhowells@redhat.com, Andreas Gruenbacher <agruen@suse.de>,
-       "Andrew G. Morgan" <morgan@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] file capabilities: Add no_file_caps switch
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
-Date: Wed, 27 Aug 2008 17:13:24 +0100
-Message-ID: <26995.1219853604@redhat.com>
+	id S1754632AbYH0QTP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 12:19:15 -0400
+Message-ID: <48B57E81.2020708@goop.org>
+Date: Wed, 27 Aug 2008 09:19:13 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: Louis.Rilling@kerlabs.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, arnd@arndb.de
+Subject: Re: [RFC v2][PATCH 4/9] Memory management - dump state
+References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>	 <Pine.LNX.4.64.0808202304490.17436@takamine.ncl.cs.columbia.edu>	 <1219437422.20559.146.camel@nimitz> <48B0F449.2000006@cs.columbia.edu>	 <1219768406.8680.17.camel@nimitz> <48B49C61.1040003@cs.columbia.edu>	 <1219851696.8680.67.camel@nimitz>	 <20080827155725.GD14473@hawkmoon.kerlabs.com> <1219853520.8680.69.camel@nimitz>
+In-Reply-To: <1219853520.8680.69.camel@nimitz>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn <serue@us.ibm.com> wrote:
+Dave Hansen wrote:
+> On Wed, 2008-08-27 at 17:57 +0200, Louis Rilling wrote:
+>   
+>> On Wed, Aug 27, 2008 at 08:41:36AM -0700, Dave Hansen wrote:
+>>     
+>>> Dang.  What's the thing we return from system calls that are
+>>> unsupported?  Did I just dream that up?
+>>>       
+>> ENOSYS?
+>>     
+>
+> Brain not functioning, yet.  Thanks.
+>   
 
-> (Also note that if you have such users, you'll want to ask David Howells not
-> to push the patch he has floated removing the ability to pass caps to
-> another task altogether when CONFIG_SECURITY_FILE_CAPABILITIES=n :)
+Or EOPNOTSUPP - but that's documented as a network error ("Operation not
+supported on transport endpoint").
 
-Ugh.  My patch removes the ability to pass caps to another task under all
-circumstances because to do otherwise means that I have to make the kernel use
-RCU locking for a task to access its own creds.  If you want this, I'll have
-to redo all my later patches.
-
-David
+    J
