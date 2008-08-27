@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752414AbYH0AoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753848AbYH0AzP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752414AbYH0AoV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 20:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYH0AoN
+	id S1753848AbYH0AzP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 20:55:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbYH0AzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 20:44:13 -0400
-Received: from web33206.mail.mud.yahoo.com ([209.191.69.154]:20561 "HELO
-	web33206.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752586AbYH0AoN (ORCPT
+	Tue, 26 Aug 2008 20:55:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43674 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751953AbYH0AzB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 20:44:13 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=PRmtoXp3sIAonL06SThczEDolaLCmyGwXqiMPp9/hJF/IkLcFQt6IBLwd+Or1roNWLlkGT7rH+fgMLJ9DCSh9B2AGVQPn07U5GOHsrd0LYDcWJlGGapoHJi1GOXlllEQ2ALNrHTO/cmlCBuMCh1wuliE2qOOTc51ZsQxafsfzP4=;
-X-YMail-OSG: jaU2A2YVM1kncIeZgXSAcb1ihUlFBONhLLVBOflgJ3FXIEL6_ZJJI3T2TINOceMplw--
-X-Mailer: YahooMailRC/1042.48 YahooMailWebService/0.7.218.2
-Date: Tue, 26 Aug 2008 17:44:12 -0700 (PDT)
-From: jassi brar <jassi_singh_brar@yahoo.com>
-Subject: Re: An idea .... with code
-To: linux-kernel@vger.kernel.org
-Cc: jochen.voss@googlemail.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <215864.42566.qm@web33206.mail.mud.yahoo.com>
+	Tue, 26 Aug 2008 20:55:01 -0400
+Date: Tue, 26 Aug 2008 17:53:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+Cc: eparis@redhat.com, linux-kernel@vger.kernel.org, debora@linux.vnet.ibm.com,
+       tpm@selhorst.net
+Subject: Re: [PATCH] TPM: include subscribers-only notation in MAINTAINERS
+Message-Id: <20080826175339.bb3b0e15.akpm@linux-foundation.org>
+In-Reply-To: <1219423872.4765.14.camel@blackbox>
+References: <1219420519.3613.16.camel@localhost.localdomain>
+	<1219423872.4765.14.camel@blackbox>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jochen, Marcin and Bill,
+On Fri, 22 Aug 2008 13:51:12 -0300
+Rajiv Andrade <srajiv@linux.vnet.ibm.com> wrote:
 
-> Some minor remarks below.
-> It's better to check this patch with scripts/checkpatch.pl  
-Thanks for the feedback. I admit the code is not near perfection, but then 
- i think that comes after the community finds the idea any worth.
+> ---
+>  MAINTAINERS |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 28c69aa..71bd3cb 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -4057,7 +4057,7 @@ W:	http://tpmdd.sourceforge.net
+>  P:	Marcel Selhorst
+>  M:	tpm@selhorst.net
+>  W:	http://www.prosec.rub.de/tpm/
+> -L:	tpmdd-devel@lists.sourceforge.net
+> +L:	tpmdd-devel@lists.sourceforge.net (moderated for non-subscribers)
+>  S:	Maintained
+>
 
-> will it interface with crypto applications like LUKS? 
-   It should work with LUKS, as it transparently emulates a file as a block device. 
- Please suggest a test case(webpage?) to verify it against LUKS, as i don't know much about it.
+- patch title ("TPM: include subscribers-only notation in
+  MAINTAINERS) is now wrong.
 
- As i said the code was just as a proof of concept hastily put together. I heard Linux folks hate Ideas without code :)
- Btw, i personally believe not everyone with an idea could code well and not every good programmer is as well creative.
- 
-Regards,
--Jassi
+- patch has no changelog
 
+- patch has no signoff.
 
-      
+I can (and often do) fix the first two things, and sometimes I'll even
+fix the third, while notifying the submitter.
+
+I would prefer to not have to do so though.
