@@ -1,101 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbYH0Pgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbYH0Pls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757473AbYH0Pgk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 11:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755263AbYH0Pgb
+	id S1756534AbYH0Pls (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 11:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbYH0Plk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 11:36:31 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:37643 "EHLO e6.ny.us.ibm.com"
+	Wed, 27 Aug 2008 11:41:40 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:52231 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755001AbYH0Pga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 11:36:30 -0400
-Date: Wed, 27 Aug 2008 10:36:28 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: ebiederm@xmission.com, akpm@linux-foundation.org, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: unprivileged mounts git tree
-Message-ID: <20080827153628.GA11242@us.ibm.com>
-References: <E1JtiOX-0004Qg-1z@pomaz-ex.szeredi.hu> <20080807222751.GA28412@us.ibm.com> <m1prokgyje.fsf@frodo.ebiederm.org> <20080808002537.GA5364@us.ibm.com> <E1KXZpC-0008Ie-6w@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1KXZpC-0008Ie-6w@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1753926AbYH0Plk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 11:41:40 -0400
+Subject: Re: [RFC v2][PATCH 4/9] Memory management - dump state
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: arnd@arndb.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+In-Reply-To: <48B49C61.1040003@cs.columbia.edu>
+References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>
+	 <Pine.LNX.4.64.0808202304490.17436@takamine.ncl.cs.columbia.edu>
+	 <1219437422.20559.146.camel@nimitz>  <48B0F449.2000006@cs.columbia.edu>
+	 <1219768406.8680.17.camel@nimitz>  <48B49C61.1040003@cs.columbia.edu>
+Content-Type: text/plain
+Date: Wed, 27 Aug 2008 08:41:36 -0700
+Message-Id: <1219851696.8680.67.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> On Thu, 7 Aug 2008, Serge E. Hallyn wrote:
-> > Quoting Eric W. Biederman (ebiederm@xmission.com):
-> > > "Serge E. Hallyn" <serue@us.ibm.com> writes:
-> > > > so on the bright side I pulled this tree today and it compiled and
-> > > > passed ltp with no problems.
-> > > >
-> > > > But then I played around a bit and found I could do the following:
-> > > >
-> > > > (hmm, i'm trying to remember the exact order :)
-> > > >
-> > > > as root:
-> > > > 	mmount --bind -o user=500 /home/hallyn/etc/ /home/hallyn/etc/
-> > > > 	mount --bind /mnt /mnt
-> > > > 	mount --make-rshared /mnt
-> > > > 	mount --bind /dev /mnt/dev
-> > > >
-> > > > as hallyn:
-> > > > 	mmount --bind /mnt /home/hallyn/etc/mnt
-> > > > 	/usr/src/mmount-0.3/mmount --bind mnt/dev mnt/src
-> > > 
-> > > You are using relative directory names here which makes it confusing.
-> > > I'm assuming you in /home/hallyn/etc ?
+On Tue, 2008-08-26 at 20:14 -0400, Oren Laadan wrote:
+> >>>> +
+> >>>> +	while (addr < end) {
+> >>>> +		struct page *page;
+> >>>> +
+> >>>> +		/* simplified version of get_user_pages(): already have vma,
+> >>>> +		* only need FOLL_TOUCH, and (for now) ignore fault stats */
+> >>>> +
+> >>>> +		cond_resched();
+> >>>> +		while (!(page = follow_page(vma, addr, FOLL_TOUCH))) {
+> >>>> +			ret = handle_mm_fault(vma->vm_mm, vma, addr, 0);
+> >>>> +			if (ret & VM_FAULT_ERROR) {
+> >>>> +				if (ret & VM_FAULT_OOM)
+> >>>> +					ret = -ENOMEM;
+> >>>> +				else if (ret & VM_FAULT_SIGBUS)
+> >>>> +					ret = -EFAULT;
+> >>>> +				else
+> >>>> +					BUG();
+> >>>> +				break;
+> >>>> +			}
+> >>>> +			cond_resched();
+> >>>> +		}
+> >>> At best this needs to get folded back into its own function.  This is
+> >> This is almost identical to the original - see the preceding comment.
 > > 
-> > Sorry, yeah.
+> > Exactly.  The code is copy-and-pasted.  If there's a bug in the
+> > original, who will change this one?  Better to simply consolidate the
+> > code into one copy.
 > > 
-> > > > Now /mnt/src contained /dev.
-> > > >
-> > > > Is this what we want?
-> > > 
-> > > I don't think so.
-> > > 
-> > > I think the simplest answer is to not allow mounting of shared
-> > > subtrees controlled by a different user.
-> > > 
-> > > Serge I think you are right downgrading the mount from shared to slave
-> > > looks like the sane thing to do if the mount owners match.
+> >>> pretty hard to read as-is.  Also, are there truly no in-kernel functions
+> >>> that can be used for this?
+> >> Can you suggest one ?
 > > 
-> > I assume you mean "if the mount owners don't match"?
+> > This is where the mentality has to shift.  Instead of thinking "there is
+> > no exact in-kernel match for what I want here" we need to consider that
+> > we can modify the in-kernel ones.  They can be modified to suit both
+> > existing and the new needs that we have.
+> 
+> I agree.
+> 
+> However, my main goal now is not to make this patch perfect, but to provide
+> a viable proof-of-concept that demonstrates how we want to do things. Unless
+> you feel we are near ready to send these for inclusion soon (...), I intend
+> to prioritize design and functionality.
+
+So, you currently have buy-in on this basic approach from the OpenVZ
+guys, and probably Ingo.  If you get too far along in the "design and
+functionality" and a community member comes up with a really good
+objection to some basic part of the "design and functionality" you're
+going to have a lot of code to rewrite.
+
+I'm trying to get minimized the quantity of "design and functionality"
+down to the bare minimum set where we can get this merged.  So, yes, I
+do think these should be sent for inclusion soon.
+
+I believe that we're on course to create another large out-of-tree patch
+set that does in-kernel checkpoint/restart.  We have no shortage of
+those.  It's been done many times before.
+
+This one will *HOPEFULLY* be different from all the rest when it gets
+merged.  
+
+> >>>> +	for (pgarr = ctx->pgarr; pgarr; pgarr = pgarr->next) {
+> >>>> +		struct page **pages = pgarr->pages;
+> >>>> +		int nr = pgarr->nused;
+> >>>> +		void *ptr;
+> >>>> +
+> >>>> +		while (nr--) {
+> >>>> +			ptr = kmap(*pages);
+> >>>> +			ret = cr_kwrite(ctx, ptr, PAGE_SIZE);
+> >>>> +			kunmap(*pages);
+> >>> Why not use kmap_atomic() here?
+> >> It is my understanding that the code must not sleep between kmap_atomic()
+> >> and kunmap_atomic().
 > > 
-> > Miklos, what do you think?
+> > Yes, but you're going to absolutely kill performance on systems which
+> > have expensive global TLB flushes.  Frequent kmaps()s should be avoided
+> > at all costs.
+> > 
+> > The best way around this would be to change the interface to cr_kwrite()
+> > so that it didn't have to use *mapped* kernel memory.  Maybe an
+> > interface that takes 'struct page'.  Or, one where we kmap_atomic() the
+> > buffer, kunmap_atomic(), copy to a temporary buffer, then cr_kwrite().
+> > 
+> >>>> +static int cr_write_vma(struct cr_ctx *ctx, struct vm_area_struct *vma)
+> >>>> +{
+> >>>> +	struct cr_hdr h;
+> >>>> +	struct cr_hdr_vma *hh = ctx->hbuf;
+> >>>> +	char *fname = NULL;
+> >>>> +	int flen = 0, how, nr, ret;
+> >>>> +
+> >>>> +	h.type = CR_HDR_VMA;
+> >>>> +	h.len = sizeof(*hh);
+> >>>> +	h.ptag = 0;
+> >>>> +
+> >>>> +	hh->vm_start = vma->vm_start;
+> >>>> +	hh->vm_end = vma->vm_end;
+> >>>> +	hh->vm_page_prot = vma->vm_page_prot.pgprot;
+> >>>> +	hh->vm_flags = vma->vm_flags;
+> >>>> +	hh->vm_pgoff = vma->vm_pgoff;
+> >>>> +
+> >>>> +	if (vma->vm_flags & (VM_SHARED | VM_IO | VM_HUGETLB | VM_NONLINEAR)) {
+> >>>> +		pr_warning("CR: unknown VMA %#lx\n", vma->vm_flags);
+> >>>> +		return -ETXTBSY;
+> >>>> +	}
+> >>> Hmmm.  Interesting error code for VM_HUGETLB.  :)
+> >> :)  well, the usual EINVAL didn't seem suitable. Any better suggestions ?
+> > 
+> > -ENOSUP might be clearest for now.  "Your system call tried to do
+> > something unsupported."
 > 
-> Sorry about the late reply: I was on a long summer vacation...
-> 
-> Serge, thanks for spotting this: it looks indeed a nasty hole!  I also
-> agree about the solution.
+> Are you suggesting adding a new error code ?
 
-Are you implementing it, or did you want me to?
+Dang.  What's the thing we return from system calls that are
+unsupported?  Did I just dream that up?
 
-> > The next question then becomes, how can we prove to ourselves that that
-> > closes the last security hole with unprivileged mounts?  So long as
-> > we treat each mount event as a piece of information and look at it as an
-> > information flow problem, maybe we can actually come up with a good
-> > description of the logic that is implemented and show that there is no
-> > way a user can "leak" info...  (where a leak is a mount event, a
-> > violation of intended DAC on open(file) or mkdir, etc)
-> 
-> "Information flow problem" doesn't mean much to me (I'm actually an
-> electric engineer, who ended up doing programming for living ;)
-> 
-> But yeah, we should think this over very carefully.  Especially
-> interaction with mount propagation, which has very complicated and
-> sometimes rather counter-intuitive semantics.
+-- Dave
 
-I know we discussed before about whether a propagated mount from a
-non-user mount to a user mount should end up being owned by the user
-or not.  I don't recall (and am not checking the code at the moment
-as your tree is sitting elsewhere) whether we mark the propagated
-tree with the right nosuid and nodev flags, or whether we call it
-a user mount or not.
-
--serge
