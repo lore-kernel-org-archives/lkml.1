@@ -1,41 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbYH0WSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbYH0WSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbYH0WSW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 18:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbYH0WSO
+	id S1756244AbYH0WSk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 18:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYH0WS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 18:18:14 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45665 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752910AbYH0WSN (ORCPT
+	Wed, 27 Aug 2008 18:18:29 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47893
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753199AbYH0WS2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 18:18:13 -0400
-Message-ID: <48B5D29D.9080209@zytor.com>
-Date: Wed, 27 Aug 2008 15:18:05 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org
-Subject: Re: C language lawyers needed
-References: <adaod3ef82e.fsf@cisco.com> <48B5CE61.8020809@zytor.com> <20080827221711.GE28946@ZenIV.linux.org.uk>
-In-Reply-To: <20080827221711.GE28946@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 27 Aug 2008 18:18:28 -0400
+Date: Wed, 27 Aug 2008 15:18:24 -0700 (PDT)
+Message-Id: <20080827.151824.14173512.davem@davemloft.net>
+To: andi@firstfloor.org
+Cc: rick.jones2@hp.com, johnpol@2ka.mipt.ru, dada1@cosmosbay.com,
+       denys@visp.net.lb, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080827162735.GW26610@one.firstfloor.org>
+References: <87vdxmr53f.fsf@basil.nowhere.org>
+	<48B57BD3.5050206@hp.com>
+	<20080827162735.GW26610@one.firstfloor.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> On Wed, Aug 27, 2008 at 03:00:01PM -0700, H. Peter Anvin wrote:
->> Looks like a gcc bug to me.
->>
->> 0xff000000 is unsigned, like any hexadecimal constant.
-> 
-> Not any.  Ones that do not fit into range of int but do fit into the range
-> of unsigned are.
-> 
+From: Andi Kleen <andi@firstfloor.org>
+Date: Wed, 27 Aug 2008 18:27:35 +0200
 
-Crap, I keep having a stale/bogus bit set for that since I don't know when.
+> > Those banks really want to crank down on latency - to the point they 
+> > start disabling interrupt coalescing.  I bet they'd toss anything out 
+> > they could to shave another microsecond.
+> 
+> This change would actually likely lower their latency.
 
-	-hpa
+They want the timestamps, but they want it to match when the packet
+arrived at their system as closely as is reasonably possible.
+
+Socket based solutions don't do that, because we can be sleeping on
+GFP_KERNEL memory or similar with the socket locked, and thus not
+be able to set the timestamp until the task wakes up and processes
+the backlog.
