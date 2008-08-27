@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbYHZX5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbYH0AHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753660AbYHZX5h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 19:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbYHZX53
+	id S1753383AbYH0AHg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 20:07:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbYH0AH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 19:57:29 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:11773 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751887AbYHZX53 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 19:57:29 -0400
-Message-ID: <48B4984A.6090508@ct.jp.nec.com>
-Date: Tue, 26 Aug 2008 16:56:58 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH -next] initramfs: fix compilation warning
-References: <20080826184008.6be39f19.sfr@canb.auug.org.au>
-In-Reply-To: <20080826184008.6be39f19.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 26 Aug 2008 20:07:28 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47589 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751887AbYH0AH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Aug 2008 20:07:27 -0400
+Subject: Re: [PATCH] genirq: irq_chip->startup() usage in setup_irq and
+	set_irq_chained handler
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Pawel MOLL <pawel.moll@st.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1219745676.16078.219.camel@bri1004.bri.st.com>
+References: <1219313656.31630.89.camel@bri1004.bri.st.com>
+	 <1219416584.31630.639.camel@bri1004.bri.st.com>
+	 <20080823160859.GE27974@elte.hu>  <1219531395.21386.200.camel@pasglop>
+	 <1219745676.16078.219.camel@bri1004.bri.st.com>
+Content-Type: text/plain
+Date: Wed, 27 Aug 2008 10:06:59 +1000
+Message-Id: <1219795619.13162.166.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+On Tue, 2008-08-26 at 11:14 +0100, Pawel MOLL wrote:
 
-  CC      init/initramfs.o
-init/initramfs.c:517: warning: 'clean_rootfs' defined but not used
+> Let me briefly explain my situation. I have a main interrupt controller
+> which provides startup() and unmask/mask() functions. The first one is
+> rather expensive (as the controller itself is... hmmm...
+> complicated ;-), the second - very cheap. And that is how I understand
+> the different "levels" of interrupt access - startup() should be called
+> once, somewhere during request_irq(), (un)masking may be used
+> frequently.
 
-clean_rootfs is not used when CONFIG_BLK_DEV_RAM disabled.
+Oh, I don't disagree. It's probably a good idea. I'm just worried of
+the potential impact on existing code written around the current
+behaviour.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- init/initramfs.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+We have 23 calls to set_irq_chained_handler in arch/powerpc, and I need
+to audit them all. Luckily, we mostly don't have startup() callbacks.
 
-diff --git a/init/initramfs.c b/init/initramfs.c
-index da8d030..2f056e2 100644
---- a/init/initramfs.c
-+++ b/init/initramfs.c
-@@ -512,6 +512,7 @@ skip:
- 	initrd_end = 0;
- }
- 
-+#ifdef CONFIG_BLK_DEV_RAM
- #define BUF_SIZE 1024
- static void __init clean_rootfs(void)
- {
-@@ -558,6 +559,7 @@ static void __init clean_rootfs(void)
- 	sys_close(fd);
- 	kfree(buf);
- }
-+#endif
- 
- static int __init populate_rootfs(void)
- {
--- 
-1.5.6
+ (... some time later ...)
+
+It looks good. Of course, we'll have to test at one point, but at this
+stage, I think powerpc is happy with the change.
+
+Interestingly enough, I can see a case where we would have a problem
+-without- your change :-) Not with the current code, but in conjunction
+with another change that's planned for .28.
+
+So Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Cheers,
+Ben.
+
+
+
 
