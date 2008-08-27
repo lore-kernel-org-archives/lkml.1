@@ -1,109 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbYH0SmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYH0SqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756188AbYH0SmR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 14:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYH0SmE
+	id S1756073AbYH0SqU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 14:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbYH0SqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 14:42:04 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44673 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752506AbYH0SmD (ORCPT
+	Wed, 27 Aug 2008 14:46:07 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:44418 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751768AbYH0SqG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 14:42:03 -0400
-Date: Wed, 27 Aug 2008 11:36:15 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
-       Stefan Kopp <stefan_kopp@agilent.com>, Marcel Janssen <korgull@home.nl>,
-       Felipe Balbi <me@felipebalbi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: add USB test and measurement class driver - round
-	2
-Message-ID: <20080827183615.GA15692@kroah.com>
-References: <20080827172042.GA18774@kroah.com> <Pine.LNX.4.44L0.0808271423030.17568-100000@iolanthe.rowland.org>
+	Wed, 27 Aug 2008 14:46:06 -0400
+Date: Wed, 27 Aug 2008 13:46:00 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: ebiederm@xmission.com, akpm@linux-foundation.org, hch@infradead.org,
+       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: unprivileged mounts git tree
+Message-ID: <20080827184600.GA8069@us.ibm.com>
+References: <E1JtiOX-0004Qg-1z@pomaz-ex.szeredi.hu> <20080807222751.GA28412@us.ibm.com> <m1prokgyje.fsf@frodo.ebiederm.org> <20080808002537.GA5364@us.ibm.com> <E1KXZpC-0008Ie-6w@pomaz-ex.szeredi.hu> <20080827153628.GA11242@us.ibm.com> <E1KYNMl-0000TG-Qs@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0808271423030.17568-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <E1KYNMl-0000TG-Qs@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 02:28:22PM -0400, Alan Stern wrote:
-> On Wed, 27 Aug 2008, Greg KH wrote:
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> On Wed, 27 Aug 2008, Serge E. Hallyn wrote:
+> > Quoting Miklos Szeredi (miklos@szeredi.hu):
+> > > Serge, thanks for spotting this: it looks indeed a nasty hole!  I also
+> > > agree about the solution.
+> > 
+> > Are you implementing it, or did you want me to?
 > 
-> > Here's an updated version of the usbtmc driver, with all of the
-> > different issues that have been raised, hopefully addressed.
-> 
-> This is an example of what I was discussing with Oliver.  In all 
-> likelihood you simply don't need usbtmc_mutex, and using it will cause 
-> a lockdep violation.
-> 
-> That's why so many of the other USB class drivers don't have an 
-> analogous static mutex.
+> I'll implement it.
 
-Ok, then it's just safe to drop this static mutex entirely, right?
+Ok, thanks.  I look forward to playing around with it when you publish
+the resulting git tree  :)
 
-> > +static int usbtmc_open(struct inode *inode, struct file *filp)
-> > +{
-> > +	struct usb_interface *intf;
-> > +	struct usbtmc_device_data *data;
-> > +	int retval = -ENODEV;
-> > +
-> > +	mutex_lock(&usbtmc_mutex);
+> > > But yeah, we should think this over very carefully.  Especially
+> > > interaction with mount propagation, which has very complicated and
+> > > sometimes rather counter-intuitive semantics.
+> > 
+> > I know we discussed before about whether a propagated mount from a
+> > non-user mount to a user mount should end up being owned by the user
+> > or not.  I don't recall (and am not checking the code at the moment
+> > as your tree is sitting elsewhere) whether we mark the propagated
+> > tree with the right nosuid and nodev flags, or whether we call it
+> > a user mount or not.
 > 
-> You must never acquire a lock in your open method if it will be held
-> by your disconnect method while unregistering the minor.
+> If the destination is a user mount, then
 > 
-> > +static int usbtmc_probe(struct usb_interface *intf,
-> > +			const struct usb_device_id *id)
-> > +{
-> ...
-> > +	retcode = usb_register_dev(intf, &usbtmc_class);
-> > +	if (retcode) {
-> > +		dev_err(&intf->dev, "Not able to get a minor"
-> > +			" (base %u, slice default): %d\n", USBTMC_MINOR_BASE,
-> > +			retcode);
-> > +		goto error_register;
-> > +	}
-> > +	dev_dbg(&intf->dev, "Using minor number %d\n", intf->minor);
+>  - the propagated mount(s) will be owned by the same user as the destination
+>  - the propagated mount(s) will inherit 'nosuid' from the destination
 > 
-> You do call usb_register_dev() during probe...
-> 
-> > +
-> > +	return 0;
-> > +
-> > +error_register:
-> > +	sysfs_remove_group(&intf->dev.kobj, &capability_attr_grp);
-> > +	sysfs_remove_group(&intf->dev.kobj, &data_attr_grp);
-> > +	kref_put(&data->kref, usbtmc_delete);
-> > +	return retcode;
-> > +}
-> > +
-> > +static void usbtmc_disconnect(struct usb_interface *intf)
-> > +{
-> > +	struct usbtmc_device_data *data;
-> > +
-> > +	dev_dbg(&intf->dev, "usbtmc_disconnect called\n");
-> > +
-> > +	mutex_lock(&usbtmc_mutex);
-> > +	data = usb_get_intfdata(intf);
-> > +	sysfs_remove_group(&intf->dev.kobj, &capability_attr_grp);
-> > +	sysfs_remove_group(&intf->dev.kobj, &data_attr_grp);
-> > +	kref_put(&data->kref, usbtmc_delete);
-> > +	mutex_unlock(&usbtmc_mutex);
-> > +}
-> 
-> But you don't call usb_unregister_dev() during disconnect.  An 
-> oversight?
+> I remember also thinking about 'nodev' and why it doesn't need similar
+> treatment to 'nosuid'.  The reasoning was that 'nodev' is safe as long
+> as permissions are enforced, namespace shuffling cannot make it
+> insecure.  Does that sound correct?
 
-Ah, yes, my fault, I converted this from using a private cdev to using
-the usb_register_dev() call and forgot about this.  Thanks for catching
-it, I'll go fix this.
+Yes that sounds correct, thanks for the refresher.
 
-Oh, it's usb_deregister_dev(), stupid programmers with inconsitant
-interfaces :)
-
-thanks,
-
-greg k-h
+-serge
