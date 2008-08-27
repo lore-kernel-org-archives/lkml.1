@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761678AbYH0OJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761597AbYH0OJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761678AbYH0OJx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 10:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757266AbYH0OBk
+	id S1761597AbYH0OJh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 10:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbYH0OBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 10:01:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46588 "EHLO mx1.redhat.com"
+	Wed, 27 Aug 2008 10:01:13 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46555 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760129AbYH0OBi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 10:01:38 -0400
+	id S1759262AbYH0OBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 10:01:11 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 38/59] CRED: Wrap task credential accesses in the OCFS2
-	filesystem
+Subject: [PATCH 11/59] CRED: Wrap task credential accesses in video input
+	drivers
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Serge Hallyn <serue@us.ibm.com>, Mark Fasheh <mfasheh@suse.com>,
-       Joel Becker <joel.becker@oracle.com>, ocfs2-devel@oss.oracle.com
-Date: Wed, 27 Aug 2008 14:48:58 +0100
-Message-ID: <20080827134858.19980.65277.stgit@warthog.procyon.org.uk>
+       Serge Hallyn <serue@us.ibm.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       video4linux-list@redhat.com
+Date: Wed, 27 Aug 2008 14:46:39 +0100
+Message-ID: <20080827134638.19980.39537.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
 References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -44,60 +45,25 @@ addressed by later patches.
 Signed-off-by: David Howells <dhowells@redhat.com>
 Reviewed-by: James Morris <jmorris@namei.org>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
-Cc: Mark Fasheh <mfasheh@suse.com>
-Cc: Joel Becker <joel.becker@oracle.com>
-Cc: ocfs2-devel@oss.oracle.com
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: video4linux-list@redhat.com
 ---
 
- fs/ocfs2/dlm/dlmfs.c |    8 ++++----
- fs/ocfs2/namei.c     |    4 ++--
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/media/video/cpia.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 
-diff --git a/fs/ocfs2/dlm/dlmfs.c b/fs/ocfs2/dlm/dlmfs.c
-index 533a789..3516d8a 100644
---- a/fs/ocfs2/dlm/dlmfs.c
-+++ b/fs/ocfs2/dlm/dlmfs.c
-@@ -339,8 +339,8 @@ static struct inode *dlmfs_get_root_inode(struct super_block *sb)
- 		ip = DLMFS_I(inode);
+diff --git a/drivers/media/video/cpia.c b/drivers/media/video/cpia.c
+index f5f6944..844b445 100644
+--- a/drivers/media/video/cpia.c
++++ b/drivers/media/video/cpia.c
+@@ -3198,7 +3198,7 @@ static int cpia_open(struct inode *inode, struct file *file)
  
- 		inode->i_mode = mode;
--		inode->i_uid = current->fsuid;
--		inode->i_gid = current->fsgid;
-+		inode->i_uid = current_fsuid();
-+		inode->i_gid = current_fsgid();
- 		inode->i_blocks = 0;
- 		inode->i_mapping->backing_dev_info = &dlmfs_backing_dev_info;
- 		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
-@@ -365,8 +365,8 @@ static struct inode *dlmfs_get_inode(struct inode *parent,
- 		return NULL;
+ 	/* Set ownership of /proc/cpia/videoX to current user */
+ 	if(cam->proc_entry)
+-		cam->proc_entry->uid = current->uid;
++		cam->proc_entry->uid = current_uid();
  
- 	inode->i_mode = mode;
--	inode->i_uid = current->fsuid;
--	inode->i_gid = current->fsgid;
-+	inode->i_uid = current_fsuid();
-+	inode->i_gid = current_fsgid();
- 	inode->i_blocks = 0;
- 	inode->i_mapping->backing_dev_info = &dlmfs_backing_dev_info;
- 	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
-diff --git a/fs/ocfs2/namei.c b/fs/ocfs2/namei.c
-index 76d1d13..ef14614 100644
---- a/fs/ocfs2/namei.c
-+++ b/fs/ocfs2/namei.c
-@@ -426,13 +426,13 @@ static int ocfs2_mknod_locked(struct ocfs2_super *osb,
- 	fe->i_blkno = cpu_to_le64(fe_blkno);
- 	fe->i_suballoc_bit = cpu_to_le16(suballoc_bit);
- 	fe->i_suballoc_slot = cpu_to_le16(inode_ac->ac_alloc_slot);
--	fe->i_uid = cpu_to_le32(current->fsuid);
-+	fe->i_uid = cpu_to_le32(current_fsuid());
- 	if (dir->i_mode & S_ISGID) {
- 		fe->i_gid = cpu_to_le32(dir->i_gid);
- 		if (S_ISDIR(mode))
- 			mode |= S_ISGID;
- 	} else
--		fe->i_gid = cpu_to_le32(current->fsgid);
-+		fe->i_gid = cpu_to_le32(current_fsgid());
- 	fe->i_mode = cpu_to_le16(mode);
- 	if (S_ISCHR(mode) || S_ISBLK(mode))
- 		fe->id1.dev1.i_rdev = cpu_to_le64(huge_encode_dev(dev));
+ 	/* set mark for loading first frame uncompressed */
+ 	cam->first_frame = 1;
 
