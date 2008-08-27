@@ -1,82 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755396AbYH0XVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbYH0XX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755396AbYH0XVp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 19:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYH0XVf
+	id S1756006AbYH0XX3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 19:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYH0XXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 19:21:35 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38423 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751346AbYH0XVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 19:21:34 -0400
-Date: Thu, 28 Aug 2008 09:21:20 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Howells <dhowells@redhat.com>
-Cc: Artem Bityutskiy <dedekind@yandex.ru>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
-       Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org
-Subject: Re: [PATCH 01/59] CRED: Wrap task credential accesses in the IA64
- arch
-Message-Id: <20080828092120.b9b198bb.sfr@canb.auug.org.au>
-In-Reply-To: <25475.1219850678@redhat.com>
-References: <48B56ADA.8010808@yandex.ru>
-	<20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
-	<20080827134547.19980.38813.stgit@warthog.procyon.org.uk>
-	<25475.1219850678@redhat.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__28_Aug_2008_09_21_20_+1000_X_XPTG5ZPJHlSZRb"
+	Wed, 27 Aug 2008 19:23:21 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:60807 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753149AbYH0XXU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 19:23:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=SRqs3pAMO/Py5Duk55xO19hoaswGNsPjVB/KroIcoMLKkIG+ZQgfi5B+8PegZzUmkO
+         lDg0i2nx9RyEwdirn8J1kaV6zLXCk0RFSWbOjD3pBftGKKW2qM6/5w6eTUZJYcwZ4zC4
+         EJPU/z6RpMhaLR6gIbYsprxKVEkEpTG6Ayx1w=
+Message-ID: <86802c440808271623oc1ed5f1n8519fa7be9d1e301@mail.gmail.com>
+Date: Wed, 27 Aug 2008 16:23:18 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jesse Barnes" <jbarnes@virtuousgeek.org>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
+Cc: "Ingo Molnar" <mingo@elte.hu>, "David Witbrodt" <dawitbro@sbcglobal.net>,
+       "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <200808271541.11546.jbarnes@virtuousgeek.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <914225.91320.qm@web82104.mail.mud.yahoo.com>
+	 <20080825073125.GA27950@elte.hu>
+	 <86802c440808250100g15b056e0l359e83c6a8ee488b@mail.gmail.com>
+	 <200808271541.11546.jbarnes@virtuousgeek.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__28_Aug_2008_09_21_20_+1000_X_XPTG5ZPJHlSZRb
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi David, Artem,
-
-On Wed, 27 Aug 2008 16:24:38 +0100 David Howells <dhowells@redhat.com> wrot=
-e:
+On Wed, Aug 27, 2008 at 3:41 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> On Monday, August 25, 2008 1:00 am Yinghai Lu wrote:
+>> On Mon, Aug 25, 2008 at 12:31 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>> >> this one should work. please apply this one only.
+>> >>
+>> >> YH
+>> >>
+>> >> [PATCH] x86: check hpet with BAR v2
+>> > - plus a more highlevel approach would be nice as well i think - making
+>> >  sure that the hpet driver runs before any of the PCI code, and
+>> >  inserting a special "sticky" resource there which would keep any
+>> >  potential followup generic PCI resource that overlaps this resource
+>> >  untouched. (with a proper kernel warning emitted as well - such
+>> >  situations are likely BIOS bugs.)
+>>
+>> yes, can remove that late_initcall tricky code to insert resource for
+>> lapic and ioapic, and mmconfig etc.
 >
-> Artem Bityutskiy <dedekind@yandex.ru> wrote:
->=20
-> > Fine with me.
->=20
-> Can I count that as an Acked-by?
->=20
-> > Do you want us to put this patch to ubifs-2.6.git or you
-> > prefer to make it go together with the rest of the CRED patches?
->=20
-> Ummm...  I'll check.  I'm not sure exactly how Stephen wanted to play thi=
-s.
+> I agree, a higher level way of dealing with resource reservation might be
+> nice.
 
-I am happy for these patches to go into both the subsystem and creds
-trees (the mess - if any - will be on my head).  I do expect this to
-reduce conflicts in the longer term.
+1. insert the lapic, ioapic, mmconf mmio address into resource tree at first...
+2. later when we fail to request_resource for one BAR res of pci dev,
+call check_resource(.., res) to see if could find some res with the
+same range and the sticky flag.
+if so will insert BAR resource for the device forcibly.
 
-It is much better for that to happen than for a subsystem maintainer to
-apply a slightly different fixup when I find a conflict.  If there is not
-conflict between the subsystem tree and the creds tree, then it doesn't
-matter if the patch is in both trees or not.
+that should be for 2.6.28.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> I'm hoping to polish up TJ's PCI allocation code
+> (http://tjworld.net/wiki/Linux/PCIDynamicResourceAllocationManagement) for
+> 2.6.28; it may have some stuff that can help.
 
---Signature=_Thu__28_Aug_2008_09_21_20_+1000_X_XPTG5ZPJHlSZRb
-Content-Type: application/pgp-signature
+not sure. actually we should rely on BIOS to allocate ioport/mmio for
+us. and only do some minor adjust to BAR
+that is obvious wrong. so have list for gap seems overkilling.
+for Hotplug, the acpi code in dst should (pre)allocate the resource
+for new insert devices.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAki14XAACgkQjjKRsyhoI8zPDwCfZJgXfWVihB1ZyDKMmnzfmyQi
-JzAAoJjY/iI3TWx9UAkKoRzvU4NVrSpX
-=2qhH
------END PGP SIGNATURE-----
-
---Signature=_Thu__28_Aug_2008_09_21_20_+1000_X_XPTG5ZPJHlSZRb--
+YH
