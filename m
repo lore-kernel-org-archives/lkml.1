@@ -1,122 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbYH0QjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbYH0Qjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757220AbYH0QjO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 12:39:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbYH0Qi5
+	id S1756681AbYH0Qjs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 12:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbYH0Qjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 12:38:57 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:33398 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753130AbYH0Qi4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 12:38:56 -0400
-Date: Wed, 27 Aug 2008 09:36:21 -0700
-From: Greg KH <greg@kroah.com>
-To: linux-usb@vger.kernel.org
-Cc: Stefan Kopp <stefan_kopp@agilent.com>, Marcel Janssen <korgull@home.nl>,
-       Felipe Balbi <me@felipebalbi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: add USB test and measurement class driver
-Message-ID: <20080827163621.GA14379@kroah.com>
-References: <20080827000501.GA29570@kroah.com> <20080827031205.GA22912@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 27 Aug 2008 12:39:39 -0400
+Received: from ns.firmix.at ([62.141.48.66]:2428 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752724AbYH0Qji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 12:39:38 -0400
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
+	bisected
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Parag Warudkar <parag.lkml@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Rusty Russell <rusty@rustcorp.com.au>,
+       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-embedded@vger.kernel.org
+In-Reply-To: <20080827154805.GA25387@shareable.org>
+References: <20080826183051.GB10925@cs181140183.pp.htv.fi>
+	 <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org>
+	 <20080826205916.GB11734@cs181140183.pp.htv.fi>
+	 <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org>
+	 <f7848160808261554j2f4eaaa6i1ee8801ae75ca7bf@mail.gmail.com>
+	 <alpine.LFD.1.10.0808261644260.3363@nehalem.linux-foundation.org>
+	 <f7848160808261758q7b84aab1m188c1ebb59304818@mail.gmail.com>
+	 <1219827609.30209.29.camel@spike.firmix.at>
+	 <f7848160808270556q54c36270ye6a465d2ca123cc@mail.gmail.com>
+	 <1219843032.30209.51.camel@spike.firmix.at>
+	 <20080827154805.GA25387@shareable.org>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Wed, 27 Aug 2008 18:38:41 +0200
+Message-Id: <1219855121.30209.112.camel@spike.firmix.at>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.345 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.345 required=5
+X-Spam-Score: -2.345 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20080827031205.GA22912@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 08:12:05PM -0700, Greg KH wrote:
-> On Tue, Aug 26, 2008 at 05:05:01PM -0700, Greg KH wrote:
-> > I've now added this to my tree, and any review comments are greatly
-> > welcome.
+On Wed, 2008-08-27 at 16:48 +0100, Jamie Lokier wrote:
+> Bernd Petrovitsch wrote:
+> > If you "develop" an embedded system (which is partly system integration
+> > of existing apps) to be installed in the field, you don't have that many
+> > conceivable work loads compared to a desktop/server system. And you have
+> > a fixed list of drivers and applications.
 > 
-> Heck, I'll review my own patch, as I noticed I forgot some things:
+> Hah!  Not in my line of embedded device.
 > 
-> > ---
-> >  drivers/usb/class/Kconfig  |   10 
-> >  drivers/usb/class/Makefile |    1 
-> >  drivers/usb/class/usbtmc.c | 1058 +++++++++++++++++++++++++++++++++++++++++++++
-> >  drivers/usb/class/usbtmc.h |   24 +
-> >  include/linux/usb/tmc.h    |   27 +
-> >  5 files changed, 1120 insertions(+)
+> 32MB no-MMU ARM boards which people run new things and attach new
+> devices to rather often - without making new hardware.  Volume's too
+> low per individual application to get new hardware designed and made.
+
+Yes, you may have several products on the same hardware with somewhat
+differing requirements (or not). But that is much less than a general
+purpose system IMHO.
+
+> I'm seriously thinking of forwarding porting the 4 year old firmware
+> from 2.4.26 to 2.6.current, just to get new drivers and capabilities.
+
+That sounds reasonable (and I never meant maintaining the old system
+infinitely. Actually once the thing is shipped it usually enters deep
+maintenance mode and the next is more a fork from the old).
+
+> Backporting is tedious, so's feeling wretchedly far from the mainline
+> world.
+
+ACK. But that also depends on amount local changes (and sorry, but not
+all locally necessary patches would be accepted in mainline in any way).
+
+> > A usual approach is to run stress tests on several (or all)
+> > subsystems/services/... in parallel and if the device survives it
+> > functioning correctly, it is at least good enough.
 > 
-> needs Documentation/ABI description of new sysfs files
-
-Now added.
-
-> > +/*
-> > + * This structure is the capabilities for the device
-> > + * See section 4.2.1.8 of the USBTMC specification for details.
-> > + */
-> > +struct usbtmc_dev_capabilities {
-> > +	__u8 interface_capabilities;
-> > +	__u8 device_capabilities;
-> > +	__u8 usb488_interface_capabilities;
-> > +	__u8 usb488_device_capabilities;
-> > +};
+> Per application.
 > 
-> These should match the usbif description names to make it easier to
-> understand.
+> Some little devices run hundreds of different applications and
+> customers expect to customise, script themselves, and attach different
+> devices (over USB).  The next customer in the chain expects the bits
+> you supplied to work in a variety of unexpected situations, even when
+> you advise that it probably won't do that.
 
-Nevermind, they match the spec description just fine, these will stay.
+Basically their problem. Yes, "they" actually think they get a Linux
+system where they can do everything and it simply works.
 
-> > +	/* USBTMC devices have only one setting, so use that */
-> > +	iface_desc = data->intf->cur_altsetting;
-> > +
-> > +	/* Find bulk in endpoint */
-> > +	for (n = 0; n < iface_desc->desc.bNumEndpoints; n++) {
-> > +		endpoint = &iface_desc->endpoint[n].desc;
-> > +
-> > +		if (usb_endpoint_is_bulk_in(endpoint)) {
-> > +			data->bulk_in = endpoint->bEndpointAddress;
-> > +			dev_dbg(dev, "Found bulk in endpoint at %u\n",
-> > +				data->bulk_in);
-> > +			break;
-> > +		}
-> > +	}
-> > +
-> > +	/* Find bulk out endpoint */
-> > +	for (n = 0; n < iface_desc->desc.bNumEndpoints; n++) {
-> > +		endpoint = &iface_desc->endpoint[n].desc;
-> > +
-> > +		if (usb_endpoint_is_bulk_out(endpoint)) {
-> > +			data->bulk_out = endpoint->bEndpointAddress;
-> > +			dev_dbg(dev, "Found Bulk out endpoint at %u\n",
-> > +				data->bulk_out);
-> > +			break;
-> > +		}
-> > +	}
+Oh, that's obviously not a usual "WLAN-router style" of product (where
+you are not expected to actually login on a console or per ssh).
+
+> Much like desktop/server Linux, but on a small device where silly
+> little things like 'create a process' are a stress for the dear little
+> thing.
 > 
-> This can all be done at probe() time, no need to wait until open().
+> (My biggest lesson: insist on an MMU next time!)
 
-Now moved.
+ACK. We avoid MMU-less hardware too - especially since there is enough
+hardware with a MMU around.
 
-> > +static ssize_t usbtmc_write(struct file *filp, const char __user *buf,
-> > +			    size_t count, loff_t *f_pos)
-> > +{
-> > +	struct usbtmc_device_data *data;
-> > +	u8 *buffer;
-> > +	int retval;
-> > +	int actual;
-> > +	unsigned long int n_bytes;
-> > +	int n;
-> > +	int remaining;
-> > +	int done;
-> > +	int this_part;
-> > +
-> > +	data = filp->private_data;
-> > +	buffer = data->buffer;
-> 
-> This buffer should be local to the function, and not the device as we
-> could overlap reads and writes.  It should be removed from the device
-> itself to make sure everything is correct.  The ioctls already have
-> their own local buffers, fixing a bug in the original driver which used
-> 1! buffer for all devices and all commands...
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
 
-Now fixed.
 
-It's fun talking to yourself...
-
-greg k-h
