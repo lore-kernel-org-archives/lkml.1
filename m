@@ -1,103 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758125AbYH0QWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758553AbYH0QYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758125AbYH0QWX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 12:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbYH0QWM
+	id S1758553AbYH0QYY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 12:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755424AbYH0QX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 12:22:12 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:38880 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753292AbYH0QWL (ORCPT
+	Wed, 27 Aug 2008 12:23:59 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33062 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755094AbYH0QX6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 12:22:11 -0400
-Date: Wed, 27 Aug 2008 17:21:47 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-embedded@vger.kernel.org
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-Message-ID: <20080827162147.GB25387@shareable.org>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org> <200808261111.19205.rusty@rustcorp.com.au> <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org> <20080826183051.GB10925@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261134530.3363@nehalem.linux-foundation.org> <20080826202134.GA11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261332570.3363@nehalem.linux-foundation.org>
+	Wed, 27 Aug 2008 12:23:58 -0400
+Date: Wed, 27 Aug 2008 09:08:54 -0700
+From: Greg KH <greg@kroah.com>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-usb@vger.kernel.org, Stefan Kopp <stefan_kopp@agilent.com>,
+       Marcel Janssen <korgull@home.nl>, Felipe Balbi <me@felipebalbi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: add USB test and measurement class driver
+Message-ID: <20080827160854.GC19710@kroah.com>
+References: <20080827000501.GA29570@kroah.com> <200808271013.07561.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0808261332570.3363@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200808271013.07561.oliver@neukum.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> > Most LOCs of the kernel are not written by people like you or Al Viro or 
-> > David Miller, and the average kernel developer is unlikely to do it as 
-> > good as gcc.
+On Wed, Aug 27, 2008 at 10:13:06AM +0200, Oliver Neukum wrote:
+> Am Mittwoch 27 August 2008 02:05:01 schrieb Greg KH:
+> > +static ssize_t usbtmc_read(struct file *filp, char __user *buf,
+> > +                          size_t count, loff_t *f_pos)
+> > +{
+> > +       struct usbtmc_device_data *data;
+> > +       struct device *dev;
+> > +       unsigned long int n_characters;
+> > +       u8 *buffer;
+> > +       int actual;
+> > +       int done;
+> > +       int remaining;
+> > +       int retval;
+> > +       int this_part;
+> > +
+> > +       /* Get pointer to private data structure */
+> > +       data = filp->private_data;
+> > +       dev = &data->intf->dev;
+> > +       buffer = data->buffer;
+> > +
+> > +       remaining = count;
+> > +       done = 0;
+> > +
+> > +       while (remaining > 0) {
+> > +               if (remaining > USBTMC_SIZE_IOBUFFER - 12 - 3)
+> > +                       this_part = USBTMC_SIZE_IOBUFFER - 12 - 3;
+> > +               else
+> > +                       this_part = remaining;
+> > +
+> > +               /* Setup IO buffer for DEV_DEP_MSG_IN message
+> > +                * Refer to class specs for details
+> > +                */
+> > +               buffer[0] = 2;
+> > +               buffer[1] = data->bTag;
+> > +               buffer[2] = ~(data->bTag);
+> > +               buffer[3] = 0; /* Reserved */
+> > +               buffer[4] = (this_part - 12 - 3) & 255;
+> > +               buffer[5] = ((this_part - 12 - 3) >> 8) & 255;
+> > +               buffer[6] = ((this_part - 12 - 3) >> 16) & 255;
+> > +               buffer[7] = ((this_part - 12 - 3) >> 24) & 255;
+> > +               buffer[8] = data->TermCharEnabled * 2;
+> > +               /* Use term character? */
+> > +               buffer[9] = data->TermChar;
+> > +               buffer[10] = 0; /* Reserved */
+> > +               buffer[11] = 0; /* Reserved */
 > 
-> Sure. But we do have tools. We do have checkstack.pl, it's just that it 
-> hasn't been an issue in a long time, so I suspect many people didn't even 
-> _realize_ we have it, and I certainly can attest to the fact that even 
-> people who remember it - like me - don't actually tend to run it all that 
-> often.
+> This function will go bad if concurrent readers enter, yet it has no locking.
 
-Sounds like what's really desired here isn't more worry and
-unpredictability, but for GCC+Binutils to gain the ability to
-calculate the stack depth over all callchains (doesn't have to be
-exact, just an upper bound; annotate recursions) in a way that's good
-enough to do on every compile, complain if a depth is exceeded
-statically (or it can't be proven), and to gain the
-architecture-independent option "optimise to reduce stack usage".
+Now fixed with an i/o mutex.
 
-> > BTW:
-> > I just ran checkstack on a (roughly) allyesconfig kernel, and we have a 
-> > new driver that allocates "unsigned char recvbuf[1500];" on the stack...
-> 
-> Yeah, it's _way_ too easy to do bad things.
+thanks,
 
-In my userspace code, I have macros tmp_alloc and tmp_free.  They must
-be matched in the same function:
-
-     unsigned char * recvbuf = tmp_alloc(1500);
-     ....
-     tmp_free(recvbuf);
-
-When stack is plentiful, it maps to alloca() which is roughly
-equivalent to using a stack variable.
-
-When stack is constrained (as it is on my little devices), that maps
-to xmalloc/free.  The kernel equivalent would be kmalloc GFP_ATOMIC
-(perhaps).
-
-With different macros to mine, it may be possible to map small
-fixed-size requests exactly onto local variables, and large ones to
-kmalloc().  A stab at it (not tested):
-
-    #define LOCAL_ALLOC_THRESHOLD     128
-
-    #define LOCAL_ALLOC(type, ptr)                                        \
-        __typeof__(type) __attribute__((__unused__)) ptr##_local_struct;  \
-        __typeof__(type) * ptr =                                          \
-              ((__builtin_constant_p(sizeof(type))                        \
-                && sizeof(type) <= LOCAL_ALLOC_THRESHOLD)                 \
-               ? &ptr##_local_struct : kmalloc(sizeof(type), GFP_ATOMIC))
-
-    #define LOCAL_FREE(ptr)                           \
-        ((__builtin_constant_p(sizeof (*(ptr)))       \
-          && sizeof(*(ptr)) <= LOCAL_ALLOC_THRESHOLD) \
-         ? (void) 0 : kfree(ptr))
-
-Would that be useful in the kernel?
-
-I'm thinking if it were a commonly used pattern for temporary buffers,
-unknown structures and arrays of macro-determined size, the "new
-driver" author would be less likely to accidentally drop a big object
-on the stack.
-
-Obviously it would be nicer for GCC to code such a thing
-automatically, but that really is wishful thinking.
-
--- Jamie
+greg k-h
