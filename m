@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbYH0G4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754037AbYH0HBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754564AbYH0G4k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 02:56:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbYH0G4d
+	id S1754037AbYH0HBf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 03:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbYH0HB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 02:56:33 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:14496 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752706AbYH0G4c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 02:56:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Wi2iEOStlv4rVq+zP2o5ifa3quzLSN8zXEbDGWGqo6PNYbRcFMovfpkUzuPZ3VNOWD
-         BoyXaCc5G0BwN6HRpW5AiclXx50Si/oFzaNr/HSVkAkkWuawaKelJn31AUzZPkVL37Q9
-         w1aKpk52T6vPGcuSioHptCJVR52Sipo/WITIw=
-Message-ID: <386072610808262356i78a41e3buc7f751a2af9bc32f@mail.gmail.com>
-Date: Wed, 27 Aug 2008 14:56:31 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [PATCH] blackfin/sram: use 'unsigned long' for irqflags
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>, "Julia Lawall" <julia@diku.dk>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <8bd0f97a0808220644v67f0e51ek4500d96f09a377f4@mail.gmail.com>
+	Wed, 27 Aug 2008 03:01:27 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:7161 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752735AbYH0HB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 03:01:26 -0400
+Date: Wed, 27 Aug 2008 16:00:58 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Magnus Damm <magnus.damm@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       video4linux-list@redhat.com,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] VIDEO_SH_MOBILE_CEU should depend on HAS_DMA (was: Re: m68k allmodconfig)
+Message-ID: <20080827070057.GA18717@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Mauro Carvalho Chehab <mchehab@infradead.org>,
+	video4linux-list@redhat.com,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>
+References: <20080814195522.ad74990c.akpm@linux-foundation.org> <Pine.LNX.4.64.0808262035310.7910@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080806105836.GA2903@localhost.localdomain>
-	 <8bd0f97a0808220644v67f0e51ek4500d96f09a377f4@mail.gmail.com>
-X-Google-Sender-Auth: bee8e7192b164ec7
+In-Reply-To: <Pine.LNX.4.64.0808262035310.7910@anakin>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 22, 2008 at 9:44 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On Wed, Aug 6, 2008 at 6:58 PM, Vegard Nossum wrote:
->> From 3ef36948a88a968eec1b09859aa251dc6727df4e Mon Sep 17 00:00:00 2001
->> From: Vegard Nossum <vegard.nossum@gmail.com>
->> Date: Wed, 6 Aug 2008 12:00:23 +0200
->> Subject: [PATCH] blackfin/sram: use 'unsigned long' for irqflags
->>
->> Using just 'unsigned' will make flags an unsigned int. While this is
->> arguably not an error on blackfin where sizeof(int) == sizeof(long),
->> the patch is still justified on the grounds of principle.
->>
->> The patch was generated using the Coccinelle semantic patch framework.
->>
->> Cc: Julia Lawall <julia@diku.dk>
->> Cc: Alexey Dobriyan <adobriyan@gmail.com>
->> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
->
-> make sure to grab this Bryan ?
-> -mike
->
+On Tue, Aug 26, 2008 at 09:37:21PM +0200, Geert Uytterhoeven wrote:
+> 	Hi Andrew,
+> 
+> On Thu, 14 Aug 2008, Andrew Morton wrote:
+> > ERROR: "dma_alloc_coherent" [drivers/media/video/videobuf-dma-contig.ko] undefined!
+> > ERROR: "dma_sync_single_for_cpu" [drivers/media/video/videobuf-dma-contig.ko] undefined!
+> > ERROR: "dma_free_coherent" [drivers/media/video/videobuf-dma-contig.ko] undefined!
+> 
+> M68k allmodconfig still selects Sun-3, which sets NO_DMA.
+> I guess you're also seeing this on the other NO_DMA platforms (h8300, m32r,
+> s390, and PCI-less SPARC)?
+> 
+> Below is a patch.
+> 
+> Shouldn't it also (or instead) depend on SUPERH or some SuperH platform?
+> Or is this not done to have more compile-coverage?
+> 
+The SUPERH dependency was there initially, but was dropped for increased
+compilation coverage. The HAS_DMA dependence is certainly the right thing
+to do here.
 
-Sorry for the delay, guys. I'm just back from my vacation.
+> Subject: [PATCH] VIDEO_SH_MOBILE_CEU should depend on HAS_DMA
+> 
+> commit 0d3244d6439c8c31d2a29efd587c7aca9042c8aa ("V4L/DVB (8342):
+> sh_mobile_ceu_camera: Add SuperH Mobile CEU driver V3") introduced
+> VIDEO_SH_MOBILE_CEU, which selects VIDEOBUF_DMA_CONTIG. This circumvents the
+> dependency on HAS_DMA of VIDEOBUF_DMA_CONTIG.
+> 
+> Add a dependency on HAS_DMA to VIDEO_SH_MOBILE_CEU to fix this.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-I will apply this patch to our svn first and then push it to mainline later.
-
-Thanks
--Bryan
+Acked-by: Paul Mundt <lethal@linux-sh.org>
