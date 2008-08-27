@@ -1,242 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbYH0IVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbYH0IWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754827AbYH0IVO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 04:21:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYH0IU7
+	id S1754719AbYH0IWG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 04:22:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYH0IVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 04:20:59 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47766 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753070AbYH0IU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 04:20:58 -0400
-Message-ID: <48B50E17.4020106@kernel.org>
-Date: Wed, 27 Aug 2008 10:19:35 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       alsa-devel@alsa-project.org, perex@perex.cz
-Subject: [PATCH RESEND] sound: make OSS sound core optional
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
+	Wed, 27 Aug 2008 04:21:51 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50920 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753018AbYH0IVu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 04:21:50 -0400
+Subject: Re: [PATCH v2 3/6] sched: make double-lock-balance fair
+From: Peter Zijlstra <peterz@infradead.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: mingo@elte.hu, srostedt@redhat.com, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, npiggin@suse.de,
+       gregory.haskins@gmail.com
+In-Reply-To: <20080826173500.16413.40514.stgit@dev.haskins.net>
+References: <20080826173131.16413.17862.stgit@dev.haskins.net>
+	 <20080826173500.16413.40514.stgit@dev.haskins.net>
+Content-Type: text/plain
+Date: Wed, 27 Aug 2008 10:21:35 +0200
+Message-Id: <1219825295.6462.54.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 Aug 2008 08:20:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sound/sound_core.c implements soundcore.ko contains two parts -
-sound_class which is shared by both ALSA and OSS and device
-redirection support for OSS.  It's always compiled when any sound
-support is enabled although it's necessary only when OSS (the actual
-one or emulation) is enabled.  This is slightly wasteful and as device
-redirection always registers character device region for major 14, it
-prevents alternative implementation.
+On Tue, 2008-08-26 at 13:35 -0400, Gregory Haskins wrote:
+> double_lock balance() currently favors logically lower cpus since they
+> often do not have to release their own lock to acquire a second lock.
+> The result is that logically higher cpus can get starved when there is
+> a lot of pressure on the RQs.  This can result in higher latencies on
+> higher cpu-ids.
+> 
+> This patch makes the algorithm more fair by forcing all paths to have
+> to release both locks before acquiring them again.  Since callsites to
+> double_lock_balance already consider it a potential preemption/reschedule
+> point, they have the proper logic to recheck for atomicity violations.
+> 
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> ---
+> 
+>  kernel/sched.c |   52 +++++++++++++++++++++++++++++++++++++++++++++-------
+>  1 files changed, 45 insertions(+), 7 deletions(-)
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index df6b447..850b454 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -2782,21 +2782,43 @@ static void double_rq_unlock(struct rq *rq1, struct rq *rq2)
+>  		__release(rq2->lock);
+>  }
+>  
+> +#ifdef CONFIG_PREEMPT
+> +
+>  /*
+> - * double_lock_balance - lock the busiest runqueue, this_rq is locked already.
+> + * fair double_lock_balance: Safely acquires both rq->locks in a fair
+> + * way at the expense of forcing extra atomic operations in all
+> + * invocations.  This assures that the double_lock is acquired using the
+> + * same underlying policy as the spinlock_t on this architecture, which
+> + * reduces latency compared to the unfair variant below.  However, it
+> + * also adds more overhead and therefore may reduce throughput.
+>   */
+> -static int double_lock_balance(struct rq *this_rq, struct rq *busiest)
+> +static inline int _double_lock_balance(struct rq *this_rq, struct rq *busiest)
+> +	__releases(this_rq->lock)
+> +	__acquires(busiest->lock)
+> +	__acquires(this_rq->lock)
+> +{
+> +	spin_unlock(&this_rq->lock);
+> +	double_rq_lock(this_rq, busiest);
+> +
+> +	return 1;
+> +}
 
-This patch introduces a new config SOUND_OSS_CORE which is selected
-iff OSS support is actually necessary and build the OSS core part
-conditionally.
+Right - so to belabour Nick's point:
 
-If OSS is disabled, soundcore merely contains sound_class but leaving
-it that way seems to be the simplest approach as otherwise sound_class
-should be in ALSA core file if OSS is disabled but should be in
-soundcore if OSS is enabled and there's also the user confusion
-factor.
+  if (!spin_trylock(&busiest->lock)) {
+    spin_unlock(&this_rq->lock);
+    double_rq_lock(this_rq, busiest);
+  }
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
-Aieee.. forgot to add [PATCH].  Resending.  Thanks.
+might unfairly treat someone who is waiting on this_rq if I understand
+it right?
 
- arch/um/Kconfig.char |    4 ++
- sound/Kconfig        |    5 +++
- sound/core/Kconfig   |    1 
- sound/sound_core.c   |   82 +++++++++++++++++++++++++++++++++++++--------------
- 4 files changed, 71 insertions(+), 21 deletions(-)
+I suppose one could then write it like:
 
-Index: work/sound/Kconfig
-===================================================================
---- work.orig/sound/Kconfig
-+++ work/sound/Kconfig
-@@ -28,6 +28,10 @@ menuconfig SOUND
- 
- if SOUND
- 
-+config SOUND_OSS_CORE
-+	bool
-+	default n
-+
- source "sound/oss/dmasound/Kconfig"
- 
- if !M68K
-@@ -80,6 +84,7 @@ endif # SND
- 
- menuconfig SOUND_PRIME
- 	tristate "Open Sound System (DEPRECATED)"
-+	select SOUND_OSS_CORE
- 	help
- 	  Say 'Y' or 'M' to enable Open Sound System drivers.
- 
-Index: work/sound/core/Kconfig
-===================================================================
---- work.orig/sound/core/Kconfig
-+++ work/sound/core/Kconfig
-@@ -38,6 +38,7 @@ config SND_SEQ_DUMMY
- 	  will be called snd-seq-dummy.
- 
- config SND_OSSEMUL
-+	select SOUND_OSS_CORE
- 	bool
- 
- config SND_MIXER_OSS
-Index: work/sound/sound_core.c
-===================================================================
---- work.orig/sound/sound_core.c
-+++ work/sound/sound_core.c
-@@ -1,5 +1,62 @@
- /*
-- *	Sound core handling. Breaks out sound functions to submodules
-+ *	Sound core.  This file is composed of two parts.  sound_class
-+ *	which is common to both OSS and ALSA and OSS sound core which
-+ *	is used OSS or emulation of it.
-+ */
-+
-+/*
-+ * First, the common part.
-+ */
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
-+
-+#ifdef CONFIG_SOUND_OSS_CORE
-+static int __init init_oss_soundcore(void);
-+static void __exit cleanup_oss_soundcore(void);
-+#else
-+static inline int init_oss_soundcore(void)	{ return 0; }
-+static inline void cleanup_oss_soundcore(void)	{ }
-+#endif
-+
-+struct class *sound_class;
-+EXPORT_SYMBOL(sound_class);
-+
-+MODULE_DESCRIPTION("Core sound module");
-+MODULE_AUTHOR("Alan Cox");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS_CHARDEV_MAJOR(SOUND_MAJOR);
-+
-+static int __init init_soundcore(void)
-+{
-+	int rc;
-+
-+	rc = init_oss_soundcore();
-+	if (rc)
-+		return rc;
-+
-+	sound_class = class_create(THIS_MODULE, "sound");
-+	if (IS_ERR(sound_class)) {
-+		cleanup_oss_soundcore();
-+		return PTR_ERR(sound_class);
-+	}
-+
-+	return 0;
-+}
-+
-+static void __exit cleanup_soundcore(void)
-+{
-+	cleanup_oss_soundcore();
-+	class_destroy(sound_class);
-+}
-+
-+module_init(init_soundcore);
-+module_exit(cleanup_soundcore);
-+
-+
-+#ifdef CONFIG_SOUND_OSS_CORE
-+/*
-+ *	OSS sound core handling. Breaks out sound functions to submodules
-  *	
-  *	Author:		Alan Cox <alan.cox@linux.org>
-  *
-@@ -34,21 +91,17 @@
-  *	locking at some point in 2.3.x.
-  */
- 
--#include <linux/module.h>
- #include <linux/init.h>
- #include <linux/slab.h>
- #include <linux/smp_lock.h>
- #include <linux/types.h>
- #include <linux/kernel.h>
--#include <linux/fs.h>
- #include <linux/sound.h>
- #include <linux/major.h>
- #include <linux/kmod.h>
--#include <linux/device.h>
- 
- #define SOUND_STEP 16
- 
--
- struct sound_unit
- {
- 	int unit_minor;
-@@ -64,9 +117,6 @@ extern int msnd_classic_init(void);
- extern int msnd_pinnacle_init(void);
- #endif
- 
--struct class *sound_class;
--EXPORT_SYMBOL(sound_class);
--
- /*
-  *	Low level list operator. Scan the ordered list, find a hole and
-  *	join into it. Called with the lock asserted
-@@ -523,31 +573,21 @@ int soundcore_open(struct inode *inode,
- 	return -ENODEV;
- }
- 
--MODULE_DESCRIPTION("Core sound module");
--MODULE_AUTHOR("Alan Cox");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS_CHARDEV_MAJOR(SOUND_MAJOR);
--
--static void __exit cleanup_soundcore(void)
-+static void __exit cleanup_oss_soundcore(void)
- {
- 	/* We have nothing to really do here - we know the lists must be
- 	   empty */
- 	unregister_chrdev(SOUND_MAJOR, "sound");
--	class_destroy(sound_class);
- }
- 
--static int __init init_soundcore(void)
-+static int __init init_oss_soundcore(void)
- {
- 	if (register_chrdev(SOUND_MAJOR, "sound", &soundcore_fops)==-1) {
- 		printk(KERN_ERR "soundcore: sound device already in use.\n");
- 		return -EBUSY;
- 	}
--	sound_class = class_create(THIS_MODULE, "sound");
--	if (IS_ERR(sound_class))
--		return PTR_ERR(sound_class);
- 
- 	return 0;
- }
- 
--module_init(init_soundcore);
--module_exit(cleanup_soundcore);
-+#endif /* CONFIG_SOUND_OSS_CORE */
-Index: work/arch/um/Kconfig.char
-===================================================================
---- work.orig/arch/um/Kconfig.char
-+++ work/arch/um/Kconfig.char
-@@ -203,6 +203,10 @@ config SOUND
- 	tristate
- 	default UML_SOUND
- 
-+config SOUND_OSS_CORE
-+	bool
-+	default UML_SOUND
-+
- config HOSTAUDIO
- 	tristate
- 	default UML_SOUND
+  if (spin_is_contended(&this_rq->lock) || !spin_trylock(&busiest->lock)) {
+    spin_unlock(&this_rq->lock);
+    double_rq_lock(this_rq, busiest);
+  }
+
+But, I'm not sure that's worth the effort at that point..
+
+Anyway - I think all this is utterly defeated on CONFIG_PREEMPT by the
+spin with IRQs enabled logic in kernel/spinlock.c.
+
+Making this an -rt only patch...
 
