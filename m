@@ -1,61 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbYH0SjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbYH0SmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbYH0SjP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 14:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbYH0Si7
+	id S1756188AbYH0SmR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 14:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYH0SmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 14:38:59 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:39468 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752554AbYH0Si6 (ORCPT
+	Wed, 27 Aug 2008 14:42:04 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44673 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752506AbYH0SmD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 14:38:58 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=F2xut11xAVOWuuLWqe8/6tpHT1TfO7F5ilm73keJuF9na5deFWNkcylV4v1iYNvnVDE8aQj1A2fFm1nVv0qhduL0p2hxJZC+Iand1vE0fYaFsQjwtd4pu0r1sVkmUUy/OGsTdFQVgpDFrWxIWdrUdgL59CCNdiU7tuUuHp+j6Fc=  ;
-X-YMail-OSG: bMt9IDMVM1ktV23UDvq8Hyo30kL.olxRDtcKHCMU_rf.jFNWDAaZo92unCpsGAm1WM7OSPsPxkP1ELpGJN2EH2oqv5m6srkRlS5tF3UShmpOnj_UO6Lz12gpkvgZT0E-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Greg KH <greg@kroah.com>
-Subject: Re: USB Serial device disconnect causes IRQ disable after using ehci controller halted
-Date: Wed, 27 Aug 2008 11:37:23 -0700
-User-Agent: KMail/1.9.9
-Cc: amruth_pv@yahoo.com, Alan Stern <stern@rowland.harvard.edu>,
-       Karsten Wiese <fzu@wemgehoertderstaat.de>,
-       Oliver Neukum <oliver@neukum.org>, USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-References: <434860.93444.qm@web45203.mail.sp1.yahoo.com> <200808262335.05204.david-b@pacbell.net> <20080827175325.GB31820@kroah.com>
-In-Reply-To: <20080827175325.GB31820@kroah.com>
+	Wed, 27 Aug 2008 14:42:03 -0400
+Date: Wed, 27 Aug 2008 11:36:15 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
+       Stefan Kopp <stefan_kopp@agilent.com>, Marcel Janssen <korgull@home.nl>,
+       Felipe Balbi <me@felipebalbi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: add USB test and measurement class driver - round
+	2
+Message-ID: <20080827183615.GA15692@kroah.com>
+References: <20080827172042.GA18774@kroah.com> <Pine.LNX.4.44L0.0808271423030.17568-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808271137.24557.david-b@pacbell.net>
+In-Reply-To: <Pine.LNX.4.44L0.0808271423030.17568-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 August 2008, Greg KH wrote:
+On Wed, Aug 27, 2008 at 02:28:22PM -0400, Alan Stern wrote:
+> On Wed, 27 Aug 2008, Greg KH wrote:
 > 
-> > As noted by Stefan Neis <Stefan.Neis@kobil.com>, we had a recent
-> > regression with EHCI periodic transfers, in some (seemingly not
-> > all that common) cases.
-> > 
-> > The root cause was that the schedule activation was only loosely
-> > coupled to the addition or removal of transfers, so two different 
-> > execution contexts could both think they had to deactivate (or
-> > conversely activate) the schedule.  So this fix tightens that
-> > coupling, managing it more like a refcount.
-> > 
-> > Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> > Here's an updated version of the usbtmc driver, with all of the
+> > different issues that have been raised, hopefully addressed.
 > 
-> Do you want me to also apply this one?  If so, for .27 or .28?
+> This is an example of what I was discussing with Oliver.  In all 
+> likelihood you simply don't need usbtmc_mutex, and using it will cause 
+> a lockdep violation.
+> 
+> That's why so many of the other USB class drivers don't have an 
+> analogous static mutex.
 
-It should get into 2.6.27, and probably 26.stable ... assuming
-that it checks out properly.  A somewhat cruftier version resolved
-Stefan's problem, but I'd rather not merge that one.  Hmm, I'll
-ask Stefan to confirm this version.
+Ok, then it's just safe to drop this static mutex entirely, right?
 
-- Dave
+> > +static int usbtmc_open(struct inode *inode, struct file *filp)
+> > +{
+> > +	struct usb_interface *intf;
+> > +	struct usbtmc_device_data *data;
+> > +	int retval = -ENODEV;
+> > +
+> > +	mutex_lock(&usbtmc_mutex);
+> 
+> You must never acquire a lock in your open method if it will be held
+> by your disconnect method while unregistering the minor.
+> 
+> > +static int usbtmc_probe(struct usb_interface *intf,
+> > +			const struct usb_device_id *id)
+> > +{
+> ...
+> > +	retcode = usb_register_dev(intf, &usbtmc_class);
+> > +	if (retcode) {
+> > +		dev_err(&intf->dev, "Not able to get a minor"
+> > +			" (base %u, slice default): %d\n", USBTMC_MINOR_BASE,
+> > +			retcode);
+> > +		goto error_register;
+> > +	}
+> > +	dev_dbg(&intf->dev, "Using minor number %d\n", intf->minor);
+> 
+> You do call usb_register_dev() during probe...
+> 
+> > +
+> > +	return 0;
+> > +
+> > +error_register:
+> > +	sysfs_remove_group(&intf->dev.kobj, &capability_attr_grp);
+> > +	sysfs_remove_group(&intf->dev.kobj, &data_attr_grp);
+> > +	kref_put(&data->kref, usbtmc_delete);
+> > +	return retcode;
+> > +}
+> > +
+> > +static void usbtmc_disconnect(struct usb_interface *intf)
+> > +{
+> > +	struct usbtmc_device_data *data;
+> > +
+> > +	dev_dbg(&intf->dev, "usbtmc_disconnect called\n");
+> > +
+> > +	mutex_lock(&usbtmc_mutex);
+> > +	data = usb_get_intfdata(intf);
+> > +	sysfs_remove_group(&intf->dev.kobj, &capability_attr_grp);
+> > +	sysfs_remove_group(&intf->dev.kobj, &data_attr_grp);
+> > +	kref_put(&data->kref, usbtmc_delete);
+> > +	mutex_unlock(&usbtmc_mutex);
+> > +}
+> 
+> But you don't call usb_unregister_dev() during disconnect.  An 
+> oversight?
+
+Ah, yes, my fault, I converted this from using a private cdev to using
+the usb_register_dev() call and forgot about this.  Thanks for catching
+it, I'll go fix this.
+
+Oh, it's usb_deregister_dev(), stupid programmers with inconsitant
+interfaces :)
+
+thanks,
+
+greg k-h
