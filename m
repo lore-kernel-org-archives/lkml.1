@@ -1,70 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbYH0LqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbYH0Lqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755856AbYH0LqP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 07:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbYH0Lp5
+	id S1756019AbYH0Lqo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 07:46:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbYH0Lqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 07:45:57 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36390
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754153AbYH0Lp4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 07:45:56 -0400
-Date: Wed, 27 Aug 2008 04:45:51 -0700 (PDT)
-Message-Id: <20080827.044551.102233262.davem@davemloft.net>
-To: tomasw@gmail.com
-Cc: johannes@sipsolutions.net, holtmann@linux.intel.com,
-       linville@tuxdriver.com, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2008-08-26
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1ba2fa240808270434y1589761xd2ff0a48c2e99033@mail.gmail.com>
-References: <1ba2fa240808270305m7f505efak9fd0d36d5db09a1e@mail.gmail.com>
-	<1219831828.3891.3.camel@johannes.berg>
-	<1ba2fa240808270434y1589761xd2ff0a48c2e99033@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 27 Aug 2008 07:46:35 -0400
+Received: from sacred.ru ([62.205.161.221]:47807 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754358AbYH0Lqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 07:46:34 -0400
+Message-ID: <48B53CB8.2060208@openvz.org>
+Date: Wed, 27 Aug 2008 15:38:32 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Robert Rex <robert.rex@exasol.com>, Roland McGrath <roland@redhat.com>,
+       Serge Hallyn <serue@us.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] pid_ns: de_thread: kill the now unneeded ->child_reaper
+ change
+References: <20080824154912.GA3783@tv-sign.ru>
+In-Reply-To: <20080824154912.GA3783@tv-sign.ru>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 27 Aug 2008 15:38:29 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Tomas Winkler" <tomasw@gmail.com>
-Date: Wed, 27 Aug 2008 14:34:28 +0300
+Oleg Nesterov wrote:
+> de_thread() checks if the old leader was the ->child_reaper, this is not
+> possible any longer. With the previous patch ->group_leader itself will
+> change ->child_reaper on exit.
+> 
+>>From now find_new_reaper() is the only function (apart from initialization)
+> which plays with ->child_reaper.
+> 
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-> Unfortunately fixing bugs on stable branch take precedence  of
-> adjusting to new API on development branch that someone decided to do.
->  I wanted to work directly on wireless testing but it was broken over
-> an over and I have only limited resources more in testing then in
-> development I just had to branch out to be ready with the driver when
-> HW is out. People just check the immediate impact of they fix the
-> don't test for collateral damage and this is understandable an
-> individual developer doesn't have lab with IBSS, BSS, AP, etc setups.
-
-But think about this from the other perspective.
-
-When you queue up tons of things, especially in infrastructure level
-code such as mac80211, and on top of it you do your work on the stable
-branch and do not do you work against the development tree, guess what
-happens?
-
-You show up with accumulated piles of non-trivial patches for people
-to review.  And then you'll get upset when they suggest that things be
-implemented differently.
-
-It's all because of the gap in time.
-
-And during this time, if you had submitted earlier, you would end up
-doing smaller and mode gradual modifications to your design.  And
-you'd take care of them before they effect subsequent pieces of work
-you want to do which depend upon the earlier bits.
-
-The longer you queue stuff up, the more painful having to change stuff
-at the beginning of that queue becomes.  It can invalidate everything
-else you worked on.
-
-The only sane way to operate is to post your work early and often, or
-else you'll live in a world of hurt, and it will be nobody's fault but
-your own.
-
+Acked-by: Pavel Emelyanov <xemul@openvz.org>
