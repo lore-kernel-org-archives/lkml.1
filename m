@@ -1,60 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbYH0VeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754447AbYH0Vgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754771AbYH0VeU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 17:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYH0VeH
+	id S1754447AbYH0Vgn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 17:36:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYH0Vge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 17:34:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59473
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752396AbYH0VeG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 17:34:06 -0400
-Date: Wed, 27 Aug 2008 14:34:01 -0700 (PDT)
-Message-Id: <20080827.143401.76242975.davem@davemloft.net>
-To: andi@firstfloor.org
-Cc: johnpol@2ka.mipt.ru, dada1@cosmosbay.com, denys@visp.net.lb,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <87vdxmr53f.fsf@basil.nowhere.org>
-References: <48B46B48.7030609@cosmosbay.com>
-	<20080826205158.GA15266@2ka.mipt.ru>
-	<87vdxmr53f.fsf@basil.nowhere.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 27 Aug 2008 17:36:34 -0400
+Received: from gw.goop.org ([64.81.55.164]:33715 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751296AbYH0Vgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 17:36:33 -0400
+Message-ID: <48B5C8DE.9050304@goop.org>
+Date: Wed, 27 Aug 2008 14:36:30 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.27-rc2 USB suspend regression
+References: <Pine.LNX.4.44L0.0808271729380.2137-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808271729380.2137-100000@iolanthe.rowland.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
-Date: Wed, 27 Aug 2008 14:54:12 +0200
+Alan Stern wrote:
+> On Wed, 20 Aug 2008, Jeremy Fitzhardinge wrote:
+>
+>   
+>> Alan Stern wrote:
+>>     
+>>> On Wed, 20 Aug 2008, Jeremy Fitzhardinge wrote:
+>>>
+>>>   
+>>>       
+>>>> Using the Fedora Rawhide kernel RPM "2.6.27-0.238.rc2.fc10.i686"
+>>>> (kernel-2.6.27-0.238.rc2.fc10.i686), I'm seeing suspend to ram
+>>>> failures.  The suspend seems to go OK, but then I just get endless:
+>>>>
+>>>> usb 5-1: uhci_result_common: failed with status 440000
+>>>>
+>>>> messages, with occasional flickers of something else being printed
+>>>> (perhaps).  The machine is otherwise unresponsive.
+>>>>     
+>>>>         
+>>> You could comment out that error message in order to see what else is 
+>>> in the log.  It is located in drivers/usb/host/uhci-q.c in the 
+>>> uhci_result_common() function.
+>>>
+>>> You could try running -rc3 instead of -rc2, although that probably 
+>>> won't make much difference.
+>>>
+>>> What USB devices do you have on the failing system?  In particular,
+>>> what is 5-1?  If you unplug it before suspending, does the problem go
+>>> away?  (It certainly should!)
+>>>
+>>>   
+>>>       
+>> No external usb devices.  There are three internal USB devices:
+>> Bluetooth, a Sierra CDMA modem thingy and a fingerprint reader.
+>>
+>> $ lsusb
+>> Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+>> Bus 005 Device 003: ID 0483:2016 SGS Thomson Microelectronics
+>> Fingerprint Reader
+>> Bus 005 Device 002: ID 0a5c:2110 Broadcom Corp. Bluetooth Controller
+>> Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+>> Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+>> Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+>> Bus 003 Device 003: ID 1199:0218 Sierra Wireless, Inc. MC5720 Wireless Modem
+>> Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+>>
+>> The rfkill switch "unplugs" the two wireless devices, so I'll try that
+>> before suspending next time (if I remember).
+>>     
+>
+> Is this still a problem?
+>   
 
-> Evgeniy Polyakov <johnpol@2ka.mipt.ru> writes:
-> >
-> > Yup, this innocent toys can end up with this such behaviour on modern
-> > highly loaded machines.
-> 
-> I and also other people had some patches to move the time stamp
-> measuring into the socket. This way the time stamping didn't need to
-> be enabled on all packets, only on those that actually end up at a
-> socket that requires the time stamp.
+I haven't seen it lately, but it was fairly erratic anyway.  It happened
+a few times in quick succession, and then it all worked fine.  The
+rawhide kernels are getting fairly old (I guess RH is still trying to
+pull its infrastructure together), so I'm running a fairly recent
+self-compiled kernel.  Will report anything I see.
 
-By the time you get to the socket, it might be eons (relatively
-speaking) later, decreasing the usefulness of the timestamp.
+> Is this related to other Bluetooth suspend/resume regressions in 
+> 2.6.27?
+>   
 
-As just an odd example if the TCP socket is user locked at the moment,
-because the user is blocked on a GFP_KERNEL allocation, it could be
-a very long time before we actually process the packet and timestamp
-it.
+I'm not sure if its BT or Sierra wireless related.
 
-UDP now does similar socket locking so could potentially hit the same
-kind of problem.
-
-That was my argument against such a change.
-
-I find it amusing that nobody it talking about fixing the tools
-that are creating the timestamp requests when they have no real
-reason for having them in the first place.
+    J
