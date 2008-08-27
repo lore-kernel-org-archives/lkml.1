@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760470AbYH0OCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760564AbYH0ODU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760470AbYH0OCz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 10:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756577AbYH0Nvs
+	id S1760564AbYH0ODU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 10:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757934AbYH0Nv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 09:51:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49581 "EHLO mx1.redhat.com"
+	Wed, 27 Aug 2008 09:51:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49588 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757892AbYH0Nvq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 09:51:46 -0400
+	id S1757923AbYH0Nvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 09:51:53 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 46/59] CRED: Wrap task credential accesses in the UFS
+Subject: [PATCH 47/59] CRED: Wrap task credential accesses in the XFS
 	filesystem
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Serge Hallyn <serue@us.ibm.com>, Evgeniy Dushistov <dushistov@mail.ru>
-Date: Wed, 27 Aug 2008 14:49:39 +0100
-Message-ID: <20080827134939.19980.46772.stgit@warthog.procyon.org.uk>
+       Serge Hallyn <serue@us.ibm.com>, xfs@oss.sgi.com
+Date: Wed, 27 Aug 2008 14:49:44 +0100
+Message-ID: <20080827134944.19980.51300.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
 References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -43,31 +43,54 @@ addressed by later patches.
 Signed-off-by: David Howells <dhowells@redhat.com>
 Reviewed-by: James Morris <jmorris@namei.org>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
-Cc: Evgeniy Dushistov <dushistov@mail.ru>
+Cc: xfs@oss.sgi.com
 ---
 
- fs/ufs/ialloc.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ fs/xfs/linux-2.6/xfs_cred.h |    2 +-
+ fs/xfs/xfs_acl.c            |    6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
 
-diff --git a/fs/ufs/ialloc.c b/fs/ufs/ialloc.c
-index ac181f6..6f5dcf0 100644
---- a/fs/ufs/ialloc.c
-+++ b/fs/ufs/ialloc.c
-@@ -304,13 +304,13 @@ cg_found:
+diff --git a/fs/xfs/linux-2.6/xfs_cred.h b/fs/xfs/linux-2.6/xfs_cred.h
+index 652721c..293043a 100644
+--- a/fs/xfs/linux-2.6/xfs_cred.h
++++ b/fs/xfs/linux-2.6/xfs_cred.h
+@@ -24,7 +24,7 @@
+  * Credentials
+  */
+ typedef struct cred {
+-	/* EMPTY */
++       /* EMPTY */
+ } cred_t;
  
- 	inode->i_ino = cg * uspi->s_ipg + bit;
- 	inode->i_mode = mode;
--	inode->i_uid = current->fsuid;
-+	inode->i_uid = current_fsuid();
- 	if (dir->i_mode & S_ISGID) {
- 		inode->i_gid = dir->i_gid;
- 		if (S_ISDIR(mode))
- 			inode->i_mode |= S_ISGID;
- 	} else
--		inode->i_gid = current->fsgid;
-+		inode->i_gid = current_fsgid();
- 
- 	inode->i_blocks = 0;
- 	inode->i_generation = 0;
+ extern struct cred *sys_cred;
+diff --git a/fs/xfs/xfs_acl.c b/fs/xfs/xfs_acl.c
+index b2f639a..91d6933 100644
+--- a/fs/xfs/xfs_acl.c
++++ b/fs/xfs/xfs_acl.c
+@@ -366,7 +366,7 @@ xfs_acl_allow_set(
+ 		return ENOTDIR;
+ 	if (vp->i_sb->s_flags & MS_RDONLY)
+ 		return EROFS;
+-	if (XFS_I(vp)->i_d.di_uid != current->fsuid && !capable(CAP_FOWNER))
++	if (XFS_I(vp)->i_d.di_uid != current_fsuid() && !capable(CAP_FOWNER))
+ 		return EPERM;
+ 	return 0;
+ }
+@@ -413,13 +413,13 @@ xfs_acl_access(
+ 		switch (fap->acl_entry[i].ae_tag) {
+ 		case ACL_USER_OBJ:
+ 			seen_userobj = 1;
+-			if (fuid != current->fsuid)
++			if (fuid != current_fsuid())
+ 				continue;
+ 			matched.ae_tag = ACL_USER_OBJ;
+ 			matched.ae_perm = allows;
+ 			break;
+ 		case ACL_USER:
+-			if (fap->acl_entry[i].ae_id != current->fsuid)
++			if (fap->acl_entry[i].ae_id != current_fsuid())
+ 				continue;
+ 			matched.ae_tag = ACL_USER;
+ 			matched.ae_perm = allows;
 
