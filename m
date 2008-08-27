@@ -1,191 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbYH0P3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758057AbYH0P3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756853AbYH0P3F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 11:29:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbYH0P2t
+	id S1758057AbYH0P3g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 11:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbYH0P3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 11:28:49 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:42670 "EHLO
-	e28esmtp01.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754599AbYH0P2s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 11:28:48 -0400
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: cmm@us.ibm.com, tytso@mit.edu, sandeen@redhat.com
-Cc: linux-ext4@vger.kernel.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH -V3 01/11] percpu_counters: make fbc->count read atomic on 32 bit architecture
-Date: Wed, 27 Aug 2008 20:58:26 +0530
-Message-Id: <1219850916-8986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.6.0.1.90.g27a6e
+	Wed, 27 Aug 2008 11:29:25 -0400
+Received: from cantor.suse.de ([195.135.220.2]:43475 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755583AbYH0P3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 11:29:24 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs / Novell
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [patch] file capabilities: Add no_file_caps switch
+Date: Wed, 27 Aug 2008 17:29:18 +0200
+User-Agent: KMail/1.9.9
+Cc: "Andrew G. Morgan" <morgan@kernel.org>, linux-kernel@vger.kernel.org
+References: <200808262057.51606.agruen@suse.de> <20080827135206.GA12919@us.ibm.com>
+In-Reply-To: <20080827135206.GA12919@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808271729.18220.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fbc->count is of type s64. The change was introduced by
-0216bfcffe424a5473daa4da47440881b36c1f4 which changed the type
-from long to s64. Moving to s64 also means on 32 bit architectures
-we can get wrong values on fbc->count. Since fbc->count is read
-more frequently and updated rarely use seqlocks. This should
-reduce the impact of locking in the read path for 32bit arch.
+On Wednesday, 27 August 2008 15:52:06 Serge E. Hallyn wrote:
+> Quoting Andreas Gruenbacher (agruen@suse.de):
+> > Hello,
+> >
+> > here is a patch allowing to disable file capabilities via a kernel
+> > command line option (once compiled in with
+> > CONFIG_SECURITY_FILE_CAPABILITIES).
+> >
+> > We would like to ship our next round of products with file capabilities
+> > compiled in, yet we feel that too many system utilities are still file
+> > capabilitiy unaware, and so we would like to turn them off by default
+> > initially. File capabilities can be used to grant privileges to binaries
+> > which otherwise look "harmless", which is a security risk until utilities
+> > like rpm have learned how to install and verify capabilities, etc.
+> >
+> > Any objections?
+>
+> Hi Andreas,
+>
+> No objections in general - if it makes you more comfortable shipping
+> kernels with CONFIG_SECURITY_FILE_CAPABILITIES=y then it's worthwhile.
+> However, can you elaborate on your concerns?
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
----
- include/linux/percpu_counter.h |   28 ++++++++++++++++++++++++----
- lib/percpu_counter.c           |   20 ++++++++++----------
- 2 files changed, 34 insertions(+), 14 deletions(-)
+We don't have the time left for developing the few missing pieces and properly 
+integrating file capabilities into our products (use in various packages, 
+support in rpm, system management, manuals, release notes), and so I would 
+like to have a way to turn them off by default for now.
 
-diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
-index 9007ccd..1b711a1 100644
---- a/include/linux/percpu_counter.h
-+++ b/include/linux/percpu_counter.h
-@@ -6,7 +6,7 @@
-  * WARNING: these things are HUGE.  4 kbytes per counter on 32-way P4.
-  */
- 
--#include <linux/spinlock.h>
-+#include <linux/seqlock.h>
- #include <linux/smp.h>
- #include <linux/list.h>
- #include <linux/threads.h>
-@@ -16,7 +16,7 @@
- #ifdef CONFIG_SMP
- 
- struct percpu_counter {
--	spinlock_t lock;
-+	seqlock_t lock;
- 	s64 count;
- #ifdef CONFIG_HOTPLUG_CPU
- 	struct list_head list;	/* All percpu_counters are on a list */
-@@ -53,10 +53,30 @@ static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
- 	return __percpu_counter_sum(fbc);
- }
- 
--static inline s64 percpu_counter_read(struct percpu_counter *fbc)
-+#if BITS_PER_LONG == 64
-+static inline s64 fbc_count(struct percpu_counter *fbc)
- {
- 	return fbc->count;
- }
-+#else
-+/* doesn't have atomic 64 bit operation */
-+static inline s64 fbc_count(struct percpu_counter *fbc)
-+{
-+	s64 ret;
-+	unsigned seq;
-+	do {
-+		seq = read_seqbegin(&fbc->lock);
-+		ret = fbc->count;
-+	} while (read_seqretry(&fbc->lock, seq));
-+	return ret;
-+
-+}
-+#endif
-+
-+static inline s64 percpu_counter_read(struct percpu_counter *fbc)
-+{
-+	return fbc_count(fbc);
-+}
- 
- /*
-  * It is possible for the percpu_counter_read() to return a small negative
-@@ -65,7 +85,7 @@ static inline s64 percpu_counter_read(struct percpu_counter *fbc)
-  */
- static inline s64 percpu_counter_read_positive(struct percpu_counter *fbc)
- {
--	s64 ret = fbc->count;
-+	s64 ret = fbc_count(fbc);
- 
- 	barrier();		/* Prevent reloads of fbc->count */
- 	if (ret >= 0)
-diff --git a/lib/percpu_counter.c b/lib/percpu_counter.c
-index a866389..83bb809 100644
---- a/lib/percpu_counter.c
-+++ b/lib/percpu_counter.c
-@@ -18,13 +18,13 @@ void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
- {
- 	int cpu;
- 
--	spin_lock(&fbc->lock);
-+	write_seqlock(&fbc->lock);
- 	for_each_possible_cpu(cpu) {
- 		s32 *pcount = per_cpu_ptr(fbc->counters, cpu);
- 		*pcount = 0;
- 	}
- 	fbc->count = amount;
--	spin_unlock(&fbc->lock);
-+	write_sequnlock(&fbc->lock);
- }
- EXPORT_SYMBOL(percpu_counter_set);
- 
-@@ -37,10 +37,10 @@ void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch)
- 	pcount = per_cpu_ptr(fbc->counters, cpu);
- 	count = *pcount + amount;
- 	if (count >= batch || count <= -batch) {
--		spin_lock(&fbc->lock);
-+		write_seqlock(&fbc->lock);
- 		fbc->count += count;
- 		*pcount = 0;
--		spin_unlock(&fbc->lock);
-+		write_sequnlock(&fbc->lock);
- 	} else {
- 		*pcount = count;
- 	}
-@@ -57,7 +57,7 @@ s64 __percpu_counter_sum(struct percpu_counter *fbc)
- 	s64 ret;
- 	int cpu;
- 
--	spin_lock(&fbc->lock);
-+	write_seqlock(&fbc->lock);
- 	ret = fbc->count;
- 	for_each_online_cpu(cpu) {
- 		s32 *pcount = per_cpu_ptr(fbc->counters, cpu);
-@@ -66,7 +66,7 @@ s64 __percpu_counter_sum(struct percpu_counter *fbc)
- 	}
- 	fbc->count = ret;
- 
--	spin_unlock(&fbc->lock);
-+	write_sequnlock(&fbc->lock);
- 	return ret;
- }
- EXPORT_SYMBOL(__percpu_counter_sum);
-@@ -75,7 +75,7 @@ EXPORT_SYMBOL(__percpu_counter_sum);
- 
- int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
- {
--	spin_lock_init(&fbc->lock);
-+	seqlock_init(&fbc->lock);
- 	fbc->count = amount;
- 	fbc->counters = alloc_percpu(s32);
- 	if (!fbc->counters)
-@@ -95,7 +95,7 @@ int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount)
- 
- 	err = percpu_counter_init(fbc, amount);
- 	if (!err)
--		lockdep_set_class(&fbc->lock, &percpu_counter_irqsafe);
-+		lockdep_set_class(&fbc->lock.lock, &percpu_counter_irqsafe);
- 	return err;
- }
- 
-@@ -130,11 +130,11 @@ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
- 		s32 *pcount;
- 		unsigned long flags;
- 
--		spin_lock_irqsave(&fbc->lock, flags);
-+		write_seqlock_irqsave(&fbc->lock, flags);
- 		pcount = per_cpu_ptr(fbc->counters, cpu);
- 		fbc->count += *pcount;
- 		*pcount = 0;
--		spin_unlock_irqrestore(&fbc->lock, flags);
-+		write_sequnlock_irqrestore(&fbc->lock, flags);
- 	}
- 	mutex_unlock(&percpu_counters_lock);
- 	return NOTIFY_OK;
--- 
-1.6.0.1.90.g27a6e
+> In particular, if as you say above the concern is really just that a
+> file might have capabilities accidentally (or maliciously) enabled, then
+> we should be able to just check for file_caps_enabled() at
+> get_file_caps(), refusing to fill in the file capabilities.
 
+My main concern is accidental granting of capabilities because of admin 
+unawareness / lack of tool support. This could be taken care of by not 
+loading the capabilities from disk.
+
+> The other changes which you are canceling out confuscate the code but
+> actually make no difference.
+
+Well, the other difference is that with CONFIG_SECURITY_FILE_CAPABILITIES=y 
+you currently lose the ability to pass on capabilities to other processes. Do 
+you have good arguments why this feature is unnecessary? I don' think that 
+having this feature was a good idea in the first place, but taking it away 
+now after several years may break current users which may not have gotten 
+converted, yet.
+
+Thanks,
+Andreas
