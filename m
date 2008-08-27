@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754450AbYH0GCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbYH0GMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754450AbYH0GCf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 02:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbYH0GCH
+	id S1753556AbYH0GMS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 02:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbYH0GMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 02:02:07 -0400
-Received: from ozlabs.org ([203.10.76.45]:56096 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752342AbYH0GCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 02:02:05 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18612.60878.887716.452936@drongo.ozlabs.ibm.com>
-Date: Wed, 27 Aug 2008 16:01:50 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Parag Warudkar <parag.lkml@gmail.com>, Adrian Bunk <bunk@stusta.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-embedded@vger.kernel.org
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
- bisected
-In-Reply-To: <alpine.LFD.1.10.0808261837530.3363@nehalem.linux-foundation.org>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
-	<alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org>
-	<200808261111.19205.rusty@rustcorp.com.au>
-	<alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org>
-	<20080826183051.GB10925@cs181140183.pp.htv.fi>
-	<alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org>
-	<20080826205916.GB11734@cs181140183.pp.htv.fi>
-	<alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org>
-	<f7848160808261554j2f4eaaa6i1ee8801ae75ca7bf@mail.gmail.com>
-	<alpine.LFD.1.10.0808261644260.3363@nehalem.linux-foundation.org>
-	<f7848160808261758q7b84aab1m188c1ebb59304818@mail.gmail.com>
-	<alpine.LFD.1.10.0808261837530.3363@nehalem.linux-foundation.org>
-X-Mailer: VM 8.0.9 under Emacs 21.4.1 (powerpc-unknown-linux-gnu)
+	Wed, 27 Aug 2008 02:12:06 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:36663 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752067AbYH0GME convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 02:12:04 -0400
+Subject: RE: [PATCH 2/2][MTD] Add support for > 2GiB MTD devices
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Tim Anderson <tanderson@mvista.com>
+Cc: Bruce_Leonard@selinc.com, "'Andrew Morton'" <akpm@linux-foundation.org>,
+       linux-mtd-bounces@lists.infradead.org,
+       "'David Woodhouse'" <dwmw2@infradead.org>,
+       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
+       "'Bruce Leonard'" <brucle@earthlink.net>
+In-Reply-To: <000101c9080a$4ec3a6b0$6b01a8c0@mvista.com>
+References: <000101c9080a$4ec3a6b0$6b01a8c0@mvista.com>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 27 Aug 2008 09:03:37 +0300
+Message-Id: <1219817017.18027.149.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 27 Aug 2008 06:06:41.0528 (UTC) FILETIME=[131FBF80:01C9080B]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds writes:
+On Tue, 2008-08-26 at 23:01 -0700, Tim Anderson wrote:
+> I have been experimenting with this. I think there is at least 3 maybe 4
+> IOCTLS that are going to need to have a LARGE mode. The 2 most obvious are
+> MEMGETINFO and MEMERASE.
 
-> 4kB used to be the _only_ choice. And no, there weren't even irq stacks. 
-> So that 4kB was not just the whole kernel call-chain, it was also all the 
-> irq nesting above it.
+dwmw2 vetoed any MEMGETINFO ioctl changes, or new similar ioctls, and it
+kind of make sense, because we should use sysfs instead. But this, in
+turn, means implementing sysfs support for MTD, because MTD is not
+LinuxDeviceModel-enabled at the moment.
 
-I think your memory is failing you.  In 2.4 and earlier, the kernel
-stack was 8kB minus the size of the task_struct, which sat at the
-start of the 8kB.  For instance, from include/asm-i386/processor.h for
-2.4.29:
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
-#define THREAD_SIZE (2*PAGE_SIZE)
-#define alloc_task_struct() ((struct task_struct *) __get_free_pages(GFP_KERNEL,1))
-#define free_task_struct(p) free_pages((unsigned long) (p), 1)
-
-Paul.
