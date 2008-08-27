@@ -1,81 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755946AbYH0MGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbYH0MLB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755946AbYH0MGQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 08:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754928AbYH0MGB
+	id S1755593AbYH0MLB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 08:11:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYH0MKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 08:06:01 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:34883 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754820AbYH0MGA (ORCPT
+	Wed, 27 Aug 2008 08:10:50 -0400
+Received: from relay2.globalproof.net ([194.146.153.25]:56466 "EHLO
+	relay2.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754565AbYH0MKt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 08:06:00 -0400
-Message-ID: <48B5428E.40902@novell.com>
-Date: Wed, 27 Aug 2008 08:03:26 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Wed, 27 Aug 2008 08:10:49 -0400
+From: Denys Fedoryshchenko <denys@visp.net.lb>
+Organization: Virtual ISP
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+Date: Wed, 27 Aug 2008 15:09:17 +0300
+User-Agent: KMail/1.9.9
+Cc: Eric Dumazet <dada1@cosmosbay.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200808220457.40892.denys@visp.net.lb> <48B46B48.7030609@cosmosbay.com> <20080826205158.GA15266@2ka.mipt.ru>
+In-Reply-To: <20080826205158.GA15266@2ka.mipt.ru>
 MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: Peter Zijlstra <peterz@infradead.org>, mingo@elte.hu, srostedt@redhat.com,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       gregory.haskins@gmail.com
-Subject: Re: [PATCH v2 3/6] sched: make double-lock-balance fair
-References: <20080826173131.16413.17862.stgit@dev.haskins.net> <20080826173500.16413.40514.stgit@dev.haskins.net> <1219825295.6462.54.camel@twins> <20080827102646.GA5818@wotan.suse.de> <1219833668.6462.72.camel@twins> <20080827105615.GB5818@wotan.suse.de> <20080827105731.GC5818@wotan.suse.de>
-In-Reply-To: <20080827105731.GC5818@wotan.suse.de>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig4FEA1A4FF757EFD063FEB615"
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_uPUtIK8vFW3CqnH"
+Message-Id: <200808271509.18529.denys@visp.net.lb>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4FEA1A4FF757EFD063FEB615
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+--Boundary-00=_uPUtIK8vFW3CqnH
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Nick Piggin wrote:
-> On Wed, Aug 27, 2008 at 12:56:15PM +0200, Nick Piggin wrote:
->  =20
->> On Wed, Aug 27, 2008 at 12:41:08PM +0200, Peter Zijlstra wrote:
->>    =20
->>> Does it make sense to make this _double_lock_balance() thing depend o=
-n
->>> that too?
->>>      =20
->> Hmm, you might have a good point there. Greg?
->>
->> BTW. I wonder about other architectures that are of interest to -rt? L=
-ike
->> mips or arm perhaps... Any plans to implement ticket locks on those, o=
-r
->> do they not tend to be used in SMP configurations on -rt yte?
->>    =20
+On Tuesday 26 August 2008, Evgeniy Polyakov wrote:
+> On Tue, Aug 26, 2008 at 10:44:56PM +0200, Eric Dumazet (dada1@cosmosbay.com) 
+wrote:
+> > >Do you have any packet sockets in this system? Like running dhcp daemon?
+No, nothing at all.
+> >
+> > Another way to see this problem can be to start a sniffer on the machine,
+> > even with a restrictive pcap filter, to check if performance change or
+> > not. (It should decrease)
+Yes, when i run tcpdump even without promisc at peak time, machine will be 
+almost dead. Transit traffic will be 100ms+. I know that it is timestamping 
+packets. Same almost for any libpcap app.
+
 >
-> Oh, or maybe I guess again: -rt might be using Greg's generic ticket lo=
-ck
-> implementation?
->  =20
-I never submitted them since yours were better for x86. But I can dust
-them off and post
+> Or just check /proc/net/packet iirc.
+> Anyway, having at least one packet socket ends up with timestamping of
+> each packet, so you will get fair load of getnstimeofday() in that case.
+There is very short list of tasks. Attached. 
+/proc/net/packet clean, nothing there.
 
--Greg
+>
+> > For example, I believe that running "ping" could have the same effect
+> > (increasing netstamp_needed variable : every incoming packet has to be
+> > timestamped)
+Even answering icmp timestamp request will take resources.
+> >
+> > So beware of pings, traceroute and other networking tools...
+When i am measuring performance - they are all off.
+>
+> Yup, this innocent toys can end up with this such behaviour on modern
+> highly loaded machines.
 
 
---------------enig4FEA1A4FF757EFD063FEB615
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+--Boundary-00=_uPUtIK8vFW3CqnH
+Content-Type: text/plain;
+  charset="iso-8859-1";
+  name="tasks.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+	filename="tasks.txt"
 
-iEYEARECAAYFAki1Qo4ACgkQlOSOBdgZUxnF8ACfV2pGDvAl1AS3DDPrwEgNFkMe
-CuQAn1OVQ/I+Tn/Xk/TeTnYpMM6j4b9e
-=63ZK
------END PGP SIGNATURE-----
+tcp        0      0 127.0.0.1:2600          0.0.0.0:*               LISTEN     3167/zebra
+tcp        0      0 0.0.0.0:2601            0.0.0.0:*               LISTEN     3167/zebra
+tcp        0      0 0.0.0.0:2602            0.0.0.0:*               LISTEN     3174/ripd
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN     3549/sshd
+tcp        0      0 194.146.153.17:22       194.146.154.161:37549   ESTABLISHED11593/sshd
+tcp        0      0 194.146.153.17:22       192.168.0.92:45891      ESTABLISHED11803/sshd
+tcp        0      0 127.0.0.1:42537         127.0.0.1:2600          ESTABLISHED3174/ripd
+tcp        0      0 194.146.153.17:22       194.146.153.18:51810    ESTABLISHED11799/sshd
+tcp        0      0 127.0.0.1:2600          127.0.0.1:42537         ESTABLISHED3167/zebra
+udp        0      0 0.0.0.0:520             0.0.0.0:*                          3174/ripd
+udp        0      0 0.0.0.0:161             0.0.0.0:*                          3194/snmpd
+udp        0      0 0.0.0.0:67              0.0.0.0:*                          3207/udhcpd
+udp   111360      0 0.0.0.0:49619           0.0.0.0:*                          2449/syslogd
 
---------------enig4FEA1A4FF757EFD063FEB615--
+--Boundary-00=_uPUtIK8vFW3CqnH--
