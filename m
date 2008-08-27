@@ -1,99 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbYH0Vz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbYH0V5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754811AbYH0Vz1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 17:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbYH0VzP
+	id S1755383AbYH0V5q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 17:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbYH0V5i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 17:55:15 -0400
-Received: from mail.lang.hm ([64.81.33.126]:55571 "EHLO bifrost.lang.hm"
+	Wed, 27 Aug 2008 17:57:38 -0400
+Received: from mga02.intel.com ([134.134.136.20]:45372 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752546AbYH0VzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 17:55:14 -0400
-Date: Wed, 27 Aug 2008 14:54:28 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Dave Chinner <david@fromorbit.com>
-cc: Jamie Lokier <jamie@shareable.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       gus3 <musicman529@yahoo.com>, Szabolcs Szakacsits <szaka@ntfs-3g.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Subject: Re: XFS vs Elevators (was Re: [PATCH RFC] nilfs2: continuous
- snapshotting file system)
-In-Reply-To: <20080827012013.GC5706@disturbed>
-Message-ID: <alpine.DEB.1.10.0808271450280.907@asgard.lang.hm>
-References: <20080821051508.GB5706@disturbed> <200808211933.34565.nickpiggin@yahoo.com.au> <20080821170854.GJ5706@disturbed> <200808221229.11069.nickpiggin@yahoo.com.au> <20080825015922.GP5706@disturbed> <20080825120146.GC20960@shareable.org>
- <20080826030759.GY5706@disturbed> <alpine.DEB.1.10.0808252041300.29665@asgard.lang.hm> <20080827012013.GC5706@disturbed>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1752953AbYH0V5h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 17:57:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,282,1217833200"; 
+   d="scan'208";a="432753946"
+Date: Wed, 27 Aug 2008 14:57:36 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: hpa@zytor.com, tglx@linutronix.de, mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com
+Subject: [patch] xsave: restore xcr0 during resume
+Message-ID: <20080827215736.GI1152@linux-os.sc.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Aug 2008, Dave Chinner wrote:
+Add the missing XCR0(XFEATURE_ENABLED_MASK) restore during resume.
 
-> On Mon, Aug 25, 2008 at 08:50:14PM -0700, david@lang.hm wrote:
->> it sounds as if the various flag definitions have been evolving, would it
->> be worthwhile to sep back and try to get the various filesystem folks to
->> brainstorm together on what types of hints they would _like_ to see
->> supported?
->
-> Three types:
->
-> 	1. immediate dispatch - merge first with adjacent requests
-> 	   then dispatch
-> 	2. delayed dispatch - queue for a short while to allow
-> 	   merging of requests from above
-> 	3. bulk data - queue and merge. dispatch is completely
-> 	   controlled by the elevator
+Reported-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
 
-does this list change if you consider the fact that there may be a raid 
-array or some more complex structure for the block device instead of a 
-simple single disk partition?
-
-since I am suggesting re-thinking the filesystem <-> elevator interface, 
-is there anything you need to have the elevator tell the filesystem? (I'm 
-thinking that this may be the path for the filesystem to learn things 
-about the block device that's under it, is it a raid array, a solid-state 
-drive, etc)
-
-David Lang
-
-> Basically most metadata and log writes would fall into category 2,
-> which every logbufs/2 log writes or every log force using a category
-> 1 to prevent log I/O from being stalled too long by other I/O.
->
-> Data writes from the filesystem would appear as category 3 (read and write)
-> and are subject to the specific elevator scheduling. That is, things
-> like the CFQ ionice throttling would work on the bulk data queue,
-> but not the other queues that the filesystem is using for metadata.
->
-> Tagging the I/O as a sync I/O can still be done, but that only
-> affects category 3 scheduling - category 1 or 2 would do the same
-> thing whether sync or async....
->
->> it sounds like you are using 'sync' for things where you really should be
->> saying 'metadata' (or 'journal contents'), it's happened to work well
->> enough in the past, but it's forcing you to keep tweaking the
->> filesystems.
->
-> Right, because there was no 'metadata' tagging, and 'sync' happened
-> to do exactly what we needed on all elevators at the time.
->
->> it may be better to try and define things from the
->> filesystem point of view and let the elevators do the tweaking.
->>
->> basicly I'm proposing a complete rethink of the filesyste <-> elevator
->> interface.
->
-> Yeah, I've been saying that for a while w.r.t. the filesystem/block
-> layer interfaces, esp. now with discard requests, data integrity,
-> device alignment information, barriers, etc being exposed by the
-> layers below the filesystem, but with no interface for filesystems
-> to be able to access that information...
->
-> Cheers,
->
-> Dave.
->
+diff --git a/arch/x86/power/cpu_32.c b/arch/x86/power/cpu_32.c
+index d3e083d..274d060 100644
+--- a/arch/x86/power/cpu_32.c
++++ b/arch/x86/power/cpu_32.c
+@@ -11,6 +11,7 @@
+ #include <linux/suspend.h>
+ #include <asm/mtrr.h>
+ #include <asm/mce.h>
++#include <asm/xcr.h>
+ 
+ static struct saved_context saved_context;
+ 
+@@ -126,6 +127,12 @@ static void __restore_processor_state(struct saved_context *ctxt)
+ 	if (boot_cpu_has(X86_FEATURE_SEP))
+ 		enable_sep_cpu();
+ 
++	/*
++	 * restore XCR0 for xsave capable cpu's.
++	 */
++	if (cpu_has_xsave)
++		xsetbv(XCR_XFEATURE_ENABLED_MASK, pcntxt_mask);
++
+ 	fix_processor_context();
+ 	do_fpu_end();
+ 	mtrr_ap_init();
+diff --git a/arch/x86/power/cpu_64.c b/arch/x86/power/cpu_64.c
+index 66bdfb5..e3b6cf7 100644
+--- a/arch/x86/power/cpu_64.c
++++ b/arch/x86/power/cpu_64.c
+@@ -14,6 +14,7 @@
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+ #include <asm/mtrr.h>
++#include <asm/xcr.h>
+ 
+ static void fix_processor_context(void);
+ 
+@@ -122,6 +123,12 @@ static void __restore_processor_state(struct saved_context *ctxt)
+ 	wrmsrl(MSR_GS_BASE, ctxt->gs_base);
+ 	wrmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
+ 
++	/*
++	 * restore XCR0 for xsave capable cpu's.
++	 */
++	if (cpu_has_xsave)
++		xsetbv(XCR_XFEATURE_ENABLED_MASK, pcntxt_mask);
++
+ 	fix_processor_context();
+ 
+ 	do_fpu_end();
