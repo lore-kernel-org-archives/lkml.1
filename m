@@ -1,72 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbYH0Vwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbYH0Vz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689AbYH0Vwf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 17:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbYH0Vw2
+	id S1754811AbYH0Vz1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 17:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbYH0VzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 17:52:28 -0400
-Received: from mail.gmx.net ([213.165.64.20]:60041 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752546AbYH0Vw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 17:52:27 -0400
-X-Authenticated: #31060655
-X-Provags-ID: V01U2FsdGVkX1+DTEkRDCyD+LsjH40tBNivVFbDFC3N+5p7l3O2bI
-	9pkjMBUGpkfikn
-Message-ID: <48B5CC98.9000904@gmx.net>
-Date: Wed, 27 Aug 2008 23:52:24 +0200
-From: Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080316 SUSE/1.1.9-1.1 SeaMonkey/1.1.9
+	Wed, 27 Aug 2008 17:55:15 -0400
+Received: from mail.lang.hm ([64.81.33.126]:55571 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752546AbYH0VzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 17:55:14 -0400
+Date: Wed, 27 Aug 2008 14:54:28 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Dave Chinner <david@fromorbit.com>
+cc: Jamie Lokier <jamie@shareable.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       gus3 <musicman529@yahoo.com>, Szabolcs Szakacsits <szaka@ntfs-3g.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: XFS vs Elevators (was Re: [PATCH RFC] nilfs2: continuous
+ snapshotting file system)
+In-Reply-To: <20080827012013.GC5706@disturbed>
+Message-ID: <alpine.DEB.1.10.0808271450280.907@asgard.lang.hm>
+References: <20080821051508.GB5706@disturbed> <200808211933.34565.nickpiggin@yahoo.com.au> <20080821170854.GJ5706@disturbed> <200808221229.11069.nickpiggin@yahoo.com.au> <20080825015922.GP5706@disturbed> <20080825120146.GC20960@shareable.org>
+ <20080826030759.GY5706@disturbed> <alpine.DEB.1.10.0808252041300.29665@asgard.lang.hm> <20080827012013.GC5706@disturbed>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Jamie Lokier <jamie@shareable.org>
-CC: Bruce_Leonard@selinc.com, linux-mtd-bounces@lists.infradead.org,
-       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Bruce Leonard <brucle@earthlink.net>
-Subject: Re: [PATCH 2/2] Add support for > 2GiB MTD devices
-References: <1219815617.18027.132.camel@sauron>	<OF5BDBDD21.E5375C78-ON882574B2.0061B127-882574B2.00648B63@selinc.com> <20080827185142.GE27491@shareable.org>
-In-Reply-To: <20080827185142.GE27491@shareable.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.59
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 27.08.2008 20:51, Jamie Lokier wrote:
-> Bruce_Leonard@selinc.com wrote:
->   
->> I'm still reluctant to change size to a 64-bit value.  There's a vague 
->> recolection of early conversations on the list that there would be little 
->> acceptance for that.  And that probably has to do with the ongoing 
->> conversation about ABI changes.  What I could do to eliminate the 
->> multiplication is introduce the same concept that the NAND layer uses, 
->> shift values.  After all, erasesize should always be a power of 2, making 
->> that a power of 2 multiplication which can be done via shifts.  By 
->> changing erasesize to erasesize_shift, I'd get something like this:
+On Wed, 27 Aug 2008, Dave Chinner wrote:
+
+> On Mon, Aug 25, 2008 at 08:50:14PM -0700, david@lang.hm wrote:
+>> it sounds as if the various flag definitions have been evolving, would it
+>> be worthwhile to sep back and try to get the various filesystem folks to
+>> brainstorm together on what types of hints they would _like_ to see
+>> supported?
+>
+> Three types:
+>
+> 	1. immediate dispatch - merge first with adjacent requests
+> 	   then dispatch
+> 	2. delayed dispatch - queue for a short while to allow
+> 	   merging of requests from above
+> 	3. bulk data - queue and merge. dispatch is completely
+> 	   controlled by the elevator
+
+does this list change if you consider the fact that there may be a raid 
+array or some more complex structure for the block device instead of a 
+simple single disk partition?
+
+since I am suggesting re-thinking the filesystem <-> elevator interface, 
+is there anything you need to have the elevator tell the filesystem? (I'm 
+thinking that this may be the path for the filesystem to learn things 
+about the block device that's under it, is it a raid array, a solid-state 
+drive, etc)
+
+David Lang
+
+> Basically most metadata and log writes would fall into category 2,
+> which every logbufs/2 log writes or every log force using a category
+> 1 to prevent log I/O from being stalled too long by other I/O.
+>
+> Data writes from the filesystem would appear as category 3 (read and write)
+> and are subject to the specific elevator scheduling. That is, things
+> like the CFQ ionice throttling would work on the bulk data queue,
+> but not the other queues that the filesystem is using for metadata.
+>
+> Tagging the I/O as a sync I/O can still be done, but that only
+> affects category 3 scheduling - category 1 or 2 would do the same
+> thing whether sync or async....
+>
+>> it sounds like you are using 'sync' for things where you really should be
+>> saying 'metadata' (or 'journal contents'), it's happened to work well
+>> enough in the past, but it's forcing you to keep tweaking the
+>> filesystems.
+>
+> Right, because there was no 'metadata' tagging, and 'sync' happened
+> to do exactly what we needed on all elevators at the time.
+>
+>> it may be better to try and define things from the
+>> filesystem point of view and let the elevators do the tweaking.
 >>
->> return a->num_eraseblocks == 0 ? a->size : a->num_eraseblocks << 
->> a->erasesize_shift
->>
->> How would that suit you?
->>     
+>> basicly I'm proposing a complete rethink of the filesyste <-> elevator
+>> interface.
 >
-> Are you sure it's always going to be a power of 2?
+> Yeah, I've been saying that for a while w.r.t. the filesystem/block
+> layer interfaces, esp. now with discard requests, data integrity,
+> device alignment information, barriers, etc being exposed by the
+> layers below the filesystem, but with no interface for filesystems
+> to be able to access that information...
 >
-> What if someone targets a board with 3 chips wired to shared address
-> and parallel data buses?
+> Cheers,
 >
-> Or if someone makes a weird chip?  Or if you can format it in
-> different ways according to desired ECC level (like you can with CDs)?
->   
-
-IIRC I saw a datasheet for such a chip (selectable erasesize with
-non-power-of-2 default) some weeks ago and it had entered production a
-few months ago. The erasesize was alwas a multiple of 16, though. Sorry
-for not remembering more details.
-
-Regards,
-Carl-Daniel
-
--- 
-http://www.hailfinger.org/
-
+> Dave.
+>
