@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbYH0MwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbYH0Mxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755402AbYH0MwW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 08:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbYH0MwK
+	id S1755778AbYH0Mxf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 08:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbYH0Mx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 08:52:10 -0400
-Received: from mail-gx0-f29.google.com ([209.85.217.29]:54245 "EHLO
-	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754120AbYH0MwI (ORCPT
+	Wed, 27 Aug 2008 08:53:28 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:47496 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753673AbYH0Mx1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 08:52:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=xpQfVR80pSFgZC1eMWKU76TI0ZgolvUMzhP5hV0AkURB/pDMjckwtQhXgkSLm54NCn
-         IdcxsnP+Wm8f73doMdv22c5nwP4IkSfMYWUGFqxlBaxVO+f21SFRJ9nm7u4mGubAN7WE
-         QbbG0IPJDru86osbVO2HCs1atf6kb7IU7PJds=
-Message-ID: <f7848160808270552u2ee66167x912a68e0bf8b25bf@mail.gmail.com>
-Date: Wed, 27 Aug 2008 08:52:06 -0400
-From: "Parag Warudkar" <parag.lkml@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-Cc: "Adrian Bunk" <bunk@kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Rusty Russell" <rusty@rustcorp.com.au>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Arjan van de Ven" <arjan@linux.intel.com>,
-       "Ingo Molnar" <mingo@elte.hu>, linux-embedded@vger.kernel.org
-In-Reply-To: <20080827092528.780916bd@lxorguk.ukuu.org.uk>
+	Wed, 27 Aug 2008 08:53:27 -0400
+Message-ID: <48B54E45.6020206@aitel.hist.no>
+Date: Wed, 27 Aug 2008 14:53:25 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+Organization: HiST
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Alexander Huemer <alexander.huemer@sbg.ac.at>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: 2.6.27 mtrr fixes do not work when X starts
+References: <4899AF8E.20105@sbg.ac.at> <48A43CB5.8010709@sbg.ac.at>	 <86802c440808141031p2712976cqe2c34d3b986ad810@mail.gmail.com>	 <48AD8125.7050104@sbg.ac.at>	 <86802c440808210827y72bb1ec0ndcb97b00d6af3a9c@mail.gmail.com>	 <48AE90BB.5090800@aitel.hist.no>	 <86802c440808221024u1f152a73hf060f70e1b16dccb@mail.gmail.com>	 <48B29320.5070903@aitel.hist.no>	 <86802c440808251308i609a1c8ay6a7300bf4d0e0758@mail.gmail.com>	 <48B3CDAF.604@aitel.hist.no> <86802c440808260943k210be3edp54aebc9fea5366f5@mail.gmail.com>
+In-Reply-To: <86802c440808260943k210be3edp54aebc9fea5366f5@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
-	 <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org>
-	 <200808261111.19205.rusty@rustcorp.com.au>
-	 <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org>
-	 <20080826183051.GB10925@cs181140183.pp.htv.fi>
-	 <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org>
-	 <20080826205916.GB11734@cs181140183.pp.htv.fi>
-	 <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org>
-	 <20080826232411.GC11734@cs181140183.pp.htv.fi>
-	 <20080827092528.780916bd@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 4:25 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> You have a good point that aiming at 4kB makes 8kB a very safe choice.
->
-> Not really no - we use separate IRQ stacks in 4K but not 8K mode on
-> x86-32. That means you've actually got no more space if you are unlucky
-> with the timing of events. The 8K mode is merely harder to debug.
->
+Yinghai Lu wrote:
+> On Tue, Aug 26, 2008 at 2:32 AM, Helge Hafting
+> <helge.hafting@aitel.hist.no> wrote:
 
-By your logic though, XFS on x86 should work fine with 4K stacks -
-many will attest that it does not and blows up due to stack issues.
+>> I hope this helps so the extra bootup parameters can be avoided in the
+>> release kernel.
+> 
+> that is a little bit hard.
 
-I have first hand experiences of things blowing up with deep call
-chains when using 4K stacks where 8K worked just fine on same
-workload.
+Well, perhaps not 2.6.27, but I hope I won't need
+"mtrr_spare_reg_nr=3" forever. Or is my machine a strange
+corner case as far as mtrr's are concerned?
 
-So there is definitely some other problem with 4K stacks.
-
-Thanks
-Parag
+Helge Hafting
