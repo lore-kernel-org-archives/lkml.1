@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbYH0JYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbYH0J1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755141AbYH0JYr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 05:24:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbYH0JYj
+	id S1754911AbYH0J1J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 05:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYH0J04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 05:24:39 -0400
-Received: from www.tglx.de ([62.245.132.106]:39175 "EHLO www.tglx.de"
+	Wed, 27 Aug 2008 05:26:56 -0400
+Received: from ryu.zarb.org ([212.85.153.228]:36470 "EHLO ryu.zarb.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752214AbYH0JYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 05:24:38 -0400
-Date: Wed, 27 Aug 2008 11:24:19 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Kevin Hao <haokexin@gmail.com>
-cc: linux-kernel <linux-kernel@vger.kernel.org>, mingo@redhat.com
-Subject: Re: [x86] apic timer tick interval is not so accurate in periodic
- mode
-In-Reply-To: <8dd980de0808200236g1c77f4e6n1e97339fb3c27e6@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0808271103180.3243@apollo.tec.linutronix.de>
-References: <8dd980de0808200236g1c77f4e6n1e97339fb3c27e6@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752742AbYH0J0z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 05:26:55 -0400
+X-Greylist: delayed 408 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Aug 2008 05:26:55 EDT
+Subject: r8169 regression in 2.6.26.3 vs 2.6.26.2
+From: Pascal Terjan <pterjan@mandriva.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>, stable@kernel.org
+Cc: Marcus Sundberg <marcus@ingate.com>
+Content-Type: text/plain
+Organization: Mandriva
+Date: Wed, 27 Aug 2008 11:20:00 +0200
+Message-Id: <1219828800.30098.7.camel@plop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.23.90-1mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008, Kevin Hao wrote:
-> Hi all,
-> 
-> I found the apic timer tick interval is not so accurate when it works
-> in periodic mode(CONFIG_HIGH_RES_TIMERS=N).
-> But in one-shot mode(CONFIG_HIGH_RES_TIMERS=Y)  it works well.
-> I tested it on a Dell390 pc. HZ is 250. Kernel version is 2.6.27-rc3.
-> The following is the result:
-> 
-> In periodic mode:
-> tick = 1, apic tick timer interval is 4020211
-> tick = 1, apic tick timer interval is 4020233
-> tick = 1, apic tick timer interval is 4020233
-> tick = 1, apic tick timer interval is 4020199
-> tick = 1, apic tick timer interval is 4020267
-> tick = 1, apic tick timer interval is 4020218
-> tick = 1, apic tick timer interval is 4020278
-> tick = 1, apic tick timer interval is 4020173
-> 
-> 
-> In one-shot mode:
-> tick = 1, apic tick timer interval is 3999930
-> tick = 1, apic tick timer interval is 4000035
-> tick = 1, apic tick timer interval is 3999998
-> tick = 1, apic tick timer interval is 4000005
-> tick = 1, apic tick timer interval is 4000001
-> tick = 1, apic tick timer interval is 4000009
-> tick = 1, apic tick timer interval is 3999945
-> tick = 1, apic tick timer interval is 4000024
-> tick = 1, apic tick timer interval is 4000005
-> 
-> Why is there so big difference between these two mode?
-> The attachment is my test program and config file.
-> Any comments is appreciated .
+Since updating to 2.6.26.3, networking no longer works on Acer Aspire
+One.
 
-The periodic mode uses a reload value which is calculated during
-system startup and never touched again. At this point we do not have
-the full timekeeping infrastructure working and your test code uses
-the working infrastructure as reference.
+PCI config is now always filled with ones.
 
-In high resolution timer mode we reprogramm the local apic timer for
-the next hrtimer instance which is enqueued. We calculate the delta
-against the system time and then convert it to the local apic counter
-value. 
+Reverting "r8169: avoid thrashing PCI conf space above
+RTL_GIGA_MAC_VER_06" makes it work again.
 
-But yes, it's surprising that the obvious calibration deviation of the
-local apic timer, which results in longer times is not showing up in
-one shot mode. It would be interesting to see the absolute time line
-in terms of ktime_get() of those events versus the expiry value of the
-hrtimer which drives the tick emulation in tick_sched_timer().
+The device is 10ec:8136
 
-Thanks,
+02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8101E
+PCI Express Fast Ethernet controller (rev 02)
+	Subsystem: Acer Incorporated [ALI] Device 015b
+	Flags: bus master, fast devsel, latency 0, IRQ 17
+	I/O ports at 3000 [size=256]
+	Memory at 31010000 (64-bit, prefetchable) [size=4K]
+	Memory at 31000000 (64-bit, prefetchable) [size=64K]
+	Expansion ROM at 31020000 [disabled] [size=128K]
+	Capabilities: [40] Power Management version 3
+	Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0
+Enable-
+	Capabilities: [70] Express Endpoint, MSI 01
+	Capabilities: [ac] MSI-X: Enable- Mask- TabSize=2
+	Capabilities: [cc] Vital Product Data <?>
+	Capabilities: [100] Advanced Error Reporting <?>
+	Capabilities: [140] Virtual Channel <?>
+	Capabilities: [160] Device Serial Number 00-00-ff-ff-00-00-00-04
+	Kernel driver in use: r8169
+	Kernel modules: r8169
 
-	tglx
+
