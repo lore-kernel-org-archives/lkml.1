@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYH0Ptg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756915AbYH0Pz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756698AbYH0Ptg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 11:49:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYH0Pt0
+	id S1756915AbYH0Pz4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 11:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755340AbYH0Pzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 11:49:26 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:35008 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753486AbYH0PtZ (ORCPT
+	Wed, 27 Aug 2008 11:55:44 -0400
+Received: from mailer2.option.com ([81.246.70.163]:26523 "EHLO
+	mailer2.option.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753486AbYH0Pzn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 11:49:25 -0400
-Date: Wed, 27 Aug 2008 16:48:05 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Bernd Petrovitsch <bernd@firmix.at>
-Cc: Parag Warudkar <parag.lkml@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Rusty Russell <rusty@rustcorp.com.au>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-embedded@vger.kernel.org
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-Message-ID: <20080827154805.GA25387@shareable.org>
-References: <20080826183051.GB10925@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org> <20080826205916.GB11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org> <f7848160808261554j2f4eaaa6i1ee8801ae75ca7bf@mail.gmail.com> <alpine.LFD.1.10.0808261644260.3363@nehalem.linux-foundation.org> <f7848160808261758q7b84aab1m188c1ebb59304818@mail.gmail.com> <1219827609.30209.29.camel@spike.firmix.at> <f7848160808270556q54c36270ye6a465d2ca123cc@mail.gmail.com> <1219843032.30209.51.camel@spike.firmix.at>
+	Wed, 27 Aug 2008 11:55:43 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah0BACsWtUgKAAAZ/2dsb2JhbAAIuVyBaA
+Message-ID: <48B578F3.1050908@option.com>
+Date: Wed, 27 Aug 2008 17:55:31 +0200
+From: Denis Joseph Barrow <D.Barow@option.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1219843032.30209.51.camel@spike.firmix.at>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jeff Garzik <jgarzik@pobox.com>
+CC: greg@kroah.com, Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: question wrt /drivers/char/tty_io.c in pre 2.6.16 code
+References: <20080820010353.593820280@mini.kroah.org> <20080820010752.GB3365@kroah.com> <48B52064.9070700@pobox.com>
+In-Reply-To: <48B52064.9070700@pobox.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Aug 2008 15:55:31.0729 (UTC) FILETIME=[55909810:01C9085D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernd Petrovitsch wrote:
-> If you "develop" an embedded system (which is partly system integration
-> of existing apps) to be installed in the field, you don't have that many
-> conceivable work loads compared to a desktop/server system. And you have
-> a fixed list of drivers and applications.
+Hi all,
+In kernels prior to 2.6.16 it appears to me have
+no mechanism for finding out if the tty recieve buffers
+are full. This is important for me in implementing
+flow control in the hso serial driver I'm developing
+I don't want to lose characters.
 
-Hah!  Not in my line of embedded device.
+The snippet from allesandro rubini's book
+doesn't will just blindly flip buffers
+& overrun if data is pushed in too quickly
+into the tty layer. 
 
-32MB no-MMU ARM boards which people run new things and attach new
-devices to rather often - without making new hardware.  Volume's too
-low per individual application to get new hardware designed and made.
+for (i = 0; i < data_size; ++i) {
+if (tty->flip.count >= TTY_FLIPBUF_SIZE)
+tty_flip_buffer_push(tty);
+tty_insert_flip_char(tty, data[i], TTY_NORMAL);
+}
+tty_flip_buffer_push(tty);
 
-I'm seriously thinking of forwarding porting the 4 year old firmware
-from 2.4.26 to 2.6.current, just to get new drivers and capabilities.
-Backporting is tedious, so's feeling wretchedly far from the mainline
-world.
+The new tty_insert_flip_string returns the
+number of bytes successfully copied to tty recieve buffers
+how do I implement this functionality in pre 2.6.16 code,
+can it be done?
 
-> A usual approach is to run stress tests on several (or all)
-> subsystems/services/... in parallel and if the device survives it
-> functioning correctly, it is at least good enough.
-
-Per application.
-
-Some little devices run hundreds of different applications and
-customers expect to customise, script themselves, and attach different
-devices (over USB).  The next customer in the chain expects the bits
-you supplied to work in a variety of unexpected situations, even when
-you advise that it probably won't do that.
-
-Much like desktop/server Linux, but on a small device where silly
-little things like 'create a process' are a stress for the dear little
-thing.
-
-(My biggest lesson: insist on an MMU next time!)
-
--- Jamie
+Thank you,
+D.J. Barrow
