@@ -1,32 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbYH0UXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754853AbYH0UYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754471AbYH0UXc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 16:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbYH0UXY
+	id S1754853AbYH0UYg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 16:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYH0UY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 16:23:24 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:37791 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752151AbYH0UXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 16:23:23 -0400
-Subject: Re: [PATCH, RFC, tip/core/rcu] scalable classic RCU implementation
-From: Josh Triplett <josht@linux.vnet.ibm.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, manfred@colorfullife.com,
-       dipankar@in.ibm.com, schamp@sgi.com, niv@us.ibm.com, dvhltc@us.ibm.com,
-       ego@in.ibm.com, laijs@cn.fujitsu.com, rostedt@goodmis.org
-In-Reply-To: <20080827183446.GL6711@linux.vnet.ibm.com>
-References: <20080821234318.GA1754@linux.vnet.ibm.com>
-	 <1219447772.5197.98.camel@josh-work.beaverton.ibm.com>
-	 <20080823015336.GP6744@linux.vnet.ibm.com>
-	 <1219701750.12334.29.camel@josh-work.beaverton.ibm.com>
-	 <20080826160530.GB6656@linux.vnet.ibm.com>
-	 <1219797516.6911.6.camel@josh-work.beaverton.ibm.com>
-	 <20080827183446.GL6711@linux.vnet.ibm.com>
+	Wed, 27 Aug 2008 16:24:28 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:31080 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750765AbYH0UY1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 16:24:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=nTkLgV4Ln5FAlWhc/OsyyKbccxwS8GGeQk0TF2OBt0M6zN18oFeP5CFmJv7ptbdtWk
+         2Ia9Gi0N338c9BpD/lYR/Net4EkaJFdd/BS2cl2HLv3H3vz0Dsmem0iMPvrKmC5qLc9z
+         FrGWQjSnYl2h3aheeJn+doZqE18Wb6ZthjC/w=
+Subject: [PATCH] block: kmalloc args reversed, small function definition
+	fixes
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 27 Aug 2008 13:23:28 -0700
-Message-Id: <1219868608.10880.5.camel@josh-work.beaverton.ibm.com>
+Date: Wed, 27 Aug 2008 13:24:29 -0700
+Message-Id: <1219868669.6069.53.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -34,54 +33,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-08-27 at 11:34 -0700, Paul E. McKenney wrote:
-> On Tue, Aug 26, 2008 at 05:38:36PM -0700, Josh Triplett wrote:
-> > On Tue, 2008-08-26 at 09:05 -0700, Paul E. McKenney wrote:
-> > > On Mon, Aug 25, 2008 at 03:02:30PM -0700, Josh Triplett wrote:
-> > > > On Fri, 2008-08-22 at 18:53 -0700, Paul E. McKenney wrote:
-> > > > > On Fri, Aug 22, 2008 at 04:29:32PM -0700, Josh Triplett wrote:
-> > > > > > On Thu, 2008-08-21 at 16:43 -0700, Paul E. McKenney wrote:
-> > > > > > > @@ -658,14 +806,19 @@ int rcu_needs_cpu(int cpu)
-> > > > > > >  	struct rcu_data *rdp = &per_cpu(rcu_data, cpu);
-> > > > > > >  	struct rcu_data *rdp_bh = &per_cpu(rcu_bh_data, cpu);
-> > > > > > > 
-> > > > > > > -	return !!rdp->nxtlist || !!rdp_bh->nxtlist || rcu_pending(cpu);
-> > > > > > > +	return !!*rdp->nxttail[RCU_DONE_TAIL] ||
-> > > > > > > +	       !!*rdp_bh->nxttail[RCU_DONE_TAIL] ||
-> > > > > > > +	       rcu_pending(cpu);
-> > > > > > 
-> > > > > > !! seems unnecessary here.
-> > > > > 
-> > > > > Someone once told me why this was necessary, but I forget.  It was in the
-> > > > > original, and I didn't put it there.  Some weirdness about conversion
-> > > > > to 32-bit integer when the lower 32 bits of the pointer was zero or
-> > > > > some such.  So if your pointer value was 0x100000000, for example,
-> > > > > so that conversion to int gives zero.
-> > > > 
-> > > > Good point!  That doesn't apply if you use ||, though.  If you just did
-> > > > "return somepointer" that could potentially cause the problem you
-> > > > describe.  In any case, it can't *hurt* to have it; GCC should do the
-> > > > sane thing.
-> > > 
-> > > OK.  I will review this towards the end, leaving it there to remind me
-> > > in the meantime.
-> > > 
-> > > So, would I need the !! on the left-hand operand of the first || due
-> > > to short-circuiting?
-> > 
-> > No.  || will always return 1 or 0.  You only need the !! if you want to
-> > directly return the boolean value of a potentially 64-bit pointer.
-> 
-> Even if one argument of || is long and the other int or some fool thing
-> like that?  (What, me paranoid???)
+Noticed by sparse:
+block/blk-softirq.c:156:12: warning: symbol 'blk_softirq_init' was not declared. Should it be static?
+block/genhd.c:583:28: warning: function 'bdget_disk' with external linkage has definition
+block/genhd.c:659:17: warning: incorrect type in argument 1 (different base types)
+block/genhd.c:659:17:    expected unsigned int [unsigned] [usertype] size
+block/genhd.c:659:17:    got restricted gfp_t
+block/genhd.c:659:29: warning: incorrect type in argument 2 (different base types)
+block/genhd.c:659:29:    expected restricted gfp_t [usertype] flags
+block/genhd.c:659:29:    got unsigned int
+block: kmalloc args reversed
 
-What, you don't know exactly how C behaves in every strange corner
-case? ;)
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+new in next-20080827
 
-|| always produces a result of type int, and it compares each of its two
-arguments to 0 independently; to the best of my knowledge the size of
-those arguments never matters.
+ block/blk-settings.c |    2 +-
+ block/genhd.c        |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-- Josh Triplett
+diff --git a/block/blk-settings.c b/block/blk-settings.c
+index a60e959..d70692b 100644
+--- a/block/blk-settings.c
++++ b/block/blk-settings.c
+@@ -443,7 +443,7 @@ void blk_queue_update_dma_alignment(struct request_queue *q, int mask)
+ }
+ EXPORT_SYMBOL(blk_queue_update_dma_alignment);
+ 
+-int __init blk_settings_init(void)
++static int __init blk_settings_init(void)
+ {
+ 	blk_max_low_pfn = max_low_pfn - 1;
+ 	blk_max_pfn = max_pfn - 1;
+diff --git a/block/genhd.c b/block/genhd.c
+index a189358..e2eaaa3 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -580,7 +580,7 @@ struct gendisk *get_gendisk(dev_t devt, int *partno)
+  * RETURNS:
+  * Resulting block_device on success, NULL on failure.
+  */
+-extern struct block_device *bdget_disk(struct gendisk *disk, int partno)
++struct block_device *bdget_disk(struct gendisk *disk, int partno)
+ {
+ 	struct hd_struct *part;
+ 	struct block_device *bdev = NULL;
+@@ -656,7 +656,7 @@ static void *disk_seqf_start(struct seq_file *seqf, loff_t *pos)
+ 	struct class_dev_iter *iter;
+ 	struct device *dev;
+ 
+-	iter = kmalloc(GFP_KERNEL, sizeof(*iter));
++	iter = kmalloc(sizeof(*iter), GFP_KERNEL);
+ 	if (!iter)
+ 		return ERR_PTR(-ENOMEM);
+ 
+-- 
+1.6.0.366.gf9ffa8
+
 
 
