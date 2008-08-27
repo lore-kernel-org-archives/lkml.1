@@ -1,133 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbYH0Lek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbYH0Le4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336AbYH0Lek (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 07:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbYH0Le1
+	id S1754573AbYH0Le4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 07:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbYH0Lec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 07:34:27 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:52300 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753305AbYH0Le1 (ORCPT
+	Wed, 27 Aug 2008 07:34:32 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:16914 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754734AbYH0Lea (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 07:34:27 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Kevin Diggs <kevdig@hypersurf.com>
-Subject: Re: [PATCH 2/4] Add cpufreq driver for the IBM PowerPC 750GX
-Date: Wed, 27 Aug 2008 13:34:16 +0200
-User-Agent: KMail/1.9.9
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-References: <48B28F23.1000906@hypersurf.com> <200808261329.22699.arnd@arndb.de> <48B51A31.8090909@hypersurf.com>
-In-Reply-To: <48B51A31.8090909@hypersurf.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 27 Aug 2008 07:34:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Hcgnj8Djlk2/eS6xQYQ3NWak3D07CoIYkgeQTALIK40zyQMuK41B9Rx95MJkoq0toi
+         HC/GnQRZED/hytCBNn6RZceccKdmwcFhsCFaTrXXs+VNOV9pQSRgti2Qfpv9bPWq7MJK
+         x+e2Pud7qdtRpIKdV7qDp1ivdHd5qhTgQP9js=
+Message-ID: <1ba2fa240808270434y1589761xd2ff0a48c2e99033@mail.gmail.com>
+Date: Wed, 27 Aug 2008 14:34:28 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Johannes Berg" <johannes@sipsolutions.net>
+Subject: Re: pull request: wireless-2.6 2008-08-26
+Cc: "Marcel Holtmann" <holtmann@linux.intel.com>,
+       "David Miller" <davem@davemloft.net>, linville@tuxdriver.com,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1219831828.3891.3.camel@johannes.berg>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808271334.16712.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/JAx5DaPE+H4u9l+1/FD8h+q7zhx9Qyn0a/Aq
- Hl+xwDCor8c4xrr1JXAnbaowtLq+EbfkHqBxbXLWkFSRePUqLo
- +S3E1qJKZDkmye3wPqTdQ==
+References: <20080827013009.GA15781@tuxdriver.com>
+	 <1ba2fa240808270038r24d5eeb9l36fd70ef5ae904f5@mail.gmail.com>
+	 <20080827.014041.230100807.davem@davemloft.net>
+	 <1219835410.5359.24.camel@californication>
+	 <1ba2fa240808270305m7f505efak9fd0d36d5db09a1e@mail.gmail.com>
+	 <1219831828.3891.3.camel@johannes.berg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 August 2008, Kevin Diggs wrote:
-> Arnd Bergmann wrote:
+On Wed, Aug 27, 2008 at 1:10 PM, Johannes Berg
+<johannes@sipsolutions.net> wrote:
+> On Wed, 2008-08-27 at 13:05 +0300, Tomas Winkler wrote:
+>
+>> There is a central problem here, since I cannot really adjust driver
+>> development progress from obvious reason with Linux merging window.
+>> Upstream kernel is unfortunately not the only customer I report to. So
+>> actually stable versions got half backed drivers depending on some
+>> arbitrary time cut from my (selfish) development point of view.
+>
+> FWIW, many people including myself think you should work the other way
+> around, that is develop things in the mainline/wireless-testing tree
+> rather than developing a stable version internally
+> big pile of patches whenever it's convenient for you.
 
-> > Ok, thanks for the explanation. I now saw that you also
-> > use '_v' for variables (I guess). These should probably
-> > go the same way.
-> > 
-> Actually the _v means global variable. I would prefer to keep it.
+We put big pile once the driver was functional and nobody expected it
+to be merged into stable kernel from that point
+we post everything that is mergable. The patches are sent out each
+Friday after they got through internal review there is nothing, there
+is nothing magical about it.
 
-The reasoning on Linux is that you can tell from the declaration
-whether something is global or automatic. In fact, functions should
-be so short that you can always see all automatic declarations
-when you look at some code.
+IOW, we think you
+> should use Linux upstream as your development tree and then branch off
+> of that for the internal stabilisation trees you need for other
+> customers, rather than having some sort of internal development tree and
+> branching out Linux upstream as you appear to work.
 
-If you use nonstandard variable naming, people will never stop
-asking you about that, so it's easier to just to the same as
-everyone else.
- 
-> > 
-> > Then at least for the first two, the common coding style would
-> > be to leave out the '= 0'. For minmaxmode, the most expressive
-> > way would be to define an enum, like
-> > 
-> > enum {
-> > 	MODE_NORMAL,
-> > 	MODE_MINMAX,
-> > };
-> > 
-> > int minmaxmode = MODE_NORMAL;
-> > 
-> Since this is a boolean parameter I don't know? What if I change the
-> name to enable_minmax. And actually use the "bool" module parameter
-> type?
+Unfortunately fixing bugs on stable branch take precedence  of
+adjusting to new API on development branch that someone decided to do.
+ I wanted to work directly on wireless testing but it was broken over
+an over and I have only limited resources more in testing then in
+development I just had to branch out to be ready with the driver when
+HW is out. People just check the immediate impact of they fix the
+don't test for collateral damage and this is understandable an
+individual developer doesn't have lab with IBSS, BSS, AP, etc setups.
 
-Module parameter names should be short, so just "minmax" would
-be a good name, but better put the module_param() line right
-after that. If it's a bool type, I would just leave out the
-initialization.
+> That would also avoid the nasty surprises you've gotten a few times
+> where other people managed to get patches to iwlwifi drivers into the
+> Linux tree without you noticing.
 
-> >>..._min_max_mode is a boolean to hold the state of
-> >>minmaxmode. Seems to be only used to print the current
-> >>value.
-> > 
-> > 
-> > this looks like a duplicate then. why would you need both?
-> > It seems really confusing to have both a cpufreq attribute
-> > and a module attribute with the same name, writing to
-> > different variables. 
-> > 
-> I probably don't need both? I kinda treat the variables tied to module
-> parameters as read only.
+I've noticed just deferred to fixing it.
 
-But you have marked as read/write in the module_param line.
-
-I would prefer to just have the module parameter and have
-a tool to modify that one.
-
-If a module parameter only makes sense as read-only, you
-should mark it as 0444 instead of 0644, but this one looks
-like it can be writable.
-
-> > Are there even SMP boards based on a 750? I thought only 74xx
-> > and 603/604 were SMP capable.
-> > 
-> Not that I have heard of. I thought it was lacking some hardware that
-> was needed to do SMP? Can the 603 do SMP?
-
-No, I was wrong about the 603. The machine I was thinking of is actually
-604e.
-
-> > The completion would certainly be better than the sleep here, but
-> > I think you shouldn't need that in the first place. AFAICT, you
-> > have three different kinds of events that you need to protect
-> > against, when some other code can call into your module:
-> > 
-> > 1. timer function,
-> > 2. cpufreq notifier, and
-> > 3. sysfs attribute.
-> > 
-> > In each case, the problem is a race between two threads that you
-> > need to close. In case of the timer, you need to call del_timer_sync
-> > because the timers already have this method builtin. For the other
-> > two, you already unregister the interfaces, which ought to be enough.
-> > 
-> The choice I made here was to wait for the timer to fire rather than
-> to delete it. I think it is easier to just wait for it than to delete
-> it and try to get things back in order. Though since this is in a
-> module exit routine it probably does not matter. Also I would have to
-> check whether there was an analogous HRTimer call and call the right
-> one.
-
-I think the module_exit() function should leave the frequency in a
-well-defined state, so the easiest way to get there is probably
-to delete the timer, and then manually set the frequency.
-
-	Arnd <><
+In summary
+This was my first Linux project, it was first project that was done on
+new HW (nobody could test it but us)  and I don't deny I did a lot of
+mistake in development process  I don't deny that and we are learning
+from them.
+Tomas
