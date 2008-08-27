@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbYH0TQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849AbYH0T0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756639AbYH0TQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 15:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYH0TQU
+	id S1754849AbYH0T0q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 15:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYH0T0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 15:16:20 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:54664 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752425AbYH0TQT (ORCPT
+	Wed, 27 Aug 2008 15:26:34 -0400
+Received: from gv-out-0910.google.com ([216.239.58.191]:38910 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463AbYH0T0d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 15:16:19 -0400
-Date: Wed, 27 Aug 2008 15:16:18 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Oliver Neukum <oliver@neukum.org>
-cc: Greg KH <greg@kroah.com>, USB list <linux-usb@vger.kernel.org>,
-       Stefan Kopp <stefan_kopp@agilent.com>, Marcel Janssen <korgull@home.nl>,
-       Felipe Balbi <me@felipebalbi.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] USB: add USB test and measurement class driver - round
- 2
-In-Reply-To: <200808272105.50169.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.44L0.0808271513270.2138-100000@iolanthe.rowland.org>
+	Wed, 27 Aug 2008 15:26:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=uLT0Antfmc9X9Pi/JOBdRd217SkltKreUhAY2UAfucI5omdgxgCn4jR3sCVM7dEpkQ
+         z6wECkbYn26qO7S/SyPAiaWZYH4zCfQVqt3K1l+GkvrJ296XoUNwaq2FgLpussEIeZzM
+         1xySzhpmPFRaTJ2eK1v6nIooF1DUZpwlHH/2M=
+Message-ID: <1ba2fa240808271226i95a7789k481a68b09dc60164@mail.gmail.com>
+Date: Wed, 27 Aug 2008 22:26:31 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>,
+       "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: pull request: wireless-2.6 2008-08-26
+Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080827013009.GA15781@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080827013009.GA15781@tuxdriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Aug 2008, Oliver Neukum wrote:
+> John W. Linville (1):
+>      mac80211: quiet chatty IBSS merge message
 
-> Am Mittwoch 27 August 2008 20:58:08 schrieb Alan Stern:
-> > > And this rule depends on sharing the USB major or not. This needs
-> > > a big fat mention in Documentation.
-> > 
-> > You mean that the open/disconnect locking rule applies only to drivers 
-> > that call usb_register_dev, i.e, drivers using the USB major.  Right?
-> 
-> Yes. In fact drivers not using the USB major but their own char devices
-> will need such a lock. This is tricky.
+This patch is correct yet it suppresses an important warning, meaning
+that you have constant IBSS reconnection, remove all connected station
+and adding them again, This greatly degraded performance. This is
+caused by inability to adjust to TSF of the IBSS leader
 
-IMO all char-device registration/deregistration routines should use a 
-similar rwsem.  Then device drivers wouldn't need to worry about it.
+<snipt>
+static int ieee80211_sta_join_ibss(struct net_device *dev,
+				   struct ieee80211_if_sta *ifsta,
+				   struct ieee80211_sta_bss *bss)
+.....
+/* Remove possible STA entries from other IBSS networks. */
+	sta_info_flush_delayed(sdata);
+</snip>
 
-> > I agree that it deserves to be mentioned in the documentation 
-> > somewhere.  Where would be a good place?  None of the existing files in 
-> > Documentation/usb seem appropriate.
-> 
-> The USB major merits a file of its own.
+> Assaf Krauss (1):
+>      iwlwifi: W/A for the TSF correction in IBSS
+>
 
-I don't feel competent to start writing such a file.  Greg, what do you 
-think?  Maybe all that's needed to get going is to "borrow" some of the 
-material in LDD3.  :-)
+This patch fixes this problem in iwlwifi
 
-Alan Stern
+We've observed same problem with the broadcom card
 
+Tomas
