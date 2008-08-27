@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbYH0J1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbYH0Jbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754911AbYH0J1J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 05:27:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYH0J04
+	id S1754636AbYH0Jbe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 05:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYH0Jb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 05:26:56 -0400
-Received: from ryu.zarb.org ([212.85.153.228]:36470 "EHLO ryu.zarb.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752742AbYH0J0z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 05:26:55 -0400
-X-Greylist: delayed 408 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Aug 2008 05:26:55 EDT
-Subject: r8169 regression in 2.6.26.3 vs 2.6.26.2
-From: Pascal Terjan <pterjan@mandriva.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>, stable@kernel.org
-Cc: Marcus Sundberg <marcus@ingate.com>
-Content-Type: text/plain
-Organization: Mandriva
-Date: Wed, 27 Aug 2008 11:20:00 +0200
-Message-Id: <1219828800.30098.7.camel@plop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.23.90-1mdv2009.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Aug 2008 05:31:26 -0400
+Received: from burp.tkv.asdf.org ([212.16.99.49]:50265 "EHLO
+	cs181073102.pp.htv.fi" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753147AbYH0Jb0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 05:31:26 -0400
+To: linux-kernel@vger.kernel.org
+Subject: Frustrated with capabilities..
+From: Markku Savela <msa@moth.iki.fi>
+Date: Wed, 27 Aug 2008 12:31:10 +0300
+Message-ID: <87hc96by8x.fsf@burp.tkv.asdf.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since updating to 2.6.26.3, networking no longer works on Acer Aspire
-One.
+I just want to run an exectable with limited capabilities and assumed
+the following approach would work fine:
 
-PCI config is now always filled with ones.
+ 1) fork process
+ 2) in child
 
-Reverting "r8169: avoid thrashing PCI conf space above
-RTL_GIGA_MAC_VER_06" makes it work again.
+    2.1 set current capabilities (eip) using cap_set_proc
+    2.2 execve the executable.
 
-The device is 10ec:8136
+But it frigging does not work! Just before the execve, the result of
+cap_to_text is
 
-02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8101E
-PCI Express Fast Ethernet controller (rev 02)
-	Subsystem: Acer Incorporated [ALI] Device 015b
-	Flags: bus master, fast devsel, latency 0, IRQ 17
-	I/O ports at 3000 [size=256]
-	Memory at 31010000 (64-bit, prefetchable) [size=4K]
-	Memory at 31000000 (64-bit, prefetchable) [size=64K]
-	Expansion ROM at 31020000 [disabled] [size=128K]
-	Capabilities: [40] Power Management version 3
-	Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0
-Enable-
-	Capabilities: [70] Express Endpoint, MSI 01
-	Capabilities: [ac] MSI-X: Enable- Mask- TabSize=2
-	Capabilities: [cc] Vital Product Data <?>
-	Capabilities: [100] Advanced Error Reporting <?>
-	Capabilities: [140] Virtual Channel <?>
-	Capabilities: [160] Device Serial Number 00-00-ff-ff-00-00-00-04
-	Kernel driver in use: r8169
-	Kernel modules: r8169
+    = cap_net_bind_service+eip
 
+but, in the execve executable, the result is suddenly
 
+    = cap_net_bind_service+i
+
+Why does the execve clear the effective and permitted capabities,
+against my clear instructions? (I also have the prctl KEEP_CAPS set,
+though in this case it should be irrelevant).
+
+- The kernel is from ubuntu distro, 2.6.24.
+
+- the executable *does* *not* have any setuid/setgid bits
+
+- the upcoming file capabities will not be any help, because I will
+  need to start the same executable with different capabilities
+  depending on context.
+
+If this is not a bug in kernel, it is a misdesign, which makes the
+obvious use of cap_set_proc rather useless...
+
+-- 
+Markku Savela
