@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759523AbYH0N6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757697AbYH0N7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759523AbYH0N6j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 09:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757593AbYH0Nuu
+	id S1757697AbYH0N7V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 09:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757683AbYH0NvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 09:50:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49426 "EHLO mx1.redhat.com"
+	Wed, 27 Aug 2008 09:51:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49471 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756448AbYH0Nus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 09:50:48 -0400
+	id S1757653AbYH0Nu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 09:50:58 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 54/59] CRED: Wrap task credential accesses in the SunRPC
-	protocol
+Subject: [PATCH 01/59] CRED: Wrap task credential accesses in the IA64 arch
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Serge Hallyn <serue@us.ibm.com>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       "J. Bruce Fields" <bfields@fieldses.org>, Neil Brown <neilb@suse.de>,
-       linux-nfs@vger.kernel.org
-Date: Wed, 27 Aug 2008 14:50:21 +0100
-Message-ID: <20080827135021.19980.77243.stgit@warthog.procyon.org.uk>
+       Serge Hallyn <serue@us.ibm.com>, Tony Luck <tony.luck@intel.com>,
+       linux-ia64@vger.kernel.org
+Date: Wed, 27 Aug 2008 14:45:47 +0100
+Message-ID: <20080827134547.19980.38813.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
 References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -46,29 +43,98 @@ addressed by later patches.
 Signed-off-by: David Howells <dhowells@redhat.com>
 Reviewed-by: James Morris <jmorris@namei.org>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: J. Bruce Fields <bfields@fieldses.org>
-Cc: Neil Brown <neilb@suse.de>
-Cc: linux-nfs@vger.kernel.org
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: linux-ia64@vger.kernel.org
 ---
 
- net/sunrpc/auth.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/ia64/kernel/mca_drv.c |    2 +-
+ arch/ia64/kernel/perfmon.c |   23 +++++++++++++----------
+ arch/ia64/kernel/signal.c  |    4 ++--
+ 3 files changed, 16 insertions(+), 13 deletions(-)
 
 
-diff --git a/net/sunrpc/auth.c b/net/sunrpc/auth.c
-index 436bf1b..fc2bb08 100644
---- a/net/sunrpc/auth.c
-+++ b/net/sunrpc/auth.c
-@@ -349,8 +349,8 @@ struct rpc_cred *
- rpcauth_lookupcred(struct rpc_auth *auth, int flags)
+diff --git a/arch/ia64/kernel/mca_drv.c b/arch/ia64/kernel/mca_drv.c
+index fab1d21..f94aaa8 100644
+--- a/arch/ia64/kernel/mca_drv.c
++++ b/arch/ia64/kernel/mca_drv.c
+@@ -158,7 +158,7 @@ mca_handler_bh(unsigned long paddr, void *iip, unsigned long ipsr)
+ 	ia64_mlogbuf_dump();
+ 	printk(KERN_ERR "OS_MCA: process [cpu %d, pid: %d, uid: %d, "
+ 		"iip: %p, psr: 0x%lx,paddr: 0x%lx](%s) encounters MCA.\n",
+-		raw_smp_processor_id(), current->pid, current->uid,
++	       raw_smp_processor_id(), current->pid, current_uid(),
+ 		iip, ipsr, paddr, current->comm);
+ 
+ 	spin_lock(&mca_bh_lock);
+diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
+index fc8f350..ffe6de0 100644
+--- a/arch/ia64/kernel/perfmon.c
++++ b/arch/ia64/kernel/perfmon.c
+@@ -2224,8 +2224,8 @@ pfm_alloc_file(pfm_context_t *ctx)
+ 	DPRINT(("new inode ino=%ld @%p\n", inode->i_ino, inode));
+ 
+ 	inode->i_mode = S_IFCHR|S_IRUGO;
+-	inode->i_uid  = current->fsuid;
+-	inode->i_gid  = current->fsgid;
++	inode->i_uid  = current_fsuid();
++	inode->i_gid  = current_fsgid();
+ 
+ 	sprintf(name, "[%lu]", inode->i_ino);
+ 	this.name = name;
+@@ -2403,22 +2403,25 @@ error_kmem:
+ static int
+ pfm_bad_permissions(struct task_struct *task)
  {
- 	struct auth_cred acred = {
--		.uid = current->fsuid,
--		.gid = current->fsgid,
-+		.uid = current_fsuid(),
-+		.gid = current_fsgid(),
- 		.group_info = current->group_info,
- 	};
- 	struct rpc_cred *ret;
++	uid_t uid = current_uid();
++	gid_t gid = current_gid();
++
+ 	/* inspired by ptrace_attach() */
+ 	DPRINT(("cur: uid=%d gid=%d task: euid=%d suid=%d uid=%d egid=%d sgid=%d\n",
+-		current->uid,
+-		current->gid,
++		uid,
++		gid,
+ 		task->euid,
+ 		task->suid,
+ 		task->uid,
+ 		task->egid,
+ 		task->sgid));
+ 
+-	return ((current->uid != task->euid)
+-	    || (current->uid != task->suid)
+-	    || (current->uid != task->uid)
+-	    || (current->gid != task->egid)
+-	    || (current->gid != task->sgid)
+-	    || (current->gid != task->gid)) && !capable(CAP_SYS_PTRACE);
++	return (uid != task->euid)
++	    || (uid != task->suid)
++	    || (uid != task->uid)
++	    || (gid != task->egid)
++	    || (gid != task->sgid)
++	    || (gid != task->gid)) && !capable(CAP_SYS_PTRACE);
+ }
+ 
+ static int
+diff --git a/arch/ia64/kernel/signal.c b/arch/ia64/kernel/signal.c
+index 19c5a78..434e93e 100644
+--- a/arch/ia64/kernel/signal.c
++++ b/arch/ia64/kernel/signal.c
+@@ -228,7 +228,7 @@ ia64_rt_sigreturn (struct sigscratch *scr)
+ 	si.si_errno = 0;
+ 	si.si_code = SI_KERNEL;
+ 	si.si_pid = task_pid_vnr(current);
+-	si.si_uid = current->uid;
++	si.si_uid = current_uid();
+ 	si.si_addr = sc;
+ 	force_sig_info(SIGSEGV, &si, current);
+ 	return retval;
+@@ -325,7 +325,7 @@ force_sigsegv_info (int sig, void __user *addr)
+ 	si.si_errno = 0;
+ 	si.si_code = SI_KERNEL;
+ 	si.si_pid = task_pid_vnr(current);
+-	si.si_uid = current->uid;
++	si.si_uid = current_uid();
+ 	si.si_addr = addr;
+ 	force_sig_info(SIGSEGV, &si, current);
+ 	return 0;
 
