@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYH0KsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbYH0Kvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755046AbYH0KsT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 06:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbYH0KsL
+	id S1755206AbYH0Kvx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 06:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbYH0Kvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 06:48:11 -0400
-Received: from styx.suse.cz ([82.119.242.94]:55884 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753799AbYH0KsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 06:48:11 -0400
-Date: Wed, 27 Aug 2008 12:48:10 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Alex Chiang <achiang@hp.com>
-cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix grammo in HID_COMPAT Kconfig help text
-In-Reply-To: <20080827013136.GA21966@ldl.fc.hp.com>
-Message-ID: <alpine.LNX.1.10.0808271247580.3260@jikos.suse.cz>
-References: <20080827013136.GA21966@ldl.fc.hp.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 27 Aug 2008 06:51:44 -0400
+Received: from il.qumranet.com ([212.179.150.194]:35370 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753178AbYH0Kvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 06:51:44 -0400
+Message-ID: <48B531BD.20608@qumranet.com>
+Date: Wed, 27 Aug 2008 13:51:41 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Pavel Machek <pavel@suse.cz>
+CC: Andi Kleen <andi@firstfloor.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [PATCH] x86: default to reboot via ACPI
+References: <1219659087-17536-1-git-send-email-avi@qumranet.com> <20080826095032.GA309@elf.ucw.cz> <48B3D579.40502@qumranet.com> <20080826113317.520cbab1@lxorguk.ukuu.org.uk> <48B3F3A9.8030709@qumranet.com> <Pine.LNX.4.55.0808261406330.28361@cliff.in.clinika.pl> <87fxorsqdx.fsf@basil.nowhere.org> <20080827091810.GB1688@elf.ucw.cz>
+In-Reply-To: <20080827091810.GB1688@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Aug 2008, Alex Chiang wrote:
+Pavel Machek wrote:
+> I'd not count of this. When you relegate laptop to "quiet home server"
+> role, the mechanical stresses suddenly stop, and I'd expect it to
+> survive for long long years.
+>   
 
-> The Kconfig option for HID_COMPAT should read "lose", not "loose".
-> 
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
-> diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
-> index 4319af3..46337a2 100644
-> --- a/drivers/hid/Kconfig
-> +++ b/drivers/hid/Kconfig
-> @@ -78,7 +78,7 @@ config HID_COMPAT
->  	support of module loading through aliases and also old
->  	module-init-tools which can't handle hid bus, choose Y here. Otherwise
->  	say N. If you say N and your userspace is old enough, the only
-> -	functionality you loose is modules autoloading.
-> +	functionality you lose is modules autoloading.
->  
->  	If unsure, say Y.
+For every user who uses an old laptop as a home server, or has a "best 
+MIPS64 box", there are maybe five million users with a 0-3 year old x86 
+computer (they don't know that it's really a "box").
 
-Applied on top of hidbus patches, thanks Alex.
+Let's optimize for the common case, please.
 
 -- 
-Jiri Kosina
-SUSE Labs
+error compiling committee.c: too many arguments to function
+
