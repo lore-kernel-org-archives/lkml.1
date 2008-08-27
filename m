@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbYH0RCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbYH0RCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752138AbYH0RCT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 13:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbYH0RCG
+	id S1753157AbYH0RCf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 13:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbYH0RCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 13:02:06 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:50214 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbYH0RCF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 13:02:05 -0400
-Date: Wed, 27 Aug 2008 13:02:01 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ftrace: remove warning of old objcopy and local functions
-In-Reply-To: <20080826154721.9416e2e9.sfr@canb.auug.org.au>
-Message-ID: <alpine.DEB.1.10.0808271300540.16904@gandalf.stny.rr.com>
-References: <20080825130117.33fe34bc.sfr@canb.auug.org.au> <20080825060934.GB14993@elte.hu> <alpine.DEB.1.10.0808251434000.23923@gandalf.stny.rr.com> <20080825190103.GA24029@elte.hu> <20080826094627.5d627b5b.sfr@canb.auug.org.au> <20080826115113.806cfe23.sfr@canb.auug.org.au>
- <alpine.DEB.1.10.0808252324050.966@gandalf.stny.rr.com> <20080826154721.9416e2e9.sfr@canb.auug.org.au>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 27 Aug 2008 13:02:09 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:60706 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750866AbYH0RCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 13:02:08 -0400
+Date: Wed, 27 Aug 2008 21:06:48 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: sukadev@us.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Robert Rex <robert.rex@exasol.com>,
+       Roland McGrath <roland@redhat.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] pid_ns: (BUG 11391) change ->child_reaper when init->group_leader exits
+Message-ID: <20080827170648.GC97@tv-sign.ru>
+References: <20080824154912.GA3780@tv-sign.ru> <20080826233353.GA21052@us.ibm.com> <20080827003524.GA22580@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080827003524.GA22580@us.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/26, sukadev@us.ibm.com wrote:
+>
+> sukadev@us.ibm.com [sukadev@us.ibm.com] wrote:
+> | I was able to repro the problem without the patchset and could  not
+> | reproduce  with the patchset. But just had a quick question while
+> | reviewing the patches.
+> |
+> | Oleg Nesterov [oleg@tv-sign.ru] wrote:
+> | | We don't change pid_ns->child_reaper when the main thread of the
+> | | subnamespace init exits. As Robert Rex <robert.rex@exasol.com>
+> | | pointed out this is wrong.
+> | |
+> | | Yes, the re-parenting itself works correctly, but if the reparented
+> | | task exits it needs ->parent->nsproxy->pid_ns in do_notify_parent(),
+> |
+> | If the task was reparented, then with patch 1/4 its parent would be
+> | the global init (init_pid_ns.child_reaper) right ?
+> |
+> | | and if the main thread is zombie its ->nsproxy was already cleared
+> | | by exit_task_namespaces().
+> |
+> | If above is true, then even if the main thread's nsproxy is NULL, does
+> | it affect the reparented task ?
+>
+> never mind. I see it now. The group_dead check in current code is not
+> sufficient (and the zap_pid_ns() may not have been called when main
+> thread is exiting).
 
-The warning messages about old objcopy and local functions spam the
-user quite drastically.  Remove the warning until we can find a nicer
-way of tell the user to upgrade their objcopy.
+Yes.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- scripts/recordmcount.pl |    6 ------
- 1 file changed, 6 deletions(-)
+BTW, your original patch (which introduced zap_pid_ns()) was correct ;)
+The code was broken later, during the s/->pid/vpid/ conversion.
 
-Index: linux-tip.git/scripts/recordmcount.pl
-===================================================================
---- linux-tip.git.orig/scripts/recordmcount.pl	2008-08-27 12:57:40.000000000 -0400
-+++ linux-tip.git/scripts/recordmcount.pl	2008-08-27 12:58:03.000000000 -0400
-@@ -262,12 +262,6 @@ sub update_funcs
- 
- 	# only use locals if objcopy supports globalize-symbols
- 	if (!$use_locals) {
--	    print STDERR
--		"$inputfile: WARNING: referencing local function " .
--		"$ref_func for mcount\n" .
--		"\tConsider upgrading objcopy to support the globalize-" .
--		"symbols option.\n"
--		if (!$local_warn_once++);
- 	    return;
- 	}
- 	$convert{$ref_func} = 1;
+The group_dead check _is_ sufficient (and correct) for zap_pid_ns(),
+but we all missed the simple fact: if we continue to re-parent to
+some task, it must have the valid ->nsproxy->pid_ns. Thanks to Robert
+again.
+
+Oleg.
+
