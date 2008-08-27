@@ -1,84 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbYH0Xmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbYH0Xo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757422AbYH0Xmp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 19:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755598AbYH0Xmd
+	id S1757247AbYH0Xo5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 19:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbYH0Xot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 19:42:33 -0400
-Received: from outbound-mail-137.bluehost.com ([67.222.39.27]:39086 "HELO
-	outbound-mail-137.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755872AbYH0Xmd (ORCPT
+	Wed, 27 Aug 2008 19:44:49 -0400
+Received: from outbound-mail-155.bluehost.com ([67.222.39.35]:59306 "HELO
+	outbound-mail-155.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753975AbYH0Xot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 19:42:33 -0400
+	Wed, 27 Aug 2008 19:44:49 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
 	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=W8fy+8f5BGQnPVUQiT0NsXfy41Idn13yTh/NkBo8oDE1UFDpk52/6M/Rri1fC+IYPG9DVy2MIu+gtcWRCQ4ADpnxFO5UnNhysZ0MMqhSxjTWmFs3WBvP7OexwP95mbFo;
+	b=ak2V9g3VwenHcIzKlehx7ie9r7GGfh//vifnYPOFUACZ0IVTRaNn5IreY7b2Rv3cLMz4qmeJgAOXGg0Dejwxj4MT1awsCKYah3ub4t+Skba9ORQfuHZxktDPTmTDrltU;
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user with the same regression
-Date: Wed, 27 Aug 2008 16:42:25 -0700
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PCI PM: Introduce function pci_wake_from_d3 (rev. 2)
+Date: Wed, 27 Aug 2008 16:04:59 -0700
 User-Agent: KMail/1.9.9
-Cc: "Ingo Molnar" <mingo@elte.hu>, "David Witbrodt" <dawitbro@sbcglobal.net>,
-       "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-References: <914225.91320.qm@web82104.mail.mud.yahoo.com> <200808271541.11546.jbarnes@virtuousgeek.org> <86802c440808271623oc1ed5f1n8519fa7be9d1e301@mail.gmail.com>
-In-Reply-To: <86802c440808271623oc1ed5f1n8519fa7be9d1e301@mail.gmail.com>
+Cc: linux-pm@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200808182057.22501.rjw@sisk.pl> <200808182138.00989.rjw@sisk.pl>
+In-Reply-To: <200808182138.00989.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808271642.26486.jbarnes@virtuousgeek.org>
+Message-Id: <200808271605.01006.jbarnes@virtuousgeek.org>
 X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, August 27, 2008 4:23 pm Yinghai Lu wrote:
-> On Wed, Aug 27, 2008 at 3:41 PM, Jesse Barnes <jbarnes@virtuousgeek.org> 
-wrote:
-> > On Monday, August 25, 2008 1:00 am Yinghai Lu wrote:
-> >> On Mon, Aug 25, 2008 at 12:31 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >> >> this one should work. please apply this one only.
-> >> >>
-> >> >> YH
-> >> >>
-> >> >> [PATCH] x86: check hpet with BAR v2
-> >> >
-> >> > - plus a more highlevel approach would be nice as well i think -
-> >> > making sure that the hpet driver runs before any of the PCI code, and
-> >> > inserting a special "sticky" resource there which would keep any
-> >> > potential followup generic PCI resource that overlaps this resource
-> >> > untouched. (with a proper kernel warning emitted as well - such
-> >> > situations are likely BIOS bugs.)
-> >>
-> >> yes, can remove that late_initcall tricky code to insert resource for
-> >> lapic and ioapic, and mmconfig etc.
-> >
-> > I agree, a higher level way of dealing with resource reservation might be
-> > nice.
+On Monday, August 18, 2008 12:38 pm Rafael J. Wysocki wrote:
+> [Sorry, it is more useful to define the function so that it takes a second
+> argument indicating whether to enable or disable wake-up.]
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 >
-> 1. insert the lapic, ioapic, mmconf mmio address into resource tree at
-> first... 2. later when we fail to request_resource for one BAR res of pci
-> dev, call check_resource(.., res) to see if could find some res with the
-> same range and the sticky flag.
-> if so will insert BAR resource for the device forcibly.
+> PCI PM: Introduce function pci_wake_from_d3 (rev. 2)
 >
-> that should be for 2.6.28.
+> Many device drivers use the following sequence of statements to
+> enable the device to wake up the system while being in the D3_hot
+> or D3_cold low power state:
 >
-> > I'm hoping to polish up TJ's PCI allocation code
-> > (http://tjworld.net/wiki/Linux/PCIDynamicResourceAllocationManagement)
-> > for 2.6.28; it may have some stuff that can help.
+> 	pci_enable_wake(pdev, PCI_D3hot, 1);
+> 	pci_enable_wake(pdev, PCI_D3cold, 1);
 >
-> not sure. actually we should rely on BIOS to allocate ioport/mmio for
-> us. and only do some minor adjust to BAR
-> that is obvious wrong. so have list for gap seems overkilling.
-> for Hotplug, the acpi code in dst should (pre)allocate the resource
-> for new insert devices.
+> However, the second call is not necessary if the first one succeeds
+> (the ordering of the statements above doesn't matter here) and it
+> may even be harmful, because we are not supposed to enable PME#
+> after the wake-up power has been enabled for the device.
+>
+> To allow drivers to overcome this problem, introduce function
+> pci_wake_from_d3() that will enable the device to wake up the system
+> from any of D3_hot and D3_cold as long as the wake-up from at least
+> one of them is supported.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-For just reservations that may be true, but we definitely want more space 
-available for PCI device allocations.  As for ACPI allocations, maybe, but we 
-have to make sure not to stomp on that space in the first place...
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Applied to linux-next, thanks Rafael.
+
+Jesse
