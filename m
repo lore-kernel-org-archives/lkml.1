@@ -1,121 +1,419 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753129AbYH0Rgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754942AbYH0RhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753129AbYH0Rgr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 13:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYH0Rgi
+	id S1754942AbYH0RhF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 13:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYH0Rgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 13:36:38 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:41819 "EHLO smtp5.pp.htv.fi"
+	Wed, 27 Aug 2008 13:36:43 -0400
+Received: from ns.suse.de ([195.135.220.2]:60354 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750798AbYH0Rgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 13:36:37 -0400
-Date: Wed, 27 Aug 2008 20:35:44 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Paul Mundt <lethal@linux-sh.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-embedded@vger.kernel.org
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
-	bisected
-Message-ID: <20080827173544.GH11734@cs181140183.pp.htv.fi>
-References: <20080826183051.GB10925@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org> <20080826205916.GB11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org> <20080826232411.GC11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261648140.3363@nehalem.linux-foundation.org> <20080827002316.GE11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261726560.3363@nehalem.linux-foundation.org> <20080827115829.GF11734@cs181140183.pp.htv.fi> <20080827160052.GA15968@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S1752045AbYH0Rgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 13:36:41 -0400
+Date: Wed, 27 Aug 2008 10:36:38 -0700
+From: Mark Fasheh <mfasheh@suse.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+       Joel Becker <joel.becker@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [git patches] Ocfs2 and Configfs fixes
+Message-ID: <20080827173638.GN4563@wotan.suse.de>
+Reply-To: Mark Fasheh <mfasheh@suse.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080827160052.GA15968@linux-sh.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 01:00:52AM +0900, Paul Mundt wrote:
-> On Wed, Aug 27, 2008 at 02:58:30PM +0300, Adrian Bunk wrote:
-> > On Tue, Aug 26, 2008 at 05:28:37PM -0700, Linus Torvalds wrote:
-> > > On Wed, 27 Aug 2008, Adrian Bunk wrote:
-> > > > 
-> > > > When did we get callpaths like like nfs+xfs+md+scsi reliably 
-> > > > working with 4kB stacks on x86-32?
-> > > 
-> > > XFS may never have been usable, but the rest, sure.
-> > > 
-> > > And you seem to be making this whole argument an excuse to SUCK, adn an 
-> > > excuse to let gcc crap even more on our stack space.
-> > > 
-> > > Why?
-> > > 
-> > > Why aren't you saying that we should be able to do better? Instead, you 
-> > > seem to asking us to do even worse than we do now?
-> > 
-> > My main point is:
-> > - getting 4kB stacks working reliably is a hard task
-> > - having an eye on gcc increasing the stack usage, and fixing it if
-> >   required, is relatively easy
-> > 
-> > If we should be able to do better at getting (and keeping) 4kB stacks 
-> > working, then coping with possible inlining problems caused by gcc
-> > should not be a big problem for us.
-> > 
-> Out of the architectures you've mentioned for 4k stacks, they also tend
-> to do IRQ stacks, which is something you seem to have overlooked.
+Please pull from 'upstream-linus' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
 
-No, I am aware of that, and on i386 IRQ stacks are only used with
-4kB stacks.
+to receive the following updates:
 
-On i386 it is effectively a step from 6kB to 4kB.
+ fs/configfs/dir.c               |   17 ++++++--------
+ fs/ocfs2/cluster/netdebug.c     |   26 +++++++++++-----------
+ fs/ocfs2/cluster/tcp.c          |   44 ++++++++++++++++++++++++++++++++------
+ fs/ocfs2/cluster/tcp_internal.h |   32 ----------------------------
+ fs/ocfs2/dir.c                  |   11 +++++++--
+ fs/ocfs2/journal.c              |   23 ++++++++++++--------
+ fs/ocfs2/stackglue.c            |    7 +++--
+ 7 files changed, 83 insertions(+), 77 deletions(-)
 
-> In addition to that, debugging the runaway stack users on 4k tends to be
-> easier anyways since you end up blowing the stack a lot sooner. On sh
-> we've had pretty good luck with it, though most of our users are using
-> fairly deterministic workloads and continually profiling the footprint.
-> Anything that runs away or uses an insane amount of stack space needs to
-> be fixed well before that anyways, so catching it sooner is always
-> preferable. I imagine the same case is true for m68knommu (even sans IRQ
-> stacks).
+Adrian Bunk (1):
+      ocfs2/cluster/tcp.c: make some functions static
 
-CONFIG_DEBUG_STACKOVERFLOW should give you the same information, and if
-wanted with an arbitrary limit.
+Alexander Beregalov (1):
+      ocfs2/cluster/netdebug.c: fix warning
 
-> Things might be more sensitive on x86, but it's certainly not something
-> that's a huge problem for the various embedded platforms to wire up,
-> whether they want to go the IRQ stack route or not.
+Joel Becker (1):
+      ocfs2: Increment the reference count of an already-active stack.
 
-How many platforms use 4kB stacks on sh?
+Louis Rilling (1):
+      configfs: Consolidate locking around configfs_detach_prep() in configfs_rmdir()
 
-Only 1 out of 34 defconfigs uses it.
+Mark Fasheh (2):
+      ocfs2: Fix sleep-with-spinlock recovery regression
+      ocfs2: correctly set i_blocks after inline dir gets expanded
 
-Are there any numbers for real life usage.
+Tao Ma (1):
+      ocfs2: Jump to correct label in ocfs2_expand_inline_dir()
 
-> In any event, lack of support for something on embedded architectures in
-> the kernel is more often due to apathy/utter indifference on the part of
-> the architecture maintainer rather than being indicative of any intrinsic
-> difficulty in supporting the thing in question. Most new "features" on the
-> lesser maintained architectures tend to end up there either out of peer
-> pressure or copying-and-pasting accidents rather than any sort of design.
-> ;-)
-
-arm or powerpc aren't exactly lesser maintained architectures.
-
-4kB has shown to be a hard to achieve limit. After more than 4 years in 
-mainline being available on i386 there are still cases where 4kB are not 
-enough.
-
-IMHO there seems to currently be a mismatch between it's maintainance 
-cost and the actual number of users. That's in my opinion the main 
-problem with it, no matter in which direction it gets resolved.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+diff --git a/fs/configfs/dir.c b/fs/configfs/dir.c
+index 7a8db78..8e93341 100644
+--- a/fs/configfs/dir.c
++++ b/fs/configfs/dir.c
+@@ -1311,16 +1311,18 @@ static int configfs_rmdir(struct inode *dir, struct dentry *dentry)
+ 	 * Ensure that no racing symlink() will make detach_prep() fail while
+ 	 * the new link is temporarily attached
+ 	 */
+-	mutex_lock(&configfs_symlink_mutex);
+-	spin_lock(&configfs_dirent_lock);
+ 	do {
+ 		struct mutex *wait_mutex;
+ 
++		mutex_lock(&configfs_symlink_mutex);
++		spin_lock(&configfs_dirent_lock);
+ 		ret = configfs_detach_prep(dentry, &wait_mutex);
+-		if (ret) {
++		if (ret)
+ 			configfs_detach_rollback(dentry);
+-			spin_unlock(&configfs_dirent_lock);
+-			mutex_unlock(&configfs_symlink_mutex);
++		spin_unlock(&configfs_dirent_lock);
++		mutex_unlock(&configfs_symlink_mutex);
++
++		if (ret) {
+ 			if (ret != -EAGAIN) {
+ 				config_item_put(parent_item);
+ 				return ret;
+@@ -1329,13 +1331,8 @@ static int configfs_rmdir(struct inode *dir, struct dentry *dentry)
+ 			/* Wait until the racing operation terminates */
+ 			mutex_lock(wait_mutex);
+ 			mutex_unlock(wait_mutex);
+-
+-			mutex_lock(&configfs_symlink_mutex);
+-			spin_lock(&configfs_dirent_lock);
+ 		}
+ 	} while (ret == -EAGAIN);
+-	spin_unlock(&configfs_dirent_lock);
+-	mutex_unlock(&configfs_symlink_mutex);
+ 
+ 	/* Get a working ref for the duration of this function */
+ 	item = configfs_get_config_item(dentry);
+diff --git a/fs/ocfs2/cluster/netdebug.c b/fs/ocfs2/cluster/netdebug.c
+index d8bfa0e..52276c0 100644
+--- a/fs/ocfs2/cluster/netdebug.c
++++ b/fs/ocfs2/cluster/netdebug.c
+@@ -138,20 +138,20 @@ static int nst_seq_show(struct seq_file *seq, void *v)
+ 			   "  message id:   %d\n"
+ 			   "  message type: %u\n"
+ 			   "  message key:  0x%08x\n"
+-			   "  sock acquiry: %lu.%lu\n"
+-			   "  send start:   %lu.%lu\n"
+-			   "  wait start:   %lu.%lu\n",
++			   "  sock acquiry: %lu.%ld\n"
++			   "  send start:   %lu.%ld\n"
++			   "  wait start:   %lu.%ld\n",
+ 			   nst, (unsigned long)nst->st_task->pid,
+ 			   (unsigned long)nst->st_task->tgid,
+ 			   nst->st_task->comm, nst->st_node,
+ 			   nst->st_sc, nst->st_id, nst->st_msg_type,
+ 			   nst->st_msg_key,
+ 			   nst->st_sock_time.tv_sec,
+-			   (unsigned long)nst->st_sock_time.tv_usec,
++			   (long)nst->st_sock_time.tv_usec,
+ 			   nst->st_send_time.tv_sec,
+-			   (unsigned long)nst->st_send_time.tv_usec,
++			   (long)nst->st_send_time.tv_usec,
+ 			   nst->st_status_time.tv_sec,
+-			   nst->st_status_time.tv_usec);
++			   (long)nst->st_status_time.tv_usec);
+ 	}
+ 
+ 	spin_unlock(&o2net_debug_lock);
+@@ -276,7 +276,7 @@ static void *sc_seq_next(struct seq_file *seq, void *v, loff_t *pos)
+ 	return sc; /* unused, just needs to be null when done */
+ }
+ 
+-#define TV_SEC_USEC(TV) TV.tv_sec, (unsigned long)TV.tv_usec
++#define TV_SEC_USEC(TV) TV.tv_sec, (long)TV.tv_usec
+ 
+ static int sc_seq_show(struct seq_file *seq, void *v)
+ {
+@@ -309,12 +309,12 @@ static int sc_seq_show(struct seq_file *seq, void *v)
+ 			   "  remote node:     %s\n"
+ 			   "  page off:        %zu\n"
+ 			   "  handshake ok:    %u\n"
+-			   "  timer:           %lu.%lu\n"
+-			   "  data ready:      %lu.%lu\n"
+-			   "  advance start:   %lu.%lu\n"
+-			   "  advance stop:    %lu.%lu\n"
+-			   "  func start:      %lu.%lu\n"
+-			   "  func stop:       %lu.%lu\n"
++			   "  timer:           %lu.%ld\n"
++			   "  data ready:      %lu.%ld\n"
++			   "  advance start:   %lu.%ld\n"
++			   "  advance stop:    %lu.%ld\n"
++			   "  func start:      %lu.%ld\n"
++			   "  func stop:       %lu.%ld\n"
+ 			   "  func key:        %u\n"
+ 			   "  func type:       %u\n",
+ 			   sc,
+diff --git a/fs/ocfs2/cluster/tcp.c b/fs/ocfs2/cluster/tcp.c
+index a27d615..2bcf706 100644
+--- a/fs/ocfs2/cluster/tcp.c
++++ b/fs/ocfs2/cluster/tcp.c
+@@ -143,8 +143,8 @@ static void o2net_sc_postpone_idle(struct o2net_sock_container *sc);
+ static void o2net_sc_reset_idle_timer(struct o2net_sock_container *sc);
+ 
+ #ifdef CONFIG_DEBUG_FS
+-void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
+-		    u32 msgkey, struct task_struct *task, u8 node)
++static void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
++			   u32 msgkey, struct task_struct *task, u8 node)
+ {
+ 	INIT_LIST_HEAD(&nst->st_net_debug_item);
+ 	nst->st_task = task;
+@@ -153,31 +153,61 @@ void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
+ 	nst->st_node = node;
+ }
+ 
+-void o2net_set_nst_sock_time(struct o2net_send_tracking *nst)
++static void o2net_set_nst_sock_time(struct o2net_send_tracking *nst)
+ {
+ 	do_gettimeofday(&nst->st_sock_time);
+ }
+ 
+-void o2net_set_nst_send_time(struct o2net_send_tracking *nst)
++static void o2net_set_nst_send_time(struct o2net_send_tracking *nst)
+ {
+ 	do_gettimeofday(&nst->st_send_time);
+ }
+ 
+-void o2net_set_nst_status_time(struct o2net_send_tracking *nst)
++static void o2net_set_nst_status_time(struct o2net_send_tracking *nst)
+ {
+ 	do_gettimeofday(&nst->st_status_time);
+ }
+ 
+-void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
++static void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
+ 					 struct o2net_sock_container *sc)
+ {
+ 	nst->st_sc = sc;
+ }
+ 
+-void o2net_set_nst_msg_id(struct o2net_send_tracking *nst, u32 msg_id)
++static void o2net_set_nst_msg_id(struct o2net_send_tracking *nst, u32 msg_id)
+ {
+ 	nst->st_id = msg_id;
+ }
++
++#else  /* CONFIG_DEBUG_FS */
++
++static inline void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
++				  u32 msgkey, struct task_struct *task, u8 node)
++{
++}
++
++static inline void o2net_set_nst_sock_time(struct o2net_send_tracking *nst)
++{
++}
++
++static inline void o2net_set_nst_send_time(struct o2net_send_tracking *nst)
++{
++}
++
++static inline void o2net_set_nst_status_time(struct o2net_send_tracking *nst)
++{
++}
++
++static inline void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
++						struct o2net_sock_container *sc)
++{
++}
++
++static inline void o2net_set_nst_msg_id(struct o2net_send_tracking *nst,
++					u32 msg_id)
++{
++}
++
+ #endif /* CONFIG_DEBUG_FS */
+ 
+ static inline int o2net_reconnect_delay(void)
+diff --git a/fs/ocfs2/cluster/tcp_internal.h b/fs/ocfs2/cluster/tcp_internal.h
+index 18307ff..8d58cfe 100644
+--- a/fs/ocfs2/cluster/tcp_internal.h
++++ b/fs/ocfs2/cluster/tcp_internal.h
+@@ -224,42 +224,10 @@ struct o2net_send_tracking {
+ 	struct timeval			st_send_time;
+ 	struct timeval			st_status_time;
+ };
+-
+-void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
+-		    u32 msgkey, struct task_struct *task, u8 node);
+-void o2net_set_nst_sock_time(struct o2net_send_tracking *nst);
+-void o2net_set_nst_send_time(struct o2net_send_tracking *nst);
+-void o2net_set_nst_status_time(struct o2net_send_tracking *nst);
+-void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
+-				  struct o2net_sock_container *sc);
+-void o2net_set_nst_msg_id(struct o2net_send_tracking *nst, u32 msg_id);
+-
+ #else
+ struct o2net_send_tracking {
+ 	u32	dummy;
+ };
+-
+-static inline void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
+-				  u32 msgkey, struct task_struct *task, u8 node)
+-{
+-}
+-static inline void o2net_set_nst_sock_time(struct o2net_send_tracking *nst)
+-{
+-}
+-static inline void o2net_set_nst_send_time(struct o2net_send_tracking *nst)
+-{
+-}
+-static inline void o2net_set_nst_status_time(struct o2net_send_tracking *nst)
+-{
+-}
+-static inline void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
+-						struct o2net_sock_container *sc)
+-{
+-}
+-static inline void o2net_set_nst_msg_id(struct o2net_send_tracking *nst,
+-					u32 msg_id)
+-{
+-}
+ #endif	/* CONFIG_DEBUG_FS */
+ 
+ #endif /* O2CLUSTER_TCP_INTERNAL_H */
+diff --git a/fs/ocfs2/dir.c b/fs/ocfs2/dir.c
+index 8a18758..9cce563 100644
+--- a/fs/ocfs2/dir.c
++++ b/fs/ocfs2/dir.c
+@@ -1300,7 +1300,6 @@ static int ocfs2_expand_inline_dir(struct inode *dir, struct buffer_head *di_bh,
+ 	di->i_size = cpu_to_le64(sb->s_blocksize);
+ 	di->i_ctime = di->i_mtime = cpu_to_le64(dir->i_ctime.tv_sec);
+ 	di->i_ctime_nsec = di->i_mtime_nsec = cpu_to_le32(dir->i_ctime.tv_nsec);
+-	dir->i_blocks = ocfs2_inode_sector_count(dir);
+ 
+ 	/*
+ 	 * This should never fail as our extent list is empty and all
+@@ -1310,9 +1309,15 @@ static int ocfs2_expand_inline_dir(struct inode *dir, struct buffer_head *di_bh,
+ 				  NULL);
+ 	if (ret) {
+ 		mlog_errno(ret);
+-		goto out;
++		goto out_commit;
+ 	}
+ 
++	/*
++	 * Set i_blocks after the extent insert for the most up to
++	 * date ip_clusters value.
++	 */
++	dir->i_blocks = ocfs2_inode_sector_count(dir);
++
+ 	ret = ocfs2_journal_dirty(handle, di_bh);
+ 	if (ret) {
+ 		mlog_errno(ret);
+@@ -1336,7 +1341,7 @@ static int ocfs2_expand_inline_dir(struct inode *dir, struct buffer_head *di_bh,
+ 					  len, 0, NULL);
+ 		if (ret) {
+ 			mlog_errno(ret);
+-			goto out;
++			goto out_commit;
+ 		}
+ 	}
+ 
+diff --git a/fs/ocfs2/journal.c b/fs/ocfs2/journal.c
+index 7a37240..c47bc2a 100644
+--- a/fs/ocfs2/journal.c
++++ b/fs/ocfs2/journal.c
+@@ -1418,13 +1418,13 @@ int ocfs2_mark_dead_nodes(struct ocfs2_super *osb)
+ {
+ 	unsigned int node_num;
+ 	int status, i;
++	u32 gen;
+ 	struct buffer_head *bh = NULL;
+ 	struct ocfs2_dinode *di;
+ 
+ 	/* This is called with the super block cluster lock, so we
+ 	 * know that the slot map can't change underneath us. */
+ 
+-	spin_lock(&osb->osb_lock);
+ 	for (i = 0; i < osb->max_slots; i++) {
+ 		/* Read journal inode to get the recovery generation */
+ 		status = ocfs2_read_journal_inode(osb, i, &bh, NULL);
+@@ -1433,23 +1433,31 @@ int ocfs2_mark_dead_nodes(struct ocfs2_super *osb)
+ 			goto bail;
+ 		}
+ 		di = (struct ocfs2_dinode *)bh->b_data;
+-		osb->slot_recovery_generations[i] =
+-					ocfs2_get_recovery_generation(di);
++		gen = ocfs2_get_recovery_generation(di);
+ 		brelse(bh);
+ 		bh = NULL;
+ 
++		spin_lock(&osb->osb_lock);
++		osb->slot_recovery_generations[i] = gen;
++
+ 		mlog(0, "Slot %u recovery generation is %u\n", i,
+ 		     osb->slot_recovery_generations[i]);
+ 
+-		if (i == osb->slot_num)
++		if (i == osb->slot_num) {
++			spin_unlock(&osb->osb_lock);
+ 			continue;
++		}
+ 
+ 		status = ocfs2_slot_to_node_num_locked(osb, i, &node_num);
+-		if (status == -ENOENT)
++		if (status == -ENOENT) {
++			spin_unlock(&osb->osb_lock);
+ 			continue;
++		}
+ 
+-		if (__ocfs2_recovery_map_test(osb, node_num))
++		if (__ocfs2_recovery_map_test(osb, node_num)) {
++			spin_unlock(&osb->osb_lock);
+ 			continue;
++		}
+ 		spin_unlock(&osb->osb_lock);
+ 
+ 		/* Ok, we have a slot occupied by another node which
+@@ -1465,10 +1473,7 @@ int ocfs2_mark_dead_nodes(struct ocfs2_super *osb)
+ 			mlog_errno(status);
+ 			goto bail;
+ 		}
+-
+-		spin_lock(&osb->osb_lock);
+ 	}
+-	spin_unlock(&osb->osb_lock);
+ 
+ 	status = 0;
+ bail:
+diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
+index 10e149a..07f348b 100644
+--- a/fs/ocfs2/stackglue.c
++++ b/fs/ocfs2/stackglue.c
+@@ -97,13 +97,14 @@ static int ocfs2_stack_driver_request(const char *stack_name,
+ 		goto out;
+ 	}
+ 
+-	/* Ok, the stack is pinned */
+-	p->sp_count++;
+ 	active_stack = p;
+-
+ 	rc = 0;
+ 
+ out:
++	/* If we found it, pin it */
++	if (!rc)
++		active_stack->sp_count++;
++
+ 	spin_unlock(&ocfs2_stack_lock);
+ 	return rc;
+ }
