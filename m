@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbYH0Xed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756967AbYH0XfE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756872AbYH0Xed (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 19:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbYH0XeX
+	id S1756967AbYH0XfE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 19:35:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754597AbYH0Xew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 19:34:23 -0400
-Received: from outbound-mail-137.bluehost.com ([67.222.39.27]:54868 "HELO
-	outbound-mail-137.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753690AbYH0XeW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 19:34:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=DILKheBU077W4QPaeEgYngmxxc8m16KposHgKCKpObT6TlA09LQW4PzlOLqs4a7GNHLYXbmR+DsXSzSYjIfQWg5/b0ACcnKFfm4+r1TnN63cz/zfC4fHs8IGVEVCxnNX;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] hotplug/rpaphp: remove unused error path code
-Date: Wed, 27 Aug 2008 16:34:03 -0700
-User-Agent: KMail/1.9.9
-Cc: Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linda Xie <lxie@us.ibm.com>
-References: <20080819114555.c0d2bd50.sfr@canb.auug.org.au>
-In-Reply-To: <20080819114555.c0d2bd50.sfr@canb.auug.org.au>
+	Wed, 27 Aug 2008 19:34:52 -0400
+Received: from mga09.intel.com ([134.134.136.24]:2689 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754568AbYH0Xev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 19:34:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,283,1217833200"; 
+   d="scan'208";a="432779358"
+From: Seth Heasley <seth.heasley@intel.com>
+To: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       htejun@gmail.com
+Subject: [PATCH 2.6.26.7-rc4] ata_piix: IDE Mode SATA patch for Intel Ibex Peak DeviceIDs
+Date: Wed, 27 Aug 2008 16:40:06 -0700
+User-Agent: KMail/1.9.1
+Cc: seth.heasley@intel.com
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808271634.06199.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Message-Id: <200808271640.06762.seth.heasley@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, August 18, 2008 6:45 pm Stephen Rothwell wrote:
-> Commit f46753c5e354b857b20ab8e0fe7b2579831dc369 ("PCI: introduce pci_slot")
-> removed the need for this error path.  Eliminate this warning:
->
-> drivers/pci/hotplug/rpaphp_slot.c: In function 'rpaphp_register_slot':
-> drivers/pci/hotplug/rpaphp_slot.c:151: warning: label 'sysfs_fail' defined
-> but not used
->
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+This patch updates the Intel Ibex Peak (PCH) IDE mode SATA Controller DeviceIDs.
 
-Applied to linux-next, thanks.
+Signed-off-by: Seth Heasley <seth.heasley@intel.com>
 
-Jesse
+--- linux-2.6/drivers/ata/ata_piix.c.orig	2008-08-27 11:32:28.000000000 -0700
++++ linux-2.6/drivers/ata/ata_piix.c	2008-08-27 11:47:59.000000000 -0700
+@@ -278,12 +278,15 @@
+ 	/* SATA Controller IDE (PCH) */
+ 	{ 0x8086, 0x3b20, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata },
+ 	/* SATA Controller IDE (PCH) */
++	{ 0x8086, 0x3b21, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_2port_sata },
++	/* SATA Controller IDE (PCH) */
+ 	{ 0x8086, 0x3b26, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_2port_sata },
+ 	/* SATA Controller IDE (PCH) */
++	{ 0x8086, 0x3b28, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata },
++	/* SATA Controller IDE (PCH) */
+ 	{ 0x8086, 0x3b2d, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_2port_sata },
+ 	/* SATA Controller IDE (PCH) */
+ 	{ 0x8086, 0x3b2e, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata },
+-
+ 	{ }	/* terminate list */
+ };
+ 
