@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbYH0WA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbYH0WDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755983AbYH0WA0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 18:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbYH0WAO
+	id S1755489AbYH0WDS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 18:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbYH0WDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 18:00:14 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:41791 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753149AbYH0WAN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 18:00:13 -0400
-Message-ID: <48B5CE61.8020809@zytor.com>
-Date: Wed, 27 Aug 2008 15:00:01 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 27 Aug 2008 18:03:08 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:54829 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751085AbYH0WDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 18:03:07 -0400
+Date: Thu, 28 Aug 2008 01:02:12 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Karsten Keil <kkeil@suse.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] mISDN/dsp_cmx.c: fix size checks
+Message-ID: <20080827220212.GK11734@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: C language lawyers needed
-References: <adaod3ef82e.fsf@cisco.com>
-In-Reply-To: <adaod3ef82e.fsf@cisco.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> 
-> A fairly small test case that I don't understand either is:
-> 
-> unsigned foo(int x)
-> {
-> 	return (((x & 0xffffff) | (1 << 30)) & 0xff000000) >> 24;
-> }
-> 
-> just running "gcc -c" (ie no extra warnings enabled) on that produces
-> the same:
-> 
->     b.c: In function 'foo':
->     b.c:3: warning: integer overflow in expression
-> 
-> I'm sure there's some promotion rule or something that makes sense of
-> this, but it's a mystery to me...
-> 
+The checks for ensuring that the array indices are inside the range
+were flipped.
 
-Looks like a gcc bug to me.
+Reported-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-0xff000000 is unsigned, like any hexadecimal constant.
+---
+1743b2c1c483c8f1e5c6f706b8937136359f5aeb 
+diff --git a/drivers/isdn/mISDN/dsp_cmx.c b/drivers/isdn/mISDN/dsp_cmx.c
+index e92b1ba..c2f51cc 100644
+--- a/drivers/isdn/mISDN/dsp_cmx.c
++++ b/drivers/isdn/mISDN/dsp_cmx.c
+@@ -452,10 +452,10 @@ one_member:
+ 			if (finddsp->features.pcm_id == dsp->features.pcm_id) {
+ 				if (finddsp->pcm_slot_rx >= 0 &&
+ 				    finddsp->pcm_slot_rx < sizeof(freeslots))
+-					freeslots[finddsp->pcm_slot_tx] = 0;
++					freeslots[finddsp->pcm_slot_rx] = 0;
+ 				if (finddsp->pcm_slot_tx >= 0 &&
+ 				    finddsp->pcm_slot_tx < sizeof(freeslots))
+-					freeslots[finddsp->pcm_slot_rx] = 0;
++					freeslots[finddsp->pcm_slot_tx] = 0;
+ 			}
+ 		}
+ 		i = 0;
 
-unsigned foo(int x)
-{
-	return ((x & 0xffffff) | (1 << 30)) & 0x80000000;
-}
-
-... is enough to reproduce the bug -- explicitly casting either side or 
-both of the & operator to unsigned doesn't affect the warning, either.
-
-	-hpa
