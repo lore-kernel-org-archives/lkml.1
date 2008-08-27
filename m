@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbYH0VaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755086AbYH0Vav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754435AbYH0VaU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 17:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbYH0VaF
+	id S1755086AbYH0Vav (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 17:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbYH0Vaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 17:30:05 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:36035 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752178AbYH0VaD (ORCPT
+	Wed, 27 Aug 2008 17:30:39 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:31391 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752772AbYH0Vai (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 17:30:03 -0400
-X-IronPort-AV: E=Sophos;i="4.32,281,1217808000"; 
-   d="scan'208";a="147869641"
-From: Roland Dreier <rdreier@cisco.com>
-To: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: [PATCH] IB/mlx4: Actually return L_Key and R_Key for fast register MRs
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 27 Aug 2008 14:29:57 -0700
-Message-ID: <adasksqf8oa.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 27 Aug 2008 17:30:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=oMt5q3C3ibk7veeytBWZrivQ5raswEwETvDW+Vd9oCrqTmvBDfwwo5/aX2UD4CUQ41
+         vgy+I1Sf6E01Jp5hfxYpTcV0eTXFuOJp2s41gYGx6DzaoknqTXTEwM+kLyUc3OvhXMB7
+         Wvsr+k51Cpah92VwdjNA5cJnEPHnT8l3QzkM8=
+Date: Thu, 28 Aug 2008 01:32:11 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] utrace core
+Message-ID: <20080827213211.GA31861@x200.localdomain>
+References: <20080826220102.89635154233@magilla.localdomain> <20080826220157.397C7154233@magilla.localdomain> <20080826225519.GC27724@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 27 Aug 2008 21:29:58.0201 (UTC) FILETIME=[0E1D3A90:01C9088C]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <20080826225519.GC27724@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Vladimir Sokolovsky <vlad@mellanox.co.il>
+> And run to confirm that attach/detach/exec program still crashes it.
+> There is PREEMPT_RCU now so it will be even more not funny.
 
-Initialize the L_Key and R_Key for memory regions returned from
-mlx4_ib_alloc_fast_reg_mr().  Otherwise callers just get garbage for
-the memory keys and can't do anything useful with these MRs.
+As promised, quickly reproducible via expt_ptratt.c:
 
-Signed-off-by: Vladimir Sokolovsky <vlad@mellanox.co.il>
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
----
-Hi Linus,
+kernel/utrace.c:532	if (likely(!utrace->stopped))
 
-Please apply this for 2.6.27.  This fixes a new feature we merged during
-the window but weren't able to test fully because device firmware wasn't
-ready at the time.
-
-I'm just sending this as a patch rather than a git pull request since I
-think applying one patch from email is, if anything, easier than pulling
-a git tree.  If you'd rather get singleton patches via git in the future
-just let me know.
-
-Thanks,
-  Roland
-
- drivers/infiniband/hw/mlx4/mr.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/infiniband/hw/mlx4/mr.c b/drivers/infiniband/hw/mlx4/mr.c
-index a4cdb46..87f5c5a 100644
---- a/drivers/infiniband/hw/mlx4/mr.c
-+++ b/drivers/infiniband/hw/mlx4/mr.c
-@@ -204,6 +204,8 @@ struct ib_mr *mlx4_ib_alloc_fast_reg_mr(struct ib_pd *pd,
- 	if (err)
- 		goto err_mr;
- 
-+	mr->ibmr.rkey = mr->ibmr.lkey = mr->mmr.key;
-+
- 	return &mr->ibmr;
- 
- err_mr:
--- 
-1.5.6.3
+BUG: unable to handle kernel paging request at ffff88017c51c958
+IP: [<ffffffff8025e38b>] utrace_stop+0x9b/0x120
+PGD 202063 PUD b067 PMD 17d8e5163 PTE 800000017c51c160
+Oops: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+last sysfs file: /sys/kernel/uevent_seqnum
+CPU 0 
+Modules linked in: ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 sr_mod cdrom
+Pid: 32731, comm: exe Tainted: G        W 2.6.27-rc4-next-20080827-utrace #4
+RIP: 0010:[<ffffffff8025e38b>]  [<ffffffff8025e38b>] utrace_stop+0x9b/0x120
+RSP: 0000:ffff88017c521c38  EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88017c02b880 RCX: 0000000000000000
+RDX: 000000000000ebea RSI: 00000000ffffffff RDI: 0000000000000001
+RBP: ffff88017c521c58 R08: 0000000000000002 R09: 0000000000000001
+R10: 0000000000000000 R11: 0000000000000001 R12: ffff88017c51c8e8
+R13: ffff88017c51c918 R14: ffff88017c51c8e8 R15: ffff88017c02b880
+FS:  00007fe23dcf66f0(0000) GS:ffffffff8054b600(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: ffff88017c51c958 CR3: 000000017c077000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process exe (pid: 32731, threadinfo ffff88017c520000, task ffff88017c02b880)
+Stack:  ffff88017c51c8e8 ffff88017c521ce8 ffff88017c51c8e8 ffff88017c02b880
+ ffff88017c521c88 ffffffff8025e4b0 ffff88017f92e360 ffff88017c51c8f8
+ ffff88017f92e360 ffff88017c51c8f0 ffff88017c521d38 ffffffff8025fb05
+Call Trace:
+ [<ffffffff8025e4b0>] finish_resume_report+0xa0/0xd0
+ [<ffffffff8025fb05>] utrace_get_signal+0x305/0x710
+ [<ffffffff802408cc>] get_signal_to_deliver+0x24c/0x310
+ [<ffffffff8020ab54>] do_notify_resume+0xd4/0x860
+ [<ffffffff80253fcd>] ? trace_hardirqs_off+0xd/0x10
+ [<ffffffff8042d812>] ? _spin_unlock_irqrestore+0x42/0x80
+ [<ffffffff8024b43a>] ? hrtimer_start+0x11a/0x1f0
+ [<ffffffff8025652d>] ? trace_hardirqs_on+0xd/0x10
+ [<ffffffff8042d886>] ? _spin_unlock_irq+0x36/0x60
+ [<ffffffff8022d728>] ? finish_task_switch+0x68/0xe0
+ [<ffffffff8022d6c0>] ? finish_task_switch+0x0/0xe0
+ [<ffffffff8042a6fc>] ? thread_return+0xa4/0x548
+ [<ffffffff8020b7d5>] ? sysret_signal+0x19/0x29
+ [<ffffffff8020bab7>] ptregscall_common+0x67/0xb0
+Code: 42 78 48 8b bb 60 04 00 00 48 81 c7 08 08 00 00 e8 db f4 1c 00 4c 89 ef e8 33 f3 1c 00 66 83 7b 1a 05 74 1a e8 97 c0 1c 00 31 c0 <41> f6 44 24 70 01 75 32 48 83 c4 08 5b 41 5c 41 5d c9 c3 48 c7 
+RIP  [<ffffffff8025e38b>] utrace_stop+0x9b/0x120
+ RSP <ffff88017c521c38>
+CR2: ffff88017c51c958
+---[ end trace 4eaa2a86a8e2da22 ]---
 
