@@ -1,69 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbYH0BuD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbYH0B6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754350AbYH0BuD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Aug 2008 21:50:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbYH0Bty
+	id S1754142AbYH0B6l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Aug 2008 21:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYH0B6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 21:49:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38582 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751339AbYH0Btx (ORCPT
+	Tue, 26 Aug 2008 21:58:34 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58768 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751003AbYH0B6d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 21:49:53 -0400
-Date: Tue, 26 Aug 2008 18:49:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Parag Warudkar <parag.lkml@gmail.com>
-cc: Adrian Bunk <bunk@stusta.de>, Rusty Russell <rusty@rustcorp.com.au>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-embedded@vger.kernel.org
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
- bisected
-In-Reply-To: <f7848160808261758q7b84aab1m188c1ebb59304818@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0808261837530.3363@nehalem.linux-foundation.org>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>  <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org>  <200808261111.19205.rusty@rustcorp.com.au>  <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org>  <20080826183051.GB10925@cs181140183.pp.htv.fi>
-  <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org>  <20080826205916.GB11734@cs181140183.pp.htv.fi>  <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org>  <f7848160808261554j2f4eaaa6i1ee8801ae75ca7bf@mail.gmail.com> 
- <alpine.LFD.1.10.0808261644260.3363@nehalem.linux-foundation.org> <f7848160808261758q7b84aab1m188c1ebb59304818@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 Aug 2008 21:58:33 -0400
+Subject: Re: Locking API testsuite: Failures
+From: Peter Zijlstra <peterz@infradead.org>
+To: Peter Teoh <htmldeveloper@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <804dabb00808261727o3ba1f3c0xc25d27ad0694aab4@mail.gmail.com>
+References: <804dabb00808261727o3ba1f3c0xc25d27ad0694aab4@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 27 Aug 2008 03:58:31 +0200
+Message-Id: <1219802311.6462.26.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-08-27 at 08:27 +0800, Peter Teoh wrote:
+> [    0.000999] | Locking API testsuite:
+> [    0.000999] ----------------------------------------------------------------------------
+> [    0.000999]                                  | spin |wlock |rlock
+> |mutex | wsem | rsem |
+> [    0.000999]
+> --------------------------------------------------------------------------
+> [    0.000999]                      A-A deadlock:failed|failed|  ok
+> |failed|failed|failed|
+> [    0.000999]                  A-B-B-A deadlock:failed|failed|  ok
+> |failed|failed|failed|
+> [    0.000999]              A-B-B-C-C-A deadlock:failed|failed|  ok
+> |failed|failed|failed|
+> [    0.000999]              A-B-C-A-B-C deadlock:failed|failed|  ok
+> |failed|failed|failed|
+> [    0.000999]          A-B-B-C-C-D-D-A deadlock:failed|failed|  ok
+> |failed|failed|failed|
+> [    0.000999]          A-B-C-D-B-D-D-A deadlock:failed|failed|  ok
+> |failed|failed|failed|
+> [    0.000999]          A-B-C-D-B-C-D-A deadlock:failed|failed|  ok
+> |failed|failed|failed|
+> [    0.000999]                     double
+> unlock:failed|failed|failed|failed|failed|failed|
+> [    0.000999]                   initialize
+> held:failed|failed|failed|failed|failed|failed|
+> [    0.000999]                  bad unlock order:  ok  |  ok  |  ok  |
+>  ok  |  ok  |  ok  |
+> [    0.000999]
+> --------------------------------------------------------------------------
+> [    0.000999]               recursive read-lock:             |  ok  |
+>             |failed|
+> [    0.000999]            recursive read-lock #2:             |  ok  |
+>             |failed|
+> [    0.000999]             mixed read-write-lock:             |failed|
+>             |failed|
+> [    0.000999]             mixed write-read-lock:             |failed|
+>             |failed|
+> [    0.000999]
+> --------------------------------------------------------------------------
+> [    0.000999]      hard-irqs-on + irq-safe-A/12:failed|failed|  ok  |
+> [    0.000999]      soft-irqs-on + irq-safe-A/12:failed|failed|  ok  |
+> [    0.000999]      hard-irqs-on + irq-safe-A/21:failed|failed|  ok  |
+> [    0.000999]      soft-irqs-on + irq-safe-A/21:failed|failed|  ok  |
+> [    0.000999]        sirq-safe-A => hirqs-on/12:failed|failed|  ok  |
+> [    0.000999]        sirq-safe-A => hirqs-on/21:failed|failed|  ok  |
+> [    0.000999]          hard-safe-A + irqs-on/12:failed|failed|  ok  |
+> [    0.000999]          soft-safe-A + irqs-on/12:failed|failed|  ok  |
+> [    0.000999]          hard-safe-A + irqs-on/21:failed|failed|  ok  |
+> [    0.000999]          soft-safe-A + irqs-on/21:failed|failed|  ok  |
+> [    0.000999]     hard-safe-A + unsafe-B #1/123:failed|failed|  ok  |
+> [    0.000999]     soft-safe-A + unsafe-B #1/123:failed|failed|  ok  |
+> 
+> truncated....
+> 
+> I am just curious what does all these failures imply?
+
+Probably that you forgot to enable lockdep ;-)
+
+In which case the error cases fail to produce an error, and the test
+fails, but its an expected error, otherwise it would have shouted much
+more verbose.
 
 
-On Tue, 26 Aug 2008, Parag Warudkar wrote:
->
-> And although you said in your later reply that Linux x86 with 4K
-> stacks should be more than usable - my experiences running a untainted
-> desktop/file server with 4K stack have been always disastrous XFS or
-> not.  It _might_ work for some well defined workloads but you would
-> not want to risk 4K stacks otherwise.
 
-Umm. How long?
-
-4kB used to be the _only_ choice. And no, there weren't even irq stacks. 
-So that 4kB was not just the whole kernel call-chain, it was also all the 
-irq nesting above it.
-
-And yes, we've gotten much worse over time, and no, I can't really suggest 
-going back to that in general. The code bloat has certainly been 
-accompanied by a stack bloat too.
-
-But part of it is definitely gcc. Some versions of gcc used to be 
-absolutely _horrid_ when it came to stack usage, especially with some 
-flags, and especially with the crazy inlining that module-at-a-time 
-caused.
-
-But I'd be really happy if some embedded people tried to take some of that 
-bloat back, and aim for 4kB stacks. Because it's definitely not 
-unrealistic. At least it _shouldn't_ be. And a lot of the cases of us 
-having structures on the stack is actually not worth it, and tends to be 
-about being lazy rather than anything else.
-
-			Linus
