@@ -1,61 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758158AbYH0QUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758125AbYH0QWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758158AbYH0QUq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 12:20:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbYH0QUi
+	id S1758125AbYH0QWX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 12:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbYH0QWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 12:20:38 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:58426 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752755AbYH0QUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 12:20:38 -0400
-Date: Wed, 27 Aug 2008 20:24:55 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Pierre Morel <pmorel@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>,
-       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
-       sameske@linux.vnet.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [RFC] [Patch 1/1] [Self Ptrace] System call notification with self_ptrace
-Message-ID: <20080827162455.GA132@tv-sign.ru>
-References: <48B26083.8080506@linux.vnet.ibm.com> <20080825165403.GA604@tv-sign.ru> <48B40D5F.3020705@linux.vnet.ibm.com> <20080826162750.GA406@tv-sign.ru> <48B5658A.5000101@linux.vnet.ibm.com>
-Mime-Version: 1.0
+	Wed, 27 Aug 2008 12:22:12 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:38880 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753292AbYH0QWL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 12:22:11 -0400
+Date: Wed, 27 Aug 2008 17:21:47 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-embedded@vger.kernel.org
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
+Message-ID: <20080827162147.GB25387@shareable.org>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <48B313E0.1000501@hp.com> <alpine.LFD.1.10.0808251326500.3363@nehalem.linux-foundation.org> <200808261111.19205.rusty@rustcorp.com.au> <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org> <20080826183051.GB10925@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261134530.3363@nehalem.linux-foundation.org> <20080826202134.GA11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261332570.3363@nehalem.linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48B5658A.5000101@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <alpine.LFD.1.10.0808261332570.3363@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/27, Pierre Morel wrote:
->
-> Oleg Nesterov wrote:
->
-> >On s390 the patch changes handle_signal(), this is not clear to me too.
-> >
-> The patch clears the trace flags before delivering the signal so
-> that the signal handler can use system call without bouncing again.
+Linus Torvalds wrote:
+> > Most LOCs of the kernel are not written by people like you or Al Viro or 
+> > David Miller, and the average kernel developer is unlikely to do it as 
+> > good as gcc.
+> 
+> Sure. But we do have tools. We do have checkstack.pl, it's just that it 
+> hasn't been an issue in a long time, so I suspect many people didn't even 
+> _realize_ we have it, and I certainly can attest to the fact that even 
+> people who remember it - like me - don't actually tend to run it all that 
+> often.
 
-Yes I see. But the signal handler for SIGSYS can fisrt do
-sys_ptrace(PTRACE_SELF_OFF) (which is filtered out), and then use any
-other syscall.
+Sounds like what's really desired here isn't more worry and
+unpredictability, but for GCC+Binutils to gain the ability to
+calculate the stack depth over all callchains (doesn't have to be
+exact, just an upper bound; annotate recursions) in a way that's good
+enough to do on every compile, complain if a depth is exceeded
+statically (or it can't be proven), and to gain the
+architecture-independent option "optimise to reduce stack usage".
 
-With this patch PT_SELF is cleared on any signal. This doesn't look
-right. Let's suppose that another signal comes in parallel with SIGSYS.
-It is very possible that the handler for that another signal will be
-called first, this handler can do some syscall which will be "missed".
+> > BTW:
+> > I just ran checkstack on a (roughly) allyesconfig kernel, and we have a 
+> > new driver that allocates "unsigned char recvbuf[1500];" on the stack...
+> 
+> Yeah, it's _way_ too easy to do bad things.
 
-> >Isn't it possible to implement this behaviour in the user space? If the
-> >task needs the PT_SELF behaviour, it can fork another process which will
-> >do PTRACE_ATTACH and then send the notifications to the task. We can use
-> >signals or something else.
-> >
-> In this case we would go back to standard ptrace behaviour.
-> The goal of the patch is to avoid the overhead of task switching
-> and IPC when instrumenting the process.
+In my userspace code, I have macros tmp_alloc and tmp_free.  They must
+be matched in the same function:
 
-Ah, I forgot to read the changelog, sorry.
+     unsigned char * recvbuf = tmp_alloc(1500);
+     ....
+     tmp_free(recvbuf);
 
-Oleg.
+When stack is plentiful, it maps to alloca() which is roughly
+equivalent to using a stack variable.
 
+When stack is constrained (as it is on my little devices), that maps
+to xmalloc/free.  The kernel equivalent would be kmalloc GFP_ATOMIC
+(perhaps).
+
+With different macros to mine, it may be possible to map small
+fixed-size requests exactly onto local variables, and large ones to
+kmalloc().  A stab at it (not tested):
+
+    #define LOCAL_ALLOC_THRESHOLD     128
+
+    #define LOCAL_ALLOC(type, ptr)                                        \
+        __typeof__(type) __attribute__((__unused__)) ptr##_local_struct;  \
+        __typeof__(type) * ptr =                                          \
+              ((__builtin_constant_p(sizeof(type))                        \
+                && sizeof(type) <= LOCAL_ALLOC_THRESHOLD)                 \
+               ? &ptr##_local_struct : kmalloc(sizeof(type), GFP_ATOMIC))
+
+    #define LOCAL_FREE(ptr)                           \
+        ((__builtin_constant_p(sizeof (*(ptr)))       \
+          && sizeof(*(ptr)) <= LOCAL_ALLOC_THRESHOLD) \
+         ? (void) 0 : kfree(ptr))
+
+Would that be useful in the kernel?
+
+I'm thinking if it were a commonly used pattern for temporary buffers,
+unknown structures and arrays of macro-determined size, the "new
+driver" author would be less likely to accidentally drop a big object
+on the stack.
+
+Obviously it would be nicer for GCC to code such a thing
+automatically, but that really is wishful thinking.
+
+-- Jamie
