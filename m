@@ -1,95 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbYH0QBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbYH0QEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756128AbYH0QBp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 12:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbYH0QBg
+	id S1756653AbYH0QEu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 12:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbYH0QEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 12:01:36 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:24536 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753607AbYH0QBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 12:01:34 -0400
-Date: Thu, 28 Aug 2008 01:00:52 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-embedded@vger.kernel.org
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-Message-ID: <20080827160052.GA15968@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian Bunk <bunk@kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	"Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Arjan van de Ven <arjan@linux.intel.com>,
-	Ingo Molnar <mingo@elte.hu>, linux-embedded@vger.kernel.org
-References: <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org> <20080826183051.GB10925@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org> <20080826205916.GB11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org> <20080826232411.GC11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261648140.3363@nehalem.linux-foundation.org> <20080827002316.GE11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261726560.3363@nehalem.linux-foundation.org> <20080827115829.GF11734@cs181140183.pp.htv.fi>
+	Wed, 27 Aug 2008 12:04:42 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:42466 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754549AbYH0QEl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 12:04:41 -0400
+Date: Wed, 27 Aug 2008 11:04:39 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: "Andrew G. Morgan" <morgan@kernel.org>, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [patch] file capabilities: Add no_file_caps switch
+Message-ID: <20080827160439.GA12085@us.ibm.com>
+References: <200808262057.51606.agruen@suse.de> <20080827135206.GA12919@us.ibm.com> <200808271729.18220.agruen@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080827115829.GF11734@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200808271729.18220.agruen@suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 02:58:30PM +0300, Adrian Bunk wrote:
-> On Tue, Aug 26, 2008 at 05:28:37PM -0700, Linus Torvalds wrote:
-> > On Wed, 27 Aug 2008, Adrian Bunk wrote:
-> > > 
-> > > When did we get callpaths like like nfs+xfs+md+scsi reliably 
-> > > working with 4kB stacks on x86-32?
-> > 
-> > XFS may never have been usable, but the rest, sure.
-> > 
-> > And you seem to be making this whole argument an excuse to SUCK, adn an 
-> > excuse to let gcc crap even more on our stack space.
-> > 
-> > Why?
-> > 
-> > Why aren't you saying that we should be able to do better? Instead, you 
-> > seem to asking us to do even worse than we do now?
+Quoting Andreas Gruenbacher (agruen@suse.de):
+> On Wednesday, 27 August 2008 15:52:06 Serge E. Hallyn wrote:
+> > Quoting Andreas Gruenbacher (agruen@suse.de):
+> > > Hello,
+> > >
+> > > here is a patch allowing to disable file capabilities via a kernel
+> > > command line option (once compiled in with
+> > > CONFIG_SECURITY_FILE_CAPABILITIES).
+> > >
+> > > We would like to ship our next round of products with file capabilities
+> > > compiled in, yet we feel that too many system utilities are still file
+> > > capabilitiy unaware, and so we would like to turn them off by default
+> > > initially. File capabilities can be used to grant privileges to binaries
+> > > which otherwise look "harmless", which is a security risk until utilities
+> > > like rpm have learned how to install and verify capabilities, etc.
+> > >
+> > > Any objections?
+> >
+> > Hi Andreas,
+> >
+> > No objections in general - if it makes you more comfortable shipping
+> > kernels with CONFIG_SECURITY_FILE_CAPABILITIES=y then it's worthwhile.
+> > However, can you elaborate on your concerns?
 > 
-> My main point is:
-> - getting 4kB stacks working reliably is a hard task
-> - having an eye on gcc increasing the stack usage, and fixing it if
->   required, is relatively easy
+> We don't have the time left for developing the few missing pieces and properly 
+> integrating file capabilities into our products (use in various packages, 
+> support in rpm, system management, manuals, release notes), and so I would 
+> like to have a way to turn them off by default for now.
 > 
-> If we should be able to do better at getting (and keeping) 4kB stacks 
-> working, then coping with possible inlining problems caused by gcc
-> should not be a big problem for us.
+> > In particular, if as you say above the concern is really just that a
+> > file might have capabilities accidentally (or maliciously) enabled, then
+> > we should be able to just check for file_caps_enabled() at
+> > get_file_caps(), refusing to fill in the file capabilities.
 > 
-Out of the architectures you've mentioned for 4k stacks, they also tend
-to do IRQ stacks, which is something you seem to have overlooked.
+> My main concern is accidental granting of capabilities because of admin 
+> unawareness / lack of tool support. This could be taken care of by not 
+> loading the capabilities from disk.
+> 
+> > The other changes which you are canceling out confuscate the code but
+> > actually make no difference.
+> 
+> Well, the other difference is that with CONFIG_SECURITY_FILE_CAPABILITIES=y 
+> you currently lose the ability to pass on capabilities to other processes. Do 
+> you have good arguments why this feature is unnecessary?
 
-In addition to that, debugging the runaway stack users on 4k tends to be
-easier anyways since you end up blowing the stack a lot sooner. On sh
-we've had pretty good luck with it, though most of our users are using
-fairly deterministic workloads and continually profiling the footprint.
-Anything that runs away or uses an insane amount of stack space needs to
-be fixed well before that anyways, so catching it sooner is always
-preferable. I imagine the same case is true for m68knommu (even sans IRQ
-stacks).
+Yes, mainly that you don't actually have that ability anyway, because
+when CONFIG_SECURITY_FILE_CAPABILITIES=n, then CAP_SETPCAP is not in the
+system-wide capability bounding set, and without CAP_SETPCAP you cannot
+pass capabilities to another process.
 
-Things might be more sensitive on x86, but it's certainly not something
-that's a huge problem for the various embedded platforms to wire up,
-whether they want to go the IRQ stack route or not.
+You can do it if you have a custom initrd that adds CAP_SETPCAP to the
+bounding set early enough, but it has to be done by pid=1.  As far as I
+have seen there are 0 users of the feature.  I would expect most people
+would find it easier to recompile a tweaked kernel changing the #define
+of CAP_INIT_BSET.
 
-In any event, lack of support for something on embedded architectures in
-the kernel is more often due to apathy/utter indifference on the part of
-the architecture maintainer rather than being indicative of any intrinsic
-difficulty in supporting the thing in question. Most new "features" on the
-lesser maintained architectures tend to end up there either out of peer
-pressure or copying-and-pasting accidents rather than any sort of design.
-;-)
+If, however, you really do have such users, then we must go with a
+version of your patch.  We may then want to consider altogether
+replacing the CONFIG_SECURITY_FILE_CAPABILITIES boolean with a default
+value for file_caps_enabled.  That may actually end up cleaner than
+the current code by removing all of the #ifdefs.  Does that sound ok
+to you?  Andrew Morgan, would you be ok with that?
+
+(Also note that if you have such users, you'll want to ask David
+Howells not to push the patch he has floated removing the ability to
+pass caps to another task altogether when CONFIG_SECURITY_FILE_CAPABILITIES=n :)
+
+> I don' think that 
+> having this feature was a good idea in the first place, but taking it away 
+> now after several years may break current users which may not have gotten 
+> converted, yet.
+
+thanks,
+-serge
