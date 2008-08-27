@@ -1,285 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbYH0IPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbYH0ITz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbYH0IPL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 04:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbYH0IOv
+	id S1754082AbYH0ITz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 04:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbYH0ITj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 04:14:51 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:37436 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752432AbYH0IOt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 04:14:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:subject:to:cc:date:message-id:user-agent:mime-version
-         :content-type:content-transfer-encoding:sender;
-        b=RPQr1jsAZ7/AEvBVwe8t2fvX27ioNKQvC6QETKbhauFJLYKSLQxPEm1kwgpaXUklF8
-         xovih0OmL+ur6uF7auOtsD7UjEC7X9pt0sd7ON1AbJnCyDM0BFPO/f1zPuKxet+aOB9p
-         T4Ee1Kn+NmG/1fiRPyRIppn3FoIPHEMT68LbI=
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: [PATCH] e1000: fix stack size
-To: jeff@garzik.org
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, davem@davemloft.net,
-       akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 27 Aug 2008 01:14:46 -0700
-Message-ID: <20080827081446.9269.19136.stgit@jtkirshe-mobile.jf.intel.com>
-User-Agent: StGIT/0.14.3
+	Wed, 27 Aug 2008 04:19:39 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59106 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752248AbYH0ITi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 04:19:38 -0400
+Message-ID: <48B50DC7.8090905@kernel.org>
+Date: Wed, 27 Aug 2008 10:18:15 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Takashi Iwai <tiwai@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       alsa-devel@alsa-project.org, perex@perex.cz
+Subject: sound: make OSS sound core optional
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 27 Aug 2008 08:19:25 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
+sound/sound_core.c implements soundcore.ko contains two parts -
+sound_class which is shared by both ALSA and OSS and device
+redirection support for OSS.  It's always compiled when any sound
+support is enabled although it's necessary only when OSS (the actual
+one or emulation) is enabled.  This is slightly wasteful and as device
+redirection always registers character device region for major 14, it
+prevents alternative implementation.
 
-Here's the patch. It shrinks the stack from 1152 bytes to 192 bytes (the
-first version, that only did the e1000_option part, got it down to 600
-bytes). About half comes from not using multiple "e1000_option"
-structures, the other half comes from turning the "e1000_opt_list[]"
-arrays into "static const" instead, so that gcc doesn't copy them onto the
-stack.
+This patch introduces a new config SOUND_OSS_CORE which is selected
+iff OSS support is actually necessary and build the OSS core part
+conditionally.
 
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Reveiewed-by: Auke Kok <auke-jan.h.kok@intel.com>
-Tested-by: Emil Tantilov <emil.s.tantilov@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+If OSS is disabled, soundcore merely contains sound_class but leaving
+it that way seems to be the simplest approach as otherwise sound_class
+should be in ALSA core file if OSS is disabled but should be in
+soundcore if OSS is enabled and there's also the user confusion
+factor.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
+ arch/um/Kconfig.char |    4 ++
+ sound/Kconfig        |    5 +++
+ sound/core/Kconfig   |    1 
+ sound/sound_core.c   |   82 +++++++++++++++++++++++++++++++++++++--------------
+ 4 files changed, 71 insertions(+), 21 deletions(-)
 
- drivers/net/e1000/e1000_param.c |   81 ++++++++++++++++++++++-----------------
- 1 files changed, 45 insertions(+), 36 deletions(-)
-
-diff --git a/drivers/net/e1000/e1000_param.c b/drivers/net/e1000/e1000_param.c
-index b9f90a5..213437d 100644
---- a/drivers/net/e1000/e1000_param.c
-+++ b/drivers/net/e1000/e1000_param.c
-@@ -208,7 +208,7 @@ struct e1000_option {
- 		} r;
- 		struct { /* list_option info */
- 			int nr;
--			struct e1000_opt_list { int i; char *str; } *p;
-+			const struct e1000_opt_list { int i; char *str; } *p;
- 		} l;
- 	} arg;
- };
-@@ -242,7 +242,7 @@ static int __devinit e1000_validate_option(unsigned int *value,
- 		break;
- 	case list_option: {
- 		int i;
--		struct e1000_opt_list *ent;
-+		const struct e1000_opt_list *ent;
+Index: work/sound/Kconfig
+===================================================================
+--- work.orig/sound/Kconfig
++++ work/sound/Kconfig
+@@ -28,6 +28,10 @@ menuconfig SOUND
  
- 		for (i = 0; i < opt->arg.l.nr; i++) {
- 			ent = &opt->arg.l.p[i];
-@@ -279,7 +279,9 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter);
+ if SOUND
  
- void __devinit e1000_check_options(struct e1000_adapter *adapter)
++config SOUND_OSS_CORE
++	bool
++	default n
++
+ source "sound/oss/dmasound/Kconfig"
+ 
+ if !M68K
+@@ -80,6 +84,7 @@ endif # SND
+ 
+ menuconfig SOUND_PRIME
+ 	tristate "Open Sound System (DEPRECATED)"
++	select SOUND_OSS_CORE
+ 	help
+ 	  Say 'Y' or 'M' to enable Open Sound System drivers.
+ 
+Index: work/sound/core/Kconfig
+===================================================================
+--- work.orig/sound/core/Kconfig
++++ work/sound/core/Kconfig
+@@ -38,6 +38,7 @@ config SND_SEQ_DUMMY
+ 	  will be called snd-seq-dummy.
+ 
+ config SND_OSSEMUL
++	select SOUND_OSS_CORE
+ 	bool
+ 
+ config SND_MIXER_OSS
+Index: work/sound/sound_core.c
+===================================================================
+--- work.orig/sound/sound_core.c
++++ work/sound/sound_core.c
+@@ -1,5 +1,62 @@
+ /*
+- *	Sound core handling. Breaks out sound functions to submodules
++ *	Sound core.  This file is composed of two parts.  sound_class
++ *	which is common to both OSS and ALSA and OSS sound core which
++ *	is used OSS or emulation of it.
++ */
++
++/*
++ * First, the common part.
++ */
++#include <linux/module.h>
++#include <linux/device.h>
++#include <linux/err.h>
++
++#ifdef CONFIG_SOUND_OSS_CORE
++static int __init init_oss_soundcore(void);
++static void __exit cleanup_oss_soundcore(void);
++#else
++static inline int init_oss_soundcore(void)	{ return 0; }
++static inline void cleanup_oss_soundcore(void)	{ }
++#endif
++
++struct class *sound_class;
++EXPORT_SYMBOL(sound_class);
++
++MODULE_DESCRIPTION("Core sound module");
++MODULE_AUTHOR("Alan Cox");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS_CHARDEV_MAJOR(SOUND_MAJOR);
++
++static int __init init_soundcore(void)
++{
++	int rc;
++
++	rc = init_oss_soundcore();
++	if (rc)
++		return rc;
++
++	sound_class = class_create(THIS_MODULE, "sound");
++	if (IS_ERR(sound_class)) {
++		cleanup_oss_soundcore();
++		return PTR_ERR(sound_class);
++	}
++
++	return 0;
++}
++
++static void __exit cleanup_soundcore(void)
++{
++	cleanup_oss_soundcore();
++	class_destroy(sound_class);
++}
++
++module_init(init_soundcore);
++module_exit(cleanup_soundcore);
++
++
++#ifdef CONFIG_SOUND_OSS_CORE
++/*
++ *	OSS sound core handling. Breaks out sound functions to submodules
+  *	
+  *	Author:		Alan Cox <alan.cox@linux.org>
+  *
+@@ -34,21 +91,17 @@
+  *	locking at some point in 2.3.x.
+  */
+ 
+-#include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/slab.h>
+ #include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+-#include <linux/fs.h>
+ #include <linux/sound.h>
+ #include <linux/major.h>
+ #include <linux/kmod.h>
+-#include <linux/device.h>
+ 
+ #define SOUND_STEP 16
+ 
+-
+ struct sound_unit
  {
-+	struct e1000_option opt;
- 	int bd = adapter->bd_number;
-+
- 	if (bd >= E1000_MAX_NIC) {
- 		DPRINTK(PROBE, NOTICE,
- 		       "Warning: no configuration for board #%i\n", bd);
-@@ -287,19 +289,21 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
- 	}
+ 	int unit_minor;
+@@ -64,9 +117,6 @@ extern int msnd_classic_init(void);
+ extern int msnd_pinnacle_init(void);
+ #endif
  
- 	{ /* Transmit Descriptor Count */
--		struct e1000_option opt = {
-+		struct e1000_tx_ring *tx_ring = adapter->tx_ring;
-+		int i;
-+		e1000_mac_type mac_type = adapter->hw.mac_type;
-+
-+		opt = (struct e1000_option) {
- 			.type = range_option,
- 			.name = "Transmit Descriptors",
- 			.err  = "using default of "
- 				__MODULE_STRING(E1000_DEFAULT_TXD),
- 			.def  = E1000_DEFAULT_TXD,
--			.arg  = { .r = { .min = E1000_MIN_TXD }}
-+			.arg  = { .r = {
-+				.min = E1000_MIN_TXD,
-+				.max = mac_type < e1000_82544 ? E1000_MAX_TXD : E1000_MAX_82544_TXD
-+				}}
- 		};
--		struct e1000_tx_ring *tx_ring = adapter->tx_ring;
--		int i;
--		e1000_mac_type mac_type = adapter->hw.mac_type;
--		opt.arg.r.max = mac_type < e1000_82544 ?
--			E1000_MAX_TXD : E1000_MAX_82544_TXD;
+-struct class *sound_class;
+-EXPORT_SYMBOL(sound_class);
+-
+ /*
+  *	Low level list operator. Scan the ordered list, find a hole and
+  *	join into it. Called with the lock asserted
+@@ -523,31 +573,21 @@ int soundcore_open(struct inode *inode,
+ 	return -ENODEV;
+ }
  
- 		if (num_TxDescriptors > bd) {
- 			tx_ring->count = TxDescriptors[bd];
-@@ -313,19 +317,21 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
- 			tx_ring[i].count = tx_ring->count;
- 	}
- 	{ /* Receive Descriptor Count */
--		struct e1000_option opt = {
-+		struct e1000_rx_ring *rx_ring = adapter->rx_ring;
-+		int i;
-+		e1000_mac_type mac_type = adapter->hw.mac_type;
-+
-+		opt = (struct e1000_option) {
- 			.type = range_option,
- 			.name = "Receive Descriptors",
- 			.err  = "using default of "
- 				__MODULE_STRING(E1000_DEFAULT_RXD),
- 			.def  = E1000_DEFAULT_RXD,
--			.arg  = { .r = { .min = E1000_MIN_RXD }}
-+			.arg  = { .r = {
-+				.min = E1000_MIN_RXD,
-+				.max = mac_type < e1000_82544 ? E1000_MAX_RXD : E1000_MAX_82544_RXD
-+			}}
- 		};
--		struct e1000_rx_ring *rx_ring = adapter->rx_ring;
--		int i;
--		e1000_mac_type mac_type = adapter->hw.mac_type;
--		opt.arg.r.max = mac_type < e1000_82544 ? E1000_MAX_RXD :
--			E1000_MAX_82544_RXD;
- 
- 		if (num_RxDescriptors > bd) {
- 			rx_ring->count = RxDescriptors[bd];
-@@ -339,7 +345,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
- 			rx_ring[i].count = rx_ring->count;
- 	}
- 	{ /* Checksum Offload Enable/Disable */
--		struct e1000_option opt = {
-+		opt = (struct e1000_option) {
- 			.type = enable_option,
- 			.name = "Checksum Offload",
- 			.err  = "defaulting to Enabled",
-@@ -363,7 +369,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
- 			 { E1000_FC_FULL,    "Flow Control Enabled" },
- 			 { E1000_FC_DEFAULT, "Flow Control Hardware Default" }};
- 
--		struct e1000_option opt = {
-+		opt = (struct e1000_option) {
- 			.type = list_option,
- 			.name = "Flow Control",
- 			.err  = "reading default settings from EEPROM",
-@@ -381,7 +387,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
- 		}
- 	}
- 	{ /* Transmit Interrupt Delay */
--		struct e1000_option opt = {
-+		opt = (struct e1000_option) {
- 			.type = range_option,
- 			.name = "Transmit Interrupt Delay",
- 			.err  = "using default of " __MODULE_STRING(DEFAULT_TIDV),
-@@ -399,7 +405,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
- 		}
- 	}
- 	{ /* Transmit Absolute Interrupt Delay */
--		struct e1000_option opt = {
-+		opt = (struct e1000_option) {
- 			.type = range_option,
- 			.name = "Transmit Absolute Interrupt Delay",
- 			.err  = "using default of " __MODULE_STRING(DEFAULT_TADV),
-@@ -417,7 +423,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
- 		}
- 	}
- 	{ /* Receive Interrupt Delay */
--		struct e1000_option opt = {
-+		opt = (struct e1000_option) {
- 			.type = range_option,
- 			.name = "Receive Interrupt Delay",
- 			.err  = "using default of " __MODULE_STRING(DEFAULT_RDTR),
-@@ -435,7 +441,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
- 		}
- 	}
- 	{ /* Receive Absolute Interrupt Delay */
--		struct e1000_option opt = {
-+		opt = (struct e1000_option) {
- 			.type = range_option,
- 			.name = "Receive Absolute Interrupt Delay",
- 			.err  = "using default of " __MODULE_STRING(DEFAULT_RADV),
-@@ -453,7 +459,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
- 		}
- 	}
- 	{ /* Interrupt Throttling Rate */
--		struct e1000_option opt = {
-+		opt = (struct e1000_option) {
- 			.type = range_option,
- 			.name = "Interrupt Throttling Rate (ints/sec)",
- 			.err  = "using default of " __MODULE_STRING(DEFAULT_ITR),
-@@ -497,7 +503,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
- 		}
- 	}
- 	{ /* Smart Power Down */
--		struct e1000_option opt = {
-+		opt = (struct e1000_option) {
- 			.type = enable_option,
- 			.name = "PHY Smart Power Down",
- 			.err  = "defaulting to Disabled",
-@@ -513,7 +519,7 @@ void __devinit e1000_check_options(struct e1000_adapter *adapter)
- 		}
- 	}
- 	{ /* Kumeran Lock Loss Workaround */
--		struct e1000_option opt = {
-+		opt = (struct e1000_option) {
- 			.type = enable_option,
- 			.name = "Kumeran Lock Loss Workaround",
- 			.err  = "defaulting to Enabled",
-@@ -578,16 +584,18 @@ static void __devinit e1000_check_fiber_options(struct e1000_adapter *adapter)
- 
- static void __devinit e1000_check_copper_options(struct e1000_adapter *adapter)
+-MODULE_DESCRIPTION("Core sound module");
+-MODULE_AUTHOR("Alan Cox");
+-MODULE_LICENSE("GPL");
+-MODULE_ALIAS_CHARDEV_MAJOR(SOUND_MAJOR);
+-
+-static void __exit cleanup_soundcore(void)
++static void __exit cleanup_oss_soundcore(void)
  {
-+	struct e1000_option opt;
- 	unsigned int speed, dplx, an;
- 	int bd = adapter->bd_number;
+ 	/* We have nothing to really do here - we know the lists must be
+ 	   empty */
+ 	unregister_chrdev(SOUND_MAJOR, "sound");
+-	class_destroy(sound_class);
+ }
  
- 	{ /* Speed */
--		struct e1000_opt_list speed_list[] = {{          0, "" },
--						      {   SPEED_10, "" },
--						      {  SPEED_100, "" },
--						      { SPEED_1000, "" }};
-+		static const struct e1000_opt_list speed_list[] = {
-+			{          0, "" },
-+			{   SPEED_10, "" },
-+			{  SPEED_100, "" },
-+			{ SPEED_1000, "" }};
- 
--		struct e1000_option opt = {
-+		opt = (struct e1000_option) {
- 			.type = list_option,
- 			.name = "Speed",
- 			.err  = "parameter ignored",
-@@ -604,11 +612,12 @@ static void __devinit e1000_check_copper_options(struct e1000_adapter *adapter)
- 		}
+-static int __init init_soundcore(void)
++static int __init init_oss_soundcore(void)
+ {
+ 	if (register_chrdev(SOUND_MAJOR, "sound", &soundcore_fops)==-1) {
+ 		printk(KERN_ERR "soundcore: sound device already in use.\n");
+ 		return -EBUSY;
  	}
- 	{ /* Duplex */
--		struct e1000_opt_list dplx_list[] = {{           0, "" },
--						     { HALF_DUPLEX, "" },
--						     { FULL_DUPLEX, "" }};
-+		static const struct e1000_opt_list dplx_list[] = {
-+			{           0, "" },
-+			{ HALF_DUPLEX, "" },
-+			{ FULL_DUPLEX, "" }};
+-	sound_class = class_create(THIS_MODULE, "sound");
+-	if (IS_ERR(sound_class))
+-		return PTR_ERR(sound_class);
  
--		struct e1000_option opt = {
-+		opt = (struct e1000_option) {
- 			.type = list_option,
- 			.name = "Duplex",
- 			.err  = "parameter ignored",
-@@ -637,7 +646,7 @@ static void __devinit e1000_check_copper_options(struct e1000_adapter *adapter)
- 		       "parameter ignored\n");
- 		adapter->hw.autoneg_advertised = AUTONEG_ADV_DEFAULT;
- 	} else { /* Autoneg */
--		struct e1000_opt_list an_list[] =
-+		static const struct e1000_opt_list an_list[] =
- 			#define AA "AutoNeg advertising "
- 			{{ 0x01, AA "10/HD" },
- 			 { 0x02, AA "10/FD" },
-@@ -671,7 +680,7 @@ static void __devinit e1000_check_copper_options(struct e1000_adapter *adapter)
- 			 { 0x2e, AA "1000/FD, 100/FD, 100/HD, 10/FD" },
- 			 { 0x2f, AA "1000/FD, 100/FD, 100/HD, 10/FD, 10/HD" }};
+ 	return 0;
+ }
  
--		struct e1000_option opt = {
-+		opt = (struct e1000_option) {
- 			.type = list_option,
- 			.name = "AutoNeg",
- 			.err  = "parameter ignored",
-
+-module_init(init_soundcore);
+-module_exit(cleanup_soundcore);
++#endif /* CONFIG_SOUND_OSS_CORE */
+Index: work/arch/um/Kconfig.char
+===================================================================
+--- work.orig/arch/um/Kconfig.char
++++ work/arch/um/Kconfig.char
+@@ -203,6 +203,10 @@ config SOUND
+ 	tristate
+ 	default UML_SOUND
+ 
++config SOUND_OSS_CORE
++	bool
++	default UML_SOUND
++
+ config HOSTAUDIO
+ 	tristate
+ 	default UML_SOUND
