@@ -1,175 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbYH0GfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbYH0Gfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754103AbYH0GfY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 02:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbYH0GfJ
+	id S1754525AbYH0Gfm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 02:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbYH0GfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 02:35:09 -0400
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:33605 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752394AbYH0GfH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 02:35:07 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ra202r0CPB71fnXMQe/XQScQTCwmgep9+NltOzyc+brdF5EgF21xrzfu7R/aBQtwJWc9ku7VbRjTUHt7Ms4zLFXVXQNYOFjd/8UeTwI52nQuZsIepHqM0ErdSnPQ7fz0E9B/uVYQV0PfL7r3lxqWLZiufx6OpFIkAyxYYuvJo2g=  ;
-X-YMail-OSG: Rk76i_oVM1mbn.9LEoVolm85EqCF9ojpvpn2qQBjH5uynsMuQ9J6gegQQHqmCwS5MJFSm3WwGdrLcz.B6cnLKnNprbihg2iN3___7AkQBwzKRnxdqBkrcK06RaBJv67a40Tw7L8qvBNPZdtv3vuOgZCC
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: amruth_pv@yahoo.com
-Subject: Re: USB Serial device disconnect causes IRQ disable after using ehci controller halted
-Date: Tue, 26 Aug 2008 23:35:04 -0700
-User-Agent: KMail/1.9.9
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Karsten Wiese <fzu@wemgehoertderstaat.de>,
-       Oliver Neukum <oliver@neukum.org>, USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>
-References: <434860.93444.qm@web45203.mail.sp1.yahoo.com>
-In-Reply-To: <434860.93444.qm@web45203.mail.sp1.yahoo.com>
+	Wed, 27 Aug 2008 02:35:19 -0400
+Received: from mga09.intel.com ([134.134.136.24]:21315 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753305AbYH0GfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 02:35:17 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,276,1217833200"; 
+   d="scan'208";a="432541200"
+Date: Wed, 27 Aug 2008 14:33:00 +0800
+From: Zhu Yi <yi.zhu@intel.com>
+To: peterz@infradead.org, mingo@redhat.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] lockdep: fix invalid list_del_rcu in zap_class
+Message-ID: <20080827063300.GA18265@mail.intel.com>
+Reply-To: yi.zhu@intel.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808262335.05204.david-b@pacbell.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 August 2008, amruth wrote:
-> This patch below does not fix the issue it just stops IRQ being
-> disabled but still ehci hcd crashes. 
 
-That patch was only intended to address the issue of bogus error
-handling.
+The problem is found during iwlagn driver testing on
+v2.6.27-rc4-176-gb8e6c91 kernel, but it turns out to be a lockdep bug.
+In our testing, we frequently load and unload the iwlagn driver
+(>50 times). Then the MAX_STACK_TRACE_ENTRIES is reached (expected
+behaviour?). The error message with the call trace is as below.
+
+BUG: MAX_STACK_TRACE_ENTRIES too low!
+turning off the locking correctness validator.
+Pid: 4895, comm: iwlagn Not tainted 2.6.27-rc4 #13
+
+Call Trace:
+ [<ffffffff81014aa1>] save_stack_trace+0x22/0x3e
+ [<ffffffff8105390a>] save_trace+0x8b/0x91
+ [<ffffffff81054e60>] mark_lock+0x1b0/0x8fa
+ [<ffffffff81056f71>] __lock_acquire+0x5b9/0x716
+ [<ffffffffa00d818a>] ieee80211_sta_work+0x0/0x6ea [mac80211]
+ [<ffffffff81057120>] lock_acquire+0x52/0x6b
+ [<ffffffff81045f0e>] run_workqueue+0x97/0x1ed
+ [<ffffffff81045f5e>] run_workqueue+0xe7/0x1ed
+ [<ffffffff81045f0e>] run_workqueue+0x97/0x1ed
+ [<ffffffff81046ae4>] worker_thread+0xd8/0xe3
+ [<ffffffff81049503>] autoremove_wake_function+0x0/0x2e
+ [<ffffffff81046a0c>] worker_thread+0x0/0xe3
+ [<ffffffff810493ec>] kthread+0x47/0x73
+ [<ffffffff8128e3ab>] trace_hardirqs_on_thunk+0x3a/0x3f
+ [<ffffffff8100cea9>] child_rip+0xa/0x11
+ [<ffffffff8100c4df>] restore_args+0x0/0x30
+ [<ffffffff810316e1>] finish_task_switch+0x0/0xcc
+ [<ffffffff810493a5>] kthread+0x0/0x73
+ [<ffffffff8100ce9f>] child_rip+0x0/0x11
 
 
-> Please let me know what could be causing the issue.
+Although the above is harmless, when the ilwagn module is removed
+later lockdep will trigger a kernel oops as below.
 
-If it's like the other case, I'd hope this patch would solve it.
 
-Note that you also seem to be having hardware or firmware issues
-with the peripheral you're connecting ... this won't change that
-stuff at all.
+BUG: unable to handle kernel NULL pointer dereference at
+0000000000000008
+IP: [<ffffffff810531e1>] zap_class+0x24/0x82
+PGD 73128067 PUD 7448c067 PMD 0
+Oops: 0002 [1] SMP
+CPU 0
+Modules linked in: rfcomm l2cap bluetooth autofs4 sunrpc
+nf_conntrack_ipv6 xt_state nf_conntrack xt_tcpudp ip6t_ipv6header
+ip6t_REJECT ip6table_filter ip6_tables x_tables ipv6 cpufreq_ondemand
+acpi_cpufreq dm_mirror dm_log dm_multipath dm_mod snd_hda_intel sr_mod
+snd_seq_dummy snd_seq_oss snd_seq_midi_event battery snd_seq
+snd_seq_device cdrom button snd_pcm_oss snd_mixer_oss snd_pcm
+snd_timer snd_page_alloc e1000e snd_hwdep sg iTCO_wdt
+iTCO_vendor_support ac pcspkr i2c_i801 i2c_core snd soundcore video
+output ata_piix ata_generic libata sd_mod scsi_mod ext3 jbd mbcache
+uhci_hcd ohci_hcd ehci_hcd [last unloaded: mac80211]
+Pid: 4941, comm: modprobe Not tainted 2.6.27-rc4 #10
+RIP: 0010:[<ffffffff810531e1>]  [<ffffffff810531e1>]
+zap_class+0x24/0x82
+RSP: 0000:ffff88007bcb3eb0  EFLAGS: 00010046
+RAX: 0000000000068ee8 RBX: ffffffff8192a0a0 RCX: 0000000000000000
+RDX: 0000000000000000 RSI: 0000000000001dfb RDI: ffffffff816e70b0
+RBP: ffffffffa00cd000 R08: ffffffff816818f8 R09: ffff88007c923558
+R10: ffffe20002ad2408 R11: ffffffff811028ec R12: ffffffff8192a0a0
+R13: 000000000002bd90 R14: 0000000000000000 R15: 0000000000000296
+FS:  00007f9d1cee56f0(0000) GS:ffffffff814a58c0(0000)
+knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000000008 CR3: 0000000073047000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process modprobe (pid: 4941, threadinfo ffff88007bcb2000, task
+ffff8800758d1fc0)
+Stack:  ffffffff81057376 0000000000000000 ffffffffa00f7b00
+0000000000000000
+ 0000000000000080 0000000000618278 00007fff24f16720 0000000000000000
+ ffffffff8105d37a ffffffffa00f7b00 ffffffff8105d591 313132303863616d
+Call Trace:
+ [<ffffffff81057376>] ? lockdep_free_key_range+0x61/0xf5
+ [<ffffffff8105d37a>] ? free_module+0xd4/0xe4
+ [<ffffffff8105d591>] ? sys_delete_module+0x1de/0x1f9
+ [<ffffffff8106dbfa>] ? audit_syscall_entry+0x12d/0x160
+ [<ffffffff8100be2b>] ? system_call_fastpath+0x16/0x1b
 
-- Dave
 
-================ SNIP!
-From: David Brownell <dbrownell@users.sourceforge.net>
+Code: b2 00 01 00 00 00 c3 31 f6 49 c7 c0 10 8a 61 81 eb 32 49 39 38
+75 26 48 98 48 6b c0 38 48 8b 90 08 8a 61 81 48 8b 88 00 8a 61 81 <48>
+89 51 08 48 89 0a 48 c7 80 08 8a 61 81 00 02 20 00 48 ff c6
+RIP  [<ffffffff810531e1>] zap_class+0x24/0x82
+ RSP <ffff88007bcb3eb0>
+CR2: 0000000000000008
+---[ end trace a1297e0c4abb0f2e ]---
 
-As noted by Stefan Neis <Stefan.Neis@kobil.com>, we had a recent
-regression with EHCI periodic transfers, in some (seemingly not
-all that common) cases.
 
-The root cause was that the schedule activation was only loosely
-coupled to the addition or removal of transfers, so two different 
-execution contexts could both think they had to deactivate (or
-conversely activate) the schedule.  So this fix tightens that
-coupling, managing it more like a refcount.
+The root cause for this oops is in add_lock_to_list() when
+save_trace() fails due to MAX_STACK_TRACE_ENTRIES is reached,
+entry->class is assigned but entry is never added into any lock list.
+This makes the list_del_rcu() in zap_class() oops later when the
+module is unloaded. This patch fixes the problem by assigning
+entry->class after save_trace() returns success.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/usb/host/ehci-sched.c |   32 ++++++++++++++------------------
- 1 file changed, 14 insertions(+), 18 deletions(-)
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
 
---- a/drivers/usb/host/ehci-sched.c	2008-08-15 16:38:19.000000000 -0700
-+++ b/drivers/usb/host/ehci-sched.c	2008-08-15 17:47:02.000000000 -0700
-@@ -437,6 +437,9 @@ static int enable_periodic (struct ehci_
- 	u32	cmd;
- 	int	status;
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 3bfb187..5593c56 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -875,11 +875,11 @@ static int add_lock_to_list(struct lock_class *class, struct lock_class *this,
+ 	if (!entry)
+ 		return 0;
  
-+	if (ehci->periodic_sched++)
-+		return 0;
-+
- 	/* did clearing PSE did take effect yet?
- 	 * takes effect only at frame boundaries...
- 	 */
-@@ -461,6 +464,9 @@ static int disable_periodic (struct ehci
- 	u32	cmd;
- 	int	status;
+-	entry->class = this;
+-	entry->distance = distance;
+ 	if (!save_trace(&entry->trace))
+ 		return 0;
  
-+	if (--ehci->periodic_sched)
-+		return 0;
-+
- 	/* did setting PSE not take effect yet?
- 	 * takes effect only at frame boundaries...
- 	 */
-@@ -544,13 +550,10 @@ static int qh_link_periodic (struct ehci
- 		: (qh->usecs * 8);
- 
- 	/* maybe enable periodic schedule processing */
--	if (!ehci->periodic_sched++)
--		return enable_periodic (ehci);
--
--	return 0;
-+	return enable_periodic(ehci);
- }
- 
--static void qh_unlink_periodic (struct ehci_hcd *ehci, struct ehci_qh *qh)
-+static int qh_unlink_periodic(struct ehci_hcd *ehci, struct ehci_qh *qh)
- {
- 	unsigned	i;
- 	unsigned	period;
-@@ -586,9 +589,7 @@ static void qh_unlink_periodic (struct e
- 	qh_put (qh);
- 
- 	/* maybe turn off periodic schedule */
--	ehci->periodic_sched--;
--	if (!ehci->periodic_sched)
--		(void) disable_periodic (ehci);
-+	return disable_periodic(ehci);
- }
- 
- static void intr_deschedule (struct ehci_hcd *ehci, struct ehci_qh *qh)
-@@ -1562,9 +1563,7 @@ itd_link_urb (
- 	urb->hcpriv = NULL;
- 
- 	timer_action (ehci, TIMER_IO_WATCHDOG);
--	if (unlikely (!ehci->periodic_sched++))
--		return enable_periodic (ehci);
--	return 0;
-+	return enable_periodic(ehci);
- }
- 
- #define	ISO_ERRS (EHCI_ISOC_BUF_ERR | EHCI_ISOC_BABBLE | EHCI_ISOC_XACTERR)
-@@ -1642,7 +1641,7 @@ itd_complete (
- 	ehci_urb_done(ehci, urb, 0);
- 	retval = true;
- 	urb = NULL;
--	ehci->periodic_sched--;
-+	(void) disable_periodic(ehci);
- 	ehci_to_hcd(ehci)->self.bandwidth_isoc_reqs--;
- 
- 	if (unlikely (list_empty (&stream->td_list))) {
-@@ -1951,9 +1950,7 @@ sitd_link_urb (
- 	urb->hcpriv = NULL;
- 
- 	timer_action (ehci, TIMER_IO_WATCHDOG);
--	if (!ehci->periodic_sched++)
--		return enable_periodic (ehci);
--	return 0;
-+	return enable_periodic(ehci);
- }
- 
- /*-------------------------------------------------------------------------*/
-@@ -2019,7 +2016,7 @@ sitd_complete (
- 	ehci_urb_done(ehci, urb, 0);
- 	retval = true;
- 	urb = NULL;
--	ehci->periodic_sched--;
-+	(void) disable_periodic(ehci);
- 	ehci_to_hcd(ehci)->self.bandwidth_isoc_reqs--;
- 
- 	if (list_empty (&stream->td_list)) {
-@@ -2243,8 +2240,7 @@ restart:
- 			if (unlikely (modified)) {
- 				if (likely(ehci->periodic_sched > 0))
- 					goto restart;
--				/* maybe we can short-circuit this scan! */
--				disable_periodic(ehci);
-+				/* short-circuit this scan */
- 				now_uframe = clock;
- 				break;
- 			}
++	entry->class = this;
++	entry->distance = distance;
+ 	/*
+ 	 * Since we never remove from the dependency list, the list can
+ 	 * be walked lockless by other CPUs, it's only allocation
