@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbYH0STV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711AbYH0STf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918AbYH0STV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 14:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYH0STL
+	id S1755711AbYH0STf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 14:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbYH0STR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 14:19:11 -0400
-Received: from tesla.selinc.com ([12.110.71.2]:44362 "EHLO tesla.selinc.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751295AbYH0STK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 14:19:10 -0400
-In-Reply-To: <1219815617.18027.132.camel@sauron>
-To: dedekind@infradead.org
-Cc: Bruce Leonard <brucle@earthlink.net>, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, linux-mtd-bounces@lists.infradead.org
-Subject: Re: [PATCH 2/2] Add support for > 2GiB MTD devices
+	Wed, 27 Aug 2008 14:19:17 -0400
+Received: from lazybastard.de ([212.112.238.170]:58455 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752988AbYH0STQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 14:19:16 -0400
+Date: Wed, 27 Aug 2008 20:19:04 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
+Message-ID: <20080827181904.GD1371@logfs.org>
+References: <20080826101618.GA17261@logfs.org> <200808261654.AA00216@capsicum.lab.ntt.co.jp>
 MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 7.0.3 September 26, 2007
-Message-ID: <OF5BDBDD21.E5375C78-ON882574B2.0061B127-882574B2.00648B63@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Wed, 27 Aug 2008 11:18:23 -0700
-X-MIMETrack: Serialize by Router on Edison2/SEL(Release 7.0.3|September 26, 2007) at 08/27/2008
- 11:18:26 AM,
-	Serialize complete at 08/27/2008 11:18:26 AM
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200808261654.AA00216@capsicum.lab.ntt.co.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Artem,
-
-> > +/*
-> > + * Inline function for determining the size of the MTD device, 
-independant
-> > + * of old or new way of doing things.
-> > + *
-> > + */
-> > +static inline u_int64_t device_size(struct mtd_info *a)
-> > +{
-> > +   return a->num_eraseblocks == 0 ? a->size : a->num_eraseblocks * 
-a->erasesize;
-> > +}
+On Wed, 27 August 2008 01:54:30 +0900, Ryusuke Konishi wrote:
+> On Tue, 26 Aug 2008 12:16:19 +0200, Jorn Engel wrote:
+> >
+> >Interesting approach.  Does that mean that every block lookup involves
+> >two disk accesses, one for the DAT and one for the actual block?
 > 
-> I do not think it is a good idea to do multiplication every time we need
-> MTD device size. It is unnecessarily large overhead in terms of speed
-> and code size.
+> Simply stated, it's Yes.
 > 
+> But the actual number of disk accesses will become fewer because the DAT is 
+> cached like regular files and read-ahead is also applied.
+> The cache for the DAT works well enough.
 
-I'm still reluctant to change size to a 64-bit value.  There's a vague 
-recolection of early conversations on the list that there would be little 
-acceptance for that.  And that probably has to do with the ongoing 
-conversation about ABI changes.  What I could do to eliminate the 
-multiplication is introduce the same concept that the NAND layer uses, 
-shift values.  After all, erasesize should always be a power of 2, making 
-that a power of 2 multiplication which can be done via shifts.  By 
-changing erasesize to erasesize_shift, I'd get something like this:
+Yep.  It is not a bad tradeoff.  You pay with some extra seeks when the
+filesystem is freshly mounted but gain a lot of simplicity in garbage
+collection.
 
-return a->num_eraseblocks == 0 ? a->size : a->num_eraseblocks << 
-a->erasesize_shift
+More questions.  I believe the first two answer are no, but would like
+to be sure.
+Do you support compression?
+Do you do wear leveling or scrubbing?
+How does garbage collection work?  In particular, when the filesystem
+runs out of free space, do you depend on the userspace daemon to make
+some policy decisions or can the kernel make progress on its own?
 
-How would that suit you?
+Jörn
 
-Bruce
-
+-- 
+There are two ways of constructing a software design: one way is to make
+it so simple that there are obviously no deficiencies, and the other is
+to make it so complicated that there are no obvious deficiencies.
+-- C. A. R. Hoare
