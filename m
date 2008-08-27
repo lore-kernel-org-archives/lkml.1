@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbYH0L5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbYH0L7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755659AbYH0L5w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 07:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904AbYH0L5n
+	id S1755527AbYH0L7c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 07:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753717AbYH0L7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 07:57:43 -0400
-Received: from smtp117.mail.mud.yahoo.com ([209.191.84.166]:44885 "HELO
-	smtp117.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754153AbYH0L5m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 07:57:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=0rsMrInFGo5I04sJsJV5pgWZI7PzOeJpWiclFb59/auen3e2ZpxTvoKso2SmqLa55H3gjE0e9UUpebtEPq0Qvtw71d8KXlkk+AQkgFEnlfPGVHQHJJxvpU38nAtskmODdhjkCaBFkv5ZAXZjeM3Q1Ns6x9C72I3WXJHzMu8t4C8=  ;
-X-YMail-OSG: bQYs2iEVM1l3MIp9b13aXr9SVD9NwQQ28osua3SUK6vzBgFa2RHpXCCmjdDUNv8hvVegVKn73n_54fb8DKlRgRMOpu2Qgxtc1VkKCOLhA0IUM5SK0VH4UoN9RbWJEMFU9XA-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Gregory Haskins <ghaskins@novell.com>
-Subject: Re: [PATCH 2/5] sched: pull only one task during NEWIDLE balancing to limit critical section
-Date: Wed, 27 Aug 2008 21:57:34 +1000
-User-Agent: KMail/1.9.5
-Cc: mingo@elte.hu, srostedt@redhat.com, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       npiggin@suse.de, gregory.haskins@gmail.com
-References: <20080825200852.23217.13842.stgit@dev.haskins.net> <200808271641.46359.nickpiggin@yahoo.com.au> <48B53F97.20101@novell.com>
-In-Reply-To: <48B53F97.20101@novell.com>
+	Wed, 27 Aug 2008 07:59:22 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:43412 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753305AbYH0L7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 07:59:21 -0400
+Date: Wed, 27 Aug 2008 14:58:30 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-embedded@vger.kernel.org
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
+	bisected
+Message-ID: <20080827115829.GF11734@cs181140183.pp.htv.fi>
+References: <200808261111.19205.rusty@rustcorp.com.au> <alpine.LFD.1.10.0808261019450.3363@nehalem.linux-foundation.org> <20080826183051.GB10925@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org> <20080826205916.GB11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org> <20080826232411.GC11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261648140.3363@nehalem.linux-foundation.org> <20080827002316.GE11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261726560.3363@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200808272157.34494.nickpiggin@yahoo.com.au>
+In-Reply-To: <alpine.LFD.1.10.0808261726560.3363@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 August 2008 21:50, Gregory Haskins wrote:
-> Nick Piggin wrote:
+On Tue, Aug 26, 2008 at 05:28:37PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 27 Aug 2008, Adrian Bunk wrote:
+> > 
+> > When did we get callpaths like like nfs+xfs+md+scsi reliably 
+> > working with 4kB stacks on x86-32?
+> 
+> XFS may never have been usable, but the rest, sure.
+> 
+> And you seem to be making this whole argument an excuse to SUCK, adn an 
+> excuse to let gcc crap even more on our stack space.
+> 
+> Why?
+> 
+> Why aren't you saying that we should be able to do better? Instead, you 
+> seem to asking us to do even worse than we do now?
 
-> > I'm surprised 2 is too much but 1 is OK. Seems pretty fragile to me.
->
-> Its not that 1 is magically "ok".  Its simply that newidle balancing
-> hurts latency, and 1 is the minimum to pull to reasonably reduce the
-> critical section.  I already check if we NEEDS_RESCHED before taking the
-> rq->lock in newidle, so waiting for one task to pull is the first
-> opportunity I have to end the section as quickly as possible.  It would
-> be nice if I could just keep going if  I could detect whether there was
-> not any real contention.  Let me  give this angle some more thought.
+My main point is:
+- getting 4kB stacks working reliably is a hard task
+- having an eye on gcc increasing the stack usage, and fixing it if
+  required, is relatively easy
 
-OK. Beware of introducing more cache coherency transitions, branches,
-icache, etc. If you are already resigned to put some special cases under
-CONFIG_PREEMPT, I think there is a lot to say for keeping the logic
-really simple and correct even if there is a small expense to performance.
+If we should be able to do better at getting (and keeping) 4kB stacks 
+working, then coping with possible inlining problems caused by gcc
+should not be a big problem for us.
 
-But of course I never object to speedups ;)
+> 			Linus
 
+cu
+Adrian
 
-> > FWIW, if you haven't already, then for -rt you might want to look at a
-> > more advanced data structure than simple run ordered list for moving
-> > tasks from one rq to the other. A simple one I was looking at is a time
-> > ordered list to pull the most cache cold tasks (and thus we can stop
-> > searching when we encounter the first cache hot task, in situations where
-> > it is appropriate, etc).
->
-> Im not sure I follow your point, but if I do note that the RT scheduler
-> uses a completely different load balancer (that is priority ordered).
+-- 
 
-You still use the normal scheduler for other tasks, though? At any
-rate, no I haven't looked closely at the scheduler for a while, so
-I'm quite likely to be talking nonsense.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
