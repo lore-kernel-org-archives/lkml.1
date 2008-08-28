@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756066AbYH1SBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbYH1SBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756066AbYH1SBO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 14:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYH1SAz
+	id S1756582AbYH1SBa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 14:01:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbYH1SBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 14:00:55 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:11354 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751725AbYH1SAy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 14:00:54 -0400
-Message-ID: <48B6E7D0.5070307@hp.com>
-Date: Thu, 28 Aug 2008 11:00:48 -0700
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
+	Thu, 28 Aug 2008 14:01:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40971 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752339AbYH1SBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 14:01:18 -0400
+Message-ID: <48B6E79E.6020702@kernel.org>
+Date: Thu, 28 Aug 2008 19:59:58 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: Joe Malicki <jmalicki@metacarta.com>
-CC: David Miller <davem@davemloft.net>, andi@firstfloor.org,
-       johnpol@2ka.mipt.ru, dada1@cosmosbay.com, denys@visp.net.lb,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       juhlenko@akamai.com, sammy@sammy.net
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-References: <21915755.1327801219904892242.JavaMail.root@ouachita>
-In-Reply-To: <21915755.1327801219904892242.JavaMail.root@ouachita>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Greg KH <greg@kroah.com>
+CC: fuse-devel@lists.sourceforge.net, miklos@szeredi.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <20080828175116.GB18461@kroah.com>
+In-Reply-To: <20080828175116.GB18461@kroah.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 28 Aug 2008 18:01:11 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greg KH wrote:
+> Why do we need ioctls?  For CUSE?  In that case, would we need to copy
+> the memory from userspace, into the kernel, and then back out into
+> userspace again?  Can't we just have a "pass-through" type fixed ioctl
+> instead?
 
-> What utility does the time of hitting the socket get you?
+Can you elaborate a bit?  How the fixed ioctl would know how much to
+copy in and out and from where?
 
-The earliest time the application could have been expected to start 
-processing the request.  Until it hits the socket, it might as well be 
-somewhere in the cloud.  By that reasoning of course, one could argue 
-that a gettimeofday() call immediately following recv() would suffice.
+Thanks.
 
-Earlier in the thread mention was made of financial services types.  If 
-someone has knowledge of the (probably) arcane rules under which they 
-must operate it would be great to hear more.  Does some entity like the 
-SEC (Securities and Exchange Commission in the United States) mandate 
-some sort of timestamp for when the trading request "arrives at the 
-trading system" and do they define that "arriving at the trading system" 
-means?
-
-rick jones
+-- 
+tejun
