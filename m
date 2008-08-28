@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbYH1Sfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbYH1Si7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756819AbYH1Sfi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 14:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbYH1Sfa
+	id S1755560AbYH1Si7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 14:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbYH1Siv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 14:35:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39105 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752874AbYH1Sf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 14:35:29 -0400
-Message-ID: <48B6EF98.4070008@kernel.org>
-Date: Thu, 28 Aug 2008 20:34:00 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Thu, 28 Aug 2008 14:38:51 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:16346 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751250AbYH1Siu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 14:38:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=e9ft8OlkbMF2XhBSjEjYlbIHvg9spWF7ieGjeMJsBk/Z9+b75iv+jn+/ONWvwUJ9Qt
+         OIsyojuErHfZt4GfAzA7MC+1x9KrzwRYvkLyiw/yVECVM6xdEgQQNS5b4dqMhjG0aTT5
+         MbQof0x5y+eX0HrnLaCF8nSKGh6XeQcJMff7M=
+Date: Thu, 28 Aug 2008 22:40:25 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] bitfields API
+Message-ID: <20080828184025.GA22165@x200.localdomain>
+References: <20080828183223.GA30781@localhost.localdomain>
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: greg@kroah.com, fuse-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <20080828175116.GB18461@kroah.com> <48B6E79E.6020702@kernel.org> <48B6E801.9080102@kernel.org> <E1KYm0D-0003q0-IQ@pomaz-ex.szeredi.hu> <48B6EBBD.6050406@kernel.org> <E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 28 Aug 2008 18:35:20 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080828183223.GA30781@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
->> Hmmm... I was trying to stay within similar operation mechanics as other
->> ops.  Directly accessing the caller's memory has performance benefits
->> but that benefit can also be used by reads and writes.  So, if we're
->> gonna do direct memory access, maybe doing it in more generic way is a
->> better idea?
-> 
-> On the contrary: playing VM games is going to be slow.  I think this
-> approach is best suited for generic ioctl support because it
-> simplifies the kernel part.  I'd hate to add all that complexity to
-> the kernel if not absolutely necessary.
+On Thu, Aug 28, 2008 at 08:32:23PM +0200, Vegard Nossum wrote:
+> How do you feel about this patch? It's all about making kmemcheck more
+> useful... and not much else. Does it have any chance of entering the
+> kernel along with kmemcheck (when/if that happens)?
 
-Well, it's only 240 lines with good amount of comments and iovec copying
-function.  The ioctl itself isn't too complex.  I'm a bit skeptical
-about direct access.  It can easily introduce security vulnerabilities
-as there really is no way to hold a pid.
+DEFINE_BITFIELD is horrible.
 
-Thanks.
+> @@ -285,11 +286,12 @@ struct sk_buff {
+>  		};
+>  	};
+>  	__u32			priority;
+> -	__u8			local_df:1,
+> +	DEFINE_BITFIELD(__u8,	flags1,
+> +				local_df:1,
+>  				cloned:1,
+>  				ip_summed:2,
+>  				nohdr:1,
+> -				nfctinfo:3;
+> +				nfctinfo:3);
+>  	__u8			pkt_type:3,
+>  				fclone:2,
+>  				ipvs_property:1,
 
--- 
-tejun
