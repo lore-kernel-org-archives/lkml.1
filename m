@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbYH1OSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbYH1OTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754829AbYH1OSs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 10:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbYH1OSk
+	id S1755166AbYH1OTw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 10:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbYH1OTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 10:18:40 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2729 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752519AbYH1OSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 10:18:39 -0400
-Date: Thu, 28 Aug 2008 16:18:27 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Markku Savela <msa@moth.iki.fi>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Frustrated with capabilities..
-Message-ID: <20080828141826.GA6797@ucw.cz>
-References: <87hc96by8x.fsf@burp.tkv.asdf.org>
-Mime-Version: 1.0
+	Thu, 28 Aug 2008 10:19:45 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39053 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752726AbYH1OTp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 10:19:45 -0400
+Date: Thu, 28 Aug 2008 10:19:33 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] block: kmalloc args reversed, small function
+	definition  fixes
+Message-ID: <20080828141933.GA8937@infradead.org>
+References: <1219868669.6069.53.camel@brick> <20080828072621.GQ20055@kernel.dk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87hc96by8x.fsf@burp.tkv.asdf.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080828072621.GQ20055@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-08-27 12:31:10, Markku Savela wrote:
-> I just want to run an exectable with limited capabilities and assumed
-> the following approach would work fine:
+On Thu, Aug 28, 2008 at 09:26:21AM +0200, Jens Axboe wrote:
+> On Wed, Aug 27 2008, Harvey Harrison wrote:
+> > Noticed by sparse:
+> > block/blk-softirq.c:156:12: warning: symbol 'blk_softirq_init' was not declared. Should it be static?
+> > block/genhd.c:583:28: warning: function 'bdget_disk' with external linkage has definition
+> > block/genhd.c:659:17: warning: incorrect type in argument 1 (different base types)
+> > block/genhd.c:659:17:    expected unsigned int [unsigned] [usertype] size
+> > block/genhd.c:659:17:    got restricted gfp_t
+> > block/genhd.c:659:29: warning: incorrect type in argument 2 (different base types)
+> > block/genhd.c:659:29:    expected restricted gfp_t [usertype] flags
+> > block/genhd.c:659:29:    got unsigned int
+> > block: kmalloc args reversed
 > 
->  1) fork process
->  2) in child
-> 
->     2.1 set current capabilities (eip) using cap_set_proc
->     2.2 execve the executable.
-> 
-> But it frigging does not work! Just before the execve, the result of
-> cap_to_text is
-> 
->     = cap_net_bind_service+eip
-> 
-> but, in the execve executable, the result is suddenly
-> 
->     = cap_net_bind_service+i
-> 
-> Why does the execve clear the effective and permitted capabities,
-> against my clear instructions? (I also have the prctl KEEP_CAPS set,
-> though in this case it should be irrelevant).
-> 
-> - The kernel is from ubuntu distro, 2.6.24.
-> 
-> - the executable *does* *not* have any setuid/setgid bits
-> 
-> - the upcoming file capabities will not be any help, because I will
->   need to start the same executable with different capabilities
->   depending on context.
+> Woops, that kmalloc() is nasty. Thanks a lot, applied to for-2.6.28.
 
-Yes, you need upcoming filesystem capabilities.  Binary may not
-inherit capabilities unless filesystem flags permit that.
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Umm, the gfp bit sounds like a clear 2.6.27 candidate.
