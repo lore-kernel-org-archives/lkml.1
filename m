@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755908AbYH1Aqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbYH1Arp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755908AbYH1Aqe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 20:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757322AbYH1AqM
+	id S1757499AbYH1Arp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 20:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755027AbYH1Arg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 20:46:12 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54942
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757267AbYH1AqL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 20:46:11 -0400
-Date: Wed, 27 Aug 2008 17:46:05 -0700 (PDT)
-Message-Id: <20080827.174605.85608276.davem@davemloft.net>
-To: lethal@linux-sh.org
-Cc: bunk@kernel.org, torvalds@linux-foundation.org, rusty@rustcorp.com.au,
-       Alan.Brunelle@hp.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, akpm@linux-foundation.org,
-       arjan@linux.intel.com, mingo@elte.hu, linux-embedded@vger.kernel.org
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
- bisected
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080828003211.GA18893@linux-sh.org>
-References: <20080827160052.GA15968@linux-sh.org>
-	<20080827173544.GH11734@cs181140183.pp.htv.fi>
-	<20080828003211.GA18893@linux-sh.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 27 Aug 2008 20:47:36 -0400
+Received: from gw.goop.org ([64.81.55.164]:50877 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754880AbYH1Arg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 20:47:36 -0400
+Message-ID: <48B5F5A6.4060309@goop.org>
+Date: Wed, 27 Aug 2008 17:47:34 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Ingo Molnar <mingo@elte.hu>, Hugh Dickens <hugh@veritas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: Definition of x86 _PAGE_SPECIAL and sharing _PAGE_UNUSED1
+References: <48B5A4B0.9050308@goop.org> <200808281032.30594.nickpiggin@yahoo.com.au>
+In-Reply-To: <200808281032.30594.nickpiggin@yahoo.com.au>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Thu, 28 Aug 2008 09:32:13 +0900
+Nick Piggin wrote:
+> Ah... pity it was hidden away there and not put into the include file.
+>   
 
-> On Wed, Aug 27, 2008 at 08:35:44PM +0300, Adrian Bunk wrote:
-> > CONFIG_DEBUG_STACKOVERFLOW should give you the same information, and if
-> > wanted with an arbitrary limit.
+Yes.  I just prepped a patch to bring it out into the light.
+
+> I don't feel strongly about it. But you should put your definition in
+> pgtable.h (and possibly explain how it coexists with _SPECIAL).
+>   
+
+Yes, that was my plan, but without knowing how _SPECIAL is used, it's a
+bit tricky.  Is there a comment somewhere which describes who sets it
+and when?  From a quick look, it seems it's set on newly added user
+pages which aren't COWed.  Can they be shared file-backed pages? 
+Anonymous pages?  Device pages?
+
+>> Am I right in supposing that _PAGE_SPECIAL can only be set on user pages?
+>>     
 >
-> In some cases, yes. In the CONFIG_DEBUG_STACKOVERFLOW case the check is
-> only performed from do_IRQ(), which is sporadic at best, especially on
-> tickless. While it catches some things, it's not a complete solution in
-> and of iteslf.
+> Yes.
+>   
 
-BTW, on sparc64 we have a stack overflow checker that runs via
-the profiling _mcount hook.  So every function call we check
-if the stack is getting overused.
+OK, that won't clash with CPA tests at all, since they're kernel only.
 
-If so, we jump onto a special static debugging stack and print
-the stack overflow message.
+>> (Also, "SPECIAL" is awfully generic.  Was there really no more
+>> descriptive name for this?)
+>>     
+>
+> I thought it was about on par with its counterpart, which is "normal".
+> Either way, I don't think a casual reader would get an adequate idea
+> of how it works in one word. normal ~= refcounted, special ~= !refcounted
+> I guess, but it is slightly more than that and besides, normal was there
+> first, and I think Linus coined it... if you can convince him to change
+> it then you have my blessing to change special into whatever you want.
+>   
 
-And yes it works with IRQ stacks which is all that sparc64 uses
-nowadays.
+It's only used in a couple of places, so giving it a longer name
+wouldn't cost much.  _PAGE_USER_UNCOUNTED?  But ugh, a lot of cross-arch
+churnpatch to do it.
 
-Perhaps this is useful enough to make generic.
+    J
+
