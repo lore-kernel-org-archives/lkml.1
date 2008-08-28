@@ -1,104 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbYH1ATu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756834AbYH1AWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756669AbYH1ATu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 20:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbYH1ATi
+	id S1756834AbYH1AWd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 20:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbYH1AWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 20:19:38 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:7936 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752359AbYH1ATh (ORCPT
+	Wed, 27 Aug 2008 20:22:23 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:39774 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754441AbYH1AWW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 20:19:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=xELVUea/Er0A+kZdb0sQ8aCDXFhKtj/CdZL8hoKcrQvG3bb3qIvcM4mU/567roX2/n
-         Bfkrce/hZo718bsAJdMq+PeFncxhPhIMp9xfA/t5P0SU1lTLC19vk108JQmcltna7bD+
-         EbnLToaU/Cb6vjDXxSQirfpJpiA7zjO/eeMKk=
-Message-ID: <1ba2fa240808271719o2a3617e7re0499670de785b2f@mail.gmail.com>
-Date: Thu, 28 Aug 2008 03:19:35 +0300
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: pull request: wireless-2.6 2008-08-26
-Cc: "Michael Buesch" <mb@bu3sch.de>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Bruno Randolf" <bruno@thinktube.com>
-In-Reply-To: <20080827233103.GE5927@tesla>
+	Wed, 27 Aug 2008 20:22:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=t6eBwT4IBxnn5pxaOCShqf6GOrcag5x/rwvReKhFbjhS9SjXWaR0hZezC5iLdj2exdvlsEiQ8sl0Ql99JSs1IzACNLR2fwyhMO6xverJQHkPbwIkAa+3eln62W7KQRaNPf9hrAxFqbA99sI4oAcr9iENqznyouXBw4Br6EXu4Cc=  ;
+X-YMail-OSG: ELfd2QAVM1koUH1UTLkz6ynjM86ahIzFeosoSnu6_sHTndgbm7pzSCVcHrpYiJVl60yBDOnvQY4vsRjk90DZoy2.joKOPi5zKKXm375.QjCQB1nu_hEaqwoobX0WM5OrSt.9YtVKc1VWcJC5GYJkdBgF
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Eric Anholt <eric@anholt.net>
+Subject: Re: [PATCH] Export kmap_atomic_pfn for DRM-GEM.
+Date: Thu, 28 Aug 2008 10:22:14 +1000
+User-Agent: KMail/1.9.5
+Cc: Dave Airlie <airlied@gmail.com>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <1219779789-8368-1-git-send-email-eric@anholt.net> <200808272336.05736.nickpiggin@yahoo.com.au> <1219855961.4994.6.camel@vonnegut.anholt.net>
+In-Reply-To: <1219855961.4994.6.camel@vonnegut.anholt.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080827013009.GA15781@tuxdriver.com>
-	 <1ba2fa240808271226i95a7789k481a68b09dc60164@mail.gmail.com>
-	 <200808272225.10557.mb@bu3sch.de>
-	 <1ba2fa240808271611v382631ecn2a24e2816562d434@mail.gmail.com>
-	 <20080827233103.GE5927@tesla>
+Message-Id: <200808281022.14296.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 2:31 AM, Luis R. Rodriguez
-<lrodriguez@atheros.com> wrote:
-> On Wed, Aug 27, 2008 at 04:11:15PM -0700, Tomas Winkler wrote:
->> if (beacon_timestamp > rx_timestamp)
->>     merge
->>
->> The patch from Assaf just disable reporting RX timestamp to mac and
->> thus disabling merging which gives incorrect spec behavior but smooth
->> traffic.
+On Thursday 28 August 2008 02:52, Eric Anholt wrote:
+> On Wed, 2008-08-27 at 23:36 +1000, Nick Piggin wrote:
+> > On Wednesday 27 August 2008 05:43, Eric Anholt wrote:
+> > > The driver would like to map IO space directly for copying data in when
+> > > appropriate, to avoid CPU cache flushing for streaming writes.
+> > > kmap_atomic_pfn lets us avoid IPIs associated with ioremap for this
+> > > process.
+> > >
+> > > Signed-off-by: Eric Anholt <eric@anholt.net>
+> > > ---
+> > >  arch/x86/mm/highmem_32.c |    1 +
+> > >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > >
+> > > diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
+> > > index 165c871..d52e91d 100644
+> > > --- a/arch/x86/mm/highmem_32.c
+> > > +++ b/arch/x86/mm/highmem_32.c
+> > > @@ -137,6 +137,7 @@ void *kmap_atomic_pfn(unsigned long pfn, enum
+> > > km_type type)
+> > >
+> > >  	return (void*) vaddr;
+> > >  }
+> > > +EXPORT_SYMBOL(kmap_atomic_pfn);
+> > >
+> > >  struct page *kmap_atomic_to_page(void *ptr)
+> > >  {
+> >
+> > I wonder if you ever tested my vmap rework patches with this issue? It
+> > seems somewhat x86 specific and also not conceptually so clean to use
+> > kmap_atomic_pfn for this. vmap may not be used by all architectures but
+> > I think it might be able to cover some of them.
+> >
+> > As I said, there are some other possible improvements that can be made
+> > to my vmap rewrite if performance isn't good enough, but I simply have
+> > not seen numbers...
 >
-> We *should follow the spec*.
+> The consumer of this is a driver for Intel platforms, so being
+> x86-specific is not a worry this patch series.
 
-I prefer to be able transfer files over blindly following spec. This
-doesn't really break interoperability in practice.
-
->> Actually we've checked few cards including broadcom and various
->> windows NICs
->
-> What are windows NICs?
->
->> and non of them implements this correctly so this WA is
->> probably the solution.
->
-> Disagreed! If there is hardware which is not capable of handling this
-> we should simply have a HW flag which specifies this to handle this as a
-> work around (WA). Just because some cards are not capable it doesn't
-> mean it should impose that on the rest.
-
-This is w/a in the specific driver not in the mac so this is de facto
-what you have suggested. This patch is marked as W/A and should have
-probably
-some cleaner solution in 2.6.28
-
->> Other solution would be to mark leader with highest TSF and not
->> reconnecting to the same station again and again.
->>
->> Last solution would be to remove this merging all together but then
->> I'm not sure if Bruno added this code just implement the spec or
->> really tested it with any hardware. I'm not sure if any vendor
->> implements PS in IBSS so this merging is probably not important
->> anyway.
->
-> Absolutely not! IBSS merge is per spec, otherwise you don't really have
-> a real IBSS.
-
-I'm all for following spec and we've tried really hard to make it work.
-Anyhow I'm not sure what you call real IBSS. nobody has checked it for
-1.5 year this patch  is in and now is suddenly so important...
-b43 was effected and probably also something that John worked with (as
-he issued his anti-chatty patch)
-I would like to see if there is any  HW under mac80211 that actually
-work with this.
-
-Tomas
+It would help verify and improve the new vmap code, and it would be
+"doing the right thing" to begin with. It would avoid some nasty
+ifdefery in your driver too. And what about 64 bit x86 that doesn't
+have kmap_atomic_pfn? Or x86 builds without highmem?
 
 
->  Luis
->
+> However, when other DRM drivers get around to doing memory management,
+> I'm sure they'll also be interested in an ioremap_wc that doesn't eat
+> ipi costs.  For us, the ipis for flushing were eating over 10% of CPU
+> time.  If your patch series cuts that cost, we could drop this piece at
+> that point.
+
+It can cut the cost quite significantly on normal vmap/vunmap loads I
+tested. Whether it will work as well on your workload, I don't know
+but I would have liked to find out. I raised this issue quite a while
+back, so I'm disappointed it had not been tried...
+
