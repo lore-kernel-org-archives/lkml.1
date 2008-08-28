@@ -1,66 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbYH1Tyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbYH1Tzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756053AbYH1Tyb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 15:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbYH1TyW
+	id S1756230AbYH1Tzo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 15:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754342AbYH1Tzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 15:54:22 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:47240 "EHLO e4.ny.us.ibm.com"
+	Thu, 28 Aug 2008 15:55:36 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:55571 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753048AbYH1TyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 15:54:21 -0400
+	id S1753572AbYH1Tzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 15:55:35 -0400
 From: Serge Hallyn <serue@us.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: dhowells@redhat.com, morgan@kernel.org, agruen@suse.de,
        Serge Hallyn <serue@us.ibm.com>
-Subject: [PATCH 2/2] file capabilities: turn on by default
-Date: Thu, 28 Aug 2008 14:54:15 -0500
-Message-Id: <fe7784a0710a8fef0ac2e4f39589dff6f8293ad0.1219951973.git.serue@us.ibm.com>
+Subject: [PATCH 1/2] file capabilities: add no_file_caps switch (v2)
+Date: Thu, 28 Aug 2008 14:54:14 -0500
+Message-Id: <f79cd5c96d2996b984fdfe1c7d8300975f55e8e6.1219951973.git.serue@us.ibm.com>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <f79cd5c96d2996b984fdfe1c7d8300975f55e8e6.1219951973.git.serue@us.ibm.com>
+In-Reply-To: <>
 References: <>
- <f79cd5c96d2996b984fdfe1c7d8300975f55e8e6.1219951973.git.serue@us.ibm.com>
-In-Reply-To: <f79cd5c96d2996b984fdfe1c7d8300975f55e8e6.1219951973.git.serue@us.ibm.com>
-References: <f79cd5c96d2996b984fdfe1c7d8300975f55e8e6.1219951973.git.serue@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that file capabilities can be turned off at boot, go ahead
-and compile them into the kernel by default by making
-CONFIG_SECURITY_FILE_CAPABILITIES=y the default.
+Add a no_file_caps boot option when file capabilities are
+compiled into the kernel (CONFIG_SECURITY_FILE_CAPABILITIES=y).
 
-Note that the boot flag no_file_caps must be specified to turn
-file capabilities off, as by default they are on.  So the
-default behavior is in fact changed.
+This allows distributions to ship a kernel with file capabilities
+compiled in, without forcing users to use (and understand and
+trust) them.
+
+When no_file_caps is specified at boot, then when a process executes
+a file, any file capabilities stored with that file will not be
+used in the calculation of the process' new capability sets.
+
+This means that booting with the no_file_caps boot option will
+not be the same as booting a kernel with file capabilities
+compiled out - in particular a task with  CAP_SETPCAP will not
+have any chance of passing capabilities to another task (which
+isn't "really" possible anyway, and which may soon by killed
+altogether by David Howells in any case), and it will instead
+be able to put new capabilities in its pI.  However since fI
+will always be empty and pI is masked with fI, it gains the
+task nothing.
+
+We also support the extra prctl options, setting securebits and
+dropping capabilities from the per-process bounding set.
+
+The other remaining difference is that killpriv, task_setscheduler,
+setioprio, and setnice will continue to be hooked.  That will
+be noticable in the case where a root task changed its uid
+while keeping some caps, and another task owned by the new uid
+tries to change settings for the more privileged task.
 
 Signed-off-by: Serge Hallyn <serue@us.ibm.com>
 ---
- security/Kconfig |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+ include/linux/capability.h |    4 ++++
+ kernel/capability.c        |   11 +++++++++++
+ security/commoncap.c       |    9 +++++++++
+ 3 files changed, 24 insertions(+), 0 deletions(-)
 
-diff --git a/security/Kconfig b/security/Kconfig
-index 5592939..6fbb233 100644
---- a/security/Kconfig
-+++ b/security/Kconfig
-@@ -75,12 +75,15 @@ config SECURITY_NETWORK_XFRM
+diff --git a/include/linux/capability.h b/include/linux/capability.h
+index 9d1fe30..c96c455 100644
+--- a/include/linux/capability.h
++++ b/include/linux/capability.h
+@@ -359,6 +359,10 @@ typedef struct kernel_cap_struct {
  
- config SECURITY_FILE_CAPABILITIES
- 	bool "File POSIX Capabilities"
--	default n
-+	default y
- 	help
- 	  This enables filesystem capabilities, allowing you to give
- 	  binaries a subset of root's powers without using setuid 0.
+ #ifdef __KERNEL__
  
--	  If in doubt, answer N.
-+	  You can still boot with the no_file_caps option to disable
-+	  file capabilities.
++#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
++extern int file_caps_enabled;
++#endif
 +
-+	  If in doubt, answer Y.
+ /*
+  * Internal kernel functions only
+  */
+diff --git a/kernel/capability.c b/kernel/capability.c
+index 33e51e7..e13a685 100644
+--- a/kernel/capability.c
++++ b/kernel/capability.c
+@@ -33,6 +33,17 @@ EXPORT_SYMBOL(__cap_empty_set);
+ EXPORT_SYMBOL(__cap_full_set);
+ EXPORT_SYMBOL(__cap_init_eff_set);
  
- config SECURITY_ROOTPLUG
- 	bool "Root Plug Support"
++#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
++int file_caps_enabled = 1;
++
++static int __init file_caps_disable(char *str)
++{
++	file_caps_enabled = 0;
++	return 1;
++}
++__setup("no_file_caps", file_caps_disable);
++#endif
++
+ /*
+  * More recent versions of libcap are available from:
+  *
+diff --git a/security/commoncap.c b/security/commoncap.c
+index e4c4b3f..e33f632 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -27,6 +27,10 @@
+ #include <linux/prctl.h>
+ #include <linux/securebits.h>
+ 
++#ifndef CONFIG_SECURITY_FILE_CAPABILITIES
++static const int file_caps_enabled;
++#endif
++
+ int cap_netlink_send(struct sock *sk, struct sk_buff *skb)
+ {
+ 	NETLINK_CB(skb).eff_cap = current->cap_effective;
+@@ -279,6 +283,11 @@ static int get_file_caps(struct linux_binprm *bprm)
+ 	struct vfs_cap_data vcaps;
+ 	struct inode *inode;
+ 
++	if (!file_caps_enabled) {
++		bprm_clear_caps(bprm);
++		return 0;
++	}
++
+ 	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID) {
+ 		bprm_clear_caps(bprm);
+ 		return 0;
 -- 
 1.5.4.3
 
