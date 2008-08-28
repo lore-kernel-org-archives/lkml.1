@@ -1,503 +1,467 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbYH1ELp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbYH1EMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755302AbYH1ELp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 00:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbYH1ELc
+	id S1755306AbYH1EMn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 00:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbYH1EMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 00:11:32 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:28773 "EHLO
-	stargate.asicdesigners.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750718AbYH1EL3 (ORCPT
+	Thu, 28 Aug 2008 00:12:33 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:36677 "EHLO
+	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750831AbYH1EMb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 00:11:29 -0400
-Date: Wed, 27 Aug 2008 21:21:59 -0700
-From: Karen Xie <kxie@chelsio.com>
-Message-Id: <200808280421.m7S4LxFl006471@localhost.localdomain>
-To: netdev@vger.kernel.org, open-iscsi@googlegroups.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4 2.6.28] open-iscsi - support for digest offload and payload DDP
-Cc: jgarzik@pobox.com, davem@davemloft.net, michaelc@cs.wisc.edu,
-       swise@opengridcomputing.com, rdreier@cisco.com, daisyc@us.ibm.com,
-       wenxiong@us.ibm.com, bhua@us.ibm.com, divy@chelsio.com, dm@chelsio.com,
-       leedom@chelsio.com, kxie@chelsio.com
+	Thu, 28 Aug 2008 00:12:31 -0400
+Date: Wed, 27 Aug 2008 23:11:15 -0500
+From: David Fries <david@fries.net>
+To: linux-kernel@vger.kernel.org
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       Paul Gortmaker <p_gortmaker@yahoo.com>
+Subject: [PATCH] ne.c fix for hibernate and rmmod oops fix
+Message-ID: <20080828041110.GA9404@spacedout.fries.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.4i
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Wed, 27 Aug 2008 23:11:58 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 3/4 2.6.28] open-iscsi - support for digest offload and payload DDP.
+side notes on the patch and development:
 
-From: Karen Xie <kxie@chelsio.com>
+I found it strange that ne_init was being called before ne_probe.
+ne_probe is called in drivers/net/Space.c
 
-Added PDU digest offload and payload direct-placement support in
-open-iscsi.
+do_ne_probe uses dev->mem_end special value 0xbad as a flag to deal
+specially when some bad, but usable devices.  The io port platform
+resource has a start and end, but if start is 0x300 and end is 0xbad,
+it will just fail with io ports in use and not probe the device.  Is
+using the flag IORESOURCE_DISABLED acceptable?  There doesn't seem to
+be any good way to pass some extra driver dependent data through to
+the platform probe function.
 
-Signed-off-by: Karen Xie <kxie@chelsio.com>
----
++	/* Bad, crippled, how about disabled?
++	 * Any other suggestions for passing this through?
++	 */
++	if (dev->mem_end == BAD)
++		r[0].flags |= IORESOURCE_DISABLED;
 
- drivers/scsi/iscsi_tcp.c            |   56 ++++++++++++++++++++++++-----------
- drivers/scsi/iscsi_tcp.h            |   14 +++++++++
- drivers/scsi/libiscsi.c             |   54 +++++++++++++++++++++++++++-------
- include/scsi/iscsi_if.h             |    1 +
- include/scsi/libiscsi.h             |    2 +
- include/scsi/scsi_transport_iscsi.h |    9 ++++++
- 6 files changed, 106 insertions(+), 30 deletions(-)
+-- 
+David Fries <david@fries.net>
+http://fries.net/~david/ (PGP encryption key available)
 
+commit 3e2c3988388583aac009525ec1d2803dceb7cd1b
+Author: David Fries <david@fries.net>
+Date:   Wed Aug 27 22:49:16 2008 -0500
 
-diff --git a/drivers/scsi/iscsi_tcp.c b/drivers/scsi/iscsi_tcp.c
-index 2a2f009..ec73a31 100644
---- a/drivers/scsi/iscsi_tcp.c
-+++ b/drivers/scsi/iscsi_tcp.c
-@@ -97,7 +97,7 @@ static int iscsi_tcp_hdr_recv_done(struct iscsi_tcp_conn *tcp_conn,
-  * data is copied to the indicated sg entry, at the given
-  * offset.
-  */
--static inline void
-+void
- iscsi_tcp_segment_init_sg(struct iscsi_segment *segment,
- 			  struct scatterlist *sg, unsigned int offset)
- {
-@@ -107,6 +107,7 @@ iscsi_tcp_segment_init_sg(struct iscsi_segment *segment,
- 			    segment->total_size - segment->total_copied);
- 	segment->data = NULL;
- }
-+EXPORT_SYMBOL_GPL(iscsi_tcp_segment_init_sg);
+    [PATCH] ne.c fix for hibernate and rmmod oops fix
+    
+    Removing the module would cause a kernel oops as platform_driver_probe
+    failed to detect a device and unregistered the platform driver on
+    module init, and cleanup_module would unregister the already
+    unregistered driver.  The suspend and resume functions weren't being
+    called and the network card didn't function across a suspend to disk
+    followed by a power cycle.
+    
+    platform_driver support was added earlier, but without any
+    platform_device_register* calls I don't think it was being used.  Now
+    all devices are registered using platform_device_register_simple and
+    pointers are kept to unregister the ones that the probe failed for or
+    unregister all devices on module shutdown.  ne_init and ne_exit are no
+    longer compiled into the module to reduce confusion (and multiple
+    unregister paths that caused the rmmod oops).  With the devices
+    now registered they are added to the platform driver and get suspend
+    and resume events.  A call to pnp_stop_dev and pnp_start_dev now
+    shutsdown and initializes plug and play devices.
+    
+    mdelay(10) replaced by msleep(10) to give up the CPU.
+    
+    netif_device_detach(dev) was added before unregister_netdev(dev) when
+    removing the region as occationally I would see a race condition where
+    the device was still being used in unregister_netdev.
+    
+    Signed-off-by: David Fries <david@fries.net>
+    Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+    Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
+
+diff --git a/drivers/net/ne.c b/drivers/net/ne.c
+index 42443d6..e8eaf5c 100644
+--- a/drivers/net/ne.c
++++ b/drivers/net/ne.c
+@@ -192,8 +192,13 @@ static int __init do_ne_probe(struct net_device *dev)
+ #endif
  
- /**
-  * iscsi_tcp_segment_map - map the current S/G page
-@@ -117,7 +118,7 @@ iscsi_tcp_segment_init_sg(struct iscsi_segment *segment,
-  * because the iscsi passthrough and internal IO paths will never use high
-  * mem pages.
-  */
--static inline void
-+void
- iscsi_tcp_segment_map(struct iscsi_segment *segment, int recv)
- {
- 	struct scatterlist *sg;
-@@ -143,8 +144,9 @@ iscsi_tcp_segment_map(struct iscsi_segment *segment, int recv)
- 	segment->sg_mapped = kmap_atomic(sg_page(sg), KM_SOFTIRQ0);
- 	segment->data = segment->sg_mapped + sg->offset + segment->sg_offset;
- }
-+EXPORT_SYMBOL_GPL(iscsi_tcp_segment_map);
+ 	/* First check any supplied i/o locations. User knows best. <cough> */
+-	if (base_addr > 0x1ff)	/* Check a single specified location. */
+-		return ne_probe1(dev, base_addr);
++	if (base_addr > 0x1ff) {	/* Check a single specified location. */
++		int ret = ne_probe1(dev, base_addr);
++		if (ret)
++			printk(KERN_WARNING "ne.c: No NE*000 card found at "
++				"i/o = %#lx\n", base_addr);
++		return ret;
++	}
+ 	else if (base_addr != 0)	/* Don't probe at all. */
+ 		return -ENXIO;
  
--static inline void
-+void
- iscsi_tcp_segment_unmap(struct iscsi_segment *segment)
- {
- 	debug_tcp("iscsi_tcp_segment_unmap %p\n", segment);
-@@ -156,6 +158,7 @@ iscsi_tcp_segment_unmap(struct iscsi_segment *segment)
- 		segment->data = NULL;
- 	}
+@@ -214,11 +219,47 @@ static int __init do_ne_probe(struct net_device *dev)
+ 	return -ENODEV;
  }
-+EXPORT_SYMBOL_GPL(iscsi_tcp_segment_unmap);
  
- /*
-  * Splice the digest buffer into the buffer
-@@ -376,6 +379,9 @@ static inline int
- iscsi_tcp_dgst_verify(struct iscsi_tcp_conn *tcp_conn,
- 		      struct iscsi_segment *segment)
- {
-+	if (tcp_conn->iscsi_conn->session->tt->caps & CAP_DIGEST_OFFLOAD)
-+		return (segment->status & ISCSI_SEGMENT_DGST_ERR) ? 0 : 1;
++#define MAX_NE_CARDS	4	/* Max number of NE cards per module */
++static struct platform_device *pdev_ne[MAX_NE_CARDS];
++/* 0xbad = bad sig or no reset ack */
++#define BAD 0xbad
 +
- 	if (!segment->digest_len)
- 		return 1;
- 
-@@ -448,7 +454,7 @@ iscsi_segment_seek_sg(struct iscsi_segment *segment,
-  * function is called we do not yet know the final size of the header and want
-  * to delay the digest processing until we know that.
-  */
--static void
-+void
- iscsi_tcp_hdr_recv_prep(struct iscsi_tcp_conn *tcp_conn)
- {
- 	debug_tcp("iscsi_tcp_hdr_recv_prep(%p%s)\n", tcp_conn,
-@@ -457,6 +463,7 @@ iscsi_tcp_hdr_recv_prep(struct iscsi_tcp_conn *tcp_conn)
- 				tcp_conn->in.hdr_buf, sizeof(struct iscsi_hdr),
- 				iscsi_tcp_hdr_recv_done, NULL);
- }
-+EXPORT_SYMBOL_GPL(iscsi_tcp_hdr_recv_prep);
- 
- /*
-  * Handle incoming reply to any other type of command
-@@ -486,7 +493,8 @@ iscsi_tcp_data_recv_prep(struct iscsi_tcp_conn *tcp_conn)
- 	struct iscsi_conn *conn = tcp_conn->iscsi_conn;
- 	struct hash_desc *rx_hash = NULL;
- 
--	if (conn->datadgst_en)
-+	if (conn->datadgst_en &&
-+	    !(conn->session->tt->caps & CAP_DIGEST_OFFLOAD))
- 		rx_hash = &tcp_conn->rx_hash;
- 
- 	iscsi_segment_init_linear(&tcp_conn->in.segment,
-@@ -497,7 +505,7 @@ iscsi_tcp_data_recv_prep(struct iscsi_tcp_conn *tcp_conn)
- /*
-  * must be called with session lock
-  */
--static void
-+void
- iscsi_tcp_cleanup_task(struct iscsi_conn *conn, struct iscsi_task *task)
- {
- 	struct iscsi_tcp_task *tcp_task = task->dd_data;
-@@ -521,6 +529,7 @@ iscsi_tcp_cleanup_task(struct iscsi_conn *conn, struct iscsi_task *task)
- 		tcp_task->r2t = NULL;
- 	}
- }
-+EXPORT_SYMBOL_GPL(iscsi_tcp_cleanup_task);
- 
- /**
-  * iscsi_data_rsp - SCSI Data-In Response processing
-@@ -737,7 +746,7 @@ iscsi_tcp_process_data_in(struct iscsi_tcp_conn *tcp_conn,
-  * by data, the receive buffer is set up to copy the incoming data
-  * to the correct location.
-  */
--static int
-+int
- iscsi_tcp_hdr_dissect(struct iscsi_conn *conn, struct iscsi_hdr *hdr)
- {
- 	int rc = 0, opcode, ahslen;
-@@ -793,7 +802,8 @@ iscsi_tcp_hdr_dissect(struct iscsi_conn *conn, struct iscsi_hdr *hdr)
- 			 * we move on to the next scatterlist entry and
- 			 * update the digest per-entry.
- 			 */
--			if (conn->datadgst_en)
-+			if (conn->datadgst_en &&
-+			    !(conn->session->tt->caps & CAP_DIGEST_OFFLOAD))
- 				rx_hash = &tcp_conn->rx_hash;
- 
- 			debug_tcp("iscsi_tcp_begin_data_in(%p, offset=%d, "
-@@ -881,6 +891,7 @@ iscsi_tcp_hdr_dissect(struct iscsi_conn *conn, struct iscsi_hdr *hdr)
- 
- 	return rc;
- }
-+EXPORT_SYMBOL_GPL(iscsi_tcp_hdr_dissect);
- 
- /**
-  * iscsi_tcp_hdr_recv_done - process PDU header
-@@ -919,7 +930,8 @@ iscsi_tcp_hdr_recv_done(struct iscsi_tcp_conn *tcp_conn,
- 	/* We're done processing the header. See if we're doing
- 	 * header digests; if so, set up the recv_digest buffer
- 	 * and go back for more. */
--	if (conn->hdrdgst_en) {
-+	if (conn->hdrdgst_en &&
-+	    !(conn->session->tt->caps & CAP_DIGEST_OFFLOAD)) {
- 		if (segment->digest_len == 0) {
- 			iscsi_tcp_segment_splice_digest(segment,
- 							segment->recv_digest);
-@@ -1158,7 +1170,7 @@ iscsi_tcp_xmit_qlen(struct iscsi_conn *conn)
- 	return segment->total_copied - segment->total_size;
- }
- 
--static inline int
-+static int
- iscsi_tcp_flush(struct iscsi_conn *conn)
- {
- 	int rc;
-@@ -1205,7 +1217,8 @@ iscsi_tcp_send_hdr_prep(struct iscsi_conn *conn, void *hdr, size_t hdrlen)
- 	 * sure that both iscsi_tcp_task and mtask have
- 	 * sufficient room.
- 	 */
--	if (conn->hdrdgst_en) {
-+	if (conn->hdrdgst_en &&
-+	    !(conn->session->tt->caps & CAP_DIGEST_OFFLOAD)) {
- 		iscsi_tcp_dgst_header(&tcp_conn->tx_hash, hdr, hdrlen,
- 				      hdr + hdrlen);
- 		hdrlen += ISCSI_DIGEST_SIZE;
-@@ -1243,7 +1256,8 @@ iscsi_tcp_send_data_prep(struct iscsi_conn *conn, struct scatterlist *sg,
- 	hdr_spec_len = ntoh24(tcp_conn->out.hdr->dlength);
- 	WARN_ON(iscsi_padded(len) != iscsi_padded(hdr_spec_len));
- 
--	if (conn->datadgst_en)
-+	if (conn->datadgst_en &&
-+	    !(conn->session->tt->caps & CAP_DIGEST_OFFLOAD))
- 		tx_hash = &tcp_conn->tx_hash;
- 
- 	return iscsi_segment_seek_sg(&tcp_conn->out.data_segment,
-@@ -1267,7 +1281,8 @@ iscsi_tcp_send_linear_data_prepare(struct iscsi_conn *conn, void *data,
- 	hdr_spec_len = ntoh24(tcp_conn->out.hdr->dlength);
- 	WARN_ON(iscsi_padded(len) != iscsi_padded(hdr_spec_len));
- 
--	if (conn->datadgst_en)
-+	if (conn->datadgst_en &&
-+	    !(conn->session->tt->caps & CAP_DIGEST_OFFLOAD))
- 		tx_hash = &tcp_conn->tx_hash;
- 
- 	iscsi_segment_init_linear(&tcp_conn->out.data_segment,
-@@ -1329,7 +1344,7 @@ iscsi_solicit_data_cont(struct iscsi_conn *conn, struct iscsi_task *task,
-  * @task: scsi command task
-  * @sc: scsi command
-  **/
--static int
-+int
- iscsi_tcp_task_init(struct iscsi_task *task)
- {
- 	struct iscsi_tcp_task *tcp_task = task->dd_data;
-@@ -1378,6 +1393,7 @@ iscsi_tcp_task_init(struct iscsi_task *task)
- 	task->imm_count = 0;
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(iscsi_tcp_task_init);
- 
- /*
-  * iscsi_tcp_task_xmit - xmit normal PDU task
-@@ -1387,7 +1403,7 @@ iscsi_tcp_task_init(struct iscsi_task *task)
-  * -EAGAIN if there's still data in the queue, or != 0 for any other kind
-  * of error.
-  */
--static int
-+int
- iscsi_tcp_task_xmit(struct iscsi_task *task)
- {
- 	struct iscsi_conn *conn = task->conn;
-@@ -1398,7 +1414,7 @@ iscsi_tcp_task_xmit(struct iscsi_task *task)
- 
- flush:
- 	/* Flush any pending data first. */
--	rc = iscsi_tcp_flush(conn);
-+	rc = conn->session->tt->flush_conn(conn);
- 	if (rc < 0)
- 		return rc;
- 
-@@ -1490,6 +1506,7 @@ fail:
- 	iscsi_conn_failure(conn, rc);
- 	return -EIO;
- }
-+EXPORT_SYMBOL_GPL(iscsi_tcp_task_xmit);
- 
- static struct iscsi_cls_conn *
- iscsi_tcp_conn_create(struct iscsi_cls_session *cls_session, uint32_t conn_idx)
-@@ -1696,7 +1713,7 @@ free_socket:
- 	return err;
- }
- 
--static int
-+int
- iscsi_r2tpool_alloc(struct iscsi_session *session)
- {
- 	int i;
-@@ -1742,8 +1759,9 @@ r2t_alloc_fail:
- 	}
- 	return -ENOMEM;
- }
-+EXPORT_SYMBOL_GPL(iscsi_r2tpool_alloc);
- 
--static void
-+void
- iscsi_r2tpool_free(struct iscsi_session *session)
- {
- 	int i;
-@@ -1756,6 +1774,7 @@ iscsi_r2tpool_free(struct iscsi_session *session)
- 		iscsi_pool_free(&tcp_task->r2tpool);
- 	}
- }
-+EXPORT_SYMBOL_GPL(iscsi_r2tpool_free);
- 
- static int
- iscsi_conn_set_param(struct iscsi_cls_conn *cls_conn, enum iscsi_param param,
-@@ -1978,6 +1997,7 @@ static struct iscsi_transport iscsi_tcp_transport = {
- 	.get_session_param	= iscsi_session_get_param,
- 	.start_conn		= iscsi_conn_start,
- 	.stop_conn		= iscsi_tcp_conn_stop,
-+	.flush_conn		= iscsi_tcp_flush,
- 	/* iscsi host params */
- 	.get_host_param		= iscsi_host_get_param,
- 	.set_host_param		= iscsi_host_set_param,
-diff --git a/drivers/scsi/iscsi_tcp.h b/drivers/scsi/iscsi_tcp.h
-index 498d8ca..81ed0fb 100644
---- a/drivers/scsi/iscsi_tcp.h
-+++ b/drivers/scsi/iscsi_tcp.h
-@@ -32,7 +32,9 @@ struct iscsi_segment;
- typedef int iscsi_segment_done_fn_t(struct iscsi_tcp_conn *,
- 				    struct iscsi_segment *);
- 
-+#define ISCSI_SEGMENT_DGST_ERR 0x1
- struct iscsi_segment {
-+	unsigned int		status;
- 	unsigned char		*data;
- 	unsigned int		size;
- 	unsigned int		copied;
-@@ -130,4 +132,16 @@ struct iscsi_tcp_task {
- 	struct iscsi_data_task	unsol_dtask;	/* Data-Out header buf */
- };
- 
-+void iscsi_tcp_segment_init_sg(struct iscsi_segment *, struct scatterlist *,
-+			       unsigned int);
-+void iscsi_tcp_segment_map(struct iscsi_segment *, int);
-+void iscsi_tcp_segment_unmap(struct iscsi_segment *);
-+void iscsi_tcp_hdr_recv_prep(struct iscsi_tcp_conn *);
-+void iscsi_tcp_cleanup_task(struct iscsi_conn *, struct iscsi_task *);
-+int iscsi_tcp_hdr_dissect(struct iscsi_conn *conn, struct iscsi_hdr *);
-+int iscsi_tcp_task_init(struct iscsi_task *);
-+int iscsi_tcp_task_xmit(struct iscsi_task *);
-+int iscsi_r2tpool_alloc(struct iscsi_session *);
-+void iscsi_r2tpool_free(struct iscsi_session *);
++#ifdef MODULE
++static int io[MAX_NE_CARDS];
++static int irq[MAX_NE_CARDS];
++static int bad[MAX_NE_CARDS];
 +
- #endif /* ISCSI_H */
-diff --git a/drivers/scsi/libiscsi.c b/drivers/scsi/libiscsi.c
-index 299e075..9c8eb4c 100644
---- a/drivers/scsi/libiscsi.c
-+++ b/drivers/scsi/libiscsi.c
-@@ -218,7 +218,12 @@ static int iscsi_prep_scsi_cmd_pdu(struct iscsi_task *task)
- 	hdr->opcode = ISCSI_OP_SCSI_CMD;
- 	hdr->flags = ISCSI_ATTR_SIMPLE;
- 	int_to_scsilun(sc->device->lun, (struct scsi_lun *)hdr->lun);
--	hdr->itt = build_itt(task->itt, session->age);
-+	if (session->tt->reserve_itt) {
-+		rc = session->tt->reserve_itt(task, &hdr->itt);
-+		if (rc)
-+			return rc;
-+	} else
-+		hdr->itt = build_itt(task->itt, session->age);
- 	hdr->cmdsn = cpu_to_be32(session->cmdsn);
- 	session->cmdsn++;
- 	hdr->exp_statsn = cpu_to_be32(conn->exp_statsn);
-@@ -332,6 +337,9 @@ static void iscsi_complete_command(struct iscsi_task *task)
- 	struct iscsi_session *session = conn->session;
- 	struct scsi_cmnd *sc = task->sc;
- 
-+	if (session->tt->release_itt)
-+		session->tt->release_itt(task, task->hdr->itt);
++module_param_array(io, int, NULL, 0);
++module_param_array(irq, int, NULL, 0);
++module_param_array(bad, int, NULL, 0);
++MODULE_PARM_DESC(io, "I/O base address(es),required");
++MODULE_PARM_DESC(irq, "IRQ number(s)");
++MODULE_PARM_DESC(bad, "Accept card(s) with bad signatures");
++MODULE_DESCRIPTION("NE1000/NE2000 ISA/PnP Ethernet driver");
++MODULE_LICENSE("GPL");
++#endif /* MODULE */
 +
- 	list_del_init(&task->running);
- 	task->state = ISCSI_TASK_COMPLETED;
- 	task->sc = NULL;
-@@ -442,7 +450,12 @@ static int iscsi_prep_mgmt_task(struct iscsi_conn *conn,
- 	 */
- 	nop->cmdsn = cpu_to_be32(session->cmdsn);
- 	if (hdr->itt != RESERVED_ITT) {
--		hdr->itt = build_itt(task->itt, session->age);
-+		if (session->tt->reserve_itt) {
-+			int rc = session->tt->reserve_itt(task, &hdr->itt);
-+			if (rc)
-+				return rc;
-+		} else
-+			hdr->itt = build_itt(task->itt, session->age);
- 		/*
- 		 * TODO: We always use immediate, so we never hit this.
- 		 * If we start to send tmfs or nops as non-immediate then
-@@ -691,7 +704,13 @@ static int iscsi_handle_reject(struct iscsi_conn *conn, struct iscsi_hdr *hdr,
- 
- 		if (ntoh24(reject->dlength) >= sizeof(struct iscsi_hdr)) {
- 			memcpy(&rejected_pdu, data, sizeof(struct iscsi_hdr));
--			itt = get_itt(rejected_pdu.itt);
-+			if (conn->session->tt->parse_itt)
-+				conn->session->tt->parse_itt(conn,
-+							     rejected_pdu.itt,
-+							     &itt,
-+							     NULL);
-+			else
-+				itt = get_itt(rejected_pdu.itt);
- 			iscsi_conn_printk(KERN_ERR, conn,
- 					  "itt 0x%x had pdu (op 0x%x) rejected "
- 					  "due to DataDigest error.\n", itt,
-@@ -719,7 +738,11 @@ static struct iscsi_task *iscsi_itt_to_task(struct iscsi_conn *conn, itt_t itt)
- 	if (itt == RESERVED_ITT)
- 		return NULL;
- 
--	i = get_itt(itt);
-+	if (conn->session->tt->parse_itt)
-+		conn->session->tt->parse_itt(conn, itt, &i, NULL);
-+	else
-+		i = get_itt(itt);
-+
- 	if (i >= session->cmds_max)
- 		return NULL;
- 
-@@ -750,9 +773,13 @@ int __iscsi_complete_pdu(struct iscsi_conn *conn, struct iscsi_hdr *hdr,
- 	if (rc)
- 		return rc;
- 
--	if (hdr->itt != RESERVED_ITT)
--		itt = get_itt(hdr->itt);
--	else
-+	if (hdr->itt != RESERVED_ITT) {
-+		if (conn->session->tt->parse_itt)
-+			conn->session->tt->parse_itt(conn, hdr->itt,
-+						     &itt, NULL);
-+		else
-+			itt = get_itt(hdr->itt);
-+	} else
- 		itt = ~0U;
- 
- 	debug_scsi("[op 0x%x cid %d itt 0x%x len %d]\n",
-@@ -899,20 +926,25 @@ EXPORT_SYMBOL_GPL(iscsi_complete_pdu);
- int iscsi_verify_itt(struct iscsi_conn *conn, itt_t itt)
+ #ifndef MODULE
+ struct net_device * __init ne_probe(int unit)
  {
- 	struct iscsi_session *session = conn->session;
--	uint32_t i;
-+	uint32_t i, age;
- 
- 	if (itt == RESERVED_ITT)
- 		return 0;
- 
--	if (((__force u32)itt & ISCSI_AGE_MASK) !=
--	    (session->age << ISCSI_AGE_SHIFT)) {
-+	if (conn->session->tt->parse_itt)
-+		conn->session->tt->parse_itt(conn, itt, &i, &age);
-+	else {
-+		i = get_itt(itt);
-+		age = ((__force u32)itt >> ISCSI_AGE_SHIFT) & ISCSI_AGE_MASK;
+-	struct net_device *dev = alloc_eip_netdev();
+-	int err;
++	struct net_device *dev;
++	struct platform_device *pdev;
++	struct resource r[2] = {
++		{
++			.name = "io_port",
++			.flags = IORESOURCE_IO},
++		{
++			.name = "irq",
++			.flags = IORESOURCE_IRQ} };
++	/* Find an empty slot. */
++	int this_dev = 0;
++	while (pdev_ne[this_dev]) {
++		if (++this_dev == MAX_NE_CARDS)
++			return ERR_PTR(-ENOMEM);
 +	}
 +
-+	if (age != session->age) {
- 		iscsi_conn_printk(KERN_ERR, conn,
- 				  "received itt %x expected session age (%x)\n",
- 				  (__force u32)itt, session->age);
- 		return ISCSI_ERR_BAD_ITT;
++	/* Get irq, io from kernel command line */
++	dev = alloc_eip_netdev();
+ 
+ 	if (!dev)
+ 		return ERR_PTR(-ENOMEM);
+@@ -226,13 +267,31 @@ struct net_device * __init ne_probe(int unit)
+ 	sprintf(dev->name, "eth%d", unit);
+ 	netdev_boot_setup_check(dev);
+ 
+-	err = do_ne_probe(dev);
+-	if (err)
+-		goto out;
+-	return dev;
+-out:
++	r[0].start = dev->base_addr;
++	r[0].end = r[0].start+NE_IO_EXTENT-1;
++
++	/* Bad, crippled, how about disabled?
++	 * Any other suggestions for passing this through?
++	 */
++	if (dev->mem_end == BAD)
++		r[0].flags |= IORESOURCE_DISABLED;
++
++	r[1].start = dev->irq;
++
+ 	free_netdev(dev);
+-	return ERR_PTR(err);
++
++	pdev = platform_device_register_simple(
++		DRV_NAME, unit, r, ARRAY_SIZE(r));
++	if (IS_ERR(pdev))
++		return ERR_CAST(pdev);
++	pdev_ne[this_dev] = pdev;
++
++	/* Why is ne_probe being called before ne_init? */
++	dev = platform_get_drvdata(pdev);
++	if (!dev)
++		return ERR_PTR(-ENODEV);
++
++	return dev;
+ }
+ #endif
+ 
+@@ -329,7 +388,7 @@ static int __init ne_probe1(struct net_device *dev, unsigned long ioaddr)
+ 	   with an otherwise unused dev->mem_end value of "0xBAD" will
+ 	   cause the driver to skip these parts of the probe. */
+ 
+-	bad_card = ((dev->base_addr != 0) && (dev->mem_end == 0xbad));
++	bad_card = ((dev->base_addr != 0) && (dev->mem_end == BAD));
+ 
+ 	/* Reset card. Who knows what dain-bramaged state it was left in. */
+ 
+@@ -472,7 +531,7 @@ static int __init ne_probe1(struct net_device *dev, unsigned long ioaddr)
+ 		outb_p(0x00, ioaddr + EN0_RCNTLO);
+ 		outb_p(0x00, ioaddr + EN0_RCNTHI);
+ 		outb_p(E8390_RREAD+E8390_START, ioaddr); /* Trigger it... */
+-		mdelay(10);		/* wait 10ms for interrupt to propagate */
++		msleep(10);	/* wait 10ms for interrupt to propagate */
+ 		outb_p(0x00, ioaddr + EN0_IMR); 		/* Mask it again. */
+ 		dev->irq = probe_irq_off(cookie);
+ 		if (ei_debug > 2)
+@@ -807,18 +866,20 @@ static int __init ne_drv_probe(struct platform_device *pdev)
+ {
+ 	struct net_device *dev;
+ 	struct resource *res;
+-	int err, irq;
++	int err, r_irq;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+-	irq = platform_get_irq(pdev, 0);
+-	if (!res || irq < 0)
++	r_irq = platform_get_irq(pdev, 0);
++	if (!res || r_irq < 0)
+ 		return -ENODEV;
+ 
+ 	dev = alloc_eip_netdev();
+ 	if (!dev)
+ 		return -ENOMEM;
+-	dev->irq = irq;
++	dev->irq = r_irq;
+ 	dev->base_addr = res->start;
++	if (res->flags & IORESOURCE_DISABLED)
++		dev->mem_end = BAD;
+ 	err = do_ne_probe(dev);
+ 	if (err) {
+ 		free_netdev(dev);
+@@ -828,24 +889,56 @@ static int __init ne_drv_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int __exit ne_drv_remove(struct platform_device *pdev)
++static int ne_drv_remove(struct platform_device *pdev)
+ {
+ 	struct net_device *dev = platform_get_drvdata(pdev);
+ 
+-	unregister_netdev(dev);
+-	free_irq(dev->irq, dev);
+-	release_region(dev->base_addr, NE_IO_EXTENT);
+-	free_netdev(dev);
++	if (dev) {
++		struct pnp_dev *idev = (struct pnp_dev *)ei_status.priv;
++		netif_device_detach(dev);
++		unregister_netdev(dev);
++		if (idev)
++			pnp_device_detach(idev);
++		/* Careful ne_drv_remove can be called twice, once from
++		 * the platform_driver.remove and again when the
++		 * platform_device is being removed.
++		 */
++		ei_status.priv = 0;
++		free_irq(dev->irq, dev);
++		release_region(dev->base_addr, NE_IO_EXTENT);
++		free_netdev(dev);
++		platform_set_drvdata(pdev, NULL);
++	}
+ 	return 0;
+ }
+ 
++/* Remove unused devices or all if true. */
++static void ne_loop_rm_unreg(int all)
++{
++	int this_dev;
++	struct platform_device *pdev;
++	for (this_dev = 0; this_dev < MAX_NE_CARDS; this_dev++) {
++		pdev = pdev_ne[this_dev];
++		/* No network device == unused */
++		if (pdev && (!platform_get_drvdata(pdev) || all)) {
++			ne_drv_remove(pdev);
++			platform_device_unregister(pdev);
++			pdev_ne[this_dev] = NULL;
++		}
++	}
++}
++
+ #ifdef CONFIG_PM
+ static int ne_drv_suspend(struct platform_device *pdev, pm_message_t state)
+ {
+ 	struct net_device *dev = platform_get_drvdata(pdev);
+ 
+-	if (netif_running(dev))
++	if (netif_running(dev)) {
++		struct pnp_dev *idev = (struct pnp_dev *)ei_status.priv;
+ 		netif_device_detach(dev);
++		if (idev)
++			pnp_stop_dev(idev);
++	}
+ 	return 0;
+ }
+ 
+@@ -854,6 +947,9 @@ static int ne_drv_resume(struct platform_device *pdev)
+ 	struct net_device *dev = platform_get_drvdata(pdev);
+ 
+ 	if (netif_running(dev)) {
++		struct pnp_dev *idev = (struct pnp_dev *)ei_status.priv;
++		if (idev)
++			pnp_start_dev(idev);
+ 		ne_reset_8390(dev);
+ 		NS8390p_init(dev, 1);
+ 		netif_device_attach(dev);
+@@ -866,7 +962,7 @@ static int ne_drv_resume(struct platform_device *pdev)
+ #endif
+ 
+ static struct platform_driver ne_driver = {
+-	.remove		= __exit_p(ne_drv_remove),
++	.remove		= ne_drv_remove,
+ 	.suspend	= ne_drv_suspend,
+ 	.resume		= ne_drv_resume,
+ 	.driver		= {
+@@ -875,31 +971,7 @@ static struct platform_driver ne_driver = {
+ 	},
+ };
+ 
+-static int __init ne_init(void)
+-{
+-	return platform_driver_probe(&ne_driver, ne_drv_probe);
+-}
+-
+-static void __exit ne_exit(void)
+-{
+-	platform_driver_unregister(&ne_driver);
+-}
+-
+ #ifdef MODULE
+-#define MAX_NE_CARDS	4	/* Max number of NE cards per module */
+-static struct net_device *dev_ne[MAX_NE_CARDS];
+-static int io[MAX_NE_CARDS];
+-static int irq[MAX_NE_CARDS];
+-static int bad[MAX_NE_CARDS];	/* 0xbad = bad sig or no reset ack */
+-
+-module_param_array(io, int, NULL, 0);
+-module_param_array(irq, int, NULL, 0);
+-module_param_array(bad, int, NULL, 0);
+-MODULE_PARM_DESC(io, "I/O base address(es),required");
+-MODULE_PARM_DESC(irq, "IRQ number(s)");
+-MODULE_PARM_DESC(bad, "Accept card(s) with bad signatures");
+-MODULE_DESCRIPTION("NE1000/NE2000 ISA/PnP Ethernet driver");
+-MODULE_LICENSE("GPL");
+ 
+ /* This is set up so that no ISA autoprobe takes place. We can't guarantee
+ that the ne2k probe is the last 8390 based probe to take place (as it
+@@ -908,58 +980,76 @@ ISA device autoprobes on a running machine are not recommended anyway. */
+ 
+ int __init init_module(void)
+ {
+-	int this_dev, found = 0;
+-	int plat_found = !ne_init();
++	int retval;
++	int this_dev;
++	int probed_zero = 0;
++	struct platform_device *pdev;
+ 
+ 	for (this_dev = 0; this_dev < MAX_NE_CARDS; this_dev++) {
+-		struct net_device *dev = alloc_eip_netdev();
+-		if (!dev)
+-			break;
+-		dev->irq = irq[this_dev];
+-		dev->mem_end = bad[this_dev];
+-		dev->base_addr = io[this_dev];
+-		if (do_ne_probe(dev) == 0) {
+-			dev_ne[found++] = dev;
+-			continue;
++		struct resource r[2] = {
++			{
++				.start = io[this_dev],
++				.end = io[this_dev]+NE_IO_EXTENT-1,
++				.name = "io_port",
++				.flags = IORESOURCE_IO},
++			{
++				.start = irq[this_dev],
++				.name = "irq",
++				.flags = IORESOURCE_IRQ} };
++		/* probe zero once */
++		if (io[this_dev] == 0) {
++			if (probed_zero)
++				continue;
++			probed_zero = 1;
+ 		}
+-		free_netdev(dev);
+-		if (found || plat_found)
+-			break;
+-		if (io[this_dev] != 0)
+-			printk(KERN_WARNING "ne.c: No NE*000 card found at i/o = %#x\n", io[this_dev]);
+-		else
+-			printk(KERN_NOTICE "ne.c: You must supply \"io=0xNNN\" value(s) for ISA cards.\n");
+-		return -ENXIO;
++		if (bad[this_dev] == BAD)
++			r[0].flags |= IORESOURCE_DISABLED;
++		pdev = platform_device_register_simple(
++			DRV_NAME, this_dev, r, ARRAY_SIZE(r));
++		if (IS_ERR(pdev))
++			continue;
++		pdev_ne[this_dev] = pdev;
  	}
+-	if (found || plat_found)
+-		return 0;
+-	return -ENODEV;
+-}
  
--	i = get_itt(itt);
- 	if (i >= session->cmds_max) {
- 		iscsi_conn_printk(KERN_ERR, conn,
- 				  "received invalid itt index %u (max cmds "
-diff --git a/include/scsi/iscsi_if.h b/include/scsi/iscsi_if.h
-index 16be12f..75afc58 100644
---- a/include/scsi/iscsi_if.h
-+++ b/include/scsi/iscsi_if.h
-@@ -333,6 +333,7 @@ enum iscsi_host_param {
- #define CAP_FW_DB		0x200
- #define CAP_SENDTARGETS_OFFLOAD	0x400
- #define CAP_DATA_PATH_OFFLOAD	0x800
-+#define CAP_DIGEST_OFFLOAD	0x1000
+-static void cleanup_card(struct net_device *dev)
+-{
+-	struct pnp_dev *idev = (struct pnp_dev *)ei_status.priv;
+-	if (idev)
+-		pnp_device_detach(idev);
+-	free_irq(dev->irq, dev);
+-	release_region(dev->base_addr, NE_IO_EXTENT);
++	/* Need to find out if any devices are found, if not the driver
++	 * has been unregistered, so re-register it for suspend and
++	 * resume notifications and because cleanup_module unregisters it.
++	 */
++	retval = platform_driver_probe(&ne_driver, ne_drv_probe);
++	if (retval) {
++		if (io[this_dev] == 0)
++			printk(KERN_NOTICE "ne.c: You must supply \"io=0xNNN\""
++				" value(s) for ISA cards.\n");
++		ne_loop_rm_unreg(1);
++		return retval;
++	}
++
++	/* Unregister unused platform_devices. */
++	ne_loop_rm_unreg(0);
++
++	return retval;
+ }
  
- /*
-  * These flags describes reason of stop_conn() call
-diff --git a/include/scsi/libiscsi.h b/include/scsi/libiscsi.h
-index 5e75bb7..31f916f 100644
---- a/include/scsi/libiscsi.h
-+++ b/include/scsi/libiscsi.h
-@@ -75,7 +75,7 @@ enum {
- /* this must be a power of two greater than ISCSI_MGMT_CMDS_MAX */
- #define ISCSI_TOTAL_CMDS_MIN		16
- #define ISCSI_AGE_SHIFT			28
--#define ISCSI_AGE_MASK			(0xf << ISCSI_AGE_SHIFT)
-+#define ISCSI_AGE_MASK			0xf
+ void __exit cleanup_module(void)
+ {
+-	int this_dev;
++	platform_driver_unregister(&ne_driver);
  
- #define ISCSI_ADDRESS_BUF_LEN		64
- 
-diff --git a/include/scsi/scsi_transport_iscsi.h b/include/scsi/scsi_transport_iscsi.h
-index 8b6c91d..eb4e34c 100644
---- a/include/scsi/scsi_transport_iscsi.h
-+++ b/include/scsi/scsi_transport_iscsi.h
-@@ -56,6 +56,10 @@ struct sockaddr;
-  *			is not supported, and a -Exx value on other error
-  * @start_conn:		set connection to be operational
-  * @stop_conn:		suspend/recover/terminate connection
-+ * @flush_conn:		flush a connection's transmit queue
-+ * @parse_itt:		parse the itt rcv'ed in BHS
-+ * @reserve_itt:	construct a task itt to be sent in BHS
-+ * @release_itt:	release a itt (constructed by reserve_itt)
-  * @send_pdu:		send iSCSI PDU, Login, Logout, NOP-Out, Reject, Text.
-  * @session_recovery_timedout: notify LLD a block during recovery timed out
-  * @init_task:		Initialize a iscsi_task and any internal structs.
-@@ -109,6 +113,11 @@ struct iscsi_transport {
- 	int (*set_host_param) (struct Scsi_Host *shost,
- 			       enum iscsi_host_param param, char *buf,
- 			       int buflen);
-+	int (*flush_conn) (struct iscsi_conn *conn);
-+	void (*parse_itt)(struct iscsi_conn *conn, itt_t hdr_itt,
-+			  int *idx, int *age);
-+	int (*reserve_itt)(struct iscsi_task *task, itt_t *hdr_itt);
-+	void (*release_itt)(struct iscsi_task *task, itt_t hdr_itt);
- 	int (*send_pdu) (struct iscsi_cls_conn *conn, struct iscsi_hdr *hdr,
- 			 char *data, uint32_t data_size);
- 	void (*get_stats) (struct iscsi_cls_conn *conn,
+-	ne_exit();
+-	for (this_dev = 0; this_dev < MAX_NE_CARDS; this_dev++) {
+-		struct net_device *dev = dev_ne[this_dev];
+-		if (dev) {
+-			unregister_netdev(dev);
+-			cleanup_card(dev);
+-			free_netdev(dev);
+-		}
+-	}
++	ne_loop_rm_unreg(1);
+ }
+ #else /* MODULE */
++
++static int __init ne_init(void)
++{
++	return platform_driver_probe(&ne_driver, ne_drv_probe);
++}
++
++static void __exit ne_exit(void)
++{
++	platform_driver_unregister(&ne_driver);
++
++	ne_loop_rm_unreg(1);
++}
++
+ module_init(ne_init);
+ module_exit(ne_exit);
+ #endif /* MODULE */
