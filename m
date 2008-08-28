@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbYH1QP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbYH1QRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755739AbYH1QP4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 12:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754875AbYH1QPn
+	id S1753916AbYH1QRm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 12:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbYH1QRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 12:15:43 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:60232 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754701AbYH1QPm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 12:15:42 -0400
-Date: Thu, 28 Aug 2008 12:15:40 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Stefani Seibold <stefani@seibold.net>,
-       Dario Faggioli <raistlin@linux.it>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Max Krasnyansky <maxk@qualcomm.com>,
+	Thu, 28 Aug 2008 12:17:32 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:44812 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750828AbYH1QRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 12:17:31 -0400
+Date: Thu, 28 Aug 2008 19:16:32 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Paul Mundt <lethal@linux-sh.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
-In-Reply-To: <1219939502.17355.30.camel@twins>
-Message-ID: <alpine.DEB.1.10.0808281212590.14580@gandalf.stny.rr.com>
-References: <20080819103301.787700742@chello.nl>  <20080819103844.459178947@chello.nl> <20080819110557.GA18608@elte.hu>  <20080828141513.GC31444@goodmis.org> <1219939502.17355.30.camel@twins>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-embedded@vger.kernel.org
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
+	bisected
+Message-ID: <20080828161632.GA13609@cs181140183.pp.htv.fi>
+References: <20080826205916.GB11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org> <20080826232411.GC11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261648140.3363@nehalem.linux-foundation.org> <20080827002316.GE11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261726560.3363@nehalem.linux-foundation.org> <20080827115829.GF11734@cs181140183.pp.htv.fi> <20080827160052.GA15968@linux-sh.org> <20080827173544.GH11734@cs181140183.pp.htv.fi> <20080828003211.GA18893@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080828003211.GA18893@linux-sh.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 28 Aug 2008, Peter Zijlstra wrote:
-
-> On Thu, 2008-08-28 at 10:15 -0400, Steven Rostedt wrote:
-> 
-> > My biggest concern about adding a limit to FIFO is that an RT developer
-> > would spend weeks trying to debug their system wondering why their
-> > planned CPU RT hog, is being preempted by a non-RT task.
+On Thu, Aug 28, 2008 at 09:32:13AM +0900, Paul Mundt wrote:
+> On Wed, Aug 27, 2008 at 08:35:44PM +0300, Adrian Bunk wrote:
+> > On Thu, Aug 28, 2008 at 01:00:52AM +0900, Paul Mundt wrote:
+> > > On Wed, Aug 27, 2008 at 02:58:30PM +0300, Adrian Bunk wrote:
+> > > In addition to that, debugging the runaway stack users on 4k tends to be
+> > > easier anyways since you end up blowing the stack a lot sooner. On sh
+> > > we've had pretty good luck with it, though most of our users are using
+> > > fairly deterministic workloads and continually profiling the footprint.
+> > > Anything that runs away or uses an insane amount of stack space needs to
+> > > be fixed well before that anyways, so catching it sooner is always
+> > > preferable. I imagine the same case is true for m68knommu (even sans IRQ
+> > > stacks).
 > > 
-> > For this, if this time limit does kick in, we should at the very least
-> > print something out to let the user know this happened. After all, this
-> > is more of a safety net anyway, and if we are hitting the limit, the
-> > user should be notified. Perhaps even tell the user that if this
-> > behaviour is expected, to up the sysctl <var> by more.
+> > CONFIG_DEBUG_STACKOVERFLOW should give you the same information, and if
+> > wanted with an arbitrary limit.
+> > 
+> In some cases, yes. In the CONFIG_DEBUG_STACKOVERFLOW case the check is
+> only performed from do_IRQ(), which is sporadic at best, especially on
+> tickless. While it catches some things, it's not a complete solution in
+> and of iteslf.
 > 
-> Should be easy enough to do - 
-> 
-> > Peter, another question. Is this limit for a single RT task running, or
-> > all RT tasks. I'm assuming here that it is a single RT task. If you have
-> > 20 RT tasks all running, would this let non RT tasks in? In that case,
-> > this could be even a bigger issues.
-> 
-> No its not per task. Its per group (and trivially the !group case is one
-> group).
+> In addition to this, there are even fewer platforms that support it than
+> there are platforms that do 4k stacks. At first glance, it looks like
+> it's only m32r, powerpc, sh, x86, and xtensa.
+>...
 
-Does this mean, if I have 100 RT tasks, that will together run for 10secs
-secs, they will only run for 9.5secs?
+As far as I can see the only architectures that optionally offer 4kB 
+stacks today are m68knommu, s390, sh and x86.
 
-This looks like an even bigger issue. Now we don't have one RT FIFO CPU 
-hog, we are now hitting 100 RT FIFO tasks that try to get a bunch done in 
-10 secs.
+Did I miss some architectures or is 5 < 4 ;) ?
 
--- Steve
+> Others support the Kconfig
+> option, but don't seem to realize that it's not an option that the kernel
+> does anything with by itself, and so don't actually do anything (ie,
+> FRV).
+
+Unless I miss anything these "others" include only FRV.
+
+> > IMHO there seems to currently be a mismatch between it's maintainance 
+> > cost and the actual number of users. That's in my opinion the main 
+> > problem with it, no matter in which direction it gets resolved.
+> > 
+> Perhaps that's true on x86, but in general I take issue with that. On sh
+> we've had to do very little maintenance for it and most shipping products
+> are using it today (at least on MMU-Linux, we don't bother with it on
+> nommu). Most of the problems we ran in to with 4k stacks tended to be
+> stuff that we wanted to fix for 8k anyways. I suspect that this case is
+> true for the other embedded platforms also.
+>...
+
+Most stack issues are not platform or architecture specific.
+
+The maintainance effort therefore mostly depends on whether a non-zero 
+number of architectures uses 4kB stacks.
+
+And if something is considered to be important for small embedded 
+systems, but not supported on ARM, MIPS or PowerPC, then that's 
+a bit strange.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
