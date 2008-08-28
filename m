@@ -1,74 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754269AbYH1Baw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754770AbYH1BbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754269AbYH1Baw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 21:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbYH1Bak
+	id S1754770AbYH1BbM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 21:31:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbYH1Baq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 21:30:40 -0400
-Received: from wr-out-0506.google.com ([64.233.184.235]:22309 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752776AbYH1Bai (ORCPT
+	Wed, 27 Aug 2008 21:30:46 -0400
+Received: from 181-30.bbned.dsl.internl.net ([82.215.30.181]:56467 "HELO
+	hubble.stokkie.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753614AbYH1Bao (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 21:30:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=qaOF/N7fkhU/fSjGNMMGC3GoP5VTYa7gOlptiGPiTnNtsSpYKivdRbZmNy1feFwieT
-         sn/3JM91WqAf+qFQDLokjZ9JMFkRf74pQTchEJNV1ZSLR6lqqO9lcrH+Fy8+zoW5r9uF
-         DG1LypIM8BhJ94OxJfnxp93eUvrwz6hvosmgM=
-Message-ID: <43e72e890808271830k6e0a9e65j790ee1e0d6d52d36@mail.gmail.com>
-Date: Wed, 27 Aug 2008 18:30:37 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: "Tomas Winkler" <tomasw@gmail.com>
-Subject: Re: pull request: wireless-2.6 2008-08-26
-Cc: "Michael Buesch" <mb@bu3sch.de>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Bruno Randolf" <bruno@thinktube.com>
-In-Reply-To: <1ba2fa240808271719o2a3617e7re0499670de785b2f@mail.gmail.com>
+	Wed, 27 Aug 2008 21:30:44 -0400
+Date: Thu, 28 Aug 2008 03:30:42 +0200 (CEST)
+From: "Robert M. Stockmann" <stock@stokkie.net>
+To: Jeff Garzik <jeff@garzik.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: libata, Sound on same IRQ : flaky sound
+In-Reply-To: <48B5F877.8030506@garzik.org>
+Message-ID: <Pine.LNX.4.44.0808280320470.31973-100000@hubble.stokkie.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080827013009.GA15781@tuxdriver.com>
-	 <1ba2fa240808271226i95a7789k481a68b09dc60164@mail.gmail.com>
-	 <200808272225.10557.mb@bu3sch.de>
-	 <1ba2fa240808271611v382631ecn2a24e2816562d434@mail.gmail.com>
-	 <20080827233103.GE5927@tesla>
-	 <1ba2fa240808271719o2a3617e7re0499670de785b2f@mail.gmail.com>
-X-Google-Sender-Auth: acba1f5a8e1d97f2
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiVirus: scanned for viruses by AMaViS 0.2.4 (ftp://crashrecovery.org/pub/linux/amavis/)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 5:19 PM, Tomas Winkler <tomasw@gmail.com> wrote:
-> This patch is marked as W/A and should have
-> probably some cleaner solution in 2.6.28
+On Wed, 27 Aug 2008, Jeff Garzik wrote:
 
-OK
+> Date: Wed, 27 Aug 2008 20:59:35 -0400
+> From: Jeff Garzik <jeff@garzik.org>
+> To: Robert M. Stockmann <stock@stokkie.net>
+> Cc: linux-kernel@vger.kernel.org
+> Subject: Re: libata, Sound on same IRQ : flaky sound
+> 
+> Robert M. Stockmann wrote:
+> > Hi,
+> > 
+> > I have a couple of AMD64 machines with onboard sound devices running 
+> > and they all have one thing in common : flaky sound when one is 
+> > doing some heavy disk I/O on the SATA disks. Interesting enough 
+> > /proc/interrupts shows that libata is using the same IRQ as the sound 
+> > devices :
+> > 
+> > model name      : AMD Athlon(tm) 64 X2 Dual Core Processor 6000+
+> > stepping        : 3
+> > cpu MHz         : 3014.679
+> > cache size      : 1024 KB
+> > 
+> > # cat /proc/interrupts 
+> >            CPU0       CPU1       
+> >   0:      55869  154467838    IO-APIC-edge  timer
+> >   8:          0          0    IO-APIC-edge  rtc
+> >   9:          0          0   IO-APIC-level  acpi
+> >  16:       1453     499686   IO-APIC-level  libata, NVidia CK8S
+> >  17:          0          0   IO-APIC-level  ehci_hcd:usb1
+> >  18:      27633   69978987   IO-APIC-level  eth0
+> > NMI:      10718      12112 
+> > LOC:  154533874  154533852 
+> > ERR:          0
+> > MIS:          0
+> 
+> What is the behavior of a recent kernel?
+> 
+> Is your SATA interface set to legacy mode in BIOS?
+> 
 
->>> Last solution would be to remove this merging all together
->>
->> Absolutely not! IBSS merge is per spec, otherwise you don't really have
->> a real IBSS.
->
-> I'm all for following spec and we've tried really hard to make it work.
-> Anyhow I'm not sure what you call real IBSS. nobody has checked it for
-> 1.5 year this patch  is in and now is suddenly so important...
+the BIOS supports raid0, but the sata disks are running standalone
+as /dev/sda /dev/sdb etc.
 
-I don't care about your work around, I was replying due to your insane
-comments about considering removing IBSS merge support because your
-hardware does not support it well.
+installing a recent kernel is not that easy, as the required
+upgrade of udev will break the initscripts and a lot of installed
+services and even the functionality of the KDE desktop. Installing
+a recent distro is not desirable as they resemble me only
+of a Open Source Vista distro, where it takes months to clean
+up the unwanted garbage and bloat inside. Its preposterous that
+a upgrade to a recent kernel mandates the installation of a recent
+distro. I run Mandrake 10.1 with kernel 2.6.15 and some applications
+upgraded like firefox, mplayer and k3b etc.
 
-> I would like to see if there is any  HW under mac80211 that actually
-> work with this.
+Robert
+-- 
+Robert M. Stockmann - RHCE
+Network Engineer - UNIX/Linux Specialist
+crashrecovery.org  stock@stokkie.net
 
-Atheros hardware supports IBSS merge, please consider a proper work
-around instead for hardware which does not support this.
-
-  Luis
