@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758337AbYH1XGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbYH1XNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758337AbYH1XGi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 19:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbYH1XGU
+	id S1757299AbYH1XNY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 19:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbYH1XNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 19:06:20 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58468 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754819AbYH1XGS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 19:06:18 -0400
-Message-ID: <48B72F53.9080109@kernel.org>
-Date: Thu, 28 Aug 2008 16:05:55 -0700
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 28 Aug 2008 19:13:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41070 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753872AbYH1XNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 19:13:13 -0400
+Date: Thu, 28 Aug 2008 20:06:59 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: greg@kroah.com
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Brian Merrell <bgmerrell@novell.com>,
+       Takahiro Hirofuchi <hirofuchi@users.sourceforge.net>, gregkh@suse.de
+Subject: Re: [patch 00/03] USB-IP patches
+Message-ID: <20080828230659.GA9193@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	greg@kroah.com, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Brian Merrell <bgmerrell@novell.com>,
+	Takahiro Hirofuchi <hirofuchi@users.sourceforge.net>,
+	gregkh@suse.de
+References: <20080828230016.GA15014@kroah.com>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Adrian Bunk <bunk@kernel.org>, Tejun Heo <tj@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, Takashi Iwai <tiwai@suse.de>,
-       fuse-devel@lists.sourceforge.net
-Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
-References: <48B6F711.1040604@kernel.org> <20080828200120.GA16462@cs181140183.pp.htv.fi> <20080828221828.GB2855@kroah.com>
-In-Reply-To: <20080828221828.GB2855@kroah.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080828230016.GA15014@kroah.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
+Em Thu, Aug 28, 2008 at 04:00:16PM -0700, greg@kroah.com escreveu:
+> Here's 3 patches that adds USB-IP functionality code to the kernel tree.
 > 
-> Independant of that, I can see a number of uses for the CUSE code.  One
-> would be emulating /dev/pilot for old palm pilot software that things it
-> wants to talk to a serial port, yet really a libusb userspace program
-> can handle all of the data to the USB device instead.
+> It is against 2.6.27-rc4, and has been added to the -staging tree.  If
+> there are no major objections, I'll also queue it up in the usb tree for
+> submission into 2.6.28.
 > 
+> The code is based on Takahiro's great work that has been sitting outside
+> of the kernel for many many years now.  Brian Merrell took the most
+> recent version of the code, cleaned it up and sent it to me.  I did more
+> cleanup and split the patch into 3 pieces, making it a bit easier to
+> work with.
+> 
+> There are still a number of checkpatch.pl warnings/errors emitted, and
+> Brian said he would work on them in the upcoming weeks, but they don't
+> distract from the basic functionality and a good review would be nice to
+> have.
+> 
+> We do need some more documentation for how to use this code (you need
+> the tools at usbip.sf.net), and how the sysfs files are exporting data
+> to userspace.  Brian, can you write up the sysfs interface in the format
+> that Documentation/ABI/ details and also provide some kind of basic
+> HOWTO to include in the kernel source tree?
 
-I think that's probably another bad example... I would think serial port 
-emulation would be better handled by ptys, and/or a specific serial port 
-emulation module.
+Great stuff, I almost worked on udp_hcd or something along these lines,
+will definetely take a look! :-)
 
-The big problem with using ptys for serial port emulation is that they 
-currently don't handle BREAK at all.
-
-	-hpa
+- Arnaldo
