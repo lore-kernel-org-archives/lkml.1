@@ -1,65 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbYH1MWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbYH1M0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754106AbYH1MWo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 08:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbYH1MWf
+	id S1753794AbYH1M0S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 08:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbYH1M0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 08:22:35 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:47076 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbYH1MWe (ORCPT
+	Thu, 28 Aug 2008 08:26:06 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:39600 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751947AbYH1M0E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 08:22:34 -0400
-Date: Thu, 28 Aug 2008 13:22:29 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Thomas Renninger <trenn@suse.de>
-Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>, linux-acpi@vger.kernel.org,
-       Len Brown <lenb@kernel.org>, Andi Kleen <ak@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE] ACPI BIOS Guideline for Linux
-Message-ID: <20080828122227.GA26285@srcf.ucam.org>
-References: <200807241732.23412.trenn@suse.de> <200808281141.30178.trenn@suse.de> <20080828105616.GA24515@srcf.ucam.org> <200808281416.57193.trenn@suse.de>
+	Thu, 28 Aug 2008 08:26:04 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH RFC 3/3] x86: use mwait for trigger API
+Date: Thu, 28 Aug 2008 14:25:57 +0200
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Arjan van de Ven <arjan@infradead.org>
+References: <48A70192.7020002@goop.org>
+In-Reply-To: <48A70192.7020002@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200808281416.57193.trenn@suse.de>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Message-Id: <200808281425.57336.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 02:16:55PM +0200, Thomas Renninger wrote:
-> On Thursday 28 August 2008 12:56:16 Matthew Garrett wrote:
-> > A documented WMI interface is easier to use than an entirely custom 
-> > documented interface, and reduces the amount of work the vendor has to
-> > do in Windows. To be honest, I think it's the sort of thing we should be
-> > encouraging.
-> IMO WMI should not exist.
-> A lot laptop BIOSes do not use it at all, unfortunately it seems to get
-> more common again.
-> What advantage do you get on Linux using WMI?
+Am Samstag, 16. August 2008 schrieb Jeremy Fitzhardinge:
 
-Little. But what advantage do we get in the same functionality being 
-implemented in an entirely custom way? Even less.
+Seems that this cant work. We never reset the t->cpus bits. That means we 
+never mwait after a kick.
 
-> For example HP is using WMI to export a WLAN (or bluetooth?) button on
-> some machines.
-> They should not do that, right?
+See:
 
-The HP wlan button is a hardware event. There's no need for it to be 
-sent via the keyboard controller. Some of the other keys would be easier 
-to deal with if they were sent via the keyboard controller, yes, but 
-that's not the full set of what the WMI functionality gives us. How do 
-you want kill switches to be controlled? I'd be happier with it being 
-done through WMI (like HP) than via Dell's bizarro SMI interface.
+> +void mwait_trigger_reset(trigger_t *t)
+> +{
+> +	unsigned long flags;
+> +
+> +	t->trigger = 0;
+> +
+> +	local_save_flags(flags);
+> +	__get_cpu_var(mwait_saved_flags) = flags;
+> +
+> +	__monitor(&t->trigger, 0, 0);
+> +}
+> +
+> +void mwait_trigger_wait(trigger_t *t)
+> +{
+> +	unsigned long flags = __get_cpu_var(mwait_saved_flags);
+> +	int cpu = smp_processor_id();
+> +
+> +	if (irqs_disabled_flags(flags)) {
+> +		while(!cpu_isset(cpu, t->cpus)) {
 
-> AFAIK most vendors tend to send an ordinary key event again for most
-> extra buttons. Is this the way to go for the future? This probably
-> should also be mentioned then.
+We check the bits here
 
-Some vendors do, and I agree that it's preferable.
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> +			__mwait(0, 0);
+> +			barrier();
+> +			__monitor(&t->trigger, 0, 0);
+> +		}
+> +	} else {
+> +		while(!cpu_isset(cpu, t->cpus)) {
+
+and here
+
+> +			__sti_mwait(0, 0);
+> +			barrier();
+> +			local_irq_disable();
+> +			__monitor(&t->trigger, 0, 0);
+> +		}
+> +	}
+> +}
+> +
+> +void mwait_trigger_finish(trigger_t *t)
+> +{
+> +	local_irq_restore(__get_cpu_var(mwait_saved_flags));
+> +}
+> +
+> +void mwait_trigger_kick(trigger_t *t)
+> +{
+> +	cpus_setall(t->cpus);
+
+We set the bits here.
+
+> +	smp_wmb();
+> +	t->trigger = 1;
+> +	smp_wmb();
+> +}
+
+Nothing else.
