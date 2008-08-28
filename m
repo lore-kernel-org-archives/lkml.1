@@ -1,80 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757004AbYH1UTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbYH1UVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757004AbYH1UTj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 16:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbYH1UTc
+	id S1756699AbYH1UVs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 16:21:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYH1UVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 16:19:32 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:15674 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753660AbYH1UTb (ORCPT
+	Thu, 28 Aug 2008 16:21:40 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33272 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752913AbYH1UVj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 16:19:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=x7odSB42qjcbn0Abk41zA6deNMkGAcfGqiAbCP5yssdEzUq2E5Hbpi7QsIWaAVhIKM
-         ZoFHvOzEwSmjuEWQVCgKQl8cKdXm8DabrlEwduKKr2NtbmUxiX4lcTENjzrKg2R4Euz8
-         +M/P3XpjaT0iYA52XkQMjUFPD+FETDtd0s+HQ=
-Message-ID: <86802c440808281319i2f727274g505e43a2f6f6cdeb@mail.gmail.com>
-Date: Thu, 28 Aug 2008 13:19:30 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Bjorn Helgaas" <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH] x86: split e820 reserved entries record to late
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0808281255200.3300@nehalem.linux-foundation.org>
+	Thu, 28 Aug 2008 16:21:39 -0400
+Message-ID: <48B708C4.4000405@kernel.org>
+Date: Thu, 28 Aug 2008 13:21:24 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: tj@kernel.org, fuse-devel@lists.sourceforge.net, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <48B6EC83.1070207@kernel.org> <48B6EE36.5070209@kernel.org> <48B6F7C5.3020204@kernel.org> <E1KYn0U-00047F-Qa@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1KYn0U-00047F-Qa@pomaz-ex.szeredi.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1219952345-13574-1-git-send-email-yhlu.kernel@gmail.com>
-	 <alpine.LFD.1.10.0808281255200.3300@nehalem.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 1:05 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Thu, 28 Aug 2008, Yinghai Lu wrote:
->>
->> so could let BAR res register at first, or even pnp?
->
-> Well, I'm not sure whether PnP or e820 should be first, as long as any
-> "real hardware" probing takes precedence over either. I _suspect_ that
-> e820 is more trustworthy, which implies that PnP should probably be added
-> last. It would be good to have some idea what Windows does, since usually
-> all the firmware bugs are essentially hidden by whatever that other OS
-> happens to do.
->
-> The basic rule really should be: "What do we trust most?" and probe things
-> in that order.
->
-> So e820 is fairly trustworthy, but we know that it will have various
-> random things marked as reserved because they are special in some way (but
-> we don't know _how_ they are special - they may well be real BAR's that
-> just have a fixed meaning to ACPI or whatever).
->
-> But we obviously trust _part_ of it (the RAM stuff) more than we trust
-> other parts. So it does make sense to consider that separately.
->
-> PnP I personally wouldn't trust at all, except as a way to keep dynamic
-> resources away from those things, which is why I'd put it last. But that's
-> just my personal gut feeling.
->
-> Hardware we generally trust more than any firmware, but even hardware can
-> have bugs. And some classes of hardware tends to be less buggy than others
-> (ie I'd trust some on-die APIC base pointer before I would trust a Cardbus
-> controller BAR, for example).
+Miklos Szeredi wrote:
+> On Thu, 28 Aug 2008, H. Peter Anvin wrote:
+>> Tejun Heo wrote:
+>>> Ah.... funky.  If this retry thing is too repulsive, I guess the best
+>>> alternative would be directly accessing caller's memory as Miklos suggested.
+>>>
+>> Be careful -- there are some serious dragons there in the presence of 
+>> multiple threads.
+> 
+> OK, it should map /proc/pid/task/tid/mem.  Or rather
+> /proc/tid/task/tid/mem, as the pid (tgid) of the caller is not
+> currently passed to the filesystem.
+> 
 
-ok, will move e820_reserve_resource_late to pcibios_resource_survey(),
-so it is called vi pci_subsys_init before pnp_system_init
+Uhm, no.  You can still have it change underneath you as long as you 
+have any thread of execution with access to the same memory.
 
-YH
+This is *hard* to get right, and we screw this up in the kernel with 
+painful regularity.  The throught of having user-space processes, which 
+don't have access to the kernel locking primitives and functions like 
+copy_from_user() dealing with this stuff scares me crazy.
+
+That is why I'm suggesting using an in-kernel linearizer.
+
+	-hpa
