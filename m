@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbYH1BDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbYH1BHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755302AbYH1BDT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 21:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbYH1BDD
+	id S1755498AbYH1BHm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 21:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbYH1BHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 21:03:03 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:36879 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752806AbYH1BDB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 21:03:01 -0400
-Date: Thu, 28 Aug 2008 10:02:26 +0900
-From: Paul Mundt <lethal@linux-sh.org>
+	Wed, 27 Aug 2008 21:07:30 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:20155 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753065AbYH1BH3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 21:07:29 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=1uoWnfphAkLwJYlz+lYS+XF17hXVgG1V1p0HhIoUig+Ca6glMovsN6L6P4CJp7yrqII6LbYwHCG5Ia1JKAAfFRhr3lUAtfHSlJNKOxv8XDBpVAaMDJ/2ayTFG1baIUlCm5xwAoFt+CPtim1bIH415KFVYqRC4i2PrOopnJOnxbg=  ;
+X-YMail-OSG: U3Q4.T4VM1mLkmnkBVUFB5fFnRzcoLrd3i3gVQwVZAALEgjSzh2V4Vekzw1aJ_K8ZC6Uj7jhuEDlnIHmJeup8Ey99mrodTj06MaJq_k2Dy2VZ..6zthAXQpkUJp0OU5AmOOwtHWi7hGuDJR9vUKAFPc9
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
 To: David Miller <davem@davemloft.net>
-Cc: bunk@kernel.org, torvalds@linux-foundation.org, rusty@rustcorp.com.au,
-       Alan.Brunelle@hp.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, akpm@linux-foundation.org,
-       arjan@linux.intel.com, mingo@elte.hu, linux-embedded@vger.kernel.org
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-Message-ID: <20080828010226.GB18893@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	David Miller <davem@davemloft.net>, bunk@kernel.org,
-	torvalds@linux-foundation.org, rusty@rustcorp.com.au,
-	Alan.Brunelle@hp.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-	kernel-testers@vger.kernel.org, akpm@linux-foundation.org,
-	arjan@linux.intel.com, mingo@elte.hu,
-	linux-embedded@vger.kernel.org
-References: <20080827160052.GA15968@linux-sh.org> <20080827173544.GH11734@cs181140183.pp.htv.fi> <20080828003211.GA18893@linux-sh.org> <20080827.174605.85608276.davem@davemloft.net>
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+Date: Thu, 28 Aug 2008 11:07:20 +1000
+User-Agent: KMail/1.9.5
+Cc: andi@firstfloor.org, rick.jones2@hp.com, johnpol@2ka.mipt.ru,
+       dada1@cosmosbay.com, denys@visp.net.lb, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20080827.151824.14173512.davem@davemloft.net> <200808281045.03460.nickpiggin@yahoo.com.au> <20080827.174855.126675086.davem@davemloft.net>
+In-Reply-To: <20080827.174855.126675086.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080827.174605.85608276.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200808281107.21173.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 05:46:05PM -0700, David Miller wrote:
-> From: Paul Mundt <lethal@linux-sh.org>
-> Date: Thu, 28 Aug 2008 09:32:13 +0900
-> 
-> > On Wed, Aug 27, 2008 at 08:35:44PM +0300, Adrian Bunk wrote:
-> > > CONFIG_DEBUG_STACKOVERFLOW should give you the same information, and if
-> > > wanted with an arbitrary limit.
+On Thursday 28 August 2008 10:48, David Miller wrote:
+> From: Nick Piggin <nickpiggin@yahoo.com.au>
+> Date: Thu, 28 Aug 2008 10:45:03 +1000
+>
+> > On Thursday 28 August 2008 08:39, Andi Kleen wrote:
+> > > On Wed, Aug 27, 2008 at 03:18:24PM -0700, David Miller wrote:
+> > > > From: Andi Kleen <andi@firstfloor.org>
+> > > > Date: Wed, 27 Aug 2008 18:27:35 +0200
+> > > >
+> > > > > > Those banks really want to crank down on latency - to the point
+> > > > > > they start disabling interrupt coalescing.  I bet they'd toss
+> > > > > > anything out they could to shave another microsecond.
+> > > > >
+> > > > > This change would actually likely lower their latency.
+> > > >
+> > > > They want the timestamps, but they want it to match when the packet
+> > > > arrived at their system as closely as is reasonably possible.
+> > >
+> > > Then they should use hardware time stamps which are increasingly
+> > > available (e.g. current Intel e1000 design has them and I expect
+> > > others too).
 > >
-> > In some cases, yes. In the CONFIG_DEBUG_STACKOVERFLOW case the check is
-> > only performed from do_IRQ(), which is sporadic at best, especially on
-> > tickless. While it catches some things, it's not a complete solution in
-> > and of iteslf.
-> 
-> BTW, on sparc64 we have a stack overflow checker that runs via
-> the profiling _mcount hook.  So every function call we check
-> if the stack is getting overused.
-> 
-> If so, we jump onto a special static debugging stack and print
-> the stack overflow message.
-> 
-> And yes it works with IRQ stacks which is all that sparc64 uses
-> nowadays.
-> 
-> Perhaps this is useful enough to make generic.
+> > Would it make sense to make a new option for these socket timestamps
+> > and encourage some apps move over to it?
+>
+> We don't have support to using these specific hardware provided timestamps
+> sources yet, so it's kind of premature to recommend the facility to
+> applications. :)
 
-Thanks for the pointer, I'll take a look at it!
+Dang, that was a really badly quoted. I was reading the thread and
+got to the end and just fired off my reply from there...
+
+Sorry -- what I meant to ask was, would it make sense to have a new
+option to enable time stamp measuring in the socket receive layer
+as in the patchset that Andi referenced, but without removing existing
+support for early timestamping?
+
