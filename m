@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbYH1DKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbYH1DQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754220AbYH1DKh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 23:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbYH1DK0
+	id S1754577AbYH1DQx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 23:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbYH1DQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 23:10:26 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52549
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751432AbYH1DKZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 23:10:25 -0400
-Date: Wed, 27 Aug 2008 20:10:20 -0700 (PDT)
-Message-Id: <20080827.201020.17601834.davem@davemloft.net>
-To: juhlenko@akamai.com
-Cc: andi@firstfloor.org, johnpol@2ka.mipt.ru, dada1@cosmosbay.com,
-       denys@visp.net.lb, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080828023958.GB21395@juhlenko-desk.sanmateo.corp.akamai.com>
-References: <87vdxmr53f.fsf@basil.nowhere.org>
-	<20080827.143401.76242975.davem@davemloft.net>
-	<20080828023958.GB21395@juhlenko-desk.sanmateo.corp.akamai.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 27 Aug 2008 23:16:44 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:51580 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751432AbYH1DQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 23:16:44 -0400
+Date: Thu, 28 Aug 2008 13:16:28 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+       Alex Chiang <achiang@hp.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linda Xie <lxie@us.ibm.com>
+Subject: Re: [PATCH] hotplug/rpaphp: remove unused error path code
+Message-Id: <20080828131628.0db54f22.sfr@canb.auug.org.au>
+In-Reply-To: <200808271634.06199.jbarnes@virtuousgeek.org>
+References: <20080819114555.c0d2bd50.sfr@canb.auug.org.au>
+	<200808271634.06199.jbarnes@virtuousgeek.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__28_Aug_2008_13_16_28_+1000_M2xyaxybVvd8P.=m"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jason Uhlenkott <juhlenko@akamai.com>
-Date: Wed, 27 Aug 2008 19:39:58 -0700
+--Signature=_Thu__28_Aug_2008_13_16_28_+1000_M2xyaxybVvd8P.=m
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> It's a *socket* option.  It's named SO_TIMESTAMP.  Users of it ought
-> to *expect* that it records the time the packet hits the socket, not
-> the time the frame hits the device.
+Hi Jesse,
 
-When expectations equal reality, and then we change reality, that's
-called breaking things.
+On Wed, 27 Aug 2008 16:34:03 -0700 Jesse Barnes <jbarnes@virtuousgeek.org> =
+wrote:
+>
+> On Monday, August 18, 2008 6:45 pm Stephen Rothwell wrote:
+> > Commit f46753c5e354b857b20ab8e0fe7b2579831dc369 ("PCI: introduce pci_sl=
+ot")
+> > removed the need for this error path.  Eliminate this warning:
+> >
+> > drivers/pci/hotplug/rpaphp_slot.c: In function 'rpaphp_register_slot':
+> > drivers/pci/hotplug/rpaphp_slot.c:151: warning: label 'sysfs_fail' defi=
+ned
+> > but not used
+> >
+> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+>=20
+> Applied to linux-next, thanks.
 
-What might (and I do mean "might") save us is how other systems
-implement this.  A quick check of BSD shows that at least OpenBSD
-fetches the timestamp inside of the RAW and UDP usrreq handler,
-which is basically socket receive.
+I has also been applied to the powerpc next tree, but that is ok.
 
-Our man pages simply say "reception" as when the timestamp is from,
-which may also give us some more leeway.
-From: Jason Uhlenkott <juhlenko@akamai.com>
-Date: Wed, 27 Aug 2008 19:39:58 -0700
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> > I find it amusing that nobody it talking about fixing the tools
-> > that are creating the timestamp requests when they have no real
-> > reason for having them in the first place.
-> 
-> I don't agree that the tools are broken.  Some of them may have
-> frivolous reasons for wanting timestamps, but they're asking for
-> something at the socket layer, with the scope of a single socket, and
-> it's hardly their fault that we respond to that by doing something
-> expensive and global at a much lower level.
+--Signature=_Thu__28_Aug_2008_13_16_28_+1000_M2xyaxybVvd8P.=m
+Content-Type: application/pgp-signature
 
-Every application using AF_PACKET sockets gets timestamps by
-default.  And we do know of several specific cases where the
-timestamps are unnecessary.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Even for other cases, why in the world does a DHCP client need
-accurate timestamps?  Give me a break. :)
+iEYEARECAAYFAki2GI0ACgkQjjKRsyhoI8xHkwCgn3/0Tz3qTuigMOMLoV9+XMn8
+JXsAoLbMnd2n3FnParu2hTTOAFb3qjGv
+=ltml
+-----END PGP SIGNATURE-----
 
-
+--Signature=_Thu__28_Aug_2008_13_16_28_+1000_M2xyaxybVvd8P.=m--
