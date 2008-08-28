@@ -1,78 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756360AbYH1SFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYH1SGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756360AbYH1SFR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 14:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbYH1SFD
+	id S1756106AbYH1SGt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 14:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbYH1SGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 14:05:03 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:34349 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751805AbYH1SFC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 14:05:02 -0400
-Date: Thu, 28 Aug 2008 14:04:59 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stefani Seibold <stefani@seibold.net>,
-       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
-In-Reply-To: <alpine.LFD.1.10.0808281024060.3300@nehalem.linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0808281356010.6278@gandalf.stny.rr.com>
-References: <20080819103301.787700742@chello.nl> <200808290036.35817.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0808281110570.14580@gandalf.stny.rr.com> <200808290134.35093.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0808281142280.14580@gandalf.stny.rr.com>
- <alpine.LFD.1.10.0808281024060.3300@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 28 Aug 2008 14:06:41 -0400
+Received: from nn7.de ([85.214.94.156]:49402 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753138AbYH1SGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 14:06:40 -0400
+Subject: Re: converting appletouch to usb autosuspend again...
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Jiri Kosina <jikos@jikos.cz>
+In-Reply-To: <200808242039.48701.oliver@neukum.org>
+References: <1219525218.8221.31.camel@localhost>
+	 <200808242039.48701.oliver@neukum.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 28 Aug 2008 15:41:11 +0000
+Message-Id: <1219938071.9717.59.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 28 Aug 2008, Linus Torvalds wrote:
-
-> 
-> 
-> On Thu, 28 Aug 2008, Steven Rostedt wrote:
+On Sun, 2008-08-24 at 20:39 +0200, Oliver Neukum wrote:
+> Am Samstag 23 August 2008 23:00:18 schrieb Soeren Sonnenburg:
+> > Dear all,
 > > 
-> > I've always thought that the policy settings belong in the distro, and the 
-> > kernel should never enforce a policy (by setting this as default, it is 
-> > enforcing a policy, even though an RT user can change it).
+> > I wonder whether anyone else tried to get appletouch usb autosuspend to
+> > work. I've seen Oliver's patch but as it kept oopsing on me and I
 > 
-> The kernel has always done a certain amount of "default policy". 
+> You might post the oops. I haven't seen it.
+
+Do you have an updated version of your patch that applies to
+git-current? I will give your patch another try then.
+
+> > couldn't parse the usb_mark_last_busy logic I came up with the attached
+> > patch against (current git; at least didn't oops for me over the last
+> > several days and suspend/resume cycles).
+> > 
+> > However things I don't understand, 
+> > 
+> > a) is autosuspend on the appletouch driver used at all (how can I find
+> > out)
 > 
-> What do you think things like "swappiness" etc are? Or things like 
-> oevrcommit settings? They're all policies, and there is always a default 
-> one. So in that sense the kernel always has - and fundamentally _must_ - 
-> set some kind of policy.
+> Compile your kernel with CONFIG_USB_DEBUG and autosuspend will be logged.
+> You need to activate autosuspend via sysfs.
+
+OK, indeed it never autosuspends... I guess this is this due to the
+keyboard and the mice being on the same usb port and as the kbd part
+does not support autosuspend it never suspends?!
+
+> > b) do I need dev->intf->needs_remote_wakeup = 1; ?
 > 
-> And the default policy should generally be the one that makes sense for 
-> most people. Quite frankly, if it's an issue where all normal distros 
-> would basically be expected to set a value, then that value should _be_ 
-> the default policy, and none of the normal distros should ever need to 
-> worry.
+> Yes.
 > 
-> Whether this case is one such, I dunno. Quite frankly, I don't think it's 
-> even _nearly_ important enough to get this kind of noise.
+> > c) is line 33 in the patch safe to do ?
+> 
+> Why do you want to add it?
 
-I guess the reason that this is getting so much noise over other default 
-policies, is that this default policy is changing a well known definition:
-The meaning of FIFO.
+Well reaching this line the touchpad is idling (hasn't been touched+no
+button was pressed) - I somehow wanted to force it to suspend in this
+case.
 
-By making the default policy limit the time an RT task runs, we have, in 
-essence, changed a user API. Applications that expect to be able to run  
-uninterrupted by SCHED_OTHER tasks, will now break.
+> > And while we are at it I am still seeing these X falls back to hid mouse
+> > mode, only switching to console and back resolves this (looks like this
+> > only worked in previous kernels as resume from s2ram took a lot longer
+> > due to the IDE driver doing a couple of resets) - is there anything one
+> > could do about it?
+> 
+> Post a log.
 
-No one is arguing that this new feature is not useful. The argument is, 
-should the kernel set the default policy of an old well known scheduling 
-policy to something different than what is expected?
+My fault. I was still rmmod'ing appletouch before suspending. It works
+perfectly + reliably the way it is.
 
-Distros set SE Linux on by default, should the kernel do that too?
-
--- Steve
-
+Thanks,
+Soeren
