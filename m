@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbYH1B0J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754269AbYH1Baw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754497AbYH1B0J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 21:26:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbYH1BZ4
+	id S1754269AbYH1Baw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 21:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbYH1Bak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 21:25:56 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:51639 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752962AbYH1BZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 21:25:54 -0400
-Date: Thu, 28 Aug 2008 11:25:41 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: linux-next: Tree for August 27
-Message-Id: <20080828112541.7f8f8e0a.sfr@canb.auug.org.au>
-In-Reply-To: <58cb370e0808270757k583c0fc2oc659bc8e2dd6c21e@mail.gmail.com>
-References: <20080827183453.eb651f50.sfr@canb.auug.org.au>
-	<200808271206.48370.bzolnier@gmail.com>
-	<58cb370e0808270757k583c0fc2oc659bc8e2dd6c21e@mail.gmail.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__28_Aug_2008_11_25_41_+1000_wbLrunD8O+I=_K+z"
+	Wed, 27 Aug 2008 21:30:40 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:22309 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752776AbYH1Bai (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 21:30:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=qaOF/N7fkhU/fSjGNMMGC3GoP5VTYa7gOlptiGPiTnNtsSpYKivdRbZmNy1feFwieT
+         sn/3JM91WqAf+qFQDLokjZ9JMFkRf74pQTchEJNV1ZSLR6lqqO9lcrH+Fy8+zoW5r9uF
+         DG1LypIM8BhJ94OxJfnxp93eUvrwz6hvosmgM=
+Message-ID: <43e72e890808271830k6e0a9e65j790ee1e0d6d52d36@mail.gmail.com>
+Date: Wed, 27 Aug 2008 18:30:37 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: "Tomas Winkler" <tomasw@gmail.com>
+Subject: Re: pull request: wireless-2.6 2008-08-26
+Cc: "Michael Buesch" <mb@bu3sch.de>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Bruno Randolf" <bruno@thinktube.com>
+In-Reply-To: <1ba2fa240808271719o2a3617e7re0499670de785b2f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080827013009.GA15781@tuxdriver.com>
+	 <1ba2fa240808271226i95a7789k481a68b09dc60164@mail.gmail.com>
+	 <200808272225.10557.mb@bu3sch.de>
+	 <1ba2fa240808271611v382631ecn2a24e2816562d434@mail.gmail.com>
+	 <20080827233103.GE5927@tesla>
+	 <1ba2fa240808271719o2a3617e7re0499670de785b2f@mail.gmail.com>
+X-Google-Sender-Auth: acba1f5a8e1d97f2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__28_Aug_2008_11_25_41_+1000_wbLrunD8O+I=_K+z
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Aug 27, 2008 at 5:19 PM, Tomas Winkler <tomasw@gmail.com> wrote:
+> This patch is marked as W/A and should have
+> probably some cleaner solution in 2.6.28
 
-Hi Bart,
+OK
 
-On Wed, 27 Aug 2008 16:57:18 +0200 "Bartlomiej Zolnierkiewicz" <bzolnier@gm=
-ail.com> wrote:
+>>> Last solution would be to remove this merging all together
+>>
+>> Absolutely not! IBSS merge is per spec, otherwise you don't really have
+>> a real IBSS.
 >
-> On Wed, Aug 27, 2008 at 12:06 PM, Bartlomiej Zolnierkiewicz
-> <bzolnier@gmail.com> wrote:
-> >
-> > it fails to build here with:
-> >
-> > arch/x86/kernel/cpu/addon_cpuid_features.c: In function 'detect_extende=
-d_topology':
-> > arch/x86/kernel/cpu/addon_cpuid_features.c:119: error: 'struct cpuinfo_=
-x86' hasno member named 'cpu_core_id'
-> > arch/x86/kernel/cpu/addon_cpuid_features.c:121: error: 'struct cpuinfo_=
-x86' hasno member named 'phys_proc_id'
-> > arch/x86/kernel/cpu/addon_cpuid_features.c:130: error: 'struct cpuinfo_=
-x86' hasno member named 'phys_proc_id'
-> > arch/x86/kernel/cpu/addon_cpuid_features.c:133: error: 'struct cpuinfo_=
-x86' hasno member named 'cpu_core_id'
-> > make[2]: *** [arch/x86/kernel/cpu/addon_cpuid_features.o] Error 1
-> > make[1]: *** [arch/x86/kernel/cpu] Error 2
-> > make: *** [arch/x86/kernel] Error 2
->=20
-> which is most likely already fixed in x86 tree by
->=20
-> http://lkml.org/lkml/2008/8/27/34
+> I'm all for following spec and we've tried really hard to make it work.
+> Anyhow I'm not sure what you call real IBSS. nobody has checked it for
+> 1.5 year this patch  is in and now is suddenly so important...
 
-Thanks for finding this, I will apply it to today's linux-next.
+I don't care about your work around, I was replying due to your insane
+comments about considering removing IBSS merge support because your
+hardware does not support it well.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> I would like to see if there is any  HW under mac80211 that actually
+> work with this.
 
---Signature=_Thu__28_Aug_2008_11_25_41_+1000_wbLrunD8O+I=_K+z
-Content-Type: application/pgp-signature
+Atheros hardware supports IBSS merge, please consider a proper work
+around instead for hardware which does not support this.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAki1/pUACgkQjjKRsyhoI8x0WQCfYFuOImPZPKOuZoQBQpqZO7Gv
-7ncAnjz8RsPx8zNdlW2GwT/zx6cYAPe3
-=x8bg
------END PGP SIGNATURE-----
-
---Signature=_Thu__28_Aug_2008_11_25_41_+1000_wbLrunD8O+I=_K+z--
+  Luis
