@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbYH1Mxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbYH1NBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754701AbYH1Mxv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 08:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbYH1Mxo
+	id S1754054AbYH1NBU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 09:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbYH1NBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 08:53:44 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:58319 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751613AbYH1Mxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 08:53:43 -0400
-Date: Thu, 28 Aug 2008 16:58:32 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Steve VanDeBogart <vandebo-lkml@NerdBox.Net>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] exit signals: use of uninitialized field notify_count
-Message-ID: <20080828125832.GA221@tv-sign.ru>
-References: <alpine.DEB.1.00.0808261505550.15543@abydos.NerdBox.Net> <20080827080136.GA4453@elte.hu> <20080827161141.GA97@tv-sign.ru> <alpine.DEB.1.00.0808271747160.15543@abydos.NerdBox.Net>
-Mime-Version: 1.0
+	Thu, 28 Aug 2008 09:01:10 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:4054 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752112AbYH1NBJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 09:01:09 -0400
+Date: Thu, 28 Aug 2008 14:01:05 +0100
+From: Mark Brown <broonie@sirena.org.uk>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Bryan Wu <cooloney@kernel.org>, perex@perex.cz, lrg@kernel.org,
+       Cliff Cai <cliff.cai@analog.com>, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [alsa-devel] [PATCH 3/4] ASOC: WM8731 codec: add SPI support as well as I2C
+Message-ID: <20080828130104.GD11132@sirena.org.uk>
+Mail-Followup-To: Takashi Iwai <tiwai@suse.de>,
+	Bryan Wu <cooloney@kernel.org>, perex@perex.cz, lrg@kernel.org,
+	Cliff Cai <cliff.cai@analog.com>, alsa-devel@alsa-project.org,
+	linux-kernel@vger.kernel.org
+References: <1219829968-6431-1-git-send-email-cooloney@kernel.org> <1219829968-6431-4-git-send-email-cooloney@kernel.org> <20080827110143.GB10834@sirena.org.uk> <386072610808272046u270c1302g1102bf1f0bd9b6ee@mail.gmail.com> <20080828101434.GB11132@sirena.org.uk> <s5h3akp9uii.wl%tiwai@suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.00.0808271747160.15543@abydos.NerdBox.Net>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <s5h3akp9uii.wl%tiwai@suse.de>
+X-Cookie: To see you is to sympathize.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/27, Steve VanDeBogart wrote:
->
-> It looks like that would work.  Seems that
-> sig->count == 0 && sig->group_exit_task != NULL can never be true.
-> If it does work, a lot of initialization in copy_signal() can be
-> removed and it would reduce the chances that a similar problem would be
-> reintroduced.  I would submit a patch, but I'm not sure how to trigger
-> those code paths in order to test it.
+On Thu, Aug 28, 2008 at 02:47:01PM +0200, Takashi Iwai wrote:
 
-I'd suggest to make 2 patches. The first one adds "->notify_count = 0"
-to copy_signal() and removes "->group_exit_task != NULL" checks. The
-second one changes copy_signal() to use zalloc.
+> I still postponed to merge Jean's latest patches.  Care to check that
+> don't conflict your work and send them together?
 
-BTW, I forgot to mention that you can kill the "thread_group_leader()"
-check in exit_notify() too.
-
-Oleg.
-
+No problem from my point of view, though all I'll do is construct a
+patch series with Jean's changes at the start so from that point of view
+you may as well merge them directly - it doesn't change the work that
+needs to be done.
