@@ -1,99 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYH1Hsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYH1Ht4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbYH1Hsl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 03:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbYH1Hsd
+	id S1754892AbYH1Ht4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 03:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbYH1Hts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 03:48:33 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:52502 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751615AbYH1Hsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 03:48:33 -0400
-Date: Thu, 28 Aug 2008 09:48:30 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, jurriaan <thunder7@xs4all.nl>,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
-Subject: Re: 2.6.27-rc4: lots of 'in_atomic():1, irqs_disabled():0' with  software-raid1
-Message-ID: <20080828074830.GV20055@kernel.dk>
-References: <20080827170538.GA24393@amd64.of.nowhere> <200808272347.43577.rjw@sisk.pl> <20080828073324.GR20055@kernel.dk> <20080828004532.45d8b8c9.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080828004532.45d8b8c9.akpm@linux-foundation.org>
+	Thu, 28 Aug 2008 03:49:48 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:2704 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753455AbYH1Htr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 03:49:47 -0400
+Date: Thu, 28 Aug 2008 09:49:35 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Seth Heasley <seth.heasley@intel.com>
+Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org,
+       seth.heasley@intel.com
+Subject: Re: [PATCH 2.6.27-rc4] irq: irq and pci_ids patch for Intel Ibex 
+ Peak DeviceIDs
+Message-ID: <20080828094935.0f50af24@hyperion.delvare>
+In-Reply-To: <200808271658.26313.seth.heasley@intel.com>
+References: <200808271658.26313.seth.heasley@intel.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28 2008, Andrew Morton wrote:
-> On Thu, 28 Aug 2008 09:33:24 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Wed, Aug 27 2008, Rafael J. Wysocki wrote:
-> > > [Adding CCs]
-> > > 
-> > > On Wednesday, 27 of August 2008, jurriaan wrote:
-> > > > After returning from my holidays, I proceeded to test 2.6.27-rc4. 2.6.26
-> > > > works fine, but 2.6.27-rc4 gives me lots of:
-> > > > 
-> > > > Aug 27 18:03:10 middle kernel: in_atomic():1, irqs_disabled():0
-> > > > Aug 27 18:03:10 middle kernel: Pid: 1185, comm: md2_raid1 Not tainted 2.6.27-rc4 #2
-> > > > Aug 27 18:03:10 middle kernel: 
-> > > > Aug 27 18:03:10 middle kernel: Call Trace:
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff802303fb>] __might_sleep+0xdb/0x100
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff802734a9>] mempool_alloc+0x89/0x140
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff802c8deb>] bio_alloc_bioset+0x2b/0xb0
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff802c8ed0>] bio_alloc+0x10/0x20
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff8061ecda>] md_super_write+0x3a/0xe0
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff80623e0e>] write_page+0x14e/0x310
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff803a30f1>] ? rb_insert_color+0x101/0x130
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff8022de7f>] ? update_curr+0x3f/0x60
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff8039e3e9>] ? __next_cpu+0x19/0x30
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff80231ecc>] ? find_busiest_group+0x1dc/0x960
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff806240ab>] bitmap_update_sb+0xdb/0x110
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff8061ef65>] md_update_sb+0x1e5/0x370
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff80620dc5>] md_check_recovery+0x355/0x640
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff80607665>] raid1d+0x35/0x10a0
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff802360db>] ? finish_task_switch+0x3b/0xc0
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff8070ec96>] ? thread_return+0xa3/0x63d
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff80710e52>] ? _spin_lock_irqsave+0x22/0x50
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff80247406>] ? lock_timer_base+0x36/0x70
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff807110c2>] ? _spin_unlock_irqrestore+0x12/0x40
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff8024749a>] ? try_to_del_timer_sync+0x5a/0x70
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff802474ca>] ? del_timer_sync+0x1a/0x30
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff80710e52>] ? _spin_lock_irqsave+0x22/0x50
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff807110c2>] ? _spin_unlock_irqrestore+0x12/0x40
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff8061e084>] md_thread+0x54/0x140
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff80253390>] ? autoremove_wake_function+0x0/0x40
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff8061e030>] ? md_thread+0x0/0x140
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff80252fc9>] kthread+0x49/0x80
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff8020ca09>] child_rip+0xa/0x11
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff80252f80>] ? kthread+0x0/0x80
-> > > > Aug 27 18:03:10 middle kernel:  [<ffffffff8020c9ff>] ? child_rip+0x0/0x11
-> > > > Aug 27 18:03:10 middle kernel: 
-> > > > 
-> > > > I was able to reboot into 2.6.26 without further trouble. I wasn't able
-> > > > to find this reported earlier on lkml.
-> > 
-> > Hmm, this just looks like a GFP_NOIO alloc inside rcu_read_lock(), I
-> > don't see anything wrong with that?
-> > 
-> 
-> Cant sleep inside rcu_read_lock(), with CONFIG_PREEMPT_RCU=n, at least.
-> 
-> Dunno if it's legal if CONFIG_PREEMPT_RCU=y.  Hopefully not - that
-> would be insane.  But I've failed to keep up with rcu goings-on
-> recently.
+Hi Seth,
 
-Doh right, we of course can't block inside a RCU section. Then
-bitmap.c:write_sb_page() wants fixing:
+On Wed, 27 Aug 2008 16:58:26 -0700, Seth Heasley wrote:
+> This patch updates the Intel Ibex Peak (PCH) LPC and SMBus Controller DeviceIDs.
+> 
+> Signed-off-by: Seth Heasley <seth.heasley@intel.com>
+> 
+> --- linux-2.6/include/linux/pci_ids.h.orig	2008-08-27 11:54:07.000000000 -0700
+> +++ linux-2.6/include/linux/pci_ids.h	2008-08-27 12:01:53.000000000 -0700
+> @@ -2428,9 +2428,39 @@
+>  #define PCI_DEVICE_ID_INTEL_ICH10_3	0x3a1a
+>  #define PCI_DEVICE_ID_INTEL_ICH10_4	0x3a30
+>  #define PCI_DEVICE_ID_INTEL_ICH10_5	0x3a60
+> -#define PCI_DEVICE_ID_INTEL_PCH_0	0x3b10
+> -#define PCI_DEVICE_ID_INTEL_PCH_1	0x3b11
+> -#define PCI_DEVICE_ID_INTEL_PCH_2	0x3b30
+> +#define PCI_DEVICE_ID_INTEL_PCH_0	0x3b00
+> +#define PCI_DEVICE_ID_INTEL_PCH_1	0x3b01
+> +#define PCI_DEVICE_ID_INTEL_PCH_2	0x3b02
 
-        rcu_read_lock();
-        rdev_for_each_rcu(...)
-                md_super_write(...)
-                        bio_alloc(GFP_NOIO, 1);
+Changing device ID definitions that way is really bad practice. It
+needs to be synchronized between all involved subsystems.
 
-Neil?
+> +#define PCI_DEVICE_ID_INTEL_PCH_3	0x3b03
+> +#define PCI_DEVICE_ID_INTEL_PCH_4	0x3b04
+> +#define PCI_DEVICE_ID_INTEL_PCH_5	0x3b05
+> +#define PCI_DEVICE_ID_INTEL_PCH_6	0x3b06
+> +#define PCI_DEVICE_ID_INTEL_PCH_7	0x3b07
+> +#define PCI_DEVICE_ID_INTEL_PCH_8	0x3b08
+> +#define PCI_DEVICE_ID_INTEL_PCH_9	0x3b09
+> +#define PCI_DEVICE_ID_INTEL_PCH_10	0x3b0a
+> +#define PCI_DEVICE_ID_INTEL_PCH_11	0x3b0b
+> +#define PCI_DEVICE_ID_INTEL_PCH_12	0x3b0c
+> +#define PCI_DEVICE_ID_INTEL_PCH_13	0x3b0d
+> +#define PCI_DEVICE_ID_INTEL_PCH_14	0x3b0e
+> +#define PCI_DEVICE_ID_INTEL_PCH_15	0x3b0f
+> +#define PCI_DEVICE_ID_INTEL_PCH_16	0x3b10
+> +#define PCI_DEVICE_ID_INTEL_PCH_17	0x3b11
+> +#define PCI_DEVICE_ID_INTEL_PCH_18	0x3b12
+> +#define PCI_DEVICE_ID_INTEL_PCH_19	0x3b13
+> +#define PCI_DEVICE_ID_INTEL_PCH_20	0x3b14
+> +#define PCI_DEVICE_ID_INTEL_PCH_21	0x3b15
+> +#define PCI_DEVICE_ID_INTEL_PCH_22	0x3b16
+> +#define PCI_DEVICE_ID_INTEL_PCH_23	0x3b17
+> +#define PCI_DEVICE_ID_INTEL_PCH_24	0x3b18
+> +#define PCI_DEVICE_ID_INTEL_PCH_25	0x3b19
+> +#define PCI_DEVICE_ID_INTEL_PCH_26	0x3b1a
+> +#define PCI_DEVICE_ID_INTEL_PCH_27	0x3b1b
+> +#define PCI_DEVICE_ID_INTEL_PCH_28	0x3b1c
+> +#define PCI_DEVICE_ID_INTEL_PCH_29	0x3b1d
+> +#define PCI_DEVICE_ID_INTEL_PCH_30	0x3b1e
+> +#define PCI_DEVICE_ID_INTEL_PCH_31	0x3b1f
+> +#define PCI_DEVICE_ID_INTEL_PCH_32	0x3b30
+>  #define PCI_DEVICE_ID_INTEL_IOAT_SNB	0x402f
+>  #define PCI_DEVICE_ID_INTEL_5100_16	0x65f0
+>  #define PCI_DEVICE_ID_INTEL_5100_21	0x65f5
+
+BTW, what's the point of these defines? I get the idea of giving nice
+names to device IDs if these names are explicit and really describe the
+device. But the Intel south bridge device names are nothing more than
+arbitrary numbers, so you are replacing a set of arbitrary numbers by
+another set of arbitrary numbers. I see little benefit in doing this,
+given the cost it has. For what it's worth, several subsystems (ata,
+sound...) have already stopped using these defines and I understand
+them completely: depending on changes done to include/linux/pci_ids.h
+is more pain than is worth.
+
+Can't we stop defining these IDs now and start using the hexadecimal
+numbers in all the drivers directly?
+
+> --- linux-2.6/arch/x86/pci/irq.c.orig	2008-08-27 11:53:13.000000000 -0700
+> +++ linux-2.6/arch/x86/pci/irq.c	2008-08-27 12:07:21.000000000 -0700
+> @@ -592,6 +592,36 @@
+>  	case PCI_DEVICE_ID_INTEL_ICH10_3:
+>  	case PCI_DEVICE_ID_INTEL_PCH_0:
+>  	case PCI_DEVICE_ID_INTEL_PCH_1:
+> +	case PCI_DEVICE_ID_INTEL_PCH_2:
+> +	case PCI_DEVICE_ID_INTEL_PCH_3:
+> +	case PCI_DEVICE_ID_INTEL_PCH_4:
+> +	case PCI_DEVICE_ID_INTEL_PCH_5:
+> +	case PCI_DEVICE_ID_INTEL_PCH_6:
+> +	case PCI_DEVICE_ID_INTEL_PCH_7:
+> +	case PCI_DEVICE_ID_INTEL_PCH_8:
+> +	case PCI_DEVICE_ID_INTEL_PCH_9:
+> +	case PCI_DEVICE_ID_INTEL_PCH_10:
+> +	case PCI_DEVICE_ID_INTEL_PCH_11:
+> +	case PCI_DEVICE_ID_INTEL_PCH_12:
+> +	case PCI_DEVICE_ID_INTEL_PCH_13:
+> +	case PCI_DEVICE_ID_INTEL_PCH_14:
+> +	case PCI_DEVICE_ID_INTEL_PCH_15:
+> +	case PCI_DEVICE_ID_INTEL_PCH_16:
+> +	case PCI_DEVICE_ID_INTEL_PCH_17:
+> +	case PCI_DEVICE_ID_INTEL_PCH_18:
+> +	case PCI_DEVICE_ID_INTEL_PCH_19:
+> +	case PCI_DEVICE_ID_INTEL_PCH_20:
+> +	case PCI_DEVICE_ID_INTEL_PCH_21:
+> +	case PCI_DEVICE_ID_INTEL_PCH_22:
+> +	case PCI_DEVICE_ID_INTEL_PCH_23:
+> +	case PCI_DEVICE_ID_INTEL_PCH_24:
+> +	case PCI_DEVICE_ID_INTEL_PCH_25:
+> +	case PCI_DEVICE_ID_INTEL_PCH_26:
+> +	case PCI_DEVICE_ID_INTEL_PCH_27:
+> +	case PCI_DEVICE_ID_INTEL_PCH_28:
+> +	case PCI_DEVICE_ID_INTEL_PCH_29:
+> +	case PCI_DEVICE_ID_INTEL_PCH_30:
+> +	case PCI_DEVICE_ID_INTEL_PCH_31:
+
+I am no PCI IRQ routing expert, but I have to admit that I a bit
+skeptical that all the PCH functions are IRQ routers. You're adding as
+many entries here for the PCH than there have been for all Intel chips
+in the past 10 years or so...
+
+>  		r->name = "PIIX/ICH";
+>  		r->get = pirq_piix_get;
+>  		r->set = pirq_piix_set;
+
 
 -- 
-Jens Axboe
-
+Jean Delvare
