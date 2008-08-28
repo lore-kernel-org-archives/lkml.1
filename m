@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbYH1JBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbYH1JIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbYH1JBA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 05:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYH1JAu
+	id S1752834AbYH1JIc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 05:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYH1JIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 05:00:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53047 "EHLO mx2.mail.elte.hu"
+	Thu, 28 Aug 2008 05:08:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51109 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752704AbYH1JAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 05:00:48 -0400
-Date: Thu, 28 Aug 2008 11:00:36 +0200
+	id S1751242AbYH1JIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 05:08:22 -0400
+Date: Thu, 28 Aug 2008 11:08:02 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Joe Korty <joe.korty@ccur.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] make poll_idle behave more like the other idle methods
-Message-ID: <20080828090036.GC19422@elte.hu>
-References: <20080827143506.GA23166@tsunami.ccur.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for August 27
+Message-ID: <20080828090802.GE19422@elte.hu>
+References: <20080827183453.eb651f50.sfr@canb.auug.org.au> <200808271206.48370.bzolnier@gmail.com> <58cb370e0808270757k583c0fc2oc659bc8e2dd6c21e@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080827143506.GA23166@tsunami.ccur.com>
+In-Reply-To: <58cb370e0808270757k583c0fc2oc659bc8e2dd6c21e@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,23 +35,34 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Joe Korty <joe.korty@ccur.com> wrote:
+* Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-> Make poll_idle() behave more like the other idle methods.
+> On Wed, Aug 27, 2008 at 12:06 PM, Bartlomiej Zolnierkiewicz
+> <bzolnier@gmail.com> wrote:
+> >
+> > Hi,
+> >
+> > On Wednesday 27 August 2008, Stephen Rothwell wrote:
+> >> Hi all,
+> >>
+> >> Changes since next-20080826:
+> >
+> > it fails to build here with:
+> >
+> > arch/x86/kernel/cpu/addon_cpuid_features.c: In function 'detect_extended_topology':
+> > arch/x86/kernel/cpu/addon_cpuid_features.c:119: error: 'struct cpuinfo_x86' hasno member named 'cpu_core_id'
+> > arch/x86/kernel/cpu/addon_cpuid_features.c:121: error: 'struct cpuinfo_x86' hasno member named 'phys_proc_id'
+> > arch/x86/kernel/cpu/addon_cpuid_features.c:130: error: 'struct cpuinfo_x86' hasno member named 'phys_proc_id'
+> > arch/x86/kernel/cpu/addon_cpuid_features.c:133: error: 'struct cpuinfo_x86' hasno member named 'cpu_core_id'
+> > make[2]: *** [arch/x86/kernel/cpu/addon_cpuid_features.o] Error 1
+> > make[1]: *** [arch/x86/kernel/cpu] Error 2
+> > make: *** [arch/x86/kernel] Error 2
 > 
-> Currently, poll_idle() returns immediately.  The other
-> idle methods all wait indefinately for some condition
-> to come true before returning.  poll_idle should emulate
-> these other methods and also wait for a return condition,
-> in this case, for need_resched() to become 'true'.
+> which is most likely already fixed in x86 tree by
 > 
-> Without this delay the idle loop spends all of its time
-> in the outer loop that calls poll_idle.  This outer loop,
-> these days, does real work, some of it under rcu locks.
-> That work should only be done when idle is entered and
-> when idle exits, not continuously while idle is spinning.
+> http://lkml.org/lkml/2008/8/27/34
 
-i'm wondering, what's the motivation, have you actually seen
-anything bad/undesired happen due to that?
+ok, i've propagated those commits to auto-x86-next as well, so that 
+linux-next is fixed too.
 
 	Ingo
