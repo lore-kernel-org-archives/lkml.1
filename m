@@ -1,394 +1,577 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753738AbYH1Eah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753314AbYH1FAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753738AbYH1Eah (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 00:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbYH1Ea2
+	id S1753314AbYH1FAp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 01:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbYH1FAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 00:30:28 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35886 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750784AbYH1Ea1 (ORCPT
+	Thu, 28 Aug 2008 01:00:33 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:12565 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbYH1FAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 00:30:27 -0400
-Message-ID: <48B629D2.7040809@zytor.com>
-Date: Wed, 27 Aug 2008 21:30:10 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 28 Aug 2008 01:00:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=lJYdwFr9bX81/X1A2WmWClh6SHKxnBx96feG9prRyH9faDXV2/ZdOEg6NAAE/Y/X5S
+         lz5zzh3kQVe1y7UIdXocsKe31pCR2YLhpGOrdp46In+mKGhrM2rUMaWOuBB4DyQAZi9o
+         jd/feVmT2yos8EGDJi2p4/BJwywTZsYoM3p8o=
+Date: Thu, 28 Aug 2008 09:02:03 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH -next] sysctl: simplify ->strategy
+Message-ID: <20080828050203.GA7608@x200.localdomain>
 MIME-Version: 1.0
-To: the arch/x86 maintainers <x86@kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Austin Zhang <austin_zhang@linux.intel.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Cleanup and updates of x86 CPU definitions
-Content-Type: multipart/mixed;
- boundary="------------080600000708010003020203"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080600000708010003020203
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+name and nlen parameters passed to ->strategy hook are unused, remove them.
+In general ->strategy hook should know what it's doing, and don't do
+something tricky for which, say, pointer to original userspace array may
+be needed (name).
 
-Hi all,
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-I have just committed to tip:x86/cpu the following patch series:
+ arch/frv/kernel/pm.c           |    6 +++---
+ arch/mips/lasat/sysctl.c       |   17 ++++++++---------
+ drivers/char/random.c          |    2 +-
+ include/linux/sysctl.h         |    2 +-
+ include/net/ip.h               |    2 +-
+ include/net/ndisc.h            |    5 ++---
+ ipc/ipc_sysctl.c               |    9 ++++-----
+ kernel/sysctl.c                |   29 +++++++++++++----------------
+ kernel/utsname_sysctl.c        |    5 ++---
+ net/decnet/dn_dev.c            |    4 ++--
+ net/decnet/sysctl_net_decnet.c |    4 ++--
+ net/ipv4/devinet.c             |    7 +++----
+ net/ipv4/route.c               |    7 +------
+ net/ipv4/sysctl_net_ipv4.c     |   18 +++++++++---------
+ net/ipv6/addrconf.c            |    1 -
+ net/ipv6/ndisc.c               |   11 ++++-------
+ 16 files changed, 56 insertions(+), 73 deletions(-)
 
-H. Peter Anvin (3):
-       x86: generate names for /proc/cpuinfo from <asm/cpufeature.h>
-       x86: cpufeature: add Intel features from CPUID and AVX specs
-       x86: <asm/cpufeature.h>: clean up overlong lines, whitespace
+--- a/arch/frv/kernel/pm.c
++++ b/arch/frv/kernel/pm.c
+@@ -211,7 +211,7 @@ static int cmode_procctl(ctl_table *ctl, int write, struct file *filp,
+ 	return try_set_cmode(new_cmode)?:*lenp;
+ }
+ 
+-static int cmode_sysctl(ctl_table *table, int __user *name, int nlen,
++static int cmode_sysctl(ctl_table *table,
+ 			void __user *oldval, size_t __user *oldlenp,
+ 			void __user *newval, size_t newlen)
+ {
+@@ -314,7 +314,7 @@ static int p0_procctl(ctl_table *ctl, int write, struct file *filp,
+ 	return try_set_p0(new_p0)?:*lenp;
+ }
+ 
+-static int p0_sysctl(ctl_table *table, int __user *name, int nlen,
++static int p0_sysctl(ctl_table *table,
+ 		     void __user *oldval, size_t __user *oldlenp,
+ 		     void __user *newval, size_t newlen)
+ {
+@@ -358,7 +358,7 @@ static int cm_procctl(ctl_table *ctl, int write, struct file *filp,
+ 	return try_set_cm(new_cm)?:*lenp;
+ }
+ 
+-static int cm_sysctl(ctl_table *table, int __user *name, int nlen,
++static int cm_sysctl(ctl_table *table,
+ 		     void __user *oldval, size_t __user *oldlenp,
+ 		     void __user *newval, size_t newlen)
+ {
+--- a/arch/mips/lasat/sysctl.c
++++ b/arch/mips/lasat/sysctl.c
+@@ -38,14 +38,13 @@
+ #endif
+ 
+ /* Strategy function to write EEPROM after changing string entry */
+-int sysctl_lasatstring(ctl_table *table, int *name, int nlen,
++int sysctl_lasatstring(ctl_table *table,
+ 		void *oldval, size_t *oldlenp,
+ 		void *newval, size_t newlen)
+ {
+ 	int r;
+ 
+-	r = sysctl_string(table, name,
+-			  nlen, oldval, oldlenp, newval, newlen);
++	r = sysctl_string(table, oldval, oldlenp, newval, newlen);
+ 	if (r < 0)
+ 		return r;
+ 
+@@ -113,13 +112,13 @@ int proc_dolasatrtc(ctl_table *table, int write, struct file *filp,
+ #endif
+ 
+ /* Sysctl for setting the IP addresses */
+-int sysctl_lasat_intvec(ctl_table *table, int *name, int nlen,
++int sysctl_lasat_intvec(ctl_table *table,
+ 		    void *oldval, size_t *oldlenp,
+ 		    void *newval, size_t newlen)
+ {
+ 	int r;
+ 
+-	r = sysctl_intvec(table, name, nlen, oldval, oldlenp, newval, newlen);
++	r = sysctl_intvec(table, oldval, oldlenp, newval, newlen);
+ 	if (r < 0)
+ 		return r;
+ 
+@@ -131,7 +130,7 @@ int sysctl_lasat_intvec(ctl_table *table, int *name, int nlen,
+ 
+ #ifdef CONFIG_DS1603
+ /* Same for RTC */
+-int sysctl_lasat_rtc(ctl_table *table, int *name, int nlen,
++int sysctl_lasat_rtc(ctl_table *table,
+ 		    void *oldval, size_t *oldlenp,
+ 		    void *newval, size_t newlen)
+ {
+@@ -140,7 +139,7 @@ int sysctl_lasat_rtc(ctl_table *table, int *name, int nlen,
+ 	rtctmp = read_persistent_clock();
+ 	if (rtctmp < 0)
+ 		rtctmp = 0;
+-	r = sysctl_intvec(table, name, nlen, oldval, oldlenp, newval, newlen);
++	r = sysctl_intvec(table, oldval, oldlenp, newval, newlen);
+ 	if (r < 0)
+ 		return r;
+ 	if (newval && newlen)
+@@ -211,13 +210,13 @@ int proc_lasat_ip(ctl_table *table, int write, struct file *filp,
+ }
+ #endif
+ 
+-static int sysctl_lasat_prid(ctl_table *table, int *name, int nlen,
++static int sysctl_lasat_prid(ctl_table *table,
+ 				     void *oldval, size_t *oldlenp,
+ 				     void *newval, size_t newlen)
+ {
+ 	int r;
+ 
+-	r = sysctl_intvec(table, name, nlen, oldval, oldlenp, newval, newlen);
++	r = sysctl_intvec(table, oldval, oldlenp, newval, newlen);
+ 	if (r < 0)
+ 		return r;
+ 	if (newval && newlen) {
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -1266,7 +1266,7 @@ static int proc_do_uuid(ctl_table *table, int write, struct file *filp,
+ 	return proc_dostring(&fake_table, write, filp, buffer, lenp, ppos);
+ }
+ 
+-static int uuid_strategy(ctl_table *table, int __user *name, int nlen,
++static int uuid_strategy(ctl_table *table,
+ 			 void __user *oldval, size_t __user *oldlenp,
+ 			 void __user *newval, size_t newlen)
+ {
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -972,7 +972,7 @@ extern int sysctl_perm(struct ctl_table_root *root,
+ 
+ typedef struct ctl_table ctl_table;
+ 
+-typedef int ctl_handler (struct ctl_table *table, int __user *name, int nlen,
++typedef int ctl_handler (struct ctl_table *table,
+ 			 void __user *oldval, size_t __user *oldlenp,
+ 			 void __user *newval, size_t newlen);
+ 
+--- a/include/net/ip.h
++++ b/include/net/ip.h
+@@ -383,7 +383,7 @@ extern void	ip_local_error(struct sock *sk, int err, __be32 daddr, __be16 dport,
+ int ipv4_doint_and_flush(ctl_table *ctl, int write,
+ 			 struct file* filp, void __user *buffer,
+ 			 size_t *lenp, loff_t *ppos);
+-int ipv4_doint_and_flush_strategy(ctl_table *table, int __user *name, int nlen,
++int ipv4_doint_and_flush_strategy(ctl_table *table,
+ 				  void __user *oldval, size_t __user *oldlenp,
+ 				  void __user *newval, size_t newlen);
+ #ifdef CONFIG_PROC_FS
+--- a/include/net/ndisc.h
++++ b/include/net/ndisc.h
+@@ -129,9 +129,8 @@ extern int 			ndisc_ifinfo_sysctl_change(struct ctl_table *ctl,
+ 							   void __user *buffer,
+ 							   size_t *lenp,
+ 							   loff_t *ppos);
+-int ndisc_ifinfo_sysctl_strategy(ctl_table *ctl, int __user *name,
+-				 int nlen, void __user *oldval,
+-				 size_t __user *oldlenp,
++int ndisc_ifinfo_sysctl_strategy(ctl_table *ctl,
++				 void __user *oldval, size_t __user *oldlenp,
+ 				 void __user *newval, size_t newlen);
+ #endif
+ 
+--- a/ipc/ipc_sysctl.c
++++ b/ipc/ipc_sysctl.c
+@@ -131,7 +131,7 @@ static int proc_ipcauto_dointvec_minmax(ctl_table *table, int write,
+ 
+ #ifdef CONFIG_SYSCTL_SYSCALL
+ /* The generic sysctl ipc data routine. */
+-static int sysctl_ipc_data(ctl_table *table, int __user *name, int nlen,
++static int sysctl_ipc_data(ctl_table *table,
+ 		void __user *oldval, size_t __user *oldlenp,
+ 		void __user *newval, size_t newlen)
+ {
+@@ -169,14 +169,13 @@ static int sysctl_ipc_data(ctl_table *table, int __user *name, int nlen,
+ 	return 1;
+ }
+ 
+-static int sysctl_ipc_registered_data(ctl_table *table, int __user *name,
+-		int nlen, void __user *oldval, size_t __user *oldlenp,
++static int sysctl_ipc_registered_data(ctl_table *table,
++		void __user *oldval, size_t __user *oldlenp,
+ 		void __user *newval, size_t newlen)
+ {
+ 	int rc;
+ 
+-	rc = sysctl_ipc_data(table, name, nlen, oldval, oldlenp, newval,
+-		newlen);
++	rc = sysctl_ipc_data(table, oldval, oldlenp, newval, newlen);
+ 
+ 	if (newval && newlen && rc > 0)
+ 		/*
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1545,7 +1545,6 @@ void register_sysctl_root(struct ctl_table_root *root)
+ /* Perform the actual read/write of a sysctl table entry. */
+ static int do_sysctl_strategy(struct ctl_table_root *root,
+ 			struct ctl_table *table,
+-			int __user *name, int nlen,
+ 			void __user *oldval, size_t __user *oldlenp,
+ 			void __user *newval, size_t newlen)
+ {
+@@ -1559,8 +1558,7 @@ static int do_sysctl_strategy(struct ctl_table_root *root,
+ 		return -EPERM;
+ 
+ 	if (table->strategy) {
+-		rc = table->strategy(table, name, nlen, oldval, oldlenp,
+-				     newval, newlen);
++		rc = table->strategy(table, oldval, oldlenp, newval, newlen);
+ 		if (rc < 0)
+ 			return rc;
+ 		if (rc > 0)
+@@ -1570,8 +1568,7 @@ static int do_sysctl_strategy(struct ctl_table_root *root,
+ 	/* If there is no strategy routine, or if the strategy returns
+ 	 * zero, proceed with automatic r/w */
+ 	if (table->data && table->maxlen) {
+-		rc = sysctl_data(table, name, nlen, oldval, oldlenp,
+-				 newval, newlen);
++		rc = sysctl_data(table, oldval, oldlenp, newval, newlen);
+ 		if (rc < 0)
+ 			return rc;
+ 	}
+@@ -1603,7 +1600,7 @@ repeat:
+ 				table = table->child;
+ 				goto repeat;
+ 			}
+-			error = do_sysctl_strategy(root, table, name, nlen,
++			error = do_sysctl_strategy(root, table,
+ 						   oldval, oldlenp,
+ 						   newval, newlen);
+ 			return error;
+@@ -2762,7 +2759,7 @@ int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int write,
+  */
+ 
+ /* The generic sysctl data routine (used if no strategy routine supplied) */
+-int sysctl_data(struct ctl_table *table, int __user *name, int nlen,
++int sysctl_data(struct ctl_table *table,
+ 		void __user *oldval, size_t __user *oldlenp,
+ 		void __user *newval, size_t newlen)
+ {
+@@ -2796,7 +2793,7 @@ int sysctl_data(struct ctl_table *table, int __user *name, int nlen,
+ }
+ 
+ /* The generic string strategy routine: */
+-int sysctl_string(struct ctl_table *table, int __user *name, int nlen,
++int sysctl_string(struct ctl_table *table,
+ 		  void __user *oldval, size_t __user *oldlenp,
+ 		  void __user *newval, size_t newlen)
+ {
+@@ -2842,7 +2839,7 @@ int sysctl_string(struct ctl_table *table, int __user *name, int nlen,
+  * are between the minimum and maximum values given in the arrays
+  * table->extra1 and table->extra2, respectively.
+  */
+-int sysctl_intvec(struct ctl_table *table, int __user *name, int nlen,
++int sysctl_intvec(struct ctl_table *table,
+ 		void __user *oldval, size_t __user *oldlenp,
+ 		void __user *newval, size_t newlen)
+ {
+@@ -2878,7 +2875,7 @@ int sysctl_intvec(struct ctl_table *table, int __user *name, int nlen,
+ }
+ 
+ /* Strategy function to convert jiffies to seconds */ 
+-int sysctl_jiffies(struct ctl_table *table, int __user *name, int nlen,
++int sysctl_jiffies(struct ctl_table *table,
+ 		void __user *oldval, size_t __user *oldlenp,
+ 		void __user *newval, size_t newlen)
+ {
+@@ -2912,7 +2909,7 @@ int sysctl_jiffies(struct ctl_table *table, int __user *name, int nlen,
+ }
+ 
+ /* Strategy function to convert jiffies to seconds */ 
+-int sysctl_ms_jiffies(struct ctl_table *table, int __user *name, int nlen,
++int sysctl_ms_jiffies(struct ctl_table *table,
+ 		void __user *oldval, size_t __user *oldlenp,
+ 		void __user *newval, size_t newlen)
+ {
+@@ -2967,35 +2964,35 @@ asmlinkage long sys_sysctl(struct __sysctl_args __user *args)
+ 	return error;
+ }
+ 
+-int sysctl_data(struct ctl_table *table, int __user *name, int nlen,
++int sysctl_data(struct ctl_table *table,
+ 		  void __user *oldval, size_t __user *oldlenp,
+ 		  void __user *newval, size_t newlen)
+ {
+ 	return -ENOSYS;
+ }
+ 
+-int sysctl_string(struct ctl_table *table, int __user *name, int nlen,
++int sysctl_string(struct ctl_table *table,
+ 		  void __user *oldval, size_t __user *oldlenp,
+ 		  void __user *newval, size_t newlen)
+ {
+ 	return -ENOSYS;
+ }
+ 
+-int sysctl_intvec(struct ctl_table *table, int __user *name, int nlen,
++int sysctl_intvec(struct ctl_table *table,
+ 		void __user *oldval, size_t __user *oldlenp,
+ 		void __user *newval, size_t newlen)
+ {
+ 	return -ENOSYS;
+ }
+ 
+-int sysctl_jiffies(struct ctl_table *table, int __user *name, int nlen,
++int sysctl_jiffies(struct ctl_table *table,
+ 		void __user *oldval, size_t __user *oldlenp,
+ 		void __user *newval, size_t newlen)
+ {
+ 	return -ENOSYS;
+ }
+ 
+-int sysctl_ms_jiffies(struct ctl_table *table, int __user *name, int nlen,
++int sysctl_ms_jiffies(struct ctl_table *table,
+ 		void __user *oldval, size_t __user *oldlenp,
+ 		void __user *newval, size_t newlen)
+ {
+--- a/kernel/utsname_sysctl.c
++++ b/kernel/utsname_sysctl.c
+@@ -60,7 +60,7 @@ static int proc_do_uts_string(ctl_table *table, int write, struct file *filp,
+ 
+ #ifdef CONFIG_SYSCTL_SYSCALL
+ /* The generic string strategy routine: */
+-static int sysctl_uts_string(ctl_table *table, int __user *name, int nlen,
++static int sysctl_uts_string(ctl_table *table,
+ 		  void __user *oldval, size_t __user *oldlenp,
+ 		  void __user *newval, size_t newlen)
+ {
+@@ -69,8 +69,7 @@ static int sysctl_uts_string(ctl_table *table, int __user *name, int nlen,
+ 	write = newval && newlen;
+ 	memcpy(&uts_table, table, sizeof(uts_table));
+ 	uts_table.data = get_uts(table, write);
+-	r = sysctl_string(&uts_table, name, nlen,
+-		oldval, oldlenp, newval, newlen);
++	r = sysctl_string(&uts_table, oldval, oldlenp, newval, newlen);
+ 	put_uts(table, write, uts_table.data);
+ 	return r;
+ }
+--- a/net/decnet/dn_dev.c
++++ b/net/decnet/dn_dev.c
+@@ -166,7 +166,7 @@ static int max_priority[] = { 127 }; /* From DECnet spec */
+ 
+ static int dn_forwarding_proc(ctl_table *, int, struct file *,
+ 			void __user *, size_t *, loff_t *);
+-static int dn_forwarding_sysctl(ctl_table *table, int __user *name, int nlen,
++static int dn_forwarding_sysctl(ctl_table *table,
+ 			void __user *oldval, size_t __user *oldlenp,
+ 			void __user *newval, size_t newlen);
+ 
+@@ -318,7 +318,7 @@ static int dn_forwarding_proc(ctl_table *table, int write,
+ #endif
+ }
+ 
+-static int dn_forwarding_sysctl(ctl_table *table, int __user *name, int nlen,
++static int dn_forwarding_sysctl(ctl_table *table,
+ 			void __user *oldval, size_t __user *oldlenp,
+ 			void __user *newval, size_t newlen)
+ {
+--- a/net/decnet/sysctl_net_decnet.c
++++ b/net/decnet/sysctl_net_decnet.c
+@@ -132,7 +132,7 @@ static int parse_addr(__le16 *addr, char *str)
+ }
+ 
+ 
+-static int dn_node_address_strategy(ctl_table *table, int __user *name, int nlen,
++static int dn_node_address_strategy(ctl_table *table,
+ 				void __user *oldval, size_t __user *oldlenp,
+ 				void __user *newval, size_t newlen)
+ {
+@@ -217,7 +217,7 @@ static int dn_node_address_handler(ctl_table *table, int write,
+ }
+ 
+ 
+-static int dn_def_dev_strategy(ctl_table *table, int __user *name, int nlen,
++static int dn_def_dev_strategy(ctl_table *table,
+ 				void __user *oldval, size_t __user *oldlenp,
+ 				void __user *newval, size_t newlen)
+ {
+--- a/net/ipv4/devinet.c
++++ b/net/ipv4/devinet.c
+@@ -1272,7 +1272,7 @@ static int devinet_conf_proc(ctl_table *ctl, int write,
+ 	return ret;
+ }
+ 
+-static int devinet_conf_sysctl(ctl_table *table, int __user *name, int nlen,
++static int devinet_conf_sysctl(ctl_table *table,
+ 			       void __user *oldval, size_t __user *oldlenp,
+ 			       void __user *newval, size_t newlen)
+ {
+@@ -1368,12 +1368,11 @@ int ipv4_doint_and_flush(ctl_table *ctl, int write,
+ 	return ret;
+ }
+ 
+-int ipv4_doint_and_flush_strategy(ctl_table *table, int __user *name, int nlen,
++int ipv4_doint_and_flush_strategy(ctl_table *table,
+ 				  void __user *oldval, size_t __user *oldlenp,
+ 				  void __user *newval, size_t newlen)
+ {
+-	int ret = devinet_conf_sysctl(table, name, nlen, oldval, oldlenp,
+-				      newval, newlen);
++	int ret = devinet_conf_sysctl(table, oldval, oldlenp, newval, newlen);
+ 	struct net *net = table->extra2;
+ 
+ 	if (ret == 1)
+--- a/net/ipv4/route.c
++++ b/net/ipv4/route.c
+@@ -2896,8 +2896,6 @@ static int ipv4_sysctl_rtcache_flush(ctl_table *__ctl, int write,
+ }
+ 
+ static int ipv4_sysctl_rtcache_flush_strategy(ctl_table *table,
+-						int __user *name,
+-						int nlen,
+ 						void __user *oldval,
+ 						size_t __user *oldlenp,
+ 						void __user *newval,
+@@ -2960,16 +2958,13 @@ static int ipv4_sysctl_rt_secret_interval(ctl_table *ctl, int write,
+ }
+ 
+ static int ipv4_sysctl_rt_secret_interval_strategy(ctl_table *table,
+-						   int __user *name,
+-						   int nlen,
+ 						   void __user *oldval,
+ 						   size_t __user *oldlenp,
+ 						   void __user *newval,
+ 						   size_t newlen)
+ {
+ 	int old = ip_rt_secret_interval;
+-	int ret = sysctl_jiffies(table, name, nlen, oldval, oldlenp, newval,
+-				 newlen);
++	int ret = sysctl_jiffies(table, oldval, oldlenp, newval, newlen);
+ 
+ 	rt_secret_reschedule(old);
+ 
+--- a/net/ipv4/sysctl_net_ipv4.c
++++ b/net/ipv4/sysctl_net_ipv4.c
+@@ -67,8 +67,8 @@ static int ipv4_local_port_range(ctl_table *table, int write, struct file *filp,
+ }
+ 
+ /* Validate changes from sysctl interface. */
+-static int ipv4_sysctl_local_port_range(ctl_table *table, int __user *name,
+-					 int nlen, void __user *oldval,
++static int ipv4_sysctl_local_port_range(ctl_table *table,
++					 void __user *oldval,
+ 					 size_t __user *oldlenp,
+ 					void __user *newval, size_t newlen)
+ {
+@@ -83,7 +83,7 @@ static int ipv4_sysctl_local_port_range(ctl_table *table, int __user *name,
+ 		.extra2 = &ip_local_port_range_max,
+ 	};
+ 
+-	ret = sysctl_intvec(&tmp, name, nlen, oldval, oldlenp, newval, newlen);
++	ret = sysctl_intvec(&tmp, oldval, oldlenp, newval, newlen);
+ 	if (ret == 0 && newval && newlen) {
+ 		if (range[1] < range[0])
+ 			ret = -EINVAL;
+@@ -112,8 +112,8 @@ static int proc_tcp_congestion_control(ctl_table *ctl, int write, struct file *
+ 	return ret;
+ }
+ 
+-static int sysctl_tcp_congestion_control(ctl_table *table, int __user *name,
+-					 int nlen, void __user *oldval,
++static int sysctl_tcp_congestion_control(ctl_table *table,
++					 void __user *oldval,
+ 					 size_t __user *oldlenp,
+ 					 void __user *newval, size_t newlen)
+ {
+@@ -125,7 +125,7 @@ static int sysctl_tcp_congestion_control(ctl_table *table, int __user *name,
+ 	int ret;
+ 
+ 	tcp_get_default_congestion_control(val);
+-	ret = sysctl_string(&tbl, name, nlen, oldval, oldlenp, newval, newlen);
++	ret = sysctl_string(&tbl, oldval, oldlenp, newval, newlen);
+ 	if (ret == 1 && newval && newlen)
+ 		ret = tcp_set_default_congestion_control(val);
+ 	return ret;
+@@ -168,8 +168,8 @@ static int proc_allowed_congestion_control(ctl_table *ctl,
+ 	return ret;
+ }
+ 
+-static int strategy_allowed_congestion_control(ctl_table *table, int __user *name,
+-					       int nlen, void __user *oldval,
++static int strategy_allowed_congestion_control(ctl_table *table,
++					       void __user *oldval,
+ 					       size_t __user *oldlenp,
+ 					       void __user *newval,
+ 					       size_t newlen)
+@@ -182,7 +182,7 @@ static int strategy_allowed_congestion_control(ctl_table *table, int __user *nam
+ 		return -ENOMEM;
+ 
+ 	tcp_get_available_congestion_control(tbl.data, tbl.maxlen);
+-	ret = sysctl_string(&tbl, name, nlen, oldval, oldlenp, newval, newlen);
++	ret = sysctl_string(&tbl, oldval, oldlenp, newval, newlen);
+ 	if (ret == 1 && newval && newlen)
+ 		ret = tcp_set_allowed_congestion_control(tbl.data);
+ 	kfree(tbl.data);
+--- a/net/ipv6/addrconf.c
++++ b/net/ipv6/addrconf.c
+@@ -3982,7 +3982,6 @@ int addrconf_sysctl_forward(ctl_table *ctl, int write, struct file * filp,
+ }
+ 
+ static int addrconf_sysctl_forward_strategy(ctl_table *table,
+-					    int __user *name, int nlen,
+ 					    void __user *oldval,
+ 					    size_t __user *oldlenp,
+ 					    void __user *newval, size_t newlen)
+--- a/net/ipv6/ndisc.c
++++ b/net/ipv6/ndisc.c
+@@ -1730,9 +1730,8 @@ int ndisc_ifinfo_sysctl_change(struct ctl_table *ctl, int write, struct file * f
+ 	return ret;
+ }
+ 
+-int ndisc_ifinfo_sysctl_strategy(ctl_table *ctl, int __user *name,
+-				 int nlen, void __user *oldval,
+-				 size_t __user *oldlenp,
++int ndisc_ifinfo_sysctl_strategy(ctl_table *ctl,
++				 void __user *oldval, size_t __user *oldlenp,
+ 				 void __user *newval, size_t newlen)
+ {
+ 	struct net_device *dev = ctl->extra1;
+@@ -1745,13 +1744,11 @@ int ndisc_ifinfo_sysctl_strategy(ctl_table *ctl, int __user *name,
+ 
+ 	switch (ctl->ctl_name) {
+ 	case NET_NEIGH_REACHABLE_TIME:
+-		ret = sysctl_jiffies(ctl, name, nlen,
+-				     oldval, oldlenp, newval, newlen);
++		ret = sysctl_jiffies(ctl, oldval, oldlenp, newval, newlen);
+ 		break;
+ 	case NET_NEIGH_RETRANS_TIME_MS:
+ 	case NET_NEIGH_REACHABLE_TIME_MS:
+-		 ret = sysctl_ms_jiffies(ctl, name, nlen,
+-					 oldval, oldlenp, newval, newlen);
++		 ret = sysctl_ms_jiffies(ctl, oldval, oldlenp, newval, newlen);
+ 		 break;
+ 	default:
+ 		ret = 0;
 
-The combined patch is below.
-
-This changes the CPU feature naming code so that all that information 
-comes from <asm-x86/cpufeature.h>.  In the past we have had a number of 
-problems with cpufeature.h diverging from what /proc/cpuinfo showed (not 
-to mention that at one point we would show different things for 32 and 
-64 bits.)
-
-I'm flagging this especially, since this is a patch fairly likely to 
-conflict with other changes (incluing in other trees), although 
-hopefully in a trivial fashion (this patchset should supercede) since I 
-have gone through all the Intel and AMD documentation I could find and 
-made sure it has the flags.
-
-It is definitely unfortunate how the kernel sources and /proc/cpuinfo 
-use different names for features; given that we can't change 
-/proc/cpuinfo it might be worthwhile to run a sed script over the kernel 
-sources.
-
-	-hpa
-
---------------080600000708010003020203
-Content-Type: text/plain;
- name="log"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="log"
-
-IGFyY2gveDg2L2Jvb3QvbWtjcHVzdHIuYyAgICAgICAgICAgIHwgICAgMiArLQogYXJjaC94
-ODYva2VybmVsL2NwdS9NYWtlZmlsZSAgICAgICAgfCAgIDExICsrKy0KIGFyY2gveDg2L2tl
-cm5lbC9jcHUvZmVhdHVyZV9uYW1lcy5jIHwgICA4NCAtLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0KIGFyY2gveDg2L2tlcm5lbC9jcHUvbWtjYXBmbGFncy5wbCAgIHwgICAzMiArKysr
-KysrKysrCiBhcmNoL3g4Ni9rZXJuZWwvY3B1L3Bvd2VyZmxhZ3MuYyAgICB8ICAgMjAgKysr
-KysrKwogaW5jbHVkZS9hc20teDg2L2NwdWZlYXR1cmUuaCAgICAgICAgfCAgMTA3ICsrKysr
-KysrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0tCiA2IGZpbGVzIGNoYW5nZWQsIDEzNCBp
-bnNlcnRpb25zKCspLCAxMjIgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvYXJjaC94ODYv
-Ym9vdC9ta2NwdXN0ci5jIGIvYXJjaC94ODYvYm9vdC9ta2NwdXN0ci5jCmluZGV4IGJiZTc2
-OTUuLjQ1ODljYWEgMTAwNjQ0Ci0tLSBhL2FyY2gveDg2L2Jvb3QvbWtjcHVzdHIuYworKysg
-Yi9hcmNoL3g4Ni9ib290L21rY3B1c3RyLmMKQEAgLTE1LDcgKzE1LDcgQEAKIAogI2luY2x1
-ZGUgPHN0ZGlvLmg+CiAKLSNpbmNsdWRlICIuLi9rZXJuZWwvY3B1L2ZlYXR1cmVfbmFtZXMu
-YyIKKyNpbmNsdWRlICIuLi9rZXJuZWwvY3B1L2NhcGZsYWdzLmMiCiAKICNpZiBOQ0FQRkxB
-R1MgPiA4CiAjIGVycm9yICJOZWVkIHRvIGFkanVzdCB0aGUgYm9vdCBjb2RlIGhhbmRsaW5n
-IG9mIENQVUlEIHN0cmluZ3MiCmRpZmYgLS1naXQgYS9hcmNoL3g4Ni9rZXJuZWwvY3B1L01h
-a2VmaWxlIGIvYXJjaC94ODYva2VybmVsL2NwdS9NYWtlZmlsZQppbmRleCBhMGZjNmMxLi4z
-ZWRlMTlhIDEwMDY0NAotLS0gYS9hcmNoL3g4Ni9rZXJuZWwvY3B1L01ha2VmaWxlCisrKyBi
-L2FyY2gveDg2L2tlcm5lbC9jcHUvTWFrZWZpbGUKQEAgLTMsNyArMyw3IEBACiAjCiAKIG9i
-ai15CQkJOj0gaW50ZWxfY2FjaGVpbmZvLm8gYWRkb25fY3B1aWRfZmVhdHVyZXMubwotb2Jq
-LXkJCQkrPSBwcm9jLm8gZmVhdHVyZV9uYW1lcy5vCitvYmoteQkJCSs9IHByb2MubyBjYXBm
-bGFncy5vIHBvd2VyZmxhZ3MubwogCiBvYmotJChDT05GSUdfWDg2XzMyKQkrPSBjb21tb24u
-byBidWdzLm8gY21weGNoZy5vCiBvYmotJChDT05GSUdfWDg2XzY0KQkrPSBjb21tb25fNjQu
-byBidWdzXzY0Lm8KQEAgLTIzLDMgKzIzLDEyIEBAIG9iai0kKENPTkZJR19NVFJSKQkrPSBt
-dHJyLwogb2JqLSQoQ09ORklHX0NQVV9GUkVRKQkrPSBjcHVmcmVxLwogCiBvYmotJChDT05G
-SUdfWDg2X0xPQ0FMX0FQSUMpICs9IHBlcmZjdHItd2F0Y2hkb2cubworCitxdWlldF9jbWRf
-bWtjYXBmbGFncyA9IE1LQ0FQICAgJEAKKyAgICAgIGNtZF9ta2NhcGZsYWdzID0gJChQRVJM
-KSAkKHNyY3RyZWUpLyQoc3JjKS9ta2NhcGZsYWdzLnBsICQ8ICRACisKK2NwdWZlYXR1cmUg
-PSAkKHNyYykvLi4vLi4vLi4vLi4vaW5jbHVkZS9hc20teDg2L2NwdWZlYXR1cmUuaAorCit0
-YXJnZXRzICs9IGNhcGZsYWdzLmMKKyQob2JqKS9jYXBmbGFncy5jOiAkKGNwdWZlYXR1cmUp
-ICQoc3JjKS9ta2NhcGZsYWdzLnBsIEZPUkNFCisJJChjYWxsIGlmX2NoYW5nZWQsbWtjYXBm
-bGFncykKZGlmZiAtLWdpdCBhL2FyY2gveDg2L2tlcm5lbC9jcHUvZmVhdHVyZV9uYW1lcy5j
-IGIvYXJjaC94ODYva2VybmVsL2NwdS9mZWF0dXJlX25hbWVzLmMKZGVsZXRlZCBmaWxlIG1v
-ZGUgMTAwNjQ0CmluZGV4IGM5MDE3NzkuLjAwMDAwMDAKLS0tIGEvYXJjaC94ODYva2VybmVs
-L2NwdS9mZWF0dXJlX25hbWVzLmMKKysrIC9kZXYvbnVsbApAQCAtMSw4NCArMCwwIEBACi0v
-KgotICogU3RyaW5ncyBmb3IgdGhlIHZhcmlvdXMgeDg2IGNhcGFiaWxpdHkgZmxhZ3MuCi0g
-KgotICogVGhpcyBmaWxlIG11c3Qgbm90IGNvbnRhaW4gYW55IGV4ZWN1dGFibGUgY29kZS4K
-LSAqLwotCi0jaW5jbHVkZSA8YXNtL2NwdWZlYXR1cmUuaD4KLQotLyoKLSAqIFRoZXNlIGZs
-YWcgYml0cyBtdXN0IG1hdGNoIHRoZSBkZWZpbml0aW9ucyBpbiA8YXNtL2NwdWZlYXR1cmUu
-aD4uCi0gKiBOVUxMIG1lYW5zIHRoaXMgYml0IGlzIHVuZGVmaW5lZCBvciByZXNlcnZlZDsg
-ZWl0aGVyIHdheSBpdCBkb2Vzbid0Ci0gKiBoYXZlIG1lYW5pbmcgYXMgZmFyIGFzIExpbnV4
-IGlzIGNvbmNlcm5lZC4gIE5vdGUgdGhhdCBpdCdzIGltcG9ydGFudAotICogdG8gcmVhbGl6
-ZSB0aGVyZSBpcyBhIGRpZmZlcmVuY2UgYmV0d2VlbiB0aGlzIHRhYmxlIGFuZCBDUFVJRCAt
-LSBpZgotICogYXBwbGljYXRpb25zIHdhbnQgdG8gZ2V0IHRoZSByYXcgQ1BVSUQgZGF0YSwg
-dGhleSBzaG91bGQgYWNjZXNzCi0gKiAvZGV2L2NwdS88Y3B1X25yPi9jcHVpZCBpbnN0ZWFk
-LgotICovCi1jb25zdCBjaGFyICogY29uc3QgeDg2X2NhcF9mbGFnc1tOQ0FQSU5UUyozMl0g
-PSB7Ci0JLyogSW50ZWwtZGVmaW5lZCAqLwotCSJmcHUiLCAidm1lIiwgImRlIiwgInBzZSIs
-ICJ0c2MiLCAibXNyIiwgInBhZSIsICJtY2UiLAotCSJjeDgiLCAiYXBpYyIsIE5VTEwsICJz
-ZXAiLCAibXRyciIsICJwZ2UiLCAibWNhIiwgImNtb3YiLAotCSJwYXQiLCAicHNlMzYiLCAi
-cG4iLCAiY2xmbHVzaCIsIE5VTEwsICJkdHMiLCAiYWNwaSIsICJtbXgiLAotCSJmeHNyIiwg
-InNzZSIsICJzc2UyIiwgInNzIiwgImh0IiwgInRtIiwgImlhNjQiLCAicGJlIiwKLQotCS8q
-IEFNRC1kZWZpbmVkICovCi0JTlVMTCwgTlVMTCwgTlVMTCwgTlVMTCwgTlVMTCwgTlVMTCwg
-TlVMTCwgTlVMTCwKLQlOVUxMLCBOVUxMLCBOVUxMLCAic3lzY2FsbCIsIE5VTEwsIE5VTEws
-IE5VTEwsIE5VTEwsCi0JTlVMTCwgTlVMTCwgTlVMTCwgIm1wIiwgIm54IiwgTlVMTCwgIm1t
-eGV4dCIsIE5VTEwsCi0JTlVMTCwgImZ4c3Jfb3B0IiwgInBkcGUxZ2IiLCAicmR0c2NwIiwg
-TlVMTCwgImxtIiwKLQkiM2Rub3dleHQiLCAiM2Rub3ciLAotCi0JLyogVHJhbnNtZXRhLWRl
-ZmluZWQgKi8KLQkicmVjb3ZlcnkiLCAibG9uZ3J1biIsIE5VTEwsICJscnRpIiwgTlVMTCwg
-TlVMTCwgTlVMTCwgTlVMTCwKLQlOVUxMLCBOVUxMLCBOVUxMLCBOVUxMLCBOVUxMLCBOVUxM
-LCBOVUxMLCBOVUxMLAotCU5VTEwsIE5VTEwsIE5VTEwsIE5VTEwsIE5VTEwsIE5VTEwsIE5V
-TEwsIE5VTEwsCi0JTlVMTCwgTlVMTCwgTlVMTCwgTlVMTCwgTlVMTCwgTlVMTCwgTlVMTCwg
-TlVMTCwKLQotCS8qIE90aGVyIChMaW51eC1kZWZpbmVkKSAqLwotCSJjeG1teCIsICJrNl9t
-dHJyIiwgImN5cml4X2FyciIsICJjZW50YXVyX21jciIsCi0JTlVMTCwgTlVMTCwgTlVMTCwg
-TlVMTCwKLQkiY29uc3RhbnRfdHNjIiwgInVwIiwgTlVMTCwgImFyY2hfcGVyZm1vbiIsCi0J
-InBlYnMiLCAiYnRzIiwgTlVMTCwgTlVMTCwKLQkicmVwX2dvb2QiLCBOVUxMLCBOVUxMLCBO
-VUxMLAotCSJub3BsIiwgTlVMTCwgTlVMTCwgTlVMTCwKLQlOVUxMLCBOVUxMLCBOVUxMLCBO
-VUxMLCBOVUxMLCBOVUxMLCBOVUxMLCBOVUxMLAotCi0JLyogSW50ZWwtZGVmaW5lZCAoIzIp
-ICovCi0JInBuaSIsIE5VTEwsIE5VTEwsICJtb25pdG9yIiwgImRzX2NwbCIsICJ2bXgiLCAi
-c214IiwgImVzdCIsCi0JInRtMiIsICJzc3NlMyIsICJjaWQiLCBOVUxMLCBOVUxMLCAiY3gx
-NiIsICJ4dHByIiwgTlVMTCwKLQlOVUxMLCBOVUxMLCAiZGNhIiwgInNzZTRfMSIsICJzc2U0
-XzIiLCBOVUxMLCBOVUxMLCAicG9wY250IiwKLQlOVUxMLCBOVUxMLCBOVUxMLCBOVUxMLCBO
-VUxMLCBOVUxMLCBOVUxMLCBOVUxMLAotCi0JLyogVklBL0N5cml4L0NlbnRhdXItZGVmaW5l
-ZCAqLwotCU5VTEwsIE5VTEwsICJybmciLCAicm5nX2VuIiwgTlVMTCwgTlVMTCwgImFjZSIs
-ICJhY2VfZW4iLAotCSJhY2UyIiwgImFjZTJfZW4iLCAicGhlIiwgInBoZV9lbiIsICJwbW0i
-LCAicG1tX2VuIiwgTlVMTCwgTlVMTCwKLQlOVUxMLCBOVUxMLCBOVUxMLCBOVUxMLCBOVUxM
-LCBOVUxMLCBOVUxMLCBOVUxMLAotCU5VTEwsIE5VTEwsIE5VTEwsIE5VTEwsIE5VTEwsIE5V
-TEwsIE5VTEwsIE5VTEwsCi0KLQkvKiBBTUQtZGVmaW5lZCAoIzIpICovCi0JImxhaGZfbG0i
-LCAiY21wX2xlZ2FjeSIsICJzdm0iLCAiZXh0YXBpYyIsCi0JImNyOF9sZWdhY3kiLCAiYWJt
-IiwgInNzZTRhIiwgIm1pc2FsaWduc3NlIiwKLQkiM2Rub3dwcmVmZXRjaCIsICJvc3Z3Iiwg
-ImlicyIsICJzc2U1IiwKLQkic2tpbml0IiwgIndkdCIsIE5VTEwsIE5VTEwsCi0JTlVMTCwg
-TlVMTCwgTlVMTCwgTlVMTCwgTlVMTCwgTlVMTCwgTlVMTCwgTlVMTCwKLQlOVUxMLCBOVUxM
-LCBOVUxMLCBOVUxMLCBOVUxMLCBOVUxMLCBOVUxMLCBOVUxMLAotCi0JLyogQXV4aWxpYXJ5
-IChMaW51eC1kZWZpbmVkKSAqLwotCSJpZGEiLCBOVUxMLCBOVUxMLCBOVUxMLCBOVUxMLCBO
-VUxMLCBOVUxMLCBOVUxMLAotCU5VTEwsIE5VTEwsIE5VTEwsIE5VTEwsIE5VTEwsIE5VTEws
-IE5VTEwsIE5VTEwsCi0JTlVMTCwgTlVMTCwgTlVMTCwgTlVMTCwgTlVMTCwgTlVMTCwgTlVM
-TCwgTlVMTCwKLQlOVUxMLCBOVUxMLCBOVUxMLCBOVUxMLCBOVUxMLCBOVUxMLCBOVUxMLCBO
-VUxMLAotfTsKLQotY29uc3QgY2hhciAqY29uc3QgeDg2X3Bvd2VyX2ZsYWdzWzMyXSA9IHsK
-LQkidHMiLAkvKiB0ZW1wZXJhdHVyZSBzZW5zb3IgKi8KLQkiZmlkIiwgIC8qIGZyZXF1ZW5j
-eSBpZCBjb250cm9sICovCi0JInZpZCIsICAvKiB2b2x0YWdlIGlkIGNvbnRyb2wgKi8KLQki
-dHRwIiwgIC8qIHRoZXJtYWwgdHJpcCAqLwotCSJ0bSIsCi0JInN0YyIsCi0JIjEwMG1oenN0
-ZXBzIiwKLQkiaHdwc3RhdGUiLAotCSIiLAkvKiB0c2MgaW52YXJpYW50IG1hcHBlZCB0byBj
-b25zdGFudF90c2MgKi8KLQkJLyogbm90aGluZyAqLwotfTsKZGlmZiAtLWdpdCBhL2FyY2gv
-eDg2L2tlcm5lbC9jcHUvbWtjYXBmbGFncy5wbCBiL2FyY2gveDg2L2tlcm5lbC9jcHUvbWtj
-YXBmbGFncy5wbApuZXcgZmlsZSBtb2RlIDEwMDY0NAppbmRleCAwMDAwMDAwLi5kZmVhMzkw
-Ci0tLSAvZGV2L251bGwKKysrIGIvYXJjaC94ODYva2VybmVsL2NwdS9ta2NhcGZsYWdzLnBs
-CkBAIC0wLDAgKzEsMzIgQEAKKyMhL3Vzci9iaW4vcGVybAorIworIyBHZW5lcmF0ZSB0aGUg
-eDg2X2NhcF9mbGFnc1tdIGFycmF5IGZyb20gaW5jbHVkZS9hc20teDg2L2NwdWZlYXR1cmUu
-aAorIworCisoJGluLCAkb3V0KSA9IEBBUkdWOworCitvcGVuKElOLCAiPCAkaW5cMCIpICAg
-b3IgZGllICIkMDogY2Fubm90IG9wZW46ICRpbjogJCFcbiI7CitvcGVuKE9VVCwgIj4gJG91
-dFwwIikgb3IgZGllICIkMDogY2Fubm90IGNyZWF0ZTogJG91dDogJCFcbiI7CisKK3ByaW50
-IE9VVCAiI2luY2x1ZGUgPGFzbS9jcHVmZWF0dXJlLmg+XG5cbiI7CitwcmludCBPVVQgImNv
-bnN0IGNoYXIgKiBjb25zdCB4ODZfY2FwX2ZsYWdzW05DQVBJTlRTKjMyXSA9IHtcbiI7CisK
-K3doaWxlIChkZWZpbmVkKCRsaW5lID0gPElOPikpIHsKKwlpZiAoJGxpbmUgPX4gL15ccypc
-I1xzKmRlZmluZVxzKyhYODZfRkVBVFVSRV8oXFMrKSlccysoLiopJC8pIHsKKwkJJG1hY3Jv
-ID0gJDE7CisJCSRmZWF0dXJlID0gJDI7CisJCSR0YWlsID0gJDM7CisJCWlmICgkdGFpbCA9
-fiAvXC9cKlxzKlwiKFteIl0qKVwiLipcKlwvLykgeworCQkJJGZlYXR1cmUgPSAkMTsKKwkJ
-fQorCisJCWlmICgkZmVhdHVyZSBuZSAnJykgeworCQkJcHJpbnRmIE9VVCAiXHQlLTMycyA9
-IFwiJXNcIixcbiIsCisJCQkJIlskbWFjcm9dIiwgIlxMJGZlYXR1cmUiOworCQl9CisJfQor
-fQorcHJpbnQgT1VUICJ9O1xuIjsKKworY2xvc2UoSU4pOworY2xvc2UoT1VUKTsKZGlmZiAt
-LWdpdCBhL2FyY2gveDg2L2tlcm5lbC9jcHUvcG93ZXJmbGFncy5jIGIvYXJjaC94ODYva2Vy
-bmVsL2NwdS9wb3dlcmZsYWdzLmMKbmV3IGZpbGUgbW9kZSAxMDA2NDQKaW5kZXggMDAwMDAw
-MC4uNWFiYmVhMgotLS0gL2Rldi9udWxsCisrKyBiL2FyY2gveDg2L2tlcm5lbC9jcHUvcG93
-ZXJmbGFncy5jCkBAIC0wLDAgKzEsMjAgQEAKKy8qCisgKiBTdHJpbmdzIGZvciB0aGUgdmFy
-aW91cyB4ODYgcG93ZXIgZmxhZ3MKKyAqCisgKiBUaGlzIGZpbGUgbXVzdCBub3QgY29udGFp
-biBhbnkgZXhlY3V0YWJsZSBjb2RlLgorICovCisKKyNpbmNsdWRlIDxhc20vY3B1ZmVhdHVy
-ZS5oPgorCitjb25zdCBjaGFyICpjb25zdCB4ODZfcG93ZXJfZmxhZ3NbMzJdID0geworCSJ0
-cyIsCS8qIHRlbXBlcmF0dXJlIHNlbnNvciAqLworCSJmaWQiLCAgLyogZnJlcXVlbmN5IGlk
-IGNvbnRyb2wgKi8KKwkidmlkIiwgIC8qIHZvbHRhZ2UgaWQgY29udHJvbCAqLworCSJ0dHAi
-LCAgLyogdGhlcm1hbCB0cmlwICovCisJInRtIiwKKwkic3RjIiwKKwkiMTAwbWh6c3RlcHMi
-LAorCSJod3BzdGF0ZSIsCisJIiIsCS8qIHRzYyBpbnZhcmlhbnQgbWFwcGVkIHRvIGNvbnN0
-YW50X3RzYyAqLworCQkvKiBub3RoaW5nICovCit9OwpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9h
-c20teDg2L2NwdWZlYXR1cmUuaCBiL2luY2x1ZGUvYXNtLXg4Ni9jcHVmZWF0dXJlLmgKaW5k
-ZXggOTQ4OTI4My4uNzcxMDY4NiAxMDA2NDQKLS0tIGEvaW5jbHVkZS9hc20teDg2L2NwdWZl
-YXR1cmUuaAorKysgYi9pbmNsdWRlL2FzbS14ODYvY3B1ZmVhdHVyZS5oCkBAIC04LDEzICs4
-LDE5IEBACiAKICNkZWZpbmUgTkNBUElOVFMJOAkvKiBOIDMyLWJpdCB3b3JkcyB3b3J0aCBv
-ZiBpbmZvICovCiAKKy8qCisgKiBOb3RlOiBJZiB0aGUgY29tbWVudCBiZWdpbnMgd2l0aCBh
-IHF1b3RlZCBzdHJpbmcsIHRoYXQgc3RyaW5nIGlzIHVzZWQKKyAqIGluIC9wcm9jL2NwdWlu
-Zm8gaW5zdGVhZCBvZiB0aGUgbWFjcm8gbmFtZS4gIElmIHRoZSBzdHJpbmcgaXMgIiIsCisg
-KiB0aGlzIGZlYXR1cmUgYml0IGlzIG5vdCBkaXNwbGF5ZWQgaW4gL3Byb2MvY3B1aW5mbyBh
-dCBhbGwuCisgKi8KKwogLyogSW50ZWwtZGVmaW5lZCBDUFUgZmVhdHVyZXMsIENQVUlEIGxl
-dmVsIDB4MDAwMDAwMDEgKGVkeCksIHdvcmQgMCAqLwogI2RlZmluZSBYODZfRkVBVFVSRV9G
-UFUJCSgwKjMyKyAwKSAvKiBPbmJvYXJkIEZQVSAqLwogI2RlZmluZSBYODZfRkVBVFVSRV9W
-TUUJCSgwKjMyKyAxKSAvKiBWaXJ0dWFsIE1vZGUgRXh0ZW5zaW9ucyAqLwogI2RlZmluZSBY
-ODZfRkVBVFVSRV9ERQkJKDAqMzIrIDIpIC8qIERlYnVnZ2luZyBFeHRlbnNpb25zICovCiAj
-ZGVmaW5lIFg4Nl9GRUFUVVJFX1BTRQkJKDAqMzIrIDMpIC8qIFBhZ2UgU2l6ZSBFeHRlbnNp
-b25zICovCiAjZGVmaW5lIFg4Nl9GRUFUVVJFX1RTQwkJKDAqMzIrIDQpIC8qIFRpbWUgU3Rh
-bXAgQ291bnRlciAqLwotI2RlZmluZSBYODZfRkVBVFVSRV9NU1IJCSgwKjMyKyA1KSAvKiBN
-b2RlbC1TcGVjaWZpYyBSZWdpc3RlcnMsIFJETVNSLCBXUk1TUiAqLworI2RlZmluZSBYODZf
-RkVBVFVSRV9NU1IJCSgwKjMyKyA1KSAvKiBNb2RlbC1TcGVjaWZpYyBSZWdpc3RlcnMgKi8K
-ICNkZWZpbmUgWDg2X0ZFQVRVUkVfUEFFCQkoMCozMisgNikgLyogUGh5c2ljYWwgQWRkcmVz
-cyBFeHRlbnNpb25zICovCiAjZGVmaW5lIFg4Nl9GRUFUVVJFX01DRQkJKDAqMzIrIDcpIC8q
-IE1hY2hpbmUgQ2hlY2sgQXJjaGl0ZWN0dXJlICovCiAjZGVmaW5lIFg4Nl9GRUFUVVJFX0NY
-OAkJKDAqMzIrIDgpIC8qIENNUFhDSEc4IGluc3RydWN0aW9uICovCkBAIC0yMywyMiArMjks
-MjMgQEAKICNkZWZpbmUgWDg2X0ZFQVRVUkVfTVRSUgkoMCozMisxMikgLyogTWVtb3J5IFR5
-cGUgUmFuZ2UgUmVnaXN0ZXJzICovCiAjZGVmaW5lIFg4Nl9GRUFUVVJFX1BHRQkJKDAqMzIr
-MTMpIC8qIFBhZ2UgR2xvYmFsIEVuYWJsZSAqLwogI2RlZmluZSBYODZfRkVBVFVSRV9NQ0EJ
-CSgwKjMyKzE0KSAvKiBNYWNoaW5lIENoZWNrIEFyY2hpdGVjdHVyZSAqLwotI2RlZmluZSBY
-ODZfRkVBVFVSRV9DTU9WCSgwKjMyKzE1KSAvKiBDTU9WIGluc3RydWN0aW9uIChGQ01PVkND
-IGFuZCBGQ09NSSB0b28gaWYgRlBVIHByZXNlbnQpICovCisjZGVmaW5lIFg4Nl9GRUFUVVJF
-X0NNT1YJKDAqMzIrMTUpIC8qIENNT1YgaW5zdHJ1Y3Rpb25zICovCisJCQkJCSAgLyogKHBs
-dXMgRkNNT1ZjYywgRkNPTUkgd2l0aCBGUFUpICovCiAjZGVmaW5lIFg4Nl9GRUFUVVJFX1BB
-VAkJKDAqMzIrMTYpIC8qIFBhZ2UgQXR0cmlidXRlIFRhYmxlICovCiAjZGVmaW5lIFg4Nl9G
-RUFUVVJFX1BTRTM2CSgwKjMyKzE3KSAvKiAzNi1iaXQgUFNFcyAqLwogI2RlZmluZSBYODZf
-RkVBVFVSRV9QTgkJKDAqMzIrMTgpIC8qIFByb2Nlc3NvciBzZXJpYWwgbnVtYmVyICovCi0j
-ZGVmaW5lIFg4Nl9GRUFUVVJFX0NMRkxTSAkoMCozMisxOSkgLyogU3VwcG9ydHMgdGhlIENM
-RkxVU0ggaW5zdHJ1Y3Rpb24gKi8KLSNkZWZpbmUgWDg2X0ZFQVRVUkVfRFMJCSgwKjMyKzIx
-KSAvKiBEZWJ1ZyBTdG9yZSAqLworI2RlZmluZSBYODZfRkVBVFVSRV9DTEZMU0gJKDAqMzIr
-MTkpIC8qICJjbGZsdXNoIiBDTEZMVVNIIGluc3RydWN0aW9uICovCisjZGVmaW5lIFg4Nl9G
-RUFUVVJFX0RTCQkoMCozMisyMSkgLyogImR0cyIgRGVidWcgU3RvcmUgKi8KICNkZWZpbmUg
-WDg2X0ZFQVRVUkVfQUNQSQkoMCozMisyMikgLyogQUNQSSB2aWEgTVNSICovCiAjZGVmaW5l
-IFg4Nl9GRUFUVVJFX01NWAkJKDAqMzIrMjMpIC8qIE11bHRpbWVkaWEgRXh0ZW5zaW9ucyAq
-LwotI2RlZmluZSBYODZfRkVBVFVSRV9GWFNSCSgwKjMyKzI0KSAvKiBGWFNBVkUgYW5kIEZY
-UlNUT1IgaW5zdHJ1Y3Rpb25zIChmYXN0IHNhdmUgYW5kIHJlc3RvcmUgKi8KLQkJCQkJICAv
-KiBvZiBGUFUgY29udGV4dCksIGFuZCBDUjQuT1NGWFNSIGF2YWlsYWJsZSAqLwotI2RlZmlu
-ZSBYODZfRkVBVFVSRV9YTU0JCSgwKjMyKzI1KSAvKiBTdHJlYW1pbmcgU0lNRCBFeHRlbnNp
-b25zICovCi0jZGVmaW5lIFg4Nl9GRUFUVVJFX1hNTTIJKDAqMzIrMjYpIC8qIFN0cmVhbWlu
-ZyBTSU1EIEV4dGVuc2lvbnMtMiAqLwotI2RlZmluZSBYODZfRkVBVFVSRV9TRUxGU05PT1AJ
-KDAqMzIrMjcpIC8qIENQVSBzZWxmIHNub29wICovCisjZGVmaW5lIFg4Nl9GRUFUVVJFX0ZY
-U1IJKDAqMzIrMjQpIC8qIEZYU0FWRS9GWFJTVE9SLCBDUjQuT1NGWFNSICovCisjZGVmaW5l
-IFg4Nl9GRUFUVVJFX1hNTQkJKDAqMzIrMjUpIC8qICJzc2UiICovCisjZGVmaW5lIFg4Nl9G
-RUFUVVJFX1hNTTIJKDAqMzIrMjYpIC8qICJzc2UyIiAqLworI2RlZmluZSBYODZfRkVBVFVS
-RV9TRUxGU05PT1AJKDAqMzIrMjcpIC8qICJzcyIgQ1BVIHNlbGYgc25vb3AgKi8KICNkZWZp
-bmUgWDg2X0ZFQVRVUkVfSFQJCSgwKjMyKzI4KSAvKiBIeXBlci1UaHJlYWRpbmcgKi8KLSNk
-ZWZpbmUgWDg2X0ZFQVRVUkVfQUNDCQkoMCozMisyOSkgLyogQXV0b21hdGljIGNsb2NrIGNv
-bnRyb2wgKi8KKyNkZWZpbmUgWDg2X0ZFQVRVUkVfQUNDCQkoMCozMisyOSkgLyogInRtIiBB
-dXRvbWF0aWMgY2xvY2sgY29udHJvbCAqLwogI2RlZmluZSBYODZfRkVBVFVSRV9JQTY0CSgw
-KjMyKzMwKSAvKiBJQS02NCBwcm9jZXNzb3IgKi8KKyNkZWZpbmUgWDg2X0ZFQVRVUkVfUEJF
-CQkoMCozMiszMSkgLyogUGVuZGluZyBCcmVhayBFbmFibGUgKi8KIAogLyogQU1ELWRlZmlu
-ZWQgQ1BVIGZlYXR1cmVzLCBDUFVJRCBsZXZlbCAweDgwMDAwMDAxLCB3b3JkIDEgKi8KIC8q
-IERvbid0IGR1cGxpY2F0ZSBmZWF0dXJlIGZsYWdzIHdoaWNoIGFyZSByZWR1bmRhbnQgd2l0
-aCBJbnRlbCEgKi8KQEAgLTQ2LDcgKzUzLDggQEAKICNkZWZpbmUgWDg2X0ZFQVRVUkVfTVAJ
-CSgxKjMyKzE5KSAvKiBNUCBDYXBhYmxlLiAqLwogI2RlZmluZSBYODZfRkVBVFVSRV9OWAkJ
-KDEqMzIrMjApIC8qIEV4ZWN1dGUgRGlzYWJsZSAqLwogI2RlZmluZSBYODZfRkVBVFVSRV9N
-TVhFWFQJKDEqMzIrMjIpIC8qIEFNRCBNTVggZXh0ZW5zaW9ucyAqLwotI2RlZmluZSBYODZf
-RkVBVFVSRV9HQlBBR0VTCSgxKjMyKzI2KSAvKiBHQiBwYWdlcyAqLworI2RlZmluZSBYODZf
-RkVBVFVSRV9GWFNSX09QVAkoMSozMisyNSkgLyogRlhTQVZFL0ZYUlNUT1Igb3B0aW1pemF0
-aW9ucyAqLworI2RlZmluZSBYODZfRkVBVFVSRV9HQlBBR0VTCSgxKjMyKzI2KSAvKiAicGRw
-ZTFnYiIgR0IgcGFnZXMgKi8KICNkZWZpbmUgWDg2X0ZFQVRVUkVfUkRUU0NQCSgxKjMyKzI3
-KSAvKiBSRFRTQ1AgKi8KICNkZWZpbmUgWDg2X0ZFQVRVUkVfTE0JCSgxKjMyKzI5KSAvKiBM
-b25nIE1vZGUgKHg4Ni02NCkgKi8KICNkZWZpbmUgWDg2X0ZFQVRVUkVfM0ROT1dFWFQJKDEq
-MzIrMzApIC8qIEFNRCAzRE5vdyEgZXh0ZW5zaW9ucyAqLwpAQCAtNjQsNTIgKzcyLDc2IEBA
-CiAjZGVmaW5lIFg4Nl9GRUFUVVJFX0NZUklYX0FSUgkoMyozMisgMikgLyogQ3lyaXggQVJS
-cyAoPSBNVFJScykgKi8KICNkZWZpbmUgWDg2X0ZFQVRVUkVfQ0VOVEFVUl9NQ1IJKDMqMzIr
-IDMpIC8qIENlbnRhdXIgTUNScyAoPSBNVFJScykgKi8KIC8qIGNwdSB0eXBlcyBmb3Igc3Bl
-Y2lmaWMgdHVuaW5nczogKi8KLSNkZWZpbmUgWDg2X0ZFQVRVUkVfSzgJCSgzKjMyKyA0KSAv
-KiBPcHRlcm9uLCBBdGhsb242NCAqLwotI2RlZmluZSBYODZfRkVBVFVSRV9LNwkJKDMqMzIr
-IDUpIC8qIEF0aGxvbiAqLwotI2RlZmluZSBYODZfRkVBVFVSRV9QMwkJKDMqMzIrIDYpIC8q
-IFAzICovCi0jZGVmaW5lIFg4Nl9GRUFUVVJFX1A0CQkoMyozMisgNykgLyogUDQgKi8KKyNk
-ZWZpbmUgWDg2X0ZFQVRVUkVfSzgJCSgzKjMyKyA0KSAvKiAiIiBPcHRlcm9uLCBBdGhsb242
-NCAqLworI2RlZmluZSBYODZfRkVBVFVSRV9LNwkJKDMqMzIrIDUpIC8qICIiIEF0aGxvbiAq
-LworI2RlZmluZSBYODZfRkVBVFVSRV9QMwkJKDMqMzIrIDYpIC8qICIiIFAzICovCisjZGVm
-aW5lIFg4Nl9GRUFUVVJFX1A0CQkoMyozMisgNykgLyogIiIgUDQgKi8KICNkZWZpbmUgWDg2
-X0ZFQVRVUkVfQ09OU1RBTlRfVFNDICgzKjMyKyA4KSAvKiBUU0MgdGlja3MgYXQgYSBjb25z
-dGFudCByYXRlICovCiAjZGVmaW5lIFg4Nl9GRUFUVVJFX1VQCQkoMyozMisgOSkgLyogc21w
-IGtlcm5lbCBydW5uaW5nIG9uIHVwICovCi0jZGVmaW5lIFg4Nl9GRUFUVVJFX0ZYU0FWRV9M
-RUFLICgzKjMyKzEwKSAvKiBGWFNBVkUgbGVha3MgRk9QL0ZJUC9GT1AgKi8KKyNkZWZpbmUg
-WDg2X0ZFQVRVUkVfRlhTQVZFX0xFQUsgKDMqMzIrMTApIC8qICIiIEZYU0FWRSBsZWFrcyBG
-T1AvRklQL0ZPUCAqLwogI2RlZmluZSBYODZfRkVBVFVSRV9BUkNIX1BFUkZNT04gKDMqMzIr
-MTEpIC8qIEludGVsIEFyY2hpdGVjdHVyYWwgUGVyZk1vbiAqLwogI2RlZmluZSBYODZfRkVB
-VFVSRV9QRUJTCSgzKjMyKzEyKSAvKiBQcmVjaXNlLUV2ZW50IEJhc2VkIFNhbXBsaW5nICov
-CiAjZGVmaW5lIFg4Nl9GRUFUVVJFX0JUUwkJKDMqMzIrMTMpIC8qIEJyYW5jaCBUcmFjZSBT
-dG9yZSAqLwotI2RlZmluZSBYODZfRkVBVFVSRV9TWVNDQUxMMzIJKDMqMzIrMTQpIC8qIHN5
-c2NhbGwgaW4gaWEzMiB1c2Vyc3BhY2UgKi8KLSNkZWZpbmUgWDg2X0ZFQVRVUkVfU1lTRU5U
-RVIzMgkoMyozMisxNSkgLyogc3lzZW50ZXIgaW4gaWEzMiB1c2Vyc3BhY2UgKi8KLSNkZWZp
-bmUgWDg2X0ZFQVRVUkVfUkVQX0dPT0QJKDMqMzIrMTYpIC8qIHJlcCBtaWNyb2NvZGUgd29y
-a3Mgd2VsbCBvbiB0aGlzIENQVSAqLwotI2RlZmluZSBYODZfRkVBVFVSRV9NRkVOQ0VfUkRU
-U0MgKDMqMzIrMTcpIC8qIE1mZW5jZSBzeW5jaHJvbml6ZXMgUkRUU0MgKi8KLSNkZWZpbmUg
-WDg2X0ZFQVRVUkVfTEZFTkNFX1JEVFNDICgzKjMyKzE4KSAvKiBMZmVuY2Ugc3luY2hyb25p
-emVzIFJEVFNDICovCi0jZGVmaW5lIFg4Nl9GRUFUVVJFXzExQVAJKDMqMzIrMTkpIC8qIEJh
-ZCBsb2NhbCBBUElDIGFrYSAxMUFQICovCisjZGVmaW5lIFg4Nl9GRUFUVVJFX1NZU0NBTEwz
-MgkoMyozMisxNCkgLyogIiIgc3lzY2FsbCBpbiBpYTMyIHVzZXJzcGFjZSAqLworI2RlZmlu
-ZSBYODZfRkVBVFVSRV9TWVNFTlRFUjMyCSgzKjMyKzE1KSAvKiAiIiBzeXNlbnRlciBpbiBp
-YTMyIHVzZXJzcGFjZSAqLworI2RlZmluZSBYODZfRkVBVFVSRV9SRVBfR09PRAkoMyozMisx
-NikgLyogcmVwIG1pY3JvY29kZSB3b3JrcyB3ZWxsICovCisjZGVmaW5lIFg4Nl9GRUFUVVJF
-X01GRU5DRV9SRFRTQyAoMyozMisxNykgLyogIiIgTWZlbmNlIHN5bmNocm9uaXplcyBSRFRT
-QyAqLworI2RlZmluZSBYODZfRkVBVFVSRV9MRkVOQ0VfUkRUU0MgKDMqMzIrMTgpIC8qICIi
-IExmZW5jZSBzeW5jaHJvbml6ZXMgUkRUU0MgKi8KKyNkZWZpbmUgWDg2X0ZFQVRVUkVfMTFB
-UAkoMyozMisxOSkgLyogIiIgQmFkIGxvY2FsIEFQSUMgYWthIDExQVAgKi8KICNkZWZpbmUg
-WDg2X0ZFQVRVUkVfTk9QTAkoMyozMisyMCkgLyogVGhlIE5PUEwgKDBGIDFGKSBpbnN0cnVj
-dGlvbnMgKi8KIAogLyogSW50ZWwtZGVmaW5lZCBDUFUgZmVhdHVyZXMsIENQVUlEIGxldmVs
-IDB4MDAwMDAwMDEgKGVjeCksIHdvcmQgNCAqLwotI2RlZmluZSBYODZfRkVBVFVSRV9YTU0z
-CSg0KjMyKyAwKSAvKiBTdHJlYW1pbmcgU0lNRCBFeHRlbnNpb25zLTMgKi8KLSNkZWZpbmUg
-WDg2X0ZFQVRVUkVfTVdBSVQJKDQqMzIrIDMpIC8qIE1vbml0b3IvTXdhaXQgc3VwcG9ydCAq
-LwotI2RlZmluZSBYODZfRkVBVFVSRV9EU0NQTAkoNCozMisgNCkgLyogQ1BMIFF1YWxpZmll
-ZCBEZWJ1ZyBTdG9yZSAqLworI2RlZmluZSBYODZfRkVBVFVSRV9YTU0zCSg0KjMyKyAwKSAv
-KiAicG5pIiBTU0UtMyAqLworI2RlZmluZSBYODZfRkVBVFVSRV9QQ0xNVUxRRFEJKDQqMzIr
-IDEpIC8qIFBDTE1VTFFEUSBpbnN0cnVjdGlvbiAqLworI2RlZmluZSBYODZfRkVBVFVSRV9E
-VEVTNjQJKDQqMzIrIDIpIC8qIDY0LWJpdCBEZWJ1ZyBTdG9yZSAqLworI2RlZmluZSBYODZf
-RkVBVFVSRV9NV0FJVAkoNCozMisgMykgLyogIm1vbml0b3IiIE1vbml0b3IvTXdhaXQgc3Vw
-cG9ydCAqLworI2RlZmluZSBYODZfRkVBVFVSRV9EU0NQTAkoNCozMisgNCkgLyogImRzX2Nw
-bCIgQ1BMIFF1YWwuIERlYnVnIFN0b3JlICovCisjZGVmaW5lIFg4Nl9GRUFUVVJFX1ZNWAkJ
-KDQqMzIrIDUpIC8qIEhhcmR3YXJlIHZpcnR1YWxpemF0aW9uICovCisjZGVmaW5lIFg4Nl9G
-RUFUVVJFX1NNWAkJKDQqMzIrIDYpIC8qICJTYWZlciIgbW9kZSAqLwogI2RlZmluZSBYODZf
-RkVBVFVSRV9FU1QJCSg0KjMyKyA3KSAvKiBFbmhhbmNlZCBTcGVlZFN0ZXAgKi8KICNkZWZp
-bmUgWDg2X0ZFQVRVUkVfVE0yCQkoNCozMisgOCkgLyogVGhlcm1hbCBNb25pdG9yIDIgKi8K
-KyNkZWZpbmUgWDg2X0ZFQVRVUkVfU1NTRTMJKDQqMzIrIDkpIC8qIFN1cHBsZW1lbnRhbCBT
-U0UtMyAqLwogI2RlZmluZSBYODZfRkVBVFVSRV9DSUQJCSg0KjMyKzEwKSAvKiBDb250ZXh0
-IElEICovCisjZGVmaW5lIFg4Nl9GRUFUVVJFX0ZNQQkJKDQqMzIrMTIpIC8qIEZ1c2VkIG11
-bHRpcGx5LWFkZCAqLwogI2RlZmluZSBYODZfRkVBVFVSRV9DWDE2CSg0KjMyKzEzKSAvKiBD
-TVBYQ0hHMTZCICovCiAjZGVmaW5lIFg4Nl9GRUFUVVJFX1hUUFIJKDQqMzIrMTQpIC8qIFNl
-bmQgVGFzayBQcmlvcml0eSBNZXNzYWdlcyAqLworI2RlZmluZSBYODZfRkVBVFVSRV9QRENN
-CSg0KjMyKzE1KSAvKiBQZXJmb3JtYW5jZSBDYXBhYmlsaXRpZXMgKi8KICNkZWZpbmUgWDg2
-X0ZFQVRVUkVfRENBCQkoNCozMisxOCkgLyogRGlyZWN0IENhY2hlIEFjY2VzcyAqLwotI2Rl
-ZmluZSBYODZfRkVBVFVSRV9YTU00XzIJKDQqMzIrMjApIC8qIFN0cmVhbWluZyBTSU1EIEV4
-dGVuc2lvbnMtNC4yICovCisjZGVmaW5lIFg4Nl9GRUFUVVJFX1hNTTRfMQkoNCozMisxOSkg
-LyogInNzZTRfMSIgU1NFLTQuMSAqLworI2RlZmluZSBYODZfRkVBVFVSRV9YTU00XzIJKDQq
-MzIrMjApIC8qICJzc2U0XzIiIFNTRS00LjIgKi8KKyNkZWZpbmUgWDg2X0ZFQVRVUkVfWDJB
-UElDCSg0KjMyKzIxKSAvKiB4MkFQSUMgKi8KKyNkZWZpbmUgWDg2X0ZFQVRVUkVfQUVTCQko
-NCozMisyNSkgLyogQUVTIGluc3RydWN0aW9ucyAqLworI2RlZmluZSBYODZfRkVBVFVSRV9Y
-U0FWRQkoNCozMisyNikgLyogWFNBVkUvWFJTVE9SL1hTRVRCVi9YR0VUQlYgKi8KKyNkZWZp
-bmUgWDg2X0ZFQVRVUkVfT1NYU0FWRQkoNCozMisyNykgLyogIiIgWFNBVkUgZW5hYmxlZCBp
-biB0aGUgT1MgKi8KKyNkZWZpbmUgWDg2X0ZFQVRVUkVfQVZYCQkoNCozMisyOCkgLyogQWR2
-YW5jZWQgVmVjdG9yIEV4dGVuc2lvbnMgKi8KIAogLyogVklBL0N5cml4L0NlbnRhdXItZGVm
-aW5lZCBDUFUgZmVhdHVyZXMsIENQVUlEIGxldmVsIDB4QzAwMDAwMDEsIHdvcmQgNSAqLwot
-I2RlZmluZSBYODZfRkVBVFVSRV9YU1RPUkUJKDUqMzIrIDIpIC8qIG9uLUNQVSBSTkcgcHJl
-c2VudCAoeHN0b3JlIGluc24pICovCi0jZGVmaW5lIFg4Nl9GRUFUVVJFX1hTVE9SRV9FTgko
-NSozMisgMykgLyogb24tQ1BVIFJORyBlbmFibGVkICovCi0jZGVmaW5lIFg4Nl9GRUFUVVJF
-X1hDUllQVAkoNSozMisgNikgLyogb24tQ1BVIGNyeXB0byAoeGNyeXB0IGluc24pICovCi0j
-ZGVmaW5lIFg4Nl9GRUFUVVJFX1hDUllQVF9FTgkoNSozMisgNykgLyogb24tQ1BVIGNyeXB0
-byBlbmFibGVkICovCisjZGVmaW5lIFg4Nl9GRUFUVVJFX1hTVE9SRQkoNSozMisgMikgLyog
-InJuZyIgUk5HIHByZXNlbnQgKHhzdG9yZSkgKi8KKyNkZWZpbmUgWDg2X0ZFQVRVUkVfWFNU
-T1JFX0VOCSg1KjMyKyAzKSAvKiAicm5nX2VuIiBSTkcgZW5hYmxlZCAqLworI2RlZmluZSBY
-ODZfRkVBVFVSRV9YQ1JZUFQJKDUqMzIrIDYpIC8qICJhY2UiIG9uLUNQVSBjcnlwdG8gKHhj
-cnlwdCkgKi8KKyNkZWZpbmUgWDg2X0ZFQVRVUkVfWENSWVBUX0VOCSg1KjMyKyA3KSAvKiAi
-YWNlX2VuIiBvbi1DUFUgY3J5cHRvIGVuYWJsZWQgKi8KICNkZWZpbmUgWDg2X0ZFQVRVUkVf
-QUNFMgkoNSozMisgOCkgLyogQWR2YW5jZWQgQ3J5cHRvZ3JhcGh5IEVuZ2luZSB2MiAqLwog
-I2RlZmluZSBYODZfRkVBVFVSRV9BQ0UyX0VOCSg1KjMyKyA5KSAvKiBBQ0UgdjIgZW5hYmxl
-ZCAqLwotI2RlZmluZSBYODZfRkVBVFVSRV9QSEUJCSg1KjMyKyAxMCkgLyogUGFkTG9jayBI
-YXNoIEVuZ2luZSAqLwotI2RlZmluZSBYODZfRkVBVFVSRV9QSEVfRU4JKDUqMzIrIDExKSAv
-KiBQSEUgZW5hYmxlZCAqLwotI2RlZmluZSBYODZfRkVBVFVSRV9QTU0JCSg1KjMyKyAxMikg
-LyogUGFkTG9jayBNb250Z29tZXJ5IE11bHRpcGxpZXIgKi8KLSNkZWZpbmUgWDg2X0ZFQVRV
-UkVfUE1NX0VOCSg1KjMyKyAxMykgLyogUE1NIGVuYWJsZWQgKi8KKyNkZWZpbmUgWDg2X0ZF
-QVRVUkVfUEhFCQkoNSozMisxMCkgLyogUGFkTG9jayBIYXNoIEVuZ2luZSAqLworI2RlZmlu
-ZSBYODZfRkVBVFVSRV9QSEVfRU4JKDUqMzIrMTEpIC8qIFBIRSBlbmFibGVkICovCisjZGVm
-aW5lIFg4Nl9GRUFUVVJFX1BNTQkJKDUqMzIrMTIpIC8qIFBhZExvY2sgTW9udGdvbWVyeSBN
-dWx0aXBsaWVyICovCisjZGVmaW5lIFg4Nl9GRUFUVVJFX1BNTV9FTgkoNSozMisxMykgLyog
-UE1NIGVuYWJsZWQgKi8KIAogLyogTW9yZSBleHRlbmRlZCBBTUQgZmxhZ3M6IENQVUlEIGxl
-dmVsIDB4ODAwMDAwMDEsIGVjeCwgd29yZCA2ICovCiAjZGVmaW5lIFg4Nl9GRUFUVVJFX0xB
-SEZfTE0JKDYqMzIrIDApIC8qIExBSEYvU0FIRiBpbiBsb25nIG1vZGUgKi8KICNkZWZpbmUg
-WDg2X0ZFQVRVUkVfQ01QX0xFR0FDWQkoNiozMisgMSkgLyogSWYgeWVzIEh5cGVyVGhyZWFk
-aW5nIG5vdCB2YWxpZCAqLwotI2RlZmluZSBYODZfRkVBVFVSRV9JQlMJCSg2KjMyKyAxMCkg
-LyogSW5zdHJ1Y3Rpb24gQmFzZWQgU2FtcGxpbmcgKi8KKyNkZWZpbmUgWDg2X0ZFQVRVUkVf
-U1ZNCQkoNiozMisgMikgLyogU2VjdXJlIHZpcnR1YWwgbWFjaGluZSAqLworI2RlZmluZSBY
-ODZfRkVBVFVSRV9FWFRBUElDCSg2KjMyKyAzKSAvKiBFeHRlbmRlZCBBUElDIHNwYWNlICov
-CisjZGVmaW5lIFg4Nl9GRUFUVVJFX0NSOF9MRUdBQ1kJKDYqMzIrIDQpIC8qIENSOCBpbiAz
-Mi1iaXQgbW9kZSAqLworI2RlZmluZSBYODZfRkVBVFVSRV9BQk0JCSg2KjMyKyA1KSAvKiBB
-ZHZhbmNlZCBiaXQgbWFuaXB1bGF0aW9uICovCisjZGVmaW5lIFg4Nl9GRUFUVVJFX1NTRTRB
-CSg2KjMyKyA2KSAvKiBTU0UtNEEgKi8KKyNkZWZpbmUgWDg2X0ZFQVRVUkVfTUlTQUxJR05T
-U0UgKDYqMzIrIDcpIC8qIE1pc2FsaWduZWQgU1NFIG1vZGUgKi8KKyNkZWZpbmUgWDg2X0ZF
-QVRVUkVfM0ROT1dQUkVGRVRDSCAoNiozMisgOCkgLyogM0ROb3cgcHJlZmV0Y2ggaW5zdHJ1
-Y3Rpb25zICovCisjZGVmaW5lIFg4Nl9GRUFUVVJFX09TVlcJKDYqMzIrIDkpIC8qIE9TIFZp
-c2libGUgV29ya2Fyb3VuZCAqLworI2RlZmluZSBYODZfRkVBVFVSRV9JQlMJCSg2KjMyKzEw
-KSAvKiBJbnN0cnVjdGlvbiBCYXNlZCBTYW1wbGluZyAqLworI2RlZmluZSBYODZfRkVBVFVS
-RV9TU0U1CSg2KjMyKzExKSAvKiBTU0UtNSAqLworI2RlZmluZSBYODZfRkVBVFVSRV9TS0lO
-SVQJKDYqMzIrMTIpIC8qIFNLSU5JVC9TVEdJIGluc3RydWN0aW9ucyAqLworI2RlZmluZSBY
-ODZfRkVBVFVSRV9XRFQJCSg2KjMyKzEzKSAvKiBXYXRjaGRvZyB0aW1lciAqLwogCiAvKgog
-ICogQXV4aWxpYXJ5IGZsYWdzOiBMaW51eCBkZWZpbmVkIC0gRm9yIGZlYXR1cmVzIHNjYXR0
-ZXJlZCBpbiB2YXJpb3VzCkBAIC0xNTAsNyArMTgyLDcgQEAgZXh0ZXJuIGNvbnN0IGNoYXIg
-KiBjb25zdCB4ODZfcG93ZXJfZmxhZ3NbMzJdOwogfSB3aGlsZSAoMCkKICNkZWZpbmUgc2V0
-dXBfZm9yY2VfY3B1X2NhcChiaXQpIGRvIHsgXAogCXNldF9jcHVfY2FwKCZib290X2NwdV9k
-YXRhLCBiaXQpOwlcCi0JY2xlYXJfYml0KGJpdCwgKHVuc2lnbmVkIGxvbmcgKiljbGVhcmVk
-X2NwdV9jYXBzKTsgCVwKKwljbGVhcl9iaXQoYml0LCAodW5zaWduZWQgbG9uZyAqKWNsZWFy
-ZWRfY3B1X2NhcHMpOwlcCiB9IHdoaWxlICgwKQogCiAjZGVmaW5lIGNwdV9oYXNfZnB1CQli
-b290X2NwdV9oYXMoWDg2X0ZFQVRVUkVfRlBVKQpAQCAtMTkxLDcgKzIyMywxMCBAQCBleHRl
-cm4gY29uc3QgY2hhciAqIGNvbnN0IHg4Nl9wb3dlcl9mbGFnc1szMl07CiAjZGVmaW5lIGNw
-dV9oYXNfZ2JwYWdlcwkJYm9vdF9jcHVfaGFzKFg4Nl9GRUFUVVJFX0dCUEFHRVMpCiAjZGVm
-aW5lIGNwdV9oYXNfYXJjaF9wZXJmbW9uCWJvb3RfY3B1X2hhcyhYODZfRkVBVFVSRV9BUkNI
-X1BFUkZNT04pCiAjZGVmaW5lIGNwdV9oYXNfcGF0CQlib290X2NwdV9oYXMoWDg2X0ZFQVRV
-UkVfUEFUKQorI2RlZmluZSBjcHVfaGFzX3htbTRfMQkJYm9vdF9jcHVfaGFzKFg4Nl9GRUFU
-VVJFX1hNTTRfMSkKICNkZWZpbmUgY3B1X2hhc194bW00XzIJCWJvb3RfY3B1X2hhcyhYODZf
-RkVBVFVSRV9YTU00XzIpCisjZGVmaW5lIGNwdV9oYXNfeDJhcGljCQlib290X2NwdV9oYXMo
-WDg2X0ZFQVRVUkVfWDJBUElDKQorI2RlZmluZSBjcHVfaGFzX3hzYXZlCQlib290X2NwdV9o
-YXMoWDg2X0ZFQVRVUkVfWFNBVkUpCiAKICNpZiBkZWZpbmVkKENPTkZJR19YODZfSU5WTFBH
-KSB8fCBkZWZpbmVkKENPTkZJR19YODZfNjQpCiAjIGRlZmluZSBjcHVfaGFzX2ludmxwZwkJ
-MQo=
---------------080600000708010003020203--
