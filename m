@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbYH1Hwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755272AbYH1Hxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755342AbYH1Hwr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 03:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYH1Hwh
+	id S1755272AbYH1Hxk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 03:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYH1Hxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 03:52:37 -0400
-Received: from mx.bridgeco.net ([213.173.191.47]:4364 "EHLO mx.bridgeco.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753325AbYH1Hwg convert rfc822-to-8bit (ORCPT
+	Thu, 28 Aug 2008 03:53:31 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:21049 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751615AbYH1Hxa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 03:52:36 -0400
-From: Wappler Marcel <Marcel.Wappler@bridgeco.net>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Thu, 28 Aug 2008 09:52:32 +0200
-Subject: VM: page reclaim does not work on ARM9?
-Thread-Topic: VM: page reclaim does not work on ARM9?
-Thread-Index: Ach0m4cSiApNdLdFScC3DSTHVH8H7w==
-Message-ID: <462ADBE7F1A69C438B7E2ED56007E6F5ABF9A43F21@exch10.BC-Int.NET>
-Accept-Language: en-US, de-CH
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US, de-CH
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
-X-OriginalArrivalTime: 28 Aug 2008 07:52:07.0214 (UTC) FILETIME=[F7F094E0:01C908E2]
+	Thu, 28 Aug 2008 03:53:30 -0400
+Date: Thu, 28 Aug 2008 09:53:23 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Seth Heasley <seth.heasley@intel.com>
+Cc: linux-kernel@vger.kernel.org, i2c@lm-sensors.org,
+       linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org
+Subject: Re: [PATCH 2.6.27-rc4] i2c-i801: SMBus patch for Intel Ibex Peak
+ DeviceIDs
+Message-ID: <20080828095323.58f2a60e@hyperion.delvare>
+In-Reply-To: <200808271652.37597.seth.heasley@intel.com>
+References: <200808271652.37597.seth.heasley@intel.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I do need some help to understand what's going on in the VM of the Linux kernel...
+On Wed, 27 Aug 2008 16:52:37 -0700, Seth Heasley wrote:
+> This patch adds the Intel Ibex Peak (PCH) SMBus Controller DeviceIDs.
+> 
+> Signed-off-by: Seth Heasley <seth.heasley@intel.com>
+> 
+> --- linux-2.6/drivers/i2c/busses/Kconfig.orig	2008-08-27 12:11:03.000000000 -0700
+> +++ linux-2.6/drivers/i2c/busses/Kconfig	2008-08-27 12:11:24.000000000 -0700
+> @@ -97,6 +97,7 @@
+>  	    ICH9
+>  	    Tolapai
+>  	    ICH10
+> +	    PCH
+>  
+>  	  This driver can also be built as a module.  If so, the module
+>  	  will be called i2c-i801.
+> --- linux-2.6/drivers/i2c/busses/i2c-i801.c.orig	2008-08-27 11:52:45.000000000 -0700
+> +++ linux-2.6/drivers/i2c/busses/i2c-i801.c	2008-08-27 12:10:50.000000000 -0700
+> @@ -577,6 +577,7 @@
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TOLAPAI_1) },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_4) },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_5) },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_PCH_32) },
+>  	{ 0, }
+>  };
+>  
+> @@ -600,6 +601,7 @@
+>  	case PCI_DEVICE_ID_INTEL_TOLAPAI_1:
+>  	case PCI_DEVICE_ID_INTEL_ICH10_4:
+>  	case PCI_DEVICE_ID_INTEL_ICH10_5:
+> +	case PCI_DEVICE_ID_INTEL_PCH_32:
+>  		i801_features |= FEATURE_I2C_BLOCK_READ;
+>  		/* fall through */
+>  	case PCI_DEVICE_ID_INTEL_82801DB_3:
 
-I wrote a little script which generates a C app with millions of lines of dumb linear running code and a endless loop at the end. I run this app on both PC Linux (swapping enabled) and embedded Linux (Kernel 2.6.24.7, ARM9, swapping disabled).
+This is messy. I'm discarding this patch from my i2c tree for the time
+being. When things have settled on the pci_ids.h front, I'll look into
+applying it again.
 
-The app shall consume a lot of code pages which are used only once (to run the linear code in it) and then stay in the endless loop and never touch all the other pages in memory. Then I consume all of the remaining memory of the system through generating a big file on the tmpfs (whose data resides in memory) with the help of /dev/zero and "dd".
+Note that your patch is still missing a chunk to
+Documentation/i2c/busses/i2c-i801. Originally I added it myself but if
+you are going to resend the same patch with different IDs every now and
+then, please add it on your side too, so that I don't have to fix it
+manually every time.
 
-My expectation was: the VM shall steal (reclaim) all the only once touched pages containing those dumb linear code of the app.
-
-My observation is: "top" shows that the app is consuming constantly the same huge amount of residential memory during the decreasing free memory space. At some moment the kernel starts a OOM killer on the app instead of reclaiming its unused code pages.
-
-Keep in mind: the behaviour is the same on both PC Linux (2 GB RAM) and ARM Linux (32MB RAM ) with and without swapping enabled.
-
-So for me it looks like that any page which is containing code never gets reclaimed from the application it belongs to regardless of its usage.
-
-Any idias, whats going on?
-
-best regards,
-Marcel
-
-PS: Please CC me on reply...
+-- 
+Jean Delvare
