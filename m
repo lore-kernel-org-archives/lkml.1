@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbYH1Nbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbYH1Nd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754920AbYH1Nbq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 09:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbYH1Nbi
+	id S1754870AbYH1Nd4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 09:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbYH1Nds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 09:31:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35769 "EHLO mx2.mail.elte.hu"
+	Thu, 28 Aug 2008 09:33:48 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34880 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752516AbYH1Nbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 09:31:37 -0400
-Date: Thu, 28 Aug 2008 15:31:20 +0200
+	id S1752636AbYH1Nds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 09:33:48 -0400
+Date: Thu, 28 Aug 2008 15:33:35 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] tracing fixes
-Message-ID: <20080828133120.GA31952@elte.hu>
+To: Joe Korty <joe.korty@ccur.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] make poll_idle behave more like the other idle methods
+Message-ID: <20080828133335.GA1126@elte.hu>
+References: <20080827143506.GA23166@tsunami.ccur.com> <20080828090036.GC19422@elte.hu> <20080828132237.GA20926@tsunami.ccur.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080828132237.GA20926@tsunami.ccur.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -33,104 +35,42 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Linus,
+* Joe Korty <joe.korty@ccur.com> wrote:
 
-Please pull the latest tracing-fixes-for-linus git tree from:
+> On Thu, Aug 28, 2008 at 05:00:36AM -0400, Ingo Molnar wrote:
+> > 
+> > * Joe Korty <joe.korty@ccur.com> wrote:
+> > 
+> > > Make poll_idle() behave more like the other idle methods.
+> > >
+> > > Currently, poll_idle() returns immediately.  The other
+> > > idle methods all wait indefinately for some condition
+> > > to come true before returning.  poll_idle should emulate
+> > > these other methods and also wait for a return condition,
+> > > in this case, for need_resched() to become 'true'.
+> > >
+> > > Without this delay the idle loop spends all of its time
+> > > in the outer loop that calls poll_idle.  This outer loop,
+> > > these days, does real work, some of it under rcu locks.
+> > > That work should only be done when idle is entered and
+> > > when idle exits, not continuously while idle is spinning.
+> > 
+> > i'm wondering, what's the motivation, have you actually seen
+> > anything bad/undesired happen due to that?
+> 
+> I saw the outer loop running continuously, from the old
+> trace patch which I had applied.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
+ah - was that an older version of ftrace?
 
-Thanks,
+> Nowdays the outer loop runs the NO_HZ stuff, which touches
+> quite a few memory locations.  Having say two cpus in idle
+> and there is potential for cache thrashing to suck up a good
+> part of the local memory bus bandwidth.
+> 
+> And I suspect as time goes on cpu_idle will end up with
+> more work to do.
+
+agreed.
 
 	Ingo
-
------------------->
-Rafael J. Wysocki (1):
-      ftrace: disable tracing for hibernation
-
-
- kernel/power/disk.c |   13 ++++++++++---
- 1 files changed, 10 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/power/disk.c b/kernel/power/disk.c
-index f011e08..bbd85c6 100644
---- a/kernel/power/disk.c
-+++ b/kernel/power/disk.c
-@@ -21,6 +21,7 @@
- #include <linux/console.h>
- #include <linux/cpu.h>
- #include <linux/freezer.h>
-+#include <linux/ftrace.h>
- 
- #include "power.h"
- 
-@@ -255,7 +256,7 @@ static int create_image(int platform_mode)
- 
- int hibernation_snapshot(int platform_mode)
- {
--	int error;
-+	int error, ftrace_save;
- 
- 	/* Free memory before shutting down devices. */
- 	error = swsusp_shrink_memory();
-@@ -267,6 +268,7 @@ int hibernation_snapshot(int platform_mode)
- 		goto Close;
- 
- 	suspend_console();
-+	ftrace_save = __ftrace_enabled_save();
- 	error = device_suspend(PMSG_FREEZE);
- 	if (error)
- 		goto Recover_platform;
-@@ -296,6 +298,7 @@ int hibernation_snapshot(int platform_mode)
-  Resume_devices:
- 	device_resume(in_suspend ?
- 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
-+	__ftrace_enabled_restore(ftrace_save);
- 	resume_console();
-  Close:
- 	platform_end(platform_mode);
-@@ -366,10 +369,11 @@ static int resume_target_kernel(void)
- 
- int hibernation_restore(int platform_mode)
- {
--	int error;
-+	int error, ftrace_save;
- 
- 	pm_prepare_console();
- 	suspend_console();
-+	ftrace_save = __ftrace_enabled_save();
- 	error = device_suspend(PMSG_QUIESCE);
- 	if (error)
- 		goto Finish;
-@@ -384,6 +388,7 @@ int hibernation_restore(int platform_mode)
- 	platform_restore_cleanup(platform_mode);
- 	device_resume(PMSG_RECOVER);
-  Finish:
-+	__ftrace_enabled_restore(ftrace_save);
- 	resume_console();
- 	pm_restore_console();
- 	return error;
-@@ -396,7 +401,7 @@ int hibernation_restore(int platform_mode)
- 
- int hibernation_platform_enter(void)
- {
--	int error;
-+	int error, ftrace_save;
- 
- 	if (!hibernation_ops)
- 		return -ENOSYS;
-@@ -411,6 +416,7 @@ int hibernation_platform_enter(void)
- 		goto Close;
- 
- 	suspend_console();
-+	ftrace_save = __ftrace_enabled_save();
- 	error = device_suspend(PMSG_HIBERNATE);
- 	if (error) {
- 		if (hibernation_ops->recover)
-@@ -445,6 +451,7 @@ int hibernation_platform_enter(void)
- 	hibernation_ops->finish();
-  Resume_devices:
- 	device_resume(PMSG_RESTORE);
-+	__ftrace_enabled_restore(ftrace_save);
- 	resume_console();
-  Close:
- 	hibernation_ops->end();
