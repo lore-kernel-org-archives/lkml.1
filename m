@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbYH1AJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbYH1AMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbYH1AJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 20:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbYH1AJK
+	id S1756661AbYH1AMw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 20:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbYH1AMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 20:09:10 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:35261 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754120AbYH1AJI (ORCPT
+	Wed, 27 Aug 2008 20:12:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48936 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753754AbYH1AMn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 20:09:08 -0400
-Message-ID: <48B5EBFD.7090005@snapgear.com>
-Date: Thu, 28 Aug 2008 10:06:21 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Jamie Lokier <jamie@shareable.org>
-CC: Bernd Petrovitsch <bernd@firmix.at>, Parag Warudkar <parag.lkml@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Rusty Russell <rusty@rustcorp.com.au>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-embedded@vger.kernel.org
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-References: <20080826205916.GB11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org> <f7848160808261554j2f4eaaa6i1ee8801ae75ca7bf@mail.gmail.com> <alpine.LFD.1.10.0808261644260.3363@nehalem.linux-foundation.org> <f7848160808261758q7b84aab1m188c1ebb59304818@mail.gmail.com> <1219827609.30209.29.camel@spike.firmix.at> <f7848160808270556q54c36270ye6a465d2ca123cc@mail.gmail.com> <1219843032.30209.51.camel@spike.firmix.at> <20080827154805.GA25387@shareable.org> <1219855121.30209.112.camel@spike.firmix.at> <20080827175152.GA27491@shareable.org>
-In-Reply-To: <20080827175152.GA27491@shareable.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 27 Aug 2008 20:12:43 -0400
+Date: Wed, 27 Aug 2008 17:07:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
+Subject: Re: [PATCH 1/3] user namespaces: introduce
+ user_struct->user_namespace relationship
+Message-Id: <20080827170740.c50cacf7.akpm@linux-foundation.org>
+In-Reply-To: <20080826185341.GA338@us.ibm.com>
+References: <20080826185341.GA338@us.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 26 Aug 2008 13:53:41 -0500
+"Serge E. Hallyn" <serue@us.ibm.com> wrote:
 
-Jamie Lokier wrote:
-> Bernd Petrovitsch wrote:
->>> 32MB no-MMU ARM boards which people run new things and attach new
->>> devices to rather often - without making new hardware.  Volume's too
->>> low per individual application to get new hardware designed and made.
->> Yes, you may have several products on the same hardware with somewhat
->> differing requirements (or not). But that is much less than a general
->> purpose system IMHO.
+> When a task does clone(CLONE_NEWNS), the task's user is the 'creator' of the
+> new user_namespace, and the user_namespace is tacked onto a list of those
+> created by this user.
 > 
-> It is, but the idea that small embedded systems go through a 'all
-> components are known, drivers are known, test and if it passes it's
-> shippable' does not always apply.
+> Changelog:
+> 	Aug 25: make free_user not inlined as it's not trivial.  (Eric
+> 		Biederman suggestion)
+> 	Aug 1: renamed user->user_namespace to user_ns, as the next
+> 		patch did anyway.
+> 	Aug 1: move put_user_ns call in one free_user() definition
+> 		to move it outside the lock in free_user.  put_user_ns
+> 		calls free_user on the user_ns->creator, which in
+> 		turn would grab the lock again.
 > 
->>> I'm seriously thinking of forwarding porting the 4 year old firmware
->>> from 2.4.26 to 2.6.current, just to get new drivers and capabilities.
->> That sounds reasonable (and I never meant maintaining the old system
->> infinitely.
-> 
-> Sounds reasonable, but it's vetoed for anticipated time and cost,
-> compared with backporting on demand.  Fair enough, since 2.6.current
-> doesn't support ARM no-MMU last I heard ('soon'?).
-> 
-> On the other hand, the 2.6 anti-fragmentation patches, including
-> latest SLUB stuff, ironically meant to help big machines, sound really
-> appealing for my current problem and totally unrealistic to
-> backport...
-> 
->> ACK. We avoid MMU-less hardware too - especially since there is enough
->> hardware with a MMU around.
-> 
-> I can't emphasise enough how much difference MMU makes to Linux userspace.
-> 
-> It's practically: MMU = standard Linux (with less RAM), have everything.
-> No-MMU = lots of familiar 'Linux' things not available or break.
+> Signed-off-by: Serge Hallyn <serue@us.ibm.com>
+> ---
+>  include/linux/sched.h          |    1 +
+>  include/linux/user_namespace.h |    1 +
+>  kernel/user.c                  |   11 +++++++++--
+>  kernel/user_namespace.c        |   20 +++++++++++---------
 
-And lots of things work in the usual way...
+The credentials code in linux-next is changing the same code which
+you're changing, in more-than-trivially-textual ways.
 
-Of course the flip side is that for people who have platforms
-without MMU they can run something more than the mostly "toy"
-like operating systems typically available. There are plenty of
-problem domains that the non-MMU limitations are not a problem for.
-(Yours doesn't sound like one of them :-)
+I'd suggest a dhowells cc on these changes, as he's also working
+in this area, and as you touch the keyring code a bit.
 
-Regards
-Greg
+And, of course, please remove that almost-always-wrong
+extern-declaration-in-C which checkpatch told you about.  init_groups
+is already declared in include/linux/init_task.h anyway...
 
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-Secure Computing Corporation                PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
