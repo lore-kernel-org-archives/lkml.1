@@ -1,380 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbYH1DbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbYH1Dfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754914AbYH1DbR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 23:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbYH1DbF
+	id S1754867AbYH1Dfd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 23:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbYH1DfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 23:31:05 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:36045 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753619AbYH1DbD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 23:31:03 -0400
-Date: Wed, 27 Aug 2008 23:31:01 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [RFC PATCH] ftrace stack tracer
-Message-ID: <alpine.DEB.1.10.0808272324210.1782@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 27 Aug 2008 23:35:21 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:42070 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753660AbYH1DfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 23:35:20 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -1.777
+Date: Wed, 27 Aug 2008 20:35:18 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Denys Fedoryshchenko <denys@visp.net.lb>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+Message-ID: <20080827203518.7f6075a0@extreme>
+In-Reply-To: <200808220457.40892.denys@visp.net.lb>
+References: <200808220457.40892.denys@visp.net.lb>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 22 Aug 2008 04:57:40 +0300
+Denys Fedoryshchenko <denys@visp.net.lb> wrote:
 
-This is another tracer using the ftrace infrastructure, that examines
-at each function call the size of the stack. If the stack use is greater
-than the previous max it is recorded.
+> I have loaded router (~650 Mbps In+Out), based on 2xAMD Opteron 248, Sun Fire 
+> X4100. HPET timer available (TSC seems not available on this platform).
+> Network interfaces is onboard, connected over PCI-X.
+> 
+> Right now i am using only one processor, cause using only one interface and 
+> interrupts stick to it. Other is almost not used.
+> At peak time i notice in mpstat, that this processor is almost "dead", and if 
+> i run minor application consuming resources - ping over this router will be 
+> terrible. For me it is clear - system overloaded. I did oprofile, and here is 
+> result (at low load time, but at peak time it is very similar).
+> 
+> CPU: AMD64 processors, speed 2193.74 MHz (estimated)
+> Counted CPU_CLK_UNHALTED events (Cycles outside of halt state) with a unit 
+> mask of 0x00 (No unit mask) count 100000
+> CPU_CLK_UNHALT...|
+>   samples|      %|
+> ------------------
+>   2679376 71.9851 vmlinux
+>    287212  7.7163 e1000
+>    278674  7.4870 ip_tables
+>    259923  6.9832 nf_conntrack
+>     29699  0.7979 iptable_nat
+>     26752  0.7187 nf_nat
+>     26093  0.7010 nf_conntrack_ipv4
+>     16525  0.4440 iptable_mangle
+>     14988  0.4027 oprofiled
+> 
+> 
+> CPU: AMD64 processors, speed 2193.74 MHz (estimated)
+> Counted CPU_CLK_UNHALTED events (Cycles outside of halt state) with a unit 
+> mask of 0x00 (No unit mask) count 100000
+> samples  %        symbol name
+> 1031727  37.1736  getnstimeofday
+> 230457    8.3035  __napi_schedule
+> 122154    4.4013  __do_softirq
+> 110036    3.9647  dev_queue_xmit
+> 88800     3.1995  net_rx_action
+> 71163     2.5640  ip_route_input
+> 52232     1.8819  local_bh_enable
+> 43804     1.5783  get_next_timer_interrupt
+> 43387     1.5633  ip_forward
+> 35501     1.2791  nf_iterate
+> 35212     1.2687  __slab_alloc
+> 34652     1.2485  default_idle
+> 32375     1.1665  kfree
+> 28127     1.0134  kmem_cache_alloc
+> 
+> What is bothering me, why getnstimeofday called so much? Even i remove HTB 
+> shaper, it still takes 30-40% of whole vmlinux time. From other 
+> applications - only zebra is running.
+> Any ideas?
 
-You can always see (and set) the max stack size seen. By setting it
-to zero will start the recording again. The backtrace is also available.
-
-For example:
-
-# cat /debug/tracing/stack_max_size 
-1856
-
-# cat /debug/tracing/stack_trace 
-[<c027764d>] stack_trace_call+0x8f/0x101
-[<c021b966>] ftrace_call+0x5/0x8
-[<c02553cc>] clocksource_get_next+0x12/0x48
-[<c02542a5>] update_wall_time+0x538/0x6d1
-[<c0245913>] do_timer+0x23/0xb0
-[<c0257657>] tick_do_update_jiffies64+0xd9/0xf1
-[<c02576b9>] tick_sched_timer+0x4a/0xad
-[<c0250fe6>] __run_hrtimer+0x3e/0x75
-[<c02518ed>] hrtimer_interrupt+0xf1/0x154
-[<c022c870>] smp_apic_timer_interrupt+0x71/0x84
-[<c021b7e9>] apic_timer_interrupt+0x2d/0x34
-[<c0238597>] finish_task_switch+0x29/0xa0
-[<c05abd13>] schedule+0x765/0x7be
-[<c05abfca>] schedule_timeout+0x1b/0x90
-[<c05ab4d4>] wait_for_common+0xab/0x101
-[<c05ab5ac>] wait_for_completion+0x12/0x14
-[<c033cfc3>] blk_execute_rq+0x84/0x99
-[<c0402470>] scsi_execute+0xc2/0x105
-[<c040250a>] scsi_execute_req+0x57/0x7f
-[<c043afe0>] sr_test_unit_ready+0x3e/0x97
-[<c043bbd6>] sr_media_change+0x43/0x205
-[<c046b59f>] media_changed+0x48/0x77
-[<c046b5ff>] cdrom_media_changed+0x31/0x37
-[<c043b091>] sr_block_media_changed+0x16/0x18
-[<c02b9e69>] check_disk_change+0x1b/0x63
-[<c046f4c3>] cdrom_open+0x7a1/0x806
-[<c043b148>] sr_block_open+0x78/0x8d
-[<c02ba4c0>] do_open+0x90/0x257
-[<c02ba869>] blkdev_open+0x2d/0x56
-[<c0296a1f>] __dentry_open+0x14d/0x23c
-[<c0296b32>] nameidata_to_filp+0x24/0x38
-[<c02a1c68>] do_filp_open+0x347/0x626
-[<c02967ef>] do_sys_open+0x47/0xbc
-[<c02968b0>] sys_open+0x23/0x2b
-[<c021aadd>] sysenter_do_call+0x12/0x26
-
-I've tested this on both x86_64 and i386.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/Kconfig       |    9 +
- kernel/trace/Makefile      |    1 
- kernel/trace/trace_stack.c |  254 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 264 insertions(+)
-
-Index: linux-tip.git/kernel/trace/Kconfig
-===================================================================
---- linux-tip.git.orig/kernel/trace/Kconfig	2008-08-27 18:47:03.000000000 -0400
-+++ linux-tip.git/kernel/trace/Kconfig	2008-08-27 22:28:36.000000000 -0400
-@@ -106,6 +106,15 @@ config CONTEXT_SWITCH_TRACER
- 	  This tracer gets called from the context switch and records
- 	  all switching of tasks.
- 
-+config STACK_TRACER
-+	bool "Trace max stack"
-+	depends on HAVE_FTRACE
-+	select FTRACE
-+	select STACKTRACE
-+	help
-+	  This tracer records the max stack of the kernel, and displays
-+	  it in debugfs/tracing/stack_trace
-+
- config DYNAMIC_FTRACE
- 	bool "enable/disable ftrace tracepoints dynamically"
- 	depends on FTRACE
-Index: linux-tip.git/kernel/trace/Makefile
-===================================================================
---- linux-tip.git.orig/kernel/trace/Makefile	2008-08-27 18:47:03.000000000 -0400
-+++ linux-tip.git/kernel/trace/Makefile	2008-08-27 22:28:36.000000000 -0400
-@@ -19,6 +19,7 @@ obj-$(CONFIG_FTRACE) += trace_functions.
- obj-$(CONFIG_IRQSOFF_TRACER) += trace_irqsoff.o
- obj-$(CONFIG_PREEMPT_TRACER) += trace_irqsoff.o
- obj-$(CONFIG_SCHED_TRACER) += trace_sched_wakeup.o
-+obj-$(CONFIG_STACK_TRACER) += trace_stack.o
- obj-$(CONFIG_MMIOTRACE) += trace_mmiotrace.o
- 
- libftrace-y := ftrace.o
-Index: linux-tip.git/kernel/trace/trace_stack.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-tip.git/kernel/trace/trace_stack.c	2008-08-27 22:40:29.000000000 -0400
-@@ -0,0 +1,254 @@
-+/*
-+ * Copyright (C) 2008 Steven Rostedt <srostedt@redhat.com>
-+ *
-+ */
-+#include <linux/stacktrace.h>
-+#include <linux/kallsyms.h>
-+#include <linux/seq_file.h>
-+#include <linux/spinlock.h>
-+#include <linux/uaccess.h>
-+#include <linux/debugfs.h>
-+#include <linux/ftrace.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/fs.h>
-+#include "trace.h"
-+
-+#define STACK_TRACE_ENTRIES 500
-+
-+static unsigned long stack_dump_trace[STACK_TRACE_ENTRIES] =
-+	{ [0 ... (STACK_TRACE_ENTRIES-1)] = ULONG_MAX };
-+static struct stack_trace max_stack_trace = {
-+	.max_entries		= STACK_TRACE_ENTRIES,
-+	.entries		= stack_dump_trace,
-+};
-+
-+static unsigned long max_stack_size;
-+static raw_spinlock_t max_stack_lock =
-+	(raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
-+
-+static int stack_trace_disabled __read_mostly;
-+static DEFINE_PER_CPU(int, trace_active);
-+
-+static inline void check_stack(void)
-+{
-+	unsigned long this_size;
-+	unsigned long flags;
-+
-+	this_size = ((unsigned long)&this_size) & (THREAD_SIZE-1);
-+	this_size = THREAD_SIZE - this_size;
-+
-+	if (this_size <= max_stack_size)
-+		return;
-+
-+	raw_local_irq_save(flags);
-+	__raw_spin_lock(&max_stack_lock);
-+
-+	/* a race could have already updated it */
-+	if (this_size <= max_stack_size)
-+		goto out;
-+
-+	max_stack_size = this_size;
-+
-+	max_stack_trace.nr_entries	= 0;
-+	max_stack_trace.skip		= 1;
-+
-+	save_stack_trace(&max_stack_trace);
-+
-+ out:
-+	__raw_spin_unlock(&max_stack_lock);
-+	raw_local_irq_restore(flags);
-+}
-+
-+static void
-+stack_trace_call(unsigned long ip, unsigned long parent_ip)
-+{
-+	int cpu, resched;
-+
-+	if (unlikely(!ftrace_enabled || stack_trace_disabled))
-+		return;
-+
-+	resched = need_resched();
-+	preempt_disable_notrace();
-+
-+	cpu = raw_smp_processor_id();
-+	/* no atomic needed, we only modify this variable by this cpu */
-+	if (per_cpu(trace_active, cpu)++ != 0)
-+		goto out;
-+
-+	check_stack();
-+
-+ out:
-+	per_cpu(trace_active, cpu)--;
-+	/* prevent recursion in schedule */
-+	if (resched)
-+		preempt_enable_no_resched_notrace();
-+	else
-+		preempt_enable_notrace();
-+}
-+
-+static struct ftrace_ops trace_ops __read_mostly =
-+{
-+	.func = stack_trace_call,
-+};
-+
-+static ssize_t
-+stack_max_size_read(struct file *filp, char __user *ubuf,
-+		    size_t count, loff_t *ppos)
-+{
-+	unsigned long *ptr = filp->private_data;
-+	char buf[64];
-+	int r;
-+
-+	r = snprintf(buf, sizeof(buf), "%ld\n", *ptr);
-+	if (r > sizeof(buf))
-+		r = sizeof(buf);
-+	return simple_read_from_buffer(ubuf, count, ppos, buf, r);
-+}
-+
-+static ssize_t
-+stack_max_size_write(struct file *filp, const char __user *ubuf,
-+		     size_t count, loff_t *ppos)
-+{
-+	long *ptr = filp->private_data;
-+	unsigned long val, flags;
-+	char buf[64];
-+	int ret;
-+
-+	if (count >= sizeof(buf))
-+		return -EINVAL;
-+
-+	if (copy_from_user(&buf, ubuf, count))
-+		return -EFAULT;
-+
-+	buf[count] = 0;
-+
-+	ret = strict_strtoul(buf, 10, &val);
-+	if (ret < 0)
-+		return ret;
-+
-+	raw_local_irq_save(flags);
-+	__raw_spin_lock(&max_stack_lock);
-+	*ptr = val;
-+	__raw_spin_unlock(&max_stack_lock);
-+	raw_local_irq_restore(flags);
-+
-+	return count;
-+}
-+
-+static struct file_operations stack_max_size_fops = {
-+	.open		= tracing_open_generic,
-+	.read		= stack_max_size_read,
-+	.write		= stack_max_size_write,
-+};
-+
-+static void *
-+t_next(struct seq_file *m, void *v, loff_t *pos)
-+{
-+	unsigned long *t = m->private;
-+
-+	(*pos)++;
-+
-+	if (!t || *t == ULONG_MAX)
-+		return NULL;
-+
-+	t++;
-+	m->private = t;
-+
-+	return t;
-+}
-+
-+static void *t_start(struct seq_file *m, loff_t *pos)
-+{
-+	unsigned long *t = m->private;
-+	loff_t l = 0;
-+
-+	local_irq_disable();
-+	__raw_spin_lock(&max_stack_lock);
-+
-+	for (; t && l < *pos; t = t_next(m, t, &l))
-+		;
-+
-+	return t;
-+}
-+
-+static void t_stop(struct seq_file *m, void *p)
-+{
-+	__raw_spin_unlock(&max_stack_lock);
-+	local_irq_enable();
-+}
-+
-+static int trace_lookup_stack(struct seq_file *m, unsigned long addr)
-+{
-+#ifdef CONFIG_KALLSYMS
-+	char str[KSYM_SYMBOL_LEN];
-+
-+	sprint_symbol(str, addr);
-+
-+	return seq_printf(m, "[<%p>] %s\n", (void*)addr, str);
-+#else
-+	return seq_printf(m, "%p\n", (void*)addr);
-+#endif
-+}
-+
-+static int t_show(struct seq_file *m, void *v)
-+{
-+	unsigned long *t = v;
-+
-+	if (!t || *t == ULONG_MAX)
-+		return 0;
-+
-+	trace_lookup_stack(m, *t);
-+
-+	return 0;
-+}
-+
-+static struct seq_operations stack_trace_seq_ops = {
-+	.start		= t_start,
-+	.next		= t_next,
-+	.stop		= t_stop,
-+	.show		= t_show,
-+};
-+
-+static int stack_trace_open(struct inode *inode, struct file *file)
-+{
-+	int ret;
-+
-+	ret = seq_open(file, &stack_trace_seq_ops);
-+	if (!ret) {
-+		struct seq_file *m = file->private_data;
-+		m->private = stack_dump_trace;
-+	}
-+
-+	return ret;
-+}
-+
-+static struct file_operations stack_trace_fops = {
-+	.open		= stack_trace_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+};
-+
-+static __init int stack_trace_init(void)
-+{
-+	struct dentry *d_tracer;
-+	struct dentry *entry;
-+
-+	d_tracer = tracing_init_dentry();
-+
-+	entry = debugfs_create_file("stack_max_size", 0644, d_tracer,
-+				    &max_stack_size, &stack_max_size_fops);
-+	if (!entry)
-+		pr_warning("Could not create debugfs 'stack_max_size' entry\n");
-+
-+	entry = debugfs_create_file("stack_trace", 0444, d_tracer,
-+				    NULL, &stack_trace_fops);
-+	if (!entry)
-+		pr_warning("Could not create debugfs 'stack_trace' entry\n");
-+
-+	register_ftrace_function(&trace_ops);
-+
-+	return 0;
-+}
-+
-+device_initcall(stack_trace_init);
-
+What kernel version is this?  There was a fix to AF_PACKET about a year ago
+to reduce this.
