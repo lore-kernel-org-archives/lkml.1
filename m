@@ -1,207 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757609AbYH1Uwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757234AbYH1U4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757609AbYH1Uwf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 16:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbYH1Uw0
+	id S1757234AbYH1U4Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 16:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbYH1U4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 16:52:26 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:17064 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754162AbYH1UwZ (ORCPT
+	Thu, 28 Aug 2008 16:56:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59543
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753696AbYH1U4O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 16:52:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=tteE3TQhh3ZM/oJS6Aedj9LItAofZq2do3Sz1ULw20TX19oqp3P6a1X1Jix24/1tF6
-         WMfq9mB+hSnVs+IkeurjMkeU+TSFGcpcfZohkcHwlcsdQ2PzNWmfcBPO/UKkzwyDuOV5
-         ijUOaIU+Xjs6i4RIIXCkEgsgXVqwBTnyY78nM=
-Message-ID: <86802c440808281352y1371f437vf3409d9e104d1a51@mail.gmail.com>
-Date: Thu, 28 Aug 2008 13:52:25 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "David Witbrodt" <dawitbro@sbcglobal.net>
-Subject: Re: [PATCH] x86: split e820 reserved entries record to late v2
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0808281339250.3300@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_5432_6703567.1219956745151"
-References: <1219955655-18357-1-git-send-email-yhlu.kernel@gmail.com>
-	 <alpine.LFD.1.10.0808281339250.3300@nehalem.linux-foundation.org>
+	Thu, 28 Aug 2008 16:56:14 -0400
+Date: Thu, 28 Aug 2008 13:56:09 -0700 (PDT)
+Message-Id: <20080828.135609.106382483.davem@davemloft.net>
+To: Brice.Goglin@inria.fr
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [RFC] export irq_set/get_affinity() for multiqueue network
+ drivers
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <48B708E1.4070001@inria.fr>
+References: <48B708E1.4070001@inria.fr>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_5432_6703567.1219956745151
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+From: Brice Goglin <Brice.Goglin@inria.fr>
+Date: Thu, 28 Aug 2008 22:21:53 +0200
 
-On Thu, Aug 28, 2008 at 1:40 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Thu, 28 Aug 2008, Yinghai Lu wrote:
->>
->> v2: insert e820 reserve resources before pnp_system_init
->
-> Looks ok by me. Now it just needs testing ;)
->
-> Does it actually fix the HPET regression on that odd machine (without the
-> special hacks to recognize HPET explicitly)?
->
+> With more and more drivers using multiqueues, I think we need a nice way
+> to bind MSI-X from within the drivers. I am not sure what's best, the
+> attached (untested) patch would just export the existing
+> irq_set_affinity() and add irq_get_affinity(). Comments?
 
-David,
+I think we should rather have some kind of generic thing in the
+IRQ layer that allows specifying the usage model of the device's
+interrupts, so that the IRQ layer can choose a default affinities.
 
-can you test attached patch?
-also you may try to revert the old patch.
+I never notice any of this complete insanity on sparc64 because
+we flat spread out all of the interrupts across the machine.
 
-YH
-
-------=_Part_5432_6703567.1219956745151
-Content-Type: text/x-patch; name=split_e820_reserve.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fkfulqja0
-Content-Disposition: attachment; filename=split_e820_reserve.patch
-
-RnJvbTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgpTdWJqZWN0OiBbUEFUQ0hd
-IHg4Njogc3BsaXQgZTgyMCByZXNlcnZlZCBlbnRyaWVzIHJlY29yZCB0byBsYXRlIHYyCgpzbyBj
-b3VsZCBsZXQgQkFSIHJlcyByZWdpc3RlciBhdCBmaXJzdCwgb3IgZXZlbiBwbnA/Cgp2MjogaW5z
-ZXJ0IGU4MjAgcmVzZXJ2ZSByZXNvdXJjZXMgYmVmb3JlIHBucF9zeXN0ZW1faW5pdAoKU2lnbmVk
-LW9mZi1ieTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgoKLS0tCiBhcmNoL3g4
-Ni9rZXJuZWwvZTgyMC5jIHwgICAyMCArKysrKysrKysrKysrKysrKystLQogYXJjaC94ODYvcGNp
-L2kzODYuYyAgICB8ICAgIDMgKysrCiBpbmNsdWRlL2FzbS14ODYvZTgyMC5oIHwgICAgMSArCiAz
-IGZpbGVzIGNoYW5nZWQsIDIyIGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pCgpJbmRleDog
-bGludXgtMi42L2FyY2gveDg2L2tlcm5lbC9lODIwLmMKPT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42
-Lm9yaWcvYXJjaC94ODYva2VybmVsL2U4MjAuYworKysgbGludXgtMi42L2FyY2gveDg2L2tlcm5l
-bC9lODIwLmMKQEAgLTEyNzEsMTMgKzEyNzEsMTUgQEAgc3RhdGljIGlubGluZSBjb25zdCBjaGFy
-ICplODIwX3R5cGVfdG9fcwogLyoKICAqIE1hcmsgZTgyMCByZXNlcnZlZCBhcmVhcyBhcyBidXN5
-IGZvciB0aGUgcmVzb3VyY2UgbWFuYWdlci4KICAqLworc3RydWN0IHJlc291cmNlIF9faW5pdGRh
-dGEgKmU4MjBfcmVzOwogdm9pZCBfX2luaXQgZTgyMF9yZXNlcnZlX3Jlc291cmNlcyh2b2lkKQog
-ewogCWludCBpOwotCXN0cnVjdCByZXNvdXJjZSAqcmVzOwogCXU2NCBlbmQ7CisJc3RydWN0IHJl
-c291cmNlICpyZXM7CiAKIAlyZXMgPSBhbGxvY19ib290bWVtX2xvdyhzaXplb2Yoc3RydWN0IHJl
-c291cmNlKSAqIGU4MjAubnJfbWFwKTsKKwllODIwX3JlcyA9IHJlczsKIAlmb3IgKGkgPSAwOyBp
-IDwgZTgyMC5ucl9tYXA7IGkrKykgewogCQllbmQgPSBlODIwLm1hcFtpXS5hZGRyICsgZTgyMC5t
-YXBbaV0uc2l6ZSAtIDE7CiAjaWZuZGVmIENPTkZJR19SRVNPVVJDRVNfNjRCSVQKQEAgLTEyOTEs
-NyArMTI5Myw4IEBAIHZvaWQgX19pbml0IGU4MjBfcmVzZXJ2ZV9yZXNvdXJjZXModm9pZCkKIAkJ
-cmVzLT5lbmQgPSBlbmQ7CiAKIAkJcmVzLT5mbGFncyA9IElPUkVTT1VSQ0VfTUVNIHwgSU9SRVNP
-VVJDRV9CVVNZOwotCQlpbnNlcnRfcmVzb3VyY2UoJmlvbWVtX3Jlc291cmNlLCByZXMpOworCQlp
-ZiAoZTgyMC5tYXBbaV0udHlwZSAhPSBFODIwX1JFU0VSVkVEIHx8IHJlcy0+c3RhcnQgPCAoMVVM
-TDw8MjApKQorCQkJaW5zZXJ0X3Jlc291cmNlKCZpb21lbV9yZXNvdXJjZSwgcmVzKTsKIAkJcmVz
-Kys7CiAJfQogCkBAIC0xMzAzLDYgKzEzMDYsMTkgQEAgdm9pZCBfX2luaXQgZTgyMF9yZXNlcnZl
-X3Jlc291cmNlcyh2b2lkKQogCX0KIH0KIAordm9pZCBfX2luaXQgZTgyMF9yZXNlcnZlX3Jlc291
-cmNlc19sYXRlKHZvaWQpCit7CisJaW50IGk7CisJc3RydWN0IHJlc291cmNlICpyZXM7CisKKwly
-ZXMgPSBlODIwX3JlczsKKwlmb3IgKGkgPSAwOyBpIDwgZTgyMC5ucl9tYXA7IGkrKykgeworCQlp
-ZiAoZTgyMC5tYXBbaV0udHlwZSA9PSBFODIwX1JFU0VSVkVEICYmIHJlcy0+c3RhcnQgPj0gKDFV
-TEw8PDIwKSkKKwkJCWluc2VydF9yZXNvdXJjZSgmaW9tZW1fcmVzb3VyY2UsIHJlcyk7CisJCXJl
-cysrOworCX0KK30KKwogY2hhciAqX19pbml0IGRlZmF1bHRfbWFjaGluZV9zcGVjaWZpY19tZW1v
-cnlfc2V0dXAodm9pZCkKIHsKIAljaGFyICp3aG8gPSAiQklPUy1lODIwIjsKSW5kZXg6IGxpbnV4
-LTIuNi9hcmNoL3g4Ni9wY2kvaTM4Ni5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2Fy
-Y2gveDg2L3BjaS9pMzg2LmMKKysrIGxpbnV4LTIuNi9hcmNoL3g4Ni9wY2kvaTM4Ni5jCkBAIC0z
-Niw2ICszNiw3IEBACiAjaW5jbHVkZSA8YXNtL3BhdC5oPgogI2luY2x1ZGUgPGFzbS9ocGV0Lmg+
-CiAjaW5jbHVkZSA8YXNtL2lvX2FwaWMuaD4KKyNpbmNsdWRlIDxhc20vZTgyMC5oPgogCiAjaW5j
-bHVkZSAicGNpLmgiCiAKQEAgLTMwOCw2ICszMDksOCBAQCB2b2lkIF9faW5pdCBwY2liaW9zX3Jl
-c291cmNlX3N1cnZleSh2b2lkCiAJcGNpYmlvc19hbGxvY2F0ZV9idXNfcmVzb3VyY2VzKCZwY2lf
-cm9vdF9idXNlcyk7CiAJcGNpYmlvc19hbGxvY2F0ZV9yZXNvdXJjZXMoMCk7CiAJcGNpYmlvc19h
-bGxvY2F0ZV9yZXNvdXJjZXMoMSk7CisKKwllODIwX3Jlc2VydmVfcmVzb3VyY2VzX2xhdGUoKTsK
-IH0KIAogLyoqCkluZGV4OiBsaW51eC0yLjYvaW5jbHVkZS9hc20teDg2L2U4MjAuaAo9PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09Ci0tLSBsaW51eC0yLjYub3JpZy9pbmNsdWRlL2FzbS14ODYvZTgyMC5oCisrKyBsaW51eC0y
-LjYvaW5jbHVkZS9hc20teDg2L2U4MjAuaApAQCAtMTIyLDYgKzEyMiw3IEBAIGV4dGVybiB2b2lk
-IGU4MjBfcmVnaXN0ZXJfYWN0aXZlX3JlZ2lvbnMKIGV4dGVybiB1NjQgZTgyMF9ob2xlX3NpemUo
-dTY0IHN0YXJ0LCB1NjQgZW5kKTsKIGV4dGVybiB2b2lkIGZpbmlzaF9lODIwX3BhcnNpbmcodm9p
-ZCk7CiBleHRlcm4gdm9pZCBlODIwX3Jlc2VydmVfcmVzb3VyY2VzKHZvaWQpOworZXh0ZXJuIHZv
-aWQgZTgyMF9yZXNlcnZlX3Jlc291cmNlc19sYXRlKHZvaWQpOwogZXh0ZXJuIHZvaWQgc2V0dXBf
-bWVtb3J5X21hcCh2b2lkKTsKIGV4dGVybiBjaGFyICpkZWZhdWx0X21hY2hpbmVfc3BlY2lmaWNf
-bWVtb3J5X3NldHVwKHZvaWQpOwogZXh0ZXJuIGNoYXIgKm1hY2hpbmVfc3BlY2lmaWNfbWVtb3J5
-X3NldHVwKHZvaWQpOwo=
-------=_Part_5432_6703567.1219956745151
-Content-Type: application/octet-stream; name=commit-a2bd727
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fkfuoyey1
-Content-Disposition: attachment; filename=commit-a2bd727
-
-Y29tbWl0IGEyYmQ3Mjc0YjQ3MTI0ZDJmYzRkZmRiOGMwNTkxZjU0NWJhNzQ5ZGQKQXV0aG9yOiBZ
-aW5naGFpIEx1IDx5aGx1Lmtlcm5lbEBnbWFpbC5jb20+CkRhdGU6ICAgTW9uIEF1ZyAyNSAwMDo1
-NjowOCAyMDA4IC0wNzAwCgogICAgeDg2OiBmaXggSFBFVCByZWdyZXNzaW9uIGluIDIuNi4yNiB2
-ZXJzdXMgMi42LjI1LCBjaGVjayBocGV0IGFnYWluc3QgQkFSLCB2MwogICAgCiAgICBEYXZpZCBX
-aXRicm9kdCB0cmFja2VkIGRvd24gKGFuZCBiaXNlY3RlZCkgYSBocGV0IGJvb3R1cCBoYW5nIG9u
-IGhpcwogICAgc3lzdGVtIHRvIHRoZSBmb2xsb3dpbmcgcHJvYmxlbTogYSBCSU9TIGJ1ZyBtYWRl
-IHRoZSBocGV0IGRldmljZQogICAgdmlzaWJsZSBhcyBhIGdlbmVyaWMgUENJIGRldmljZS4gSWYg
-ZTgyMCByZXNlcnZlZCBlbnRyaWVzIGhhcHBlbiB0bwogICAgYmUgcmVnaXN0ZXJlZCBmaXJzdCBp
-biB0aGUgcmVzb3VyY2UgdHJlZSBbd2hpY2ggdjIuNi4yNiBzdGFydGVkIGRvaW5nXSwKICAgIHRo
-ZW4gdGhlIFBDSSBjb2RlIHdpbGwgcmVhbGxvY2F0ZSB0aGF0IGRldmljZSdzIEJBUiB0byBzb21l
-IG90aGVyCiAgICBhZGRyZXNzIC0gYnJlYWtpbmcgdGltZXIgSVJRcyBhbmQgaGFuZ2luZyB0aGUg
-c3lzdGVtLgogICAgCiAgICAoIE5vcm1hbGx5IGhwZXQgZGV2aWNlcyBhcmUgaGlkZGVuIGJ5IHRo
-ZSBCSU9TIGZyb20gdGhlIE9TJ3MgUENJCiAgICAgIGRpc2NvdmVyeSB2aWEgY2hpcHNldCBtYWdp
-Yy4gU29tZXRpbWVzIHRoZSBocGV0IGlzIG5vdCBhIFBDSSBkZXZpY2UKICAgICAgYXQgYWxsLiAp
-CiAgICAKICAgIFNvbHZlIHRoaXMgZnVuZGFtZW50YWwgZnJhZ2lsaXR5IGJ5IG1ha2luZyBub24t
-UENJIHBsYXRmb3JtIGRyaXZlcnMKICAgIGluc2VydCByZXNvdXJjZXMgaW50byB0aGUgcmVzb3Vy
-Y2UgdHJlZSBldmVuIGlmIGl0IG92ZXJsYXBzIHRoZSBlODIwCiAgICByZXNlcnZlZCBlbnRyeSwg
-dG8ga2VlcCB0aGUgcmVzb3VyY2UgbWFuYWdlciBmcm9tIHVwZGF0aW5nIHRoZSBCQVIuCiAgICAK
-ICAgIEFsc28gZG8gdGhlc2UgY2hlY2tzIGZvciB0aGUgaW9hcGljIGFuZCBtbWNvbmZpZyBhZGRy
-ZXNzZXMsIGFuZCBlbWl0CiAgICBhIHdhcm5pbmcgaWYgdGhpcyBoYXBwZW5zLgogICAgCiAgICBC
-aXNlY3RlZC1ieTogRGF2aWQgV2l0YnJvZHQgPGRhd2l0YnJvQHNiY2dsb2JhbC5uZXQ+CiAgICBT
-aWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aGx1Lmtlcm5lbEBnbWFpbC5jb20+CiAgICBUZXN0
-ZWQtYnk6IERhdmlkIFdpdGJyb2R0IDxkYXdpdGJyb0BzYmNnbG9iYWwubmV0PgogICAgU2lnbmVk
-LW9mZi1ieTogSW5nbyBNb2xuYXIgPG1pbmdvQGVsdGUuaHU+CgpkaWZmIC0tZ2l0IGEvYXJjaC94
-ODYvcGNpL2kzODYuYyBiL2FyY2gveDg2L3BjaS9pMzg2LmMKaW5kZXggNTgwN2QxYi4uZDc2NWRh
-OSAxMDA2NDQKLS0tIGEvYXJjaC94ODYvcGNpL2kzODYuYworKysgYi9hcmNoL3g4Ni9wY2kvaTM4
-Ni5jCkBAIC0zMSw4ICszMSwxMSBAQAogI2luY2x1ZGUgPGxpbnV4L2lvcG9ydC5oPgogI2luY2x1
-ZGUgPGxpbnV4L2Vycm5vLmg+CiAjaW5jbHVkZSA8bGludXgvYm9vdG1lbS5oPgorI2luY2x1ZGUg
-PGxpbnV4L2FjcGkuaD4KIAogI2luY2x1ZGUgPGFzbS9wYXQuaD4KKyNpbmNsdWRlIDxhc20vaHBl
-dC5oPgorI2luY2x1ZGUgPGFzbS9pb19hcGljLmg+CiAKICNpbmNsdWRlICJwY2kuaCIKIApAQCAt
-NzcsNiArODAsNzcgQEAgcGNpYmlvc19hbGlnbl9yZXNvdXJjZSh2b2lkICpkYXRhLCBzdHJ1Y3Qg
-cmVzb3VyY2UgKnJlcywKIH0KIEVYUE9SVF9TWU1CT0wocGNpYmlvc19hbGlnbl9yZXNvdXJjZSk7
-CiAKK3N0YXRpYyBpbnQgY2hlY2tfcmVzX3dpdGhfdmFsaWQoc3RydWN0IHBjaV9kZXYgKmRldiwg
-c3RydWN0IHJlc291cmNlICpyZXMpCit7CisJdW5zaWduZWQgbG9uZyBiYXNlOworCXVuc2lnbmVk
-IGxvbmcgc2l6ZTsKKwlpbnQgaTsKKworCWJhc2UgPSByZXMtPnN0YXJ0OworCXNpemUgPSAocmVz
-LT5zdGFydCA9PSAwICYmIHJlcy0+ZW5kID09IHJlcy0+c3RhcnQpID8gMCA6CisJCSAocmVzLT5l
-bmQgLSByZXMtPnN0YXJ0ICsgMSk7CisKKwlpZiAoIWJhc2UgfHwgIXNpemUpCisJCXJldHVybiAw
-OworCisjaWZkZWYgQ09ORklHX0hQRVRfVElNRVIKKwkvKiBmb3IgaHBldCAqLworCWlmIChiYXNl
-ID09IGhwZXRfYWRkcmVzcyAmJiAocmVzLT5mbGFncyAmIElPUkVTT1VSQ0VfTUVNKSkgeworCQlk
-ZXZfaW5mbygmZGV2LT5kZXYsICJCQVIgaGFzIEhQRVQgYXQgJTA4bHgtJTA4bHhcbiIsCisJCQkJ
-IGJhc2UsIGJhc2UgKyBzaXplIC0gMSk7CisJCXJldHVybiAxOworCX0KKyNlbmRpZgorCisjaWZk
-ZWYgQ09ORklHX1g4Nl9JT19BUElDCisJZm9yIChpID0gMDsgaSA8IG5yX2lvYXBpY3M7IGkrKykg
-eworCQl1bnNpZ25lZCBsb25nIGlvYXBpY19waHlzID0gbXBfaW9hcGljc1tpXS5tcF9hcGljYWRk
-cjsKKworCQlpZiAoYmFzZSA9PSBpb2FwaWNfcGh5cyAmJiAocmVzLT5mbGFncyAmIElPUkVTT1VS
-Q0VfTUVNKSkgeworCQkJZGV2X2luZm8oJmRldi0+ZGV2LCAiQkFSIGhhcyBpb2FwaWMgYXQgJTA4
-bHgtJTA4bHhcbiIsCisJCQkJCSBiYXNlLCBiYXNlICsgc2l6ZSAtIDEpOworCQkJcmV0dXJuIDE7
-CisJCX0KKwl9CisjZW5kaWYKKworI2lmZGVmIENPTkZJR19QQ0lfTU1DT05GSUcKKwlmb3IgKGkg
-PSAwOyBpIDwgcGNpX21tY2ZnX2NvbmZpZ19udW07IGkrKykgeworCQl1bnNpZ25lZCBsb25nIGFk
-ZHI7CisKKwkJYWRkciA9IHBjaV9tbWNmZ19jb25maWdbaV0uYWRkcmVzczsKKwkJaWYgKGJhc2Ug
-PT0gYWRkciAmJiAocmVzLT5mbGFncyAmIElPUkVTT1VSQ0VfTUVNKSkgeworCQkJZGV2X2luZm8o
-JmRldi0+ZGV2LCAiQkFSIGhhcyBNTUNPTkZJRyBhdCAlMDhseC0lMDhseFxuIiwKKwkJCQkJIGJh
-c2UsIGJhc2UgKyBzaXplIC0gMSk7CisJCQlyZXR1cm4gMTsKKwkJfQorCX0KKyNlbmRpZgorCisJ
-cmV0dXJuIDA7Cit9CisKK3N0YXRpYyBpbnQgY2hlY2tfcGxhdGZvcm0oc3RydWN0IHBjaV9kZXYg
-KmRldiwgc3RydWN0IHJlc291cmNlICpyZXMpCit7CisJc3RydWN0IHJlc291cmNlICpyb290ID0g
-TlVMTDsKKworCS8qCisJICogZm9yY2libHkgaW5zZXJ0IGl0IGludG8gdGhlCisJICogcmVzb3Vy
-Y2UgdHJlZQorCSAqLworCWlmIChyZXMtPmZsYWdzICYgSU9SRVNPVVJDRV9NRU0pCisJCXJvb3Qg
-PSAmaW9tZW1fcmVzb3VyY2U7CisJZWxzZSBpZiAocmVzLT5mbGFncyAmIElPUkVTT1VSQ0VfSU8p
-CisJCXJvb3QgPSAmaW9wb3J0X3Jlc291cmNlOworCisJaWYgKHJvb3QgJiYgY2hlY2tfcmVzX3dp
-dGhfdmFsaWQoZGV2LCByZXMpKSB7CisJCWluc2VydF9yZXNvdXJjZShyb290LCByZXMpOworCisJ
-CXJldHVybiAxOworCX0KKworCXJldHVybiAwOworfQogLyoKICAqICBIYW5kbGUgcmVzb3VyY2Vz
-IG9mIFBDSSBkZXZpY2VzLiAgSWYgdGhlIHdvcmxkIHdlcmUgcGVyZmVjdCwgd2UgY291bGQKICAq
-ICBqdXN0IGFsbG9jYXRlIGFsbCB0aGUgcmVzb3VyY2UgcmVnaW9ucyBhbmQgZG8gbm90aGluZyBt
-b3JlLiAgSXQgaXNuJ3QuCkBAIC0xMjgsNiArMjAyLDggQEAgc3RhdGljIHZvaWQgX19pbml0IHBj
-aWJpb3NfYWxsb2NhdGVfYnVzX3Jlc291cmNlcyhzdHJ1Y3QgbGlzdF9oZWFkICpidXNfbGlzdCkK
-IAkJCQlwciA9IHBjaV9maW5kX3BhcmVudF9yZXNvdXJjZShkZXYsIHIpOwogCQkJCWlmICghci0+
-c3RhcnQgfHwgIXByIHx8CiAJCQkJICAgIHJlcXVlc3RfcmVzb3VyY2UocHIsIHIpIDwgMCkgewor
-CQkJCQlpZiAoY2hlY2tfcGxhdGZvcm0oZGV2LCByKSkKKwkJCQkJCWNvbnRpbnVlOwogCQkJCQlk
-ZXZfZXJyKCZkZXYtPmRldiwgIkJBUiAlZDogY2FuJ3QgIgogCQkJCQkJImFsbG9jYXRlIHJlc291
-cmNlXG4iLCBpZHgpOwogCQkJCQkvKgpAQCAtMTcxLDYgKzI0Nyw4IEBAIHN0YXRpYyB2b2lkIF9f
-aW5pdCBwY2liaW9zX2FsbG9jYXRlX3Jlc291cmNlcyhpbnQgcGFzcykKIAkJCQkJci0+ZmxhZ3Ms
-IGRpc2FibGVkLCBwYXNzKTsKIAkJCQlwciA9IHBjaV9maW5kX3BhcmVudF9yZXNvdXJjZShkZXYs
-IHIpOwogCQkJCWlmICghcHIgfHwgcmVxdWVzdF9yZXNvdXJjZShwciwgcikgPCAwKSB7CisJCQkJ
-CWlmIChjaGVja19wbGF0Zm9ybShkZXYsIHIpKQorCQkJCQkJY29udGludWU7CiAJCQkJCWRldl9l
-cnIoJmRldi0+ZGV2LCAiQkFSICVkOiBjYW4ndCAiCiAJCQkJCQkiYWxsb2NhdGUgcmVzb3VyY2Vc
-biIsIGlkeCk7CiAJCQkJCS8qIFdlJ2xsIGFzc2lnbiBhIG5ldyBhZGRyZXNzIGxhdGVyICovCg==
-
-------=_Part_5432_6703567.1219956745151--
+What we don't want it drivers choosing IRQ affinity settings,
+they have no idea about NUMA topology, what NUMA node the
+PCI controller sits behind, what cpus are there, etc.  and
+without that kind of knowledge you cannot possible make
+affinity decisions properly.
