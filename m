@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbYH1Snc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbYH1SoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753972AbYH1Snc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 14:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbYH1SnG
+	id S1756680AbYH1SoS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 14:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYH1SoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 14:43:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52137 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752747AbYH1SnE (ORCPT
+	Thu, 28 Aug 2008 14:44:05 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:36543 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753779AbYH1SoE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 14:43:04 -0400
-Date: Thu, 28 Aug 2008 11:42:01 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mark Hounschell <markh@compro.net>
-cc: Steven Rostedt <rostedt@goodmis.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stefani Seibold <stefani@seibold.net>,
-       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
-In-Reply-To: <48B6EB6F.2050802@compro.net>
-Message-ID: <alpine.LFD.1.10.0808281138060.3300@nehalem.linux-foundation.org>
-References: <20080819103301.787700742@chello.nl> <200808290036.35817.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0808281110570.14580@gandalf.stny.rr.com> <200808290134.35093.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0808281142280.14580@gandalf.stny.rr.com>
- <alpine.LFD.1.10.0808281024060.3300@nehalem.linux-foundation.org> <48B6EB6F.2050802@compro.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 28 Aug 2008 14:44:04 -0400
+Message-ID: <48B6F12F.1010909@cs.helsinki.fi>
+Date: Thu, 28 Aug 2008 21:40:47 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Vegard Nossum <vegard.nossum@gmail.com>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] bitfields API
+References: <20080828183223.GA30781@localhost.localdomain> <20080828184025.GA22165@x200.localdomain>
+In-Reply-To: <20080828184025.GA22165@x200.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Alexey,
 
-
-On Thu, 28 Aug 2008, Mark Hounschell wrote:
+Alexey Dobriyan wrote:
+> On Thu, Aug 28, 2008 at 08:32:23PM +0200, Vegard Nossum wrote:
+>> How do you feel about this patch? It's all about making kmemcheck more
+>> useful... and not much else. Does it have any chance of entering the
+>> kernel along with kmemcheck (when/if that happens)?
 > 
-> More and more are wanting and now finding the Linux kernel to be more
-> RT capable. I seem to remember way back you saying it was one thing you didn't
-> really care much about one way or the other. Thats OK. But, you _are_ the man.
+> DEFINE_BITFIELD is horrible.
 
-The thing is, the reason I dislike RT is that so many people have so 
-different understanding of what RT means.
-
-Quite frankly, I think that the people who are complaining (like you) 
-think that RT means "hard realtime". You think about literally specialized 
-devices.
-
-A lot of _other_ people think that RT means "good audio latency", where it 
-really is a lot softer. 
-
-And neither camp seems to ever admit that they are just a small camp, and 
-that the other camp exists or is even valid.
-
-And I'm not really interested. Quite frankly, I suspect the "we want to 
-run something like pulseaudio with RT priorities" camp is the more common 
-one, and in that context I understand limiting SCHED_FIFO sounds perfectly 
-understandable.
-
-As to your
-
-> "just to protect a few _supposedly_ bad programmers???"
-
-quite frankly, most programmers aren't "supposedly bad". And if you think 
-that the hard-RT "real man" programmers aren't bad, I really have nothing 
-to say.
-
-		Linus
-
+Heh, heh, one alternative is to have a kmemcheck_memset() thingy that 
+unconditionally zeroes bit fields and maybe is a no-op when kmemcheck is 
+disabled.
