@@ -1,45 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbYH1U6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758042AbYH1U65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758018AbYH1U6T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 16:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756389AbYH1U6A
+	id S1758042AbYH1U65 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 16:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756432AbYH1U6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 16:58:00 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:49452 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756355AbYH1U57 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 16:57:59 -0400
-Message-ID: <48B71093.3070409@cs.helsinki.fi>
-Date: Thu, 28 Aug 2008 23:54:43 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Thu, 28 Aug 2008 16:58:47 -0400
+Received: from gw.goop.org ([64.81.55.164]:42405 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756183AbYH1U6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 16:58:46 -0400
+Message-ID: <48B7117F.8090008@goop.org>
+Date: Thu, 28 Aug 2008 13:58:39 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Alexey Dobriyan <adobriyan@gmail.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] bitfields API
-References: <20080828183223.GA30781@localhost.localdomain> <20080828184025.GA22165@x200.localdomain> <48B6F12F.1010909@cs.helsinki.fi> <20080828202750.GB16462@cs181140183.pp.htv.fi>
-In-Reply-To: <20080828202750.GB16462@cs181140183.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: make sure the CPA test code's use of _PAGE_UNUSED1 is
+ obvious
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
->> Heh, heh, one alternative is to have a kmemcheck_memset() thingy that  
->> unconditionally zeroes bit fields and maybe is a no-op when kmemcheck is  
->> disabled.
-> 
-> This sounds as if this might cause bugs to disappear when debugging gets 
-> turned on?
+The CPA test code uses _PAGE_UNUSED1, so make sure its obvious.
 
-Yeah, I suppose. The problem doing that unconditionally is that it 
-increases kernel text slightly on some architectures (e.g. sparc). 
-However, as long as you use the KMEMCHECK_BIT_FIELD annotation only in 
-places that give you false positives, it's we should be safe.
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/mm/pageattr-test.c |    6 +++---
+ include/asm-x86/pgtable.h   |    2 ++
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
-		Pekka
+===================================================================
+--- a/arch/x86/mm/pageattr-test.c
++++ b/arch/x86/mm/pageattr-test.c
+@@ -32,7 +32,7 @@
+ 	GPS			= (1<<30)
+ };
+ 
+-#define PAGE_TESTBIT	__pgprot(_PAGE_UNUSED1)
++#define PAGE_CPA_TEST	__pgprot(_PAGE_CPA_TEST)
+ 
+ static int pte_testbit(pte_t pte)
+ {
+@@ -174,7 +174,7 @@
+ 		}
+ 
+ 		test_addr = addr[i];
+-		err = change_page_attr_set(&test_addr, len[i], PAGE_TESTBIT, 0);
++		err = change_page_attr_set(&test_addr, len[i], PAGE_CPA_TEST, 0);
+ 		if (err < 0) {
+ 			printk(KERN_ERR "CPA %d failed %d\n", i, err);
+ 			failed++;
+@@ -207,7 +207,7 @@
+ 			continue;
+ 		}
+ 		test_addr = addr[i];
+-		err = change_page_attr_clear(&test_addr, len[i], PAGE_TESTBIT, 0);
++		err = change_page_attr_clear(&test_addr, len[i], PAGE_CPA_TEST, 0);
+ 		if (err < 0) {
+ 			printk(KERN_ERR "CPA reverting failed: %d\n", err);
+ 			failed++;
+===================================================================
+--- a/include/asm-x86/pgtable.h
++++ b/include/asm-x86/pgtable.h
+@@ -19,6 +19,7 @@
+ #define _PAGE_BIT_HIDDEN	11	/* hidden by kmemcheck */
+ #define _PAGE_BIT_PAT_LARGE	12	/* On 2MB or 1GB pages */
+ #define _PAGE_BIT_SPECIAL	_PAGE_BIT_UNUSED1
++#define _PAGE_BIT_CPA_TEST	_PAGE_BIT_UNUSED1
+ #define _PAGE_BIT_NX           63       /* No execute: only valid after cpuid check */
+ 
+ #define _PAGE_PRESENT	(_AT(pteval_t, 1) << _PAGE_BIT_PRESENT)
+@@ -36,6 +37,7 @@
+ #define _PAGE_PAT	(_AT(pteval_t, 1) << _PAGE_BIT_PAT)
+ #define _PAGE_PAT_LARGE (_AT(pteval_t, 1) << _PAGE_BIT_PAT_LARGE)
+ #define _PAGE_SPECIAL	(_AT(pteval_t, 1) << _PAGE_BIT_SPECIAL)
++#define _PAGE_CPA_TEST	(_AT(pteval_t, 1) << _PAGE_BIT_CPA_TEST)
+ #define __HAVE_ARCH_PTE_SPECIAL
+ 
+ #if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
+
+
