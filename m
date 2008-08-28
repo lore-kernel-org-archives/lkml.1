@@ -1,282 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbYH1Oqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755238AbYH1Osz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755329AbYH1Oqe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 10:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbYH1Oq0
+	id S1755238AbYH1Osz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 10:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYH1Osr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 10:46:26 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53340 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753305AbYH1OqZ (ORCPT
+	Thu, 28 Aug 2008 10:48:47 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:56841 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752518AbYH1Osq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 10:46:25 -0400
-Date: Thu, 28 Aug 2008 09:46:21 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] - GRU driver, minor updates
-Message-ID: <20080828144620.GA30328@sgi.com>
+	Thu, 28 Aug 2008 10:48:46 -0400
+Subject: Re: [PATCH] coredump_filter: add hugepage core dumping
+From: Adam Litke <agl@us.ibm.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Kawai Hidehiro <hidehiro.kawai.ez@hitachi.com>,
+       Hugh Dickins <hugh@veritas.com>, William Irwin <wli@holomorphy.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080828142352.6ABC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080828142352.6ABC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain
+Organization: IBM
+Date: Thu, 28 Aug 2008 09:48:15 -0500
+Message-Id: <1219934895.14358.40.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A few minor updates for the GRU driver.
-	- documentation changes found in code reviews
-	- changes to #ifdefs to make them recognized by "unifdef"
-	  (used in simulator testing)
-	- change GRU context load/unload to prefetch data
+On Thu, 2008-08-28 at 14:24 +0900, KOSAKI Motohiro wrote:
+> Now, hugepage's vma has VM_RESERVED flag because it cannot be swapped.
+> 
+> and VM_RESERVED vma isn't core dumped because its flag often be used for
+> kernel internal vma (e.g. vmalloc, sound related).
+> 
+> So, hugepage is never dumped and it indicate hugepages's program can't be debugged easily.
+> 
+> In these days, demand on making use of hugepage is increasing.
+> IMO, native support for coredump of hugepage is useful.
+> 
+> 
+> I think VM_RESERVED default dumping bahavior is good,
+> then I'd like to add coredump_filter mask.
+> 
+> This patch doesn't change dafault behavior.
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+I have tested this using both the provided C program and with a program
+that used libhugetlbfs to back its text and data segments with huge
+pages.  This seems to work as expected.  From a hugetlbfs perspective,
+this seems like a reasonable patch to me.
 
----
- drivers/misc/sgi-gru/gru.h              |    4 ++--
- drivers/misc/sgi-gru/gru_instructions.h |   10 ++++++----
- drivers/misc/sgi-gru/grufault.c         |   11 ++++++-----
- drivers/misc/sgi-gru/grufile.c          |    8 +++++++-
- drivers/misc/sgi-gru/gruhandles.h       |    5 -----
- drivers/misc/sgi-gru/grukservices.c     |    1 +
- drivers/misc/sgi-gru/grumain.c          |   29 ++++++++++++++++++-----------
- 7 files changed, 40 insertions(+), 28 deletions(-)
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: Kawai, Hidehiro <hidehiro.kawai.ez@hitachi.com>
+> CC: Hugh Dickins <hugh@veritas.com>
+> CC: William Irwin <wli@holomorphy.com>
+> CC: Adam Litke <agl@us.ibm.com>
 
-Index: linux/drivers/misc/sgi-gru/gru.h
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/gru.h	2008-08-27 19:56:45.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/gru.h	2008-08-28 09:02:29.000000000 -0500
-@@ -30,9 +30,9 @@
- /*
-  * Size used to map GRU GSeg
-  */
--#if defined CONFIG_IA64
-+#if defined(CONFIG_IA64)
- #define GRU_GSEG_PAGESIZE	(256 * 1024UL)
--#elif defined CONFIG_X86_64
-+#elif defined(CONFIG_X86_64)
- #define GRU_GSEG_PAGESIZE	(256 * 1024UL)		/* ZZZ 2MB ??? */
- #else
- #error "Unsupported architecture"
-Index: linux/drivers/misc/sgi-gru/gru_instructions.h
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/gru_instructions.h	2008-08-27 19:56:45.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/gru_instructions.h	2008-08-28 09:02:30.000000000 -0500
-@@ -26,7 +26,7 @@
-  * Architecture dependent functions
-  */
- 
--#if defined CONFIG_IA64
-+#if defined(CONFIG_IA64)
- #include <linux/compiler.h>
- #include <asm/intrinsics.h>
- #define __flush_cache(p)		ia64_fc(p)
-@@ -36,7 +36,7 @@
- 			barrier();					\
- 			*((volatile int *)(p)) = v; /* force st.rel */	\
- 		} while (0)
--#elif defined CONFIG_X86_64
-+#elif defined(CONFIG_X86_64)
- #define __flush_cache(p)		clflush(p)
- #define gru_ordered_store_int(p,v)					\
- 		do {							\
-@@ -299,6 +299,7 @@ static inline void gru_flush_cache(void 
- static inline void gru_start_instruction(struct gru_instruction *ins, int op32)
- {
- 	gru_ordered_store_int(ins, op32);
-+	gru_flush_cache(ins);
- }
- 
- 
-@@ -604,8 +605,9 @@ static inline int gru_get_cb_substatus(v
- static inline int gru_check_status(void *cb)
- {
- 	struct gru_control_block_status *cbs = (void *)cb;
--	int ret = cbs->istatus;
-+	int ret;
- 
-+	ret = cbs->istatus;
- 	if (ret == CBS_CALL_OS)
- 		ret = gru_check_status_proc(cb);
- 	return ret;
-@@ -617,7 +619,7 @@ static inline int gru_check_status(void 
- static inline int gru_wait(void *cb)
- {
- 	struct gru_control_block_status *cbs = (void *)cb;
--	int ret = cbs->istatus;;
-+	int ret = cbs->istatus;
- 
- 	if (ret != CBS_IDLE)
- 		ret = gru_wait_proc(cb);
-Index: linux/drivers/misc/sgi-gru/grufault.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grufault.c	2008-08-27 19:56:45.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grufault.c	2008-08-28 09:02:29.000000000 -0500
-@@ -220,6 +220,10 @@ static int non_atomic_pte_lookup(struct 
-  * Convert a user virtual address to a physical address
-  * Only supports Intel large pages (2MB only) on x86_64.
-  *	ZZZ - hugepage support is incomplete
-+ *
-+ * NOTE; mmap_sem is already held on entry to this function. This
-+ * guarantees existence of the apge tables.
-+ *
-  */
- static int atomic_pte_lookup(struct vm_area_struct *vma, unsigned long vaddr,
- 	int write, unsigned long *paddr, int *pageshift)
-@@ -229,9 +233,6 @@ static int atomic_pte_lookup(struct vm_a
- 	pud_t *pudp;
- 	pte_t pte;
- 
--	WARN_ON(irqs_disabled());		/* ZZZ debug */
--
--	local_irq_disable();
- 	pgdp = pgd_offset(vma->vm_mm, vaddr);
- 	if (unlikely(pgd_none(*pgdp)))
- 		goto err;
-@@ -250,8 +251,6 @@ static int atomic_pte_lookup(struct vm_a
- #endif
- 		pte = *pte_offset_kernel(pmdp, vaddr);
- 
--	local_irq_enable();
--
- 	if (unlikely(!pte_present(pte) ||
- 		     (write && (!pte_write(pte) || !pte_dirty(pte)))))
- 		return 1;
-@@ -324,6 +323,7 @@ static int gru_try_dropin(struct gru_thr
- 	 * Atomic lookup is faster & usually works even if called in non-atomic
- 	 * context.
- 	 */
-+	rmb();	/* Must/check ms_range_active before loading PTEs */
- 	ret = atomic_pte_lookup(vma, vaddr, write, &paddr, &pageshift);
- 	if (ret) {
- 		if (!cb)
-@@ -543,6 +543,7 @@ int gru_get_exception_detail(unsigned lo
- 		ucbnum = get_cb_number((void *)excdet.cb);
- 		cbrnum = thread_cbr_number(gts, ucbnum);
- 		cbe = get_cbe_by_index(gts->ts_gru, cbrnum);
-+		prefetchw(cbe);		/* Harmless on hardware, required for emulator */
- 		excdet.opc = cbe->opccpy;
- 		excdet.exopc = cbe->exopccpy;
- 		excdet.ecause = cbe->ecause;
-Index: linux/drivers/misc/sgi-gru/grufile.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grufile.c	2008-08-27 19:56:45.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grufile.c	2008-08-28 09:40:16.000000000 -0500
-@@ -113,7 +113,7 @@ static int gru_file_mmap(struct file *fi
- 		return -EPERM;
- 
- 	if (vma->vm_start & (GRU_GSEG_PAGESIZE - 1) ||
--			vma->vm_end & (GRU_GSEG_PAGESIZE - 1))
-+	    			vma->vm_end & (GRU_GSEG_PAGESIZE - 1))
- 		return -EINVAL;
- 
- 	vma->vm_flags |=
-@@ -398,6 +398,12 @@ static int __init gru_init(void)
- 	irq = get_base_irq();
- 	for (chip = 0; chip < GRU_CHIPLETS_PER_BLADE; chip++) {
- 		ret = request_irq(irq + chip, gru_intr, 0, id, NULL);
-+		/* TODO: fix irq handling on x86. For now ignore failures because
-+		 * interrupts are not required & not yet fully supported */
-+		if (ret) {
-+			printk("!!!WARNING: GRU ignoring request failure!!!\n");
-+			ret = 0;
-+		}
- 		if (ret) {
- 			printk(KERN_ERR "%s: request_irq failed\n",
- 			       GRU_DRIVER_ID_STR);
-Index: linux/drivers/misc/sgi-gru/gruhandles.h
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/gruhandles.h	2008-08-27 19:56:45.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/gruhandles.h	2008-08-28 09:02:29.000000000 -0500
-@@ -91,12 +91,7 @@
- #define GSEGPOFF(h) 		((h) & (GRU_SIZE - 1))
- 
- /* Convert an arbitrary handle address to the beginning of the GRU segment */
--#ifndef __PLUGIN__
- #define GRUBASE(h)		((void *)((unsigned long)(h) & ~(GRU_SIZE - 1)))
--#else
--extern void *gmu_grubase(void *h);
--#define GRUBASE(h)		gmu_grubase(h)
--#endif
- 
- /* General addressing macros. */
- static inline void *get_gseg_base_address(void *base, int ctxnum)
-Index: linux/drivers/misc/sgi-gru/grukservices.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grukservices.c	2008-08-27 19:56:45.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grukservices.c	2008-08-28 09:02:30.000000000 -0500
-@@ -122,6 +122,7 @@ int gru_get_cb_exception_detail(void *cb
- 	struct gru_control_block_extended *cbe;
- 
- 	cbe = get_cbe(GRUBASE(cb), get_cb_number(cb));
-+	prefetchw(cbe);         /* Harmless on hardware, required for emulator */
- 	excdet->opc = cbe->opccpy;
- 	excdet->exopc = cbe->exopccpy;
- 	excdet->ecause = cbe->ecause;
-Index: linux/drivers/misc/sgi-gru/grumain.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grumain.c	2008-08-27 19:56:45.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grumain.c	2008-08-28 09:02:30.000000000 -0500
-@@ -432,29 +432,35 @@ static inline long gru_copy_handle(void 
- 	return GRU_HANDLE_BYTES;
- }
- 
--/* rewrite in assembly & use lots of prefetch */
--static void gru_load_context_data(void *save, void *grubase, int ctxnum,
--				  unsigned long cbrmap, unsigned long dsrmap)
-+static void gru_prefetch_context(void *gseg, void *cb, void *cbe, unsigned long cbrmap,
-+				unsigned long length)
- {
--	void *gseg, *cb, *cbe;
--	unsigned long length;
- 	int i, scr;
- 
--	gseg = grubase + ctxnum * GRU_GSEG_STRIDE;
--	length = hweight64(dsrmap) * GRU_DSR_AU_BYTES;
- 	prefetch_data(gseg + GRU_DS_BASE, length / GRU_CACHE_LINE_BYTES,
- 		      GRU_CACHE_LINE_BYTES);
- 
--	cb = gseg + GRU_CB_BASE;
--	cbe = grubase + GRU_CBE_BASE;
- 	for_each_cbr_in_allocation_map(i, &cbrmap, scr) {
- 		prefetch_data(cb, 1, GRU_CACHE_LINE_BYTES);
- 		prefetch_data(cbe + i * GRU_HANDLE_STRIDE, 1,
- 			      GRU_CACHE_LINE_BYTES);
- 		cb += GRU_HANDLE_STRIDE;
- 	}
-+}
-+
-+static void gru_load_context_data(void *save, void *grubase, int ctxnum,
-+				  unsigned long cbrmap, unsigned long dsrmap)
-+{
-+	void *gseg, *cb, *cbe;
-+	unsigned long length;
-+	int i, scr;
- 
-+	gseg = grubase + ctxnum * GRU_GSEG_STRIDE;
- 	cb = gseg + GRU_CB_BASE;
-+	cbe = grubase + GRU_CBE_BASE;
-+	length = hweight64(dsrmap) * GRU_DSR_AU_BYTES;
-+	gru_prefetch_context(gseg, cb, cbe, cbrmap, length);
-+
- 	for_each_cbr_in_allocation_map(i, &cbrmap, scr) {
- 		save += gru_copy_handle(cb, save);
- 		save += gru_copy_handle(cbe + i * GRU_HANDLE_STRIDE, save);
-@@ -472,15 +478,16 @@ static void gru_unload_context_data(void
- 	int i, scr;
- 
- 	gseg = grubase + ctxnum * GRU_GSEG_STRIDE;
--
- 	cb = gseg + GRU_CB_BASE;
- 	cbe = grubase + GRU_CBE_BASE;
-+	length = hweight64(dsrmap) * GRU_DSR_AU_BYTES;
-+	gru_prefetch_context(gseg, cb, cbe, cbrmap, length);
-+
- 	for_each_cbr_in_allocation_map(i, &cbrmap, scr) {
- 		save += gru_copy_handle(save, cb);
- 		save += gru_copy_handle(save, cbe + i * GRU_HANDLE_STRIDE);
- 		cb += GRU_HANDLE_STRIDE;
- 	}
--	length = hweight64(dsrmap) * GRU_DSR_AU_BYTES;
- 	memcpy(save, gseg + GRU_DS_BASE, length);
- }
- 
+Tested-by: Adam Litke <agl@us.ibm.com>
+Acked-by: Adam Litke <agl@us.ibm.com>
+
+> ---
+>  Documentation/filesystems/proc.txt |    3 ++-
+>  fs/binfmt_elf.c                    |    7 ++++++-
+>  include/linux/sched.h              |    3 ++-
+>  3 files changed, 10 insertions(+), 3 deletions(-)
+> 
+> Index: b/Documentation/filesystems/proc.txt
+> ===================================================================
+> --- a/Documentation/filesystems/proc.txt
+> +++ b/Documentation/filesystems/proc.txt
+> @@ -2389,11 +2389,12 @@ will be dumped when the <pid> process is
+>  of memory types. If a bit of the bitmask is set, memory segments of the
+>  corresponding memory type are dumped, otherwise they are not dumped.
+> 
+> -The following 4 memory types are supported:
+> +The following 5 memory types are supported:
+>    - (bit 0) anonymous private memory
+>    - (bit 1) anonymous shared memory
+>    - (bit 2) file-backed private memory
+>    - (bit 3) file-backed shared memory
+> +  - (bit 5) hugetlb memory
+> 
+>    Note that MMIO pages such as frame buffer are never dumped and vDSO pages
+>    are always dumped regardless of the bitmask status.
+> Index: b/include/linux/sched.h
+> ===================================================================
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -402,8 +402,9 @@ extern int get_dumpable(struct mm_struct
+>  #define MMF_DUMP_MAPPED_PRIVATE	4
+>  #define MMF_DUMP_MAPPED_SHARED	5
+>  #define MMF_DUMP_ELF_HEADERS	6
+> +#define MMF_DUMP_HUGETLB	7
+>  #define MMF_DUMP_FILTER_SHIFT	MMF_DUMPABLE_BITS
+> -#define MMF_DUMP_FILTER_BITS	5
+> +#define MMF_DUMP_FILTER_BITS	(MMF_DUMP_HUGETLB - MMF_DUMP_ANON_PRIVATE + 1)
+>  #define MMF_DUMP_FILTER_MASK \
+>  	(((1 << MMF_DUMP_FILTER_BITS) - 1) << MMF_DUMP_FILTER_SHIFT)
+>  #define MMF_DUMP_FILTER_DEFAULT \
+> Index: b/fs/binfmt_elf.c
+> ===================================================================
+> --- a/fs/binfmt_elf.c
+> +++ b/fs/binfmt_elf.c
+> @@ -1160,11 +1160,16 @@ static unsigned long vma_dump_size(struc
+>  	if (vma->vm_flags & VM_ALWAYSDUMP)
+>  		goto whole;
+> 
+> +#define FILTER(type)	(mm_flags & (1UL << MMF_DUMP_##type))
+> +
+> +	if ((vma->vm_flags & VM_HUGETLB) && FILTER(HUGETLB))
+> +		goto whole;
+> +
+>  	/* Do not dump I/O mapped devices or special mappings */
+>  	if (vma->vm_flags & (VM_IO | VM_RESERVED))
+>  		return 0;
+> 
+> -#define FILTER(type)	(mm_flags & (1UL << MMF_DUMP_##type))
+> 
+>  	/* By default, dump shared memory if mapped from an anonymous file. */
+>  	if (vma->vm_flags & VM_SHARED) {
+> 
+> 
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
+
