@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbYH1UB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbYH1UCl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756707AbYH1UB1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 16:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755440AbYH1UBK
+	id S1756864AbYH1UCl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 16:02:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755867AbYH1UC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 16:01:10 -0400
-Received: from relay2.globalproof.net ([194.146.153.25]:55239 "EHLO
-	relay2.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755412AbYH1UBJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 16:01:09 -0400
-From: Denys Fedoryshchenko <denys@visp.net.lb>
-Organization: Virtual ISP
-To: David Miller <davem@davemloft.net>
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-Date: Thu, 28 Aug 2008 22:59:43 +0300
-User-Agent: KMail/1.9.9
-Cc: andi@firstfloor.org, jmalicki@metacarta.com, johnpol@2ka.mipt.ru,
-       dada1@cosmosbay.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, juhlenko@akamai.com, sammy@sammy.net
-References: <21915755.1327801219904892242.JavaMail.root@ouachita> <200808281948.52608.denys@visp.net.lb> <20080828.123645.78561286.davem@davemloft.net>
-In-Reply-To: <20080828.123645.78561286.davem@davemloft.net>
+	Thu, 28 Aug 2008 16:02:26 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:36395 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754918AbYH1UCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 16:02:20 -0400
+Date: Thu, 28 Aug 2008 23:01:20 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Miklos Szeredi <miklos@szeredi.hu>,
+       Takashi Iwai <tiwai@suse.de>, fuse-devel@lists.sourceforge.net
+Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
+Message-ID: <20080828200120.GA16462@cs181140183.pp.htv.fi>
+References: <48B6F711.1040604@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200808282259.43550.denys@visp.net.lb>
+In-Reply-To: <48B6F711.1040604@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 August 2008, David Miller wrote:
-> From: Denys Fedoryshchenko <denys@visp.net.lb>
-> Date: Thu, 28 Aug 2008 19:48:52 +0300
->
-> > So there is few good solutions available (IMHO):
-> > 1)Introduce some SO_REALTIMESTAMP (anyway even SO_TIMESTAMP not defined
-> > in any standard) for banks and ntp folks, who need them. And even give
-> > them timespec instead timeval, so they will be even more happy with
-> > resolution. 2)Provide sysctl,kernel boot, or even "build time" option for
-> > "banks" to have high resolution(and expensive) SO_TIMESTAMP.
->
-> The performance hit hurts, but changing the default to lower
-> resolution after it having been high resolution for 10+ years
-> is a regression and something we really can't do.
-Agree. Then maybe to add way to choose, because choice is high resolution vs 
-performance. For example Intel dynamically throttling interrupts on e1000*, 
-and it saves me in this case. They leave also option for users who wants low 
-latency/high troughput.
-So maybe there must be a way for specific functions who uses get(ns)timeofday  
-to use specific timers (cheap and less precise), by option. Or to limit 
-amount of calls to timer by them.
+On Thu, Aug 28, 2008 at 09:05:53PM +0200, Tejun Heo wrote:
+> Hello again,
+> 
+> So, after all the fuss, here's the state-of-the-art standard-compliant
+> cloud-computing web-3.0-beta web page for OSS emulation using CUSE.
+> 
+>   http://userweb.kernel.org/~tj/ossp/
+> 
+> It works pretty well here.  :-)
+
+Sorry for being destructive, but 6 years after ALSA went into the
+kernel we are slightly approaching the point where all applications 
+support ALSA.
+
+The application you list on your webpage is UML host sound support,
+and I'm wondering why you don't fix that instead of working on a
+better OSS emulation?
+
+> Thanks.
+> tejun
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
