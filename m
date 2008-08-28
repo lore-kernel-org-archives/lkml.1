@@ -1,49 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753016AbYH1H13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbYH1Hdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753016AbYH1H13 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 03:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbYH1H1V
+	id S1754058AbYH1Hdf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 03:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYH1Hd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 03:27:21 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:10040 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752959AbYH1H1V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 03:27:21 -0400
-Date: Thu, 28 Aug 2008 09:27:01 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux I2C <i2c@lm-sensors.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] i2c fixes for 2.6.27
-Message-ID: <20080828092701.3d6fe6e8@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Aug 2008 03:33:27 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:44274 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752917AbYH1Hd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 03:33:26 -0400
+Date: Thu, 28 Aug 2008 09:33:24 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: jurriaan <thunder7@xs4all.nl>, linux-kernel@vger.kernel.org,
+       Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.27-rc4: lots of 'in_atomic():1, irqs_disabled():0' with software-raid1
+Message-ID: <20080828073324.GR20055@kernel.dk>
+References: <20080827170538.GA24393@amd64.of.nowhere> <200808272347.43577.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808272347.43577.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Wed, Aug 27 2008, Rafael J. Wysocki wrote:
+> [Adding CCs]
+> 
+> On Wednesday, 27 of August 2008, jurriaan wrote:
+> > After returning from my holidays, I proceeded to test 2.6.27-rc4. 2.6.26
+> > works fine, but 2.6.27-rc4 gives me lots of:
+> > 
+> > Aug 27 18:03:10 middle kernel: in_atomic():1, irqs_disabled():0
+> > Aug 27 18:03:10 middle kernel: Pid: 1185, comm: md2_raid1 Not tainted 2.6.27-rc4 #2
+> > Aug 27 18:03:10 middle kernel: 
+> > Aug 27 18:03:10 middle kernel: Call Trace:
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff802303fb>] __might_sleep+0xdb/0x100
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff802734a9>] mempool_alloc+0x89/0x140
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff802c8deb>] bio_alloc_bioset+0x2b/0xb0
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff802c8ed0>] bio_alloc+0x10/0x20
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff8061ecda>] md_super_write+0x3a/0xe0
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff80623e0e>] write_page+0x14e/0x310
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff803a30f1>] ? rb_insert_color+0x101/0x130
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff8022de7f>] ? update_curr+0x3f/0x60
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff8039e3e9>] ? __next_cpu+0x19/0x30
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff80231ecc>] ? find_busiest_group+0x1dc/0x960
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff806240ab>] bitmap_update_sb+0xdb/0x110
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff8061ef65>] md_update_sb+0x1e5/0x370
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff80620dc5>] md_check_recovery+0x355/0x640
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff80607665>] raid1d+0x35/0x10a0
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff802360db>] ? finish_task_switch+0x3b/0xc0
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff8070ec96>] ? thread_return+0xa3/0x63d
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff80710e52>] ? _spin_lock_irqsave+0x22/0x50
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff80247406>] ? lock_timer_base+0x36/0x70
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff807110c2>] ? _spin_unlock_irqrestore+0x12/0x40
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff8024749a>] ? try_to_del_timer_sync+0x5a/0x70
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff802474ca>] ? del_timer_sync+0x1a/0x30
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff80710e52>] ? _spin_lock_irqsave+0x22/0x50
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff807110c2>] ? _spin_unlock_irqrestore+0x12/0x40
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff8061e084>] md_thread+0x54/0x140
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff80253390>] ? autoremove_wake_function+0x0/0x40
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff8061e030>] ? md_thread+0x0/0x140
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff80252fc9>] kthread+0x49/0x80
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff8020ca09>] child_rip+0xa/0x11
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff80252f80>] ? kthread+0x0/0x80
+> > Aug 27 18:03:10 middle kernel:  [<ffffffff8020c9ff>] ? child_rip+0x0/0x11
+> > Aug 27 18:03:10 middle kernel: 
+> > 
+> > I was able to reboot into 2.6.26 without further trouble. I wasn't able
+> > to find this reported earlier on lkml.
 
-Please pull the i2c subsystem fixes for Linux 2.6.27 from:
+Hmm, this just looks like a GFP_NOIO alloc inside rcu_read_lock(), I
+don't see anything wrong with that?
 
-git://jdelvare.pck.nerim.net/jdelvare-2.6 i2c-for-linus
-
-
- drivers/i2c/i2c-core.c |   18 ++++++++++--------
- include/linux/i2c.h    |   12 ++++++++++++
- 2 files changed, 22 insertions(+), 8 deletions(-)
-
----------------
-
-Jean Delvare (2):
-      i2c: Add missing kerneldoc descriptions
-      i2c: Prevent log spam on some DVB adapters
-
-Marc Pignat (1):
-      i2c: Fix device_init_wakeup place
-
-Thanks,
 -- 
-Jean Delvare
+Jens Axboe
+
