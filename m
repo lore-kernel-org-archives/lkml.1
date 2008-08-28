@@ -1,146 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbYH1KEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbYH1KGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753825AbYH1KEt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 06:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbYH1KEk
+	id S1753392AbYH1KGg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 06:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbYH1KG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 06:04:40 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:22047 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750802AbYH1KEj (ORCPT
+	Thu, 28 Aug 2008 06:06:27 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:4708 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750709AbYH1KG0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 06:04:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=bUviUQHKBNNkbVNs+h4qabZNZwidFPGwM2TJYrh0St7x+GG1pXWxJZEFXWN7u5CMzS
-         acKyygE2AwsRzpZz2MLnfE9495yiTP1D3YeK0CmgNk1Dpo38gTCfE/lXUz49Uma4HQ7j
-         a1gFQFiVWVvaiv4ChmeUVoNFMm1NIh+P1PURo=
-Message-ID: <c62985530808280304x389cb958vff24b5d11f22d35c@mail.gmail.com>
-Date: Thu, 28 Aug 2008 11:04:36 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Pekka Paalanen" <pq@iki.fi>
-Subject: Re: [Patch] Tracing/ftrace: Adds a marker to allow user comments
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080827212130.4b8365a8@daedalus.pq.iki.fi>
+	Thu, 28 Aug 2008 06:06:26 -0400
+Date: Thu, 28 Aug 2008 11:06:18 +0100
+From: Mark Brown <broonie@sirena.org.uk>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: perex@perex.cz, lrg@kernel.org, Cliff Cai <cliff.cai@analog.com>,
+       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       khali@linux-fr.org
+Subject: Re: [alsa-devel] [PATCH 2/4] ASOC codec: add support for SSM2602 audio codec in ALSA SoC framework
+Message-ID: <20080828100615.GA11132@sirena.org.uk>
+Mail-Followup-To: Bryan Wu <cooloney@kernel.org>, perex@perex.cz,
+	lrg@kernel.org, Cliff Cai <cliff.cai@analog.com>,
+	alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+	khali@linux-fr.org
+References: <1219829968-6431-1-git-send-email-cooloney@kernel.org> <1219829968-6431-3-git-send-email-cooloney@kernel.org> <20080827105456.GA10834@sirena.org.uk> <386072610808272255o7ef18860u29e10727e6e11a11@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48B1D5CA.8000607@gmail.com>
-	 <c62985530808270259i491e32e2r40adf719e32e4086@mail.gmail.com>
-	 <20080827212130.4b8365a8@daedalus.pq.iki.fi>
+In-Reply-To: <386072610808272255o7ef18860u29e10727e6e11a11@mail.gmail.com>
+X-Cookie: To see you is to sympathize.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Pekka,
+On Thu, Aug 28, 2008 at 01:55:33PM +0800, Bryan Wu wrote:
+> On Wed, Aug 27, 2008 at 6:54 PM, Mark Brown <broonie@sirena.org.uk> wrote:
 
-2008/8/27 Pekka Paalanen <pq@iki.fi>:
-> IMHO we could just make ftrace_printk() work for all tracers. I doubt
-> there will be need to be able to record nil bytes. The idea of a marker
-> is to be a line of human readable text.
->
->> > +int __ftrace_printk(unsigned long ip, const char *fmt, ...)
->> > +{
->> > +       struct trace_array *tr = &global_trace;
->> > +       static DEFINE_SPINLOCK(trace_buf_lock);
->> > +       static char trace_buf[TRACE_BUF_SIZE];
->> > +       struct trace_array_cpu *data;
->> > +       struct trace_entry tmp_ent;
->> > +       unsigned long flags;
->> > +       long disabled;
->> > +       va_list ap;
->> > +       int cpu, len = 0;
->> > +
->> > +       if (likely(!ftrace_function_enabled))
->> > +               return 0;
->
-> And that is the kind of check that makes current ftrace_printk() unusable.
-> I think this restriction should be lifted and allow it to work on all
-> tracers. I would also like to be able to have e.g. mmiotrace_marker(),
-> which would have the same signature as ftrace_printk(), but is a no-op if
-> mmiotrace is not active. So, we could have an __ftrace_vprintk() to make
-> writing such wrappers easy. And the wrappers could be #ifdef'd away, if
-> the corresponding tracer is not built.
+> > Current kernels have a Kconfig option SND_SOC_ALL_CODECS which should
+> > have your codec added - this allows codec drivers to be built without
+> > boards for test purposes.
 
-I like your idea of a ftrace_vprintk wrapper.
-But actually I'm questioning about the fact that the tracing api
-itself is not generic enough.
+> Is this option in alsa git tree or in the mainline? I fail to find it
+> in upstream mainline.
+> And do you mean I don't need to add SND_SOC_SSM2602 at all?
 
-At this time, a tracer has to put a function inside the tracing api
-when it wants to add an entry into the list.
-See __trace_mmiotrace_rw() for example.
+It's in ALSA git, queued for the 2.6.28 merge window.  See the
+topic/asoc branch of:
 
-Just imagine if one wants to implement a tracer by using a simple module.
-The way seems to be simple at the beginning: you define your struct
-tracer, implement your functions and register your tracer.
-But the simple, single function that will add your entries has to be
-put in tracing api.
-It's quite impossible without changing the trace.c file and so
-impossible without recompiling your kernel.
+        git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
 
-And if I make my own tracer and want to implement my handler for the
-marker messages, I will have to put my foo_trace_printk in trace.c and
-add it on the wrapper.
+for the current ASoC merge queue.  The other API changes will all be
+queued there too.
 
-IMHO the choice of a wrapper is good but it should dynamically
-dispatch the message on a handler proposed by the tracer. I think
-about a new function pointer which could be called "mark" on the
-struct tracer.
+There's quite a bit of churn in ASoC at the minute but additional API
+changes will be taken care of by whoever does them once your driver is
+merged so it should save you some work if you're able to get this in
+soon.
 
-And (always IMHO) I think that functions like __trace_mmiotrace_rw()
-shouldn't be located on trace.c but implemented on the appropriate
-tracer (in this example: trace_mmiotrace.c).
-And for this purpose, functions like tracing_generic_entry_update()
-(or even more higher level function of entry adding) should be
-symbol's exported.
+> Yes, I will fix this issue by running checkpatch.pl. And for other API
+> conflicts and I2C interface upgrading stuffs,
+> I will leave them to Cliff.
 
-With such a new environment, building personal and quick tracers by
-using modules may be more appreciated if one has not to touch the
-tracing API or the whole running kernel.
-
-> I recall somewhere mentioning, that one shouldn't leave ftrace_printk's
-> lying around in "final" code, so I'm not sure how people feel about this
-> wrapping idea, especially when e.g. mmiotrace is hoped to be built-in by
-> default. OTOH, I don't think in-tree drivers and stuff want to use them,
-> so they would be mostly offered for out-of-tree modules
-> (reverse-engineering) and developers (debugging). That makes me wonder
-> if they would be accepted (as exported symbols).
-
-Yes I think such a function should really be exported. For example
-using mmiotrace on a module and beeing able to signal the fact that we
-are entering the "foo" function seems to me very useful. It's
-important to know where we are in all these IO for debugging....
-
-
->> >  static int print_trace_line(struct trace_iterator *iter)
->> >  {
->> > +       if (iter->ent->type == TRACE_MARK)
->> > +               return print_mark(iter);
->> > +
->
-> Please, put this call after the following...
->
->> >        if (iter->trace && iter->trace->print_line)
->> >                return iter->trace->print_line(iter);
->
-> ..so that tracers may override it at will. Mmiotrace needs to replace
-> newlines and nil characters, before printing it in its own style, i.e.
-> prefixed with a tag and a timestamp, which are specified in the mmiotrace
-> log format.
-
-Perhaps the idea of an appropriate "mark" handler for each tracer
-could solve this...
-
-
-> I didn't try the patch yet, or read it too carefully, but I should.
-> Unfortunately I'm away the next weekend, so I hope to continue working
-> on it the weekend after that.
-
-No problem.
-
-Thanks!
+OK.  Jean might be willing to do the I2C API conversion for you (I've
+CCed him in).
