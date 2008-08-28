@@ -1,50 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbYH1EIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbYH1EJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753680AbYH1EIH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 00:08:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbYH1EHy
+	id S1754030AbYH1EJj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 00:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYH1EJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 00:07:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43461 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750850AbYH1EHx (ORCPT
+	Thu, 28 Aug 2008 00:09:23 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:29390 "EHLO
+	stargate.asicdesigners.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750874AbYH1EJV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 00:07:53 -0400
-Date: Wed, 27 Aug 2008 21:06:52 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: cmm@us.ibm.com, tytso@mit.edu, sandeen@redhat.com,
-       linux-ext4@vger.kernel.org, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -V3 01/11] percpu_counters: make fbc->count read atomic
- on 32 bit architecture
-Message-Id: <20080827210652.dcbe5ff4.akpm@linux-foundation.org>
-In-Reply-To: <20080828034816.GA6440@skywalker>
-References: <1219850916-8986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-	<20080827120553.9c9d6690.akpm@linux-foundation.org>
-	<20080828034816.GA6440@skywalker>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Aug 2008 00:09:21 -0400
+Date: Wed, 27 Aug 2008 21:21:57 -0700
+From: Karen Xie <kxie@chelsio.com>
+Message-Id: <200808280421.m7S4LvAB006456@localhost.localdomain>
+To: netdev@vger.kernel.org, open-iscsi@googlegroups.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/4 2.6.28] cxgb3 - manage a private ip address for iSCSI
+Cc: jgarzik@pobox.com, davem@davemloft.net, michaelc@cs.wisc.edu,
+       swise@opengridcomputing.com, rdreier@cisco.com, daisyc@us.ibm.com,
+       wenxiong@us.ibm.com, bhua@us.ibm.com, divy@chelsio.com, dm@chelsio.com,
+       leedom@chelsio.com, kxie@chelsio.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Aug 2008 09:18:16 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+[PATCH 1/4 2.6.28] cxgb3 - manage a private ip address for iSCSI
 
-> > This is now too large to be inlined.
-> > 
-> 
-> 
-> How do we actually figure that out ? I have been making that mistakes
-> quiet often.
+From: Karen Xie <kxie@chelsio.com>
 
-Well.  Experience and guesswork, mainly.
+Create a per port sysfs entry to pass an IP address to the NIC driver, and a control call for the iSCSI driver to grab it.
+The IP address is required in both drivers to manage ARP requests and connection set up.
 
-But a useful metric is to look and the /bin/size output before and
-after the inlining.  In this case fs/ext3/ialloc.o's text shrunk 40-odd
-bytes, which we think is a net benefit due to reduced CPU cache
-pressure.
+Signed-off-by: Divy Le Ray <divy@chelsio.com>
+---
+
+ drivers/net/cxgb3/adapter.h        |    1 +
+ drivers/net/cxgb3/cxgb3_ctl_defs.h |    7 +++++
+ drivers/net/cxgb3/cxgb3_main.c     |   46 ++++++++++++++++++++++++++++++++++++
+ drivers/net/cxgb3/cxgb3_offload.c  |    6 +++++
+ 4 files changed, 60 insertions(+), 0 deletions(-)
 
 
+diff --git a/drivers/net/cxgb3/adapter.h b/drivers/net/cxgb3/adapter.h
+index 2711404..adc2f13 100644
+--- a/drivers/net/cxgb3/adapter.h
++++ b/drivers/net/cxgb3/adapter.h
+@@ -64,6 +64,7 @@ struct port_info {
+ 	struct link_config link_config;
+ 	struct net_device_stats netstats;
+ 	int activity;
++	__be32 iscsi_ipv4addr;
+ };
+ 
+ enum {				/* adapter flags */
+diff --git a/drivers/net/cxgb3/cxgb3_ctl_defs.h b/drivers/net/cxgb3/cxgb3_ctl_defs.h
+index 6ad9240..2bf5027 100644
+--- a/drivers/net/cxgb3/cxgb3_ctl_defs.h
++++ b/drivers/net/cxgb3/cxgb3_ctl_defs.h
+@@ -57,6 +57,7 @@ enum {
+ 	RDMA_GET_MIB		= 19,
+ 
+ 	GET_RX_PAGE_INFO	= 50,
++	GET_ISCSI_IPV4ADDR	= 51,
+ };
+ 
+ /*
+@@ -86,6 +87,12 @@ struct iff_mac {
+ 	u16 vlan_tag;
+ };
+ 
++/* Structure used to request a port's iSCSI IPv4 address */
++struct iscsi_ipv4addr {
++	struct net_device *dev;		/* the net_device */
++	__be32 ipv4addr;		/* the return iSCSI IPv4 address */
++};
++
+ struct pci_dev;
+ 
+ /*
+diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
+index 5447f3e..4f72c06 100644
+--- a/drivers/net/cxgb3/cxgb3_main.c
++++ b/drivers/net/cxgb3/cxgb3_main.c
+@@ -34,6 +34,7 @@
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <linux/dma-mapping.h>
++#include <linux/inet.h>
+ #include <linux/netdevice.h>
+ #include <linux/etherdevice.h>
+ #include <linux/if_vlan.h>
+@@ -687,6 +688,47 @@ static struct attribute *offload_attrs[] = {
+ 
+ static struct attribute_group offload_attr_group = {.attrs = offload_attrs };
+ 
++static ssize_t iscsi_ipv4addr_attr_show(struct device *d, char *buf)
++{
++	struct port_info *pi = netdev_priv(to_net_dev(d));
++	__be32 a = pi->iscsi_ipv4addr;
++
++	return sprintf(buf, NIPQUAD_FMT "\n", NIPQUAD(a));
++}
++
++static ssize_t iscsi_ipv4addr_attr_store(struct device *d,
++				       const char *buf, size_t len)
++{
++	struct port_info *pi = netdev_priv(to_net_dev(d));
++
++	pi->iscsi_ipv4addr = in_aton(buf);
++	return len;
++}
++
++#define ISCSI_IPADDR_ATTR(name) \
++static ssize_t show_##name(struct device *d, struct device_attribute *attr, \
++			   char *buf) \
++{ \
++	return iscsi_ipv4addr_attr_show(d, buf); \
++} \
++static ssize_t store_##name(struct device *d, struct device_attribute *attr, \
++			    const char *buf, size_t len) \
++{ \
++	return iscsi_ipv4addr_attr_store(d, buf, len); \
++} \
++static DEVICE_ATTR(name, S_IRUGO | S_IWUSR, show_##name, store_##name)
++
++ISCSI_IPADDR_ATTR(iscsi_ipv4addr);
++
++static struct attribute *iscsi_offload_attrs[] = {
++	&dev_attr_iscsi_ipv4addr.attr,
++	NULL
++};
++
++static struct attribute_group iscsi_offload_attr_group = {
++	.attrs = iscsi_offload_attrs
++};
++
+ /*
+  * Sends an sk_buff to an offload queue driver
+  * after dealing with any active network taps.
+@@ -1078,6 +1120,7 @@ static int cxgb_open(struct net_device *dev)
+ 		if (err)
+ 			printk(KERN_WARNING
+ 			       "Could not initialize offload capabilities\n");
++		sysfs_create_group(&dev->dev.kobj, &iscsi_offload_attr_group);
+ 	}
+ 
+ 	link_start(dev);
+@@ -1100,6 +1143,9 @@ static int cxgb_close(struct net_device *dev)
+ 	netif_carrier_off(dev);
+ 	t3_mac_disable(&pi->mac, MAC_DIRECTION_TX | MAC_DIRECTION_RX);
+ 
++	if (is_offload(adapter) && !ofld_disable)
++		sysfs_remove_group(&dev->dev.kobj, &iscsi_offload_attr_group);
++
+ 	spin_lock(&adapter->work_lock);	/* sync with update task */
+ 	clear_bit(pi->port_id, &adapter->open_device_map);
+ 	spin_unlock(&adapter->work_lock);
+diff --git a/drivers/net/cxgb3/cxgb3_offload.c b/drivers/net/cxgb3/cxgb3_offload.c
+index c5b3de1..f8f4faa 100644
+--- a/drivers/net/cxgb3/cxgb3_offload.c
++++ b/drivers/net/cxgb3/cxgb3_offload.c
+@@ -407,6 +407,12 @@ static int cxgb_offload_ctl(struct t3cdev *tdev, unsigned int req, void *data)
+ 		rx_page_info->page_size = tp->rx_pg_size;
+ 		rx_page_info->num = tp->rx_num_pgs;
+ 		break;
++	case GET_ISCSI_IPV4ADDR: {
++		struct iscsi_ipv4addr *p = data;
++		struct port_info *pi = netdev_priv(p->dev);
++		p->ipv4addr = pi->iscsi_ipv4addr;
++		break;
++	}
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
