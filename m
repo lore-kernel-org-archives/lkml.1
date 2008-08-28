@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbYH1ND0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbYH1NHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbYH1ND0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 09:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYH1NDM
+	id S1754589AbYH1NHn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 09:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbYH1NHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 09:03:12 -0400
-Received: from postel.suug.ch ([194.88.212.233]:33515 "EHLO postel.suug.ch"
+	Thu, 28 Aug 2008 09:07:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38292 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752636AbYH1NDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 09:03:11 -0400
-Date: Thu, 28 Aug 2008 15:03:31 +0200
-From: Thomas Graf <tgraf@suug.ch>
-To: David Miller <davem@davemloft.net>
-Cc: alexander.duyck@gmail.com, shemminger@vyatta.com,
-       jeffrey.t.kirsher@intel.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       alexander.h.duyck@intel.com
-Subject: [PATCH 2.6.26.y] sch_prio: Fix nla_parse_nested_compat() regression
-Message-ID: <20080828130331.GA20815@postel.suug.ch>
-References: <20080827144122.GT20815@postel.suug.ch> <20080827.234731.77434405.davem@davemloft.net> <20080828101840.GZ20815@postel.suug.ch> <20080828.031943.114025230.davem@davemloft.net>
-Mime-Version: 1.0
+	id S1752463AbYH1NHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 09:07:35 -0400
+Date: Thu, 28 Aug 2008 15:07:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Stefani Seibold <stefani@seibold.net>,
+       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
+Message-ID: <20080828130708.GA19672@elte.hu>
+References: <20080819103301.787700742@chello.nl> <200808272008.16106.nickpiggin@yahoo.com.au> <20080828105408.GA4488@elte.hu> <200808282203.48396.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080828.031943.114025230.davem@davemloft.net>
+In-Reply-To: <200808282203.48396.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nla_parse_nested_compat() was used to parse two different message
-formats in the netem and prio qdisc, when it was "fixed" to work
-with netem, it broke the multi queue support in the prio qdisc.
-Since the prio qdisc code in question is already removed in the
-development tree, this patch only fixes the regression in the
-stable tree.
 
-Based on original patch from Alexander H Duyck <alexander.h.duyck@intel.com>
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-Signed-off-by: Thomas Graf <tgraf@suug.ch>
+> There is no customer issue and there is no handwaving about 
+> compliance;
 
-Index: linux-2.6.26.y/net/sched/sch_prio.c
-===================================================================
---- linux-2.6.26.y.orig/net/sched/sch_prio.c	2008-08-28 13:24:22.000000000 +0200
-+++ linux-2.6.26.y/net/sched/sch_prio.c	2008-08-28 14:16:44.000000000 +0200
-@@ -228,14 +228,20 @@
- {
- 	struct prio_sched_data *q = qdisc_priv(sch);
- 	struct tc_prio_qopt *qopt;
--	struct nlattr *tb[TCA_PRIO_MAX + 1];
-+	struct nlattr *tb[TCA_PRIO_MAX + 1] = {0};
- 	int err;
- 	int i;
- 
--	err = nla_parse_nested_compat(tb, TCA_PRIO_MAX, opt, NULL, qopt,
--				      sizeof(*qopt));
--	if (err < 0)
--		return err;
-+	qopt = nla_data(opt);
-+	if (nla_len(opt) < sizeof(*qopt))
-+		return -1;
-+
-+	if (nla_len(opt) >= sizeof(*qopt) + sizeof(struct nlattr)) {
-+		err = nla_parse_nested(tb, TCA_PRIO_MAX,
-+				       (struct nlattr *) (qopt + 1), NULL);
-+		if (err < 0)
-+			return err;
-+	}
- 
- 	q->bands = qopt->bands;
- 	/* If we're multiqueue, make sure the number of incoming bands
+well, the reason i'm asking is that i cannot for anything in the world 
+imagine you being so upset about _anything_ but something that involves 
+benchmark runs ;-)
+
+And what does SCHED_FIFO RT policy scheduling have to do with 
+performance and benchmarks? Nothing usually in the real world, except 
+for this little known fact: a common 'tuning' for TPC database 
+benchmarks is to run all DB threads as SCHED_FIFO to squeeze the last 
+0.1% of performance out of the setup.
+
+So - and i'm taking an educated guess here - is SCHED_FIFO+TPC 
+performance perhaps one of the factors that played a role in you 
+initiating this thread? If yes then it's obviously an incredibly broken 
+use of SCHED_FIFO and we can add the sysctl tuning to the long list of 
+dozens of other tunings that happen before a TPC run anyway.
+
+Hm?
+
+	Ingo
