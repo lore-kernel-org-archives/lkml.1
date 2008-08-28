@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbYH1KGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbYH1KIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753392AbYH1KGg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 06:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbYH1KG1
+	id S1753354AbYH1KIm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 06:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbYH1KIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 06:06:27 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:4708 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750709AbYH1KG0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 06:06:26 -0400
-Date: Thu, 28 Aug 2008 11:06:18 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: perex@perex.cz, lrg@kernel.org, Cliff Cai <cliff.cai@analog.com>,
-       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       khali@linux-fr.org
-Subject: Re: [alsa-devel] [PATCH 2/4] ASOC codec: add support for SSM2602 audio codec in ALSA SoC framework
-Message-ID: <20080828100615.GA11132@sirena.org.uk>
-Mail-Followup-To: Bryan Wu <cooloney@kernel.org>, perex@perex.cz,
-	lrg@kernel.org, Cliff Cai <cliff.cai@analog.com>,
-	alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-	khali@linux-fr.org
-References: <1219829968-6431-1-git-send-email-cooloney@kernel.org> <1219829968-6431-3-git-send-email-cooloney@kernel.org> <20080827105456.GA10834@sirena.org.uk> <386072610808272255o7ef18860u29e10727e6e11a11@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <386072610808272255o7ef18860u29e10727e6e11a11@mail.gmail.com>
-X-Cookie: To see you is to sympathize.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+	Thu, 28 Aug 2008 06:08:34 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:37690 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751530AbYH1KId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 06:08:33 -0400
+X-Greylist: delayed 1638 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Aug 2008 06:08:33 EDT
+Subject: Re: An idea .... with code
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: jassi brar <jassi_singh_brar@yahoo.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080827150221.GV26610@one.firstfloor.org>
+References: <20080827074751.GO26610@one.firstfloor.org>
+	 <35042.98883.qm@web33207.mail.mud.yahoo.com>
+	 <20080827124734.GT26610@one.firstfloor.org>
+	 <1219848575.9776.8.camel@localhost>
+	 <20080827150221.GV26610@one.firstfloor.org>
+Content-Type: text/plain
+Date: Thu, 28 Aug 2008 11:41:13 +0200
+Message-Id: <1219916473.9776.19.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 01:55:33PM +0800, Bryan Wu wrote:
-> On Wed, Aug 27, 2008 at 6:54 PM, Mark Brown <broonie@sirena.org.uk> wrote:
+On Wed, 2008-08-27 at 17:02 +0200, Andi Kleen wrote:
+> On Wed, Aug 27, 2008 at 04:49:35PM +0200, Kasper Sandberg wrote:
+> > On Wed, 2008-08-27 at 14:47 +0200, Andi Kleen wrote:
+> > > >  As far as features are concerned, please suggest me what could be done with /dev/loop0 and not for /dev/vblk?
+> > > 
+> > > Serious question?  cryptoloop, offsets are the big ticket items,
+> > > i'm sure there are more.
+> > 
+> > As far as cryptoloop goes, isnt that obsoleted anyway? 
+> 
+> It's like saying: FAT -- isn't that obsolete by now? 
+> As long as there are crypto loop files around it's not obsolete.
+I disagree, as i recall, i stopped using cryptoloop and went directly to
+dm-crypt with compatibility for my already existing files?
 
-> > Current kernels have a Kconfig option SND_SOC_ALL_CODECS which should
-> > have your codec added - this allows codec drivers to be built without
-> > boards for test purposes.
+> 
+> > is there anyone
+> > that doesent use dm-crypt by now?
+> 
+> Wrong question. You lose.
+In the case that i am correct above, it would appear that i did not
+loose, given that the newer stuff has backwards compatibility (which i
+am fairly certain it does)
 
-> Is this option in alsa git tree or in the mainline? I fail to find it
-> in upstream mainline.
-> And do you mean I don't need to add SND_SOC_SSM2602 at all?
+also do not forget that i did say its unlikely that loop be removed due
+to its heavily "established" status.
 
-It's in ALSA git, queued for the 2.6.28 merge window.  See the
-topic/asoc branch of:
+> 
+> -Andi
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
-
-for the current ASoC merge queue.  The other API changes will all be
-queued there too.
-
-There's quite a bit of churn in ASoC at the minute but additional API
-changes will be taken care of by whoever does them once your driver is
-merged so it should save you some work if you're able to get this in
-soon.
-
-> Yes, I will fix this issue by running checkpatch.pl. And for other API
-> conflicts and I2C interface upgrading stuffs,
-> I will leave them to Cliff.
-
-OK.  Jean might be willing to do the I2C API conversion for you (I've
-CCed him in).
