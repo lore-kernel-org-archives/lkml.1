@@ -1,98 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756321AbYH1Se5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbYH1Sfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756321AbYH1Se5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 14:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbYH1Set
+	id S1756819AbYH1Sfi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 14:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbYH1Sfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 14:34:49 -0400
-Received: from proofpoint3.lanl.gov ([204.121.3.28]:40450 "EHLO
-	proofpoint3.lanl.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751805AbYH1Ses (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 14:34:48 -0400
-X-CTN-5-Virus-Scanner: amavisd-new at mailrelay1.lanl.gov
-Subject: Re: [PATCH] 9p bug fix: return non-zero error value in p9_put_data
-From: Abhishek Kulkarni <kulkarni@lanl.gov>
-To: Eric Van Hensbergen <ericvh@gmail.com>
-Cc: v9fs-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <a4e6962a0808281110s6ee6c86ak3ff6e28c51981656@mail.gmail.com>
-References: <1219771831.16125.12.camel@blender>
-	 <a4e6962a0808281110s6ee6c86ak3ff6e28c51981656@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 28 Aug 2008 12:35:16 -0600
-Message-Id: <1219948516.2678.16.camel@blender>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 28 Aug 2008 14:35:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39105 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752874AbYH1Sf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 14:35:29 -0400
+Message-ID: <48B6EF98.4070008@kernel.org>
+Date: Thu, 28 Aug 2008 20:34:00 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: greg@kroah.com, fuse-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <20080828175116.GB18461@kroah.com> <48B6E79E.6020702@kernel.org> <48B6E801.9080102@kernel.org> <E1KYm0D-0003q0-IQ@pomaz-ex.szeredi.hu> <48B6EBBD.6050406@kernel.org> <E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-CTN-5-MailScanner-Information: Please see http://network.lanl.gov/email/virus-scan.php
-X-CTN-5-MailScanner: Found to be clean
-X-CTN-5-MailScanner-From: kulkarni@lanl.gov
-X-Proofpoint-Virus-Version: vendor=fsecure engine=4.65.7161:2.4.4,1.2.40,4.0.164 definitions=2008-08-28_11:2008-08-28,2008-08-28,2008-08-28 signatures=0
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 28 Aug 2008 18:35:20 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-28 at 11:10 -0700, Eric Van Hensbergen wrote:
-> On Tue, Aug 26, 2008 at 10:30 AM, Abhishek Kulkarni <kulkarni@lanl.gov> wrote:
-> > p9_put_data is called by p9_create_twrite which expects it to return a
-> > non-zero value on error. This was the reason why every p9_client_write
-> > was failing. This patch also adds a check for buffer overflow in
-> > p9_put_data.
-> >
+Miklos Szeredi wrote:
+>> Hmmm... I was trying to stay within similar operation mechanics as other
+>> ops.  Directly accessing the caller's memory has performance benefits
+>> but that benefit can also be used by reads and writes.  So, if we're
+>> gonna do direct memory access, maybe doing it in more generic way is a
+>> better idea?
 > 
-> I'm a bit confused about when this is even getting called -- O thought
-> all writes were following the p9_client_uwrite path?
+> On the contrary: playing VM games is going to be slow.  I think this
+> approach is best suited for generic ioctl support because it
+> simplifies the kernel part.  I'd hate to add all that complexity to
+> the kernel if not absolutely necessary.
 
-Yes, this bug didn't come up to the surface since p9_create_twrite is
-not even being called anywhere in v9fs. I tripped over it when using 9p
-for a different module that I am working on. 
+Well, it's only 240 lines with good amount of comments and iovec copying
+function.  The ioctl itself isn't too complex.  I'm a bit skeptical
+about direct access.  It can easily introduce security vulnerabilities
+as there really is no way to hold a pid.
 
-> 
-> Also, we do the bufoverflow check in p9_create_write -- so with your
-> patch aren't we doing this twice?
-> 
-Yes, but then that makes the "check for error in return value" in
-p9_create_twrite useless since memmove is not going to return an error
-in any case.
+Thanks.
 
-Going with the existing convention however, I think the bufoverflow
-check is unnecessary in p9_put_data and so is the check for error on
-return.
-
-I'll resubmit a patch.
-
- -- Abhishek
-
-
->            -eric
-> 
-> 
-> > Signed-off-by: Abhishek Kulkarni <kulkarni@lanl.gov>
-> > ---
-> >  net/9p/conv.c |    5 ++++-
-> >  1 files changed, 4 insertions(+), 1 deletions(-)
-> > diff --git a/net/9p/conv.c b/net/9p/conv.c
-> > index 4454720..7f6db15 100644
-> > --- a/net/9p/conv.c
-> > +++ b/net/9p/conv.c
-> > @@ -451,8 +451,11 @@ p9_put_data(struct cbuf *bufp, const char *data,
-> > int count,
-> >                   unsigned char **pdata)
-> >  {
-> >        *pdata = buf_alloc(bufp, count);
-> > +       if (buf_check_overflow(bufp))
-> > +               return -EIO;
-> > +
-> >        memmove(*pdata, data, count);
-> > -       return count;
-> > +       return 0;
-> >  }
-> >
-> >  static int
-> >
-> >
-> > Thanks,
-> >  -- Abhishek
-> >
-> >
-
+-- 
+tejun
