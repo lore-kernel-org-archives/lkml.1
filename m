@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755867AbYH1R7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756066AbYH1SBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755867AbYH1R7Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 13:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbYH1R7Q
+	id S1756066AbYH1SBO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 14:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYH1SAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 13:59:16 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:43286 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751683AbYH1R7P (ORCPT
+	Thu, 28 Aug 2008 14:00:55 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:11354 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751725AbYH1SAy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 13:59:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=qjMzuGb6yR2znZRpJKYJdJti7tFYNuZR8Ez4B/YIklsnl7jEFcMZcNEtgPkT8Ny12K
-         jh8wU1o8hz32i10P2B0JgP1NpJZmSON5qGr9QARPnbW35ge3AvRoc/tnIc2ENGq+dIXc
-         Zf+GK0HPKsmYf5NfTvvqopktkVWAU5sdSGiCI=
-Message-ID: <a4e6962a0808281059u68acad11v575df9031e6a2f3b@mail.gmail.com>
-Date: Thu, 28 Aug 2008 12:59:12 -0500
-From: "Eric Van Hensbergen" <ericvh@gmail.com>
-To: "David Howells" <dhowells@redhat.com>
-Subject: Re: [PATCH 14/59] CRED: Wrap task credential accesses in 9P2000 filesystem
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       "Serge Hallyn" <serue@us.ibm.com>, "Ron Minnich" <rminnich@sandia.gov>,
-       "Latchesar Ionkov" <lucho@ionkov.net>,
-       v9fs-developer@lists.sourceforge.net
-In-Reply-To: <20080827134654.19980.45849.stgit@warthog.procyon.org.uk>
+	Thu, 28 Aug 2008 14:00:54 -0400
+Message-ID: <48B6E7D0.5070307@hp.com>
+Date: Thu, 28 Aug 2008 11:00:48 -0700
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Joe Malicki <jmalicki@metacarta.com>
+CC: David Miller <davem@davemloft.net>, andi@firstfloor.org,
+       johnpol@2ka.mipt.ru, dada1@cosmosbay.com, denys@visp.net.lb,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       juhlenko@akamai.com, sammy@sammy.net
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+References: <21915755.1327801219904892242.JavaMail.root@ouachita>
+In-Reply-To: <21915755.1327801219904892242.JavaMail.root@ouachita>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
-	 <20080827134654.19980.45849.stgit@warthog.procyon.org.uk>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 8:46 AM, David Howells <dhowells@redhat.com> wrote:
-> Wrap access to task credentials so that they can be separated more easily from
-> the task_struct during the introduction of COW creds.
->
-> Change most current->(|e|s|fs)[ug]id to current_(|e|s|fs)[ug]id().
->
-> Change some task->e?[ug]id to task_e?[ug]id().  In some places it makes more
-> sense to use RCU directly rather than a convenient wrapper; these will be
-> addressed by later patches.
->
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> Reviewed-by: James Morris <jmorris@namei.org>
-> Acked-by: Serge Hallyn <serue@us.ibm.com>
-> Cc: Eric Van Hensbergen <ericvh@gmail.com>
-Reviewed-by: Eric Van Hensbergen <ericvh@gmail.com>
+
+> What utility does the time of hitting the socket get you?
+
+The earliest time the application could have been expected to start 
+processing the request.  Until it hits the socket, it might as well be 
+somewhere in the cloud.  By that reasoning of course, one could argue 
+that a gettimeofday() call immediately following recv() would suffice.
+
+Earlier in the thread mention was made of financial services types.  If 
+someone has knowledge of the (probably) arcane rules under which they 
+must operate it would be great to hear more.  Does some entity like the 
+SEC (Securities and Exchange Commission in the United States) mandate 
+some sort of timestamp for when the trading request "arrives at the 
+trading system" and do they define that "arriving at the trading system" 
+means?
+
+rick jones
