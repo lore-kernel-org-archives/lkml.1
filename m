@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbYH1B6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbYH1CEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754286AbYH1B6M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 21:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbYH1B55
+	id S1754686AbYH1CEY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 22:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYH1CEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 21:57:57 -0400
-Received: from tundra.namei.org ([65.99.196.166]:45744 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753586AbYH1B54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 21:57:56 -0400
-Date: Thu, 28 Aug 2008 11:57:25 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-cc: David Howells <dhowells@redhat.com>, Andreas Gruenbacher <agruen@suse.de>,
-       "Andrew G. Morgan" <morgan@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] file capabilities: Add no_file_caps switch
-In-Reply-To: <20080828004807.GC16607@us.ibm.com>
-Message-ID: <alpine.LRH.1.10.0808281156110.20135@tundra.namei.org>
-References: <20080827185845.GA25669@us.ibm.com> <200808262057.51606.agruen@suse.de> <200808271729.18220.agruen@suse.de> <20080827160439.GA12085@us.ibm.com> <200808271857.48651.agruen@suse.de> <31237.1219871686@redhat.com> <alpine.LRH.1.10.0808281004170.18937@tundra.namei.org>
- <20080828004807.GC16607@us.ibm.com>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 27 Aug 2008 22:04:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44186
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753266AbYH1CEO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 22:04:14 -0400
+Date: Wed, 27 Aug 2008 19:04:09 -0700 (PDT)
+Message-Id: <20080827.190409.80969099.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+       wli@holomorphy.com
+Subject: Re: sparc build failure
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080828114602.6c6df4a2.sfr@canb.auug.org.au>
+References: <20080828114602.6c6df4a2.sfr@canb.auug.org.au>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Aug 2008, Serge E. Hallyn wrote:
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 28 Aug 2008 11:46:02 +1000
 
-> Quoting James Morris (jmorris@namei.org):
-> > On Wed, 27 Aug 2008, David Howells wrote:
-> > 
-> > >  (2) Neuter sys_capset().  I've been holding this off for the next merge
-> > >      window as it isn't a bugfix, unlike (1).  Perhaps I should ask James to
-> > >      push it to Linus.  James?
-> > 
-> > Linus only pulled the PF_SUPERPRIV fix once the sys_capset change was 
-> > removed from the patch.  It really does need to be a bugfix at this stage.
+> Linus' tree fails to build for sparc32 allmodconfig:
 > 
-> Ok, sorry, of course that makes sense.  I was just confused about where
-> the patch was originally heading.
+> kernel/relay.c:701: undefined reference to `smp_call_function_single'
 > 
-> Would it be appropriate to put the capset neutering patch in your
-> security-testing tree, James, or does that feed straight into
-> linux-next?
+> This is because it has CONFIG_SMP but not CONFIG_USE_GENERIC_SMP_HELPERS.
+> 
+> I am not sure what to do about this.
 
-It's already in the next-creds branch, but it could be added to the next 
-branch (which will be pushed to Linus in the next merge window).  Both 
-branches are in linux-next.
-
-
--- 
-James Morris
-<jmorris@namei.org>
+I'll try to come up with a fix for this, thanks.
