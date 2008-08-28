@@ -1,88 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbYH1AOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbYH1ATu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757121AbYH1AOY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 20:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbYH1AOL
+	id S1756669AbYH1ATu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 20:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbYH1ATi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 20:14:11 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:35542 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753391AbYH1AOJ (ORCPT
+	Wed, 27 Aug 2008 20:19:38 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:7936 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752359AbYH1ATh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 20:14:09 -0400
-Message-ID: <48B5ED2C.60602@snapgear.com>
-Date: Thu, 28 Aug 2008 10:11:24 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 27 Aug 2008 20:19:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xELVUea/Er0A+kZdb0sQ8aCDXFhKtj/CdZL8hoKcrQvG3bb3qIvcM4mU/567roX2/n
+         Bfkrce/hZo718bsAJdMq+PeFncxhPhIMp9xfA/t5P0SU1lTLC19vk108JQmcltna7bD+
+         EbnLToaU/Cb6vjDXxSQirfpJpiA7zjO/eeMKk=
+Message-ID: <1ba2fa240808271719o2a3617e7re0499670de785b2f@mail.gmail.com>
+Date: Thu, 28 Aug 2008 03:19:35 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: pull request: wireless-2.6 2008-08-26
+Cc: "Michael Buesch" <mb@bu3sch.de>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Bruno Randolf" <bruno@thinktube.com>
+In-Reply-To: <20080827233103.GE5927@tesla>
 MIME-Version: 1.0
-To: Jamie Lokier <jamie@shareable.org>
-CC: Bernd Petrovitsch <bernd@firmix.at>, Parag Warudkar <parag.lkml@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Rusty Russell <rusty@rustcorp.com.au>,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-embedded@vger.kernel.org
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-References: <20080826183051.GB10925@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261144510.3363@nehalem.linux-foundation.org> <20080826205916.GB11734@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0808261403360.3363@nehalem.linux-foundation.org> <f7848160808261554j2f4eaaa6i1ee8801ae75ca7bf@mail.gmail.com> <alpine.LFD.1.10.0808261644260.3363@nehalem.linux-foundation.org> <f7848160808261758q7b84aab1m188c1ebb59304818@mail.gmail.com> <1219827609.30209.29.camel@spike.firmix.at> <f7848160808270556q54c36270ye6a465d2ca123cc@mail.gmail.com> <1219843032.30209.51.camel@spike.firmix.at> <20080827154805.GA25387@shareable.org>
-In-Reply-To: <20080827154805.GA25387@shareable.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080827013009.GA15781@tuxdriver.com>
+	 <1ba2fa240808271226i95a7789k481a68b09dc60164@mail.gmail.com>
+	 <200808272225.10557.mb@bu3sch.de>
+	 <1ba2fa240808271611v382631ecn2a24e2816562d434@mail.gmail.com>
+	 <20080827233103.GE5927@tesla>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Aug 28, 2008 at 2:31 AM, Luis R. Rodriguez
+<lrodriguez@atheros.com> wrote:
+> On Wed, Aug 27, 2008 at 04:11:15PM -0700, Tomas Winkler wrote:
+>> if (beacon_timestamp > rx_timestamp)
+>>     merge
+>>
+>> The patch from Assaf just disable reporting RX timestamp to mac and
+>> thus disabling merging which gives incorrect spec behavior but smooth
+>> traffic.
+>
+> We *should follow the spec*.
 
-Jamie Lokier wrote:
-> Bernd Petrovitsch wrote:
->> If you "develop" an embedded system (which is partly system integration
->> of existing apps) to be installed in the field, you don't have that many
->> conceivable work loads compared to a desktop/server system. And you have
->> a fixed list of drivers and applications.
-> 
-> Hah!  Not in my line of embedded device.
-> 
-> 32MB no-MMU ARM boards which people run new things and attach new
-> devices to rather often - without making new hardware.  Volume's too
-> low per individual application to get new hardware designed and made.
-> 
-> I'm seriously thinking of forwarding porting the 4 year old firmware
-> from 2.4.26 to 2.6.current, just to get new drivers and capabilities.
-> Backporting is tedious, so's feeling wretchedly far from the mainline
-> world.
-> 
->> A usual approach is to run stress tests on several (or all)
->> subsystems/services/... in parallel and if the device survives it
->> functioning correctly, it is at least good enough.
-> 
-> Per application.
-> 
-> Some little devices run hundreds of different applications and
-> customers expect to customise, script themselves, and attach different
-> devices (over USB).  The next customer in the chain expects the bits
-> you supplied to work in a variety of unexpected situations, even when
-> you advise that it probably won't do that.
-> 
-> Much like desktop/server Linux, but on a small device where silly
-> little things like 'create a process' are a stress for the dear little
-> thing.
-> 
-> (My biggest lesson: insist on an MMU next time!)
+I prefer to be able transfer files over blindly following spec. This
+doesn't really break interoperability in practice.
 
-But given you have hardware you can't change would you choose
-to not run Linux, even with the limitations of non-MMU?
+>> Actually we've checked few cards including broadcom and various
+>> windows NICs
+>
+> What are windows NICs?
+>
+>> and non of them implements this correctly so this WA is
+>> probably the solution.
+>
+> Disagreed! If there is hardware which is not capable of handling this
+> we should simply have a HW flag which specifies this to handle this as a
+> work around (WA). Just because some cards are not capable it doesn't
+> mean it should impose that on the rest.
 
-Hell no :-)
+This is w/a in the specific driver not in the mac so this is de facto
+what you have suggested. This patch is marked as W/A and should have
+probably
+some cleaner solution in 2.6.28
 
-Regards
-Greg
+>> Other solution would be to mark leader with highest TSF and not
+>> reconnecting to the same station again and again.
+>>
+>> Last solution would be to remove this merging all together but then
+>> I'm not sure if Bruno added this code just implement the spec or
+>> really tested it with any hardware. I'm not sure if any vendor
+>> implements PS in IBSS so this merging is probably not important
+>> anyway.
+>
+> Absolutely not! IBSS merge is per spec, otherwise you don't really have
+> a real IBSS.
+
+I'm all for following spec and we've tried really hard to make it work.
+Anyhow I'm not sure what you call real IBSS. nobody has checked it for
+1.5 year this patch  is in and now is suddenly so important...
+b43 was effected and probably also something that John worked with (as
+he issued his anti-chatty patch)
+I would like to see if there is any  HW under mac80211 that actually
+work with this.
+
+Tomas
 
 
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-Secure Computing Corporation                PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+>  Luis
+>
