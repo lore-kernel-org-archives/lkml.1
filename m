@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757257AbYH1VVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756954AbYH1V1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757257AbYH1VVr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 17:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbYH1VVj
+	id S1756954AbYH1V1y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 17:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbYH1V1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 17:21:39 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:61639 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753957AbYH1VVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 17:21:38 -0400
-Subject: Re: Frustrated with capabilities..
-From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Markku Savela <msa@moth.iki.fi>, Pavel Machek <pavel@suse.cz>,
+	Thu, 28 Aug 2008 17:27:46 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49685 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753563AbYH1V1q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 17:27:46 -0400
+Message-ID: <48B7183E.3010100@kernel.org>
+Date: Thu, 28 Aug 2008 14:27:26 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: tj@kernel.org, fuse-devel@lists.sourceforge.net, greg@kroah.com,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20080828174854.GM26987@mit.edu>
-References: <87hc96by8x.fsf@burp.tkv.asdf.org>
-	 <20080828141826.GA6797@ucw.cz>
-	 <200808281445.m7SEjYsB007502@burp.tkv.asdf.org>
-	 <20080828174854.GM26987@mit.edu>
-Content-Type: text/plain
-Date: Thu, 28 Aug 2008 17:03:19 -0400
-Message-Id: <1219957399.2627.127.camel@moss-terrapins.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <48B6EC83.1070207@kernel.org> <48B6EE36.5070209@kernel.org> <48B6F7C5.3020204@kernel.org> <E1KYn0U-00047F-Qa@pomaz-ex.szeredi.hu> <48B708C4.4000405@kernel.org> <E1KYoX9-0004Mn-NX@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1KYoX9-0004Mn-NX@pomaz-ex.szeredi.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-28 at 13:48 -0400, Theodore Tso wrote:
-> On Thu, Aug 28, 2008 at 05:45:34PM +0300, Markku Savela wrote:
-> > 
-> > > From: Pavel Machek <pavel@suse.cz>
-> > 
-> > > Yes, you need upcoming filesystem capabilities.  Binary may not
-> > > inherit capabilities unless filesystem flags permit that.
-> > 
-> > I think this is wrong. Normal executables inherit uid/gid and
-> > supplementary groups by default. Why should capabilities be any
-> > different?
+Miklos Szeredi wrote:
+> On Thu, 28 Aug 2008, H. Peter Anvin wrote:
+>> This is *hard* to get right, and we screw this up in the kernel with 
+>> painful regularity.  The throught of having user-space processes, which 
+>> don't have access to the kernel locking primitives and functions like 
+>> copy_from_user() dealing with this stuff scares me crazy.
 > 
-> Well, because that's not the what the POSIX draft specification (and
-> the rest of the Unix industry who were striving to meet the US
-> Department of Defense's "B2 by '92" initiative) ended up implementing.
+> What issues exactly are you thinking of?
 
-Minor nit. It was actually C2(Controlled Access Protection) by '92 which
-is mainly just DAC protections as opposed to B2(Structured Protection)
-which also included MAC policies and Sensitivity labels in addition to
-DAC protections.
+Memory changing underneath you.  It can be dealt with by very careful 
+sequencing only.
 
-Dave
+>> That is why I'm suggesting using an in-kernel linearizer.
+> 
+> Lots of complexity, ugh...  Even Tejun's current scheme is better IMO.
 
+And then you get *no* privilege separation, for one thing, so why even 
+bother doing it in userspace?
+
+	-hpa
