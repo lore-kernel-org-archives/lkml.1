@@ -1,108 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbYH1TjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbYH1Tjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756780AbYH1TjT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 15:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755225AbYH1TjB
+	id S1756922AbYH1Tjc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 15:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756782AbYH1TjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 15:39:01 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:46939 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755202AbYH1Ti7 (ORCPT
+	Thu, 28 Aug 2008 15:39:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45715 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756660AbYH1TjS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 15:38:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Xt5eb0za9eM0DfUHq/P5c1YayI+EyBXKboZr0ow1QJZY8Uj2O5uhIs4NBkA9yfviEo
-         Epf7ThqUKQydSctCKmWN1bf2+7CKrWE/80xBk8bmvdeeIZ8WBWdoXaPYmJwczA8qw/qB
-         tzEITtgyAdtANEqoIWbH157O5IQ+J/Pk79kMQ=
-Message-ID: <19f34abd0808281238w18a53b90wc55591a572c225da@mail.gmail.com>
-Date: Thu, 28 Aug 2008 21:38:58 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Pekka J Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [RFC][PATCH] bitfields API
-Cc: "Alexey Dobriyan" <adobriyan@gmail.com>,
-       "David Miller" <davem@davemloft.net>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0808282201190.11146@melkki.cs.Helsinki.FI>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 28 Aug 2008 15:39:18 -0400
+Date: Thu, 28 Aug 2008 12:38:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: kernel1@cyberdogtech.com
+Cc: bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 11446] New: Automate "to compile as module"
+ strings
+Message-Id: <20080828123847.dfc8943b.akpm@linux-foundation.org>
+In-Reply-To: <bug-11446-10286@http.bugzilla.kernel.org/>
+References: <bug-11446-10286@http.bugzilla.kernel.org/>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080828183223.GA30781@localhost.localdomain>
-	 <20080828184025.GA22165@x200.localdomain>
-	 <19f34abd0808281146o7a00388eie9322ff778665961@mail.gmail.com>
-	 <Pine.LNX.4.64.0808282201190.11146@melkki.cs.Helsinki.FI>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 9:02 PM, Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
-> Why not do something like this (as suggested by Ingo, I think)? Yeah, the
-> macro should go into kmemcheck.h but I don't have a tree handy...
->
->                Pekka
->
-> Index: linux-2.6/include/linux/bitfield.h
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6/include/linux/bitfield.h
-> @@ -0,0 +1,10 @@
-> +#ifndef __LINUX_BITFIELD_H
-> +#define __LINUX_BITFIELD_H
-> +
-> +#ifdef CONFIG_KMEMCHECK
-> +#define KMEMCHECK_BIT_FIELD(field) do { field = 0; } while (0)
-> +#else
-> +#define KMEMCHECK_BIT_FIELD(field) do { } while (0)
-> +#endif /* CONFIG_KMEMCHECK */
-> +
-> +#endif /* __LINUX_BITFIELD_H */
->
-> Index: linux-2.6/net/core/skbuff.c
-> ===================================================================
-> --- linux-2.6.orig/net/core/skbuff.c
-> +++ linux-2.6/net/core/skbuff.c
-> @@ -55,6 +55,7 @@
->  #include <linux/rtnetlink.h>
->  #include <linux/init.h>
->  #include <linux/scatterlist.h>
-> +#include <linux/bitfield.h>
->
->  #include <net/protocol.h>
->  #include <net/dst.h>
-> @@ -209,6 +210,11 @@ struct sk_buff *__alloc_skb(unsigned int
->        skb->data = data;
->        skb_reset_tail_pointer(skb);
->        skb->end = skb->tail + size;
-> +       KMEMCHECK_BIT_FIELD(skb->local_df);
-> +       KMEMCHECK_BIT_FIELD(skb->cloned);
-> +       KMEMCHECK_BIT_FIELD(skb->ip_summed);
-> +       KMEMCHECK_BIT_FIELD(skb->nohdr);
-> +       KMEMCHECK_BIT_FIELD(skb->nfctinfo);
->        /* make sure we initialize shinfo sequentially */
->        shinfo = skb_shinfo(skb);
->        atomic_set(&shinfo->dataref, 1);
->
+On Thu, 28 Aug 2008 09:24:42 -0700 (PDT)
+bugme-daemon@bugzilla.kernel.org wrote:
 
-That looks good to me. If the extra lines are okay with net people, we
-can put this in the fixlets branch and make it the norm for dealing
-with bitfields in kmemcheck.
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=11446
+> 
+>            Summary: Automate "to compile as module" strings
+>            Product: Other
+>            Version: 2.5
+>      KernelVersion: 2.6.27
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: enhancement
+>           Priority: P1
+>          Component: Configuration
+>         AssignedTo: zippel@linux-m68k.org
+>         ReportedBy: kernel1@cyberdogtech.com
+> 
+> 
+> I've spent quite a bit of time scanning through Kconfig files correcting
+> various textual errors.  One thing that I've noticed is variations of "To
+> compile X as a module, choose M here.  The module will be called Y" occur
+> extremely frequently.  A quick grep of the current mainline actually reveals
+> ~1192 instances of it.  It seems very redundant to me to have everyone who adds
+> a module or feature copy and paste this text, when it could seemingly be
+> dynamically generated with ease.
+> 
+> Is there any reason we can't simply standardize on one string, and display it
+> for any component that has the module option available?
 
-One thing to keep in mind that if the members of the bitfield does not
-span the entire width of the bitfield, the remaining bits must also be
-assigned (as an extra "filler" member), otherwise GCC will not
-optimize it to a single store. But that is not an issue in this
-particular case since all the bits are used.
+Good point :)
+
+The Kconfig system doesn't presently know the name of the module,
+but that could be added.  eg:
 
 
-Vegard
+  config BMAC
+	tristate "BMAC (G3 ethernet) support"
+	depends on PPC_PMAC && PPC32
++	modulename bmac
+	select CRC32
+	help
+	  Say Y for support of BMAC Ethernet interfaces. These are used on G3
+	  computers.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+-	  To compile this driver as a module, choose M here: the module
+-	  will be called bmac.
+
+
+Any sane organisation would look at the benefit of this, weigh that
+against the massive amount of code churn and would then run away howling.
+
+
