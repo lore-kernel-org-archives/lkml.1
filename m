@@ -1,58 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbYH1M3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbYH1Mfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754705AbYH1M3v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 08:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYH1M3m
+	id S1753904AbYH1Mfv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 08:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbYH1Mfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 08:29:42 -0400
-Received: from smtp119.mail.mud.yahoo.com ([209.191.84.76]:34766 "HELO
-	smtp119.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750709AbYH1M3m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 08:29:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=bhX3VB94nSbPcPoS5bZXCjJsQ1Gy3rDtQ82Ws9aiSS3/m1WS/cbSy/wubJ7J+MQwvFNhZJG4r2yVqObREDz7wF5kUv8l1SleV7PcQw1kUY++IHv9McAVijIA2OPe2yH/6jNjuPDTuHDTZoEejyMmOCuDKSGsWQpLiDn9hgxNCIg=  ;
-X-YMail-OSG: zrHqlYYVM1mCgSeeMZgeQkNqQYT5r7PUxA.FigfwssQDGBsJP8BY2JiZ_I3aR5BodpzAEJnw.CZzd8rYCBlUOuqF.pICRIV69uQUwlGcNcBOg9FnwN8iQRXz3blhtG8qgKY-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
-Date: Thu, 28 Aug 2008 22:29:34 +1000
-User-Agent: KMail/1.9.5
-Cc: Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Stefani Seibold <stefani@seibold.net>,
-       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
+	Thu, 28 Aug 2008 08:35:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46744 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752112AbYH1Mfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 08:35:42 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH] ftrace: disable tracing for hibernation
+Date: Thu, 28 Aug 2008 14:39:12 +0200
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       Marcin Slusarz <marcin.slusarz@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
-References: <20080819103301.787700742@chello.nl> <200808272008.16106.nickpiggin@yahoo.com.au> <20080828105408.GA4488@elte.hu>
-In-Reply-To: <20080828105408.GA4488@elte.hu>
+References: <alpine.DEB.1.10.0808211139420.3947@gandalf.stny.rr.com> <alpine.DEB.1.10.0808270844500.7871@gandalf.stny.rr.com> <200808271526.46868.rjw@sisk.pl>
+In-Reply-To: <200808271526.46868.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808282229.34414.nickpiggin@yahoo.com.au>
+Message-Id: <200808281439.13959.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 August 2008 20:54, Ingo Molnar wrote:
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-> This fundamental lack of experience weakens all your arguments and i
-> dont even know why you are arguing about it.
+ftrace: disable tracing for hibernation
+    
+In accordance with commit f42ac38c59e0a03d6da0c24a63fb211393f484b0
+("ftrace: disable tracing for suspend to ram"), disable tracing
+around the suspend code in hibernation code paths.
+    
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/disk.c |   13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
-BTW. this is funny that you just decide you can somehow "weaken"
-my technical arguments because of some of my personal attribute
-you believe about me.
-
-You don't know why I am arguing? I'll put it very simply one more
-time.
-
-- This behaviour has changed the kernel's userspace API in a way
-  that can break existing applications.
-
-That is my primary point. If you think it gets somehow weaker
-because you don't think I have ever locked up my workstation with
-an RT task, then I give up arguing with you.
+Index: linux-2.6/kernel/power/disk.c
+===================================================================
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -21,6 +21,7 @@
+ #include <linux/console.h>
+ #include <linux/cpu.h>
+ #include <linux/freezer.h>
++#include <linux/ftrace.h>
+ 
+ #include "power.h"
+ 
+@@ -255,7 +256,7 @@ static int create_image(int platform_mod
+ 
+ int hibernation_snapshot(int platform_mode)
+ {
+-	int error;
++	int error, ftrace_save;
+ 
+ 	/* Free memory before shutting down devices. */
+ 	error = swsusp_shrink_memory();
+@@ -267,6 +268,7 @@ int hibernation_snapshot(int platform_mo
+ 		goto Close;
+ 
+ 	suspend_console();
++	ftrace_save = __ftrace_enabled_save();
+ 	error = device_suspend(PMSG_FREEZE);
+ 	if (error)
+ 		goto Recover_platform;
+@@ -296,6 +298,7 @@ int hibernation_snapshot(int platform_mo
+  Resume_devices:
+ 	device_resume(in_suspend ?
+ 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
++	__ftrace_enabled_restore(ftrace_save);
+ 	resume_console();
+  Close:
+ 	platform_end(platform_mode);
+@@ -366,10 +369,11 @@ static int resume_target_kernel(void)
+ 
+ int hibernation_restore(int platform_mode)
+ {
+-	int error;
++	int error, ftrace_save;
+ 
+ 	pm_prepare_console();
+ 	suspend_console();
++	ftrace_save = __ftrace_enabled_save();
+ 	error = device_suspend(PMSG_QUIESCE);
+ 	if (error)
+ 		goto Finish;
+@@ -384,6 +388,7 @@ int hibernation_restore(int platform_mod
+ 	platform_restore_cleanup(platform_mode);
+ 	device_resume(PMSG_RECOVER);
+  Finish:
++	__ftrace_enabled_restore(ftrace_save);
+ 	resume_console();
+ 	pm_restore_console();
+ 	return error;
+@@ -396,7 +401,7 @@ int hibernation_restore(int platform_mod
+ 
+ int hibernation_platform_enter(void)
+ {
+-	int error;
++	int error, ftrace_save;
+ 
+ 	if (!hibernation_ops)
+ 		return -ENOSYS;
+@@ -411,6 +416,7 @@ int hibernation_platform_enter(void)
+ 		goto Close;
+ 
+ 	suspend_console();
++	ftrace_save = __ftrace_enabled_save();
+ 	error = device_suspend(PMSG_HIBERNATE);
+ 	if (error) {
+ 		if (hibernation_ops->recover)
+@@ -445,6 +451,7 @@ int hibernation_platform_enter(void)
+ 	hibernation_ops->finish();
+  Resume_devices:
+ 	device_resume(PMSG_RESTORE);
++	__ftrace_enabled_restore(ftrace_save);
+ 	resume_console();
+  Close:
+ 	hibernation_ops->end();
