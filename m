@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757694AbYH1U5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbYH1U5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757694AbYH1U5k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 16:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbYH1U5b
+	id S1757965AbYH1U5y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 16:57:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757566AbYH1U5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 16:57:31 -0400
-Received: from flusers.ccur.com ([12.192.68.2]:57718 "EHLO gamx.iccur.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754552AbYH1U5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 16:57:31 -0400
-Date: Thu, 28 Aug 2008 16:57:27 -0400
-From: Joe Korty <joe.korty@ccur.com>
-To: "Myklebust, Trond" <Trond.Myklebust@netapp.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] NFSv3: cached permissions subset enhancement, v2
-Message-ID: <20080828205727.GA21880@tsunami.ccur.com>
-Reply-To: Joe Korty <joe.korty@ccur.com>
-References: <20080827142820.GA22661@tsunami.ccur.com> <2BBFD074-16C3-4640-8F3D-DF604F4146A7@netapp.com> <20080828182848.GA19286@tsunami.ccur.com>
-Mime-Version: 1.0
+	Thu, 28 Aug 2008 16:57:39 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:32817 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757510AbYH1U5i convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 16:57:38 -0400
+Date: Thu, 28 Aug 2008 22:57:36 +0200
+From: Andreas Mohr <andi@lisas.de>
+To: "Leisner, Martin" <Martin.Leisner@xerox.com>, linux-kernel@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] select with timeout across S3
+Message-ID: <20080828205736.GA11743@rhlx01.hs-esslingen.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080828182848.GA19286@tsunami.ccur.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <556445368AFA1C438794ABDA8901891C09639B7A@USA0300MS03.na.xerox.net>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 02:28:48PM -0400, Joe Korty wrote:
-> On Thu, Aug 28, 2008 at 12:03:47PM -0400, Myklebust, Trond wrote:
->> This isn't a good solution. The correct thing to do here is to resend
->> the request for just those permissions that the VFS requested.
-> 
-> Is there any chance that the cached permissions are shared amoung
-> multiple open(2)'s of the same file?  If sharing happens then we
-> really need to cache all of MAY_EXEC | MAY_WRITE | MAY_READ, rather
-> than just that subset asked for by the open(2) that happens to
-> be the one filling in the cache.
-> 
-> In any case, I've rewritten the patch per the above suggestion, and
+Hi,
 
+dito.
 
-Hi Trond,
-I've tested the new patch with the test sequence mentioned in the
-original customer bug report, and it seems to work.
+This also happened to me a couple (4?) months ago, likely on 2.6.24 or
+2.6.25.
+And for me it had the "very nice" effect of not obeying DHCP lease time,
+with a red-faced IT guy appearing in my door the next morning thusly... ;)
 
-Joe
+>From examining it more closely, it was rather obvious that select timeout
+happened maybe 10 hours later than it should have (with 12h lease time),
+due to hitting nightly S2R about two hours into the lease time.
+Annoying, to say the least.
+
+I think I then privately asked some timer guy about it, but I didn't get
+a reply.
+
+The DHCP client to hit this was pump, IIRC (can re-check).
+
+Andreas Mohr
