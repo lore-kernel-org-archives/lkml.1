@@ -1,106 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbYH1KKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbYH1KOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbYH1KKs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 06:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYH1KKk
+	id S1753354AbYH1KOr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 06:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYH1KOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 06:10:40 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:46861 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751675AbYH1KKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 06:10:40 -0400
-Date: Thu, 28 Aug 2008 12:09:21 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Manuel Lauss <mano@roarinelk.homelinux.net>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
-Subject: Re: MTD kobject warnings due to block layer changes
-Message-ID: <20080828100921.GY20055@kernel.dk>
-References: <20080828084603.GA17139@roarinelk.homelinux.net>
+	Thu, 28 Aug 2008 06:14:38 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:4011 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751503AbYH1KOi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 06:14:38 -0400
+Date: Thu, 28 Aug 2008 11:14:35 +0100
+From: Mark Brown <broonie@sirena.org.uk>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: perex@perex.cz, lrg@kernel.org, Cliff Cai <cliff.cai@analog.com>,
+       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+Subject: Re: [alsa-devel] [PATCH 3/4] ASOC: WM8731 codec: add SPI support as well as I2C
+Message-ID: <20080828101434.GB11132@sirena.org.uk>
+Mail-Followup-To: Bryan Wu <cooloney@kernel.org>, perex@perex.cz,
+	lrg@kernel.org, Cliff Cai <cliff.cai@analog.com>,
+	alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+References: <1219829968-6431-1-git-send-email-cooloney@kernel.org> <1219829968-6431-4-git-send-email-cooloney@kernel.org> <20080827110143.GB10834@sirena.org.uk> <386072610808272046u270c1302g1102bf1f0bd9b6ee@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080828084603.GA17139@roarinelk.homelinux.net>
+In-Reply-To: <386072610808272046u270c1302g1102bf1f0bd9b6ee@mail.gmail.com>
+X-Cookie: To see you is to sympathize.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28 2008, Manuel Lauss wrote:
-> Hello,
-> 
-> Todays -git spits out these wanings during boot, caused by
-> Commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4
-> ( block: move cmdfilter from gendisk to request_queue ):
-> 
-> Using physmap partition information
-> Creating 3 MTD partitions on "physmap-flash":
-> 0x00000000-0x01c00000 : "User FS"
-> 0x01c00000-0x01c40000 : "booter"
-> kobject (8511c410): tried to init an initialized object, something is seriously wrong.
-> Call Trace:
-> [<8036644c>] dump_stack+0x8/0x34
-> [<8021f050>] kobject_init+0x50/0xcc
-> [<8021fa18>] kobject_init_and_add+0x24/0x58
-> [<8021d20c>] blk_register_filter+0x4c/0x64
-> [<8021c194>] add_disk+0x78/0xe0
-> [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
-> [<8027c8f0>] blktrans_notify_add+0x40/0x78
-> [<80279c00>] add_mtd_device+0xd0/0x150
-> [<8027b090>] add_mtd_partitions+0x568/0x5d8
-> [<80285458>] physmap_flash_probe+0x2ac/0x334
-> [<802644f8>] driver_probe_device+0x12c/0x244
-> [<8026465c>] __driver_attach+0x4c/0x84
-> [<80263c64>] bus_for_each_dev+0x58/0xac
-> [<802633ec>] bus_add_driver+0xc4/0x24c
-> [<802648e0>] driver_register+0xcc/0x184
-> [<80100460>] _stext+0x60/0x1bc
-> 
-> 0x01c40000-0x01fe0000 : "vmlinux.elf"
-> kobject (8511c410): tried to init an initialized object, something is seriously wrong.
-> Call Trace:
-> [<8036644c>] dump_stack+0x8/0x34
-> [<8021f050>] kobject_init+0x50/0xcc
-> [<8021fa18>] kobject_init_and_add+0x24/0x58
-> [<8021d20c>] blk_register_filter+0x4c/0x64
-> [<8021c194>] add_disk+0x78/0xe0
-> [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
-> [<8027c8f0>] blktrans_notify_add+0x40/0x78
-> [<80279c00>] add_mtd_device+0xd0/0x150
-> [<8027b090>] add_mtd_partitions+0x568/0x5d8
-> [<80285458>] physmap_flash_probe+0x2ac/0x334
-> [<802644f8>] driver_probe_device+0x12c/0x244
-> [<8026465c>] __driver_attach+0x4c/0x84
-> [<80263c64>] bus_for_each_dev+0x58/0xac
-> [<802633ec>] bus_add_driver+0xc4/0x24c
-> [<802648e0>] driver_register+0xcc/0x184
-> [<80100460>] _stext+0x60/0x1bc
-> 
-> NAND device: Manufacturer ID: 0xec, Chip ID: 0xf1 (Samsung NAND 128MiB 3,3V 8-bit)
-> Scanning device for bad blocks
-> Creating 1 MTD partitions on "gen_nand":
-> 0x00000000-0x08000000 : "NAND FS 0"
-> kobject (8511c410): tried to init an initialized object, something is seriously wrong.
-> Call Trace:
-> [<8036644c>] dump_stack+0x8/0x34
-> [<8021f050>] kobject_init+0x50/0xcc
-> [<8021fa18>] kobject_init_and_add+0x24/0x58
-> [<8021d20c>] blk_register_filter+0x4c/0x64
-> [<8021c194>] add_disk+0x78/0xe0
-> [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
-> [<8027c8f0>] blktrans_notify_add+0x40/0x78
-> [<80279c00>] add_mtd_device+0xd0/0x150
-> [<8027b090>] add_mtd_partitions+0x568/0x5d8
-> [<804016b0>] plat_nand_probe+0x1e8/0x24c
-> [<802644f8>] driver_probe_device+0x12c/0x244
-> [<8026465c>] __driver_attach+0x4c/0x84
-> [<80263c64>] bus_for_each_dev+0x58/0xac
-> [<802633ec>] bus_add_driver+0xc4/0x24c
-> [<802648e0>] driver_register+0xcc/0x184
-> [<80100460>] _stext+0x60/0x1bc
+On Thu, Aug 28, 2008 at 11:46:24AM +0800, Bryan Wu wrote:
+> On Wed, Aug 27, 2008 at 7:01 PM, Mark Brown <broonie@sirena.org.uk> wrote:
 
-Tomo? I don't see how this is happening. The queue is properly zeroed,
-so no chance ->state_initialized being crap.
+> > ...as for the SSM2602 it'd be good if it were possible to build a kernel
+> > which supports both I2C and SPI.  If you like I could do this for you -
+> > there's likely to be merge issues due to the update to the new I2C API
+> > anyway?
 
--- 
-Jens Axboe
+> Oh, do you mean SSM2602 or WM8731? I also noticed the i2c API updates
+> patch from Jean and I'd like to use the new one
 
+Sorry, that could've been clearer - I meant wm8731.  Obviously if you
+want to update that too then that would be great but I figured it'd make
+life easier for you if I were to ensure that one gets merged OK.  Which
+way do you prefer?
