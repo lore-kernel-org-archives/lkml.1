@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbYH1U5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbYH1U6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757965AbYH1U5y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 16:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757566AbYH1U5j
+	id S1758018AbYH1U6T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 16:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756389AbYH1U6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 16:57:39 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:32817 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757510AbYH1U5i convert rfc822-to-8bit (ORCPT
+	Thu, 28 Aug 2008 16:58:00 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:49452 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756355AbYH1U57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 16:57:38 -0400
-Date: Thu, 28 Aug 2008 22:57:36 +0200
-From: Andreas Mohr <andi@lisas.de>
-To: "Leisner, Martin" <Martin.Leisner@xerox.com>, linux-kernel@vger.kernel.org
-Cc: linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] select with timeout across S3
-Message-ID: <20080828205736.GA11743@rhlx01.hs-esslingen.de>
+	Thu, 28 Aug 2008 16:57:59 -0400
+Message-ID: <48B71093.3070409@cs.helsinki.fi>
+Date: Thu, 28 Aug 2008 23:54:43 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <556445368AFA1C438794ABDA8901891C09639B7A@USA0300MS03.na.xerox.net>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Adrian Bunk <bunk@kernel.org>
+CC: Alexey Dobriyan <adobriyan@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] bitfields API
+References: <20080828183223.GA30781@localhost.localdomain> <20080828184025.GA22165@x200.localdomain> <48B6F12F.1010909@cs.helsinki.fi> <20080828202750.GB16462@cs181140183.pp.htv.fi>
+In-Reply-To: <20080828202750.GB16462@cs181140183.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Adrian Bunk wrote:
+>> Heh, heh, one alternative is to have a kmemcheck_memset() thingy that  
+>> unconditionally zeroes bit fields and maybe is a no-op when kmemcheck is  
+>> disabled.
+> 
+> This sounds as if this might cause bugs to disappear when debugging gets 
+> turned on?
 
-dito.
+Yeah, I suppose. The problem doing that unconditionally is that it 
+increases kernel text slightly on some architectures (e.g. sparc). 
+However, as long as you use the KMEMCHECK_BIT_FIELD annotation only in 
+places that give you false positives, it's we should be safe.
 
-This also happened to me a couple (4?) months ago, likely on 2.6.24 or
-2.6.25.
-And for me it had the "very nice" effect of not obeying DHCP lease time,
-with a red-faced IT guy appearing in my door the next morning thusly... ;)
-
->From examining it more closely, it was rather obvious that select timeout
-happened maybe 10 hours later than it should have (with 12h lease time),
-due to hitting nightly S2R about two hours into the lease time.
-Annoying, to say the least.
-
-I think I then privately asked some timer guy about it, but I didn't get
-a reply.
-
-The DHCP client to hit this was pump, IIRC (can re-check).
-
-Andreas Mohr
+		Pekka
