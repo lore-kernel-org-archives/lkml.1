@@ -1,124 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbYH1Dsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755188AbYH1Dvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755115AbYH1Dsm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 23:48:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbYH1Dsd
+	id S1755188AbYH1Dvl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 23:51:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbYH1Dvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 23:48:33 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:37167 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753755AbYH1Dsc (ORCPT
+	Wed, 27 Aug 2008 23:51:33 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:34397 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753877AbYH1Dvc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 23:48:32 -0400
-Date: Thu, 28 Aug 2008 09:18:16 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: cmm@us.ibm.com, tytso@mit.edu, sandeen@redhat.com,
-       linux-ext4@vger.kernel.org, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -V3 01/11] percpu_counters: make fbc->count read atomic
-	on 32 bit architecture
-Message-ID: <20080828034816.GA6440@skywalker>
-References: <1219850916-8986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com> <20080827120553.9c9d6690.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080827120553.9c9d6690.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 27 Aug 2008 23:51:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=F7jySAjOrGkemk4ZOHsek/L3O8goQY8LSjPnZEfXYRDJ77skoKiIlg7vAnLhxWLs5V
+         jkqDhmubUxybMS0Bal/aD9hVIEPfYJRwen1sqtohv3HlnwSHgq6MEJjbJMUFBrLnm7Vt
+         CTtROz92anJS4zLqO3plBXTwz0XZlYLDX/c2E=
+Subject: Re: + rcu-fix-sparse-shadowed-variable-warning.patch added to -mm
+	tree
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulmck@linux.vnet.ibm.com
+In-Reply-To: <20080828033123.GA19218@x200.localdomain>
+References: <200808280322.m7S3MOUg004835@imap1.linux-foundation.org>
+	 <20080828033123.GA19218@x200.localdomain>
+Content-Type: text/plain
+Date: Wed, 27 Aug 2008 20:51:31 -0700
+Message-Id: <1219895491.6069.4.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 12:05:53PM -0700, Andrew Morton wrote:
-> On Wed, 27 Aug 2008 20:58:26 +0530
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> 
-> > fbc->count is of type s64. The change was introduced by
-> > 0216bfcffe424a5473daa4da47440881b36c1f4 which changed the type
-> > from long to s64. Moving to s64 also means on 32 bit architectures
-> > we can get wrong values on fbc->count. Since fbc->count is read
-> > more frequently and updated rarely use seqlocks. This should
-> > reduce the impact of locking in the read path for 32bit arch.
-> > 
-> 
-> So...  yesterday's suggestionm to investigate implementing this at a
-> lower level wasn't popular?
-
-I wanted to sent the entire patchset which fixes ENOSPC issues with
-delalloc. It happened to be on the next day you looked at the previous
-mail. Sending the patch again in now way mean we should not have
-generic atomic64_t;
-
-
-> 
-> >  include/linux/percpu_counter.h |   28 ++++++++++++++++++++++++----
-> >  lib/percpu_counter.c           |   20 ++++++++++----------
-> >  2 files changed, 34 insertions(+), 14 deletions(-)
-> > 
-> > diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
-> > index 9007ccd..1b711a1 100644
-> > --- a/include/linux/percpu_counter.h
-> > +++ b/include/linux/percpu_counter.h
-> > @@ -6,7 +6,7 @@
-> >   * WARNING: these things are HUGE.  4 kbytes per counter on 32-way P4.
-> >   */
+On Thu, 2008-08-28 at 07:31 +0400, Alexey Dobriyan wrote:
+> > --- a/kernel/rcuclassic.c~rcu-fix-sparse-shadowed-variable-warning
+> > +++ a/kernel/rcuclassic.c
+> > @@ -561,15 +561,15 @@ static void __rcu_process_callbacks(stru
+> >  		local_irq_restore(flags);
 > >  
-> > -#include <linux/spinlock.h>
-> > +#include <linux/seqlock.h>
-> >  #include <linux/smp.h>
-> >  #include <linux/list.h>
-> >  #include <linux/threads.h>
-> > @@ -16,7 +16,7 @@
-> >  #ifdef CONFIG_SMP
+> >  		if (rcu_batch_after(rdp->batch, rcp->pending)) {
+> > -			unsigned long flags;
+> > +			unsigned long flags2;
 > >  
-> >  struct percpu_counter {
-> > -	spinlock_t lock;
-> > +	seqlock_t lock;
-> >  	s64 count;
-> >  #ifdef CONFIG_HOTPLUG_CPU
-> >  	struct list_head list;	/* All percpu_counters are on a list */
-> > @@ -53,10 +53,30 @@ static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
-> >  	return __percpu_counter_sum(fbc);
-> >  }
-> >  
-> > -static inline s64 percpu_counter_read(struct percpu_counter *fbc)
-> > +#if BITS_PER_LONG == 64
-> > +static inline s64 fbc_count(struct percpu_counter *fbc)
-> >  {
-> >  	return fbc->count;
-> >  }
-> > +#else
-> > +/* doesn't have atomic 64 bit operation */
-> > +static inline s64 fbc_count(struct percpu_counter *fbc)
-> > +{
-> > +	s64 ret;
-> > +	unsigned seq;
-> > +	do {
-> > +		seq = read_seqbegin(&fbc->lock);
-> > +		ret = fbc->count;
-> > +	} while (read_seqretry(&fbc->lock, seq));
-> > +	return ret;
-> > +
+> >  			/* and start it/schedule start if it's a new batch */
+> > -			spin_lock_irqsave(&rcp->lock, flags);
+> > +			spin_lock_irqsave(&rcp->lock, flags2);
+> >  			if (rcu_batch_after(rdp->batch, rcp->pending)) {
+> >  				rcp->pending = rdp->batch;
+> >  				rcu_start_batch(rcp);
+> >  			}
+> > -			spin_unlock_irqrestore(&rcp->lock, flags);
+> > +			spin_unlock_irqrestore(&rcp->lock, flags2);
+> >  		}
+> >  	}
 > 
-> Please don't put unneeded blank lines into random places.
+> Bzzzrt... just remove second variable.
 > 
 
-Will fix
+>From my original e-mail:
 
-> > +}
-> > +#endif
-> 
-> This is now too large to be inlined.
-> 
+It would be safe in this case to just remove the second declaration of flags
+and reuse it as it is outside the local_irq_save/restore pair.  I did it
+this
+way in case there are future changes that might mix up the use of flags.
 
+Feel free to just remove the second flags declaration if you'd rather do
+it
+that way.
 
-How do we actually figure that out ? I have been making that mistakes
-quiet often.
+Cheers,
 
-> > +static inline s64 percpu_counter_read(struct percpu_counter *fbc)
-> > +{
-> > +	return fbc_count(fbc);
-> > +}
-> 
+Harvey
 
--aneesh
