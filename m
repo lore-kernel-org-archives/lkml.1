@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbYH1VMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbYH1VQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbYH1VMR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 17:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbYH1VL6
+	id S1757178AbYH1VQe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 17:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbYH1VQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 17:11:58 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42240 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753563AbYH1VL5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 17:11:57 -0400
-Date: Thu, 28 Aug 2008 21:53:21 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mark Hounschell <markh@compro.net>, Steven Rostedt <rostedt@goodmis.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stefani Seibold <stefani@seibold.net>,
-       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
-Message-ID: <20080828215321.7a1fabd5@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.1.10.0808281138060.3300@nehalem.linux-foundation.org>
-References: <20080819103301.787700742@chello.nl>
-	<200808290036.35817.nickpiggin@yahoo.com.au>
-	<alpine.DEB.1.10.0808281110570.14580@gandalf.stny.rr.com>
-	<200808290134.35093.nickpiggin@yahoo.com.au>
-	<alpine.DEB.1.10.0808281142280.14580@gandalf.stny.rr.com>
-	<alpine.LFD.1.10.0808281024060.3300@nehalem.linux-foundation.org>
-	<48B6EB6F.2050802@compro.net>
-	<alpine.LFD.1.10.0808281138060.3300@nehalem.linux-foundation.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 28 Aug 2008 17:16:26 -0400
+Received: from ns2.suse.de ([195.135.220.15]:55836 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753252AbYH1VQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 17:16:26 -0400
+From: Oliver Neukum <oneukum@suse.de>
+Organization: Novell
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: autosuspend for SCSI devices
+Date: Thu, 28 Aug 2008 23:17:37 +0200
+User-Agent: KMail/1.9.9
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
+       James.Bottomley@hansenpartnership.com, linux-kernel@vger.kernel.org,
+       teheo@novell.com, stefanr@s5r6.in-berlin.de, Martin.Leisner@xerox.com
+References: <20080822105626.GA9475@elf.ucw.cz> <200808261301.45167.oneukum@suse.de> <20080828080427.GD15474@elf.ucw.cz>
+In-Reply-To: <20080828080427.GD15474@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808282317.38703.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And I'm not really interested. Quite frankly, I suspect the "we want to 
-> run something like pulseaudio with RT priorities" camp is the more common 
-> one, and in that context I understand limiting SCHED_FIFO sounds perfectly 
-> understandable.
+Am Donnerstag 28 August 2008 10:04:27 schrieb Pavel Machek:
+> On Tue 2008-08-26 13:01:43, Oliver Neukum wrote:
+> > Am Dienstag 26 August 2008 11:43:55 schrieb Pavel Machek:
+> > > > firstly, it doesn't consider error handling before suspending.
+> > > 
+> > > What problems do you see with error handling? This patch does not
+> > > touch the error handling, and I do not think it needs to touch it.
+> > 
+> > You'd make scsi driver writers' life easier if you made sure no autosuspends
+> > happen while they recover from errors. After all, you have no idea which
+> > commands will get through while the bus is in disarray.
+> 
+> Well, they have to handle other commands while bus has problems,
+> anyway, right? So I'm not creating any _new_ problems for them. 
+> 
+> 									Pavel
 
-Is there actually a reason we can't have two forms of SCHED_FIFO. For
-hard RT the existing behaviour is a lot more useful and it is hard to see
-how you'd emulate it.
 
-> quite frankly, most programmers aren't "supposedly bad". And if you think 
-> that the hard-RT "real man" programmers aren't bad, I really have nothing 
-> to say.
+I am afraid this is not true.
 
-"real man" programmers stare at the code in Zen contemplation and debug
-by powercycling - thats one thing even hard RT processes can't beat.
+	Regards
+		Oliver
+/**
+ * scsi_block_when_processing_errors - Prevent cmds from being queued.
+ * @sdev:	Device on which we are performing recovery.
+ *
+ * Description:
+ *     We block until the host is out of error recovery, and then check to
+ *     see whether the host or the device is offline.
+ *
+ * Return value:
+ *     0 when dev was taken offline by error recovery. 1 OK to proceed.
+ */
+int scsi_block_when_processing_errors(struct scsi_device *sdev)
 
-Alan
+
+/**
+ * scsi_restart_operations - restart io operations to the specified host.
+ * @shost:	Host we are restarting.
+ *
+ * Notes:
+ *    When we entered the error handler, we blocked all further i/o to
+ *    this device.  we need to 'reverse' this process.
+ */
+static void scsi_restart_operations(struct Scsi_Host *shost)
