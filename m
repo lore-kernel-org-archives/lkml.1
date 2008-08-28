@@ -1,80 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbYH1JP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751422AbYH1JUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752794AbYH1JP0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 05:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbYH1JPL
+	id S1751422AbYH1JUH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 05:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbYH1JTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 05:15:11 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:47382 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750746AbYH1JPJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 05:15:09 -0400
-Date: Thu, 28 Aug 2008 14:42:49 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch] sched: call resched_task() conditionally from new task
-	wake up path.
-Message-ID: <20080828091249.GA3303@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 28 Aug 2008 05:19:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39330 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750746AbYH1JTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 05:19:54 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080827173950.02afc804@lxorguk.ukuu.org.uk>
+References: <20080827173950.02afc804@lxorguk.ukuu.org.uk> <20080827143355.5b8bfcf1@lxorguk.ukuu.org.uk> <20080827134541.19980.61042.stgit@warthog.procyon.org.uk> <21723.1219847044@redhat.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 00/59] Introduce credentials
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Thu, 28 Aug 2008 10:19:44 +0100
+Message-ID: <4235.1219915184@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-sched: call resched_task() conditionally from new task wake up path.
+> > We get a number of things:
+> > 
+> >  (1) Multiple credential changes all happen simultaneously (setresuid() for
+> >      example).  The new set of credentials is committed with a single RCU
+> >      assignment.
+> 
+> Makes sense - except for the question of bounding memory utilisation.
 
-- During wake up of a new task, task_new_fair() can do a resched_task()
-  on the current task. Later in the code path, check_preempt_curr() also ends
-  up doing the same, which can be avoided. Check if TIF_NEED_RESCHED is
-  already set for the current task.
+Would it make sense to call synchronise_rcu() from commit_creds() or from
+setuid()/setresuid()/setgroups()/etc. to make sure that some user process
+doing:
 
-- task_new_fair() does a resched_task() on the current task unconditionally.
-  This can be done only in case when child runs before the parent.
+	while (1)
+		alter_credentials();
 
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-CC: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched_fair.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+doesn't run the system out of memory by having loads of frees waiting in RCU's
+queues because put_cred() uses call_rcu() to defer the destruction.
 
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1348,6 +1348,13 @@ static void check_preempt_wakeup(struct 
- 	if (unlikely(se == pse))
- 		return;
- 
-+	/*
-+	 * We can come here with TIF_NEED_RESCHED already set from new task
-+	 * wake up path.
-+	 */
-+	if (test_tsk_need_resched(curr))
-+		return;
-+
- 	cfs_rq_of(pse)->next = pse;
- 
- 	/*
-@@ -1615,10 +1622,10 @@ static void task_new_fair(struct rq *rq,
- 		 * 'current' within the tree based on its new key value.
- 		 */
- 		swap(curr->vruntime, se->vruntime);
-+		resched_task(rq->curr);
- 	}
- 
- 	enqueue_task_fair(rq, p, 0);
--	resched_task(rq->curr);
- }
- 
- /*
-
-Regards,
-Bharata.
+David
