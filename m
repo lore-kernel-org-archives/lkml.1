@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbYH1Rlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbYH1Rmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755689AbYH1Rlf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 13:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbYH1RlN
+	id S1755402AbYH1Rmj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 13:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYH1Rma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 13:41:13 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57857 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753427AbYH1RlM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 13:41:12 -0400
-Date: Thu, 28 Aug 2008 10:38:13 -0700
-From: Greg KH <greg@kroah.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RESEND] char_dev: add cdev->release() and convert
-	cdev_alloc() to use it
-Message-ID: <20080828173813.GC18097@kroah.com>
-References: <48B6D428.2020308@kernel.org> <20080828164741.GA17475@kroah.com> <48B6D8D0.6080506@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48B6D8D0.6080506@kernel.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 28 Aug 2008 13:42:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52418 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752050AbYH1Rm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 13:42:29 -0400
+From: Tejun Heo <tj@kernel.org>
+To: fuse-devel@lists.sourceforge.net, miklos@szeredi.hu, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCHSET] FUSE: extend FUSE to support more operations
+Date: Fri, 29 Aug 2008 02:40:56 +0900
+Message-Id: <1219945263-21074-1-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.5.4.5
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 28 Aug 2008 17:42:21 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 06:56:48PM +0200, Tejun Heo wrote:
-> Greg KH wrote:
-> > Ick, I really don't want struct cdev to be used for lifecycle
-> > management, as it is only for major:minor stuff.  Why do you want to
-> > make this change?
-> 
-> Well, as cdev can be referenced from userspace, ->release is required
-> for most purposes.  The reason why devices have been getting by without
-> it is because most chardevs are created on module load and destroyed on
-> module unload and in the meantime cdev refcount virtually equals module
-> refcnt, but I'm fairly sure we have cases where cdev can be destroyed
-> for other reasons then module unloading and it's very likely those cases
-> are buggy in the current code (backing structure gone bug cdev still
-> hanging around).
+This patchset extends FUSE such that it supports more file operations
+and is consisted of the following seven patches.
 
-Hm, I thought Al covered that when he created the cdev interface, I
-would be a bit supprised if this was the case.
+  0001-FUSE-add-include-protectors.patch
+  0002-FUSE-pass-nonblock-flag-to-client.patch
+  0003-FUSE-implement-nonseekable-open.patch
+  0004-FUSE-implement-direct-lseek-support.patch
+  0005-FUSE-implement-ioctl-support.patch
+  0006-FUSE-implement-unsolicited-notification.patch
+  0007-FUSE-implement-poll-support.patch
 
-> As CUSE can create and destroy devices regardless of module reference
-> count, it falls in the second category and needs cdev->release() to make
-> sure the backing structure doesn't go away till cdev is released.
+The added features will be used primarily for CUSE but can be used by
+any FUSE client.  Accompanying libfuse updates will be posted
+separately.
 
-But CUSE should be it's own module, right?  And it would "own" the cdev,
-so the module and cdev count should be fine and matching.  The userspace
-code could go away but the CUSE code should handle that with a different
-reference count.  This is the way that hardware drivers handle the
-issue.
+This patchset is on top of
 
-thanks,
+  2.6.27-rc4 (b8e6c91c74e9f0279b7c51048779b3d62da60b88)
++ [1] 9p-use-single-poller patchset
++ [2] wait-kill-is_sync_wait
++ [3] poll-allow-f_op_poll-to-sleep
 
-greg k-h
+The above three patches allow f_op->poll() to sleep and 0007 depends
+on it.
+
+This patchset is available in the following git tree.
+
+ http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=shortlog;h=extend-fuse
+ git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git extend-fuse
+
+and contains the following changes.
+
+ fs/fuse/dev.c        |   49 +++++
+ fs/fuse/file.c       |  446 +++++++++++++++++++++++++++++++++++++++++++++++++--
+ fs/fuse/fuse_i.h     |   31 +++
+ fs/fuse/inode.c      |    5 
+ include/linux/fuse.h |   82 +++++++++
+ 5 files changed, 599 insertions(+), 14 deletions(-)
+
+Thanks.
+
+--
+tejun
+
+[1] http://thread.gmane.org/gmane.linux.kernel/726098
+[2] http://article.gmane.org/gmane.linux.kernel/726176
+[3] http://article.gmane.org/gmane.linux.kernel/726178
