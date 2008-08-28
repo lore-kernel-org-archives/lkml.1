@@ -1,136 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753670AbYH1MEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbYH1MH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753670AbYH1MEM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 08:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYH1MD6
+	id S1753893AbYH1MH0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 08:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYH1MHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 08:03:58 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:22253 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751997AbYH1MD5 (ORCPT
+	Thu, 28 Aug 2008 08:07:14 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:39580 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbYH1MHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 08:03:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=WcfTt6ie0xDkocJ61yaxsngxrQu/f9aGQSXYaz/wf6Mh77FT3EjIj1ZjcbM5Ua+tCOAJ22pK+dfhucqsM6FcP0X0rMZOJgy1+W6/dFYqWZdOichs7PMPvZ7SsjIADXHkcagyDopAVMPEgscAYe9yxR7hMHUSxjCmoWQ6TRaPkDg=  ;
-X-YMail-OSG: JrvRS9IVM1m2TikebVgnUsYM.vTZWMA.gv2qr0H.TCSdhFP8kE0td7oQLAwOiTUA9bzic5qLolG.nE9cRqj2ngX6LeYG9G_Xe2WJ5whLoiD2FAmtp6PucXJLJ8xJJexYO1QtmyCOCHeW.0btCz.v_JIt
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
-Date: Thu, 28 Aug 2008 22:03:48 +1000
-User-Agent: KMail/1.9.5
-Cc: Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Stefani Seibold <stefani@seibold.net>,
-       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20080819103301.787700742@chello.nl> <200808272008.16106.nickpiggin@yahoo.com.au> <20080828105408.GA4488@elte.hu>
-In-Reply-To: <20080828105408.GA4488@elte.hu>
+	Thu, 28 Aug 2008 08:07:12 -0400
+Message-ID: <48B6942E.2050607@linux.vnet.ibm.com>
+Date: Thu, 28 Aug 2008 14:03:58 +0200
+From: Pierre Morel <pmorel@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Roland McGrath <roland@redhat.com>,
+       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
+       sameske@linux.vnet.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [RFC] [Patch 1/1] [Self Ptrace] System call notification with
+ self_ptrace
+References: <48B26083.8080506@linux.vnet.ibm.com> <20080825165403.GA604@tv-sign.ru> <48B40D5F.3020705@linux.vnet.ibm.com> <20080826162750.GA406@tv-sign.ru> <48B5658A.5000101@linux.vnet.ibm.com> <20080827162455.GA132@tv-sign.ru>
+In-Reply-To: <20080827162455.GA132@tv-sign.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808282203.48396.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 August 2008 20:54, Ingo Molnar wrote:
-> * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > On Wednesday 27 August 2008 08:49, Andi Kleen wrote:
-> > > Thomas Gleixner <tglx@linutronix.de> writes:
-> > > > Well, we might have a public opinion poll, whether a system is
-> > > > declared frozen after 1, 10 or 100 seconds. Even a one second
-> > > > unresponsivness shows up on the kernel bugzilla and you request that
-> > > > unlimited unresponsivness w/o a chance to debug it is the sane
-> > > > default.
-> > >
-> > > That assumes single CPU. With multiple CPUs and not
-> > > all hogged the system should be still responsive?
-> >
-> > Right.
+Oleg Nesterov wrote:
+> On 08/27, Pierre Morel wrote:
+>   
+>> Oleg Nesterov wrote:
+>>
+>>     
+>>> On s390 the patch changes handle_signal(), this is not clear to me too.
+>>>
+>>>       
+>> The patch clears the trace flags before delivering the signal so
+>> that the signal handler can use system call without bouncing again.
+>>     
 >
-> Wrong.
->
-> Even if the system has multiple CPUs, and even if just a single CPU is
-> fully utilized by an RT task, without the rt-limit the system will still
-> lock up in practice due to various other factors: workqueues and tasks
-> being 'stuck' on CPUs that host an RT hog. While there's obviously CPU
-> time available on other CPUs, you cannot run 'top', the desktop will
-> freeze, work flows of the system can be stuck, etc, etc..
+> Yes I see. But the signal handler for SIGSYS can fisrt do
+> sys_ptrace(PTRACE_SELF_OFF) (which is filtered out), and then use any
+> other syscall.
+>   
+It is right but brings the overhead of a syscall.
+> With this patch PT_SELF is cleared on any signal. This doesn't look
+> right. Let's suppose that another signal comes in parallel with SIGSYS.
+> It is very possible that the handler for that another signal will be
+> called first, this handler can do some syscall which will be "missed".
+>   
 
-No, it is right. With caveats. Because you can pretty well isolate a
-CPU from running kernel threads or work. At any rate, I don't think it
-is your decision to just mandate this.
+If the tracing application catches all signals before delivering
+them to the instrumented original handler there is no problem,
+the catching code can reset PTRACE_SELF_ON before calling the 
+instrumented application's original handler.
+The instrumented code will then bounce as expected.
 
+I see this more like a security, the "bouncing" feature
+is only enabled until next syscall or signal, never more.
 
-> With the rt limit in place, it's all pretty smooth and debuggable. Even
-> with all CPUs hogged by SCHED_FIFO prio 99 the system is laggy but
-> debuggable - the user can run 'top' and can resolve the situation.
+This instrumentation method allows with this little patch to do
+all the syscall and signal instrumentation in userland and inside the
+address space of the instrumented application.
 
-When I write rt apps, I run a watchdog thread which detects a hang
-task and kills it.
+I expect we will  have a big improvement of instrumenting tools like
+ - debugger, tracing tool,
+ - virtualization applications like UML
+ - High availability: checkpoint and restart, record and replay.
+because of the reduction of IPC and task switch overhead.
 
+Pierre
 
-> Really, this reply of yours shows something startling: that despite this
-> many mails you still have never actually tried to run the scenario you
-> are complaining about: you have never tried to run a CPU hog high-prio
-> RT task on a Linux system before, and you have never observed the
-> effects it has on general system stability and debuggability.
+-- 
+=============
+Pierre Morel
+RTOS and Embedded Linux
 
-Of course I have and of course I know what it does if you run a
-for (;;) rt thread on an ordinary Linux desktop system. Trying to
-"fix" that for people is not a good reason to break the API.
-
-
-> This fundamental lack of experience weakens all your arguments and i
-> dont even know why you are arguing about it. Do you perhaps have some
-> customer application/workload you are worried about? If you have then
-> please tell us about the exact specifics - this handwaving about
-> compliance really makes little sense.
-
-You're continually ignoring all of my arguments and instead raising
-irrelvant things like this.
-
-You ignored others in this thread who replied with real uses of the
-rt scheduling that is being prevented by this API breakage, and
-you're ignoring my examples of how it could be used and just keep
-asserting that "anybody who does that is broken anyway".
-
-You also ignored when I told you how you can fix this correctly by
-introducing new SCHED_xxx scheduling policies that won't break
-backwards compatibility and will be defined from the outset to be
-throttled as such.
-
-There is no customer issue and there is no handwaving about compliance;
-it is a black and white issue: this behaviour breaks all documentation,
-previous Linux behaviour, other systems.
-
-
-> In other words: in our car the air-bag continues to be enabled by
-> default, and if someone wants to use the car for stunts the air-bag can
-> be disabled via that handy sysctl.
-
-How am I supposed to respond to that? My car doesn't have an air bag
-but it's breaks don't stop working every 10 seconds.
-
-Can we stop with the car and gun analogies now?
-
-
-> In any case i think i'm going to ignore this thread from now on, nothing
-> new has been said really, just the general tone of discussion is
-> deteriorating.
-
-OK, if you don't wish to have further discussion then I will submit a
-patch to Linus and I'll see what he says.
-
-
-> You are also very late with raising objections in any 
-> case - the rt-limit feature has been posted 10 months ago and went
-> upstream 8 months ago - two full kernel cycles have been completed with
-> this change in place and a third one has almost been finished.
-
-So what?
