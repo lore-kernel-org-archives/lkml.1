@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbYH1Xh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757908AbYH1Xil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757349AbYH1Xh2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 19:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272AbYH1XhO
+	id S1757908AbYH1Xil (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 19:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755335AbYH1Xic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 19:37:14 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35462 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755166AbYH1XhM (ORCPT
+	Thu, 28 Aug 2008 19:38:32 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:54593 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754936AbYH1Xic (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 19:37:12 -0400
-Date: Fri, 29 Aug 2008 08:35:28 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH] coredump_filter: add hugepage core dumping
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Kawai Hidehiro <hidehiro.kawai.ez@hitachi.com>,
-       William Irwin <wli@holomorphy.com>, Adam Litke <agl@us.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0808281724300.11072@blonde.site>
-References: <20080828142352.6ABC.KOSAKI.MOTOHIRO@jp.fujitsu.com> <Pine.LNX.4.64.0808281724300.11072@blonde.site>
-Message-Id: <20080829082832.3C1D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 28 Aug 2008 19:38:32 -0400
+Message-ID: <48B736E7.5000407@kernel.org>
+Date: Thu, 28 Aug 2008 16:38:15 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Greg KH <greg@kroah.com>
+CC: Adrian Bunk <bunk@kernel.org>, Tejun Heo <tj@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, Takashi Iwai <tiwai@suse.de>,
+       fuse-devel@lists.sourceforge.net
+Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
+References: <48B6F711.1040604@kernel.org> <20080828200120.GA16462@cs181140183.pp.htv.fi> <20080828221828.GB2855@kroah.com> <48B72F53.9080109@kernel.org> <20080828231426.GA15284@kroah.com>
+In-Reply-To: <20080828231426.GA15284@kroah.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-> > I think VM_RESERVED default dumping bahavior is good,
-> > then I'd like to add coredump_filter mask.
-> > 
-> > This patch doesn't change dafault behavior.
+Greg KH wrote:
 > 
-> This seems very reasonable to me
-> (though I've little use for coredumps or hugepages myself).
+> Hm, why?  It's a "fake" serial port as it is just a pass-through to the
+> USB device.  No flow control or line settings work on the device, so the
+> kernel driver just silently eats them.  But there is old, closed source
+> software that wants to talk to a serial port, so the kernel driver
+> remains.  With this code, we could then use the more modern libusb code
+> instead.
+> 
+> I guess you could hook it up through a pty, and somehow create
+> /dev/pilot/ for it as well, that is an idea to consider.
+> 
 
-Thanks a lot.
+Why?  Because there is a lot of complexity in the tty layer, and there 
+is no point in replicating the entire tty layer with all its ioctls 
+through a fragile user-space emulator.  For cases like this, a pty is 
+easier (your daemon opens /dev/ptmx, and then symlinks the appropriate 
+pty to /dev/pilot) and works better.
 
-> One caution though: how well does it behave when coredumping a large
-> area of hugepages which have not actually been instantiated prior to
-> the coredump?  We have that funny FOLL_ANON ZERO_PAGE code in
-> follow_page() to avoid wasting memory on large uninstantiated anon
-> areas, but hugepages won't go that way.  If the dump hangs waiting for
-> memory to be freed, or OOMkills other processes, that wouldn't be good;
-> whereas if hugepage reservations (I've not followed what happens with
-> them) or whatever just make it skip when no more, that should be okay.
+>> The big problem with using ptys for serial port emulation is that they 
+>> currently don't handle BREAK at all.
+> 
+> For this type of USB device, that's not an issue :)
 
-I think hugepage reservation pages always exist when hugepage COW happend.
-Then, hugepage access never cause try_to_free_pages() nor OOM.
+Indeed.  It would be nice to fix, because it would make implementing 
+serial ports as ptys+userspace a much more capable replacement.  It's 
+not trivial, though, because the interpretation of the BREAK has to be 
+done when received, not when sent, which means supporting a 257th value 
+in the underlying buffer setup.
 
-Adam, if I talk lie, please tell us truth.
-
-
-
-
+	-hpa
