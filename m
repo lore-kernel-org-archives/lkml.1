@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbYH1Hw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbYH1Hwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754799AbYH1Hw0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 03:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYH1HwR
+	id S1755342AbYH1Hwr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 03:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYH1Hwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 03:52:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35046 "EHLO mx3.mail.elte.hu"
+	Thu, 28 Aug 2008 03:52:37 -0400
+Received: from mx.bridgeco.net ([213.173.191.47]:4364 "EHLO mx.bridgeco.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752841AbYH1HwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 03:52:17 -0400
-Date: Thu, 28 Aug 2008 09:52:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ftrace: remove warning of old objcopy and local
-	functions
-Message-ID: <20080828075201.GJ21875@elte.hu>
-References: <20080825130117.33fe34bc.sfr@canb.auug.org.au> <20080825060934.GB14993@elte.hu> <alpine.DEB.1.10.0808251434000.23923@gandalf.stny.rr.com> <20080825190103.GA24029@elte.hu> <20080826094627.5d627b5b.sfr@canb.auug.org.au> <20080826115113.806cfe23.sfr@canb.auug.org.au> <alpine.DEB.1.10.0808252324050.966@gandalf.stny.rr.com> <20080826154721.9416e2e9.sfr@canb.auug.org.au> <alpine.DEB.1.10.0808271300540.16904@gandalf.stny.rr.com>
+	id S1753325AbYH1Hwg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 03:52:36 -0400
+From: Wappler Marcel <Marcel.Wappler@bridgeco.net>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Thu, 28 Aug 2008 09:52:32 +0200
+Subject: VM: page reclaim does not work on ARM9?
+Thread-Topic: VM: page reclaim does not work on ARM9?
+Thread-Index: Ach0m4cSiApNdLdFScC3DSTHVH8H7w==
+Message-ID: <462ADBE7F1A69C438B7E2ED56007E6F5ABF9A43F21@exch10.BC-Int.NET>
+Accept-Language: en-US, de-CH
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US, de-CH
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0808271300540.16904@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-OriginalArrivalTime: 28 Aug 2008 07:52:07.0214 (UTC) FILETIME=[F7F094E0:01C908E2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I do need some help to understand what's going on in the VM of the Linux kernel...
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+I wrote a little script which generates a C app with millions of lines of dumb linear running code and a endless loop at the end. I run this app on both PC Linux (swapping enabled) and embedded Linux (Kernel 2.6.24.7, ARM9, swapping disabled).
 
-> The warning messages about old objcopy and local functions spam the 
-> user quite drastically.  Remove the warning until we can find a nicer 
-> way of tell the user to upgrade their objcopy.
+The app shall consume a lot of code pages which are used only once (to run the linear code in it) and then stay in the endless loop and never touch all the other pages in memory. Then I consume all of the remaining memory of the system through generating a big file on the tmpfs (whose data resides in memory) with the help of /dev/zero and "dd".
 
-applied to tip/tracing/ftrace, thanks!
+My expectation was: the VM shall steal (reclaim) all the only once touched pages containing those dumb linear code of the app.
 
-	Ingo
+My observation is: "top" shows that the app is consuming constantly the same huge amount of residential memory during the decreasing free memory space. At some moment the kernel starts a OOM killer on the app instead of reclaiming its unused code pages.
+
+Keep in mind: the behaviour is the same on both PC Linux (2 GB RAM) and ARM Linux (32MB RAM ) with and without swapping enabled.
+
+So for me it looks like that any page which is containing code never gets reclaimed from the application it belongs to regardless of its usage.
+
+Any idias, whats going on?
+
+best regards,
+Marcel
+
+PS: Please CC me on reply...
