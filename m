@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbYH1W14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbYH1W2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758035AbYH1W14 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 18:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755771AbYH1W1r
+	id S1756869AbYH1W2W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 18:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756507AbYH1W2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 18:27:47 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:7279 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754291AbYH1W1q (ORCPT
+	Thu, 28 Aug 2008 18:28:08 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:54961 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755771AbYH1W2G convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 18:27:46 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Johann Felix Soden <johfel@gmx.de>
-Subject: Re: [PATCH] pci: Fix printk warnings in probe.c
-Date: Thu, 28 Aug 2008 16:27:41 -0600
+	Thu, 28 Aug 2008 18:28:06 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
+Date: Fri, 29 Aug 2008 00:27:58 +0200
 User-Agent: KMail/1.9.9
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-References: <1219430819.7010.5.camel@localhost>
-In-Reply-To: <1219430819.7010.5.camel@localhost>
+Cc: Scott Wood <scottwood@freescale.com>, dbrownell@users.sourceforge.net,
+       greg@kroah.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
+References: <Pine.LNX.4.44L0.0808281613540.3844-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808281613540.3844-100000@iolanthe.rowland.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200808281627.42171.bjorn.helgaas@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Message-Id: <200808290027.59127.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+NSStdv0AH415ECBJbOszN7JpDHpExGuysgA4
+ ZrzgPXOtkDijx64oouLjEjd+lzQKLtRaqvroWd+e+vWcI1XeEu
+ LmENyLUPv741nF9hSFRPg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 August 2008 12:46:59 pm Johann Felix Soden wrote:
-> From: Johann Felix Soden <johfel@users.sourceforge.net>
+On Thursday 28 August 2008, Alan Stern wrote:
+> On Thu, 28 Aug 2008, Scott Wood wrote:
 > 
-> Fix printk format warnings:
-> drivers/pci/probe.c: In function 'pci_read_bridge_bases':
-> drivers/pci/probe.c:386: warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'resource_size_t'
-> drivers/pci/probe.c:386: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'resource_size_t'
-> drivers/pci/probe.c:398: warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'resource_size_t'
-> drivers/pci/probe.c:398: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'resource_size_t'
-> drivers/pci/probe.c:434: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'resource_size_t'
-> drivers/pci/probe.c:434: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'resource_size_t'
+> > Alan Stern wrote:
+> > > This was done deliberately.  The relevant standards state that a USB
+> > > device can have no more than one peripheral interface.
+> > 
+> > Does building a kernel image that can run on different hardware without 
+> > rebuilding also violate the "relevant standards"?
 > 
-> Signed-off-by: Johann Felix Soden <johfel@users.sourceforge.net>
-> ---
->  drivers/pci/probe.c |   11 ++++++++---
->  1 files changed, 8 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index cce2f4c..0ad9367 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -383,7 +383,9 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
->  			res->start = base;
->  		if (!res->end)
->  			res->end = limit + 0xfff;
-> -		printk(KERN_INFO "PCI: bridge %s io port: [%llx, %llx]\n", pci_name(dev), res->start, res->end);
-> +		printk(KERN_INFO "PCI: bridge %s io port: [%llx, %llx]\n",
-> +			pci_name(dev), (unsigned long long) res->start,
-> +			(unsigned long long) res->end);
+> No.  That isn't what Arnd was concerned about.  He noted that even if 
+> you did build multiple modules, only one of them could be loaded at any 
+> time.
 
-Thanks for fixing the warnings.  I wish you'd changed these at the
-same time to use dev_info() and "[%#llx-%#llx]" like the rest of PCI.
+Well, actually it was exactly what I was concerned about ;-)
 
-I confess I don't understand where the ioport, mmio, and prefetchable
-mmio resources are coming from here, but before your patch, these
-printed values that look like junk on an HP nw8000:
+The way I understand the code, it is layered into the hardware specific
+part and the protocol specific part, which are connected through
+the interfaces I pointed out.
 
-  PCI: bridge 0000:00:01.0 io port: [2fff00002000, ef92eae800000300]
-  PCI: bridge 0000:00:01.0 32bit mmio: [904fffff90400000, ef92eae800000300]
-  PCI: bridge 0000:00:01.0 32bit mmio pref: [9fffffff98000000, ef92eae8]
+The standard requires that there can only be one protocol handler
+per physical interface, which is a reasonable limitation.
+However, what the Linux implementation actually enforces is
+that there can only be one hardware specific driver built or loaded
+into the kernel, which just looks like an arbitrary restriction
+that does not actually help.
 
-I just returned the laptop, or I'd double-check to see whether your casts
-fixed this.
+If the gadget hardware drivers were registering the device with a
+gadget_bus_type, you could still enforce the "only one protocol"
+rule by binding every protocol to every device in that bus type.
 
-
-
+	Arnd <><
