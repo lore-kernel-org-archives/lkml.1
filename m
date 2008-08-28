@@ -1,39 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757863AbYH1U4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757694AbYH1U5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757863AbYH1U4k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 16:56:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756170AbYH1U4R
+	id S1757694AbYH1U5k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 16:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbYH1U5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 16:56:17 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:36914 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755823AbYH1U4Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 16:56:16 -0400
-To: hpa@kernel.org
-CC: miklos@szeredi.hu, tj@kernel.org, fuse-devel@lists.sourceforge.net,
-       greg@kroah.com, linux-kernel@vger.kernel.org
-In-reply-to: <48B708C4.4000405@kernel.org> (hpa@kernel.org)
-Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <48B6EC83.1070207@kernel.org> <48B6EE36.5070209@kernel.org> <48B6F7C5.3020204@kernel.org> <E1KYn0U-00047F-Qa@pomaz-ex.szeredi.hu> <48B708C4.4000405@kernel.org>
-Message-Id: <E1KYoX9-0004Mn-NX@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 28 Aug 2008 22:55:59 +0200
+	Thu, 28 Aug 2008 16:57:31 -0400
+Received: from flusers.ccur.com ([12.192.68.2]:57718 "EHLO gamx.iccur.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754552AbYH1U5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 16:57:31 -0400
+Date: Thu, 28 Aug 2008 16:57:27 -0400
+From: Joe Korty <joe.korty@ccur.com>
+To: "Myklebust, Trond" <Trond.Myklebust@netapp.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] NFSv3: cached permissions subset enhancement, v2
+Message-ID: <20080828205727.GA21880@tsunami.ccur.com>
+Reply-To: Joe Korty <joe.korty@ccur.com>
+References: <20080827142820.GA22661@tsunami.ccur.com> <2BBFD074-16C3-4640-8F3D-DF604F4146A7@netapp.com> <20080828182848.GA19286@tsunami.ccur.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080828182848.GA19286@tsunami.ccur.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Aug 2008, H. Peter Anvin wrote:
-> This is *hard* to get right, and we screw this up in the kernel with 
-> painful regularity.  The throught of having user-space processes, which 
-> don't have access to the kernel locking primitives and functions like 
-> copy_from_user() dealing with this stuff scares me crazy.
+On Thu, Aug 28, 2008 at 02:28:48PM -0400, Joe Korty wrote:
+> On Thu, Aug 28, 2008 at 12:03:47PM -0400, Myklebust, Trond wrote:
+>> This isn't a good solution. The correct thing to do here is to resend
+>> the request for just those permissions that the VFS requested.
+> 
+> Is there any chance that the cached permissions are shared amoung
+> multiple open(2)'s of the same file?  If sharing happens then we
+> really need to cache all of MAY_EXEC | MAY_WRITE | MAY_READ, rather
+> than just that subset asked for by the open(2) that happens to
+> be the one filling in the cache.
+> 
+> In any case, I've rewritten the patch per the above suggestion, and
 
-What issues exactly are you thinking of?
 
-> That is why I'm suggesting using an in-kernel linearizer.
+Hi Trond,
+I've tested the new patch with the test sequence mentioned in the
+original customer bug report, and it seems to work.
 
-Lots of complexity, ugh...  Even Tejun's current scheme is better IMO.
-
-Miklos
-
+Joe
