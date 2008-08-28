@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbYH1R5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755867AbYH1R7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755582AbYH1R5b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 13:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbYH1R5X
+	id S1755867AbYH1R7Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 13:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbYH1R7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 13:57:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46004 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751776AbYH1R5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 13:57:22 -0400
-Message-ID: <48B6E69B.1090800@kernel.org>
-Date: Thu, 28 Aug 2008 19:55:39 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Thu, 28 Aug 2008 13:59:16 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:43286 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751683AbYH1R7P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 13:59:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=qjMzuGb6yR2znZRpJKYJdJti7tFYNuZR8Ez4B/YIklsnl7jEFcMZcNEtgPkT8Ny12K
+         jh8wU1o8hz32i10P2B0JgP1NpJZmSON5qGr9QARPnbW35ge3AvRoc/tnIc2ENGq+dIXc
+         Zf+GK0HPKsmYf5NfTvvqopktkVWAU5sdSGiCI=
+Message-ID: <a4e6962a0808281059u68acad11v575df9031e6a2f3b@mail.gmail.com>
+Date: Thu, 28 Aug 2008 12:59:12 -0500
+From: "Eric Van Hensbergen" <ericvh@gmail.com>
+To: "David Howells" <dhowells@redhat.com>
+Subject: Re: [PATCH 14/59] CRED: Wrap task credential accesses in 9P2000 filesystem
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       "Serge Hallyn" <serue@us.ibm.com>, "Ron Minnich" <rminnich@sandia.gov>,
+       "Latchesar Ionkov" <lucho@ionkov.net>,
+       v9fs-developer@lists.sourceforge.net
+In-Reply-To: <20080827134654.19980.45849.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RESEND] char_dev: add cdev->release() and convert	cdev_alloc()
- to use it
-References: <48B6D428.2020308@kernel.org> <20080828164741.GA17475@kroah.com> <48B6D8D0.6080506@kernel.org> <20080828173813.GC18097@kroah.com> <48B6E417.5030605@kernel.org> <20080828174807.GA18461@kroah.com>
-In-Reply-To: <20080828174807.GA18461@kroah.com>
-X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 28 Aug 2008 17:56:49 +0000 (UTC)
+Content-Disposition: inline
+References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
+	 <20080827134654.19980.45849.stgit@warthog.procyon.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
->> The problem is not the device to talk to CUSE (/dev/cuse as in
->> /dev/fuse), for which module refcount and device refcount match fine.
->> But the whole point of CUSE is allowing CUSE clients to create arbitrary
->> character devices, so in addition to /dev/cuse which clients use to talk
->> to CUSE, CUSE hosts character devices for its clients and they come and
->> go dynamically and thus requires proper lifetime management.
-> 
-> That's fine, it's just like a USB device that uses a cdev, right?  Or a
-> PCI device, or any other type of device that can come and go independant
-> of the cdev or module lifespan.
-> 
-> So, you tie the cdev lifespan to the module lifespan with the
-> MODULE_OWNER in the file operations.  As the cuse.ko module will own the
-> cdev, it can handle that reference, and it can not be removed as long as
-> userspace has the cdev open, right?
-> 
-> It really isn't any different from any other type of removable device
-> (i.e. any type of device...)
-
-Ah.. right, but taking cdev refcount out of the picture requires adding
-'severing' operation on cdev f_ops, which certainly is doable but isn't
-it just cleaner to make cdev follow the usual lifetime management rules?
- An object which is referenced counted requires ->release if it's gonna
-be used in any non-simplistic way.
-
-Thanks.
-
--- 
-tejun
+On Wed, Aug 27, 2008 at 8:46 AM, David Howells <dhowells@redhat.com> wrote:
+> Wrap access to task credentials so that they can be separated more easily from
+> the task_struct during the introduction of COW creds.
+>
+> Change most current->(|e|s|fs)[ug]id to current_(|e|s|fs)[ug]id().
+>
+> Change some task->e?[ug]id to task_e?[ug]id().  In some places it makes more
+> sense to use RCU directly rather than a convenient wrapper; these will be
+> addressed by later patches.
+>
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> Reviewed-by: James Morris <jmorris@namei.org>
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
+> Cc: Eric Van Hensbergen <ericvh@gmail.com>
+Reviewed-by: Eric Van Hensbergen <ericvh@gmail.com>
