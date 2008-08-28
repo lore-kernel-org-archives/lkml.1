@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbYH1M2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbYH1M3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754759AbYH1M2g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 08:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYH1M23
+	id S1754705AbYH1M3v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 08:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYH1M3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 08:28:29 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:54867 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752093AbYH1M22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 08:28:28 -0400
-Date: Thu, 28 Aug 2008 16:32:42 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Pierre Morel <pmorel@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>,
-       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
-       sameske@linux.vnet.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [RFC] [Patch 1/1] [Self Ptrace] System call notification with self_ptrace
-Message-ID: <20080828123242.GA187@tv-sign.ru>
-References: <48B26083.8080506@linux.vnet.ibm.com> <20080825165403.GA604@tv-sign.ru> <48B40D5F.3020705@linux.vnet.ibm.com> <20080826162750.GA406@tv-sign.ru> <48B5658A.5000101@linux.vnet.ibm.com> <20080827162455.GA132@tv-sign.ru> <48B6942E.2050607@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 28 Aug 2008 08:29:42 -0400
+Received: from smtp119.mail.mud.yahoo.com ([209.191.84.76]:34766 "HELO
+	smtp119.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750709AbYH1M3m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 08:29:42 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=bhX3VB94nSbPcPoS5bZXCjJsQ1Gy3rDtQ82Ws9aiSS3/m1WS/cbSy/wubJ7J+MQwvFNhZJG4r2yVqObREDz7wF5kUv8l1SleV7PcQw1kUY++IHv9McAVijIA2OPe2yH/6jNjuPDTuHDTZoEejyMmOCuDKSGsWQpLiDn9hgxNCIg=  ;
+X-YMail-OSG: zrHqlYYVM1mCgSeeMZgeQkNqQYT5r7PUxA.FigfwssQDGBsJP8BY2JiZ_I3aR5BodpzAEJnw.CZzd8rYCBlUOuqF.pICRIV69uQUwlGcNcBOg9FnwN8iQRXz3blhtG8qgKY-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
+Date: Thu, 28 Aug 2008 22:29:34 +1000
+User-Agent: KMail/1.9.5
+Cc: Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Stefani Seibold <stefani@seibold.net>,
+       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <20080819103301.787700742@chello.nl> <200808272008.16106.nickpiggin@yahoo.com.au> <20080828105408.GA4488@elte.hu>
+In-Reply-To: <20080828105408.GA4488@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48B6942E.2050607@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200808282229.34414.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/28, Pierre Morel wrote:
->
-> Oleg Nesterov wrote:
-> >On 08/27, Pierre Morel wrote:
-> >
-> >>Oleg Nesterov wrote:
-> >>
-> >>
-> >>>On s390 the patch changes handle_signal(), this is not clear to me too.
-> >>>
-> >>>
-> >>The patch clears the trace flags before delivering the signal so
-> >>that the signal handler can use system call without bouncing again.
-> >>
-> >
-> >Yes I see. But the signal handler for SIGSYS can fisrt do
-> >sys_ptrace(PTRACE_SELF_OFF) (which is filtered out), and then use any
-> >other syscall.
-> >
-> It is right but brings the overhead of a syscall.
+On Thursday 28 August 2008 20:54, Ingo Molnar wrote:
 
-Well, this overhead is very small compared to the signal delivery.
+> This fundamental lack of experience weakens all your arguments and i
+> dont even know why you are arguing about it.
 
-> >With this patch PT_SELF is cleared on any signal. This doesn't look
-> >right. Let's suppose that another signal comes in parallel with SIGSYS.
-> >It is very possible that the handler for that another signal will be
-> >called first, this handler can do some syscall which will be "missed".
-> >
->
-> If the tracing application catches all signals before delivering
-> them to the instrumented original handler there is no problem,
-> the catching code can reset PTRACE_SELF_ON before calling the
-> instrumented application's original handler.
-> The instrumented code will then bounce as expected.
+BTW. this is funny that you just decide you can somehow "weaken"
+my technical arguments because of some of my personal attribute
+you believe about me.
 
-Sorry, can't understand the text above :(
+You don't know why I am arguing? I'll put it very simply one more
+time.
 
-OK, let's suppose the application does
+- This behaviour has changed the kernel's userspace API in a way
+  that can break existing applications.
 
-	ptrace(PTRACE_SELF_ON);
-	...
-	syscall();
-
-This "syscall()" above should trigger the handler for SIGSYS.
-But what if another signal (with handler) comes in between?
-In that case handle_signal() clears PT_SELF/TIF_SYSCALL_TRACE,
-this syscall() (or any other) doesn't send SIGSYS.
-
-Oleg.
-
+That is my primary point. If you think it gets somehow weaker
+because you don't think I have ever locked up my workstation with
+an RT task, then I give up arguing with you.
