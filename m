@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbYH1O6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbYH1O7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754214AbYH1O6d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 10:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYH1O6Y
+	id S1755235AbYH1O7T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 10:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbYH1O7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 10:58:24 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40319 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752830AbYH1O6X (ORCPT
+	Thu, 28 Aug 2008 10:59:08 -0400
+Received: from qb-out-0506.google.com ([72.14.204.230]:3701 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753145AbYH1O7H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 10:58:23 -0400
-Subject: Re: [BUG] linux-next: Tree for August 26 - Badness at
-	kernel/notifier.c:25
-From: David Woodhouse <dwmw2@infradead.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
+	Thu, 28 Aug 2008 10:59:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=qg9b3T8os2j+xL/IcWwPMNMpfaP+1RRJSc2nAOBFxmsF9oMpso4dQHFGUBr9yYvgHL
+         Js8o5vcj9dXWct8Xcbl3bAVguaaAU03jKjccwqcm+p+oH1ipbtGs3aOryWl1q6Y42BfA
+         TJ8htl/Lx31qD1BgeNx8w64rNFBRpon3yhjgA=
+Message-ID: <2f11576a0808280759k2500f2ebm89ab9c3601014457@mail.gmail.com>
+Date: Thu, 28 Aug 2008 23:59:05 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Adam Litke" <agl@us.ibm.com>
+Subject: Re: [PATCH] coredump_filter: add hugepage core dumping
+Cc: "Kawai Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
+       "Hugh Dickins" <hugh@veritas.com>, "William Irwin" <wli@holomorphy.com>,
        LKML <linux-kernel@vger.kernel.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-       linux-next@vger.kernel.org, mingo@elte.hu
-In-Reply-To: <1219933410.7107.296.camel@pmac.infradead.org>
-References: <20080826184008.6be39f19.sfr@canb.auug.org.au>
-	 <48B44B2D.8070809@linux.vnet.ibm.com> <48B46610.1010809@linux.intel.com>
-	 <48B53695.3020703@linux.vnet.ibm.com> <48B55B16.7060804@linux.intel.com>
-	 <20080828003308.400038e0.sfr@canb.auug.org.au>
-	 <20080828003821.d29d2a03.sfr@canb.auug.org.au>
-	 <1219933410.7107.296.camel@pmac.infradead.org>
-Content-Type: text/plain
-Date: Thu, 28 Aug 2008 15:55:07 +0100
-Message-Id: <1219935307.7107.302.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <1219934895.14358.40.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <20080828142352.6ABC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <1219934895.14358.40.camel@localhost.localdomain>
+X-Google-Sender-Auth: 7a85d224b0ee099e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-28 at 15:23 +0100, David Woodhouse wrote:
-> On Thu, 2008-08-28 at 00:38 +1000, Stephen Rothwell wrote:
-> > Hi Arjan,
-> > 
-> > On Thu, 28 Aug 2008 00:33:08 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > >
-> > > The original reported trace was during setup_system which is very early in
-> > > the boot.
-> > 
-> > But, of course, that version didn't have the necessary extra dereference
-> > of the function address ...
-> > 
-> > And the later debug patch did not check the address at register time,
-> > only at notify time.
-> > 
-> > The later trace also looks to be early in the boot.
-> 
-> It's isa_bridge_notify(), which is neither within _[se]text nor
-> _[se]inittext, so the core_kernel_text() function disavows it.
-> 
-> Where are __devinit functions supposed to end up?
+> I have tested this using both the provided C program and with a program
+> that used libhugetlbfs to back its text and data segments with huge
+> pages.  This seems to work as expected.  From a hugetlbfs perspective,
+> this seems like a reasonable patch to me.
 
-The TEXT_TEXT macro defined in <asm-generic/vmlinux.lds.h> should get
-this right... but we don't use it. Is there any particular reason for
-that, or should we....
+Thank you, Adam!
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Yes, libhugetlbfs user increased in these days.
+So, I believe debaggability of libhugetlbfs linked program is important.
 
---- linux-2.6.26.ppc64/arch/powerpc/kernel/vmlinux.lds.S~	2008-07-13 22:51:29.000000000 +0100
-+++ linux-2.6.26.ppc64/arch/powerpc/kernel/vmlinux.lds.S	2008-08-28 15:39:14.000000000 +0100
-@@ -35,10 +35,11 @@ SECTIONS
- 		ALIGN_FUNCTION();
- 		*(.text.head)
- 		_text = .;
--		*(.text .fixup .text.init.refok .exit.text.refok)
-+		TEXT_TEXT
- 		SCHED_TEXT
- 		LOCK_TEXT
- 		KPROBES_TEXT
-+		*(.fixup)
- 
- #ifdef CONFIG_PPC32
- 		*(.got1)
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
-
-
+>> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>> CC: Kawai, Hidehiro <hidehiro.kawai.ez@hitachi.com>
+>> CC: Hugh Dickins <hugh@veritas.com>
+>> CC: William Irwin <wli@holomorphy.com>
+>> CC: Adam Litke <agl@us.ibm.com>
+>
+> Tested-by: Adam Litke <agl@us.ibm.com>
+> Acked-by: Adam Litke <agl@us.ibm.com>
+>
