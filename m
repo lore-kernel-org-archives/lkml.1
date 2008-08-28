@@ -1,113 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYH1Nal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbYH1Nbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbYH1Nal (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 09:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbYH1Nad
+	id S1754920AbYH1Nbq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 09:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbYH1Nbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 09:30:33 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:54482 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752584AbYH1Nac (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 09:30:32 -0400
-Date: Thu, 28 Aug 2008 10:30:13 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Gerhard Brauer <gerhard.brauer@web.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.{26.2,27-rc} oops on virtualbox
-Message-ID: <20080828103013.163730ee@doriath.conectiva>
-In-Reply-To: <20080827233328.GC25531@Krystal>
-References: <20080822175741.6bc83dc8@doriath.conectiva>
-	<48AF2ABD.9070100@zytor.com>
-	<20080826141851.GA5300@tux1.brauer.lan>
-	<20080826145338.GA8601@Krystal>
-	<20080826131354.356ae11d@doriath.conectiva>
-	<20080826171822.GB14906@Krystal>
-	<20080826150222.0cf1542c@doriath.conectiva>
-	<20080826181558.GA16887@Krystal>
-	<20080826203449.GD5300@tux1.brauer.lan>
-	<20080827161346.35b48d75@doriath.conectiva>
-	<20080827233328.GC25531@Krystal>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Aug 2008 09:31:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35769 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752516AbYH1Nbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 09:31:37 -0400
+Date: Thu, 28 Aug 2008 15:31:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [git pull] tracing fixes
+Message-ID: <20080828133120.GA31952@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, 27 Aug 2008 19:33:28 -0400
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> escreveu:
 
-| * Luiz Fernando N. Capitulino (lcapitulino@mandriva.com.br) wrote:
-| > Em Tue, 26 Aug 2008 22:34:49 +0200
-| > Gerhard Brauer <gerhard.brauer@web.de> escreveu:
-| > 
-| > | On Tue, Aug 26, 2008 at 02:15:58PM -0400, Mathieu Desnoyers wrote:
-| > | > 
-| > | > Ok, it might still be caused by paravirt and alternatives instruction
-| > | > patching. What if you also do :
-| > | > 
-| > | > alternative_instructions()
-| > | > 
-| > | > +        unsigned long flags;
-| > | >         /* The patching is not fully atomic, so try to avoid local interruptions
-| > | >            that might execute the to be patched code.
-| > | >            Other CPUs are not running. */
-| > | >         stop_nmi();
-| > | > #ifdef CONFIG_X86_MCE
-| > | >         stop_mce();
-| > | > #endif
-| > | > +        local_irq_save(flags);
-| > | > 
-| > | > 
-| > | > ...
-| > | > +        local_irq_restore(flags);
-| > | >         restart_nmi();
-| > | > #ifdef CONFIG_X86_MCE
-| > | >         restart_mce();
-| > | > #endif
-| > | > 
-| > | > ?
-| > | 
-| > | Hej! This last changes (in addition to the others you mentioned) seems
-| > | to be a good shot. I could reboot 8 times the guest, compile several
-| > | packages (something which always leeds to the oops) and currently i
-| > | build two big packages simultan. So this is heavy IO.
-| > 
-| >  Yeah, it works for me too and it's good to know that you are doing
-| > additional tests. I'm doing only boot tests... I was testing lots of
-| > kernels and doing additional tests would take a lot of time.
-| > 
-| >  Now, what does this mean? Is VirtualBox issuing interrupts when it
-| > shouldn't or should this section of the code be better protected?
-| > 
-| 
-| Since this problem appears while we are using a simple memcpy (the
-| text_poke_early version), but disappears when we disable interrupts for
-| a longer period of this, I suspect a problem with irq disabling in
-| Virtualbox.
-| 
-| We could try to add some nsleep() or msleep() calls within text_poke and
-| text_poke_early before and after the code modificatoin to see if the
-| problem disappears. If it does, then that would somewhat confirm the
-| racy irq disable thesis.
+Linus,
 
- Well, a Ubuntu kernel guy has reported in the virtualbox's ticket[1]
-that the oops doesn't happen if he puts a printk() in the crash site.
+Please pull the latest tracing-fixes-for-linus git tree from:
 
- The funny thing is that someone (who might be a virtualbox developer)
-used the same race argument to say that this is a bug in the kernel.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
 
- What concerns me though is that how can virtualbox be worth using
-in the Linux community if it's probably not working for various distros
-(currently Fedora, Ubuntu, Mandriva and ArchLinux).
+Thanks,
 
- Thanks for the effort, guys.
+	Ingo
 
-[1] http://www.virtualbox.org/ticket/1875
+------------------>
+Rafael J. Wysocki (1):
+      ftrace: disable tracing for hibernation
 
--- 
-Luiz Fernando N. Capitulino
+
+ kernel/power/disk.c |   13 ++++++++++---
+ 1 files changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/power/disk.c b/kernel/power/disk.c
+index f011e08..bbd85c6 100644
+--- a/kernel/power/disk.c
++++ b/kernel/power/disk.c
+@@ -21,6 +21,7 @@
+ #include <linux/console.h>
+ #include <linux/cpu.h>
+ #include <linux/freezer.h>
++#include <linux/ftrace.h>
+ 
+ #include "power.h"
+ 
+@@ -255,7 +256,7 @@ static int create_image(int platform_mode)
+ 
+ int hibernation_snapshot(int platform_mode)
+ {
+-	int error;
++	int error, ftrace_save;
+ 
+ 	/* Free memory before shutting down devices. */
+ 	error = swsusp_shrink_memory();
+@@ -267,6 +268,7 @@ int hibernation_snapshot(int platform_mode)
+ 		goto Close;
+ 
+ 	suspend_console();
++	ftrace_save = __ftrace_enabled_save();
+ 	error = device_suspend(PMSG_FREEZE);
+ 	if (error)
+ 		goto Recover_platform;
+@@ -296,6 +298,7 @@ int hibernation_snapshot(int platform_mode)
+  Resume_devices:
+ 	device_resume(in_suspend ?
+ 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
++	__ftrace_enabled_restore(ftrace_save);
+ 	resume_console();
+  Close:
+ 	platform_end(platform_mode);
+@@ -366,10 +369,11 @@ static int resume_target_kernel(void)
+ 
+ int hibernation_restore(int platform_mode)
+ {
+-	int error;
++	int error, ftrace_save;
+ 
+ 	pm_prepare_console();
+ 	suspend_console();
++	ftrace_save = __ftrace_enabled_save();
+ 	error = device_suspend(PMSG_QUIESCE);
+ 	if (error)
+ 		goto Finish;
+@@ -384,6 +388,7 @@ int hibernation_restore(int platform_mode)
+ 	platform_restore_cleanup(platform_mode);
+ 	device_resume(PMSG_RECOVER);
+  Finish:
++	__ftrace_enabled_restore(ftrace_save);
+ 	resume_console();
+ 	pm_restore_console();
+ 	return error;
+@@ -396,7 +401,7 @@ int hibernation_restore(int platform_mode)
+ 
+ int hibernation_platform_enter(void)
+ {
+-	int error;
++	int error, ftrace_save;
+ 
+ 	if (!hibernation_ops)
+ 		return -ENOSYS;
+@@ -411,6 +416,7 @@ int hibernation_platform_enter(void)
+ 		goto Close;
+ 
+ 	suspend_console();
++	ftrace_save = __ftrace_enabled_save();
+ 	error = device_suspend(PMSG_HIBERNATE);
+ 	if (error) {
+ 		if (hibernation_ops->recover)
+@@ -445,6 +451,7 @@ int hibernation_platform_enter(void)
+ 	hibernation_ops->finish();
+  Resume_devices:
+ 	device_resume(PMSG_RESTORE);
++	__ftrace_enabled_restore(ftrace_save);
+ 	resume_console();
+  Close:
+ 	hibernation_ops->end();
