@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbYH1SIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbYH1SKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756488AbYH1SIu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 14:08:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbYH1SIm
+	id S1756130AbYH1SKc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 14:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbYH1SKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 14:08:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56914 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751250AbYH1SIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 14:08:41 -0400
-Message-ID: <48B6E844.3050508@kernel.org>
-Date: Thu, 28 Aug 2008 20:02:44 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Thu, 28 Aug 2008 14:10:24 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:44845 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751725AbYH1SKX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 14:10:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Sl5NpjrLt6KsUIjHoJrC4ASCjk2ON1kD66m7IiaqWNCiDY5wy+ZzUQEujkAd8lKMdY
+         8uIMECfCqFpIT84l7OJHzWHQef2+B+yBY2Goj4atIFKGY0U+VmATcvX0ORXcbBX+csBV
+         SUKHLe4D5oukXOhdq6NiDqwFM1bqshPxXTs2E=
+Message-ID: <a4e6962a0808281110s6ee6c86ak3ff6e28c51981656@mail.gmail.com>
+Date: Thu, 28 Aug 2008 11:10:21 -0700
+From: "Eric Van Hensbergen" <ericvh@gmail.com>
+To: "Abhishek Kulkarni" <kulkarni@lanl.gov>
+Subject: Re: [PATCH] 9p bug fix: return non-zero error value in p9_put_data
+Cc: v9fs-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <1219771831.16125.12.camel@blender>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: fuse-devel@lists.sourceforge.net, miklos@szeredi.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <20080828175116.GB18461@kroah.com> <48B6E79E.6020702@kernel.org>
-In-Reply-To: <48B6E79E.6020702@kernel.org>
-X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 28 Aug 2008 18:08:35 +0000 (UTC)
+Content-Disposition: inline
+References: <1219771831.16125.12.camel@blender>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Greg KH wrote:
->> Why do we need ioctls?  For CUSE?  In that case, would we need to copy
->> the memory from userspace, into the kernel, and then back out into
->> userspace again?  Can't we just have a "pass-through" type fixed ioctl
->> instead?
-> 
-> Can you elaborate a bit?  How the fixed ioctl would know how much to
-> copy in and out and from where?
+On Tue, Aug 26, 2008 at 10:30 AM, Abhishek Kulkarni <kulkarni@lanl.gov> wrote:
+> p9_put_data is called by p9_create_twrite which expects it to return a
+> non-zero value on error. This was the reason why every p9_client_write
+> was failing. This patch also adds a check for buffer overflow in
+> p9_put_data.
+>
 
-If you're worried about the double copying due to performance reasons,
-what we can do is implementing userspace to userspace copying.  I just
-took easier path of copying twice as u-u copy can't be done using the
-existing FUSE mechanics, but frankly, at this point, I think that would
-be an premature optimization.
+I'm a bit confused about when this is even getting called -- O thought
+all writes were following the p9_client_uwrite path?
 
--- 
-tejun
+Also, we do the bufoverflow check in p9_create_write -- so with your
+patch aren't we doing this twice?
+
+           -eric
+
+
+> Signed-off-by: Abhishek Kulkarni <kulkarni@lanl.gov>
+> ---
+>  net/9p/conv.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+> diff --git a/net/9p/conv.c b/net/9p/conv.c
+> index 4454720..7f6db15 100644
+> --- a/net/9p/conv.c
+> +++ b/net/9p/conv.c
+> @@ -451,8 +451,11 @@ p9_put_data(struct cbuf *bufp, const char *data,
+> int count,
+>                   unsigned char **pdata)
+>  {
+>        *pdata = buf_alloc(bufp, count);
+> +       if (buf_check_overflow(bufp))
+> +               return -EIO;
+> +
+>        memmove(*pdata, data, count);
+> -       return count;
+> +       return 0;
+>  }
+>
+>  static int
+>
+>
+> Thanks,
+>  -- Abhishek
+>
+>
