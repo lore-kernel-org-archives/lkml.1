@@ -1,71 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbYH1IBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbYH1IMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755559AbYH1IBc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 04:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbYH1IBX
+	id S1754248AbYH1IMP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 04:12:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbYH1IMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 04:01:23 -0400
-Received: from mx.bridgeco.net ([213.173.191.47]:4427 "EHLO mx.bridgeco.net"
+	Thu, 28 Aug 2008 04:12:01 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:40025 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753016AbYH1IBW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 04:01:22 -0400
-From: Wappler Marcel <Marcel.Wappler@bridgeco.net>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Thu, 28 Aug 2008 10:01:19 +0200
-Subject: VM: page reclaim does not work on ARM9? [resend]
-Thread-Topic: VM: page reclaim does not work on ARM9? [resend]
-Thread-Index: Ach0m4cSiApNdLdFScC3DSTHVH8H7w==
-Message-ID: <462ADBE7F1A69C438B7E2ED56007E6F5ABF9A43F2B@exch10.BC-Int.NET>
-Accept-Language: en-US, de-CH
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US, de-CH
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1752117AbYH1IL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 04:11:59 -0400
+Date: Thu, 28 Aug 2008 10:11:13 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andre Noll <maan@systemlinux.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, jurriaan <thunder7@xs4all.nl>,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
+Subject: Re: 2.6.27-rc4: lots of 'in_atomic():1, irqs_disabled():0' with  software-raid1
+Message-ID: <20080828081113.GW20055@kernel.dk>
+References: <20080827170538.GA24393@amd64.of.nowhere> <200808272347.43577.rjw@sisk.pl> <20080828073324.GR20055@kernel.dk> <20080828004532.45d8b8c9.akpm@linux-foundation.org> <20080828074830.GV20055@kernel.dk> <20080828075607.GA3795@skl-net.de>
 MIME-Version: 1.0
-X-OriginalArrivalTime: 28 Aug 2008 08:00:54.0214 (UTC) FILETIME=[320E6660:01C908E4]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080828075607.GA3795@skl-net.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I do need some help to understand what's going on in the VM
-of the Linux kernel...
+On Thu, Aug 28 2008, Andre Noll wrote:
+> On 09:48, Jens Axboe wrote:
+> > Doh right, we of course can't block inside a RCU section. Then
+> > bitmap.c:write_sb_page() wants fixing:
+> > 
+> >         rcu_read_lock();
+> >         rdev_for_each_rcu(...)
+> >                 md_super_write(...)
+> >                         bio_alloc(GFP_NOIO, 1);
+> 
+> Also, md_super_write() does not check the return value of bio_alloc().
+> That probably needs fixing as well.
 
-I wrote a little script which generates a C app with
-millions of lines of dumb linear running code and a endless
-loop at the end. I run this app on both PC Linux (swapping
-enabled) and embedded Linux (Kernel 2.6.24.7, ARM9, swapping
-disabled).
+No, that's the guarentee of mempool_alloc() - as long as you have
+__GFP_WAIT set, you'll never see a NULL return.
 
-The app shall consume a lot of code pages which are used
-only once (to run the linear code in it) and then stay in
-the endless loop and never touch all the other pages in
-memory. Then I consume all of the remaining memory of the
-system through generating a big file on the tmpfs (whose
-data resides in memory) with the help of /dev/zero and "dd".
+-- 
+Jens Axboe
 
-My expectation was: the VM shall steal (reclaim) all the
-only once touched pages containing those dumb linear code of
-the app.
-
-My observation is: "top" shows that the app is consuming
-constantly the same huge amount of residential memory during
-the decreasing free memory space. At some moment the kernel
-starts a OOM killer on the app instead of reclaiming its
-unused code pages.
-
-Keep in mind: the behaviour is the same on both PC Linux (2
-GB RAM) and ARM Linux (32MB RAM ) with and without swapping
-enabled.
-
-So for me it looks like that any page which is containing
-code never gets reclaimed from the application it belongs to
-regardless of its usage.
-
-Any idias, whats going on?
-
-best regards, Marcel
-
-PS: Please CC me on reply...
