@@ -1,39 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbYH1Vki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbYH1VpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756703AbYH1Vki (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 17:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbYH1Vk0
+	id S1757313AbYH1VpV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 17:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbYH1VpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 17:40:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52637 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752005AbYH1VkZ (ORCPT
+	Thu, 28 Aug 2008 17:45:08 -0400
+Received: from smtp1.dnsmadeeasy.com ([205.234.170.134]:48835 "EHLO
+	smtp1.dnsmadeeasy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752942AbYH1VpH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 17:40:25 -0400
-Date: Thu, 28 Aug 2008 14:39:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Takashi Iwai <tiwai@suse.de>, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: linux-next: Tree for August 28
-Message-Id: <20080828143934.a5034a01.akpm@linux-foundation.org>
-In-Reply-To: <20080828183307.23c6be82.sfr@canb.auug.org.au>
-References: <20080828183307.23c6be82.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 28 Aug 2008 17:45:07 -0400
+X-Greylist: delayed 388 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Aug 2008 17:45:07 EDT
+X-Authenticated-Name: js.dnsmadeeasy
+X-Transit-System: In case of SPAM please contact abuse@dnsmadeeasy.com
+Message-ID: <48B71C61.3020004@avtrex.com>
+Date: Thu, 28 Aug 2008 14:45:05 -0700
+From: David Daney <ddaney@avtrex.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: linux-mips@linux-mips.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Patch [1/6] MIPS: Add HARDWARE_WATCHPOINTS configure option.
+References: <48B71ADD.601@avtrex.com>
+In-Reply-To: <48B71ADD.601@avtrex.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Aug 2008 21:45:05.0707 (UTC) FILETIME=[557167B0:01C90957]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Aug 2008 18:33:07 +1000
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> I have created today's linux-next tree at
-> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+This is automatically set for all MIPS32 and MIPS64 processors.
 
-firmware/yamaha/yss225_registers.bin.ihex uses \r\n line termination.
-Is that actually required, or can we use plain old \n?
+Signed-off-by: David Daney <ddaney@avtrex.com>
+---
+ arch/mips/Kconfig |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-Andy, a checkpatch rule for this would be nice.
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 4da736e..f5b3fca 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -1272,6 +1272,13 @@ config CPU_SUPPORTS_32BIT_KERNEL
+ config CPU_SUPPORTS_64BIT_KERNEL
+ 	bool
+ 
++#
++# Set to y for ptrace access to watch registers.
++#
++config HARDWARE_WATCHPOINTS
++       bool
++       default y if CPU_MIPS32 || CPU_MIPS64
++
+ menu "Kernel type"
+ 
+ choice
+-- 
+1.5.5.1
+
+
