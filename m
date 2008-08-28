@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbYH1MLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbYH1MMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753819AbYH1MLz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 08:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYH1MLr
+	id S1754627AbYH1MMU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 08:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbYH1MMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 08:11:47 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:49745 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750746AbYH1MLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 08:11:47 -0400
-Message-ID: <48B69582.4000208@cn.fujitsu.com>
-Date: Thu, 28 Aug 2008 20:09:38 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH] cgroup(fix critical bug): new handling for tasks file
-References: <48B360CE.2010501@cn.fujitsu.com>	 <6599ad830808251929p10dfc9d2ub11e4db0cd4f9f3@mail.gmail.com>	 <48B39319.7070403@cn.fujitsu.com>	 <6599ad830808261544w308a850m865ac0c0a1552c77@mail.gmail.com>	 <48B4D81D.2040200@cn.fujitsu.com> <6599ad830808270536i353e1807kaac4e9fb74301bb0@mail.gmail.com>
-In-Reply-To: <6599ad830808270536i353e1807kaac4e9fb74301bb0@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Aug 2008 08:12:03 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39322 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751815AbYH1MMB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 08:12:01 -0400
+Date: Thu, 28 Aug 2008 14:14:36 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Stefani Seibold <stefani@seibold.net>,
+       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
+Message-ID: <20080828121436.GN26610@one.firstfloor.org>
+References: <20080819103301.787700742@chello.nl> <alpine.LFD.1.10.0808262228030.3243@apollo.tec.linutronix.de> <874p57s873.fsf@basil.nowhere.org> <200808272008.16106.nickpiggin@yahoo.com.au> <20080828105408.GA4488@elte.hu> <20080828110923.GL26610@one.firstfloor.org> <1219922353.6443.14.camel@twins> <20080828115035.GM26610@one.firstfloor.org> <1219924853.6443.18.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1219924853.6443.18.camel@twins>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Tue, Aug 26, 2008 at 9:29 PM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
->> And vmalloc can malloc larger memory than kmalloc, is vmalloc() enough?
->> If not, I think using an array of pages is the best choice.
-> 
-> vmalloc would be simpler, certainly, but it has a higher overhead. And
-> since we're dealing with arrays of integers here, it's not too hard to
-> manage multiple arrays. Oh, except for sorting them, which would be
-> more of a pain. So yes, maybe vmalloc() would be a better choice at
-> first.
-> 
-Yep, these are hard. Which method is your favorite?
+> Then people can no longer assume stuff like queue_work_on() etc.. works.
+> Users of such code might depend on it actually running on the specified
+> cpu.
 
-My original purpose was to fix a bug as I described. 
-This bug and the problem that offering big enough array for a huge
-cgroup are orthogonal!
+If they assume that they're already buggy because CPU hot unplug will break
+affinities.
 
-Could you consider/test that is it a bug as I described(and is it as
-critical as I described, maybe I was too nervous)?
-And this is also a problem: opening a cgroup.tasks twice or will waste
-a lot of _physical_ memory.
-
-    Thanks! Lai
-
+-Andi
