@@ -1,70 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbYH1AEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbYH1AIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756864AbYH1AEk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 20:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbYH1AE3
+	id S1756192AbYH1AIy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 20:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbYH1AIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 20:04:29 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44846 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754312AbYH1AE2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 20:04:28 -0400
-Date: Wed, 27 Aug 2008 16:48:49 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oliver@neukum.org>, USB list <linux-usb@vger.kernel.org>,
-       Stefan Kopp <stefan_kopp@agilent.com>, Marcel Janssen <korgull@home.nl>,
-       Felipe Balbi <me@felipebalbi.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] USB: add USB test and measurement class driver - round
-	2
-Message-ID: <20080827234849.GD31264@kroah.com>
-References: <200808272105.50169.oliver@neukum.org> <Pine.LNX.4.44L0.0808271513270.2138-100000@iolanthe.rowland.org>
+	Wed, 27 Aug 2008 20:08:46 -0400
+Received: from tundra.namei.org ([65.99.196.166]:52420 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752359AbYH1AIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 20:08:45 -0400
+Date: Thu, 28 Aug 2008 10:05:09 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: David Howells <dhowells@redhat.com>
+cc: "Serge E. Hallyn" <serue@us.ibm.com>, Andreas Gruenbacher <agruen@suse.de>,
+       "Andrew G. Morgan" <morgan@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] file capabilities: Add no_file_caps switch
+In-Reply-To: <31237.1219871686@redhat.com>
+Message-ID: <alpine.LRH.1.10.0808281004170.18937@tundra.namei.org>
+References: <20080827185845.GA25669@us.ibm.com> <200808262057.51606.agruen@suse.de> <200808271729.18220.agruen@suse.de> <20080827160439.GA12085@us.ibm.com> <200808271857.48651.agruen@suse.de> <31237.1219871686@redhat.com>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.44L0.0808271513270.2138-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 27, 2008 at 03:16:18PM -0400, Alan Stern wrote:
-> On Wed, 27 Aug 2008, Oliver Neukum wrote:
-> 
-> > Am Mittwoch 27 August 2008 20:58:08 schrieb Alan Stern:
-> > > > And this rule depends on sharing the USB major or not. This needs
-> > > > a big fat mention in Documentation.
-> > > 
-> > > You mean that the open/disconnect locking rule applies only to drivers 
-> > > that call usb_register_dev, i.e, drivers using the USB major.  Right?
-> > 
-> > Yes. In fact drivers not using the USB major but their own char devices
-> > will need such a lock. This is tricky.
-> 
-> IMO all char-device registration/deregistration routines should use a 
-> similar rwsem.  Then device drivers wouldn't need to worry about it.
-> 
-> > > I agree that it deserves to be mentioned in the documentation 
-> > > somewhere.  Where would be a good place?  None of the existing files in 
-> > > Documentation/usb seem appropriate.
-> > 
-> > The USB major merits a file of its own.
-> 
-> I don't feel competent to start writing such a file.  Greg, what do you 
-> think?  Maybe all that's needed to get going is to "borrow" some of the 
-> material in LDD3.  :-)
+On Wed, 27 Aug 2008, David Howells wrote:
 
-Well, as the USB chapter in LDD3 "borrowed" heavily from the comments in
-the usb code itself, that would only be fair :)
+>  (2) Neuter sys_capset().  I've been holding this off for the next merge
+>      window as it isn't a bugfix, unlike (1).  Perhaps I should ask James to
+>      push it to Linus.  James?
 
-That chapter needs to be reworked.  The authors and Oreilly and I are
-currently talking about how to do this all in a framework that makes
-sense (the current one of a book every few years that quickly gets out
-of date doesn't make sense.)
+Linus only pulled the PF_SUPERPRIV fix once the sys_capset change was 
+removed from the patch.  It really does need to be a bugfix at this stage.
 
-thanks,
 
-greg k-h
+- James
+-- 
+James Morris
+<jmorris@namei.org>
