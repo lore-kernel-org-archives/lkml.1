@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757681AbYH1BJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYH1BTH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757681AbYH1BJh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 21:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757309AbYH1BJY
+	id S1754109AbYH1BTH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 21:19:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbYH1BSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 21:09:24 -0400
-Received: from mu-out-0910.google.com ([209.85.134.186]:54958 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756726AbYH1BJW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 21:09:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=Tgj5SPwNd4u3J1GwDWpFVXBESIIGlZ58Qx2D80iMvyu+MPkFESWRgHq9MzR0nRKnvh
-         vm4yVqA39MXKHQYc89FaF8Xa8jjnD7JTcOT8/ttLESqPvLzQGLWiW5X08YM55rMQCX6h
-         d4jS0jfdMgLFvRFANfntXmC3PAQTP+e6Y3x6Y=
-Date: Thu, 28 Aug 2008 05:10:57 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Less softirq vectors
-Message-ID: <20080828011057.GA3634@x200.localdomain>
+	Wed, 27 Aug 2008 21:18:54 -0400
+Received: from tundra.namei.org ([65.99.196.166]:57267 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752500AbYH1BSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 21:18:53 -0400
+Date: Thu, 28 Aug 2008 11:17:39 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Eric Paris <eparis@redhat.com>
+cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       chrisw@sous-sol.org, debora@linux.vnet.ibm.com,
+       srajiv@linux.vnet.ibm.com, tpm@selhorst.net,
+       tpmdd-devel@lists.sourceforge.net
+Subject: Re: [PATCH] securityfs: do not depend on CONFIG_SECURITY
+In-Reply-To: <1219419357.3613.12.camel@localhost.localdomain>
+Message-ID: <alpine.LRH.1.10.0808281117250.19833@tundra.namei.org>
+References: <1219419357.3613.12.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We don't need whole 32 of them, only NR_SOFTIRQS.
+On Fri, 22 Aug 2008, Eric Paris wrote:
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+> Add a new Kconfig option SECURITYFS which will build securityfs support
+> but does not require CONFIG_SECURITY.  The only current user of
+> securityfs does not depend on CONFIG_SECURITY and there is no reason the
+> full LSM needs to be built to build this fs.
+> 
+> Signed-off-by: Eric Paris <eparis@redhat.com>
 
- include/linux/interrupt.h |    2 ++
- kernel/softirq.c          |    2 +-
- 2 files changed, 3 insertions(+), 1 deletion(-)
+Applied to 
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
 
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -252,6 +252,8 @@ enum
- 	HRTIMER_SOFTIRQ,
- #endif
- 	RCU_SOFTIRQ, 	/* Preferable RCU should always be the last softirq */
-+
-+	NR_SOFTIRQS
- };
- 
- /* softirq mask and active fields moved to irq_cpustat_t in
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -46,7 +46,7 @@ irq_cpustat_t irq_stat[NR_CPUS] ____cacheline_aligned;
- EXPORT_SYMBOL(irq_stat);
- #endif
- 
--static struct softirq_action softirq_vec[32] __cacheline_aligned_in_smp;
-+static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;
- 
- static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
- 
 
+-- 
+James Morris
+<jmorris@namei.org>
