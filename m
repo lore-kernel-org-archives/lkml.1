@@ -1,54 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755956AbYH1TZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbYH1T1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755956AbYH1TZr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 15:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753767AbYH1TZj
+	id S1756177AbYH1T1l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 15:27:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYH1T13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 15:25:39 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:44933 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752675AbYH1TZi (ORCPT
+	Thu, 28 Aug 2008 15:27:29 -0400
+Received: from relay2.globalproof.net ([194.146.153.25]:51138 "EHLO
+	relay2.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753252AbYH1T12 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 15:25:38 -0400
-To: tj@kernel.org
-CC: miklos@szeredi.hu, greg@kroah.com, fuse-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-reply-to: <48B6EF98.4070008@kernel.org> (message from Tejun Heo on Thu, 28
-	Aug 2008 20:34:00 +0200)
-Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <20080828175116.GB18461@kroah.com> <48B6E79E.6020702@kernel.org> <48B6E801.9080102@kernel.org> <E1KYm0D-0003q0-IQ@pomaz-ex.szeredi.hu> <48B6EBBD.6050406@kernel.org> <E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu> <48B6EF98.4070008@kernel.org>
-Message-Id: <E1KYn7T-00048J-Qj@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 28 Aug 2008 21:25:23 +0200
+	Thu, 28 Aug 2008 15:27:28 -0400
+From: Denys Fedoryshchenko <denys@visp.net.lb>
+Organization: Virtual ISP
+To: Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+Date: Thu, 28 Aug 2008 22:25:57 +0300
+User-Agent: KMail/1.9.9
+Cc: Andi Kleen <andi@firstfloor.org>, Joe Malicki <jmalicki@metacarta.com>,
+       David Miller <davem@davemloft.net>, johnpol@2ka.mipt.ru,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       juhlenko@akamai.com, sammy@sammy.net
+References: <20080827.201020.17601834.davem@davemloft.net> <200808281948.52608.denys@visp.net.lb> <48B6F4FE.6010308@cosmosbay.com>
+In-Reply-To: <48B6F4FE.6010308@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808282225.57535.denys@visp.net.lb>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Aug 2008, Tejun Heo wrote:
-> Miklos Szeredi wrote:
-> >> Hmmm... I was trying to stay within similar operation mechanics as other
-> >> ops.  Directly accessing the caller's memory has performance benefits
-> >> but that benefit can also be used by reads and writes.  So, if we're
-> >> gonna do direct memory access, maybe doing it in more generic way is a
-> >> better idea?
-> > 
-> > On the contrary: playing VM games is going to be slow.  I think this
-> > approach is best suited for generic ioctl support because it
-> > simplifies the kernel part.  I'd hate to add all that complexity to
-> > the kernel if not absolutely necessary.
-> 
-> Well, it's only 240 lines with good amount of comments and iovec copying
-> function.  The ioctl itself isn't too complex.  I'm a bit skeptical
-> about direct access.  It can easily introduce security vulnerabilities
-> as there really is no way to hold a pid.
+On Thursday 28 August 2008, Eric Dumazet wrote:
 
-I don't understand.  No new vulnerabilities are introduced, since it
-would just use existing infrastructure.
+> So... if using ping on your machine has direct an noticeable effect on cpu
+> load, problem is elsewhere (if no ping is running, you dont have skb
+> timestamping, but still getnstimeofday() is the top function in oprofile)
 
-Why is it better if the kernel does the copying of memory regions
-instructed by the userspace filesystem, than if the userspace
-filesystem does that copying itself?  I feel they are totally
-equivalent, except that the latter needs more complexity in the
-kernel.
+>
+> 1) Do you have any netfilter rule using xt_time ?
+>    (This module also calls __net_timestamp(skb))
+No
 
-Miklos
+>
+> 2) You maybe have a bad program that do something expensive relative to
+> kernel time services.
+No, process list is very short, it is custom semi-embedded linux distro i 
+made, so i know each process running there.  Here is process list (kernel 
+processes/threads and running shell(busybox ash) removed) 
+
+1 root     /bin/sh /init
+ 1119 root     init
+ 2451 root     /sbin/syslogd -R 80.83.17.2
+ 2453 root     /sbin/klogd
+ 3168 squid    /usr/sbin/zebra -d
+ 3175 squid    /usr/sbin/ripd -d
+ 3195 root     /usr/sbin/snmpd -c /config/snmpd.conf
+ 3208 root     udhcpd /config/udhcp.office.conf -S
+ 3550 root     /usr/sbin/sshd -b /etc/banner
+ 3566 root     /sbin/getty 38400 tty1
+ 3567 root     /sbin/getty 38400 tty2
+ 3570 root     /sbin/getty 38400 tty3
+ 4055 root     /usr/sbin/sshd -b /etc/banner
+
+> Your setup is probably not common.
+> You want a PersonnalComputer class machine acts as a SuperCiscoDevice(TM),
+> while most PC machines dont use more than 10% of CPU power in average...
+I dont think i am alone, and almost sure there is many guys trying to run 
+linux as high-performance router. But most of them dont know about 
+netdev@ :-)
+
+Well, thats called "Increasing resources use efficiency and system 
+productivity". It is never a shame to utilize resources more efficiently. 
+Plus i am not using PC class machine. For example this one with HPET, is Sun 
+Fire X4100, which costs us that time a lot of bucks, and mostly because it is 
+reliable hardware (very good IPMI/remote kvm/... onboard, good cooling, 4 
+e1000, dual power supply).
+
+I can use also PC class, but i will face some issues, like building proper 
+cooling system and maybe even it will not work well, cause some chips not 
+designed for "heavy duty", and on load they will not be able to dissipate 
+heat inside the chip and will be broked soon. But sometimes it is even worth 
+to try.
+
+And most important, many routers is already "soft"-routers. What is Cisco 
+7206+NPE G1/G2? It is MIPS CPU with relatively large L2 cache. There is seems 
+no ASIC for routing offloading.  Means Linux can do same or better job.
+And means Vyatta can beat Cisco on this market, and be far away forward from 
+Cisco soon. As result more jobs for opensource guys. Linux must enter "heavy 
+duty" and critical jobs too, not only SOHO-class routers.
+
+>
+> Many existing programs depend on current SO_TIMESTAMP.
+> We wont break them to solve a particular problem (yet to be demonstrated)
+I think it wouldn't break. But sure we must be very careful and on my side i 
+can test all possible scenarios i can implement.
+
+Maybe even good idea to not change (for now) current  default behaviour, but 
+to provide option for "high performance" systems then.
+
+> kernel already provides nanosecond resolution :)
+> Check SO_TIMESTAMPNS and SCM_TIMESTAMPNS
+Maybe this function really must be "heavy" then.
