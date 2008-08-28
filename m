@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbYH1A6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbYH1A7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756679AbYH1A6c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 20:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbYH1A6Y
+	id S1757307AbYH1A7s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 20:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754847AbYH1A7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 20:58:24 -0400
-Received: from abydos.nerdbox.net ([216.151.149.55]:43232 "EHLO
-	abydos.NerdBox.Net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753669AbYH1A6X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 20:58:23 -0400
-Date: Wed, 27 Aug 2008 17:58:17 -0700 (PDT)
-From: Steve VanDeBogart <vandebo-lkml@NerdBox.Net>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] exit signals: use of uninitialized field notify_count
-In-Reply-To: <20080827161141.GA97@tv-sign.ru>
-Message-ID: <alpine.DEB.1.00.0808271747160.15543@abydos.NerdBox.Net>
-References: <alpine.DEB.1.00.0808261505550.15543@abydos.NerdBox.Net> <20080827080136.GA4453@elte.hu> <20080827161141.GA97@tv-sign.ru>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Wed, 27 Aug 2008 20:59:40 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:44948 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753037AbYH1A7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 20:59:39 -0400
+Message-ID: <48B5F877.8030506@garzik.org>
+Date: Wed, 27 Aug 2008 20:59:35 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: "Robert M. Stockmann" <stock@stokkie.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: libata, Sound on same IRQ : flaky sound
+References: <Pine.LNX.4.44.0808280147230.1242-100000@hubble.stokkie.net>
+In-Reply-To: <Pine.LNX.4.44.0808280147230.1242-100000@hubble.stokkie.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Aug 2008, Oleg Nesterov wrote:
+Robert M. Stockmann wrote:
+> Hi,
+> 
+> I have a couple of AMD64 machines with onboard sound devices running 
+> and they all have one thing in common : flaky sound when one is 
+> doing some heavy disk I/O on the SATA disks. Interesting enough 
+> /proc/interrupts shows that libata is using the same IRQ as the sound 
+> devices :
+> 
+> model name      : AMD Athlon(tm) 64 X2 Dual Core Processor 6000+
+> stepping        : 3
+> cpu MHz         : 3014.679
+> cache size      : 1024 KB
+> 
+> # cat /proc/interrupts 
+>            CPU0       CPU1       
+>   0:      55869  154467838    IO-APIC-edge  timer
+>   8:          0          0    IO-APIC-edge  rtc
+>   9:          0          0   IO-APIC-level  acpi
+>  16:       1453     499686   IO-APIC-level  libata, NVidia CK8S
+>  17:          0          0   IO-APIC-level  ehci_hcd:usb1
+>  18:      27633   69978987   IO-APIC-level  eth0
+> NMI:      10718      12112 
+> LOC:  154533874  154533852 
+> ERR:          0
+> MIS:          0
 
->> * Steve VanDeBogart <vandebo-lkml@NerdBox.Net> wrote:
->>
->>> task->signal->notify_count is only initialized if
->>> task->signal->group_exit_task is not NULL.  Reorder a conditional so
->>> that uninitialised memory is not used.  Found by Valgrind.
->
-> Minor comment. As Roland pointed out, it makes sense to initialize
-> the whole signal_struct explicitely, perhaps copy_signal() should
-> just use zalloc. In that case we don't need to check ->group_exit_task
-> at all, the same for __exit_signal().
->
-> Thanks Steve! and what do you think about the above?
+What is the behavior of a recent kernel?
 
-It looks like that would work.  Seems that
-sig->count == 0 && sig->group_exit_task != NULL can never be true.
-If it does work, a lot of initialization in copy_signal() can be
-removed and it would reduce the chances that a similar problem would be
-reintroduced.  I would submit a patch, but I'm not sure how to trigger
-those code paths in order to test it.
+Is your SATA interface set to legacy mode in BIOS?
 
---
-Steve
+	Jeff
+
+
