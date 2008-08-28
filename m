@@ -1,577 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753314AbYH1FAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753311AbYH1Faf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753314AbYH1FAp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 01:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbYH1FAd
+	id S1753311AbYH1Faf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 01:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbYH1Fa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 01:00:33 -0400
-Received: from mu-out-0910.google.com ([209.85.134.186]:12565 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751239AbYH1FAb (ORCPT
+	Thu, 28 Aug 2008 01:30:26 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34649 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750990AbYH1FaZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 01:00:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=lJYdwFr9bX81/X1A2WmWClh6SHKxnBx96feG9prRyH9faDXV2/ZdOEg6NAAE/Y/X5S
-         lz5zzh3kQVe1y7UIdXocsKe31pCR2YLhpGOrdp46In+mKGhrM2rUMaWOuBB4DyQAZi9o
-         jd/feVmT2yos8EGDJi2p4/BJwywTZsYoM3p8o=
-Date: Thu, 28 Aug 2008 09:02:03 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH -next] sysctl: simplify ->strategy
-Message-ID: <20080828050203.GA7608@x200.localdomain>
+	Thu, 28 Aug 2008 01:30:25 -0400
+Date: Thu, 28 Aug 2008 14:24:16 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Kawai Hidehiro <hidehiro.kawai.ez@hitachi.com>,
+       Hugh Dickins <hugh@veritas.com>, William Irwin <wli@holomorphy.com>,
+       Adam Litke <agl@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] coredump_filter: add hugepage core dumping
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20080828142352.6ABC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-name and nlen parameters passed to ->strategy hook are unused, remove them.
-In general ->strategy hook should know what it's doing, and don't do
-something tricky for which, say, pointer to original userspace array may
-be needed (name).
+Now, hugepage's vma has VM_RESERVED flag because it cannot be swapped.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+and VM_RESERVED vma isn't core dumped because its flag often be used for
+kernel internal vma (e.g. vmalloc, sound related).
+
+So, hugepage is never dumped and it indicate hugepages's program can't be debugged easily.
+
+In these days, demand on making use of hugepage is increasing.
+IMO, native support for coredump of hugepage is useful.
+
+
+I think VM_RESERVED default dumping bahavior is good,
+then I'd like to add coredump_filter mask.
+
+This patch doesn't change dafault behavior.
+
+
+I tested by following method.
+
+# ulimit -c unlimited
+# echo 0x23 > /proc/self/coredump_filter
+# ./hugepage_dump
+# gdb ./hugepage_dump core
+
+
+hugepage_dump.c
+------------------------------------------------
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+
+#define HUGEPAGE_SIZE (256*1024*1024)
+
+int main(int argc, char** argv)
+{
+	int err;
+	int shmid;
+	int *pval;
+	int shm_flags = 0666;
+
+	if ((argc >= 2) && (strcmp(argv[1], "-h")==0))
+		shm_flags |= SHM_HUGETLB;
+
+	err = shmid = shmget(IPC_PRIVATE, HUGEPAGE_SIZE, shm_flags);
+	if (err < 0) {
+		perror("shmget");
+		exit(1);
+	}
+
+	pval = shmat(shmid, 0, 0);
+	if (pval == (void*)-1) {
+		perror("shmat");
+		exit(1);
+	}
+
+	*pval = 1;
+
+	*(int*)0 = 1;
+
+	exit(0);
+}
+-----------------------------------------------------
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Kawai, Hidehiro <hidehiro.kawai.ez@hitachi.com>
+CC: Hugh Dickins <hugh@veritas.com>
+CC: William Irwin <wli@holomorphy.com>
+CC: Adam Litke <agl@us.ibm.com>
+
 ---
+ Documentation/filesystems/proc.txt |    3 ++-
+ fs/binfmt_elf.c                    |    7 ++++++-
+ include/linux/sched.h              |    3 ++-
+ 3 files changed, 10 insertions(+), 3 deletions(-)
 
- arch/frv/kernel/pm.c           |    6 +++---
- arch/mips/lasat/sysctl.c       |   17 ++++++++---------
- drivers/char/random.c          |    2 +-
- include/linux/sysctl.h         |    2 +-
- include/net/ip.h               |    2 +-
- include/net/ndisc.h            |    5 ++---
- ipc/ipc_sysctl.c               |    9 ++++-----
- kernel/sysctl.c                |   29 +++++++++++++----------------
- kernel/utsname_sysctl.c        |    5 ++---
- net/decnet/dn_dev.c            |    4 ++--
- net/decnet/sysctl_net_decnet.c |    4 ++--
- net/ipv4/devinet.c             |    7 +++----
- net/ipv4/route.c               |    7 +------
- net/ipv4/sysctl_net_ipv4.c     |   18 +++++++++---------
- net/ipv6/addrconf.c            |    1 -
- net/ipv6/ndisc.c               |   11 ++++-------
- 16 files changed, 56 insertions(+), 73 deletions(-)
+Index: b/Documentation/filesystems/proc.txt
+===================================================================
+--- a/Documentation/filesystems/proc.txt
++++ b/Documentation/filesystems/proc.txt
+@@ -2389,11 +2389,12 @@ will be dumped when the <pid> process is
+ of memory types. If a bit of the bitmask is set, memory segments of the
+ corresponding memory type are dumped, otherwise they are not dumped.
+ 
+-The following 4 memory types are supported:
++The following 5 memory types are supported:
+   - (bit 0) anonymous private memory
+   - (bit 1) anonymous shared memory
+   - (bit 2) file-backed private memory
+   - (bit 3) file-backed shared memory
++  - (bit 5) hugetlb memory
+ 
+   Note that MMIO pages such as frame buffer are never dumped and vDSO pages
+   are always dumped regardless of the bitmask status.
+Index: b/include/linux/sched.h
+===================================================================
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -402,8 +402,9 @@ extern int get_dumpable(struct mm_struct
+ #define MMF_DUMP_MAPPED_PRIVATE	4
+ #define MMF_DUMP_MAPPED_SHARED	5
+ #define MMF_DUMP_ELF_HEADERS	6
++#define MMF_DUMP_HUGETLB	7
+ #define MMF_DUMP_FILTER_SHIFT	MMF_DUMPABLE_BITS
+-#define MMF_DUMP_FILTER_BITS	5
++#define MMF_DUMP_FILTER_BITS	(MMF_DUMP_HUGETLB - MMF_DUMP_ANON_PRIVATE + 1)
+ #define MMF_DUMP_FILTER_MASK \
+ 	(((1 << MMF_DUMP_FILTER_BITS) - 1) << MMF_DUMP_FILTER_SHIFT)
+ #define MMF_DUMP_FILTER_DEFAULT \
+Index: b/fs/binfmt_elf.c
+===================================================================
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -1160,11 +1160,16 @@ static unsigned long vma_dump_size(struc
+ 	if (vma->vm_flags & VM_ALWAYSDUMP)
+ 		goto whole;
+ 
++#define FILTER(type)	(mm_flags & (1UL << MMF_DUMP_##type))
++
++	if ((vma->vm_flags & VM_HUGETLB) && FILTER(HUGETLB))
++		goto whole;
++
+ 	/* Do not dump I/O mapped devices or special mappings */
+ 	if (vma->vm_flags & (VM_IO | VM_RESERVED))
+ 		return 0;
+ 
+-#define FILTER(type)	(mm_flags & (1UL << MMF_DUMP_##type))
+ 
+ 	/* By default, dump shared memory if mapped from an anonymous file. */
+ 	if (vma->vm_flags & VM_SHARED) {
 
---- a/arch/frv/kernel/pm.c
-+++ b/arch/frv/kernel/pm.c
-@@ -211,7 +211,7 @@ static int cmode_procctl(ctl_table *ctl, int write, struct file *filp,
- 	return try_set_cmode(new_cmode)?:*lenp;
- }
- 
--static int cmode_sysctl(ctl_table *table, int __user *name, int nlen,
-+static int cmode_sysctl(ctl_table *table,
- 			void __user *oldval, size_t __user *oldlenp,
- 			void __user *newval, size_t newlen)
- {
-@@ -314,7 +314,7 @@ static int p0_procctl(ctl_table *ctl, int write, struct file *filp,
- 	return try_set_p0(new_p0)?:*lenp;
- }
- 
--static int p0_sysctl(ctl_table *table, int __user *name, int nlen,
-+static int p0_sysctl(ctl_table *table,
- 		     void __user *oldval, size_t __user *oldlenp,
- 		     void __user *newval, size_t newlen)
- {
-@@ -358,7 +358,7 @@ static int cm_procctl(ctl_table *ctl, int write, struct file *filp,
- 	return try_set_cm(new_cm)?:*lenp;
- }
- 
--static int cm_sysctl(ctl_table *table, int __user *name, int nlen,
-+static int cm_sysctl(ctl_table *table,
- 		     void __user *oldval, size_t __user *oldlenp,
- 		     void __user *newval, size_t newlen)
- {
---- a/arch/mips/lasat/sysctl.c
-+++ b/arch/mips/lasat/sysctl.c
-@@ -38,14 +38,13 @@
- #endif
- 
- /* Strategy function to write EEPROM after changing string entry */
--int sysctl_lasatstring(ctl_table *table, int *name, int nlen,
-+int sysctl_lasatstring(ctl_table *table,
- 		void *oldval, size_t *oldlenp,
- 		void *newval, size_t newlen)
- {
- 	int r;
- 
--	r = sysctl_string(table, name,
--			  nlen, oldval, oldlenp, newval, newlen);
-+	r = sysctl_string(table, oldval, oldlenp, newval, newlen);
- 	if (r < 0)
- 		return r;
- 
-@@ -113,13 +112,13 @@ int proc_dolasatrtc(ctl_table *table, int write, struct file *filp,
- #endif
- 
- /* Sysctl for setting the IP addresses */
--int sysctl_lasat_intvec(ctl_table *table, int *name, int nlen,
-+int sysctl_lasat_intvec(ctl_table *table,
- 		    void *oldval, size_t *oldlenp,
- 		    void *newval, size_t newlen)
- {
- 	int r;
- 
--	r = sysctl_intvec(table, name, nlen, oldval, oldlenp, newval, newlen);
-+	r = sysctl_intvec(table, oldval, oldlenp, newval, newlen);
- 	if (r < 0)
- 		return r;
- 
-@@ -131,7 +130,7 @@ int sysctl_lasat_intvec(ctl_table *table, int *name, int nlen,
- 
- #ifdef CONFIG_DS1603
- /* Same for RTC */
--int sysctl_lasat_rtc(ctl_table *table, int *name, int nlen,
-+int sysctl_lasat_rtc(ctl_table *table,
- 		    void *oldval, size_t *oldlenp,
- 		    void *newval, size_t newlen)
- {
-@@ -140,7 +139,7 @@ int sysctl_lasat_rtc(ctl_table *table, int *name, int nlen,
- 	rtctmp = read_persistent_clock();
- 	if (rtctmp < 0)
- 		rtctmp = 0;
--	r = sysctl_intvec(table, name, nlen, oldval, oldlenp, newval, newlen);
-+	r = sysctl_intvec(table, oldval, oldlenp, newval, newlen);
- 	if (r < 0)
- 		return r;
- 	if (newval && newlen)
-@@ -211,13 +210,13 @@ int proc_lasat_ip(ctl_table *table, int write, struct file *filp,
- }
- #endif
- 
--static int sysctl_lasat_prid(ctl_table *table, int *name, int nlen,
-+static int sysctl_lasat_prid(ctl_table *table,
- 				     void *oldval, size_t *oldlenp,
- 				     void *newval, size_t newlen)
- {
- 	int r;
- 
--	r = sysctl_intvec(table, name, nlen, oldval, oldlenp, newval, newlen);
-+	r = sysctl_intvec(table, oldval, oldlenp, newval, newlen);
- 	if (r < 0)
- 		return r;
- 	if (newval && newlen) {
---- a/drivers/char/random.c
-+++ b/drivers/char/random.c
-@@ -1266,7 +1266,7 @@ static int proc_do_uuid(ctl_table *table, int write, struct file *filp,
- 	return proc_dostring(&fake_table, write, filp, buffer, lenp, ppos);
- }
- 
--static int uuid_strategy(ctl_table *table, int __user *name, int nlen,
-+static int uuid_strategy(ctl_table *table,
- 			 void __user *oldval, size_t __user *oldlenp,
- 			 void __user *newval, size_t newlen)
- {
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -972,7 +972,7 @@ extern int sysctl_perm(struct ctl_table_root *root,
- 
- typedef struct ctl_table ctl_table;
- 
--typedef int ctl_handler (struct ctl_table *table, int __user *name, int nlen,
-+typedef int ctl_handler (struct ctl_table *table,
- 			 void __user *oldval, size_t __user *oldlenp,
- 			 void __user *newval, size_t newlen);
- 
---- a/include/net/ip.h
-+++ b/include/net/ip.h
-@@ -383,7 +383,7 @@ extern void	ip_local_error(struct sock *sk, int err, __be32 daddr, __be16 dport,
- int ipv4_doint_and_flush(ctl_table *ctl, int write,
- 			 struct file* filp, void __user *buffer,
- 			 size_t *lenp, loff_t *ppos);
--int ipv4_doint_and_flush_strategy(ctl_table *table, int __user *name, int nlen,
-+int ipv4_doint_and_flush_strategy(ctl_table *table,
- 				  void __user *oldval, size_t __user *oldlenp,
- 				  void __user *newval, size_t newlen);
- #ifdef CONFIG_PROC_FS
---- a/include/net/ndisc.h
-+++ b/include/net/ndisc.h
-@@ -129,9 +129,8 @@ extern int 			ndisc_ifinfo_sysctl_change(struct ctl_table *ctl,
- 							   void __user *buffer,
- 							   size_t *lenp,
- 							   loff_t *ppos);
--int ndisc_ifinfo_sysctl_strategy(ctl_table *ctl, int __user *name,
--				 int nlen, void __user *oldval,
--				 size_t __user *oldlenp,
-+int ndisc_ifinfo_sysctl_strategy(ctl_table *ctl,
-+				 void __user *oldval, size_t __user *oldlenp,
- 				 void __user *newval, size_t newlen);
- #endif
- 
---- a/ipc/ipc_sysctl.c
-+++ b/ipc/ipc_sysctl.c
-@@ -131,7 +131,7 @@ static int proc_ipcauto_dointvec_minmax(ctl_table *table, int write,
- 
- #ifdef CONFIG_SYSCTL_SYSCALL
- /* The generic sysctl ipc data routine. */
--static int sysctl_ipc_data(ctl_table *table, int __user *name, int nlen,
-+static int sysctl_ipc_data(ctl_table *table,
- 		void __user *oldval, size_t __user *oldlenp,
- 		void __user *newval, size_t newlen)
- {
-@@ -169,14 +169,13 @@ static int sysctl_ipc_data(ctl_table *table, int __user *name, int nlen,
- 	return 1;
- }
- 
--static int sysctl_ipc_registered_data(ctl_table *table, int __user *name,
--		int nlen, void __user *oldval, size_t __user *oldlenp,
-+static int sysctl_ipc_registered_data(ctl_table *table,
-+		void __user *oldval, size_t __user *oldlenp,
- 		void __user *newval, size_t newlen)
- {
- 	int rc;
- 
--	rc = sysctl_ipc_data(table, name, nlen, oldval, oldlenp, newval,
--		newlen);
-+	rc = sysctl_ipc_data(table, oldval, oldlenp, newval, newlen);
- 
- 	if (newval && newlen && rc > 0)
- 		/*
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1545,7 +1545,6 @@ void register_sysctl_root(struct ctl_table_root *root)
- /* Perform the actual read/write of a sysctl table entry. */
- static int do_sysctl_strategy(struct ctl_table_root *root,
- 			struct ctl_table *table,
--			int __user *name, int nlen,
- 			void __user *oldval, size_t __user *oldlenp,
- 			void __user *newval, size_t newlen)
- {
-@@ -1559,8 +1558,7 @@ static int do_sysctl_strategy(struct ctl_table_root *root,
- 		return -EPERM;
- 
- 	if (table->strategy) {
--		rc = table->strategy(table, name, nlen, oldval, oldlenp,
--				     newval, newlen);
-+		rc = table->strategy(table, oldval, oldlenp, newval, newlen);
- 		if (rc < 0)
- 			return rc;
- 		if (rc > 0)
-@@ -1570,8 +1568,7 @@ static int do_sysctl_strategy(struct ctl_table_root *root,
- 	/* If there is no strategy routine, or if the strategy returns
- 	 * zero, proceed with automatic r/w */
- 	if (table->data && table->maxlen) {
--		rc = sysctl_data(table, name, nlen, oldval, oldlenp,
--				 newval, newlen);
-+		rc = sysctl_data(table, oldval, oldlenp, newval, newlen);
- 		if (rc < 0)
- 			return rc;
- 	}
-@@ -1603,7 +1600,7 @@ repeat:
- 				table = table->child;
- 				goto repeat;
- 			}
--			error = do_sysctl_strategy(root, table, name, nlen,
-+			error = do_sysctl_strategy(root, table,
- 						   oldval, oldlenp,
- 						   newval, newlen);
- 			return error;
-@@ -2762,7 +2759,7 @@ int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int write,
-  */
- 
- /* The generic sysctl data routine (used if no strategy routine supplied) */
--int sysctl_data(struct ctl_table *table, int __user *name, int nlen,
-+int sysctl_data(struct ctl_table *table,
- 		void __user *oldval, size_t __user *oldlenp,
- 		void __user *newval, size_t newlen)
- {
-@@ -2796,7 +2793,7 @@ int sysctl_data(struct ctl_table *table, int __user *name, int nlen,
- }
- 
- /* The generic string strategy routine: */
--int sysctl_string(struct ctl_table *table, int __user *name, int nlen,
-+int sysctl_string(struct ctl_table *table,
- 		  void __user *oldval, size_t __user *oldlenp,
- 		  void __user *newval, size_t newlen)
- {
-@@ -2842,7 +2839,7 @@ int sysctl_string(struct ctl_table *table, int __user *name, int nlen,
-  * are between the minimum and maximum values given in the arrays
-  * table->extra1 and table->extra2, respectively.
-  */
--int sysctl_intvec(struct ctl_table *table, int __user *name, int nlen,
-+int sysctl_intvec(struct ctl_table *table,
- 		void __user *oldval, size_t __user *oldlenp,
- 		void __user *newval, size_t newlen)
- {
-@@ -2878,7 +2875,7 @@ int sysctl_intvec(struct ctl_table *table, int __user *name, int nlen,
- }
- 
- /* Strategy function to convert jiffies to seconds */ 
--int sysctl_jiffies(struct ctl_table *table, int __user *name, int nlen,
-+int sysctl_jiffies(struct ctl_table *table,
- 		void __user *oldval, size_t __user *oldlenp,
- 		void __user *newval, size_t newlen)
- {
-@@ -2912,7 +2909,7 @@ int sysctl_jiffies(struct ctl_table *table, int __user *name, int nlen,
- }
- 
- /* Strategy function to convert jiffies to seconds */ 
--int sysctl_ms_jiffies(struct ctl_table *table, int __user *name, int nlen,
-+int sysctl_ms_jiffies(struct ctl_table *table,
- 		void __user *oldval, size_t __user *oldlenp,
- 		void __user *newval, size_t newlen)
- {
-@@ -2967,35 +2964,35 @@ asmlinkage long sys_sysctl(struct __sysctl_args __user *args)
- 	return error;
- }
- 
--int sysctl_data(struct ctl_table *table, int __user *name, int nlen,
-+int sysctl_data(struct ctl_table *table,
- 		  void __user *oldval, size_t __user *oldlenp,
- 		  void __user *newval, size_t newlen)
- {
- 	return -ENOSYS;
- }
- 
--int sysctl_string(struct ctl_table *table, int __user *name, int nlen,
-+int sysctl_string(struct ctl_table *table,
- 		  void __user *oldval, size_t __user *oldlenp,
- 		  void __user *newval, size_t newlen)
- {
- 	return -ENOSYS;
- }
- 
--int sysctl_intvec(struct ctl_table *table, int __user *name, int nlen,
-+int sysctl_intvec(struct ctl_table *table,
- 		void __user *oldval, size_t __user *oldlenp,
- 		void __user *newval, size_t newlen)
- {
- 	return -ENOSYS;
- }
- 
--int sysctl_jiffies(struct ctl_table *table, int __user *name, int nlen,
-+int sysctl_jiffies(struct ctl_table *table,
- 		void __user *oldval, size_t __user *oldlenp,
- 		void __user *newval, size_t newlen)
- {
- 	return -ENOSYS;
- }
- 
--int sysctl_ms_jiffies(struct ctl_table *table, int __user *name, int nlen,
-+int sysctl_ms_jiffies(struct ctl_table *table,
- 		void __user *oldval, size_t __user *oldlenp,
- 		void __user *newval, size_t newlen)
- {
---- a/kernel/utsname_sysctl.c
-+++ b/kernel/utsname_sysctl.c
-@@ -60,7 +60,7 @@ static int proc_do_uts_string(ctl_table *table, int write, struct file *filp,
- 
- #ifdef CONFIG_SYSCTL_SYSCALL
- /* The generic string strategy routine: */
--static int sysctl_uts_string(ctl_table *table, int __user *name, int nlen,
-+static int sysctl_uts_string(ctl_table *table,
- 		  void __user *oldval, size_t __user *oldlenp,
- 		  void __user *newval, size_t newlen)
- {
-@@ -69,8 +69,7 @@ static int sysctl_uts_string(ctl_table *table, int __user *name, int nlen,
- 	write = newval && newlen;
- 	memcpy(&uts_table, table, sizeof(uts_table));
- 	uts_table.data = get_uts(table, write);
--	r = sysctl_string(&uts_table, name, nlen,
--		oldval, oldlenp, newval, newlen);
-+	r = sysctl_string(&uts_table, oldval, oldlenp, newval, newlen);
- 	put_uts(table, write, uts_table.data);
- 	return r;
- }
---- a/net/decnet/dn_dev.c
-+++ b/net/decnet/dn_dev.c
-@@ -166,7 +166,7 @@ static int max_priority[] = { 127 }; /* From DECnet spec */
- 
- static int dn_forwarding_proc(ctl_table *, int, struct file *,
- 			void __user *, size_t *, loff_t *);
--static int dn_forwarding_sysctl(ctl_table *table, int __user *name, int nlen,
-+static int dn_forwarding_sysctl(ctl_table *table,
- 			void __user *oldval, size_t __user *oldlenp,
- 			void __user *newval, size_t newlen);
- 
-@@ -318,7 +318,7 @@ static int dn_forwarding_proc(ctl_table *table, int write,
- #endif
- }
- 
--static int dn_forwarding_sysctl(ctl_table *table, int __user *name, int nlen,
-+static int dn_forwarding_sysctl(ctl_table *table,
- 			void __user *oldval, size_t __user *oldlenp,
- 			void __user *newval, size_t newlen)
- {
---- a/net/decnet/sysctl_net_decnet.c
-+++ b/net/decnet/sysctl_net_decnet.c
-@@ -132,7 +132,7 @@ static int parse_addr(__le16 *addr, char *str)
- }
- 
- 
--static int dn_node_address_strategy(ctl_table *table, int __user *name, int nlen,
-+static int dn_node_address_strategy(ctl_table *table,
- 				void __user *oldval, size_t __user *oldlenp,
- 				void __user *newval, size_t newlen)
- {
-@@ -217,7 +217,7 @@ static int dn_node_address_handler(ctl_table *table, int write,
- }
- 
- 
--static int dn_def_dev_strategy(ctl_table *table, int __user *name, int nlen,
-+static int dn_def_dev_strategy(ctl_table *table,
- 				void __user *oldval, size_t __user *oldlenp,
- 				void __user *newval, size_t newlen)
- {
---- a/net/ipv4/devinet.c
-+++ b/net/ipv4/devinet.c
-@@ -1272,7 +1272,7 @@ static int devinet_conf_proc(ctl_table *ctl, int write,
- 	return ret;
- }
- 
--static int devinet_conf_sysctl(ctl_table *table, int __user *name, int nlen,
-+static int devinet_conf_sysctl(ctl_table *table,
- 			       void __user *oldval, size_t __user *oldlenp,
- 			       void __user *newval, size_t newlen)
- {
-@@ -1368,12 +1368,11 @@ int ipv4_doint_and_flush(ctl_table *ctl, int write,
- 	return ret;
- }
- 
--int ipv4_doint_and_flush_strategy(ctl_table *table, int __user *name, int nlen,
-+int ipv4_doint_and_flush_strategy(ctl_table *table,
- 				  void __user *oldval, size_t __user *oldlenp,
- 				  void __user *newval, size_t newlen)
- {
--	int ret = devinet_conf_sysctl(table, name, nlen, oldval, oldlenp,
--				      newval, newlen);
-+	int ret = devinet_conf_sysctl(table, oldval, oldlenp, newval, newlen);
- 	struct net *net = table->extra2;
- 
- 	if (ret == 1)
---- a/net/ipv4/route.c
-+++ b/net/ipv4/route.c
-@@ -2896,8 +2896,6 @@ static int ipv4_sysctl_rtcache_flush(ctl_table *__ctl, int write,
- }
- 
- static int ipv4_sysctl_rtcache_flush_strategy(ctl_table *table,
--						int __user *name,
--						int nlen,
- 						void __user *oldval,
- 						size_t __user *oldlenp,
- 						void __user *newval,
-@@ -2960,16 +2958,13 @@ static int ipv4_sysctl_rt_secret_interval(ctl_table *ctl, int write,
- }
- 
- static int ipv4_sysctl_rt_secret_interval_strategy(ctl_table *table,
--						   int __user *name,
--						   int nlen,
- 						   void __user *oldval,
- 						   size_t __user *oldlenp,
- 						   void __user *newval,
- 						   size_t newlen)
- {
- 	int old = ip_rt_secret_interval;
--	int ret = sysctl_jiffies(table, name, nlen, oldval, oldlenp, newval,
--				 newlen);
-+	int ret = sysctl_jiffies(table, oldval, oldlenp, newval, newlen);
- 
- 	rt_secret_reschedule(old);
- 
---- a/net/ipv4/sysctl_net_ipv4.c
-+++ b/net/ipv4/sysctl_net_ipv4.c
-@@ -67,8 +67,8 @@ static int ipv4_local_port_range(ctl_table *table, int write, struct file *filp,
- }
- 
- /* Validate changes from sysctl interface. */
--static int ipv4_sysctl_local_port_range(ctl_table *table, int __user *name,
--					 int nlen, void __user *oldval,
-+static int ipv4_sysctl_local_port_range(ctl_table *table,
-+					 void __user *oldval,
- 					 size_t __user *oldlenp,
- 					void __user *newval, size_t newlen)
- {
-@@ -83,7 +83,7 @@ static int ipv4_sysctl_local_port_range(ctl_table *table, int __user *name,
- 		.extra2 = &ip_local_port_range_max,
- 	};
- 
--	ret = sysctl_intvec(&tmp, name, nlen, oldval, oldlenp, newval, newlen);
-+	ret = sysctl_intvec(&tmp, oldval, oldlenp, newval, newlen);
- 	if (ret == 0 && newval && newlen) {
- 		if (range[1] < range[0])
- 			ret = -EINVAL;
-@@ -112,8 +112,8 @@ static int proc_tcp_congestion_control(ctl_table *ctl, int write, struct file *
- 	return ret;
- }
- 
--static int sysctl_tcp_congestion_control(ctl_table *table, int __user *name,
--					 int nlen, void __user *oldval,
-+static int sysctl_tcp_congestion_control(ctl_table *table,
-+					 void __user *oldval,
- 					 size_t __user *oldlenp,
- 					 void __user *newval, size_t newlen)
- {
-@@ -125,7 +125,7 @@ static int sysctl_tcp_congestion_control(ctl_table *table, int __user *name,
- 	int ret;
- 
- 	tcp_get_default_congestion_control(val);
--	ret = sysctl_string(&tbl, name, nlen, oldval, oldlenp, newval, newlen);
-+	ret = sysctl_string(&tbl, oldval, oldlenp, newval, newlen);
- 	if (ret == 1 && newval && newlen)
- 		ret = tcp_set_default_congestion_control(val);
- 	return ret;
-@@ -168,8 +168,8 @@ static int proc_allowed_congestion_control(ctl_table *ctl,
- 	return ret;
- }
- 
--static int strategy_allowed_congestion_control(ctl_table *table, int __user *name,
--					       int nlen, void __user *oldval,
-+static int strategy_allowed_congestion_control(ctl_table *table,
-+					       void __user *oldval,
- 					       size_t __user *oldlenp,
- 					       void __user *newval,
- 					       size_t newlen)
-@@ -182,7 +182,7 @@ static int strategy_allowed_congestion_control(ctl_table *table, int __user *nam
- 		return -ENOMEM;
- 
- 	tcp_get_available_congestion_control(tbl.data, tbl.maxlen);
--	ret = sysctl_string(&tbl, name, nlen, oldval, oldlenp, newval, newlen);
-+	ret = sysctl_string(&tbl, oldval, oldlenp, newval, newlen);
- 	if (ret == 1 && newval && newlen)
- 		ret = tcp_set_allowed_congestion_control(tbl.data);
- 	kfree(tbl.data);
---- a/net/ipv6/addrconf.c
-+++ b/net/ipv6/addrconf.c
-@@ -3982,7 +3982,6 @@ int addrconf_sysctl_forward(ctl_table *ctl, int write, struct file * filp,
- }
- 
- static int addrconf_sysctl_forward_strategy(ctl_table *table,
--					    int __user *name, int nlen,
- 					    void __user *oldval,
- 					    size_t __user *oldlenp,
- 					    void __user *newval, size_t newlen)
---- a/net/ipv6/ndisc.c
-+++ b/net/ipv6/ndisc.c
-@@ -1730,9 +1730,8 @@ int ndisc_ifinfo_sysctl_change(struct ctl_table *ctl, int write, struct file * f
- 	return ret;
- }
- 
--int ndisc_ifinfo_sysctl_strategy(ctl_table *ctl, int __user *name,
--				 int nlen, void __user *oldval,
--				 size_t __user *oldlenp,
-+int ndisc_ifinfo_sysctl_strategy(ctl_table *ctl,
-+				 void __user *oldval, size_t __user *oldlenp,
- 				 void __user *newval, size_t newlen)
- {
- 	struct net_device *dev = ctl->extra1;
-@@ -1745,13 +1744,11 @@ int ndisc_ifinfo_sysctl_strategy(ctl_table *ctl, int __user *name,
- 
- 	switch (ctl->ctl_name) {
- 	case NET_NEIGH_REACHABLE_TIME:
--		ret = sysctl_jiffies(ctl, name, nlen,
--				     oldval, oldlenp, newval, newlen);
-+		ret = sysctl_jiffies(ctl, oldval, oldlenp, newval, newlen);
- 		break;
- 	case NET_NEIGH_RETRANS_TIME_MS:
- 	case NET_NEIGH_REACHABLE_TIME_MS:
--		 ret = sysctl_ms_jiffies(ctl, name, nlen,
--					 oldval, oldlenp, newval, newlen);
-+		 ret = sysctl_ms_jiffies(ctl, oldval, oldlenp, newval, newlen);
- 		 break;
- 	default:
- 		ret = 0;
 
