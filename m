@@ -1,23 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbYH1RHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbYH1RIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755404AbYH1RHv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 13:07:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYH1RHn
+	id S1755865AbYH1RIX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 13:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYH1RIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 13:07:43 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:54777 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbYH1RHn (ORCPT
+	Thu, 28 Aug 2008 13:08:14 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33510 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751776AbYH1RIN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 13:07:43 -0400
-Date: Thu, 28 Aug 2008 14:07:26 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: sam@ravnborg.org
-Cc: linux-kernel@vger.kernel.org
-Subject: PATCH: Kbuild: mkspec has to include /lib/firmware contents
-Message-ID: <20080828140726.2feee90b@doriath.conectiva>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
+	Thu, 28 Aug 2008 13:08:13 -0400
+Date: Thu, 28 Aug 2008 17:51:00 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: david@lang.hm
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: question about overcommit
+Message-ID: <20080828175100.3c3cda9e@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.DEB.1.10.0808280952010.2713@asgard.lang.hm>
+References: <alpine.DEB.1.10.0808280952010.2713@asgard.lang.hm>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -25,31 +29,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+O> my belief from watching the discussions is that it will evict things from 
+> ram to make space for the new allocation, and as a result running with 
+> overcommit disabled ends up wasting a noticable amount of ram. As a result 
 
-We have to include the contents of /lib/firmware directory when building
-the RPM package, otherwise the build will fail because of unpackaged
-files.
+No-overcommit is address space accounting alone. It doesn't change actual
+allocation or management of memory, it simply ensures that there should
+always be enough space to ensure it can sort itself out without having to
+OOM something.
 
-Signed-off-by: Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>
----
- scripts/package/mkspec |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+It's a bit like bank loans - providing I know how much money is available
+I don't have to do much except for ensure the total loaned is covered. In
+the overcommit mode we instead run like the US banking system and pray we
+don't hit a messy OOM (out of money) situation.
 
-diff --git a/scripts/package/mkspec b/scripts/package/mkspec
-index ffd61fe..4f5d8cd 100755
---- a/scripts/package/mkspec
-+++ b/scripts/package/mkspec
-@@ -92,5 +92,6 @@ echo "%files"
- echo '%defattr (-, root, root)'
- echo "%dir /lib/modules"
- echo "/lib/modules/$KERNELRELEASE"
-+echo "/lib/firmware/*"
- echo "/boot/*"
- echo ""
--- 
-1.5.6
-
-
-
--- 
-Luiz Fernando N. Capitulino
+Alan
