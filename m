@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbYH1EJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751869AbYH1EJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754030AbYH1EJj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 00:09:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYH1EJX
+	id S1751869AbYH1EJz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 00:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYH1EJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 00:09:23 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:29390 "EHLO
+	Thu, 28 Aug 2008 00:09:25 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:27986 "EHLO
 	stargate.asicdesigners.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750874AbYH1EJV (ORCPT
+	by vger.kernel.org with ESMTP id S1750915AbYH1EJW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 00:09:21 -0400
-Date: Wed, 27 Aug 2008 21:21:57 -0700
+	Thu, 28 Aug 2008 00:09:22 -0400
+Date: Wed, 27 Aug 2008 21:21:58 -0700
 From: Karen Xie <kxie@chelsio.com>
-Message-Id: <200808280421.m7S4LvAB006456@localhost.localdomain>
+Message-Id: <200808280421.m7S4Lw4r006465@localhost.localdomain>
 To: netdev@vger.kernel.org, open-iscsi@googlegroups.com,
        linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/4 2.6.28] cxgb3 - manage a private ip address for iSCSI
+Subject: [PATCH 2/4 2.6.28] cxgb3 - handle ARP replies for private iSCSI IP address
 Cc: jgarzik@pobox.com, davem@davemloft.net, michaelc@cs.wisc.edu,
        swise@opengridcomputing.com, rdreier@cisco.com, daisyc@us.ibm.com,
        wenxiong@us.ibm.com, bhua@us.ibm.com, divy@chelsio.com, dm@chelsio.com,
@@ -24,152 +24,133 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 1/4 2.6.28] cxgb3 - manage a private ip address for iSCSI
+[PATCH 2/4 2.6.28] cxgb3 - handle ARP replies for private iSCSI IP address
 
 From: Karen Xie <kxie@chelsio.com>
 
-Create a per port sysfs entry to pass an IP address to the NIC driver, and a control call for the iSCSI driver to grab it.
-The IP address is required in both drivers to manage ARP requests and connection set up.
+The accelerated iSCSI traffic uses a private IP address unknown to the OS.
+The driver has to reply to ARP requests dedicated to the private IP address.
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 
- drivers/net/cxgb3/adapter.h        |    1 +
- drivers/net/cxgb3/cxgb3_ctl_defs.h |    7 +++++
- drivers/net/cxgb3/cxgb3_main.c     |   46 ++++++++++++++++++++++++++++++++++++
- drivers/net/cxgb3/cxgb3_offload.c  |    6 +++++
- 4 files changed, 60 insertions(+), 0 deletions(-)
+ drivers/net/cxgb3/sge.c |   72 ++++++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 67 insertions(+), 5 deletions(-)
 
 
-diff --git a/drivers/net/cxgb3/adapter.h b/drivers/net/cxgb3/adapter.h
-index 2711404..adc2f13 100644
---- a/drivers/net/cxgb3/adapter.h
-+++ b/drivers/net/cxgb3/adapter.h
-@@ -64,6 +64,7 @@ struct port_info {
- 	struct link_config link_config;
- 	struct net_device_stats netstats;
- 	int activity;
-+	__be32 iscsi_ipv4addr;
- };
- 
- enum {				/* adapter flags */
-diff --git a/drivers/net/cxgb3/cxgb3_ctl_defs.h b/drivers/net/cxgb3/cxgb3_ctl_defs.h
-index 6ad9240..2bf5027 100644
---- a/drivers/net/cxgb3/cxgb3_ctl_defs.h
-+++ b/drivers/net/cxgb3/cxgb3_ctl_defs.h
-@@ -57,6 +57,7 @@ enum {
- 	RDMA_GET_MIB		= 19,
- 
- 	GET_RX_PAGE_INFO	= 50,
-+	GET_ISCSI_IPV4ADDR	= 51,
- };
- 
- /*
-@@ -86,6 +87,12 @@ struct iff_mac {
- 	u16 vlan_tag;
- };
- 
-+/* Structure used to request a port's iSCSI IPv4 address */
-+struct iscsi_ipv4addr {
-+	struct net_device *dev;		/* the net_device */
-+	__be32 ipv4addr;		/* the return iSCSI IPv4 address */
-+};
-+
- struct pci_dev;
- 
- /*
-diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-index 5447f3e..4f72c06 100644
---- a/drivers/net/cxgb3/cxgb3_main.c
-+++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -34,6 +34,7 @@
- #include <linux/init.h>
- #include <linux/pci.h>
+diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
+index 1b0861d..2f17cf3 100644
+--- a/drivers/net/cxgb3/sge.c
++++ b/drivers/net/cxgb3/sge.c
+@@ -36,6 +36,7 @@
+ #include <linux/ip.h>
+ #include <linux/tcp.h>
  #include <linux/dma-mapping.h>
-+#include <linux/inet.h>
- #include <linux/netdevice.h>
- #include <linux/etherdevice.h>
- #include <linux/if_vlan.h>
-@@ -687,6 +688,47 @@ static struct attribute *offload_attrs[] = {
++#include <net/arp.h>
+ #include "common.h"
+ #include "regs.h"
+ #include "sge_defs.h"
+@@ -1859,6 +1860,54 @@ static void restart_tx(struct sge_qset *qs)
+ }
  
- static struct attribute_group offload_attr_group = {.attrs = offload_attrs };
- 
-+static ssize_t iscsi_ipv4addr_attr_show(struct device *d, char *buf)
+ /**
++ *	cxgb3_arp_process - process an ARP request probing a private IP address
++ *	@adapter: the adapter
++ *	@skb: the skbuff containing the ARP request
++ *
++ *	Check if the ARP request is probing the private IP address
++ *	dedicated to iSCSI, generate an ARP reply if so.
++ */
++static void cxgb3_arp_process(struct adapter *adapter, struct sk_buff *skb)
 +{
-+	struct port_info *pi = netdev_priv(to_net_dev(d));
-+	__be32 a = pi->iscsi_ipv4addr;
++	struct net_device *dev = skb->dev;
++	struct port_info *pi;
++	struct arphdr *arp;
++	unsigned char *arp_ptr;
++	unsigned char *sha;
++	__be32 sip, tip;
 +
-+	return sprintf(buf, NIPQUAD_FMT "\n", NIPQUAD(a));
++	if (!dev)
++		return;
++
++	skb_reset_network_header(skb);
++	arp = arp_hdr(skb);
++
++	if (arp->ar_op != htons(ARPOP_REQUEST))
++		return;
++
++	arp_ptr = (unsigned char *)(arp + 1);
++	sha = arp_ptr;
++	arp_ptr += dev->addr_len;
++	memcpy(&sip, arp_ptr, sizeof(sip));
++	arp_ptr += sizeof(sip);
++	arp_ptr += dev->addr_len;
++	memcpy(&tip, arp_ptr, sizeof(tip));
++
++	pi = netdev_priv(dev);
++	if (tip != pi->iscsi_ipv4addr)
++		return;
++
++	arp_send(ARPOP_REPLY, ETH_P_ARP, sip, dev, tip, sha,
++		 dev->dev_addr, sha);
++
 +}
 +
-+static ssize_t iscsi_ipv4addr_attr_store(struct device *d,
-+				       const char *buf, size_t len)
++static inline int is_arp(struct sk_buff *skb)
 +{
-+	struct port_info *pi = netdev_priv(to_net_dev(d));
-+
-+	pi->iscsi_ipv4addr = in_aton(buf);
-+	return len;
++	return skb->protocol == htons(ETH_P_ARP);
 +}
 +
-+#define ISCSI_IPADDR_ATTR(name) \
-+static ssize_t show_##name(struct device *d, struct device_attribute *attr, \
-+			   char *buf) \
-+{ \
-+	return iscsi_ipv4addr_attr_show(d, buf); \
-+} \
-+static ssize_t store_##name(struct device *d, struct device_attribute *attr, \
-+			    const char *buf, size_t len) \
-+{ \
-+	return iscsi_ipv4addr_attr_store(d, buf, len); \
-+} \
-+static DEVICE_ATTR(name, S_IRUGO | S_IWUSR, show_##name, store_##name)
-+
-+ISCSI_IPADDR_ATTR(iscsi_ipv4addr);
-+
-+static struct attribute *iscsi_offload_attrs[] = {
-+	&dev_attr_iscsi_ipv4addr.attr,
-+	NULL
-+};
-+
-+static struct attribute_group iscsi_offload_attr_group = {
-+	.attrs = iscsi_offload_attrs
-+};
-+
- /*
-  * Sends an sk_buff to an offload queue driver
-  * after dealing with any active network taps.
-@@ -1078,6 +1120,7 @@ static int cxgb_open(struct net_device *dev)
- 		if (err)
- 			printk(KERN_WARNING
- 			       "Could not initialize offload capabilities\n");
-+		sysfs_create_group(&dev->dev.kobj, &iscsi_offload_attr_group);
- 	}
++/**
+  *	rx_eth - process an ingress ethernet packet
+  *	@adap: the adapter
+  *	@rq: the response queue that received the packet
+@@ -1882,7 +1931,7 @@ static void rx_eth(struct adapter *adap, struct sge_rspq *rq,
+ 	pi = netdev_priv(skb->dev);
+ 	if (pi->rx_csum_offload && p->csum_valid && p->csum == htons(0xffff) &&
+ 	    !p->fragment) {
+-		rspq_to_qset(rq)->port_stats[SGE_PSTAT_RX_CSUM_GOOD]++;
++		qs->port_stats[SGE_PSTAT_RX_CSUM_GOOD]++;
+ 		skb->ip_summed = CHECKSUM_UNNECESSARY;
+ 	} else
+ 		skb->ip_summed = CHECKSUM_NONE;
+@@ -1891,22 +1940,35 @@ static void rx_eth(struct adapter *adap, struct sge_rspq *rq,
+ 		struct vlan_group *grp = pi->vlan_grp;
  
- 	link_start(dev);
-@@ -1100,6 +1143,9 @@ static int cxgb_close(struct net_device *dev)
- 	netif_carrier_off(dev);
- 	t3_mac_disable(&pi->mac, MAC_DIRECTION_TX | MAC_DIRECTION_RX);
- 
-+	if (is_offload(adapter) && !ofld_disable)
-+		sysfs_remove_group(&dev->dev.kobj, &iscsi_offload_attr_group);
+ 		qs->port_stats[SGE_PSTAT_VLANEX]++;
+-		if (likely(grp))
 +
- 	spin_lock(&adapter->work_lock);	/* sync with update task */
- 	clear_bit(pi->port_id, &adapter->open_device_map);
- 	spin_unlock(&adapter->work_lock);
-diff --git a/drivers/net/cxgb3/cxgb3_offload.c b/drivers/net/cxgb3/cxgb3_offload.c
-index c5b3de1..f8f4faa 100644
---- a/drivers/net/cxgb3/cxgb3_offload.c
-+++ b/drivers/net/cxgb3/cxgb3_offload.c
-@@ -407,6 +407,12 @@ static int cxgb_offload_ctl(struct t3cdev *tdev, unsigned int req, void *data)
- 		rx_page_info->page_size = tp->rx_pg_size;
- 		rx_page_info->num = tp->rx_num_pgs;
- 		break;
-+	case GET_ISCSI_IPV4ADDR: {
-+		struct iscsi_ipv4addr *p = data;
-+		struct port_info *pi = netdev_priv(p->dev);
-+		p->ipv4addr = pi->iscsi_ipv4addr;
-+		break;
-+	}
- 	default:
- 		return -EOPNOTSUPP;
- 	}
++		if (likely(grp)) {
+ 			if (lro)
+ 				lro_vlan_hwaccel_receive_skb(&qs->lro_mgr, skb,
+ 							     grp,
+ 							     ntohs(p->vlan),
+ 							     p);
+-			else
++			else {
++				if (unlikely(pi->iscsi_ipv4addr &&
++					     is_arp(skb))) {
++					unsigned short vtag = ntohs(p->vlan) &
++							VLAN_VID_MASK;
++					skb->dev = vlan_group_get_device(grp,
++									 vtag);
++					cxgb3_arp_process(adap, skb);
++				}
+ 				__vlan_hwaccel_rx(skb, grp, ntohs(p->vlan),
+ 					  	  rq->polling);
+-		else
++			}
++		} else
+ 			dev_kfree_skb_any(skb);
+ 	} else if (rq->polling) {
+ 		if (lro)
+ 			lro_receive_skb(&qs->lro_mgr, skb, p);
+-		else
++		else {
++			if (unlikely(pi->iscsi_ipv4addr && is_arp(skb)))
++				cxgb3_arp_process(adap, skb);
+ 			netif_receive_skb(skb);
++		}
+ 	} else
+ 		netif_rx(skb);
+ }
