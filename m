@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbYH1M1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbYH1M2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754530AbYH1M1m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 08:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbYH1M1e
+	id S1754759AbYH1M2g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 08:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYH1M23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 08:27:34 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:50829 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751523AbYH1M1e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 08:27:34 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH RFC 1/3] Add a trigger API for efficient non-blocking waiting
-Date: Thu, 28 Aug 2008 14:27:24 +0200
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-References: <48A70185.2020600@goop.org>
-In-Reply-To: <48A70185.2020600@goop.org>
-MIME-Version: 1.0
+	Thu, 28 Aug 2008 08:28:29 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:54867 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752093AbYH1M22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 08:28:28 -0400
+Date: Thu, 28 Aug 2008 16:32:42 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Pierre Morel <pmorel@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Roland McGrath <roland@redhat.com>,
+       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
+       sameske@linux.vnet.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [RFC] [Patch 1/1] [Self Ptrace] System call notification with self_ptrace
+Message-ID: <20080828123242.GA187@tv-sign.ru>
+References: <48B26083.8080506@linux.vnet.ibm.com> <20080825165403.GA604@tv-sign.ru> <48B40D5F.3020705@linux.vnet.ibm.com> <20080826162750.GA406@tv-sign.ru> <48B5658A.5000101@linux.vnet.ibm.com> <20080827162455.GA132@tv-sign.ru> <48B6942E.2050607@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200808281427.24566.borntraeger@de.ibm.com>
+In-Reply-To: <48B6942E.2050607@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for answering late, but here are some comments.
+On 08/28, Pierre Morel wrote:
+>
+> Oleg Nesterov wrote:
+> >On 08/27, Pierre Morel wrote:
+> >
+> >>Oleg Nesterov wrote:
+> >>
+> >>
+> >>>On s390 the patch changes handle_signal(), this is not clear to me too.
+> >>>
+> >>>
+> >>The patch clears the trace flags before delivering the signal so
+> >>that the signal handler can use system call without bouncing again.
+> >>
+> >
+> >Yes I see. But the signal handler for SIGSYS can fisrt do
+> >sys_ptrace(PTRACE_SELF_OFF) (which is filtered out), and then use any
+> >other syscall.
+> >
+> It is right but brings the overhead of a syscall.
 
-Am Samstag, 16. August 2008 schrieb Jeremy Fitzhardinge:
-[...]
-> 
->  - In a virtual environment, spinning virtual CPUs just waste CPU
->    resources, and may steal CPU time from vCPUs which need it to make
->    progress.  The trigger API allows the vCPUs to give up their CPU
->    entirely.  The s390 people observed a problem with stop_machine
->    taking a very long time (seconds) when there are more vcpus than
->    available cpus.
+Well, this overhead is very small compared to the signal delivery.
 
-Yes, we have seen some real contention if the number of vcpus is much higher 
-than the number of real cpus. 
+> >With this patch PT_SELF is cleared on any signal. This doesn't look
+> >right. Let's suppose that another signal comes in parallel with SIGSYS.
+> >It is very possible that the handler for that another signal will be
+> >called first, this handler can do some syscall which will be "missed".
+> >
+>
+> If the tracing application catches all signals before delivering
+> them to the instrumented original handler there is no problem,
+> the catching code can reset PTRACE_SELF_ON before calling the
+> instrumented application's original handler.
+> The instrumented code will then bounce as expected.
 
-> 
-> The trigger API is simple:
-> 
-> To initialize a trigger, you can either do it statically with:
-> 
->    DEFINE_TRIGGER(trigger);
-> 
-> or dynamically with
-> 
->    trigger_init(&trigger);
-> 
-> Then to use it, the wait side does:
-> 
->    trigger_reset(&trigger);
-> 
->    while(!condition)
-> 	trigger_wait(&trigger);
-> 
->    trigger_finish(&trigger);
-> 
-> and when the condition is set true:
-> 
->    condition = true;
->    trigger_kick(&trigger);
+Sorry, can't understand the text above :(
 
-Hmm, I currently try to build something  with sigp_stop and sigp_start on 
-s390, not sure yet if this interface allows me to do that. At the moment 
-something is wrong in my prototype. 
+OK, let's suppose the application does
+
+	ptrace(PTRACE_SELF_ON);
+	...
+	syscall();
+
+This "syscall()" above should trigger the handler for SIGSYS.
+But what if another signal (with handler) comes in between?
+In that case handle_signal() clears PT_SELF/TIF_SYSCALL_TRACE,
+this syscall() (or any other) doesn't send SIGSYS.
+
+Oleg.
+
