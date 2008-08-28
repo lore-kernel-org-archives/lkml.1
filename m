@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbYH1LoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbYH1Lo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754181AbYH1LoS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 07:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbYH1LoI
+	id S1754517AbYH1Lo7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 07:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYH1Lou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 07:44:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47554 "EHLO mx3.mail.elte.hu"
+	Thu, 28 Aug 2008 07:44:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46149 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751997AbYH1LoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 07:44:06 -0400
-Date: Thu, 28 Aug 2008 13:43:53 +0200
+	id S1752345AbYH1Lot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 07:44:49 -0400
+Date: Thu, 28 Aug 2008 13:44:36 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] scheduler fixes
-Message-ID: <20080828114353.GA1651@elte.hu>
+Subject: [git pull] core kernel fixes
+Message-ID: <20080828114436.GA1854@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,60 +34,85 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest sched-fixes-for-linus git tree from:
+Please pull the latest core-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
 
 Thanks,
 
 	Ingo
 
 ------------------>
-John Blackwood (1):
-      sched: fix sched_rt_rq_enqueue() resched idle
+Joe Korty (2):
+      lockstat: fix numerical output rounding error
+      lockstat: repair erronous contention statistics
 
-Peter Zijlstra (1):
-      sched: rt-bandwidth accounting fix
+Steve VanDeBogart (1):
+      exit signals: use of uninitialized field notify_count
+
+Zhu Yi (1):
+      lockdep: fix invalid list_del_rcu in zap_class
 
 
- kernel/sched_rt.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+ kernel/exit.c         |    4 ++--
+ kernel/lockdep.c      |    6 +++---
+ kernel/lockdep_proc.c |    3 ++-
+ 3 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 998ba54..5523107 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -199,6 +199,8 @@ static inline struct rt_rq *group_rt_rq(struct sched_rt_entity *rt_se)
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 38ec406..75c6473 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -918,8 +918,8 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
  
- static inline void sched_rt_rq_enqueue(struct rt_rq *rt_rq)
+ 	/* mt-exec, de_thread() is waiting for us */
+ 	if (thread_group_leader(tsk) &&
+-	    tsk->signal->notify_count < 0 &&
+-	    tsk->signal->group_exit_task)
++	    tsk->signal->group_exit_task &&
++	    tsk->signal->notify_count < 0)
+ 		wake_up_process(tsk->signal->group_exit_task);
+ 
+ 	write_unlock_irq(&tasklist_lock);
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 3bfb187..dbda475 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -875,11 +875,11 @@ static int add_lock_to_list(struct lock_class *class, struct lock_class *this,
+ 	if (!entry)
+ 		return 0;
+ 
+-	entry->class = this;
+-	entry->distance = distance;
+ 	if (!save_trace(&entry->trace))
+ 		return 0;
+ 
++	entry->class = this;
++	entry->distance = distance;
+ 	/*
+ 	 * Since we never remove from the dependency list, the list can
+ 	 * be walked lockless by other CPUs, it's only allocation
+@@ -3029,7 +3029,7 @@ found_it:
+ 
+ 	stats = get_lock_stats(hlock_class(hlock));
+ 	if (point < ARRAY_SIZE(stats->contention_point))
+-		stats->contention_point[i]++;
++		stats->contention_point[point]++;
+ 	if (lock->cpu != smp_processor_id())
+ 		stats->bounces[bounce_contended + !!hlock->read]++;
+ 	put_lock_stats(stats);
+diff --git a/kernel/lockdep_proc.c b/kernel/lockdep_proc.c
+index 4b194d3..20dbcbf 100644
+--- a/kernel/lockdep_proc.c
++++ b/kernel/lockdep_proc.c
+@@ -472,8 +472,9 @@ static void snprint_time(char *buf, size_t bufsiz, s64 nr)
  {
-+	if (rt_rq->rt_nr_running)
-+		resched_task(rq_of_rt_rq(rt_rq)->curr);
+ 	unsigned long rem;
+ 
++	nr += 5; /* for display rounding */
+ 	rem = do_div(nr, 1000); /* XXX: do_div_signed */
+-	snprintf(buf, bufsiz, "%lld.%02d", (long long)nr, ((int)rem+5)/10);
++	snprintf(buf, bufsiz, "%lld.%02d", (long long)nr, (int)rem/10);
  }
  
- static inline void sched_rt_rq_dequeue(struct rt_rq *rt_rq)
-@@ -438,9 +440,6 @@ static int sched_rt_runtime_exceeded(struct rt_rq *rt_rq)
- {
- 	u64 runtime = sched_rt_runtime(rt_rq);
- 
--	if (runtime == RUNTIME_INF)
--		return 0;
--
- 	if (rt_rq->rt_throttled)
- 		return rt_rq_throttled(rt_rq);
- 
-@@ -491,9 +490,11 @@ static void update_curr_rt(struct rq *rq)
- 		rt_rq = rt_rq_of_se(rt_se);
- 
- 		spin_lock(&rt_rq->rt_runtime_lock);
--		rt_rq->rt_time += delta_exec;
--		if (sched_rt_runtime_exceeded(rt_rq))
--			resched_task(curr);
-+		if (sched_rt_runtime(rt_rq) != RUNTIME_INF) {
-+			rt_rq->rt_time += delta_exec;
-+			if (sched_rt_runtime_exceeded(rt_rq))
-+				resched_task(curr);
-+		}
- 		spin_unlock(&rt_rq->rt_runtime_lock);
- 	}
- }
+ static void seq_time(struct seq_file *m, s64 time)
