@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbYH1RFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbYH1RHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755385AbYH1RFZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 13:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbYH1RFP
+	id S1755404AbYH1RHv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 13:07:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYH1RHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 13:05:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40924 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751768AbYH1RFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 13:05:13 -0400
-Message-ID: <48B6DA4F.6090601@redhat.com>
-Date: Thu, 28 Aug 2008 13:03:11 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Marlow Weston <miwesto@sandia.gov>
-CC: ananth@in.ibm.com, davem@davemloft.net, mhiramata@redhat.com,
-       linux-kernel@vger.kernel.org, anil.s.keshavamurthy@intel.com
-Subject: Re: HELP!  KProbes bug
-References: <48B6D03C.9090906@sandia.gov>
-In-Reply-To: <48B6D03C.9090906@sandia.gov>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 28 Aug 2008 13:07:43 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:54777 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751250AbYH1RHn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 13:07:43 -0400
+Date: Thu, 28 Aug 2008 14:07:26 -0300
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: sam@ravnborg.org
+Cc: linux-kernel@vger.kernel.org
+Subject: PATCH: Kbuild: mkspec has to include /lib/firmware contents
+Message-ID: <20080828140726.2feee90b@doriath.conectiva>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Marlow,
 
-Marlow Weston wrote:
-> Hello persons in the current kernel maintainers file under KProbes:
-> 
-> I can't find this bug reported anywhere nor somewhere useful for 
-> reporting it, so I chose that location to find people to write.  If 
-> there is somewhere else I should be sending this to, please tell me and 
-> I will redirect it there.
-> 
-> I think I have found a KProbes bug when I turn on the KProbes via a proc 
-> file call instead of via the init code.  The stack trace is attached and 
-> seems to indicate a locking issue.  Also attached is module code that 
-> will make this happen.  Any advice on where to start hunting this down 
-> would be greatly appreciated.
-> 
-> If the KProbes are going by quickly, ie there is no 
-> schedule_timeout_interrupt(), then the problem doesn't show up.  This 
-> problem is exacerbated by the probes actually doing things that take 
-> time while other probes are attempting to register.  Also, I don't 
-> believe it has to do with any particular probe as which probe locks up 
-> varies (and my mad attempts at commenting out various probes did not work).
+We have to include the contents of /lib/firmware directory when building
+the RPM package, otherwise the build will fail because of unpackaged
+files.
 
-Why would you like to call scheduler from probe handler?
-
-By design, kprobe handler MUST NOT call scheduling functions because it
-checks recursive call by using per-cpu variable and scheduler might move
-probed process to other cpu. Especially, since kretprobe uses a spinlock
-(or hashed spinlocks on recently kernel), if the handler calls scheduler,
-it will cause deadlock.
-
-Anyway, if you read Documentation/kprobes.txt carefully, you can find
-below paragraph;
-
+Signed-off-by: Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>
 ---
-5. Kprobes Features and Limitations
-[...]
-Probe handlers are run with preemption disabled.  Depending on the
-architecture, handlers may also run with interrupts disabled.  In any
-case, your handler should not yield the CPU (e.g., by attempting to
-acquire a semaphore).
----
-(I think this note should prohibit process scheduling more clearly.)
+ scripts/package/mkspec |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-So, it's not a bug of kprobes. It's a known limitation.
+diff --git a/scripts/package/mkspec b/scripts/package/mkspec
+index ffd61fe..4f5d8cd 100755
+--- a/scripts/package/mkspec
++++ b/scripts/package/mkspec
+@@ -92,5 +92,6 @@ echo "%files"
+ echo '%defattr (-, root, root)'
+ echo "%dir /lib/modules"
+ echo "/lib/modules/$KERNELRELEASE"
++echo "/lib/firmware/*"
+ echo "/boot/*"
+ echo ""
+-- 
+1.5.6
 
-Thank you,
 
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Luiz Fernando N. Capitulino
