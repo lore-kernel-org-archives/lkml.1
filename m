@@ -1,79 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbYH1WHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbYH1WIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758070AbYH1WHt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 18:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756337AbYH1WH2
+	id S1756740AbYH1WIK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 18:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757965AbYH1WHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 18:07:28 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60435 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756246AbYH1WH1 (ORCPT
+	Thu, 28 Aug 2008 18:07:40 -0400
+Received: from smtp1.dnsmadeeasy.com ([205.234.170.134]:59173 "EHLO
+	smtp1.dnsmadeeasy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757941AbYH1WHj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 18:07:27 -0400
-Date: Thu, 28 Aug 2008 13:38:44 -0700
-From: Greg KH <greg@kroah.com>
-To: Marcel Janssen <korgull@home.nl>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       Stefan Kopp <stefan_kopp@agilent.com>,
-       Felipe Balbi <me@felipebalbi.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] USB: add USB test and measurement class driver - round
-	2
-Message-ID: <20080828203844.GC20537@kroah.com>
-References: <20080827183615.GA15692@kroah.com> <Pine.LNX.4.44L0.0808271451550.17771-100000@iolanthe.rowland.org> <20080827234720.GC31264@kroah.com> <200808281858.42486.korgull@home.nl>
+	Thu, 28 Aug 2008 18:07:39 -0400
+X-Authenticated-Name: js.dnsmadeeasy
+X-Transit-System: In case of SPAM please contact abuse@dnsmadeeasy.com
+Message-ID: <48B721A9.4070201@avtrex.com>
+Date: Thu, 28 Aug 2008 15:07:37 -0700
+From: David Daney <ddaney@avtrex.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808281858.42486.korgull@home.nl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: linux-mips@linux-mips.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [Patch 4/6] MIPS: Watch exception handling for HARDWARE_WATCHPOINTS.
+References: <48B71ADD.601@avtrex.com>
+In-Reply-To: <48B71ADD.601@avtrex.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Aug 2008 22:07:37.0729 (UTC) FILETIME=[7B4F9710:01C9095A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 06:58:41PM +0200, Marcel Janssen wrote:
-> On Thursday 28 August 2008 01:47:20 Greg KH wrote:
-> > Great, all done now.
-> >
-> > Here's the updated version.
-> 
-> I've just installed this version.
-> 
-> Here's what I see so far :
-> 
-> The driver inserts well and when I connect my device it shows /dev/usbtmc0 
-> with major 180 and minor 176.
-> It only creates one device (Stefan's driver created two) but I'm not sure if 
-> that has changed for a reason so just let you know.
 
-Yes, the old driver had a "control and debug " channel at minor 0, which
-isn't needed anymore.
+Here we hook up the watch exception handler so that it sends SIGTRAP
+when the hardware watch registers are triggered.
 
-> When I disconnect my device, usbtmc0 will not be destroyed. After connecting 
-> the device a couple of times I have a lot of /dev/usbtmc.. files.
+Signed-off-by: David Daney <ddaney@avtrex.com>
+---
+ arch/mips/kernel/genex.S |    4 ++++
+ arch/mips/kernel/traps.c |   14 +++++++++-----
+ 2 files changed, 13 insertions(+), 5 deletions(-)
 
-Hm, that's not good, something's wrong here.
+diff --git a/arch/mips/kernel/genex.S b/arch/mips/kernel/genex.S
+index c6ada98..15a9bde 100644
+--- a/arch/mips/kernel/genex.S
++++ b/arch/mips/kernel/genex.S
+@@ -416,7 +416,11 @@ NESTED(nmi_handler, PT_SIZE, sp)
+ 	BUILD_HANDLER tr tr sti silent			/* #13 */
+ 	BUILD_HANDLER fpe fpe fpe silent		/* #15 */
+ 	BUILD_HANDLER mdmx mdmx sti silent		/* #22 */
++#ifdef 	CONFIG_HARDWARE_WATCHPOINTS
++	BUILD_HANDLER watch watch sti silent		/* #23 */
++#else
+ 	BUILD_HANDLER watch watch sti verbose		/* #23 */
++#endif
+ 	BUILD_HANDLER mcheck mcheck cli verbose		/* #24 */
+ 	BUILD_HANDLER mt mt sti silent			/* #25 */
+ 	BUILD_HANDLER dsp dsp sti silent		/* #26 */
+diff --git a/arch/mips/kernel/traps.c b/arch/mips/kernel/traps.c
+index 6bee290..5fbf591 100644
+--- a/arch/mips/kernel/traps.c
++++ b/arch/mips/kernel/traps.c
+@@ -42,6 +42,7 @@
+ #include <asm/tlbdebug.h>
+ #include <asm/traps.h>
+ #include <asm/uaccess.h>
++#include <asm/watch.h>
+ #include <asm/mmu_context.h>
+ #include <asm/types.h>
+ #include <asm/stacktrace.h>
+@@ -908,12 +909,15 @@ asmlinkage void do_mdmx(struct pt_regs *regs)
+ asmlinkage void do_watch(struct pt_regs *regs)
+ {
+ 	/*
+-	 * We use the watch exception where available to detect stack
+-	 * overflows.
++	 * If the current thread has the watch registers loaded, save
++	 * their values and send SIGTRAP.  Otherwise another thread
++	 * left the registers set, clear them and continue.
+ 	 */
+-	dump_tlb_all();
+-	show_regs(regs);
+-	panic("Caught WATCH exception - probably caused by stack overflow.");
++	if (test_tsk_thread_flag(current, TIF_LOAD_WATCH)) {
++		mips_read_watch_registers();
++		force_sig(SIGTRAP, current);
++	} else
++		mips_clear_watch_registers();
+ }
+ 
+ asmlinkage void do_mcheck(struct pt_regs *regs)
+-- 
+1.5.5.1
 
-Can you enable CONFIG_USB_DEBUG and rebuild the driver and send me the
-kernel log messages when you plug the device in and then remove it?
-
-> I would expect the following to work :
-> echo :*IDN?>/dev/usbtmc0
-> But it returns : No such device
-
-Yeah, I would expect that to work as well.  The debug information might
-be helpful here also.
-
-> Using echo and cat to test the device is quite convenient, but is this 
-> supposed to work yet ?
-
-Yes it should.
-
-> I checked /sys a bit and found that the endpoints are correctly found.    
-
-Good, how about the capability information?  That should be in sysfs as
-well, does that show the proper values?
-
-thanks,
-
-greg k-h
