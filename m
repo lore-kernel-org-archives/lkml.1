@@ -1,87 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbYH1Dfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbYH1Dqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867AbYH1Dfd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 23:35:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbYH1DfV
+	id S1754669AbYH1Dqg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 23:46:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYH1Dq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 23:35:21 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:42070 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753660AbYH1DfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 23:35:20 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -1.777
-Date: Wed, 27 Aug 2008 20:35:18 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Denys Fedoryshchenko <denys@visp.net.lb>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-Message-ID: <20080827203518.7f6075a0@extreme>
-In-Reply-To: <200808220457.40892.denys@visp.net.lb>
-References: <200808220457.40892.denys@visp.net.lb>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 27 Aug 2008 23:46:26 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:32288 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753157AbYH1DqZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 23:46:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=pSX4eYOpH32Lb9mLdX67+IK3n7LKUDhUAWvXE1l43OojTl0nZhjYtlzPe3y2Omjs8A
+         mWNUsCC+uShUbr9a6xwLUPI+mAfkS8heuzQ+scV1PAioxqkemkngIP7h6S+vPAvcCqgM
+         OUjOCXu0d63AfMkCvk90R9DSOSJrwl6lHc6Io=
+Message-ID: <386072610808272046u270c1302g1102bf1f0bd9b6ee@mail.gmail.com>
+Date: Thu, 28 Aug 2008 11:46:24 +0800
+From: "Bryan Wu" <cooloney@kernel.org>
+To: "Bryan Wu" <cooloney@kernel.org>, perex@perex.cz, lrg@kernel.org,
+       "Cliff Cai" <cliff.cai@analog.com>, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [alsa-devel] [PATCH 3/4] ASOC: WM8731 codec: add SPI support as well as I2C
+In-Reply-To: <20080827110143.GB10834@sirena.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1219829968-6431-1-git-send-email-cooloney@kernel.org>
+	 <1219829968-6431-4-git-send-email-cooloney@kernel.org>
+	 <20080827110143.GB10834@sirena.org.uk>
+X-Google-Sender-Auth: 79ce67851236e052
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Aug 2008 04:57:40 +0300
-Denys Fedoryshchenko <denys@visp.net.lb> wrote:
+On Wed, Aug 27, 2008 at 7:01 PM, Mark Brown <broonie@sirena.org.uk> wrote:
+> On Wed, Aug 27, 2008 at 05:39:27PM +0800, Bryan Wu wrote:
+>
+> This looks good, thanks but...
+>
+>> -#if defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE)
+>> +#if defined (CONFIG_I2C) || defined (CONFIG_I2C_MODULE) && !defined (CONFIG_SND_SOC_WM8731_SPI)
+>>       if (setup->i2c_address) {
+>>               normal_i2c[0] = setup->i2c_address;
+>>               codec->hw_write = (hw_write_t)i2c_master_send;
+>> @@ -688,8 +745,14 @@ static int wm8731_probe(struct platform_device *pdev)
+>>               if (ret != 0)
+>>                       printk(KERN_ERR "can't add i2c driver");
+>>       }
+>> +#elif defined (CONFIG_SPI_MASTER) && defined (CONFIG_SND_SOC_WM8731_SPI)
+>> +     codec->hw_write = (hw_write_t)wm8731_spi_write;
+>> +     ret = spi_register_driver(&wm8731_spi_driver);
+>> +     if (ret != 0)
+>> +             printk(KERN_ERR "can't add spi driver");
+>
+> ...as for the SSM2602 it'd be good if it were possible to build a kernel
+> which supports both I2C and SPI.  If you like I could do this for you -
+> there's likely to be merge issues due to the update to the new I2C API
+> anyway?
+>
 
-> I have loaded router (~650 Mbps In+Out), based on 2xAMD Opteron 248, Sun Fire 
-> X4100. HPET timer available (TSC seems not available on this platform).
-> Network interfaces is onboard, connected over PCI-X.
-> 
-> Right now i am using only one processor, cause using only one interface and 
-> interrupts stick to it. Other is almost not used.
-> At peak time i notice in mpstat, that this processor is almost "dead", and if 
-> i run minor application consuming resources - ping over this router will be 
-> terrible. For me it is clear - system overloaded. I did oprofile, and here is 
-> result (at low load time, but at peak time it is very similar).
-> 
-> CPU: AMD64 processors, speed 2193.74 MHz (estimated)
-> Counted CPU_CLK_UNHALTED events (Cycles outside of halt state) with a unit 
-> mask of 0x00 (No unit mask) count 100000
-> CPU_CLK_UNHALT...|
->   samples|      %|
-> ------------------
->   2679376 71.9851 vmlinux
->    287212  7.7163 e1000
->    278674  7.4870 ip_tables
->    259923  6.9832 nf_conntrack
->     29699  0.7979 iptable_nat
->     26752  0.7187 nf_nat
->     26093  0.7010 nf_conntrack_ipv4
->     16525  0.4440 iptable_mangle
->     14988  0.4027 oprofiled
-> 
-> 
-> CPU: AMD64 processors, speed 2193.74 MHz (estimated)
-> Counted CPU_CLK_UNHALTED events (Cycles outside of halt state) with a unit 
-> mask of 0x00 (No unit mask) count 100000
-> samples  %        symbol name
-> 1031727  37.1736  getnstimeofday
-> 230457    8.3035  __napi_schedule
-> 122154    4.4013  __do_softirq
-> 110036    3.9647  dev_queue_xmit
-> 88800     3.1995  net_rx_action
-> 71163     2.5640  ip_route_input
-> 52232     1.8819  local_bh_enable
-> 43804     1.5783  get_next_timer_interrupt
-> 43387     1.5633  ip_forward
-> 35501     1.2791  nf_iterate
-> 35212     1.2687  __slab_alloc
-> 34652     1.2485  default_idle
-> 32375     1.1665  kfree
-> 28127     1.0134  kmem_cache_alloc
-> 
-> What is bothering me, why getnstimeofday called so much? Even i remove HTB 
-> shaper, it still takes 30-40% of whole vmlinux time. From other 
-> applications - only zebra is running.
-> Any ideas?
+Oh, do you mean SSM2602 or WM8731? I also noticed the i2c API updates
+patch from Jean and I'd like to use the new one
 
-What kernel version is this?  There was a fix to AF_PACKET about a year ago
-to reduce this.
+Thanks
+-Bryan
