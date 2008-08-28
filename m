@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbYH1VRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757257AbYH1VVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757556AbYH1VRS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 17:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbYH1VRH
+	id S1757257AbYH1VVr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 17:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbYH1VVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 17:17:07 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44355 "EHLO mx2.mail.elte.hu"
+	Thu, 28 Aug 2008 17:21:39 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:61639 "EHLO mummy.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753252AbYH1VRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 17:17:05 -0400
-Date: Thu, 28 Aug 2008 23:16:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Witbrodt <dawitbro@sbcglobal.net>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: split e820 reserved entries record to late v2
-Message-ID: <20080828211647.GA32431@elte.hu>
-References: <1219955655-18357-1-git-send-email-yhlu.kernel@gmail.com> <alpine.LFD.1.10.0808281339250.3300@nehalem.linux-foundation.org> <86802c440808281352y1371f437vf3409d9e104d1a51@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440808281352y1371f437vf3409d9e104d1a51@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1753957AbYH1VVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 17:21:38 -0400
+Subject: Re: Frustrated with capabilities..
+From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Markku Savela <msa@moth.iki.fi>, Pavel Machek <pavel@suse.cz>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080828174854.GM26987@mit.edu>
+References: <87hc96by8x.fsf@burp.tkv.asdf.org>
+	 <20080828141826.GA6797@ucw.cz>
+	 <200808281445.m7SEjYsB007502@burp.tkv.asdf.org>
+	 <20080828174854.GM26987@mit.edu>
+Content-Type: text/plain
+Date: Thu, 28 Aug 2008 17:03:19 -0400
+Message-Id: <1219957399.2627.127.camel@moss-terrapins.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-08-28 at 13:48 -0400, Theodore Tso wrote:
+> On Thu, Aug 28, 2008 at 05:45:34PM +0300, Markku Savela wrote:
+> > 
+> > > From: Pavel Machek <pavel@suse.cz>
+> > 
+> > > Yes, you need upcoming filesystem capabilities.  Binary may not
+> > > inherit capabilities unless filesystem flags permit that.
+> > 
+> > I think this is wrong. Normal executables inherit uid/gid and
+> > supplementary groups by default. Why should capabilities be any
+> > different?
+> 
+> Well, because that's not the what the POSIX draft specification (and
+> the rest of the Unix industry who were striving to meet the US
+> Department of Defense's "B2 by '92" initiative) ended up implementing.
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+Minor nit. It was actually C2(Controlled Access Protection) by '92 which
+is mainly just DAC protections as opposed to B2(Structured Protection)
+which also included MAC policies and Sensitivity labels in addition to
+DAC protections.
 
-> +void __init e820_reserve_resources_late(void)
-> +{
-> +	int i;
-> +	struct resource *res;
-> +
-> +	res = e820_res;
-> +	for (i = 0; i < e820.nr_map; i++) {
-> +		if (e820.map[i].type == E820_RESERVED && res->start >= (1ULL<<20))
-> +			insert_resource(&iomem_resource, res);
-> +		res++;
-> +	}
-> +}
+Dave
 
-Here we have the problem of overlap i outlined earlier: if there's a 
-partial overlap at this stage (as i think it can happen in the hpet case 
-on David's box), we wont insert the E820_RESERVED resource.
-
-The hpet hang will be solved, because we dont reprogram the BAR, but we 
-now keep the formerly e820-reserved area as 'free' - which the PCI code 
-could allocate new resources into - which could cause other problems 
-(hangs, non-working devices, etc.) down the line.
-
-Which most likely wont happen currently in practice (there's enough free 
-space elsewhere), but it's still a not truly 'free' area and it would be 
-nice to have a complete and correct picture, based on all sources of 
-information we have.
-
-	Ingo
