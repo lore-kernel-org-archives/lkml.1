@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbYH1CY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbYH1CpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754738AbYH1CY7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 22:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbYH1CYu
+	id S1754445AbYH1CpV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 22:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbYH1CpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 22:24:50 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:5648 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753157AbYH1CYt (ORCPT
+	Wed, 27 Aug 2008 22:45:04 -0400
+Received: from prod-mail-xrelay01.akamai.com ([72.246.2.12]:39019 "EHLO
+	prod-mail-xrelay01.akamai.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753633AbYH1CpD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 22:24:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=OkB0PRSrx48YopFTPHYF/TLYStUuXFK+CYSPPtPE5PIrX5rLMrgptmp+hkTUj5616o
-         CrPxKdH4YxbwHCJjgkD83MLH+4hkmVV9N5yfZkUadDNM1rt4YcsFr535tAVCrbkg722X
-         kZ2EHblQkdcjrIqpUPPUNBEe3btAARF2B9y6c=
-Date: Thu, 28 Aug 2008 06:26:23 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org, viro@zeniv.linux.org.uk
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] anondev: switch to IDA
-Message-ID: <20080828022623.GB18499@x200.localdomain>
+	Wed, 27 Aug 2008 22:45:03 -0400
+X-Greylist: delayed 303 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Aug 2008 22:45:02 EDT
+Date: Wed, 27 Aug 2008 19:39:58 -0700
+From: Jason Uhlenkott <juhlenko@akamai.com>
+To: David Miller <davem@davemloft.net>
+Cc: andi@firstfloor.org, johnpol@2ka.mipt.ru, dada1@cosmosbay.com,
+       denys@visp.net.lb, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+Message-ID: <20080828023958.GB21395@juhlenko-desk.sanmateo.corp.akamai.com>
+References: <48B46B48.7030609@cosmosbay.com> <20080826205158.GA15266@2ka.mipt.ru> <87vdxmr53f.fsf@basil.nowhere.org> <20080827.143401.76242975.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080827.143401.76242975.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+On Wed, Aug 27, 2008 at 14:34:01 -0700, David Miller wrote:
+> By the time you get to the socket, it might be eons (relatively
+> speaking) later, decreasing the usefulness of the timestamp.
 
- fs/super.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+It's a *socket* option.  It's named SO_TIMESTAMP.  Users of it ought
+to *expect* that it records the time the packet hits the socket, not
+the time the frame hits the device.
 
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -682,7 +682,7 @@ void emergency_remount(void)
-  * filesystems which don't use real block-devices.  -- jrs
-  */
- 
--static DEFINE_IDR(unnamed_dev_idr);
-+static DEFINE_IDA(unnamed_dev_ida);
- static DEFINE_SPINLOCK(unnamed_dev_lock);/* protects the above */
- 
- int set_anon_super(struct super_block *s, void *data)
-@@ -691,10 +691,10 @@ int set_anon_super(struct super_block *s, void *data)
- 	int error;
- 
-  retry:
--	if (idr_pre_get(&unnamed_dev_idr, GFP_ATOMIC) == 0)
-+	if (ida_pre_get(&unnamed_dev_ida, GFP_ATOMIC) == 0)
- 		return -ENOMEM;
- 	spin_lock(&unnamed_dev_lock);
--	error = idr_get_new(&unnamed_dev_idr, NULL, &dev);
-+	error = ida_get_new(&unnamed_dev_ida, &dev);
- 	spin_unlock(&unnamed_dev_lock);
- 	if (error == -EAGAIN)
- 		/* We raced and lost with another CPU. */
-@@ -704,7 +704,7 @@ int set_anon_super(struct super_block *s, void *data)
- 
- 	if ((dev & MAX_ID_MASK) == (1 << MINORBITS)) {
- 		spin_lock(&unnamed_dev_lock);
--		idr_remove(&unnamed_dev_idr, dev);
-+		ida_remove(&unnamed_dev_ida, dev);
- 		spin_unlock(&unnamed_dev_lock);
- 		return -EMFILE;
- 	}
-@@ -720,7 +720,7 @@ void kill_anon_super(struct super_block *sb)
- 
- 	generic_shutdown_super(sb);
- 	spin_lock(&unnamed_dev_lock);
--	idr_remove(&unnamed_dev_idr, slot);
-+	ida_remove(&unnamed_dev_ida, slot);
- 	spin_unlock(&unnamed_dev_lock);
- }
- 
+If banks want to know when frames are hitting their devices, that's
+fine, but setsockopt() is the wrong layer for controlling that sort of
+thing.  An interface flag would make a lot more sense.
 
+
+> I find it amusing that nobody it talking about fixing the tools
+> that are creating the timestamp requests when they have no real
+> reason for having them in the first place.
+
+I don't agree that the tools are broken.  Some of them may have
+frivolous reasons for wanting timestamps, but they're asking for
+something at the socket layer, with the scope of a single socket, and
+it's hardly their fault that we respond to that by doing something
+expensive and global at a much lower level.
