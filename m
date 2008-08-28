@@ -1,105 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbYH1T1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbYH1Tbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756177AbYH1T1l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 15:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYH1T13
+	id S1756000AbYH1Tbp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 15:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbYH1Tbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 15:27:29 -0400
-Received: from relay2.globalproof.net ([194.146.153.25]:51138 "EHLO
-	relay2.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753252AbYH1T12 (ORCPT
+	Thu, 28 Aug 2008 15:31:35 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33860
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753932AbYH1Tbe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 15:27:28 -0400
-From: Denys Fedoryshchenko <denys@visp.net.lb>
-Organization: Virtual ISP
-To: Eric Dumazet <dada1@cosmosbay.com>
+	Thu, 28 Aug 2008 15:31:34 -0400
+Date: Thu, 28 Aug 2008 12:31:29 -0700 (PDT)
+Message-Id: <20080828.123129.176935353.davem@davemloft.net>
+To: denys@visp.net.lb
+Cc: andi@firstfloor.org, jmalicki@metacarta.com, johnpol@2ka.mipt.ru,
+       dada1@cosmosbay.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, juhlenko@akamai.com, sammy@sammy.net
 Subject: Re: loaded router, excessive getnstimeofday in oprofile
-Date: Thu, 28 Aug 2008 22:25:57 +0300
-User-Agent: KMail/1.9.9
-Cc: Andi Kleen <andi@firstfloor.org>, Joe Malicki <jmalicki@metacarta.com>,
-       David Miller <davem@davemloft.net>, johnpol@2ka.mipt.ru,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       juhlenko@akamai.com, sammy@sammy.net
-References: <20080827.201020.17601834.davem@davemloft.net> <200808281948.52608.denys@visp.net.lb> <48B6F4FE.6010308@cosmosbay.com>
-In-Reply-To: <48B6F4FE.6010308@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200808281802.17867.denys@visp.net.lb>
+References: <21915755.1327801219904892242.JavaMail.root@ouachita>
+	<20080828072218.GI26610@one.firstfloor.org>
+	<200808281802.17867.denys@visp.net.lb>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808282225.57535.denys@visp.net.lb>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 August 2008, Eric Dumazet wrote:
+From: Denys Fedoryshchenko <denys@visp.net.lb>
+Date: Thu, 28 Aug 2008 18:02:17 +0300
 
-> So... if using ping on your machine has direct an noticeable effect on cpu
-> load, problem is elsewhere (if no ping is running, you dont have skb
-> timestamping, but still getnstimeofday() is the top function in oprofile)
+> It seems i cannot test current net-2.6, because it is broken for me 
+> on USB part (fixed by workaround in init scripts), HPET totally broken in 
+> net-2.6, but works for latest main git from torvalds tree.
+> I have to wait when net-2.6 rebased to current torvalds tree, then i will try 
+> to test.
 
->
-> 1) Do you have any netfilter rule using xt_time ?
->    (This module also calls __net_timestamp(skb))
-No
+Make a clone of Linus's tree, then pull in the net-2.6 tree.
 
->
-> 2) You maybe have a bad program that do something expensive relative to
-> kernel time services.
-No, process list is very short, it is custom semi-embedded linux distro i 
-made, so i know each process running there.  Here is process list (kernel 
-processes/threads and running shell(busybox ash) removed) 
-
-1 root     /bin/sh /init
- 1119 root     init
- 2451 root     /sbin/syslogd -R 80.83.17.2
- 2453 root     /sbin/klogd
- 3168 squid    /usr/sbin/zebra -d
- 3175 squid    /usr/sbin/ripd -d
- 3195 root     /usr/sbin/snmpd -c /config/snmpd.conf
- 3208 root     udhcpd /config/udhcp.office.conf -S
- 3550 root     /usr/sbin/sshd -b /etc/banner
- 3566 root     /sbin/getty 38400 tty1
- 3567 root     /sbin/getty 38400 tty2
- 3570 root     /sbin/getty 38400 tty3
- 4055 root     /usr/sbin/sshd -b /etc/banner
-
-> Your setup is probably not common.
-> You want a PersonnalComputer class machine acts as a SuperCiscoDevice(TM),
-> while most PC machines dont use more than 10% of CPU power in average...
-I dont think i am alone, and almost sure there is many guys trying to run 
-linux as high-performance router. But most of them dont know about 
-netdev@ :-)
-
-Well, thats called "Increasing resources use efficiency and system 
-productivity". It is never a shame to utilize resources more efficiently. 
-Plus i am not using PC class machine. For example this one with HPET, is Sun 
-Fire X4100, which costs us that time a lot of bucks, and mostly because it is 
-reliable hardware (very good IPMI/remote kvm/... onboard, good cooling, 4 
-e1000, dual power supply).
-
-I can use also PC class, but i will face some issues, like building proper 
-cooling system and maybe even it will not work well, cause some chips not 
-designed for "heavy duty", and on load they will not be able to dissipate 
-heat inside the chip and will be broked soon. But sometimes it is even worth 
-to try.
-
-And most important, many routers is already "soft"-routers. What is Cisco 
-7206+NPE G1/G2? It is MIPS CPU with relatively large L2 cache. There is seems 
-no ASIC for routing offloading.  Means Linux can do same or better job.
-And means Vyatta can beat Cisco on this market, and be far away forward from 
-Cisco soon. As result more jobs for opensource guys. Linux must enter "heavy 
-duty" and critical jobs too, not only SOHO-class routers.
-
->
-> Many existing programs depend on current SO_TIMESTAMP.
-> We wont break them to solve a particular problem (yet to be demonstrated)
-I think it wouldn't break. But sure we must be very careful and on my side i 
-can test all possible scenarios i can implement.
-
-Maybe even good idea to not change (for now) current  default behaviour, but 
-to provide option for "high performance" systems then.
-
-> kernel already provides nanosecond resolution :)
-> Check SO_TIMESTAMPNS and SCM_TIMESTAMPNS
-Maybe this function really must be "heavy" then.
+This is always how you should test things especially if you want to
+make sure you have whatever non-networking bug fixes your machine
+might require.
