@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753101AbYH1Hu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbYH1Hw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753101AbYH1Hu5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 03:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYH1Hus
+	id S1754799AbYH1Hw0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 03:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYH1HwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 03:50:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34826 "EHLO mx3.mail.elte.hu"
+	Thu, 28 Aug 2008 03:52:17 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35046 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751123AbYH1Hus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 03:50:48 -0400
-Date: Thu, 28 Aug 2008 09:50:26 +0200
+	id S1752841AbYH1HwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 03:52:17 -0400
+Date: Thu, 28 Aug 2008 09:52:01 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] ftrace: remove direct reference to mcount in trace code
-Message-ID: <20080828075023.GI21875@elte.hu>
-References: <alpine.DEB.1.10.0808272323030.1782@gandalf.stny.rr.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ftrace: remove warning of old objcopy and local
+	functions
+Message-ID: <20080828075201.GJ21875@elte.hu>
+References: <20080825130117.33fe34bc.sfr@canb.auug.org.au> <20080825060934.GB14993@elte.hu> <alpine.DEB.1.10.0808251434000.23923@gandalf.stny.rr.com> <20080825190103.GA24029@elte.hu> <20080826094627.5d627b5b.sfr@canb.auug.org.au> <20080826115113.806cfe23.sfr@canb.auug.org.au> <alpine.DEB.1.10.0808252324050.966@gandalf.stny.rr.com> <20080826154721.9416e2e9.sfr@canb.auug.org.au> <alpine.DEB.1.10.0808271300540.16904@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0808272323030.1782@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0808271300540.16904@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,17 +39,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> The mcount record method of ftrace scans objdump for references to 
-> mcount. Using mcount as the reference to test if the calls to mcount 
-> being replaced are indeed calls to mcount, this use of mcount was also 
-> caught as a location to change. Using a variable that points to the 
-> mcount address moves this reference into the data section that is not 
-> scanned, and we do not use a false location to try and modify.
-> 
-> The warn on code was what was used to detect this bug.
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> The warning messages about old objcopy and local functions spam the 
+> user quite drastically.  Remove the warning until we can find a nicer 
+> way of tell the user to upgrade their objcopy.
 
-applied to tip/tracing/ftrace - thanks Steve!
+applied to tip/tracing/ftrace, thanks!
 
 	Ingo
