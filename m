@@ -1,99 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbYH1Tiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbYH1TjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755835AbYH1Tiq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 15:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbYH1Tig
+	id S1756780AbYH1TjT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 15:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755225AbYH1TjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 15:38:36 -0400
-Received: from [84.19.168.8] ([84.19.168.8]:54962 "EHLO server03.ke-net.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754858AbYH1Tif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 15:38:35 -0400
-Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
-From: Stefani Seibold <stefani@seibold.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mark Hounschell <markh@compro.net>, Steven Rostedt <rostedt@goodmis.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Dario Faggioli <raistlin@linux.it>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0808281138060.3300@nehalem.linux-foundation.org>
-References: <20080819103301.787700742@chello.nl>
-	 <200808290036.35817.nickpiggin@yahoo.com.au>
-	 <alpine.DEB.1.10.0808281110570.14580@gandalf.stny.rr.com>
-	 <200808290134.35093.nickpiggin@yahoo.com.au>
-	 <alpine.DEB.1.10.0808281142280.14580@gandalf.stny.rr.com>
-	 <alpine.LFD.1.10.0808281024060.3300@nehalem.linux-foundation.org>
-	 <48B6EB6F.2050802@compro.net>
-	 <alpine.LFD.1.10.0808281138060.3300@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 28 Aug 2008 21:39:07 +0200
-Message-Id: <1219952347.6230.25.camel@matrix>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 28 Aug 2008 15:39:01 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:46939 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755202AbYH1Ti7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 15:38:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Xt5eb0za9eM0DfUHq/P5c1YayI+EyBXKboZr0ow1QJZY8Uj2O5uhIs4NBkA9yfviEo
+         Epf7ThqUKQydSctCKmWN1bf2+7CKrWE/80xBk8bmvdeeIZ8WBWdoXaPYmJwczA8qw/qB
+         tzEITtgyAdtANEqoIWbH157O5IQ+J/Pk79kMQ=
+Message-ID: <19f34abd0808281238w18a53b90wc55591a572c225da@mail.gmail.com>
+Date: Thu, 28 Aug 2008 21:38:58 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Pekka J Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: [RFC][PATCH] bitfields API
+Cc: "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "David Miller" <davem@davemloft.net>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0808282201190.11146@melkki.cs.Helsinki.FI>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080828183223.GA30781@localhost.localdomain>
+	 <20080828184025.GA22165@x200.localdomain>
+	 <19f34abd0808281146o7a00388eie9322ff778665961@mail.gmail.com>
+	 <Pine.LNX.4.64.0808282201190.11146@melkki.cs.Helsinki.FI>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I started this discussion last week with an apparent bug in the new CFS.
+On Thu, Aug 28, 2008 at 9:02 PM, Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+> Why not do something like this (as suggested by Ingo, I think)? Yeah, the
+> macro should go into kmemcheck.h but I don't have a tree handy...
+>
+>                Pekka
+>
+> Index: linux-2.6/include/linux/bitfield.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/include/linux/bitfield.h
+> @@ -0,0 +1,10 @@
+> +#ifndef __LINUX_BITFIELD_H
+> +#define __LINUX_BITFIELD_H
+> +
+> +#ifdef CONFIG_KMEMCHECK
+> +#define KMEMCHECK_BIT_FIELD(field) do { field = 0; } while (0)
+> +#else
+> +#define KMEMCHECK_BIT_FIELD(field) do { } while (0)
+> +#endif /* CONFIG_KMEMCHECK */
+> +
+> +#endif /* __LINUX_BITFIELD_H */
+>
+> Index: linux-2.6/net/core/skbuff.c
+> ===================================================================
+> --- linux-2.6.orig/net/core/skbuff.c
+> +++ linux-2.6/net/core/skbuff.c
+> @@ -55,6 +55,7 @@
+>  #include <linux/rtnetlink.h>
+>  #include <linux/init.h>
+>  #include <linux/scatterlist.h>
+> +#include <linux/bitfield.h>
+>
+>  #include <net/protocol.h>
+>  #include <net/dst.h>
+> @@ -209,6 +210,11 @@ struct sk_buff *__alloc_skb(unsigned int
+>        skb->data = data;
+>        skb_reset_tail_pointer(skb);
+>        skb->end = skb->tail + size;
+> +       KMEMCHECK_BIT_FIELD(skb->local_df);
+> +       KMEMCHECK_BIT_FIELD(skb->cloned);
+> +       KMEMCHECK_BIT_FIELD(skb->ip_summed);
+> +       KMEMCHECK_BIT_FIELD(skb->nohdr);
+> +       KMEMCHECK_BIT_FIELD(skb->nfctinfo);
+>        /* make sure we initialize shinfo sequentially */
+>        shinfo = skb_shinfo(skb);
+>        atomic_set(&shinfo->dataref, 1);
+>
 
-As it turns out, it was not a bug, it was an feature, a (undocumented?)
-feature.
+That looks good to me. If the extra lines are okay with net people, we
+can put this in the fixlets branch and make it the norm for dealing
+with bitfields in kmemcheck.
 
-In the world of embeded device and real time programming it is not a
-hard job to compile the kernel right for the desired usage und fix the
-startup script to use the desired policy.
+One thing to keep in mind that if the members of the bitfield does not
+span the entire width of the bitfield, the remaining bits must also be
+assigned (as an extra "filler" member), otherwise GCC will not
+optimize it to a single store. But that is not an issue in this
+particular case since all the bits are used.
 
-Getting back the old behaviour would be nice and in my opinion the right
-way, because the new one breaks with POSIX. But I have a working
-solution and that is for me what matters.
 
-By the way - RT means not hard real time. Hard-RT is a marketing phrase.
-A given combination of OS and hardware must handle a event in a given
-time. Thats all.
+Vegard
 
-Thanks for the support.
-
-Regards,
-Stefani, the hard RT "real woman" programmer ;-)
-
-Am Donnerstag, den 28.08.2008, 11:42 -0700 schrieb Linus Torvalds:
-> 
-> On Thu, 28 Aug 2008, Mark Hounschell wrote:
-> > 
-> > More and more are wanting and now finding the Linux kernel to be more
-> > RT capable. I seem to remember way back you saying it was one thing you didn't
-> > really care much about one way or the other. Thats OK. But, you _are_ the man.
-> 
-> The thing is, the reason I dislike RT is that so many people have so 
-> different understanding of what RT means.
-> 
-> Quite frankly, I think that the people who are complaining (like you) 
-> think that RT means "hard realtime". You think about literally specialized 
-> devices.
-> 
-> A lot of _other_ people think that RT means "good audio latency", where it 
-> really is a lot softer. 
-> 
-> And neither camp seems to ever admit that they are just a small camp, and 
-> that the other camp exists or is even valid.
-> 
-> And I'm not really interested. Quite frankly, I suspect the "we want to 
-> run something like pulseaudio with RT priorities" camp is the more common 
-> one, and in that context I understand limiting SCHED_FIFO sounds perfectly 
-> understandable.
-> 
-> As to your
-> 
-> > "just to protect a few _supposedly_ bad programmers???"
-> 
-> quite frankly, most programmers aren't "supposedly bad". And if you think 
-> that the hard-RT "real man" programmers aren't bad, I really have nothing 
-> to say.
-> 
-> 		Linus
-> 
-
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
