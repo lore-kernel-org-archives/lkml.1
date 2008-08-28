@@ -1,90 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754378AbYH1Hp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbYH1Hq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754378AbYH1Hp6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 03:45:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYH1Hpu
+	id S1754729AbYH1Hq3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 03:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbYH1HqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 03:45:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56149 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752957AbYH1Hpt (ORCPT
+	Thu, 28 Aug 2008 03:46:20 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:58759 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752957AbYH1HqT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 03:45:49 -0400
-Date: Thu, 28 Aug 2008 00:45:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, jurriaan <thunder7@xs4all.nl>,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
-Subject: Re: 2.6.27-rc4: lots of 'in_atomic():1, irqs_disabled():0' with
- software-raid1
-Message-Id: <20080828004532.45d8b8c9.akpm@linux-foundation.org>
-In-Reply-To: <20080828073324.GR20055@kernel.dk>
-References: <20080827170538.GA24393@amd64.of.nowhere>
-	<200808272347.43577.rjw@sisk.pl>
-	<20080828073324.GR20055@kernel.dk>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 28 Aug 2008 03:46:19 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Kevin Diggs <kevdig@hypersurf.com>
+Subject: Re: [PATCH 2/4] Add cpufreq driver for the IBM PowerPC 750GX
+Date: Thu, 28 Aug 2008 09:46:09 +0200
+User-Agent: KMail/1.9.9
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <48B28F23.1000906@hypersurf.com> <200808271334.16712.arnd@arndb.de> <48B5C0AD.9040006@hypersurf.com>
+In-Reply-To: <48B5C0AD.9040006@hypersurf.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808280946.10077.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX198EH0qoK+08oY+EyDvhA+jjiccRckD9O2jM6O
+ u1pFMpaa+AOlI5Qdjw4YCdeJr/vxgm61r249mK/gg0f3HHYyCk
+ b91Kb0ghcP0Hk65d4tkAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Aug 2008 09:33:24 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> On Wed, Aug 27 2008, Rafael J. Wysocki wrote:
-> > [Adding CCs]
+On Wednesday 27 August 2008, Kevin Diggs wrote:
+> Arnd Bergmann wrote:
 > > 
-> > On Wednesday, 27 of August 2008, jurriaan wrote:
-> > > After returning from my holidays, I proceeded to test 2.6.27-rc4. 2.6.26
-> > > works fine, but 2.6.27-rc4 gives me lots of:
-> > > 
-> > > Aug 27 18:03:10 middle kernel: in_atomic():1, irqs_disabled():0
-> > > Aug 27 18:03:10 middle kernel: Pid: 1185, comm: md2_raid1 Not tainted 2.6.27-rc4 #2
-> > > Aug 27 18:03:10 middle kernel: 
-> > > Aug 27 18:03:10 middle kernel: Call Trace:
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff802303fb>] __might_sleep+0xdb/0x100
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff802734a9>] mempool_alloc+0x89/0x140
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff802c8deb>] bio_alloc_bioset+0x2b/0xb0
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff802c8ed0>] bio_alloc+0x10/0x20
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8061ecda>] md_super_write+0x3a/0xe0
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80623e0e>] write_page+0x14e/0x310
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff803a30f1>] ? rb_insert_color+0x101/0x130
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8022de7f>] ? update_curr+0x3f/0x60
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8039e3e9>] ? __next_cpu+0x19/0x30
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80231ecc>] ? find_busiest_group+0x1dc/0x960
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff806240ab>] bitmap_update_sb+0xdb/0x110
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8061ef65>] md_update_sb+0x1e5/0x370
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80620dc5>] md_check_recovery+0x355/0x640
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80607665>] raid1d+0x35/0x10a0
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff802360db>] ? finish_task_switch+0x3b/0xc0
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8070ec96>] ? thread_return+0xa3/0x63d
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80710e52>] ? _spin_lock_irqsave+0x22/0x50
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80247406>] ? lock_timer_base+0x36/0x70
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff807110c2>] ? _spin_unlock_irqrestore+0x12/0x40
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8024749a>] ? try_to_del_timer_sync+0x5a/0x70
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff802474ca>] ? del_timer_sync+0x1a/0x30
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80710e52>] ? _spin_lock_irqsave+0x22/0x50
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff807110c2>] ? _spin_unlock_irqrestore+0x12/0x40
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8061e084>] md_thread+0x54/0x140
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80253390>] ? autoremove_wake_function+0x0/0x40
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8061e030>] ? md_thread+0x0/0x140
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80252fc9>] kthread+0x49/0x80
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8020ca09>] child_rip+0xa/0x11
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80252f80>] ? kthread+0x0/0x80
-> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8020c9ff>] ? child_rip+0x0/0x11
-> > > Aug 27 18:03:10 middle kernel: 
-> > > 
-> > > I was able to reboot into 2.6.26 without further trouble. I wasn't able
-> > > to find this reported earlier on lkml.
+> > Module parameter names should be short, so just "minmax" would
+> > be a good name, but better put the module_param() line right
+> > after that. If it's a bool type, I would just leave out the
+> > initialization.
+> > 
+> Ok. But leaving out the initialization will make me itch. Should I
+> also replace "override_min_core" with "mincore" (or "min_core")? And
+> "override_max_core" with "maxcore" (or "max_core")?
 > 
-> Hmm, this just looks like a GFP_NOIO alloc inside rcu_read_lock(), I
-> don't see anything wrong with that?
+> Leaving out the initializations makes me ... uneasy. It's ok to leave
+> them out if they are 0?
+
+Yes, that's how global and static variables are defined in C.
+Only automatic variables have undefined content.
+
+> > I think the module_exit() function should leave the frequency in a
+> > well-defined state, so the easiest way to get there is probably
+> > to delete the timer, and then manually set the frequency.
+> > 
+> I really don't follow you here? If I let the timer fire then the cpu
+> (and the cpufreq sub-system) will be left in a well-defined state. I
+> don't understand why you want me to delete the timer and then
+> basically do manually what it was going to do anyway. There are two
+> calls to cpufreq_notify_transition(). One just before the modify_PLL()
+> call, with CPUFREQ_PRECHANGE as an argument, and one in the
+> pll_switch_cb() routine, with CPUFREQ_POSTCHANGE as an argument. I
+> would need to make sure that these are matched up.
 > 
+> Even without the HRTimer stuff being used the timer fires in less than
+> 4 ms (@ 250 HZ). So I can't see the user actually trying to interrupt
+> a frequency change. With HRTimers it is 100 us.
+> 
+> Can we please, please leave this part as is?
 
-Cant sleep inside rcu_read_lock(), with CONFIG_PREEMPT_RCU=n, at least.
+I'm still not convinced that it's actually correct if you call complete()
+from the other places as well. You have three locations in your code where
+you call complete() but only one for INIT_COMPLETION. The part that I don't
+understand (and therefore don't expect other readers to understand) is how
+the driver guarantees that only one complete() will be called on the
+completion variable after it has been initialized.
 
-Dunno if it's legal if CONFIG_PREEMPT_RCU=y.  Hopefully not - that
-would be insane.  But I've failed to keep up with rcu goings-on
-recently.
+What I meant with the well-defined state is that after unloading the module,
+the CPU frequency should be the same as before loading the module, typically
+the maximum frequency, but not the one that was set last.
 
+	Arnd <><
