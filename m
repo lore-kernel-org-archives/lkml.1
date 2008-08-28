@@ -1,85 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754770AbYH1BbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754469AbYH1BqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754770AbYH1BbM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Aug 2008 21:31:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbYH1Baq
+	id S1754469AbYH1BqT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Aug 2008 21:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbYH1BqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Aug 2008 21:30:46 -0400
-Received: from 181-30.bbned.dsl.internl.net ([82.215.30.181]:56467 "HELO
-	hubble.stokkie.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753614AbYH1Bao (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Aug 2008 21:30:44 -0400
-Date: Thu, 28 Aug 2008 03:30:42 +0200 (CEST)
-From: "Robert M. Stockmann" <stock@stokkie.net>
-To: Jeff Garzik <jeff@garzik.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: libata, Sound on same IRQ : flaky sound
-In-Reply-To: <48B5F877.8030506@garzik.org>
-Message-ID: <Pine.LNX.4.44.0808280320470.31973-100000@hubble.stokkie.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiVirus: scanned for viruses by AMaViS 0.2.4 (ftp://crashrecovery.org/pub/linux/amavis/)
+	Wed, 27 Aug 2008 21:46:12 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44691 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753042AbYH1BqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Aug 2008 21:46:11 -0400
+Date: Thu, 28 Aug 2008 11:46:02 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       "William L. Irwin" <wli@holomorphy.com>
+Subject: sparc build failure
+Message-Id: <20080828114602.6c6df4a2.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__28_Aug_2008_11_46_02_+1000_08DEFSLk7n2IRWKB"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Aug 2008, Jeff Garzik wrote:
+--Signature=_Thu__28_Aug_2008_11_46_02_+1000_08DEFSLk7n2IRWKB
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Date: Wed, 27 Aug 2008 20:59:35 -0400
-> From: Jeff Garzik <jeff@garzik.org>
-> To: Robert M. Stockmann <stock@stokkie.net>
-> Cc: linux-kernel@vger.kernel.org
-> Subject: Re: libata, Sound on same IRQ : flaky sound
-> 
-> Robert M. Stockmann wrote:
-> > Hi,
-> > 
-> > I have a couple of AMD64 machines with onboard sound devices running 
-> > and they all have one thing in common : flaky sound when one is 
-> > doing some heavy disk I/O on the SATA disks. Interesting enough 
-> > /proc/interrupts shows that libata is using the same IRQ as the sound 
-> > devices :
-> > 
-> > model name      : AMD Athlon(tm) 64 X2 Dual Core Processor 6000+
-> > stepping        : 3
-> > cpu MHz         : 3014.679
-> > cache size      : 1024 KB
-> > 
-> > # cat /proc/interrupts 
-> >            CPU0       CPU1       
-> >   0:      55869  154467838    IO-APIC-edge  timer
-> >   8:          0          0    IO-APIC-edge  rtc
-> >   9:          0          0   IO-APIC-level  acpi
-> >  16:       1453     499686   IO-APIC-level  libata, NVidia CK8S
-> >  17:          0          0   IO-APIC-level  ehci_hcd:usb1
-> >  18:      27633   69978987   IO-APIC-level  eth0
-> > NMI:      10718      12112 
-> > LOC:  154533874  154533852 
-> > ERR:          0
-> > MIS:          0
-> 
-> What is the behavior of a recent kernel?
-> 
-> Is your SATA interface set to legacy mode in BIOS?
-> 
+Hi Dave,
 
-the BIOS supports raid0, but the sata disks are running standalone
-as /dev/sda /dev/sdb etc.
+Linus' tree fails to build for sparc32 allmodconfig:
 
-installing a recent kernel is not that easy, as the required
-upgrade of udev will break the initscripts and a lot of installed
-services and even the functionality of the KDE desktop. Installing
-a recent distro is not desirable as they resemble me only
-of a Open Source Vista distro, where it takes months to clean
-up the unwanted garbage and bloat inside. Its preposterous that
-a upgrade to a recent kernel mandates the installation of a recent
-distro. I run Mandrake 10.1 with kernel 2.6.15 and some applications
-upgraded like firefox, mplayer and k3b etc.
+kernel/relay.c:701: undefined reference to `smp_call_function_single'
 
-Robert
--- 
-Robert M. Stockmann - RHCE
-Network Engineer - UNIX/Linux Specialist
-crashrecovery.org  stock@stokkie.net
+This is because it has CONFIG_SMP but not CONFIG_USE_GENERIC_SMP_HELPERS.
 
+I am not sure what to do about this.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__28_Aug_2008_11_46_02_+1000_08DEFSLk7n2IRWKB
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAki2A1oACgkQjjKRsyhoI8yBQQCdFvwQA1Rl6dfDQrO01c7zhH0e
+7ysAoL9mlQ3tiqZiggMBiV+qXojFvKZ9
+=dAEX
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__28_Aug_2008_11_46_02_+1000_08DEFSLk7n2IRWKB--
