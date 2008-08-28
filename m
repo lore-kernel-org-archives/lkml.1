@@ -1,72 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbYH1TiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbYH1Tiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756716AbYH1TiK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 15:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756386AbYH1Thq
+	id S1755835AbYH1Tiq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 15:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbYH1Tig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 15:37:46 -0400
-Received: from smtp2f.orange.fr ([80.12.242.152]:49284 "EHLO smtp2f.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756136AbYH1Tho convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 15:37:44 -0400
-X-ME-UUID: 20080828193740766.BB1367000083@mwinf2f18.orange.fr
-Message-ID: <48B6FE6C.4080905@cosmosbay.com>
-Date: Thu, 28 Aug 2008 21:37:16 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Denys Fedoryshchenko <denys@visp.net.lb>
-Cc: Andi Kleen <andi@firstfloor.org>, Joe Malicki <jmalicki@metacarta.com>,
-       David Miller <davem@davemloft.net>, johnpol@2ka.mipt.ru,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       juhlenko@akamai.com, sammy@sammy.net
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-References: <20080827.201020.17601834.davem@davemloft.net> <200808281948.52608.denys@visp.net.lb> <48B6F4FE.6010308@cosmosbay.com> <200808282225.57535.denys@visp.net.lb>
-In-Reply-To: <200808282225.57535.denys@visp.net.lb>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Thu, 28 Aug 2008 15:38:36 -0400
+Received: from [84.19.168.8] ([84.19.168.8]:54962 "EHLO server03.ke-net.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754858AbYH1Tif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 15:38:35 -0400
+Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
+From: Stefani Seibold <stefani@seibold.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mark Hounschell <markh@compro.net>, Steven Rostedt <rostedt@goodmis.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Dario Faggioli <raistlin@linux.it>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0808281138060.3300@nehalem.linux-foundation.org>
+References: <20080819103301.787700742@chello.nl>
+	 <200808290036.35817.nickpiggin@yahoo.com.au>
+	 <alpine.DEB.1.10.0808281110570.14580@gandalf.stny.rr.com>
+	 <200808290134.35093.nickpiggin@yahoo.com.au>
+	 <alpine.DEB.1.10.0808281142280.14580@gandalf.stny.rr.com>
+	 <alpine.LFD.1.10.0808281024060.3300@nehalem.linux-foundation.org>
+	 <48B6EB6F.2050802@compro.net>
+	 <alpine.LFD.1.10.0808281138060.3300@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 28 Aug 2008 21:39:07 +0200
+Message-Id: <1219952347.6230.25.camel@matrix>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denys Fedoryshchenko a écrit :
-> On Thursday 28 August 2008, Eric Dumazet wrote:
->> 2) You maybe have a bad program that do something expensive relative to
->> kernel time services.
-> No, process list is very short, it is custom semi-embedded linux distro i 
-> made, so i know each process running there.  Here is process list (kernel 
-> processes/threads and running shell(busybox ash) removed) 
+I started this discussion last week with an apparent bug in the new CFS.
+
+As it turns out, it was not a bug, it was an feature, a (undocumented?)
+feature.
+
+In the world of embeded device and real time programming it is not a
+hard job to compile the kernel right for the desired usage und fix the
+startup script to use the desired policy.
+
+Getting back the old behaviour would be nice and in my opinion the right
+way, because the new one breaks with POSIX. But I have a working
+solution and that is for me what matters.
+
+By the way - RT means not hard real time. Hard-RT is a marketing phrase.
+A given combination of OS and hardware must handle a event in a given
+time. Thats all.
+
+Thanks for the support.
+
+Regards,
+Stefani, the hard RT "real woman" programmer ;-)
+
+Am Donnerstag, den 28.08.2008, 11:42 -0700 schrieb Linus Torvalds:
 > 
-> 1 root     /bin/sh /init
->  1119 root     init
->  2451 root     /sbin/syslogd -R 80.83.17.2
->  2453 root     /sbin/klogd
->  3168 squid    /usr/sbin/zebra -d
->  3175 squid    /usr/sbin/ripd -d
->  3195 root     /usr/sbin/snmpd -c /config/snmpd.conf
->  3208 root     udhcpd /config/udhcp.office.conf -S
->  3550 root     /usr/sbin/sshd -b /etc/banner
->  3566 root     /sbin/getty 38400 tty1
->  3567 root     /sbin/getty 38400 tty2
->  3570 root     /sbin/getty 38400 tty3
->  4055 root     /usr/sbin/sshd -b /etc/banner
+> On Thu, 28 Aug 2008, Mark Hounschell wrote:
+> > 
+> > More and more are wanting and now finding the Linux kernel to be more
+> > RT capable. I seem to remember way back you saying it was one thing you didn't
+> > really care much about one way or the other. Thats OK. But, you _are_ the man.
 > 
-
-OK, please try oprofile with call graph analysis.
-
+> The thing is, the reason I dislike RT is that so many people have so 
+> different understanding of what RT means.
 > 
->> kernel already provides nanosecond resolution :)
->> Check SO_TIMESTAMPNS and SCM_TIMESTAMPNS
-> Maybe this function really must be "heavy" then.
-
-Nope... the contrary :)
-
-Kernel timestamping has nanosec resolution.
-
-SO_TIMESTAMP needs a divide (by 1000), while SO_TIMESTAMPNS is native.
-
-
-
-
+> Quite frankly, I think that the people who are complaining (like you) 
+> think that RT means "hard realtime". You think about literally specialized 
+> devices.
+> 
+> A lot of _other_ people think that RT means "good audio latency", where it 
+> really is a lot softer. 
+> 
+> And neither camp seems to ever admit that they are just a small camp, and 
+> that the other camp exists or is even valid.
+> 
+> And I'm not really interested. Quite frankly, I suspect the "we want to 
+> run something like pulseaudio with RT priorities" camp is the more common 
+> one, and in that context I understand limiting SCHED_FIFO sounds perfectly 
+> understandable.
+> 
+> As to your
+> 
+> > "just to protect a few _supposedly_ bad programmers???"
+> 
+> quite frankly, most programmers aren't "supposedly bad". And if you think 
+> that the hard-RT "real man" programmers aren't bad, I really have nothing 
+> to say.
+> 
+> 		Linus
+> 
 
