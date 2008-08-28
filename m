@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752482AbYH1JAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbYH1JBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752482AbYH1JAq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 05:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYH1JAi
+	id S1753335AbYH1JBA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 05:01:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYH1JAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 05:00:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49188 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750780AbYH1JAh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 05:00:37 -0400
-Date: Thu, 28 Aug 2008 02:00:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Neil Brown <neilb@suse.de>
-Cc: Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       jurriaan <thunder7@xs4all.nl>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27-rc4: lots of 'in_atomic():1, irqs_disabled():0' with 
- software-raid1
-Message-Id: <20080828020018.a8ea85f0.akpm@linux-foundation.org>
-In-Reply-To: <18614.24929.952454.829021@notabene.brown>
-References: <20080827170538.GA24393@amd64.of.nowhere>
-	<200808272347.43577.rjw@sisk.pl>
-	<20080828073324.GR20055@kernel.dk>
-	<20080828004532.45d8b8c9.akpm@linux-foundation.org>
-	<20080828074830.GV20055@kernel.dk>
-	<18614.24929.952454.829021@notabene.brown>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Aug 2008 05:00:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53047 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752704AbYH1JAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 05:00:48 -0400
+Date: Thu, 28 Aug 2008 11:00:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Joe Korty <joe.korty@ccur.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] make poll_idle behave more like the other idle methods
+Message-ID: <20080828090036.GC19422@elte.hu>
+References: <20080827143506.GA23166@tsunami.ccur.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080827143506.GA23166@tsunami.ccur.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Aug 2008 18:27:13 +1000 Neil Brown <neilb@suse.de> wrote:
 
-> On Thursday August 28, jens.axboe@oracle.com wrote:
-> > On Thu, Aug 28 2008, Andrew Morton wrote:
-> > > 
-> > > Cant sleep inside rcu_read_lock(), with CONFIG_PREEMPT_RCU=n, at least.
-> > > 
-> > > Dunno if it's legal if CONFIG_PREEMPT_RCU=y.  Hopefully not - that
-> > > would be insane.  But I've failed to keep up with rcu goings-on
-> > > recently.
-> > 
-> > Doh right, we of course can't block inside a RCU section. Then
-> > bitmap.c:write_sb_page() wants fixing:
-> > 
-> >         rcu_read_lock();
-> >         rdev_for_each_rcu(...)
-> >                 md_super_write(...)
-> >                         bio_alloc(GFP_NOIO, 1);
-> > 
-> > Neil?
+* Joe Korty <joe.korty@ccur.com> wrote:
+
+> Make poll_idle() behave more like the other idle methods.
 > 
+> Currently, poll_idle() returns immediately.  The other
+> idle methods all wait indefinately for some condition
+> to come true before returning.  poll_idle should emulate
+> these other methods and also wait for a return condition,
+> in this case, for need_resched() to become 'true'.
 > 
-> Yes......
-> 
-> And not only can't I call bio_alloc inside the rcu_read_lock, I also
-> cannot call submit_bio, as that can do a mempool alloc for a request
-> structure.
+> Without this delay the idle loop spends all of its time
+> in the outer loop that calls poll_idle.  This outer loop,
+> these days, does real work, some of it under rcu locks.
+> That work should only be done when idle is entered and
+> when idle exits, not continuously while idle is spinning.
 
-I'm curious about how this happened.
+i'm wondering, what's the motivation, have you actually seen
+anything bad/undesired happen due to that?
 
-afaict from reading the code, this:
-
-	rcu_read_lock();
-	might_sleep();
-	rcu_read_unlock();
-
-will warn if CONFIG_PREEMPT_RCU=n but won't warn if
-CONFIG_PREEMPT_RCU=y.  If correct, that's a nasty trap.
-
-Is that what you did?
+	Ingo
