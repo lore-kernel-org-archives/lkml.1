@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbYH1OTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbYH1OXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755166AbYH1OTw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 10:19:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbYH1OTp
+	id S1754320AbYH1OXq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 10:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbYH1OXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 10:19:45 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39053 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752726AbYH1OTp (ORCPT
+	Thu, 28 Aug 2008 10:23:39 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48402 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752518AbYH1OXi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 10:19:45 -0400
-Date: Thu, 28 Aug 2008 10:19:33 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] block: kmalloc args reversed, small function
-	definition  fixes
-Message-ID: <20080828141933.GA8937@infradead.org>
-References: <1219868669.6069.53.camel@brick> <20080828072621.GQ20055@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080828072621.GQ20055@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	Thu, 28 Aug 2008 10:23:38 -0400
+Subject: Re: [BUG] linux-next: Tree for August 26 - Badness at
+	kernel/notifier.c:25
+From: David Woodhouse <dwmw2@infradead.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+       linux-next@vger.kernel.org, mingo@elte.hu
+In-Reply-To: <20080828003821.d29d2a03.sfr@canb.auug.org.au>
+References: <20080826184008.6be39f19.sfr@canb.auug.org.au>
+	 <48B44B2D.8070809@linux.vnet.ibm.com> <48B46610.1010809@linux.intel.com>
+	 <48B53695.3020703@linux.vnet.ibm.com> <48B55B16.7060804@linux.intel.com>
+	 <20080828003308.400038e0.sfr@canb.auug.org.au>
+	 <20080828003821.d29d2a03.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Thu, 28 Aug 2008 14:23:30 +0000
+Message-Id: <1219933410.7107.296.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 09:26:21AM +0200, Jens Axboe wrote:
-> On Wed, Aug 27 2008, Harvey Harrison wrote:
-> > Noticed by sparse:
-> > block/blk-softirq.c:156:12: warning: symbol 'blk_softirq_init' was not declared. Should it be static?
-> > block/genhd.c:583:28: warning: function 'bdget_disk' with external linkage has definition
-> > block/genhd.c:659:17: warning: incorrect type in argument 1 (different base types)
-> > block/genhd.c:659:17:    expected unsigned int [unsigned] [usertype] size
-> > block/genhd.c:659:17:    got restricted gfp_t
-> > block/genhd.c:659:29: warning: incorrect type in argument 2 (different base types)
-> > block/genhd.c:659:29:    expected restricted gfp_t [usertype] flags
-> > block/genhd.c:659:29:    got unsigned int
-> > block: kmalloc args reversed
+On Thu, 2008-08-28 at 00:38 +1000, Stephen Rothwell wrote:
+> Hi Arjan,
 > 
-> Woops, that kmalloc() is nasty. Thanks a lot, applied to for-2.6.28.
+> On Thu, 28 Aug 2008 00:33:08 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> > The original reported trace was during setup_system which is very early in
+> > the boot.
+> 
+> But, of course, that version didn't have the necessary extra dereference
+> of the function address ...
+> 
+> And the later debug patch did not check the address at register time,
+> only at notify time.
+> 
+> The later trace also looks to be early in the boot.
 
-Umm, the gfp bit sounds like a clear 2.6.27 candidate.
+It's isa_bridge_notify(), which is neither within _[se]text nor
+_[se]inittext, so the core_kernel_text() function disavows it.
+
+Where are __devinit functions supposed to end up?
+
+ $ egrep _[es]init\|_[es]text\|isa_bridge_notify System.map 
+c000000000000000 T _stext
+c00000000045d000 T _etext
+c000000000463ca8 t .isa_bridge_notify
+c00000000063a000 T _sinittext
+c00000000067c3bc T _einittext
+c00000000071fd80 d isa_bridge_notify
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+
+
