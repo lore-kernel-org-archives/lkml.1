@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755272AbYH1Hxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbYH1H5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755272AbYH1Hxk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 03:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYH1Hxb
+	id S1754553AbYH1H5o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 03:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYH1H5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 03:53:31 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:21049 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751615AbYH1Hxa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 03:53:30 -0400
-Date: Thu, 28 Aug 2008 09:53:23 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Seth Heasley <seth.heasley@intel.com>
-Cc: linux-kernel@vger.kernel.org, i2c@lm-sensors.org,
-       linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org
-Subject: Re: [PATCH 2.6.27-rc4] i2c-i801: SMBus patch for Intel Ibex Peak
- DeviceIDs
-Message-ID: <20080828095323.58f2a60e@hyperion.delvare>
-In-Reply-To: <200808271652.37597.seth.heasley@intel.com>
-References: <200808271652.37597.seth.heasley@intel.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Thu, 28 Aug 2008 03:57:36 -0400
+Received: from main.gmane.org ([80.91.229.2]:57129 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751123AbYH1H5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 03:57:36 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: el es <el_es_cr@yahoo.co.uk>
+Subject: Re: libata, Sound on same IRQ : flaky sound
+Date: Thu, 28 Aug 2008 07:57:22 +0000 (UTC)
+Message-ID: <loom.20080828T075203-963@post.gmane.org>
+References: <48B5F877.8030506@garzik.org> <Pine.LNX.4.44.0808280320470.31973-100000@hubble.stokkie.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 86.157.229.32 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.1) Gecko/2008070208 Firefox/3.0.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Aug 2008 16:52:37 -0700, Seth Heasley wrote:
-> This patch adds the Intel Ibex Peak (PCH) SMBus Controller DeviceIDs.
+Robert M. Stockmann <stock <at> stokkie.net> writes:
+
+
 > 
-> Signed-off-by: Seth Heasley <seth.heasley@intel.com>
+> the BIOS supports raid0, but the sata disks are running standalone
+> as /dev/sda /dev/sdb etc.
 > 
-> --- linux-2.6/drivers/i2c/busses/Kconfig.orig	2008-08-27 12:11:03.000000000 -0700
-> +++ linux-2.6/drivers/i2c/busses/Kconfig	2008-08-27 12:11:24.000000000 -0700
-> @@ -97,6 +97,7 @@
->  	    ICH9
->  	    Tolapai
->  	    ICH10
-> +	    PCH
->  
->  	  This driver can also be built as a module.  If so, the module
->  	  will be called i2c-i801.
-> --- linux-2.6/drivers/i2c/busses/i2c-i801.c.orig	2008-08-27 11:52:45.000000000 -0700
-> +++ linux-2.6/drivers/i2c/busses/i2c-i801.c	2008-08-27 12:10:50.000000000 -0700
-> @@ -577,6 +577,7 @@
->  	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TOLAPAI_1) },
->  	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_4) },
->  	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_5) },
-> +	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_PCH_32) },
->  	{ 0, }
->  };
->  
-> @@ -600,6 +601,7 @@
->  	case PCI_DEVICE_ID_INTEL_TOLAPAI_1:
->  	case PCI_DEVICE_ID_INTEL_ICH10_4:
->  	case PCI_DEVICE_ID_INTEL_ICH10_5:
-> +	case PCI_DEVICE_ID_INTEL_PCH_32:
->  		i801_features |= FEATURE_I2C_BLOCK_READ;
->  		/* fall through */
->  	case PCI_DEVICE_ID_INTEL_82801DB_3:
+> installing a recent kernel is not that easy, as the required
+> upgrade of udev will break the initscripts and a lot of installed
+> services and even the functionality of the KDE desktop. Installing
+> a recent distro is not desirable as they resemble me only
+> of a Open Source Vista distro, where it takes months to clean
+> up the unwanted garbage and bloat inside. Its preposterous that
+> a upgrade to a recent kernel mandates the installation of a recent
+> distro. I run Mandrake 10.1 with kernel 2.6.15 and some applications
+> upgraded like firefox, mplayer and k3b etc.
+> 
+> Robert
 
-This is messy. I'm discarding this patch from my i2c tree for the time
-being. When things have settled on the pci_ids.h front, I'll look into
-applying it again.
 
-Note that your patch is still missing a chunk to
-Documentation/i2c/busses/i2c-i801. Originally I added it myself but if
-you are going to resend the same patch with different IDs every now and
-then, please add it on your side too, so that I don't have to fix it
-manually every time.
+If you don't want bloat AND you want a recent kernel AND lots to fiddle around
+and figure out for yourself, install PLD Linux :) No, seriously. Last time I
+tried, a usable graphic environment (GNOME that is, dunno about KDE) fitted in
+300-500 MiB ON DISK. (without graphical env. fitted in 150MB ON DISK). Try that.
 
--- 
-Jean Delvare
+el es
+
