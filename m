@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757971AbYH1WMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757604AbYH1WVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757971AbYH1WMM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 18:12:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbYH1WMA
+	id S1757604AbYH1WVS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 18:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbYH1WVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 18:12:00 -0400
-Received: from smtp1.dnsmadeeasy.com ([205.234.170.134]:34381 "EHLO
-	smtp1.dnsmadeeasy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751528AbYH1WMA (ORCPT
+	Thu, 28 Aug 2008 18:21:06 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48456 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754043AbYH1WVF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 18:12:00 -0400
-X-Authenticated-Name: js.dnsmadeeasy
-X-Transit-System: In case of SPAM please contact abuse@dnsmadeeasy.com
-Message-ID: <48B722AD.3000703@avtrex.com>
-Date: Thu, 28 Aug 2008 15:11:57 -0700
-From: David Daney <ddaney@avtrex.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 28 Aug 2008 18:21:05 -0400
+Date: Thu, 28 Aug 2008 15:18:28 -0700
+From: Greg KH <greg@kroah.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, Takashi Iwai <tiwai@suse.de>,
+       fuse-devel@lists.sourceforge.net
+Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
+Message-ID: <20080828221828.GB2855@kroah.com>
+References: <48B6F711.1040604@kernel.org> <20080828200120.GA16462@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: linux-mips@linux-mips.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [Patch 5/6] MIPS: Scheduler support for HARDWARE_WATCHPOINTS.
-References: <48B71ADD.601@avtrex.com>
-In-Reply-To: <48B71ADD.601@avtrex.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Aug 2008 22:11:58.0461 (UTC) FILETIME=[16B822D0:01C9095B]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080828200120.GA16462@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Aug 28, 2008 at 11:01:20PM +0300, Adrian Bunk wrote:
+> On Thu, Aug 28, 2008 at 09:05:53PM +0200, Tejun Heo wrote:
+> > Hello again,
+> > 
+> > So, after all the fuss, here's the state-of-the-art standard-compliant
+> > cloud-computing web-3.0-beta web page for OSS emulation using CUSE.
+> > 
+> >   http://userweb.kernel.org/~tj/ossp/
+> > 
+> > It works pretty well here.  :-)
+> 
+> Sorry for being destructive, but 6 years after ALSA went into the
+> kernel we are slightly approaching the point where all applications 
+> support ALSA.
+> 
+> The application you list on your webpage is UML host sound support,
+> and I'm wondering why you don't fix that instead of working on a
+> better OSS emulation?
 
-Here we hook up the scheduler.  Whenever we switch to a new process,
-we check to see if the watch registers should be installed, and do it
-if needed.
+Independant of that, I can see a number of uses for the CUSE code.  One
+would be emulating /dev/pilot for old palm pilot software that things it
+wants to talk to a serial port, yet really a libusb userspace program
+can handle all of the data to the USB device instead.
 
-Signed-off-by: David Daney <ddaney@avtrex.com>
----
- include/asm-mips/system.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+So don't think that just because this userspace-OSS implementation is
+"not what should be done" that CUSE shouldn't be viable.
 
-diff --git a/include/asm-mips/system.h b/include/asm-mips/system.h
-index a944eda..cd30f83 100644
---- a/include/asm-mips/system.h
-+++ b/include/asm-mips/system.h
-@@ -20,6 +20,7 @@
- #include <asm/cmpxchg.h>
- #include <asm/cpu-features.h>
- #include <asm/dsp.h>
-+#include <asm/watch.h>
- #include <asm/war.h>
- 
- 
-@@ -76,6 +77,7 @@ do {									\
- 		__restore_dsp(current);					\
- 	if (cpu_has_userlocal)						\
- 		write_c0_userlocal(current_thread_info()->tp_value);	\
-+	__restore_watch();						\
- } while (0)
- 
- static inline unsigned long __xchg_u32(volatile int * m, unsigned int val)
--- 
-1.5.5.1
+thanks,
 
+greg k-h
