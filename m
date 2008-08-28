@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbYH1Qav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbYH1Qba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755234AbYH1Qav (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 12:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYH1Qan
+	id S1754004AbYH1Qba (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 12:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYH1QbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 12:30:43 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:47343 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751127AbYH1Qam (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 12:30:42 -0400
-Date: Thu, 28 Aug 2008 18:33:19 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Max Krasnyansky <maxk@qualcomm.com>, Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Stefani Seibold <stefani@seibold.net>,
-       Dario Faggioli <raistlin@linux.it>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
-Message-ID: <20080828163318.GR26610@one.firstfloor.org>
-References: <20080819103301.787700742@chello.nl> <alpine.LFD.1.10.0808262228030.3243@apollo.tec.linutronix.de> <874p57s873.fsf@basil.nowhere.org> <200808272008.16106.nickpiggin@yahoo.com.au> <20080828105408.GA4488@elte.hu> <20080828110923.GL26610@one.firstfloor.org> <1219922353.6443.14.camel@twins> <20080828115035.GM26610@one.firstfloor.org> <48B6CFFD.2050801@qualcomm.com> <20080828162548.GA3826@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080828162548.GA3826@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 28 Aug 2008 12:31:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57856 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750828AbYH1QbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 12:31:18 -0400
+Message-ID: <48B6D28E.10006@kernel.org>
+Date: Thu, 28 Aug 2008 18:30:06 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] uevent: don't pass envp_ext[] as format string in kobject_uevent_env()
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 28 Aug 2008 16:31:17 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 06:25:48PM +0200, Ingo Molnar wrote:
-> 
-> * Max Krasnyansky <maxk@qualcomm.com> wrote:
-> 
-> > Andi Kleen wrote:
-> >> On Thu, Aug 28, 2008 at 01:19:13PM +0200, Peter Zijlstra wrote:
-> >>> On Thu, 2008-08-28 at 13:09 +0200, Andi Kleen wrote:
-> >>>>> Even if the system has multiple CPUs, and even if just a single CPU is
-> >>>>> fully utilized by an RT task, without the rt-limit the system will still
-> >>>>> lock up in practice due to various other factors: workqueues and tasks
-> >>>>> being 'stuck' on CPUs that host an RT hog.
-> >>>> The load balancer will not notice that a particular CPU is busy
-> >>>> with real time tasks?
-> >>> Not currently, working on that though.
-> >>
-> >> I wonder if it would make sense to break affinities in extreme case?
-> >> With that even the workqueues would work again.
-> >
-> > Please lets not break affinity :).
-> 
-> correct, breaking affinity is a rather stupid idea.
+kobject_uevent_env() uses envp_ext[] as verbatim format string which
+can cause problems ranging from unexpectedly mangled string to oops if
+a string in envp_ext[] contains substring which can be interpreted as
+format.  Fix it.
 
-Ok let's remove cpu hotunplug then.  Probably nobody uses it anyways @)
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ lib/kobject_uevent.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Seriously cpu affinity on all non BP CPU is currently broken on every
-suspend to RAM, doing it in a few more cases when it makes the system
-more robust is unlikely to hurt anybody.
-
--Andi
-
+diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
+index 3f91472..ca215bc 100644
+--- a/lib/kobject_uevent.c
++++ b/lib/kobject_uevent.c
+@@ -165,7 +165,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+ 	/* keys passed in from the caller */
+ 	if (envp_ext) {
+ 		for (i = 0; envp_ext[i]; i++) {
+-			retval = add_uevent_var(env, envp_ext[i]);
++			retval = add_uevent_var(env, "%s", envp_ext[i]);
+ 			if (retval)
+ 				goto exit;
+ 		}
 -- 
-ak@linux.intel.com
+1.5.4.5
 
