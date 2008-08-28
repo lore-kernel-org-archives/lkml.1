@@ -1,207 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbYH1Pc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYH1Pe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755388AbYH1Pc3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 11:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYH1PcR
+	id S1755463AbYH1Pe4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 11:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbYH1Pes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 11:32:17 -0400
-Received: from ik-out-1112.google.com ([66.249.90.180]:58543 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752421AbYH1PcP (ORCPT
+	Thu, 28 Aug 2008 11:34:48 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:48391 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751815AbYH1Pes (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 11:32:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=wLolLWmjx8USwk4F9gB1mvIOShhpXIm9t7iOjMIQH3WgVegyC1iuMzrJHj0Gdw5Dpf
-         QGZyuH7aEPccH9BJeZUG3CkUVRCog9ch7nBtnxasLkB9JcClECUBd2IT44JTs9khyHgH
-         Jxvxa/6LgFBjY/pmm9W11EKmVbpjOtS2RB82A=
-Date: Thu, 28 Aug 2008 17:32:14 +0200
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Daniel J Blueman <daniel.blueman@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Lameter <clameter@sgi.com>,
+	Thu, 28 Aug 2008 11:34:48 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Aa/i+E7gbTdiINslOE+3yFvTfr5ABs0ZzDXuABlvhGrRTzALxBDZlHypggn3ly/eY/UDlStE7ISfand5RDJNiLl1cUxzy20+gAbyA9O+5CNFWhCTmSxTAG3VEpvAIMIBuVHkjxSWPd8fZhuEO7f5Vtm/5UZ+mbyZDNYiHF1pr2M=  ;
+X-YMail-OSG: R6ppJmEVM1kp0QSKqKNFbfhjsp0YA50_fJK4xGBXpujBanSQMy_UtdDIrH6UPbTtzHMFHKpzI33poIU0d1F3sz7fp3SUv8r_PXpUgnuabVVmsyFSk.qgRu9YSRGGFNSfpyswRijqS66dxzOD9geUzNsU
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
+Date: Fri, 29 Aug 2008 01:34:34 +1000
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, Stefani Seibold <stefani@seibold.net>,
+       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: [PATCH] debugobjects: fix lockdep warning #2
-Message-ID: <20080828153214.GA27653@localhost.localdomain>
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20080819103301.787700742@chello.nl> <200808290036.35817.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0808281110570.14580@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0808281110570.14580@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+Message-Id: <200808290134.35093.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 3:56 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> could you resend the final patch please? It's a candidate for .27, if it
-> works out fine.
-
-Here is the combined patch. I've tested it only briefly, and I am
-unsure of whether it still produces lockdep warnings for Daniel or
-not. I wish it would not be applied anywhere unless it was
-officially Reviewed-by: someone. In particular, I'm not quite
-steady with the irq-safe locking (Thomas might want to have a look).
-
-Thanks :)
-
-
-Vegard
-
-
->From 977cf583b79be7308d5e310711fe6038c8af96a4 Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Thu, 28 Aug 2008 17:09:57 +0200
-Subject: [PATCH] debugobjects: fix lockdep warning #2
-
-Daniel J. Blueman reported:
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.27-rc4-224c #1
-> -------------------------------------------------------
-> hald/4680 is trying to acquire lock:
->  (&n->list_lock){++..}, at: [<ffffffff802bfa26>] add_partial+0x26/0x80
+On Friday 29 August 2008 01:12, Steven Rostedt wrote:
+> On Fri, 29 Aug 2008, Nick Piggin wrote:
+> > On Friday 29 August 2008 00:30, Ingo Molnar wrote:
+> > > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> > > > For this, if this time limit does kick in, we should at the very
+> > > > least print something out to let the user know this happened. After
+> > > > all, this is more of a safety net anyway, and if we are hitting the
+> > > > limit, the user should be notified. Perhaps even tell the user that
+> > > > if this behaviour is expected, to up the sysctl <var> by more.
+> > >
+> > > yeah, agreed, this is a reasonable suggestion. Peter, do you agree?
+> >
+> > Seems reasonable. But I still think it should be disabled by default
+> > (it might not get caught in testing for example).
 >
-> but task is already holding lock:
->  (&obj_hash[i].lock){++..}, at: [<ffffffff8041cfdc>]
-> debug_object_free+0x5c/0x120
+> Perhaps we should default it to 1sec, that way it would be hit more often,
+> and educate the users of this now feature.
 
-We fix it by moving the actual freeing to outside the lock (the lock
-now only protects the list).
+There only one sane default, as far as I can see.
 
-The lock is also promoted to irq-safe (suggested by Dan).
+Before anybody attacks me again because I haven't got my brain together or
+am an annoying standards nitpicker:
 
-Reported-by: Daniel J Blueman <daniel.blueman@gmail.com>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- lib/debugobjects.c |   38 +++++++++++++++++++++++++++++---------
- 1 files changed, 29 insertions(+), 9 deletions(-)
+I'm very well aware of the consequences of unlimited hogging of the CPU.
+And I know exactly why people might want rt throttling. But just think for
+a minute the _negative_ consequences of changing the API and remember that
+is close to the #1 rule of Linux development to not break user API.
 
-diff --git a/lib/debugobjects.c b/lib/debugobjects.c
-index 19acf8c..acf9ed8 100644
---- a/lib/debugobjects.c
-+++ b/lib/debugobjects.c
-@@ -115,9 +115,10 @@ static struct debug_obj *lookup_object(void *addr, struct debug_bucket *b)
- static struct debug_obj *
- alloc_object(void *addr, struct debug_bucket *b, struct debug_obj_descr *descr)
- {
-+	unsigned long flags;
- 	struct debug_obj *obj = NULL;
- 
--	spin_lock(&pool_lock);
-+	spin_lock_irqsave(&pool_lock, flags);
- 	if (obj_pool.first) {
- 		obj	    = hlist_entry(obj_pool.first, typeof(*obj), node);
- 
-@@ -136,7 +137,7 @@ alloc_object(void *addr, struct debug_bucket *b, struct debug_obj_descr *descr)
- 		if (obj_pool_free < obj_pool_min_free)
- 			obj_pool_min_free = obj_pool_free;
- 	}
--	spin_unlock(&pool_lock);
-+	spin_unlock_irqrestore(&pool_lock, flags);
- 
- 	return obj;
- }
-@@ -146,18 +147,19 @@ alloc_object(void *addr, struct debug_bucket *b, struct debug_obj_descr *descr)
-  */
- static void free_object(struct debug_obj *obj)
- {
-+	unsigned long flags;
- 	unsigned long idx = (unsigned long)(obj - obj_static_pool);
- 
- 	if (obj_pool_free < ODEBUG_POOL_SIZE || idx < ODEBUG_POOL_SIZE) {
--		spin_lock(&pool_lock);
-+		spin_lock_irqsave(&pool_lock, flags);
- 		hlist_add_head(&obj->node, &obj_pool);
- 		obj_pool_free++;
- 		obj_pool_used--;
--		spin_unlock(&pool_lock);
-+		spin_unlock_irqrestore(&pool_lock, flags);
- 	} else {
--		spin_lock(&pool_lock);
-+		spin_lock_irqsave(&pool_lock, flags);
- 		obj_pool_used--;
--		spin_unlock(&pool_lock);
-+		spin_unlock_irqrestore(&pool_lock, flags);
- 		kmem_cache_free(obj_cache, obj);
- 	}
- }
-@@ -170,19 +172,28 @@ static void debug_objects_oom(void)
- {
- 	struct debug_bucket *db = obj_hash;
- 	struct hlist_node *node, *tmp;
-+	HLIST_HEAD(freelist);
- 	struct debug_obj *obj;
- 	unsigned long flags;
- 	int i;
- 
- 	printk(KERN_WARNING "ODEBUG: Out of memory. ODEBUG disabled\n");
- 
-+	/* XXX: Could probably be optimized by transplantation of more than
-+	 * one entry at a time. */
- 	for (i = 0; i < ODEBUG_HASH_SIZE; i++, db++) {
- 		spin_lock_irqsave(&db->lock, flags);
- 		hlist_for_each_entry_safe(obj, node, tmp, &db->list, node) {
- 			hlist_del(&obj->node);
--			free_object(obj);
-+			hlist_add_head(&obj->node, &freelist);
- 		}
- 		spin_unlock_irqrestore(&db->lock, flags);
-+
-+		/* Now free them */
-+		hlist_for_each_entry_safe(obj, node, tmp, &freelist, node) {
-+			hlist_del(&obj->node);
-+			free_object(obj);
-+		}
- 	}
- }
- 
-@@ -500,8 +511,9 @@ void debug_object_free(void *addr, struct debug_obj_descr *descr)
- 		return;
- 	default:
- 		hlist_del(&obj->node);
-+		spin_unlock_irqrestore(&db->lock, flags);
- 		free_object(obj);
--		break;
-+		return;
- 	}
- out_unlock:
- 	spin_unlock_irqrestore(&db->lock, flags);
-@@ -512,6 +524,7 @@ static void __debug_check_no_obj_freed(const void *address, unsigned long size)
- {
- 	unsigned long flags, oaddr, saddr, eaddr, paddr, chunks;
- 	struct hlist_node *node, *tmp;
-+	HLIST_HEAD(freelist);
- 	struct debug_obj_descr *descr;
- 	enum debug_obj_state state;
- 	struct debug_bucket *db;
-@@ -547,11 +560,18 @@ repeat:
- 				goto repeat;
- 			default:
- 				hlist_del(&obj->node);
--				free_object(obj);
-+				hlist_add_head(&obj->node, &freelist);
- 				break;
- 			}
- 		}
- 		spin_unlock_irqrestore(&db->lock, flags);
-+
-+		/* Now free them */
-+		hlist_for_each_entry_safe(obj, node, tmp, &freelist, node) {
-+			hlist_del(&obj->node);
-+			free_object(obj);
-+		}
-+
- 		if (cnt > debug_objects_maxchain)
- 			debug_objects_maxchain = cnt;
- 	}
--- 
-1.5.5.1
-
+And put it this way: the sysctl is right there. Any distro that cares about
+this problem will probably find this thread as #1 hit and work out how to
+enable the sysctl and break the API if they are happy to do that. On the
+flip side, not every application development or deployment is even going to
+know about this, and it may not be trivial to catch in testing, so it could
+cause failures in the field.
