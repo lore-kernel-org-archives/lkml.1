@@ -1,50 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756954AbYH1V1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757830AbYH1V2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756954AbYH1V1y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 17:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbYH1V1q
+	id S1757830AbYH1V2d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 17:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbYH1V2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 17:27:46 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:49685 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753563AbYH1V1q (ORCPT
+	Thu, 28 Aug 2008 17:28:23 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:56700 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754244AbYH1V2W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 17:27:46 -0400
-Message-ID: <48B7183E.3010100@kernel.org>
-Date: Thu, 28 Aug 2008 14:27:26 -0700
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 28 Aug 2008 17:28:22 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] USB: add USB test and measurement class driver - round 2
+Date: Thu, 28 Aug 2008 23:29:33 +0200
+User-Agent: KMail/1.9.9
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       USB list <linux-usb@vger.kernel.org>,
+       Stefan Kopp <stefan_kopp@agilent.com>, Marcel Janssen <korgull@home.nl>,
+       Felipe Balbi <me@felipebalbi.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+References: <20080827183615.GA15692@kroah.com> <200808281210.27661.oliver@neukum.org> <20080828161702.GB18132@kroah.com>
+In-Reply-To: <20080828161702.GB18132@kroah.com>
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: tj@kernel.org, fuse-devel@lists.sourceforge.net, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <48B6EC83.1070207@kernel.org> <48B6EE36.5070209@kernel.org> <48B6F7C5.3020204@kernel.org> <E1KYn0U-00047F-Qa@pomaz-ex.szeredi.hu> <48B708C4.4000405@kernel.org> <E1KYoX9-0004Mn-NX@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1KYoX9-0004Mn-NX@pomaz-ex.szeredi.hu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808282329.34780.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
-> On Thu, 28 Aug 2008, H. Peter Anvin wrote:
->> This is *hard* to get right, and we screw this up in the kernel with 
->> painful regularity.  The throught of having user-space processes, which 
->> don't have access to the kernel locking primitives and functions like 
->> copy_from_user() dealing with this stuff scares me crazy.
+
+> > > +		buffer[4] = (this_part - 12 - 3) & 255;
+> > > +		buffer[5] = ((this_part - 12 - 3) >> 8) & 255;
+> > > +		buffer[6] = ((this_part - 12 - 3) >> 16) & 255;
+> > > +		buffer[7] = ((this_part - 12 - 3) >> 24) & 255;
+> > 
+> > We have excellent endianness conversion macros.
 > 
-> What issues exactly are you thinking of?
+> For splitting values up into the individual byte portions?  I think this
+> is far more obvious as to exactly what is going on, don't you?
 
-Memory changing underneath you.  It can be dealt with by very careful 
-sequencing only.
+No. Kernel code does not exist to show how to do endianness conversion.
+We have clearly labeled functions.
 
->> That is why I'm suggesting using an in-kernel linearizer.
+> > > +		buffer[8] = data->TermCharEnabled * 2;
+> > > +		/* Use term character? */
+> > 
+> > smp_rmb(); /* we must make sure we don't read a stale terminator */
 > 
-> Lots of complexity, ugh...  Even Tejun's current scheme is better IMO.
+> I'm not going to worry about races here, that's not a real issue.
 
-And then you get *no* privilege separation, for one thing, so why even 
-bother doing it in userspace?
+There is no such thing as an ignorable race. On second thought
+you can take the mutex in the sysfs handlers. That will also do the job.
 
-	-hpa
+
+> > This and usbtmc_read() need a test for disconnection. Open() and disconnect
+> > are guarded in usbcore, read & write are not. By reference count you've made
+> > sure you have a valid device descriptor, but the device may have been reprobed.
+> 
+> If so, then struct usb_device would be different, right?  Oh, I see,
+> disconnect() using usbfs/sysfs.  Bah, is it really something that
+> happens in the real world?  Oh well, I'll go fix this...
+
+This is oopsable from user space.
+
+> > If you ignore an error return, be open about it.
+> 
+> I'm not?  Should I print an error and then just continue on?  Would that
+> be sufficient?
+
+Yes.
+ 
+> > > +static void usbtmc_disconnect(struct usb_interface *intf)
+> > > +{
+> > > +	struct usbtmc_device_data *data;
+> > > +
+> > > +	dev_dbg(&intf->dev, "usbtmc_disconnect called\n");
+> > > +
+> > 
+> > You must set a flag for read, write and ioctl.
+> 
+> Will do.  Then I need to lock the flag with a mutex, right?
+
+Yes. You can set the intf pointer to NULL. That's sort of idiomatic.
+And you should NULL intfdata.
+
+
+	Regards
+		Oliver
+
+
