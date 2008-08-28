@@ -1,68 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbYH1JIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbYH1JP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752834AbYH1JIc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 05:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYH1JIX
+	id S1752794AbYH1JP0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 05:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbYH1JPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 05:08:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51109 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751242AbYH1JIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 05:08:22 -0400
-Date: Thu, 28 Aug 2008 11:08:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for August 27
-Message-ID: <20080828090802.GE19422@elte.hu>
-References: <20080827183453.eb651f50.sfr@canb.auug.org.au> <200808271206.48370.bzolnier@gmail.com> <58cb370e0808270757k583c0fc2oc659bc8e2dd6c21e@mail.gmail.com>
+	Thu, 28 Aug 2008 05:15:11 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:47382 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750746AbYH1JPJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 05:15:09 -0400
+Date: Thu, 28 Aug 2008 14:42:49 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch] sched: call resched_task() conditionally from new task
+	wake up path.
+Message-ID: <20080828091249.GA3303@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <58cb370e0808270757k583c0fc2oc659bc8e2dd6c21e@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+sched: call resched_task() conditionally from new task wake up path.
 
-> On Wed, Aug 27, 2008 at 12:06 PM, Bartlomiej Zolnierkiewicz
-> <bzolnier@gmail.com> wrote:
-> >
-> > Hi,
-> >
-> > On Wednesday 27 August 2008, Stephen Rothwell wrote:
-> >> Hi all,
-> >>
-> >> Changes since next-20080826:
-> >
-> > it fails to build here with:
-> >
-> > arch/x86/kernel/cpu/addon_cpuid_features.c: In function 'detect_extended_topology':
-> > arch/x86/kernel/cpu/addon_cpuid_features.c:119: error: 'struct cpuinfo_x86' hasno member named 'cpu_core_id'
-> > arch/x86/kernel/cpu/addon_cpuid_features.c:121: error: 'struct cpuinfo_x86' hasno member named 'phys_proc_id'
-> > arch/x86/kernel/cpu/addon_cpuid_features.c:130: error: 'struct cpuinfo_x86' hasno member named 'phys_proc_id'
-> > arch/x86/kernel/cpu/addon_cpuid_features.c:133: error: 'struct cpuinfo_x86' hasno member named 'cpu_core_id'
-> > make[2]: *** [arch/x86/kernel/cpu/addon_cpuid_features.o] Error 1
-> > make[1]: *** [arch/x86/kernel/cpu] Error 2
-> > make: *** [arch/x86/kernel] Error 2
-> 
-> which is most likely already fixed in x86 tree by
-> 
-> http://lkml.org/lkml/2008/8/27/34
+- During wake up of a new task, task_new_fair() can do a resched_task()
+  on the current task. Later in the code path, check_preempt_curr() also ends
+  up doing the same, which can be avoided. Check if TIF_NEED_RESCHED is
+  already set for the current task.
 
-ok, i've propagated those commits to auto-x86-next as well, so that 
-linux-next is fixed too.
+- task_new_fair() does a resched_task() on the current task unconditionally.
+  This can be done only in case when child runs before the parent.
 
-	Ingo
+Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+CC: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched_fair.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1348,6 +1348,13 @@ static void check_preempt_wakeup(struct 
+ 	if (unlikely(se == pse))
+ 		return;
+ 
++	/*
++	 * We can come here with TIF_NEED_RESCHED already set from new task
++	 * wake up path.
++	 */
++	if (test_tsk_need_resched(curr))
++		return;
++
+ 	cfs_rq_of(pse)->next = pse;
+ 
+ 	/*
+@@ -1615,10 +1622,10 @@ static void task_new_fair(struct rq *rq,
+ 		 * 'current' within the tree based on its new key value.
+ 		 */
+ 		swap(curr->vruntime, se->vruntime);
++		resched_task(rq->curr);
+ 	}
+ 
+ 	enqueue_task_fair(rq, p, 0);
+-	resched_task(rq->curr);
+ }
+ 
+ /*
+
+Regards,
+Bharata.
