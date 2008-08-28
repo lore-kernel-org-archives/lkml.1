@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbYH1KOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619AbYH1KRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753354AbYH1KOr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 06:14:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYH1KOi
+	id S1753619AbYH1KRd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 06:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbYH1KRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 06:14:38 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:4011 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751503AbYH1KOi (ORCPT
+	Thu, 28 Aug 2008 06:17:21 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:59000 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751371AbYH1KRU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 06:14:38 -0400
-Date: Thu, 28 Aug 2008 11:14:35 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: perex@perex.cz, lrg@kernel.org, Cliff Cai <cliff.cai@analog.com>,
-       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-Subject: Re: [alsa-devel] [PATCH 3/4] ASOC: WM8731 codec: add SPI support as well as I2C
-Message-ID: <20080828101434.GB11132@sirena.org.uk>
-Mail-Followup-To: Bryan Wu <cooloney@kernel.org>, perex@perex.cz,
-	lrg@kernel.org, Cliff Cai <cliff.cai@analog.com>,
-	alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-References: <1219829968-6431-1-git-send-email-cooloney@kernel.org> <1219829968-6431-4-git-send-email-cooloney@kernel.org> <20080827110143.GB10834@sirena.org.uk> <386072610808272046u270c1302g1102bf1f0bd9b6ee@mail.gmail.com>
+	Thu, 28 Aug 2008 06:17:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ajFlSYM5jRi9d7IFPFZVS7UOoKfbdvDBc0AQyaFMhoVmZ0HpYYEe0XhJfLm8PI8+7H
+         42zJalPT7SznEZIiBgN3zKnYvwR+/4ecEitY5UKYWED9OhHQvpIyfErAiTtBM+HsxBjE
+         tTgX7bmqAeLZPC8LbfkbAv2n8z6tJySC6sfEk=
+Message-ID: <ef1cd66f0808280317r72f98402x5f4c23bf4aaf100d@mail.gmail.com>
+Date: Thu, 28 Aug 2008 11:17:19 +0100
+From: "=?ISO-8859-1?Q?Jochen_Vo=DF?=" <jochen.voss@googlemail.com>
+To: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
+Subject: Re: [PATCH] e1000: fix stack size
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       davem@davemloft.net, akpm@linux-foundation.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <20080827081446.9269.19136.stgit@jtkirshe-mobile.jf.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <386072610808272046u270c1302g1102bf1f0bd9b6ee@mail.gmail.com>
-X-Cookie: To see you is to sympathize.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+References: <20080827081446.9269.19136.stgit@jtkirshe-mobile.jf.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 11:46:24AM +0800, Bryan Wu wrote:
-> On Wed, Aug 27, 2008 at 7:01 PM, Mark Brown <broonie@sirena.org.uk> wrote:
+Hi,
 
-> > ...as for the SSM2602 it'd be good if it were possible to build a kernel
-> > which supports both I2C and SPI.  If you like I could do this for you -
-> > there's likely to be merge issues due to the update to the new I2C API
-> > anyway?
+2008/8/27 Jeff Kirsher <jeffrey.t.kirsher@intel.com>:
+> From: Linus Torvalds <torvalds@linux-foundation.org>
+>
+> Here's the patch. It shrinks the stack from 1152 bytes to 192 bytes (the
+> first version, that only did the e1000_option part, got it down to 600
+> bytes). About half comes from not using multiple "e1000_option"
+> structures, the other half comes from turning the "e1000_opt_list[]"
+> arrays into "static const" instead, so that gcc doesn't copy them onto the
+> stack.
+>
+> Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> Reveiewed-by: Auke Kok <auke-jan.h.kok@intel.com>
+  ^^^^^^^^^^^^^^
+  typo here
 
-> Oh, do you mean SSM2602 or WM8731? I also noticed the i2c API updates
-> patch from Jean and I'd like to use the new one
+> Tested-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-Sorry, that could've been clearer - I meant wm8731.  Obviously if you
-want to update that too then that would be great but I figured it'd make
-life easier for you if I were to ensure that one gets merged OK.  Which
-way do you prefer?
+I hope this helps,
+Jochen
+-- 
+http://seehuhn.de/
