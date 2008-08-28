@@ -1,157 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbYH1Pa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbYH1Pc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755092AbYH1Pa4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 11:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbYH1Pas
+	id S1755388AbYH1Pc3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 11:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYH1PcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 11:30:48 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:22371 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbYH1Par (ORCPT
+	Thu, 28 Aug 2008 11:32:17 -0400
+Received: from ik-out-1112.google.com ([66.249.90.180]:58543 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752421AbYH1PcP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 11:30:47 -0400
-Date: Thu, 28 Aug 2008 17:30:35 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Heasley, Seth" <seth.heasley@intel.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, i2c@lm-sensors.org,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 2.6.27-rc4] irq: irq and pci_ids patch for Intel Ibex  
- Peak DeviceIDs
-Message-ID: <20080828173035.73069de6@hyperion.delvare>
-In-Reply-To: <CF9C39F99A89134C9CF9C4CCB68B8DDF177A16F0@orsmsx501.amr.corp.intel.com>
-References: <200808271658.26313.seth.heasley@intel.com>
-	<20080828094935.0f50af24@hyperion.delvare>
-	<200808280712.47908.jbarnes@virtuousgeek.org>
-	<CF9C39F99A89134C9CF9C4CCB68B8DDF177A16F0@orsmsx501.amr.corp.intel.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Aug 2008 11:32:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent:from;
+        b=wLolLWmjx8USwk4F9gB1mvIOShhpXIm9t7iOjMIQH3WgVegyC1iuMzrJHj0Gdw5Dpf
+         QGZyuH7aEPccH9BJeZUG3CkUVRCog9ch7nBtnxasLkB9JcClECUBd2IT44JTs9khyHgH
+         Jxvxa/6LgFBjY/pmm9W11EKmVbpjOtS2RB82A=
+Date: Thu, 28 Aug 2008 17:32:14 +0200
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Daniel J Blueman <daniel.blueman@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: [PATCH] debugobjects: fix lockdep warning #2
+Message-ID: <20080828153214.GA27653@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Aug 2008 08:18:19 -0700, Heasley, Seth wrote:
-> >On Thursday, August 28, 2008 12:49 am Jean Delvare wrote:
-> >> Hi Seth,
-> >>
-> >> On Wed, 27 Aug 2008 16:58:26 -0700, Seth Heasley wrote:
-> >> > This patch updates the Intel Ibex Peak (PCH) LPC and SMBus Controller
-> >> > DeviceIDs.
-> >> >
-> >> > Signed-off-by: Seth Heasley <seth.heasley@intel.com>
-> >> >
-> >> > --- linux-2.6/include/linux/pci_ids.h.orig  2008-08-27
-> >11:54:07.000000000
-> >> > -0700 +++ linux-2.6/include/linux/pci_ids.h 2008-08-27
-> >12:01:53.000000000
-> >> > -0700 @@ -2428,9 +2428,39 @@
-> >> >  #define PCI_DEVICE_ID_INTEL_ICH10_3        0x3a1a
-> >> >  #define PCI_DEVICE_ID_INTEL_ICH10_4        0x3a30
-> >> >  #define PCI_DEVICE_ID_INTEL_ICH10_5        0x3a60
-> >> > -#define PCI_DEVICE_ID_INTEL_PCH_0  0x3b10
-> >> > -#define PCI_DEVICE_ID_INTEL_PCH_1  0x3b11
-> >> > -#define PCI_DEVICE_ID_INTEL_PCH_2  0x3b30
-> >> > +#define PCI_DEVICE_ID_INTEL_PCH_0  0x3b00
-> >> > +#define PCI_DEVICE_ID_INTEL_PCH_1  0x3b01
-> >> > +#define PCI_DEVICE_ID_INTEL_PCH_2  0x3b02
-> >>
-> >> Changing device ID definitions that way is really bad practice. It
-> >> needs to be synchronized between all involved subsystems.
-> >>
-> >> > --- linux-2.6/arch/x86/pci/irq.c.orig       2008-08-27
-> >11:53:13.000000000 -0700
-> >> > +++ linux-2.6/arch/x86/pci/irq.c    2008-08-27 12:07:21.000000000 -0700
-> >> > @@ -592,6 +592,36 @@
-> >> >     case PCI_DEVICE_ID_INTEL_ICH10_3:
-> >> >     case PCI_DEVICE_ID_INTEL_PCH_0:
-> >> >     case PCI_DEVICE_ID_INTEL_PCH_1:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_2:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_3:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_4:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_5:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_6:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_7:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_8:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_9:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_10:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_11:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_12:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_13:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_14:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_15:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_16:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_17:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_18:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_19:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_20:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_21:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_22:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_23:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_24:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_25:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_26:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_27:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_28:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_29:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_30:
-> >> > +   case PCI_DEVICE_ID_INTEL_PCH_31:
-> >>
-> >> I am no PCI IRQ routing expert, but I have to admit that I a bit
-> >> skeptical that all the PCH functions are IRQ routers. You're adding as
-> >> many entries here for the PCH than there have been for all Intel chips
-> >> in the past 10 years or so...
-> >>
-> >> >             r->name = "PIIX/ICH";
-> >> >             r->get = pirq_piix_get;
-> >> >             r->set = pirq_piix_set;
-> >
-> >Yeah, this has me confused now too.  I remember specifically asking if the
-> >other PCHs needed to be added to this list when the last patch was applied..
-> >What happened?  Can you give us some more background here, Seth?  The
-> >changelog should definitely include an explanation of why the IDs need to
-> >be
-> >changed (i.e. why the old commit was wrong).
-> >
-> >Thanks,
-> >--
-> >Jesse Barnes, Intel Open Source Technology Center
-> 
-> I'm not sure what's "messy," given that I changed what was required
-> to be changed, then added the new IDs.  These IDs are as follows:
-> 
-> LPC Controller: 3b00-3b1f (final ID set in Firmware, but 32 possibilities)
-> SMBus: 3b30
-> 
-> In terms of the irq stuff, I'm adding only the LPC Controller IDs
-> there.  There are just a lot of them.  Normally we have a handful of
-> IDs, but in this case the list is longer.
+On Thu, Aug 28, 2008 at 3:56 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> could you resend the final patch please? It's a candidate for .27, if it
+> works out fine.
 
-So basically, you (Intel) have no clue what IDs will be used, and
-instead of waiting until you have the information, you prefer to add a
-bunch of device IDs to the Linux kernel, most of which will never
-exist? This is making the kernel code bigger and slower. Not by much,
-but still... That's bad engineering, really. Especially if you don't
-clean up afterwards, as happens to be the case for the ICH10. I
-compared the ICH10 datasheet with the IDs we have in the kernel and
-only 3 of the 6 defined device IDs are actually used by existing ICH10
-chips.
+Here is the combined patch. I've tested it only briefly, and I am
+unsure of whether it still produces lockdep warnings for Daniel or
+not. I wish it would not be applied anywhere unless it was
+officially Reviewed-by: someone. In particular, I'm not quite
+steady with the irq-safe locking (Thomas might want to have a look).
 
-> I suppose what "messy" means is, I should have kept the existing
-> defines and only added the new?  I can resubmit if that's the way
-> it should be done.
+Thanks :)
 
-That's one part of the messiness, yes. Which underlines how bad the
-symbol naming scheme is to start with.
 
-> I will also patch the Documentation file.  It wasn't in the list I
-> was given by Jason, but I'm onboard with saving Jean the trouble.
+Vegard
 
-Thanks.
 
-> Please advise on how I should proceed here.
+>From 977cf583b79be7308d5e310711fe6038c8af96a4 Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Thu, 28 Aug 2008 17:09:57 +0200
+Subject: [PATCH] debugobjects: fix lockdep warning #2
 
-I gave my opinion on it - now up to Jesse to decide.
+Daniel J. Blueman reported:
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.27-rc4-224c #1
+> -------------------------------------------------------
+> hald/4680 is trying to acquire lock:
+>  (&n->list_lock){++..}, at: [<ffffffff802bfa26>] add_partial+0x26/0x80
+>
+> but task is already holding lock:
+>  (&obj_hash[i].lock){++..}, at: [<ffffffff8041cfdc>]
+> debug_object_free+0x5c/0x120
 
+We fix it by moving the actual freeing to outside the lock (the lock
+now only protects the list).
+
+The lock is also promoted to irq-safe (suggested by Dan).
+
+Reported-by: Daniel J Blueman <daniel.blueman@gmail.com>
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ lib/debugobjects.c |   38 +++++++++++++++++++++++++++++---------
+ 1 files changed, 29 insertions(+), 9 deletions(-)
+
+diff --git a/lib/debugobjects.c b/lib/debugobjects.c
+index 19acf8c..acf9ed8 100644
+--- a/lib/debugobjects.c
++++ b/lib/debugobjects.c
+@@ -115,9 +115,10 @@ static struct debug_obj *lookup_object(void *addr, struct debug_bucket *b)
+ static struct debug_obj *
+ alloc_object(void *addr, struct debug_bucket *b, struct debug_obj_descr *descr)
+ {
++	unsigned long flags;
+ 	struct debug_obj *obj = NULL;
+ 
+-	spin_lock(&pool_lock);
++	spin_lock_irqsave(&pool_lock, flags);
+ 	if (obj_pool.first) {
+ 		obj	    = hlist_entry(obj_pool.first, typeof(*obj), node);
+ 
+@@ -136,7 +137,7 @@ alloc_object(void *addr, struct debug_bucket *b, struct debug_obj_descr *descr)
+ 		if (obj_pool_free < obj_pool_min_free)
+ 			obj_pool_min_free = obj_pool_free;
+ 	}
+-	spin_unlock(&pool_lock);
++	spin_unlock_irqrestore(&pool_lock, flags);
+ 
+ 	return obj;
+ }
+@@ -146,18 +147,19 @@ alloc_object(void *addr, struct debug_bucket *b, struct debug_obj_descr *descr)
+  */
+ static void free_object(struct debug_obj *obj)
+ {
++	unsigned long flags;
+ 	unsigned long idx = (unsigned long)(obj - obj_static_pool);
+ 
+ 	if (obj_pool_free < ODEBUG_POOL_SIZE || idx < ODEBUG_POOL_SIZE) {
+-		spin_lock(&pool_lock);
++		spin_lock_irqsave(&pool_lock, flags);
+ 		hlist_add_head(&obj->node, &obj_pool);
+ 		obj_pool_free++;
+ 		obj_pool_used--;
+-		spin_unlock(&pool_lock);
++		spin_unlock_irqrestore(&pool_lock, flags);
+ 	} else {
+-		spin_lock(&pool_lock);
++		spin_lock_irqsave(&pool_lock, flags);
+ 		obj_pool_used--;
+-		spin_unlock(&pool_lock);
++		spin_unlock_irqrestore(&pool_lock, flags);
+ 		kmem_cache_free(obj_cache, obj);
+ 	}
+ }
+@@ -170,19 +172,28 @@ static void debug_objects_oom(void)
+ {
+ 	struct debug_bucket *db = obj_hash;
+ 	struct hlist_node *node, *tmp;
++	HLIST_HEAD(freelist);
+ 	struct debug_obj *obj;
+ 	unsigned long flags;
+ 	int i;
+ 
+ 	printk(KERN_WARNING "ODEBUG: Out of memory. ODEBUG disabled\n");
+ 
++	/* XXX: Could probably be optimized by transplantation of more than
++	 * one entry at a time. */
+ 	for (i = 0; i < ODEBUG_HASH_SIZE; i++, db++) {
+ 		spin_lock_irqsave(&db->lock, flags);
+ 		hlist_for_each_entry_safe(obj, node, tmp, &db->list, node) {
+ 			hlist_del(&obj->node);
+-			free_object(obj);
++			hlist_add_head(&obj->node, &freelist);
+ 		}
+ 		spin_unlock_irqrestore(&db->lock, flags);
++
++		/* Now free them */
++		hlist_for_each_entry_safe(obj, node, tmp, &freelist, node) {
++			hlist_del(&obj->node);
++			free_object(obj);
++		}
+ 	}
+ }
+ 
+@@ -500,8 +511,9 @@ void debug_object_free(void *addr, struct debug_obj_descr *descr)
+ 		return;
+ 	default:
+ 		hlist_del(&obj->node);
++		spin_unlock_irqrestore(&db->lock, flags);
+ 		free_object(obj);
+-		break;
++		return;
+ 	}
+ out_unlock:
+ 	spin_unlock_irqrestore(&db->lock, flags);
+@@ -512,6 +524,7 @@ static void __debug_check_no_obj_freed(const void *address, unsigned long size)
+ {
+ 	unsigned long flags, oaddr, saddr, eaddr, paddr, chunks;
+ 	struct hlist_node *node, *tmp;
++	HLIST_HEAD(freelist);
+ 	struct debug_obj_descr *descr;
+ 	enum debug_obj_state state;
+ 	struct debug_bucket *db;
+@@ -547,11 +560,18 @@ repeat:
+ 				goto repeat;
+ 			default:
+ 				hlist_del(&obj->node);
+-				free_object(obj);
++				hlist_add_head(&obj->node, &freelist);
+ 				break;
+ 			}
+ 		}
+ 		spin_unlock_irqrestore(&db->lock, flags);
++
++		/* Now free them */
++		hlist_for_each_entry_safe(obj, node, tmp, &freelist, node) {
++			hlist_del(&obj->node);
++			free_object(obj);
++		}
++
+ 		if (cnt > debug_objects_maxchain)
+ 			debug_objects_maxchain = cnt;
+ 	}
 -- 
-Jean Delvare
+1.5.5.1
+
