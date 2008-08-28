@@ -1,115 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbYH1RTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbYH1RUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754106AbYH1RTU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 13:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYH1RTK
+	id S1754544AbYH1RUw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 13:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbYH1RUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 13:19:10 -0400
-Received: from sullivan.realtime.net ([205.238.132.226]:3660 "EHLO
-	sullivan.realtime.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbYH1RTI (ORCPT
+	Thu, 28 Aug 2008 13:20:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42852 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751683AbYH1RUn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 13:19:08 -0400
-Date: Thu, 28 Aug 2008 12:14:39 -0500 (CDT)
-Message-Id: <200808281714.m7SHEdCX096569@sullivan.realtime.net>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [BUG] linux-next: Tree for August 26 - Badness at kernel/notifier.c:25 
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-       linux-next@vger.kernel.org, mingo@elte.hu,
-       Arjan van de Ven <arjan@linux.intel.com>
-In-Reply-To: <1219935307.7107.302.camel@pmac.infradead.org>
-References: <1219935307.7107.302.camel@pmac.infradead.org>
+	Thu, 28 Aug 2008 13:20:43 -0400
+Date: Thu, 28 Aug 2008 10:20:12 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] resource/x86: add sticky resource type
+In-Reply-To: <20080828082119.GN21875@elte.hu>
+Message-ID: <alpine.LFD.1.10.0808281015440.3300@nehalem.linux-foundation.org>
+References: <1219888583-31577-1-git-send-email-yhlu.kernel@gmail.com> <20080828082119.GN21875@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-David Woodhouse dwmw2 at infradead.org
-Fri Aug 29 00:55:07 EST 2008
 
-> On Thu, 2008-08-28 at 15:23 +0100, David Woodhouse wrote:
->> On Thu, 2008-08-28 at 00:38 +1000, Stephen Rothwell wrote:
->>> Hi Arjan,
->>> 
->>> On Thu, 28 Aug 2008 00:33:08 +1000 Stephen Rothwell <sfr at canb.auug.org.au> wrote:
->>>>
->>>> The original reported trace was during setup_system which is very early in
->>>> the boot.
->>> 
->>> But, of course, that version didn't have the necessary extra dereference
->>> of the function address ...
->>> 
->>> And the later debug patch did not check the address at register time,
->>> only at notify time.
->>> 
->>> The later trace also looks to be early in the boot.
->> 
->> It's isa_bridge_notify(), which is neither within _[se]text nor
->> _[se]inittext, so the core_kernel_text() function disavows it.
->> 
->> Where are __devinit functions supposed to end up?
-> 
-> The TEXT_TEXT macro defined in <asm-generic/vmlinux.lds.h> should get
-> this right... but we don't use it. Is there any particular reason for
-> that, or should we....
+On Thu, 28 Aug 2008, Ingo Molnar wrote:
+>
+> Does anyone have any suggestions of how to improve this some more? (or 
+> do it differently)
 
-gitk -- arch/powerpc/kernel/vmlinux.S
+As far as I can see, THIS IS TOTALLY BROKEN.
 
-	e95c91821fa56b489d7beb74103a419466c5ec10
-	[POWERPC] Fix link errors for allyesconfig
-    
-    An allyesconfig build creates a .text section that is so big that the
-    .text.init.refok and .fixup sections are too far away for the relocations
-    to be fixed up correctly. This patch fixes that by linking all the
-    relevent text sections for each file together.
-    
-    Suggested by Paul Mackerras.
-    
-    Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+There's a reason why we add the broken resources LATE. There's a reason we 
+_have_ to add them late.
 
+Trying to come up with these braindamaged schemes to avoid doing it right 
+is wrong. Don't do it.
 
-Although I think its really fac23fe4be23259a8eaa9bad822f5b14dd07d15c 
-powerpc: Introduce infrastructure for feature sections with alternatives
-that causes the problems.
+The reason? Those bogus resources that the BIOS reports are simply NOT 
+TRUSTWORTHY. They may actually be in all the wrong places, including 
+covering a resource half-way, or crossing two real resources.
 
-If the problem is only reaching the branch-out-of-fixup-section, then
-we could create a macro that caculates the branch as if it were already
-at the destination address (using something like
+Yes, it's rare. But it happens. Which is why we should not do these broken 
+things that _incorrectly_ assume that the BIOS resources will only ever be 
+totally contained within a BAR, or will totally contain one. Think about 
+the partial overlap case.
 
-	b (target-fixup_start)-(current-alternative_start)
+Guys, until you learn that the BIOS resources are _crap_ and at most 
+random guesses, you shouldn't touch this code! And it has nothing to do 
+with writing "clean" code, or making things "simple", because quite 
+frankly, things simply ARE NOT simple!
 
-and then removing the code that determines the branch target goes beyond
-the feature section.
+The fact is, the only reliable way to handle these things has _always_ 
+been to ask the hardware first. Add the broken resources from ACPI and 
+other BIOS tables _later_. If they conflict, it is the ACPI/BIOS tables 
+that should be removed.
 
-Just a concept, have't tried it yet and don't know if there are other
-problems with .text.init.refok.
+Why do I have to tell this to people over and over again?
 
-Or we fix our defintion and put a comment next to TEXT_TEXT that we
-don't use it for future editors.
-
-> 
-> Signed-off-by: David Woodhouse <David.Woodhouse at intel.com>
-> 
-> --- linux-2.6.26.ppc64/arch/powerpc/kernel/vmlinux.lds.S~	2008-07-13 22:51:29.000000000 +0100
-> +++ linux-2.6.26.ppc64/arch/powerpc/kernel/vmlinux.lds.S	2008-08-28 15:39:14.000000000 +0100
-> @@ -35,10 +35,11 @@ SECTIONS
->  		ALIGN_FUNCTION();
->  		*(.text.head)
->  		_text = .;
-> -		*(.text .fixup .text.init.refok .exit.text.refok)
-> +		TEXT_TEXT
->  		SCHED_TEXT
->  		LOCK_TEXT
->  		KPROBES_TEXT
-> +		*(.fixup)
->  
->  #ifdef CONFIG_PPC32
->  		*(.got1)
-> 
-> -- 
-> David Woodhouse                            Open Source Technology Centre
-> David.Woodhouse at intel.com                              Intel Corporation
+		Linus
