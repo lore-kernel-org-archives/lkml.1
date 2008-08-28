@@ -1,142 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbYH1PSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbYH1PSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755400AbYH1PSe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 11:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbYH1PSZ
+	id S1755572AbYH1PSs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 11:18:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbYH1PS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 11:18:25 -0400
-Received: from mga09.intel.com ([134.134.136.24]:48706 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753112AbYH1PSY convert rfc822-to-8bit (ORCPT
+	Thu, 28 Aug 2008 11:18:29 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:21441 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753525AbYH1PS2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 11:18:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,286,1217833200"; 
-   d="scan'208";a="329903065"
-From: "Heasley, Seth" <seth.heasley@intel.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>, Jean Delvare <khali@linux-fr.org>
-CC: "i2c@lm-sensors.org" <i2c@lm-sensors.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Date: Thu, 28 Aug 2008 08:18:19 -0700
-Subject: RE: [PATCH 2.6.27-rc4] irq: irq and pci_ids patch for Intel Ibex
-  Peak DeviceIDs
-Thread-Topic: [PATCH 2.6.27-rc4] irq: irq and pci_ids patch for Intel Ibex
-  Peak DeviceIDs
-Thread-Index: AckJGDFehCaihAocTXelnqSFCJMV8gACEajw
-Message-ID: <CF9C39F99A89134C9CF9C4CCB68B8DDF177A16F0@orsmsx501.amr.corp.intel.com>
-References: <200808271658.26313.seth.heasley@intel.com>
- <20080828094935.0f50af24@hyperion.delvare>
- <200808280712.47908.jbarnes@virtuousgeek.org>
-In-Reply-To: <200808280712.47908.jbarnes@virtuousgeek.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	Thu, 28 Aug 2008 11:18:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=YMmx3Mzhwm1sjjPi/t/8zEPooEhrBRvhHX5NCOD2/F4qAy2cFN+OBI2VsSQXzpljav
+         WVCAJLxVczibDvNXhYO7XXDIzYQcU+ANqUeLrYd+abiI1qsm1UxUH05E4LyXoHIDHBkt
+         aFFgV1o20bfXaNB4i5bnaCQ5uxmz5kd9BE2v4=
+Date: Thu, 28 Aug 2008 17:18:17 +0200
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: sHittmeyer <hittmeyer@corscience.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: WLAN Stack for 2.6.23
+Message-ID: <20080828171817.1d9dcd35@Varda>
+In-Reply-To: <48B6B7BF.9010907@corscience.de>
+References: <48B6B7BF.9010907@corscience.de>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On Thursday, August 28, 2008 12:49 am Jean Delvare wrote:
->> Hi Seth,
->>
->> On Wed, 27 Aug 2008 16:58:26 -0700, Seth Heasley wrote:
->> > This patch updates the Intel Ibex Peak (PCH) LPC and SMBus Controller
->> > DeviceIDs.
->> >
->> > Signed-off-by: Seth Heasley <seth.heasley@intel.com>
->> >
->> > --- linux-2.6/include/linux/pci_ids.h.orig  2008-08-27
->11:54:07.000000000
->> > -0700 +++ linux-2.6/include/linux/pci_ids.h 2008-08-27
->12:01:53.000000000
->> > -0700 @@ -2428,9 +2428,39 @@
->> >  #define PCI_DEVICE_ID_INTEL_ICH10_3        0x3a1a
->> >  #define PCI_DEVICE_ID_INTEL_ICH10_4        0x3a30
->> >  #define PCI_DEVICE_ID_INTEL_ICH10_5        0x3a60
->> > -#define PCI_DEVICE_ID_INTEL_PCH_0  0x3b10
->> > -#define PCI_DEVICE_ID_INTEL_PCH_1  0x3b11
->> > -#define PCI_DEVICE_ID_INTEL_PCH_2  0x3b30
->> > +#define PCI_DEVICE_ID_INTEL_PCH_0  0x3b00
->> > +#define PCI_DEVICE_ID_INTEL_PCH_1  0x3b01
->> > +#define PCI_DEVICE_ID_INTEL_PCH_2  0x3b02
->>
->> Changing device ID definitions that way is really bad practice. It
->> needs to be synchronized between all involved subsystems.
->>
->> > --- linux-2.6/arch/x86/pci/irq.c.orig       2008-08-27
->11:53:13.000000000 -0700
->> > +++ linux-2.6/arch/x86/pci/irq.c    2008-08-27 12:07:21.000000000 -0700
->> > @@ -592,6 +592,36 @@
->> >     case PCI_DEVICE_ID_INTEL_ICH10_3:
->> >     case PCI_DEVICE_ID_INTEL_PCH_0:
->> >     case PCI_DEVICE_ID_INTEL_PCH_1:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_2:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_3:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_4:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_5:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_6:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_7:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_8:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_9:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_10:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_11:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_12:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_13:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_14:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_15:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_16:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_17:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_18:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_19:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_20:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_21:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_22:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_23:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_24:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_25:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_26:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_27:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_28:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_29:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_30:
->> > +   case PCI_DEVICE_ID_INTEL_PCH_31:
->>
->> I am no PCI IRQ routing expert, but I have to admit that I a bit
->> skeptical that all the PCH functions are IRQ routers. You're adding as
->> many entries here for the PCH than there have been for all Intel chips
->> in the past 10 years or so...
->>
->> >             r->name = "PIIX/ICH";
->> >             r->get = pirq_piix_get;
->> >             r->set = pirq_piix_set;
->
->Yeah, this has me confused now too.  I remember specifically asking if the
->other PCHs needed to be added to this list when the last patch was applied.
->What happened?  Can you give us some more background here, Seth?  The
->changelog should definitely include an explanation of why the IDs need to
->be
->changed (i.e. why the old commit was wrong).
->
->Thanks,
->--
->Jesse Barnes, Intel Open Source Technology Center
+El Thu, 28 Aug 2008 16:35:43 +0200
+sHittmeyer <hittmeyer@corscience.de> escribió:
 
-I'm not sure what's "messy," given that I changed what was required to be changed, then added the new IDs.  These IDs are as follows:
+> I'm trying to get the actual mac80211 WLAN stack onto a 2.6.23 kernel 
+> which is patched for a embedded Controller (Coldfire V4 M54455EVB).
 
-LPC Controller: 3b00-3b1f (final ID set in Firmware, but 32 possibilities)
-SMBus: 3b30
-
-In terms of the irq stuff, I'm adding only the LPC Controller IDs there.  There are just a lot of them.  Normally we have a handful of IDs, but in this case the list is longer.
-
-I suppose what "messy" means is, I should have kept the existing defines and only added the new?  I can resubmit if that's the way it should be done.
-
-I will also patch the Documentation file.  It wasn't in the list I was given by Jason, but I'm onboard with saving Jean the trouble.
-
-Please advise on how I should proceed here.
-
--Seth
+ Maybe from here?
+ 
+   http://linuxwireless.org/en/users/Download
+> 
+> Could anybody tell me where i can find the sources for the stack on 
+> git.kernel.org and perhaps give me some hints how I can update my kernel?
+> I would also be happy about every link related to it that could been 
+> given to me.
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
