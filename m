@@ -1,94 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbYH1Hkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754378AbYH1Hp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753780AbYH1Hkq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 03:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYH1Hki
+	id S1754378AbYH1Hp6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 03:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYH1Hpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 03:40:38 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51696
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753033AbYH1Hkh (ORCPT
+	Thu, 28 Aug 2008 03:45:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56149 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752957AbYH1Hpt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 03:40:37 -0400
-Date: Thu, 28 Aug 2008 00:40:32 -0700 (PDT)
-Message-Id: <20080828.004032.234293354.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: mingo@elte.hu, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: build failure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080825212833.38550575.sfr@canb.auug.org.au>
-References: <20080825212833.38550575.sfr@canb.auug.org.au>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 28 Aug 2008 03:45:49 -0400
+Date: Thu, 28 Aug 2008 00:45:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, jurriaan <thunder7@xs4all.nl>,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
+Subject: Re: 2.6.27-rc4: lots of 'in_atomic():1, irqs_disabled():0' with
+ software-raid1
+Message-Id: <20080828004532.45d8b8c9.akpm@linux-foundation.org>
+In-Reply-To: <20080828073324.GR20055@kernel.dk>
+References: <20080827170538.GA24393@amd64.of.nowhere>
+	<200808272347.43577.rjw@sisk.pl>
+	<20080828073324.GR20055@kernel.dk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 25 Aug 2008 21:28:33 +1000
+On Thu, 28 Aug 2008 09:33:24 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> Hi Ingo,
+> On Wed, Aug 27 2008, Rafael J. Wysocki wrote:
+> > [Adding CCs]
+> > 
+> > On Wednesday, 27 of August 2008, jurriaan wrote:
+> > > After returning from my holidays, I proceeded to test 2.6.27-rc4. 2.6.26
+> > > works fine, but 2.6.27-rc4 gives me lots of:
+> > > 
+> > > Aug 27 18:03:10 middle kernel: in_atomic():1, irqs_disabled():0
+> > > Aug 27 18:03:10 middle kernel: Pid: 1185, comm: md2_raid1 Not tainted 2.6.27-rc4 #2
+> > > Aug 27 18:03:10 middle kernel: 
+> > > Aug 27 18:03:10 middle kernel: Call Trace:
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff802303fb>] __might_sleep+0xdb/0x100
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff802734a9>] mempool_alloc+0x89/0x140
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff802c8deb>] bio_alloc_bioset+0x2b/0xb0
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff802c8ed0>] bio_alloc+0x10/0x20
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8061ecda>] md_super_write+0x3a/0xe0
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80623e0e>] write_page+0x14e/0x310
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff803a30f1>] ? rb_insert_color+0x101/0x130
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8022de7f>] ? update_curr+0x3f/0x60
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8039e3e9>] ? __next_cpu+0x19/0x30
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80231ecc>] ? find_busiest_group+0x1dc/0x960
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff806240ab>] bitmap_update_sb+0xdb/0x110
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8061ef65>] md_update_sb+0x1e5/0x370
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80620dc5>] md_check_recovery+0x355/0x640
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80607665>] raid1d+0x35/0x10a0
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff802360db>] ? finish_task_switch+0x3b/0xc0
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8070ec96>] ? thread_return+0xa3/0x63d
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80710e52>] ? _spin_lock_irqsave+0x22/0x50
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80247406>] ? lock_timer_base+0x36/0x70
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff807110c2>] ? _spin_unlock_irqrestore+0x12/0x40
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8024749a>] ? try_to_del_timer_sync+0x5a/0x70
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff802474ca>] ? del_timer_sync+0x1a/0x30
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80710e52>] ? _spin_lock_irqsave+0x22/0x50
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff807110c2>] ? _spin_unlock_irqrestore+0x12/0x40
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8061e084>] md_thread+0x54/0x140
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80253390>] ? autoremove_wake_function+0x0/0x40
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8061e030>] ? md_thread+0x0/0x140
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80252fc9>] kthread+0x49/0x80
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8020ca09>] child_rip+0xa/0x11
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff80252f80>] ? kthread+0x0/0x80
+> > > Aug 27 18:03:10 middle kernel:  [<ffffffff8020c9ff>] ? child_rip+0x0/0x11
+> > > Aug 27 18:03:10 middle kernel: 
+> > > 
+> > > I was able to reboot into 2.6.26 without further trouble. I wasn't able
+> > > to find this reported earlier on lkml.
 > 
-> Today's linux-next build (sparc64 defconfig) failed like this:
+> Hmm, this just looks like a GFP_NOIO alloc inside rcu_read_lock(), I
+> don't see anything wrong with that?
 > 
-> ERROR: "__BUILD_BUG_ON_non_constant" [drivers/net/sunvnet.ko] undefined!
-> ERROR: "__BUILD_BUG_ON_non_constant" [drivers/block/sunvdc.ko] undefined!
-> 
-> Probably intorduced by commit f5b5d41dd51a31fe70e3a04fb80a3b90b84c6a4e
-> ("debug: fix BUILD_BUG_ON() for non-constant expressions").
 
-I think __builtin_constant_p() is not seeing something it
-should here.
+Cant sleep inside rcu_read_lock(), with CONFIG_PREEMPT_RCU=n, at least.
 
-It isn't accepting:
+Dunno if it's legal if CONFIG_PREEMPT_RCU=y.  Hopefully not - that
+would be insane.  But I've failed to keep up with rcu goings-on
+recently.
 
---------------------
-static inline __attribute__((const))
-bool is_power_of_2(unsigned long n)
-{
-	return (n != 0 && ((n & (n - 1)) == 0));
-}
---------------------
-
-and thus is_power_of_2(256) as being a constant.
-
-If a 'const' inline function being passed a const argument isn't
-constant, what is! :-)
-
-I bet the problem is the fact that is_power_of_2() is a function.
-
-I did some tests and I can only trigger this problem with gcc-3.4 on
-sparc, gcc-4.1 and gcc-4.2 worked fine.
-
-It triggers with both -O2 and -Os for the following simple test case:
-
-static inline __attribute__((const))
-int is_power_of_2(unsigned long n)
-{
-	return (n != 0 && ((n & (n - 1)) == 0));
-}
-
-extern int bar;
-
-int main(void)
-{
-	if (!__builtin_constant_p(is_power_of_2(256)))
-		bar++;
-	return 0;
-}
-
-davem@sunset:~/src/GIT/linux-2.6$ gcc-3.4  -Os -o x x.c
-/tmp/ccy8FzD8.o: In function `main':
-x.c:(.text+0x0): undefined reference to `bar'
-x.c:(.text+0x4): undefined reference to `bar'
-x.c:(.text+0xc): undefined reference to `bar'
-collect2: ld returned 1 exit status
-davem@sunset:~/src/GIT/linux-2.6$ gcc-3.4  -O2 -o x x.c
-/tmp/ccQNzZuj.o: In function `main':
-x.c:(.text+0x0): undefined reference to `bar'
-x.c:(.text+0x4): undefined reference to `bar'
-x.c:(.text+0xc): undefined reference to `bar'
-collect2: ld returned 1 exit status
-davem@sunset:~/src/GIT/linux-2.6$ 
