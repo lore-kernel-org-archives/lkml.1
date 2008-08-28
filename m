@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbYH1Jop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752833AbYH1J7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753392AbYH1Jop (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 05:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbYH1Joh
+	id S1752833AbYH1J7j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 05:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbYH1J73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 05:44:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35052 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751503AbYH1Jog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 05:44:36 -0400
-Date: Thu, 28 Aug 2008 11:44:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Paalanen <pq@iki.fi>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch] Tracing/ftrace: Adds a marker to allow user comments
-Message-ID: <20080828094423.GD28783@elte.hu>
-References: <48B1D5CA.8000607@gmail.com> <c62985530808270259i491e32e2r40adf719e32e4086@mail.gmail.com> <20080827212130.4b8365a8@daedalus.pq.iki.fi>
+	Thu, 28 Aug 2008 05:59:29 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:38065 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751229AbYH1J71 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 05:59:27 -0400
+Date: 28 Aug 2008 11:59:25 +0200
+From: kovlensky@interia.pl
+Subject: mounting windows shares with path exactly like on windows
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080827212130.4b8365a8@daedalus.pq.iki.fi>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-ORIGINATE-IP: 195.224.154.166
+IMPORTANCE: Normal
+X-MSMAIL-PRIORITY: Normal
+X-PRIORITY: 3
+X-Mailer: PSE3
+Message-Id: <20080828095925.AB0ED313C53@f48.poczta.interia.pl>
+X-EMID: fbb40acc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I'm sorry to be slightly off topic, when it comes to this list, but I have no clue where to look for that and I think it can be doe on kernel level only.
 
-* Pekka Paalanen <pq@iki.fi> wrote:
+In short - I've got bunch of applications running both on windows and linux and these applications exchange links to files mounted on both sides. The problem is that these paths are different, i.e. like D:/dir/file on windows and /mountpoint/dir/file on Linux. What I need is unifying them. So my idea is to have path translator on anything on kernel level, which will make Linux open call to D:/dir/file on Linux work and open /mountpoint/dir/file. Was anything close to that ever incorporated in kernel?
 
-> > Do you think I should modify something or use a way to make it 
-> > better? (Added Pekka Paalanen in Cc since it concerns an idea from 
-> > his mmiotrace's documentation)...
-> 
-> Thanks for adding me, I've been brewing my own version of this stuff, 
-> but didn't yet solve the __ftrace_printk-is-unusable issue yet. I have 
-> the mmiotrace specific parts written for TRACE_PRINT, so we haven't 
-> really overlapped each other's work yet.
+Applications are, as usual, closed source, and support for them, also as usual, answers "won't be fixed, switch to Windows, please". Very helpful.
 
-we can certainly include and test Frédéric's patch in tip/tracing/ftrace 
-- i'll wait for v2 as i guess he will implement the modifications 
-suggested by you?
+Any other ideas of solving this problem are also warmly welcomed. Also on windows side.
 
-	Ingo
+----------------------------------------------------------------------
+Nie szukam kochanka!
+>> http://link.interia.pl/f1eeb
+
