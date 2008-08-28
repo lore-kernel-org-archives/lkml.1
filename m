@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbYH1Q6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbYH1Q7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754637AbYH1Q6X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 12:58:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbYH1Q6P
+	id S1755241AbYH1Q7T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 12:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbYH1Q7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 12:58:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44868 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751801AbYH1Q6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 12:58:14 -0400
-Message-ID: <48B6D8D0.6080506@kernel.org>
-Date: Thu, 28 Aug 2008 18:56:48 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
+	Thu, 28 Aug 2008 12:59:08 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:53521 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752061AbYH1Q7H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Aug 2008 12:59:07 -0400
+From: Marcel Janssen <korgull@home.nl>
+Reply-To: korgull@home.nl
 To: Greg KH <greg@kroah.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RESEND] char_dev: add cdev->release() and convert	cdev_alloc()
- to use it
-References: <48B6D428.2020308@kernel.org> <20080828164741.GA17475@kroah.com>
-In-Reply-To: <20080828164741.GA17475@kroah.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [PATCH] USB: add USB test and measurement class driver - round 2
+Date: Thu, 28 Aug 2008 18:58:41 +0200
+User-Agent: KMail/1.9.9
+Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       Stefan Kopp <stefan_kopp@agilent.com>,
+       Felipe Balbi <me@felipebalbi.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+References: <20080827183615.GA15692@kroah.com> <Pine.LNX.4.44L0.0808271451550.17771-100000@iolanthe.rowland.org> <20080827234720.GC31264@kroah.com>
+In-Reply-To: <20080827234720.GC31264@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 28 Aug 2008 16:58:06 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200808281858.42486.korgull@home.nl>
+X-Spam-Score: -0.5 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> Ick, I really don't want struct cdev to be used for lifecycle
-> management, as it is only for major:minor stuff.  Why do you want to
-> make this change?
+On Thursday 28 August 2008 01:47:20 Greg KH wrote:
+> Great, all done now.
+>
+> Here's the updated version.
 
-Well, as cdev can be referenced from userspace, ->release is required
-for most purposes.  The reason why devices have been getting by without
-it is because most chardevs are created on module load and destroyed on
-module unload and in the meantime cdev refcount virtually equals module
-refcnt, but I'm fairly sure we have cases where cdev can be destroyed
-for other reasons then module unloading and it's very likely those cases
-are buggy in the current code (backing structure gone bug cdev still
-hanging around).
+I've just installed this version.
 
-As CUSE can create and destroy devices regardless of module reference
-count, it falls in the second category and needs cdev->release() to make
-sure the backing structure doesn't go away till cdev is released.
+Here's what I see so far :
 
-Thanks.
+The driver inserts well and when I connect my device it shows /dev/usbtmc0 
+with major 180 and minor 176.
+It only creates one device (Stefan's driver created two) but I'm not sure if 
+that has changed for a reason so just let you know.
 
--- 
-tejun
+When I disconnect my device, usbtmc0 will not be destroyed. After connecting 
+the device a couple of times I have a lot of /dev/usbtmc.. files.
+
+I would expect the following to work :
+echo :*IDN?>/dev/usbtmc0
+But it returns : No such device
+
+Using echo and cat to test the device is quite convenient, but is this 
+supposed to work yet ?
+
+I checked /sys a bit and found that the endpoints are correctly found.    
+
+I also had an issue applying the patch (documentation and makefile). Not sure 
+if that's related to my system though, I'll check that later.
+
+regards,
+Marcel
+
+
