@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbYH1Sqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbYH1SxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756011AbYH1Sqx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 14:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYH1Sqp
+	id S1755027AbYH1SxW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 14:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbYH1SxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 14:46:45 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:42693 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751805AbYH1Sqo (ORCPT
+	Thu, 28 Aug 2008 14:53:08 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:58806 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752296AbYH1SxI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 14:46:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=FptcLo/Xl3LNWnKINR9YYZXPOebuf3wkq4mLxKShCRSI9j/4y2d4F38Iktx08DDo7c
-         3MHJnQWIDIocyk2H/cNRmDQZS4NBO5eTvFxwKUhO0ET4uXxz3Lva23D9SpO+sCBhGrkl
-         ilPWst36Gwg12pn0ODEuoCQnZI6dqnbcPMUYU=
-Message-ID: <19f34abd0808281146o7a00388eie9322ff778665961@mail.gmail.com>
-Date: Thu, 28 Aug 2008 20:46:43 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>
-Subject: Re: [RFC][PATCH] bitfields API
-Cc: "David Miller" <davem@davemloft.net>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080828184025.GA22165@x200.localdomain>
+	Thu, 28 Aug 2008 14:53:08 -0400
+Date: Thu, 28 Aug 2008 14:53:06 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Mark Hounschell <markh@compro.net>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Stefani Seibold <stefani@seibold.net>,
+       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
+In-Reply-To: <alpine.LFD.1.10.0808281138060.3300@nehalem.linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0808281448170.18124@gandalf.stny.rr.com>
+References: <20080819103301.787700742@chello.nl> <200808290036.35817.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0808281110570.14580@gandalf.stny.rr.com> <200808290134.35093.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0808281142280.14580@gandalf.stny.rr.com>
+ <alpine.LFD.1.10.0808281024060.3300@nehalem.linux-foundation.org> <48B6EB6F.2050802@compro.net> <alpine.LFD.1.10.0808281138060.3300@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080828183223.GA30781@localhost.localdomain>
-	 <20080828184025.GA22165@x200.localdomain>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 8:40 PM, Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> On Thu, Aug 28, 2008 at 08:32:23PM +0200, Vegard Nossum wrote:
->> How do you feel about this patch? It's all about making kmemcheck more
->> useful... and not much else. Does it have any chance of entering the
->> kernel along with kmemcheck (when/if that happens)?
->
-> DEFINE_BITFIELD is horrible.
->
->> @@ -285,11 +286,12 @@ struct sk_buff {
->>               };
->>       };
->>       __u32                   priority;
->> -     __u8                    local_df:1,
->> +     DEFINE_BITFIELD(__u8,   flags1,
->> +                             local_df:1,
->>                               cloned:1,
->>                               ip_summed:2,
->>                               nohdr:1,
->> -                             nfctinfo:3;
->> +                             nfctinfo:3);
->>       __u8                    pkt_type:3,
->>                               fclone:2,
->>                               ipvs_property:1,
 
-Ok, that's constructive :-P
+On Thu, 28 Aug 2008, Linus Torvalds wrote:
+> 
+> And I'm not really interested. Quite frankly, I suspect the "we want to 
+> run something like pulseaudio with RT priorities" camp is the more common 
+> one, and in that context I understand limiting SCHED_FIFO sounds perfectly 
+> understandable.
 
-Can we skip the type and always assume that it should be __u8/uint8_t?
-I read somewhere that bitfields should anyway always be 1 byte wide if
-the bitfield should be "portable". Would it help (to make this less
-horrible) to omit the type declaration and have just the bitfield
-members as arguments to the macro?
+The fact that it actually limits a SCHED_FIFO task group, over a single 
+task thread does bother me a little.
 
-Thanks,
+But that said, I and others have made our complaints known, and will 
+forever be documented in the halls of the Internet abyss. Thus, the 
+verdict has been laid. Seems the default shall be something other than 
+infinite.
 
+I will now remain silent.
 
-Vegard
+-- Steve
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
