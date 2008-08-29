@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbYH2PVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751034AbYH2PVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752502AbYH2PVV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 11:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750934AbYH2PVG
+	id S1751034AbYH2PVj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 11:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbYH2PVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 11:21:06 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42531 "EHLO
+	Fri, 29 Aug 2008 11:21:07 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42533 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750855AbYH2PVD (ORCPT
+	with ESMTP id S1750908AbYH2PVF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 11:21:03 -0400
-Date: Fri, 29 Aug 2008 08:07:08 -0700
+	Fri, 29 Aug 2008 11:21:05 -0400
+Date: Fri, 29 Aug 2008 08:07:40 -0700
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: Arjan van de Ven <arjan@infradead.org>, mingo@elte.hu, tglx@tglx.de,
        torvalds@linux-foundation.org
-Subject: [PATCH 2/5] select: return accurate remainer in select() and
- ppoll()
-Message-ID: <20080829080708.4a301d23@infradead.org>
+Subject: [PATCH 3/5] select: introduce a schedule_hrtimeout() function
+Message-ID: <20080829080740.7857618e@infradead.org>
 In-Reply-To: <20080829080549.6906b744@infradead.org>
 References: <20080829080549.6906b744@infradead.org>
 Organization: Intel
@@ -34,183 +33,98 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Thu, 28 Aug 2008 13:40:29 -0700
-Subject: [PATCH] select: return accurate remainer in select() and ppoll()
+Date: Thu, 28 Aug 2008 13:44:03 -0700
+Subject: [PATCH] select: introduce a schedule_hrtimeout() function
 
-On Linux, select() and ppoll() write back the time remaining into the timeout
-value. Now that we have a nanosecond level end time, we can also give a very
-accurate remainder back; this patch adds the logic to do this.
+This patch adds a schedule_hrtimeout() function, to be used by select() and poll()
+in a later patch. This function works similar to schedule_timeout() in most ways,
+but takes a timespec rather than jiffies.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- fs/compat.c |   39 ++++++++++++++++++++++++++++++---------
- fs/select.c |   47 ++++++++++++++++++++++++++++++++++++-----------
- 2 files changed, 66 insertions(+), 20 deletions(-)
+ include/linux/hrtimer.h |    3 ++
+ kernel/hrtimer.c        |   57 +++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 60 insertions(+), 0 deletions(-)
 
-diff --git a/fs/compat.c b/fs/compat.c
-index 7c9b2a1..b7c68f1 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -1615,11 +1615,22 @@ asmlinkage long compat_sys_select(int n, compat_ulong_t __user *inp,
+diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
+index 6d93dce..526b62f 100644
+--- a/include/linux/hrtimer.h
++++ b/include/linux/hrtimer.h
+@@ -346,6 +346,9 @@ extern long hrtimer_nanosleep_restart(struct restart_block *restart_block);
+ extern void hrtimer_init_sleeper(struct hrtimer_sleeper *sl,
+ 				 struct task_struct *tsk);
  
- 	if (tvp) {
- 		struct compat_timeval rtv;
-+		struct timespec now;
++extern signed long schedule_hrtimeout(struct timespec *time, int mode);
++
++
+ /* Soft interrupt function to run the hrtimer queues: */
+ extern void hrtimer_run_queues(void);
+ extern void hrtimer_run_pending(void);
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index b8e4dce..0ab7b04 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1678,3 +1678,60 @@ void __init hrtimers_init(void)
+ #endif
+ }
  
- 		if (current->personality & STICKY_TIMEOUTS)
- 			goto sticky;
- 		rtv.tv_usec = jiffies_to_usecs(do_div((*(u64*)&timeout), HZ));
- 		rtv.tv_sec = timeout;
 +
-+		ktime_get_ts(&now);
-+		now = timespec_sub(end_time, now);
-+		if (now.tv_sec < 0 || now.tv_nsec < 0) {
-+			memset(&rtv, 0, sizeof(rtv));
-+		} else {
-+			rtv.tv_sec = now.tv_sec;
-+			rtv.tv_usec = now.tv_nsec / NSEC_PER_USEC;
-+		}
++/**
++ * schedule_hrtimeout - sleep until timeout
++ * @timeout: timeout value (timespec)
++ * @mode: timer mode, HRTIMER_MODE_ABS or HRTIMER_MODE_REL
++ *
++ * Make the current task sleep until @timeout time has
++ * elapsed. The routine will return immediately unless
++ * the current task state has been set (see set_current_state()).
++ *
++ * You can set the task state as follows -
++ *
++ * %TASK_UNINTERRUPTIBLE - at least @timeout time is guaranteed to
++ * pass before the routine returns. The routine will return 0
++ *
++ * %TASK_INTERRUPTIBLE - the routine may return early if a signal is
++ * delivered to the current task. In this case a positivee value will
++ * be returned or 0 if the timer expired in time
++ *
++ * The current task state is guaranteed to be TASK_RUNNING when this
++ * routine returns.
++ *
++ * In all cases the return value is guaranteed to be non-negative.
++ */
++signed long __sched schedule_hrtimeout(struct timespec *time, int mode)
++{
++	struct hrtimer_sleeper t;
++	ktime_t expire;
 +
- 		if (compat_timeval_compare(&rtv, &tv) >= 0)
- 			rtv = tv;
- 		if (copy_to_user(tvp, &rtv, sizeof(rtv))) {
-@@ -1697,16 +1708,20 @@ asmlinkage long compat_sys_pselect7(int n, compat_ulong_t __user *inp,
- 
- 	if (tsp) {
- 		struct compat_timespec rts;
-+		struct timespec now;
- 
- 		if (current->personality & STICKY_TIMEOUTS)
- 			goto sticky;
- 
--		rts.tv_sec = timeout / HZ;
--		rts.tv_nsec = (timeout % HZ) * (NSEC_PER_SEC/HZ);
--		if (rts.tv_nsec >= NSEC_PER_SEC) {
--			rts.tv_sec++;
--			rts.tv_nsec -= NSEC_PER_SEC;
-+		ktime_get_ts(&now);
-+		now = timespec_sub(end_time, now);
-+		if (now.tv_sec < 0 || now.tv_nsec < 0) {
-+			memset(&rts, 0, sizeof(rts));
-+		} else {
-+			rts.tv_nsec = now.tv_nsec;
-+			rts.tv_sec = now.tv_sec;
- 		}
++	expire = timespec_to_ktime(*time);
 +
- 		if (compat_timespec_compare(&rts, &ts) >= 0)
- 			rts = ts;
- 		if (copy_to_user(tsp, &rts, sizeof(rts))) {
-@@ -1818,13 +1833,19 @@ asmlinkage long compat_sys_ppoll(struct pollfd __user *ufds,
- 
- 	if (tsp && timeout >= 0) {
- 		struct compat_timespec rts;
-+		struct timespec now;
- 
- 		if (current->personality & STICKY_TIMEOUTS)
- 			goto sticky;
--		/* Yes, we know it's actually an s64, but it's also positive. */
--		rts.tv_nsec = jiffies_to_usecs(do_div((*(u64*)&timeout), HZ)) *
--					1000;
--		rts.tv_sec = timeout;
-+		ktime_get_ts(&now);
-+		now = timespec_sub(end_time, now);
-+		if (now.tv_sec < 0 || now.tv_nsec < 0) {
-+			memset(&rts, 0, sizeof(rts));
-+		} else {
-+			rts.tv_nsec = now.tv_nsec;
-+			rts.tv_sec = now.tv_sec;
-+		}
++	if (ktime_to_ns(expire) <= 0) {
++		__set_current_state(TASK_RUNNING);
++		return 0;
++	}
 +
- 		if (compat_timespec_compare(&rts, &ts) >= 0)
- 			rts = ts;
- 		if (copy_to_user(tsp, &rts, sizeof(rts))) {
-diff --git a/fs/select.c b/fs/select.c
-index 6a6e33a..3ce5943 100644
---- a/fs/select.c
-+++ b/fs/select.c
-@@ -409,13 +409,24 @@ asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp,
- 
- 	if (tvp) {
- 		struct timeval rtv;
-+		struct timespec now;
- 
- 		if (current->personality & STICKY_TIMEOUTS)
- 			goto sticky;
--		rtv.tv_usec = jiffies_to_usecs(do_div((*(u64*)&timeout), HZ));
--		rtv.tv_sec = timeout;
++	hrtimer_init_on_stack(&t.timer, CLOCK_MONOTONIC, mode);
++	t.timer.expires = expire;
 +
-+		ktime_get_ts(&now);
-+		now = timespec_sub(end_time, now);
-+		if (now.tv_sec < 0 || now.tv_nsec < 0) {
-+			rtv.tv_usec = 0;
-+			rtv.tv_sec = 0;
-+		} else {
-+			rtv.tv_usec = now.tv_nsec / NSEC_PER_USEC;
-+			rtv.tv_sec = now.tv_sec;
-+		}
++	hrtimer_init_sleeper(&t, current);
 +
- 		if (timeval_compare(&rtv, &tv) >= 0)
- 			rtv = tv;
++	hrtimer_start(&t.timer, t.timer.expires, mode);
++	if (!hrtimer_active(&t.timer))
++		t.task = NULL;
 +
- 		if (copy_to_user(tvp, &rtv, sizeof(rtv))) {
- sticky:
- 			/*
-@@ -481,15 +492,24 @@ asmlinkage long sys_pselect7(int n, fd_set __user *inp, fd_set __user *outp,
- 	ret = core_sys_select(n, inp, outp, exp, &timeout, &end_time);
- 
- 	if (tsp) {
--		struct timespec rts;
-+		struct timespec rts, now;
- 
- 		if (current->personality & STICKY_TIMEOUTS)
- 			goto sticky;
--		rts.tv_nsec = jiffies_to_usecs(do_div((*(u64*)&timeout), HZ)) *
--						1000;
--		rts.tv_sec = timeout;
++	if (likely(t.task))
++		schedule();
 +
-+		ktime_get_ts(&now);
-+		now = timespec_sub(end_time, now);
-+		if (now.tv_sec < 0 || now.tv_nsec < 0) {
-+			rts.tv_nsec = 0;
-+			rts.tv_sec = 0;
-+		} else {
-+			rts.tv_nsec = now.tv_nsec;
-+			rts.tv_sec = now.tv_sec;
-+		}
++	hrtimer_cancel(&t.timer);
 +
- 		if (timespec_compare(&rts, &ts) >= 0)
- 			rts = ts;
 +
- 		if (copy_to_user(tsp, &rts, sizeof(rts))) {
- sticky:
- 			/*
-@@ -847,16 +867,21 @@ asmlinkage long sys_ppoll(struct pollfd __user *ufds, unsigned int nfds,
- 		sigprocmask(SIG_SETMASK, &sigsaved, NULL);
- 
- 	if (tsp && timeout >= 0) {
--		struct timespec rts;
-+		struct timespec rts, now;
- 
- 		if (current->personality & STICKY_TIMEOUTS)
- 			goto sticky;
--		/* Yes, we know it's actually an s64, but it's also positive. */
--		rts.tv_nsec = jiffies_to_usecs(do_div((*(u64*)&timeout), HZ)) *
--						1000;
--		rts.tv_sec = timeout;
++	__set_current_state(TASK_RUNNING);
 +
-+		ktime_get_ts(&now);
-+		now = timespec_sub(end_time, now);
-+		if (now.tv_sec < 0 || now.tv_nsec < 0)
-+			memset(&rts, 0, sizeof(rts));
-+		else
-+			rts = now;
++	return t.task == NULL;
++}
++EXPORT_SYMBOL_GPL(schedule_hrtimeout);
 +
- 		if (timespec_compare(&rts, &ts) >= 0)
- 			rts = ts;
-+
- 		if (copy_to_user(tsp, &rts, sizeof(rts))) {
- 		sticky:
- 			/*
 -- 
 1.5.5.1
 
