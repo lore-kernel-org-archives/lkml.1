@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbYH2Tzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbYH2UFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755889AbYH2Tzh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 15:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbYH2Tz3
+	id S1754775AbYH2UFQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 16:05:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbYH2UFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 15:55:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42261 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751025AbYH2Tz3 (ORCPT
+	Fri, 29 Aug 2008 16:05:01 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47099
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751184AbYH2UFA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 15:55:29 -0400
-Date: Fri, 29 Aug 2008 12:54:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: aaron@merfinllc.com, mpm@selenic.com, linux-kernel@vger.kernel.org,
-       tytso@mit.edu, stable@kernel.org
-Subject: Re: drivers/char/random.c line 728 BUG
-Message-Id: <20080829125445.9e48b1f1.akpm@linux-foundation.org>
-In-Reply-To: <20080829124807.54293904.akpm@linux-foundation.org>
-References: <20080826225918.GC5452@merfinllc.com>
-	<20080828225924.GD6432@merfinllc.com>
-	<20080829124807.54293904.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 29 Aug 2008 16:05:00 -0400
+Date: Fri, 29 Aug 2008 13:04:55 -0700 (PDT)
+Message-Id: <20080829.130455.54621315.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: jes@sgi.com, travis@sgi.com, mingo@elte.hu, Alan.Brunelle@hp.com,
+       tglx@linutronix.de, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, akpm@linux-foundation.org,
+       arjan@linux.intel.com, rusty@rustcorp.com.au
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
+ bisected
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.1.10.0808290909020.3300@nehalem.linux-foundation.org>
+References: <20080826.134535.193703558.davem@davemloft.net>
+	<48B7EEA2.7090300@sgi.com>
+	<alpine.LFD.1.10.0808290909020.3300@nehalem.linux-foundation.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008 12:48:07 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 29 Aug 2008 09:14:44 -0700 (PDT)
 
-> We could fix this by moving the assertion inside the lock, but it seems
-> safer and saner to revert to the old behaviour wherein
-> entropy_store.entropy_count at no time exceeds
-> entropy_store.poolinfo->POOLBITS.
+> Well, it probably boots because it doesn't really seem to _change_ much of 
+> anything.
+> 
+> Things like this:
+> 
+> 	-static inline void arch_send_call_function_ipi(cpumask_t mask)
+> 	+static inline void arch_send_call_function_ipi(cpumask_t *mask)
+> 	 {
+> 	-       smp_ops.send_call_func_ipi(mask);
+> 	+       smp_ops.send_call_func_ipi(*mask);
+> 	 }
+> 
+> will still do that stack allocation at the time of the call. You'd have to 
+> pass the thing all the way down as a pointer..
 
-The fixed version even generates improved code.
+True, but we have to get there one step at a time.
 
-Let's try to avoid repeats:
+BTW, sparc64 already wants a pointer here, so it's completely ready for
+this:
 
---- a/drivers/char/random.c~drivers-char-randomc-fix-a-race-which-can-lead-to-a-bogus-bug-fix
-+++ a/drivers/char/random.c
-@@ -407,7 +407,7 @@ struct entropy_store {
- 	/* read-write data: */
- 	spinlock_t lock;
- 	unsigned add_ptr;
--	int entropy_count;
-+	int entropy_count;	/* Must at no time exceed ->POOLBITS! */
- 	int input_rotate;
- };
- 
-_
-
+void arch_send_call_function_ipi(cpumask_t mask)
+{
+	xcall_deliver((u64) &xcall_call_function, 0, 0, &mask);
+}
