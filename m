@@ -1,115 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753778AbYH2G3s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbYH2Gak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753778AbYH2G3s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 02:29:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYH2G3j
+	id S1754125AbYH2Gak (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 02:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYH2Gaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 02:29:39 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:53631 "EHLO pasmtpB.tele.dk"
+	Fri, 29 Aug 2008 02:30:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48713 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751397AbYH2G3i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 02:29:38 -0400
-Date: Fri, 29 Aug 2008 08:29:34 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: mano@roarinelk.homelinux.net, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org
-Subject: Re: MTD kobject warnings due to block layer changes
-Message-ID: <20080829062933.GI20055@kernel.dk>
-References: <20080828084603.GA17139@roarinelk.homelinux.net> <20080828100921.GY20055@kernel.dk> <20080829145616P.fujita.tomonori@lab.ntt.co.jp>
+	id S1751417AbYH2Ga3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 02:30:29 -0400
+Date: Fri, 29 Aug 2008 08:30:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: split e820 reserved entries record to late v4
+Message-ID: <20080829063012.GA19459@elte.hu>
+References: <1219973391-9580-1-git-send-email-yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080829145616P.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1219973391-9580-1-git-send-email-yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 29 2008, FUJITA Tomonori wrote:
-> On Thu, 28 Aug 2008 12:09:21 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
+
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+
+> Linus said we should register some entries in e820 later,
+> so could let BAR res register at first, or even pnp?
 > 
-> > On Thu, Aug 28 2008, Manuel Lauss wrote:
-> > > Hello,
-> > > 
-> > > Todays -git spits out these wanings during boot, caused by
-> > > Commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4
-> > > ( block: move cmdfilter from gendisk to request_queue ):
-> > > 
-> > > Using physmap partition information
-> > > Creating 3 MTD partitions on "physmap-flash":
-> > > 0x00000000-0x01c00000 : "User FS"
-> > > 0x01c00000-0x01c40000 : "booter"
-> > > kobject (8511c410): tried to init an initialized object, something is seriously wrong.
-> > > Call Trace:
-> > > [<8036644c>] dump_stack+0x8/0x34
-> > > [<8021f050>] kobject_init+0x50/0xcc
-> > > [<8021fa18>] kobject_init_and_add+0x24/0x58
-> > > [<8021d20c>] blk_register_filter+0x4c/0x64
-> > > [<8021c194>] add_disk+0x78/0xe0
-> > > [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
-> > > [<8027c8f0>] blktrans_notify_add+0x40/0x78
-> > > [<80279c00>] add_mtd_device+0xd0/0x150
-> > > [<8027b090>] add_mtd_partitions+0x568/0x5d8
-> > > [<80285458>] physmap_flash_probe+0x2ac/0x334
-> > > [<802644f8>] driver_probe_device+0x12c/0x244
-> > > [<8026465c>] __driver_attach+0x4c/0x84
-> > > [<80263c64>] bus_for_each_dev+0x58/0xac
-> > > [<802633ec>] bus_add_driver+0xc4/0x24c
-> > > [<802648e0>] driver_register+0xcc/0x184
-> > > [<80100460>] _stext+0x60/0x1bc
-> > > 
-> > > 0x01c40000-0x01fe0000 : "vmlinux.elf"
-> > > kobject (8511c410): tried to init an initialized object, something is seriously wrong.
-> > > Call Trace:
-> > > [<8036644c>] dump_stack+0x8/0x34
-> > > [<8021f050>] kobject_init+0x50/0xcc
-> > > [<8021fa18>] kobject_init_and_add+0x24/0x58
-> > > [<8021d20c>] blk_register_filter+0x4c/0x64
-> > > [<8021c194>] add_disk+0x78/0xe0
-> > > [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
-> > > [<8027c8f0>] blktrans_notify_add+0x40/0x78
-> > > [<80279c00>] add_mtd_device+0xd0/0x150
-> > > [<8027b090>] add_mtd_partitions+0x568/0x5d8
-> > > [<80285458>] physmap_flash_probe+0x2ac/0x334
-> > > [<802644f8>] driver_probe_device+0x12c/0x244
-> > > [<8026465c>] __driver_attach+0x4c/0x84
-> > > [<80263c64>] bus_for_each_dev+0x58/0xac
-> > > [<802633ec>] bus_add_driver+0xc4/0x24c
-> > > [<802648e0>] driver_register+0xcc/0x184
-> > > [<80100460>] _stext+0x60/0x1bc
-> > > 
-> > > NAND device: Manufacturer ID: 0xec, Chip ID: 0xf1 (Samsung NAND 128MiB 3,3V 8-bit)
-> > > Scanning device for bad blocks
-> > > Creating 1 MTD partitions on "gen_nand":
-> > > 0x00000000-0x08000000 : "NAND FS 0"
-> > > kobject (8511c410): tried to init an initialized object, something is seriously wrong.
-> > > Call Trace:
-> > > [<8036644c>] dump_stack+0x8/0x34
-> > > [<8021f050>] kobject_init+0x50/0xcc
-> > > [<8021fa18>] kobject_init_and_add+0x24/0x58
-> > > [<8021d20c>] blk_register_filter+0x4c/0x64
-> > > [<8021c194>] add_disk+0x78/0xe0
-> > > [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
-> > > [<8027c8f0>] blktrans_notify_add+0x40/0x78
-> > > [<80279c00>] add_mtd_device+0xd0/0x150
-> > > [<8027b090>] add_mtd_partitions+0x568/0x5d8
-> > > [<804016b0>] plat_nand_probe+0x1e8/0x24c
-> > > [<802644f8>] driver_probe_device+0x12c/0x244
-> > > [<8026465c>] __driver_attach+0x4c/0x84
-> > > [<80263c64>] bus_for_each_dev+0x58/0xac
-> > > [<802633ec>] bus_add_driver+0xc4/0x24c
-> > > [<802648e0>] driver_register+0xcc/0x184
-> > > [<80100460>] _stext+0x60/0x1bc
-> > 
-> > Tomo? I don't see how this is happening. The queue is properly zeroed,
-> > so no chance ->state_initialized being crap.
+> this one replace
+> | commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
+> | Author: Yinghai Lu <yhlu.kernel@gmail.com>
+> | Date:   Mon Aug 25 00:56:08 2008 -0700
+> |
+> |    x86: fix HPET regression in 2.6.26 versus 2.6.25, check hpet against BAR, v3
 > 
-> With MTD, multiple gendisks share a single request_queue?
+> v2: insert e820 reserve resources before pnp_system_init
+> v3: fix merging problem in tip/x86/core
+>     please drop the one in tip/x86/core use this one instead
+> v4: address Linus's review about comments and condition in _late()
+> 
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-Irk, sure looks that way. I thougt we had disbanded with that years ago,
-it's generally not a "supported" configuration.
+applied to tip/x86/core, thanks.
 
--- 
-Jens Axboe
+Let me outline the issue that i raised before:
 
+> +               if (!res->parent && res->end)
+> +                       insert_resource(&iomem_resource, res);
+
+what if this insertion fails due to partial overlap? Right now we drop 
+it silently - which might be fine for most systems, but have a look on 
+the specific system that had the hpet regression, there we have these 
+reserved e820 entries:
+
+ BIOS-e820: 0000000077ff0000 - 0000000078000000 (reserved)
+ BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+ BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
+
+which overlaps with the chipset PCI BAR (hpet) resource:
+
+   pci 0000:00:14.0: BAR has HPET at fed00000-fed003ff
+
+so due to this 1K conflict we take the full e820-reserved entry out and 
+give the range 0xfec00000-0x100000000 as 'free'.
+
+And that failure to register can cause problems. In this case that 
+'reserved' e820 entry definitely has real meaning, both the local APIC 
+and the IO-APIC is in that range:
+
+   ACPI: Local APIC address 0xfee00000
+   IOAPIC[0]: apic_id 2, version 0, address 0xfec00000, GSI 0-23
+
+Which might still be OK for all memory resources we happen to enumerate 
+- but we dont necessarily enumerate all of them when we have e.g. an UP 
+kernel, and we will definitely not enumerate any 'hidden' state a system 
+might have there. (SMM, etc.) If we then allocate a dynamic PCI resource 
+into that range later on (thinking it's "free" but in reality it's 
+claimed) we get a crash or worse.
+
+So my worry, which i outlined before and which Peter agreed with, was 
+that we should not mark areas 'free' that the BIOS thinks are 
+'reserved'. According to the map above, the BIOS declared non-RAM 'free' 
+range in the first 4GB is 0x78000000..0xe0000000 - 1664 MB, plenty of 
+space.
+
+The solution would be to insert such conflicting (even if partially 
+overlapping)
+
+Also, a small code structure comment:
+
+> +		if (e820.map[i].type != E820_RESERVED || res->start < (1ULL<<20))
+> +			insert_resource(&iomem_resource, res);
+
+this still needs a comment that we deal with resources that start below 
+1MB in a special way and insert them early.
+
+Perhaps split it out into a e820_entry_trusted() function and use that 
+as a condition in both the early and the late logic. [plus the check for 
+->end in the late logic - that should be outside of the 'trust' 
+definition]
+
+So whenever we tweak the definition of 'trust', we only have to do it in 
+a single place. Agreed?
+
+	Ingo
