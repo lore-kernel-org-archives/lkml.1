@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758763AbYH2RGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758053AbYH2RGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758763AbYH2RGa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 13:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756458AbYH2RGA
+	id S1758053AbYH2RGs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 13:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758078AbYH2RGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 13:06:00 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42181 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756276AbYH2RF7 (ORCPT
+	Fri, 29 Aug 2008 13:06:11 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:54892 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757519AbYH2RGK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 13:05:59 -0400
-Message-ID: <48B82B96.30401@zytor.com>
-Date: Fri, 29 Aug 2008 10:02:14 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory corruption
-References: <48B701FB.2020905@goop.org> <Pine.LNX.4.64.0808290817190.21494@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0808290817190.21494@blonde.site>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 29 Aug 2008 13:06:10 -0400
+Date: Fri, 29 Aug 2008 19:08:51 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>, mingo@elte.hu,
+       rostedt@goodmis.org, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH] seqlock: serialize against writers
+Message-ID: <20080829170851.GZ26610@one.firstfloor.org>
+References: <20080829154237.1196.66825.stgit@dev.haskins.net> <87abevpzv7.fsf@basil.nowhere.org> <48B81F60.3080409@gmail.com> <20080829162216.GW26610@one.firstfloor.org> <48B823F6.1010509@novell.com> <20080829163749.GX26610@one.firstfloor.org> <48B826BD.9000308@novell.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48B826BD.9000308@novell.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> 
-> hpa introduced the 64k idea, and we've all been repeating it;
-> but I've not heard the reasoning behind it.  Is it a fundamental
-> addressing limitation within the BIOS memory model?  Or a case
-> that Windows treats the bottom 64k as scratch, so BIOS testers
-> won't notice if they corrupt it?
-> 
-> The two instances of corruption we've been studying have indeed
-> been below 64k (one in page 8 and one in page 11), but that's
-> because they were both recognizable corruptions of direct map PMDs.
-> 
-> If there is not a very strong justification for that 64k limit,
-> then I don't think this approach will be very useful, and we should
-> simply continue to rely on analyzing corruption when it appears, and
-> recommend memmap= as a way of avoiding it once analyzed.  If there
-> is a strong justification for it, please dispel my ignorance!
-> 
 
-The 64K number was empirical, of course.  The bottom 64K is somewhat 
-special, however, in that it is what you can address in real mode (as 
-opposed to big real mode) with your segments parked at zero, so you end 
-up with something approaching a flat real mode.  Especially the first 
-32K (below 0x7c00) are frequently used by various BIOS items, but I 
-believe the corruption observed was at 0x8000, so it's beyond even this 
-first barrier.
+No idea on the problem itself because I don't understand it, just:
 
-Obviously, it's extremely hard to predict where BIOS vendors will have 
-choosen to scribble, but the observations in this particular case seemed 
-to finger this particular area.
+> Given that, we either need to address the const requirement
+> for userspace, alter userspace's usage, or find another way to address
+> the deadlock.  Any ideas?
 
-	-hpa
+In the worst case you can always disable the vsyscall gtod() and
+thus the need for a user space safe seqlock_t, but it will
+hurt some workloads significantly. 
+
+-Andi
+
