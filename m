@@ -1,206 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757750AbYH2Q3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbYH2QaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757750AbYH2Q3Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 12:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYH2Q3O
+	id S1757524AbYH2QaY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 12:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYH2QaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 12:29:14 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:16045 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751743AbYH2Q3M (ORCPT
+	Fri, 29 Aug 2008 12:30:09 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:64839 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753531AbYH2QaH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 12:29:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:openpgp:content-type;
-        b=cElG9agV7KAUmoqecASIb6DBCOkgnw77pQ0HpBa4FCmk6xgQ9nzwoO0H5nV2JsqaS9
-         hld/nHTOutNGfdckCrMPuj//XvN08dx00Dp+Yy1R2Gn50QAI5xk6akWI3ZP5sNoha4yP
-         ywYs98x6lfjGQI6HmErUNqT21jbsSuF6ewFtI=
-Message-ID: <48B82349.1020109@gmail.com>
-Date: Fri, 29 Aug 2008 12:26:49 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Fri, 29 Aug 2008 12:30:07 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
+Date: Fri, 29 Aug 2008 18:29:48 +0200
+User-Agent: KMail/1.9.9
+Cc: Scott Wood <scottwood@freescale.com>, dbrownell@users.sourceforge.net,
+       greg@kroah.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
+References: <Pine.LNX.4.44L0.0808291202270.4447-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808291202270.4447-100000@netrider.rowland.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu, rostedt@goodmis.org,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH] seqlock: serialize against writers
-References: <20080829154237.1196.66825.stgit@dev.haskins.net> <87abevpzv7.fsf@basil.nowhere.org> <48B81F60.3080409@gmail.com> <20080829162216.GW26610@one.firstfloor.org>
-In-Reply-To: <20080829162216.GW26610@one.firstfloor.org>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=CBD79AA1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig35DF74AA4C68EBC63B46EFB2"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808291829.48939.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX183tloO5bu1XhvmMxAeSkEe7iBMGpCl8ElGSZ4
+ nUOWvSqEKB8zAJAxgIBhbHwuIWkxF979ui/7B5DTeChyBgY3Nk
+ wOwXanarlHB/sR2MIZSYw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig35DF74AA4C68EBC63B46EFB2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Friday 29 August 2008, Alan Stern wrote:
+> > The standard requires that there can only be one protocol handler
+> > per physical interface, which is a reasonable limitation.
+> 
+> No, you've got it exactly backward.  There can be multiple protocol 
+> handlers per physical interface, but there must be only one physical 
+> interface per device.
 
-Andi Kleen wrote:
->> Im running it on a x86_64 box as we speak.  How can I tell if there is=
- a
->> certain mode that is permitting this?
->>    =20
->
-> If the boot up says you're running with PMtimer then it uses the fallba=
-ck
-> (usually happens on pre Fam10h AMD boxes). A typical Intel box
-> would use the faster ring 3 only TSC path and then explode with your
-> change I bet.=20
->
-> Or step with gdb through gettimeofday() and see if it does a syscall.
->
-> -Andi
->  =20
+Maybe I am using wrong terminology, but I still don't see how that
+fits together. Let me try to explain what I have understood so far:
 
-It seems to be running fine with no indication it has fallen back.=20
-Perhaps I need a certain workload to bring out the issue?
+The physical device is identified by a struct usb_gadget is defined
+statically in the driver that exports the
+usb_gadget_{un,}register_driver() functions. Obviously there can only
+be one physical interface per physical device, I was not arguing
+against that.
 
-Here are some details of my system:
+The protocol handler is identified by a usb_gadget_driver and defined
+in a driver that calls usb_gadget_register_driver().
+You say that there can be multiple protocol handlers, which I don't
+understand because the protocol handlers all call set_gadget_data,
+which overwrites the previous driver_data field in struct usb_gadget,
+making it impossible to load more than one simultaneously.
+ 
+> > However, what the Linux implementation actually enforces is
+> > that there can only be one hardware specific driver built or loaded
+> > into the kernel, which just looks like an arbitrary restriction
+> > that does not actually help.
+> 
+> Not at all -- it is an implementation of the constraint that there be 
+> only one physical interface.
 
--------------------
+How that? Taking drivers/usb/gadget/fsl_usb2_udc.c as an example, it will
+create a new fsl_udc structure for each matching platform_device it finds
+(though it will leak every one except the last one), so the interface
+does not limit the number of physical interfaces at all to this point,
+the implementation of the every gadget hardware driver does this.
 
-ghaskins@test:~> uname -a
-Linux test 2.6.26.3-rt3-rt #2 SMP PREEMPT RT Fri Aug 29 10:47:17 EDT
-2008 x86_64 x86_64 x86_64 GNU/Linux
-ghaskins@test:~> cat /proc/cpuinfo
-processor    : 0
-vendor_id    : GenuineIntel
-cpu family    : 6
-model        : 15
-model name    : Intel(R) Xeon(R) CPU            5130  @ 2.00GHz
-stepping    : 6
-cpu MHz        : 1995.006
-cache size    : 4096 KB
-physical id    : 0
-siblings    : 2
-core id        : 0
-cpu cores    : 2
-apicid        : 0
-initial apicid    : 0
-fpu        : yes
-fpu_exception    : yes
-cpuid level    : 10
-wp        : yes
-flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall
-lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx
-tm2 ssse3 cx16 xtpr dca lahf_lm
-bogomips    : 3992.49
-clflush size    : 64
-cache_alignment    : 64
-address sizes    : 36 bits physical, 48 bits virtual
-power management:
+The real problem is that you cannot build a kernel that has both
+fsl_usb2_udc.c and fsl_qe_udc.c built in. Having both drivers loaded
+would not violate the one-interface rule, because only one of them
+would find hardware to bind to on a given system, just like you can
+load both the uhci and ohci drivers without them interfering.
 
-processor    : 1
-vendor_id    : GenuineIntel
-cpu family    : 6
-model        : 15
-model name    : Intel(R) Xeon(R) CPU            5130  @ 2.00GHz
-stepping    : 6
-cpu MHz        : 1995.006
-cache size    : 4096 KB
-physical id    : 3
-siblings    : 2
-core id        : 0
-cpu cores    : 2
-apicid        : 6
-initial apicid    : 6
-fpu        : yes
-fpu_exception    : yes
-cpuid level    : 10
-wp        : yes
-flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall
-lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx
-tm2 ssse3 cx16 xtpr dca lahf_lm
-bogomips    : 3990.05
-clflush size    : 64
-cache_alignment    : 64
-address sizes    : 36 bits physical, 48 bits virtual
-power management:
-
-processor    : 2
-vendor_id    : GenuineIntel
-cpu family    : 6
-model        : 15
-model name    : Intel(R) Xeon(R) CPU            5130  @ 2.00GHz
-stepping    : 6
-cpu MHz        : 1995.006
-cache size    : 4096 KB
-physical id    : 0
-siblings    : 2
-core id        : 1
-cpu cores    : 2
-apicid        : 1
-initial apicid    : 1
-fpu        : yes
-fpu_exception    : yes
-cpuid level    : 10
-wp        : yes
-flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall
-lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx
-tm2 ssse3 cx16 xtpr dca lahf_lm
-bogomips    : 3990.08
-clflush size    : 64
-cache_alignment    : 64
-address sizes    : 36 bits physical, 48 bits virtual
-power management:
-
-processor    : 3
-vendor_id    : GenuineIntel
-cpu family    : 6
-model        : 15
-model name    : Intel(R) Xeon(R) CPU            5130  @ 2.00GHz
-stepping    : 6
-cpu MHz        : 1995.006
-cache size    : 4096 KB
-physical id    : 3
-siblings    : 2
-core id        : 1
-cpu cores    : 2
-apicid        : 7
-initial apicid    : 7
-fpu        : yes
-fpu_exception    : yes
-cpuid level    : 10
-wp        : yes
-flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall
-lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx
-tm2 ssse3 cx16 xtpr dca lahf_lm
-bogomips    : 3990.04
-clflush size    : 64
-cache_alignment    : 64
-address sizes    : 36 bits physical, 48 bits virtual
-power management:
-
-ghaskins@test:~> dmesg | grep -i "pmtimer"
-ghaskins@test:~>
-
-
-
-
---------------enig35DF74AA4C68EBC63B46EFB2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAki4I0kACgkQP5K2CMvXmqGv9QCcCajSM3XpLEwRKvFc6Y1G5SyP
-XpcAnioYZjXY44wu1zRcF2jMdXI+ouLe
-=ZbkH
------END PGP SIGNATURE-----
-
---------------enig35DF74AA4C68EBC63B46EFB2--
+	Arnd <><
