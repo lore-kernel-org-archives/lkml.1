@@ -1,41 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbYH2QTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbYH2QU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756798AbYH2QTn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 12:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbYH2QTe
+	id S1757558AbYH2QU6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 12:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbYH2QUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 12:19:34 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44788 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752012AbYH2QTe (ORCPT
+	Fri, 29 Aug 2008 12:20:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55766 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753520AbYH2QUu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 12:19:34 -0400
-Date: Fri, 29 Aug 2008 18:22:16 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Gregory Haskins <ghaskins@novell.com>,
-       mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH] seqlock: serialize against writers
-Message-ID: <20080829162216.GW26610@one.firstfloor.org>
-References: <20080829154237.1196.66825.stgit@dev.haskins.net> <87abevpzv7.fsf@basil.nowhere.org> <48B81F60.3080409@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48B81F60.3080409@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 29 Aug 2008 12:20:50 -0400
+Date: Fri, 29 Aug 2008 09:20:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de
+Subject: Re: [PATCH 4/5] select: make select() use schedule_hrtimeout()
+In-Reply-To: <20080829080809.0e42a323@infradead.org>
+Message-ID: <alpine.LFD.1.10.0808290915560.3300@nehalem.linux-foundation.org>
+References: <20080829080549.6906b744@infradead.org> <20080829080809.0e42a323@infradead.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Im running it on a x86_64 box as we speak.  How can I tell if there is a
-> certain mode that is permitting this?
 
-If the boot up says you're running with PMtimer then it uses the fallback
-(usually happens on pre Fam10h AMD boxes). A typical Intel box
-would use the faster ring 3 only TSC path and then explode with your
-change I bet. 
 
-Or step with gdb through gettimeofday() and see if it does a syscall.
+On Fri, 29 Aug 2008, Arjan van de Ven wrote:
+> 
+> now that we have schedule_hrtimeout(), make select() use it.
+> But only for short delays; really long delays are assumed to not
+> need the highres level of accuracy but rather want the regular
+> timer behavior for now.
 
--Andi
+This is _really_ ugly.
+
+Can't you just do this relaxation in "schedule_hrtimeout()" instead, and 
+just document the fact that the "high resolution" of hrtimeout is relative 
+to the length of the timeout.
+
+It's not that select() doesn't care, it's that *NOBODY* cares. If somebody 
+asks for a timeout of one second and 2 microseconds, the two microseconds 
+simply don't matter. Ever. But if somebody asks for a timeout of 12 
+microseconds, individual microseconds probably _do_ matter.
+
+So if you want high-resolution select/poll, then get rid of the "use_hr" 
+logic entirely, and just do it unconditionally. Then, relax the scheduler 
+timeouts in the scheduler.
+
+(But, that's probably _generally_ true. Even now, when people do 
+"schedule_timeout()", there's a big difference between asking for two 
+ticks and asking for two seconds. The latter should probably try to round 
+to a nice timer tick basis for power reasons).
+
+		Linus
