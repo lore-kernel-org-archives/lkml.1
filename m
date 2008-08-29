@@ -1,56 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbYH2I5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbYH2I71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754629AbYH2I5i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 04:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYH2I52
+	id S1755482AbYH2I71 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 04:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbYH2I7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 04:57:28 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:62290 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751417AbYH2I51 convert rfc822-to-8bit (ORCPT
+	Fri, 29 Aug 2008 04:59:19 -0400
+Received: from qb-out-0506.google.com ([72.14.204.227]:63883 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752548AbYH2I7S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 04:57:27 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: leoli@freescale.com
-Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
-Date: Fri, 29 Aug 2008 10:57:20 +0200
-User-Agent: KMail/1.9.9
-Cc: linuxppc-dev@ozlabs.org, greg@kroah.com, linux-usb@vger.kernel.org,
-       dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org
-References: <1219916613-28827-1-git-send-email-leoli@freescale.com> <200808281704.20999.arnd@arndb.de> <1220000265.30607.10.camel@Gundam>
-In-Reply-To: <1220000265.30607.10.camel@Gundam>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 29 Aug 2008 04:59:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=Rn4YuR3MfeC8MCsqxwrUCZ8+fUtZCYjypj6+0CNLN6q+qMQMKFcDUY5I3dNi78SzGJ
+         MniCS92HlOfhQV1EpQ9L+CnrxPoW1KZXYOlHFL6aQGDajC4qj7lMWr1cWTKZ7v0IGJhy
+         4yh7wg8H808XCVwcoO3cwfm1nwgn8qnE9HqEA=
+Message-ID: <e68bb3470808290159s734283d7s2270bbbf455d630d@mail.gmail.com>
+Date: Fri, 29 Aug 2008 16:59:16 +0800
+From: "=?GB2312?B?zfLX2suz?=" <mcuos.com@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.17.14]arm:Add the Nuvoton w90x900 Platform support to ARM tree
+Cc: torvalds@linux-foundation.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808291057.20612.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18FfSubivxRb3EC5oUcf76RTYTMm5+PQTo/b7h
- CcmiWRc/y7COmDRWiS2v93WARxf7lU2NjSUoL8i44DcokJ6R0X
- 7NLzQrYQ+uKcLpIK8y1Rg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 29 August 2008, Li Yang wrote:
-> 
-> > Not a problem, but an observation: Most new code uses work queues instead
-> > of tasklets these days, which gives you more predictable real time
-> > latencies.
-> > If you don't have a specific reason to prefer a tasklet, just use
-> > a workqueue here.
-> 
-> Is this truly a trend?  Work queue is more flexible but it has higher
-> latency.  Why are work queues preferred?
+From: vincen.zswan mcuos.com@gmail.com
+hi,
+I come from Nuvoton technology corporation.I have add the Nuvoton ARM
+series IC w90x900(W90P910,W90P920,W90P950,W90N960) Platform support to
+LINUX ARM tree and make a patch to linux-2.6.17.14.
 
-Most drivers don't need the low irq to bottom half latency. As I said,
-not a problem at all, just my observation. In 2.6.27, we have around
-three times more new workqueue usages than new tasklet usages. My
-feeling from doing reviews was that it would be closer to a factor
-of ten, but I guess I was wrong in that.
+The patch named:nuvoton-arm-linux-2.6.17.patch
+you can get the patch from link: http://www.mcuos.com/attachment.php?aid=530
 
-	Arnd <><
+Changes:
+(1)Add two directory to support W90X900 IC
+
+/arch/arm/mach-W90X900
+/include/asm-arm/arch-W90X900
+
+(2)w90x900 bootloader don't auto sent the r1=mach type num,so add this file
+
+/arch/arm/kernel/head-common.S
+
+(3)I have apply the w90x900 mach-types num is 1860.
+
+/arch/arm/tools/mach-types
+
+(4)w90x900 EVB all drivers have been test.
+/drivers/char/nuvoton_sc.h
+/drivers/char/tsc2007.c
+/drivers/char/w90x900_mouse.c
+/drivers/char/w90x900_sc.c
+/drivers/char/w90x900_ts.c
+/drivers/char/w90x900_usb.c
+
+/drivers/i2c/busses/i2c-w90x900-p0.c
+/drivers/i2c/busses/i2c-w90x900-p1.c
+
+/drivers/ide/w90x900_ide.c
+
+/drivers/input/serio/w90x900_ps2.c
+/drivers/input/touchscreen/w90x900_ts.c
+/drivers/input/w90x900_keypad.c
+
+/drivers/mtd/maps/w90x900_flash.c
+
+/drivers/net/8139too.c
+/drivers/net/arm/eth_w90x900.c
+/drivers/net/r8169.c
+
+/drivers/pci/pci_w90x900.c
+
+/drivers/rtc/w90x900_rtc.c
+
+/drivers/scsi/w90x900_ms.c
+/drivers/scsi/w90x900_sdio.c
+
+/drivers/serial/serial_core.c
+/drivers/serial/w90x900_serial.c
+/drivers/spi/spi_w90x900.c
+
+/drivers/usb/host/ehci-w90x900.c
+/drivers/usb/host/ohci-w90x900.c
+
+/drivers/video/w90x900fb.c
+
+/sound/oss/w90x900_WM8978.c
+/sound/oss/w90x900_ac97.c
+/sound/oss/w90x900_audio.c
+/sound/oss/w90x900_i2s.c
+(5)When patch the w90x900 paltform,some kernel files need update by nuvoton.
+
+/drivers/char/keyboard.c
+/drivers/ide/ide-io.c
+/drivers/ide/ide.c
+/drivers/input/keyboard/atkbd.c
+/drivers/usb/host/ehci.h
+/drivers/usb/host/ohci-hcd.c
+/drivers/usb/core/hcd.c
+/drivers/usb/core/hub.c
+/drivers/usb/host/ehci-hcd.c
+/drivers/usb/host/ehci-hub.c
+/include/asm-arm/ide.h
+/include/linux/ide.h
+/include/linux/serial_core.h
+
+
+Thanks to everybody who discussed the patch.
+
+Best Regards
+Vincen
+
+Signed-off-by: vincen.zswan <mcuos.com@gmail.com>
