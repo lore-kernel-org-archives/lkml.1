@@ -1,38 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbYH2GSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbYH2GR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbYH2GSW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 02:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYH2GPf
+	id S1754215AbYH2GR5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 02:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbYH2GPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 02:15:35 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:59512 "EHLO
+	Fri, 29 Aug 2008 02:15:34 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:59514 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751498AbYH2GP1 (ORCPT
+	with ESMTP id S1751530AbYH2GP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 29 Aug 2008 02:15:27 -0400
 Date: Thu, 28 Aug 2008 23:47:41 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808290547.m7T5lfkx016123@wolfmountaingroup.com>
+Message-Id: <200808290547.m7T5lfnX016125@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc5 8/29] mdb: add mdb-ia32-apic.c Intel x86 architecure functions
+Subject: [PATCH 2.6.27-rc5 10/29] mdb: add mdb-ia32.h Intel x86 architecure includes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add mdb-ia32-apic.c Intel x86 architecure functions.
-add support to dump local APIC and IOAPIC registers.  
-Instrument support for remote read of local apic registers.
-
-Add support for hardware NMI assertion for debugging a hard 
-hung processor.  
+add mdb-ia32.h Intel x86 architecure includes
 
 
 
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/debug/mdb/mdb-ia32-apic.c	1969-12-31 17:00:00.000000000 -0700
-+++ b/debug/mdb/mdb-ia32-apic.c	2008-08-28 14:20:04.000000000 -0600
-@@ -0,0 +1,280 @@
+--- a/debug/mdb/mdb-ia32.h	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/mdb/mdb-ia32.h	2008-08-28 14:20:04.000000000 -0600
+@@ -0,0 +1,172 @@
 +
 +/***************************************************************************
 +*
@@ -67,249 +62,141 @@ Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 +*
 +***************************************************************************/
 +
-+#include <linux/version.h>
-+#include <linux/types.h>
-+#include <linux/sched.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/string.h>
-+#include <linux/stat.h>
-+#include <linux/errno.h>
-+#include <linux/fcntl.h>
-+#include <linux/slab.h>
-+#include <linux/vmalloc.h>
-+#include <linux/genhd.h>
-+#include <linux/hdreg.h>
-+#include <linux/fs.h>
-+#include <linux/major.h>
-+#include <linux/mm.h>
-+#include <linux/cdrom.h>
-+#include <linux/pagemap.h>
-+#include <linux/swap.h>
-+#include <linux/smp.h>
-+#include <linux/smp_lock.h>
-+#include <linux/ctype.h>
-+#include <linux/keyboard.h>
-+#include <linux/console.h>
-+#include <linux/serial_reg.h>
-+#include <linux/uaccess.h>
-+#include <linux/nmi.h>
-+#include <asm/system.h>
-+#include <asm/segment.h>
-+#include <asm/atomic.h>
-+#include <asm/msr.h>
-+#include <linux/io.h>
-+#include <linux/clocksource.h>
++#ifndef _MDB_IA32_H
++#define _MDB_IA32_H
 +
-+#ifdef CONFIG_SMP
-+#include <mach_apic.h>
-+#include <mach_ipi.h>
++typedef struct _StackFrame {
++   unsigned long tReserved[7];
++   unsigned long *tCR3;
++   unsigned long tEIP;
++   unsigned long tSystemFlags;
++   unsigned long tEAX;
++   unsigned long tECX;
++   unsigned long tEDX;
++   unsigned long tEBX;
++   unsigned long tESP;
++   unsigned long tEBP;
++   unsigned long tESI;
++   unsigned long tEDI;
++   unsigned short tES;
++   unsigned short Res1;
++   unsigned short tCS;
++   unsigned short Res2;
++   unsigned short tSS;
++   unsigned short Res3;
++   unsigned short tDS;
++   unsigned short Res4;
++   unsigned short tFS;
++   unsigned short Res5;
++   unsigned short tGS;
++   unsigned short Res6;
++   unsigned short tLDT;
++   unsigned short Res7;
++   unsigned long tIOMap;
++} StackFrame;
++
++/*  128 bytes total size numeric register context */
++
++typedef struct _NPXREG {
++  unsigned short sig0;        /*  10 bytes total size this structure */
++  unsigned short sig1;
++  unsigned short sig2;
++  unsigned short sig3;
++  unsigned short exponent:15;
++  unsigned short sign:1;
++} NUMERIC_REGISTER_CONTEXT;
++
++typedef struct _NPX {
++  unsigned long control;
++  unsigned long status;
++  unsigned long tag;
++  unsigned long eip;
++  unsigned long cs;
++  unsigned long dataptr;
++  unsigned long datasel;
++  NUMERIC_REGISTER_CONTEXT reg[8];    /* 80 bytes */
++  unsigned long pad[5];
++} NUMERIC_FRAME;
++
++/*  128 bytes total size register context */
++
++typedef struct _CONTEXT_FRAME {
++    unsigned short cBackLink;
++    unsigned short cTSSReserved;
++    unsigned long cESP0;
++    unsigned short cSS0;
++    unsigned short cSS0res;
++    unsigned long cESP1;
++    unsigned short cSS1;
++    unsigned short cSS1res;
++    unsigned long cESP2;
++    unsigned short cSS2;
++    unsigned short cSS2res;
++    unsigned long cCR3;
++    unsigned long cEIP;
++    unsigned long cSystemFlags;
++    unsigned long cEAX;
++    unsigned long cECX;
++    unsigned long cEDX;
++    unsigned long cEBX;
++    unsigned long cESP;
++    unsigned long cEBP;
++    unsigned long cESI;
++    unsigned long cEDI;
++    unsigned long cES;
++    unsigned long cCS;
++    unsigned long cSS;
++    unsigned long cDS;
++    unsigned long cFS;
++    unsigned long cGS;
++    unsigned long cLDT;
++    unsigned long cIOPermissMap;
++    unsigned long pad[6];
++} CONTEXT_FRAME;
++
++static inline void _cli(void)
++{
++	__asm__ __volatile__("cli" : : : "memory");
++}
++
++static inline void _sti(void)
++{
++	__asm__ __volatile__("sti" : : : "memory");
++}
++
++static inline unsigned long get_flags(void)
++{
++	unsigned long flags;
++
++	__asm__ __volatile__(
++		"pushfl ; popl %0"
++		: "=g" (flags)
++		: /* no input */
++	);
++	return flags;
++}
++
++static inline unsigned long save_flags(void)
++{
++	unsigned long flags;
++
++	__asm__ __volatile__(
++		"pushfl ; popl %0"
++		: "=g" (flags)
++		: /* no input */
++	);
++	__asm__ __volatile__("cli" : : : "memory");
++	return flags;
++}
++
++static inline void restore_flags(unsigned long flags)
++{
++	__asm__ __volatile__(
++		"pushl %0 ; popfl"
++		:
++		:"g" (flags)
++		:"memory", "cc"
++	);
++}
++
 +#endif
-+
-+#define __KERNEL_SYSCALLS__
-+#include <linux/unistd.h>
-+#include <linux/kallsyms.h>
-+
-+#include "mdb.h"
-+#include "mdb-ia32.h"
-+#include "mdb-list.h"
-+#include "mdb-ia32-proc.h"
-+#include "mdb-base.h"
-+#include "mdb-proc.h"
-+#include "mdb-os.h"
-+#include "mdb-keyboard.h"
-+
-+#if defined(CONFIG_SMP)
-+
-+extern unsigned int io_apic_read(unsigned int apic, unsigned int reg);
-+extern int nr_ioapics;
-+
-+unsigned long apic_directed_nmi(unsigned long cpu)
-+{
-+    send_IPI_mask(cpumask_of_cpu(cpu), 
-+                  APIC_DM_NMI | APIC_INT_LEVELTRIG | APIC_INT_ASSERT);
-+    send_IPI_mask(cpumask_of_cpu(cpu), 
-+                  APIC_DM_NMI | APIC_INT_LEVELTRIG);
-+    return 0;
-+}
-+
-+void dump_ioapic(unsigned long num)
-+{
-+     unsigned long i, val;
-+
-+     if (num < nr_ioapics)
-+     {
-+        DBGPrint("io_apic registers\n");
-+        for (i = 0; i <= 0x2F; i++)
-+        {
-+	   if ((i & 3) == 0)
-+	      DBGPrint("%08X: ", i);
-+
-+	   val = io_apic_read(num, i * 4);
-+	   DBGPrint("%08X ", val);
-+
-+	   if ((i & 3) == 3)
-+	      DBGPrint("\n");
-+        }
-+     }
-+     return;
-+}
-+
-+void dump_local_apic(void)
-+{
-+    unsigned long i, val;
-+
-+    DBGPrint("local apic registers\n");
-+    for (i = 0; i <= 0x3F; i++)
-+    {
-+       if ((i & 3) == 0)
-+	  DBGPrint("%08X: ", i);
-+
-+       val = apic_read(i * 4);
-+       DBGPrint("%08X ", val);
-+
-+       if ((i & 3) == 3)
-+	  DBGPrint("\n");
-+    }
-+
-+}
-+
-+void dump_remote_apic(unsigned long cpu)
-+{
-+    register unsigned long i, timeout, apicid;
-+    register unsigned long val;
-+
-+    DBGPrint("remote apic registers processor(%d)\n", cpu);
-+    for (i = 0; i <= 0x3F; i++)
-+    {
-+       if ((i & 3) == 0)
-+	  DBGPrint("%08X: ", i);
-+
-+       apicid = cpu_present_to_apicid(cpu);
-+       if (apicid == BAD_APICID)
-+       {
-+          DBGPrint("BADAPICX ");
-+          continue;
-+       }
-+
-+       timeout = 0;
-+       while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
-+       {
-+          udelay(100);
-+          if (timeout++ >= 1000)
-+             break;
-+          cpu_relax();
-+          touch_nmi_watchdog();
-+       }
-+
-+       if (timeout >= 1000)
-+       {
-+          DBGPrint("???????? ");
-+          continue;
-+       }
-+
-+       apic_write(APIC_ICR2, SET_APIC_DEST_FIELD(apicid));
-+       apic_write(APIC_ICR, i | APIC_DEST_LOGICAL | APIC_DM_REMRD);
-+
-+       timeout = 0;
-+       while ((apic_read(APIC_ICR) & APIC_ICR_RR_MASK) == APIC_ICR_RR_INPROG)
-+       {
-+          udelay(100);
-+          if (timeout++ >= 1000)
-+             break;
-+
-+          cpu_relax();
-+          touch_nmi_watchdog();
-+       }
-+
-+       if (timeout >= 1000)
-+       {
-+          DBGPrint("???????? ");
-+          continue;
-+       }
-+
-+       if ((apic_read(APIC_ICR) & APIC_ICR_RR_MASK) == APIC_ICR_RR_VALID)
-+       {
-+          val = apic_read(APIC_RRR);
-+          DBGPrint("%08X ", val);
-+       }
-+       else
-+       {
-+          DBGPrint("???????? ");
-+       }
-+
-+       if ((i & 3) == 3)
-+	  DBGPrint("\n");
-+    }
-+
-+}
-+
-+unsigned long displayAPICHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    DBGPrint("apic                     - display local apic regs\n");
-+    DBGPrint("apic [p#]                - display remote apic regs\n");
-+    return 1;
-+}
-+
-+/* APIC */
-+
-+unsigned long displayAPICInfo(unsigned char *cmd,
-+		     StackFrame *stackFrame, unsigned long Exception,
-+		     DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long value;
-+     unsigned long valid;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid && ((value >= MAX_PROCESSORS) || !cpu_online(value)))
-+     {
-+        DBGPrint("processor not found\n");
-+        return 1;
-+     }
-+     if (valid && (value != get_processor_id()))
-+        dump_remote_apic(value);
-+     else
-+        dump_local_apic();
-+     return 1;
-+}
-+
-+unsigned long displayIOAPICHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    DBGPrint("ioapic [#]               - display specified ioapic [#] regs\n");
-+    return 1;
-+}
-+
-+/* IOAPIC */
-+
-+unsigned long displayIOAPICInfo(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long value;
-+     unsigned long valid;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid && !(value < nr_ioapics))
-+     {
-+        DBGPrint("ioapic not found\n");
-+        return 1;
-+     }
-+     if (valid)
-+        dump_ioapic(value);
-+     else
-+        dump_ioapic(0);
-+     return 1;
-+
-+}
-+
-+#endif /* CONFIG_SMP */
