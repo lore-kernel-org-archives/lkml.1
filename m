@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbYH2IGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbYH2IIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754906AbYH2IGf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 04:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbYH2IGS
+	id S1754662AbYH2IIv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 04:08:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751186AbYH2IIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 04:06:18 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:53833 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752394AbYH2IGO (ORCPT
+	Fri, 29 Aug 2008 04:08:38 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:21300 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750803AbYH2IIg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 04:06:14 -0400
-X-SourceIP: 80.57.229.25
-Subject: Re: [PATCH 6/6] sched: disabled rt-bandwidth by default
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mark Hounschell <markh@compro.net>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stefani Seibold <stefani@seibold.net>,
-       Dario Faggioli <raistlin@linux.it>, Max Krasnyansky <maxk@qualcomm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1219996607.5079.142.camel@marge.simson.net>
-References: <20080819103301.787700742@chello.nl>
-	 <200808290036.35817.nickpiggin@yahoo.com.au>
-	 <alpine.DEB.1.10.0808281110570.14580@gandalf.stny.rr.com>
-	 <200808290134.35093.nickpiggin@yahoo.com.au>
-	 <alpine.DEB.1.10.0808281142280.14580@gandalf.stny.rr.com>
-	 <alpine.LFD.1.10.0808281024060.3300@nehalem.linux-foundation.org>
-	 <48B6EB6F.2050802@compro.net>
-	 <alpine.LFD.1.10.0808281138060.3300@nehalem.linux-foundation.org>
-	 <alpine.DEB.1.10.0808281448170.18124@gandalf.stny.rr.com>
-	 <1219996607.5079.142.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Fri, 29 Aug 2008 10:06:05 +0200
-Message-Id: <1219997165.17355.42.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 29 Aug 2008 04:08:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=q8855DG6xX2XKrDPng3VwBvVJowt3BFBOjEYehDjiigxIDy7APuJkvZdHBQw7CkPMY
+         E2zIBOg/VhdfbOuxuUwLv7LJ7bl8lekYjPHs1LJpIx+tbphN6dHrvdnJ3bKnHmhv2G7+
+         txfewdcE65+SeVZHGTMXDAoLowj8l2YfAk/8w=
+Message-ID: <86802c440808290108m170d74b3t6838f96e2d8d6959@mail.gmail.com>
+Date: Fri, 29 Aug 2008 01:08:35 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jari Aalto" <jari.aalto@cante.net>
+Subject: Re: 2.6.25 DMA: Out of SW-IOMMU space - Asus M2N32 AMD 8GB memory
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <87vdxkb6rs.fsf@jondo.cante.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48B76FF5.6010507@yahoo.com.ar> <87vdxkb6rs.fsf@jondo.cante.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-29 at 09:56 +0200, Mike Galbraith wrote:
-> On Thu, 2008-08-28 at 14:53 -0400, Steven Rostedt wrote:
-> > On Thu, 28 Aug 2008, Linus Torvalds wrote:
-> > > 
-> > > And I'm not really interested. Quite frankly, I suspect the "we want to 
-> > > run something like pulseaudio with RT priorities" camp is the more common 
-> > > one, and in that context I understand limiting SCHED_FIFO sounds perfectly 
-> > > understandable.
-> > 
-> > The fact that it actually limits a SCHED_FIFO task group, over a single 
-> > task thread does bother me a little.
-> 
-> It bothers me some too.  You have to patch/re-compile the kernel if you
-> need to turn it off and don't have SCHED_DEBUG enabled (not free).
+On Fri, Aug 29, 2008 at 12:49 AM, Jari Aalto <jari.aalto@cante.net> wrote:
+>> On Thu, Aug 28, 2008 at 1:49 PM, Jari Aalto <jari.aalto@cante.net> wrote:
+>>
+>>> Krzysztof Halasa <khc@pm.waw.pl> writes:
+>>>
+>>>> Jari Aalto <jari.aalto@cante.net> writes:
+>>>>
+>>>>> What, if after booting to 2.6.26 and without any 'iommu' boot parameters,
+>>>>> there still appears "Out of Iommu space" messages? What kind of logs
+>>>>> should I post?
+>>>>
+>>>> You shouldn't be getting "Out of SW-IOMMU space" messages when not
+>>>> using SW-IOMMU.
+>>>
+>>> REF: http://article.gmane.org/gmane.linux.kernel/725293 (thread start)
+>>>
+>>> I regret to report that:
+>>>
+>>> - Upgraded to kernel 2.6.26-1-amd64 (Debian/unstable 2.6.26-3)
+>>
+>> can you send out whole boot log? with "debug initcall_debug"
+>
+> See below.
+>
+>> http://people.redhat.com/mingo/tip.git/readme.txt
+>
+> Could you explain this document a bit. What git commands should I use to
+> retrive test kernel to build?
 
-/proc/sys/kernel/sched_rt_{runtime,period}_us don't require SCHED_DEBUG.
-If they are in any way non-functional on SCHED_DEBUG=n then that's a
-clear bug.
 
+mkdir linux.trees.git || exit -1
+cd linux.trees.git
+
+git init
+git remote add linus
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+
+git remote add tip
+git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
+
+git remote update
+
+git checkout -b tip-latest tip/master
+
+can you fix your mail client? it stripped Cc and automatically?
+
+YH
