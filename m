@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753776AbYH2HbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbYH2HcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753776AbYH2HbB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 03:31:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbYH2Hax
+	id S1753914AbYH2HcS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 03:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYH2HcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 03:30:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36435 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751822AbYH2Hax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 03:30:53 -0400
-Date: Fri, 29 Aug 2008 09:30:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Hugh Dickens <hugh@veritas.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory
-	corruption
-Message-ID: <20080829073036.GB9232@elte.hu>
-References: <48B701FB.2020905@goop.org> <b170af450808282320g27dfa2a9mc0e14e27e215ce96@mail.gmail.com> <20080829064540.GA26619@elte.hu> <48B7A377.8010205@goop.org>
+	Fri, 29 Aug 2008 03:32:03 -0400
+Received: from edna.telenet-ops.be ([195.130.132.58]:48179 "EHLO
+	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751139AbYH2HcA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 03:32:00 -0400
+Date: Fri, 29 Aug 2008 09:31:43 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Greg Ungerer <gerg@snapgear.com>, jbarnes@virtuousgeek.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [RFC: 2.6 patch] m68knommu: remove the broken COMEMPCI code
+In-Reply-To: <20080829070103.GD16462@cs181140183.pp.htv.fi>
+Message-ID: <Pine.LNX.4.64.0808290929280.22326@anakin>
+References: <20080819134718.GH8852@cs181140183.pp.htv.fi> <48B24E2C.9060703@snapgear.com>
+ <20080825204333.GA13027@cs181140183.pp.htv.fi> <48B77764.6060607@snapgear.com>
+ <20080829070103.GD16462@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <48B7A377.8010205@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 29 Aug 2008, Adrian Bunk wrote:
+> On Fri, Aug 29, 2008 at 02:13:24PM +1000, Greg Ungerer wrote:
+> > Adrian Bunk wrote:
+> >> A patch for removing the comempci code is below.
+> >>
+> >> It's a bit suspicious that asm/elia.h is now removed since comempci.c  
+> >> was the only user. What's the sttus of the eLIA platform?
+> >
+> > Only ever a handful where made, and that was in 1999.
+> > I doubt anyone could ever use the PCI interface on it
+> > in any useful way.
+> 
+> So I can send a patch to remove the platform?
+> 
+> >> But COMEMPCI fails with a different error - this init/main.o build 
+> >> error is present for CONFIG_PCI=y, CONFIG_COMEMPCI=n, so the dependency 
+> >> of PCI on BROKEN is still required (unless it gets fixed).
+> >
+> > Unless I am mistaken there is now no need for the CONFIG_PCI option
+> > if selecting m68knommu. The only m68knommu platforms that had PCI
+> > as far as I know where those that use the comempci part.
+> 
+> That implies I can also kill the m68k PCI code since m68knommu will 
+> never use it?
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Sure. If the FreeScale guys ever forward-port their ColdFire/MMU code to
+current mainline, we can readd it.
 
-> Rafał's corruption was definitely non-zero.  I think the corruption is 
-> happening, but it's just not reported.
+Gr{oetje,eeting}s,
 
-i thought we did a check after coming back from resume? That would be a 
-natural place to do the check. (the corruption is suspend/resume related 
-after all, right?)
+						Geert
 
-	Ingo
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
