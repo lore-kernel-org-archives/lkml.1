@@ -1,84 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbYH2INt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbYH2IO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754127AbYH2INt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 04:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbYH2INe
+	id S1755419AbYH2IO0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 04:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbYH2ION
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 04:13:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49910 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752375AbYH2INc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 04:13:32 -0400
-Message-ID: <48B7AF60.8040709@kernel.org>
-Date: Fri, 29 Aug 2008 10:12:16 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: greg@kroah.com, fuse-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <20080828175116.GB18461@kroah.com> <48B6E79E.6020702@kernel.org> <48B6E801.9080102@kernel.org> <E1KYm0D-0003q0-IQ@pomaz-ex.szeredi.hu> <48B6EBBD.6050406@kernel.org> <E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu> <48B6EF98.4070008@kernel.org> <E1KYn7T-00048J-Qj@pomaz-ex.szeredi.hu> <48B6FFB6.7000104@kernel.org> <E1KYnhA-0004Ei-3t@pomaz-ex.szeredi.hu> <48B75C94.7030604@kernel.org> <E1KYyt9-0005Ur-Eu@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1KYyt9-0005Ur-Eu@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 Aug 2008 08:13:25 +0000 (UTC)
+	Fri, 29 Aug 2008 04:14:13 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:13237 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753093AbYH2IOL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 04:14:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=sEFkTU6hoC6jJ9qddouSf3aC4XZfVelr9u7lQny7Co9iX744J3wW9mRyAlplpeLVgt
+         2K4R9VsJUg6QuXWx4jRzFnQfMRvryI64Zv/28z3JXGqlmuG9WygxlANCT3+cgpCv1pj7
+         GdiXrEu8mohBFDAfMDevb3xke8NGQez3oZy8w=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: split e820 reserved entries record to late v4 - fix
+Date: Fri, 29 Aug 2008 01:13:12 -0700
+Message-Id: <1219997592-9975-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
-> On Fri, 29 Aug 2008, Tejun Heo wrote:
->> I'm not worried about the client accessing wrong memory regions or even
->> corrupting it.  It's pointless to try to protect against that.  From the
->> calling process's POV, it runs the same risk whether it calls an
->> in-kernel ioctl or a CUSE one and FUSE already has sufficient protection
->> against allowing unprivileged FS implementation to serve other users.
-> 
-> Yes and no.  Fuse allows this protection to be relaxed
-> (-oallow_other), because it does provide quite good privilege
-> separation.  This ioctl thing breaks that, so we should disable ioctls
-> with 'allow_other' or require the filesystem to be privileged.  But
-> the latter is not easy because mount(2) is always privileged, we don't
-> know if the process calling fusermount was privileged or not.
-> 
-> So, your current patch actually _introduces_ a security vulnerability
-> with the 'allow_other' mount option.
+try to insert_resource second time, by expand the resource...
 
-Ah.. right.  allow_other.  Yeah, restricting ioctl implementation only
-to root or !allow_other sounds like a good idea.
+for case: e820 reserved entry is partially overlapped with bar res...
 
->> What I'm worried about is the possibility of CUSE client being able to
->> break out of that privilege protection which is currently ensured by the
->> kernel.
-> 
-> What do you call client?  If you mean the app using the char dev, then
-> I don't see how it could break out of any protection.
+hope it will never happen
 
-I first used 'server' for userland [FC]USE server but then I noticed
-there were places in FUSE they were referred as clients so now I use
-'client' for those and call the app using the FUSE fs the 'caller'.
-What are the established terms?
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-Anyways, doing it directly from the server (or is it client) opens up a
-lot of new possibilities to screw up and I'd really much prefer staying
-in similar ballpark with other operations.  Maybe we can restrict it to
-two stages (query size & transfer) and linear consecutive ranges but
-then again adding retry doesn't contribute too much to the complexity.
-Oh.. and BTW, the in-ioctl length coding is not used universally, so it
-can't be depended upon.
+---
+ arch/x86/kernel/e820.c |   32 ++++++++++++++++++++++++++++++--
+ include/linux/ioport.h |    1 +
+ kernel/resource.c      |   35 ++++++++++++++++++++++++++---------
+ 3 files changed, 57 insertions(+), 11 deletions(-)
 
->>  Also, what about containers?  How would it work then?
-> 
-> Dunno.  Isn't there some transformation of pids going on, so that the
-> global namespace can access pids in all containers but under a
-> different alias?  I do hope somethinig like this works, otherwise it's
-> not only fuse that will break.
-
-I'm not sure either.  Any idea who we should be asking about it?
-
-Thanks.
-
--- 
-tejun
+Index: linux-2.6/arch/x86/kernel/e820.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -1319,8 +1319,36 @@ void __init e820_reserve_resources_late(
+ 
+ 	res = e820_res;
+ 	for (i = 0; i < e820.nr_map; i++) {
+-		if (!res->parent && res->end)
+-			insert_resource(&iomem_resource, res);
++		if (!res->parent && res->end) {
++			struct resource *ret;
++
++			ret = __insert_resource(&iomem_resource, res);
++			if (ret) {
++				int updated = 0;
++
++				printk(KERN_WARNING "found conflict: %s [%08llx, %08llx] with %s [%08llx, %08llx]\n",
++					res->name, res->start, res->end,
++					ret->name, ret->start, ret->end);
++				if (res->start > ret->start && res->start <= ret->end) {
++					if (i && ret->start > e820_res[i-1].end) {
++						res->start = ret->start;
++						updated = 1;
++					}
++				} else if (res->end > ret->start && res->end <= ret->end) {
++					if (i < (e820.nr_map - 1) && ret->end > e820_res[i+1].start) {
++						res->end = ret->end;
++						updated = 1;
++					}
++				}
++				if (updated) {
++					ret = __insert_resource(&iomem_resource, res);
++					if (ret)
++						printk(KERN_WARNING "second try found conflict: %s [%08llx, %08llx] with %s [%08llx, %08llx]\n",
++							res->name, res->start, res->end,
++							ret->name, ret->start, ret->end);
++				}
++			}
++		}
+ 		res++;
+ 	}
+ }
+Index: linux-2.6/include/linux/ioport.h
+===================================================================
+--- linux-2.6.orig/include/linux/ioport.h
++++ linux-2.6/include/linux/ioport.h
+@@ -108,6 +108,7 @@ extern struct resource iomem_resource;
+ 
+ extern int request_resource(struct resource *root, struct resource *new);
+ extern int release_resource(struct resource *new);
++extern struct resource *__insert_resource(struct resource *parent, struct resource *new);
+ extern int insert_resource(struct resource *parent, struct resource *new);
+ extern int allocate_resource(struct resource *root, struct resource *new,
+ 			     resource_size_t size, resource_size_t min,
+Index: linux-2.6/kernel/resource.c
+===================================================================
+--- linux-2.6.orig/kernel/resource.c
++++ linux-2.6/kernel/resource.c
+@@ -363,11 +363,11 @@ int allocate_resource(struct resource *r
+ EXPORT_SYMBOL(allocate_resource);
+ 
+ /**
+- * insert_resource - Inserts a resource in the resource tree
++ * __insert_resource - Inserts a resource in the resource tree
+  * @parent: parent of the new resource
+  * @new: new resource to insert
+  *
+- * Returns 0 on success, -EBUSY if the resource can't be inserted.
++ * Returns NULL on success, or first conflict resource.
+  *
+  * This function is equivalent to request_resource when no conflict
+  * happens. If a conflict happens, and the conflicting resources
+@@ -375,20 +375,20 @@ EXPORT_SYMBOL(allocate_resource);
+  * resource is inserted and the conflicting resources become children of
+  * the new resource.
+  */
+-int insert_resource(struct resource *parent, struct resource *new)
++struct resource *__insert_resource(struct resource *parent, struct resource *new)
+ {
+-	int result;
++	struct resource *ret_res;
+ 	struct resource *first, *next;
+ 
+ 	write_lock(&resource_lock);
+ 
+ 	for (;; parent = first) {
+-	 	result = 0;
++		ret_res = NULL;
+ 		first = __request_resource(parent, new);
+ 		if (!first)
+ 			goto out;
+ 
+-		result = -EBUSY;
++		ret_res = first;
+ 		if (first == parent)
+ 			goto out;
+ 
+@@ -400,15 +400,17 @@ int insert_resource(struct resource *par
+ 
+ 	for (next = first; ; next = next->sibling) {
+ 		/* Partial overlap? Bad, and unfixable */
+-		if (next->start < new->start || next->end > new->end)
++		if (next->start < new->start || next->end > new->end) {
++			ret_res = next;
+ 			goto out;
++		}
+ 		if (!next->sibling)
+ 			break;
+ 		if (next->sibling->start > new->end)
+ 			break;
+ 	}
+ 
+-	result = 0;
++	ret_res = NULL;
+ 
+ 	new->parent = parent;
+ 	new->sibling = next->sibling;
+@@ -429,10 +431,25 @@ int insert_resource(struct resource *par
+ 
+  out:
+ 	write_unlock(&resource_lock);
+-	return result;
++	return ret_res;
+ }
+ 
+ /**
++ * insert_resource - Inserts a resource in the resource tree
++ * @parent: parent of the new resource
++ * @new: new resource to insert
++ *
++ * Returns 0 on success, -EBUSY if the resource can't be inserted.
++ */
++int insert_resource(struct resource *parent, struct resource *new)
++{
++	struct resource *res_conflict;
++
++	res_conflict = __insert_resource(parent, new);
++
++	return res_conflict ? -EBUSY : 0;
++}
++/**
+  * adjust_resource - modify a resource's start and size
+  * @res: resource to modify
+  * @start: new start value
