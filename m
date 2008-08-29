@@ -1,32 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbYH2GRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbYH2GSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754070AbYH2GRl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 02:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbYH2GPd
+	id S1753907AbYH2GSW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 02:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYH2GPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 02:15:33 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:59508 "EHLO
+	Fri, 29 Aug 2008 02:15:35 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:59512 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751408AbYH2GP1 (ORCPT
+	with ESMTP id S1751498AbYH2GP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 29 Aug 2008 02:15:27 -0400
 Date: Thu, 28 Aug 2008 23:47:41 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808290547.m7T5lf7E016121@wolfmountaingroup.com>
+Message-Id: <200808290547.m7T5lfkx016123@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc5 6/29] mdb: add mdb-base.h architecure indepedent include
+Subject: [PATCH 2.6.27-rc5 8/29] mdb: add mdb-ia32-apic.c Intel x86 architecure functions
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add mdb-base.h architecure indepedent include
+add mdb-ia32-apic.c Intel x86 architecure functions.
+add support to dump local APIC and IOAPIC registers.  
+Instrument support for remote read of local apic registers.
+
+Add support for hardware NMI assertion for debugging a hard 
+hung processor.  
+
 
 
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/debug/mdb/mdb-base.h	1969-12-31 17:00:00.000000000 -0700
-+++ b/debug/mdb/mdb-base.h	2008-08-28 14:20:04.000000000 -0600
-@@ -0,0 +1,296 @@
+--- a/debug/mdb/mdb-ia32-apic.c	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/mdb/mdb-ia32-apic.c	2008-08-28 14:20:04.000000000 -0600
+@@ -0,0 +1,280 @@
 +
 +/***************************************************************************
 +*
@@ -61,265 +67,249 @@ Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 +*
 +***************************************************************************/
 +
-+#ifndef _MDB_BASE_H
-+#define _MDB_BASE_H
++#include <linux/version.h>
++#include <linux/types.h>
++#include <linux/sched.h>
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/kernel.h>
++#include <linux/mm.h>
++#include <linux/string.h>
++#include <linux/stat.h>
++#include <linux/errno.h>
++#include <linux/fcntl.h>
++#include <linux/slab.h>
++#include <linux/vmalloc.h>
++#include <linux/genhd.h>
++#include <linux/hdreg.h>
++#include <linux/fs.h>
++#include <linux/major.h>
++#include <linux/mm.h>
++#include <linux/cdrom.h>
++#include <linux/pagemap.h>
++#include <linux/swap.h>
++#include <linux/smp.h>
++#include <linux/smp_lock.h>
++#include <linux/ctype.h>
++#include <linux/keyboard.h>
++#include <linux/console.h>
++#include <linux/serial_reg.h>
++#include <linux/uaccess.h>
++#include <linux/nmi.h>
++#include <asm/system.h>
++#include <asm/segment.h>
++#include <asm/atomic.h>
++#include <asm/msr.h>
++#include <linux/io.h>
++#include <linux/clocksource.h>
 +
-+extern unsigned long enterKeyACC(unsigned long key, void *stackFrame,
-+		     ACCELERATOR *accel);
-+extern unsigned long activateRegisterDisplayACC(unsigned long key, void *stackFrame,
-+		     ACCELERATOR *accel);
-+
-+extern unsigned long displayDebuggerHelpHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayDebuggerHelp(unsigned char *commandLine,
-+			 StackFrame *stackFrame, unsigned long Exception,
-+			 DEBUGGER_PARSER *parser);
-+
-+extern unsigned long ascTableHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayASCTable(unsigned char *cmd,
-+		     StackFrame *stackFrame, unsigned long Exception,
-+		     DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayToggleHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ProcessTUToggle(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long ProcessTDToggle(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long ProcessTLToggle(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long ProcessTGToggle(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long ProcessTCToggle(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long ProcessTNToggle(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long ProcessTRToggle(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long ProcessTSToggle(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long ProcessTAToggle(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayDebuggerVersionHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long DisplayDebuggerVersion(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayKernelProcessHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayKernelProcess(unsigned char *cmd,
-+			  StackFrame *stackFrame, unsigned long Exception,
-+			  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayKernelQueueHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayKernelQueue(unsigned char *cmd,
-+			StackFrame *stackFrame, unsigned long Exception,
-+			DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displaySymbolsHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displaySymbols(unsigned char *cmd,
-+		    StackFrame *stackFrame, unsigned long Exception,
-+		    DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayLoaderMapHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayLoaderMap(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayModuleHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayModuleInfo(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayProcessesHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayProcesses(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayRegistersHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayControlRegisters(unsigned char *cmd,
-+			     StackFrame *stackFrame, unsigned long Exception,
-+			     DEBUGGER_PARSER *parser);
-+extern unsigned long displayAllRegisters(unsigned char *cmd,
-+			     StackFrame *stackFrame, unsigned long Exception,
-+			     DEBUGGER_PARSER *parser);
-+extern unsigned long displaySegmentRegisters(unsigned char *cmd,
-+			     StackFrame *stackFrame, unsigned long Exception,
-+			     DEBUGGER_PARSER *parser);
-+extern unsigned long displayNumericRegisters(unsigned char *cmd,
-+			     StackFrame *stackFrame, unsigned long Exception,
-+			     DEBUGGER_PARSER *parser);
-+extern unsigned long displayGeneralRegisters(unsigned char *cmd,
-+			     StackFrame *stackFrame, unsigned long Exception,
-+			     DEBUGGER_PARSER *parser);
-+extern unsigned long displayDefaultRegisters(unsigned char *cmd,
-+			     StackFrame *stackFrame, unsigned long Exception,
-+			     DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayAPICHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayAPICInfo(unsigned char *cmd,
-+		     StackFrame *stackFrame, unsigned long Exception,
-+		     DEBUGGER_PARSER *parser);
-+
-+extern unsigned long listProcessors(unsigned char *cmd,
-+		    StackFrame *stackFrame, unsigned long Exception,
-+		    DEBUGGER_PARSER *parser);
-+extern unsigned long listProcessorFrame(unsigned char *cmd,
-+			StackFrame *stackFrame, unsigned long Exception,
-+			DEBUGGER_PARSER *parser);
-+
-+extern unsigned long ReasonHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ReasonDisplay(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayMPSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayMPS(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser);
-+
-+extern unsigned long clearScreenHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long clearDebuggerScreen(unsigned char *cmd,
-+			 StackFrame *stackFrame, unsigned long Exception,
-+			 DEBUGGER_PARSER *parser);
-+
-+
-+extern unsigned long SearchMemoryHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long SearchMemory(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser);
-+extern unsigned long SearchMemoryB(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser);
-+extern unsigned long SearchMemoryW(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser);
-+extern unsigned long SearchMemoryD(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser);
-+
-+extern unsigned long changeMemoryHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long changeWordValue(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser);
-+extern unsigned long changeDoubleValue(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser);
-+extern unsigned long changeByteValue(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser);
-+extern unsigned long changeDefaultValue(unsigned char *cmd,
-+			StackFrame *stackFrame, unsigned long Exception,
-+			DEBUGGER_PARSER *parser);
-+
-+
-+extern unsigned long displayCloseHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayCloseSymbols(unsigned char *cmd,
-+			 StackFrame *stackFrame, unsigned long Exception,
-+			 DEBUGGER_PARSER *parser);
-+
-+
-+extern unsigned long displayINTRHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayInterruptTable(unsigned char *cmd,
-+			   StackFrame *stackFrame, unsigned long Exception,
-+			   DEBUGGER_PARSER *parser);
-+
-+
-+extern unsigned long viewScreensHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayScreenList(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser);
-+
-+
-+extern unsigned long displayIOAPICHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayIOAPICInfo(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser);
-+
-+
-+
-+extern unsigned long displayDumpHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long debuggerWalkStack(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser);
-+extern unsigned long debuggerDumpLinkedList(unsigned char *cmd,
-+			    StackFrame *stackFrame, unsigned long Exception,
-+			    DEBUGGER_PARSER *parser);
-+extern unsigned long debuggerDumpWord(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser);
-+extern unsigned long debuggerDumpStack(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser);
-+extern unsigned long debuggerDumpDoubleStack(unsigned char *cmd,
-+			     StackFrame *stackFrame, unsigned long Exception,
-+			     DEBUGGER_PARSER *parser);
-+extern unsigned long debuggerDumpDouble(unsigned char *cmd,
-+			StackFrame *stackFrame, unsigned long Exception,
-+			DEBUGGER_PARSER *parser);
-+extern unsigned long debuggerDumpByte(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser);
-+
-+
-+extern unsigned long displayDisassembleHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long processDisassemble16(unsigned char *cmd,
-+			  StackFrame *stackFrame, unsigned long Exception,
-+			  DEBUGGER_PARSER *parser);
-+extern unsigned long processDisassemble32(unsigned char *cmd,
-+			  StackFrame *stackFrame, unsigned long Exception,
-+			  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long rebootSystemHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long rebootSystem(unsigned char *cmd, StackFrame *stackFrame, unsigned long Exception,
-+	                  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displaySectionsHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displaySections(unsigned char *cmd,
-+		             StackFrame *stackFrame, unsigned long Exception,
-+		             DEBUGGER_PARSER *parser);
-+extern unsigned long displayKernelProcessHelp(unsigned char *commandLine,
-+                                      DEBUGGER_PARSER *parser);
-+extern unsigned long displayKernelProcess(unsigned char *cmd,
-+		                  StackFrame *stackFrame, unsigned long Exception,
-+		                  DEBUGGER_PARSER *parser);
-+extern unsigned long displayProcessorStatusHelp(unsigned char *commandLine,
-+                                        DEBUGGER_PARSER *parser);
-+extern unsigned long displayProcessorStatus(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser);
-+
-+extern unsigned long backTraceHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long backTraceAllPID(unsigned char *cmd, StackFrame *stackFrame,
-+                             unsigned long Exception, DEBUGGER_PARSER *parser);
-+extern unsigned long backTracePID(unsigned char *cmd, StackFrame *stackFrame,
-+                             unsigned long Exception, DEBUGGER_PARSER *parser);
-+extern unsigned long backTraceStack(unsigned char *cmd, StackFrame *stackFrame,
-+                             unsigned long Exception, DEBUGGER_PARSER *parser);
-+extern unsigned long timedBreakpointHelp(unsigned char *commandLine,
-+                                  DEBUGGER_PARSER *parser);
-+extern unsigned long timerBreakpoint(unsigned char *cmd,
-+                                     StackFrame *stackFrame,
-+                                     unsigned long Exception,
-+                                     DEBUGGER_PARSER *parser);
-+extern unsigned long timerBreakpointClear(unsigned char *cmd,
-+                                          StackFrame *stackFrame,
-+                                          unsigned long Exception,
-+                                          DEBUGGER_PARSER *parser);
-+
-+#if defined(CONFIG_MODULES)
-+extern unsigned long listModulesHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long listModules(unsigned char *cmd, StackFrame *stackFrame, unsigned long Exception,
-+	                 DEBUGGER_PARSER *parser);
-+extern unsigned long unloadModule(unsigned char *cmd, StackFrame *stackFrame, unsigned long Exception,
-+	                 DEBUGGER_PARSER *parser);
++#ifdef CONFIG_SMP
++#include <mach_apic.h>
++#include <mach_ipi.h>
 +#endif
 +
-+#endif
++#define __KERNEL_SYSCALLS__
++#include <linux/unistd.h>
++#include <linux/kallsyms.h>
++
++#include "mdb.h"
++#include "mdb-ia32.h"
++#include "mdb-list.h"
++#include "mdb-ia32-proc.h"
++#include "mdb-base.h"
++#include "mdb-proc.h"
++#include "mdb-os.h"
++#include "mdb-keyboard.h"
++
++#if defined(CONFIG_SMP)
++
++extern unsigned int io_apic_read(unsigned int apic, unsigned int reg);
++extern int nr_ioapics;
++
++unsigned long apic_directed_nmi(unsigned long cpu)
++{
++    send_IPI_mask(cpumask_of_cpu(cpu), 
++                  APIC_DM_NMI | APIC_INT_LEVELTRIG | APIC_INT_ASSERT);
++    send_IPI_mask(cpumask_of_cpu(cpu), 
++                  APIC_DM_NMI | APIC_INT_LEVELTRIG);
++    return 0;
++}
++
++void dump_ioapic(unsigned long num)
++{
++     unsigned long i, val;
++
++     if (num < nr_ioapics)
++     {
++        DBGPrint("io_apic registers\n");
++        for (i = 0; i <= 0x2F; i++)
++        {
++	   if ((i & 3) == 0)
++	      DBGPrint("%08X: ", i);
++
++	   val = io_apic_read(num, i * 4);
++	   DBGPrint("%08X ", val);
++
++	   if ((i & 3) == 3)
++	      DBGPrint("\n");
++        }
++     }
++     return;
++}
++
++void dump_local_apic(void)
++{
++    unsigned long i, val;
++
++    DBGPrint("local apic registers\n");
++    for (i = 0; i <= 0x3F; i++)
++    {
++       if ((i & 3) == 0)
++	  DBGPrint("%08X: ", i);
++
++       val = apic_read(i * 4);
++       DBGPrint("%08X ", val);
++
++       if ((i & 3) == 3)
++	  DBGPrint("\n");
++    }
++
++}
++
++void dump_remote_apic(unsigned long cpu)
++{
++    register unsigned long i, timeout, apicid;
++    register unsigned long val;
++
++    DBGPrint("remote apic registers processor(%d)\n", cpu);
++    for (i = 0; i <= 0x3F; i++)
++    {
++       if ((i & 3) == 0)
++	  DBGPrint("%08X: ", i);
++
++       apicid = cpu_present_to_apicid(cpu);
++       if (apicid == BAD_APICID)
++       {
++          DBGPrint("BADAPICX ");
++          continue;
++       }
++
++       timeout = 0;
++       while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
++       {
++          udelay(100);
++          if (timeout++ >= 1000)
++             break;
++          cpu_relax();
++          touch_nmi_watchdog();
++       }
++
++       if (timeout >= 1000)
++       {
++          DBGPrint("???????? ");
++          continue;
++       }
++
++       apic_write(APIC_ICR2, SET_APIC_DEST_FIELD(apicid));
++       apic_write(APIC_ICR, i | APIC_DEST_LOGICAL | APIC_DM_REMRD);
++
++       timeout = 0;
++       while ((apic_read(APIC_ICR) & APIC_ICR_RR_MASK) == APIC_ICR_RR_INPROG)
++       {
++          udelay(100);
++          if (timeout++ >= 1000)
++             break;
++
++          cpu_relax();
++          touch_nmi_watchdog();
++       }
++
++       if (timeout >= 1000)
++       {
++          DBGPrint("???????? ");
++          continue;
++       }
++
++       if ((apic_read(APIC_ICR) & APIC_ICR_RR_MASK) == APIC_ICR_RR_VALID)
++       {
++          val = apic_read(APIC_RRR);
++          DBGPrint("%08X ", val);
++       }
++       else
++       {
++          DBGPrint("???????? ");
++       }
++
++       if ((i & 3) == 3)
++	  DBGPrint("\n");
++    }
++
++}
++
++unsigned long displayAPICHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
++{
++    DBGPrint("apic                     - display local apic regs\n");
++    DBGPrint("apic [p#]                - display remote apic regs\n");
++    return 1;
++}
++
++/* APIC */
++
++unsigned long displayAPICInfo(unsigned char *cmd,
++		     StackFrame *stackFrame, unsigned long Exception,
++		     DEBUGGER_PARSER *parser)
++{
++     register unsigned long value;
++     unsigned long valid;
++
++     cmd = &cmd[parser->debugCommandNameLength];
++     while (*cmd && *cmd == ' ')
++        cmd++;
++
++     value = EvaluateExpression(stackFrame, &cmd, &valid);
++     if (valid && ((value >= MAX_PROCESSORS) || !cpu_online(value)))
++     {
++        DBGPrint("processor not found\n");
++        return 1;
++     }
++     if (valid && (value != get_processor_id()))
++        dump_remote_apic(value);
++     else
++        dump_local_apic();
++     return 1;
++}
++
++unsigned long displayIOAPICHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
++{
++    DBGPrint("ioapic [#]               - display specified ioapic [#] regs\n");
++    return 1;
++}
++
++/* IOAPIC */
++
++unsigned long displayIOAPICInfo(unsigned char *cmd,
++		       StackFrame *stackFrame, unsigned long Exception,
++		       DEBUGGER_PARSER *parser)
++{
++     register unsigned long value;
++     unsigned long valid;
++
++     cmd = &cmd[parser->debugCommandNameLength];
++     while (*cmd && *cmd == ' ')
++        cmd++;
++
++     value = EvaluateExpression(stackFrame, &cmd, &valid);
++     if (valid && !(value < nr_ioapics))
++     {
++        DBGPrint("ioapic not found\n");
++        return 1;
++     }
++     if (valid)
++        dump_ioapic(value);
++     else
++        dump_ioapic(0);
++     return 1;
++
++}
++
++#endif /* CONFIG_SMP */
