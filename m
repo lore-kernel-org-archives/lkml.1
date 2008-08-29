@@ -1,105 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbYH2OoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbYH2Oof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758097AbYH2OoW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 10:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYH2OoL
+	id S1758695AbYH2Oof (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 10:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbYH2OoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 10:44:11 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:54633 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751180AbYH2OoK (ORCPT
+	Fri, 29 Aug 2008 10:44:18 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:21664 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752673AbYH2OoQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 10:44:10 -0400
-Date: Fri, 29 Aug 2008 08:43:54 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Greg KH <greg@kroah.com>
-Cc: linux-usb@vger.kernel.org, bgmerrell@novell.com,
-       hirofuchi@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       usbip-devel@lists.sourceforge.net
-Subject: Re: USBIP protocol
-Message-ID: <20080829144354.GD1968@parisc-linux.org>
-References: <20080829140224.GC1968@parisc-linux.org> <20080829143017.GB18086@kroah.com>
+	Fri, 29 Aug 2008 10:44:16 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=w9VPZomRAAAA:8 a=QNL960UaPSWsI_EjxcgA:9 a=dL0HOw8pF7HDb7sBoPsA:7 a=QWQyJXggu_cwZV3y6zNcTFJdo_sA:4 a=jA2AA3tCuIgA:10 a=4agS3z1FbX8A:10
+Message-ID: <48B80B40.5060002@shaw.ca>
+Date: Fri, 29 Aug 2008 08:44:16 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080829143017.GB18086@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>
+Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
+References: <fa.CVrJhjm3R8sjl5Z+EEIzYm7QtW0@ifi.uio.no>
+In-Reply-To: <fa.CVrJhjm3R8sjl5Z+EEIzYm7QtW0@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 29, 2008 at 07:30:17AM -0700, Greg KH wrote:
-> On Fri, Aug 29, 2008 at 08:02:24AM -0600, Matthew Wilcox wrote:
-> > 
-> > I'm in the middle of implementing a userspace client for usbip and I
-> > strongly feel that the protocol needs to be changed before it is merged.
-> > 
-> >  - I'm unconvinced that TCP is the correct protocol to be running this over.
-> >    I understand the reluctance to use UDP, but the protocol is fundamentally
-> >    packet-based.  If TCP is used, the delimitation of packets within the
-> >    stream needs to be much more robust.  I've managed to wedge the VHCI driver
-> >    a number of times in ways that just wouldn't be possible if we were using
-> >    a packet protocol instead of a stream protocol.
+(ccing linux-ide)
+
+Tejun, another one of these reset issues?
+
+Konstantin Kletschke wrote:
+> Hello!
 > 
-> USB is fundamentally packet-based, so it kind of fits very well.
-
-Erm, did you not read what I wrote?  USB is packet based.  TCP isn't.
-We shouldn't be using TCP here.
-
-> >  - Endianness.  This is a mess.  The usbip protocol is big-endian, but the
-> >    encapsulated usb protocol is little-endian.  This doesn't matter to the
-> >    people who are just tunnelling usb from one computer to another, but for
-> >    someone implementing a usbip client, it's very confusing.
 > 
-> Then just document it, no big deal.
-> Yeah, the current code isn't the cleanest here (sparse throws up some
-> warnings), but it's not that much work to fix it up, it's on my todo
-> list.
-
-I'm not talking about the code.  I'm talking about the protocol.  It's a
-mess to have two different endiannesses within the same packet.
-
-> >  - There are actually two completely different protocols in use.  First,
-> >    the usbipd daemon listens on port 3240, and handles device discovery.
-> >    When usbip successfully attaches to usbipd, both sides of the connection
-> >    pass the socket fd into the kernel and the protocol changes.
-> >  - The protocol sends a 48-byte packet header for every command (and every
-> >    response).  It's cunningly hidden as a union.
+> I found to references regarding this problem in this list. Many Maxwell
+> reported this and Tejo asked if his supposed fix helps out. 
 > 
-> Is that a real problem?
-
-Yes, it really is.  It complicates the protocol, complicates the
-implementation, introduces unnecessary state, and makes it impossible to
-renegotiate on the same connection.
-
-> > I think the protocol would be immeasurably improved by going through the
-> > IETF RFC process and getting feedback from networking experts.  Failing
-> > that, I have some suggestions about how to improve it.  I was hoping to
-> > get my client finished before I started mucking with the protocol though.
+> Another reference by Jeff suggests bisecting a git commit. Since I am
+> very unexperienced in the git stuff I hope it is okay to start another
+> initial mail about this to ask
 > 
-> Why mess with the RFC process, is that really necessary for something
-> like this?
+> 1.) What I should try out on the code to trace this further down
+> 
+> 2.) I would extend this problem on >2.6.25 version of kernel.
+> 
+> I have an "nForce3 250 chipset" on an Asrock K8Upgrade-NF3 Motherboard
+> 
+> 00:00.0 Host bridge: nVidia Corporation nForce3 250Gb Host Bridge (rev a1)
+> 00:01.0 ISA bridge: nVidia Corporation nForce3 250Gb LPC Bridge (rev a2)
+> 00:01.1 SMBus: nVidia Corporation nForce 250Gb PCI System Management (rev a1)
+> 00:02.0 USB Controller: nVidia Corporation CK8S USB Controller (rev a1)
+> 00:02.1 USB Controller: nVidia Corporation CK8S USB Controller (rev a1)
+> 00:02.2 USB Controller: nVidia Corporation nForce3 EHCI USB 2.0 Controller (rev a2)
+> 00:05.0 Bridge: nVidia Corporation CK8S Ethernet Controller (rev a2)
+> 00:06.0 Multimedia audio controller: nVidia Corporation nForce3 250Gb AC'97 Audio Controller (rev a1)
+> 00:08.0 IDE interface: nVidia Corporation CK8S Parallel ATA Controller (v2.5) (rev a2)
+> 00:0a.0 IDE interface: nVidia Corporation CK8S Serial ATA Controller (v2.5) (rev a2)
+> 00:0b.0 PCI bridge: nVidia Corporation nForce3 250Gb AGP Host to PCI Bridge (rev a2)
+> 00:0e.0 PCI bridge: nVidia Corporation nForce3 250Gb PCI-to-PCI Bridge (rev a2)
+> 00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] HyperTransport Technology Configuration
+> 00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Address Map
+> 00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM Controller
+> 00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Miscellaneous Control
+> 01:00.0 VGA compatible controller: nVidia Corporation NV34 [GeForce FX 5200] (rev a1)
+> 02:06.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8139/8139C/8139C+ (rev 10)
+> 
+> While 2.6.25 works very fine I experienced this with 2.6.26_rc7 at first 
+> (I skipped versions between). Cold Boot yields into the described error,
+> I sadly only have real screenshots of this:
+> 
+> http://ludenkalle.de/sata
+> 
+> After a reset the Kernel was not able to do anything useful with the
+> SATA interface anymore (this description is a bit vague, IIRC it stuck
+> immediately around "SATA Link down..."). Only powercycling helped out,
+> then it booted with SATA.
+> 
+> Now I have 2.6.27-rc3, same error but config netconsole enabled.
+> Normal Boot:
+> 
+> ata1: SATA link down (SStatus 0 SControl 300)
+> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> ata2.00: ATA-7: SAMSUNG HD753LJ, 1AA01106, max UDMA7
+> ata2.00: 1465149168 sectors, multi 16: LBA48 NCQ (depth 0/32)
+> ata2.00: configured for UDMA/133
+> isa bounce pool size: 16 pages
+> scsi 1:0:0:0: Direct-Access     ATA      SAMSUNG HD753LJ  1AA0 PQ: 0 ANSI: 5
+> sd 1:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
+> sd 1:0:0:0: [sda] Write Protect is off
+> sd 1:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> sd 1:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
+> sd 1:0:0:0: [sda] Write Protect is off
+> sd 1:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+>  sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 sda8 sda9 >
+> sd 1:0:0:0: [sda] Attached SCSI disk
+> PNP: No PS/2 controller found. Probing ports directly.
+> serio: i8042 KBD port at 0x60,0x64 irq 1
+> serio: i8042 AUX port at 0x60,0x64 irq 12
+> TCP cubic registered
+> NET: Registered protocol family 17
+> XFS mounting filesystem sda1
+> VFS: Mounted root (xfs filesystem) readonly.
+> Freeing unused kernel memory: 220k freed
+> 
+> Cold Boot:
+> 
+> ata1: SATA link down (SStatus 0 SControl 300)
+> ata2: link is slow to respond, please be patient (ready=0)
+> ata2: COMRESET failed (errno=-16)
+> ata2: link is slow to respond, please be patient (ready=0)
+> ata2: COMRESET failed (errno=-16)
+> ata2: link is slow to respond, please be patient (ready=0)
+> ata2: COMRESET failed (errno=-16)
+> ata2: limiting SATA link speed to 1.5 Gbps
+> ata2: COMRESET failed (errno=-16)
+> ata2: reset failed, giving up
+> PNP: No PS/2 controller found. Probing ports directly.
+> serio: i8042 KBD port at 0x60,0x64 irq 1
+> serio: i8042 AUX port at 0x60,0x64 irq 12
+> TCP cubic registered
+> NET: Registered protocol family 17
+> VFS: Cannot open root device "801" or unknown-block(8,1)
+> Please append a correct "root=" boot option; here are the available partitions:
+> Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(8,1)
+> 
+> Hmn, thats it. Where should I poke into?
+> 
+> Kind Regards, Konsti
+> 
+> 
 
-It helps clarify the odd corners of any protocol.  I don't have the
-impression that it's a terribly heavy-weight process -- though we can
-ask the netlink guys how it went for them.
-
-> Windows has had this for years, no need for a RFC there, and if we just
-> document this well, no need for one here either.
-
-Yes, and as a result we can't interoperate with Windows.
-
-By the way, is this actually built into Windows or just available as
-several mutually incompatible and pay-for products?  I did some
-searching a few months ago and didn't come up with anything official
-from Microsoft.
-
-Even if we don't go through the RFC process, just writing down the
-on-wire protocol should be mandatory for taking this kind of thing into
-the kernel.
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
