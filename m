@@ -1,42 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbYH2Lhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbYH2Lpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756555AbYH2Lhz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 07:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbYH2Lhr
+	id S1756638AbYH2Lpa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 07:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbYH2LpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 07:37:47 -0400
-Received: from alto.filmlight.ltd.uk ([217.40.27.25]:17112 "HELO
-	a.mx.filmlight.ltd.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752335AbYH2Lhr (ORCPT
+	Fri, 29 Aug 2008 07:45:21 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:13661 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753818AbYH2LpU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 07:37:47 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Aug 2008 07:37:46 EDT
-Message-ID: <48B7DDF7.7060107@filmlight.ltd.uk>
-Date: Fri, 29 Aug 2008 12:31:03 +0100
-From: Roger Willcocks <roger@filmlight.ltd.uk>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Miklos Szeredi <miklos@szeredi.hu>, fuse-devel@lists.sourceforge.net,
-       greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: [fuse-devel] [PATCH 5/7] FUSE: implement ioctl support
-References: <1219945263-21074-1-git-send-email-tj@kernel.org>	<1219945263-21074-6-git-send-email-tj@kernel.org>	<20080828175116.GB18461@kroah.com>	<48B6E79E.6020702@kernel.org> <48B6E801.9080102@kernel.org>	<E1KYm0D-0003q0-IQ@pomaz-ex.szeredi.hu>	<48B6EBBD.6050406@kernel.org>	<E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu>	<48B6EF98.4070008@kernel.org>	<E1KYn7T-00048J-Qj@pomaz-ex.szeredi.hu>	<48B6FFB6.7000104@kernel.org>	<E1KYnhA-0004Ei-3t@pomaz-ex.szeredi.hu> <48B75C94.7030604@kernel.org>
-In-Reply-To: <48B75C94.7030604@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 29 Aug 2008 07:45:20 -0400
+Message-Id: <48B7FDBA.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
+Date: Fri, 29 Aug 2008 12:46:34 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] BUILD_BUG_ON() should not use array type
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One thing to bear in mind is the possibility of 32-bit client programs 
-running on a 64-bit platform, so your user-space driver will need be be 
-aware of the flavour of the client, and parse the ioctl arguments (and 
-in particular, pointers) appropriately.
+With gcc's extension of variable size arrays, using the size of an
+array type for BUILD_BUG_ON() doesn't always work, since non-constant
+conditions aren't being detected, and hence the intention of the
+construct cannot be met anymore. It is therefore necessary to use a
+construct where all compilers can be expected to only accept constant
+expressions with certain values being invalid, and the only thing I
+could think of are bit-fields.
 
-That's true of a kernel implementation too, of course.
+Note that in the virtio_config.h case MAYBE_BUILD_BUG_ON() really just
+serves documentation purposes - even if the expression is compile time
+constant (__builtin_constant_p() yields true), the array is still deemed
+of variable length by gcc, and hence the whole expression doesn#t have
+the intended effect.
 
---
-Roger
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+
+---
+ drivers/net/niu.c             |    2 +-
+ include/linux/kernel.h        |    8 ++++++--
+ include/linux/virtio_config.h |    3 +--
+ 3 files changed, 8 insertions(+), 5 deletions(-)
+
+--- linux-2.6.27-rc5/drivers/net/niu.c	2008-08-21 14:37:31.000000000 +0200
++++ 2.6.27-rc5-build-bug-on/drivers/net/niu.c	2008-08-28 16:51:40.000000000 +0200
+@@ -5144,7 +5144,7 @@ static void niu_init_tx_mac(struct niu *
+ 	/* The XMAC_MIN register only accepts values for TX min which
+ 	 * have the low 3 bits cleared.
+ 	 */
+-	BUILD_BUG_ON(min & 0x7);
++	BUG_ON(min & 0x7);
+ 
+ 	if (np->flags & NIU_FLAGS_XMAC)
+ 		niu_init_tx_xmac(np, min, max);
+--- linux-2.6.27-rc5/include/linux/kernel.h	2008-08-21 14:37:35.000000000 +0200
++++ 2.6.27-rc5-build-bug-on/include/linux/kernel.h	2008-08-28 15:10:28.000000000 +0200
+@@ -468,13 +468,17 @@ struct sysinfo {
+ };
+ 
+ /* Force a compilation error if condition is true */
+-#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
++#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
++
++/* Force a compilation error if condition is constant and true */
++#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
+ 
+ /* Force a compilation error if condition is true, but also produce a
+    result (of value 0 and type size_t), so the expression can be used
+    e.g. in a structure initializer (or where-ever else comma expressions
+    aren't permitted). */
+-#define BUILD_BUG_ON_ZERO(e) (sizeof(char[1 - 2 * !!(e)]) - 1)
++#define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
++#define BUILD_BUG_ON_NULL(e) ((void *)BUILD_BUG_ON_ZERO(e))
+ 
+ /* Trap pasters of __FUNCTION__ at compile-time */
+ #define __FUNCTION__ (__func__)
+--- linux-2.6.27-rc5/include/linux/virtio_config.h	2008-08-21 14:37:35.000000000 +0200
++++ 2.6.27-rc5-build-bug-on/include/linux/virtio_config.h	2008-08-28 15:08:47.000000000 +0200
+@@ -96,8 +96,7 @@ static inline bool virtio_has_feature(co
+ 				      unsigned int fbit)
+ {
+ 	/* Did you forget to fix assumptions on max features? */
+-	if (__builtin_constant_p(fbit))
+-		BUILD_BUG_ON(fbit >= 32);
++	MAYBE_BUILD_BUG_ON(fbit >= 32);
+ 
+ 	virtio_check_driver_offered_feature(vdev, fbit);
+ 	return test_bit(fbit, vdev->features);
 
 
 
