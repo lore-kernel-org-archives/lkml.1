@@ -1,122 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbYH2I71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbYH2JFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755482AbYH2I71 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 04:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbYH2I7T
+	id S1755233AbYH2JFc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 05:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbYH2JFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 04:59:19 -0400
-Received: from qb-out-0506.google.com ([72.14.204.227]:63883 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752548AbYH2I7S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 04:59:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=Rn4YuR3MfeC8MCsqxwrUCZ8+fUtZCYjypj6+0CNLN6q+qMQMKFcDUY5I3dNi78SzGJ
-         MniCS92HlOfhQV1EpQ9L+CnrxPoW1KZXYOlHFL6aQGDajC4qj7lMWr1cWTKZ7v0IGJhy
-         4yh7wg8H808XCVwcoO3cwfm1nwgn8qnE9HqEA=
-Message-ID: <e68bb3470808290159s734283d7s2270bbbf455d630d@mail.gmail.com>
-Date: Fri, 29 Aug 2008 16:59:16 +0800
-From: "=?GB2312?B?zfLX2suz?=" <mcuos.com@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.17.14]arm:Add the Nuvoton w90x900 Platform support to ARM tree
-Cc: torvalds@linux-foundation.org
+	Fri, 29 Aug 2008 05:05:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48844 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753202AbYH2JFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 05:05:23 -0400
+Message-ID: <48B7BB4C.4060907@kernel.org>
+Date: Fri, 29 Aug 2008 11:03:08 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Miklos Szeredi <miklos@szeredi.hu>, Eric Biederman <ebiederm@xmission.com>,
+       Serge Hallyn <serue@us.ibm.com>
+CC: greg@kroah.com, fuse-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <20080828175116.GB18461@kroah.com> <48B6E79E.6020702@kernel.org> <48B6E801.9080102@kernel.org> <E1KYm0D-0003q0-IQ@pomaz-ex.szeredi.hu> <48B6EBBD.6050406@kernel.org> <E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu> <48B6EF98.4070008@kernel.org> <E1KYn7T-00048J-Qj@pomaz-ex.szeredi.hu> <48B6FFB6.7000104@kernel.org> <E1KYnhA-0004Ei-3t@pomaz-ex.szeredi.hu> <48B75C94.7030604@kernel.org> <E1KYyt9-0005Ur-Eu@pomaz-ex.szeredi.hu> <48B7AF60.8040709@kernel.org> <E1KYzMd-0005aR-28@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1KYzMd-0005aR-28@pomaz-ex.szeredi.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 Aug 2008 09:04:23 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: vincen.zswan mcuos.com@gmail.com
-hi,
-I come from Nuvoton technology corporation.I have add the Nuvoton ARM
-series IC w90x900(W90P910,W90P920,W90P950,W90N960) Platform support to
-LINUX ARM tree and make a patch to linux-2.6.17.14.
+Miklos Szeredi wrote:
+> On Fri, 29 Aug 2008, Tejun Heo wrote:
+>> I first used 'server' for userland [FC]USE server but then I noticed
+>> there were places in FUSE they were referred as clients so now I use
+>> 'client' for those and call the app using the FUSE fs the 'caller'.
+>> What are the established terms?
+> 
+> Umm
+> 
+>  - userspace filesystem
+>  - filesystem daemon
+>  - filesystem process
+>  - server
+> 
+> Yes it's also a client of the fuse device, but that term is confusing.
 
-The patch named:nuvoton-arm-linux-2.6.17.patch
-you can get the patch from link: http://www.mcuos.com/attachment.php?aid=530
+Okay, will do s/client/server/g
 
-Changes:
-(1)Add two directory to support W90X900 IC
+>> Anyways, doing it directly from the server (or is it client) opens up a
+>> lot of new possibilities to screw up and I'd really much prefer staying
+>> in similar ballpark with other operations.  Maybe we can restrict it to
+>> two stages (query size & transfer) and linear consecutive ranges but
+>> then again adding retry doesn't contribute too much to the complexity.
+>> Oh.. and BTW, the in-ioctl length coding is not used universally, so it
+>> can't be depended upon.
+> 
+> I know it's not universal, some horrors I've seen in the old wireless
+> interfaces.  The question is: do we want to support such "extended"
+> ioctls?  For exmaple, does OSS have non-conformant ioctls?
 
-/arch/arm/mach-W90X900
-/include/asm-arm/arch-W90X900
+OSS ioctls are all pretty simple and I think they all use the proper
+encoding.  For the question, my answer would be yes (naturally).  It
+will suck later when implementing some other device only to find out
+that there's this one ioctl that needs to dereference a pointer but
+there's no supported way to do it but everything else works.
 
-(2)w90x900 bootloader don't auto sent the r1=mach type num,so add this file
+I don't think the performance or the complexity of specific ioctl
+implementation is of the determining importance as long as it can be
+made to work with minimal impact on the rest of the whole thing, so
+the current retry implementation.
 
-/arch/arm/kernel/head-common.S
+>>>>  Also, what about containers?  How would it work then?
+>>> Dunno.  Isn't there some transformation of pids going on, so that the
+>>> global namespace can access pids in all containers but under a
+>>> different alias?  I do hope somethinig like this works, otherwise it's
+>>> not only fuse that will break.
+>> I'm not sure either.  Any idea who we should be asking about it?
+> 
+> Serge Hallyn and Eric Biederman.
 
-(3)I have apply the w90x900 mach-types num is 1860.
-
-/arch/arm/tools/mach-types
-
-(4)w90x900 EVB all drivers have been test.
-/drivers/char/nuvoton_sc.h
-/drivers/char/tsc2007.c
-/drivers/char/w90x900_mouse.c
-/drivers/char/w90x900_sc.c
-/drivers/char/w90x900_ts.c
-/drivers/char/w90x900_usb.c
-
-/drivers/i2c/busses/i2c-w90x900-p0.c
-/drivers/i2c/busses/i2c-w90x900-p1.c
-
-/drivers/ide/w90x900_ide.c
-
-/drivers/input/serio/w90x900_ps2.c
-/drivers/input/touchscreen/w90x900_ts.c
-/drivers/input/w90x900_keypad.c
-
-/drivers/mtd/maps/w90x900_flash.c
-
-/drivers/net/8139too.c
-/drivers/net/arm/eth_w90x900.c
-/drivers/net/r8169.c
-
-/drivers/pci/pci_w90x900.c
-
-/drivers/rtc/w90x900_rtc.c
-
-/drivers/scsi/w90x900_ms.c
-/drivers/scsi/w90x900_sdio.c
-
-/drivers/serial/serial_core.c
-/drivers/serial/w90x900_serial.c
-/drivers/spi/spi_w90x900.c
-
-/drivers/usb/host/ehci-w90x900.c
-/drivers/usb/host/ohci-w90x900.c
-
-/drivers/video/w90x900fb.c
-
-/sound/oss/w90x900_WM8978.c
-/sound/oss/w90x900_ac97.c
-/sound/oss/w90x900_audio.c
-/sound/oss/w90x900_i2s.c
-(5)When patch the w90x900 paltform,some kernel files need update by nuvoton.
-
-/drivers/char/keyboard.c
-/drivers/ide/ide-io.c
-/drivers/ide/ide.c
-/drivers/input/keyboard/atkbd.c
-/drivers/usb/host/ehci.h
-/drivers/usb/host/ohci-hcd.c
-/drivers/usb/core/hcd.c
-/drivers/usb/core/hub.c
-/drivers/usb/host/ehci-hcd.c
-/drivers/usb/host/ehci-hub.c
-/include/asm-arm/ide.h
-/include/linux/ide.h
-/include/linux/serial_core.h
+Okay, cc'd both.  Hello, Eric Biederman, Serge Hallyn.  For
+implementing ioctl in FUSE, it's suggested that to access the address
+space of the caller directly from the FUSE server using its pid via
+/proc/pid/mem (or task/tid/mem).  It's most likely that the calling
+process's tid will be used.  As I don't know much about the
+containers, I'm not sure how such approach will play out when combined
+with containers.  Can you enlighten us a bit?  W/o containers, it will
+look like the following.
 
 
-Thanks to everybody who discussed the patch.
+          FUSE ----------------
+           ^                   |
+           |                   |        kernel
+  ------ ioctl ----------- /dev/fuse ------------
+           |                   |       userland
+           |                   v
+    ---------------      -------------
+   | caller        |    | FUSE server |---> reads and writes
+   | with tid CTID |    |             |    /proc/PID/task/TID/mem
+    ---------------      -------------
 
-Best Regards
-Vincen
+The FUSE server gets task->pid.  IIUC, if the FUSE server is not in a
+container, task->pid should work fine whether the caller is in
+container or not, right?  And if the FUSE server is in a container,
+it's hell lot more complex and FUSE may have to map task->pid to what
+FUSE server would know if possible?
 
-Signed-off-by: vincen.zswan <mcuos.com@gmail.com>
+Thanks.
+
+-- 
+tejun
