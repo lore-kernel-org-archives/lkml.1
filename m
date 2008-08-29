@@ -1,118 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbYH2H1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753377AbYH2H2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753155AbYH2H1d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 03:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbYH2H10
+	id S1753377AbYH2H2q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 03:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbYH2H2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 03:27:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44726 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751139AbYH2H1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 03:27:25 -0400
-Message-ID: <48B7A48B.8020405@kernel.org>
-Date: Fri, 29 Aug 2008 09:26:03 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Fri, 29 Aug 2008 03:28:39 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:38199 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096AbYH2H2i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 03:28:38 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: greg@kroah.com
+Subject: Re: [patch 01/03] USB: USB/IP: add common functions needed
+Date: Fri, 29 Aug 2008 09:29:51 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Brian Merrell <bgmerrell@novell.com>,
+       Takahiro Hirofuchi <hirofuchi@users.sourceforge.net>, gregkh@suse.de
+References: <20080828225248.758800945@mini.kroah.org> <20080828230031.GB15014@kroah.com>
+In-Reply-To: <20080828230031.GB15014@kroah.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       Takashi Iwai <tiwai@suse.de>, fuse-devel@lists.sourceforge.net
-Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
-References: <48B6F711.1040604@kernel.org> <20080828200120.GA16462@cs181140183.pp.htv.fi> <48B751DA.5090906@kernel.org> <20080829065026.GC16462@cs181140183.pp.htv.fi>
-In-Reply-To: <20080829065026.GC16462@cs181140183.pp.htv.fi>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 Aug 2008 07:27:16 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200808290929.52547.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
->> Yeah, I have to agree it's a bit too late but the exclusion between OSS
->> and more modern sound systems (be it ALSA or PA) still bugged me quite a
->> bit.  There always seems this one off app that wasn't quite there - be
->> it mpg123 for whatever reason I still enjoy to use from time to time,
-> 
-> mpg123 supports ALSA since 1998 (sic).
+Am Freitag 29 August 2008 01:00:31 schrieb greg@kroah.com:
+> From: Takahiro Hirofuchi <hirofuchi@users.sourceforge.net>
 
-Heh.. I probably don't have the right plugin.  Oh... it has all the
-plugins including pulse.  So, this one can be crossed off.
+> +static ssize_t store_flag(struct device *dev, struct device_attribute *attr,
+> +		const char *buf, size_t count)
+> +{
+> +	unsigned long flag;
+> +
+> +	sscanf(buf, "%lx", &flag);
 
->> vmware which is a genuine pain in the ass to get working with LD_PRELOAD
->> tricks (hopefully 6.5 will finally use ALSA but wait we're all going PA
->> now...) or scorch-3D (and many other games) where aoss delivers horrible
->> sound after playing for a while.
-> 
-> Scorched3D gives me sound with native ALSA.
-> 
-> Is your libSDL not linked with libasound?
+Needs error handling
 
-I'm not sure at all.  It was from openSUSE game repo back in 10.3
-earlier this year and it only spoke OSS, but I bet if I try different
-games in the current repo, I'll be able to find at least some which
-still only work with OSS.
+> +	usbip_debug_flag = flag;
+> +
+> +	return count;
+> +}
+> +DEVICE_ATTR(usbip_debug, (S_IRUGO | S_IWUSR), show_flag, store_flag);
+> +
+> +static void usbip_dump_buffer(char *buff, int bufflen)
 
->> Anyways, the thing is that unlike what was originally expected, dropping
->> an major programming API doesn't really work too well even after six
->> years of trying.
-> 
-> Good ALSA emulation was a hot topic a few years ago when popular 
-> software like Flash and Skype didn't support ALSA, but the use
-> cases are becoming rare.
-> 
-> 2 out of your 3 examples above were software where native ALSA works,
-> but your distributions seems to ship you a setup where you thought 
-> OSS emulation was required.
+Such functions better print into a buffer, handed over in one go.
+Otherwise you can get results
+-second message-
+like this
 
-Yeah, that's why I agree it's a bit too late but still better late than
-never.  There are just some programs, be it commercial or ancient, which
-don't work quite as well as it could.  Requiring update to ALSA took
-painfully long years and we're still not in the clear yet.  Now should
-we ask people to update to PA?
+> +/* there may be more cases to tweak the flags. */
+> +static unsigned int tweak_transfer_flags(unsigned int flags)
+> +{
+> +
+> +	if (flags & URB_NO_TRANSFER_DMA_MAP)
+> +		/*
+> +		 * vhci_hcd does not provide DMA-mapped I/O. The upper
+> +		 * driver does not need to set this flag. The remote
+> +		 * usbip.ko does not still perform DMA-mapped I/O for
+> +		 * DMA-caplable host controllers. So, clear this flag.
+> +		 */
+> +		flags &= ~URB_NO_TRANSFER_DMA_MAP;
+> +
+> +	if (flags & URB_NO_SETUP_DMA_MAP)
+> +		flags &= ~URB_NO_SETUP_DMA_MAP;
 
-Then there's arch-um.  Yes, you can teach it to forward ALSA but then it
-won't mux.  The only solution would be to link it against libalsa or
-libpulse.
+There's no need to do this conditionally.
 
-> Which distribution are you using whose makers seem to need
-> a big cluebat?
+> +/* must free buffer */
+> +void *usbip_alloc_iso_desc_pdu(struct urb *urb, ssize_t *bufflen)
+> +{
+> +	void *buff;
+> +	struct usbip_iso_packet_descriptor *iso;
+> +	int np = urb->number_of_packets;
+> +	ssize_t size = np * sizeof(*iso);
+> +	int i;
+> +
+> +	buff = kzalloc(size, GFP_KERNEL);
 
-openSUSE.  Not sure whether it deserves cluebat tho.
+Are you sure you cannot badly recourse here?
 
->> Maybe because OSS is still kicking on other unices.
-> 
-> Which Unix with a big userbase uses OSS as primary sound system?
-> 
-> OSS-only applications tend to be older Linux-only applications.
-> 
-> Cross-platform applications either ship half a dozen different sound 
-> drivers (including ALSA), or more commonly use some library that offers
-> one API no matter which sound system gets used.
-
-Most major ones do, but there are programs and games which just haven't
-fared off as well as more popular ones and thus just stopped being
-updated and then there are commercial games which won't be updated in
-any foreseeable future.  There are reasons why something as brand new as
-pulse comes with something like padsp.
-
-And it's not like CUSE adds whole lot to the kernel.  It mostly just
-piggy backs on the existing FUSE.  Yeah, ioctl and poll are a bit
-complex but with those and CUSE proper combined, it's way smaller than
-the in-kernel ALSA OSS emulation which is somewhat painful to use these
-days.
-
-ossp is simply a better way to support /dev/dsp on modern systems and
-bulk of it lives in userland (and I hope this can be the case for future
-deprecations too).  If for nothing else, it'll enable us to do away with
-three different emulations at the very least.  I mean we can't of course
-do away with padsp and then some still only work with aoss and then we
-need in-kernel ALSA OSS emulation as the final fallback when both fail.
- It's a big mess and ossp can basically OSS emulation as good as
-in-kernel ALSA OSS w/ muxing.
-
-Thanks.
-
--- 
-tejun
+	Regards
+		Oliver
