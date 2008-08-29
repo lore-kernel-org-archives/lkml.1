@@ -1,78 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbYH2Jht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbYH2JjL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753478AbYH2Jht (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 05:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755544AbYH2JhS
+	id S1755886AbYH2JjL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 05:39:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYH2Jix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 05:37:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51959 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755450AbYH2JhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 05:37:12 -0400
-Message-ID: <48B7C2D5.2060209@kernel.org>
-Date: Fri, 29 Aug 2008 11:35:17 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Fri, 29 Aug 2008 05:38:53 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:63741 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753005AbYH2Jiv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 05:38:51 -0400
+Message-ID: <328724AE665B49F8A8B60D92187C4BBF@nsl.ad.nec.co.jp>
+From: "Takashi Sato" <t-sato@yk.jp.nec.com>
+To: "Christoph Hellwig" <hch@infradead.org>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-fsdevel@vger.kernel.org>, <dm-devel@redhat.com>,
+       <viro@ZenIV.linux.org.uk>, <linux-ext4@vger.kernel.org>,
+       <xfs@oss.sgi.com>, "Christoph Hellwig" <hch@infradead.org>,
+       <axboe@kernel.dk>, <mtk.manpages@googlemail.com>,
+       <linux-kernel@vger.kernel.org>
+References: <20080818212819t-sato@mail.jp.nec.com> <20080822181458.GA15469@infradead.org>
+In-Reply-To: <20080822181458.GA15469@infradead.org>
+Subject: Re: [PATCH 1/3] Implement generic freeze feature
+Date: Fri, 29 Aug 2008 18:37:28 +0900
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       dm-devel@redhat.com
-Subject: [PATCH] block: don't test for partition size in bdget_disk() and
- blk_lookup_devt()
-References: <20080827183453.eb651f50.sfr@canb.auug.org.au> <58cb370e0808270757k583c0fc2oc659bc8e2dd6c21e@mail.gmail.com> <200808272145.20627.bzolnier@gmail.com> <200808290210.37211.bzolnier@gmail.com> <20080829070515.GL20055@kernel.dk>
-In-Reply-To: <20080829070515.GL20055@kernel.dk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 Aug 2008 09:36:30 +0000 (UTC)
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Windows Mail 6.0.6000.16480
+X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6000.16545
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-bdget_disk() and blk_lookup_devt() never cared whether the specified
-partition (or disk) is zero sized or not.  I got confused while
-converting those not to depend on consecutive minor numbers in commit
-5a6411b1178baf534aa9138052864dfa89d3eada and later when dev0 was added
-it broke callers which expected to get valid return for zero sized
-disk devices.
+Hi,
 
-So, they never needed nr_sects checks in the first place.  Kill them.
+Christoph Hellwig wrote:
+>On Mon, Aug 18, 2008 at 09:28:19PM +0900, Takashi Sato wrote:
+>> +    down(&bdev->bd_freeze_sem);
+>> +    bdev->bd_freeze_count++;
+>> +    if (bdev->bd_freeze_count > 1) {
+>> +            sb = get_super(bdev);
+>> +            drop_super(sb);
+>> +            up(&bdev->bd_freeze_sem);
+>> +            return sb;
+>> +    }
+>> +
+>>      down(&bdev->bd_mount_sem);
+>
+>Now you have a reference counter of freezes which actually is pretty
+>sensible, but also needs some documentation.  What I don't understand
+>here at all is why you do the get_super/drop_super in the already frozen
+>case.
 
-This problem was spotted and debugged by Bartlmoiej Zolnierkiewicz.
+Even if the filesystem has already been frozen, the superblock
+should be returned. Because a caller should recognize the success of
+freeze_bdev() and call thaw_bdev() to decrease the reference count. 
+But I will remove drop_super() as it should be called in thaw_bdev().
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-Thanks for the good spotting.  I got confused between the meaning of
-!part and !part->nr_sects and added the wrong check during conversion.
-I audited the rest and it seems those two are the only ones.
+>
+>Now that the freeze_count has replaced one of the uses of bd_mount_sem
+>you should also replace the other use in the unmount path by simply
+>checking for the freez_count and abort if it's set.  To do so you'll
+>need to hold the bd_mount_sem over the whole unmount operation to
+>prevent new frezes from coming in.
 
-Thanks.
+In the original implementation,
+unmount is protected by s_umount(semaphore),
+not bd_mount_sem.  So, unmount task waits for unfreeze.
+I think this original behavior shouldn't be changed, 
+so the existing s_umount lock is better.
 
- block/genhd.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+>
+>As others noted it should be a mutex and not a semaphore.
 
-Index: work/block/genhd.c
-===================================================================
---- work.orig/block/genhd.c
-+++ work/block/genhd.c
-@@ -586,7 +586,7 @@ extern struct block_device *bdget_disk(s
- 	struct block_device *bdev = NULL;
- 
- 	part = disk_get_part(disk, partno);
--	if (part && (part->nr_sects || partno == 0))
-+	if (part)
- 		bdev = bdget(part_devt(part));
- 	disk_put_part(part);
- 
-@@ -1032,7 +1032,7 @@ dev_t blk_lookup_devt(const char *name,
- 			continue;
- 
- 		part = disk_get_part(disk, partno);
--		if (part && (part->nr_sects || partno == 0)) {
-+		if (part) {
- 			devt = part_devt(part);
- 			disk_put_part(part);
- 			break;
+As you said, we should use the mutex.
+I will replace it.
+
+>
+>>  /*
+>> + * ioctl_freeze - Freeze the filesystem.
+>> + *
+>> + * @filp:   target file
+>> + *
+>> + * Call freeze_bdev() to freeze the filesystem.
+>> + */
+>> +static int ioctl_freeze(struct file *filp)
+>
+>This is not quite kerneldcoc format, which would ne a /** as commnt
+>start.  But I don't think the comment is actually needed, it's a pretty
+>obvious file scope function. (Same commnt also applies to ioctl_thaw)
+
+I will remove these comments.
+
+>
+>> +    struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
+>> +
+>> +    if (!capable(CAP_SYS_ADMIN))
+>> +            return -EPERM;
+>> +
+>> +    /* If filesystem doesn't support freeze feature, return. */
+>> +    if (sb->s_op->write_super_lockfs == NULL)
+>> +            return -EOPNOTSUPP;
+>> +
+>> +    /* If a regular file or a directory isn't specified, return. */
+>> +    if (sb->s_bdev == NULL)
+>> +            return -EINVAL;
+>
+>I don't understand this commnt.  What you are checking is that the
+>filesystem has a non-NULL s_bdev, which implies a not blockdevice-backed
+>filesystem.
+
+I will fix the comment as :
+" If a blockdevice-backed filesystem isn't specified, return."
+
+Cheers, Takashi
