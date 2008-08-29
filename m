@@ -1,60 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbYH2Hcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbYH2HgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754307AbYH2Hcm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 03:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbYH2Hcd
+	id S1753164AbYH2HgZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 03:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbYH2HgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 03:32:33 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:48851 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751186AbYH2Hcc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 03:32:32 -0400
-To: hpa@kernel.org
-CC: miklos@szeredi.hu, tj@kernel.org, fuse-devel@lists.sourceforge.net,
-       greg@kroah.com, linux-kernel@vger.kernel.org
-In-reply-to: <48B7183E.3010100@kernel.org> (hpa@kernel.org)
-Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <48B6EC83.1070207@kernel.org> <48B6EE36.5070209@kernel.org> <48B6F7C5.3020204@kernel.org> <E1KYn0U-00047F-Qa@pomaz-ex.szeredi.hu> <48B708C4.4000405@kernel.org> <E1KYoX9-0004Mn-NX@pomaz-ex.szeredi.hu> <48B7183E.3010100@kernel.org>
-Message-Id: <E1KYySw-0005RZ-3e@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 29 Aug 2008 09:32:18 +0200
+	Fri, 29 Aug 2008 03:36:17 -0400
+Received: from mx2.suse.de ([195.135.220.15]:43641 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751299AbYH2HgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 03:36:16 -0400
+From: Neil Brown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Fri, 29 Aug 2008 17:36:08 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18615.42728.498883.440973@notabene.brown>
+Cc: Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       jurriaan <thunder7@xs4all.nl>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27-rc4: lots of 'in_atomic():1, irqs_disabled():0' with 
+ software-raid1
+In-Reply-To: message from Andrew Morton on Thursday August 28
+References: <20080827170538.GA24393@amd64.of.nowhere>
+	<200808272347.43577.rjw@sisk.pl>
+	<20080828073324.GR20055@kernel.dk>
+	<20080828004532.45d8b8c9.akpm@linux-foundation.org>
+	<20080828074830.GV20055@kernel.dk>
+	<18614.24929.952454.829021@notabene.brown>
+	<20080828020018.a8ea85f0.akpm@linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Aug 2008, H. Peter Anvin wrote:
-> Miklos Szeredi wrote:
-> > On Thu, 28 Aug 2008, H. Peter Anvin wrote:
-> >> This is *hard* to get right, and we screw this up in the kernel with 
-> >> painful regularity.  The throught of having user-space processes, which 
-> >> don't have access to the kernel locking primitives and functions like 
-> >> copy_from_user() dealing with this stuff scares me crazy.
-> > 
-> > What issues exactly are you thinking of?
+On Thursday August 28, akpm@linux-foundation.org wrote:
 > 
-> Memory changing underneath you.  It can be dealt with by very careful 
-> sequencing only.
-
-That's just handwaving.  Apps don't normally change memory under
-system call arguments.  Or if they do the only thing we ever guarantee
-is that the thing won't blow up in a big fireball.
-
-I don't see how getting the data from userspace is different from
-doing the same in the kernel.  Care to explain?
-
-> >> That is why I'm suggesting using an in-kernel linearizer.
-> > 
-> > Lots of complexity, ugh...  Even Tejun's current scheme is better IMO.
+> I'm curious about how this happened.
 > 
-> And then you get *no* privilege separation, for one thing, so why even 
-> bother doing it in userspace?
+> afaict from reading the code, this:
+> 
+> 	rcu_read_lock();
+> 	might_sleep();
+> 	rcu_read_unlock();
+> 
+> will warn if CONFIG_PREEMPT_RCU=n but won't warn if
+> CONFIG_PREEMPT_RCU=y.  If correct, that's a nasty trap.
+> 
+> Is that what you did?
 
-And with ioctls (at least if the filesystem supplies the linearizer
-instructions) you simply _cannot_ get proper privilege separation.
-Generic ioctl support will always be a privileged thing.
+Uhm..
+$ grep PREEMPT /home/src/md-x86-64/.config
+CONFIG_PREEMPT_NONE=y
+# CONFIG_PREEMPT_VOLUNTARY is not set
+# CONFIG_PREEMPT is not set
+$ grep DEBUG_SPIN /home/src/md-x86-64/.config
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_SPINLOCK_SLEEP=y
+$ grep RCU /home/src/md-x86-64/.config
+CONFIG_CLASSIC_RCU=y
+# CONFIG_RCU_TORTURE_TEST is not set
 
-Alternatively we can restrict ioctls.  Most ioctls conform to some
-convention for encoding the format (size/in/out) in the command, no?
+This definitely doesn't report an error if I put "might_sleep" inside 
+rcu_read_lock.  I tried to figure out why but got lost.
 
-Miklos
+BTW, I need the following to get current -git to compile.
+
+NeilBrown
+
+Author: NeilBrown <neilb@suse.de>
+Date:   Tue Aug 19 11:59:37 2008 +1000
+
+    Fix compile error in security
+
+diff --git a/include/linux/security.h b/include/linux/security.h
+index 2ee5ecf..0cc23a1 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -1757,7 +1757,7 @@ static inline int security_ptrace_may_access(struct task_struct *child,
+ 
+ static inline int security_ptrace_traceme(struct task_struct *child)
+ {
+-	return cap_ptrace_traceme(parent);
++	return cap_ptrace_traceme(child);
+ }
+ 
+ static inline int security_capget(struct task_struct *target,
+
+
