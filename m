@@ -1,112 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758723AbYH2RvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbYH2SGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758723AbYH2RvW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 13:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbYH2RvO
+	id S1757686AbYH2SGW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 14:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYH2SGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 13:51:14 -0400
-Received: from ryu.zarb.org ([212.85.153.228]:43492 "EHLO ryu.zarb.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752755AbYH2RvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 13:51:13 -0400
-Subject: Re: r8169 regression in 2.6.26.3 vs 2.6.26.2
-From: Pascal Terjan <pterjan@mandriva.com>
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: Marcus Sundberg <marcus@ingate.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, stable@kernel.org
-In-Reply-To: <1219869889.30098.43.camel@plop>
-References: <1219828800.30098.7.camel@plop> <48B52E8C.40605@ingate.com>
-	 <1219833655.30098.9.camel@plop>
-	 <20080827201111.GA29569@electric-eye.fr.zoreil.com>
-	 <1219869889.30098.43.camel@plop>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Mandriva
-Date: Fri, 29 Aug 2008 19:51:07 +0200
-Message-Id: <1220032267.27275.9.camel@plop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.23.90-1mdv2009.0 
-Content-Transfer-Encoding: 8bit
+	Fri, 29 Aug 2008 14:06:13 -0400
+Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:37984
+	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751526AbYH2SGM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 14:06:12 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [RT PATCH v2] seqlock: serialize against writers
+To: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       gregory.haskins@gmail.com, andi@firstfloor.org, shemminger@vyatta.com
+Date: Fri, 29 Aug 2008 14:03:51 -0400
+Message-ID: <20080829180135.22450.54780.stgit@dev.haskins.net>
+In-Reply-To: <20080829154237.1196.66825.stgit@dev.haskins.net>
+References: <20080829154237.1196.66825.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le mercredi 27 août 2008 à 22:44 +0200, Pascal Terjan a écrit :
-> Le mercredi 27 août 2008 à 22:11 +0200, Francois Romieu a écrit :
-> > Pascal Terjan <pterjan@mandriva.com> :
-> > > Le mercredi 27 ao?t 2008 ? 12:38 +0200, Marcus Sundberg a ?crit :
-> > > > Pascal Terjan wrote:
-> > > > > Since updating to 2.6.26.3, networking no longer works on Acer Aspire
-> > > > > One.
-> > > > > 
-> > > > > PCI config is now always filled with ones.
-> > > > > 
-> > > > > Reverting "r8169: avoid thrashing PCI conf space above
-> > > > > RTL_GIGA_MAC_VER_06" makes it work again.
-> > > > > 
-> > > > > The device is 10ec:8136
-> > [...]
-> > > > How does the kernel identify your chipset upon driver load?
-> > > > (grep for XID)
-> > > 
-> > > eth0: RTL8169 at 0xe04ee000, 00:1e:68:a0:07:b5, XID 24a00000 IRQ 17
-> > 
-> > As far as I can read rtl8169_get_mac_version, this XID should not match
-> > any known device with 2.6.26.3 and thus fallback to RTL_GIGA_MAC_VER_01
-> > (assuming that rtl8169_init_phy runs after rtl8169_get_mac_version, what
-> > it appears to do so far).
-> > 
-> > Yes / no / -ECOFFEE ?
-> > 
-> 
-> Yes I took some time to look at it and now does not understand what's
-> wrong.
-> 
-> Indeed I get "unknown MAC (27a00600)" so I get RTL_GIGA_MAC_VER_01 which
-> is <= RTL_GIGA_MAC_VER_06, so it should work fine with or without this
-> patch. And indeed it seems to work when I rebuild the module, even when
-> I do not revert the patch.
-> 
-> And by the way, unrelated to this problem, it is written twice for
-> RTL_GIGA_MAC_VER_02:
-> 
-> =====
->         if (tp->mac_version <= RTL_GIGA_MAC_VER_06) {
->                 dprintk("Set MAC Reg C+CR Offset 0x82h = 0x01h\n");
->                 RTL_W8(0x82, 0x01);
->         }
-> [...]
->         if (tp->mac_version == RTL_GIGA_MAC_VER_02) {
->                 dprintk("Set MAC Reg C+CR Offset 0x82h = 0x01h\n");
->                 RTL_W8(0x82, 0x01);
-> =====
-> 
-> To come back to the problem, this patch may not be faulty but I fail to
-> understand the issue...
-> 
-> - 2.6.26.2 always works
-> - 2.6.26.3 from my distro always fails
-> - 2.6.26.3 from my distro with r8169 rebuilt out of the kernel tree but
-> from the same source and with the same config, gcc, etc, works...
-> 
-> So either it is random I am very unlucky that it always works with one
-> and always fails with the other or there is some difference that I could
-> not think about
+*Patch submitted for inclusion in PREEMPT_RT 26-rt4.  Applies to 2.6.26.3-rt3*
 
-OK I was very unlucky...
-For some reason when 2.6.26.2 was OK but 2.6.26.3 built inside the rpm
-will always fail (or maybe very often, harder to test).
-And when rebuilding the module by hand, it will work most of the time,
-but I got the bug after unloading/reloading it about 30 times in a row,
-so it's just that this chip is affected by the random bug and something
-make it more likely to happen.
+Hi Ingo, Steven, Thomas,
+  Please consider for -rt4.  This fixes a nasty deadlock on my systems under
+  heavy load.
 
-> > On a different topic, I would suggest to try patches #0001 ... #0006
-> > at http://userweb.kernel.org/~romieu/r8169/2.6.27-rc3/20080818/ with
-> > your chipset.
-> 
-> OK I will
+[
+Changelog:
+	v2: only touch seqlock_t because raw_seqlock_t doesn't require
+	    serialization and userspace cannot modify data during a read
 
-I applied these patches meaning that now the write will not occur, and
-tried to unload/load the module 200 times but after some time I got a
-oops in rtl_tx_performance_tweak (and could not capture it).
+	v1: initial release
+]
+
+-Greg
+
+----
+seqlock: serialize against writers
+
+Seqlocks have always advertised that readers do not "block", but this was
+never really true.  Readers have always logically blocked at the head of
+the critical section under contention with writers, regardless of whether
+they were allowed to run code or not.
+
+Recent changes in this space (88a411c07b6fedcfc97b8dc51ae18540bd2beda0)
+have turned this into a more explicit blocking operation in mainline.
+However, this change highlights a short-coming in -rt because the
+normal seqlock_ts are preemptible.  This means that we can potentially
+deadlock should a reader spin waiting for a write critical-section to end
+while the writer is preempted.
+
+This patch changes the internal implementation to use a rwlock and forces
+the readers to serialize with the writers under contention.  This will
+have the advantage that -rt seqlocks_t will sleep the reader if deadlock
+were imminent, and it will pi-boost the writer to prevent inversion.
+
+This fixes a deadlock discovered under testing where all high prioritiy
+readers were hogging the cpus and preventing a writer from releasing the
+lock.
+
+Since seqlocks are designed to be used as rarely-write locks, this should
+not affect the performance in the fast-path
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
+
+ include/linux/seqlock.h |   51 +++++++++++++++++++++++------------------------
+ 1 files changed, 25 insertions(+), 26 deletions(-)
+
+diff --git a/include/linux/seqlock.h b/include/linux/seqlock.h
+index 345d726..605fcdb 100644
+--- a/include/linux/seqlock.h
++++ b/include/linux/seqlock.h
+@@ -3,9 +3,11 @@
+ /*
+  * Reader/writer consistent mechanism without starving writers. This type of
+  * lock for data where the reader wants a consistent set of information
+- * and is willing to retry if the information changes.  Readers never
+- * block but they may have to retry if a writer is in
+- * progress. Writers do not wait for readers. 
++ * and is willing to retry if the information changes. Readers block
++ * on write contention (and where applicable, pi-boost the writer).
++ * Readers without contention on entry acquire the critical section
++ * without any atomic operations, but they may have to retry if a writer
++ * enters before the critical section ends. Writers do not wait for readers.
+  *
+  * This is not as cache friendly as brlock. Also, this will not work
+  * for data that contains pointers, because any writer could
+@@ -24,6 +26,8 @@
+  *
+  * Based on x86_64 vsyscall gettimeofday 
+  * by Keith Owens and Andrea Arcangeli
++ *
++ * Priority inheritance and live-lock avoidance by Gregory Haskins
+  */
+ 
+ #include <linux/spinlock.h>
+@@ -31,7 +35,7 @@
+ 
+ typedef struct {
+ 	unsigned sequence;
+-	spinlock_t lock;
++	rwlock_t lock;
+ } __seqlock_t;
+ 
+ typedef struct {
+@@ -57,7 +61,7 @@ typedef __raw_seqlock_t raw_seqlock_t;
+ 		{ 0, RAW_SPIN_LOCK_UNLOCKED(lockname) }
+ 
+ #ifdef CONFIG_PREEMPT_RT
+-# define __SEQLOCK_UNLOCKED(lockname) { 0, __SPIN_LOCK_UNLOCKED(lockname) }
++# define __SEQLOCK_UNLOCKED(lockname) { 0, __RW_LOCK_UNLOCKED(lockname) }
+ #else
+ # define __SEQLOCK_UNLOCKED(lockname) __RAW_SEQLOCK_UNLOCKED(lockname)
+ #endif
+@@ -69,7 +73,7 @@ typedef __raw_seqlock_t raw_seqlock_t;
+ 	do { *(x) = (raw_seqlock_t) __RAW_SEQLOCK_UNLOCKED(x); spin_lock_init(&(x)->lock); } while (0)
+ 
+ #define seqlock_init(x) \
+-		do { *(x) = (seqlock_t) __SEQLOCK_UNLOCKED(x); spin_lock_init(&(x)->lock); } while (0)
++		do { *(x) = (seqlock_t) __SEQLOCK_UNLOCKED(x); rwlock_init(&(x)->lock); } while (0)
+ 
+ #define DEFINE_SEQLOCK(x) \
+ 		seqlock_t x = __SEQLOCK_UNLOCKED(x)
+@@ -85,7 +89,7 @@ typedef __raw_seqlock_t raw_seqlock_t;
+  */
+ static inline void __write_seqlock(seqlock_t *sl)
+ {
+-	spin_lock(&sl->lock);
++	write_lock(&sl->lock);
+ 	++sl->sequence;
+ 	smp_wmb();
+ }
+@@ -103,14 +107,14 @@ static inline void __write_sequnlock(seqlock_t *sl)
+ {
+ 	smp_wmb();
+ 	sl->sequence++;
+-	spin_unlock(&sl->lock);
++	write_unlock(&sl->lock);
+ }
+ 
+ #define __write_sequnlock_irqrestore(sl, flags)	__write_sequnlock(sl)
+ 
+ static inline int __write_tryseqlock(seqlock_t *sl)
+ {
+-	int ret = spin_trylock(&sl->lock);
++	int ret = write_trylock(&sl->lock);
+ 
+ 	if (ret) {
+ 		++sl->sequence;
+@@ -120,18 +124,25 @@ static inline int __write_tryseqlock(seqlock_t *sl)
+ }
+ 
+ /* Start of read calculation -- fetch last complete writer token */
+-static __always_inline unsigned __read_seqbegin(const seqlock_t *sl)
++static __always_inline unsigned __read_seqbegin(seqlock_t *sl)
+ {
+ 	unsigned ret;
+ 
+-repeat:
+ 	ret = sl->sequence;
+ 	smp_rmb();
+ 	if (unlikely(ret & 1)) {
+-		cpu_relax();
+-		goto repeat;
++		/*
++		 * Serialze with the writer which will ensure they are
++		 * pi-boosted if necessary and prevent us from starving
++		 * them.
++		 */
++		read_lock(&sl->lock);
++		ret = sl->sequence;
++		read_unlock(&sl->lock);
+ 	}
+ 
++	BUG_ON(ret & 1);
++
+ 	return ret;
+ }
+ 
+@@ -142,20 +153,8 @@ repeat:
+  */
+ static inline int __read_seqretry(seqlock_t *sl, unsigned iv)
+ {
+-	int ret;
+-
+ 	smp_rmb();
+-	ret = (sl->sequence != iv);
+-	/*
+-	 * If invalid then serialize with the writer, to make sure we
+-	 * are not livelocking it:
+-	 */
+-	if (unlikely(ret)) {
+-		unsigned long flags;
+-		spin_lock_irqsave(&sl->lock, flags);
+-		spin_unlock_irqrestore(&sl->lock, flags);
+-	}
+-	return ret;
++	return (sl->sequence != iv);
+ }
+ 
+ static __always_inline void __write_seqlock_raw(raw_seqlock_t *sl)
 
