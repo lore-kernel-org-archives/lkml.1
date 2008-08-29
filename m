@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757015AbYH2Oxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751203AbYH2OyG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757015AbYH2Oxc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 10:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbYH2Owk
+	id S1751203AbYH2OyG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 10:54:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbYH2Oxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 10:52:40 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35172 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbYH2Owj (ORCPT
+	Fri, 29 Aug 2008 10:53:49 -0400
+Received: from ti-out-0910.google.com ([209.85.142.188]:58076 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751006AbYH2Oxr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 10:52:39 -0400
-Date: Fri, 29 Aug 2008 05:50:23 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Brice Goglin <Brice.Goglin@inria.fr>
-Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: [RFC] export irq_set/get_affinity() for multiqueue network
- drivers
-Message-ID: <20080829055023.07966b4a@infradead.org>
-In-Reply-To: <48B708E1.4070001@inria.fr>
-References: <48B708E1.4070001@inria.fr>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 29 Aug 2008 10:53:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=OIXEL9vBpEZZsrwPit66lKRanCTDyKdc0W+bYJbncQHzjivyTMh9DP7nTU/YMVxc31
+         HqIjBm/i6S+nnvOuoSLlxjiy2BFhEHenYUVWuGIFaYX1h/zaUfKOwTDG1nOT/6zCclAf
+         IJQCe0dddyomt8hYGdUHhs7026tk43VPnC9lQ=
+Message-ID: <48B80D33.5050806@gmail.com>
+Date: Fri, 29 Aug 2008 16:52:35 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>,
+       Peer Chen <pchen@nvidia.com>
+Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
+References: <fa.CVrJhjm3R8sjl5Z+EEIzYm7QtW0@ifi.uio.no> <48B80B40.5060002@shaw.ca>
+In-Reply-To: <48B80B40.5060002@shaw.ca>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Aug 2008 22:21:53 +0200
-Brice Goglin <Brice.Goglin@inria.fr> wrote:
-
-> Hello,
+Robert Hancock wrote:
+> (ccing linux-ide)
 > 
-> Is there any way to setup IRQ masks from within a driver? myri10ge
-> currently relies on an external script (writing in
-> /proc/irq/*/smp_affinity) to bind each queue/MSI-X to a different
-> processor. By default, Linux will either:
-> * round-robin the interrupts (killing the benefit of DCA for instance)
-> * put all IRQs on the same CPU (killing much of th
+> Tejun, another one of these reset issues?
 
-* do the right thing with the userspace irq balancer
+Yeah, looks like it.  I just sent the patch for #upstream-fixes and will
+forward it to -stable once it gets into #upstream-fixes.
+
+  http://article.gmane.org/gmane.linux.ide/34077
+
+Thanks.
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+tejun
