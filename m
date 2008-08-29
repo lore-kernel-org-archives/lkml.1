@@ -1,41 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbYH2Lb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbYH2Lhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756366AbYH2Lb5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 07:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbYH2Lbt
+	id S1756555AbYH2Lhz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 07:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbYH2Lhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 07:31:49 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:43347 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753485AbYH2Lbs (ORCPT
+	Fri, 29 Aug 2008 07:37:47 -0400
+Received: from alto.filmlight.ltd.uk ([217.40.27.25]:17112 "HELO
+	a.mx.filmlight.ltd.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752335AbYH2Lhr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 07:31:48 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: stefan_kopp@agilent.com
-Subject: Re: [PATCH] USB: add USB test and measurement class driver - round 2
-Date: Fri, 29 Aug 2008 13:33:01 +0200
-User-Agent: KMail/1.9.9
-Cc: korgull@home.nl, greg@kroah.com, stern@rowland.harvard.edu,
-       linux-usb@vger.kernel.org, me@felipebalbi.com,
-       linux-kernel@vger.kernel.org
-References: <20080827183615.GA15692@kroah.com> <200808291034.09307.oliver@neukum.org> <7D8F552F9FFBAC438A816966BEC4516BFBA3D0@cos-us-mb07.cos.agilent.com>
-In-Reply-To: <7D8F552F9FFBAC438A816966BEC4516BFBA3D0@cos-us-mb07.cos.agilent.com>
+	Fri, 29 Aug 2008 07:37:47 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Aug 2008 07:37:46 EDT
+Message-ID: <48B7DDF7.7060107@filmlight.ltd.uk>
+Date: Fri, 29 Aug 2008 12:31:03 +0100
+From: Roger Willcocks <roger@filmlight.ltd.uk>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Tejun Heo <tj@kernel.org>
+CC: Miklos Szeredi <miklos@szeredi.hu>, fuse-devel@lists.sourceforge.net,
+       greg@kroah.com, linux-kernel@vger.kernel.org
+Subject: Re: [fuse-devel] [PATCH 5/7] FUSE: implement ioctl support
+References: <1219945263-21074-1-git-send-email-tj@kernel.org>	<1219945263-21074-6-git-send-email-tj@kernel.org>	<20080828175116.GB18461@kroah.com>	<48B6E79E.6020702@kernel.org> <48B6E801.9080102@kernel.org>	<E1KYm0D-0003q0-IQ@pomaz-ex.szeredi.hu>	<48B6EBBD.6050406@kernel.org>	<E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu>	<48B6EF98.4070008@kernel.org>	<E1KYn7T-00048J-Qj@pomaz-ex.szeredi.hu>	<48B6FFB6.7000104@kernel.org>	<E1KYnhA-0004Ei-3t@pomaz-ex.szeredi.hu> <48B75C94.7030604@kernel.org>
+In-Reply-To: <48B75C94.7030604@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808291333.02113.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 29 August 2008 11:13:04 schrieb stefan_kopp@agilent.com:
-> For large amounts of data (e.g. when downloading a waveform), USBTMC instruments often use a "binblock", a concept taken from the good old GPIB (IEEE488) standard, where the data is preceeded by a header and the header indicates how many bytes are following. So you first read and interpret the header and then you know exactly how many bytes to expect in the body of the message.
+One thing to bear in mind is the possibility of 32-bit client programs 
+running on a 64-bit platform, so your user-space driver will need be be 
+aware of the flavour of the client, and parse the ioctl arguments (and 
+in particular, pointers) appropriately.
 
-Not really ideal. We should tell user space how much really was sent.
+That's true of a kernel implementation too, of course.
 
-	Regards
-		Oliver
+--
+Roger
+
+
 
