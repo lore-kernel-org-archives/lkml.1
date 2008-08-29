@@ -1,35 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbYH2LLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbYH2Lay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756028AbYH2LLz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 07:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbYH2LLs
+	id S1755465AbYH2Lay (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 07:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbYH2Lap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 07:11:48 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:52110 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753254AbYH2LLr (ORCPT
+	Fri, 29 Aug 2008 07:30:45 -0400
+Received: from hpsmtp-eml14.kpnxchange.com ([213.75.38.114]:5111 "EHLO
+	hpsmtp-eml14.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753078AbYH2Lao (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 07:11:47 -0400
-Date: Fri, 29 Aug 2008 12:11:46 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: kovlensky@interia.pl
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: mounting windows shares with path exactly like on windows
-Message-ID: <20080829111146.GJ28946@ZenIV.linux.org.uk>
-References: <20080829105420.E10967E8036@f17.poczta.interia.pl>
+	Fri, 29 Aug 2008 07:30:44 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Regression: SATA disk double spin-off during hibernation on hp nx6325
+Date: Fri, 29 Aug 2008 13:30:40 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org, trenn@suse.de,
+       htejun@gmail.com, hancockr@shaw.ca, linux-kernel@vger.kernel.org
+References: <200808290002.55026.rjw@sisk.pl> <200808291245.27436.elendil@planet.nl> <200808291257.33690.rjw@sisk.pl>
+In-Reply-To: <200808291257.33690.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080829105420.E10967E8036@f17.poczta.interia.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200808291330.42265.elendil@planet.nl>
+X-OriginalArrivalTime: 29 Aug 2008 11:30:42.0511 (UTC) FILETIME=[ABADD5F0:01C909CA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 29, 2008 at 12:54:20PM +0200, kovlensky@interia.pl wrote:
-> All,
-> 
-> Thank you for massive support. First - all of you miss one important issue - slash/backlash conversion, when transferring path from Linux to Windows and back. Second - that's corporate with tens of people relying on these systems running. Answering questions about application - that's big engineering one, with port existing on many os'es. Objects, which are created there, point to physical files on disk. It's like symlink. One symlink per object. As these symlinks are simply single paths to file I find it impossible to develop any method of having a link working on both Linux and Windows. Also writing anything on my own won't work - I know that it can be done with LD_PRELOAD for example, but try convincing big corporation that their development-critical environment can safely rely on your custom piece of code...
- 
-If they have port to many OSes, they have dealt with that before and
-solution used for e.g. Solaris would very likely be a good start...
+On Friday 29 August 2008, Rafael J. Wysocki wrote:
+> Suspend to RAM is fine, hibernation (aka suspend to disk) is not (on my
+> box). Does it mean that hibernation is fine on your box with
+> 2.6.27-rc5, although shutdown is not?  That would require special
+> DMI-dependent handling, so please double check.
+
+Ah, right. The double spin down happens during hibernation too.
+
+> Anyway, please attach the output of dmidecode to
+> http://bugzilla.kernel.org/show_bug.cgi?id=8855
+> so I can include your box into the final version of the patch.
+
+Done.
