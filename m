@@ -1,102 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbYH2IaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbYH2Iaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755739AbYH2IaQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 04:30:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbYH2I34
+	id S1755922AbYH2Iaj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 04:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbYH2IaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 04:29:56 -0400
-Received: from bigben2.bytemark.co.uk ([80.68.81.132]:50364 "EHLO
-	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751400AbYH2I3z (ORCPT
+	Fri, 29 Aug 2008 04:30:06 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:33035 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755556AbYH2IaC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 04:29:55 -0400
-Date: Fri, 29 Aug 2008 09:29:50 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mm: hugetlb.c make functions static, use NULL rather
-	than 0
-Message-ID: <20080829082950.GC3387@brain>
-References: <1219445274.4493.10.camel@brick> <Pine.LNX.4.64.0808251023220.8672@blonde.site>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0808251023220.8672@blonde.site>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 29 Aug 2008 04:30:02 -0400
+To: tj@kernel.org
+CC: miklos@szeredi.hu, greg@kroah.com, fuse-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-reply-to: <48B7AF60.8040709@kernel.org> (message from Tejun Heo on Fri, 29
+	Aug 2008 10:12:16 +0200)
+Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <20080828175116.GB18461@kroah.com> <48B6E79E.6020702@kernel.org> <48B6E801.9080102@kernel.org> <E1KYm0D-0003q0-IQ@pomaz-ex.szeredi.hu> <48B6EBBD.6050406@kernel.org> <E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu> <48B6EF98.4070008@kernel.org> <E1KYn7T-00048J-Qj@pomaz-ex.szeredi.hu> <48B6FFB6.7000104@kernel.org> <E1KYnhA-0004Ei-3t@pomaz-ex.szeredi.hu> <48B75C94.7030604@kernel.org> <E1KYyt9-0005Ur-Eu@pomaz-ex.szeredi.hu> <48B7AF60.8040709@kernel.org>
+Message-Id: <E1KYzMd-0005aR-28@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 29 Aug 2008 10:29:51 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 25, 2008 at 10:27:39AM +0100, Hugh Dickins wrote:
-> On Fri, 22 Aug 2008, Harvey Harrison wrote:
-> 
-> > mm/hugetlb.c:265:17: warning: symbol 'resv_map_alloc' was not declared. Should it be static?
-> > mm/hugetlb.c:277:6: warning: symbol 'resv_map_release' was not declared. Should it be static?
-> > mm/hugetlb.c:292:9: warning: Using plain integer as NULL pointer
-> > mm/hugetlb.c:1750:5: warning: symbol 'unmap_ref_private' was not declared. Should it be static?
+On Fri, 29 Aug 2008, Tejun Heo wrote:
+> I first used 'server' for userland [FC]USE server but then I noticed
+> there were places in FUSE they were referred as clients so now I use
+> 'client' for those and call the app using the FUSE fs the 'caller'.
+> What are the established terms?
 
-Harvey are you using some additional compiler flags to get this, I am
-pretty sure I checked for warnings during compilation before this lot
-was merged.  Hmmm.
+Umm
 
-> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+ - userspace filesystem
+ - filesystem daemon
+ - filesystem process
+ - server
 
-Yep this looks completely sane.  This appears to have been sucked up
-into -mm already, but for completeness.
+Yes it's also a client of the fuse device, but that term is confusing.
 
-Acked-by: Andy Whitcroft <apw@shadowen.org>
+> Anyways, doing it directly from the server (or is it client) opens up a
+> lot of new possibilities to screw up and I'd really much prefer staying
+> in similar ballpark with other operations.  Maybe we can restrict it to
+> two stages (query size & transfer) and linear consecutive ranges but
+> then again adding retry doesn't contribute too much to the complexity.
+> Oh.. and BTW, the in-ioctl length coding is not used universally, so it
+> can't be depended upon.
 
-> This all looks good to me, but guess you sent it my way because
-> you mistook it for mm/hughtlb.c?  Cc'ed Andy, he's the man here!
+I know it's not universal, some horrors I've seen in the old wireless
+interfaces.  The question is: do we want to support such "extended"
+ioctls?  For exmaple, does OSS have non-conformant ioctls?
 
-Thanks for the heads up.
-
-> Hugh
-> 
-> > ---
-> >  mm/hugetlb.c |    8 ++++----
-> >  1 files changed, 4 insertions(+), 4 deletions(-)
+> >>  Also, what about containers?  How would it work then?
 > > 
-> > diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> > index 67a7119..b548a94 100644
-> > --- a/mm/hugetlb.c
-> > +++ b/mm/hugetlb.c
-> > @@ -262,7 +262,7 @@ struct resv_map {
-> >  	struct list_head regions;
-> >  };
-> >  
-> > -struct resv_map *resv_map_alloc(void)
-> > +static struct resv_map *resv_map_alloc(void)
-> >  {
-> >  	struct resv_map *resv_map = kmalloc(sizeof(*resv_map), GFP_KERNEL);
-> >  	if (!resv_map)
-> > @@ -274,7 +274,7 @@ struct resv_map *resv_map_alloc(void)
-> >  	return resv_map;
-> >  }
-> >  
-> > -void resv_map_release(struct kref *ref)
-> > +static void resv_map_release(struct kref *ref)
-> >  {
-> >  	struct resv_map *resv_map = container_of(ref, struct resv_map, refs);
-> >  
-> > @@ -289,7 +289,7 @@ static struct resv_map *vma_resv_map(struct vm_area_struct *vma)
-> >  	if (!(vma->vm_flags & VM_SHARED))
-> >  		return (struct resv_map *)(get_vma_private_data(vma) &
-> >  							~HPAGE_RESV_MASK);
-> > -	return 0;
-> > +	return NULL;
-> >  }
-> >  
-> >  static void set_vma_resv_map(struct vm_area_struct *vma, struct resv_map *map)
-> > @@ -1747,7 +1747,7 @@ void unmap_hugepage_range(struct vm_area_struct *vma, unsigned long start,
-> >   * from other VMAs and let the children be SIGKILLed if they are faulting the
-> >   * same region.
-> >   */
-> > -int unmap_ref_private(struct mm_struct *mm,
-> > +static int unmap_ref_private(struct mm_struct *mm,
-> >  					struct vm_area_struct *vma,
-> >  					struct page *page,
-> >  					unsigned long address)
-> > -- 
-> > 1.6.0.340.g84854
+> > Dunno.  Isn't there some transformation of pids going on, so that the
+> > global namespace can access pids in all containers but under a
+> > different alias?  I do hope somethinig like this works, otherwise it's
+> > not only fuse that will break.
+> 
+> I'm not sure either.  Any idea who we should be asking about it?
+
+Serge Hallyn and Eric Biederman.
+
+Miklos
