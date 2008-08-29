@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbYH2QJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbYH2QMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756908AbYH2QJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 12:09:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbYH2QJU
+	id S1755922AbYH2QMj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 12:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYH2QM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 12:09:20 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34397 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753317AbYH2QJT (ORCPT
+	Fri, 29 Aug 2008 12:12:29 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48611 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751451AbYH2QM3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 12:09:19 -0400
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       gregory.haskins@gmail.com
-Subject: Re: [PATCH] seqlock: serialize against writers
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080829154237.1196.66825.stgit@dev.haskins.net>
-Date: Fri, 29 Aug 2008 18:09:16 +0200
-In-Reply-To: <20080829154237.1196.66825.stgit@dev.haskins.net> (Gregory Haskins's message of "Fri, 29 Aug 2008 11:44:58 -0400")
-Message-ID: <87abevpzv7.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 29 Aug 2008 12:12:29 -0400
+Date: Fri, 29 Aug 2008 09:12:29 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de,
+       torvalds@linux-foundation.org, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [patch 0/5] Nano/Microsecond resolution for select() and poll()
+Message-ID: <20080829091229.1ddfc92d@infradead.org>
+In-Reply-To: <200808291754.28241.arnd@arndb.de>
+References: <20080829080549.6906b744@infradead.org>
+	<200808291754.28241.arnd@arndb.de>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins <ghaskins@novell.com> writes:
+On Fri, 29 Aug 2008 17:54:27 +0200
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-> *Patch submitted for inclusion in PREEMPT_RT 26-rt4.  Applies to 2.6.26.3-rt3*
->
-> Hi Ingo, Steven, Thomas,
->   Please consider for -rt4.  This fixes a nasty deadlock on my systems under
->   heavy load.
+> On Friday 29 August 2008, Arjan van de Ven wrote:
+> 
+> > With this patch series, the internals of select() and poll()
+> > interfaces are changed such that they work on the nanosecond level
+> > (using hrtimers). The userspace interface for select() is in
+> > microseconds, for pselect() and ppoll() this is in nanoseconds.
+> 
+> Nice work, seems a lot better thought through than my previous
+> attempt [1], which unfortunately never saw any reactions.
+>  
+> > even though poll() (as opposed to ppoll()) only accepts milliseconds
+> > as userspace interface, the behavior will still improve because the
+> > current time no longer needs to be rounded up to the next jiffie,
+> > so on average a 500 milliseconds behavior improvement.
+> 
+> That would be 500 microseconds I think.
+> 
+> > I'd like to get rid of the jiffies timeout entirely over time, and
+> > only use hrtimers (makes the code a lot nicer) but that's for now
+> > a separate step, first I'd like to see how this change pans out. 
+> 
+> You mean entirely entirely getting rid of jiffies in the kernel, or
+> just with user facing interfaces like epoll_wait, rt_sigtimedwait etc?
 
-Does this even work under x86-64? x86-64 uses seqlocks in user space
-in its vsyscalls. And read_lock() definitely doesn't work there because 
-it writes.
+I meant actually just in the select() and poll() code; right now it is
+sort of dual-brained, I'd like to eventually be able to get rid of that
+and just use hrtimers for select() and poll() always
 
-You would need at least to disable vsyscall gettimeofday(), making
-it much much slower.
-
-Perhaps you tested on one of the systems where the vsyscalls need
-to fallback for other reasons? (e.g. one using pmtimer for timing).
-
--Andi
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
