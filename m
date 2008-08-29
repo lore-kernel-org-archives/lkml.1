@@ -1,92 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758944AbYH2Vhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759235AbYH2Vim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758944AbYH2Vhl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 17:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbYH2Vhb
+	id S1759235AbYH2Vim (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 17:38:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbYH2Vif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 17:37:31 -0400
-Received: from nebensachen.de ([195.34.83.29]:49689 "EHLO mail.nebensachen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752138AbYH2Vha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 17:37:30 -0400
-X-Hashcash: 1:20:080829:bzolnier@gmail.com::YyNzrjvtKAoqX5ik:0000000000000000000000000000000000000000000AGdv
-X-Hashcash: 1:20:080829:linux-ide@vger.kernel.org::/APTvs9fQWa5Gexi:0000000000000000000000000000000000000xtk
-X-Hashcash: 1:20:080829:linux-kernel@vger.kernel.org::TrZdsntMX1msKlUq:0000000000000000000000000000000004kEK
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ide: Build fix for CONFIG_IDE_PROC_FS=n
-Message-ID: <20080829213217.4826.91622.stgit@denkblock.local>
-User-Agent: StGIT/0.14.2
-Content-Type: text/plain; charset="utf-8"
+	Fri, 29 Aug 2008 17:38:35 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49456
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751553AbYH2Vie (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 17:38:34 -0400
+Date: Fri, 29 Aug 2008 14:38:29 -0700 (PDT)
+Message-Id: <20080829.143829.39803986.davem@davemloft.net>
+To: jose.calhariz@tagus.ist.utl.pt
+Cc: yoshfuji@linux-ipv6.org, linux-kernel@vger.kernel.org,
+       494223@bugs.debian.org
+Subject: Re: Definition of PIM_REGISTER in pim.h, with more information
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080829.135614.87412482.davem@davemloft.net>
+References: <20080829134319.GA8665@copernico.tagus.ist.utl.pt>
+	<20080829.135614.87412482.davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date: Fri, 29 Aug 2008 23:37:20 +0200
-MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recent changes have broken compilation when CONFIG_IDE_PROC_FS is not set.
+From: David Miller <davem@davemloft.net>
+Date: Fri, 29 Aug 2008 13:56:14 -0700 (PDT)
 
-Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
+> net: Unbreak userspace which includes linux/mroute.h
+
+Actually, now that I can see how this linux/pim.h thing
+is used by both linux/mroute.h and linux/mroute6.h I have
+decided to fix the problem in a different way.
+
+net: Unbreak userspace usage of linux/mroute.h
+
+Nothing in linux/pim.h should be exported to userspace.
+
+This should fix the XORP build failure reported by
+Jose Calhariz, the debain package maintainer.
+
+Nothing originally in linux/mroute.h was exported to userspace
+ever, but some of this stuff started to be when it was moved into
+this new linux/pim.h, and that was wrong.  If we didn't provide these
+definitions for 10 years we can reasonably expect that applications
+defined this stuff locally or used GLIBC headers providing the
+protocol definitions.  And as such the only result of this can
+be conflict and userland build breakage.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
-Applies to next-20080829.
+ include/linux/Kbuild    |    1 -
+ include/linux/mroute.h  |    2 +-
+ include/linux/mroute6.h |    1 +
+ include/linux/pim.h     |   18 ------------------
+ 4 files changed, 2 insertions(+), 20 deletions(-)
 
- drivers/ide/Makefile     |    9 +++++++--
- drivers/ide/ide-disk.h   |    2 ++
- drivers/ide/ide-floppy.h |    2 ++
- 3 files changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/ide/Makefile b/drivers/ide/Makefile
-index 95a6135..e6e7811 100644
---- a/drivers/ide/Makefile
-+++ b/drivers/ide/Makefile
-@@ -36,9 +36,14 @@ obj-$(CONFIG_IDE_H8300)			+= h8300/
- obj-$(CONFIG_IDE_GENERIC)		+= ide-generic.o
- obj-$(CONFIG_BLK_DEV_IDEPNP)		+= ide-pnp.o
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index 7d97067..5939125 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -297,7 +297,6 @@ unifdef-y += parport.h
+ unifdef-y += patchkey.h
+ unifdef-y += pci.h
+ unifdef-y += personality.h
+-unifdef-y += pim.h
+ unifdef-y += pktcdvd.h
+ unifdef-y += pmu.h
+ unifdef-y += poll.h
+diff --git a/include/linux/mroute.h b/include/linux/mroute.h
+index 07112ee..8a45569 100644
+--- a/include/linux/mroute.h
++++ b/include/linux/mroute.h
+@@ -6,7 +6,6 @@
+ #ifdef __KERNEL__
+ #include <linux/in.h>
+ #endif
+-#include <linux/pim.h>
  
--ide-disk_mod-y += ide-disk.o ide-disk_ioctl.o ide-disk_proc.o
-+ide-disk_mod-y += ide-disk.o ide-disk_ioctl.o
- ide-cd_mod-y += ide-cd.o ide-cd_ioctl.o ide-cd_verbose.o
--ide-floppy_mod-y += ide-floppy.o ide-floppy_ioctl.o ide-floppy_proc.o
-+ide-floppy_mod-y += ide-floppy.o ide-floppy_ioctl.o
-+
-+ifeq ($(CONFIG_IDE_PROC_FS), y)
-+	ide-disk_mod-y += ide-disk_proc.o
-+	ide-floppy_mod-y += ide-floppy_proc.o
-+endif
+ /*
+  *	Based on the MROUTING 3.5 defines primarily to keep
+@@ -130,6 +129,7 @@ struct igmpmsg
+  */
  
- obj-$(CONFIG_BLK_DEV_IDEDISK)		+= ide-disk_mod.o
- obj-$(CONFIG_BLK_DEV_IDECD)		+= ide-cd_mod.o
-diff --git a/drivers/ide/ide-disk.h b/drivers/ide/ide-disk.h
-index f937772..5254cae 100644
---- a/drivers/ide/ide-disk.h
-+++ b/drivers/ide/ide-disk.h
-@@ -23,8 +23,10 @@ ide_decl_devset(acoustic);
- /* ide-disk_ioctl.c */
- int ide_disk_ioctl(struct inode *, struct file *, unsigned int, unsigned long);
+ #ifdef __KERNEL__
++#include <linux/pim.h>
+ #include <net/sock.h>
  
-+#ifdef CONFIG_IDE_PROC_FS
- /* ide-disk_proc.c */
- extern ide_proc_entry_t ide_disk_proc[];
- extern const struct ide_proc_devset ide_disk_settings[];
-+#endif /* CONFIG_IDE_PROC_FS */
+ #ifdef CONFIG_IP_MROUTE
+diff --git a/include/linux/mroute6.h b/include/linux/mroute6.h
+index 5cf5047..6f4c180 100644
+--- a/include/linux/mroute6.h
++++ b/include/linux/mroute6.h
+@@ -115,6 +115,7 @@ struct sioc_mif_req6
  
- #endif /* __IDE_DISK_H */
-diff --git a/drivers/ide/ide-floppy.h b/drivers/ide/ide-floppy.h
-index 2ad373e..86ee37e 100644
---- a/drivers/ide/ide-floppy.h
-+++ b/drivers/ide/ide-floppy.h
-@@ -53,8 +53,10 @@ sector_t ide_floppy_capacity(ide_drive_t *);
- /* ide-floppy_ioctl.c */
- int ide_floppy_ioctl(struct inode *, struct file *, unsigned, unsigned long);
+ #ifdef __KERNEL__
  
-+#ifdef CONFIG_IDE_PROC_FS
- /* ide-floppy_proc.c */
- extern ide_proc_entry_t ide_floppy_proc[];
- extern const struct ide_proc_devset ide_floppy_settings[];
-+#endif /* CONFIG_IDE_PROC_FS */
++#include <linux/pim.h>
+ #include <linux/skbuff.h>	/* for struct sk_buff_head */
  
- #endif /*__IDE_FLOPPY_H */
-
+ #ifdef CONFIG_IPV6_MROUTE
+diff --git a/include/linux/pim.h b/include/linux/pim.h
+index 236ffd3..1ba0661 100644
+--- a/include/linux/pim.h
++++ b/include/linux/pim.h
+@@ -3,22 +3,6 @@
+ 
+ #include <asm/byteorder.h>
+ 
+-#ifndef __KERNEL__
+-struct pim {
+-#if defined(__LITTLE_ENDIAN_BITFIELD)
+-	__u8	pim_type:4,		/* PIM message type */
+-		pim_ver:4;		/* PIM version */
+-#elif defined(__BIG_ENDIAN_BITFIELD)
+-	__u8	pim_ver:4;		/* PIM version */
+-		pim_type:4;		/* PIM message type */
+-#endif
+-	__u8	pim_rsv;		/* Reserved */
+-	__be16	pim_cksum;		/* Checksum */
+-};
+-
+-#define PIM_MINLEN		8
+-#endif
+-
+ /* Message types - V1 */
+ #define PIM_V1_VERSION		__constant_htonl(0x10000000)
+ #define PIM_V1_REGISTER		1
+@@ -27,7 +11,6 @@ struct pim {
+ #define PIM_VERSION		2
+ #define PIM_REGISTER		1
+ 
+-#if defined(__KERNEL__)
+ #define PIM_NULL_REGISTER	__constant_htonl(0x40000000)
+ 
+ /* PIMv2 register message header layout (ietf-draft-idmr-pimvsm-v2-00.ps */
+@@ -42,4 +25,3 @@ struct pimreghdr
+ struct sk_buff;
+ extern int pim_rcv_v1(struct sk_buff *);
+ #endif
+-#endif
+-- 
+1.5.6.5.GIT
 
