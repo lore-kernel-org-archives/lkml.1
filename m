@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbYH2HcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbYH2Hcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753914AbYH2HcS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 03:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYH2HcD
+	id S1754307AbYH2Hcm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 03:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbYH2Hcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 03:32:03 -0400
-Received: from edna.telenet-ops.be ([195.130.132.58]:48179 "EHLO
-	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751139AbYH2HcA (ORCPT
+	Fri, 29 Aug 2008 03:32:33 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:48851 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751186AbYH2Hcc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 03:32:00 -0400
-Date: Fri, 29 Aug 2008 09:31:43 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Adrian Bunk <bunk@kernel.org>
-cc: Greg Ungerer <gerg@snapgear.com>, jbarnes@virtuousgeek.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [RFC: 2.6 patch] m68knommu: remove the broken COMEMPCI code
-In-Reply-To: <20080829070103.GD16462@cs181140183.pp.htv.fi>
-Message-ID: <Pine.LNX.4.64.0808290929280.22326@anakin>
-References: <20080819134718.GH8852@cs181140183.pp.htv.fi> <48B24E2C.9060703@snapgear.com>
- <20080825204333.GA13027@cs181140183.pp.htv.fi> <48B77764.6060607@snapgear.com>
- <20080829070103.GD16462@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 29 Aug 2008 03:32:32 -0400
+To: hpa@kernel.org
+CC: miklos@szeredi.hu, tj@kernel.org, fuse-devel@lists.sourceforge.net,
+       greg@kroah.com, linux-kernel@vger.kernel.org
+In-reply-to: <48B7183E.3010100@kernel.org> (hpa@kernel.org)
+Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <48B6EC83.1070207@kernel.org> <48B6EE36.5070209@kernel.org> <48B6F7C5.3020204@kernel.org> <E1KYn0U-00047F-Qa@pomaz-ex.szeredi.hu> <48B708C4.4000405@kernel.org> <E1KYoX9-0004Mn-NX@pomaz-ex.szeredi.hu> <48B7183E.3010100@kernel.org>
+Message-Id: <E1KYySw-0005RZ-3e@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 29 Aug 2008 09:32:18 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008, Adrian Bunk wrote:
-> On Fri, Aug 29, 2008 at 02:13:24PM +1000, Greg Ungerer wrote:
-> > Adrian Bunk wrote:
-> >> A patch for removing the comempci code is below.
-> >>
-> >> It's a bit suspicious that asm/elia.h is now removed since comempci.c  
-> >> was the only user. What's the sttus of the eLIA platform?
-> >
-> > Only ever a handful where made, and that was in 1999.
-> > I doubt anyone could ever use the PCI interface on it
-> > in any useful way.
+On Thu, 28 Aug 2008, H. Peter Anvin wrote:
+> Miklos Szeredi wrote:
+> > On Thu, 28 Aug 2008, H. Peter Anvin wrote:
+> >> This is *hard* to get right, and we screw this up in the kernel with 
+> >> painful regularity.  The throught of having user-space processes, which 
+> >> don't have access to the kernel locking primitives and functions like 
+> >> copy_from_user() dealing with this stuff scares me crazy.
+> > 
+> > What issues exactly are you thinking of?
 > 
-> So I can send a patch to remove the platform?
+> Memory changing underneath you.  It can be dealt with by very careful 
+> sequencing only.
+
+That's just handwaving.  Apps don't normally change memory under
+system call arguments.  Or if they do the only thing we ever guarantee
+is that the thing won't blow up in a big fireball.
+
+I don't see how getting the data from userspace is different from
+doing the same in the kernel.  Care to explain?
+
+> >> That is why I'm suggesting using an in-kernel linearizer.
+> > 
+> > Lots of complexity, ugh...  Even Tejun's current scheme is better IMO.
 > 
-> >> But COMEMPCI fails with a different error - this init/main.o build 
-> >> error is present for CONFIG_PCI=y, CONFIG_COMEMPCI=n, so the dependency 
-> >> of PCI on BROKEN is still required (unless it gets fixed).
-> >
-> > Unless I am mistaken there is now no need for the CONFIG_PCI option
-> > if selecting m68knommu. The only m68knommu platforms that had PCI
-> > as far as I know where those that use the comempci part.
-> 
-> That implies I can also kill the m68k PCI code since m68knommu will 
-> never use it?
+> And then you get *no* privilege separation, for one thing, so why even 
+> bother doing it in userspace?
 
-Sure. If the FreeScale guys ever forward-port their ColdFire/MMU code to
-current mainline, we can readd it.
+And with ioctls (at least if the filesystem supplies the linearizer
+instructions) you simply _cannot_ get proper privilege separation.
+Generic ioctl support will always be a privileged thing.
 
-Gr{oetje,eeting}s,
+Alternatively we can restrict ioctls.  Most ioctls conform to some
+convention for encoding the format (size/in/out) in the command, no?
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Miklos
