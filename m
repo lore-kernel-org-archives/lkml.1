@@ -1,91 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757199AbYH2Pn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbYH2Pnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757199AbYH2Pn4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 11:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756715AbYH2Pn3
+	id S1756872AbYH2Pnl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 11:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756534AbYH2PnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 11:43:29 -0400
-Received: from silene.metacarta.com ([208.80.142.18]:49043 "EHLO
-	silene.metacarta.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbYH2Pn2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 11:43:28 -0400
-Date: Fri, 29 Aug 2008 11:43:21 -0400 (EDT)
-From: Joe Malicki <jmalicki@metacarta.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       johnpol@2ka.mipt.ru, dada1@cosmosbay.com, denys@visp.net.lb,
+	Fri, 29 Aug 2008 11:43:23 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:57437 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756285AbYH2PnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 11:43:21 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -1.681
+Date: Fri, 29 Aug 2008 08:43:18 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Denys Fedoryshchenko <denys@visp.net.lb>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Andi Kleen <andi@firstfloor.org>,
+       Joe Malicki <jmalicki@metacarta.com>,
+       David Miller <davem@davemloft.net>, johnpol@2ka.mipt.ru,
        netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        juhlenko@akamai.com, sammy@sammy.net
-Message-ID: <9908552.1357791220024601650.JavaMail.root@ouachita>
-In-Reply-To: <20080829153036.GV26610@one.firstfloor.org>
 Subject: Re: loaded router, excessive getnstimeofday in oprofile
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Message-ID: <20080829084318.04f0fad8@extreme>
+In-Reply-To: <200808282255.29640.denys@visp.net.lb>
+References: <20080827.201020.17601834.davem@davemloft.net>
+	<200808282225.57535.denys@visp.net.lb>
+	<48B6FE6C.4080905@cosmosbay.com>
+	<200808282255.29640.denys@visp.net.lb>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: [208.80.142.151]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 28 Aug 2008 22:55:29 +0300
+Denys Fedoryshchenko <denys@visp.net.lb> wrote:
 
-
-Joe Malicki
-Software Engineer
-MetaCarta, Inc.
-
------ "Andi Kleen" <andi@firstfloor.org> wrote:
-> > That adds variance, and packets aren't comparable because they may
-> > suffer different kernel/hardware delays.
+> On Thursday 28 August 2008, Eric Dumazet wrote:
+> > OK, please try oprofile with call graph analysis.
+> I did already. Even because most of programs (except ripd/zebra) can be 
+> killed, and i kill them, it doesn't change almost anything.
 > 
-> And there are no "different kernel/hardware delays" in the network?
+> it seems heavy things causing instability:
 > 
-> If your RTT measurement method cannot handle some variance (using
-> standard sampling and data smoothing techniques similar to TCP) then
-> it 
-> just needs to be fixed.
+> 1)HTB (resolution can be lowered to improve performance, i will try Jarek 
+> patch soon)
 
-Noone's measuring RTT... what ever made you think that?
+If you are doing HTB it also calls clock to get timing information.
+Each packet dequeue in htb calls psched_get_time() and that becomes
+another call nano-second real time clock.
 
-I should explain the application of SO_TIMESTAMP better.
+If your embedded processor has really expensive clock, you probably
+just want to provide an alternative cheaper time source with less
+resolution.
 
- Video camera -> Video jack -> Digitization -> Compression ->
-     Packetization -> NIC -> Ethernet -> NIC -> Interrupt Handler -> Queue -> Application
-
- Microphone   -> MIC jack -> Digitization -> Compression ->
-      Packetization -> NIC -> Ethernet -> NIC -> Interrupt Handler -> Queue -> Application
-
-One wants to know the original time sound and light waves hit the camera
-and microphone, because one wants to know when they should hit the soundcard and
-video on the other end (i.e. any delays should be synchronized) but one only has control
-over the receiving system.  There are timestamps at the application level for this...
-unfortunately, many implementations in the real world have independent clocks that skew
-relative to each other, with little correction on the sending system.
-
-Yeah, that's broken, but one has to be liberal in what one accepts from popular products.
-
-One way to mitigate the skew between the clocks is to take measurements on the receiving
-host, which you do control, and compare the average skew between the two streams and
-correct for it.  Interrupt handler time has variance, but it's less than application-level
-time, so it's a better, more reliable estimator.
-
-> Besides measuring in the interrupt handler doesn't protect you
-> against local variances anyways because the interrupt timing has
-> variability
-> (e.g due to irq off regions or due to interrupt mitigation or
-> higher priority interrupts) too
->
-True, but occasionally it's the best approximation to original send time.
-
-> > > Yes, but why ignore local scheduling delays? 
-> > 
-> > Because one would want to ignore even network scheduling delays
-> > if possible... unfortunately in some instances it's not.
-> 
-> The local delays add to the user experience too.
-> It's unclear why you want to ignore those.
-> 
-> -Andi
-
-You don't want to ignore them, you want to compensate for them
-by getting an earlier timestamp.
