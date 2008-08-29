@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755132AbYH2IKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbYH2IMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755132AbYH2IKJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 04:10:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbYH2IJy
+	id S1755232AbYH2IMq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 04:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbYH2IM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 04:09:54 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:58981 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751186AbYH2IJx (ORCPT
+	Fri, 29 Aug 2008 04:12:28 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:49964 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752769AbYH2IM1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 04:09:53 -0400
-To: tj@kernel.org
-CC: bunk@kernel.org, linux-kernel@vger.kernel.org, greg@kroah.com,
-       miklos@szeredi.hu, tiwai@suse.de, fuse-devel@lists.sourceforge.net
-In-reply-to: <48B7A48B.8020405@kernel.org> (message from Tejun Heo on Fri, 29
-	Aug 2008 09:26:03 +0200)
-Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
-References: <48B6F711.1040604@kernel.org> <20080828200120.GA16462@cs181140183.pp.htv.fi> <48B751DA.5090906@kernel.org> <20080829065026.GC16462@cs181140183.pp.htv.fi> <48B7A48B.8020405@kernel.org>
-Message-Id: <E1KYz3H-0005Wn-4X@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 29 Aug 2008 10:09:51 +0200
+	Fri, 29 Aug 2008 04:12:27 -0400
+Date: Fri, 29 Aug 2008 09:12:08 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>
+Subject: Re: linux-next: Tree for August 28
+Message-ID: <20080829081154.GB3387@brain>
+References: <20080828183307.23c6be82.sfr@canb.auug.org.au> <20080828143934.a5034a01.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080828143934.a5034a01.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008, Tejun Heo wrote:
-> Most major ones do, but there are programs and games which just haven't
-> fared off as well as more popular ones and thus just stopped being
-> updated and then there are commercial games which won't be updated in
-> any foreseeable future.  There are reasons why something as brand new as
-> pulse comes with something like padsp.
+On Thu, Aug 28, 2008 at 02:39:34PM -0700, Andrew Morton wrote:
+> On Thu, 28 Aug 2008 18:33:07 +1000
+> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> 
+> > I have created today's linux-next tree at
+> > git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+> 
+> firmware/yamaha/yss225_registers.bin.ihex uses \r\n line termination.
+> Is that actually required, or can we use plain old \n?
+> 
+> Andy, a checkpatch rule for this would be nice.
 
-I have to agree with Tejun, there will always be old executables lying
-around and source code that nobody will bother updating that still use
-legacy interfaces.
+Ahhh, well we do have a check for DOS line endings, but it only applies
+to 'source' files.  I guess what we should do is bring ihex in as a
+'text' file format and apply limited checks to that.
 
-I have a handful of programs that are still OSS only (one of them,
-spectemu, being still popular enough to be in several major distros).
-
-I could update them to alsa, but most of them I use once or twice a
-year, it doesn't make sense.
-
-In all the world there are probably thousands of such apps, and
-porting each and every one to newer interfaces (if it could be done at
-all) would probably be a much bigger effort then implementing a
-backward compatibility layer for OSS.
-
-Miklos
+-apw
