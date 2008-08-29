@@ -1,122 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757822AbYH2N0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757953AbYH2N1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757822AbYH2N0q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 09:26:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbYH2N0i
+	id S1757953AbYH2N1e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 09:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbYH2N10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 09:26:38 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:60538 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754018AbYH2N0h (ORCPT
+	Fri, 29 Aug 2008 09:27:26 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:63338 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754306AbYH2N1Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 09:26:37 -0400
-Message-ID: <48B7F877.6070906@novell.com>
-Date: Fri, 29 Aug 2008 09:24:07 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: mingo@elte.hu
-CC: srostedt@redhat.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, npiggin@suse.de,
-       gregory.haskins@gmail.com
-Subject: Re: [PATCH v2 6/6] sched: create "pushable_tasks" list to limit pushing
- to one attempt
-References: <20080826173131.16413.17862.stgit@dev.haskins.net> <20080826173515.16413.39166.stgit@dev.haskins.net>
-In-Reply-To: <20080826173515.16413.39166.stgit@dev.haskins.net>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigEC7EB108149896663D041132"
+	Fri, 29 Aug 2008 09:27:25 -0400
+Subject: Re: [PATCH 2/2] uevent: handle duplicate uevent_var keys properly
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: Greg KH <greg@kroah.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Zeuthen <david@fubar.dk>
+In-Reply-To: <48B7AD11.2070906@kernel.org>
+References: <48B6D28E.10006@kernel.org> <48B6D2C6.4010703@kernel.org>
+	 <20080828164924.GB17475@kroah.com> <48B6D9B7.2050406@kernel.org>
+	 <3ae72650808290048v1a5d7e51pc68270b2a8d6faa@mail.gmail.com>
+	 <48B7AD11.2070906@kernel.org>
+Content-Type: text/plain
+Date: Fri, 29 Aug 2008 15:27:19 +0200
+Message-Id: <1220016439.24737.18.camel@lgn.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+Josy7XOw91siBJMUheGN98LpEC1eXVfe+zGE
+ ck4omCJe/nnCSJaZCtKdKVaEMdSDFBZ8ZRmpaqd8oAyK9BY5SQ
+ tuKFpHoZ0V4CU9KvOK5Zh431r4FbLY1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigEC7EB108149896663D041132
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2008-08-29 at 10:02 +0200, Tejun Heo wrote:
+> Kay Sievers wrote:
+> > Not sure if I understand that correctly. Remember, that there is a
+> > symlink "subsystem" at each device, and udev, HAL, DeviceKit reads it.
+> > If the uevent environment key "SUBSYSTEM" does not match the symlink
+> > target, things will break horribly. So no device can be a member of
+> > class "cuse" but carry a SUBSYSTEM value of a different class.
+> >
+> > If that is how it works, I guess that must be solved differently, by
+> > hooking into the subsystem code and create "virtual devices" at the
+> > original class they fake, instead of their own "cuse" class. Possibly
+> > by making cuse a "bus", and use the cuse device as a parent for the
+> > "real" class device.
+> 
+> For OSS emulation, it didn't really matter.  For cases where it matters,
+> I think easier path to take would be let the userland emulation set up a
+> directory containing pseudo files and just override DEVPATH to it.
+> Would that work?
 
-Hi Ingo,
-
-Gregory Haskins wrote:
-> The RT scheduler employs a "push/pull" design to actively balance tasks=
-
-> within the system (on a per disjoint cpuset basis).  When a task is
-> awoken, it is immediately determined if there are any lower priority
-> cpus which should be preempted.  This is opposed to the way normal
-> SCHED_OTHER tasks behave, which will wait for a periodic rebalancing
-> operation to occur before spreading out load.
->
-> When a particular RQ has more than 1 active RT task, it is said to
-> be in an "overloaded" state.  Once this occurs, the system enters
-> the active balancing mode, where it will try to push the task away,
-> or persuade a different cpu to pull it over.  The system will stay
-> in this state until the system falls back below the <=3D 1 queued RT
-> task per RQ.
->
-> However, the current implementation suffers from a limitation in the
-> push logic.  Once overloaded, all tasks (other than current) on the
-> RQ are analyzed on every push operation, even if it was previously
-> unpushable (due to affinity, etc).  Whats more, the operation stops
-> at the first task that is unpushable and will not look at items
-> lower in the queue.  This causes two problems:
->
-> 1) We can have the same tasks analyzed over and over again during each
->    push, which extends out the fast path in the scheduler for no
->    gain.  Consider a RQ that has dozens of tasks that are bound to a
->    core.  Each one of those tasks will be encountered and skipped
->    for each push operation while they are queued.
->
-> 2) There may be lower-priority tasks under the unpushable task that
->    could have been successfully pushed, but will never be considered
->    until either the unpushable task is cleared, or a pull operation
->    succeeds.  The net result is a potential latency source for mid
->    priority tasks.
->
-> This patch aims to rectify these two conditions by introducing a new
-> priority sorted list: "pushable_tasks".  A task is added to the list
-> each time a task is activated or preempted.  It is removed from the
-> list any time it is deactivated, made current, or fails to push.
->
-> This works because a task only needs to be attempted to push once.
-> After an initial failure to push, the other cpus will eventually try to=
-
-> pull the task when the conditions are proper.  This also solves the
-> problem that we don't completely analyze all tasks due to encountering
-> an unpushable tasks.  Now every task will have a push attempted (when
-> appropriate).
->
-> This reduces latency both by shorting the critical section of the
-> rq->lock for certain workloads, and by making sure the algorithm
-> considers all eligible tasks in the system.
->
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> CC: Steven Rostedt <srostedt@redhat.com>
->  =20
-
-We have found a crash bug in this patch in our lab caused by this
-patch.  So if you had any plans to pull this series in, please skip this
-last patch for now (6/6).  I will send out a refresh after I fix the issu=
-e.
+No, I don't think so, it's a too bad hack. the SUBSYSTEM key, the entry
+in the class/bus directory, and the target of the symlink in the device
+directory _must_ match. Everything else asks for serious trouble, by the
+inconsistency it creates.
 
 Thanks,
--Greg
+Kay
 
-
-
---------------enigEC7EB108149896663D041132
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAki3+HcACgkQlOSOBdgZUxmF7ACfb/ZJaddBCthbghoG2fLx+5Ht
-TdcAn2CrJC6ZLVokzoILsykHQMy5OU5n
-=9rTm
------END PGP SIGNATURE-----
-
---------------enigEC7EB108149896663D041132--
