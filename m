@@ -1,65 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbYH2G0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753778AbYH2G3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756096AbYH2G0x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 02:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbYH2GXh
+	id S1753778AbYH2G3s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 02:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYH2G3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 02:23:37 -0400
-Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:46837 "EHLO
-	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755320AbYH2GXe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 02:23:34 -0400
-Message-Id: <200808290629.AA00218@capsicum.lab.ntt.co.jp>
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Date: Fri, 29 Aug 2008 15:29:35 +0900
-To: Jorn Engel <joern@logfs.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
-In-Reply-To: <20080827181904.GD1371@logfs.org>
-References: <20080827181904.GD1371@logfs.org>
+	Fri, 29 Aug 2008 02:29:39 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:53631 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751397AbYH2G3i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 02:29:38 -0400
+Date: Fri, 29 Aug 2008 08:29:34 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: mano@roarinelk.homelinux.net, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org
+Subject: Re: MTD kobject warnings due to block layer changes
+Message-ID: <20080829062933.GI20055@kernel.dk>
+References: <20080828084603.GA17139@roarinelk.homelinux.net> <20080828100921.GY20055@kernel.dk> <20080829145616P.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-X-Mailer: AL-Mail32 Version 1.13
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080829145616P.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Jorn
+On Fri, Aug 29 2008, FUJITA Tomonori wrote:
+> On Thu, 28 Aug 2008 12:09:21 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Thu, Aug 28 2008, Manuel Lauss wrote:
+> > > Hello,
+> > > 
+> > > Todays -git spits out these wanings during boot, caused by
+> > > Commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4
+> > > ( block: move cmdfilter from gendisk to request_queue ):
+> > > 
+> > > Using physmap partition information
+> > > Creating 3 MTD partitions on "physmap-flash":
+> > > 0x00000000-0x01c00000 : "User FS"
+> > > 0x01c00000-0x01c40000 : "booter"
+> > > kobject (8511c410): tried to init an initialized object, something is seriously wrong.
+> > > Call Trace:
+> > > [<8036644c>] dump_stack+0x8/0x34
+> > > [<8021f050>] kobject_init+0x50/0xcc
+> > > [<8021fa18>] kobject_init_and_add+0x24/0x58
+> > > [<8021d20c>] blk_register_filter+0x4c/0x64
+> > > [<8021c194>] add_disk+0x78/0xe0
+> > > [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
+> > > [<8027c8f0>] blktrans_notify_add+0x40/0x78
+> > > [<80279c00>] add_mtd_device+0xd0/0x150
+> > > [<8027b090>] add_mtd_partitions+0x568/0x5d8
+> > > [<80285458>] physmap_flash_probe+0x2ac/0x334
+> > > [<802644f8>] driver_probe_device+0x12c/0x244
+> > > [<8026465c>] __driver_attach+0x4c/0x84
+> > > [<80263c64>] bus_for_each_dev+0x58/0xac
+> > > [<802633ec>] bus_add_driver+0xc4/0x24c
+> > > [<802648e0>] driver_register+0xcc/0x184
+> > > [<80100460>] _stext+0x60/0x1bc
+> > > 
+> > > 0x01c40000-0x01fe0000 : "vmlinux.elf"
+> > > kobject (8511c410): tried to init an initialized object, something is seriously wrong.
+> > > Call Trace:
+> > > [<8036644c>] dump_stack+0x8/0x34
+> > > [<8021f050>] kobject_init+0x50/0xcc
+> > > [<8021fa18>] kobject_init_and_add+0x24/0x58
+> > > [<8021d20c>] blk_register_filter+0x4c/0x64
+> > > [<8021c194>] add_disk+0x78/0xe0
+> > > [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
+> > > [<8027c8f0>] blktrans_notify_add+0x40/0x78
+> > > [<80279c00>] add_mtd_device+0xd0/0x150
+> > > [<8027b090>] add_mtd_partitions+0x568/0x5d8
+> > > [<80285458>] physmap_flash_probe+0x2ac/0x334
+> > > [<802644f8>] driver_probe_device+0x12c/0x244
+> > > [<8026465c>] __driver_attach+0x4c/0x84
+> > > [<80263c64>] bus_for_each_dev+0x58/0xac
+> > > [<802633ec>] bus_add_driver+0xc4/0x24c
+> > > [<802648e0>] driver_register+0xcc/0x184
+> > > [<80100460>] _stext+0x60/0x1bc
+> > > 
+> > > NAND device: Manufacturer ID: 0xec, Chip ID: 0xf1 (Samsung NAND 128MiB 3,3V 8-bit)
+> > > Scanning device for bad blocks
+> > > Creating 1 MTD partitions on "gen_nand":
+> > > 0x00000000-0x08000000 : "NAND FS 0"
+> > > kobject (8511c410): tried to init an initialized object, something is seriously wrong.
+> > > Call Trace:
+> > > [<8036644c>] dump_stack+0x8/0x34
+> > > [<8021f050>] kobject_init+0x50/0xcc
+> > > [<8021fa18>] kobject_init_and_add+0x24/0x58
+> > > [<8021d20c>] blk_register_filter+0x4c/0x64
+> > > [<8021c194>] add_disk+0x78/0xe0
+> > > [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
+> > > [<8027c8f0>] blktrans_notify_add+0x40/0x78
+> > > [<80279c00>] add_mtd_device+0xd0/0x150
+> > > [<8027b090>] add_mtd_partitions+0x568/0x5d8
+> > > [<804016b0>] plat_nand_probe+0x1e8/0x24c
+> > > [<802644f8>] driver_probe_device+0x12c/0x244
+> > > [<8026465c>] __driver_attach+0x4c/0x84
+> > > [<80263c64>] bus_for_each_dev+0x58/0xac
+> > > [<802633ec>] bus_add_driver+0xc4/0x24c
+> > > [<802648e0>] driver_register+0xcc/0x184
+> > > [<80100460>] _stext+0x60/0x1bc
+> > 
+> > Tomo? I don't see how this is happening. The queue is properly zeroed,
+> > so no chance ->state_initialized being crap.
+> 
+> With MTD, multiple gendisks share a single request_queue?
 
-I'll reply from the latter mail.
+Irk, sure looks that way. I thougt we had disbanded with that years ago,
+it's generally not a "supported" configuration.
 
-On Wed, 27 Aug 2008 20:19:04 +0200,  Jorn Engel wrote:
->More questions.  I believe the first two answer are no, but would like
->to be sure.
->Do you support compression?
+-- 
+Jens Axboe
 
-No. (as you guessed)
-
->Do you do wear leveling or scrubbing?
-
-NILFS does not support scrubbing. (as you guessed)
-Under the current GC daemon, it writes logs sequentially and circularly
-in the partition, and as you know, this leads to the wear levelling
-except for superblock.
-
->How does garbage collection work?  In particular, when the filesystem
->runs out of free space, do you depend on the userspace daemon to make
->some policy decisions or can the kernel make progress on its own?
-
-The GC of NILFS depends on the userspace daemon to make policy decisions.
-NILFS cannot reclaim disk space on its own though it can work 
-(i.e. read, write, or do other operations) without the daemon.
-After it runs out of free space, disk full errors will be returned
-until GC makes new space.
-
-But, usually the GC will make enough disk space in the background
-before that occurs.
-The userland GC daemon, which runs in the background, starts to reclaim
-logs (to be presice segments) if there are logs (segments) whose age
-is older than a certain period, which we call ``protection period''. 
-If no recent logs are found, it goes sleeping.
-
-Regards,
-Ryusuke
