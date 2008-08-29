@@ -1,174 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbYH2IBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbYH2IC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754528AbYH2IBh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 04:01:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbYH2IB3
+	id S1754716AbYH2IC3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 04:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbYH2ICK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 04:01:29 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:41900 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752116AbYH2IB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 04:01:28 -0400
-Date: Fri, 29 Aug 2008 10:01:24 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: mano@roarinelk.homelinux.net, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org
-Subject: Re: MTD kobject warnings due to block layer changes
-Message-ID: <20080829080123.GO20055@kernel.dk>
-References: <20080829064415.GJ20055@kernel.dk> <20080829154659Y.fujita.tomonori@lab.ntt.co.jp> <20080829065029.GK20055@kernel.dk> <20080829165542L.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080829165542L.fujita.tomonori@lab.ntt.co.jp>
+	Fri, 29 Aug 2008 04:02:10 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:47745 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752244AbYH2ICI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 04:02:08 -0400
+Date: Fri, 29 Aug 2008 10:01:53 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Seth Heasley <seth.heasley@intel.com>
+Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org
+Subject: Re: [PATCH 2.6.27-rc4][RESEND] irq: irq and pci_ids patch for Intel
+ Ibex Peak DeviceIDs
+Message-ID: <20080829100153.5ccdf0ae@hyperion.delvare>
+In-Reply-To: <200808281540.59657.seth.heasley@intel.com>
+References: <200808281540.59657.seth.heasley@intel.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 29 2008, FUJITA Tomonori wrote:
-> On Fri, 29 Aug 2008 08:50:30 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
+On Thu, 28 Aug 2008 15:40:59 -0700, Seth Heasley wrote:
+> This patch updates the Intel Ibex Peak (PCH) LPC and SMBus Controller DeviceIDs.
 > 
-> > > Ok, I'll send a patch shortly though it would be better to fix
-> > > 'multiple gendisks share a single request_queue'...
-> > 
-> > Naturally, but we can do that in 2.6.28.
+> The LPC Controller ID is set by Firmware within the range of 0x3b00-3b1f.  This range is included in pci_ids.h using min and max values, and irq.c now has code to handle the range (in lieu of 32 additions to a SWITCH statement).
 > 
-> Yeah, here is a quick fix.
+> The SMBus Controller ID is a fixed-value and will not change.
 > 
-> Manuel, really sorry about the bug and thanks a lot for the
-> investigation.
+> Signed-off-by: Seth Heasley <seth.heasley@intel.com>
 > 
-> =
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Subject: [PATCH] remove blk_register_filter and blk_unregister_filter in genhd.c
-> 
-> This patch remove blk_register_filter and blk_unregister_filter in
-> gendisk, and adds them to sd.c and sr.c.
-> 
-> The commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4 moved cmdfilter
-> from gendisk to request_queue. It turned out that in some subsystems
-> multiple gendisks share a single request_queue. So we can't call
-> blk_register_filter in add_disk. Otherwise we get:
-> 
-> Using physmap partition information
-> Creating 3 MTD partitions on "physmap-flash":
-> 0x00000000-0x01c00000 : "User FS"
-> 0x01c00000-0x01c40000 : "booter"
-> kobject (8511c410): tried to init an initialized object, something is seriously wrong.
-> Call Trace:
-> [<8036644c>] dump_stack+0x8/0x34
-> [<8021f050>] kobject_init+0x50/0xcc
-> [<8021fa18>] kobject_init_and_add+0x24/0x58
-> [<8021d20c>] blk_register_filter+0x4c/0x64
-> [<8021c194>] add_disk+0x78/0xe0
-> [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
-> [<8027c8f0>] blktrans_notify_add+0x40/0x78
-> [<80279c00>] add_mtd_device+0xd0/0x150
-> [<8027b090>] add_mtd_partitions+0x568/0x5d8
-> [<80285458>] physmap_flash_probe+0x2ac/0x334
-> [<802644f8>] driver_probe_device+0x12c/0x244
-> [<8026465c>] __driver_attach+0x4c/0x84
-> [<80263c64>] bus_for_each_dev+0x58/0xac
-> [<802633ec>] bus_add_driver+0xc4/0x24c
-> [<802648e0>] driver_register+0xcc/0x184
-> [<80100460>] _stext+0x60/0x1bc
-> 
-> In the long term, we need to fix such subsystems but we need a quick
-> fix now. This patch add the command filter support to only sd and sr
-> though it might be useful for other SG_IO users (like cciss).
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Reported-by: Manuel Lauss <mano@roarinelk.homelinux.net>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> ---
->  block/cmd-filter.c |    3 ++-
->  block/genhd.c      |    2 --
->  drivers/scsi/sd.c  |    2 ++
->  drivers/scsi/sr.c  |    2 ++
->  4 files changed, 6 insertions(+), 3 deletions(-)
-> 
-> diff --git a/block/cmd-filter.c b/block/cmd-filter.c
-> index 1d40262..228b644 100644
-> --- a/block/cmd-filter.c
-> +++ b/block/cmd-filter.c
-> @@ -223,6 +223,7 @@ int blk_register_filter(struct gendisk *disk)
->  
+> --- linux-2.6/include/linux/pci_ids.h.orig	2008-08-27 11:54:07.000000000 -0700
+> +++ linux-2.6/include/linux/pci_ids.h	2008-08-28 14:59:35.000000000 -0700
+> @@ -2428,9 +2428,9 @@
+>  #define PCI_DEVICE_ID_INTEL_ICH10_3	0x3a1a
+>  #define PCI_DEVICE_ID_INTEL_ICH10_4	0x3a30
+>  #define PCI_DEVICE_ID_INTEL_ICH10_5	0x3a60
+> -#define PCI_DEVICE_ID_INTEL_PCH_0	0x3b10
+> -#define PCI_DEVICE_ID_INTEL_PCH_1	0x3b11
+> -#define PCI_DEVICE_ID_INTEL_PCH_2	0x3b30
+> +#define PCI_DEVICE_ID_INTEL_PCH_LPC_MIN	0x3b00
+> +#define PCI_DEVICE_ID_INTEL_PCH_LPC_MAX	0x3b1f
+> +#define PCI_DEVICE_ID_INTEL_PCH_SMBUS	0x3b30
+>  #define PCI_DEVICE_ID_INTEL_IOAT_SNB	0x402f
+>  #define PCI_DEVICE_ID_INTEL_5100_16	0x65f0
+>  #define PCI_DEVICE_ID_INTEL_5100_21	0x65f5
+> --- linux-2.6/arch/x86/pci/irq.c.orig	2008-08-27 11:53:13.000000000 -0700
+> +++ linux-2.6/arch/x86/pci/irq.c	2008-08-28 15:12:04.000000000 -0700
+> @@ -590,13 +590,20 @@
+>  	case PCI_DEVICE_ID_INTEL_ICH10_1:
+>  	case PCI_DEVICE_ID_INTEL_ICH10_2:
+>  	case PCI_DEVICE_ID_INTEL_ICH10_3:
+> -	case PCI_DEVICE_ID_INTEL_PCH_0:
+> -	case PCI_DEVICE_ID_INTEL_PCH_1:
+>  		r->name = "PIIX/ICH";
+>  		r->get = pirq_piix_get;
+>  		r->set = pirq_piix_set;
+>  		return 1;
+>  	}
+> +
+> +	if ((device >= PCI_DEVICE_ID_INTEL_PCH_LPC_MIN) && 
+> +		(device <= PCI_DEVICE_ID_INTEL_PCH_LPC_MAX)) {
+> +		r->name = "PIIX/ICH";
+> +		r->get = pirq_piix_get;
+> +		r->set = pirq_piix_set;
+> +		return 1;
+> +	}
+> +
 >  	return 0;
 >  }
-> +EXPORT_SYMBOL(blk_register_filter);
 >  
->  void blk_unregister_filter(struct gendisk *disk)
->  {
-> @@ -231,4 +232,4 @@ void blk_unregister_filter(struct gendisk *disk)
->  	kobject_put(&filter->kobj);
->  	kobject_put(disk->holder_dir->parent);
->  }
-> -
-> +EXPORT_SYMBOL(blk_unregister_filter);
-> diff --git a/block/genhd.c b/block/genhd.c
-> index 656c2c7..d9743ff 100644
-> --- a/block/genhd.c
-> +++ b/block/genhd.c
-> @@ -190,7 +190,6 @@ void add_disk(struct gendisk *disk)
->  			    disk->minors, NULL, exact_match, exact_lock, disk);
->  	register_disk(disk);
->  	blk_register_queue(disk);
-> -	blk_register_filter(disk);
->  
->  	bdi = &disk->queue->backing_dev_info;
->  	bdi_register_dev(bdi, MKDEV(disk->major, disk->first_minor));
-> @@ -203,7 +202,6 @@ EXPORT_SYMBOL(del_gendisk);	/* in partitions/check.c */
->  
->  void unlink_gendisk(struct gendisk *disk)
->  {
-> -	blk_unregister_filter(disk);
->  	sysfs_remove_link(&disk->dev.kobj, "bdi");
->  	bdi_unregister(&disk->queue->backing_dev_info);
->  	blk_unregister_queue(disk);
-> diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-> index e5e7d78..2a2bc89 100644
-> --- a/drivers/scsi/sd.c
-> +++ b/drivers/scsi/sd.c
-> @@ -1875,6 +1875,7 @@ static int sd_probe(struct device *dev)
->  
->  	dev_set_drvdata(dev, sdkp);
->  	add_disk(gd);
-> +	blk_register_filter(gd);
->  	sd_dif_config_host(sdkp);
->  
->  	sd_printk(KERN_NOTICE, sdkp, "Attached SCSI %sdisk\n",
-> @@ -1908,6 +1909,7 @@ static int sd_remove(struct device *dev)
->  	struct scsi_disk *sdkp = dev_get_drvdata(dev);
->  
->  	device_del(&sdkp->dev);
-> +	blk_unregister_filter(sdkp->disk);
->  	del_gendisk(sdkp->disk);
->  	sd_shutdown(dev);
->  
-> diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
-> index 27f5bfd..3292965 100644
-> --- a/drivers/scsi/sr.c
-> +++ b/drivers/scsi/sr.c
-> @@ -656,6 +656,7 @@ static int sr_probe(struct device *dev)
->  	dev_set_drvdata(dev, cd);
->  	disk->flags |= GENHD_FL_REMOVABLE;
->  	add_disk(disk);
-> +	blk_register_filter(disk);
->  
->  	sdev_printk(KERN_DEBUG, sdev,
->  		    "Attached scsi CD-ROM %s\n", cd->cdi.name);
-> @@ -894,6 +895,7 @@ static int sr_remove(struct device *dev)
->  {
->  	struct scsi_cd *cd = dev_get_drvdata(dev);
->  
-> +	blk_unregister_filter(cd->disk);
->  	del_gendisk(cd->disk);
->  
->  	mutex_lock(&sr_ref_mutex);
 
-What about eg ide-cd?
+Looks good to me, thanks for doing that.
+
+Acked-by: Jean Delvare <khali@linux-fr.org>
 
 -- 
-Jens Axboe
-
+Jean Delvare
