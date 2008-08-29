@@ -1,121 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbYH2IWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbYH2IXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755597AbYH2IWl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 04:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbYH2IWQ
+	id S1755826AbYH2IXJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 04:23:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755443AbYH2IWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 04:22:16 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:53413 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754116AbYH2IWN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 04:22:13 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: greg@kroah.com
-Subject: Re: [patch 02/03] USB: USB/IP: add client driver
-Date: Fri, 29 Aug 2008 10:23:26 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Brian Merrell <bgmerrell@novell.com>,
-       Takahiro Hirofuchi <hirofuchi@users.sourceforge.net>, gregkh@suse.de
-References: <20080828225248.758800945@mini.kroah.org> <20080828230035.GC15014@kroah.com>
-In-Reply-To: <20080828230035.GC15014@kroah.com>
+	Fri, 29 Aug 2008 04:22:34 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:39032 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753484AbYH2IWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 04:22:31 -0400
+Date: Fri, 29 Aug 2008 11:21:29 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Miklos Szeredi <miklos@szeredi.hu>,
+       Takashi Iwai <tiwai@suse.de>, fuse-devel@lists.sourceforge.net
+Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
+Message-ID: <20080829082129.GF16462@cs181140183.pp.htv.fi>
+References: <48B6F711.1040604@kernel.org> <20080828200120.GA16462@cs181140183.pp.htv.fi> <48B751DA.5090906@kernel.org> <20080829065026.GC16462@cs181140183.pp.htv.fi> <48B7A48B.8020405@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200808291023.27132.oliver@neukum.org>
+In-Reply-To: <48B7A48B.8020405@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 29 August 2008 01:00:35 schrieb greg@kroah.com:
-> From: Takahiro Hirofuchi <hirofuchi@users.sourceforge.net>
+On Fri, Aug 29, 2008 at 09:26:03AM +0200, Tejun Heo wrote:
+> Adrian Bunk wrote:
+>...
+> >> Anyways, the thing is that unlike what was originally expected, dropping
+> >> an major programming API doesn't really work too well even after six
+> >> years of trying.
+> > 
+> > Good ALSA emulation was a hot topic a few years ago when popular 
+> > software like Flash and Skype didn't support ALSA, but the use
+> > cases are becoming rare.
+> > 
+> > 2 out of your 3 examples above were software where native ALSA works,
+> > but your distributions seems to ship you a setup where you thought 
+> > OSS emulation was required.
+> 
+> Yeah, that's why I agree it's a bit too late but still better late than
+> never.  There are just some programs, be it commercial or ancient, which
+> don't work quite as well as it could.  Requiring update to ALSA took
+> painfully long years and we're still not in the clear yet.  Now should
+> we ask people to update to PA?
+>...
 
-> +			dum->port_status[rhport] |=
-> +					(1 << USB_PORT_FEAT_C_SUSPEND);
-> +			dum->port_status[rhport] &=
-> +					~(1 << USB_PORT_FEAT_SUSPEND);
-> +			dum->resuming = 0;
-> +			dum->re_timeout = 0;
-> +			/* if (dum->driver && dum->driver->resume) {
-> +			 *	spin_unlock (&dum->lock);
+Doesn't PA already emulate ALSA?
 
-I realise it is commented out, but still.
+> ossp is simply a better way to support /dev/dsp on modern systems and
+> bulk of it lives in userland (and I hope this can be the case for future
+> deprecations too).  If for nothing else, it'll enable us to do away with
+> three different emulations at the very least.  I mean we can't of course
+> do away with padsp and then some still only work with aoss and then we
+> need in-kernel ALSA OSS emulation as the final fallback when both fail.
+>  It's a big mess and ossp can basically OSS emulation as good as
+> in-kernel ALSA OSS w/ muxing.
 
-The resume method may sleep. It is documented as such. Thus it can
-reenable interrupts. Therefore you can deadlock if you don't use irqrestore.
+The in-kernel OSS emulation also support OSS MIDI.
 
+> Thanks.
+> tejun
 
-> +static void vhci_tx_urb(struct urb *urb)
-> +{
-> +	struct vhci_device *vdev = get_vdev(urb->dev);
-> +	struct vhci_priv *priv;
-> +	unsigned long flag;
-> +
-> +	if (!vdev) {
-> +		err("could not get virtual device");
-> +		/* BUG(); */
-> +		return;
-> +	}
-> +
-> +	spin_lock_irqsave(&vdev->priv_lock, flag);
-> +
-> +	priv = kzalloc(sizeof(struct vhci_priv), GFP_ATOMIC);
+cu
+Adrian
 
-There's no reason to hold the lock longer than necessary by
-allocating memory in the lock section.
+-- 
 
-[..]
-> +	wake_up(&vdev->waitq_tx);
-> +	spin_unlock_irqrestore(&vdev->priv_lock, flag);
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-again
-
-> +static int vhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb,
-> +			    gfp_t mem_flags)
-> +{
-
-This is called in the context of usb_submit_urb()
-
-[..]
-> +	ret = usb_hcd_link_urb_to_ep(hcd, urb);
-
-This can fail for any urb due to urb->reject
-
-> +	if (ret)
-> +		goto no_need_unlink;
-
-The branch would be taken
-
-[..]
-> +no_need_unlink:
-> +	spin_unlock_irqrestore(&the_controller->lock, flags);
-> +
-> +	usb_hcd_giveback_urb(vhci_to_hcd(the_controller), urb, urb->status);
-
-This calls urb->complete. If the completion handler takes a spinlock
-which is held when usb_submit_urb() was called, you deadlock.
-
-> +static int vhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
-
-[..]
-> +		spin_unlock_irqrestore(&the_controller->lock, flags);
-> +		usb_hcd_giveback_urb(vhci_to_hcd(the_controller), urb,
-> +								urb->status);
-
-This must be called with interrupts disabled.
-
-> +		spin_lock_irqsave(&the_controller->lock, flags);
-> +	}
-> +
-> +	spin_unlock_irqrestore(&the_controller->lock, flags);
-> +
-> +	dbg_vhci_hc("leave\n");
-> +	return 0;
-> +}
-
-	Regards
-		Oliver
