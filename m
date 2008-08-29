@@ -1,121 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758984AbYH2TLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759108AbYH2TLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758984AbYH2TLQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 15:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbYH2TLA
+	id S1759108AbYH2TLv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 15:11:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbYH2TLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 15:11:00 -0400
-Received: from mx10.lb01.inode.at ([62.99.145.10]:9093 "EHLO mx.inode.at"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750852AbYH2TK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 15:10:59 -0400
-Message-ID: <48B849BD.4000405@sbg.ac.at>
-Date: Fri, 29 Aug 2008 21:10:53 +0200
-From: Alexander Huemer <alexander.huemer@sbg.ac.at>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080729)
+	Fri, 29 Aug 2008 15:11:42 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41211 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755593AbYH2TLl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 15:11:41 -0400
+Date: Fri, 29 Aug 2008 21:11:37 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: kkeil@suse.de
+Cc: linux-kernel@vger.kernel.org
+Subject: mISDN unload kobject warnings
+Message-ID: <20080829191137.GA28057@basil.nowhere.org>
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Helge Hafting <helge.hafting@aitel.hist.no>
-Subject: Re: 2.6.27 mtrr fixes do not work
-References: <4899AF8E.20105@sbg.ac.at>	 <86802c440808251308i609a1c8ay6a7300bf4d0e0758@mail.gmail.com>	 <48B313C3.30704@sbg.ac.at>	 <86802c440808251322l72546d59o90c4e0b87c81538c@mail.gmail.com>	 <48B31508.6020305@sbg.ac.at>	 <86802c440808251344h697a27d0i91486a836d258cb@mail.gmail.com>	 <86802c440808251624u181a98eesd8a19ea6fd3d8d8c@mail.gmail.com>	 <48B34056.5080100@sbg.ac.at>	 <86802c440808251633s7bf8ecb2ua6ef187b5be563db@mail.gmail.com>	 <48B81138.4060601@sbg.ac.at> <86802c440808291043s774d3913k85de758f2e23b24b@mail.gmail.com>
-In-Reply-To: <86802c440808291043s774d3913k85de758f2e23b24b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On Fri, Aug 29, 2008 at 8:09 AM, Alexander Huemer
-> <alexander.huemer@sbg.ac.at> wrote:
->   
->> Yinghai Lu wrote:
->>     
->>> On Mon, Aug 25, 2008 at 4:29 PM, Alexander Huemer
->>> <alexander.huemer@sbg.ac.at> wrote:
->>>       
->>>> Yinghai Lu wrote:
->>>>         
->>>>> On Mon, Aug 25, 2008 at 1:44 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->>>>>
->>>>>           
->>>>>> On Mon, Aug 25, 2008 at 1:24 PM, Alexander Huemer
->>>>>> <alexander.huemer@sbg.ac.at> wrote:
->>>>>>
->>>>>>
->>>>>>             
->>>>>>> what do you mean with tip/master?
->>>>>>>
->>>>>>>               
->>>>>> http://people.redhat.com/mingo/tip.git/readme.txt
->>>>>>
->>>>>>
->>>>>>             
->>>>>>> here is my .config: http://xx.vu/~ahuemer/config.txt
->>>>>>>
->>>>>>>               
->>>>> using your config, i do get mtrr cleanup
->>>>>
->>>>>           
->>>> very interesting, thx.
->>>> so, what can i do to make it working here?
->>>> are there some more debug options i could turn on?
->>>>
->>>>         
->>> can you post whole boot log with command line
->>>
->>> console=uart8250,io,0x3f8,115200n8 debug show_msr=1
->>>
->>> assume you have serial console...
->>>
->>> YH
->>>       
->> yinghai,
->>
->> there are quite good news! 2.6.27-rc5 brought some significant changes.
->> now i get this:
->>
->>    # dmesg|grep -E "(mtrr|uvesafb)"
->>    Command line: root=/dev/sda1 video=uvesafb:1280x1024p-97,mtrr:2
->>    debug show_msr=1
->>    mtrr: your BIOS has set up an incorrect mask, fixing it up.
->>    Kernel command line: root=/dev/sda1
->>    video=uvesafb:1280x1024p-97,mtrr:2 debug show_msr=1
->>    uvesafb: XGI Technology, Inc., Volari Z9s, 1.09.10, OEM: XGI, VBE v3.0
->>    uvesafb: VBIOS/hardware supports DDC2 transfers
->>    uvesafb: monitor limits: vf = 97 Hz, hf = 129 kHz, clk = 364 MHz
->>    uvesafb: scrolling: redraw
->>    uvesafb: framebuffer at 0xd8000000, mapped to 0xffffc20002100000,
->>    using 10240k, total 32768k
->>    mtrr: 0xd8000000,0x2000000 overlaps existing 0xd8000000,0x800000
->>    # grep -E "(^\(WW\)|^\(EE\)|^\(NI\)|^\(??\))" /var/log/Xorg.0.log
->>    (WW) VESA(0): Failed to set up write-combining range
->>    (0xd8000000,0x2000000)
->>    # cat /proc/mtrr
->>    reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
->>    reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
->>    reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
->>    reg03: base=0xd8000000 (3456MB), size=   8MB: write-back, count=1
->>     
->
-> it seems BIOS setup extra entry (8M) and that is conflict with that of
-> from graphical card.
->
-> can you send out
-> dmesg -s 262144 > dmesg.txt
-> and
-> lspci -vvxxx
-> lspci -tv
->
-> so could find out if your graphical card is really allocated the memory area...
->
-> YH
->   
-http://xx.vu/~ahuemer/dmesg_5.txt
-http://xx.vu/~ahuemer/lspci_vvxxx.txt
-http://xx.vu/~ahuemer/lspci_tv.txt
+
+While unloading the modules in 2.6.27rc4:
+
+CAPI Subsystem Rev 1.1.2.8
+mISDN: HFC-multi driver 2.02
+mISDN: Layer-1-over-IP driver Rev. 2.00
+0 virtual devices registered
+DSP modul 2.0
+mISDN_dsp: DSP clocks every 64 samples. This equals 2 jiffies.
+mISDN_dsp_element_register: hwec registered
+------------[ cut here ]------------
+WARNING: at drivers/base/core.c:122 kobject_release+0x48/0x5e()
+Device 'hwec' does not have a release() function, it is broken and must be fixed.
+Modules linked in: scsi_wait_scan s2io mISDN_dsp(-) mISDN_core [last unloaded: l1oip]
+Pid: 3960, comm: rmmod Tainted: G        W 2.6.27-rc4 #18
+
+Call Trace:
+ [<ffffffff80233060>] warn_slowpath+0xb4/0xdc
+ [<ffffffff805a2d36>] schedule_timeout+0x1e/0xad
+ [<ffffffff80244863>] autoremove_wake_function+0x9/0x2e
+ [<ffffffff802290d0>] __wake_up_common+0x46/0x76
+ [<ffffffff8022858b>] need_resched+0x1e/0x28
+ [<ffffffff802c939a>] release_sysfs_dirent+0x65/0x7e
+ [<ffffffff802c9601>] remove_dir+0x29/0x31
+ [<ffffffff802c9677>] sysfs_remove_dir+0x6c/0x75
+ [<ffffffff80363aa4>] kobject_release+0x48/0x5e
+ [<ffffffff80363a5c>] kobject_release+0x0/0x5e
+ [<ffffffff80364785>] kref_put+0x41/0x4c
+ [<ffffffffa004b97f>] mISDN_dsp_element_unregister+0x62/0xc0 [mISDN_dsp]
+ [<ffffffffa004b838>] dsp_pipeline_module_exit+0xb/0xb5 [mISDN_dsp]
+ [<ffffffff80252f34>] sys_delete_module+0x1f6/0x259
+ [<ffffffff80270070>] free_pgd_range+0x32a/0x406
+ [<ffffffff80366811>] __up_write+0x12/0x45
+ [<ffffffff8020b62b>] system_call_fastpath+0x16/0x1b
+
+---[ end trace 4fd4257964474cca ]---
+mISDN_dsp_element_unregister: hwec unregistered
+dsp_pipeline_module_exit: dsp pipeline module exited
+
+
+-Andi
 
 -- 
-regards
-alex
+ak@linux.intel.com
