@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbYH2XrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbYH2Xwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbYH2XrP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 19:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751043AbYH2Xq7
+	id S1753275AbYH2Xwj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 19:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbYH2Xwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 19:46:59 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:30113 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750945AbYH2Xq6 (ORCPT
+	Fri, 29 Aug 2008 19:52:30 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41493 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722AbYH2Xw3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 19:46:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=QiVKFxp09iKyVl7VrifBdKDBC2Ywkirk+gItgEHl9YJ9JCkdsOfEtA0bIZKju8FK16
-         bFkwkPObcSHmTBE29qOhwqN9bhD35MJcBx8bIjIoA53Ayu5C9qz9kO4RqQCBD/wkiNwY
-         qmGtV8BycZYCMtgjkIIAz3vPHE8eZRGM/mKm0=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
+	Fri, 29 Aug 2008 19:52:29 -0400
+Date: Sat, 30 Aug 2008 01:53:21 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Marcin Slusarz <marcin.slusarz@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] dyn_array: fix typo
-Date: Fri, 29 Aug 2008 16:46:00 -0700
-Message-Id: <1220053560-15803-1-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] ftrace: disable tracing for hibernation
+Message-ID: <20080829235321.GA10523@elf.ucw.cz>
+References: <alpine.DEB.1.10.0808211139420.3947@gandalf.stny.rr.com> <alpine.DEB.1.10.0808270844500.7871@gandalf.stny.rr.com> <200808271526.46868.rjw@sisk.pl> <200808281439.13959.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808281439.13959.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew found the typo could break some platforms
+On Thu 2008-08-28 14:39:12, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> ftrace: disable tracing for hibernation
+>     
+> In accordance with commit f42ac38c59e0a03d6da0c24a63fb211393f484b0
+> ("ftrace: disable tracing for suspend to ram"), disable tracing
+> around the suspend code in hibernation code paths.
+>     
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-also fix one checkpatch warning
+Looks ok to me. ACK.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-diff --git a/init/dyn_array.c b/init/dyn_array.c
-index c4cd902..8192a1c 100644
---- a/init/dyn_array.c
-+++ b/init/dyn_array.c
-@@ -54,7 +54,7 @@ void __init pre_alloc_dyn_array(void)
- 			da->init_work(da);
- 	}
- #else
--#ifdef CONFIF_GENERIC_HARDIRQS
-+#ifdef CONFIG_GENERIC_HARDIRQS
- 	unsigned int i;
- 
- 	for (i = 0; i < NR_IRQS; i++)
-@@ -116,9 +116,8 @@ void __init per_cpu_alloc_dyn_array(int cpu, char *ptr)
- 
- 		phys += size;
- 
--		if (da->init_work) {
-+		if (da->init_work)
- 			da->init_work(da);
--		}
- 	}
- #endif
- }
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
