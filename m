@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbYH2QYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757881AbYH2QY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757152AbYH2QYW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 12:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYH2QYO
+	id S1757881AbYH2QY5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 12:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbYH2QYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 12:24:14 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:17290 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751184AbYH2QYN (ORCPT
+	Fri, 29 Aug 2008 12:24:48 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:32324 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754145AbYH2QYr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 12:24:13 -0400
-Subject: Re: [PATCH 4/5] select: make select() use schedule_hrtimeout()
-From: Daniel Walker <dwalker@mvista.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de,
-       torvalds@linux-foundation.org
-In-Reply-To: <20080829080809.0e42a323@infradead.org>
-References: <20080829080549.6906b744@infradead.org>
-	 <20080829080809.0e42a323@infradead.org>
+	Fri, 29 Aug 2008 12:24:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=tL3F2d6WS60STRKysMWMVMBbY//bofuIDelfbjJ20fucBu2XHc9HZ5EddZSYXb3Ba1
+         9ksFQX+FaYx3uTpmN2sRZpJRCOBYAbWJ0s683jlTonIg712J7iaNN8Owqy2bFj8vMmxA
+         39UUulSjXiVlvy6k6CHLNXOf/zMbel10Ek3kw=
+Subject: Re: endianness and sparse warnings
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0808291639540.15307@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0808291639540.15307@vixen.sonytel.be>
 Content-Type: text/plain
-Date: Fri, 29 Aug 2008 08:59:58 -0700
-Message-Id: <1220025598.4417.63.camel@localhost.localdomain>
+Date: Fri, 29 Aug 2008 09:24:49 -0700
+Message-Id: <1220027089.16663.12.camel@brick>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-29 at 08:08 -0700, Arjan van de Ven wrote:
-> rom: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Thu, 28 Aug 2008 13:45:38 -0700
-> Subject: [PATCH] select: make select() use schedule_hrtimeout()
+On Fri, 2008-08-29 at 16:54 +0200, Geert Uytterhoeven wrote:
+> With `make  C=1 CF="-D__CHECK_ENDIAN__"', you can let sparse check for bad
+> handling of endian-annotated data.
 > 
-> now that we have schedule_hrtimeout(), make select() use it.
-> But only for short delays; really long delays are assumed to not
-> need the highres level of accuracy but rather want the regular
-> timer behavior for now.
+> Unfortunately several of the accessors for endian-annotated data do not cause
+> sparse warnings.
+
+I'll try and give some background on why the unaligned versions are implemented
+this way.
+
+The get_unaligned helpers were meant to replace two kinds of use (using le16 as
+an example)
+
+char *ptr;
+
+1 - le16_to_cpu(get_unaligned((__le16 *)ptr))
+2 - u16 val = ptr[0] | (ptr[1] << 8)
+
+The places where 1 was replaced with the unaligned helpers would have been fine
+with an annotated version as it already had the cast to a proper type.
+
+The places where 2 was replaced would have required a new cast to __le16 *.
+
+Lots of places that were using 2 are drivers that have some data area pointed
+to by a char * and they are grabbing values from there at known offsets,
+for these users, the need for extra casting was quite ugly and it was known
+exactly how many bytes and in what endianness you are reading as it is
+right in the function name so I thought it would be ok to omit the annotation
+on the parameter.
+
+u16 foo, bar;
+char *my_data;
+
+foo = get_unaligned_le16((__le16 *)my_data); /* if unaligned helpers were annotated */
+bar = get_unaligned_le16(my_data);	/* current version */
+
 > 
-> This is only done for delays shorter than 1 second; currently
-> the assumption is that longer delays have no desire to get the
-> higher accuracy.
+> Summarized:
+>   - [bl]e{16,32,64}_to_cpu() is OK
+>   - [bl]e{16,32,64}_to_cpup() (aka get_aligned_[bl]e{16,32,64}() ;-) is OK
+>   - get_unaligned_[bl]e{16,32,64} is not OK
+>   - __get_unaligned_[bl]e() is partially OK, as long as you don't use it on
+>     non-annotated data, but
+>       o it's meant for internal use only
+>       o it incorrectly causes sparse warnings when assigning the resulting
+>         value to a non-annotated variable
 
-Do you have any basis to make this "short delays" assumption? I would
-think if regular timers can be used for longer than a second, people
-will naturally assume anything else that's high res will also ..
+Almost... __get_unaligned_le16 etc are _never_ to be used...as some arches
+choose to use memmove-based implementations, and on arches where unaligned
+access is OK, they don't exist _at_all_.
 
-The futex_wait() has code which looks a lot like your
-schedule_hrtimeout() , (you might want to replace your code there
-instead) , and it doesn't seem to have the short delays restriction ..
+Cheers,
 
-Daniel
+Harvey
 
