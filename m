@@ -1,57 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759273AbYH2Vcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758944AbYH2Vhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759273AbYH2Vcx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 17:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756872AbYH2Vcn
+	id S1758944AbYH2Vhl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 17:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbYH2Vhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 17:32:43 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:46330 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751749AbYH2Vcm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 17:32:42 -0400
-X-Sasl-enc: QYOhB3SKF3F7Sklc0yqUTLFFfKz8iC0JXr6qA99IDXtW 1220045560
-Date: Fri, 29 Aug 2008 18:32:36 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Philip Langdale <philipl@overt.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mjg59@srcf.ucam.org, toshiba_acpi@memebeam.org, ivdoorn@gmail.com,
-       linux-wireless@vger.kernel.org
-Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth
-	togglingthrough rfkill (v7)
-Message-ID: <20080829213236.GA27281@khazad-dum.debian.net>
-References: <20080829141216.f0d69ae4.akpm@linux-foundation.org> <f86c32a17907fdacd870e853761f0382@localhost>
+	Fri, 29 Aug 2008 17:37:31 -0400
+Received: from nebensachen.de ([195.34.83.29]:49689 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752138AbYH2Vha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 17:37:30 -0400
+X-Hashcash: 1:20:080829:bzolnier@gmail.com::YyNzrjvtKAoqX5ik:0000000000000000000000000000000000000000000AGdv
+X-Hashcash: 1:20:080829:linux-ide@vger.kernel.org::/APTvs9fQWa5Gexi:0000000000000000000000000000000000000xtk
+X-Hashcash: 1:20:080829:linux-kernel@vger.kernel.org::TrZdsntMX1msKlUq:0000000000000000000000000000000004kEK
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] ide: Build fix for CONFIG_IDE_PROC_FS=n
+Message-ID: <20080829213217.4826.91622.stgit@denkblock.local>
+User-Agent: StGIT/0.14.2
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 29 Aug 2008 23:37:20 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f86c32a17907fdacd870e853761f0382@localhost>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008, Philip Langdale wrote:
-> On Fri, 29 Aug 2008 14:12:16 -0700, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
-> > ERROR: "rfkill_force_state" [drivers/acpi/toshiba_acpi.ko] undefined!
-> > ERROR: "rfkill_free" [drivers/acpi/toshiba_acpi.ko] undefined!
-> > ERROR: "rfkill_register" [drivers/acpi/toshiba_acpi.ko] undefined!
-> > ERROR: "rfkill_allocate" [drivers/acpi/toshiba_acpi.ko] undefined!
-> > ERROR: "rfkill_unregister" [drivers/acpi/toshiba_acpi.ko] undefined!
-> > 
-> > I'll stick a `select RFKILL' in there, but it'll probably blow up
-> > in other ways.  select usually does.
-> 
-> Sorry, thanks for catching that. thinkpad_acpi also just does 'select
-> RFKILL',
+Recent changes have broken compilation when CONFIG_IDE_PROC_FS is not set.
 
-select NET
-select RFKILL
+Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
+---
+Applies to next-20080829.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+ drivers/ide/Makefile     |    9 +++++++--
+ drivers/ide/ide-disk.h   |    2 ++
+ drivers/ide/ide-floppy.h |    2 ++
+ 3 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/ide/Makefile b/drivers/ide/Makefile
+index 95a6135..e6e7811 100644
+--- a/drivers/ide/Makefile
++++ b/drivers/ide/Makefile
+@@ -36,9 +36,14 @@ obj-$(CONFIG_IDE_H8300)			+= h8300/
+ obj-$(CONFIG_IDE_GENERIC)		+= ide-generic.o
+ obj-$(CONFIG_BLK_DEV_IDEPNP)		+= ide-pnp.o
+ 
+-ide-disk_mod-y += ide-disk.o ide-disk_ioctl.o ide-disk_proc.o
++ide-disk_mod-y += ide-disk.o ide-disk_ioctl.o
+ ide-cd_mod-y += ide-cd.o ide-cd_ioctl.o ide-cd_verbose.o
+-ide-floppy_mod-y += ide-floppy.o ide-floppy_ioctl.o ide-floppy_proc.o
++ide-floppy_mod-y += ide-floppy.o ide-floppy_ioctl.o
++
++ifeq ($(CONFIG_IDE_PROC_FS), y)
++	ide-disk_mod-y += ide-disk_proc.o
++	ide-floppy_mod-y += ide-floppy_proc.o
++endif
+ 
+ obj-$(CONFIG_BLK_DEV_IDEDISK)		+= ide-disk_mod.o
+ obj-$(CONFIG_BLK_DEV_IDECD)		+= ide-cd_mod.o
+diff --git a/drivers/ide/ide-disk.h b/drivers/ide/ide-disk.h
+index f937772..5254cae 100644
+--- a/drivers/ide/ide-disk.h
++++ b/drivers/ide/ide-disk.h
+@@ -23,8 +23,10 @@ ide_decl_devset(acoustic);
+ /* ide-disk_ioctl.c */
+ int ide_disk_ioctl(struct inode *, struct file *, unsigned int, unsigned long);
+ 
++#ifdef CONFIG_IDE_PROC_FS
+ /* ide-disk_proc.c */
+ extern ide_proc_entry_t ide_disk_proc[];
+ extern const struct ide_proc_devset ide_disk_settings[];
++#endif /* CONFIG_IDE_PROC_FS */
+ 
+ #endif /* __IDE_DISK_H */
+diff --git a/drivers/ide/ide-floppy.h b/drivers/ide/ide-floppy.h
+index 2ad373e..86ee37e 100644
+--- a/drivers/ide/ide-floppy.h
++++ b/drivers/ide/ide-floppy.h
+@@ -53,8 +53,10 @@ sector_t ide_floppy_capacity(ide_drive_t *);
+ /* ide-floppy_ioctl.c */
+ int ide_floppy_ioctl(struct inode *, struct file *, unsigned, unsigned long);
+ 
++#ifdef CONFIG_IDE_PROC_FS
+ /* ide-floppy_proc.c */
+ extern ide_proc_entry_t ide_floppy_proc[];
+ extern const struct ide_proc_devset ide_floppy_settings[];
++#endif /* CONFIG_IDE_PROC_FS */
+ 
+ #endif /*__IDE_FLOPPY_H */
+
+
