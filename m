@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbYH2PlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbYH2Pmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbYH2PlE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 11:41:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbYH2Pky
+	id S1754855AbYH2Pmz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 11:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbYH2Pmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 11:40:54 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:34371 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750855AbYH2Pky (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 11:40:54 -0400
-X-Sasl-enc: v47QPwEsgQBsfvffGggmHJfcpFvLY8tdAaC3Pw/3HN6z 1220014623
-Message-ID: <48B7F21D.5070509@ladisch.de>
-Date: Fri, 29 Aug 2008 14:57:01 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Fri, 29 Aug 2008 11:42:46 -0400
+Received: from mk-outboundfilter-6-a-2.mail.uk.tiscali.com ([212.74.114.16]:36166
+	"EHLO mk-outboundfilter-6-a-2.mail.uk.tiscali.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751034AbYH2Pmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 11:42:45 -0400
+X-Trace: 20363021/mk-outboundfilter-6.mail.uk.tiscali.com/F2S/$F2S-NILDRAM-ACCEPTED/f2s-nildram-customers/195.149.44.6
+X-SBRS: None
+X-RemoteIP: 195.149.44.6
+X-IP-MAIL-FROM: alistair@devzero.co.uk
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsgEAKy1t0jDlSwG/2dsb2JhbACBZbZogWo
+X-IronPort-AV: E=Sophos;i="4.32,293,1217804400"; 
+   d="scan'208";a="20363021"
+X-IP-Direction: IN
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: cpu time oddity (was Re: Linux 2.6.27-rc5)
+Date: Fri, 29 Aug 2008 16:42:42 +0100
+User-Agent: KMail/1.10.0 (Linux/2.6.27-rc4-bisect-damocles; KDE/4.1.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-To: "Robert M. Stockmann" <stock@stokkie.net>
-CC: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-Subject: Re: libata, Sound on same IRQ : flaky sound
-References: <Pine.LNX.4.44.0808281918150.19541-100000@hubble.stokkie.net>
-In-Reply-To: <Pine.LNX.4.44.0808281918150.19541-100000@hubble.stokkie.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808291642.42255.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert M. Stockmann wrote:
-> On Thu, 28 Aug 2008, Robert Hancock wrote:
-> > Robert M. Stockmann wrote:
-> > > How about giving your sound device a proper seperate IRQ number?
-> > > At least libata should like eth0 have its own kernel resources.
-> >
-> > That's an issue with the way the motherboard IRQ lines are wired.
-> > There's nothing the kernel can do about it.
->
-> That sounds rather strange to me, as IRQ line 16 is a virtual
-> IRQ as part of IO-APIC.
+On Friday 29 August 2008 00:26:45 Linus Torvalds wrote:
+> Another week (my weeks do seem to be eight days, don't they? Very odd),
+> another -rc.
 
-The IRQ isn't virtual; in IO-APIC mode, all PCI interrupts (PCI cards
-and internal PCI devices) are hard-wired to certain interrupt vectors.
+(Don't know who's responsible for this one, so I've just added Ragael to CC)
 
+I only noticed this recently but it's probably been happening for a while
+(doesn't seem to happen on 2.6.26):
 
-Regards,
-Clemens
+ps aux
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         2 83033595  0.0  0     0 ?        S<   10:30 21114574:23 [kthreadd]
+root      1740 83078470  0.0  0     0 ?        S<   10:31 21114574:23 [md0_raid1]
+
+Seems to happen only to kernel threads and at random. Last time I booted
+it was two XFS threads.
+
+Before I start another bisection, does anybody have any ideas?
+
+-- 
+Cheers,
+Alistair.
