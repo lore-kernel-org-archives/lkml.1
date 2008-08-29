@@ -1,99 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbYH2HQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752498AbYH2HVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753302AbYH2HQk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 03:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbYH2HQd
+	id S1752498AbYH2HVi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 03:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908AbYH2HVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 03:16:33 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:64281 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751417AbYH2HQc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 03:16:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=P/9a/ZkuXRRTYhqVbr2wCSsLlrZPdNXDS6hj/0b00RDJUPkipemMBdTZXoWpUU/cWQ
-         vUTbK/IfeBpArqe4Ba619J/slI5bAZZ9s7QyV1nMgcyK+JKBCzZgE/l2KfIxvly1ZvSx
-         7hINjKt8pw+vuFWzPtREUEdKzL/lgdRF37Zh8=
-Message-ID: <86802c440808290016m6af6ecc7l52f5c7eca7f29a02@mail.gmail.com>
-Date: Fri, 29 Aug 2008 00:16:31 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: split e820 reserved entries record to late v4
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080829065812.GA28777@elte.hu>
+	Fri, 29 Aug 2008 03:21:30 -0400
+Received: from gw.goop.org ([64.81.55.164]:37927 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750710AbYH2HV3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 03:21:29 -0400
+Message-ID: <48B7A377.8010205@goop.org>
+Date: Fri, 29 Aug 2008 00:21:27 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1219973391-9580-1-git-send-email-yhlu.kernel@gmail.com>
-	 <20080829063012.GA19459@elte.hu>
-	 <86802c440808282347n66a6dfb7r2bebd9f65918614a@mail.gmail.com>
-	 <20080829065812.GA28777@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+CC: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       Hugh Dickens <hugh@veritas.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory	corruption
+References: <48B701FB.2020905@goop.org> <b170af450808282320g27dfa2a9mc0e14e27e215ce96@mail.gmail.com> <20080829064540.GA26619@elte.hu>
+In-Reply-To: <20080829064540.GA26619@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 11:58 PM, Ingo Molnar <mingo@elte.hu> wrote:
+Ingo Molnar wrote:
+> * Rafał Miłecki <zajec5@gmail.com> wrote:
 >
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> >  BIOS-e820: 0000000077ff0000 - 0000000078000000 (reserved)
->> >  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
->> >  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
->> >
->> > which overlaps with the chipset PCI BAR (hpet) resource:
->> >
->> >   pci 0000:00:14.0: BAR has HPET at fed00000-fed003ff
->> >
->> > so due to this 1K conflict we take the full e820-reserved entry out and
->> > give the range 0xfec00000-0x100000000 as 'free'.
+>   
+>> 2008/8/28 Jeremy Fitzhardinge <jeremy@goop.org>:
+>>     
+>>> Some BIOSes have been observed to corrupt memory in the low 64k.  This
+>>> patch does two things:
+>>>  - Reserves all memory which does not have to be in that area, to
+>>>   prevent it from being used as general memory by the kernel.  Things
+>>>   like the SMP trampoline are still in the memory, however.
+>>>  - Clears the reserved memory so we can observe changes to it.
+>>>  - Adds a function check_for_bios_corruption() which checks and reports on
+>>>   memory becoming unexpectedly non-zero.  Currently it's called in the
+>>>   x86 fault handler, and the powermanagement debug output.
+>>>
+>>> RFC: What other places should we check for corruption in?
+>>>
+>>> [ Alan, Rafał: could you check you see:
+>>>   1: corruption messages
+>>>   2: no crashes
+>>>  Thanks -J
+>>> ]
+>>>       
+>> I was trying my best to crash system with this patch applied and failed :)
 >>
->> you will get
->> fec00000 - ffffffff reserved
->>    fed0000 - fed003ff hpet
->>      fed0000 - fed003ff 0000:00:14.0
+>> Works great.
+>>
+>> Just wonder if I should expect any printk from
+>> check_for_bios_corruption? I do not see any:
+>>
+>> zajec@sony:~> dmesg | grep -i corr
+>> scanning 2 areas for BIOS corruption
+>>     
 >
-> ok - because it's fully contained insert_resource() will succeed? I
-> thought it would only succeed if the new resource was smaller than (a
-> subset of) the existing resource. In the other direction, when a newly
-> inserted resource is a superset of the existing resource, i thought we'd
-> fail.
->
-> hypothetical scenario, what if we had neither a superset nor a subset
-> scenario, but a partial overlap, between:
->
->> >  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
->
-> and:
->
->> >   pci 0000:00:14.0: BAR has HPET at feb0f000-fec01000
->
-> i.e. we have:
->
->      [... PCI BAR ...]
->            [... e820 reservation ...]
->
-> in that case the insert_resource() will fail due to the conflict. Can we
-> declare it in that case that the e820 reserved entry is mortally broken
-> and we just ignore it?
+> that's _very_ weird.
+>   
 
-yes, that will fail to insert ...
+No, it's expected.  Rafał only got corruption when plugging his HDMI
+cable, and I didn't put any corruption checks on that path (I'm not even
+sure what kernel code would get executed in that case).  Hugh's original
+patch put a check in the hot path of the fault handler - and so it would
+get called regularly - but I put it in the kernel-bug path, which is
+fairly pointless given that we expect this patch to prevent the crashes.
 
-expand to 0xfeb0f000 - 0xfffffff and try again.?
+It does, however, do the check in the pm state changes, so doing a
+suspend should make it print some of the corruption it found.  Alan's
+case would be a better test for that though.
 
-may need to update insert_resource to return conflict resource ...
+It does raise the question of where the good places to put the check
+are.  It shouldn't be too hot, given that it's scanning ~64k of memory,
+but often enough to actually show something.  I was thinking of putting
+some calls in the acpi code itself, but got, erm, discouraged.
 
+Maybe hooking into a sysrq key would be useful (sysrq-m?).
+
+> maybe the BIOS expects _zeroes_ somewhere? Do you suddenly see crashes 
+> if you change this line in Jeremy's patch:
 >
-> At least we should emit a prominent warning if insert_resource() fails,
-> and add in an mdelay(2000) so that the user sees it.
-right
+> +               memset(__va(addr), 0, size);
+>
+> to something like:
+>
+> +               memset(__va(addr), 0x55, size);
+>
+> If this does not tickle any messages either, then maybe the problem is 
+> in the identity of the entities we allocate in the first 64K. Is there a 
+> list of allocations that go there when Jeremy's patch is not applied?
+>
+> but ... i think with an earlier patch you saw corruption, right? 
+> Far-fetched idea: maybe it's some CPU erratum during suspend/resume that 
+> corrupts pagetables if the pagetables are allocated in the first 64K of 
+> RAM? In that case we should use a bootmem allocation for pagetables that 
+> give a minimum address of 64K.
+>   
 
-YH
+Rafał's corruption was definitely non-zero.  I think the corruption is
+happening, but it's just not reported.
+
+    J
