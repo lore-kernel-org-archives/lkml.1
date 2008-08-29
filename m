@@ -1,92 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758521AbYH2R1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbYH2Ra1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758521AbYH2R1T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 13:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbYH2R1I
+	id S1758638AbYH2Ra1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 13:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbYH2RaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 13:27:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37604 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753182AbYH2R1F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 13:27:05 -0400
-Date: Fri, 29 Aug 2008 10:26:02 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@tglx.de
-Subject: Re: [PATCH 4/5] select: make select() use schedule_hrtimeout()
-In-Reply-To: <20080829171108.63e6dcd4@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.1.10.0808291009450.3300@nehalem.linux-foundation.org>
-References: <20080829080549.6906b744@infradead.org> <20080829080809.0e42a323@infradead.org> <alpine.LFD.1.10.0808290915560.3300@nehalem.linux-foundation.org> <20080829171108.63e6dcd4@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 29 Aug 2008 13:30:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53396 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752317AbYH2RaR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 13:30:17 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Brownell <david-b@pacbell.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2.6.27-rc4] rtc-cmos: wakes again from S5
+Date: Fri, 29 Aug 2008 19:34:11 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Stefan.Becker@nokia.com
+References: <200808281129.35611.david-b@pacbell.net> <20080828172206.5e083817.akpm@linux-foundation.org> <200808281732.57394.david-b@pacbell.net>
+In-Reply-To: <200808281732.57394.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808291934.12157.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 29 Aug 2008, Alan Cox wrote:
->
-> > "schedule_timeout()", there's a big difference between asking for two 
-> > ticks and asking for two seconds. The latter should probably try to round 
-> > to a nice timer tick basis for power reasons).
+On Friday, 29 of August 2008, David Brownell wrote:
+> On Thursday 28 August 2008, Andrew Morton wrote:
+> > On Thu, 28 Aug 2008 11:29:35 -0700
+> > David Brownell <david-b@pacbell.net> wrote:
+> > 
+> > > +	if (system_state == SYSTEM_POWER_OFF && !cmos_poweroff(pdev))
+> > 
+> > erp, system_state is a pretty horrid thing.  It's a global with
+> > relatively poorly defined transition conditions which have actually
+> > changed over time.
 > 
-> I disagree - that is fixing the problem in the wrong place. The timer
-> structure needs an accuracy field of some form that the existing timer
-> functions initialise to 0.
+> True, but it's the best we've got for this kind of thing.
 
-I do agree that we could do that too, but you miss one big issue: even if 
-we were to add an accuracy field inside the kernel, there is no such field 
-in the user interfaces.
+Exactly.
 
-We just pass timevals (and sometimes timespecs) around, and no, they don't 
-have any way to specify accuracy.
+> Globals ... yeech.
+> 
+> 
+> > It was not my greatest ever idea.  It was simple and expedient at the
+> > time and expanded use of it was "discouraged" (rofl).
+> > 
+> > Is there no alternative?
+> 
+> My general belief is that there should be a set of predicates
+> that drivers use to test whether or not the target system state
+> satisfies various prerequisites.  Like whether a clock or power
+> domain must be disabled, and so on.
+> 
+> In this specific case, a system_is_powering_down() predicate is
+> the logical application of that policy to this problem.
 
-Yeah, we could use the high bits in the usec/nsec words, but then older 
-kernels would basically do random things, so that would be a horrible 
-interface.
+Well, we still need to store that information somewhere and make it globally
+available, this way or another.
 
-The other thing to do would be to just add totally new system calls with 
-totally new interfaces, but (a) nobody would use them anyway and (b) it's 
-simply not worth it.
+The problem is actually deeper, because there are quirks that have to be
+called in specific situations from within relatively low-level functions
+(e.g. http://bugzilla.kernel.org/show_bug.cgi?id=8855#c36), so if there's
+a better approach than using system_state for that, I'd like to use it. :-)
 
-So given that reality, and _if_ we want to support nice high-resolution 
-sleeping by select/poll, the only reasonable thing to do is to estimate 
-some kind of expected accuracy from the existing timeval/timespec.
-
-And the only reasonable way to do that is to just look at the range. You 
-can probably do something fairly trivial with
-
-	/* Estimate expected accuracy in ns from a timeval */
-	unsigned long estimate_accuracy(struct timeval *tv)
-	{
-		/*
-		 * Tens of ms if we're looking at seconds, even
-		 * more for 10s+ sleeping
-		 */
-		if (tv->tv_sec) {
-			/* Tenths of seconds for long sleeps */
-			if (tv->tv_sec > 10)
-				return 100000000;
-			/*
-			 * Tens of ms for second-granularity sleeps. This,
-			 * btw, is the historical Linux 100Hz timer range.
-			 */
-			return 10000000;
-		}
-
-		/* Single msecs if we're looking at milliseconds */
-		if (tv->tv_usec > 1000)
-			return 1000000;
-
-		/* Aim for tenths of msecs otherwise */
-		return 100000;
-	}
-
-and yes, it's just a heuristic, but it's probably not a horribly stupid 
-one or a very unreasonable one. 
-
-			Linus
+Thanks,
+Rafael
