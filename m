@@ -1,91 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753848AbYH2Gvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558AbYH2G6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753848AbYH2Gvj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 02:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbYH2Gv3
+	id S1753558AbYH2G6j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 02:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbYH2G6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 02:51:29 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:53455 "EHLO smtp6.pp.htv.fi"
+	Fri, 29 Aug 2008 02:58:30 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47993 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751887AbYH2Gv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 02:51:28 -0400
-Date: Fri, 29 Aug 2008 09:50:26 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       Takashi Iwai <tiwai@suse.de>, fuse-devel@lists.sourceforge.net
-Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
-Message-ID: <20080829065026.GC16462@cs181140183.pp.htv.fi>
-References: <48B6F711.1040604@kernel.org> <20080828200120.GA16462@cs181140183.pp.htv.fi> <48B751DA.5090906@kernel.org>
+	id S1751734AbYH2G63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 02:58:29 -0400
+Date: Fri, 29 Aug 2008 08:58:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: split e820 reserved entries record to late v4
+Message-ID: <20080829065812.GA28777@elte.hu>
+References: <1219973391-9580-1-git-send-email-yhlu.kernel@gmail.com> <20080829063012.GA19459@elte.hu> <86802c440808282347n66a6dfb7r2bebd9f65918614a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48B751DA.5090906@kernel.org>
+In-Reply-To: <86802c440808282347n66a6dfb7r2bebd9f65918614a@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 29, 2008 at 03:33:14AM +0200, Tejun Heo wrote:
-> Adrian Bunk wrote:
-> > Sorry for being destructive, but 6 years after ALSA went into the
-> > kernel we are slightly approaching the point where all applications 
-> > support ALSA.
+
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+
+> >  BIOS-e820: 0000000077ff0000 - 0000000078000000 (reserved)
+> >  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+> >  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
+> >
+> > which overlaps with the chipset PCI BAR (hpet) resource:
+> >
+> >   pci 0000:00:14.0: BAR has HPET at fed00000-fed003ff
+> >
+> > so due to this 1K conflict we take the full e820-reserved entry out and
+> > give the range 0xfec00000-0x100000000 as 'free'.
 > 
-> Yeah, I have to agree it's a bit too late but the exclusion between OSS
-> and more modern sound systems (be it ALSA or PA) still bugged me quite a
-> bit.  There always seems this one off app that wasn't quite there - be
-> it mpg123 for whatever reason I still enjoy to use from time to time,
+> you will get
+> fec00000 - ffffffff reserved
+>    fed0000 - fed003ff hpet
+>      fed0000 - fed003ff 0000:00:14.0
 
-mpg123 supports ALSA since 1998 (sic).
+ok - because it's fully contained insert_resource() will succeed? I 
+thought it would only succeed if the new resource was smaller than (a 
+subset of) the existing resource. In the other direction, when a newly 
+inserted resource is a superset of the existing resource, i thought we'd 
+fail.
 
-> vmware which is a genuine pain in the ass to get working with LD_PRELOAD
-> tricks (hopefully 6.5 will finally use ALSA but wait we're all going PA
-> now...) or scorch-3D (and many other games) where aoss delivers horrible
-> sound after playing for a while.
+hypothetical scenario, what if we had neither a superset nor a subset 
+scenario, but a partial overlap, between:
 
-Scorched3D gives me sound with native ALSA.
+> >  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
 
-Is your libSDL not linked with libasound?
+and:
 
->...
-> Anyways, the thing is that unlike what was originally expected, dropping
-> an major programming API doesn't really work too well even after six
-> years of trying.
+> >   pci 0000:00:14.0: BAR has HPET at feb0f000-fec01000
 
-Good ALSA emulation was a hot topic a few years ago when popular 
-software like Flash and Skype didn't support ALSA, but the use
-cases are becoming rare.
+i.e. we have:
 
-2 out of your 3 examples above were software where native ALSA works,
-but your distributions seems to ship you a setup where you thought 
-OSS emulation was required.
+      [... PCI BAR ...]
+            [... e820 reservation ...]
 
-Which distribution are you using whose makers seem to need
-a big cluebat?
+in that case the insert_resource() will fail due to the conflict. Can we 
+declare it in that case that the e820 reserved entry is mortally broken 
+and we just ignore it?
 
-> Maybe because OSS is still kicking on other unices.
+At least we should emit a prominent warning if insert_resource() fails, 
+and add in an mdelay(2000) so that the user sees it.
 
-Which Unix with a big userbase uses OSS as primary sound system?
-
-OSS-only applications tend to be older Linux-only applications.
-
-Cross-platform applications either ship half a dozen different sound 
-drivers (including ALSA), or more commonly use some library that offers
-one API no matter which sound system gets used.
-
->...
-> Thanks.
-> tejun
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Ingo
