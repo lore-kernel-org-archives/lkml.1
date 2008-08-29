@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbYH2P7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753667AbYH2QAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756204AbYH2P7j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 11:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbYH2P7b
+	id S1753667AbYH2QAV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 12:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYH2QAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 11:59:31 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:35319 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751319AbYH2P7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 11:59:31 -0400
-Date: Fri, 29 Aug 2008 18:58:28 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Sergey Lapin <slapinid@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: GIT repositories with kernels > 2.4.1 and < 2.4.33
-Message-ID: <20080829155828.GB5976@cs181140183.pp.htv.fi>
-References: <48239d390808290822x66a75f9aucff52a239779ee4e@mail.gmail.com>
+	Fri, 29 Aug 2008 12:00:08 -0400
+Received: from smtp-noauth7.primus.ca ([216.254.180.38]:54960 "EHLO
+	mail-06.primus.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750964AbYH2QAH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 12:00:07 -0400
+X-Greylist: delayed 1930 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Aug 2008 12:00:07 EDT
+Date: Fri, 29 Aug 2008 11:27:33 -0400
+From: Nick Bowler <nbowler@ellipticsemi.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       fuse-devel@lists.sourceforge.net, miklos@szeredi.hu, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] CUSE: implement CUSE - Character device in
+	Userspace
+Message-ID: <20080829152733.GA20151@finial.ellipticsemi.com>
+Mail-Followup-To: Tejun Heo <tj@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	fuse-devel@lists.sourceforge.net, miklos@szeredi.hu, greg@kroah.com,
+	linux-kernel@vger.kernel.org
+References: <1219947544-666-1-git-send-email-tj@kernel.org> <1219947544-666-6-git-send-email-tj@kernel.org> <20080828130740.344f7213.akpm@linux-foundation.org> <48B75A4C.60004@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48239d390808290822x66a75f9aucff52a239779ee4e@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <48B75A4C.60004@kernel.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 29, 2008 at 07:22:12PM +0400, Sergey Lapin wrote:
-> Hi,
-> on git.kernel.org I can find repositories, containing kernels for up to
-> 2.4.1 (history.git) and from 2.4.33 (linux-2.4.git).
->...
+On 04:09 Fri 29 Aug     , Tejun Heo wrote:
+> Hello, Andrew.
+> 
+> Andrew Morton wrote:
+> >> +struct cuse_conn {
+> >> +	struct fuse_conn	fc;
+> >> +	struct cdev		cdev;
+> >> +	struct vfsmount		*mnt;
+> >> +	struct device		*dev;
+> >> +	bool			cdev_added:1;
+> >> +	bool			disconnected:1;	/* channel disconnected */
+> > 
+> > I didn't know you could do that with bools.
+> 
+> Hmm... I thought it was like any other integral types, no?
+> 
 
-This gap is only between 2.4.15 and 2.4.31.
+Boolean bit-fields are indeed valid.  Usual semantics for objects of type
+_Bool apply.
 
-> Thanks a lot,
-> S.
+C99 6.7.2.1 Structure and union specifiers
 
-cu
-Adrian
+4   A bit-field shall have a type that is a qualified or unqualified
+    version of _Bool, signed int, unsigned int, or some other
+    implementation-defined type.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Nick Bowler, Elliptic Semiconductor (http://www.ellipticsemi.com/)
 
