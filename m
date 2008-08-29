@@ -1,49 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751833AbYH2XNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbYH2XNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751833AbYH2XNQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 19:13:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbYH2XM4
+	id S1754884AbYH2XNp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 19:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYH2XM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 19:12:56 -0400
-Received: from abydos.nerdbox.net ([216.151.149.55]:54402 "EHLO
-	abydos.NerdBox.Net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751061AbYH2XM4 (ORCPT
+	Fri, 29 Aug 2008 19:12:58 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:25553 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751180AbYH2XM4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 29 Aug 2008 19:12:56 -0400
-Date: Fri, 29 Aug 2008 16:12:55 -0700 (PDT)
-From: Steve VanDeBogart <vandebo-lkml@NerdBox.Net>
-To: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
-       jiayingz@google.com, dkegel@google.com
-Subject: [PATCH 0/6] support valgrinding uml
-Message-ID: <alpine.DEB.1.00.0808281139420.15543@abydos.NerdBox.Net>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+From: Andrew Patterson <andrew.patterson@hp.com>
+Subject: [PATCH 0/6] detect online disk resize
+To: linux-scsi@vger.kernel.org
+Cc: andrew.patterson@hp.com, James.Bottomley@HansenPartnership.com,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, axboe@kernel.dk,
+       andmike@linux.vnet.ibm.com, mike.miller@hp.com, genanr@emsphone.com,
+       jmoyer@redhat.com
+Date: Fri, 29 Aug 2008 17:12:54 -0600
+Message-ID: <20080829231254.25065.66052.stgit@bluto.andrew>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patches enables Valgrind to produce useful results for
-User Mode Linux.  Valgrind requires some patches as well.  A list of
-the limitations and a recipe for building and using everything can be
-found on this page: http://uml.jfdi.org/uml/Wiki.jsp?page=ValgrindingUML
+This is version 2 of a patch series I submitted back in May 2008. This
+version now checks for device size changes in the rescan_partitions()
+routine.  Which in turn is called when a device is opened and in the
+BLKRRPART ioctl.
 
-  Documentation/uml/valgrind-suppressions |   95
-  arch/um/Makefile                        |    4
-  arch/um/include/valgrind.h              |   12
-  arch/um/kernel/physmem.c                |   21
-  arch/um/kernel/process.c                |   31
-  arch/um/kernel/skas/process.c           |    3
-  arch/um/os-Linux/skas/process.c         |    7
-  include/asm-um/thread_info.h            |    8
-  include/linux/memcheck.h                |  285 ++
-  include/linux/sched.h                   |    6
-  include/linux/valgrind.h                | 3928 ++++++++++++++++++++++++++++++++
-  lib/Kconfig.debug                       |   20
-  mm/page_alloc.c                         |    4
-  mm/slab.c                               |   20
-  mm/vmalloc.c                            |   15
-  15 files changed, 4456 insertions(+), 3 deletions(-)
+I am resubmitting this patch series as I got little response the
+previous time.  Al Viro has told me offline that he would look at it this
+time.
 
---
-Steve
+This patch series handles online disk resizes that are currently not
+completely recognized by the kernel using the existing revalidate_disk
+routines.  An online resize can occur when growing or shrinking a
+Fibre Channel LUN or perhaps by adding a disk to an existing RAID
+volume.
+
+The kernel currently recognizes a device size change when the
+lower-level revalidate_disk routines are called; however, the block
+layer does not use the new size while it has any current openers on
+the device. So, for example, if LVM has an volume open on the device,
+you will generally not see the size change until after a reboot. We
+fix this problem by creating a wrapper to be used with lower-level
+revalidate_disk routines.  This wrapper first calls the lower-level
+driver's revalidate_disk routine. It then compares the gendisk
+capacity to the block devices inode size. If there is a difference, we
+adjust the block device's size. If the size has changed, we then flush
+the disk for safety. The size is also checked in rescan_partitions
+which is called when the device is opened or when the BLKRRPART ioctl
+is called.
+
+There are several ways to "kick off" a device size change:
+
+1. For SCSI devices do:
+
+  # echo 1 > /sys/class/scsi_device/<device>/device/rescan
+
+  or
+
+  # blockdev --rereadpt <device file>
+
+2. Other devices (not device mapper)
+
+  # blockdev --rereadpt <device file>
+
+I have tested this patch on SCSI and SmartArray (cciss)
+devices. Device mapper still does not recognize device size changes
+until the device is restarted.
+
+Jeff Moyer and Andy Ryan have done some light testing on the previous
+version of this series.
+
+This patch set has been tested with scsi-misc-2.6. It also applies to
+linux-next with some minor, obvious changes.
+
+
+Diff stats:
+
+ drivers/scsi/sd.c     |    4 +-
+ fs/block_dev.c        |   92 ++++++++++++++++++++++++++++++++++++++++++++++---
+ fs/partitions/check.c |    3 +-
+ include/linux/fs.h    |    3 ++
+ 4 files changed, 94 insertions(+), 8 deletions(-)
+
+Commits:
+
+ - Wrapper for lower-level revalidate_disk routines.
+ - Adjust block device size after an online resize of a disk.
+ - Check for device resize in rescan_partitions.
+ - SCSI sd driver calls revalidate_disk wrapper.
+ - Added flush_disk to factor out common buffer cache flushing code.
+ - Call flush_disk() after detecting an online resize.
+
+-- 
+Andrew Patterson
+
