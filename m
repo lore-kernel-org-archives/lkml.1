@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757203AbYH2QFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbYH2QGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757203AbYH2QFS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 12:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbYH2QFF
+	id S1756908AbYH2QGU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 12:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbYH2QGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 12:05:05 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2378 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753206AbYH2QFE (ORCPT
+	Fri, 29 Aug 2008 12:06:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57594 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752506AbYH2QGL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 12:05:04 -0400
-Date: Fri, 29 Aug 2008 12:05:02 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Arnd Bergmann <arnd@arndb.de>
-cc: Scott Wood <scottwood@freescale.com>, <dbrownell@users.sourceforge.net>,
-       <greg@kroah.com>, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
-       Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller
- driver
-In-Reply-To: <200808290027.59127.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.44L0.0808291202270.4447-100000@netrider.rowland.org>
+	Fri, 29 Aug 2008 12:06:11 -0400
+Date: Fri, 29 Aug 2008 09:05:16 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: split e820 reserved entries record to late v4 -
+ fix
+In-Reply-To: <1219997592-9975-1-git-send-email-yhlu.kernel@gmail.com>
+Message-ID: <alpine.LFD.1.10.0808290854000.3300@nehalem.linux-foundation.org>
+References: <1219997592-9975-1-git-send-email-yhlu.kernel@gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008, Arnd Bergmann wrote:
 
-> > > Does building a kernel image that can run on different hardware without 
-> > > rebuilding also violate the "relevant standards"?
-> > 
-> > No.  That isn't what Arnd was concerned about.  He noted that even if 
-> > you did build multiple modules, only one of them could be loaded at any 
-> > time.
-> 
-> Well, actually it was exactly what I was concerned about ;-)
-> 
-> The way I understand the code, it is layered into the hardware specific
-> part and the protocol specific part, which are connected through
-> the interfaces I pointed out.
 
-That's right.
+On Fri, 29 Aug 2008, Yinghai Lu wrote:
+>
+> try to insert_resource second time, by expand the resource...
 
-> The standard requires that there can only be one protocol handler
-> per physical interface, which is a reasonable limitation.
+I would hold off on this unless it's shown to actually be needed. And _if_ 
+it is needed, I would just make a new function for doing this all: 
+"insert_resource_expand_to_fit()"
 
-No, you've got it exactly backward.  There can be multiple protocol 
-handlers per physical interface, but there must be only one physical 
-interface per device.
+That said, I think the insert_resource()/__insert_resource() change is 
+pretty ok. However, it doesn't follow the rules, and is racy. The rules 
+for resources are:
 
-> However, what the Linux implementation actually enforces is
-> that there can only be one hardware specific driver built or loaded
-> into the kernel, which just looks like an arbitrary restriction
-> that does not actually help.
+ - the "internal" version (with the "__" prepended) is static to 
+   resource.c, because it must not be called from outside, which is in 
+   turn because:
 
-Not at all -- it is an implementation of the constraint that there be 
-only one physical interface.
+ - it must be called with the lock taken by the caller, because otherwise 
+   returning a "struct resource *" is racy - the resource is not protected
+   by anything!
 
-> If the gadget hardware drivers were registering the device with a
-> gadget_bus_type, you could still enforce the "only one protocol"
-> rule by binding every protocol to every device in that bus type.
+So the "insert_resource_expand_to_fit()" thing would look something like 
+this:
 
-There is no such rule.
+	void insert_resource_expand_to_fit(struct resource *root, struct resource *new)
+	{
+		write_lock(&resource_lock);
+		while (new->start && new->parent) {
+			struct resource *conflict;
 
-Alan Stern
+			conflict = __insert_resource(root, new);
+			if (!conflict)
+				break;
+			if (conflict->start < new->start)
+				new->start = conflict->start;
+			if (conflict->end > new->end)
+				new->end = conflict->end;
+		}
+		write_unlock(&resource_lock);
+	}
 
+but the above is obviously _totally_ untested.
+
+		Linus
