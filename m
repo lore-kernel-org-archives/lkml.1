@@ -1,77 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758618AbYH2OST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758546AbYH2O3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758618AbYH2OST (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 10:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbYH2OSJ
+	id S1758546AbYH2O3W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 10:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756783AbYH2O3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 10:18:09 -0400
-Received: from gw.goop.org ([64.81.55.164]:44781 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756111AbYH2OSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 10:18:08 -0400
-Message-ID: <48B8051E.2050401@goop.org>
-Date: Fri, 29 Aug 2008 07:18:06 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Fri, 29 Aug 2008 10:29:08 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:49195 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753721AbYH2O3G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 10:29:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=lGMI5FeVsywCmtfUJKJXPWb9hWaAXQ/IDEzL0gp7Pn196S5QW2z51XFTgGyDqdNXq4
+         SWV4w28OtCIZv8DCfMrBYKXIzENPQpOeWBeUJY8vYz14O2rlPYjoTLQ1WwSEFm1Cy4Pk
+         oCE/M4jrsOqM3jtTBbsxNdFoly1CF9htj789g=
+Message-ID: <520f0cf10808290729q1d99b915s1543256796c8eeb7@mail.gmail.com>
+Date: Fri, 29 Aug 2008 16:29:03 +0200
+From: "John Kacur" <jkacur@gmail.com>
+To: "Carsten Emde" <Carsten.Emde@osadl.org>
+Subject: Re: 2.6.26.3-rt3 bug report
+Cc: "Jon Masters" <jonathan@jonmasters.org>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <48B39969.8060501@osadl.org>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-1?Q?Rafa=3F_Mi=3Fecki?= <zajec5@gmail.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Hugh Dickens <hugh@veritas.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory corruption
-References: <48B701FB.2020905@goop.org>	<86802c440808281849nb972d64te89894077ea9f33c@mail.gmail.com>	<48B76CE0.5010309@goop.org> <20080829102547.655440bf@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080829102547.655440bf@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <520f0cf10808241551x2fe64e9esadf66634b3790c54@mail.gmail.com>
+	 <520f0cf10808251615r5953794x9816bd58ea771ab3@mail.gmail.com>
+	 <1219724080.25366.13.camel@perihelion> <48B39969.8060501@osadl.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->>>>  - Clears the reserved memory so we can observe changes to it.
->>>>         
+On Tue, Aug 26, 2008 at 7:49 AM, Carsten Emde <Carsten.Emde@osadl.org> wrote:
+> Jon Masters wrote:
+>> On Tue, 2008-08-26 at 01:15 +0200, John Kacur wrote:
+>>> Slightly different form today.
+>>> Bad page state in process 'firefox-bin'
+>>> page:ffffe20000daa360 flags:0x0100000000000000
+>>> mapping:ffffe20000daa378 mapcount:0 count:0
+>>> Trying to fix it up, but a reboot is needed
+>>> Backtrace:
+>>> Pid: 16955, comm: firefox-bin Not tainted 2.6.26.3-rt3 #3
+>> Er, does firefox run reliably on a non-RT 2.6.26.3 kernel? This many
+>> random calls to bad_page suggests more of a RAM problem.
+> Don't think so. Same problem here:
+> Bad page state in process 'bonobo-activati'
+> page:c18f66fc flags:0x40000000 mapping:c18f670c mapcount:0 count:0
+> Trying to fix it up, but a reboot is needed
+> Backtrace:
+> Pid: 4169, comm: bonobo-activati Not tainted 2.6.26.3-rt3 #2
+> [<c0438e52>] ? printk+0x14/0x1a
+> [<c026e8ef>] bad_page+0x4e/0x79
+> [<c026f3d3>] free_hot_cold_page+0x5b/0x1dc
+> [<c026f5a1>] free_hot_page+0xf/0x11
+> [<c026f5c3>] __free_pages+0x20/0x2b
+> [<c02789a0>] __pte_alloc+0x6f/0x77
+> [<c0278a4d>] handle_mm_fault+0xa5/0x56c
+> [<c0243a1c>] ? rt_mutex_down_read+0x15c/0x164
+> [<c0218759>] do_page_fault+0x2c1/0x674
+> [<c021b21d>] ? enqueue_task+0x5a/0x66
+> [<c043bb66>] ? __spin_unlock_irqrestore+0x24/0x42
+> [<c0241e4f>] ? rt_mutex_adjust_prio+0x1a/0x31
+> [<c043bc92>] ? __spin_lock_irqsave+0x1e/0x38
+> [<c021f37d>] ? try_to_wake_up+0x176/0x180
+> [<c043bb5a>] ? __spin_unlock_irqrestore+0x18/0x42
+> [<c0241e4f>] ? rt_mutex_adjust_prio+0x1a/0x31
+> [<c0241e61>] ? rt_mutex_adjust_prio+0x2c/0x31
+> [<c0241e61>] ? rt_mutex_adjust_prio+0x2c/0x31
+> [<c043a8f7>] ? rt_write_slowunlock+0x1cd/0x1d5
+> [<c027ccb0>] ? mprotect_fixup+0x238/0x282
+> [<c0259384>] ? audit_syscall_exit+0x2b6/0x2d1
+> [<c0204a4e>] ? resume_userspace+0x6/0x1c
+> [<c0218498>] ? do_page_fault+0x0/0x674
+> [<c043bf02>] error_code+0x72/0x78
 >
-> You ought to pick different values on different runs 0x00, 0xFF, 0xAA,
-> 0x55 etc...
->   
 
-Yes, that wouldn't be a bad idea.  The corruption we've seen so far is
-0->non 0, but we haven't looked for zeroing.
+Hi Carsten
 
->> Yeah, OK, but I think it should default to ON for now.  The problem is
->> that we had two very different systems (Sony Vaio and Intel desktop)
->>     
->
-> So a zillion people should lose a chunk of RAM because of what is
-> probably an obscure bug in a single version of a piece of SMM code on two
-> systems total ?
->   
+Any progress or ideas here?
 
-Well, we just don't know.  We have two systems which started reporting
-problems when I made a small change to how the initial pagetables are
-allocated.  Before that they appeared to work fine, though in reality it
-was just some other part of the address space being corrupted.  Who
-knows how many systems are out there "working fine", except that some
-obscure address in the user address space now allows you to write into
-kernel memory?
+Thank you
 
-The two systems are *completely different*.  One has a Phoenix BIOS, the
-other is AMI.  One is a Sony Vaio, the other is an OEM Intel desktop. 
-One corrupts memory on unplugging a HDMI cable, the other corrupts on
-suspend/resume.  I don't think this is reassuring, or indicates the
-problem has limited scope.
-
-> That appears to be totally out of proportion - plus the defaults are
-> *irrelevant* for mass user coverage. If you want large scale coverage ask
-> the Fedora, OpenSuSE and Ubuntu people to turn it on for a testing kernel
-> release and report back.
-
-The idea is to leave it on by default for a while - maybe a couple of
--rc releases - and see what turns up.  We can turn it off for a release
-kernel if people really object, though I'd hope something like Fedora
-Rawhide would leave it on.
-
-    J
+John
