@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751034AbYH2PVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbYH2PVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751034AbYH2PVj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 11:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbYH2PVH
+	id S1751964AbYH2PVz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 11:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbYH2PVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 11:21:07 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42533 "EHLO
+	Fri, 29 Aug 2008 11:21:09 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42537 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbYH2PVF (ORCPT
+	with ESMTP id S1750855AbYH2PVG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 11:21:05 -0400
-Date: Fri, 29 Aug 2008 08:07:40 -0700
+	Fri, 29 Aug 2008 11:21:06 -0400
+Date: Fri, 29 Aug 2008 08:08:09 -0700
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: Arjan van de Ven <arjan@infradead.org>, mingo@elte.hu, tglx@tglx.de,
        torvalds@linux-foundation.org
-Subject: [PATCH 3/5] select: introduce a schedule_hrtimeout() function
-Message-ID: <20080829080740.7857618e@infradead.org>
+Subject: [PATCH 4/5] select: make select() use schedule_hrtimeout()
+Message-ID: <20080829080809.0e42a323@infradead.org>
 In-Reply-To: <20080829080549.6906b744@infradead.org>
 References: <20080829080549.6906b744@infradead.org>
 Organization: Intel
@@ -33,98 +33,98 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Thu, 28 Aug 2008 13:44:03 -0700
-Subject: [PATCH] select: introduce a schedule_hrtimeout() function
+Date: Thu, 28 Aug 2008 13:45:38 -0700
+Subject: [PATCH] select: make select() use schedule_hrtimeout()
 
-This patch adds a schedule_hrtimeout() function, to be used by select() and poll()
-in a later patch. This function works similar to schedule_timeout() in most ways,
-but takes a timespec rather than jiffies.
+now that we have schedule_hrtimeout(), make select() use it.
+But only for short delays; really long delays are assumed to not
+need the highres level of accuracy but rather want the regular
+timer behavior for now.
+
+This is only done for delays shorter than 1 second; currently
+the assumption is that longer delays have no desire to get the
+higher accuracy.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- include/linux/hrtimer.h |    3 ++
- kernel/hrtimer.c        |   57 +++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 60 insertions(+), 0 deletions(-)
+ fs/select.c |   41 +++++++++++++++++++++++++++++------------
+ 1 files changed, 29 insertions(+), 12 deletions(-)
 
-diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-index 6d93dce..526b62f 100644
---- a/include/linux/hrtimer.h
-+++ b/include/linux/hrtimer.h
-@@ -346,6 +346,9 @@ extern long hrtimer_nanosleep_restart(struct restart_block *restart_block);
- extern void hrtimer_init_sleeper(struct hrtimer_sleeper *sl,
- 				 struct task_struct *tsk);
+diff --git a/fs/select.c b/fs/select.c
+index 3ce5943..62b9767 100644
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -24,6 +24,7 @@
+ #include <linux/fdtable.h>
+ #include <linux/fs.h>
+ #include <linux/rcupdate.h>
++#include <linux/hrtimer.h>
  
-+extern signed long schedule_hrtimeout(struct timespec *time, int mode);
-+
-+
- /* Soft interrupt function to run the hrtimer queues: */
- extern void hrtimer_run_queues(void);
- extern void hrtimer_run_pending(void);
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index b8e4dce..0ab7b04 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -1678,3 +1678,60 @@ void __init hrtimers_init(void)
- #endif
- }
+ #include <asm/uaccess.h>
  
+@@ -187,6 +188,7 @@ int do_select(int n, fd_set_bits *fds, s64 *timeout, struct timespec *end_time)
+ 	struct poll_wqueues table;
+ 	poll_table *wait;
+ 	int retval, i;
++	int use_hr = 0;
+ 
+ 	rcu_read_lock();
+ 	retval = max_select_fd(n, fds);
+@@ -196,6 +198,10 @@ int do_select(int n, fd_set_bits *fds, s64 *timeout, struct timespec *end_time)
+ 		return retval;
+ 	n = retval;
+ 
++	/* Use hrtimers only for short timeouts for now */
++	if (*timeout < HZ && end_time->tv_sec != 0)
++		use_hr = 1;
 +
-+/**
-+ * schedule_hrtimeout - sleep until timeout
-+ * @timeout: timeout value (timespec)
-+ * @mode: timer mode, HRTIMER_MODE_ABS or HRTIMER_MODE_REL
-+ *
-+ * Make the current task sleep until @timeout time has
-+ * elapsed. The routine will return immediately unless
-+ * the current task state has been set (see set_current_state()).
-+ *
-+ * You can set the task state as follows -
-+ *
-+ * %TASK_UNINTERRUPTIBLE - at least @timeout time is guaranteed to
-+ * pass before the routine returns. The routine will return 0
-+ *
-+ * %TASK_INTERRUPTIBLE - the routine may return early if a signal is
-+ * delivered to the current task. In this case a positivee value will
-+ * be returned or 0 if the timer expired in time
-+ *
-+ * The current task state is guaranteed to be TASK_RUNNING when this
-+ * routine returns.
-+ *
-+ * In all cases the return value is guaranteed to be non-negative.
-+ */
-+signed long __sched schedule_hrtimeout(struct timespec *time, int mode)
-+{
-+	struct hrtimer_sleeper t;
-+	ktime_t expire;
+ 	poll_initwait(&table);
+ 	wait = &table.pt;
+ 	if (!*timeout)
+@@ -266,20 +272,31 @@ int do_select(int n, fd_set_bits *fds, s64 *timeout, struct timespec *end_time)
+ 			break;
+ 		}
+ 
+-		if (*timeout < 0) {
+-			/* Wait indefinitely */
+-			__timeout = MAX_SCHEDULE_TIMEOUT;
+-		} else if (unlikely(*timeout >= (s64)MAX_SCHEDULE_TIMEOUT - 1)) {
+-			/* Wait for longer than MAX_SCHEDULE_TIMEOUT. Do it in a loop */
+-			__timeout = MAX_SCHEDULE_TIMEOUT - 1;
+-			*timeout -= __timeout;
++		if (use_hr) {
++			struct timespec now;
++			ktime_t expire;
++			schedule_hrtimeout(end_time, HRTIMER_MODE_ABS);
++			getnstimeofday(&now);
++			expire = ktime_sub(timespec_to_ktime(*end_time), timespec_to_ktime(now));
++			if (ktime_to_ns(expire) <= 0)
++				break;
 +
-+	expire = timespec_to_ktime(*time);
-+
-+	if (ktime_to_ns(expire) <= 0) {
-+		__set_current_state(TASK_RUNNING);
-+		return 0;
-+	}
-+
-+	hrtimer_init_on_stack(&t.timer, CLOCK_MONOTONIC, mode);
-+	t.timer.expires = expire;
-+
-+	hrtimer_init_sleeper(&t, current);
-+
-+	hrtimer_start(&t.timer, t.timer.expires, mode);
-+	if (!hrtimer_active(&t.timer))
-+		t.task = NULL;
-+
-+	if (likely(t.task))
-+		schedule();
-+
-+	hrtimer_cancel(&t.timer);
-+
-+
-+	__set_current_state(TASK_RUNNING);
-+
-+	return t.task == NULL;
-+}
-+EXPORT_SYMBOL_GPL(schedule_hrtimeout);
-+
+ 		} else {
+-			__timeout = *timeout;
+-			*timeout = 0;
++			if (*timeout < 0) {
++				/* Wait indefinitely */
++				__timeout = MAX_SCHEDULE_TIMEOUT;
++			} else if (unlikely(*timeout >= (s64)MAX_SCHEDULE_TIMEOUT - 1)) {
++				/* Wait for longer than MAX_SCHEDULE_TIMEOUT. Do it in a loop */
++				__timeout = MAX_SCHEDULE_TIMEOUT - 1;
++				*timeout -= __timeout;
++			} else {
++				__timeout = *timeout;
++				*timeout = 0;
++			}
++			__timeout = schedule_timeout(__timeout);
++			if (*timeout >= 0)
++				*timeout += __timeout;
+ 		}
+-		__timeout = schedule_timeout(__timeout);
+-		if (*timeout >= 0)
+-			*timeout += __timeout;
+ 	}
+ 	__set_current_state(TASK_RUNNING);
+ 
 -- 
 1.5.5.1
 
