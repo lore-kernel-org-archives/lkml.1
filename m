@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756274AbYH2Ksj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbYH2KtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756274AbYH2Ksj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 06:48:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbYH2Ks3
+	id S1756502AbYH2KtA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 06:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753732AbYH2Ksr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 06:48:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34300 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752463AbYH2Ks2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 06:48:28 -0400
-Message-ID: <48B7D3AE.3050108@kernel.org>
-Date: Fri, 29 Aug 2008 12:47:10 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       fuse-devel@lists.sourceforge.net
-Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
-References: <48B6F711.1040604@kernel.org> <s5htzd4gl3n.wl%tiwai@suse.de>
-In-Reply-To: <s5htzd4gl3n.wl%tiwai@suse.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 Aug 2008 10:48:19 +0000 (UTC)
+	Fri, 29 Aug 2008 06:48:47 -0400
+Received: from vms044pub.verizon.net ([206.46.252.44]:63003 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752673AbYH2Ksq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 06:48:46 -0400
+Date: Fri, 29 Aug 2008 06:48:33 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: linux-2.6.27-rc5, new msgs in log
+To: linux-kernel@vger.kernel.org
+Message-id: <200808290648.34040.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Greetings;
 
-Takashi Iwai wrote:
-> Thanks for info.  Just a quick glance, CUSE looks like a good
-> abstraction for this kind of things.
-> 
-> I've been thinking that the tunneling to an OSS-emulation daemon would
-> be the best way, too, and I actually made a similar hack (not based on
-> FUSE but own kernel module).
-> 
-> It was presented in SUSE Labs conference a few years ago.  And the
-> reaction by audience at that time was what Adrian showed -- why do we
-> need such a complexity at all?  Well, as long as we have OSS API and
-> its applications, we should keep supporting them in a good form.
-> 
-> Anyway, my implementation at that time was too hackish and I gave up
-> soon.  If it can be implemented in a generic framework like CUSE,
-> it's a good chance to merge to the upstream.
-> 
-> One thing I couldn't find in your code is the mmap support.
-> The mmap support is crucial for some apps, typically used for games.
-> Am I missing something?
+x86 box, athlon xp-2800, 1 GB ram, built w/o the 4GB switch enabled so 
+it is only seeing 8xx megs, new build with that re-enabled in progress.
 
-mmap is essential for some apps?  Aiee... I was hoping to skip that one
-after reading strong discouragement against it in the OSS programming
-manual from 4front.
+I have been building the radeon firmware in my kernels since the initial 
+patch adding them came out at about rc2 or so, as my build script carries 
+my old .config's forward before doing a 'make oldconfig', and by copying 
+the patches resultant firmware/radeon tree forward to each new -rcX.
 
-Adding it shouldn't be too difficult.  I'll give it a shot after other
-stuff settles down.
+I am now seeing these in the messages file:
+Aug 29 01:16:05 coyote kernel: [  363.201194] [drm] wait for fifo failed status : 0x80076100 0x00000000
+Aug 29 01:16:05 coyote kernel: [  363.212257] [drm] wait for fifo failed status : 0x80026138 0x00000000
+Aug 29 01:22:29 coyote kernel: [  747.797152] [drm] wait for fifo failed status : 0x80066100 0x00000000
+
+That was at bootup time, and 20 minutes ago when I woke the monitor up again:
+Aug 29 06:19:32 coyote kernel: [18570.160855] [drm] wait for fifo failed status : 0x80066107 0x00000000
+Aug 29 06:20:26 coyote kernel: [18624.592825] [drm] wait for fifo failed status : 0x80066100 0x00000000
+Aug 29 06:20:38 coyote kernel: [18636.513621] [drm] wait for fifo failed status : 0x8006610F 0x00000000
+Aug 29 06:20:42 coyote kernel: [18640.370596] [drm] wait for fifo failed status : 0x80066107 0x00000000
+Aug 29 06:20:49 coyote kernel: [18647.200431] [drm] wait for fifo failed status : 0x8006610F 0x00000000
+Aug 29 06:20:53 coyote kernel: [18651.481310] [drm] wait for fifo failed status : 0x80066100 0x00000000
+Aug 29 06:21:44 coyote kernel: [18702.575087] [drm] wait for fifo failed status : 0x8006610F 0x00000000
+Aug 29 06:21:49 coyote kernel: [18707.424341] [drm] wait for fifo failed status : 0x80076100 0x00000000
+Aug 29 06:21:58 coyote kernel: [18716.581872] [drm] wait for fifo failed status : 0x80066107 0x00000000
+Aug 29 06:22:28 coyote kernel: [18745.979819] [drm] wait for fifo failed status : 0x80066107 0x00000000
+
+Do I have a problem or has the driver just been made noisier?
 
 Thanks.
 
 -- 
-tejun
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Nothing ever becomes real until it is experienced.
+- John Keats
