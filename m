@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756715AbYH2OiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbYH2Ojn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756715AbYH2OiT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 10:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbYH2OiJ
+	id S1757686AbYH2Ojn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 10:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbYH2Ojf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 10:38:09 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:39098 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751223AbYH2OiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 10:38:08 -0400
-Subject: Re: Frustrated with capabilities..
-From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: Theodore Tso <tytso@mit.edu>, Markku Savela <msa@moth.iki.fi>,
-       Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-In-Reply-To: <48B77F53.6080200@schaufler-ca.com>
-References: <87hc96by8x.fsf@burp.tkv.asdf.org>
-	 <20080828141826.GA6797@ucw.cz>
-	 <200808281445.m7SEjYsB007502@burp.tkv.asdf.org>
-	 <20080828174854.GM26987@mit.edu>
-	 <1219957399.2627.127.camel@moss-terrapins.epoch.ncsc.mil>
-	 <48B77F53.6080200@schaufler-ca.com>
-Content-Type: text/plain
-Date: Fri, 29 Aug 2008 10:20:01 -0400
-Message-Id: <1220019601.2627.129.camel@moss-terrapins.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 29 Aug 2008 10:39:35 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57702 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751274AbYH2Oje (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 10:39:34 -0400
+Date: Fri, 29 Aug 2008 07:39:02 -0700
+From: Greg KH <greg@kroah.com>
+To: stefan_kopp@agilent.com
+Cc: korgull@home.nl, stern@rowland.harvard.edu, oliver@neukum.org,
+       linux-usb@vger.kernel.org, me@felipebalbi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: add USB test and measurement class driver - round
+	2
+Message-ID: <20080829143902.GC18136@kroah.com>
+References: <20080827183615.GA15692@kroah.com> <Pine.LNX.4.44L0.0808271451550.17771-100000@iolanthe.rowland.org> <20080827234720.GC31264@kroah.com> <200808281858.42486.korgull@home.nl> <7D8F552F9FFBAC438A816966BEC4516BFBA328@cos-us-mb07.cos.agilent.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7D8F552F9FFBAC438A816966BEC4516BFBA328@cos-us-mb07.cos.agilent.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-28 at 21:47 -0700, Casey Schaufler wrote:
-> David P. Quigley wrote:
-> > On Thu, 2008-08-28 at 13:48 -0400, Theodore Tso wrote:
-> >   
-> >> On Thu, Aug 28, 2008 at 05:45:34PM +0300, Markku Savela wrote:
-> >>     
-> >>>> From: Pavel Machek <pavel@suse.cz>
-> >>>>         
-> >>>> Yes, you need upcoming filesystem capabilities.  Binary may not
-> >>>> inherit capabilities unless filesystem flags permit that.
-> >>>>         
-> >>> I think this is wrong. Normal executables inherit uid/gid and
-> >>> supplementary groups by default. Why should capabilities be any
-> >>> different?
-> >>>       
-> >> Well, because that's not the what the POSIX draft specification (and
-> >> the rest of the Unix industry who were striving to meet the US
-> >> Department of Defense's "B2 by '92" initiative) ended up implementing.
-> >>     
-> >
-> > Minor nit. It was actually C2(Controlled Access Protection) by '92 which
-> > is mainly just DAC protections as opposed to B2(Structured Protection)
-> > which also included MAC policies and Sensitivity labels in addition to
-> > DAC protections
+On Fri, Aug 29, 2008 at 12:57:54AM -0600, stefan_kopp@agilent.com wrote:
+> Hi all,
 > 
-> But the fun part was that the evaluation requirements for B1,
-> which fell in between C2 and B2 (the order from least secure to
-> most was D, C1, C2, B1, B2, B3, A1, and "Beyond A1") where so
-> close to those for C2 that everyone implemented B1, which did
-> include MAC policy in the form of Bell and LaPadula sensitivity.
-> The privilege model (now called capabilities, and you have to buy
-> me a beer to get the whole story) does not actually come in the
-> requirements until B3, although some people will argue that it
-> was intended they be included at B2. Even though no one even tried
-> a B3 and no one succeeded at B2 everyone did capabilities based
-> on one of the drafts or another.
+> I haven't been able to follow all the enhancements you did to the
+> driver, but I can comment on the ratioale behind the orignal driver.
 > 
-> Anyone who thinks that the capability scheme is wrong headed is
-> encouraged to read the P1003.1e/2c (withdrawn) DRAFT. It's on
-> the web in several places. You may end up still thinking it's
-> wrong, but at least you will have seen how the arguments got
-> hashed out.
-> 
-> And we're still not talking about the Jackson Hole meeting.
-> 
+> The original driver used minor number 0 for "driver communication" (in
+> contrast to "device communication"). The main purpose was to get a
+> list of the USBTMC devices attached by doing a "cat /dev/usbtmc0"
+> (which would point to minor number 0). The first device found would
+> then use the next free minor number, usually 1. I believe the concept
+> of "driver communication" has been removed from the driver, so a
+> single minor number for a single device should be it.
 
-And one wonders why these certs aren't in use anymore ;)
+cating that file was sending out a text file to userspace that needed to
+be parsed, like a /proc file.  Now you can just look at all of the
+devices in /sys/class/usb/usbtmc* to see all of the different devices in
+the system.
 
-Dave
+> The issue with using cat on the shell level is that it uses fread
+> which has the (in this case) ugly behaviour of recalling the driver's
+> read method until the full number of characters requested has been
+> accumulated (or until zero characters are returned, indicating the end
+> of file). With USBTMC instruments, this behavour is bad because the
+> retry will not just return zero characters, it will cause a timeout
+> with the associated error condition in the device. So, to enable the
+> use of echo/cat, I added some fread handling to the driver (which
+> catches the retries). I believe this also has been removed, so I
+> assume cat/fread will not work (?).
 
+I do not know, but we do not do wierd things in the kernel just because
+of broken userspace programs.  This logic should be done in userspace,
+and programs should look at the return value of read() and handle it
+properly.  Otherwise it is a bug.
+
+thanks,
+
+greg k-h
