@@ -1,58 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbYH2H7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbYH2IBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754272AbYH2H7r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 03:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYH2H7i
+	id S1754528AbYH2IBh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 04:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbYH2IB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 03:59:38 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:39663 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752181AbYH2H7h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 03:59:37 -0400
-To: tj@kernel.org
-CC: miklos@szeredi.hu, greg@kroah.com, fuse-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-reply-to: <48B75C94.7030604@kernel.org> (message from Tejun Heo on Fri, 29
-	Aug 2008 04:19:00 +0200)
-Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <20080828175116.GB18461@kroah.com> <48B6E79E.6020702@kernel.org> <48B6E801.9080102@kernel.org> <E1KYm0D-0003q0-IQ@pomaz-ex.szeredi.hu> <48B6EBBD.6050406@kernel.org> <E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu> <48B6EF98.4070008@kernel.org> <E1KYn7T-00048J-Qj@pomaz-ex.szeredi.hu> <48B6FFB6.7000104@kernel.org> <E1KYnhA-0004Ei-3t@pomaz-ex.szeredi.hu> <48B75C94.7030604@kernel.org>
-Message-Id: <E1KYyt9-0005Ur-Eu@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 29 Aug 2008 09:59:23 +0200
+	Fri, 29 Aug 2008 04:01:29 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:41900 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752116AbYH2IB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 04:01:28 -0400
+Date: Fri, 29 Aug 2008 10:01:24 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: mano@roarinelk.homelinux.net, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org
+Subject: Re: MTD kobject warnings due to block layer changes
+Message-ID: <20080829080123.GO20055@kernel.dk>
+References: <20080829064415.GJ20055@kernel.dk> <20080829154659Y.fujita.tomonori@lab.ntt.co.jp> <20080829065029.GK20055@kernel.dk> <20080829165542L.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080829165542L.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008, Tejun Heo wrote:
-> I'm not worried about the client accessing wrong memory regions or even
-> corrupting it.  It's pointless to try to protect against that.  From the
-> calling process's POV, it runs the same risk whether it calls an
-> in-kernel ioctl or a CUSE one and FUSE already has sufficient protection
-> against allowing unprivileged FS implementation to serve other users.
+On Fri, Aug 29 2008, FUJITA Tomonori wrote:
+> On Fri, 29 Aug 2008 08:50:30 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > > Ok, I'll send a patch shortly though it would be better to fix
+> > > 'multiple gendisks share a single request_queue'...
+> > 
+> > Naturally, but we can do that in 2.6.28.
+> 
+> Yeah, here is a quick fix.
+> 
+> Manuel, really sorry about the bug and thanks a lot for the
+> investigation.
+> 
+> =
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Subject: [PATCH] remove blk_register_filter and blk_unregister_filter in genhd.c
+> 
+> This patch remove blk_register_filter and blk_unregister_filter in
+> gendisk, and adds them to sd.c and sr.c.
+> 
+> The commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4 moved cmdfilter
+> from gendisk to request_queue. It turned out that in some subsystems
+> multiple gendisks share a single request_queue. So we can't call
+> blk_register_filter in add_disk. Otherwise we get:
+> 
+> Using physmap partition information
+> Creating 3 MTD partitions on "physmap-flash":
+> 0x00000000-0x01c00000 : "User FS"
+> 0x01c00000-0x01c40000 : "booter"
+> kobject (8511c410): tried to init an initialized object, something is seriously wrong.
+> Call Trace:
+> [<8036644c>] dump_stack+0x8/0x34
+> [<8021f050>] kobject_init+0x50/0xcc
+> [<8021fa18>] kobject_init_and_add+0x24/0x58
+> [<8021d20c>] blk_register_filter+0x4c/0x64
+> [<8021c194>] add_disk+0x78/0xe0
+> [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
+> [<8027c8f0>] blktrans_notify_add+0x40/0x78
+> [<80279c00>] add_mtd_device+0xd0/0x150
+> [<8027b090>] add_mtd_partitions+0x568/0x5d8
+> [<80285458>] physmap_flash_probe+0x2ac/0x334
+> [<802644f8>] driver_probe_device+0x12c/0x244
+> [<8026465c>] __driver_attach+0x4c/0x84
+> [<80263c64>] bus_for_each_dev+0x58/0xac
+> [<802633ec>] bus_add_driver+0xc4/0x24c
+> [<802648e0>] driver_register+0xcc/0x184
+> [<80100460>] _stext+0x60/0x1bc
+> 
+> In the long term, we need to fix such subsystems but we need a quick
+> fix now. This patch add the command filter support to only sd and sr
+> though it might be useful for other SG_IO users (like cciss).
+> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Reported-by: Manuel Lauss <mano@roarinelk.homelinux.net>
+> Cc: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  block/cmd-filter.c |    3 ++-
+>  block/genhd.c      |    2 --
+>  drivers/scsi/sd.c  |    2 ++
+>  drivers/scsi/sr.c  |    2 ++
+>  4 files changed, 6 insertions(+), 3 deletions(-)
+> 
+> diff --git a/block/cmd-filter.c b/block/cmd-filter.c
+> index 1d40262..228b644 100644
+> --- a/block/cmd-filter.c
+> +++ b/block/cmd-filter.c
+> @@ -223,6 +223,7 @@ int blk_register_filter(struct gendisk *disk)
+>  
+>  	return 0;
+>  }
+> +EXPORT_SYMBOL(blk_register_filter);
+>  
+>  void blk_unregister_filter(struct gendisk *disk)
+>  {
+> @@ -231,4 +232,4 @@ void blk_unregister_filter(struct gendisk *disk)
+>  	kobject_put(&filter->kobj);
+>  	kobject_put(disk->holder_dir->parent);
+>  }
+> -
+> +EXPORT_SYMBOL(blk_unregister_filter);
+> diff --git a/block/genhd.c b/block/genhd.c
+> index 656c2c7..d9743ff 100644
+> --- a/block/genhd.c
+> +++ b/block/genhd.c
+> @@ -190,7 +190,6 @@ void add_disk(struct gendisk *disk)
+>  			    disk->minors, NULL, exact_match, exact_lock, disk);
+>  	register_disk(disk);
+>  	blk_register_queue(disk);
+> -	blk_register_filter(disk);
+>  
+>  	bdi = &disk->queue->backing_dev_info;
+>  	bdi_register_dev(bdi, MKDEV(disk->major, disk->first_minor));
+> @@ -203,7 +202,6 @@ EXPORT_SYMBOL(del_gendisk);	/* in partitions/check.c */
+>  
+>  void unlink_gendisk(struct gendisk *disk)
+>  {
+> -	blk_unregister_filter(disk);
+>  	sysfs_remove_link(&disk->dev.kobj, "bdi");
+>  	bdi_unregister(&disk->queue->backing_dev_info);
+>  	blk_unregister_queue(disk);
+> diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+> index e5e7d78..2a2bc89 100644
+> --- a/drivers/scsi/sd.c
+> +++ b/drivers/scsi/sd.c
+> @@ -1875,6 +1875,7 @@ static int sd_probe(struct device *dev)
+>  
+>  	dev_set_drvdata(dev, sdkp);
+>  	add_disk(gd);
+> +	blk_register_filter(gd);
+>  	sd_dif_config_host(sdkp);
+>  
+>  	sd_printk(KERN_NOTICE, sdkp, "Attached SCSI %sdisk\n",
+> @@ -1908,6 +1909,7 @@ static int sd_remove(struct device *dev)
+>  	struct scsi_disk *sdkp = dev_get_drvdata(dev);
+>  
+>  	device_del(&sdkp->dev);
+> +	blk_unregister_filter(sdkp->disk);
+>  	del_gendisk(sdkp->disk);
+>  	sd_shutdown(dev);
+>  
+> diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
+> index 27f5bfd..3292965 100644
+> --- a/drivers/scsi/sr.c
+> +++ b/drivers/scsi/sr.c
+> @@ -656,6 +656,7 @@ static int sr_probe(struct device *dev)
+>  	dev_set_drvdata(dev, cd);
+>  	disk->flags |= GENHD_FL_REMOVABLE;
+>  	add_disk(disk);
+> +	blk_register_filter(disk);
+>  
+>  	sdev_printk(KERN_DEBUG, sdev,
+>  		    "Attached scsi CD-ROM %s\n", cd->cdi.name);
+> @@ -894,6 +895,7 @@ static int sr_remove(struct device *dev)
+>  {
+>  	struct scsi_cd *cd = dev_get_drvdata(dev);
+>  
+> +	blk_unregister_filter(cd->disk);
+>  	del_gendisk(cd->disk);
+>  
+>  	mutex_lock(&sr_ref_mutex);
 
-Yes and no.  Fuse allows this protection to be relaxed
-(-oallow_other), because it does provide quite good privilege
-separation.  This ioctl thing breaks that, so we should disable ioctls
-with 'allow_other' or require the filesystem to be privileged.  But
-the latter is not easy because mount(2) is always privileged, we don't
-know if the process calling fusermount was privileged or not.
+What about eg ide-cd?
 
-So, your current patch actually _introduces_ a security vulnerability
-with the 'allow_other' mount option.
+-- 
+Jens Axboe
 
-> What I'm worried about is the possibility of CUSE client being able to
-> break out of that privilege protection which is currently ensured by the
-> kernel.
-
-What do you call client?  If you mean the app using the char dev, then
-I don't see how it could break out of any protection.
-
->  Also, what about containers?  How would it work then?
-
-Dunno.  Isn't there some transformation of pids going on, so that the
-global namespace can access pids in all containers but under a
-different alias?  I do hope somethinig like this works, otherwise it's
-not only fuse that will break.
-
-Miklos
