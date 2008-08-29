@@ -1,62 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbYH2IlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756071AbYH2Ile@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755898AbYH2IlU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 04:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbYH2IlE
+	id S1756071AbYH2Ile (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 04:41:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbYH2IlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 04:41:04 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:25561 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755122AbYH2IlB (ORCPT
+	Fri, 29 Aug 2008 04:41:09 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:38468 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753744AbYH2IlG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 04:41:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=rYnF+h50eYQJPuc8fP7YhV6JUn6QKWKqCCIojFnLt/u5SXgV6aN1dByGRWyKw46aNB
-         WuaefKc135gdD00EHiTr7UJqTB4++NvEZopqoIDfI7Ppj3j5pB7h5w0+o3LBvCBeYdM8
-         f/ubSgPReZE8DWrrXlMHwu2dkK9BwdQ7h2TOw=
-Message-ID: <48B7B618.7050409@tuffmail.co.uk>
-Date: Fri, 29 Aug 2008 09:40:56 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-CC: LKML <linux-kernel@vger.kernel.org>, kovlensky@interia.pl
-Subject: Re: mounting windows shares with path exactly like on windows
-References: <48B7B0F3.1050601@wpkg.org>
-In-Reply-To: <48B7B0F3.1050601@wpkg.org>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 29 Aug 2008 04:41:06 -0400
+Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller
+	driver
+From: Li Yang <leoli@freescale.com>
+Reply-To: leoli@freescale.com
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, greg@kroah.com, linux-usb@vger.kernel.org,
+       dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <200808281704.20999.arnd@arndb.de>
+References: <1219916613-28827-1-git-send-email-leoli@freescale.com>
+	 <200808281704.20999.arnd@arndb.de>
+Content-Type: text/plain
+Organization: Freescale Semiconductor
+Date: Fri, 29 Aug 2008 16:57:45 +0800
+Message-Id: <1220000265.30607.10.camel@Gundam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 Aug 2008 08:40:54.0418 (UTC) FILETIME=[F31A3720:01C909B2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomasz Chmielewski wrote:
->> In short - I've got bunch of applications running both on windows and
->> linux and these applications \
->> exchange links to files mounted on both sides. The problem is that
->> these paths are different, i.e. like \
->> D:/dir/file on windows and /mountpoint/dir/file on Linux. What I need
->> is unifying them. So my idea is to \
->> have path translator on anything on kernel level, which will make
->> Linux open call to D:/dir/file on Linux \
->> work and open /mountpoint/dir/file. Was anything close to that ever
->> incorporated in kernel?
->
-> What's wrong with just:
->
-> # mkdir -p /D:/dir
-> # mount.cifs ...
-> # touch /D:/dir/file
->
-> ?
->
-> Or, use symlinks from /D:/dir to /mountpoint/dir/
-That only works from the root directory though.  In unix, "C:/" is a
-relative path.
+On Thu, 2008-08-28 at 17:04 +0200, Arnd Bergmann wrote:
+> On Thursday 28 August 2008, Li Yang wrote:
+> > Some of Freescale SoC chips have a QE or CPM co-processor which
+> > supports full speed USB.  The driver adds device mode support
+> > of both QE and CPM USB controller to Linux USB gadget.  The
+> > driver is tested with MPC8360 and MPC8272, and should work with
+> > other models having QE/CPM given minor tweaks.
+> 
+> Looks pretty good, just a few comments on the driver:
+>   
+> > +config USB_GADGET_FSL_QE
+> > +	boolean "Freescale QE/CPM USB Device Controller"
+> > +	depends on FSL_SOC && (QUICC_ENGINE || CPM)
+> > +	help
+> > +	   Some of Freescale PowerPC processors have a Full Speed
+> > +	   QE/CPM2 USB controller, which support device mode with 4
+> > +	   programmable endpoints. This driver supports the
+> > +	   controller in the MPC8360 and MPC8272, and should work with
+> > +	   controllers having QE or CPM2, given minor tweaks.
+> > +
+> > +	   Say "y" to link the driver statically, or "m" to build a
+> > +	   dynamically linked module called "fsl_qe_udc" and force all
+> > +	   gadget drivers to also be dynamically linked.
+> > +
+> > +config USB_FSL_QE
+> > +	tristate
+> > +	depends on USB_GADGET_FSL_QE
+> > +	default USB_GADGET
+> > +	select USB_GADGET_SELECTED
+> 
+> 
+> Why do you need the two config options, not just one?
 
-Alan
+This is common for udc drivers.  I guess this measure is used to make
+the selection of udc drivers a choice list while still make it possible
+to compiled as module.
+
+> 
+> > +#ifdef CONFIG_CPM2
+> > +#include <asm/cpm.h>
+> > +
+> > +#define qe_muram_addr cpm_muram_addr
+> > +#define qe_muram_offset cpm_muram_offset
+> > +#define qe_muram_alloc cpm_muram_alloc
+> > +#define qe_muram_free cpm_muram_free
+> > +#endif
+> ...
+> > +static int qe_ep_cmd_restarttx(struct qe_ep *ep)
+> > +{
+> > +	u8 ep_num;
+> > +#ifdef CONFIG_CPM2
+> > +	u32 command;
+> > +	u8 opcode;
+> > +
+> > +	ep_num = ep->epnum << CPM_USB_EP_SHIFT;
+> > +	command = CPM_USB_RESTART_TX | (u32)ep_num;
+> > +	opcode = CPM_USB_RESTART_TX_OPCODE;
+> > +	cpm_command(command, opcode);
+> > +#else
+> > +	ep_num = ep->epnum;
+> > +	qe_issue_cmd(QE_USB_RESTART_TX, QE_CR_SUBBLOCK_USB, ep_num, 0);
+> > +#endif
+> > +	return 0;
+> > +}
+> 
+> This part doesn't look good, you should try to avoid hardcoding
+> the specific type of chip (QE or CPM2) here. AFAICT, you can build
+> a multiplatform kernel that supports both QE and CPM2, but your code
+> here would be broken in that case if you try to run it on QE.
+
+Ok.
+
+> 
+> > +static void setup_received_handle(struct qe_udc *udc,
+> > +					struct usb_ctrlrequest *setup);
+> > +static int qe_ep_rxframe_handle(struct qe_ep *ep);
+> > +static void ep0_req_complete(struct qe_udc *udc, struct qe_req *req);
+> 
+> Better try to avoid static forward declarations by reordering your
+> functions in call order. That is the common coding style and makes
+> drivers easier to read when you're used to it.
+> 
+> > +
+> > +	tasklet_schedule(&udc->rx_tasklet);
+> 
+> Not a problem, but an observation: Most new code uses work queues instead
+> of tasklets these days, which gives you more predictable real time
+> latencies.
+> If you don't have a specific reason to prefer a tasklet, just use
+> a workqueue here.
+
+Is this truly a trend?  Work queue is more flexible but it has higher
+latency.  Why are work queues preferred?
+
+- Leo
+
 
