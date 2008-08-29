@@ -1,73 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbYH2PBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbYH2PIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754142AbYH2PBZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 11:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbYH2PBQ
+	id S1752751AbYH2PIx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 11:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbYH2PIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 11:01:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39297 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750852AbYH2PBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 11:01:15 -0400
-Message-ID: <48B80EF5.80308@kernel.org>
-Date: Fri, 29 Aug 2008 17:00:05 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Zeuthen <david@fubar.dk>
-Subject: Re: [PATCH 2/2] uevent: handle duplicate uevent_var keys properly
-References: <48B6D28E.10006@kernel.org> <48B6D2C6.4010703@kernel.org>	 <20080828164924.GB17475@kroah.com> <48B6D9B7.2050406@kernel.org>	 <3ae72650808290048v1a5d7e51pc68270b2a8d6faa@mail.gmail.com>	 <48B7AD11.2070906@kernel.org> <1220016439.24737.18.camel@lgn.site>	 <48B7FAEC.80206@kernel.org> <1220018057.24737.36.camel@lgn.site>
-In-Reply-To: <1220018057.24737.36.camel@lgn.site>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
+	Fri, 29 Aug 2008 11:08:45 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51071 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbYH2PIo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 11:08:44 -0400
+Date: Fri, 29 Aug 2008 08:05:49 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de,
+       torvalds@linux-foundation.org
+Subject: [patch 0/5] Nano/Microsecond resolution for select() and poll()
+Message-ID: <20080829080549.6906b744@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 Aug 2008 15:01:12 +0000 (UTC)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
->> I'm afraid trying to do that from kernel side would require more scary
->> hack as CUSE will need to push in random device under unsuspecting
->> parent / class.  Maybe we can add a variable to indicate an emulated
->> device or to tell
-> 
-> Sure, SUSBYSTEM=cuse will be exactly that value. :) I see no problem, if
-> cuse adds SUBSYSTEM_FAKE, or whatever it would be.
-> 
->> udev/hal whatever to use alt root for sys hierarchy or
->> just consider sysfs is not available?  I think this problem can be
->> settled between userland programs.
-> 
-> Exactly, we can do anything needed in userspace to support that. I see
-> no problem doing that.
-> 
-> I just say, that we can _not_ allow to fake the SUBSYSTEM value for
-> "cuse" or any other device. If the kernel wants to let "cuse" devices
-> look like members of a specific subsystem, they have to appear in the
-> class/bus list of that subsystem, and have to have the proper
-> "susbsystem" link, not only a (wrong) environment key.
-> 
-> Userland enumerates devices by looking at class/bus directories for
-> things like: "give me all soundcards", it expects a set of certain sysfs
-> attributes to be present for a specific device, it reads the "subsystem"
-> link, and so on. All that would break and make things "special"  and
-> needlessly inconsistent.
-> 
-> So please drop that plan, of faking only a tiny part of
-> driver-core/sysfs device parameters. Either we do it properly, or we
-> don't do it, and leave it up to userspace to pick up a (consistent)
-> "cuse" device, but use it as a device of whatever class.
 
-Right, I was somehow fixated on sound devices having "sound" subsystem.
- That isn't necessary and if some special treatment is needed, we can
-play with udev rules and so on.  Okay, will drop the kobject_uevent
-changes and hotplug_info stuff.  It seems dev_info is all that's needed.
+Today in Linux, select() and poll() operate in jiffies resolution
+(granularity), meaning an effective resolution of 1 millisecond (HZ=1000) to
+10 milliseconds (HZ=100). Delays shorter than this are not possible, and all
+delays are in multiples of this granularity.
 
-Thanks.
+The effect is that applications that want (on average) to specify more
+accurate delays (for example multimedia or other interactive apps) just
+cannot do that; this creates more than needed jitter.
 
--- 
-tejun
+With this patch series, the internals of select() and poll() interfaces are
+changed such that they work on the nanosecond level (using hrtimers). The
+userspace interface for select() is in microseconds, for pselect() and
+ppoll() this is in nanoseconds.
+
+[actual behavior obviously depends on what resolution the hardware timers work, on
+modern PCs this is pretty good though]
+
+To show this effect I made a test application to measure the error made
+in the select() timing.
+
+For example, a userspace application asking for a 1200 microsecond delay, on
+a HZ=1000 kernel, will in practice get a 1997 microsecond delay, a delta of
+almost 800 microseconds (which is of course a high percentage of 1200). The
+extreme case is asking for 1 microsecond, and getting 998 microseconds
+delay... with the patch we get a 250 times improvement in behavior (!).
+
+A graph of various inputs with the jitter can be seen at
+http://www.tglx.de/~arjan/select_benefits.png
+
+One thing to note is that on my machine, the current select() implementation
+will return after 1997 microseconds when asked for 1999 microseconds; this
+can be seen in a zoom in of the graph above:
+http://www.tglx.de/~arjan/zoom.png
+E.g. select() is returning too early in current Linux kernels; and this is
+also fixed (by nature) by this patch series.
+In the graph there's a 4 microsecond delta for most data points, this is
+basically the measurement overhead (C-state exit, a few system calls, a 
+loop and some math).
+
+
+About the patches:
+
+Patch 1: Introduces infrastructure where select() and poll() start tracking
+	 the end time in a "struct timespec" rather than in jiffies, so in
+	 nanosecond resolution.
+Patch 2: Uses the now available end time in nanoseconds to calculate at the
+	 end of a select()/ppoll() how much time is left and returns this 
+	 in a high resolution rather than jiffies granularity
+Patch 3: Introduces a schedule_hrtimeout(); a high resolution version of the
+	 equivalent schedule_timeout() function.
+Patch 4: Converts over select() to schedule_hrtimeout()
+Patch 5: Converts over poll() to schedule_hrtimeout()
+
+
+Note: 
+even though poll() (as opposed to ppoll()) only accepts milliseconds
+as userspace interface, the behavior will still improve because the current
+time no longer needs to be rounded up to the next jiffie, so on average
+a 500 milliseconds behavior improvement.
+
+Note 2:
+I'm a bit unsure about the restart code and how that works; I'd like to
+request a bit of help on figuring out how that code is supposed to work.
+
+Future work:
+I'd like to get rid of the jiffies timeout entirely over time, and
+only use hrtimers (makes the code a lot nicer) but that's for now
+a separate step, first I'd like to see how this change pans out.
+
+
+ 
