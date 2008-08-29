@@ -1,112 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbYH2JFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155AbYH2JNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755233AbYH2JFc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 05:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbYH2JFY
+	id S1754155AbYH2JNV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 05:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbYH2JNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 05:05:24 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48844 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753202AbYH2JFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 05:05:23 -0400
-Message-ID: <48B7BB4C.4060907@kernel.org>
-Date: Fri, 29 Aug 2008 11:03:08 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Fri, 29 Aug 2008 05:13:08 -0400
+Received: from aglcosbs05.cos.agilent.com ([192.25.218.36]:56978 "EHLO
+	aglcosbs05.cos.agilent.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752091AbYH2JNG convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 05:13:06 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>, Eric Biederman <ebiederm@xmission.com>,
-       Serge Hallyn <serue@us.ibm.com>
-CC: greg@kroah.com, fuse-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <1219945263-21074-6-git-send-email-tj@kernel.org> <20080828175116.GB18461@kroah.com> <48B6E79E.6020702@kernel.org> <48B6E801.9080102@kernel.org> <E1KYm0D-0003q0-IQ@pomaz-ex.szeredi.hu> <48B6EBBD.6050406@kernel.org> <E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu> <48B6EF98.4070008@kernel.org> <E1KYn7T-00048J-Qj@pomaz-ex.szeredi.hu> <48B6FFB6.7000104@kernel.org> <E1KYnhA-0004Ei-3t@pomaz-ex.szeredi.hu> <48B75C94.7030604@kernel.org> <E1KYyt9-0005Ur-Eu@pomaz-ex.szeredi.hu> <48B7AF60.8040709@kernel.org> <E1KYzMd-0005aR-28@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1KYzMd-0005aR-28@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 Aug 2008 09:04:23 +0000 (UTC)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] USB: add USB test and measurement class driver - round 2
+Date: Fri, 29 Aug 2008 03:13:04 -0600
+Message-ID: <7D8F552F9FFBAC438A816966BEC4516BFBA3D0@cos-us-mb07.cos.agilent.com>
+In-Reply-To: <200808291034.09307.oliver@neukum.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] USB: add USB test and measurement class driver - round 2
+Thread-Index: AckJsdlZud+YZsLkSF+S/YZyt9wC2wAA2J9A
+References: <20080827183615.GA15692@kroah.com> <200808290946.37898.oliver@neukum.org> <7D8F552F9FFBAC438A816966BEC4516BFBA389@cos-us-mb07.cos.agilent.com> <200808291034.09307.oliver@neukum.org>
+From: <stefan_kopp@agilent.com>
+To: <oliver@neukum.org>
+Cc: <korgull@home.nl>, <greg@kroah.com>, <stern@rowland.harvard.edu>,
+       <linux-usb@vger.kernel.org>, <me@felipebalbi.com>,
+       <linux-kernel@vger.kernel.org>, <stefan_kopp@agilent.com>
+X-OriginalArrivalTime: 29 Aug 2008 09:13:05.0159 (UTC) FILETIME=[71E9E970:01C909B7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
-> On Fri, 29 Aug 2008, Tejun Heo wrote:
->> I first used 'server' for userland [FC]USE server but then I noticed
->> there were places in FUSE they were referred as clients so now I use
->> 'client' for those and call the app using the FUSE fs the 'caller'.
->> What are the established terms?
+I may be misinterpreting your message, but read(2) does return the number of bytes read, so if you ask for plenty of data, you can be sure you will get less than that. A device's response should only appear in the output buffer when it is complete. I have never seen a partial response being made available by an instrument.
+
+USBTMC instruments are mostly controlled by short commands such as "CONF:FREQ 1.3E3\n", and they usually return short strings such as a measurement result or setting, again as a human-readable string (according to a standard called "SCPI"). It is common practice to ask for, let's say, 1000 bytes, what you really expect is maybe 10...30 bytes. And you can activate the term char handling if the device supports it.
+
+For large amounts of data (e.g. when downloading a waveform), USBTMC instruments often use a "binblock", a concept taken from the good old GPIB (IEEE488) standard, where the data is preceeded by a header and the header indicates how many bytes are following. So you first read and interpret the header and then you know exactly how many bytes to expect in the body of the message.
+
+Best regards,
+Stefan
+
+-----Original Message-----
+From: Oliver Neukum [mailto:oliver@neukum.org] 
+Sent: Freitag, 29. August 2008 10:34
+To: KOPP,STEFAN (A-Germany,ex1)
+Cc: korgull@home.nl; greg@kroah.com; stern@rowland.harvard.edu; linux-usb@vger.kernel.org; me@felipebalbi.com; linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: add USB test and measurement class driver - round 2
+
+Am Freitag 29 August 2008 10:14:46 schrieb stefan_kopp@agilent.com:
+> USBTMC has a different concept, the "termination character". If this is enabled and set to the appropriate character (usually /n), the read operation will be terminated by the device automatically. The last character in the response will be the termination character. Note, however, this capability is optional (not every vendor supports it) and even if it is supported, is might be deactivated (for good reason, e.g. for transfer of binary data).
 > 
-> Umm
+> If you are not using the termination character, the device will typically send its full output buffer contents. Usually, this works just fine because communication with the device is transactional, one query followed by a response, then another query, followed by another response, and so on.
 > 
->  - userspace filesystem
->  - filesystem daemon
->  - filesystem process
->  - server
-> 
-> Yes it's also a client of the fuse device, but that term is confusing.
+> The driver does return the number of characters received in both cases (with or without use of the term character feature).
 
-Okay, will do s/client/server/g
+But how do you learn in user space how many characters the device actually did send? Using read() you'll only learn that the answer was shorter than you asked for. If you get the amount you expected the answer may have been as long as you expected or longer. How do you find out whether the answer was longer?
 
->> Anyways, doing it directly from the server (or is it client) opens up a
->> lot of new possibilities to screw up and I'd really much prefer staying
->> in similar ballpark with other operations.  Maybe we can restrict it to
->> two stages (query size & transfer) and linear consecutive ranges but
->> then again adding retry doesn't contribute too much to the complexity.
->> Oh.. and BTW, the in-ioctl length coding is not used universally, so it
->> can't be depended upon.
-> 
-> I know it's not universal, some horrors I've seen in the old wireless
-> interfaces.  The question is: do we want to support such "extended"
-> ioctls?  For exmaple, does OSS have non-conformant ioctls?
-
-OSS ioctls are all pretty simple and I think they all use the proper
-encoding.  For the question, my answer would be yes (naturally).  It
-will suck later when implementing some other device only to find out
-that there's this one ioctl that needs to dereference a pointer but
-there's no supported way to do it but everything else works.
-
-I don't think the performance or the complexity of specific ioctl
-implementation is of the determining importance as long as it can be
-made to work with minimal impact on the rest of the whole thing, so
-the current retry implementation.
-
->>>>  Also, what about containers?  How would it work then?
->>> Dunno.  Isn't there some transformation of pids going on, so that the
->>> global namespace can access pids in all containers but under a
->>> different alias?  I do hope somethinig like this works, otherwise it's
->>> not only fuse that will break.
->> I'm not sure either.  Any idea who we should be asking about it?
-> 
-> Serge Hallyn and Eric Biederman.
-
-Okay, cc'd both.  Hello, Eric Biederman, Serge Hallyn.  For
-implementing ioctl in FUSE, it's suggested that to access the address
-space of the caller directly from the FUSE server using its pid via
-/proc/pid/mem (or task/tid/mem).  It's most likely that the calling
-process's tid will be used.  As I don't know much about the
-containers, I'm not sure how such approach will play out when combined
-with containers.  Can you enlighten us a bit?  W/o containers, it will
-look like the following.
+	Regards
+		Oliver
 
 
-          FUSE ----------------
-           ^                   |
-           |                   |        kernel
-  ------ ioctl ----------- /dev/fuse ------------
-           |                   |       userland
-           |                   v
-    ---------------      -------------
-   | caller        |    | FUSE server |---> reads and writes
-   | with tid CTID |    |             |    /proc/PID/task/TID/mem
-    ---------------      -------------
-
-The FUSE server gets task->pid.  IIUC, if the FUSE server is not in a
-container, task->pid should work fine whether the caller is in
-container or not, right?  And if the FUSE server is in a container,
-it's hell lot more complex and FUSE may have to map task->pid to what
-FUSE server would know if possible?
-
-Thanks.
-
--- 
-tejun
