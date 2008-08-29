@@ -1,86 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbYH2Iet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755786AbYH2Ig7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568AbYH2Iet (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 04:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYH2Iei
+	id S1755786AbYH2Ig7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 04:36:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYH2Igv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 04:34:38 -0400
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:58743 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbYH2Ieh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 04:34:37 -0400
-Date: Fri, 29 Aug 2008 10:34:35 +0200
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: MTD kobject warnings due to block layer changes
-Message-ID: <20080829083435.GA27386@roarinelk.homelinux.net>
-References: <20080829065029.GK20055@kernel.dk> <20080829165542L.fujita.tomonori@lab.ntt.co.jp> <20080829080123.GO20055@kernel.dk> <20080829171936Z.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080829171936Z.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 29 Aug 2008 04:36:51 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:54680 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751822AbYH2Igu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 04:36:50 -0400
+Date: Fri, 29 Aug 2008 18:36:42 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       dm-devel@redhat.com, Tejun Heo <tj@kernel.org>
+Subject: Re: linux-next: Tree for August 27
+Message-Id: <20080829183642.6994f4dc.sfr@canb.auug.org.au>
+In-Reply-To: <20080829070515.GL20055@kernel.dk>
+References: <20080827183453.eb651f50.sfr@canb.auug.org.au>
+	<58cb370e0808270757k583c0fc2oc659bc8e2dd6c21e@mail.gmail.com>
+	<200808272145.20627.bzolnier@gmail.com>
+	<200808290210.37211.bzolnier@gmail.com>
+	<20080829070515.GL20055@kernel.dk>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__29_Aug_2008_18_36_42_+1000_s4a5xCxuCRDQeqG1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Fujita-san,
+--Signature=_Fri__29_Aug_2008_18_36_42_+1000_s4a5xCxuCRDQeqG1
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, Aug 29, 2008 at 05:19:56PM +0900, FUJITA Tomonori wrote:
-> On Fri, 29 Aug 2008 10:01:24 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > What about eg ide-cd?
-> 
-> I'm always SCSI biased.
-> 
-> 
-> =
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Subject: [PATCH] remove blk_register_filter and blk_unregister_filter in gendisk
-> 
-> This patch remove blk_register_filter and blk_unregister_filter in
-> gendisk, and adds them to sd.c, sr.c. and ide-cd.c
-> 
-> The commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4 moved cmdfilter
-> from gendisk to request_queue. It turned out that in some subsystems
-> multiple gendisks share a single request_queue. So we get:
-> 
-> Using physmap partition information
-> Creating 3 MTD partitions on "physmap-flash":
-> 0x00000000-0x01c00000 : "User FS"
-> 0x01c00000-0x01c40000 : "booter"
-> kobject (8511c410): tried to init an initialized object, something is seriously wrong.
-> Call Trace:
-> [<8036644c>] dump_stack+0x8/0x34
-> [<8021f050>] kobject_init+0x50/0xcc
-> [<8021fa18>] kobject_init_and_add+0x24/0x58
-> [<8021d20c>] blk_register_filter+0x4c/0x64
-> [<8021c194>] add_disk+0x78/0xe0
-> [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
-> [<8027c8f0>] blktrans_notify_add+0x40/0x78
-> [<80279c00>] add_mtd_device+0xd0/0x150
-> [<8027b090>] add_mtd_partitions+0x568/0x5d8
-> [<80285458>] physmap_flash_probe+0x2ac/0x334
-> [<802644f8>] driver_probe_device+0x12c/0x244
-> [<8026465c>] __driver_attach+0x4c/0x84
-> [<80263c64>] bus_for_each_dev+0x58/0xac
-> [<802633ec>] bus_add_driver+0xc4/0x24c
-> [<802648e0>] driver_register+0xcc/0x184
-> [<80100460>] _stext+0x60/0x1bc
-> 
-> In the long term, we need to fix such subsystems but we need a quick
-> fix now. This patch add the command filter support to only sd and sr
-> though it might be useful for other SG_IO users (such as cciss).
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Reported-by: Manuel Lauss <mano@roarinelk.homelinux.net>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
+Hi Bart,
 
-Thank you very much, works as advertised!
+On Fri, 29 Aug 2008 09:05:16 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+>
+> On Fri, Aug 29 2008, Bartlomiej Zolnierkiewicz wrote:
+> >=20
+> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Subject: [PATCH] block: fix part0 handling in bdget_disk() / blk_lookup=
+_devt()
+> >=20
+> > part0 is a "special" partition and doesn't need to have capacity set - =
+this
+> > fixes regression caused by "block: move __dev from disk to part0" commi=
+t.
+> >=20
+> > Cc: Tejun Heo <tj@kernel.org>
+> > Cc: Jens Axboe <jens.axboe@oracle.com>
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > ---
+> > Jens, please integrate it into the original commit if feasible.
+>=20
+> Thanks Bart, I folded it into the original commit.
 
-ManuelLauss
+And applied to today's linux-next.
+
+> > On the somehow related topic - CONFIG_DEBUG_BLOCK_EXT_DEVT which is
+> > introduced by commit 3e5ba59bbab878f60b8b87004ac55a464bddc819 ("block:
+> > implement CONFIG_DEBUG_BLOCK_EXT_DEVT") is way too intrusive to be
+> > enabled by default if CONFIG_DEBUG_KERNEL is set as it easily results
+> > in no longer bootable systems (+ help entry for the new option says
+> > "Say N if you are unsure.").
+> >=20
+> > Tejun/Jens: please consider changing this.
+>=20
+> I have change the default to 'n' for now.
+
+I will do this for today as well.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__29_Aug_2008_18_36_42_+1000_s4a5xCxuCRDQeqG1
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAki3tRoACgkQjjKRsyhoI8zrOACeL58yGBAQqJo4CPgd19e/IGPv
+27IAoLQJMftfG5KW+AYLWwIEZuCwG58h
+=ZTQa
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__29_Aug_2008_18_36_42_+1000_s4a5xCxuCRDQeqG1--
