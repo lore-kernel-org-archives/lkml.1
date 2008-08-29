@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbYH2Xgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbYH2XrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbYH2Xgy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 19:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYH2Xgl
+	id S1753991AbYH2XrP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 19:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751043AbYH2Xq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 19:36:41 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:41611 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754383AbYH2Xgk (ORCPT
+	Fri, 29 Aug 2008 19:46:59 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:30113 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750945AbYH2Xq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 19:36:40 -0400
+	Fri, 29 Aug 2008 19:46:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=veCU6fyYjkjrRIg5Ph6ojpjJZz+/PvwQ4qVbp5h+2zlDfEsGk9OPbeKJTMjj0fxs0J
-         ojP/C+zvbxI5galvLlBBH0c0UpnTgJofXrboXy4x3FK1uIqtN5LxT+X+GmQNJsVa19qM
-         vRLh4mJQ3eTP7XkB+gM3TIYQAjoLHdKvEHyRA=
-Date: Sat, 30 Aug 2008 03:38:15 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] BUILD_BUG_ON() should not use array type
-Message-ID: <20080829233815.GA3365@x200.localdomain>
-References: <48B7FDBA.76E4.0078.0@novell.com> <20080829132211.d0ed1932.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080829132211.d0ed1932.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=QiVKFxp09iKyVl7VrifBdKDBC2Ywkirk+gItgEHl9YJ9JCkdsOfEtA0bIZKju8FK16
+         bFkwkPObcSHmTBE29qOhwqN9bhD35MJcBx8bIjIoA53Ayu5C9qz9kO4RqQCBD/wkiNwY
+         qmGtV8BycZYCMtgjkIIAz3vPHE8eZRGM/mKm0=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] dyn_array: fix typo
+Date: Fri, 29 Aug 2008 16:46:00 -0700
+Message-Id: <1220053560-15803-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +/* Force a compilation error if condition is constant and true */
-> > +#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
-> 
-> MAYBE_BUILD_BUG_ON() hurts my brain.  It's doing:
-> 
-> 	if (__builtin_constant_p(expr))
-> 		BUILD_BUG_ON(expr);
-> 
-> yes?  For inlined (or macro) callsites which can be used with constant
-> or non-constant args.
-> 
-> It's tempting to just zap the one callsite and not add this at all,
+Andrew found the typo could break some platforms
 
-Yes, please. There should be no maybes in kernel.
+also fix one checkpatch warning
 
-Imagine probabilistic BUG_ON(). Imagine probabilistic refcounting: maybe_get_net().
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
+diff --git a/init/dyn_array.c b/init/dyn_array.c
+index c4cd902..8192a1c 100644
+--- a/init/dyn_array.c
++++ b/init/dyn_array.c
+@@ -54,7 +54,7 @@ void __init pre_alloc_dyn_array(void)
+ 			da->init_work(da);
+ 	}
+ #else
+-#ifdef CONFIF_GENERIC_HARDIRQS
++#ifdef CONFIG_GENERIC_HARDIRQS
+ 	unsigned int i;
+ 
+ 	for (i = 0; i < NR_IRQS; i++)
+@@ -116,9 +116,8 @@ void __init per_cpu_alloc_dyn_array(int cpu, char *ptr)
+ 
+ 		phys += size;
+ 
+-		if (da->init_work) {
++		if (da->init_work)
+ 			da->init_work(da);
+-		}
+ 	}
+ #endif
+ }
