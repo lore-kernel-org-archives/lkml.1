@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398AbYH2KXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275AbYH2KYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754398AbYH2KXy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 06:23:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbYH2KXp
+	id S1755275AbYH2KYV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 06:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbYH2KYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 06:23:45 -0400
-Received: from lazybastard.de ([212.112.238.170]:60681 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751733AbYH2KXp (ORCPT
+	Fri, 29 Aug 2008 06:24:11 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47244 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751804AbYH2KYJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 06:23:45 -0400
-Date: Fri, 29 Aug 2008 12:23:26 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Artem Bityutskiy <dedekind@infradead.org>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       linux-mtd-bounces@lists.infradead.org,
-       "'Bruce Leonard'" <brucle@earthlink.net>, Bruce_Leonard@selinc.com,
-       linux-kernel@vger.kernel.org, Tim Anderson <tanderson@mvista.com>,
-       linux-mtd@lists.infradead.org,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 2/2][MTD] Add support for > 2GiB MTD devices
-Message-ID: <20080829102326.GA27647@logfs.org>
-References: <1219817017.18027.149.camel@sauron> <000201c9080d$0bce0d20$6b01a8c0@mvista.com> <20080827093920.1bdb44c2@lxorguk.ukuu.org.uk> <1219827692.7107.170.camel@pmac.infradead.org> <20080827143416.GA1371@logfs.org> <1219848463.18027.166.camel@sauron> <20080827152534.GB1371@logfs.org> <1219988887.4036.7.camel@sauron>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1219988887.4036.7.camel@sauron>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 29 Aug 2008 06:24:09 -0400
+Date: Fri, 29 Aug 2008 11:06:41 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "=?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?=" <zajec5@gmail.com>
+Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>,
+       "Hugh Dickens" <hugh@veritas.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory
+ corruption
+Message-ID: <20080829110641.2310e418@lxorguk.ukuu.org.uk>
+In-Reply-To: <b170af450808290313x574b4561i3048ffca3e4da197@mail.gmail.com>
+References: <48B701FB.2020905@goop.org>
+	<86802c440808281849nb972d64te89894077ea9f33c@mail.gmail.com>
+	<48B76CE0.5010309@goop.org>
+	<20080829102547.655440bf@lxorguk.ukuu.org.uk>
+	<b170af450808290313x574b4561i3048ffca3e4da197@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 August 2008 08:48:07 +0300, Artem Bityutskiy wrote:
-> On Wed, 2008-08-27 at 17:25 +0200, Jörn Engel wrote:
-> > 
-> > Could be useful, I don't mind you sending a patch.  However, does this
-> > means that MEMGETINFO64 or some other ioctl should not be done?  Should
-> > flash_erase open, read and close 8 seperate files instead of doing a
-> > single ioctl?  And should our support for large devices wait for the
-> > sysfs support that has been talked about and not done for about two
-> > years already?
-> 
-> Up to dwmw2, but I do not mind if the answer to all the above questions
-> is "yes" :-)
+> I understand that disabling chunk of RAM on every, even not affected,
+> machine is far from perfect, but we have to remember about not
+> advanced end-users.
 
-Well, I personally think a "yes" to the last question would be utter
-madness.  Whoever answers that should better come up with an alternative
-patch for sysfs support pronto.
-
-Large flashes are not a one-off cases where a single manufacturer had a
-rather bizarre design.  Their numbers will continually increase.  And
-not supporting an ever-increasing class of hardware is simply not an
-option.
-
-Jörn
-
--- 
- on a false concept. This concept is that
-people actually want to look at source code.
--- Rob Enderle
+Including not advanced end users without the bug ... which is probably
+all but one or two people.
