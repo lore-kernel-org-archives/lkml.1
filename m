@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbYH2QwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbYH2Qx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757558AbYH2QwT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 12:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbYH2QwD
+	id S1758108AbYH2Qx0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 12:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbYH2QxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 12:52:03 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39087 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752769AbYH2QwB (ORCPT
+	Fri, 29 Aug 2008 12:53:16 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:43473 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752887AbYH2QxP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 12:52:01 -0400
-Date: Fri, 29 Aug 2008 09:52:03 -0700
-From: Arjan van de Ven <arjan@infradead.org>
+	Fri, 29 Aug 2008 12:53:15 -0400
+Date: Fri, 29 Aug 2008 12:53:13 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
 To: Andi Kleen <andi@firstfloor.org>
-Cc: Brice Goglin <Brice.Goglin@inria.fr>, LKML <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [RFC] export irq_set/get_affinity() for multiqueue network
- drivers
-Message-ID: <20080829095203.5732f331@infradead.org>
-In-Reply-To: <8763pjpy2b.fsf@basil.nowhere.org>
-References: <48B708E1.4070001@inria.fr>
-	<20080829055023.07966b4a@infradead.org>
-	<8763pjpy2b.fsf@basil.nowhere.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+cc: Gregory Haskins <gregory.haskins@gmail.com>,
+       Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH] seqlock: serialize against writers
+In-Reply-To: <20080829164551.GY26610@one.firstfloor.org>
+Message-ID: <alpine.DEB.1.10.0808291251510.17917@gandalf.stny.rr.com>
+References: <20080829154237.1196.66825.stgit@dev.haskins.net> <87abevpzv7.fsf@basil.nowhere.org> <48B81F60.3080409@gmail.com> <20080829162216.GW26610@one.firstfloor.org> <48B82349.1020109@gmail.com> <alpine.DEB.1.10.0808291233280.17917@gandalf.stny.rr.com>
+ <48B8254D.1010206@gmail.com> <20080829164551.GY26610@one.firstfloor.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008 18:48:12 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
 
-> Arjan van de Ven <arjan@infradead.org> writes:
-> 
-> > On Thu, 28 Aug 2008 22:21:53 +0200
-> > Brice Goglin <Brice.Goglin@inria.fr> wrote:
-> >
-> >> Hello,
-> >> 
-> >> Is there any way to setup IRQ masks from within a driver? myri10ge
-> >> currently relies on an external script (writing in
-> >> /proc/irq/*/smp_affinity) to bind each queue/MSI-X to a different
-> >> processor. By default, Linux will either:
-> >> * round-robin the interrupts (killing the benefit of DCA for
-> >> instance)
-> >> * put all IRQs on the same CPU (killing much of th
-> >
-> > * do the right thing with the userspace irq balancer
-> 
-> It probably also needs to be hooked up the sched_mc_power_savings
-> When the switch is on the interrupts shouldn't be spread out over
-> that many sockets.
+The subject forgot to add "RT" in the brackets.
 
-that's what irqbalance already does today.
+On Fri, 29 Aug 2008, Andi Kleen wrote:
+
+> > I could just force all of the seqbegins to hit the slowpath by hacking
+> > the code and see what happens (aside from slowing down, of course ;)
+> 
+> Only if you don't believe it will really crash? I think it's pretty
+> clear even without trying it.
+> 
+> > Question: Which seqlock_t does userspace use?  I assume it uses
+> > seqlock_t and not raw_seqlock_t. 
+> 
+> > But the only reason that I ask is that
+> > I converted raw_seqlock_t to use the new style as well to be consistent,
+> 
+> There's no raw_seqlock_t anywhere in mainline?
+
+Nope, raw_seqlock_t in -rt is equivelant to seqlock_t in mainline.
 
 > 
-> Also I suspect handling SMT explicitely is a good idea. e.g. I would
-> always set the affinity to all thread siblings in a core, not 
-> just a single one, because context switch is very cheap between them.
+> Anyways the variable is declared (in mainline) in asm-x86/vgtod.h 
+> 
+> > even though it is not strictly necessary for the same reasons.  So if
+> > perchance userspace uses the raw variant, I could solve this issue by
+> > only re-working the seqlock_t variant.  Kind of a long shot, but figured
+> > I would mention it :)
+> 
+> I guess you could define a new seqlock_t which is explicitely user space
+> safe. That might avoid such issues in the future. But then
+> that would likely require some code duplication and be ugly.
+> 
+> On the other hand whatever problem you fixing in the kernel
+> (to be honest it's still unclear to me what the problem is)
+> needs to be likely fixed for the userland lock too.
 
-that is what irqbalance already does today, at least for what it
-considers somewhat slower irqs.
-for networking it still sucks because the packet reordering logic is
-per logical cpu so you still don't want to receive packets from the
-same "stream" over multiple logical cpus.
+I'm not convinced that the raw_seqlocks (mainline normal seqlocks) has a 
+problem anyway.
 
+-- Steve
 
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
