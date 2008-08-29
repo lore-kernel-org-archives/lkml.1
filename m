@@ -1,98 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbYH2BC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751764AbYH2BZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755558AbYH2BC7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 21:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYH2BCu
+	id S1751764AbYH2BZc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 21:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbYH2BZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 21:02:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:39370 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752233AbYH2BCt (ORCPT
+	Thu, 28 Aug 2008 21:25:23 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:55583 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750816AbYH2BZW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 21:02:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=dW0xMDgU6hLlbTuhLbVZTr/nm2a1y7krFXICwxSo55Yo+9w8FKv0IvHye48mvCxHoc
-         usORnJmh6pO0Ilf431uegTcT2CSdko9eJe6dEwLQNEHTxo4X5LHPfMqimyQHPYPYK78x
-         UDxlZnziv4O5iY+jjAQGlqhpHdV9GDwGZ/aCo=
-Message-ID: <86802c440808281802w7994d7cdjcd1f36fe3381ac76@mail.gmail.com>
-Date: Thu, 28 Aug 2008 18:02:48 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] x86: split e820 reserved entries record to late v3
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0808281750520.3300@nehalem.linux-foundation.org>
+	Thu, 28 Aug 2008 21:25:22 -0400
+Date: Thu, 28 Aug 2008 18:22:01 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+X-X-Sender: xyzzy@t2.domain.actdsltmp
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org,
+       Richard Purdie <rpurdie@rpsys.net>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/2] leds: make the default trigger name const
+In-Reply-To: <20080728095309.GA31809@polina.dev.rtsoft.ru>
+Message-ID: <Pine.LNX.4.64.0808281818400.3610@t2.domain.actdsltmp>
+References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
+ <1217019705-24244-1-git-send-email-tpiepho@freescale.com>
+ <20080727020857.GM12191@secretlab.ca> <20080727231149.1b2508da.sfr@canb.auug.org.au>
+ <Pine.LNX.4.64.0807271304350.26456@t2.domain.actdsltmp>
+ <20080728095309.GA31809@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1219970489-1615-1-git-send-email-yhlu.kernel@gmail.com>
-	 <alpine.LFD.1.10.0808281750520.3300@nehalem.linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 5:53 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Thu, 28 Aug 2008, Yinghai Lu wrote:
->>  /*
->>   * Mark e820 reserved areas as busy for the resource manager.
->>   */
->> +struct resource __initdata *e820_res;
->
-> Btw, make this one "static" - I don't think anybody outside of this file
-> should ever use it anyway.
+The default_trigger fields of struct gpio_led and thus struct led_classdev
+are pretty much always assigned from a string literal, which means the
+string can't be modified.  Which is fine, since there is no reason to
+modify the string and in fact it never is.
 
-yes
+But they should be marked const to prevent such code from being added, to
+prevent warnings if -Wwrite-strings is used and when assigned from a
+constant string other than a string literal (which produces a warning under
+current kernel compiler flags), and for general good coding practices.
 
->
-> And this:
->
->> +             if (e820.map[i].type != E820_RESERVED || res->start < (1ULL<<20))
->> +                     insert_resource(&iomem_resource, res);
->
-> is probably worthy of a comment.
+Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+---
+Reposting this again.  It still applies to powerpc-next as of Aug 28 and I
+don't think anyone had any problems with it.
 
-how about
-/*
- * don't register the region that could be conflicted with pci device
-BAR resource
- * and insert them later.
- */
+  include/linux/leds.h |    4 ++--
+  1 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/include/linux/leds.h b/include/linux/leds.h
+index d41ccb5..d3a73f5 100644
+--- a/include/linux/leds.h
++++ b/include/linux/leds.h
+@@ -123,7 +123,7 @@ extern void ledtrig_ide_activity(void);
+   */
+  struct led_info {
+  	const char	*name;
+-	char		*default_trigger;
++	const char	*default_trigger;
+  	int		flags;
+  };
 
->
-> And finally:
->
->> +void __init e820_reserve_resources_late(void)
->> +{
->> +     int i;
->> +     struct resource *res;
->> +
->> +     res = e820_res;
->> +     for (i = 0; i < e820.nr_map; i++) {
->> +             if (e820.map[i].type == E820_RESERVED && res->start >= (1ULL<<20))
->> +                     insert_resource(&iomem_resource, res);
->
-> instead of duplicating the conditional and always having to worry about it
-> matching, how about just making it
->
->                if (!res->parent)
->                        insert_resource(&iomem_resource, res);
->
-> which basically says that "if it's not already inserted, try to re-insert
-> it now".
-there could be one is all zero, when 32bit/!64_RESOURCE.
-so could change it to
-                if (!res->parent && res->end)
-                       insert_resource(&iomem_resource, res);
+@@ -135,7 +135,7 @@ struct led_platform_data {
+  /* For the leds-gpio driver */
+  struct gpio_led {
+  	const char *name;
+-	char *default_trigger;
++	const char *default_trigger;
+  	unsigned 	gpio;
+  	u8 		active_low;
+  };
+-- 
+1.5.4.3
 
-YH
