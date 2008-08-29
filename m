@@ -1,346 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757029AbYH2Oyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293AbYH2Oyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757029AbYH2Oyh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 10:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbYH2Oy0
+	id S1755293AbYH2Oyw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 10:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826AbYH2Oy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 10:54:26 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:34816 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750847AbYH2OyZ (ORCPT
+	Fri, 29 Aug 2008 10:54:29 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50679 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754338AbYH2Oy2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 10:54:25 -0400
-Date: Fri, 29 Aug 2008 16:54:23 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Linux Kernel Development <linux-kernel@vger.kernel.org>
-cc: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: endianness and sparse warnings
-Message-ID: <Pine.LNX.4.64.0808291639540.15307@vixen.sonytel.be>
+	Fri, 29 Aug 2008 10:54:28 -0400
+Date: Fri, 29 Aug 2008 07:54:07 -0700
+From: Greg KH <greg@kroah.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-usb@vger.kernel.org, bgmerrell@novell.com,
+       hirofuchi@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       usbip-devel@lists.sourceforge.net
+Subject: Re: USBIP protocol
+Message-ID: <20080829145407.GB18423@kroah.com>
+References: <20080829140224.GC1968@parisc-linux.org> <20080829143017.GB18086@kroah.com> <20080829144354.GD1968@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-970963371-1220021663=:15307"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080829144354.GD1968@parisc-linux.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, Aug 29, 2008 at 08:43:54AM -0600, Matthew Wilcox wrote:
+> On Fri, Aug 29, 2008 at 07:30:17AM -0700, Greg KH wrote:
+> > On Fri, Aug 29, 2008 at 08:02:24AM -0600, Matthew Wilcox wrote:
+> > > 
+> > > I'm in the middle of implementing a userspace client for usbip and I
+> > > strongly feel that the protocol needs to be changed before it is merged.
+> > > 
+> > >  - I'm unconvinced that TCP is the correct protocol to be running this over.
+> > >    I understand the reluctance to use UDP, but the protocol is fundamentally
+> > >    packet-based.  If TCP is used, the delimitation of packets within the
+> > >    stream needs to be much more robust.  I've managed to wedge the VHCI driver
+> > >    a number of times in ways that just wouldn't be possible if we were using
+> > >    a packet protocol instead of a stream protocol.
+> > 
+> > USB is fundamentally packet-based, so it kind of fits very well.
+> 
+> Erm, did you not read what I wrote?  USB is packet based.  TCP isn't.
+> We shouldn't be using TCP here.
 
----584349381-970963371-1220021663=:15307
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Sorry, early morning, no coffee yet...
 
-With `make  C=1 CF="-D__CHECK_ENDIAN__"', you can let sparse check for bad
-handling of endian-annotated data.
+I think in the end, we should still use TCP otherwise you just end up
+reinventing it with UDP :)
 
-Unfortunately several of the accessors for endian-annotated data do not cause
-sparse warnings.
+> > >  - Endianness.  This is a mess.  The usbip protocol is big-endian, but the
+> > >    encapsulated usb protocol is little-endian.  This doesn't matter to the
+> > >    people who are just tunnelling usb from one computer to another, but for
+> > >    someone implementing a usbip client, it's very confusing.
+> > 
+> > Then just document it, no big deal.
+> > Yeah, the current code isn't the cleanest here (sparse throws up some
+> > warnings), but it's not that much work to fix it up, it's on my todo
+> > list.
+> 
+> I'm not talking about the code.  I'm talking about the protocol.  It's a
+> mess to have two different endiannesses within the same packet.
 
-Summarized:
-  - [bl]e{16,32,64}_to_cpu() is OK
-  - [bl]e{16,32,64}_to_cpup() (aka get_aligned_[bl]e{16,32,64}() ;-) is OK
-  - get_unaligned_[bl]e{16,32,64} is not OK
-  - __get_unaligned_[bl]e() is partially OK, as long as you don't use it on
-    non-annotated data, but
-      o it's meant for internal use only
-      o it incorrectly causes sparse warnings when assigning the resulting
-        value to a non-annotated variable
- 
-To check it for yourself, plug in the code below into any kernel source file.
- 
-#include <asm/unaligned.h>
+Ok, switch it all to be little endian, not a bit deal.
 
-__u8 d8;
-__u16 d16;
-__u32 d32;
-__u64 d64;
+> > >  - There are actually two completely different protocols in use.  First,
+> > >    the usbipd daemon listens on port 3240, and handles device discovery.
+> > >    When usbip successfully attaches to usbipd, both sides of the connection
+> > >    pass the socket fd into the kernel and the protocol changes.
+> > >  - The protocol sends a 48-byte packet header for every command (and every
+> > >    response).  It's cunningly hidden as a union.
+> > 
+> > Is that a real problem?
+> 
+> Yes, it really is.  It complicates the protocol, complicates the
+> implementation, introduces unnecessary state, and makes it impossible to
+> renegotiate on the same connection.
 
-__be16 be16;
-__be32 be32;
-__be64 be64;
+Fair enough, patches welcome :)
 
-__le16 le16;
-__le32 le32;
-__le64 le64;
+> > Windows has had this for years, no need for a RFC there, and if we just
+> > document this well, no need for one here either.
+> 
+> Yes, and as a result we can't interoperate with Windows.
 
-char dr[16];
+That is because (see below)
 
-#define get_aligned_be16	be16_to_cpup
-#define get_aligned_be32	be32_to_cpup
-#define get_aligned_be64	be64_to_cpup
-#define get_aligned_le16	le16_to_cpup
-#define get_aligned_le32	le32_to_cpup
-#define get_aligned_le64	le64_to_cpup
+> By the way, is this actually built into Windows or just available as
+> several mutually incompatible and pay-for products?  I did some
+> searching a few months ago and didn't come up with anything official
+> from Microsoft.
 
-int test(void)
-{
-	u64 x = 0;
+There is nothing official, there are various incompatible and pay-for
+products in this area.
 
-	x ^= d8;
+> Even if we don't go through the RFC process, just writing down the
+> on-wire protocol should be mandatory for taking this kind of thing into
+> the kernel.
 
-// ----------------------------------------------------------------------------
+Why, isn't the actual implementation better than a document?  :)
 
-	x ^= d16;			/* OK */
-	x ^= d32;			/* OK */
-	x ^= d64;			/* OK */
-	x ^= be16;			/* sparse warning */
-	x ^= be32;			/* sparse warning */
-	x ^= be64;			/* sparse warning */
-	x ^= le16;			/* sparse warning */
-	x ^= le32;			/* sparse warning */
-	x ^= le64;			/* sparse warning */
+thanks,
 
-// ----------------------------------------------------------------------------
-
-	x ^= be16_to_cpu(d16);		/* sparse warning */
-	x ^= be16_to_cpu(d32);		/* sparse warning */
-	x ^= be16_to_cpu(d64);		/* sparse warning */
-	x ^= be16_to_cpu(be16);		/* OK */
-	x ^= be16_to_cpu(be32);		/* sparse warning */
-	x ^= be16_to_cpu(be64);		/* sparse warning */
-	x ^= be16_to_cpu(le16);		/* sparse warning */
-	x ^= be16_to_cpu(le32);		/* sparse warning */
-	x ^= be16_to_cpu(le64);		/* sparse warning */
-
-	x ^= be32_to_cpu(d16);		/* sparse warning */
-	x ^= be32_to_cpu(d32);		/* sparse warning */
-	x ^= be32_to_cpu(d64);		/* sparse warning */
-	x ^= be32_to_cpu(be16);		/* sparse warning */
-	x ^= be32_to_cpu(be32);		/* OK */
-	x ^= be32_to_cpu(be64);		/* sparse warning */
-	x ^= be32_to_cpu(le16);		/* sparse warning */
-	x ^= be32_to_cpu(le32);		/* sparse warning */
-	x ^= be32_to_cpu(le64);		/* sparse warning */
-
-	x ^= be64_to_cpu(d16);		/* sparse warning */
-	x ^= be64_to_cpu(d32);		/* sparse warning */
-	x ^= be64_to_cpu(d64);		/* sparse warning */
-	x ^= be64_to_cpu(be16);		/* sparse warning */
-	x ^= be64_to_cpu(be32);		/* sparse warning */
-	x ^= be64_to_cpu(be64);		/* OK */
-	x ^= be64_to_cpu(le16);		/* sparse warning */
-	x ^= be64_to_cpu(le32);		/* sparse warning */
-	x ^= be64_to_cpu(le64);		/* sparse warning */
-
-	x ^= le16_to_cpu(d16);		/* sparse warning */
-	x ^= le16_to_cpu(d32);		/* sparse warning */
-	x ^= le16_to_cpu(d64);		/* sparse warning */
-	x ^= le16_to_cpu(be16);		/* sparse warning */
-	x ^= le16_to_cpu(be32);		/* sparse warning */
-	x ^= le16_to_cpu(be64);		/* sparse warning */
-	x ^= le16_to_cpu(le16);		/* OK */
-	x ^= le16_to_cpu(le32);		/* sparse warning */
-	x ^= le16_to_cpu(le64);		/* sparse warning */
-
-	x ^= le32_to_cpu(d16);		/* sparse warning */
-	x ^= le32_to_cpu(d32);		/* sparse warning */
-	x ^= le32_to_cpu(d64);		/* sparse warning */
-	x ^= le32_to_cpu(be16);		/* sparse warning */
-	x ^= le32_to_cpu(be32);		/* sparse warning */
-	x ^= le32_to_cpu(be64);		/* sparse warning */
-	x ^= le32_to_cpu(le16);		/* sparse warning */
-	x ^= le32_to_cpu(le32);		/* OK */
-	x ^= le32_to_cpu(le64);		/* sparse warning */
-
-	x ^= le64_to_cpu(d16);		/* sparse warning */
-	x ^= le64_to_cpu(d32);		/* sparse warning */
-	x ^= le64_to_cpu(d64);		/* sparse warning */
-	x ^= le64_to_cpu(be16);		/* sparse warning */
-	x ^= le64_to_cpu(be32);		/* sparse warning */
-	x ^= le64_to_cpu(be64);		/* sparse warning */
-	x ^= le64_to_cpu(le16);		/* sparse warning */
-	x ^= le64_to_cpu(le32);		/* sparse warning */
-	x ^= le64_to_cpu(le64);		/* OK */
-
-// ----------------------------------------------------------------------------
-
-	x ^= get_unaligned_be16(&d16);		/* NO WARNING!! */
-	x ^= get_unaligned_be16(&d32);		/* NO WARNING!! */
-	x ^= get_unaligned_be16(&d64);		/* NO WARNING!! */
-	x ^= get_unaligned_be16(&be16);		/* OK */
-	x ^= get_unaligned_be16(&be32);		/* NO WARNING!! */
-	x ^= get_unaligned_be16(&be64);		/* NO WARNING!! */
-	x ^= get_unaligned_be16(&le16);		/* NO WARNING!! */
-	x ^= get_unaligned_be16(&le32);		/* NO WARNING!! */
-	x ^= get_unaligned_be16(&le64);		/* NO WARNING!! */
-	x ^= get_unaligned_be16(&dr[1]);	/* OK */
-
-	x ^= get_unaligned_be32(&d16);		/* NO WARNING!! */
-	x ^= get_unaligned_be32(&d32);		/* NO WARNING!! */
-	x ^= get_unaligned_be32(&d64);		/* NO WARNING!! */
-	x ^= get_unaligned_be32(&be16);		/* NO WARNING!! */
-	x ^= get_unaligned_be32(&be32);		/* OK */
-	x ^= get_unaligned_be32(&be64);		/* NO WARNING!! */
-	x ^= get_unaligned_be32(&le16);		/* NO WARNING!! */
-	x ^= get_unaligned_be32(&le32);		/* NO WARNING!! */
-	x ^= get_unaligned_be32(&le64);		/* NO WARNING!! */
-	x ^= get_unaligned_be32(&dr[1]);	/* OK */
-
-	x ^= get_unaligned_be64(&d16);		/* NO WARNING!! */
-	x ^= get_unaligned_be64(&d32);		/* NO WARNING!! */
-	x ^= get_unaligned_be64(&d64);		/* NO WARNING!! */
-	x ^= get_unaligned_be64(&be16);		/* NO WARNING!! */
-	x ^= get_unaligned_be64(&be32);		/* NO WARNING!! */
-	x ^= get_unaligned_be64(&be64);		/* OK */
-	x ^= get_unaligned_be64(&le16);		/* NO WARNING!! */
-	x ^= get_unaligned_be64(&le32);		/* NO WARNING!! */
-	x ^= get_unaligned_be64(&le64);		/* NO WARNING!! */
-	x ^= get_unaligned_be64(&dr[1]);	/* OK */
-
-	x ^= get_unaligned_le16(&d16);		/* NO WARNING!! */
-	x ^= get_unaligned_le16(&d32);		/* NO WARNING!! */
-	x ^= get_unaligned_le16(&d64);		/* NO WARNING!! */
-	x ^= get_unaligned_le16(&be16);		/* NO WARNING!! */
-	x ^= get_unaligned_le16(&be32);		/* NO WARNING!! */
-	x ^= get_unaligned_le16(&be64);		/* NO WARNING!! */
-	x ^= get_unaligned_le16(&le16);		/* OK */
-	x ^= get_unaligned_le16(&le32);		/* NO WARNING!! */
-	x ^= get_unaligned_le16(&le64);		/* NO WARNING!! */
-	x ^= get_unaligned_le16(&dr[1]);	/* OK */
-
-	x ^= get_unaligned_le32(&d16);		/* NO WARNING!! */
-	x ^= get_unaligned_le32(&d32);		/* NO WARNING!! */
-	x ^= get_unaligned_le32(&d64);		/* NO WARNING!! */
-	x ^= get_unaligned_le32(&be16);		/* NO WARNING!! */
-	x ^= get_unaligned_le32(&be32);		/* NO WARNING!! */
-	x ^= get_unaligned_le32(&be64);		/* NO WARNING!! */
-	x ^= get_unaligned_le32(&le16);		/* NO WARNING!! */
-	x ^= get_unaligned_le32(&le32);		/* OK */
-	x ^= get_unaligned_le32(&le64);		/* NO WARNING!! */
-	x ^= get_unaligned_le16(&dr[1]);	/* OK */
-
-	x ^= get_unaligned_le64(&d16);		/* NO WARNING!! */
-	x ^= get_unaligned_le64(&d32);		/* NO WARNING!! */
-	x ^= get_unaligned_le64(&d64);		/* NO WARNING!! */
-	x ^= get_unaligned_le64(&be16);		/* NO WARNING!! */
-	x ^= get_unaligned_le64(&be32);		/* NO WARNING!! */
-	x ^= get_unaligned_le64(&be64);		/* NO WARNING!! */
-	x ^= get_unaligned_le64(&le16);		/* NO WARNING!! */
-	x ^= get_unaligned_le64(&le32);		/* NO WARNING!! */
-	x ^= get_unaligned_le64(&le64);		/* OK */
-	x ^= get_unaligned_le16(&dr[1]);	/* OK */
-
-// ----------------------------------------------------------------------------
-
-	x ^= get_unaligned(&d16);		/* OK */
-	x ^= get_unaligned(&d32);		/* OK */
-	x ^= get_unaligned(&d64);		/* OK */
-	x ^= get_unaligned(&be16);		/* sparse warning */
-	x ^= get_unaligned(&be32);		/* sparse warning */
-	x ^= get_unaligned(&be64);		/* sparse warning */
-	x ^= get_unaligned(&le16);		/* sparse warning */
-	x ^= get_unaligned(&le32);		/* sparse warning */
-	x ^= get_unaligned(&le64);		/* sparse warning */
-	x ^= get_unaligned(&dr[1]);		/* OK */
-
-	x ^= __get_unaligned_be(&d16);		/* NO WARNING!! */
-	x ^= __get_unaligned_be(&d32);		/* NO WARNING!! */
-	x ^= __get_unaligned_be(&d64);		/* NO WARNING!! */
-	x ^= __get_unaligned_be(&be16);		/* sparse warning */
-	x ^= __get_unaligned_be(&be32);		/* sparse warning */
-	x ^= __get_unaligned_be(&be64);		/* sparse warning */
-	x ^= __get_unaligned_be(&le16);		/* sparse warning */
-	x ^= __get_unaligned_be(&le32);		/* sparse warning */
-	x ^= __get_unaligned_be(&le64);		/* sparse warning */
-	x ^= __get_unaligned_be(&dr[1]);	/* NO WARNING!! */
-
-	x ^= __get_unaligned_le(&d16);		/* NO WARNING!! */
-	x ^= __get_unaligned_le(&d32);		/* NO WARNING!! */
-	x ^= __get_unaligned_le(&d64);		/* NO WARNING!! */
-	x ^= __get_unaligned_le(&be16);		/* sparse warning */
-	x ^= __get_unaligned_le(&be32);		/* sparse warning */
-	x ^= __get_unaligned_le(&be64);		/* sparse warning */
-	x ^= __get_unaligned_le(&le16);		/* sparse warning */
-	x ^= __get_unaligned_le(&le32);		/* sparse warning */
-	x ^= __get_unaligned_le(&le64);		/* sparse warning */
-	x ^= __get_unaligned_le(&dr[1]);	/* NO WARNING!! */
-
-// ----------------------------------------------------------------------------
-
-	x ^= get_aligned_be16(&d16);		/* sparse warning */
-	x ^= get_aligned_be16(&d32);		/* gcc/sparse warning */
-	x ^= get_aligned_be16(&d64);		/* gcc/sparse warning */
-	x ^= get_aligned_be16(&be16);		/* OK */
-	x ^= get_aligned_be16(&be32);		/* gcc/sparse warning */
-	x ^= get_aligned_be16(&be64);		/* gcc/sparse warning */
-	x ^= get_aligned_be16(&le16);		/* sparse warning */
-	x ^= get_aligned_be16(&le32);		/* gcc/sparse warning */
-	x ^= get_aligned_be16(&le64);		/* gcc/sparse warning */
-	x ^= get_aligned_be16(&dr[1]);		/* gcc/sparse warning */
-
-	x ^= get_aligned_be32(&d16);		/* gcc/sparse warning */
-	x ^= get_aligned_be32(&d32);		/* sparse warning */
-	x ^= get_aligned_be32(&d64);		/* gcc/sparse warning */
-	x ^= get_aligned_be32(&be16);		/* gcc/sparse warning */
-	x ^= get_aligned_be32(&be32);		/* OK */
-	x ^= get_aligned_be32(&be64);		/* gcc/sparse warning */
-	x ^= get_aligned_be32(&le16);		/* gcc/sparse warning */
-	x ^= get_aligned_be32(&le32);		/* sparse warning */
-	x ^= get_aligned_be32(&le64);		/* gcc/sparse warning */
-	x ^= get_aligned_be32(&dr[1]);		/* gcc/sparse warning */
-
-	x ^= get_aligned_be64(&d16);		/* gcc/sparse warning */
-	x ^= get_aligned_be64(&d32);		/* gcc/sparse warning */
-	x ^= get_aligned_be64(&d64);		/* sparse warning */
-	x ^= get_aligned_be64(&be16);		/* gcc/sparse warning */
-	x ^= get_aligned_be64(&be32);		/* gcc/sparse warning */
-	x ^= get_aligned_be64(&be64);		/* OK */
-	x ^= get_aligned_be64(&le16);		/* gcc/sparse warning */
-	x ^= get_aligned_be64(&le32);		/* gcc/sparse warning */
-	x ^= get_aligned_be64(&le64);		/* sparse warning */
-	x ^= get_aligned_be64(&dr[1]);		/* gcc/sparse warning */
-
-	x ^= get_aligned_le16(&d16);		/* sparse warning */
-	x ^= get_aligned_le16(&d32);		/* gcc/sparse warning */
-	x ^= get_aligned_le16(&d64);		/* gcc/sparse warning */
-	x ^= get_aligned_le16(&be16);		/* sparse warning */
-	x ^= get_aligned_le16(&be32);		/* gcc/sparse warning */
-	x ^= get_aligned_le16(&be64);		/* gcc/sparse warning */
-	x ^= get_aligned_le16(&le16);		/* OK */
-	x ^= get_aligned_le16(&le32);		/* gcc/sparse warning */
-	x ^= get_aligned_le16(&le64);		/* gcc/sparse warning */
-	x ^= get_aligned_le16(&dr[1]);		/* gcc/sparse warning */
-
-	x ^= get_aligned_le32(&d16);		/* gcc/sparse warning */
-	x ^= get_aligned_le32(&d32);		/* sparse warning */
-	x ^= get_aligned_le32(&d64);		/* gcc/sparse warning */
-	x ^= get_aligned_le32(&be16);		/* gcc/sparse warning */
-	x ^= get_aligned_le32(&be32);		/* sparse warning */
-	x ^= get_aligned_le32(&be64);		/* gcc/sparse warning */
-	x ^= get_aligned_le32(&le16);		/* gcc/sparse warning */
-	x ^= get_aligned_le32(&le32);		/* OK */
-	x ^= get_aligned_le32(&le64);		/* gcc/sparse warning */
-	x ^= get_aligned_le16(&dr[1]);		/* gcc/sparse warning */
-
-	x ^= get_aligned_le64(&d16);		/* gcc/sparse warning */
-	x ^= get_aligned_le64(&d32);		/* gcc/sparse warning */
-	x ^= get_aligned_le64(&d64);		/* sparse warning */
-	x ^= get_aligned_le64(&be16);		/* gcc/sparse warning */
-	x ^= get_aligned_le64(&be32);		/* gcc/sparse warning */
-	x ^= get_aligned_le64(&be64);		/* sparse warning */
-	x ^= get_aligned_le64(&le16);		/* gcc/sparse warning */
-	x ^= get_aligned_le64(&le32);		/* gcc/sparse warning */
-	x ^= get_aligned_le64(&le64);		/* OK */
-	x ^= get_aligned_le16(&dr[1]);		/* gcc/sparse warning */
-
-// ----------------------------------------------------------------------------
-
-	return x;
-}
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-970963371-1220021663=:15307--
+greg k-h
