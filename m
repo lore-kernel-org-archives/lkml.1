@@ -1,91 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951AbYH2Kp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755695AbYH2KsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755951AbYH2Kp3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 06:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbYH2KpQ
+	id S1755695AbYH2KsV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 06:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbYH2KsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 06:45:16 -0400
-Received: from lazybastard.de ([212.112.238.170]:37413 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752815AbYH2KpO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 06:45:14 -0400
-Date: Fri, 29 Aug 2008 12:45:00 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
-Message-ID: <20080829104459.GB27647@logfs.org>
-References: <20080827181904.GD1371@logfs.org> <200808290629.AA00218@capsicum.lab.ntt.co.jp>
+	Fri, 29 Aug 2008 06:48:13 -0400
+Received: from tundra.namei.org ([65.99.196.166]:39543 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752140AbYH2KsM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 06:48:12 -0400
+Date: Fri, 29 Aug 2008 20:47:37 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Markku Savela <msa@moth.iki.fi>
+cc: Theodore Tso <tytso@mit.edu>, pavel@suse.cz, linux-kernel@vger.kernel.org,
+       Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: Frustrated with capabilities..
+In-Reply-To: <200808291018.m7TAIcqJ030105@burp.tkv.asdf.org>
+Message-ID: <alpine.LRH.1.10.0808292034550.30593@tundra.namei.org>
+References: <87hc96by8x.fsf@burp.tkv.asdf.org> <20080828141826.GA6797@ucw.cz> <200808281445.m7SEjYsB007502@burp.tkv.asdf.org> <20080828174854.GM26987@mit.edu> <200808291018.m7TAIcqJ030105@burp.tkv.asdf.org>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200808290629.AA00218@capsicum.lab.ntt.co.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 August 2008 15:29:35 +0900, Ryusuke Konishi wrote:
-> On Wed, 27 Aug 2008 20:19:04 +0200,  Jorn Engel wrote:
+On Fri, 29 Aug 2008, Markku Savela wrote:
+
+> File capabilities (nor selinux) won't work, because the "helper
+> applications" need to be executed with different capabilities and
+> permissions, depending on the "manifests" of the downloaded
+> "code". Obviously, serious permissions are granted only to properly
+> verified "code" (signed).
 > 
-> >Do you do wear leveling or scrubbing?
+>   [Any ideas how selinux would help to enforce a permission which is
+>   dynamically defined by installing application?]
+
+You could implement a specialized userpsace application launcher, which 
+parses the manifest, determines a security context for the application, 
+performs any requiste object labeling, then launches the application it in 
+that context.  The kernel policy could enforce which particular contexts 
+the launcher was authorized to use, and which applications could be 
+launched in this way, then confine the launched applications.
+
 > 
-> NILFS does not support scrubbing. (as you guessed)
-> Under the current GC daemon, it writes logs sequentially and circularly
-> in the partition, and as you know, this leads to the wear levelling
-> except for superblock.
-
-I am a bit confused here.  My picture of log-structured filesystems was
-always that writes go round-robin _within_ a segment, but new segments
-can be picked in any order.  So there is a good chance of some segments
-simply never being picked and others constantly being reused.
-
-If nilfs works in the same way, it will by design spread the writes
-somewhat better than ext3, to pick an example, but can still lead to
-local wear-out if f.e. 98% of the filesystem is full and the remaining
-2% receive a high write load.
-
-True wear leveling requires a bit more work.  Either some probabilistic
-garbage collection of any random segment, as jffs2 does, or storing some
-write counters and keeping them roughly level as logfs does.
-
-> >How does garbage collection work?  In particular, when the filesystem
-> >runs out of free space, do you depend on the userspace daemon to make
-> >some policy decisions or can the kernel make progress on its own?
+> I'm using "code" in quotes, because in my mind, it can include HTML, 
+> word documents, spreadsheets, images. Data formats are getting so 
+> complex, that they start to look more like interpreted code, than plain 
+> passive data.
 > 
-> The GC of NILFS depends on the userspace daemon to make policy decisions.
-> NILFS cannot reclaim disk space on its own though it can work 
-> (i.e. read, write, or do other operations) without the daemon.
-> After it runs out of free space, disk full errors will be returned
-> until GC makes new space.
+> File capabilities (and setuid/setgid bits, selinux attributes) have
+> another problem: they only work properly on internal disk. No sane
+> person would allow them to be effective from removable media or NFS.
 
-This looks problematic.  In logfs I was very careful to define a
-"filesystem full" condition that is independent of GC.  So with a single
-writer, -ENOSPC always means the filesystem is full and the only way to
-gain some free space is by deleting data again.
+There is a project underway to extend SELinux (and MAC labeling in 
+general) over NFS: http://selinuxproject.org/page/Labeled_NFS
 
-In nilfs it appears possible that a single writer received -ENOSPC and
-can simply continue writing until - magically - there is space again
-because the GC daemon woke up and freed some more.  That is unexpected,
-to say the least.
 
-Which is also one of the reasons why I don't like the userspace daemon
-approach very much.  Decent behaviour now requires that you block the
-writes, wake up the userspace daemon and wait for it to do its job.  Or
-you would have to implement a backup-daemon in kernelspace which gets
-called into whenever -ENOSPC would be returned otherwise.
-
-> But, usually the GC will make enough disk space in the background
-> before that occurs.
-
-Usually, yes.  You just have to make sure that in the unusual cases the
-filesystem continues to behave correctly. ;)
-
-Jörn
-
+- James
 -- 
-Homo Sapiens is a goal, not a description.
--- unknown
+James Morris
+<jmorris@namei.org>
