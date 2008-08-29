@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758942AbYH2VOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758802AbYH2VRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758942AbYH2VOP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 17:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199AbYH2VN5
+	id S1758802AbYH2VRf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 17:17:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbYH2VRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 17:13:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46115 "EHLO
+	Fri, 29 Aug 2008 17:17:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44437 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756137AbYH2VN5 (ORCPT
+	by vger.kernel.org with ESMTP id S1755100AbYH2VRY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 17:13:57 -0400
-Date: Fri, 29 Aug 2008 14:12:16 -0700
+	Fri, 29 Aug 2008 17:17:24 -0400
+Date: Fri, 29 Aug 2008 14:16:42 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: philipl@overt.org
-Cc: linux-kernel@vger.kernel.org, mjg59@srcf.ucam.org,
-       toshiba_acpi@memebeam.org, ivdoorn@gmail.com,
-       linux-wireless@vger.kernel.org, hmh@hmh.eng.br
-Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling 
- through rfkill (v7)
-Message-Id: <20080829141216.f0d69ae4.akpm@linux-foundation.org>
-In-Reply-To: <47479.65.113.40.1.1219443825.squirrel@overt.org>
-References: <47479.65.113.40.1.1219443825.squirrel@overt.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: yhlu.kernel@gmail.com, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       ebiederm@xmission.com
+Subject: Re: [PATCH 00/53] dyn_array/nr_irqs/sparse_irq support v10
+Message-Id: <20080829141642.c0f266f3.akpm@linux-foundation.org>
+In-Reply-To: <20080814132638.GA18743@elte.hu>
+References: <1218705441-21838-1-git-send-email-yhlu.kernel@gmail.com>
+	<20080814132638.GA18743@elte.hu>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,23 +29,19 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Aug 2008 18:23:45 -0400 (EDT)
-philipl@overt.org wrote:
+On Thu, 14 Aug 2008 15:26:38 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> There's been a patch floating around for toshiba_acpi that exports an ad-hoc
-> /proc interface to toggle the bluetooth adapter in a large number of Toshiba
-> laptops. I'm not sure if it's still relevant for the latest models, but it is
-> still required for older models such as my Tecra M3.
-> 
-> This change pulls in the low level Toshiba-specific code from the old patch and
-> sets up an rfkill device and a polled input device to track the state of the
-> hardware kill-switch.
+> ok, i've created a new tip/irq/sparseirq topic branch for this.
 
-ERROR: "rfkill_force_state" [drivers/acpi/toshiba_acpi.ko] undefined!
-ERROR: "rfkill_free" [drivers/acpi/toshiba_acpi.ko] undefined!
-ERROR: "rfkill_register" [drivers/acpi/toshiba_acpi.ko] undefined!
-ERROR: "rfkill_allocate" [drivers/acpi/toshiba_acpi.ko] undefined!
-ERROR: "rfkill_unregister" [drivers/acpi/toshiba_acpi.ko] undefined!
+This:
 
-I'll stick a `select RFKILL' in there, but it'll probably blow up
-in other ways.  select usually does.
+init/dyn_array.c: In function 'pre_alloc_dyn_array':
+init/dyn_array.c:21: warning: 'print_fn_descriptor_symbol' is deprecated (declared at include/linux/kallsyms.h:100)
+init/dyn_array.c:45: warning: 'print_fn_descriptor_symbol' is deprecated (declared at include/linux/kallsyms.h:100)
+init/dyn_array.c: In function 'per_cpu_dyn_array_size':
+init/dyn_array.c:78: warning: 'print_fn_descriptor_symbol' is deprecated (declared at include/linux/kallsyms.h:100)
+init/dyn_array.c: In function 'per_cpu_alloc_dyn_array':
+init/dyn_array.c:107: warning: 'print_fn_descriptor_symbol' is deprecated (declared at include/linux/kallsyms.h:100)
+
+is reminding us about %pS/%pF.
