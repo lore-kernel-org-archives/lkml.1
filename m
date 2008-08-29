@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbYH2IDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYH2IE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752746AbYH2IDw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 04:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755052AbYH2IDf
+	id S1754730AbYH2IE0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 04:04:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbYH2IDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 29 Aug 2008 04:03:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36050 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754989AbYH2IDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 29 Aug 2008 04:03:35 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:13699 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754989AbYH2IDb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 04:03:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding:sender;
-        b=vD52NZfPbwr84chEyPguZGYVEl0V2qNTakShm0KZ3HVUK7eSBGy/uKa5XXnxzYA4Jc
-         ZV3HOcMYQim+INY0hhjUVvVaKoa21YPJlrD+HWcxVDriHCmEAj3bJsUZCkquPe7V4hUR
-         IvjuKmOV8LjvyyiJLoDLq9sUV8veZS1BDF5ns=
-Message-ID: <48B7AD4F.1070504@tuffmail.co.uk>
-Date: Fri, 29 Aug 2008 09:03:27 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+Message-ID: <48B7AD11.2070906@kernel.org>
+Date: Fri, 29 Aug 2008 10:02:25 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: kovlensky@interia.pl
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: mounting windows shares with path exactly like on windows
-Content-Type: text/plain; charset=ISO-8859-1
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: Greg KH <greg@kroah.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] uevent: handle duplicate uevent_var keys properly
+References: <48B6D28E.10006@kernel.org> <48B6D2C6.4010703@kernel.org>	 <20080828164924.GB17475@kroah.com> <48B6D9B7.2050406@kernel.org> <3ae72650808290048v1a5d7e51pc68270b2a8d6faa@mail.gmail.com>
+In-Reply-To: <3ae72650808290048v1a5d7e51pc68270b2a8d6faa@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 Aug 2008 08:03:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kovlensky@interia.pl wrote:
-
-> I'm sorry to be slightly off topic, when it comes to this list, but I have
-> no clue where to look for that and I think it can be doe on kernel level
-> only.
+Kay Sievers wrote:
+> Not sure if I understand that correctly. Remember, that there is a
+> symlink "subsystem" at each device, and udev, HAL, DeviceKit reads it.
+> If the uevent environment key "SUBSYSTEM" does not match the symlink
+> target, things will break horribly. So no device can be a member of
+> class "cuse" but carry a SUBSYSTEM value of a different class.
 >
-> In short - I've got bunch of applications running both on windows and
-> linux and these applications exchange links to files mounted on both
-> sides. The problem is that these paths are different, i.e. like
-> D:/dir/file on windows and /mountpoint/dir/file on Linux. What I need is
-> unifying them. So my idea is to have path translator on anything on kernel
-> level, which will make Linux open call to D:/dir/file on Linux work and
-> open /mountpoint/dir/file. Was anything close to that ever incorporated in
-> kernel?
+> If that is how it works, I guess that must be solved differently, by
+> hooking into the subsystem code and create "virtual devices" at the
+> original class they fake, instead of their own "cuse" class. Possibly
+> by making cuse a "bus", and use the cuse device as a parent for the
+> "real" class device.
 
-Um, no.
+For OSS emulation, it didn't really matter.  For cases where it matters,
+I think easier path to take would be let the userland emulation set up a
+directory containing pseudo files and just override DEVPATH to it.
+Would that work?
 
-More likely solutions are ptrace (intercept system calls using debugging
-interface) or similar LD_PRELOAD magic (see fakeroot for an example).
+Thanks.
 
-> Applications are, as usual, closed source, and support for them, also as
-> usual, answers "won't be fixed, switch to Windows, please". Very helpful.
->
-> Any other ideas of solving this problem are also warmly welcomed. Also on
-> windows side.
-
-I thought modern windows supported unix-like mounts, a bit like the old
-SUBST.EXE in dos.  So you could then mount all other drive letters as
-subdirectories on the main drive.  Don't ask me how to do it though :-).
-
-Alan
+-- 
+tejun
