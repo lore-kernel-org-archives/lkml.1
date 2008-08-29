@@ -1,101 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbYH2PIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbYH2PJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752751AbYH2PIx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 11:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbYH2PIp
+	id S1753815AbYH2PJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 11:09:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbYH2PJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 11:08:45 -0400
-Received: from casper.infradead.org ([85.118.1.10]:51071 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929AbYH2PIo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 11:08:44 -0400
-Date: Fri, 29 Aug 2008 08:05:49 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de,
-       torvalds@linux-foundation.org
-Subject: [patch 0/5] Nano/Microsecond resolution for select() and poll()
-Message-ID: <20080829080549.6906b744@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 29 Aug 2008 11:09:48 -0400
+Received: from mx11.lb01.inode.at ([62.99.145.13]:24750 "EHLO mx.inode.at"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750770AbYH2PJs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 11:09:48 -0400
+Message-ID: <48B81138.4060601@sbg.ac.at>
+Date: Fri, 29 Aug 2008 17:09:44 +0200
+From: Alexander Huemer <alexander.huemer@sbg.ac.at>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080729)
+MIME-Version: 1.0
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Helge Hafting <helge.hafting@aitel.hist.no>
+Subject: Re: 2.6.27 mtrr fixes do not work
+References: <4899AF8E.20105@sbg.ac.at>	 <86802c440808221024u1f152a73hf060f70e1b16dccb@mail.gmail.com>	 <48B29320.5070903@aitel.hist.no>	 <86802c440808251308i609a1c8ay6a7300bf4d0e0758@mail.gmail.com>	 <48B313C3.30704@sbg.ac.at>	 <86802c440808251322l72546d59o90c4e0b87c81538c@mail.gmail.com>	 <48B31508.6020305@sbg.ac.at>	 <86802c440808251344h697a27d0i91486a836d258cb@mail.gmail.com>	 <86802c440808251624u181a98eesd8a19ea6fd3d8d8c@mail.gmail.com>	 <48B34056.5080100@sbg.ac.at> <86802c440808251633s7bf8ecb2ua6ef187b5be563db@mail.gmail.com>
+In-Reply-To: <86802c440808251633s7bf8ecb2ua6ef187b5be563db@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Yinghai Lu wrote:
+> On Mon, Aug 25, 2008 at 4:29 PM, Alexander Huemer
+> <alexander.huemer@sbg.ac.at> wrote:
+>> Yinghai Lu wrote:
+>>> On Mon, Aug 25, 2008 at 1:44 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>>>
+>>>> On Mon, Aug 25, 2008 at 1:24 PM, Alexander Huemer
+>>>> <alexander.huemer@sbg.ac.at> wrote:
+>>>>
+>>>>
+>>>>> what do you mean with tip/master?
+>>>>>
+>>>> http://people.redhat.com/mingo/tip.git/readme.txt
+>>>>
+>>>>
+>>>>> here is my .config: http://xx.vu/~ahuemer/config.txt
+>>>>>
+>>> using your config, i do get mtrr cleanup
+>>>
+>> very interesting, thx.
+>> so, what can i do to make it working here?
+>> are there some more debug options i could turn on?
+>>
+>
+> can you post whole boot log with command line
+>
+> console=uart8250,io,0x3f8,115200n8 debug show_msr=1
+>
+> assume you have serial console...
+>
+> YH
+yinghai,
 
-Today in Linux, select() and poll() operate in jiffies resolution
-(granularity), meaning an effective resolution of 1 millisecond (HZ=1000) to
-10 milliseconds (HZ=100). Delays shorter than this are not possible, and all
-delays are in multiples of this granularity.
+there are quite good news! 2.6.27-rc5 brought some significant changes.
+now i get this:
 
-The effect is that applications that want (on average) to specify more
-accurate delays (for example multimedia or other interactive apps) just
-cannot do that; this creates more than needed jitter.
+    # dmesg|grep -E "(mtrr|uvesafb)"
+    Command line: root=/dev/sda1 video=uvesafb:1280x1024p-97,mtrr:2
+    debug show_msr=1
+    mtrr: your BIOS has set up an incorrect mask, fixing it up.
+    Kernel command line: root=/dev/sda1
+    video=uvesafb:1280x1024p-97,mtrr:2 debug show_msr=1
+    uvesafb: XGI Technology, Inc., Volari Z9s, 1.09.10, OEM: XGI, VBE v3.0
+    uvesafb: VBIOS/hardware supports DDC2 transfers
+    uvesafb: monitor limits: vf = 97 Hz, hf = 129 kHz, clk = 364 MHz
+    uvesafb: scrolling: redraw
+    uvesafb: framebuffer at 0xd8000000, mapped to 0xffffc20002100000,
+    using 10240k, total 32768k
+    mtrr: 0xd8000000,0x2000000 overlaps existing 0xd8000000,0x800000
+    # grep -E "(^\(WW\)|^\(EE\)|^\(NI\)|^\(??\))" /var/log/Xorg.0.log
+    (WW) VESA(0): Failed to set up write-combining range
+    (0xd8000000,0x2000000)
+    # cat /proc/mtrr
+    reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+    reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
+    reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
+    reg03: base=0xd8000000 (3456MB), size=   8MB: write-back, count=1
+    # grep MemTotal /proc/meminfo
+    MemTotal:      4041064 kB
+    #
 
-With this patch series, the internals of select() and poll() interfaces are
-changed such that they work on the nanosecond level (using hrtimers). The
-userspace interface for select() is in microseconds, for pselect() and
-ppoll() this is in nanoseconds.
+which is much better than before, the total size of system memory is
+correct.
+the size of the graphics adapter memory is not correct.
+and AFAIK the memory ranges should be:
 
-[actual behavior obviously depends on what resolution the hardware timers work, on
-modern PCs this is pretty good though]
+ranges of system memory until the beginning of the graphics adapter
+memory is reached (in my case 0x00000000 - 0xd8000000).
+one range of the graphics adapter memory (0xd8000000, size 0x2000000).
+with write combining.
+remaining range of system memory (if applicable).
 
-To show this effect I made a test application to measure the error made
-in the select() timing.
+is this correct, yinghai?
+so, something seems to be still wrong, X is still not satisfied, but i
+think the kernel hackers are on the right way.
 
-For example, a userspace application asking for a 1200 microsecond delay, on
-a HZ=1000 kernel, will in practice get a 1997 microsecond delay, a delta of
-almost 800 microseconds (which is of course a high percentage of 1200). The
-extreme case is asking for 1 microsecond, and getting 998 microseconds
-delay... with the patch we get a 250 times improvement in behavior (!).
-
-A graph of various inputs with the jitter can be seen at
-http://www.tglx.de/~arjan/select_benefits.png
-
-One thing to note is that on my machine, the current select() implementation
-will return after 1997 microseconds when asked for 1999 microseconds; this
-can be seen in a zoom in of the graph above:
-http://www.tglx.de/~arjan/zoom.png
-E.g. select() is returning too early in current Linux kernels; and this is
-also fixed (by nature) by this patch series.
-In the graph there's a 4 microsecond delta for most data points, this is
-basically the measurement overhead (C-state exit, a few system calls, a 
-loop and some math).
-
-
-About the patches:
-
-Patch 1: Introduces infrastructure where select() and poll() start tracking
-	 the end time in a "struct timespec" rather than in jiffies, so in
-	 nanosecond resolution.
-Patch 2: Uses the now available end time in nanoseconds to calculate at the
-	 end of a select()/ppoll() how much time is left and returns this 
-	 in a high resolution rather than jiffies granularity
-Patch 3: Introduces a schedule_hrtimeout(); a high resolution version of the
-	 equivalent schedule_timeout() function.
-Patch 4: Converts over select() to schedule_hrtimeout()
-Patch 5: Converts over poll() to schedule_hrtimeout()
-
-
-Note: 
-even though poll() (as opposed to ppoll()) only accepts milliseconds
-as userspace interface, the behavior will still improve because the current
-time no longer needs to be rounded up to the next jiffie, so on average
-a 500 milliseconds behavior improvement.
-
-Note 2:
-I'm a bit unsure about the restart code and how that works; I'd like to
-request a bit of help on figuring out how that code is supposed to work.
-
-Future work:
-I'd like to get rid of the jiffies timeout entirely over time, and
-only use hrtimers (makes the code a lot nicer) but that's for now
-a separate step, first I'd like to see how this change pans out.
-
-
- 
+-- 
+regards
+alex
