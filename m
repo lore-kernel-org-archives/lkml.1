@@ -1,74 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755956AbYH2KZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753773AbYH2KgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755956AbYH2KZm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 06:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbYH2KY4
+	id S1753773AbYH2KgU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 06:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbYH2KgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 06:24:56 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:41724 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753341AbYH2KYz (ORCPT
+	Fri, 29 Aug 2008 06:36:01 -0400
+Received: from bipbip.grupopie.com ([195.23.16.24]:40584 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751301AbYH2KgA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 06:24:55 -0400
-Date: Fri, 29 Aug 2008 11:24:44 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <zajec5@gmail.com>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory
- corruption
-In-Reply-To: <b170af450808290313x574b4561i3048ffca3e4da197@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0808291120540.8561@blonde.site>
-References: <48B701FB.2020905@goop.org>  <86802c440808281849nb972d64te89894077ea9f33c@mail.gmail.com>
-  <48B76CE0.5010309@goop.org>  <20080829102547.655440bf@lxorguk.ukuu.org.uk>
- <b170af450808290313x574b4561i3048ffca3e4da197@mail.gmail.com>
+	Fri, 29 Aug 2008 06:36:00 -0400
+X-Greylist: delayed 1382 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Aug 2008 06:36:00 EDT
+Message-ID: <48B7CBA7.4060107@grupopie.com>
+Date: Fri, 29 Aug 2008 11:12:55 +0100
+From: Rui Santos <rsantos@grupopie.com>
+Organization: GrupoPIE, Portugal SA
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-1807564604-1220005484=:8561"
+To: Ivo van Doorn <ivdoorn@gmail.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT]: Networking
+References: <20080805.190020.244441681.davem@davemloft.net> <alpine.LFD.1.10.0808051937410.15995@nehalem.linux-foundation.org> <200808061021.56150.IvDoorn@gmail.com>
+In-Reply-To: <200808061021.56150.IvDoorn@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Ivo van Doorn wrote:
+> On Wednesday 06 August 2008, Linus Torvalds wrote:
+>> On Tue, 5 Aug 2008, David Miller wrote:
+>>> There was going to be the addition of the ath9k wireless driver but
+>>> there was some fallout that is being worked on right now (linux/list.h
+>>> changes needed lkml review, ath9k driver triggered some gcc aborts,
+>>> all kinds of fun stuff :-) so hopefully it will make it in the next
+>>> pass.  I tried to wait an extra day for it to be resolved, but that
+>>> was optimistic.
+>> Talking about wireless driver updates - has anybody looked at the RaLink 
+>> wireless driver?  It's in the newer EeePC's (901 and 1000), and it 
+>> actually has a driver from the company which the comments make clear is 
+>> GPLv2 too, no apparent oddness or anything:
+>>
+>> 	http://www.ralinktech.com.tw/data/drivers/2008_0708_RT2860_Linux_STA_v1.7.0.0.tar.bz2
+>>
+>> which admittedly apparently has some trivial problems (with a trivial 
+>> patch as seen at
+>>
+>> 	http://fedoraforum.org/forum/showthread.php?t=195429
+>>
+>> I'd love to have that one working, since I have the hardware, and it's 
+>> actually reasonable (much more so than the original EeePC, in fact). What 
+>> channels should I go through? Is anybody working on integrating it 
+>> already?
+> 
+> Like the earlier rt2x00 drivers I am rewriting the driver as released by Ralink and
+> have put it in the rt2x00lib/mac80211 framework. Most of the code is currently done, and the
+> last part should be done this week. After that it is a matter of testing and comparing
+> register values with the Ralink driver for the last tweaks.
 
---8323584-1807564604-1220005484=:8561
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Hi Ivo,
 
-> On Fri, 29 Aug 2008, Rafa=C5=82 Mi=C5=82ecki wrote:
->=20
-> Out of current discussion I tried using s2ram on patched kernel (I did
-> not try s2ram earlier, my problem was (un)plugging HDMI - some ACPI
-> code probably).
->=20
-> Corruption output is quite huge, I attached it to bug report:
-> http://bugzilla.kernel.org/show_bug.cgi?id=3D11237
-> http://bugzilla.kernel.org/attachment.cgi?id=3D17526
+I'm now a EeePc 901 owner. I'd also like to have wireless working on
+this machine.
+I'm available for any test you might want to undertake so, do not
+hesitate to ask.
 
-Not quite the output we were expecting!  I've not got around to trying
-it yet, so beware, but I think Jeremy's patch needs the following on top.
-Or you may prefer to wait until one of us reports that it is now working
-as intended.
+> 
+> I doubt the driver will be ready/stable for 2.6.28, but it should be ready for 2.6.29.
+> 
+> Ivo
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+> 
 
---- a/arch/x86/kernel/setup.c=092008-08-29 11:17:16.000000000 +0100
-+++ b/arch/x86/kernel/setup.c=092008-08-29 11:19:24.000000000 +0100
-@@ -636,11 +636,12 @@ void check_for_bios_corruption(void)
- =09=09unsigned long *addr =3D __va(scan_areas[i].addr);
- =09=09unsigned long size =3D scan_areas[i].size;
-=20
--=09=09for(; size; addr++, size--) {
-+=09=09for(; size; addr++, size -=3D sizeof(unsigned long)) {
- =09=09=09if (!*addr)
- =09=09=09=09continue;
- =09=09=09printk(KERN_ERR "Corrupted low memory at %p (%lx phys) =3D %08lx\=
-n",
- =09=09=09       addr, __pa(addr), *addr);
-+=09=09=09*addr =3D 0;
- =09=09=09corruption =3D 1;
- =09=09}
- =09}
---8323584-1807564604-1220005484=:8561--
+-- 
+Regards,
+Rui Santos
+
