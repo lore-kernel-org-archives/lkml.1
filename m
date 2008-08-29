@@ -1,58 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759013AbYH2Uql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbYH2Uvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759013AbYH2Uql (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 16:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbYH2Uqa
+	id S1757524AbYH2Uvz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 16:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbYH2Uvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 16:46:30 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:35591 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754593AbYH2Uqa (ORCPT
+	Fri, 29 Aug 2008 16:51:47 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:61263 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753408AbYH2Uvq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 16:46:30 -0400
-Date: Fri, 29 Aug 2008 14:46:27 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Marcel Holtmann <holtmann@linux.intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Greg KH <greg@kroah.com>,
-       bgmerrell@novell.com, hirofuchi@users.sourceforge.net,
-       linux-kernel@vger.kernel.org, usbip-devel@lists.sourceforge.net
-Subject: Re: USBIP protocol
-Message-ID: <20080829204627.GB1239@parisc-linux.org>
-References: <20080829140224.GC1968@parisc-linux.org> <87ej47q5k8.fsf@basil.nowhere.org> <1220049103.7145.23.camel@californication>
+	Fri, 29 Aug 2008 16:51:46 -0400
+Date: Fri, 29 Aug 2008 16:51:43 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] ftrace: stack trace add indexes
+Message-ID: <alpine.DEB.1.10.0808291628530.4293@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1220049103.7145.23.camel@californication>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 30, 2008 at 12:31:43AM +0200, Marcel Holtmann wrote:
-> Hi Matthew,
-> 
-> > > I'm in the middle of implementing a userspace client for usbip and I
-> > > strongly feel that the protocol needs to be changed before it is merged.
-> > >
-> > >  - I'm unconvinced that TCP is the correct protocol to be running this over.
-> > >    I understand the reluctance to use UDP, but the protocol is fundamentally
-> > >    packet-based.  If TCP is used, the delimitation of packets within the
-> > >    stream needs to be much more robust. 
-> > 
-> > If you want reliable transport with record boundaries an alternative
-> > would be also SCTP. Main drawback is that firewalls often don't support it
-> > though (but presumably that wouldn't be a big issue for this)
-> 
-> I would also have proposed SCTP. The telco carries seems be very happy
-> with it.
 
-I'm actually looking into the sunrpc protocol.  That has the advantages:
- - Already has an in-kernel implementation
- - Widely understood and properly documented
- - Can be run over TCP or UDP or even RDMA
+This patch adds indexes into the stack that the functions in the
+stack dump were found at. As an added bonus, I also added a diff
+to show which function is the most notorious consumer of the stack.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+The output now looks like this:
+
+# cat /debug/tracing/stack_trace 
+        Depth   Size      Location    (48 entries)
+        -----   ----      --------
+  0)     2476     212   blk_recount_segments+0x39/0x59
+  1)     2264      12   bio_phys_segments+0x16/0x1d
+  2)     2252      20   blk_rq_bio_prep+0x23/0xaf
+  3)     2232      12   init_request_from_bio+0x74/0x77
+  4)     2220      56   __make_request+0x294/0x331
+  5)     2164     136   generic_make_request+0x34f/0x37d
+  6)     2028      56   submit_bio+0xe7/0xef
+  7)     1972      28   submit_bh+0xd1/0xf0
+  8)     1944     112   block_read_full_page+0x299/0x2a9
+  9)     1832       8   blkdev_readpage+0x14/0x16
+ 10)     1824      28   read_cache_page_async+0x7e/0x109
+ 11)     1796      16   read_cache_page+0x11/0x49
+ 12)     1780      32   read_dev_sector+0x3c/0x72
+ 13)     1748      48   read_lba+0x4d/0xaa
+ 14)     1700     168   efi_partition+0x85/0x61b
+ 15)     1532      72   rescan_partitions+0x10e/0x266
+ 16)     1460      40   do_open+0x1c7/0x24e
+ 17)     1420     292   __blkdev_get+0x79/0x84
+ 18)     1128      12   blkdev_get+0x12/0x14
+ 19)     1116      20   register_disk+0xd1/0x11e
+ 20)     1096      28   add_disk+0x34/0x90
+ 21)     1068      52   sd_probe+0x2b1/0x366
+ 22)     1016      20   driver_probe_device+0xa5/0x120
+ 23)      996       8   __device_attach+0xd/0xf
+ 24)      988      32   bus_for_each_drv+0x3e/0x68
+ 25)      956      24   device_attach+0x56/0x6c
+ 26)      932      16   bus_attach_device+0x26/0x4d
+ 27)      916      64   device_add+0x380/0x4b4
+ 28)      852      28   scsi_sysfs_add_sdev+0xa1/0x1c9
+ 29)      824     160   scsi_probe_and_add_lun+0x919/0xa2a
+ 30)      664      36   __scsi_add_device+0x88/0xae
+ 31)      628      44   ata_scsi_scan_host+0x9e/0x21c
+ 32)      584      28   ata_host_register+0x1cb/0x1db
+ 33)      556      24   ata_host_activate+0x98/0xb5
+ 34)      532     192   ahci_init_one+0x9bd/0x9e9
+ 35)      340      20   pci_device_probe+0x3e/0x5e
+ 36)      320      20   driver_probe_device+0xa5/0x120
+ 37)      300      20   __driver_attach+0x3f/0x5e
+ 38)      280      36   bus_for_each_dev+0x40/0x62
+ 39)      244      12   driver_attach+0x19/0x1b
+ 40)      232      28   bus_add_driver+0x9c/0x1af
+ 41)      204      28   driver_register+0x76/0xd2
+ 42)      176      20   __pci_register_driver+0x44/0x71
+ 43)      156       8   ahci_init+0x14/0x16
+ 44)      148     100   _stext+0x42/0x122
+ 45)       48      20   kernel_init+0x175/0x1dc
+ 46)       28      28   kernel_thread_helper+0x7/0x10
+
+
+The first column is simply an index starting from the inner most function 
+and counting down to the outer most.
+
+The next column is the location that the function was found on the stack.
+
+The next column is the size of the stack for that function.
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/trace_stack.c |   90 ++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 73 insertions(+), 17 deletions(-)
+
+Index: linux-tip.git/kernel/trace/trace_stack.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/trace_stack.c	2008-08-29 15:24:11.000000000 -0400
++++ linux-tip.git/kernel/trace/trace_stack.c	2008-08-29 16:39:44.000000000 -0400
+@@ -16,8 +16,10 @@
+ 
+ #define STACK_TRACE_ENTRIES 500
+ 
+-static unsigned long stack_dump_trace[STACK_TRACE_ENTRIES] =
+-	{ [0 ... (STACK_TRACE_ENTRIES-1)] = ULONG_MAX };
++static unsigned long stack_dump_trace[STACK_TRACE_ENTRIES+1] =
++	 { [0 ... (STACK_TRACE_ENTRIES)] = ULONG_MAX };
++static unsigned stack_dump_index[STACK_TRACE_ENTRIES];
++
+ static struct stack_trace max_stack_trace = {
+ 	.max_entries		= STACK_TRACE_ENTRIES,
+ 	.entries		= stack_dump_trace,
+@@ -32,8 +34,9 @@ static DEFINE_PER_CPU(int, trace_active)
+ 
+ static inline void check_stack(void)
+ {
+-	unsigned long this_size;
+-	unsigned long flags;
++	unsigned long this_size, flags;
++	unsigned long *p, *top, *start;
++	int i;
+ 
+ 	this_size = ((unsigned long)&this_size) & (THREAD_SIZE-1);
+ 	this_size = THREAD_SIZE - this_size;
+@@ -51,10 +54,42 @@ static inline void check_stack(void)
+ 	max_stack_size = this_size;
+ 
+ 	max_stack_trace.nr_entries	= 0;
+-	max_stack_trace.skip		= 1;
++	max_stack_trace.skip		= 3;
+ 
+ 	save_stack_trace(&max_stack_trace);
+ 
++	/*
++	 * Now find where in the stack these are.
++	 */
++	i = 0;
++	start = &this_size;
++	top = (unsigned long *)
++		(((unsigned long)start & ~(THREAD_SIZE-1)) + THREAD_SIZE);
++
++	/*
++	 * Loop through all the entries. One of the entries may
++	 * for some reason be missed on the stack, so we may
++	 * have to account for them. If they are all there, this
++	 * loop will only happen once. This code only takes place
++	 * on a new max, so it is far from a fast path.
++	 */
++	while (i < max_stack_trace.nr_entries) {
++
++		stack_dump_index[i] = this_size;
++		p = start;
++
++		for (; p < top && i < max_stack_trace.nr_entries; p++) {
++			if (*p == stack_dump_trace[i]) {
++				this_size = stack_dump_index[i++] =
++					(top - p) * sizeof(unsigned long);
++				/* Start the search from here */
++				start = p + 1;
++			}
++		}
++
++		i++;
++	}
++
+  out:
+ 	__raw_spin_unlock(&max_stack_lock);
+ 	raw_local_irq_restore(flags);
+@@ -145,22 +180,24 @@ static struct file_operations stack_max_
+ static void *
+ t_next(struct seq_file *m, void *v, loff_t *pos)
+ {
+-	unsigned long *t = m->private;
++	long i = (long)m->private;
+ 
+ 	(*pos)++;
+ 
+-	if (!t || *t == ULONG_MAX)
++	i++;
++
++	if (i >= max_stack_trace.nr_entries ||
++	    stack_dump_trace[i] == ULONG_MAX)
+ 		return NULL;
+ 
+-	t++;
+-	m->private = t;
++	m->private = (void *)i;
+ 
+-	return t;
++	return &m->private;
+ }
+ 
+ static void *t_start(struct seq_file *m, loff_t *pos)
+ {
+-	unsigned long *t = m->private;
++	void *t = &m->private;
+ 	loff_t l = 0;
+ 
+ 	local_irq_disable();
+@@ -178,14 +215,15 @@ static void t_stop(struct seq_file *m, v
+ 	local_irq_enable();
+ }
+ 
+-static int trace_lookup_stack(struct seq_file *m, unsigned long addr)
++static int trace_lookup_stack(struct seq_file *m, long i)
+ {
++	unsigned long addr = stack_dump_trace[i];
+ #ifdef CONFIG_KALLSYMS
+ 	char str[KSYM_SYMBOL_LEN];
+ 
+ 	sprint_symbol(str, addr);
+ 
+-	return seq_printf(m, "[<%p>] %s\n", (void*)addr, str);
++	return seq_printf(m, "%s\n", str);
+ #else
+ 	return seq_printf(m, "%p\n", (void*)addr);
+ #endif
+@@ -193,12 +231,30 @@ static int trace_lookup_stack(struct seq
+ 
+ static int t_show(struct seq_file *m, void *v)
+ {
+-	unsigned long *t = v;
++	long i = *(long *)v;
++	int size;
+ 
+-	if (!t || *t == ULONG_MAX)
++	if (i < 0) {
++		seq_printf(m, "        Depth   Size      Location"
++			   "    (%d entries)\n"
++			   "        -----   ----      --------\n",
++			   max_stack_trace.nr_entries);
+ 		return 0;
++	}
++
++	if (i >= max_stack_trace.nr_entries ||
++	    stack_dump_trace[i] == ULONG_MAX)
++		return 0;
++
++	if (i+1 == max_stack_trace.nr_entries ||
++	    stack_dump_trace[i+1] == ULONG_MAX)
++		size = stack_dump_index[i];
++	else
++		size = stack_dump_index[i] - stack_dump_index[i+1];
++
++	seq_printf(m, "%3ld) %8d   %5d   ", i, stack_dump_index[i], size);
+ 
+-	trace_lookup_stack(m, *t);
++	trace_lookup_stack(m, i);
+ 
+ 	return 0;
+ }
+@@ -217,7 +273,7 @@ static int stack_trace_open(struct inode
+ 	ret = seq_open(file, &stack_trace_seq_ops);
+ 	if (!ret) {
+ 		struct seq_file *m = file->private_data;
+-		m->private = stack_dump_trace;
++		m->private = (void *)-1;
+ 	}
+ 
+ 	return ret;
