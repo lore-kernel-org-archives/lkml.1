@@ -1,31 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbYH2GT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753782AbYH2GT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754923AbYH2GT7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 02:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbYH2GPt
+	id S1753782AbYH2GT0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 02:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbYH2GPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 02:15:49 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:59510 "EHLO
+	Fri, 29 Aug 2008 02:15:44 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:59517 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751734AbYH2GP2 (ORCPT
+	with ESMTP id S1751554AbYH2GP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 02:15:28 -0400
+	Fri, 29 Aug 2008 02:15:27 -0400
 Date: Thu, 28 Aug 2008 23:47:41 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808290547.m7T5lf9m016129@wolfmountaingroup.com>
+Message-Id: <200808290547.m7T5lfCb016128@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc5 14/29] mdb: add mdb-list.c debugger parser functions
+Subject: [PATCH 2.6.27-rc5 13/29] mdb: add mdb-keyboard.h keyboard function includes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add mdb-list.c debugger parser functions
+add mdb-keyboard.h keyboard function includes
+
 
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/debug/mdb/mdb-list.c	1969-12-31 17:00:00.000000000 -0700
-+++ b/debug/mdb/mdb-list.c	2008-08-28 22:21:03.000000000 -0600
-@@ -0,0 +1,642 @@
+--- a/debug/mdb/mdb-keyboard.h	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/mdb/mdb-keyboard.h	2008-08-28 14:20:04.000000000 -0600
+@@ -0,0 +1,137 @@
++
 +
 +/***************************************************************************
 +*
@@ -60,611 +62,105 @@ Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 +*
 +***************************************************************************/
 +
-+#include <linux/version.h>
-+#include <linux/types.h>
-+#include <linux/sched.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/string.h>
-+#include <linux/stat.h>
-+#include <linux/errno.h>
-+#include <linux/fcntl.h>
-+#include <linux/slab.h>
-+#include <linux/vmalloc.h>
-+#include <linux/genhd.h>
-+#include <linux/hdreg.h>
-+#include <linux/fs.h>
-+#include <linux/major.h>
-+#include <linux/mm.h>
-+#include <linux/cdrom.h>
-+#include <linux/pagemap.h>
-+#include <linux/swap.h>
-+#include <linux/smp.h>
-+#include <linux/smp_lock.h>
-+#include <linux/ctype.h>
-+#include <linux/keyboard.h>
-+#include <linux/console.h>
-+#include <linux/serial_reg.h>
-+#include <linux/uaccess.h>
-+#include <asm/system.h>
-+#include <asm/segment.h>
-+#include <asm/atomic.h>
-+#include <asm/msr.h>
-+#include <linux/io.h>
++#undef KBD_REPORT_ERR			/* Report keyboard errors */
++#define KBD_REPORT_UNKN			/* Report unknown scan codes */
++#define KBD_REPORT_TIMEOUTS		/* Report keyboard timeouts */
++#undef KBD_IS_FOCUS_9000		/* We have the brain-damaged FOCUS-9000 keyboard */
++#undef INITIALIZE_MOUSE			/* Define if your PS/2 mouse needs initialization. */
 +
-+#ifdef CONFIG_SMP
-+#include <mach_apic.h>
-+#include <mach_ipi.h>
-+#endif
 +
-+#define __KERNEL_SYSCALLS__
-+#include <linux/unistd.h>
-+#include <linux/kallsyms.h>
++#define KBD_INIT_TIMEOUT 1000		/* Timeout in ms for initializing the keyboard */
++#define KBC_TIMEOUT 250			/* Timeout in ms for sending to keyboard controller */
++#define KBD_TIMEOUT 1000		/* Timeout in ms for keyboard command acknowledge */
 +
-+#include "mdb.h"
-+#include "mdb-ia32.h"
-+#include "mdb-list.h"
-+#include "mdb-ia32-proc.h"
-+#include "mdb-base.h"
-+#include "mdb-proc.h"
-+#include "mdb-os.h"
-+#include "mdb-keyboard.h"
++/*
++ *	Keyboard Controller Registers on normal PCs.
++ */
 +
-+#ifdef MDB_ATOMIC
-+static spinlock_t accelLock = SPIN_LOCK_UNLOCKED;
-+static long accelflags;
-+#endif
++#define KBD_STATUS_REG		0x64	/* Status register (R) */
++#define KBD_CNTL_REG		0x64	/* Controller command register (W) */
++#define KBD_DATA_REG		0x60	/* Keyboard data register (R/W) */
 +
-+ACCELERATOR *accelHead;
-+ACCELERATOR *accelTail;
++/*
++ *	Keyboard Controller Commands
++ */
 +
-+unsigned long AccelRoutine(unsigned long key, void *p)
-+{
-+    register ACCELERATOR *accel;
-+    unsigned long retCode;
++#define KBD_CCMD_READ_MODE	0x20	/* Read mode bits */
++#define KBD_CCMD_WRITE_MODE	0x60	/* Write mode bits */
++#define KBD_CCMD_GET_VERSION	0xA1	/* Get controller version */
++#define KBD_CCMD_MOUSE_DISABLE	0xA7	/* Disable mouse interface */
++#define KBD_CCMD_MOUSE_ENABLE	0xA8	/* Enable mouse interface */
++#define KBD_CCMD_TEST_MOUSE	0xA9	/* Mouse interface test */
++#define KBD_CCMD_SELF_TEST	0xAA	/* Controller self test */
++#define KBD_CCMD_KBD_TEST	0xAB	/* Keyboard interface test */
++#define KBD_CCMD_KBD_DISABLE	0xAD	/* Keyboard interface disable */
++#define KBD_CCMD_KBD_ENABLE	0xAE	/* Keyboard interface enable */
++#define KBD_CCMD_WRITE_AUX_OBUF	0xD3    /* Write to output buffer as if
++					   initiated by the auxiliary device */
++#define KBD_CCMD_WRITE_MOUSE	0xD4	/* Write the following byte to the mouse */
 +
-+    accel = accelHead;
-+    while (accel)
-+    {
-+       if (accel->accelFlags && accel->accelRoutine && accel->key == key)
-+       {
-+	  retCode = (accel->accelRoutine)(key, p, accel);
-+	  return retCode;
-+       }
-+       accel = accel->accelNext;
-+    }
-+    return 0;
-+}
++/*
++ *	Keyboard Commands
++ */
 +
-+void ShowDebuggerAccelerators(void)
-+{
-+   register ACCELERATOR *accel;
++#define KBD_CMD_SET_LEDS	0xED	/* Set keyboard leds */
++#define KBD_CMD_SET_RATE	0xF3	/* Set typematic rate */
++#define KBD_CMD_ENABLE		0xF4	/* Enable scanning */
++#define KBD_CMD_DISABLE		0xF5	/* Disable scanning */
++#define KBD_CMD_RESET		0xFF	/* Reset */
 +
-+   DBGPrint("\nDebugger Keystroke Accelerator(s)\n");
++/*
++ *	Keyboard Replies
++ */
 +
-+   accel = accelHead;
-+   while (accel)
-+   {
-+      if (accel->shortHelp)
-+         if (DBGPrint("%s\n", accel->shortHelp)) return;
-+      accel = accel->accelNext;
-+   }
-+   return;
-+}
++#define KBD_REPLY_POR		0xAA	/* Power on reset */
++#define KBD_REPLY_ACK		0xFA	/* Command ACK */
++#define KBD_REPLY_RESEND	0xFE	/* Command NACK, send the cmd again */
 +
-+unsigned long IsAccelerator(unsigned long key)
-+{
-+    register ACCELERATOR *accel;
++/*
++ *	Status Register Bits
++ */
 +
-+    accel = accelHead;
-+    while (accel)
-+    {
-+       if (accel->accelFlags && accel->accelRoutine && accel->key == key)
-+       {
-+	  return 1;
-+       }
-+       accel = accel->accelNext;
-+    }
-+    return 0;
-+}
++#define KBD_STAT_OBF		0x01	/* Keyboard output buffer full */
++#define KBD_STAT_IBF		0x02	/* Keyboard input buffer full */
++#define KBD_STAT_SELFTEST	0x04	/* Self test successful */
++#define KBD_STAT_CMD		0x08	/* Last write was a command write (0=data) */
++#define KBD_STAT_UNLOCKED	0x10	/* Zero if keyboard locked */
++#define KBD_STAT_MOUSE_OBF	0x20	/* Mouse output buffer full */
++#define KBD_STAT_GTO		0x40	/* General receive/xmit timeout */
++#define KBD_STAT_PERR		0x80	/* Parity error */
 +
-+unsigned long AccelHelpRoutine(unsigned long key)
-+{
-+    register ACCELERATOR *accel;
++#define AUX_STAT_OBF (KBD_STAT_OBF | KBD_STAT_MOUSE_OBF)
 +
-+    accel = accelHead;
-+    if (key)  /* if we were passed a command string */
-+    {
-+       while (accel)
-+       {
-+	  if (accel->accelFlags && accel->key == key)
-+	  {
-+	     if (accel->accelRoutineHelp)
-+	     {
-+		DBGPrint("Accelerator %08X\n", (unsigned)accel->key);
-+		(accel->accelRoutineHelp)(key, accel);
-+		return 1;
-+	     }
-+	     DBGPrint("Accelerator %08X\n", (unsigned)accel->key);
-+	     return 1;
-+	  }
-+	  accel = accel->accelNext;
-+       }
-+       DBGPrint("Help for Accelerator [%08X] not found\n", (unsigned)key);
-+       return 1;
-+    }
-+    else
-+    {
-+       DBGPrint("Accelerator(s)\n");
-+       while (accel)
-+       {
-+	  if (accel->accelFlags && accel->key && !accel->supervisorCommand)
-+	     DBGPrint("%08X         - %s\n",
-+                      (unsigned)accel->key, accel->shortHelp);
-+	  accel = accel->accelNext;
-+       }
-+    }
-+    return 0;
-+}
++/*
++ *	Controller Mode Register Bits
++ */
 +
-+ACCELERATOR *insertAccel(ACCELERATOR *i, ACCELERATOR *top)
-+{
-+    ACCELERATOR *old, *p;
++#define KBD_MODE_KBD_INT	0x01	/* Keyboard data generate IRQ1 */
++#define KBD_MODE_MOUSE_INT	0x02	/* Mouse data generate IRQ12 */
++#define KBD_MODE_SYS		0x04	/* The system flag (?) */
++#define KBD_MODE_NO_KEYLOCK	0x08	/* The keylock doesn't affect the keyboard if set */
++#define KBD_MODE_DISABLE_KBD	0x10	/* Disable keyboard interface */
++#define KBD_MODE_DISABLE_MOUSE	0x20	/* Disable mouse interface */
++#define KBD_MODE_KCC		0x40	/* Scan code conversion to PC format */
++#define KBD_MODE_RFU		0x80
 +
-+    if (!accelTail)
-+    {
-+       i->accelNext = i->accelPrior = NULL;
-+       accelTail = i;
-+       return i;
-+    }
-+    p = top;
-+    old = NULL;
-+    while (p)
-+    {
-+       if (p->key < i->key)
-+       {
-+	  old = p;
-+	  p = p->accelNext;
-+       }
-+       else
-+       {
-+	  if (p->accelPrior)
-+	  {
-+	     p->accelPrior->accelNext = i;
-+	     i->accelNext = p;
-+	     i->accelPrior = p->accelPrior;
-+	     p->accelPrior = i;
-+	     return top;
-+	  }
-+	  i->accelNext = p;
-+	  i->accelPrior = NULL;
-+	  p->accelPrior = i;
-+	  return i;
-+       }
-+    }
-+    old->accelNext = i;
-+    i->accelNext = NULL;
-+    i->accelPrior = old;
-+    accelTail = i;
-+    return accelHead;
++/*
++ *	Mouse Commands
++ */
 +
-+}
++#define AUX_SET_RES		0xE8	/* Set resolution */
++#define AUX_SET_SCALE11		0xE6	/* Set 1:1 scaling */
++#define AUX_SET_SCALE21		0xE7	/* Set 2:1 scaling */
++#define AUX_GET_SCALE		0xE9	/* Get scaling factor */
++#define AUX_SET_STREAM		0xEA	/* Set stream mode */
++#define AUX_SET_SAMPLE		0xF3	/* Set sample rate */
++#define AUX_ENABLE_DEV		0xF4	/* Enable aux device */
++#define AUX_DISABLE_DEV		0xF5	/* Disable aux device */
++#define AUX_RESET		0xFF	/* Reset aux device */
++#define AUX_ACK			0xFA	/* Command byte ACK. */
 +
-+unsigned long AddAccelRoutine(ACCELERATOR *newAccel)
-+{
-+    register ACCELERATOR *accel;
-+
-+#ifdef MDB_ATOMIC
-+    spin_lock_irqsave(&accelLock, accelflags);
-+#endif
-+    accel = accelHead;
-+    while (accel)
-+    {
-+       if (accel == newAccel || accel->key == newAccel->key)
-+       {
-+#ifdef MDB_ATOMIC
-+	  spin_unlock_irqrestore(&accelLock, accelflags);
-+#endif
-+	  return 1;
-+       }
-+       accel = accel->accelNext;
-+    }
-+    newAccel->accelFlags = -1;
-+    accelHead = insertAccel(newAccel, accelHead);
-+
-+#ifdef MDB_ATOMIC
-+    spin_unlock_irqrestore(&accelLock, accelflags);
-+#endif
-+    return 0;
-+}
-+
-+unsigned long RemoveAccelRoutine(ACCELERATOR *newAccel)
-+{
-+    register ACCELERATOR *accel;
-+
-+#ifdef MDB_ATOMIC
-+    spin_lock_irqsave(&accelLock, accelflags);
-+#endif
-+    accel = accelHead;
-+    while (accel)
-+    {
-+       if (accel == newAccel)   /* found, remove from list */
-+       {
-+	  if (accelHead == newAccel)
-+	  {
-+	     accelHead = (void *) newAccel->accelNext;
-+	     if (accelHead)
-+		accelHead->accelPrior = NULL;
-+	     else
-+		accelTail = NULL;
-+	  }
-+	  else
-+	  {
-+	     newAccel->accelPrior->accelNext = newAccel->accelNext;
-+	     if (newAccel != accelTail)
-+		newAccel->accelNext->accelPrior = newAccel->accelPrior;
-+	     else
-+		accelTail = newAccel->accelPrior;
-+	  }
-+	  newAccel->accelNext = newAccel->accelPrior = 0;
-+	  newAccel->accelFlags = 0;
-+
-+#ifdef MDB_ATOMIC
-+	  spin_unlock_irqrestore(&accelLock, accelflags);
-+#endif
-+	  return 0;
-+       }
-+       accel = accel->accelNext;
-+    }
-+
-+#ifdef MDB_ATOMIC
-+    spin_unlock_irqrestore(&accelLock, accelflags);
-+#endif
-+    return -1;
-+}
-+
-+#ifdef MDB_ATOMIC
-+static spinlock_t altDebugLock = SPIN_LOCK_UNLOCKED;
-+static long altflags;
-+#endif
-+
-+ALT_DEBUGGER *altDebugHead;
-+ALT_DEBUGGER *altDebugTail;
-+
-+int AlternateDebuggerRoutine(int reason, int error, void *frame)
-+{
-+    register ALT_DEBUGGER *altDebug;
-+    register unsigned long retCode;
-+    unsigned long state;
-+
-+    state = save_flags();
-+    altDebug = altDebugHead;
-+    while (altDebug)
-+    {
-+       if (altDebug->AlternateDebugger)
-+       {
-+	  retCode = (altDebug->AlternateDebugger)(reason, error, frame);
-+	  if (retCode)
-+          {
-+             restore_flags(state);
-+	     return retCode;
-+          }
-+       }
-+       altDebug = altDebug->altDebugNext;
-+    }
-+    restore_flags(state);
-+    return 0;
-+}
-+
-+unsigned long AddAlternateDebugger(ALT_DEBUGGER *Debugger)
-+{
-+    register ALT_DEBUGGER *altDebug;
-+
-+#ifdef MDB_ATOMIC
-+    spin_lock_irqsave(&altDebugLock, altflags);
-+#endif
-+    altDebug = altDebugHead;
-+    while (altDebug)
-+    {
-+       if (altDebug == Debugger)
-+       {
-+#ifdef MDB_ATOMIC
-+	  spin_unlock_irqrestore(&altDebugLock, altflags);
-+#endif
-+	  return 1;
-+       }
-+       altDebug = altDebug->altDebugNext;
-+    }
-+    if (!altDebugHead)
-+    {
-+       altDebugHead = Debugger;
-+       altDebugTail = Debugger;
-+       Debugger->altDebugNext = 0;
-+       Debugger->altDebugPrior = 0;
-+    }
-+    else
-+    {
-+       altDebugTail->altDebugNext = Debugger;
-+       Debugger->altDebugNext = 0;
-+       Debugger->altDebugPrior = altDebugTail;
-+       altDebugTail = Debugger;
-+    }
-+
-+#ifdef MDB_ATOMIC
-+    spin_unlock_irqrestore(&altDebugLock, altflags);
-+#endif
-+    return 0;
-+}
-+
-+unsigned long RemoveAlternateDebugger(ALT_DEBUGGER *Debugger)
-+{
-+    register ALT_DEBUGGER *altDebug;
-+
-+#ifdef MDB_ATOMIC
-+    spin_lock_irqsave(&altDebugLock, altflags);
-+#endif
-+    altDebug = altDebugHead;
-+    while (altDebug)
-+    {
-+       if (altDebug == Debugger)   /* found, remove from list */
-+       {
-+	  if (altDebugHead == Debugger)
-+	  {
-+	     altDebugHead = (void *) Debugger->altDebugNext;
-+	     if (altDebugHead)
-+		altDebugHead->altDebugPrior = NULL;
-+	     else
-+		altDebugTail = NULL;
-+	  }
-+	  else
-+	  {
-+	     Debugger->altDebugPrior->altDebugNext = Debugger->altDebugNext;
-+	     if (Debugger != altDebugTail)
-+		Debugger->altDebugNext->altDebugPrior = Debugger->altDebugPrior;
-+	     else
-+		altDebugTail = Debugger->altDebugPrior;
-+	  }
-+	  Debugger->altDebugNext = Debugger->altDebugPrior = 0;
-+
-+#ifdef MDB_ATOMIC
-+          spin_unlock_irqrestore(&altDebugLock, altflags);
-+#endif
-+	  return 0;
-+       }
-+       altDebug = altDebug->altDebugNext;
-+    }
-+#ifdef MDB_ATOMIC
-+    spin_unlock_irqrestore(&altDebugLock, altflags);
-+#endif
-+    return -1;
-+}
-+
-+#ifdef MDB_ATOMIC
-+static spinlock_t debugParserLock = SPIN_LOCK_UNLOCKED;
-+static long parserflags;
-+#endif
-+
-+DEBUGGER_PARSER *debugParserHead;
-+DEBUGGER_PARSER *debugParserTail;
-+
-+unsigned long DebuggerParserRoutine(unsigned char *command, unsigned char *commandLine,
-+			    StackFrame *stackFrame, unsigned long Exception)
-+{
-+    register DEBUGGER_PARSER *debugParser;
-+    register unsigned long retCode, valid = 0, length;
-+    register unsigned char *p;
-+
-+    p = commandLine;
-+    if (!p)
-+       return 0;
-+
-+    /* if a passed string is just whitespace, return error */
-+    while (*p)
-+    {
-+       if ((*p != ' ') && (*p != '\n') && (*p != '\r'))
-+       {
-+          valid = 1;
-+          break;
-+       }
-+       p++;
-+    }
-+    if (!valid)
-+       return 0;
-+
-+    UpcaseString(command);
-+    length = strlen(command);
-+
-+    debugParser = debugParserHead;
-+    while (debugParser)
-+    {
-+       if (debugParser->parserFlags && debugParser->DebugCommandParser &&
-+	   (debugParser->debugCommandNameLength == length) &&
-+	   (!strcmp(debugParser->debugCommandName, command)))
-+       {
-+	  retCode = (debugParser->DebugCommandParser)(commandLine, stackFrame,
-+						      Exception, debugParser);
-+	  if (retCode)
-+	     return retCode;
-+       }
-+       debugParser = debugParser->debugNext;
-+    }
-+
-+    DBGPrint("unknown mdb command -> %s\n", command);
-+    return 0;
-+}
-+
-+unsigned long DebuggerParserHelpRoutine(unsigned char *command, unsigned char *commandLine)
-+{
-+    extern void ShowDebuggerAccelerators(void);
-+    register DEBUGGER_PARSER *debugParser;
-+    register unsigned long length;
-+
-+    UpcaseString(command);
-+    length = strlen(command);
-+    if (*command)  /* if we were passed a command string */
-+    {
-+
-+       debugParser = debugParserHead;
-+       while (debugParser)
-+       {
-+	  if (debugParser->parserFlags &&
-+             (debugParser->debugCommandNameLength == length) &&
-+             !strcmp(debugParser->debugCommandName, command))
-+	  {
-+	     if (debugParser->DebugCommandParserHelp)
-+	     {
-+		DBGPrint("Help for Command %s\n",
-+                         debugParser->debugCommandName);
-+		(debugParser->DebugCommandParserHelp)(commandLine, debugParser);
-+		return 1;
-+	     }
-+	     DBGPrint("Help for Command %s\n", debugParser->debugCommandName);
-+	     return 1;
-+	  }
-+	  debugParser = debugParser->debugNext;
-+       }
-+
-+       DBGPrint("Help for Command [%s] not found\n", command);
-+       return 1;
-+    }
-+    else
-+    {
-+       DBGPrint("Debugger Command(s)\n");
-+
-+       debugParser = debugParserHead;
-+       while (debugParser)
-+       {
-+	  if (debugParser->parserFlags && debugParser->debugCommandName &&
-+	      !debugParser->supervisorCommand)
-+	     if (DBGPrint("%15s    - %s\n", debugParser->debugCommandName,
-+                      debugParser->shortHelp)) return 0;
-+	  debugParser = debugParser->debugNext;
-+       }
-+       ShowDebuggerAccelerators();
-+    }
-+    return 0;
-+}
-+
-+DEBUGGER_PARSER *insertDebuggerParser(DEBUGGER_PARSER *i, DEBUGGER_PARSER *top)
-+{
-+    DEBUGGER_PARSER *old, *p;
-+
-+    if (!debugParserTail)
-+    {
-+       i->debugNext = i->debugPrior = NULL;
-+       debugParserTail = i;
-+       return i;
-+    }
-+    p = top;
-+    old = NULL;
-+    while (p)
-+    {
-+       if (strcmp(p->debugCommandName, i->debugCommandName) < 0)
-+       {
-+	  old = p;
-+	  p = p->debugNext;
-+       }
-+       else
-+       {
-+	  if (p->debugPrior)
-+	  {
-+	     p->debugPrior->debugNext = i;
-+	     i->debugNext = p;
-+	     i->debugPrior = p->debugPrior;
-+	     p->debugPrior = i;
-+	     return top;
-+	  }
-+	  i->debugNext = p;
-+	  i->debugPrior = NULL;
-+	  p->debugPrior = i;
-+	  return i;
-+       }
-+    }
-+    old->debugNext = i;
-+    i->debugNext = NULL;
-+    i->debugPrior = old;
-+    debugParserTail = i;
-+    return debugParserHead;
-+
-+}
-+
-+unsigned long AddDebuggerCommandParser(DEBUGGER_PARSER *parser)
-+{
-+    register DEBUGGER_PARSER *debugParser;
-+
-+#ifdef MDB_ATOMIC
-+    spin_lock_irqsave(&debugParserLock, parserflags);
-+#endif
-+    parser->parserFlags = -1;
-+    parser->debugCommandNameLength = strlen(parser->debugCommandName);
-+
-+    debugParser = debugParserHead;
-+    while (debugParser)
-+    {
-+       if (debugParser == parser ||
-+	  (parser->debugCommandNameLength == 
-+           debugParser->debugCommandNameLength &&
-+	  (!strcmp(parser->debugCommandName, debugParser->debugCommandName))))
-+       {
-+#ifdef MDB_ATOMIC
-+	  spin_unlock_irqrestore(&debugParserLock, parserflags);
-+#endif
-+	  return 1;
-+       }
-+       debugParser = debugParser->debugNext;
-+    }
-+
-+    debugParserHead = insertDebuggerParser(parser, debugParserHead);
-+
-+#ifdef MDB_ATOMIC
-+    spin_unlock_irqrestore(&debugParserLock, parserflags);
-+#endif
-+    return 0;
-+}
-+
-+unsigned long RemoveDebuggerCommandParser(DEBUGGER_PARSER *parser)
-+{
-+    register DEBUGGER_PARSER *debugParser;
-+
-+#ifdef MDB_ATOMIC
-+    spin_lock_irqsave(&debugParserLock, parserflags);
-+#endif
-+    debugParser = debugParserHead;
-+    while (debugParser)
-+    {
-+       if (debugParser == parser)   /* found, remove from list */
-+       {
-+	  if (debugParserHead == parser)
-+	  {
-+	     debugParserHead = (void *) parser->debugNext;
-+	     if (debugParserHead)
-+		debugParserHead->debugPrior = NULL;
-+	     else
-+		debugParserTail = NULL;
-+	  }
-+	  else
-+	  {
-+	     parser->debugPrior->debugNext = parser->debugNext;
-+	     if (parser != debugParserTail)
-+		parser->debugNext->debugPrior = parser->debugPrior;
-+	     else
-+		debugParserTail = parser->debugPrior;
-+	  }
-+	  parser->debugNext = parser->debugPrior = 0;
-+	  parser->parserFlags = 0;
-+
-+#ifdef MDB_ATOMIC
-+	  spin_unlock_irqrestore(&debugParserLock, parserflags);
-+#endif
-+	  return 0;
-+       }
-+       debugParser = debugParser->debugNext;
-+    }
-+#ifdef MDB_ATOMIC
-+    spin_unlock_irqrestore(&debugParserLock, parserflags);
-+#endif
-+    return -1;
-+}
-+
++#define AUX_BUF_SIZE		2048	/* This might be better divisible by
++					   three to make overruns stay in sync
++					   but then the read function would need
++					   a lock etc - ick */
