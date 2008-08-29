@@ -1,94 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755786AbYH2Ig7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbYH2Ikv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755786AbYH2Ig7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 04:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYH2Igv
+	id S1754827AbYH2Ikv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 04:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbYH2Ikm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 04:36:51 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:54680 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751822AbYH2Igu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 04:36:50 -0400
-Date: Fri, 29 Aug 2008 18:36:42 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       dm-devel@redhat.com, Tejun Heo <tj@kernel.org>
-Subject: Re: linux-next: Tree for August 27
-Message-Id: <20080829183642.6994f4dc.sfr@canb.auug.org.au>
-In-Reply-To: <20080829070515.GL20055@kernel.dk>
-References: <20080827183453.eb651f50.sfr@canb.auug.org.au>
-	<58cb370e0808270757k583c0fc2oc659bc8e2dd6c21e@mail.gmail.com>
-	<200808272145.20627.bzolnier@gmail.com>
-	<200808290210.37211.bzolnier@gmail.com>
-	<20080829070515.GL20055@kernel.dk>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__29_Aug_2008_18_36_42_+1000_s4a5xCxuCRDQeqG1"
+	Fri, 29 Aug 2008 04:40:42 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:62089 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752862AbYH2Ikl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 04:40:41 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
+Date: Fri, 29 Aug 2008 10:40:06 +0200
+User-Agent: KMail/1.9.9
+Cc: Jorn Engel <joern@logfs.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080827181904.GD1371@logfs.org> <200808290629.AA00218@capsicum.lab.ntt.co.jp>
+In-Reply-To: <200808290629.AA00218@capsicum.lab.ntt.co.jp>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808291040.06917.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18puYSpORKsyenyZp7kS67GbKFPsFksmIVVVKN
+ gcTkf6UR9Kz6+bllWZ8KKFyolHHyN5Jp1ukI7s60ZTK22/YABr
+ iW7Qpqn3eYT7k/vCgLw1g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__29_Aug_2008_18_36_42_+1000_s4a5xCxuCRDQeqG1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Friday 29 August 2008, Ryusuke Konishi wrote:
+> >Do you do wear leveling or scrubbing?
+> 
+> NILFS does not support scrubbing. (as you guessed)
+> Under the current GC daemon, it writes logs sequentially and circularly
+> in the partition, and as you know, this leads to the wear levelling
+> except for superblock.
 
-Hi Bart,
+I don't see how that would cope with file systems that have a lot
+of static data. The classic problem of most cheap devices that implement
+wear leveling in hardware is that they never move data in an erase block
+that is used for read-only data. If 90% of the file system is read-only,
+your wear leveling will only work on 10% of the medium, wearing it down
+10 times faster than it should.
 
-On Fri, 29 Aug 2008 09:05:16 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
->
-> On Fri, Aug 29 2008, Bartlomiej Zolnierkiewicz wrote:
-> >=20
-> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > Subject: [PATCH] block: fix part0 handling in bdget_disk() / blk_lookup=
-_devt()
-> >=20
-> > part0 is a "special" partition and doesn't need to have capacity set - =
-this
-> > fixes regression caused by "block: move __dev from disk to part0" commi=
-t.
-> >=20
-> > Cc: Tejun Heo <tj@kernel.org>
-> > Cc: Jens Axboe <jens.axboe@oracle.com>
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > ---
-> > Jens, please integrate it into the original commit if feasible.
->=20
-> Thanks Bart, I folded it into the original commit.
+Can the GC daemon handle this case, e.g. by moving around aging read-only
+erase blocks?
 
-And applied to today's linux-next.
-
-> > On the somehow related topic - CONFIG_DEBUG_BLOCK_EXT_DEVT which is
-> > introduced by commit 3e5ba59bbab878f60b8b87004ac55a464bddc819 ("block:
-> > implement CONFIG_DEBUG_BLOCK_EXT_DEVT") is way too intrusive to be
-> > enabled by default if CONFIG_DEBUG_KERNEL is set as it easily results
-> > in no longer bootable systems (+ help entry for the new option says
-> > "Say N if you are unsure.").
-> >=20
-> > Tejun/Jens: please consider changing this.
->=20
-> I have change the default to 'n' for now.
-
-I will do this for today as well.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__29_Aug_2008_18_36_42_+1000_s4a5xCxuCRDQeqG1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAki3tRoACgkQjjKRsyhoI8zrOACeL58yGBAQqJo4CPgd19e/IGPv
-27IAoLQJMftfG5KW+AYLWwIEZuCwG58h
-=ZTQa
------END PGP SIGNATURE-----
-
---Signature=_Fri__29_Aug_2008_18_36_42_+1000_s4a5xCxuCRDQeqG1--
+	Arnd <><
