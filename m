@@ -1,114 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758326AbYH2Qh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758507AbYH2Qig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758326AbYH2Qh6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 12:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755369AbYH2Qhs
+	id S1758507AbYH2Qig (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 12:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755602AbYH2QiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 12:37:48 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:40956 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755314AbYH2Qhr (ORCPT
+	Fri, 29 Aug 2008 12:38:24 -0400
+Received: from sh.osrg.net ([192.16.179.4]:52972 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755573AbYH2QiX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 12:37:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:openpgp:content-type;
-        b=FrGF1FxH/zzW9iA51+JybbKtiGulp6wwYREorxzff/p69miSql/xQcR3lcaL4qvmzP
-         uPqp/iwNKt+iX3urfXpSA4ca2NCr7y2fPimGbrzzeqHg+VOdh2rKLhJUkFRAso3KmUfw
-         haS4G2aftoQ3JuYpn3SFQbPP8Po6H9V1vnzP4=
-Message-ID: <48B8254D.1010206@gmail.com>
-Date: Fri, 29 Aug 2008 12:35:25 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Andi Kleen <andi@firstfloor.org>, Gregory Haskins <ghaskins@novell.com>,
-       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH] seqlock: serialize against writers
-References: <20080829154237.1196.66825.stgit@dev.haskins.net> <87abevpzv7.fsf@basil.nowhere.org> <48B81F60.3080409@gmail.com> <20080829162216.GW26610@one.firstfloor.org> <48B82349.1020109@gmail.com> <alpine.DEB.1.10.0808291233280.17917@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.1.10.0808291233280.17917@gandalf.stny.rr.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=CBD79AA1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigC537A9119F95D7DADBC68DF2"
+	Fri, 29 Aug 2008 12:38:23 -0400
+Date: Sat, 30 Aug 2008 01:37:29 +0900 (JST)
+Message-Id: <20080830.013729.49169215.ryusuke@osrg.net>
+To: joern@logfs.org
+Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+In-Reply-To: <20080829104459.GB27647@logfs.org>
+References: <20080827181904.GD1371@logfs.org>
+	<200808290629.AA00218@capsicum.lab.ntt.co.jp>
+	<20080829104459.GB27647@logfs.org>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigC537A9119F95D7DADBC68DF2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Fri, 29 Aug 2008 12:45:00 +0200, Jörn Engel wrote:
+> > The GC of NILFS depends on the userspace daemon to make policy decisions.
+> > NILFS cannot reclaim disk space on its own though it can work 
+> > (i.e. read, write, or do other operations) without the daemon.
+> > After it runs out of free space, disk full errors will be returned
+> > until GC makes new space.
+> 
+> This looks problematic.  In logfs I was very careful to define a
+> "filesystem full" condition that is independent of GC.  So with a single
+> writer, -ENOSPC always means the filesystem is full and the only way to
+> gain some free space is by deleting data again.
+> ...
+> > But, usually the GC will make enough disk space in the background
+> > before that occurs.
+> 
+> Usually, yes.  You just have to make sure that in the unusual cases the
+> filesystem continues to behave correctly. ;)
 
-Steven Rostedt wrote:
-> On Fri, 29 Aug 2008, Gregory Haskins wrote:
->
->  =20
->> Andi Kleen wrote:
->>    =20
->>>> Im running it on a x86_64 box as we speak.  How can I tell if there =
-is a
->>>> certain mode that is permitting this?
->>>>    =20
->>>>        =20
->>> If the boot up says you're running with PMtimer then it uses the fall=
-back
->>> (usually happens on pre Fam10h AMD boxes). A typical Intel box
->>> would use the faster ring 3 only TSC path and then explode with your
->>> change I bet.=20
->>>
->>> Or step with gdb through gettimeofday() and see if it does a syscall.=
+As the side remark, the GC of nilfs runs in the background, not
+started after it runs out of free space.  Basically the intended
+meaning of -ENOSPC is same; it does not mean the GC is ongoing, but
+means the deletion is required.  Of course this depends on the
+condition that the GC has been working with enough speed, so the
+meaning is not assured strictly.  But, at least I won't return -ENOSPC
+so easily, and will deal it more politely if needed.
 
->>>
->>> -Andi
->>>  =20
->>>      =20
->> It seems to be running fine with no indication it has fallen back.=20
->> Perhaps I need a certain workload to bring out the issue?
->>    =20
->
-> Perhaps you never hit the slow path in userland. That's the only place =
-it=20
-> would write. Perhaps add a dummy static variable in the fast path, and =
+On the other hand, there are some differences in premise because nilfs
+is aiming at racking up past user data and makes it a top priority to
+keep data which is overwritten by recent updates.  If users want to
+preserve much data in nilfs, it will increase the chance of disk fulls
+than regular file systems.
 
-> write to it. See if that crashes you apps.
->
-> -- Steve
->  =20
-
-Yeah, ideas crossed in the mail ;)
-
-I could just force all of the seqbegins to hit the slowpath by hacking
-the code and see what happens (aside from slowing down, of course ;)
-
-Question: Which seqlock_t does userspace use?  I assume it uses
-seqlock_t and not raw_seqlock_t.  But the only reason that I ask is that
-I converted raw_seqlock_t to use the new style as well to be consistent,
-even though it is not strictly necessary for the same reasons.  So if
-perchance userspace uses the raw variant, I could solve this issue by
-only re-working the seqlock_t variant.  Kind of a long shot, but figured
-I would mention it :)
-
--Greg
-
-
-
-
---------------enigC537A9119F95D7DADBC68DF2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAki4JU0ACgkQP5K2CMvXmqERwQCfXTxV8DQlmO3Zbi58bk58lEFA
-6AQAnAomtElSoo6OXBAIQwgMaZEhSNyl
-=FIv4
------END PGP SIGNATURE-----
-
---------------enigC537A9119F95D7DADBC68DF2--
+Cheers,
+Ryusuke
