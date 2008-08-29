@@ -1,56 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbYH2QPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbYH2QR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757184AbYH2QPa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 12:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbYH2QPV
+	id S1757374AbYH2QR3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 12:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbYH2QRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 12:15:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53211 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752325AbYH2QPV (ORCPT
+	Fri, 29 Aug 2008 12:17:21 -0400
+Received: from ortiz.unizar.es ([155.210.1.52]:56870 "EHLO ortiz.unizar.es"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753186AbYH2QRV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 12:15:21 -0400
-Date: Fri, 29 Aug 2008 09:14:44 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jes Sorensen <jes@sgi.com>
-cc: David Miller <davem@davemloft.net>, travis@sgi.com, mingo@elte.hu,
-       Alan.Brunelle@hp.com, tglx@linutronix.de, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       akpm@linux-foundation.org, arjan@linux.intel.com, rusty@rustcorp.com.au
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -
- bisected
-In-Reply-To: <48B7EEA2.7090300@sgi.com>
-Message-ID: <alpine.LFD.1.10.0808290909020.3300@nehalem.linux-foundation.org>
-References: <20080826072220.GB31876@elte.hu> <20080826.004607.253712060.davem@davemloft.net> <48B4542A.1050004@sgi.com> <20080826.134535.193703558.davem@davemloft.net> <48B7EEA2.7090300@sgi.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 29 Aug 2008 12:17:21 -0400
+Message-Id: <8EF35F63-8FF6-483F-9DED-D573C40430C8@ono.com>
+From: "=?ISO-8859-1?Q?=22J.A._Magall=F3n=22?=" <jamagallon@ono.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080829090139.30c69ead@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
+Content-Transfer-Encoding: 8BIT
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: Out of mtrrs
+Date: Fri, 29 Aug 2008 18:17:18 +0200
+References: <BEE3259F-0ED8-4030-9CA5-D8892C9096C2@ono.com> <20080829090139.30c69ead@infradead.org>
+X-Mailer: Apple Mail (2.926)
+X-Mail-Scanned: Criba 2.0 + Clamd & Bogofilter
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On 2008.08.29, at 18:01, Arjan van de Ven wrote:
 
-On Fri, 29 Aug 2008, Jes Sorensen wrote:
-> 
-> I have only tested this on ia64, but it boots, so it's obviously
-> perfect<tm> :-)
+> On Fri, 29 Aug 2008 17:32:49 +0200
+> ""J.A. Magallón"" <jamagallon@ono.com> wrote:
+>
+>> Hi all...
+>>
+>> I'm using the xorg intel driver, and drm/X report it has no free  
+>> mtrrs
+>> in kernel to set up:
+>>
+>> one:~# cat /proc/mtrr
+>> reg00: base=0xfffe0000 (4095MB), size= 128KB: write-protect, count=1
+>> reg01: base=0xfffc0000 (4095MB), size= 128KB: uncachable, count=1
+>> reg02: base=0x00000000 (   0MB), size= 256MB: write-back, count=1
+>> reg03: base=0x10000000 ( 256MB), size= 256MB: write-back, count=1
+>> reg04: base=0x1f800000 ( 504MB), size=   8MB: uncachable, count=1
+>> reg05: base=0x1f600000 ( 502MB), size=   2MB: uncachable, count=1
+>> reg06: base=0x1f500000 ( 501MB), size=   1MB: uncachable, count=1
+>> reg07: base=0x00000000 (   0MB), size= 128KB: uncachable, count=1
+>>
 
-Well, it probably boots because it doesn't really seem to _change_ much of 
-anything.
+with disable_mtrr_trim, I get te same:
 
-Things like this:
+reg00: base=0xfffe0000 (4095MB), size= 128KB: write-protect, count=1
+reg01: base=0xfffc0000 (4095MB), size= 128KB: uncachable, count=1
+reg02: base=0x00000000 (   0MB), size= 256MB: write-back, count=1
+reg03: base=0x10000000 ( 256MB), size= 256MB: write-back, count=1
+reg04: base=0x1f800000 ( 504MB), size=   8MB: uncachable, count=1
+reg05: base=0x1f600000 ( 502MB), size=   2MB: uncachable, count=1
+reg06: base=0x1f500000 ( 501MB), size=   1MB: uncachable, count=1
+reg07: base=0x00000000 (   0MB), size= 128KB: uncachable, count=1
 
-	-static inline void arch_send_call_function_ipi(cpumask_t mask)
-	+static inline void arch_send_call_function_ipi(cpumask_t *mask)
-	 {
-	-       smp_ops.send_call_func_ipi(mask);
-	+       smp_ops.send_call_func_ipi(*mask);
-	 }
+Is there any other option ?
 
-will still do that stack allocation at the time of the call. You'd have to 
-pass the thing all the way down as a pointer..
+cicely:/usr/share/doc/kernel-doc# grep mtrr kernel-par*
+	disable_mtrr_trim [X86, Intel and AMD only]
 
-			Linus
+> did this work with older kernels?
+> if so, you should disable the MTRR munging feature of newer kernels;
+> it's not working well enough ;)
+
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is  
+like sex:
+                                          \         It's better when  
+it's free
+Mandriva Linux release 2009.0 (Cooker) for i586
+Linux 2.6.25-jam13 (gcc 4.3.1 20080515 (GCC) #1 SMP
+
 
 
