@@ -1,145 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756422AbYH2PnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757199AbYH2Pn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756422AbYH2PnW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 11:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbYH2PnH
+	id S1757199AbYH2Pn4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 11:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756715AbYH2Pn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 11:43:07 -0400
-Received: from isuela.unizar.es ([155.210.1.53]:49582 "EHLO isuela.unizar.es"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755523AbYH2PnG convert rfc822-to-8bit (ORCPT
+	Fri, 29 Aug 2008 11:43:29 -0400
+Received: from silene.metacarta.com ([208.80.142.18]:49043 "EHLO
+	silene.metacarta.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751471AbYH2Pn2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 11:43:06 -0400
-Message-Id: <1556548A-8DD1-4212-BBEB-9AB34280854E@ono.com>
-From: "=?ISO-8859-1?Q?=22J.A._Magall=F3n=22?=" <jamagallon@ono.com>
-To: Linux-Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1D3903ED-3FEB-4E12-B1A9-269C5B73012F@ono.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
-Content-Transfer-Encoding: 8BIT
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: Unhiding devices in pci bus
-Date: Fri, 29 Aug 2008 17:43:04 +0200
-References: <1D3903ED-3FEB-4E12-B1A9-269C5B73012F@ono.com>
-X-Mailer: Apple Mail (2.926)
-X-Mail-Scanned: Criba 2.0 + Clamd & Bogofilter
+	Fri, 29 Aug 2008 11:43:28 -0400
+Date: Fri, 29 Aug 2008 11:43:21 -0400 (EDT)
+From: Joe Malicki <jmalicki@metacarta.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       johnpol@2ka.mipt.ru, dada1@cosmosbay.com, denys@visp.net.lb,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       juhlenko@akamai.com, sammy@sammy.net
+Message-ID: <9908552.1357791220024601650.JavaMail.root@ouachita>
+In-Reply-To: <20080829153036.GV26610@one.firstfloor.org>
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [208.80.142.151]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On 2008.08.29, at 16:36, J.A. Magallón wrote:
 
-> Hi all...
->
-> I have an Aspire One, and the JMicron SD Card reader is hidden from  
-> sysfs
-> space, it only shows if I do an lspci -H1 (direct hardware access):
-> ...
-> 00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI  
-> Express Port 1 (rev 02)
-> 00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI  
-> Express Port 2 (rev 02)
-> 00:1c.2 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI  
-> Express Port 3 (rev 02)
-> 00:1c.3 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI  
-> Express Port 4 (rev 02)
-> ...
+Joe Malicki
+Software Engineer
+MetaCarta, Inc.
 
-Forgot to say that this only happens after you have inserted a card
-once. You can then remove it and the device stays there.
-Unfortunately I can't boot with the card in, because udev hangs
-forever on boot...
+----- "Andi Kleen" <andi@firstfloor.org> wrote:
+> > That adds variance, and packets aren't comparable because they may
+> > suffer different kernel/hardware delays.
+> 
+> And there are no "different kernel/hardware delays" in the network?
+> 
+> If your RTT measurement method cannot handle some variance (using
+> standard sampling and data smoothing techniques similar to TCP) then
+> it 
+> just needs to be fixed.
 
->
-> 04:00.0 System peripheral: JMicron Technologies, Inc. Device 2382
-> 04:00.2 SD Host controller: JMicron Technologies, Inc. Device 2381
-> 04:00.3 System peripheral: JMicron Technologies, Inc. Device 2383
-> 04:00.4 System peripheral: JMicron Technologies, Inc. Device 2384
->
-> one:~# lspci -t
-> -[0000:00]-+-00.0
->           +-02.0
->           +-02.1
->           +-1b.0
->           +-1c.0-[0000:01]--
->           +-1c.1-[0000:02]----00.0
->           +-1c.2-[0000:03]----00.0
->           +-1c.3-[0000:04]--
->           +-1d.0
->           +-1d.1
->           +-1d.2
->           +-1d.3
->           +-1d.7
->           +-1e.0-[0000:05]--
->           +-1f.0
->           +-1f.2
->           \-1f.3
->
-> one:~# lspci -H1 -t
-> -[0000:00]-+-00.0
->           +-02.0
->           +-02.1
->           +-1b.0
->           +-1c.0-[0000:01]--
->           +-1c.1-[0000:02]--
->           +-1c.2-[0000:03]----00.0
->           +-1c.3-[0000:04]--+-00.0
->           |                 +-00.2
->           |                 +-00.3
->           |                 \-00.4
->           +-1d.0
->           +-1d.1
->           +-1d.2
->           +-1d.3
->           +-1d.7
->           +-1e.0-[0000:05]--
->           +-1f.0
->           +-1f.2
->           \-1f.3
->
-> lspci -M:
->
-> ...
-> 00: Primary host bus
-> 	1e.0 Bridge to 05-05
-> 	1c.3 Bridge to 04-04
-> 	1c.2 Bridge to 03-03
-> 	1c.1 Bridge to 02-02
-> 	1c.0 Bridge to 01-01
-> ...
->
-> If I load the driver (sdhci), it does not detect anything. It looks  
-> like
-> it is hidden/hung after one of the pci bridges, how can I make this  
-> device
-> visible for the driver ?
->
-> Thanks.
->
-> --
-> J.A. Magallon <jamagallon()ono!com>     \               Software is  
-> like sex:
->                                         \         It's better when  
-> it's free
-> Mandriva Linux release 2009.0 (Cooker) for i586
-> Linux 2.6.25-jam13 (gcc 4.3.1 20080515 (GCC) #1 SMP
->
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Noone's measuring RTT... what ever made you think that?
 
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is  
-like sex:
-                                          \         It's better when  
-it's free
-Mandriva Linux release 2009.0 (Cooker) for i586
-Linux 2.6.25-jam13 (gcc 4.3.1 20080515 (GCC) #1 SMP
+I should explain the application of SO_TIMESTAMP better.
 
+ Video camera -> Video jack -> Digitization -> Compression ->
+     Packetization -> NIC -> Ethernet -> NIC -> Interrupt Handler -> Queue -> Application
 
+ Microphone   -> MIC jack -> Digitization -> Compression ->
+      Packetization -> NIC -> Ethernet -> NIC -> Interrupt Handler -> Queue -> Application
 
+One wants to know the original time sound and light waves hit the camera
+and microphone, because one wants to know when they should hit the soundcard and
+video on the other end (i.e. any delays should be synchronized) but one only has control
+over the receiving system.  There are timestamps at the application level for this...
+unfortunately, many implementations in the real world have independent clocks that skew
+relative to each other, with little correction on the sending system.
+
+Yeah, that's broken, but one has to be liberal in what one accepts from popular products.
+
+One way to mitigate the skew between the clocks is to take measurements on the receiving
+host, which you do control, and compare the average skew between the two streams and
+correct for it.  Interrupt handler time has variance, but it's less than application-level
+time, so it's a better, more reliable estimator.
+
+> Besides measuring in the interrupt handler doesn't protect you
+> against local variances anyways because the interrupt timing has
+> variability
+> (e.g due to irq off regions or due to interrupt mitigation or
+> higher priority interrupts) too
+>
+True, but occasionally it's the best approximation to original send time.
+
+> > > Yes, but why ignore local scheduling delays? 
+> > 
+> > Because one would want to ignore even network scheduling delays
+> > if possible... unfortunately in some instances it's not.
+> 
+> The local delays add to the user experience too.
+> It's unclear why you want to ignore those.
+> 
+> -Andi
+
+You don't want to ignore them, you want to compensate for them
+by getting an earlier timestamp.
