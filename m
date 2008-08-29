@@ -1,122 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbYH2Gak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbYH2GbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbYH2Gak (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 02:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYH2Gaa
+	id S1754570AbYH2GbY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 02:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbYH2GbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 02:30:30 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48713 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751417AbYH2Ga3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 02:30:29 -0400
-Date: Fri, 29 Aug 2008 08:30:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: split e820 reserved entries record to late v4
-Message-ID: <20080829063012.GA19459@elte.hu>
-References: <1219973391-9580-1-git-send-email-yhlu.kernel@gmail.com>
+	Fri, 29 Aug 2008 02:31:15 -0400
+Received: from qb-out-0506.google.com ([72.14.204.236]:37960 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752248AbYH2GbN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 02:31:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=cHmRUzLFj9VbLDz4JwkPlahsyOz+IlCi+DtJ/jIvZk7m3R4SjYkXp13dfJwBbhkT4j
+         cCBXOUP3DY4UeVsyWzlRqJegSj7ChZ8u1S2gMyajm3w1sXJxGKxy5SI+c+zaeFv44woe
+         7CgDVPgFdq1BmGC2brxr3ZTU5Hy/zOziHoiBM=
+Message-ID: <520f0cf10808282331r3425f4f4jfac2d3a7d53c8821@mail.gmail.com>
+Date: Fri, 29 Aug 2008 08:31:12 +0200
+From: "John Kacur" <jkacur@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH RFC] pm_qos_requirement might sleep
+Cc: mgross@linux.intel.com, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, peterz@infradead.org,
+       rostedt@goodmis.org, mingo@elte.hu, tglx@linutronix.de,
+       arjan@infradead.org
+In-Reply-To: <20080828173201.8912a1f3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1219973391-9580-1-git-send-email-yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080812224926.GA20652@linux.intel.com>
+	 <1218736137.10800.234.camel@twins>
+	 <520f0cf10808141551k283aecb8y647d0f5ae321b81f@mail.gmail.com>
+	 <20080825163412.GA21910@linux.intel.com>
+	 <1219682129.8515.81.camel@twins>
+	 <520f0cf10808260148k47368b71he2737ea1a59bbe4d@mail.gmail.com>
+	 <20080826161802.GB9862@linux.intel.com>
+	 <520f0cf10808261045v9dddcdcnd1a86b224aa3feb0@mail.gmail.com>
+	 <20080828194420.GB6802@linux.intel.com>
+	 <20080828173201.8912a1f3.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 29, 2008 at 2:32 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Thu, 28 Aug 2008 12:44:20 -0700
+> mark gross <mgross@linux.intel.com> wrote:
+>
+>> From: John Kacur <jkacur at gmail dot com>
+>
+> I tend to deobfuscate email addresses when preparing the changelogs.
+>
+> Not sure why, really, and I feel a bit guilty about doing it (hey, you
+> can forward the resulting spam to me if you like).  One reason I guess
+> is to avoid breaking all the emails which my scripts will automatically
+> send out as the patch goes through its little lifecycle.  Some of which
+> can sometimes be quite important.
+>
+>> Patch to make PM_QOS and CPU_IDLE play nicer when ran with the
+>> RT-Preempt kernel.  CPU_IDLE polls the target_value's of some of the
+>> pm_qos parameters from the idle loop causing sleeping locking
+>> warnings.  Changing the target_value to an atomic avoids this issue.
+>>
+>> Signed-off-by: mark gross <mgross@linux.intel.com>
+>>
+>> Thanks,
+>>
+>> --mgross
+>>
+>>
+>> Remove the spinlock in pm_qos_requirement by making target_value an atomic type.
+>> This is necessary for real-time since pm_qos_requirement is called by idle and
+>> cannot be allowed to sleep.
+>> Signed-off-by: John Kacur <jkacur at gmail dot com>
+>
+> As usual when I get two different changelogs, I create a masterpiece
+> which is better than either of the originals!
+>
+>> Index: linux-2.6/kernel/pm_qos_params.c
+>> ===================================================================
+>> --- linux-2.6.orig/kernel/pm_qos_params.c     2008-08-08 07:52:01.000000000 -0700
+>> +++ linux-2.6/kernel/pm_qos_params.c  2008-08-28 12:14:55.000000000 -0700
+>> @@ -43,7 +43,7 @@
+>>  #include <linux/uaccess.h>
+>>
+>>  /*
+>> - * locking rule: all changes to target_value or requirements or notifiers lists
+>> + * locking rule: all changes to requirements or notifiers lists
+>>   * or pm_qos_object list and pm_qos_objects need to happen with pm_qos_lock
+>>   * held, taken with _irqsave.  One lock to rule them all
+>>   */
+>> @@ -66,7 +66,7 @@
+>>       struct miscdevice pm_qos_power_miscdev;
+>>       char *name;
+>>       s32 default_value;
+>> -     s32 target_value;
+>> +     atomic_t target_value;
+>>       s32 (*comparitor)(s32, s32);
+>>  };
+>>
+>> @@ -77,7 +77,7 @@
+>>       .notifiers = &cpu_dma_lat_notifier,
+>>       .name = "cpu_dma_latency",
+>>       .default_value = 2000 * USEC_PER_SEC,
+>> -     .target_value = 2000 * USEC_PER_SEC,
+>> +     .target_value = ATOMIC_INIT(2000 * USEC_PER_SEC),
+>>       .comparitor = min_compare
+>>  };
+>>
+>> @@ -87,7 +87,7 @@
+>>       .notifiers = &network_lat_notifier,
+>>       .name = "network_latency",
+>>       .default_value = 2000 * USEC_PER_SEC,
+>> -     .target_value = 2000 * USEC_PER_SEC,
+>> +     .target_value = ATOMIC_INIT(2000 * USEC_PER_SEC),
+>>       .comparitor = min_compare
+>>  };
+>>
+>> @@ -99,7 +99,7 @@
+>>       .notifiers = &network_throughput_notifier,
+>>       .name = "network_throughput",
+>>       .default_value = 0,
+>> -     .target_value = 0,
+>> +     .target_value = ATOMIC_INIT(0),
+>>       .comparitor = max_compare
+>>  };
+>>
+>> @@ -150,11 +150,11 @@
+>>               extreme_value = pm_qos_array[target]->comparitor(
+>>                               extreme_value, node->value);
+>>       }
+>> -     if (pm_qos_array[target]->target_value != extreme_value) {
+>> +     if (atomic_read(&pm_qos_array[target]->target_value) != extreme_value) {
+>>               call_notifier = 1;
+>> -             pm_qos_array[target]->target_value = extreme_value;
+>> +             atomic_set(&pm_qos_array[target]->target_value, extreme_value);
+>>               pr_debug(KERN_ERR "new target for qos %d is %d\n", target,
+>> -                     pm_qos_array[target]->target_value);
+>> +                     atomic_read(&pm_qos_array[target]->target_value));
+>>       }
+>>       spin_unlock_irqrestore(&pm_qos_lock, flags);
+>>
+>> @@ -193,14 +193,7 @@
+>>   */
+>>  int pm_qos_requirement(int pm_qos_class)
+>>  {
+>> -     int ret_val;
+>> -     unsigned long flags;
+>> -
+>> -     spin_lock_irqsave(&pm_qos_lock, flags);
+>> -     ret_val = pm_qos_array[pm_qos_class]->target_value;
+>> -     spin_unlock_irqrestore(&pm_qos_lock, flags);
+>> -
+>> -     return ret_val;
+>> +     return atomic_read(&pm_qos_array[pm_qos_class]->target_value);
+>>  }
+>>  EXPORT_SYMBOL_GPL(pm_qos_requirement);
+>
+> OK, so I've stared and stared.  This patch doesn't do anything.
+>
+> I'm suspecting that the rt patch might be doing something silly, like
+> thinking that it needs to take pm_qos_lock to read a single word from
+> memory, or something like that.
+>
+> But this patch is simply not understandable given the amount of
+> information which you guys have provided.
+>
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+Hi Andrew
 
-> Linus said we should register some entries in e820 later,
-> so could let BAR res register at first, or even pnp?
-> 
-> this one replace
-> | commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
-> | Author: Yinghai Lu <yhlu.kernel@gmail.com>
-> | Date:   Mon Aug 25 00:56:08 2008 -0700
-> |
-> |    x86: fix HPET regression in 2.6.26 versus 2.6.25, check hpet against BAR, v3
-> 
-> v2: insert e820 reserve resources before pnp_system_init
-> v3: fix merging problem in tip/x86/core
->     please drop the one in tip/x86/core use this one instead
-> v4: address Linus's review about comments and condition in _late()
-> 
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+The purpose of the patch is to remove the spin_lock around the read in
+the function pm_qos_requirement - since spinlocks can sleep in -rt and
+this function is called from idle. I did propose a patch, that simply
+removed the spinlock, since Peter Zilstra and others (yourself) point
+out, the lock isn't needed to read a single word from memory. Although
+the patch worked fine, Arjan objected to it, because it was not
+symmetric. A reader of the code might wonder why it was locked in
+other functions but not here. He suggested changing it to an atomic
+type might be less confusing. The alternative which I like better
+actually is to simply remove the lock in pm_qos_requirement and add a
+comment for readers of the code.
 
-applied to tip/x86/core, thanks.
-
-Let me outline the issue that i raised before:
-
-> +               if (!res->parent && res->end)
-> +                       insert_resource(&iomem_resource, res);
-
-what if this insertion fails due to partial overlap? Right now we drop 
-it silently - which might be fine for most systems, but have a look on 
-the specific system that had the hpet regression, there we have these 
-reserved e820 entries:
-
- BIOS-e820: 0000000077ff0000 - 0000000078000000 (reserved)
- BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
- BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
-
-which overlaps with the chipset PCI BAR (hpet) resource:
-
-   pci 0000:00:14.0: BAR has HPET at fed00000-fed003ff
-
-so due to this 1K conflict we take the full e820-reserved entry out and 
-give the range 0xfec00000-0x100000000 as 'free'.
-
-And that failure to register can cause problems. In this case that 
-'reserved' e820 entry definitely has real meaning, both the local APIC 
-and the IO-APIC is in that range:
-
-   ACPI: Local APIC address 0xfee00000
-   IOAPIC[0]: apic_id 2, version 0, address 0xfec00000, GSI 0-23
-
-Which might still be OK for all memory resources we happen to enumerate 
-- but we dont necessarily enumerate all of them when we have e.g. an UP 
-kernel, and we will definitely not enumerate any 'hidden' state a system 
-might have there. (SMM, etc.) If we then allocate a dynamic PCI resource 
-into that range later on (thinking it's "free" but in reality it's 
-claimed) we get a crash or worse.
-
-So my worry, which i outlined before and which Peter agreed with, was 
-that we should not mark areas 'free' that the BIOS thinks are 
-'reserved'. According to the map above, the BIOS declared non-RAM 'free' 
-range in the first 4GB is 0x78000000..0xe0000000 - 1664 MB, plenty of 
-space.
-
-The solution would be to insert such conflicting (even if partially 
-overlapping)
-
-Also, a small code structure comment:
-
-> +		if (e820.map[i].type != E820_RESERVED || res->start < (1ULL<<20))
-> +			insert_resource(&iomem_resource, res);
-
-this still needs a comment that we deal with resources that start below 
-1MB in a special way and insert them early.
-
-Perhaps split it out into a e820_entry_trusted() function and use that 
-as a condition in both the early and the late logic. [plus the check for 
-->end in the late logic - that should be outside of the 'trust' 
-definition]
-
-So whenever we tweak the definition of 'trust', we only have to do it in 
-a single place. Agreed?
-
-	Ingo
+John
