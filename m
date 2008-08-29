@@ -1,51 +1,40 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757324AbYHZFwD (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 26 Aug 2008 01:52:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbYHZFvw
+	id S1755492AbYH2KZ2 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 29 Aug 2008 06:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbYH2KYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Aug 2008 01:51:52 -0400
-Received: from [91.199.51.107] ([91.199.51.107]:46728 "EHLO
-	host107.dhms-domainmanagement.net" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751284AbYHZFvw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Aug 2008 01:51:52 -0400
-X-Greylist: delayed 1538 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Aug 2008 01:51:51 EDT
-MIME-Version: 1.0
-From: Cora <Einladung@Fahrpruefung-Absolvieren.com>
-User-Agent: Microsoft-Entourage/10.1.4.030702.0
-X-BounceID: a133f366d2c64c079e3ed971a4621401
-Subject: Cora hat Sie eingeladen
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Message-ID: <k670fn.s1onjp@localhost>
-To: linux-kernel@vger.kernel.org
-Date: Tue, 26 Aug 2008 07:26:11 +0200 (CEST)
+	Fri, 29 Aug 2008 06:24:51 -0400
+Received: from autumn.acast.nova.edu ([137.52.224.216]:63565 "EHLO
+	email.nova.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752138AbYH2KYu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 06:24:50 -0400
+X-Greylist: delayed 3599 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Aug 2008 06:24:50 EDT
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; charset=ISO-8859-1; DelSp=Yes; format=flowed
+Message-id: <20080829052447.tj8cnq4p44w4occ0@mail.acast.nova.edu>
+Date: Fri, 29 Aug 2008 05:24:47 -0400
+From: ACCOUNT UPGRADING TEAM <email@upgrading.com>
+Reply-to: couryhno@mail2webmaster.com
+To: undisclosed-recipients:;
+Subject: DEAR: EMAIL ACCOUNT OWNER
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757324AbYHZFwD@vger.kernel.org>
-
-Guten Tag,
-
-Sie sind hiermit  P E R S =C3=96 N L I C H  zur Fahrpr=C3=BCfung vorgel=
-aden.
-
-Wir bitten Sie, die Pr=C3=BCfung sofort online vorzunehmen:
-
-http://Fahrpruefung-Absolvieren.com/?los2019297
-
-Wir empfehlen, die Pr=C3=BCfung sofort nach Erhalt dieser Mitteilung zu=
- absolvieren und verbleiben
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755492AbYH2KZ2@vger.kernel.org>
 
 
-mit freundlichen Gr=C3=BCssen
-das Einladungskomitee
+DEAR: EMAIL ACCOUNT OWNER.
 
+We wish to inform you that we are undergoing account data upgrading, in order
+for your email account to be verify and remain active,you are to reply this
+message and enter your email ID and password in the space provided
+(...............), You  are required to do this before the next 72hrs of
+receipt of this e-mail, Your email Account will be de-activated and  
+erased from
+our database. Send Your account upgrading information.
 
+Thank you for using our Webmail Service
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
