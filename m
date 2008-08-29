@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbYH2P1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbYH2P2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754052AbYH2P1y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 11:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbYH2P1q
+	id S1755220AbYH2P2S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 11:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754405AbYH2P15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 11:27:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43745 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750855AbYH2P1p (ORCPT
+	Fri, 29 Aug 2008 11:27:57 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:40740 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754252AbYH2P14 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 11:27:45 -0400
-Date: Fri, 29 Aug 2008 08:26:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: split e820 reserved entries record to late v4
-In-Reply-To: <20080829063012.GA19459@elte.hu>
-Message-ID: <alpine.LFD.1.10.0808290824070.3300@nehalem.linux-foundation.org>
-References: <1219973391-9580-1-git-send-email-yhlu.kernel@gmail.com> <20080829063012.GA19459@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 29 Aug 2008 11:27:56 -0400
+Date: Fri, 29 Aug 2008 17:30:36 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Joe Malicki <jmalicki@metacarta.com>
+Cc: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       johnpol@2ka.mipt.ru, dada1@cosmosbay.com, denys@visp.net.lb,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       juhlenko@akamai.com, sammy@sammy.net
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+Message-ID: <20080829153036.GV26610@one.firstfloor.org>
+References: <20080828072218.GI26610@one.firstfloor.org> <32566205.1357331220023286187.JavaMail.root@ouachita>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <32566205.1357331220023286187.JavaMail.root@ouachita>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> That adds variance, and packets aren't comparable because they may
+> suffer different kernel/hardware delays.
 
+And there are no "different kernel/hardware delays" in the network?
 
-On Fri, 29 Aug 2008, Ingo Molnar wrote:
+If your RTT measurement method cannot handle some variance (using
+standard sampling and data smoothing techniques similar to TCP) then it 
+just needs to be fixed.
+
+Besides measuring in the interrupt handler doesn't protect you
+against local variances anyways because the interrupt timing has variability
+(e.g due to irq off regions or due to interrupt mitigation or
+higher priority interrupts) too
+
+> > Yes, but why ignore local scheduling delays? 
 > 
->  BIOS-e820: 0000000077ff0000 - 0000000078000000 (reserved)
->  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
->  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
-> 
-> which overlaps with the chipset PCI BAR (hpet) resource:
-> 
->    pci 0000:00:14.0: BAR has HPET at fed00000-fed003ff
-> 
-> so due to this 1K conflict we take the full e820-reserved entry out and 
-> give the range 0xfec00000-0x100000000 as 'free'.
+> Because one would want to ignore even network scheduling delays
+> if possible... unfortunately in some instances it's not.
 
-That's wrong. It's a full overlap, so "insert_resource()" should happily 
-insert the 00000000fec00000 - 0000000100000000 _around_ the HPET bar.
+The local delays add to the user experience too.
+It's unclear why you want to ignore those.
 
-Do you actually see this behavior, or do you just misunderstand how 
-"insert_resource()" works?
+-Andi
 
-			Linus
+-- 
+ak@linux.intel.com
+
