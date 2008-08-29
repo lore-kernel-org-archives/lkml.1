@@ -1,523 +1,392 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754778AbYH2Mm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbYH2NER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754778AbYH2Mm2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 08:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbYH2MmT
+	id S1756577AbYH2NER (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 09:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbYH2NEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 08:42:19 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58189 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750934AbYH2MmR (ORCPT
+	Fri, 29 Aug 2008 09:04:00 -0400
+Received: from hpsmtp-eml14.kpnxchange.com ([213.75.38.114]:21212 "EHLO
+	hpsmtp-eml14.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752631AbYH2ND7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 08:42:17 -0400
-Message-ID: <48B7EEA2.7090300@sgi.com>
-Date: Fri, 29 Aug 2008 14:42:10 +0200
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Fri, 29 Aug 2008 09:03:59 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [regression] usb: sometimes dead keyboard after boot (was: new errors during device detection)
+Date: Fri, 29 Aug 2008 15:03:55 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+References: <Pine.LNX.4.44L0.0808261626140.2139-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808261626140.2139-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: travis@sgi.com, mingo@elte.hu, torvalds@linux-foundation.org,
-       Alan.Brunelle@hp.com, tglx@linutronix.de, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       akpm@linux-foundation.org, arjan@linux.intel.com, rusty@rustcorp.com.au
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-References: <20080826072220.GB31876@elte.hu> <20080826.004607.253712060.davem@davemloft.net> <48B4542A.1050004@sgi.com> <20080826.134535.193703558.davem@davemloft.net>
-In-Reply-To: <20080826.134535.193703558.davem@davemloft.net>
-Content-Type: multipart/mixed;
- boundary="------------000105070102070306040301"
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_8O/tIWA2gTE5feU"
+Message-Id: <200808291503.56635.elendil@planet.nl>
+X-OriginalArrivalTime: 29 Aug 2008 13:03:57.0067 (UTC) FILETIME=[B24B55B0:01C909D7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000105070102070306040301
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+--Boundary-00=_8O/tIWA2gTE5feU
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-David Miller wrote:
->>> Otherwise you have to modify cpumask_t objects and thus pluck
->>> them onto the stack where they take up silly amounts of space.
->> Yes, I had proposed either modifying, or supplementing a new
->> smp_call function to pass the cpumask_t as a pointer (similar
->> to set_cpus_allowed_ptr.)  But an ABI change such as this was
->> not well received at the time.
-> 
-> What it seems to come down to is that any cpumask_t not inside of
-> a dynamically allocated object should be marked const.
-> 
-> And that is something we can enforce at compile time.
-> 
-> Linus has just suggested dynamically allocating cpumask_t's
-> for such cases but I don't see that as the fix either.
-> 
-> Just mark them const and enforce that cpumask_t objects can only
-> be modified when they appear in dynamically allocated objects.
+On Tuesday 26 August 2008, Alan Stern wrote:
+> > It also seems to be fragile in practice. I have now had two occasions
+> > since your last mail where my system would come up with a dead USB
+> > keyboard and it looks like this issue is the root cause.
+>
+> It isn't any more fragile than unplugging the USB cable and then
+> plugging it back in.  If your system can't handle that sort of thing
+> then something else is wrong.  I.e., you've run across a bug, not a
+> design flaw.
 
-Dave and others,
+The fragile part IMO is that the kernel currently allows the loading of 
+ehci to interrupt the initialization of uhci/ohci and *that* is what is 
+causing the errors.
 
-Sorry if I jump into the middle of the thread. Stopped subscribing to
-lkml for a while, so this is through the archives.
+I have run some tests loading ehci and uhci manually and when they are 
+done separately (i.e. with a little delay between the two) there are no 
+errors at all!
 
-Ran into some of these issues with KVM too, and noticed just how much
-we pass cpumask_t around in the smp_call functions :-( In fact, the
-only arch that did pretty well on this front was sparc64.
+If uhci is loaded first, you only get a nice, clean "USB disconnect" 
+message (for devices already detected by uhci) when ehci is loaded.
+If ehci is loaded first the low-speed devices are only detected after uhci 
+is loaded as well.
 
-I totally agree, that marking them const makes a ton of sense, but at
-the same time I suggest we convert smp_call_function_mask() to take a
-pointer to the cpumask_t. I whipped up the following patch, which cuts
-down the amont of memcpy calls emitted quite a fair bit.
+The *only* time you get the "device not accepting address" and "unable to 
+enumerate" errors is when you allow the ehci initialization to interrupt 
+the uhci initialization. IMO that cannot be classified anything other 
+than a bug.
 
-I have only tested this on ia64, but it boots, so it's obviously
-perfect<tm> :-)
+See also the attachments with dmesg output:
+- modprobe_uhci-ehci: uhci first; ehci later
+- modprobe_ehci-uhci: ehci first; uhci later
+- modprobe_uhci+ehci: both simultaneously (uhci slightly earlier)
 
-Comments, suggestions welcome.
+> > Attached a full diff between dmesg from two consecutive boots: first
+> > without keyboard; after reboot the keyboard is detected. The actual
+> > difference is fairly small and clearly shows that usb 3-1 is not
+> > handed off correctly, probably due to a small difference in timing.
+> >
+> > Note that I've never seen this problem with earlier kernels.
+>
+> I can't tell exactly what's going on because your usbcore module wasn't
+> built with CONFIG_USB_DEBUG enabled.
 
-I have a followup patch that makes virt/kvm/kvm_main.c use the new
-interface.
+Two problems:
+- CONFIG_USB_DEBUG causes such a huge load of output that it is totally
+  unacceptable to have that enabled permanently for a running system
+- I cannot reproduce this issue on demand, even though I've tried with
+  various delays between loading uhci and ehci
+
+Possibly with the new patches from Greg KH [1] it would be possible to 
+disable USB debugging automatically when system boot is completed, but 
+I'd have to build a kernel with those and wait for the problem to happen 
+again.
+
+What I can see in the logs I do have is that in the error case for some 
+reason a "reset low speed USB device" is triggered instead of either an
+"enumeration failure" or a "USB disconnect", which are what I normally 
+see. As mentioned before, this seems to indicate to me a subtle timing 
+difference between the boots and IMO confirms the danger of allowing the 
+initialization of ehci to interrupt an ongoing initialization of uhci.
+
+My guess is that this "reset" is insufficient to cause the bus to be 
+properly rescanned when ehci hands it back to uhci. I also guess that a
+"reset" can occur if the interruption by the ehci loading happens 
+somewhere between the times that would otherwise cause an "enumeration 
+failure" and a clean "USB disconnect".
+
+> Have you experimented with unloading and reloading uhci-hcd and
+> ehci-hcd by hand (over the network if your only keyboard is USB)?
+
+I have now. See results and comments above.
+
+> If you remove both and then load uhci-hcd first followed by ehci-hcd,
+> does the same thing happen?
+
+No, unfortunately I cannot reproduce it on demand. Probably because the 
+timing is too subtle and the "window" in which the problem occurs is 
+quite small.
+
+> > Even in the case where ehci-hcd is loaded much later I don't think
+> > error messages would be right. At least, assuming that the kernel can
+> > guarantee that the driver hand-off can be done cleanly (without risk
+> > of damaging interruptions in the working of already connected
+> > devices). And if it cannot guarantee that, then maybe it should just
+> > refuse to load ehci-hcd at all!
+>
+> Well, that's a problem.  The kernel _can't_ make that guarantee, not
+> once some USB devices have been set up.  So according to your
+> reasoning, ehci-hcd shouldn't be allowed to load if uhci-hcd is already
+> loaded!
+
+You made the comment that this issue isn't worse than yanking out 
+cables/devices at random times. AFAIK it is still very much discouraged 
+to do that for e.g. storage devices, especially when data has recently 
+been written to them, without at least syncing and preferably unmounting 
+the device first. For a lot of devices (like keyboards) it doesn't really 
+matter of course.
+There is one huge difference though: if a user yanks out a (storage) 
+device while it is in use he's just being dumb and IMO deserves what he 
+gets. It's basically the same as pulling a SATA cable or the power cable 
+of a desktop system.
+But when the _kernel_ does the same, it is IMO being irresponsible.
+
+I'm don't think it is reasonable to go so far as to completely prohibit 
+ehci from loading after uhci, especially not during system boot. But 
+maybe it should be made to first check with the low speed drivers what 
+their state is _before_ just barging in and rudely interrupting things on 
+the hardware level.
+
+And maybe the kernel should (eventually) even go so far as to check 
+whether a low speed USB driver is in use by a mounted storage device and 
+maybe then loading ehci should be blocked. Just as 'modprobe -r' for a 
+ATA module is blocked if the driver is still in use.
+
+> Can you suggest a reasonable method for suppressing the unwanted error
+> messages?  Maybe I'm too close to the problem, but nothing occurs to
+> me.  Part of the problem is that these errors could occur at any point
+> during the life cycle of a USB device: during detection, during
+> enumeration, during configuration, or during normal operation.  It
+> doesn't seem reasonable to have a flag to suppress _every_ error
+> message generated by the USB subsystem.
+
+My tests show that it is quite easy to avoid errors by just making sure 
+that ehci does not interrupt *the initialization process* of uhci. 
+Wouldn't it be possible to let ehci first check the state of the 
+uhci/ohci drivers and to have it *delay* its own initialization if those 
+are still busy initializing themselves?
+Conversely uhci/ohci should probably not respond to new devices being 
+plugged in when they have been notified by ehci that it wants to (or has 
+started to) initialize itself.
+
+Another option (probably on top of the above suggestion) would be to 
+slightly delay ohci/uhci initialization during system boot. This would 
+allow the general hardware discovery process to reach the later ehci PCI 
+device and start the ehci initialization.
+ohci/uhci initialization could then start after ehci initialization has 
+completed; if no ehci device is present, ohci/uhci initialization would 
+still just start after the delay times out.
+My boot logs show that the devices are generally detected within the same 
+second, so such a delay could be quite short.
+
+
+Does this sound at all logical and feasible?
 
 Cheers,
-Jes
+FJP
+
+[1] http://lkml.org/lkml/2008/8/8/529
 
 
---------------000105070102070306040301
+--Boundary-00=_8O/tIWA2gTE5feU
 Content-Type: text/plain;
- name="0040-smp-call-cpumask.patch"
+  charset="iso 8859-15";
+  name="modprobe_ehci-uhci"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="0040-smp-call-cpumask.patch"
+Content-Disposition: attachment;
+	filename="modprobe_ehci-uhci"
 
-Change smp_call_function_mask() to take a pointer to the cpumask_t
-rather than passing it by value. This avoids recursive copies of the
-cpumask_t on the stack in the IPI call. For large NR_CPUS, this is
-particularly bad, and the cost of doing this for
-NR_CPUS < bits_per_long is negligeble.
+ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 23 (level, low) -> IRQ 23
+ehci_hcd 0000:00:1d.7: setting latency timer to 64
+ehci_hcd 0000:00:1d.7: EHCI Host Controller
+ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 1
+ehci_hcd 0000:00:1d.7: debug port 1
+ehci_hcd 0000:00:1d.7: cache line size of 128 is not supported
+ehci_hcd 0000:00:1d.7: irq 23, io mem 0x902c4400
+ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+usb usb1: configuration #1 chosen from 1 choice
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 8 ports detected
+USB Universal Host Controller Interface driver v3.0
+uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 23 (level, low) -> IRQ 23
+uhci_hcd 0000:00:1d.0: setting latency timer to 64
+uhci_hcd 0000:00:1d.0: UHCI Host Controller
+uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 2
+uhci_hcd 0000:00:1d.0: irq 23, io base 0x00002080
+usb usb2: configuration #1 chosen from 1 choice
+hub 2-0:1.0: USB hub found
+hub 2-0:1.0: 2 ports detected
+uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+uhci_hcd 0000:00:1d.1: setting latency timer to 64
+uhci_hcd 0000:00:1d.1: UHCI Host Controller
+uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 3
+uhci_hcd 0000:00:1d.1: irq 19, io base 0x00002060
+usb usb3: configuration #1 chosen from 1 choice
+hub 3-0:1.0: USB hub found
+hub 3-0:1.0: 2 ports detected
+uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+uhci_hcd 0000:00:1d.2: setting latency timer to 64
+uhci_hcd 0000:00:1d.2: UHCI Host Controller
+uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 4
+uhci_hcd 0000:00:1d.2: irq 18, io base 0x00002040
+usb usb4: configuration #1 chosen from 1 choice
+hub 4-0:1.0: USB hub found
+hub 4-0:1.0: 2 ports detected
+uhci_hcd 0000:00:1d.3: PCI INT D -> GSI 16 (level, low) -> IRQ 16
+uhci_hcd 0000:00:1d.3: setting latency timer to 64
+uhci_hcd 0000:00:1d.3: UHCI Host Controller
+uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number 5
+uhci_hcd 0000:00:1d.3: irq 16, io base 0x00002020
+usb usb5: configuration #1 chosen from 1 choice
+hub 5-0:1.0: USB hub found
+hub 5-0:1.0: 2 ports detected
+usb 4-1: new low speed USB device using uhci_hcd and address 2
+usb 4-1: configuration #1 chosen from 1 choice
+input: USB Compliant Keyboard as /class/input/input18
+input: USB HID v1.10 Keyboard [USB Compliant Keyboard] on usb-0000:00:1d.2-1
+input: USB Compliant Keyboard as /class/input/input19
+input: USB HID v1.10 Device [USB Compliant Keyboard] on usb-0000:00:1d.2-1
+usb 5-1: new low speed USB device using uhci_hcd and address 2
+usb 5-1: configuration #1 chosen from 1 choice
+input: Logitech USB Receiver as /class/input/input20
+input: USB HID v1.10 Mouse [Logitech USB Receiver] on usb-0000:00:1d.3-1
 
-Signed-off-by: Jes Sorensen <jes@sgi.com>
+--Boundary-00=_8O/tIWA2gTE5feU
+Content-Type: text/plain;
+  charset="iso 8859-15";
+  name="modprobe_uhci-ehci"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="modprobe_uhci-ehci"
 
----
- arch/alpha/include/asm/smp.h    |    2 +-
- arch/alpha/kernel/smp.c         |    4 ++--
- arch/arm/include/asm/smp.h      |    2 +-
- arch/arm/kernel/smp.c           |    4 ++--
- arch/ia64/include/asm/smp.h     |    2 +-
- arch/ia64/kernel/smp.c          |    6 +++---
- arch/m32r/kernel/smp.c          |    4 ++--
- arch/mips/kernel/smp.c          |    4 ++--
- arch/parisc/kernel/smp.c        |    6 +++---
- arch/powerpc/include/asm/smp.h  |    2 +-
- arch/powerpc/kernel/smp.c       |    4 ++--
- arch/sh/include/asm/smp.h       |    2 +-
- arch/sh/kernel/smp.c            |    4 ++--
- arch/sparc/include/asm/smp_64.h |    2 +-
- arch/sparc64/kernel/smp.c       |    4 ++--
- include/asm-m32r/smp.h          |    2 +-
- include/asm-mips/smp.h          |    2 +-
- include/asm-parisc/smp.h        |    2 +-
- include/asm-x86/smp.h           |    4 ++--
- include/linux/smp.h             |    2 +-
- kernel/smp.c                    |   15 ++++++++-------
- virt/kvm/kvm_main.c             |    4 ++--
- 22 files changed, 42 insertions(+), 41 deletions(-)
+USB Universal Host Controller Interface driver v3.0
+uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 23 (level, low) -> IRQ 23
+uhci_hcd 0000:00:1d.0: setting latency timer to 64
+uhci_hcd 0000:00:1d.0: UHCI Host Controller
+uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 1
+uhci_hcd 0000:00:1d.0: irq 23, io base 0x00002080
+usb usb1: configuration #1 chosen from 1 choice
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 2 ports detected
+uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+uhci_hcd 0000:00:1d.1: setting latency timer to 64
+uhci_hcd 0000:00:1d.1: UHCI Host Controller
+uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 2
+uhci_hcd 0000:00:1d.1: irq 19, io base 0x00002060
+usb usb2: configuration #1 chosen from 1 choice
+hub 2-0:1.0: USB hub found
+hub 2-0:1.0: 2 ports detected
+uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+uhci_hcd 0000:00:1d.2: setting latency timer to 64
+uhci_hcd 0000:00:1d.2: UHCI Host Controller
+uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 3
+uhci_hcd 0000:00:1d.2: irq 18, io base 0x00002040
+usb usb3: configuration #1 chosen from 1 choice
+hub 3-0:1.0: USB hub found
+hub 3-0:1.0: 2 ports detected
+uhci_hcd 0000:00:1d.3: PCI INT D -> GSI 16 (level, low) -> IRQ 16
+uhci_hcd 0000:00:1d.3: setting latency timer to 64
+uhci_hcd 0000:00:1d.3: UHCI Host Controller
+uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number 4
+uhci_hcd 0000:00:1d.3: irq 16, io base 0x00002020
+usb usb4: configuration #1 chosen from 1 choice
+hub 4-0:1.0: USB hub found
+hub 4-0:1.0: 2 ports detected
+usb 3-1: new low speed USB device using uhci_hcd and address 2
+usb 3-1: configuration #1 chosen from 1 choice
+input: USB Compliant Keyboard as /class/input/input9
+input: USB HID v1.10 Keyboard [USB Compliant Keyboard] on usb-0000:00:1d.2-1
+input: USB Compliant Keyboard as /class/input/input10
+input: USB HID v1.10 Device [USB Compliant Keyboard] on usb-0000:00:1d.2-1
+usb 4-1: new low speed USB device using uhci_hcd and address 2
+usb 4-1: configuration #1 chosen from 1 choice
+input: Logitech USB Receiver as /class/input/input11
+input: USB HID v1.10 Mouse [Logitech USB Receiver] on usb-0000:00:1d.3-1
+ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 23 (level, low) -> IRQ 23
+ehci_hcd 0000:00:1d.7: setting latency timer to 64
+ehci_hcd 0000:00:1d.7: EHCI Host Controller
+ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 5
+ehci_hcd 0000:00:1d.7: debug port 1
+ehci_hcd 0000:00:1d.7: cache line size of 128 is not supported
+ehci_hcd 0000:00:1d.7: irq 23, io mem 0x902c4400
+ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+usb usb5: configuration #1 chosen from 1 choice
+hub 5-0:1.0: USB hub found
+hub 5-0:1.0: 8 ports detected
+usb 3-1: USB disconnect, address 2
+usb 4-1: USB disconnect, address 2
+usb 3-1: new low speed USB device using uhci_hcd and address 3
+usb 3-1: configuration #1 chosen from 1 choice
+input: USB Compliant Keyboard as /class/input/input12
+input: USB HID v1.10 Keyboard [USB Compliant Keyboard] on usb-0000:00:1d.2-1
+input: USB Compliant Keyboard as /class/input/input13
+input: USB HID v1.10 Device [USB Compliant Keyboard] on usb-0000:00:1d.2-1
+usb 4-1: new low speed USB device using uhci_hcd and address 3
+usb 4-1: configuration #1 chosen from 1 choice
+input: Logitech USB Receiver as /class/input/input14
+input: USB HID v1.10 Mouse [Logitech USB Receiver] on usb-0000:00:1d.3-1
 
-Index: linux-2.6.git/arch/alpha/include/asm/smp.h
-===================================================================
---- linux-2.6.git.orig/arch/alpha/include/asm/smp.h
-+++ linux-2.6.git/arch/alpha/include/asm/smp.h
-@@ -48,7 +48,7 @@
- #define cpu_possible_map	cpu_present_map
- 
- extern void arch_send_call_function_single_ipi(int cpu);
--extern void arch_send_call_function_ipi(cpumask_t mask);
-+extern void arch_send_call_function_ipi(cpumask_t *mask);
- 
- #else /* CONFIG_SMP */
- 
-Index: linux-2.6.git/arch/alpha/kernel/smp.c
-===================================================================
---- linux-2.6.git.orig/arch/alpha/kernel/smp.c
-+++ linux-2.6.git/arch/alpha/kernel/smp.c
-@@ -637,9 +637,9 @@
- 	send_ipi_message(to_whom, IPI_CPU_STOP);
- }
- 
--void arch_send_call_function_ipi(cpumask_t mask)
-+void arch_send_call_function_ipi(cpumask_t *mask)
- {
--	send_ipi_message(mask, IPI_CALL_FUNC);
-+	send_ipi_message(*mask, IPI_CALL_FUNC);
- }
- 
- void arch_send_call_function_single_ipi(int cpu)
-Index: linux-2.6.git/arch/arm/include/asm/smp.h
-===================================================================
---- linux-2.6.git.orig/arch/arm/include/asm/smp.h
-+++ linux-2.6.git/arch/arm/include/asm/smp.h
-@@ -102,7 +102,7 @@
- extern void platform_cpu_enable(unsigned int cpu);
- 
- extern void arch_send_call_function_single_ipi(int cpu);
--extern void arch_send_call_function_ipi(cpumask_t mask);
-+extern void arch_send_call_function_ipi(cpumask_t *mask);
- 
- /*
-  * Local timer interrupt handling function (can be IPI'ed).
-Index: linux-2.6.git/arch/arm/kernel/smp.c
-===================================================================
---- linux-2.6.git.orig/arch/arm/kernel/smp.c
-+++ linux-2.6.git/arch/arm/kernel/smp.c
-@@ -356,9 +356,9 @@
- 	local_irq_restore(flags);
- }
- 
--void arch_send_call_function_ipi(cpumask_t mask)
-+void arch_send_call_function_ipi(cpumask_t *mask)
- {
--	send_ipi_message(mask, IPI_CALL_FUNC);
-+	send_ipi_message(*mask, IPI_CALL_FUNC);
- }
- 
- void arch_send_call_function_single_ipi(int cpu)
-Index: linux-2.6.git/arch/ia64/include/asm/smp.h
-===================================================================
---- linux-2.6.git.orig/arch/ia64/include/asm/smp.h
-+++ linux-2.6.git/arch/ia64/include/asm/smp.h
-@@ -127,7 +127,7 @@
- extern int is_multithreading_enabled(void);
- 
- extern void arch_send_call_function_single_ipi(int cpu);
--extern void arch_send_call_function_ipi(cpumask_t mask);
-+extern void arch_send_call_function_ipi(cpumask_t *mask);
- 
- #else /* CONFIG_SMP */
- 
-Index: linux-2.6.git/arch/ia64/kernel/smp.c
-===================================================================
---- linux-2.6.git.orig/arch/ia64/kernel/smp.c
-+++ linux-2.6.git/arch/ia64/kernel/smp.c
-@@ -166,11 +166,11 @@
-  * Called with preemption disabled.
-  */
- static inline void
--send_IPI_mask(cpumask_t mask, int op)
-+send_IPI_mask(cpumask_t *mask, int op)
- {
- 	unsigned int cpu;
- 
--	for_each_cpu_mask(cpu, mask) {
-+	for_each_cpu_mask(cpu, *mask) {
- 			send_IPI_single(cpu, op);
- 	}
- }
-@@ -316,7 +316,7 @@
- 	send_IPI_single(cpu, IPI_CALL_FUNC_SINGLE);
- }
- 
--void arch_send_call_function_ipi(cpumask_t mask)
-+void arch_send_call_function_ipi(cpumask_t *mask)
- {
- 	send_IPI_mask(mask, IPI_CALL_FUNC);
- }
-Index: linux-2.6.git/arch/m32r/kernel/smp.c
-===================================================================
---- linux-2.6.git.orig/arch/m32r/kernel/smp.c
-+++ linux-2.6.git/arch/m32r/kernel/smp.c
-@@ -546,9 +546,9 @@
- 	for ( ; ; );
- }
- 
--void arch_send_call_function_ipi(cpumask_t mask)
-+void arch_send_call_function_ipi(cpumask_t *mask)
- {
--	send_IPI_mask(mask, CALL_FUNCTION_IPI, 0);
-+	send_IPI_mask(*mask, CALL_FUNCTION_IPI, 0);
- }
- 
- void arch_send_call_function_single_ipi(int cpu)
-Index: linux-2.6.git/arch/mips/kernel/smp.c
-===================================================================
---- linux-2.6.git.orig/arch/mips/kernel/smp.c
-+++ linux-2.6.git/arch/mips/kernel/smp.c
-@@ -131,9 +131,9 @@
- 	cpu_idle();
- }
- 
--void arch_send_call_function_ipi(cpumask_t mask)
-+void arch_send_call_function_ipi(cpumask_t *mask)
- {
--	mp_ops->send_ipi_mask(mask, SMP_CALL_FUNCTION);
-+	mp_ops->send_ipi_mask(*mask, SMP_CALL_FUNCTION);
- }
- 
- /*
-Index: linux-2.6.git/arch/parisc/kernel/smp.c
-===================================================================
---- linux-2.6.git.orig/arch/parisc/kernel/smp.c
-+++ linux-2.6.git/arch/parisc/kernel/smp.c
-@@ -228,11 +228,11 @@
- }
- 
- static void
--send_IPI_mask(cpumask_t mask, enum ipi_message_type op)
-+send_IPI_mask(cpumask_t *mask, enum ipi_message_type op)
- {
- 	int cpu;
- 
--	for_each_cpu_mask(cpu, mask)
-+	for_each_cpu_mask(cpu, *mask)
- 		ipi_send(cpu, op);
- }
- 
-@@ -274,7 +274,7 @@
- 	send_IPI_allbutself(IPI_NOP);
- }
- 
--void arch_send_call_function_ipi(cpumask_t mask)
-+void arch_send_call_function_ipi(cpumask_t *mask)
- {
- 	send_IPI_mask(mask, IPI_CALL_FUNC);
- }
-Index: linux-2.6.git/arch/powerpc/include/asm/smp.h
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/include/asm/smp.h
-+++ linux-2.6.git/arch/powerpc/include/asm/smp.h
-@@ -119,7 +119,7 @@
- extern struct smp_ops_t *smp_ops;
- 
- extern void arch_send_call_function_single_ipi(int cpu);
--extern void arch_send_call_function_ipi(cpumask_t mask);
-+extern void arch_send_call_function_ipi(cpumask_t *mask);
- 
- #endif /* __ASSEMBLY__ */
- 
-Index: linux-2.6.git/arch/powerpc/kernel/smp.c
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/kernel/smp.c
-+++ linux-2.6.git/arch/powerpc/kernel/smp.c
-@@ -135,11 +135,11 @@
- 	smp_ops->message_pass(cpu, PPC_MSG_CALL_FUNC_SINGLE);
- }
- 
--void arch_send_call_function_ipi(cpumask_t mask)
-+void arch_send_call_function_ipi(cpumask_t *mask)
- {
- 	unsigned int cpu;
- 
--	for_each_cpu_mask(cpu, mask)
-+	for_each_cpu_mask(cpu, *mask)
- 		smp_ops->message_pass(cpu, PPC_MSG_CALL_FUNCTION);
- }
- 
-Index: linux-2.6.git/arch/sh/include/asm/smp.h
-===================================================================
---- linux-2.6.git.orig/arch/sh/include/asm/smp.h
-+++ linux-2.6.git/arch/sh/include/asm/smp.h
-@@ -39,7 +39,7 @@
- int plat_register_ipi_handler(unsigned int message,
- 			      void (*handler)(void *), void *arg);
- extern void arch_send_call_function_single_ipi(int cpu);
--extern void arch_send_call_function_ipi(cpumask_t mask);
-+extern void arch_send_call_function_ipi(cpumask_t *mask);
- 
- #else
- 
-Index: linux-2.6.git/arch/sh/kernel/smp.c
-===================================================================
---- linux-2.6.git.orig/arch/sh/kernel/smp.c
-+++ linux-2.6.git/arch/sh/kernel/smp.c
-@@ -171,11 +171,11 @@
- 	smp_call_function(stop_this_cpu, 0, 0);
- }
- 
--void arch_send_call_function_ipi(cpumask_t mask)
-+void arch_send_call_function_ipi(cpumask_t *mask)
- {
- 	int cpu;
- 
--	for_each_cpu_mask(cpu, mask)
-+	for_each_cpu_mask(cpu, *mask)
- 		plat_send_ipi(cpu, SMP_MSG_FUNCTION);
- }
- 
-Index: linux-2.6.git/arch/sparc/include/asm/smp_64.h
-===================================================================
---- linux-2.6.git.orig/arch/sparc/include/asm/smp_64.h
-+++ linux-2.6.git/arch/sparc/include/asm/smp_64.h
-@@ -35,7 +35,7 @@
- extern int sparc64_multi_core;
- 
- extern void arch_send_call_function_single_ipi(int cpu);
--extern void arch_send_call_function_ipi(cpumask_t mask);
-+extern void arch_send_call_function_ipi(cpumask_t *mask);
- 
- /*
-  *	General functions that each host system must provide.
-Index: linux-2.6.git/arch/sparc64/kernel/smp.c
-===================================================================
---- linux-2.6.git.orig/arch/sparc64/kernel/smp.c
-+++ linux-2.6.git/arch/sparc64/kernel/smp.c
-@@ -810,9 +810,9 @@
- 
- extern unsigned long xcall_call_function;
- 
--void arch_send_call_function_ipi(cpumask_t mask)
-+void arch_send_call_function_ipi(cpumask_t *mask)
- {
--	xcall_deliver((u64) &xcall_call_function, 0, 0, &mask);
-+	xcall_deliver((u64) &xcall_call_function, 0, 0, mask);
- }
- 
- extern unsigned long xcall_call_function_single;
-Index: linux-2.6.git/include/asm-m32r/smp.h
-===================================================================
---- linux-2.6.git.orig/include/asm-m32r/smp.h
-+++ linux-2.6.git/include/asm-m32r/smp.h
-@@ -90,7 +90,7 @@
- extern unsigned long send_IPI_mask_phys(cpumask_t, int, int);
- 
- extern void arch_send_call_function_single_ipi(int cpu);
--extern void arch_send_call_function_ipi(cpumask_t mask);
-+extern void arch_send_call_function_ipi(cpumask_t *mask);
- 
- #endif	/* not __ASSEMBLY__ */
- 
-Index: linux-2.6.git/include/asm-mips/smp.h
-===================================================================
---- linux-2.6.git.orig/include/asm-mips/smp.h
-+++ linux-2.6.git/include/asm-mips/smp.h
-@@ -58,6 +58,6 @@
- extern asmlinkage void smp_call_function_interrupt(void);
- 
- extern void arch_send_call_function_single_ipi(int cpu);
--extern void arch_send_call_function_ipi(cpumask_t mask);
-+extern void arch_send_call_function_ipi(cpumask_t *mask);
- 
- #endif /* __ASM_SMP_H */
-Index: linux-2.6.git/include/asm-parisc/smp.h
-===================================================================
---- linux-2.6.git.orig/include/asm-parisc/smp.h
-+++ linux-2.6.git/include/asm-parisc/smp.h
-@@ -31,7 +31,7 @@
- extern void smp_send_all_nop(void);
- 
- extern void arch_send_call_function_single_ipi(int cpu);
--extern void arch_send_call_function_ipi(cpumask_t mask);
-+extern void arch_send_call_function_ipi(cpumask_t *mask);
- 
- #endif /* !ASSEMBLY */
- 
-Index: linux-2.6.git/include/asm-x86/smp.h
-===================================================================
---- linux-2.6.git.orig/include/asm-x86/smp.h
-+++ linux-2.6.git/include/asm-x86/smp.h
-@@ -101,9 +101,9 @@
- 	smp_ops.send_call_func_single_ipi(cpu);
- }
- 
--static inline void arch_send_call_function_ipi(cpumask_t mask)
-+static inline void arch_send_call_function_ipi(cpumask_t *mask)
- {
--	smp_ops.send_call_func_ipi(mask);
-+	smp_ops.send_call_func_ipi(*mask);
- }
- 
- void native_smp_prepare_boot_cpu(void);
-Index: linux-2.6.git/include/linux/smp.h
-===================================================================
---- linux-2.6.git.orig/include/linux/smp.h
-+++ linux-2.6.git/include/linux/smp.h
-@@ -62,7 +62,7 @@
-  * Call a function on all other processors
-  */
- int smp_call_function(void(*func)(void *info), void *info, int wait);
--int smp_call_function_mask(cpumask_t mask, void(*func)(void *info), void *info,
-+int smp_call_function_mask(cpumask_t *mask, void(*func)(void *info), void *info,
- 				int wait);
- int smp_call_function_single(int cpuid, void (*func) (void *info), void *info,
- 				int wait);
-Index: linux-2.6.git/kernel/smp.c
-===================================================================
---- linux-2.6.git.orig/kernel/smp.c
-+++ linux-2.6.git/kernel/smp.c
-@@ -318,7 +318,7 @@
-  * hardware interrupt handler or from a bottom half handler. Preemption
-  * must be disabled when calling this function.
-  */
--int smp_call_function_mask(cpumask_t mask, void (*func)(void *), void *info,
-+int smp_call_function_mask(cpumask_t *mask, void (*func)(void *), void *info,
- 			   int wait)
- {
- 	struct call_function_data d;
-@@ -334,8 +334,8 @@
- 	cpu = smp_processor_id();
- 	allbutself = cpu_online_map;
- 	cpu_clear(cpu, allbutself);
--	cpus_and(mask, mask, allbutself);
--	num_cpus = cpus_weight(mask);
-+	cpus_and(*mask, *mask, allbutself);
-+	num_cpus = cpus_weight(*mask);
- 
- 	/*
- 	 * If zero CPUs, return. If just a single CPU, turn this request
-@@ -344,7 +344,7 @@
- 	if (!num_cpus)
- 		return 0;
- 	else if (num_cpus == 1) {
--		cpu = first_cpu(mask);
-+		cpu = first_cpu(*mask);
- 		return smp_call_function_single(cpu, func, info, wait);
- 	}
- 
-@@ -364,7 +364,7 @@
- 	data->csd.func = func;
- 	data->csd.info = info;
- 	data->refs = num_cpus;
--	data->cpumask = mask;
-+	data->cpumask = *mask;
- 
- 	spin_lock_irqsave(&call_function_lock, flags);
- 	list_add_tail_rcu(&data->csd.list, &call_function_queue);
-@@ -377,7 +377,7 @@
- 	if (wait) {
- 		csd_flag_wait(&data->csd);
- 		if (unlikely(slowpath))
--			smp_call_function_mask_quiesce_stack(mask);
-+			smp_call_function_mask_quiesce_stack(*mask);
- 	}
- 
- 	return 0;
-@@ -402,9 +402,10 @@
- int smp_call_function(void (*func)(void *), void *info, int wait)
- {
- 	int ret;
-+	cpumask_t tmp_online_map = cpu_online_map;
- 
- 	preempt_disable();
--	ret = smp_call_function_mask(cpu_online_map, func, info, wait);
-+	ret = smp_call_function_mask(&tmp_online_map, func, info, wait);
- 	preempt_enable();
- 	return ret;
- }
-Index: linux-2.6.git/virt/kvm/kvm_main.c
-===================================================================
---- linux-2.6.git.orig/virt/kvm/kvm_main.c
-+++ linux-2.6.git/virt/kvm/kvm_main.c
-@@ -124,7 +124,7 @@
- 	if (cpus_empty(cpus))
- 		goto out;
- 	++kvm->stat.remote_tlb_flush;
--	smp_call_function_mask(cpus, ack_flush, NULL, 1);
-+	smp_call_function_mask(&cpus, ack_flush, NULL, 1);
- out:
- 	put_cpu();
- }
-@@ -149,7 +149,7 @@
- 	}
- 	if (cpus_empty(cpus))
- 		goto out;
--	smp_call_function_mask(cpus, ack_flush, NULL, 1);
-+	smp_call_function_mask(&cpus, ack_flush, NULL, 1);
- out:
- 	put_cpu();
- }
+--Boundary-00=_8O/tIWA2gTE5feU
+Content-Type: text/plain;
+  charset="iso 8859-15";
+  name="modprobe_uhci+ehci"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="modprobe_uhci+ehci"
 
---------------000105070102070306040301--
+USB Universal Host Controller Interface driver v3.0
+uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 23 (level, low) -> IRQ 23
+uhci_hcd 0000:00:1d.0: setting latency timer to 64
+uhci_hcd 0000:00:1d.0: UHCI Host Controller
+uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 1
+uhci_hcd 0000:00:1d.0: irq 23, io base 0x00002080
+usb usb1: configuration #1 chosen from 1 choice
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 2 ports detected
+uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+uhci_hcd 0000:00:1d.1: setting latency timer to 64
+uhci_hcd 0000:00:1d.1: UHCI Host Controller
+uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 2
+uhci_hcd 0000:00:1d.1: irq 19, io base 0x00002060
+usb usb2: configuration #1 chosen from 1 choice
+hub 2-0:1.0: USB hub found
+hub 2-0:1.0: 2 ports detected
+uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+uhci_hcd 0000:00:1d.2: setting latency timer to 64
+uhci_hcd 0000:00:1d.2: UHCI Host Controller
+uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 3
+uhci_hcd 0000:00:1d.2: irq 18, io base 0x00002040
+usb usb3: configuration #1 chosen from 1 choice
+hub 3-0:1.0: USB hub found
+hub 3-0:1.0: 2 ports detected
+uhci_hcd 0000:00:1d.3: PCI INT D -> GSI 16 (level, low) -> IRQ 16
+uhci_hcd 0000:00:1d.3: setting latency timer to 64
+uhci_hcd 0000:00:1d.3: UHCI Host Controller
+uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number 4
+uhci_hcd 0000:00:1d.3: irq 16, io base 0x00002020
+usb usb4: configuration #1 chosen from 1 choice
+hub 4-0:1.0: USB hub found
+hub 4-0:1.0: 2 ports detected
+usb 3-1: new low speed USB device using uhci_hcd and address 2
+ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 23 (level, low) -> IRQ 23
+ehci_hcd 0000:00:1d.7: setting latency timer to 64
+ehci_hcd 0000:00:1d.7: EHCI Host Controller
+ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 5
+ehci_hcd 0000:00:1d.7: debug port 1
+ehci_hcd 0000:00:1d.7: cache line size of 128 is not supported
+ehci_hcd 0000:00:1d.7: irq 23, io mem 0x902c4400
+ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+usb usb5: configuration #1 chosen from 1 choice
+hub 5-0:1.0: USB hub found
+hub 5-0:1.0: 8 ports detected
+usb 3-1: device not accepting address 2, error -71
+hub 3-0:1.0: unable to enumerate USB device on port 1
+usb 3-1: new low speed USB device using uhci_hcd and address 4
+usb 3-1: configuration #1 chosen from 1 choice
+input: USB Compliant Keyboard as /class/input/input27
+input: USB HID v1.10 Keyboard [USB Compliant Keyboard] on usb-0000:00:1d.2-1
+input: USB Compliant Keyboard as /class/input/input28
+input: USB HID v1.10 Device [USB Compliant Keyboard] on usb-0000:00:1d.2-1
+usb 4-1: new low speed USB device using uhci_hcd and address 2
+usb 4-1: configuration #1 chosen from 1 choice
+input: Logitech USB Receiver as /class/input/input29
+input: USB HID v1.10 Mouse [Logitech USB Receiver] on usb-0000:00:1d.3-1
+
+--Boundary-00=_8O/tIWA2gTE5feU--
