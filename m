@@ -1,128 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbYH2Hrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbYH2HsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753615AbYH2Hrq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 03:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYH2Hrg
+	id S1754466AbYH2HsA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 03:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYH2Hrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 03:47:36 -0400
-Received: from mail.ku-gbr.de ([81.3.11.18]:56999 "EHLO ku-gbr.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751815AbYH2Hrf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 03:47:35 -0400
-Date: Fri, 29 Aug 2008 09:47:29 +0200
-From: Konstantin Kletschke <lists@ku-gbr.de>
-To: linux-kernel@vger.kernel.org
-Subject: SATA Cold Boot problems on >2.6.25 with NV
-Message-ID: <20080829074729.GA19696@anita>
-Mail-Followup-To: linux-kernel@vger.kernel.org
+	Fri, 29 Aug 2008 03:47:43 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:39910 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752732AbYH2Hrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 03:47:43 -0400
+Date: Fri, 29 Aug 2008 09:47:39 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Neil Brown <neilb@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, jurriaan <thunder7@xs4all.nl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27-rc4: lots of 'in_atomic():1, irqs_disabled():0' with   software-raid1
+Message-ID: <20080829074739.GN20055@kernel.dk>
+References: <20080827170538.GA24393@amd64.of.nowhere> <200808272347.43577.rjw@sisk.pl> <20080828073324.GR20055@kernel.dk> <20080828004532.45d8b8c9.akpm@linux-foundation.org> <20080828074830.GV20055@kernel.dk> <18614.24929.952454.829021@notabene.brown> <20080828020018.a8ea85f0.akpm@linux-foundation.org> <18615.42728.498883.440973@notabene.brown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <18615.42728.498883.440973@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 29 2008, Neil Brown wrote:
+> On Thursday August 28, akpm@linux-foundation.org wrote:
+> > 
+> > I'm curious about how this happened.
+> > 
+> > afaict from reading the code, this:
+> > 
+> > 	rcu_read_lock();
+> > 	might_sleep();
+> > 	rcu_read_unlock();
+> > 
+> > will warn if CONFIG_PREEMPT_RCU=n but won't warn if
+> > CONFIG_PREEMPT_RCU=y.  If correct, that's a nasty trap.
+> > 
+> > Is that what you did?
+> 
+> Uhm..
+> $ grep PREEMPT /home/src/md-x86-64/.config
+> CONFIG_PREEMPT_NONE=y
+> # CONFIG_PREEMPT_VOLUNTARY is not set
+> # CONFIG_PREEMPT is not set
+> $ grep DEBUG_SPIN /home/src/md-x86-64/.config
+> CONFIG_DEBUG_SPINLOCK=y
+> CONFIG_DEBUG_SPINLOCK_SLEEP=y
+> $ grep RCU /home/src/md-x86-64/.config
+> CONFIG_CLASSIC_RCU=y
+> # CONFIG_RCU_TORTURE_TEST is not set
+> 
+> This definitely doesn't report an error if I put "might_sleep" inside 
+> rcu_read_lock.  I tried to figure out why but got lost.
 
-Hello!
+:/
 
+> BTW, I need the following to get current -git to compile.
+> 
+> NeilBrown
+> 
+> Author: NeilBrown <neilb@suse.de>
+> Date:   Tue Aug 19 11:59:37 2008 +1000
+> 
+>     Fix compile error in security
+> 
+> diff --git a/include/linux/security.h b/include/linux/security.h
+> index 2ee5ecf..0cc23a1 100644
+> --- a/include/linux/security.h
+> +++ b/include/linux/security.h
+> @@ -1757,7 +1757,7 @@ static inline int security_ptrace_may_access(struct task_struct *child,
+>  
+>  static inline int security_ptrace_traceme(struct task_struct *child)
+>  {
+> -	return cap_ptrace_traceme(parent);
+> +	return cap_ptrace_traceme(child);
+>  }
+>  
+>  static inline int security_capget(struct task_struct *target,
 
-I found to references regarding this problem in this list. Many Maxwell
-reported this and Tejo asked if his supposed fix helps out. 
-
-Another reference by Jeff suggests bisecting a git commit. Since I am
-very unexperienced in the git stuff I hope it is okay to start another
-initial mail about this to ask
-
-1.) What I should try out on the code to trace this further down
-
-2.) I would extend this problem on >2.6.25 version of kernel.
-
-I have an "nForce3 250 chipset" on an Asrock K8Upgrade-NF3 Motherboard
-
-00:00.0 Host bridge: nVidia Corporation nForce3 250Gb Host Bridge (rev a1)
-00:01.0 ISA bridge: nVidia Corporation nForce3 250Gb LPC Bridge (rev a2)
-00:01.1 SMBus: nVidia Corporation nForce 250Gb PCI System Management (rev a1)
-00:02.0 USB Controller: nVidia Corporation CK8S USB Controller (rev a1)
-00:02.1 USB Controller: nVidia Corporation CK8S USB Controller (rev a1)
-00:02.2 USB Controller: nVidia Corporation nForce3 EHCI USB 2.0 Controller (rev a2)
-00:05.0 Bridge: nVidia Corporation CK8S Ethernet Controller (rev a2)
-00:06.0 Multimedia audio controller: nVidia Corporation nForce3 250Gb AC'97 Audio Controller (rev a1)
-00:08.0 IDE interface: nVidia Corporation CK8S Parallel ATA Controller (v2.5) (rev a2)
-00:0a.0 IDE interface: nVidia Corporation CK8S Serial ATA Controller (v2.5) (rev a2)
-00:0b.0 PCI bridge: nVidia Corporation nForce3 250Gb AGP Host to PCI Bridge (rev a2)
-00:0e.0 PCI bridge: nVidia Corporation nForce3 250Gb PCI-to-PCI Bridge (rev a2)
-00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] HyperTransport Technology Configuration
-00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Address Map
-00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM Controller
-00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Miscellaneous Control
-01:00.0 VGA compatible controller: nVidia Corporation NV34 [GeForce FX 5200] (rev a1)
-02:06.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8139/8139C/8139C+ (rev 10)
-
-While 2.6.25 works very fine I experienced this with 2.6.26_rc7 at first 
-(I skipped versions between). Cold Boot yields into the described error,
-I sadly only have real screenshots of this:
-
-http://ludenkalle.de/sata
-
-After a reset the Kernel was not able to do anything useful with the
-SATA interface anymore (this description is a bit vague, IIRC it stuck
-immediately around "SATA Link down..."). Only powercycling helped out,
-then it booted with SATA.
-
-Now I have 2.6.27-rc3, same error but config netconsole enabled.
-Normal Boot:
-
-ata1: SATA link down (SStatus 0 SControl 300)
-ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata2.00: ATA-7: SAMSUNG HD753LJ, 1AA01106, max UDMA7
-ata2.00: 1465149168 sectors, multi 16: LBA48 NCQ (depth 0/32)
-ata2.00: configured for UDMA/133
-isa bounce pool size: 16 pages
-scsi 1:0:0:0: Direct-Access     ATA      SAMSUNG HD753LJ  1AA0 PQ: 0 ANSI: 5
-sd 1:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
-sd 1:0:0:0: [sda] Write Protect is off
-sd 1:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sd 1:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
-sd 1:0:0:0: [sda] Write Protect is off
-sd 1:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
- sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 sda8 sda9 >
-sd 1:0:0:0: [sda] Attached SCSI disk
-PNP: No PS/2 controller found. Probing ports directly.
-serio: i8042 KBD port at 0x60,0x64 irq 1
-serio: i8042 AUX port at 0x60,0x64 irq 12
-TCP cubic registered
-NET: Registered protocol family 17
-XFS mounting filesystem sda1
-VFS: Mounted root (xfs filesystem) readonly.
-Freeing unused kernel memory: 220k freed
-
-Cold Boot:
-
-ata1: SATA link down (SStatus 0 SControl 300)
-ata2: link is slow to respond, please be patient (ready=0)
-ata2: COMRESET failed (errno=-16)
-ata2: link is slow to respond, please be patient (ready=0)
-ata2: COMRESET failed (errno=-16)
-ata2: link is slow to respond, please be patient (ready=0)
-ata2: COMRESET failed (errno=-16)
-ata2: limiting SATA link speed to 1.5 Gbps
-ata2: COMRESET failed (errno=-16)
-ata2: reset failed, giving up
-PNP: No PS/2 controller found. Probing ports directly.
-serio: i8042 KBD port at 0x60,0x64 irq 1
-serio: i8042 AUX port at 0x60,0x64 irq 12
-TCP cubic registered
-NET: Registered protocol family 17
-VFS: Cannot open root device "801" or unknown-block(8,1)
-Please append a correct "root=" boot option; here are the available partitions:
-Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(8,1)
-
-Hmn, thats it. Where should I poke into?
-
-Kind Regards, Konsti
-
+That has been fixed in the tree for over a week, I think you need to
+update :-)
 
 -- 
-GPG KeyID EF62FCEF
-Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
+Jens Axboe
+
