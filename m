@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759489AbYH2Vkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758942AbYH2Vny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759489AbYH2Vkm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 17:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754486AbYH2Vka
+	id S1758942AbYH2Vny (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 17:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbYH2Vnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 17:40:30 -0400
-Received: from emh06.mail.saunalahti.fi ([62.142.5.116]:50890 "EHLO
-	emh06.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752449AbYH2Vk3 (ORCPT
+	Fri, 29 Aug 2008 17:43:46 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:15594 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753565AbYH2Vnq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 17:40:29 -0400
-X-Greylist: delayed 513 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Aug 2008 17:40:29 EDT
-From: Jari Aalto <jari.aalto@cante.net>
-To: linux-kernel@vger.kernel.org
-Cc: Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar>
-Subject: Re: 2.6.25 DMA: Out of SW-IOMMU space - Asus M2N32 AMD 8GB memory
-References: <48B843CC.1050805@yahoo.com.ar>
-Date: Sat, 30 Aug 2008 00:31:51 +0300
-In-Reply-To: <48B843CC.1050805@yahoo.com.ar> (Gerardo Exequiel Pozzi's message
-	of "Fri, 29 Aug 2008 15:45:32 -0300")
-Message-ID: <87wshza4oo.fsf@jondo.cante.net>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/22.2 (gnu/linux)
+	Fri, 29 Aug 2008 17:43:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=uFsMT7tf29P2za9WWvWyEHXjd1n4t3v+j0KUN9UH2zFMnBtl+nXcjgVx86dDZvuVwg
+         fyGGh/LeXppsgH2FCA/APuesnWXPZY+t/JYuM3C3z+qyFoZu97or+FYqKeI9kDLblDOd
+         ItE0CJpFnTnyeINslPlw8pDfWJoI+3VQpkb/o=
+Message-ID: <86802c440808291443y121c422blaa24d543e67d0de2@mail.gmail.com>
+Date: Fri, 29 Aug 2008 14:43:45 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 00/53] dyn_array/nr_irqs/sparse_irq support v10
+Cc: "Ingo Molnar" <mingo@elte.hu>, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       ebiederm@xmission.com
+In-Reply-To: <20080829141642.c0f266f3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Antivirus: VAMS
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1218705441-21838-1-git-send-email-yhlu.kernel@gmail.com>
+	 <20080814132638.GA18743@elte.hu>
+	 <20080829141642.c0f266f3.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar> writes:
-
->>    REF: http://article.gmane.org/gmane.linux.kernel/725293 (thread >start)
->>
->>but I'll try that once more with this 2.6.26 kernel to double check.
+On Fri, Aug 29, 2008 at 2:16 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Thu, 14 Aug 2008 15:26:38 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
 >
-> You have mixed options for "swiotlb" and "amd gart", see the
-> Documentation/x86_64/boot-options.txt
-
-It's difficult to find the pointer that could explain the correct use of
-the options and their combinations.
-
-> iommu=soft,memaper=3 swiotlb=65536 BAD.
+>> ok, i've created a new tip/irq/sparseirq topic branch for this.
 >
-> memaper=3 don't have any effects here, memaper is only for "AMD GART"
+> This:
 >
-> The noagp option in this motherboard is redundant.
+> init/dyn_array.c: In function 'pre_alloc_dyn_array':
+> init/dyn_array.c:21: warning: 'print_fn_descriptor_symbol' is deprecated (declared at include/linux/kallsyms.h:100)
+> init/dyn_array.c:45: warning: 'print_fn_descriptor_symbol' is deprecated (declared at include/linux/kallsyms.h:100)
+> init/dyn_array.c: In function 'per_cpu_dyn_array_size':
+> init/dyn_array.c:78: warning: 'print_fn_descriptor_symbol' is deprecated (declared at include/linux/kallsyms.h:100)
+> init/dyn_array.c: In function 'per_cpu_alloc_dyn_array':
+> init/dyn_array.c:107: warning: 'print_fn_descriptor_symbol' is deprecated (declared at include/linux/kallsyms.h:100)
 >
-> iommu=noagp,noaperture,off swiotlb=512M BAD combination options!
-> OFF, OFF, OFF, ON: The result are unknown.
->
-> You need to use the IOMMU (from AMD GART) that with your options: you
-> never used.
->
-> When you boot with no iommu options, kernels uses the AMD GART in this
-> system, with an aperture of 64MB (too small) to fix, you need only one
-> option: iommu=memaper=3
+> is reminding us about %pS/%pF.
 
-This sort of advice wouldbe wonderful if it wereincluded in the spec,
-which as of now is too technical for mere mortals:
+in init/main.c::do_one_initcall() is still using it...
 
-    http://www.mjmwired.net/kernel/Documentation/x86_64/boot-options.txt
+also i didn't get this warning, what is your gcc version?
 
-I'm not surprised that end user cannot know what combination of options
-make or does not make sense. I'll try at next boot with plain:
-
-    iommu=memaper=3
-
-Thank you,
-Jari
+YH
