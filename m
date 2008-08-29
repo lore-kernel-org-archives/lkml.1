@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbYHaR20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbYHaR2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756120AbYHaR20 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 13:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbYHaR2S
+	id S1754509AbYHaR2n (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 13:28:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756407AbYHaR2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 13:28:18 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:46696 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754371AbYHaR2R (ORCPT
+	Sun, 31 Aug 2008 13:28:33 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:51693 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754415AbYHaR2b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 13:28:17 -0400
-Date: Sun, 31 Aug 2008 10:28:14 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: tony.luck@intel.com, jes@sgi.com, manfred@colorfullife.com,
-       akpm@linux-foundation.org
-Subject: [PATCH] prevent ia64 from invoking irq handlers on offline CPUs
-Message-ID: <20080831172814.GA15087@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Sun, 31 Aug 2008 13:28:31 -0400
+To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+From: Hannes Eder <hannes@hanneseder.net>
+Date: Fri, 29 Aug 2008 21:01:21 +0200
+Subject: [PATCH] proc: fix sparse warning: make function grab_header static
+Message-ID: <48bad4bb.0aaa660a.7eb7.ffff80b2@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make ia64 refrain from clearing a given to-be-offlined CPU's bit in the
-cpu_online_mask until it has processed pending irqs.  This change
-prevents other CPUs from being blindsided by an apparently offline CPU
-nevertheless changing globally visible state.
+Fix the following sparse warning in fs/proc/proc_sysctl.c, by making
+the function grab_header static.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+warning: symbol 'grab_header' was not declared. Should it be static?
+
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
+ fs/proc/proc_sysctl.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- smpboot.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
-index bcea81e..7a90f42 100644
---- a/arch/ia64/kernel/smpboot.c
-+++ b/arch/ia64/kernel/smpboot.c
-@@ -741,8 +741,6 @@ int __cpu_disable(void)
- 			return -EBUSY;
- 	}
+diff --git a/fs/proc/proc_sysctl.c b/fs/proc/proc_sysctl.c
+index f9a8b89..84f58e8 100644
+--- a/fs/proc/proc_sysctl.c
++++ b/fs/proc/proc_sysctl.c
+@@ -66,7 +66,7 @@ static struct ctl_table *find_in_table(struct ctl_table *p, struct qstr *name)
+ 	return NULL;
+ }
  
--	cpu_clear(cpu, cpu_online_map);
--
- 	if (migrate_platform_irqs(cpu)) {
- 		cpu_set(cpu, cpu_online_map);
- 		return (-EBUSY);
-@@ -751,6 +749,7 @@ int __cpu_disable(void)
- 	remove_siblinginfo(cpu);
- 	cpu_clear(cpu, cpu_online_map);
- 	fixup_irqs();
-+	cpu_clear(cpu, cpu_online_map);
- 	local_flush_tlb_all();
- 	cpu_clear(cpu, cpu_callin_map);
- 	return 0;
+-struct ctl_table_header *grab_header(struct inode *inode)
++static struct ctl_table_header *grab_header(struct inode *inode)
+ {
+ 	if (PROC_I(inode)->sysctl)
+ 		return sysctl_head_grab(PROC_I(inode)->sysctl);
