@@ -1,138 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbYH2GrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYH2GuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753435AbYH2GrZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 02:47:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYH2GrR
+	id S1753536AbYH2GuZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 02:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbYH2GuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 02:47:17 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:53851 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467AbYH2GrQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 02:47:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=GXnTonzepItpQGqzU6Cj40qzFAsdG7ZZz4dMxgPSzVO1jtieJRuv7G040yTrwWEW0T
-         pmysMRTR6TBty6bl+PQirs+lOFYH5qTPn/218DE2/4kIbEMD97466STLASOACnZlN3BC
-         whVcyGgpAypp9HZGE9dmoISFQvbg+YH9wNGSw=
-Message-ID: <86802c440808282347n66a6dfb7r2bebd9f65918614a@mail.gmail.com>
-Date: Thu, 28 Aug 2008 23:47:14 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: split e820 reserved entries record to late v4
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080829063012.GA19459@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 29 Aug 2008 02:50:13 -0400
+Received: from mail.queued.net ([207.210.101.209]:4595 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751059AbYH2GuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 02:50:11 -0400
+Date: Fri, 29 Aug 2008 02:49:59 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] OLPC: touchpad driver (take 2)
+Message-ID: <20080829024959.68bcdc98@fred>
+In-Reply-To: <20080815031435.GD9438@anvil.corenet.prv>
+References: <20080813152459.4d6bb0cb@ephemeral>
+	<20080815031435.GD9438@anvil.corenet.prv>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1219973391-9580-1-git-send-email-yhlu.kernel@gmail.com>
-	 <20080829063012.GA19459@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28, 2008 at 11:30 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> Linus said we should register some entries in e820 later,
->> so could let BAR res register at first, or even pnp?
->>
->> this one replace
->> | commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
->> | Author: Yinghai Lu <yhlu.kernel@gmail.com>
->> | Date:   Mon Aug 25 00:56:08 2008 -0700
->> |
->> |    x86: fix HPET regression in 2.6.26 versus 2.6.25, check hpet against BAR, v3
->>
->> v2: insert e820 reserve resources before pnp_system_init
->> v3: fix merging problem in tip/x86/core
->>     please drop the one in tip/x86/core use this one instead
->> v4: address Linus's review about comments and condition in _late()
->>
->> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->
-> applied to tip/x86/core, thanks.
->
-> Let me outline the issue that i raised before:
->
->> +               if (!res->parent && res->end)
->> +                       insert_resource(&iomem_resource, res);
->
-> what if this insertion fails due to partial overlap? Right now we drop
-> it silently - which might be fine for most systems, but have a look on
-> the specific system that had the hpet regression, there we have these
-> reserved e820 entries:
->
->  BIOS-e820: 0000000077ff0000 - 0000000078000000 (reserved)
->  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
->  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
->
-> which overlaps with the chipset PCI BAR (hpet) resource:
->
->   pci 0000:00:14.0: BAR has HPET at fed00000-fed003ff
->
-> so due to this 1K conflict we take the full e820-reserved entry out and
-> give the range 0xfec00000-0x100000000 as 'free'.
+Hi Dmitry,
 
-you will get
-fec00000 - ffffffff reserved
-   fed0000 - fed003ff hpet
-     fed0000 - fed003ff 0000:00:14.0
+Sorry, just now getting the chance to look at this...
 
->
-> And that failure to register can cause problems. In this case that
-> 'reserved' e820 entry definitely has real meaning, both the local APIC
-> and the IO-APIC is in that range:
->
->   ACPI: Local APIC address 0xfee00000
->   IOAPIC[0]: apic_id 2, version 0, address 0xfec00000, GSI 0-23
->
-> Which might still be OK for all memory resources we happen to enumerate
-> - but we dont necessarily enumerate all of them when we have e.g. an UP
-> kernel, and we will definitely not enumerate any 'hidden' state a system
-> might have there. (SMM, etc.) If we then allocate a dynamic PCI resource
-> into that range later on (thinking it's "free" but in reality it's
-> claimed) we get a crash or worse.
->
-> So my worry, which i outlined before and which Peter agreed with, was
-> that we should not mark areas 'free' that the BIOS thinks are
-> 'reserved'. According to the map above, the BIOS declared non-RAM 'free'
-> range in the first 4GB is 0x78000000..0xe0000000 - 1664 MB, plenty of
-> space.
+On Thu, 14 Aug 2008 23:14:35 -0400
+Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 
-for the pci gap use?
-e820_setup_gap will check e820_map directly to use that range as pci
-gap for unassigned resources.
+> Hi Andres,
+> 
+[...]
+> > +
+> > +/*
+> > + * We have no idea why this particular hardware bug occurs.  The
+> > touchpad
+> > + * will randomly start spewing packets without anything touching
+> > the
+> > + * pad.  This wouldn't necessarily be bad, but it's indicative of a
+> > + * severely miscalibrated pad; attempting to use the touchpad
+> > while it's
+> > + * spewing means the cursor will jump all over the place, and act
+> > "drunk".
+> > + *
+> > + * The packets that are spewed tend to all have deltas between -2
+> > and 2, and
+> > + * the cursor will move around without really going very far.  It
+> > will
+> > + * tend to end up in the same location; if we tally up the changes
+> > over
+> > + * 100 packets, we end up w/ a final delta of close to 0.  This
+> > happens
+> > + * pretty regularly when the touchpad is spewing, and is pretty
+> > hard to
+> > + * manually trigger (at least for *my* fingers).  So, it makes a
+> > perfect
+> > + * scheme for detecting spews.
+> > + */
+> > +static void hgpk_spewing_hack(struct psmouse *psmouse, int l, int
+> > r, int x,
+> > +		int y)
+> > +{
+> > +	struct hgpk_data *priv = psmouse->private;
+> > +	static int count;
+> > +	static int x_tally;
+> > +	static int y_tally;
+> 
+> Hmm, I guess we'll never see 2 such devices in one box, but still
+> moving it to psmouse->private woudl be a good practice.
 
->
-> The solution would be to insert such conflicting (even if partially
-> overlapping)
->
-> Also, a small code structure comment:
->
->> +             if (e820.map[i].type != E820_RESERVED || res->start < (1ULL<<20))
->> +                     insert_resource(&iomem_resource, res);
->
-> this still needs a comment that we deal with resources that start below
-> 1MB in a special way and insert them early.
->
-> Perhaps split it out into a e820_entry_trusted() function and use that
-> as a condition in both the early and the late logic. [plus the check for
-> ->end in the late logic - that should be outside of the 'trust'
-> definition]
->
-> So whenever we tweak the definition of 'trust', we only have to do it in
-> a single place. Agreed?
 
-yes
+Can you please clarify this comment?
 
-YH
+
+> 
+> > +
+> > +static int hgpk_reconnect(struct psmouse *psmouse)
+> > +{
+> > +	if (olpc_board_at_least(olpc_board(0xb2)))
+> > +		if
+> > (psmouse->ps2dev.serio->dev.power.power_state.event !=
+> > +				PM_EVENT_ON)
+> > +			return 0;
+> > +
+> > +	psmouse_reset(psmouse);
+> > +	return 0;
+> 
+> We should not return success if we can't detect the same hardware. I
+> think if olpc_board_at_least(olpc_board(0xb2) fails we need to return
+> -1;
+> 
+
+This check isn't any kind of failure; it's due to a hardware quirk with
+earlier prototypes.  Basically, during suspend/resume, the touchpad
+rails stay powered.  We don't want to do any sort of reset of the
+psmouse device, otherwise we lose data (especially if someone is waking
+up the device via touchpad usage or button press, we certainly don't
+want to reset and drop the packets).
+
+However, b1 hardware required a reset for reasons that I can't recall
+anymore.  In both cases, the reconnect worked just fine; the difference
+is that a psmouse_reset was issued for b2 hardware and higher.
+
+I suppose the code should have a comment saying just that, eh? :)
+
+> > +}
+> > +
+> > +static ssize_t hgpk_show_powered(struct device *dev,
+> > +		struct device_attribute *attr, char *buf)
+> > +{
+> > +	struct serio *serio = to_serio_port(dev);
+> > +	struct psmouse *psmouse;
+> > +	struct hgpk_data *priv;
+> > +	int retval;
+> > +
+> > +	retval = serio_pin_driver(serio);
+> > +	if (retval)
+> > +		return retval;
+> > +
+> > +	psmouse = serio_get_drvdata(serio);
+> > +	priv = psmouse->private;
+> > +
+> > +	retval = sprintf(buf, "%d\n", priv->powered);
+> > +	serio_unpin_driver(serio);
+> > +	return retval;
+> > +}
+> > +
+> > +static ssize_t hgpk_set_powered(struct device *dev,
+> > +		struct device_attribute *attr, const char *buf,
+> > size_t count) +{
+> > +	struct serio *serio = to_serio_port(dev);
+> > +	struct psmouse *psmouse;
+> > +	struct hgpk_data *priv;
+> > +	unsigned long val;
+> > +	int retval;
+> > +
+> > +	if (*buf == '1')
+> > +		val = 1;
+> > +	else if (*buf == '0')
+> > +		val = 0;
+> > +	else
+> > +		return -EINVAL;
+> 
+> I'd use strict_strtoul() and checked for val <= 1.
+> 
+
+*nod*
+
+> > +
+> > +	retval = serio_pin_driver(serio);
+> > +	if (retval)
+> > +		return retval;
+> > +
+> > +	psmouse = serio_get_drvdata(serio);
+> > +	priv = psmouse->private;
+> > +
+> > +	if (val == priv->powered)
+> > +		goto done;
+> > +
+> > +	/* hgpk_toggle_power will deal w/ state so we're not
+> > racing w/ irq */
+> > +	retval = hgpk_toggle_power(psmouse, val);
+> > +	if (!retval)
+> > +		priv->powered = val;
+> > +
+> > +done:
+> > +	serio_unpin_driver(serio);
+> > +	return retval ? retval : count;
+> > +}
+> > +
+> > +static DEVICE_ATTR(powered, S_IWUSR | S_IRUGO, hgpk_show_powered,
+> > +		hgpk_set_powered);
+> > 
+> 
+> Any particular reason you didn't use PSMOUSE_DEFINE_ATTR? Then you
+
+PSMOUSE_DEFINE_ATTR is fine for show_powered, but doesn't work for
+set_powered because it
+a) doesn't change the value if psmouse->state == PSMOUSE_IGNORE
+b) does some deactivation dance/activate dance
+
+I don't remember the specifics, but our powered stuff wasn't working as
+a PSMOUSE_DEFINE_ATTR callback.  At some point soon I'll take another
+look at it and see what the specific problem was.
+
+> would not need to bother with pinning the driver and provode mutual
+> exclusion with other things. Btw, what do we do if device is powered
+
+Agreed, the mutex stuff is not ideal.
+
+> down an user tries to change some settings via generic attributes
+> defined in psmouse-base?
+> 
+
+Hm, good point; set_powered should be setting PSMOUSE_IGNORE when
+powering the device off!
+
+> +
+> > +static void hgpk_disconnect(struct psmouse *psmouse)
+> > +{
+> > +	struct hgpk_data *priv = psmouse->private;
+> > +
+> > +	device_remove_file(&psmouse->ps2dev.serio->dev,
+> > &dev_attr_powered);
+> > +	psmouse_reset(psmouse);
+> > +	flush_scheduled_work();
+> 
+> What does this flush protect from? We are using specialized workqueue.
+> Plus psmouse_disconnect should take care of this, shouldn't it?
+>
+
+According to the commit I made some time ago, it's to protect against
+a race with kpsmouse_wq that would cause an oops.  I don't actually
+know if I was being paranoid there, or if there actually _was_ an oops
+that was being triggered.
+
+You're right though, psmouse_disconnect should take care of it for us..
+ 
+> > +	kfree(priv);
+> > +}
+> > +
+> 
+> > +static void hgpk_recalib_work(struct work_struct *work)
+> > +{
+> > +	struct delayed_work *w = container_of(work, struct
+> > delayed_work, work);
+> > +	struct hgpk_data *priv = container_of(w, struct hgpk_data,
+> > recalib_wq);
+> > +	struct psmouse *psmouse = priv->psmouse;
+> > +
+> > +	hgpk_dbg(psmouse, "recalibrating touchpad..\n");
+> > +
+> > +	if (hgpk_force_recalibrate(psmouse))
+> > +		hgpk_err(psmouse, "recalibration failed!\n");
+> > +}
+> > +
+> 
+> Overall I am concerned about mutual exclusions between operations,
+> such as settin power state and adjusting genericmouse  properties
+> (repeaqt rate, resolution, etc). Psmouse-base usues psmouse_mutex for
+> that, mayne olps should do that too...
+> 
+
+*nod*, I'll see what I can do about the powered thing.  Thanks!
