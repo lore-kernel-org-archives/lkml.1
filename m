@@ -1,124 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbYH2Go2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbYH2GqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753141AbYH2Go2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 02:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbYH2GoU
+	id S1753249AbYH2GqQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 02:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbYH2GqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 02:44:20 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:43290 "EHLO pasmtpA.tele.dk"
+	Fri, 29 Aug 2008 02:46:00 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33288 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751316AbYH2GoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 02:44:19 -0400
-Date: Fri, 29 Aug 2008 08:44:16 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: mano@roarinelk.homelinux.net, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org
-Subject: Re: MTD kobject warnings due to block layer changes
-Message-ID: <20080829064415.GJ20055@kernel.dk>
-References: <20080828100921.GY20055@kernel.dk> <20080829145616P.fujita.tomonori@lab.ntt.co.jp> <20080829062933.GI20055@kernel.dk> <20080829153929B.fujita.tomonori@lab.ntt.co.jp>
+	id S1751320AbYH2Gp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 02:45:59 -0400
+Date: Fri, 29 Aug 2008 08:45:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       Hugh Dickens <hugh@veritas.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory
+	corruption
+Message-ID: <20080829064540.GA26619@elte.hu>
+References: <48B701FB.2020905@goop.org> <b170af450808282320g27dfa2a9mc0e14e27e215ce96@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080829153929B.fujita.tomonori@lab.ntt.co.jp>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <b170af450808282320g27dfa2a9mc0e14e27e215ce96@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 29 2008, FUJITA Tomonori wrote:
-> On Fri, 29 Aug 2008 08:29:34 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
+
+* Rafał Miłecki <zajec5@gmail.com> wrote:
+
+> 2008/8/28 Jeremy Fitzhardinge <jeremy@goop.org>:
+> > Some BIOSes have been observed to corrupt memory in the low 64k.  This
+> > patch does two things:
+> >  - Reserves all memory which does not have to be in that area, to
+> >   prevent it from being used as general memory by the kernel.  Things
+> >   like the SMP trampoline are still in the memory, however.
+> >  - Clears the reserved memory so we can observe changes to it.
+> >  - Adds a function check_for_bios_corruption() which checks and reports on
+> >   memory becoming unexpectedly non-zero.  Currently it's called in the
+> >   x86 fault handler, and the powermanagement debug output.
+> >
+> > RFC: What other places should we check for corruption in?
+> >
+> > [ Alan, Rafał: could you check you see:
+> >   1: corruption messages
+> >   2: no crashes
+> >  Thanks -J
+> > ]
 > 
-> > On Fri, Aug 29 2008, FUJITA Tomonori wrote:
-> > > On Thu, 28 Aug 2008 12:09:21 +0200
-> > > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > 
-> > > > On Thu, Aug 28 2008, Manuel Lauss wrote:
-> > > > > Hello,
-> > > > > 
-> > > > > Todays -git spits out these wanings during boot, caused by
-> > > > > Commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4
-> > > > > ( block: move cmdfilter from gendisk to request_queue ):
-> > > > > 
-> > > > > Using physmap partition information
-> > > > > Creating 3 MTD partitions on "physmap-flash":
-> > > > > 0x00000000-0x01c00000 : "User FS"
-> > > > > 0x01c00000-0x01c40000 : "booter"
-> > > > > kobject (8511c410): tried to init an initialized object, something is seriously wrong.
-> > > > > Call Trace:
-> > > > > [<8036644c>] dump_stack+0x8/0x34
-> > > > > [<8021f050>] kobject_init+0x50/0xcc
-> > > > > [<8021fa18>] kobject_init_and_add+0x24/0x58
-> > > > > [<8021d20c>] blk_register_filter+0x4c/0x64
-> > > > > [<8021c194>] add_disk+0x78/0xe0
-> > > > > [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
-> > > > > [<8027c8f0>] blktrans_notify_add+0x40/0x78
-> > > > > [<80279c00>] add_mtd_device+0xd0/0x150
-> > > > > [<8027b090>] add_mtd_partitions+0x568/0x5d8
-> > > > > [<80285458>] physmap_flash_probe+0x2ac/0x334
-> > > > > [<802644f8>] driver_probe_device+0x12c/0x244
-> > > > > [<8026465c>] __driver_attach+0x4c/0x84
-> > > > > [<80263c64>] bus_for_each_dev+0x58/0xac
-> > > > > [<802633ec>] bus_add_driver+0xc4/0x24c
-> > > > > [<802648e0>] driver_register+0xcc/0x184
-> > > > > [<80100460>] _stext+0x60/0x1bc
-> > > > > 
-> > > > > 0x01c40000-0x01fe0000 : "vmlinux.elf"
-> > > > > kobject (8511c410): tried to init an initialized object, something is seriously wrong.
-> > > > > Call Trace:
-> > > > > [<8036644c>] dump_stack+0x8/0x34
-> > > > > [<8021f050>] kobject_init+0x50/0xcc
-> > > > > [<8021fa18>] kobject_init_and_add+0x24/0x58
-> > > > > [<8021d20c>] blk_register_filter+0x4c/0x64
-> > > > > [<8021c194>] add_disk+0x78/0xe0
-> > > > > [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
-> > > > > [<8027c8f0>] blktrans_notify_add+0x40/0x78
-> > > > > [<80279c00>] add_mtd_device+0xd0/0x150
-> > > > > [<8027b090>] add_mtd_partitions+0x568/0x5d8
-> > > > > [<80285458>] physmap_flash_probe+0x2ac/0x334
-> > > > > [<802644f8>] driver_probe_device+0x12c/0x244
-> > > > > [<8026465c>] __driver_attach+0x4c/0x84
-> > > > > [<80263c64>] bus_for_each_dev+0x58/0xac
-> > > > > [<802633ec>] bus_add_driver+0xc4/0x24c
-> > > > > [<802648e0>] driver_register+0xcc/0x184
-> > > > > [<80100460>] _stext+0x60/0x1bc
-> > > > > 
-> > > > > NAND device: Manufacturer ID: 0xec, Chip ID: 0xf1 (Samsung NAND 128MiB 3,3V 8-bit)
-> > > > > Scanning device for bad blocks
-> > > > > Creating 1 MTD partitions on "gen_nand":
-> > > > > 0x00000000-0x08000000 : "NAND FS 0"
-> > > > > kobject (8511c410): tried to init an initialized object, something is seriously wrong.
-> > > > > Call Trace:
-> > > > > [<8036644c>] dump_stack+0x8/0x34
-> > > > > [<8021f050>] kobject_init+0x50/0xcc
-> > > > > [<8021fa18>] kobject_init_and_add+0x24/0x58
-> > > > > [<8021d20c>] blk_register_filter+0x4c/0x64
-> > > > > [<8021c194>] add_disk+0x78/0xe0
-> > > > > [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
-> > > > > [<8027c8f0>] blktrans_notify_add+0x40/0x78
-> > > > > [<80279c00>] add_mtd_device+0xd0/0x150
-> > > > > [<8027b090>] add_mtd_partitions+0x568/0x5d8
-> > > > > [<804016b0>] plat_nand_probe+0x1e8/0x24c
-> > > > > [<802644f8>] driver_probe_device+0x12c/0x244
-> > > > > [<8026465c>] __driver_attach+0x4c/0x84
-> > > > > [<80263c64>] bus_for_each_dev+0x58/0xac
-> > > > > [<802633ec>] bus_add_driver+0xc4/0x24c
-> > > > > [<802648e0>] driver_register+0xcc/0x184
-> > > > > [<80100460>] _stext+0x60/0x1bc
-> > > > 
-> > > > Tomo? I don't see how this is happening. The queue is properly zeroed,
-> > > > so no chance ->state_initialized being crap.
-> > > 
-> > > With MTD, multiple gendisks share a single request_queue?
-> > 
-> > Irk, sure looks that way. I thougt we had disbanded with that years ago,
-> > it's generally not a "supported" configuration.
+> I was trying my best to crash system with this patch applied and failed :)
 > 
-> How about moving blk_register_filter(disk) from add_disk to sd.c and
-> sr.c, etc, which want the command filter support?
+> Works great.
+> 
+> Just wonder if I should expect any printk from
+> check_for_bios_corruption? I do not see any:
+> 
+> zajec@sony:~> dmesg | grep -i corr
+> scanning 2 areas for BIOS corruption
 
-Yeah, I think that's the quick'n dirty to fix this one.
+that's _very_ weird.
 
--- 
-Jens Axboe
+maybe the BIOS expects _zeroes_ somewhere? Do you suddenly see crashes 
+if you change this line in Jeremy's patch:
 
++               memset(__va(addr), 0, size);
+
+to something like:
+
++               memset(__va(addr), 0x55, size);
+
+If this does not tickle any messages either, then maybe the problem is 
+in the identity of the entities we allocate in the first 64K. Is there a 
+list of allocations that go there when Jeremy's patch is not applied?
+
+but ... i think with an earlier patch you saw corruption, right? 
+Far-fetched idea: maybe it's some CPU erratum during suspend/resume that 
+corrupts pagetables if the pagetables are allocated in the first 64K of 
+RAM? In that case we should use a bootmem allocation for pagetables that 
+give a minimum address of 64K.
+
+	Ingo
