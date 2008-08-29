@@ -1,82 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755885AbYH2P2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751018AbYH2PaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755885AbYH2P2p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 11:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYH2P2e
+	id S1751018AbYH2PaI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 11:30:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbYH2P34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 11:28:34 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:42642 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750934AbYH2P2d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 11:28:33 -0400
-Subject: Re: [PATCH] coredump_filter: add hugepage core dumping
-From: Adam Litke <agl@us.ibm.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Hugh Dickins <hugh@veritas.com>,
-       Kawai Hidehiro <hidehiro.kawai.ez@hitachi.com>,
-       William Irwin <wli@holomorphy.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080829082832.3C1D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080828142352.6ABC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <Pine.LNX.4.64.0808281724300.11072@blonde.site>
-	 <20080829082832.3C1D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain
-Organization: IBM
-Date: Fri, 29 Aug 2008 10:28:33 -0500
-Message-Id: <1220023713.14358.173.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 29 Aug 2008 11:29:56 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:54555 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751184AbYH2P34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 11:29:56 -0400
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Linux - Novell
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [ANNOUNCE] ACPI BIOS Guideline for Linux
+Date: Fri, 29 Aug 2008 17:29:52 +0200
+User-Agent: KMail/1.9.9
+Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>, linux-acpi@vger.kernel.org,
+       Len Brown <lenb@kernel.org>, Andi Kleen <ak@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200807241732.23412.trenn@suse.de> <200808281416.57193.trenn@suse.de> <20080828122227.GA26285@srcf.ucam.org>
+In-Reply-To: <20080828122227.GA26285@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808291729.53628.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-29 at 08:35 +0900, KOSAKI Motohiro wrote:
-> Hi
-> 
-> > > I think VM_RESERVED default dumping bahavior is good,
-> > > then I'd like to add coredump_filter mask.
-> > > 
-> > > This patch doesn't change dafault behavior.
-> > 
-> > This seems very reasonable to me
-> > (though I've little use for coredumps or hugepages myself).
-> 
-> Thanks a lot.
-> 
-> > One caution though: how well does it behave when coredumping a large
-> > area of hugepages which have not actually been instantiated prior to
-> > the coredump?  We have that funny FOLL_ANON ZERO_PAGE code in
-> > follow_page() to avoid wasting memory on large uninstantiated anon
-> > areas, but hugepages won't go that way.  If the dump hangs waiting for
-> > memory to be freed, or OOMkills other processes, that wouldn't be good;
-> > whereas if hugepage reservations (I've not followed what happens with
-> > them) or whatever just make it skip when no more, that should be okay.
-> 
-> I think hugepage reservation pages always exist when hugepage COW happend.
-> Then, hugepage access never cause try_to_free_pages() nor OOM.
+On Thursday 28 August 2008 14:22:29 Matthew Garrett wrote:
+> On Thu, Aug 28, 2008 at 02:16:55PM +0200, Thomas Renninger wrote:
+> > On Thursday 28 August 2008 12:56:16 Matthew Garrett wrote:
+> > > A documented WMI interface is easier to use than an entirely custom
+> > > documented interface, and reduces the amount of work the vendor has to
+> > > do in Windows. To be honest, I think it's the sort of thing we should
+> > > be encouraging.
+> >
+> > IMO WMI should not exist.
+> > A lot laptop BIOSes do not use it at all, unfortunately it seems to get
+> > more common again.
+> > What advantage do you get on Linux using WMI?
+>
+> Little. But what advantage do we get in the same functionality being
+> implemented in an entirely custom way? Even less.
+It is all about documentation, right.
+WMI is complicating things by one needless and complicated layer.
 
-(Mel, since you wrote the private reservation hugetlb code, would you
-care to verify the following:)
+> > For example HP is using WMI to export a WLAN (or bluetooth?) button on
+> > some machines.
+> > They should not do that, right?
+>
+> The HP wlan button is a hardware event. There's no need for it to be
+> sent via the keyboard controller. Some of the other keys would be easier
+> to deal with if they were sent via the keyboard controller, yes, but
+> that's not the full set of what the WMI functionality gives us. How do
+> you want kill switches to be controlled? I'd be happier with it being
+> done through WMI (like HP) than via Dell's bizarro SMI interface.
+>
+> > AFAIK most vendors tend to send an ordinary key event again for most
+> > extra buttons. Is this the way to go for the future? This probably
+> > should also be mentioned then.
+>
+> Some vendors do, and I agree that it's preferable.
 
-Well, reserved huge pages _almost_ always exist.  The notable exception
-happens when a process creates a MAP_PRIVATE hugetlb mapping and then
-forks.  No guarantees are made to the children for access to that
-hugetlb mapping.  So if such a child were to core dump an unavailable
-huge page, follow_hugetlb_page() would fail.  I think that case is
-harmless since it looks like elf_coredump() will replace it with a
-zeroed page?
+Feel free to send text snippets, e.g. about the preferable way of key events.
+Best a diff against the .tex file, but I can do the work and integrate it, np.
 
-The part of Hugh's email that does deserve more attention is the part
-about FOLL_ANON and the ZERO_PAGE.  It seems like an awful waste to zero
-out and instantiate huge pages just for a core dump.  I think it would
-be worth adding a flag to follow_hugetlb_page() so that it can be
-instructed to not fault in un-instantiated huge pages.  This would take
-some investigating as to whether it is even valid for
-follow_hugetlb_page() to return the ZERO_PAGE().
+Thanks,
 
--- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
-
+      Thomas
