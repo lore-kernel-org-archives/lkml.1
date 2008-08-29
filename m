@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759447AbYH2VXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759320AbYH2VZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759447AbYH2VXG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 17:23:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757404AbYH2VWw
+	id S1759320AbYH2VZr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 17:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbYH2VZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 17:22:52 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2554 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757279AbYH2VWu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 17:22:50 -0400
-Date: Fri, 29 Aug 2008 17:22:50 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Arnd Bergmann <arnd@arndb.de>
-cc: linuxppc-dev@ozlabs.org, <dbrownell@users.sourceforge.net>,
-       <greg@kroah.com>, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, Scott Wood <scottwood@freescale.com>,
-       Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller
- driver
-In-Reply-To: <200808291938.26651.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.44L0.0808291722160.13185-100000@netrider.rowland.org>
+	Fri, 29 Aug 2008 17:25:37 -0400
+Received: from usul.saidi.cx ([204.11.33.34]:60875 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753498AbYH2VZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 17:25:37 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/1] =?UTF-8?Q?toshiba=5Facpi=3A=20Add=20support=20for=20bluet?=
+ =?UTF-8?Q?ooth=20togglingthrough=20rfkill=20=28v=37=29?=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Date: Fri, 29 Aug 2008 17:26:05 -0400
+From: Philip Langdale <philipl@overt.org>
+Cc: linux-kernel@vger.kernel.org, mjg59@srcf.ucam.org,
+       toshiba_acpi@memebeam.org, ivdoorn@gmail.com,
+       linux-wireless@vger.kernel.org, hmh@hmh.eng.br
+In-Reply-To: <20080829141216.f0d69ae4.akpm@linux-foundation.org>
+References: <20080829141216.f0d69ae4.akpm@linux-foundation.org>
+Message-ID: <f86c32a17907fdacd870e853761f0382@localhost>
+User-Agent: RoundCube Webmail/0.1b
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008, Arnd Bergmann wrote:
 
-> On Friday 29 August 2008, Alan Stern wrote:
-> > I thought you _were_ arguing against that.  Unless I misunderstood,
-> > your original complaint was that since each peripheral controller
-> > driver defines usb_gadget_{un}register_driver, there can be only one
-> > controller driver loaded at a time.
+On Fri, 29 Aug 2008 14:12:16 -0700, Andrew Morton
+<akpm@linux-foundation.org> wrote:
 > 
-> That's probably where the misunderstanding came from: I did not expect
-> more than one driver to actually be useful on a given system, but that
-> should IMHO not prevent you from loading the drivers using modprobe, or
-> building them all into the kernel.
+> ERROR: "rfkill_force_state" [drivers/acpi/toshiba_acpi.ko] undefined!
+> ERROR: "rfkill_free" [drivers/acpi/toshiba_acpi.ko] undefined!
+> ERROR: "rfkill_register" [drivers/acpi/toshiba_acpi.ko] undefined!
+> ERROR: "rfkill_allocate" [drivers/acpi/toshiba_acpi.ko] undefined!
+> ERROR: "rfkill_unregister" [drivers/acpi/toshiba_acpi.ko] undefined!
+> 
+> I'll stick a `select RFKILL' in there, but it'll probably blow up
+> in other ways.  select usually does.
 
-All right, then we're in agreement.  :-)
+Sorry, thanks for catching that. thinkpad_acpi also just does 'select
+RFKILL',
+so hopefully it'll be ok.
 
-Alan Stern
+--phil
 
