@@ -1,67 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbYH2I3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbYH2IaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754891AbYH2I3v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 04:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbYH2I3n
+	id S1755739AbYH2IaQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 04:30:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbYH2I34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 04:29:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47481 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750803AbYH2I3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 04:29:42 -0400
-Message-ID: <48B7B327.3060306@kernel.org>
-Date: Fri, 29 Aug 2008 10:28:23 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Fri, 29 Aug 2008 04:29:56 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:50364 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751400AbYH2I3z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 04:29:55 -0400
+Date: Fri, 29 Aug 2008 09:29:50 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mm: hugetlb.c make functions static, use NULL rather
+	than 0
+Message-ID: <20080829082950.GC3387@brain>
+References: <1219445274.4493.10.camel@brick> <Pine.LNX.4.64.0808251023220.8672@blonde.site>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       Takashi Iwai <tiwai@suse.de>, fuse-devel@lists.sourceforge.net
-Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
-References: <48B6F711.1040604@kernel.org> <20080828200120.GA16462@cs181140183.pp.htv.fi> <48B751DA.5090906@kernel.org> <20080829065026.GC16462@cs181140183.pp.htv.fi> <48B7A48B.8020405@kernel.org> <20080829082129.GF16462@cs181140183.pp.htv.fi>
-In-Reply-To: <20080829082129.GF16462@cs181140183.pp.htv.fi>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 29 Aug 2008 08:29:33 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0808251023220.8672@blonde.site>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Adrian Bunk wrote:
->> Yeah, that's why I agree it's a bit too late but still better late than
->> never.  There are just some programs, be it commercial or ancient, which
->> don't work quite as well as it could.  Requiring update to ALSA took
->> painfully long years and we're still not in the clear yet.  Now should
->> we ask people to update to PA?
->> ...
+On Mon, Aug 25, 2008 at 10:27:39AM +0100, Hugh Dickins wrote:
+> On Fri, 22 Aug 2008, Harvey Harrison wrote:
 > 
-> Doesn't PA already emulate ALSA?
+> > mm/hugetlb.c:265:17: warning: symbol 'resv_map_alloc' was not declared. Should it be static?
+> > mm/hugetlb.c:277:6: warning: symbol 'resv_map_release' was not declared. Should it be static?
+> > mm/hugetlb.c:292:9: warning: Using plain integer as NULL pointer
+> > mm/hugetlb.c:1750:5: warning: symbol 'unmap_ref_private' was not declared. Should it be static?
 
-There's an ALSA plugin which connects to PA.  It works pretty well most
-of the time although there are some odd ones which break.  Skype didn't
-work too well a few months ago.  Dunno how it works these days tho and
-it's likely that the next iteration of popular audio apps will do PA
-directly.
+Harvey are you using some additional compiler flags to get this, I am
+pretty sure I checked for warnings during compilation before this lot
+was merged.  Hmmm.
 
->> ossp is simply a better way to support /dev/dsp on modern systems and
->> bulk of it lives in userland (and I hope this can be the case for future
->> deprecations too).  If for nothing else, it'll enable us to do away with
->> three different emulations at the very least.  I mean we can't of course
->> do away with padsp and then some still only work with aoss and then we
->> need in-kernel ALSA OSS emulation as the final fallback when both fail.
->>  It's a big mess and ossp can basically OSS emulation as good as
->> in-kernel ALSA OSS w/ muxing.
+> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+
+Yep this looks completely sane.  This appears to have been sucked up
+into -mm already, but for completeness.
+
+Acked-by: Andy Whitcroft <apw@shadowen.org>
+
+> This all looks good to me, but guess you sent it my way because
+> you mistook it for mm/hughtlb.c?  Cc'ed Andy, he's the man here!
+
+Thanks for the heads up.
+
+> Hugh
 > 
-> The in-kernel OSS emulation also support OSS MIDI.
-
-Yeah, and adding midi support to ossp won't add one line of code to the
-kernel.  :-)
-
-Thanks.
-
--- 
-tejun
+> > ---
+> >  mm/hugetlb.c |    8 ++++----
+> >  1 files changed, 4 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> > index 67a7119..b548a94 100644
+> > --- a/mm/hugetlb.c
+> > +++ b/mm/hugetlb.c
+> > @@ -262,7 +262,7 @@ struct resv_map {
+> >  	struct list_head regions;
+> >  };
+> >  
+> > -struct resv_map *resv_map_alloc(void)
+> > +static struct resv_map *resv_map_alloc(void)
+> >  {
+> >  	struct resv_map *resv_map = kmalloc(sizeof(*resv_map), GFP_KERNEL);
+> >  	if (!resv_map)
+> > @@ -274,7 +274,7 @@ struct resv_map *resv_map_alloc(void)
+> >  	return resv_map;
+> >  }
+> >  
+> > -void resv_map_release(struct kref *ref)
+> > +static void resv_map_release(struct kref *ref)
+> >  {
+> >  	struct resv_map *resv_map = container_of(ref, struct resv_map, refs);
+> >  
+> > @@ -289,7 +289,7 @@ static struct resv_map *vma_resv_map(struct vm_area_struct *vma)
+> >  	if (!(vma->vm_flags & VM_SHARED))
+> >  		return (struct resv_map *)(get_vma_private_data(vma) &
+> >  							~HPAGE_RESV_MASK);
+> > -	return 0;
+> > +	return NULL;
+> >  }
+> >  
+> >  static void set_vma_resv_map(struct vm_area_struct *vma, struct resv_map *map)
+> > @@ -1747,7 +1747,7 @@ void unmap_hugepage_range(struct vm_area_struct *vma, unsigned long start,
+> >   * from other VMAs and let the children be SIGKILLed if they are faulting the
+> >   * same region.
+> >   */
+> > -int unmap_ref_private(struct mm_struct *mm,
+> > +static int unmap_ref_private(struct mm_struct *mm,
+> >  					struct vm_area_struct *vma,
+> >  					struct page *page,
+> >  					unsigned long address)
+> > -- 
+> > 1.6.0.340.g84854
