@@ -1,108 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbYH2GAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752963AbYH2GCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752746AbYH2GAr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 02:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbYH2GAk
+	id S1752963AbYH2GCY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 02:02:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYH2GCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 02:00:40 -0400
-Received: from sh.osrg.net ([192.16.179.4]:48441 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751180AbYH2GAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 02:00:39 -0400
-Date: Fri, 29 Aug 2008 14:56:38 +0900
-To: jens.axboe@oracle.com
-Cc: mano@roarinelk.homelinux.net, fujita.tomonori@lab.ntt.co.jp,
-       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
-Subject: Re: MTD kobject warnings due to block layer changes
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080828100921.GY20055@kernel.dk>
-References: <20080828084603.GA17139@roarinelk.homelinux.net>
-	<20080828100921.GY20055@kernel.dk>
+	Fri, 29 Aug 2008 02:02:16 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:32855 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751203AbYH2GCO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 02:02:14 -0400
+Subject: Re: [PATCH 2/2][MTD] Add support for > 2GiB MTD devices
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       linux-mtd-bounces@lists.infradead.org,
+       "'Bruce Leonard'" <brucle@earthlink.net>, Bruce_Leonard@selinc.com,
+       linux-kernel@vger.kernel.org, Tim Anderson <tanderson@mvista.com>,
+       linux-mtd@lists.infradead.org,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080827152534.GB1371@logfs.org>
+References: <1219817017.18027.149.camel@sauron>
+	 <000201c9080d$0bce0d20$6b01a8c0@mvista.com>
+	 <20080827093920.1bdb44c2@lxorguk.ukuu.org.uk>
+	 <1219827692.7107.170.camel@pmac.infradead.org>
+	 <20080827143416.GA1371@logfs.org> <1219848463.18027.166.camel@sauron>
+	 <20080827152534.GB1371@logfs.org>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 29 Aug 2008 08:48:07 +0300
+Message-Id: <1219988887.4036.7.camel@sauron>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080829145616P.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 29 Aug 2008 05:51:33.0903 (UTC) FILETIME=[4AF6A9F0:01C9099B]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Aug 2008 12:09:21 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> On Thu, Aug 28 2008, Manuel Lauss wrote:
-> > Hello,
-> > 
-> > Todays -git spits out these wanings during boot, caused by
-> > Commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4
-> > ( block: move cmdfilter from gendisk to request_queue ):
-> > 
-> > Using physmap partition information
-> > Creating 3 MTD partitions on "physmap-flash":
-> > 0x00000000-0x01c00000 : "User FS"
-> > 0x01c00000-0x01c40000 : "booter"
-> > kobject (8511c410): tried to init an initialized object, something is seriously wrong.
-> > Call Trace:
-> > [<8036644c>] dump_stack+0x8/0x34
-> > [<8021f050>] kobject_init+0x50/0xcc
-> > [<8021fa18>] kobject_init_and_add+0x24/0x58
-> > [<8021d20c>] blk_register_filter+0x4c/0x64
-> > [<8021c194>] add_disk+0x78/0xe0
-> > [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
-> > [<8027c8f0>] blktrans_notify_add+0x40/0x78
-> > [<80279c00>] add_mtd_device+0xd0/0x150
-> > [<8027b090>] add_mtd_partitions+0x568/0x5d8
-> > [<80285458>] physmap_flash_probe+0x2ac/0x334
-> > [<802644f8>] driver_probe_device+0x12c/0x244
-> > [<8026465c>] __driver_attach+0x4c/0x84
-> > [<80263c64>] bus_for_each_dev+0x58/0xac
-> > [<802633ec>] bus_add_driver+0xc4/0x24c
-> > [<802648e0>] driver_register+0xcc/0x184
-> > [<80100460>] _stext+0x60/0x1bc
-> > 
-> > 0x01c40000-0x01fe0000 : "vmlinux.elf"
-> > kobject (8511c410): tried to init an initialized object, something is seriously wrong.
-> > Call Trace:
-> > [<8036644c>] dump_stack+0x8/0x34
-> > [<8021f050>] kobject_init+0x50/0xcc
-> > [<8021fa18>] kobject_init_and_add+0x24/0x58
-> > [<8021d20c>] blk_register_filter+0x4c/0x64
-> > [<8021c194>] add_disk+0x78/0xe0
-> > [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
-> > [<8027c8f0>] blktrans_notify_add+0x40/0x78
-> > [<80279c00>] add_mtd_device+0xd0/0x150
-> > [<8027b090>] add_mtd_partitions+0x568/0x5d8
-> > [<80285458>] physmap_flash_probe+0x2ac/0x334
-> > [<802644f8>] driver_probe_device+0x12c/0x244
-> > [<8026465c>] __driver_attach+0x4c/0x84
-> > [<80263c64>] bus_for_each_dev+0x58/0xac
-> > [<802633ec>] bus_add_driver+0xc4/0x24c
-> > [<802648e0>] driver_register+0xcc/0x184
-> > [<80100460>] _stext+0x60/0x1bc
-> > 
-> > NAND device: Manufacturer ID: 0xec, Chip ID: 0xf1 (Samsung NAND 128MiB 3,3V 8-bit)
-> > Scanning device for bad blocks
-> > Creating 1 MTD partitions on "gen_nand":
-> > 0x00000000-0x08000000 : "NAND FS 0"
-> > kobject (8511c410): tried to init an initialized object, something is seriously wrong.
-> > Call Trace:
-> > [<8036644c>] dump_stack+0x8/0x34
-> > [<8021f050>] kobject_init+0x50/0xcc
-> > [<8021fa18>] kobject_init_and_add+0x24/0x58
-> > [<8021d20c>] blk_register_filter+0x4c/0x64
-> > [<8021c194>] add_disk+0x78/0xe0
-> > [<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
-> > [<8027c8f0>] blktrans_notify_add+0x40/0x78
-> > [<80279c00>] add_mtd_device+0xd0/0x150
-> > [<8027b090>] add_mtd_partitions+0x568/0x5d8
-> > [<804016b0>] plat_nand_probe+0x1e8/0x24c
-> > [<802644f8>] driver_probe_device+0x12c/0x244
-> > [<8026465c>] __driver_attach+0x4c/0x84
-> > [<80263c64>] bus_for_each_dev+0x58/0xac
-> > [<802633ec>] bus_add_driver+0xc4/0x24c
-> > [<802648e0>] driver_register+0xcc/0x184
-> > [<80100460>] _stext+0x60/0x1bc
+On Wed, 2008-08-27 at 17:25 +0200, Jörn Engel wrote:
+> > I would like to make udev creating MTD devices, instead of creating them
+> > by hands. Adding MTD to LDM would anyway introduce corresponding sysfs
+> > files, right? This means we would have one more interface anyway.
 > 
-> Tomo? I don't see how this is happening. The queue is properly zeroed,
-> so no chance ->state_initialized being crap.
+> Could be useful, I don't mind you sending a patch.  However, does this
+> means that MEMGETINFO64 or some other ioctl should not be done?  Should
+> flash_erase open, read and close 8 seperate files instead of doing a
+> single ioctl?  And should our support for large devices wait for the
+> sysfs support that has been talked about and not done for about two
+> years already?
 
-With MTD, multiple gendisks share a single request_queue?
+Up to dwmw2, but I do not mind if the answer to all the above questions
+is "yes" :-)
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
