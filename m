@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbYH2Kng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbYH2Knw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755222AbYH2Kng (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 06:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbYH2Kn0
+	id S1753128AbYH2Knw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 06:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbYH2Knl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 06:43:26 -0400
-Received: from ag-out-0708.google.com ([72.14.246.240]:25940 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751530AbYH2KnZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 06:43:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=r4wZsqUwOwz4VJQlby3kUrn1T7RBYh92n7yDnEwp9vqi7tsmeWdz7MDFukbWiu5HAu
-         BOqhsKh5Z8Xdf5mz4WrTA/m0jkqHKNm4I0wArtKibKe70wq8JdmDehfZsIm0x8B+R37v
-         76GlhiyhWgQ82g2gU6TowbLymL82z7wX7cAMw=
-Message-ID: <48B7D286.7050104@gmail.com>
-Date: Fri, 29 Aug 2008 12:42:14 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Fri, 29 Aug 2008 06:43:41 -0400
+Received: from www.tglx.de ([62.245.132.106]:43939 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755637AbYH2Knl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 06:43:41 -0400
+Date: Fri, 29 Aug 2008 12:42:44 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Daniel J Blueman <daniel.blueman@gmail.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [PATCH] debugobjects: fix lockdep warning #2
+In-Reply-To: <20080828153214.GA27653@localhost.localdomain>
+Message-ID: <alpine.LFD.1.10.0808291212100.3243@apollo.tec.linutronix.de>
+References: <20080828153214.GA27653@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
-       Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Regression: SATA disk double spin-off during hibernation on hp
- nx6325
-References: <200808290002.55026.rjw@sisk.pl> <48B7C979.1000606@gmail.com> <200808291241.04183.rjw@sisk.pl>
-In-Reply-To: <200808291241.04183.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> Actaully, they do belong to it.  This is the part "fixing" the hibernation code
-> path, in which the disk is also powered off unnecessarily.
+On Thu, 28 Aug 2008, Vegard Nossum wrote:
+> On Thu, Aug 28, 2008 at 3:56 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> > could you resend the final patch please? It's a candidate for .27, if it
+> > works out fine.
 > 
-> Well, probably I should use SYSTEM_HIBERNATE_ENTER or something similar
-> instead of SYSTEM_SUSPEND_DISK.
-> 
-> In short, the idea is to change system_state to something specific to the last
-> phase of hibernation (after saving the image) and check that in
-> ata_scsi_start_stop_xlat().  In fact that's completely analogous to what's done
-> for SYSTEM_POWER_OFF in there.
+> Here is the combined patch. I've tested it only briefly, and I am
+> unsure of whether it still produces lockdep warnings for Daniel or
+> not. I wish it would not be applied anywhere unless it was
+> officially Reviewed-by: someone. In particular, I'm not quite
+> steady with the irq-safe locking (Thomas might want to have a look).
 
-Ah.. right, missed the added check for SUSPEND_DISK in libata-scsi.c.
-Maybe it's a good idea to note it in the commit message later?
+The irq safe locking is the easy part :) Calling free_object w/o the
+hash bucket lock held is fine as we removed it already from the bucket
+and there is no other reference than the pointer we hold at that point.
+ 
+>  
+>  	printk(KERN_WARNING "ODEBUG: Out of memory. ODEBUG disabled\n");
+>  
+> +	/* XXX: Could probably be optimized by transplantation of more than
+> +	 * one entry at a time. */
+>  	for (i = 0; i < ODEBUG_HASH_SIZE; i++, db++) {
+>  		spin_lock_irqsave(&db->lock, flags);
+>  		hlist_for_each_entry_safe(obj, node, tmp, &db->list, node) {
+>  			hlist_del(&obj->node);
+> -			free_object(obj);
+> +			hlist_add_head(&obj->node, &freelist);
+>  		}
+>  		spin_unlock_irqrestore(&db->lock, flags);
+> +
+> +		/* Now free them */
+> +		hlist_for_each_entry_safe(obj, node, tmp, &freelist, node) {
+> +			hlist_del(&obj->node);
+> +			free_object(obj);
+> +		}
+>  	}
+>  }
 
-Thanks.
+What you want is a helper function which moves the complete list from
+one head to the other. I'll whip one up.
 
--- 
-tejun
+I'll push it through the tip tree.
+
+Thanks,
+
+	tglx
