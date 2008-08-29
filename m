@@ -1,172 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbYH2ASS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbYH2AVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756531AbYH2ASS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 20:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbYH2ASA
+	id S1756439AbYH2AVy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 20:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbYH2AVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 20:18:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57952 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753829AbYH2AR7 (ORCPT
+	Thu, 28 Aug 2008 20:21:46 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:40633 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753194AbYH2AVp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 20:17:59 -0400
-Date: Thu, 28 Aug 2008 17:17:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: mingo@elte.hu, daniel.blueman@gmail.com, tglx@linutronix.de,
-       clameter@sgi.com, torvalds@linux-foundation.org, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, bunk@kernel.org, protasnb@gmail.com,
-       kernel-testers@vger.kernel.org
-Subject: Re: [PATCH] debugobjects: fix lockdep warning #2
-Message-Id: <20080828171706.6080accf.akpm@linux-foundation.org>
-In-Reply-To: <20080828153214.GA27653@localhost.localdomain>
-References: <20080828153214.GA27653@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 28 Aug 2008 20:21:45 -0400
+Message-ID: <48B740F5.5060903@zytor.com>
+Date: Thu, 28 Aug 2008 17:21:09 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Witbrodt <dawitbro@sbcglobal.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: split e820 reserved entries record to late v2
+References: <1219955655-18357-1-git-send-email-yhlu.kernel@gmail.com> <alpine.LFD.1.10.0808281339250.3300@nehalem.linux-foundation.org> <86802c440808281352y1371f437vf3409d9e104d1a51@mail.gmail.com> <20080828211647.GA32431@elte.hu>
+In-Reply-To: <20080828211647.GA32431@elte.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Aug 2008 17:32:14 +0200
-Vegard Nossum <vegard.nossum@gmail.com> wrote:
-
-> On Thu, Aug 28, 2008 at 3:56 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> > could you resend the final patch please? It's a candidate for .27, if it
-> > works out fine.
+Ingo Molnar wrote:
 > 
-> Here is the combined patch. I've tested it only briefly, and I am
-> unsure of whether it still produces lockdep warnings for Daniel or
-> not. I wish it would not be applied anywhere unless it was
-> officially Reviewed-by: someone. In particular, I'm not quite
-> steady with the irq-safe locking (Thomas might want to have a look).
+> Here we have the problem of overlap i outlined earlier: if there's a 
+> partial overlap at this stage (as i think it can happen in the hpet case 
+> on David's box), we wont insert the E820_RESERVED resource.
+> 
+> The hpet hang will be solved, because we dont reprogram the BAR, but we 
+> now keep the formerly e820-reserved area as 'free' - which the PCI code 
+> could allocate new resources into - which could cause other problems 
+> (hangs, non-working devices, etc.) down the line.
+> 
+> Which most likely wont happen currently in practice (there's enough free 
+> space elsewhere), but it's still a not truly 'free' area and it would be 
+> nice to have a complete and correct picture, based on all sources of 
+> information we have.
 > 
 
-It all looks good to me.
+This may be a rehash of things previously discussed in this thread; my 
+email seems to be a bit flakey to the point that I don't know if I have 
+gotten all the messages.
 
-> 
-> 
-> >From 977cf583b79be7308d5e310711fe6038c8af96a4 Mon Sep 17 00:00:00 2001
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-> Date: Thu, 28 Aug 2008 17:09:57 +0200
-> Subject: [PATCH] debugobjects: fix lockdep warning #2
-> 
-> Daniel J. Blueman reported:
-> > =======================================================
-> > [ INFO: possible circular locking dependency detected ]
-> > 2.6.27-rc4-224c #1
-> > -------------------------------------------------------
-> > hald/4680 is trying to acquire lock:
-> >  (&n->list_lock){++..}, at: [<ffffffff802bfa26>] add_partial+0x26/0x80
-> >
-> > but task is already holding lock:
-> >  (&obj_hash[i].lock){++..}, at: [<ffffffff8041cfdc>]
-> > debug_object_free+0x5c/0x120
-> 
-> We fix it by moving the actual freeing to outside the lock (the lock
-> now only protects the list).
-> 
-> The lock is also promoted to irq-safe (suggested by Dan).
+Either way, Ingo mentioned in a private messages four steps, basically 
+summarizing the above email:
 
-What was the reason for this other change?  I'm sure Dan is a fine chap,
-but we usually prefer a little more justification for changes ;)
+1 - first we allocate the absolute essentials (e820 RAM and a few low
+     RAM specials)
+2 - then we register all existing PCI resources - but do not reallocate
+     any PCI resources that conflict with existing step #1 resources
+3 - then we allocate e820 reserved entries (and whatever special non-PCI
+     resources we might know about in general) - these are less trusted
+     than any of the existing PCI resources but still it can hurt us
+     badly if the PCI code allocates new resources on them.
+4 - then the PCI code can run and allocate free resources to all the
+     zero, not yet allocated BARs, and can reallocate any resources that
+     might conflict with existing [step #1 or step #3] registered
+     resources.
 
-> Reported-by: Daniel J Blueman <daniel.blueman@gmail.com>
-> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
-> ---
->  lib/debugobjects.c |   38 +++++++++++++++++++++++++++++---------
->  1 files changed, 29 insertions(+), 9 deletions(-)
-> 
-> diff --git a/lib/debugobjects.c b/lib/debugobjects.c
-> index 19acf8c..acf9ed8 100644
-> --- a/lib/debugobjects.c
-> +++ b/lib/debugobjects.c
-> @@ -115,9 +115,10 @@ static struct debug_obj *lookup_object(void *addr, struct debug_bucket *b)
->  static struct debug_obj *
->  alloc_object(void *addr, struct debug_bucket *b, struct debug_obj_descr *descr)
->  {
-> +	unsigned long flags;
->  	struct debug_obj *obj = NULL;
->  
-> -	spin_lock(&pool_lock);
-> +	spin_lock_irqsave(&pool_lock, flags);
->  	if (obj_pool.first) {
->  		obj	    = hlist_entry(obj_pool.first, typeof(*obj), node);
->  
-> @@ -136,7 +137,7 @@ alloc_object(void *addr, struct debug_bucket *b, struct debug_obj_descr *descr)
->  		if (obj_pool_free < obj_pool_min_free)
->  			obj_pool_min_free = obj_pool_free;
->  	}
-> -	spin_unlock(&pool_lock);
-> +	spin_unlock_irqrestore(&pool_lock, flags);
->  
->  	return obj;
->  }
-> @@ -146,18 +147,19 @@ alloc_object(void *addr, struct debug_bucket *b, struct debug_obj_descr *descr)
->   */
->  static void free_object(struct debug_obj *obj)
->  {
-> +	unsigned long flags;
->  	unsigned long idx = (unsigned long)(obj - obj_static_pool);
->  
->  	if (obj_pool_free < ODEBUG_POOL_SIZE || idx < ODEBUG_POOL_SIZE) {
-> -		spin_lock(&pool_lock);
-> +		spin_lock_irqsave(&pool_lock, flags);
->  		hlist_add_head(&obj->node, &obj_pool);
->  		obj_pool_free++;
->  		obj_pool_used--;
-> -		spin_unlock(&pool_lock);
-> +		spin_unlock_irqrestore(&pool_lock, flags);
->  	} else {
-> -		spin_lock(&pool_lock);
-> +		spin_lock_irqsave(&pool_lock, flags);
->  		obj_pool_used--;
-> -		spin_unlock(&pool_lock);
-> +		spin_unlock_irqrestore(&pool_lock, flags);
->  		kmem_cache_free(obj_cache, obj);
->  	}
->  }
-> @@ -170,19 +172,28 @@ static void debug_objects_oom(void)
->  {
->  	struct debug_bucket *db = obj_hash;
->  	struct hlist_node *node, *tmp;
-> +	HLIST_HEAD(freelist);
->  	struct debug_obj *obj;
->  	unsigned long flags;
->  	int i;
->  
->  	printk(KERN_WARNING "ODEBUG: Out of memory. ODEBUG disabled\n");
->  
-> +	/* XXX: Could probably be optimized by transplantation of more than
-> +	 * one entry at a time. */
->  	for (i = 0; i < ODEBUG_HASH_SIZE; i++, db++) {
->  		spin_lock_irqsave(&db->lock, flags);
->  		hlist_for_each_entry_safe(obj, node, tmp, &db->list, node) {
->  			hlist_del(&obj->node);
-> -			free_object(obj);
-> +			hlist_add_head(&obj->node, &freelist);
->  		}
->  		spin_unlock_irqrestore(&db->lock, flags);
-> +
-> +		/* Now free them */
-> +		hlist_for_each_entry_safe(obj, node, tmp, &freelist, node) {
-> +			hlist_del(&obj->node);
-> +			free_object(obj);
+I agree that this is almost certainly what we should be doing; there is 
+a difference between claiming resources already allocated and allocating 
+resources to new address space, in which case we want to be as 
+conservative as possible.
 
-I suspect that we can avoid the hlist_del() here, perhaps with a little
-effort.
+The key, of course, is that nothing goes in #1 unless we are bloody 
+damned sure that if a BAR points there, that BAR is unconditionally 
+broken and pointing into hyperspace.  Something claiming RAM or, say, 
+the legacy KBC might fall in this area.
 
-> +
-> +		/* Now free them */
-> +		hlist_for_each_entry_safe(obj, node, tmp, &freelist, node) {
-> +			hlist_del(&obj->node);
-> +			free_object(obj);
-> +		}
-> +
-
-and the other one.
-
-But I'm not sure that it's worth putting effort into - leaving dead
-objects strung onto a partially-live list is a little bit smelly IMO.
-
+	-hpa
