@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758741AbYH2RHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbYH2RJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758741AbYH2RHp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 13:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756436AbYH2RHg
+	id S1758674AbYH2RJs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 13:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756337AbYH2RJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 13:07:36 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46208 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756321AbYH2RHf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 13:07:35 -0400
-Message-ID: <48B82BFD.5030807@zytor.com>
-Date: Fri, 29 Aug 2008 10:03:57 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 29 Aug 2008 13:09:40 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53290 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755578AbYH2RJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 13:09:39 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.27-rc5
+Date: Fri, 29 Aug 2008 19:13:25 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>
+References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory corruption
-References: <48B701FB.2020905@goop.org> <Pine.LNX.4.64.0808290817190.21494@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0808290817190.21494@blonde.site>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808291913.26585.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
+On Friday, 29 of August 2008, Linus Torvalds wrote:
 > 
-> hpa introduced the 64k idea, and we've all been repeating it;
-> but I've not heard the reasoning behind it.  Is it a fundamental
-> addressing limitation within the BIOS memory model?  Or a case
-> that Windows treats the bottom 64k as scratch, so BIOS testers
-> won't notice if they corrupt it?
+> Another week (my weeks do seem to be eight days, don't they? Very odd), 
+> another -rc.
 > 
+> The dirstat pretty much says it all:
+> 
+>   43.0% arch/arm/configs/
+>   43.9% arch/arm/
+>   25.5% arch/powerpc/configs/
+>   26.8% arch/powerpc/
+>   73.9% arch/
+>    4.4% drivers/usb/musb/
+>    5.4% drivers/usb/
+>    4.0% drivers/watchdog/
+>   16.0% drivers/
+>    3.5% fs/
+> 
+> yeah, the bulk of it is all config updates, and with arm and powerpc 
+> leading the pack.
 
-I should point out that I have seen one particular bug quite a few times 
-poking around with boot loaders: the BIOS accesses memory at an 
-otherwise valid address, but with the segment base set to either zero or 
-0x400 instead of whatever it should have been.
+Doesn't boot on my quad core test box, apparently because of an AHCI failure.
 
-	-hpa
+Bisecting ...
+
+Rafael
