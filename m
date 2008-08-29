@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbYH2Uba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757559AbYH2Ub6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757037AbYH2Uba (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 16:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYH2UbV
+	id S1757559AbYH2Ub6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 16:31:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbYH2Ubt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 16:31:21 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:57134 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753157AbYH2UbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 16:31:21 -0400
-Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory
-	corruption
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       =?iso-8859-2?Q?Rafa=B3_Mi=B3ecki?= <zajec5@gmail.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Hugh Dickens <hugh@veritas.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <48B76CE0.5010309@goop.org>
-References: <48B701FB.2020905@goop.org>
-	 <86802c440808281849nb972d64te89894077ea9f33c@mail.gmail.com>
-	 <48B76CE0.5010309@goop.org>
+	Fri, 29 Aug 2008 16:31:49 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:47091 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753173AbYH2Ubs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 16:31:48 -0400
+Subject: Re: USBIP protocol
+From: Marcel Holtmann <holtmann@linux.intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>,
+       bgmerrell@novell.com, hirofuchi@users.sourceforge.net,
+       linux-kernel@vger.kernel.org, usbip-devel@lists.sourceforge.net
+In-Reply-To: <87ej47q5k8.fsf@basil.nowhere.org>
+References: <20080829140224.GC1968@parisc-linux.org>
+	 <87ej47q5k8.fsf@basil.nowhere.org>
 Content-Type: text/plain
-Date: Fri, 29 Aug 2008 22:31:17 +0200
-Message-Id: <1220041877.9776.26.camel@localhost>
+Date: Sat, 30 Aug 2008 00:31:43 +0200
+Message-Id: <1220049103.7145.23.camel@californication>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-28 at 20:28 -0700, Jeremy Fitzhardinge wrote:
-> Yinghai Lu wrote:
-> > On Thu, Aug 28, 2008 at 12:52 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-<snip>
-> Yeah, OK, but I think it should default to ON for now.  The problem is
-> that we had two very different systems (Sony Vaio and Intel desktop)
-> exhibit the same problem in two different ways.  These systems worked
+Hi Matthew,
 
-This is very interresting. I have a gigabyte X48 board, and everything
-works perfect, however, in memtest86+ i get thousands of errors in the
-range 0-0.9mb. I am certain my ram is fine, i've tried it in other
-computers, and reversed. I've run dozens of stress tests within my
-booted linux, no trouble, also the userspace memtester (allthough im
-aware it wont actually ever get to grab offending addresses).
-
-Any thoughts?
-
-> fine until we slightly changed the way that pagetable memory was
-> allocated.  We just don't know how many other systems are doing this
-> kind of subtle corruption of low memory.
+> > I'm in the middle of implementing a userspace client for usbip and I
+> > strongly feel that the protocol needs to be changed before it is merged.
+> >
+> >  - I'm unconvinced that TCP is the correct protocol to be running this over.
+> >    I understand the reluctance to use UDP, but the protocol is fundamentally
+> >    packet-based.  If TCP is used, the delimitation of packets within the
+> >    stream needs to be much more robust. 
 > 
->     J
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> If you want reliable transport with record boundaries an alternative
+> would be also SCTP. Main drawback is that firewalls often don't support it
+> though (but presumably that wouldn't be a big issue for this)
+
+I would also have proposed SCTP. The telco carries seems be very happy
+with it.
+
+Regards
+
+Marcel
+
 
