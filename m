@@ -1,92 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbYH2HgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbYH2Hpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753164AbYH2HgZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 03:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbYH2HgR
+	id S1753243AbYH2Hpe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 03:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbYH2HpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 03:36:17 -0400
-Received: from mx2.suse.de ([195.135.220.15]:43641 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751299AbYH2HgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 03:36:16 -0400
-From: Neil Brown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 29 Aug 2008 17:36:08 +1000
+	Fri, 29 Aug 2008 03:45:25 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:39630 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbYH2HpY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 03:45:24 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: stefan_kopp@agilent.com
+Subject: Re: [PATCH] USB: add USB test and measurement class driver - round 2
+Date: Fri, 29 Aug 2008 09:46:36 +0200
+User-Agent: KMail/1.9.9
+Cc: korgull@home.nl, greg@kroah.com, stern@rowland.harvard.edu,
+       linux-usb@vger.kernel.org, me@felipebalbi.com,
+       linux-kernel@vger.kernel.org
+References: <20080827183615.GA15692@kroah.com> <200808281858.42486.korgull@home.nl> <7D8F552F9FFBAC438A816966BEC4516BFBA328@cos-us-mb07.cos.agilent.com>
+In-Reply-To: <7D8F552F9FFBAC438A816966BEC4516BFBA328@cos-us-mb07.cos.agilent.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18615.42728.498883.440973@notabene.brown>
-Cc: Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       jurriaan <thunder7@xs4all.nl>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27-rc4: lots of 'in_atomic():1, irqs_disabled():0' with 
- software-raid1
-In-Reply-To: message from Andrew Morton on Thursday August 28
-References: <20080827170538.GA24393@amd64.of.nowhere>
-	<200808272347.43577.rjw@sisk.pl>
-	<20080828073324.GR20055@kernel.dk>
-	<20080828004532.45d8b8c9.akpm@linux-foundation.org>
-	<20080828074830.GV20055@kernel.dk>
-	<18614.24929.952454.829021@notabene.brown>
-	<20080828020018.a8ea85f0.akpm@linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+Message-Id: <200808290946.37898.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday August 28, akpm@linux-foundation.org wrote:
-> 
-> I'm curious about how this happened.
-> 
-> afaict from reading the code, this:
-> 
-> 	rcu_read_lock();
-> 	might_sleep();
-> 	rcu_read_unlock();
-> 
-> will warn if CONFIG_PREEMPT_RCU=n but won't warn if
-> CONFIG_PREEMPT_RCU=y.  If correct, that's a nasty trap.
-> 
-> Is that what you did?
+Am Freitag 29 August 2008 08:57:54 schrieb stefan_kopp@agilent.com:
+> The issue with using cat on the shell level is that it uses fread which has the (in this case) ugly behaviour of recalling the driver's read method until the full number of characters requested has been accumulated (or until zero characters are returned, indicating the end of file). With USBTMC instruments, this behavour is bad because the retry
 
-Uhm..
-$ grep PREEMPT /home/src/md-x86-64/.config
-CONFIG_PREEMPT_NONE=y
-# CONFIG_PREEMPT_VOLUNTARY is not set
-# CONFIG_PREEMPT is not set
-$ grep DEBUG_SPIN /home/src/md-x86-64/.config
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-$ grep RCU /home/src/md-x86-64/.config
-CONFIG_CLASSIC_RCU=y
-# CONFIG_RCU_TORTURE_TEST is not set
+This may be problematic. The driver is throwing away EOF in other words.
+Generally this is not a good idea. User space can no longer tell how long the
+reply was.
 
-This definitely doesn't report an error if I put "might_sleep" inside 
-rcu_read_lock.  I tried to figure out why but got lost.
-
-BTW, I need the following to get current -git to compile.
-
-NeilBrown
-
-Author: NeilBrown <neilb@suse.de>
-Date:   Tue Aug 19 11:59:37 2008 +1000
-
-    Fix compile error in security
-
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 2ee5ecf..0cc23a1 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -1757,7 +1757,7 @@ static inline int security_ptrace_may_access(struct task_struct *child,
- 
- static inline int security_ptrace_traceme(struct task_struct *child)
- {
--	return cap_ptrace_traceme(parent);
-+	return cap_ptrace_traceme(child);
- }
- 
- static inline int security_capget(struct task_struct *target,
-
+	Regards
+		Oliver
 
