@@ -1,112 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbYH2TlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYH2TsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753498AbYH2TlU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 15:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYH2TlI
+	id S1754045AbYH2TsQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 15:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbYH2TsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 15:41:08 -0400
-Received: from paperclip.laurelnetworks.com ([63.94.127.69]:41268 "EHLO
-	paperclip.laurelnetworks.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751169AbYH2TlH (ORCPT
+	Fri, 29 Aug 2008 15:48:00 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:53110 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751184AbYH2Tr7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 15:41:07 -0400
-X-Greylist: delayed 1135 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Aug 2008 15:41:07 EDT
-Date: Fri, 29 Aug 2008 15:22:15 -0400
-From: "La Monte H.P. Yarroll" <piggy@laurelnetworks.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Provide control over core name even for multithreaded
- processes
-Message-ID: <20080829152215.2cdb1438@kartuli>
-Organization: Systems
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 29 Aug 2008 15:47:59 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
+Date: Fri, 29 Aug 2008 21:47:26 +0200
+User-Agent: KMail/1.9.9
+Cc: Tejun Heo <tj@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       Serge Hallyn <serue@us.ibm.com>, greg@kroah.com,
+       fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48B7BB4C.4060907@kernel.org> <m163pjr5qf.fsf@frodo.ebiederm.org>
+In-Reply-To: <m163pjr5qf.fsf@frodo.ebiederm.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808292147.27720.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX184qrvIQz61rPfvgC0FOWMjZ2RlWsGPhKUQk4u
+ BEQmocEnTm05vl9A7QnmPdZsi8wYhqeTJQ25vwOkBdNm/o9xxx
+ GoAN44erfsxl/jbXuSOkg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Our system explicitly sets core_pattern to force a relatively small
-limit on the number of different core dump names.
+On Friday 29 August 2008, Eric W. Biederman wrote:
+> However it is a largely an insane idea.
 
-Unfortunately, the kernel unconditionally appends .<tid> for
-multithreaded processes.
+I fully agree.
 
-The attached patch introduces "%T" to the core_pattern language, which
-expands to ".<tid>" for multithreaded processes. It then changes the
-default core_pattern to "core%T" replicating the current default
-behavior.
+> Given the pain it is to maintain ioctls I would be very surprised if we wanted
+> to open up that pandoras box even wider by allowing arbitrary user space
+> processes to support random ioctls.  How would you do 32/64bit support
+> and the like?
 
-Signed-off-by: La Monte H.P. Yarroll <piggy@laurelnetworks.com> 74-256740
+I think that is not too much of a problem: Just like the file operations in
+the kernel have two callbacks (ioctl and compat_ioctl), you need to provide
+both operations from user space if there is a difference between them, or
+at least a stub otherwise.
 
-diff -Naur linux-2.6.26.3/Documentation/sysctl/kernel.txt linux-2.6.26.3-new/Documentation/sysctl/kernel.txt
---- linux-2.6.26.3/Documentation/sysctl/kernel.txt	2008-08-20 14:11:37.000000000 -0400
-+++ linux-2.6.26.3-new/Documentation/sysctl/kernel.txt	2008-08-28 13:27:50.239325000 -0400
-@@ -88,7 +88,7 @@
- core_pattern:
- 
- core_pattern is used to specify a core dumpfile pattern name.
--. max length 128 characters; default value is "core"
-+. max length 128 characters; default value is "core%T"
- . core_pattern is used as a pattern template for the output filename;
-   certain string patterns (beginning with '%') are substituted with
-   their actual values.
-@@ -104,6 +104,7 @@
- 	%g	gid
- 	%s	signal number
- 	%t	UNIX time of dump
-+	%T      .tgid or nothing if process is not threaded
- 	%h	hostname
- 	%e	executable filename
- 	%<OTHER> both are dropped
-diff -Naur linux-2.6.26.3/fs/exec.c linux-2.6.26.3-new/fs/exec.c
---- linux-2.6.26.3/fs/exec.c	2008-08-20 14:11:37.000000000 -0400
-+++ linux-2.6.26.3-new/fs/exec.c	2008-08-28 13:46:57.919768000 -0400
-@@ -66,7 +66,7 @@
- #endif
- 
- int core_uses_pid;
--char core_pattern[CORENAME_MAX_SIZE] = "core";
-+char core_pattern[CORENAME_MAX_SIZE] = "core%T";
- int suid_dumpable = 0;
- 
- /* The maximal length of core_pattern is also specified in sysctl.c */
-@@ -1415,7 +1415,7 @@
- 			case 'p':
- 				pid_in_pattern = 1;
- 				rc = snprintf(out_ptr, out_end - out_ptr,
--					      "%d", task_tgid_vnr(current));
-+					      "%d", task_pid_vnr(current));
- 				if (rc > out_end - out_ptr)
- 					goto out;
- 				out_ptr += rc;
-@@ -1455,6 +1455,17 @@
- 				out_ptr += rc;
- 				break;
- 			}
-+			/* Conditional tgid */
-+			case 'T': {
-+			  if (atomic_read(&current->mm->mm_users) != 1) {
-+			    rc = snprintf(out_ptr, out_end - out_ptr,
-+					  ".%d", task_tgid_vnr(current));
-+			    if (rc > out_end - out_ptr)
-+			      goto out;
-+			    out_ptr += rc;
-+			  }
-+			  break;
-+			}
- 			/* hostname */
- 			case 'h':
- 				down_read(&uts_sem);
-@@ -1492,10 +1503,9 @@
- 	 * If core_pattern does not include a %p (as is the default)
- 	 * and core_uses_pid is set, then .%pid will be appended to
- 	 * the filename. Do not do this for piped commands. */
--	if (!ispipe && !pid_in_pattern
--            && (core_uses_pid || atomic_read(&current->mm->mm_users) != 1)) {
-+	if (!ispipe && !pid_in_pattern && core_uses_pid) {
- 		rc = snprintf(out_ptr, out_end - out_ptr,
--			      ".%d", task_tgid_vnr(current));
-+			      ".%d", current->pid);
- 		if (rc > out_end - out_ptr)
- 			goto out;
- 		out_ptr += rc;
+	Arnd <><
