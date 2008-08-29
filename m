@@ -1,172 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757156AbYH2Lu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757053AbYH2Lv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757156AbYH2Lu6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 07:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbYH2Lut
+	id S1757053AbYH2Lv3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 07:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbYH2LvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 07:50:49 -0400
-Received: from japan.chezphil.org ([77.240.5.4]:4847 "EHLO japan.chezphil.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755241AbYH2Lus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 07:50:48 -0400
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Cc: <sylvain.meyer@worldonline.fr>, <linux-fbdev-devel@lists.sourceforge.net>
-Date: Fri, 29 Aug 2008 12:50:45 +0100
-Subject: [PATCH] intelfb: support 945GME (as used in ASUS Eee 901)
-Message-ID: <1220010645384@dmwebmail.dmwebmail.chezphil.org>
-X-Mailer: Decimail Webmail 3alpha16
+	Fri, 29 Aug 2008 07:51:18 -0400
+Received: from lazybastard.de ([212.112.238.170]:36672 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754040AbYH2LvS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 07:51:18 -0400
+Date: Fri, 29 Aug 2008 13:04:39 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: konishi.ryusuke@lab.ntt.co.jp
+Cc: arnd@arndb.de, akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
+Message-ID: <20080829110438.GC27647@logfs.org>
+References: <20080827181904.GD1371@logfs.org> <200808290629.AA00218@capsicum.lab.ntt.co.jp> <200808291040.06917.arnd@arndb.de> <20080829.195156.31189122.ryusuke@osrg.net>
 MIME-Version: 1.0
-Content-Type: text/plain; format="fixed"
-From: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080829.195156.31189122.ryusuke@osrg.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patch adds support for Intel's 945GME graphics chip to
-the intelfb driver.  I have assumed that the 945GME is identical to the
-already-supported 945GM apart from its PCI IDs; this is based on a quick
-look at the X driver for these chips which seems to treat them
-identically.
+On Fri, 29 August 2008 19:51:56 +0900, konishi.ryusuke@lab.ntt.co.jp wrote:
+> 
+> Since the primary purpose of NILFS is providing continuous
+> snapshotting, the GC is not necessarily designed with such requirement
+> in mind.
 
-Signed-off-by: Phil Endecott <spam_from_intelfb@chezphil.org>
+No shame in that.  One fine day I would like to have a filesystem that
+combines all the neat tricks from the half-dozen new filesystems that
+are currently under development.  Until then, people will simply have to
+pick which one matches their personal requirements best.
 
----
+Jörn
 
-The 945GME is used in the ASUS Eee 901, and I coded this in the hope that 
-I'd be able to use it to get a console at the native 1024x600 resolution 
-which is not known to the BIOS.  I realised too late that the intelfb 
-driver does not support mode changing on laptops, so it won't be any 
-use for me.  But rather than throw it away I will post it here as 
-essentially "untested"; maybe someone who knows more about this driver, 
-and with more useful hardware to test on, can pick it up.
-
-diff --git a/Documentation/fb/intelfb.txt b/Documentation/fb/intelfb.txt
-index 27a3160..dd9e944 100644
---- a/Documentation/fb/intelfb.txt
-+++ b/Documentation/fb/intelfb.txt
-@@ -14,6 +14,7 @@ graphics devices.  These would include:
- 	Intel 915GM
- 	Intel 945G
- 	Intel 945GM
-+	Intel 945GME
- 	Intel 965G
- 	Intel 965GM
- 
-diff --git a/drivers/video/intelfb/intelfb.h b/drivers/video/intelfb/intelfb.h
-index 3325fbd..a50bea6 100644
---- a/drivers/video/intelfb/intelfb.h
-+++ b/drivers/video/intelfb/intelfb.h
-@@ -12,9 +12,9 @@
- #endif
- 
- /*** Version/name ***/
--#define INTELFB_VERSION			"0.9.5"
-+#define INTELFB_VERSION			"0.9.6"
- #define INTELFB_MODULE_NAME		"intelfb"
--#define SUPPORTED_CHIPSETS		"830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM"
-+#define SUPPORTED_CHIPSETS		"830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/945GME/965G/965GM"
- 
- 
- /*** Debug/feature defines ***/
-@@ -58,6 +58,7 @@
- #define PCI_DEVICE_ID_INTEL_915GM	0x2592
- #define PCI_DEVICE_ID_INTEL_945G	0x2772
- #define PCI_DEVICE_ID_INTEL_945GM	0x27A2
-+#define PCI_DEVICE_ID_INTEL_945GME	0x27AE
- #define PCI_DEVICE_ID_INTEL_965G	0x29A2
- #define PCI_DEVICE_ID_INTEL_965GM	0x2A02
- 
-@@ -160,6 +161,7 @@ enum intel_chips {
- 	INTEL_915GM,
- 	INTEL_945G,
- 	INTEL_945GM,
-+	INTEL_945GME,
- 	INTEL_965G,
- 	INTEL_965GM,
- };
-@@ -363,6 +365,7 @@ struct intelfb_info {
- 			((dinfo)->chipset == INTEL_915GM) ||	\
- 			((dinfo)->chipset == INTEL_945G) ||	\
- 			((dinfo)->chipset == INTEL_945GM) ||	\
-+			((dinfo)->chipset == INTEL_945GME) ||	\
- 			((dinfo)->chipset == INTEL_965G) ||	\
- 			((dinfo)->chipset == INTEL_965GM))
- 
-diff --git a/drivers/video/intelfb/intelfb_i2c.c b/drivers/video/intelfb/intelfb_i2c.c
-index fcf9fad..5d896b8 100644
---- a/drivers/video/intelfb/intelfb_i2c.c
-+++ b/drivers/video/intelfb/intelfb_i2c.c
-@@ -171,6 +171,7 @@ void intelfb_create_i2c_busses(struct intelfb_info *dinfo)
- 		/* has some LVDS + tv-out */
- 	case INTEL_945G:
- 	case INTEL_945GM:
-+	case INTEL_945GME:
- 	case INTEL_965G:
- 	case INTEL_965GM:
- 		/* SDVO ports have a single control bus - 2 devices */
-diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
-index e44303f..a09e236 100644
---- a/drivers/video/intelfb/intelfbdrv.c
-+++ b/drivers/video/intelfb/intelfbdrv.c
-@@ -2,7 +2,7 @@
-  * intelfb
-  *
-  * Linux framebuffer driver for Intel(R) 830M/845G/852GM/855GM/865G/915G/915GM/
-- * 945G/945GM/965G/965GM integrated graphics chips.
-+ * 945G/945GM/945GME/965G/965GM integrated graphics chips.
-  *
-  * Copyright © 2002, 2003 David Dawes <dawes@xfree86.org>
-  *                   2004 Sylvain Meyer
-@@ -102,6 +102,9 @@
-  *
-  *    04/2008 - Version 0.9.5
-  *              Add support for 965G/965GM. (Maik Broemme <mbroemme@plusserver.de>)
-+ *
-+ *    08/2008 - Version 0.9.6
-+ *              Add support for 945GME. (Phil Endecott <spam_from_intelfb@chezphil.org>)
-  */
- 
- #include <linux/module.h>
-@@ -183,6 +186,7 @@ static struct pci_device_id intelfb_pci_table[] __devinitdata = {
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_915GM, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_915GM },
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945G, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945G },
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945GM, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945GM },
-+	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945GME, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945GME },
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_965G, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_965G },
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_965GM, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_965GM },
- 	{ 0, }
-@@ -555,6 +559,7 @@ static int __devinit intelfb_pci_register(struct pci_dev *pdev,
- 	    (ent->device == PCI_DEVICE_ID_INTEL_915GM) ||
- 	    (ent->device == PCI_DEVICE_ID_INTEL_945G)  ||
- 	    (ent->device == PCI_DEVICE_ID_INTEL_945GM) ||
-+	    (ent->device == PCI_DEVICE_ID_INTEL_945GME) ||
- 	    (ent->device == PCI_DEVICE_ID_INTEL_965G) ||
- 	    (ent->device == PCI_DEVICE_ID_INTEL_965GM)) {
- 
-diff --git a/drivers/video/intelfb/intelfbhw.c b/drivers/video/intelfb/intelfbhw.c
-index 8e6d6a4..8b26b27 100644
---- a/drivers/video/intelfb/intelfbhw.c
-+++ b/drivers/video/intelfb/intelfbhw.c
-@@ -143,6 +143,12 @@ int intelfbhw_get_chipset(struct pci_dev *pdev, struct intelfb_info *dinfo)
- 		dinfo->mobile = 1;
- 		dinfo->pll_index = PLLS_I9xx;
- 		return 0;
-+	case PCI_DEVICE_ID_INTEL_945GME:
-+		dinfo->name = "Intel(R) 945GME";
-+		dinfo->chipset = INTEL_945GME;
-+		dinfo->mobile = 1;
-+		dinfo->pll_index = PLLS_I9xx;
-+		return 0;
- 	case PCI_DEVICE_ID_INTEL_965G:
- 		dinfo->name = "Intel(R) 965G";
- 		dinfo->chipset = INTEL_965G;
-@@ -186,6 +192,7 @@ int intelfbhw_get_memory(struct pci_dev *pdev, int *aperture_size,
- 	case PCI_DEVICE_ID_INTEL_915GM:
- 	case PCI_DEVICE_ID_INTEL_945G:
- 	case PCI_DEVICE_ID_INTEL_945GM:
-+	case PCI_DEVICE_ID_INTEL_945GME:
- 	case PCI_DEVICE_ID_INTEL_965G:
- 	case PCI_DEVICE_ID_INTEL_965GM:
- 		/* 915, 945 and 965 chipsets support a 256MB aperture.
-
-
+-- 
+There are three principal ways to lose money: wine, women, and engineers.
+While the first two are more pleasant, the third is by far the more certain.
+-- Baron Rothschild
