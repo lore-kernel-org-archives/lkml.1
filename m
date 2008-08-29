@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757018AbYH2XOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751301AbYH2XPQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757018AbYH2XOv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 19:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbYH2XNN
+	id S1751301AbYH2XPQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 19:15:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbYH2XNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 19:13:13 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:35886 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753140AbYH2XNL (ORCPT
+	Fri, 29 Aug 2008 19:13:18 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:3160 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753594AbYH2XNQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 19:13:11 -0400
+	Fri, 29 Aug 2008 19:13:16 -0400
 From: Andrew Patterson <andrew.patterson@hp.com>
-Subject: [PATCH 3/6] Check for device resize when rescanning partitions
+Subject: [PATCH 4/6] SCSI sd driver calls revalidate_disk wrapper.
 To: linux-scsi@vger.kernel.org
 Cc: andrew.patterson@hp.com, James.Bottomley@HansenPartnership.com,
        linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, axboe@kernel.dk,
        andmike@linux.vnet.ibm.com, mike.miller@hp.com, genanr@emsphone.com,
        jmoyer@redhat.com
-Date: Fri, 29 Aug 2008 17:13:10 -0600
-Message-ID: <20080829231310.25065.40311.stgit@bluto.andrew>
+Date: Fri, 29 Aug 2008 17:13:15 -0600
+Message-ID: <20080829231315.25065.5250.stgit@bluto.andrew>
 In-Reply-To: <20080829231254.25065.66052.stgit@bluto.andrew>
 References: <20080829231254.25065.66052.stgit@bluto.andrew>
 User-Agent: StGIT/0.14.2
@@ -31,36 +31,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check for device resize when rescanning partitions
+SCSI sd driver calls revalidate_disk wrapper.
 
-Check for device resize in the rescan_partitions() routine. If the device
-has been resized, the bdev size is set to match. The rescan_partitions()
-routine is called when opening the device and when calling the
-BLKRRPART ioctl.
+Modify the SCSI disk driver to call the revalidate_disk()
+wrapper. This allows us to do some housekeeping such as accounting for
+a disk being resized online. The wrapper will call
+sd_revalidate_disk() at the appropriate time.
 
 Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
 ---
 
- fs/partitions/check.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/scsi/sd.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 7d6b34e..2e7b1fa 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -480,11 +480,12 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
- 	res = invalidate_partition(disk, 0);
- 	if (res)
- 		return res;
--	bdev->bd_invalidated = 0;
- 	for (p = 1; p < disk->minors; p++)
- 		delete_partition(disk, p);
- 	if (disk->fops->revalidate_disk)
- 		disk->fops->revalidate_disk(disk);
-+	check_disk_size_change(disk, bdev);
-+	bdev->bd_invalidated = 0;
- 	if (!get_capacity(disk) || !(state = check_partition(disk, bdev)))
- 		return 0;
- 	if (IS_ERR(state))	/* I/O error reading the partition table */
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index e5e7d78..31545b4 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -159,7 +159,7 @@ sd_store_cache_type(struct device *dev, struct device_attribute *attr,
+ 			sd_print_sense_hdr(sdkp, &sshdr);
+ 		return -EINVAL;
+ 	}
+-	sd_revalidate_disk(sdkp->disk);
++	revalidate_disk(sdkp->disk);
+ 	return count;
+ }
+ 
+@@ -910,7 +910,7 @@ static void sd_rescan(struct device *dev)
+ 	struct scsi_disk *sdkp = scsi_disk_get_from_dev(dev);
+ 
+ 	if (sdkp) {
+-		sd_revalidate_disk(sdkp->disk);
++		revalidate_disk(sdkp->disk);
+ 		scsi_disk_put(sdkp);
+ 	}
+ }
 
