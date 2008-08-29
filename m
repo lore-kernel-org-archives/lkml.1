@@ -1,61 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759563AbYH2WcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759651AbYH2WdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759563AbYH2WcJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 18:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbYH2Wb4
+	id S1759651AbYH2WdQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 18:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbYH2Wc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 18:31:56 -0400
-Received: from quackingmoose.com ([63.73.180.143]:58043 "EHLO
-	penguin.merfinllc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755117AbYH2Wb4 (ORCPT
+	Fri, 29 Aug 2008 18:32:59 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:26799 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755581AbYH2Wc7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 18:31:56 -0400
-Date: Fri, 29 Aug 2008 15:31:55 -0700
-From: Aaron Straus <aaron@merfinllc.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mpm@selenic.com, linux-kernel@vger.kernel.org,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-Subject: Re: drivers/char/random.c line 728 BUG
-Message-ID: <20080829223155.GM31108@merfinllc.com>
-References: <20080826225918.GC5452@merfinllc.com> <20080828225924.GD6432@merfinllc.com> <20080829124807.54293904.akpm@linux-foundation.org>
+	Fri, 29 Aug 2008 18:32:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=SRFxi6ieI+900OTrhnElAIlRvfRWbOz3bADvYDrhLJVvumvf7Q7XkEssELtQMVAAiv
+         CkWyj8dApbTyrGOA+nNr2SOlH5Ov0mv9c3holO48Bv/a48g0LJmeM7BdFzJ9ooxthbVq
+         /k+hGYeb/LLAf/X9V23ijtnA177z45dCOsYak=
+Message-ID: <86802c440808291532r15dd581cj3f69755985578c2b@mail.gmail.com>
+Date: Fri, 29 Aug 2008 15:32:58 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] dyn_array: using %pF instead of print_fn_descriptor_symbol
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <20080829152053.92fa6fd4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080829124807.54293904.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+References: <1220047669-15029-1-git-send-email-yhlu.kernel@gmail.com>
+	 <20080829152053.92fa6fd4.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Aug 29, 2008 at 3:20 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Fri, 29 Aug 2008 15:07:49 -0700
+> Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+>> +             printk(KERN_DEBUG "per_cpu_dyn_array %pF ==> [%#lx - %#lx]\n",
+>> +                     da->name, phys, phys + size);
+>
+> This:
+>
+> struct dyn_array {
+>        void **name;
+>
+> is a bit confusing.  One normally expects a variable called "name" to
+> point at a character string.
+>
+> What _does_ this thing point at?  There are no code comments which I
+> can find, it's unobvious from the source code, the type is the
+> information-free void** and the identifier is misleading.
+>
+> I find that documenting the data structures is the best way of making
+> code understandable (and hence maintainable).
 
-On Aug 29 12:48 PM, Andrew Morton wrote:
-> yep, I would agree with all that.
+struct dyn_array {
+        void **name;
+        unsigned long size;
+        unsigned int *nr;
+        unsigned long align;
+        void (*init_work)(void *);
+};
+extern struct dyn_array *__dyn_array_start[], *__dyn_array_end[];
+extern struct dyn_array *__per_cpu_dyn_array_start[],
+*__per_cpu_dyn_array_end[];
 
-Thanks for responding.
+#define DEFINE_DYN_ARRAY_ADDR(nameX, addrX, sizeX, nrX, alignX, init_workX) \
+                static struct dyn_array __dyn_array_##nameX __initdata = \
+                {       .name = (void **)&(nameX),\
+                        .size = sizeX,\
+                        .nr   = &(nrX),\
+                        .align = alignX,\
+                        .init_work = init_workX,\
+                }; \
+                static struct dyn_array *__dyn_array_ptr_##nameX __used \
+                __attribute__((__section__(".dyn_array.init"))) = \
+                        &__dyn_array_##nameX
 
-> How's this look?
+#define DEFINE_DYN_ARRAY(nameX, sizeX, nrX, alignX, init_workX) \
+        DEFINE_DYN_ARRAY_ADDR(nameX, nameX, sizeX, nrX, alignX, init_workX)
 
-Quick question off list... below
+and use is
 
-> -	if (r == &input_pool &&
-> -	    r->entropy_count >= random_read_wakeup_thresh) {
-> +	if (r == &input_pool && entropy_count >= random_read_wakeup_thresh) {
->  		wake_up_interruptible(&random_read_wait);
->  		kill_fasync(&fasync, SIGIO, POLL_IN);
->  	}
-> -
-> +	r->entropy_count = entropy_count;
-
-Here you set the entropy_count in the pool *after* waking up the reader.
-I was a little worried the reader would find the entropy_count unchanged
-and go back to sleep.
+struct irq_desc *sparse_irqs;
+DEFINE_DYN_ARRAY(sparse_irqs, sizeof(struct irq_desc), nr_irq_desc,
+PAGE_SIZE, init_work);
 
 
-					Regards,
-					=a=
+then sparse_irqs is pointer, and .name store the address of that pointer.
 
--- 
-===================
-Aaron Straus
-aaron@merfinllc.com
+later use
+*da->name = phys_to_virt(phys);
+to take back the dyn address.
+
+YH
