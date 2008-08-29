@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758572AbYH2RjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758848AbYH2RkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758572AbYH2RjO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 13:39:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbYH2Ri5
+	id S1758848AbYH2RkO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 13:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbYH2Rj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 13:38:57 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:59842 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752918AbYH2Ri4 convert rfc822-to-8bit (ORCPT
+	Fri, 29 Aug 2008 13:39:59 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:34932 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753371AbYH2Rj6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 13:38:56 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
-Date: Fri, 29 Aug 2008 19:38:25 +0200
-User-Agent: KMail/1.9.9
-Cc: Alan Stern <stern@rowland.harvard.edu>, dbrownell@users.sourceforge.net,
-       greg@kroah.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Scott Wood <scottwood@freescale.com>, Li Yang <leoli@freescale.com>
-References: <Pine.LNX.4.44L0.0808291307050.4447-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0808291307050.4447-100000@netrider.rowland.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 29 Aug 2008 13:39:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=JnwC/jGtz46neQJcgyf0xThYWn4LK7RimASKQsdicg0tPEe0bIRh6RzdaDAdsdT5Kg
+         4bnXlPGuMPB/XwYTirvvgnxqi7XHENfJj6tNqS5Si9ElpOlxeHc84PyR2Ay06uVc8umh
+         M0tTr1cutz9DvSBY1TKqDFE4xJUMB6hq9F4Fg=
+Message-ID: <b170af450808291039u7d036313x49acdaec079e6213@mail.gmail.com>
+Date: Fri, 29 Aug 2008 19:39:57 +0200
+From: "=?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?=" <zajec5@gmail.com>
+To: "Hugh Dickins" <hugh@veritas.com>
+Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory corruption
+Cc: "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0808291413260.12571@blonde.site>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200808291938.26651.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/nLSOinjxcqfOfz9OnojkpQo+TpZQcBVaAHe4
- iF0lcQao1/FcYZ5EbPi3DzzK4ilVZgX83LIgiElkJiqz7SR3nY
- KxHxt0JJqDB8ESIFbHosA==
+References: <48B701FB.2020905@goop.org>
+	 <86802c440808281849nb972d64te89894077ea9f33c@mail.gmail.com>
+	 <48B76CE0.5010309@goop.org>
+	 <20080829102547.655440bf@lxorguk.ukuu.org.uk>
+	 <b170af450808290313x574b4561i3048ffca3e4da197@mail.gmail.com>
+	 <Pine.LNX.4.64.0808291120540.8561@blonde.site>
+	 <b170af450808290454m2f349ce3w4f400b0df0e105a2@mail.gmail.com>
+	 <48B7E6EE.9090901@tuffmail.co.uk>
+	 <Pine.LNX.4.64.0808291413260.12571@blonde.site>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m7THeIdq022812
 
-On Friday 29 August 2008, Alan Stern wrote:
-> I thought you _were_ arguing against that. †Unless I misunderstood,
-> your original complaint was that since each peripheral controller
-> driver defines usb_gadget_{un}register_driver, there can be only one
-> controller driver loaded at a time.
-
-That's probably where the misunderstanding came from: I did not expect
-more than one driver to actually be useful on a given system, but that
-should IMHO not prevent you from loading the drivers using modprobe, or
-building them all into the kernel.
-
-	Arnd <><
+2008/8/29 Hugh Dickins <hugh@veritas.com>:> Here's my version of Jeremy's patch, that I've now tested on my machines,> as x86_32 and as x86_64.  It addresses none of the points Alan Cox made,> and it stays silent for me, even after suspend+resume, unless I actually> introduce corruption myself.  Omits Jeremy's check in fault.c, but does> a check every minute, so should soon detect Rafa≈Ç's HDMI corruption> without any need to suspend+resume.
+Your periodic test works fine:
+Corrupted low memory at ffff88000000be9c (be9c phys) = b02a0004 <IRQ>  [<ffffffff8020fc9b>] check_for_bios_corruption+0x93/0x9f [<ffffffff8020fca7>] ? periodic_check_for_corruption+0x0/0x25 [<ffffffff8020fcb0>] periodic_check_for_corruption+0x9/0x25
+By the way I confirmed this bug on Sony Vaio FW11M (my one is FW11S).Probably more machines from FW11* are affected.
+-- Rafa≈Ç Mi≈ÇeckiˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
