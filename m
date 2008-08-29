@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755142AbYH2GUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813AbYH2GV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755142AbYH2GUs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 02:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYH2GPw
+	id S1753813AbYH2GV3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 02:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYH2GPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 02:15:52 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:59518 "EHLO
+	Fri, 29 Aug 2008 02:15:54 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:59521 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751749AbYH2GP3 (ORCPT
+	with ESMTP id S1751771AbYH2GP3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 29 Aug 2008 02:15:29 -0400
-Date: Thu, 28 Aug 2008 23:47:41 -0600
+Date: Thu, 28 Aug 2008 23:47:42 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808290547.m7T5lfER016130@wolfmountaingroup.com>
+Message-Id: <200808290547.m7T5lgZq016134@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc5 15/29] mdb: add mdb-list.h debugger parser function includes
+Subject: [PATCH 2.6.27-rc5 19/29] mdb: add mdb-os.h operating system specific functions
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add mdb-list.h debugger parser function includes
+add mdb-os.h operating system specific functions
+
 
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/debug/mdb/mdb-list.h	1969-12-31 17:00:00.000000000 -0700
-+++ b/debug/mdb/mdb-list.h	2008-08-28 22:01:15.000000000 -0600
-@@ -0,0 +1,102 @@
+--- a/debug/mdb/mdb-os.h	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/mdb/mdb-os.h	2008-08-28 14:20:04.000000000 -0600
+@@ -0,0 +1,106 @@
 +
 +/***************************************************************************
 +*
@@ -60,71 +61,75 @@ Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 +*
 +***************************************************************************/
 +
-+#ifndef _MDB_LIST
-+#define _MDB_LIST
++#ifndef _MDB_OS_H
++#define _MDB_OS_H
 +
-+typedef struct _ACCELERATOR
-+{
-+    struct _ACCELERATOR *accelNext;
-+    struct _ACCELERATOR *accelPrior;
-+    unsigned long (*accelRoutine)(unsigned long key, void *p, struct _ACCELERATOR *parser);
-+    unsigned long (*accelRoutineHelp)(unsigned long key, struct _ACCELERATOR *parser);
-+    unsigned long accelFlags;
-+    unsigned long key;
-+    unsigned long supervisorCommand;
-+    unsigned char *shortHelp;
-+} ACCELERATOR;
++#define MAX_SYMBOL_LEN  KSYM_NAME_LEN+1
 +
-+typedef struct _ALT_DEBUGGER
-+{
-+    struct _ALT_DEBUGGER *altDebugNext;
-+    struct _ALT_DEBUGGER *altDebugPrior;
-+    int (*AlternateDebugger)(int reason, int error, void *frame);
-+} ALT_DEBUGGER;
++extern atomic_t inmdb;
++extern int pause_mode;
++extern unsigned char *mdb_oops;
++extern unsigned char *last_mdb_oops;
++extern unsigned char symbuf[MAX_PROCESSORS][MAX_SYMBOL_LEN];
++extern unsigned char modbuf[MAX_PROCESSORS][MAX_SYMBOL_LEN];
++extern unsigned char workbuf[MAX_PROCESSORS][MAX_SYMBOL_LEN];
 +
-+extern int AlternateDebuggerRoutine(int reason, int error, void *frame);
-+extern unsigned long AddAlternateDebugger(ALT_DEBUGGER *Debugger);
-+extern unsigned long RemoveAlternateDebugger(ALT_DEBUGGER *Debugger);
-+
-+typedef struct _DEBUGGER_PARSER {
-+    struct _DEBUGGER_PARSER *debugNext;
-+    struct _DEBUGGER_PARSER *debugPrior;
-+    unsigned long (*DebugCommandParser)(unsigned char *commandLine,
-+			       StackFrame *stackFrame, unsigned long Exception,
-+			       struct _DEBUGGER_PARSER *parser);
-+    unsigned long (*DebugCommandParserHelp)(unsigned char *commandLine,
-+				   struct _DEBUGGER_PARSER *parser);
-+    unsigned long parserFlags;
-+    unsigned char *debugCommandName;
-+    unsigned long debugCommandNameLength;
-+    unsigned long supervisorCommand;
-+    unsigned char *shortHelp;
-+    unsigned long controlTransfer;
-+} DEBUGGER_PARSER;
-+
-+typedef struct _DEBUGGER_LIST
-+{
-+   DEBUGGER_PARSER *head;
-+   DEBUGGER_PARSER *tail;
-+} DEBUGGER_LIST;
-+
-+extern unsigned long DebuggerParserRoutine(unsigned char *command, unsigned char *commandLine,
-+			   StackFrame *stackFrame, unsigned long Exception);
-+extern unsigned long DebuggerParserHelpRoutine(unsigned char *command, unsigned char *commandLine);
-+extern unsigned long AddDebuggerCommandParser(DEBUGGER_PARSER *parser);
-+extern unsigned long RemoveDebuggerCommandParser(DEBUGGER_PARSER *parser);
-+
-+static inline unsigned long strhash(unsigned char *s, int len, int limit)
-+{
-+   register unsigned long h = 0, a = 127, i;
-+
-+   if (!limit)
-+      return -1;
-+
-+   for (i = 0; i < len && *s; s++, i++)
-+      h = ((a * h) + *s) % limit;
-+
-+   return h;
-+}
-+
++extern int mdb_kallsyms(char *str, int (*print)(char *s, ...));
++extern int mdb_modules(char *str, int (*print)(char *s, ...));
++extern int mdb_getkey(void);
++extern int mdb_getlword(unsigned long *word, unsigned long addr, size_t size);
++extern int mdb_putword(unsigned long addr, unsigned long word, size_t size);
++extern unsigned long mdb_getword(unsigned long addr, size_t size);
++extern int mdb_verify_rw(void *addr, size_t size);
++extern unsigned long ValidateAddress(unsigned long addr, unsigned long length);
++extern int DisplayClosestSymbol(unsigned long address);
++extern void DumpOSSymbolTableMatch(unsigned char *symbol);
++extern void DumpOSSymbolTable(void);
++extern unsigned long GetValueFromSymbol(unsigned char *symbol);
++extern unsigned char *GetModuleInfoFromSymbolValue(unsigned long value, unsigned char *buf, unsigned long len);
++extern unsigned char *GetSymbolFromValue(unsigned long value, unsigned char *buf, unsigned long len);
++extern unsigned char *GetSymbolFromValueWithOffset(unsigned long value, unsigned long *sym_offset,
++                                          unsigned char *buf, unsigned long len);
++extern unsigned char *GetSymbolFromValueOffsetModule(unsigned long value, unsigned long *sym_offset,
++                                     unsigned char **module, unsigned char *buf, unsigned long len);
++extern unsigned long get_processor_id(void);
++extern unsigned long get_physical_processor(void);
++extern unsigned long fpu_present(void);
++extern unsigned long cpu_mttr_on(void);
++extern unsigned char *UpcaseString(unsigned char *s);
++extern void ClearScreen(void);
++extern unsigned short ReadFS(void);
++extern unsigned short ReadGS(void);
++extern unsigned long ReadDR(unsigned long regnum);
++extern void WriteDR(int regnum, unsigned long contents);
++extern unsigned long ReadCR(int regnum);
++extern void WriteCR(int regnum, unsigned long contents);
++extern unsigned long ReadTR(void);
++extern unsigned long ReadLDTR(void);
++extern void ReadGDTR(unsigned long *v);
++extern void ReadIDTR(unsigned long *v);
++extern void save_npx(NUMERIC_FRAME *v);
++extern void load_npx(NUMERIC_FRAME *v);
++extern unsigned long ReadDR0(void);
++extern unsigned long ReadDR1(void);
++extern unsigned long ReadDR2(void);
++extern unsigned long ReadDR3(void);
++extern unsigned long ReadDR6(void);
++extern unsigned long ReadDR7(void);
++extern void WriteDR0(unsigned long v);
++extern void WriteDR1(unsigned long v);
++extern void WriteDR2(unsigned long v);
++extern void WriteDR3(unsigned long v);
++extern void WriteDR6(unsigned long v);
++extern void WriteDR7(unsigned long v);
++extern unsigned long ReadCR0(void);
++extern unsigned long ReadCR2(void);
++extern unsigned long ReadCR3(void);
++extern unsigned long ReadCR4(void);
++extern void WriteCR0(unsigned long v);
++extern void WriteCR2(unsigned long v);
++extern void WriteCR3(unsigned long v);
++extern void WriteCR4(unsigned long v);
++extern void ReadMSR(unsigned long r, unsigned long *v1, unsigned long *v2);
++extern void WriteMSR(unsigned long r, unsigned long *v1, unsigned long *v2);
 +#endif
