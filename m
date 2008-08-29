@@ -1,130 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751694AbYH2ESS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751499AbYH2Erc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751694AbYH2ESS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 00:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbYH2ESI
+	id S1751499AbYH2Erc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 00:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbYH2ErY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 00:18:08 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:43740 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750739AbYH2ESF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 00:18:05 -0400
-Subject: Re: [RFC v2][PATCH 8/9] Remove some BUG_ON()s that need some
-	proper error handling instead.
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: arnd@arndb.de, jeremy@goop.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080820192607.91E0AFF2@nimitz>
-References: <20080820192557.98788FAB@nimitz>
-	 <20080820192607.91E0AFF2@nimitz>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Thu, 28 Aug 2008 21:18:02 -0700
-Message-Id: <1219983482.11632.61.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 29 Aug 2008 00:47:24 -0400
+Received: from smtp101.prem.mail.sp1.yahoo.com ([98.136.44.56]:35899 "HELO
+	smtp101.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750799AbYH2ErY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 00:47:24 -0400
+X-YMail-OSG: 1Q_p9ZcVM1mYStIbziL.jIGmj9owUcMBwtKco.pC5rwAdhMRovXYz9O9U0LbhoP34X2wsYHm.bbsbwOTKNeRIocho7YTLH927vrvBTdhtQgKaOgwc6nR3R0oSiTWaXe1GcpYchQBggkImvBvXl6diqpC
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <48B77F53.6080200@schaufler-ca.com>
+Date: Thu, 28 Aug 2008 21:47:15 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+CC: Theodore Tso <tytso@mit.edu>, Markku Savela <msa@moth.iki.fi>,
+       Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: Frustrated with capabilities..
+References: <87hc96by8x.fsf@burp.tkv.asdf.org>	 <20080828141826.GA6797@ucw.cz>	 <200808281445.m7SEjYsB007502@burp.tkv.asdf.org>	 <20080828174854.GM26987@mit.edu> <1219957399.2627.127.camel@moss-terrapins.epoch.ncsc.mil>
+In-Reply-To: <1219957399.2627.127.camel@moss-terrapins.epoch.ncsc.mil>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-08-20 at 12:26 -0700, Dave Hansen wrote:
-> 
-> 
-> ---
-> 
->  oren-cr.git-dave/checkpoint/checkpoint.c |   12 ++++++++++--
->  oren-cr.git-dave/checkpoint/restart.c    |   15 +++++++++++++++
->  2 files changed, 25 insertions(+), 2 deletions(-)
-> 
-> diff -puN checkpoint/checkpoint.c~0002-Remove-some-BUG_ON-s-that-need-some-proper-error-ha checkpoint/checkpoint.c
-> --- oren-cr.git/checkpoint/checkpoint.c~0002-Remove-some-BUG_ON-s-that-need-some-proper-error-ha	2008-08-20 12:12:51.000000000 -0700
-> +++ oren-cr.git-dave/checkpoint/checkpoint.c	2008-08-20 12:12:51.000000000 -0700
-> @@ -125,7 +125,8 @@ static int cr_write_tail(struct cr_ctx *
->  	h.id = 0;
-> 
->  	hh->magic = CR_HEADER_MAGIC;
-> -	hh->cksum[0] = hh->cksum[1] = 1;	/* TBD ... */
-> +	hh->cksum[0] = 1;
-> +       	hh->cksum[1] = 1;	/* TBD ... */
-> 
->  	ret = cr_write_obj(ctx, &h, hh);
->  	kfree(hh);
-> @@ -183,7 +184,14 @@ static int cr_write_task(struct cr_ctx *
->  {
->  	int ret ;
-> 
-> -	BUG_ON(t->state == TASK_DEAD);
-> +	/*
-> +	 * This was a BUG_ON(), which kinda makes sense if you
-> +	 * are only allowing checkpointing of 'current'.  But,
-> +	 * it is still pretty silly in that case.  Make it
-> +	 * something a bit more sensible.
-> +	 */
-> +	if (t->state == TASK_DEAD)
-> +		return -EAGAIN;
+David P. Quigley wrote:
+> On Thu, 2008-08-28 at 13:48 -0400, Theodore Tso wrote:
+>   
+>> On Thu, Aug 28, 2008 at 05:45:34PM +0300, Markku Savela wrote:
+>>     
+>>>> From: Pavel Machek <pavel@suse.cz>
+>>>>         
+>>>> Yes, you need upcoming filesystem capabilities.  Binary may not
+>>>> inherit capabilities unless filesystem flags permit that.
+>>>>         
+>>> I think this is wrong. Normal executables inherit uid/gid and
+>>> supplementary groups by default. Why should capabilities be any
+>>> different?
+>>>       
+>> Well, because that's not the what the POSIX draft specification (and
+>> the rest of the Unix industry who were striving to meet the US
+>> Department of Defense's "B2 by '92" initiative) ended up implementing.
+>>     
+>
+> Minor nit. It was actually C2(Controlled Access Protection) by '92 which
+> is mainly just DAC protections as opposed to B2(Structured Protection)
+> which also included MAC policies and Sensitivity labels in addition to
+> DAC protections
 
-	This is OK for a debug patch but I think in the end we'd want to do
-something similar early in sys_checkpoint -- before we start writing
-anything. We should check to ensure the task is properly frozen there
-and return -EBUSY if not frozen. Something like:
+But the fun part was that the evaluation requirements for B1,
+which fell in between C2 and B2 (the order from least secure to
+most was D, C1, C2, B1, B2, B3, A1, and "Beyond A1") where so
+close to those for C2 that everyone implemented B1, which did
+include MAC policy in the form of Bell and LaPadula sensitivity.
+The privilege model (now called capabilities, and you have to buy
+me a beer to get the whole story) does not actually come in the
+requirements until B3, although some people will argue that it
+was intended they be included at B2. Even though no one even tried
+a B3 and no one succeeded at B2 everyone did capabilities based
+on one of the drafts or another.
 
-/* Only current can self-checkpoint. Everything else must be frozen first. */
-for_each_task_being_checkpointed(t) {
-	if ((t != current) && !is_task_frozen_enough(t))
-		return -EBUSY;
-}
+Anyone who thinks that the capability scheme is wrong headed is
+encouraged to read the P1003.1e/2c (withdrawn) DRAFT. It's on
+the web in several places. You may end up still thinking it's
+wrong, but at least you will have seen how the arguments got
+hashed out.
 
+And we're still not talking about the Jackson Hole meeting.
 
-is_task_frozen_enough() current lives in kernel/cgroup_freezer.c. I
-think it can easily be pulled out of the cgroup_freezer.c code so that
-we don't introduce a CONFIG dependency...
-
->  	ret = cr_write_task_struct(ctx, t);
->  	pr_debug("ret (task_struct) %d\n", ret);
-> diff -puN checkpoint/restart.c~0002-Remove-some-BUG_ON-s-that-need-some-proper-error-ha checkpoint/restart.c
-> --- oren-cr.git/checkpoint/restart.c~0002-Remove-some-BUG_ON-s-that-need-some-proper-error-ha	2008-08-20 12:12:51.000000000 -0700
-> +++ oren-cr.git-dave/checkpoint/restart.c	2008-08-20 12:12:51.000000000 -0700
-> @@ -74,6 +74,11 @@ static int cr_read_hdr(struct cr_ctx *ct
->  	struct cr_hdr_head *hh = kmalloc(sizeof(*hh), GFP_KERNEL);
->  	int ret;
-> 
-> +	if (!hh) {
-> +		pr_debug("unable to get %d bytes from ctx buf for header\n",
-> +				sizeof(*hh));
-> +		return -ENOMEM;
-> +	}
->  	ret = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_HEAD);
->  	if (ret < 0)
->  		return ret;
-> @@ -99,6 +104,11 @@ static int cr_read_tail(struct cr_ctx *c
->  	struct cr_hdr_tail *hh = kmalloc(sizeof(*hh), GFP_KERNEL);
->  	int ret;
-> 
-> +	if (!hh) {
-> +		pr_debug("unable to get %d bytes from ctx buf for tail\n",
-> +				sizeof(*hh));
-> +		return -ENOMEM;
-> +	}
->  	ret = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_TAIL);
->  	if (ret < 0)
->  		return ret;
-> @@ -118,6 +128,11 @@ static int cr_read_task_struct(struct cr
->  	struct task_struct *t = current;
->  	int ret;
-> 
-> +	if (!hh) {
-> +		pr_debug("unable to get %d bytes from ctx buf for task\n",
-> +				sizeof(*hh));
-> +		return -ENOMEM;
-> +	}
->  	ret = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_TASK);
->  	if (ret < 0)
->  		return ret;
-> _
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
 
