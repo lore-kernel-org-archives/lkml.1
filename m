@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753773AbYH2KgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbYH2Khd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753773AbYH2KgU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 06:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbYH2KgB
+	id S1754805AbYH2Khd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 06:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbYH2KhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 06:36:01 -0400
-Received: from bipbip.grupopie.com ([195.23.16.24]:40584 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751301AbYH2KgA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 06:36:00 -0400
-X-Greylist: delayed 1382 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Aug 2008 06:36:00 EDT
-Message-ID: <48B7CBA7.4060107@grupopie.com>
-Date: Fri, 29 Aug 2008 11:12:55 +0100
-From: Rui Santos <rsantos@grupopie.com>
-Organization: GrupoPIE, Portugal SA
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Fri, 29 Aug 2008 06:37:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51552 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750929AbYH2KhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 06:37:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tejun Heo <htejun@gmail.com>
+Subject: Re: Regression: SATA disk double spin-off during hibernation on hp nx6325
+Date: Fri, 29 Aug 2008 12:41:03 +0200
+User-Agent: KMail/1.9.9
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
+       Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>
+References: <200808290002.55026.rjw@sisk.pl> <48B7C979.1000606@gmail.com>
+In-Reply-To: <48B7C979.1000606@gmail.com>
 MIME-Version: 1.0
-To: Ivo van Doorn <ivdoorn@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT]: Networking
-References: <20080805.190020.244441681.davem@davemloft.net> <alpine.LFD.1.10.0808051937410.15995@nehalem.linux-foundation.org> <200808061021.56150.IvDoorn@gmail.com>
-In-Reply-To: <200808061021.56150.IvDoorn@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808291241.04183.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ivo van Doorn wrote:
-> On Wednesday 06 August 2008, Linus Torvalds wrote:
->> On Tue, 5 Aug 2008, David Miller wrote:
->>> There was going to be the addition of the ath9k wireless driver but
->>> there was some fallout that is being worked on right now (linux/list.h
->>> changes needed lkml review, ath9k driver triggered some gcc aborts,
->>> all kinds of fun stuff :-) so hopefully it will make it in the next
->>> pass.  I tried to wait an extra day for it to be resolved, but that
->>> was optimistic.
->> Talking about wireless driver updates - has anybody looked at the RaLink 
->> wireless driver?  It's in the newer EeePC's (901 and 1000), and it 
->> actually has a driver from the company which the comments make clear is 
->> GPLv2 too, no apparent oddness or anything:
->>
->> 	http://www.ralinktech.com.tw/data/drivers/2008_0708_RT2860_Linux_STA_v1.7.0.0.tar.bz2
->>
->> which admittedly apparently has some trivial problems (with a trivial 
->> patch as seen at
->>
->> 	http://fedoraforum.org/forum/showthread.php?t=195429
->>
->> I'd love to have that one working, since I have the hardware, and it's 
->> actually reasonable (much more so than the original EeePC, in fact). What 
->> channels should I go through? Is anybody working on integrating it 
->> already?
+On Friday, 29 of August 2008, Tejun Heo wrote:
+> Hello,
 > 
-> Like the earlier rt2x00 drivers I am rewriting the driver as released by Ralink and
-> have put it in the rt2x00lib/mac80211 framework. Most of the code is currently done, and the
-> last part should be done this week. After that it is a matter of testing and comparing
-> register values with the Ralink driver for the last tweaks.
+> Rafael J. Wysocki wrote:
+> > It appears that the "double spin-off" problem described in
+> > 
+> > http://bugzilla.kernel.org/show_bug.cgi?id=8855
+> > 
+> > has recently started to appear during hibernation as well as during shutdown.
+> > It didn't appear during hibernation on my hp nx6325 with 2.6.26, so this is a
+> > recent regression.
+> > 
+> > I have prepared the appended patch that fixes the problem for me, based on the
+> >  earlier Tejun's patch at
+> > 
+> > http://bugzilla.kernel.org/attachment.cgi?id=15441&action=view
+> > 
+> > but I'm not really sure if this is an acceptable solution.  Please advise.
+> > 
+> > Thanks,
+> > Rafael
+> > 
+> > 
+> > not-yet-signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> The libata part looks fine to me but what are those SYSTEM_SUSPEND_DISK
+> stuff?  They don't look like belonging to this patch.
 
-Hi Ivo,
+Actaully, they do belong to it.  This is the part "fixing" the hibernation code
+path, in which the disk is also powered off unnecessarily.
 
-I'm now a EeePc 901 owner. I'd also like to have wireless working on
-this machine.
-I'm available for any test you might want to undertake so, do not
-hesitate to ask.
+Well, probably I should use SYSTEM_HIBERNATE_ENTER or something similar
+instead of SYSTEM_SUSPEND_DISK.
 
-> 
-> I doubt the driver will be ready/stable for 2.6.28, but it should be ready for 2.6.29.
-> 
-> Ivo
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-> 
+In short, the idea is to change system_state to something specific to the last
+phase of hibernation (after saving the image) and check that in
+ata_scsi_start_stop_xlat().  In fact that's completely analogous to what's done
+for SYSTEM_POWER_OFF in there.
 
--- 
-Regards,
-Rui Santos
-
+Thanks,
+Rafael
