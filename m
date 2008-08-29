@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757261AbYH2QDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757203AbYH2QFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757261AbYH2QDe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 12:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbYH2QDZ
+	id S1757203AbYH2QFS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 12:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbYH2QFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 12:03:25 -0400
-Received: from UKEmail.nice.com ([195.166.55.162]:2265 "EHLO
-	thebe.racal-recorders.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753080AbYH2QDZ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 12:03:25 -0400
-X-Greylist: delayed 609 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Aug 2008 12:03:24 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 29 Aug 2008 12:05:05 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2378 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753206AbYH2QFE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 12:05:04 -0400
+Date: Fri, 29 Aug 2008 12:05:02 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Scott Wood <scottwood@freescale.com>, <dbrownell@users.sourceforge.net>,
+       <greg@kroah.com>, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
+       Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller
+ driver
+In-Reply-To: <200808290027.59127.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.44L0.0808291202270.4447-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-Subject: RE: USBIP protocol
-Date: Fri, 29 Aug 2008 16:53:11 +0100
-Message-ID: <B710AFF518DE29459D5752E7B15256D7D08121@souexc02.eu.nice.com>
-In-Reply-To: <20080829153625.GF1968@parisc-linux.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: USBIP protocol
-thread-index: AckJ7UuwWjeFyh6IQWiCb70gvPGeDAAAZEoA
-References: <20080829140224.GC1968@parisc-linux.org> 
-    <20080829143017.GB18086@kroah.com> 
-    <20080829144354.GD1968@parisc-linux.org> 
-    <20080829145407.GB18423@kroah.com> 
-    <20080829153625.GF1968@parisc-linux.org>
-From: "Dave Higton" <DAVE.HIGTON@nice.com>
-To: "Matthew Wilcox" <matthew@wil.cx>, "Greg KH" <greg@kroah.com>
-Cc: <linux-usb@vger.kernel.org>, <bgmerrell@novell.com>,
-       <hirofuchi@users.sourceforge.net>, <linux-kernel@vger.kernel.org>,
-       <usbip-devel@lists.sourceforge.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
+On Fri, 29 Aug 2008, Arnd Bergmann wrote:
 
-> On Fri, Aug 29, 2008 at 07:54:07AM -0700, Greg KH wrote:
+> > > Does building a kernel image that can run on different hardware without 
+> > > rebuilding also violate the "relevant standards"?
 > > 
-> > Why, isn't the actual implementation better than a document?  :)
+> > No.  That isn't what Arnd was concerned about.  He noted that even if 
+> > you did build multiple modules, only one of them could be loaded at any 
+> > time.
 > 
-> Surely you know that writing things down forces you to understand it
-> better?
+> Well, actually it was exactly what I was concerned about ;-)
+> 
+> The way I understand the code, it is layered into the hardware specific
+> part and the protocol specific part, which are connected through
+> the interfaces I pointed out.
 
-It's an enormous help for anyone working on the code, either now or
-in the future.  Reverse engineering a protocol from source code is
-difficult.
+That's right.
 
-Dave
+> The standard requires that there can only be one protocol handler
+> per physical interface, which is a reasonable limitation.
 
+No, you've got it exactly backward.  There can be multiple protocol 
+handlers per physical interface, but there must be only one physical 
+interface per device.
 
+> However, what the Linux implementation actually enforces is
+> that there can only be one hardware specific driver built or loaded
+> into the kernel, which just looks like an arbitrary restriction
+> that does not actually help.
 
-*************************************************************************************************************************************************************************************************************************************************
+Not at all -- it is an implementation of the constraint that there be 
+only one physical interface.
 
-NICE CTI Systems UK Limited ("NICE") is registered in England under company number, 3403044.  The registered office of NICE is at Tollbar Way, Hedge End, Southampton, Hampshire SO30 2ZP.
+> If the gadget hardware drivers were registering the device with a
+> gadget_bus_type, you could still enforce the "only one protocol"
+> rule by binding every protocol to every device in that bus type.
 
-Confidentiality: This communication and any attachments are intended for the above-named persons only and may be confidential and/or legally privileged. Any opinions expressed in this communication are not necessarily those of NICE. If this communication has come to you in error you must take no action based on it, nor must you copy or show it to anyone; please delete/destroy and inform the sender by e-mail immediately.
+There is no such rule.
 
-Monitoring: NICE may monitor incoming and outgoing e-mails.
-
-Viruses:  Although we have taken steps toward ensuring that this e-mail and attachments are free from any virus, we advise that in keeping with good computing practice the recipient should ensure they are actually virus free.
-
-****************************************************************************************************************************************************************************************************************************************************
-
- 
+Alan Stern
 
