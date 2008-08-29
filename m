@@ -1,188 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbYH2IWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbYH2IWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754632AbYH2IWS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 04:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYH2IWA
+	id S1755597AbYH2IWl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 04:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbYH2IWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 04:22:00 -0400
-Received: from sh.osrg.net ([192.16.179.4]:58256 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751822AbYH2IV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 04:21:57 -0400
-Date: Fri, 29 Aug 2008 17:19:56 +0900
-To: jens.axboe@oracle.com
-Cc: fujita.tomonori@lab.ntt.co.jp, mano@roarinelk.homelinux.net,
-       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: MTD kobject warnings due to block layer changes
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080829080123.GO20055@kernel.dk>
-References: <20080829065029.GK20055@kernel.dk>
-	<20080829165542L.fujita.tomonori@lab.ntt.co.jp>
-	<20080829080123.GO20055@kernel.dk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 29 Aug 2008 04:22:16 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:53413 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754116AbYH2IWN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 04:22:13 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: greg@kroah.com
+Subject: Re: [patch 02/03] USB: USB/IP: add client driver
+Date: Fri, 29 Aug 2008 10:23:26 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Brian Merrell <bgmerrell@novell.com>,
+       Takahiro Hirofuchi <hirofuchi@users.sourceforge.net>, gregkh@suse.de
+References: <20080828225248.758800945@mini.kroah.org> <20080828230035.GC15014@kroah.com>
+In-Reply-To: <20080828230035.GC15014@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080829171936Z.fujita.tomonori@lab.ntt.co.jp>
+Content-Disposition: inline
+Message-Id: <200808291023.27132.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008 10:01:24 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
+Am Freitag 29 August 2008 01:00:35 schrieb greg@kroah.com:
+> From: Takahiro Hirofuchi <hirofuchi@users.sourceforge.net>
 
-> What about eg ide-cd?
+> +			dum->port_status[rhport] |=
+> +					(1 << USB_PORT_FEAT_C_SUSPEND);
+> +			dum->port_status[rhport] &=
+> +					~(1 << USB_PORT_FEAT_SUSPEND);
+> +			dum->resuming = 0;
+> +			dum->re_timeout = 0;
+> +			/* if (dum->driver && dum->driver->resume) {
+> +			 *	spin_unlock (&dum->lock);
 
-I'm always SCSI biased.
+I realise it is commented out, but still.
+
+The resume method may sleep. It is documented as such. Thus it can
+reenable interrupts. Therefore you can deadlock if you don't use irqrestore.
 
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] remove blk_register_filter and blk_unregister_filter in gendisk
+> +static void vhci_tx_urb(struct urb *urb)
+> +{
+> +	struct vhci_device *vdev = get_vdev(urb->dev);
+> +	struct vhci_priv *priv;
+> +	unsigned long flag;
+> +
+> +	if (!vdev) {
+> +		err("could not get virtual device");
+> +		/* BUG(); */
+> +		return;
+> +	}
+> +
+> +	spin_lock_irqsave(&vdev->priv_lock, flag);
+> +
+> +	priv = kzalloc(sizeof(struct vhci_priv), GFP_ATOMIC);
 
-This patch remove blk_register_filter and blk_unregister_filter in
-gendisk, and adds them to sd.c, sr.c. and ide-cd.c
+There's no reason to hold the lock longer than necessary by
+allocating memory in the lock section.
 
-The commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4 moved cmdfilter
-from gendisk to request_queue. It turned out that in some subsystems
-multiple gendisks share a single request_queue. So we get:
+[..]
+> +	wake_up(&vdev->waitq_tx);
+> +	spin_unlock_irqrestore(&vdev->priv_lock, flag);
 
-Using physmap partition information
-Creating 3 MTD partitions on "physmap-flash":
-0x00000000-0x01c00000 : "User FS"
-0x01c00000-0x01c40000 : "booter"
-kobject (8511c410): tried to init an initialized object, something is seriously wrong.
-Call Trace:
-[<8036644c>] dump_stack+0x8/0x34
-[<8021f050>] kobject_init+0x50/0xcc
-[<8021fa18>] kobject_init_and_add+0x24/0x58
-[<8021d20c>] blk_register_filter+0x4c/0x64
-[<8021c194>] add_disk+0x78/0xe0
-[<8027d14c>] add_mtd_blktrans_dev+0x254/0x278
-[<8027c8f0>] blktrans_notify_add+0x40/0x78
-[<80279c00>] add_mtd_device+0xd0/0x150
-[<8027b090>] add_mtd_partitions+0x568/0x5d8
-[<80285458>] physmap_flash_probe+0x2ac/0x334
-[<802644f8>] driver_probe_device+0x12c/0x244
-[<8026465c>] __driver_attach+0x4c/0x84
-[<80263c64>] bus_for_each_dev+0x58/0xac
-[<802633ec>] bus_add_driver+0xc4/0x24c
-[<802648e0>] driver_register+0xcc/0x184
-[<80100460>] _stext+0x60/0x1bc
+again
 
-In the long term, we need to fix such subsystems but we need a quick
-fix now. This patch add the command filter support to only sd and sr
-though it might be useful for other SG_IO users (such as cciss).
+> +static int vhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb,
+> +			    gfp_t mem_flags)
+> +{
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Reported-by: Manuel Lauss <mano@roarinelk.homelinux.net>
-Cc: Jens Axboe <jens.axboe@oracle.com>
----
- block/cmd-filter.c   |    3 ++-
- block/genhd.c        |    2 --
- drivers/ide/ide-cd.c |    2 ++
- drivers/scsi/sd.c    |    2 ++
- drivers/scsi/sr.c    |    2 ++
- 5 files changed, 8 insertions(+), 3 deletions(-)
+This is called in the context of usb_submit_urb()
 
-diff --git a/block/cmd-filter.c b/block/cmd-filter.c
-index 1d40262..228b644 100644
---- a/block/cmd-filter.c
-+++ b/block/cmd-filter.c
-@@ -223,6 +223,7 @@ int blk_register_filter(struct gendisk *disk)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(blk_register_filter);
- 
- void blk_unregister_filter(struct gendisk *disk)
- {
-@@ -231,4 +232,4 @@ void blk_unregister_filter(struct gendisk *disk)
- 	kobject_put(&filter->kobj);
- 	kobject_put(disk->holder_dir->parent);
- }
--
-+EXPORT_SYMBOL(blk_unregister_filter);
-diff --git a/block/genhd.c b/block/genhd.c
-index 656c2c7..d9743ff 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -190,7 +190,6 @@ void add_disk(struct gendisk *disk)
- 			    disk->minors, NULL, exact_match, exact_lock, disk);
- 	register_disk(disk);
- 	blk_register_queue(disk);
--	blk_register_filter(disk);
- 
- 	bdi = &disk->queue->backing_dev_info;
- 	bdi_register_dev(bdi, MKDEV(disk->major, disk->first_minor));
-@@ -203,7 +202,6 @@ EXPORT_SYMBOL(del_gendisk);	/* in partitions/check.c */
- 
- void unlink_gendisk(struct gendisk *disk)
- {
--	blk_unregister_filter(disk);
- 	sysfs_remove_link(&disk->dev.kobj, "bdi");
- 	bdi_unregister(&disk->queue->backing_dev_info);
- 	blk_unregister_queue(disk);
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index 49a8c58..f148999 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -1933,6 +1933,7 @@ static void ide_cd_remove(ide_drive_t *drive)
- 
- 	ide_proc_unregister_driver(drive, info->driver);
- 
-+	blk_unregister_filter(info->disk);
- 	del_gendisk(info->disk);
- 
- 	ide_cd_put(info);
-@@ -2158,6 +2159,7 @@ static int ide_cd_probe(ide_drive_t *drive)
- 	g->fops = &idecd_ops;
- 	g->flags |= GENHD_FL_REMOVABLE;
- 	add_disk(g);
-+	blk_register_filter(g);
- 	return 0;
- 
- out_free_cd:
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index e5e7d78..2a2bc89 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -1875,6 +1875,7 @@ static int sd_probe(struct device *dev)
- 
- 	dev_set_drvdata(dev, sdkp);
- 	add_disk(gd);
-+	blk_register_filter(gd);
- 	sd_dif_config_host(sdkp);
- 
- 	sd_printk(KERN_NOTICE, sdkp, "Attached SCSI %sdisk\n",
-@@ -1908,6 +1909,7 @@ static int sd_remove(struct device *dev)
- 	struct scsi_disk *sdkp = dev_get_drvdata(dev);
- 
- 	device_del(&sdkp->dev);
-+	blk_unregister_filter(sdkp->disk);
- 	del_gendisk(sdkp->disk);
- 	sd_shutdown(dev);
- 
-diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
-index 27f5bfd..3292965 100644
---- a/drivers/scsi/sr.c
-+++ b/drivers/scsi/sr.c
-@@ -656,6 +656,7 @@ static int sr_probe(struct device *dev)
- 	dev_set_drvdata(dev, cd);
- 	disk->flags |= GENHD_FL_REMOVABLE;
- 	add_disk(disk);
-+	blk_register_filter(disk);
- 
- 	sdev_printk(KERN_DEBUG, sdev,
- 		    "Attached scsi CD-ROM %s\n", cd->cdi.name);
-@@ -894,6 +895,7 @@ static int sr_remove(struct device *dev)
- {
- 	struct scsi_cd *cd = dev_get_drvdata(dev);
- 
-+	blk_unregister_filter(cd->disk);
- 	del_gendisk(cd->disk);
- 
- 	mutex_lock(&sr_ref_mutex);
--- 
-1.5.5.GIT
+[..]
+> +	ret = usb_hcd_link_urb_to_ep(hcd, urb);
 
+This can fail for any urb due to urb->reject
+
+> +	if (ret)
+> +		goto no_need_unlink;
+
+The branch would be taken
+
+[..]
+> +no_need_unlink:
+> +	spin_unlock_irqrestore(&the_controller->lock, flags);
+> +
+> +	usb_hcd_giveback_urb(vhci_to_hcd(the_controller), urb, urb->status);
+
+This calls urb->complete. If the completion handler takes a spinlock
+which is held when usb_submit_urb() was called, you deadlock.
+
+> +static int vhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
+
+[..]
+> +		spin_unlock_irqrestore(&the_controller->lock, flags);
+> +		usb_hcd_giveback_urb(vhci_to_hcd(the_controller), urb,
+> +								urb->status);
+
+This must be called with interrupts disabled.
+
+> +		spin_lock_irqsave(&the_controller->lock, flags);
+> +	}
+> +
+> +	spin_unlock_irqrestore(&the_controller->lock, flags);
+> +
+> +	dbg_vhci_hc("leave\n");
+> +	return 0;
+> +}
+
+	Regards
+		Oliver
