@@ -1,51 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbYH2KNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754322AbYH2KT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753998AbYH2KNo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 06:13:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbYH2KNg
+	id S1754322AbYH2KT4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 06:19:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbYH2KTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 06:13:36 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:3577 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbYH2KNf (ORCPT
+	Fri, 29 Aug 2008 06:19:48 -0400
+Received: from burp.tkv.asdf.org ([212.16.99.49]:45875 "EHLO
+	cs181073102.pp.htv.fi" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751469AbYH2KTr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 06:13:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=IpddzEE+3N+FyK2f/o8bIlQHKkBKQTrJ/LPfjfeqWZyrDBJqfkEsTaxEPMkUMn7bVD
-         abudCsKij1csxxW5McAnhTrMjhou88bsBvK6NS/oNx7BF2Bz3I98mQx6V4s6RNJQa3r4
-         Y7xK1H6TFhUuURvL2iJ3+QhBTof4kEVdhXoBc=
-Message-ID: <b170af450808290313x574b4561i3048ffca3e4da197@mail.gmail.com>
-Date: Fri, 29 Aug 2008 12:13:34 +0200
-From: "=?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?=" <zajec5@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory corruption
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>,
-       "Hugh Dickens" <hugh@veritas.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080829102547.655440bf@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <48B701FB.2020905@goop.org>
-	 <86802c440808281849nb972d64te89894077ea9f33c@mail.gmail.com>
-	 <48B76CE0.5010309@goop.org>
-	 <20080829102547.655440bf@lxorguk.ukuu.org.uk>
+	Fri, 29 Aug 2008 06:19:47 -0400
+Date: Fri, 29 Aug 2008 13:18:38 +0300
+From: Markku Savela <msa@moth.iki.fi>
+Message-Id: <200808291018.m7TAIcqJ030105@burp.tkv.asdf.org>
+To: Theodore Tso <tytso@mit.edu>
+CC: tytso@mit.edu, pavel@suse.cz, linux-kernel@vger.kernel.org
+In-reply-to: <20080828174854.GM26987@mit.edu> (message from Theodore Tso on
+	Thu, 28 Aug 2008 13:48:54 -0400)
+Subject: Re: Frustrated with capabilities..
+References: <87hc96by8x.fsf@burp.tkv.asdf.org> <20080828141826.GA6797@ucw.cz> <200808281445.m7SEjYsB007502@burp.tkv.asdf.org> <20080828174854.GM26987@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m7TADodq017606
 
-Out of current discussion I tried using s2ram on patched kernel (I didnot try s2ram earlier, my problem was (un)plugging HDMI - some ACPIcode probably).
-Corruption output is quite huge, I attached it to bug report:http://bugzilla.kernel.org/show_bug.cgi?id=11237http://bugzilla.kernel.org/attachment.cgi?id=17526
+> From: Theodore Tso <tytso@mit.edu>
 
-I do not know much about current discussion and fact if checking forcorruption should be enabled by default.
-However, please note that end-user will not able to diagnose thatLinux doesn't work on his machine because of less-or-more broken BIOS.He will not get to know that he needs to enablebios_corruption_check=1 and edit grub to make it default.
-I understand that disabling chunk of RAM on every, even not affected,machine is far from perfect, but we have to remember about notadvanced end-users.
--- RafaÅ‚ MiÅ‚eckiÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+> The reason for that was to avoid bugs where a program that wasn't
+> expecting to be setuid (or just written by a stupid progammer) exec's
+> some program which wasn't expecting to have root privileges then bad
+> things happen.  The classic example of this was running the mail
+> program, which was setuid or setgid to the mail user/group, and then
+> typing "!/bin/sh" which would exec a shell running with those
+> privileges (because the mail program didn't know to drop its
+> privileges).
+
+Considering the current case, without the file capabilites, I note
+
+- if the caller of /bin/sh is ROOT, the capabities are inherited. Thus
+  my request has no relevance in that case.
+
+- if the caller does first setuid to non-root, the capabilities are
+  cleared, unless KEEP_CAPS is explicitly set. Thus, my requested
+  change would not cause problems with your buggy mail program.
+
+- if the caller goes through all the trouble of setting KEEP_CAPS and
+  changing to non-root, I would expect it to be sensible that the
+  caller also intends the execve code to inherit capabilities.
+
+As an experiment and example, I made a small patch to Ubuntu 2.6.24
+kernel, to make it work like I think it should: if KEEP_CAPS is set,
+they are inherited (see at end).
+
+I'm ok with the current kernel code, which seems to clear the
+KEEP_CAPS on execve. Thus, each executable must again re-enable it, if
+it needs capabilities inherited further...
+
+
+> So in the capabilities model, the capabilities do *not* inherit unless
+> the a particular file explicitly states that it should inherit the
+> capabilities.  It's the principle of least privilege taken to its
+> logical conclusion.
+
+I'm looking at network oriented devices, where executables or
+interpreted content from network sources is executed by helper
+applications or directly as executables. Depending on the source of
+the "code", the helper application or the downloaded exectuable may be
+allowed to run with different permissions (capabilities, uid/gid
+etc). [For example, look at android security model with manifests of
+requested and declared permissions, but applied to everything
+downloaded or installed].
+
+File capabilities (nor selinux) won't work, because the "helper
+applications" need to be executed with different capabilities and
+permissions, depending on the "manifests" of the downloaded
+"code". Obviously, serious permissions are granted only to properly
+verified "code" (signed).
+
+  [Any ideas how selinux would help to enforce a permission which is
+  dynamically defined by installing application?]
+
+I'm using "code" in quotes, because in my mind, it can include HTML,
+word documents, spreadsheets, images. Data formats are getting so
+complex, that they start to look more like interpreted code, than
+plain passive data.
+
+File capabilities (and setuid/setgid bits, selinux attributes) have
+another problem: they only work properly on internal disk. No sane
+person would allow them to be effective from removable media or NFS.
+
+-------------------
+This only handles the case where file capabilities are not enabled. If
+enabled, I would need to remove the bprm_clear_caps call from the
+branch that gets executed when the file does not have any special
+capabilities defined.
+-------------------
+
+--- fs/exec.c.orig	2008-08-21 00:51:46.000000000 +0300
++++ fs/exec.c	2008-08-28 11:18:13.000000000 +0300
+@@ -1072,6 +1072,12 @@
+ 	bprm->e_uid = current->euid;
+ 	bprm->e_gid = current->egid;
+ 
++	if (current->keep_capabilities) {
++		bprm->cap_inheritable = current->cap_inheritable;
++		bprm->cap_permitted = current->cap_permitted;
++		bprm->cap_effective = 1;
++	}
++
+ 	if(!(bprm->file->f_path.mnt->mnt_flags & MNT_NOSUID)) {
+ 		/* Set-uid? */
+ 		if (mode & S_ISUID) {
+--- security/commoncap.c.orig	2008-08-21 00:51:47.000000000 +0300
++++ security/commoncap.c	2008-08-28 16:20:34.000000000 +0300
+@@ -282,7 +282,7 @@
+ 
+ static inline int get_file_caps(struct linux_binprm *bprm)
+ {
+-	bprm_clear_caps(bprm);
++	/*bprm_clear_caps(bprm); */
+ 	return 0;
+ }
+ #endif
+
