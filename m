@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbYH2Ly4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbYH2Lzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757379AbYH2Ly4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 07:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756501AbYH2Lys
+	id S1757451AbYH2Lzx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 07:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756726AbYH2Lzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 07:54:48 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:6292 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755972AbYH2Lyr (ORCPT
+	Fri, 29 Aug 2008 07:55:44 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:14094 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753351AbYH2Lzo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 07:54:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=E5W8AC6JI2rYlNod+LarQq649bnvX0ft/A0Pa4ssL8AxxW+hZKYtkUg4/CDfDe+1zN
-         5FjPyh43UiUqjEin22i1lZY3djNgmSCmZ0ryxhvkfhYoAOg971xOy84+d0kdrKQWI8Od
-         mLxI+t/ePUi7tFrWgqgsrt8XVI/4JFPkni8ys=
-Message-ID: <b170af450808290454m2f349ce3w4f400b0df0e105a2@mail.gmail.com>
-Date: Fri, 29 Aug 2008 13:54:46 +0200
-From: "=?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?=" <zajec5@gmail.com>
-To: "Hugh Dickins" <hugh@veritas.com>
-Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory corruption
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0808291120540.8561@blonde.site>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 29 Aug 2008 07:55:44 -0400
+Message-Id: <48B80029.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
+Date: Fri, 29 Aug 2008 12:56:57 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: "Nick Piggin" <npiggin@suse.de>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: use LOCK_PREFIX consistently in tick spin lock
+	 code
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <48B701FB.2020905@goop.org>
-	 <86802c440808281849nb972d64te89894077ea9f33c@mail.gmail.com>
-	 <48B76CE0.5010309@goop.org>
-	 <20080829102547.655440bf@lxorguk.ukuu.org.uk>
-	 <b170af450808290313x574b4561i3048ffca3e4da197@mail.gmail.com>
-	 <Pine.LNX.4.64.0808291120540.8561@blonde.site>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m7TBt6dq019001
 
-2008/8/29 Hugh Dickins <hugh@veritas.com>:>> On Fri, 29 Aug 2008, RafaÅ‚ MiÅ‚ecki wrote:>>>> Out of current discussion I tried using s2ram on patched kernel (I did>> not try s2ram earlier, my problem was (un)plugging HDMI - some ACPI>> code probably).>>>> Corruption output is quite huge, I attached it to bug report:>> http://bugzilla.kernel.org/show_bug.cgi?id=11237>> http://bugzilla.kernel.org/attachment.cgi?id=17526>> Not quite the output we were expecting!  I've not got around to trying> it yet, so beware, but I think Jeremy's patch needs the following on top.> Or you may prefer to wait until one of us reports that it is now working> as intended.>> --- a/arch/x86/kernel/setup.c   2008-08-29 11:17:16.000000000 +0100> +++ b/arch/x86/kernel/setup.c   2008-08-29 11:19:24.000000000 +0100> @@ -636,11 +636,12 @@ void check_for_bios_corruption(void)>                unsigned long *addr = __va(scan_areas[i].addr);>                unsigned long size = scan_areas[i].size;>> -               for(; size; addr++, size--) {> +               for(; size; addr++, size -= sizeof(unsigned long)) {>                        if (!*addr)>                                continue;>                        printk(KERN_ERR "Corrupted low memory at %p (%lx phys) = %08lx\n",>                               addr, __pa(addr), *addr);> +                       *addr = 0;>                        corruption = 1;>                }>        }
-I tried your patch anyway (after applying Jeremy's patch of course)and it doesn't seem to work. The only output is:scanning 2 areas for BIOS corruptionafter using s2ram. I do not get anyCorrupted low memory at*
--- RafaÅ‚ MiÅ‚eckiÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Cc: Nick Piggin <npiggin@suse.de>
+
+---
+ include/asm-x86/spinlock.h |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+--- linux-2.6.27-rc5/include/asm-x86/spinlock.h	2008-08-21 14:37:34.000000000 +0200
++++ 2.6.27-rc5-x86-spinlock-prefix/include/asm-x86/spinlock.h	2008-08-19 12:43:22.000000000 +0200
+@@ -97,8 +97,8 @@ static __always_inline int __ticket_spin
+ 		     "jne 1f\n\t"
+ 		     "movw %w0,%w1\n\t"
+ 		     "incb %h1\n\t"
+-		     "lock ; cmpxchgw %w1,%2\n\t"
+-		     "1:"
++		     LOCK_PREFIX "cmpxchgw %w1, %2\n"
++		     "1:\t"
+ 		     "sete %b1\n\t"
+ 		     "movzbl %b1,%0\n\t"
+ 		     : "=&a" (tmp), "=Q" (new), "+m" (lock->slock)
+@@ -135,9 +135,9 @@ static __always_inline void __ticket_spi
+ 	int inc = 0x00010000;
+ 	int tmp;
+ 
+-	asm volatile("lock ; xaddl %0, %1\n"
++	asm volatile(LOCK_PREFIX "xaddl %0, %1\n\t"
+ 		     "movzwl %w0, %2\n\t"
+-		     "shrl $16, %0\n\t"
++		     "shrl $16, %0\n"
+ 		     "1:\t"
+ 		     "cmpl %0, %2\n\t"
+ 		     "je 2f\n\t"
+@@ -162,8 +162,8 @@ static __always_inline int __ticket_spin
+ 		     "cmpl %0,%1\n\t"
+ 		     "jne 1f\n\t"
+ 		     "addl $0x00010000, %1\n\t"
+-		     "lock ; cmpxchgl %1,%2\n\t"
+-		     "1:"
++		     LOCK_PREFIX "cmpxchgl %1, %2\n"
++		     "1:\t"
+ 		     "sete %b1\n\t"
+ 		     "movzbl %b1,%0\n\t"
+ 		     : "=&a" (tmp), "=r" (new), "+m" (lock->slock)
+
+
+
