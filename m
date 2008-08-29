@@ -1,69 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756422AbYH2PdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYH2Pga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756422AbYH2PdA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 11:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750727AbYH2Pcw
+	id S1754766AbYH2Pga (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 11:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbYH2PgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 11:32:52 -0400
-Received: from isuela.unizar.es ([155.210.1.53]:36299 "EHLO isuela.unizar.es"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751359AbYH2Pcv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 11:32:51 -0400
-Message-Id: <BEE3259F-0ED8-4030-9CA5-D8892C9096C2@ono.com>
-From: "=?ISO-8859-1?Q?=22J.A._Magall=F3n=22?=" <jamagallon@ono.com>
-To: Linux-Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Fri, 29 Aug 2008 11:36:22 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:58926 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750971AbYH2PgV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 11:36:21 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 4/5] select: make select() use schedule_hrtimeout()
+Date: Fri, 29 Aug 2008 17:36:08 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de,
+       torvalds@linux-foundation.org
+References: <20080829080549.6906b744@infradead.org> <20080829080809.0e42a323@infradead.org>
+In-Reply-To: <20080829080809.0e42a323@infradead.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Out of mtrrs
-Date: Fri, 29 Aug 2008 17:32:49 +0200
-X-Mailer: Apple Mail (2.926)
-X-Mail-Scanned: Criba 2.0 + Clamd & Bogofilter
+Content-Disposition: inline
+Message-Id: <200808291736.09400.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/awFnhnUfQrKBsX3V93Rhfv7tZtb4PrOke6oC
+ nBkqWQjJ0hXTnVapN32Gg9sfxXz+tTxo+q0XtRzZACfPPox9fH
+ a1sjA/8Q7q4RKNBygHjEA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all...
+On Friday 29 August 2008, Arjan van de Ven wrote:
+> This is only done for delays shorter than 1 second; currently
+> the assumption is that longer delays have no desire to get the
+> higher accuracy.
 
-I'm using the xorg intel driver, and drm/X report it has no free mtrrs
-in kernel to set up:
+What is the tradeoff here? Where is the advantage in using the
+traditional timer interface for longer timeouts?
 
-one:~# cat /proc/mtrr
-reg00: base=0xfffe0000 (4095MB), size= 128KB: write-protect, count=1
-reg01: base=0xfffc0000 (4095MB), size= 128KB: uncachable, count=1
-reg02: base=0x00000000 (   0MB), size= 256MB: write-back, count=1
-reg03: base=0x10000000 ( 256MB), size= 256MB: write-back, count=1
-reg04: base=0x1f800000 ( 504MB), size=   8MB: uncachable, count=1
-reg05: base=0x1f600000 ( 502MB), size=   2MB: uncachable, count=1
-reg06: base=0x1f500000 ( 501MB), size=   1MB: uncachable, count=1
-reg07: base=0x00000000 (   0MB), size= 128KB: uncachable, count=1
-
-dmesg:
-
-[drm] Initialized i915 1.6.0 20060119 on minor 0
-mtrr: no more MTRRs available
-
-one:/var/log# grep Linear x.log
-(--) intel(0): Linear framebuffer at 0x20000000
-
-I think X tries to get a mtrr at 0x20000000, but kernel has no free one
-to offer.
-
-Does this have any solution ?
-
-TIA
-
-(Oh, this is 2.6.26.3, intel driver 2.4.2)
-00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME,  
-943/940GML Express Integrated Graphics Controller (rev 03)
-
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is  
-like sex:
-                                          \         It's better when  
-it's free
-Mandriva Linux release 2009.0 (Cooker) for i586
-Linux 2.6.25-jam13 (gcc 4.3.1 20080515 (GCC) #1 SMP
-
-
-
+	Arnd <><
