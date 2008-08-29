@@ -1,34 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754616AbYH2GS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbYH2GTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754616AbYH2GS6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 02:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbYH2GPn
+	id S1754140AbYH2GTk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 02:19:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbYH2GPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 02:15:43 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:59513 "EHLO
+	Fri, 29 Aug 2008 02:15:48 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:59516 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499AbYH2GP1 (ORCPT
+	with ESMTP id S1751413AbYH2GP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 29 Aug 2008 02:15:27 -0400
 Date: Thu, 28 Aug 2008 23:47:41 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808290547.m7T5lfFt016124@wolfmountaingroup.com>
+Message-Id: <200808290547.m7T5lfYx016127@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc5 9/29] mdb: add mdb-ia32.c Intel x86 architecure routines
+Subject: [PATCH 2.6.27-rc5 12/29] mdb: add mdb-ia32-support.c disassembler support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add mdb-ia32.c Intel x86 architecure routines
-
-remove ALL volatile declarations
+add mdb-ia32-support.c disassembler support
 
 
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/debug/mdb/mdb-ia32.c	1969-12-31 17:00:00.000000000 -0700
-+++ b/debug/mdb/mdb-ia32.c	2008-08-28 14:20:04.000000000 -0600
-@@ -0,0 +1,5769 @@
+--- a/debug/mdb/mdb-ia32-support.c	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/mdb/mdb-ia32-support.c	2008-08-28 14:20:04.000000000 -0600
+@@ -0,0 +1,1935 @@
 +
 +/***************************************************************************
 +*
@@ -91,13 +89,11 @@ Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 +#include <linux/console.h>
 +#include <linux/serial_reg.h>
 +#include <linux/uaccess.h>
-+#include <linux/nmi.h>
 +#include <asm/system.h>
 +#include <asm/segment.h>
 +#include <asm/atomic.h>
 +#include <asm/msr.h>
 +#include <linux/io.h>
-+#include <linux/clocksource.h>
 +
 +#ifdef CONFIG_SMP
 +#include <mach_apic.h>
@@ -117,5684 +113,1852 @@ Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 +#include "mdb-os.h"
 +#include "mdb-keyboard.h"
 +
-+unsigned long MajorVersion = 2627;
-+unsigned long MinorVersion = 8232008;
-+unsigned long BuildVersion = 4;
++#define mod(a)  (((a) >> 6) & 7)
++#define reg(a)  (((a) >> 3) & 7)
++#define rm(a)   ((a) & 7)
++#define ss(a)   (((a) >> 6) & 7)
++#define indx(a) (((a) >> 3) & 7)
++#define base(a) ((a) & 7)
 +
-+unsigned char *IA32Flags[]=
-+{
-+   "CF", 0, "PF", 0, "AF",    0, "ZF", "SF", "TF", "IF", "DF", "OF",
-+   0,    0, "NT", 0, "RF", "VM", "AC", "VIF","VIP","ID",    0,    0,
-+   0,
-+};
++#define   CF_FLAG   0x00000001
++#define   PF_FLAG   0x00000004
++#define   AF_FLAG   0x00000010
++#define   ZF_FLAG   0x00000040
++#define   SF_FLAG   0x00000080
++#define   TF_FLAG   0x00000100
++#define   IF_FLAG   0x00000200
++#define   DF_FLAG   0x00000400
++#define   OF_FLAG   0x00000800
++#define   NT_FLAG   0x00004000
++#define   RF_FLAG   0x00010000
++#define   VM_FLAG   0x00020000
++#define   AC_FLAG   0x00040000
++#define   VIF_FLAG  0x00080000
++#define   VIP_FLAG  0x00100000
++#define   ID_FLAG   0x00200000
 +
-+unsigned char *BreakDescription[]=
-+{
-+   "EXECUTE",  "WRITE",  "IOPORT",  "READ/WRITE",
-+};
++short SegmentSize = 32;
++unsigned char buf[20];
++unsigned char *VirtualAddress;
++short bufp, bufe;
++unsigned char ubuf[4000], *ubufp;
++short Columns;
++unsigned char NoNameBuffer[100];
++short DefaultPickSign;
++short Prefix;
++signed int modrmv;
++signed int sibv;
++short OperandSize;
++short AddressSize;
++unsigned long needs_proceed;
++unsigned long jmp_active;
++short MODRMExtend;
++long DeRefValue;
++long pSize;
++extern unsigned long full_deref_toggle;
++extern unsigned long debug_deref;
 +
-+unsigned char *BreakLengthDescription[]={
-+   ": 1 BYTE",  ": 2 BYTE",  ": ??????",  ": 4 BYTE",
-+};
++void ProcessInstruction(StackFrame *stackFrame, unsigned char *s);
 +
-+unsigned char *ExceptionDescription[]={
-+   "Divide By Zero",                 /*  0 */
-+   "Debugger Exception (INT1)",      /*  1 */
-+   "Non-Maskable Interrupt",         /*  2 */
-+   "Debugger Breakpoint (INT3)",     /*  3 */
-+   "Overflow Exception",             /*  4 */
-+   "Bounds Check",                   /*  5 */
-+   "Invalid Opcode",                 /*  6 */
-+   "No Coprocessor",                 /*  7 */
-+   "Double Fault",                   /*  8 */
-+   "Cops Error",                     /*  9 */
-+   "Invalid Task State Segment",     /*  10 */
-+   "Segment Not Present",            /*  11 */
-+   "Stack Exception",                /*  12 */
-+   "General Protection",             /*  13 */
-+   "Page Fault",                     /*  14 */
-+   "InvalidInterrupt",               /*  15 */
-+   "Coprocessor Error",              /*  16 */
-+   "AlignmentCheck",                 /*  17 */
-+   "Machine Check",                  /*  18 */
-+   "Enter Debugger Request",         /*  19 */
-+   "Unvectored Exception",           /*  20 */
-+   "Directed NMI Breakpoint",        /*  21 */
-+   "Panic"                           /*  22 */
-+};
-+unsigned long exceptions = (sizeof(ExceptionDescription) / sizeof(unsigned char *));
-+
-+unsigned char char32spc[] = { "xxxúxxxúxxxúxxxùxxxúxxxúxxxúxxx " };
-+unsigned char flset[] = { "VMRF  NT    OFDNIETFMIZR  AC  PE  CY" };
-+unsigned char floff[] = { "              UPID  PLNZ      PO  NC" };
-+unsigned char fluse[] = { 1,1,0,1,0,0,1,1,1,1,1,1,0,1,0,1,0,1 };
-+
-+unsigned long MTRR_BASE_REGS[] = {
-+  MTRR_PHYS_BASE_0, MTRR_PHYS_BASE_1, MTRR_PHYS_BASE_2, MTRR_PHYS_BASE_3,
-+  MTRR_PHYS_BASE_4, MTRR_PHYS_BASE_5, MTRR_PHYS_BASE_6, MTRR_PHYS_BASE_7
-+};
-+
-+unsigned long MTRR_MASK_VALUES[] = {
-+  MTRR_PHYS_MASK_0, MTRR_PHYS_MASK_1, MTRR_PHYS_MASK_2, MTRR_PHYS_MASK_3,
-+  MTRR_PHYS_MASK_4, MTRR_PHYS_MASK_5, MTRR_PHYS_MASK_6, MTRR_PHYS_MASK_7
-+};
-+
-+/* recursive spin lock used by the debugger to gate processors acquiring
-+ * the debugger console.  if the lock is already held on the current
-+ * processor when called, increment a use counter.  this allows us to
-+ * handle nested exceptions on the same processor without deadlocking */
-+typedef struct _RLOCK
-+{
-+#if defined(CONFIG_SMP)
-+    spinlock_t lock;
-+#endif
-+    unsigned long processor;
-+    unsigned long count;
-+    unsigned long flags[MAX_PROCESSORS];
-+} rlock_t;
-+
-+#define PROCESSOR_INACTIVE    0
-+#define PROCESSOR_ACTIVE      1
-+#define PROCESSOR_SUSPEND     2
-+#define PROCESSOR_RESUME      3
-+#define PROCESSOR_DEBUG       4
-+#define PROCESSOR_SHUTDOWN    5
-+#define PROCESSOR_IPI         6
-+#define PROCESSOR_SWITCH      7
-+#define PROCESSOR_HOLD        8
-+
-+#define PIC1_DEBUG_MASK    0xFC
-+#define PIC2_DEBUG_MASK    0xFF
-+
-+#define  MAX_PICS             3
-+#define  PIC_0             0x20
-+#define  PIC_1             0xA0
-+#define  PIC_2             0x30
-+#define  MASK_0            0x21
-+#define  MASK_1            0xA1
-+#define  MASK_2            0x31
-+
-+unsigned char irq_control[MAX_PICS] = { PIC_0, PIC_1, PIC_2 };
-+unsigned char irq_mask[MAX_PICS] = { MASK_0, MASK_1, MASK_2 };
-+unsigned char mask_value[MAX_PICS] = { 0xF8, 0xFF, 0xFF };
-+
-+StackFrame ReferenceFrame[MAX_PROCESSORS];
-+NUMERIC_FRAME npx[MAX_PROCESSORS];
-+
-+#if defined(CONFIG_SMP)
-+rlock_t debug_mutex = { SPIN_LOCK_UNLOCKED, -1, 0 };
-+#else
-+rlock_t debug_mutex = { -1, 0 };
-+#endif
-+
-+atomic_t focusActive;  /* cpus is focus */
-+atomic_t debuggerActive;  /* cpus in the debugger */
-+atomic_t debuggerProcessors[MAX_PROCESSORS]; /* cpus in handlers */
-+atomic_t nmiProcessors[MAX_PROCESSORS]; /* cpus suspended */
-+atomic_t traceProcessors[MAX_PROCESSORS]; /* focus processor mode */
-+unsigned long ProcessorHold[MAX_PROCESSORS];
-+unsigned long ProcessorState[MAX_PROCESSORS];
-+
-+unsigned char *procState[]={
-+   "PROCESSOR_INACTIVE", "PROCESSOR_ACTIVE  ", "PROCESSOR_SUSPEND ",
-+   "PROCESSOR_RESUME  ", "PROCESSOR_DEBUG   ", "PROCESSOR_SHUTDOWN",
-+   "PROCESSOR_IPI     ", "PROCESSOR_SWITCH  ", "PROCESSOR_HOLD    ",
-+   "?                 ", "?                 ", "?                 ",
-+   "?                 ", "?                 ", "?                 ",
-+   "?                 "
-+};
-+
-+/* debugger commands */
-+
-+DEBUGGER_PARSER backTraceAllPidPE = {
-+0, 0, backTraceAllPID, backTraceHelp, 0, "BTA", 0, 0,
-+"display stack backtrace for all processes" , 0 };
-+
-+DEBUGGER_PARSER backTracePidPE = {
-+0, 0, backTracePID, backTraceHelp, 0, "BTP", 0, 0,
-+"display stack backtrace by pid" , 0 };
-+
-+DEBUGGER_PARSER backTraceStackPE = {
-+0, 0, backTraceStack, backTraceHelp, 0, "BT", 0, 0,
-+"display stack backtrace by address" , 0 };
-+
-+DEBUGGER_PARSER uFramePE = {
-+0, 0, dump_uf, 0, 0, "UF", 0, 0,
-+"display task eframe contents" , 0 };
-+
-+DEBUGGER_PARSER eFramePE = {
-+0, 0, dump_ef, 0, 0, "EF", 0, 0,
-+"display eframe contents" , 0 };
-+
-+DEBUGGER_PARSER cpuFramePE = {
-+0, 0, listProcessorFrame, processorCommandHelp, 0, "LR", 0, 0,
-+"display cpu registers" , 0 };
-+
-+DEBUGGER_PARSER ProcessorPE = {
-+0, 0, displayProcessorStatus, displayProcessorStatusHelp, 0, "PROCESSORS", 0, 0,
-+"display processor status" , 0 };
-+
-+DEBUGGER_PARSER HPE = {
-+0, 0, displayDebuggerHelp, displayDebuggerHelpHelp, 0, "HELP", 0, 0,
-+"this help screen (type HELP <command> for specific help)" , 0 };
-+
-+DEBUGGER_PARSER HelpPE = {
-+0, 0, displayDebuggerHelp, displayDebuggerHelpHelp, 0, "H", 0, 0,
-+"this help screen" , 0 };
-+
-+DEBUGGER_PARSER clearScreenPE = {
-+0, 0, clearDebuggerScreen, clearScreenHelp, 0, "CLS", 0, 0,
-+"clear the screen" , 0 };
-+
-+DEBUGGER_PARSER asciiTablePE = {
-+0, 0, displayASCTable, ascTableHelp, 0, "A", 0, 0,
-+"display ASCII Table" , 0 };
-+
-+DEBUGGER_PARSER TUTogglePE = {
-+0, 0, ProcessTUToggle, displayToggleHelp, 0, ".TU", 0, 0,
-+"toggles unasm debug display (ON | OFF)" , 0 };
-+
-+DEBUGGER_PARSER TDTogglePE = {
-+0, 0, ProcessTDToggle, displayToggleHelp, 0, ".TD", 0, 0,
-+"toggles full dereference display (ON | OFF)" , 0 };
-+
-+DEBUGGER_PARSER TLTogglePE = {
-+0, 0, ProcessTLToggle, displayToggleHelp, 0, ".TL", 0, 0,
-+"toggles source line display (ON | OFF)" , 0 };
-+
-+DEBUGGER_PARSER TGTogglePE = {
-+0, 0, ProcessTGToggle, displayToggleHelp, 0, ".TG", 0, 0,
-+"toggles general registers (ON | OFF)" , 0 };
-+
-+DEBUGGER_PARSER TCTogglePE = {
-+0, 0, ProcessTCToggle, displayToggleHelp, 0, ".TC", 0, 0,
-+"toggles control registers (ON | OFF)" , 0 };
-+
-+DEBUGGER_PARSER TNTogglePE = {
-+0, 0, ProcessTNToggle, displayToggleHelp, 0, ".TN", 0, 0,
-+"toggles coprocessor registers (ON | OFF)"  , 0 };
-+
-+DEBUGGER_PARSER TRTogglePE = {
-+0, 0, ProcessTRToggle, displayToggleHelp, 0, ".TR", 0, 0,
-+"toggles display of break reason (ON | OFF)"  , 0 };
-+
-+DEBUGGER_PARSER TSTogglePE = {
-+0, 0, ProcessTSToggle, displayToggleHelp, 0, ".TS", 0, 0,
-+"toggles segment registers (ON | OFF)"  , 0 };
-+
-+DEBUGGER_PARSER TATogglePE = {
-+0, 0, ProcessTAToggle, displayToggleHelp, 0, ".TA", 0, 0,
-+"toggles all registers (ON | OFF)" , 0 };
-+
-+DEBUGGER_PARSER ReasonPE = {
-+0, 0, ReasonDisplay, ReasonHelp, 0, ".A", 0, 0,
-+"display break reason" , 0 };
-+
-+DEBUGGER_PARSER TTogglePE = {
-+0, 0, TSSDisplay, TSSDisplayHelp, 0, ".T", 0, 0,
-+"display task state segment (tss)" , 0 };
-+
-+DEBUGGER_PARSER versionPE = {
-+0, 0, DisplayDebuggerVersion, displayDebuggerVersionHelp, 0, ".V", 0, 0,
-+"display version info" , 0 };
-+
-+#if defined(CONFIG_MODULES)
-+DEBUGGER_PARSER lsmodPE1 = {
-+0, 0, listModules, listModulesHelp, 0, ".M", 0, 0,
-+"list loaded modules" , 0 };
-+
-+DEBUGGER_PARSER lsmodPE2 = {
-+0, 0, listModules, listModulesHelp, 0, "LSMOD", 0, 0,
-+"list loaded modules" , 0 };
-+
-+DEBUGGER_PARSER rmmodPE = {
-+0, 0, unloadModule, listModulesHelp, 0, "RMMOD", 0, 0,
-+"unload module" , 0 };
-+#endif
-+
-+DEBUGGER_PARSER rebootPE = {
-+0, 0, rebootSystem, rebootSystemHelp, 0, "REBOOT", 0, 0,
-+"reboot host system" , 0 };
-+
-+DEBUGGER_PARSER KernelProcessPE1 = {
-+0, 0, displayKernelProcess, displayKernelProcessHelp, 0, ".P", 0, 0,
-+"display kernel processes" , 0 };
-+
-+DEBUGGER_PARSER KernelProcessPE2 = {
-+0, 0, displayKernelProcess, displayKernelProcessHelp, 0, "PS", 0, 0,
-+"display kernel processes" , 0 };
-+
-+/*
-+DEBUGGER_PARSER SectionPE1 = {
-+0, 0, displaySections, displaySectionsHelp, 0, ".S", 0, 0,
-+"display kernel/module sections" , 0 };
-+
-+DEBUGGER_PARSER SectionPE2 = {
-+0, 0, displaySections, displaySectionsHelp, 0, "SECTIONS", 0, 0,
-+"display kernel/module sections" , 0 };
++/* Percent tokens in strings:
++   First char after '%':
++	A - direct address
++	C - reg of r/m picks control register
++	D - reg of r/m picks debug register
++        E - r/m picks operand
++        F - flags register
++	G - reg of r/m picks general register
++        I - immediate data (takes extended size, data size)
++        J - relative IP offset
++        M - r/m picks memory
++        O - no r/m, offset only
++	R - mod of r/m picks register only
++        S - reg of r/m picks segment register
++        T - reg of r/m picks test register
++        X - DS:ESI
++        Y - ES:EDI
++	2 - Prefix of two-byte opcode
++	e - put in 'e' if use32 (second char is part of reg name)
++	    put in 'w' for use16 or 'd' for use32 (second char is 'w')
++	f - floating point (second char is esc value)
++	g - do r/m group 'n'
++	p - Prefix
++	s - size override (second char is a,o)
++        + - make default signed
++   Second char after '%':
++        a - two words in memory (BOUND)
++	b - byte
++        c - byte or word
++        d - dword
++	p - 32 or 48 bit pointer
++        s - six byte pseudo-descriptor
++        v - word or dword
++	w - word
++        F - use floating regs in mod/rm
++        + - always sign
++        - - sign if negative
++	1-8 - group number, esc value, etc
 +*/
 +
-+DEBUGGER_PARSER AllSymbolsPE = {
-+0, 0, displaySymbols, displaySymbolsHelp, 0, "SYMBOL", 0, 0,
-+"display symbol(s)" , 0 };
-+
-+DEBUGGER_PARSER SymbolsPE = {
-+0, 0, displaySymbols, displaySymbolsHelp, 0, ".Z", 0, 0,
-+"display symbol(s)" , 0 };
-+
-+DEBUGGER_PARSER ControlPE = {
-+0, 0, displayControlRegisters, displayRegistersHelp, 0, "RC", 0, 0,
-+"display control registers" , 0 };
-+
-+DEBUGGER_PARSER AllPE = {
-+0, 0, displayAllRegisters, displayRegistersHelp, 0, "RA", 0, 0,
-+"display all registers" , 0 };
-+
-+DEBUGGER_PARSER SegmentPE = {
-+0, 0, displaySegmentRegisters, displayRegistersHelp, 0, "RS", 0, 0,
-+"display segment registers" , 0 };
-+
-+DEBUGGER_PARSER NumericPE = {
-+0, 0, displayNumericRegisters, displayRegistersHelp, 0, "RN", 0, 0,
-+"display coprocessor/MMX registers" , 0 };
-+
-+DEBUGGER_PARSER GeneralPE = {
-+0, 0, displayGeneralRegisters, displayRegistersHelp, 0, "RG", 0, 0,
-+"display general registers" , 0 };
-+
-+DEBUGGER_PARSER DefaultPE = {
-+0, 0, displayDefaultRegisters, displayRegistersHelp, 0, "R", 0, 0,
-+"display registers for a processor" , 0 };
-+
-+DEBUGGER_PARSER SearchMemoryBPE = {
-+0, 0, SearchMemoryB, SearchMemoryHelp, 0, "SB", 0, 0,
-+"search memory for pattern (bytes)"  , 0 };
-+
-+DEBUGGER_PARSER SearchMemoryWPE = {
-+0, 0, SearchMemoryW, SearchMemoryHelp, 0, "SW", 0, 0,
-+"search memory for pattern (words)"  , 0 };
-+
-+DEBUGGER_PARSER SearchMemoryDPE = {
-+0, 0, SearchMemoryD, SearchMemoryHelp, 0, "SD", 0, 0,
-+"search memory for pattern (dwords)"  , 0 };
-+
-+DEBUGGER_PARSER ChangeWordPE = {
-+0, 0, changeWordValue, changeMemoryHelp, 0, "CW", 0, 0,
-+"change words at address"  , 0 };
-+
-+DEBUGGER_PARSER ChangeDoublePE = {
-+0, 0, changeDoubleValue, changeMemoryHelp, 0, "CD", 0, 0,
-+"change dwords at address"  , 0 };
-+
-+DEBUGGER_PARSER ChangeBytePE = {
-+0, 0, changeByteValue, changeMemoryHelp, 0, "CB", 0, 0,
-+"change bytes at address"  , 0 };
-+
-+DEBUGGER_PARSER ChangeDefaultPE = {
-+0, 0, changeDefaultValue, changeMemoryHelp, 0, "C", 0, 0,
-+"change bytes at address"  , 0 };
-+
-+DEBUGGER_PARSER CloseSymbolsPE = {
-+0, 0, displayCloseSymbols, displayCloseHelp, 0, "?", 0, 0,
-+"display closest symbols to <address>" , 0 };
-+
-+DEBUGGER_PARSER WalkPE = {
-+0, 0, debuggerWalkStack, displayDumpHelp, 0, "W", 0, 0,
-+"display symbols on the stack"  , 0 };
-+
-+DEBUGGER_PARSER DumpLinkedPE = {
-+0, 0, debuggerDumpLinkedList, displayDumpHelp, 0, "DL", 0, 0,
-+"dump linked list"  , 0 };
-+
-+DEBUGGER_PARSER DumpWordPE = {
-+0, 0, debuggerDumpWord, displayDumpHelp, 0, "DW", 0, 0,
-+"dump memory as words"  , 0 };
-+
-+DEBUGGER_PARSER DumpStackPE = {
-+0, 0, debuggerDumpStack, displayDumpHelp, 0, "DS", 0, 0,
-+"dump stack"  , 0 };
-+
-+DEBUGGER_PARSER DumpDoubleStackPE = {
-+0, 0, debuggerDumpDoubleStack, displayDumpHelp, 0, "DDS", 0, 0,
-+"dump stack double word"  , 0 };
-+
-+DEBUGGER_PARSER DumpDoublePE = {
-+0, 0, debuggerDumpDouble, displayDumpHelp, 0, "DD", 0, 0,
-+"dump memory as double words" , 0 };
-+
-+DEBUGGER_PARSER DumpBytePE = {
-+0, 0, debuggerDumpByte, displayDumpHelp, 0, "DB", 0, 0,
-+"dump memory as bytes"  , 0 };
-+
-+DEBUGGER_PARSER DumpDefaultPE = {
-+0, 0, debuggerDumpByte, displayDumpHelp, 0, "D", 0, 0,
-+"dump memory as bytes"  , 0 };
-+
-+DEBUGGER_PARSER Diss16PE = {
-+0, 0, processDisassemble16, displayDisassembleHelp, 0, "UU", 0, 0,
-+"unassemble code (16-bit)" , 0 };
-+
-+DEBUGGER_PARSER Diss32PE = {
-+0, 0, processDisassemble32, displayDisassembleHelp, 0, "U", 0, 0,
-+"unassemble code (32-bit)"  , 0 };
-+
-+DEBUGGER_PARSER Id32PE = {
-+0, 0, processDisassemble32, displayDisassembleHelp, 0, "ID", 0, 0,
-+"unassemble code (32-bit)"  , 0 };
-+
-+DEBUGGER_PARSER ProceedPE = {
-+0, 0, processProceed, executeCommandHelp, 0, "P", 0, 0,
-+"proceed"  , -1 };
-+
-+DEBUGGER_PARSER TracePE = {
-+0, 0, processTrace, executeCommandHelp, 0, "T", 0, 0,
-+"trace"  , -1 };
-+
-+DEBUGGER_PARSER SingleStepPE = {
-+0, 0, processTrace, executeCommandHelp, 0, "S", 0, 0,
-+"single step"  , -1 };
-+
-+DEBUGGER_PARSER TraceSSPE = {
-+0, 0, processTrace, executeCommandHelp, 0, "SS", 0, 0,
-+"single step"  , -1 };
-+
-+DEBUGGER_PARSER TraceSSBPE = {
-+0, 0, processTraceSSB, executeCommandHelp, 0, "SSB", 0, 0,
-+"single step til branch", -1 };
-+
-+DEBUGGER_PARSER GPE = {
-+0, 0, processGo, executeCommandHelp, 0, "G", 0, 0,
-+"g or g til <address> match"  , -1 };
-+
-+DEBUGGER_PARSER GoPE = {
-+0, 0, processGo, executeCommandHelp, 0, "GO", 0, 0,
-+"go or go til <address> match"  , -1 };
-+
-+DEBUGGER_PARSER QPE = {
-+0, 0, processGo, executeCommandHelp, 0, "Q", 0, 0,
-+"quit debugger until <address> match"  , -1 };
-+
-+DEBUGGER_PARSER XPE = {
-+0, 0, processGo, executeCommandHelp, 0, "X", 0, 0,
-+"exit debugger until <address> match"  , -1 };
-+
-+DEBUGGER_PARSER BreakProcessorPE = {
-+0, 0, breakProcessor, processorCommandHelp, 0, "CPU", 0, 0,
-+"switch processor"  , -1 };
-+
-+DEBUGGER_PARSER ListProcessorsPE = {
-+0, 0, listProcessors, processorCommandHelp, 0, "LCPU", 0, 0,
-+"list processors"  , 0 };
-+
-+DEBUGGER_PARSER EAXPE = {
-+0, 0, ChangeEAXRegister, displayEAXHelp, 0, "EAX", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER ORIGEAXPE = {
-+0, 0, ChangeORIGEAXRegister, displayEAXHelp, 0, "ORGEAX", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER EBXPE = {
-+0, 0, ChangeEBXRegister, displayEBXHelp, 0, "EBX", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER ECXPE = {
-+0, 0, ChangeECXRegister, displayECXHelp, 0, "ECX", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER EDXPE = {
-+0, 0, ChangeEDXRegister, displayEDXHelp, 0, "EDX", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER ESIPE = {
-+0, 0, ChangeESIRegister, displayESIHelp, 0, "ESI", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER EDIPE = {
-+0, 0, ChangeEDIRegister, displayEDIHelp, 0, "EDI", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER EBPPE = {
-+0, 0, ChangeEBPRegister, displayEBPHelp, 0, "EBP", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER ESPPE = {
-+0, 0, ChangeESPRegister, displayESPHelp, 0, "ESP", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER EIPPE = {
-+0, 0, ChangeEIPRegister, displayEIPHelp, 0, "EIP", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER CSPE = {
-+0, 0, ChangeCSRegister, displayCSHelp, 0, "XCS", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER DSPE = {
-+0, 0, ChangeDSRegister, displayDSHelp, 0, "XDS", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER ESPE = {
-+0, 0, ChangeESRegister, displayESHelp, 0, "XES", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER FSPE = {
-+0, 0, ChangeFSRegister, displayFSHelp, 0, "XFS", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER GSPE = {
-+0, 0, ChangeGSRegister, displayGSHelp, 0, "XGS", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER SSPE = {
-+0, 0, ChangeSSRegister, displaySSHelp, 0, "XSS", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER RFPE = {
-+0, 0, ChangeRFFlag, displayRFHelp, 0, "RF", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER TFPE = {
-+0, 0, ChangeTFFlag, displayTFHelp, 0, "TF", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER ZFPE = {
-+0, 0, ChangeZFFlag, displayZFHelp, 0, "ZF", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER SFPE = {
-+0, 0, ChangeSFFlag, displaySFHelp, 0, "SF", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER PFPE = {
-+0, 0, ChangePFFlag, displayPFHelp, 0, "PF", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER CFPE = {
-+0, 0, ChangeCFFlag, displayCFHelp, 0, "CF", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER OFPE = {
-+0, 0, ChangeOFFlag, displayOFHelp, 0, "OF", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER IFPE = {
-+0, 0, ChangeIFFlag, displayIFHelp, 0, "IF", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER IDPE = {
-+0, 0, ChangeIDFlag, displayIDHelp, 0, "CPUID", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER DFPE = {
-+0, 0, ChangeDFFlag, displayDFHelp, 0, "DF", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER NTPE = {
-+0, 0, ChangeNTFlag, displayNTHelp, 0, "NT", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER VMPE = {
-+0, 0, ChangeVMFlag, displayVMHelp, 0, "VM", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER VIFPE = {
-+0, 0, ChangeVIFFlag, displayVIFHelp, 0, "VIF", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER VIPPE = {
-+0, 0, ChangeVIPFlag, displayVIPHelp, 0, "VIP", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER AFPE = {
-+0, 0, ChangeAFFlag, displayAFHelp, 0, "AF", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER ACPE = {
-+0, 0, ChangeACFlag, displayACHelp, 0, "AC", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER MTRRPE = {
-+0, 0, DisplayMTRRRegisters, displayMTRRHelp, 0, "MTRR", 0, 0,
-+"display memory type range registers" , 0 };
-+
-+#if defined(CONFIG_SMP)
-+DEBUGGER_PARSER APIC_PE = {
-+0, 0, displayAPICInfo, displayAPICHelp, 0, "APIC", 0, 0,
-+"display local apic registers", 0 };
-+
-+DEBUGGER_PARSER IOAPIC_PE = {
-+0, 0, displayIOAPICInfo, displayIOAPICHelp, 0, "IOAPIC", 0, 0,
-+"display io apic registers", 0 };
-+
-+DEBUGGER_PARSER NMIProcessorPE = {
-+0, 0, nmiProcessor, processorCommandHelp, 0, "NMI", 0, 0,
-+"nmi processor (WARNING: See 'help nmi' for instructions)", -1 };
-+#endif
-+
-+DEBUGGER_PARSER GDTPE = {
-+0, 0, displayGDT, displayGDTHelp, 0, ".G", 0, 0,
-+"display global descriptor table" , 0 };
-+
-+DEBUGGER_PARSER IDTPE = {
-+0, 0, displayIDT, displayIDTHelp, 0, ".I", 0, 0,
-+"display interrupt descriptor table"  , 0 };
-+
-+DEBUGGER_PARSER EvaluatePE = {
-+0, 0, evaluateExpression, evaluateExpressionHelp, 0, ".E", 0, 0,
-+"evaluate expression (help .e)"  , 0 };
-+
-+DEBUGGER_PARSER InputWordPE = {
-+0, 0, inputWordPort, portCommandHelp, 0, "IW", 0, 0,
-+"input word from port" , 0 };
-+
-+DEBUGGER_PARSER InputDoublePE = {
-+0, 0, inputDoublePort, portCommandHelp, 0, "IL", 0, 0,
-+"input double word from port" , 0 };
-+
-+DEBUGGER_PARSER InputBytePE = {
-+0, 0, inputBytePort, portCommandHelp, 0, "IB", 0, 0,
-+"input byte from port" , 0 };
-+
-+DEBUGGER_PARSER InputPE = {
-+0, 0, inputPort, portCommandHelp, 0, "I", 0, 0,
-+"input byte from port" , 0 };
-+
-+DEBUGGER_PARSER OutputWordPE = {
-+0, 0, outputWordPort, portCommandHelp, 0, "OW", 0, 0,
-+"output word to port" , 0 };
-+
-+DEBUGGER_PARSER OutputDoublePE = {
-+0, 0, outputDoublePort, portCommandHelp, 0, "OL", 0, 0,
-+"output double word to port" , 0 };
-+
-+DEBUGGER_PARSER OutputBytePE = {
-+0, 0, outputBytePort, portCommandHelp, 0, "OB", 0, 0,
-+"output byte to port" , 0 };
-+
-+DEBUGGER_PARSER OutputPE = {
-+0, 0, outputPort, portCommandHelp, 0, "O", 0, 0,
-+"output byte to port" , 0 };
-+
-+DEBUGGER_PARSER BreakClearAllPE = {
-+0, 0, breakpointClearAll, breakpointCommandHelp, 0, "BCA", 0, 0,
-+"clear all breakpoints" , 0 };
-+
-+DEBUGGER_PARSER BreakClearPE = {
-+0, 0, breakpointClear, breakpointCommandHelp, 0, "BC", 0, 0,
-+"clear breakpoint" , 0 };
-+
-+DEBUGGER_PARSER BreakMaskPE = {
-+0, 0, breakpointMask, breakpointCommandHelp, 0, "BM", 0, 0,
-+"mask breaks for specific processor" , 0 };
-+
-+DEBUGGER_PARSER BW1PE = {
-+0, 0, breakpointWord1, breakpointCommandHelp, 0, "BW1", 0, -1,
-+"" , 0 };
-+
-+DEBUGGER_PARSER BW2PE = {
-+0, 0, breakpointWord2, breakpointCommandHelp, 0, "BW2", 0, -1,
-+"" , 0 };
-+
-+DEBUGGER_PARSER BW4PE = {
-+0, 0, breakpointWord4, breakpointCommandHelp, 0, "BW4", 0, -1,
-+"" , 0 };
-+
-+DEBUGGER_PARSER BWPE = {
-+0, 0, breakpointWord, breakpointCommandHelp, 0, "BW", 0, 0,
-+"set write only breakpoint #=1,2 or 4 byte len" , 0 };
-+
-+DEBUGGER_PARSER BR1PE = {
-+0, 0, breakpointRead1, breakpointCommandHelp, 0, "BR1", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER BR2PE = {
-+0, 0, breakpointRead2, breakpointCommandHelp, 0, "BR2", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER BR4PE = {
-+0, 0, breakpointRead4, breakpointCommandHelp, 0, "BR4", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER BRPE = {
-+0, 0, breakpointRead, breakpointCommandHelp, 0, "BR", 0, 0,
-+"set read/write breakpoint #=1,2 or 4 byte len" , 0 };
-+
-+DEBUGGER_PARSER BI1PE = {
-+0, 0, breakpointIO1, breakpointCommandHelp, 0, "BI1", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER BI2PE = {
-+0, 0, breakpointIO2, breakpointCommandHelp, 0, "BI2", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER BI4PE = {
-+0, 0, breakpointIO4, breakpointCommandHelp, 0, "BI4", 0, -1,
-+"", 0 };
-+
-+DEBUGGER_PARSER BIPE = {
-+0, 0, breakpointIO, breakpointCommandHelp, 0, "BI", 0, 0,
-+"set io address breakpoint #=1,2 or 4 byte len"  , 0 };
-+
-+DEBUGGER_PARSER breakpointExecutePE = {
-+0, 0, breakpointExecute, breakpointCommandHelp, 0, "B", 0, 0,
-+"display all/set execute breakpoint" , 0 };
-+
-+DEBUGGER_PARSER breakShowTemp = {
-+0, 0, breakpointShowTemp, breakpointCommandHelp, 0, "BST", 0, 0,
-+"displays temporary breakpoints (proceed/go)" , 0 };
-+
-+DEBUGGER_PARSER breakTimer = {
-+0, 0, timerBreakpoint, timedBreakpointHelp, 0, "ADDTIMER", 0, 0,
-+"add a debug timer event" , 0 };
-+
-+DEBUGGER_PARSER breakTimerClear = {
-+0, 0, timerBreakpointClear, timedBreakpointHelp, 0, "DELTIMER", 0, 0,
-+"delete a debug timer event" , 0 };
-+
-+/* interactive debugger accelerators */
-+
-+ACCELERATOR traceSSBACC = {
-+0, 0, processTraceSSBACC, 0, 0, K_F6, 0,
-+"F6 - Trace/Single Step til Branch" };
-+
-+ACCELERATOR traceACC = {
-+0, 0, processTraceACC, 0, 0, K_F7, 0,
-+"F7 - Trace/Single Step" };
-+
-+ACCELERATOR proceedACC = {
-+0, 0, processProceedACC, 0, 0, K_F8, 0,
-+"F8 - Proceed" };
-+
-+ACCELERATOR goACC = {
-+0, 0, processGoACC, 0, 0, K_F9, 0,
-+"F9 - Go" };
-+
-+ACCELERATOR enterACC = { /* this accelerator handles repeat command */
-+0, 0, enterKeyACC, 0, 0, 13, 0,   /* processing */
-+"Enter - Execute or Repeat a Command" };
-+
-+unsigned char *lastDumpAddress;
-+unsigned char *lastLinkAddress;
-+unsigned long lastUnasmAddress;
-+unsigned long displayLength;
-+unsigned long lastCommand;
-+unsigned long lastCommandEntry;
-+unsigned char lastDebugCommand[100] = {""};
-+unsigned long lastDisplayLength;
-+unsigned char debugCommand[100] = {""};
-+unsigned long nextUnasmAddress;
-+unsigned long pic1Value;
-+unsigned long pic2Value;
-+unsigned long BreakReserved[4];
-+unsigned long BreakPoints[4];
-+unsigned long BreakType[4];
-+unsigned long BreakLength[4];
-+unsigned long BreakTemp[4];
-+unsigned long BreakGo[4];
-+unsigned long BreakProceed[4];
-+unsigned long BreakMask[MAX_PROCESSORS];
-+StackFrame *CurrentFrame[MAX_PROCESSORS];
-+unsigned long NestedInterrupts[MAX_PROCESSORS];
-+unsigned long ConditionalBreakpoint[4];
-+unsigned char BreakCondition[4][256];
-+StackFrame lastStackFrame;
-+unsigned long lastCR0;
-+unsigned long lastCR2;
-+unsigned long lastCR4;
-+unsigned long CurrentDR7;
-+unsigned long CurrentDR6[MAX_PROCESSORS];
-+unsigned long repeatCommand;
-+unsigned long totalLines;
-+unsigned long debuggerInitialized;
-+unsigned long ssbmode;
-+
-+void mdb_breakpoint(void) {__asm__ __volatile__ ("int $0x03");};
-+
-+void MDBInitializeDebugger(void)
++unsigned char *opmap1[] =
 +{
-+   register unsigned long i;
-+   extern void InitializeDebuggerRegisters(void);
-+   extern unsigned long AddAccelRoutine(ACCELERATOR *);
++  /* 0 */
++  "ADD %Eb,%Gb",   "ADD %Ev,%Gv",    "ADD %Gb,%Eb",   "ADD %Gv,%Ev",
++  "ADD AL,%I-bb",  "ADD %eAX,%I-vv", "PUSH ES",       "POP ES",
++  "OR %Eb,%Gb",    "OR %Ev,%Gv",     "OR %Gb,%Eb",    "OR %Gv,%Ev",
++  "OR AL,%Ibb",    "OR %eAX,%Ivv",   "PUSH CS",       "%2 ",
++  /* 1 */
++  "ADC %Eb,%Gb",   "ADC %Ev,%Gv",    "ADC %Gb,%Eb",   "ADC %Gv,%Ev",
++  "ADC AL,%I-bb",  "ADC %eAX,%I-vv", "PUSH SS",       "POP SS",
++  "SBB %Eb,%Gb",   "SBB %Ev,%Gv",    "SBB %Gb,%Eb",   "SBB %Gv,%Ev",
++  "SBB AL,%I-bb",  "SBB %eAX,%I-vv", "PUSH DS",       "POP DS",
++  /* 2 */
++  "AND %Eb,%Gb",   "AND %Ev,%Gv",    "AND %Gb,%Eb",   "AND %Gv,%Ev",
++  "AND AL,%Ibb",   "AND %eAX,%Ivv",  "%pe",           "DAA",
++  "SUB %Eb,%Gb",   "SUB %Ev,%Gv",    "SUB %Gb,%Eb",   "SUB %Gv,%Ev",
++  "SUB AL,%I-bb",  "SUB %eAX,%I-vv", "%pc",           "DAS",
++  /* 3 */
++  "XOR %Eb,%Gb",   "XOR %Ev,%Gv",    "XOR %Gb,%Eb",   "XOR %Gv,%Ev",
++  "XOR AL,%Ibb",   "XOR %eAX,%Ivv",  "%ps",           "AAA",
++  "CMP %Eb,%Gb",   "CMP %Ev,%Gv",    "CMP %Gb,%Eb",   "CMP %Gv,%Ev",
++  "CMP AL,%I-bb",  "CMP %eAX,%I-vv", "%pd",           "AAS",
++  /* 4 */
++  "INC %eAX",      "INC %eCX",       "INC %eDX",      "INC %eBX",
++  "INC %eSP",      "INC %eBP",       "INC %eSI",      "INC %eDI",
++  "DEC %eAX",      "DEC %eCX",       "DEC %eDX",      "DEC %eBX",
++  "DEC %eSP",      "DEC %eBP",       "DEC %eSI",      "DEC %eDI",
++  /* 5 */
++  "PUSH %eAX",     "PUSH %eCX",      "PUSH %eDX",     "PUSH %eBX",
++  "PUSH %eSP",     "PUSH %eBP",      "PUSH %eSI",     "PUSH %eDI",
++  "POP %eAX",      "POP %eCX",       "POP %eDX",      "POP %eBX",
++  "POP %eSP",      "POP %eBP",       "POP %eSI",      "POP %eDI",
++  /* 6 */
++  "PUSHA",         "POPA",           "BOUND %Gv,%Ma", "ARPL %Ew,%Rw",
++  "%pf",           "%pg",            "%so",           "%sa",
++  "PUSH %I-vv",    "IMUL %Gv=%Ev*%I-vv", "PUSH %I-vb","IMUL %Gv=%Ev*%I-vb",
++  "INSB %Yb,DX",   "INS%ew %Yv,DX",  "OUTSB DX,%Xb",  "OUTS%ew DX,%Xv",
++  /* 7 */
++  "JO %Jb",        "JNO %Jb",        "JC %Jb",        "JNC %Jb",
++  "JZ %Jb",        "JNZ %Jb",        "JBE %Jb",       "JNBE %Jb",
++  "JS %Jb",        "JNS %Jb",        "JPE %Jb",       "JPO %Jb",
++  "JL %Jb",        "JGE %Jb",        "JLE %Jb",       "JG %Jb",
++  /* 8 */
++  "%g1 %Eb,%Ibb",  "%g1 %Ev,%Ivv",   0,               "%g1 %Ev,%Ivb",
++  "TEST %Eb,%Gb",  "TEST %Ev,%Gv",   "XCHG %Eb,%Gb",  "XCHG %Ev,%Gv",
++  "MOV %Eb,%Gb",   "MOV %Ev,%Gv",    "MOV %Gb,%Eb",   "MOV %Gv,%Ev",
++  "MOV %Ew,%Sw",   "LEA %Gv,%M ",    "MOV %Sw,%Ew",   "POP %Ev",
++  /* 9 */
++  "NOP",           "XCHG %eAX,%eCX", "XCHG %eAX,%eDX","XCHG %eAX,%eBX",
++  "XCHG %eAX,%eSP","XCHG %eAX,%eBP", "XCHG %eAX,%eSI","XCHG %eAX,%eDI",
++  "CBW",           "CWD",            "CALL %Ap",      "FWAIT",
++  "PUSH %eFLAGS",  "POP %eFLAGS",    "SAHF",          "LAHF",
++  /* a */
++  "MOV AL,%Ob",    "MOV %eAX,%Ov",   "MOV %Ob,AL",    "MOV %Ov,%eAX",
++  "MOVSB %Xb,%Yb", "MOVS%ew %Xv,%Yv","CMPSB %Xb,%Yb", "CMPS%ew %Xv,%Yv",
++  "TEST AL,%Ibb",  "TEST %eAX,%Ivv", "STOSB %Yb,AL",  "STOS%ew %Yv,%eAX",
++  "LODSB AL,%Xb",  "LODS%ew %eAX,%Xv","SCASB AL,%Xb", "SCAS%ew %eAX,%Xv",
++  /* b */
++  "MOV AL,%Ibb",   "MOV CL,%Ibb",    "MOV DL,%Ibb",   "MOV BL,%Ibb",
++  "MOV AH,%Ibb",   "MOV CH,%Ibb",    "MOV DH,%Ibb",   "MOV BH,%Ibb",
++  "MOV %eAX,%I-vv","MOV %eCX,%I-vv", "MOV %eDX,%I-vv","MOV %eBX,%I-vv",
++  "MOV %eSP,%Ivv", "MOV %eBP,%Ivv",  "MOV %eSI,%I-vv","MOV %eDI,%I-vv",
++  /* c */
++  "%g2 %Eb,%Ibb",  "%g2 %Ev,%Ibb",   "RET %Iw",       "RET",
++  "LES %Gv,%Mp",   "LDS %Gv,%Mp",    "MOV %Eb,%Ibb",  "MOV %Ev,%I-vv",
++  "ENTER %Iww,%Ibb","LEAVE",         "RETF %Iww",     "RETF",
++  "INT 3",         "INT %Ibb",       "INTO",          "IRET",
++  /* d */
++  "%g2 %Eb,1",     "%g2 %Ev,1",      "%g2 %Eb,CL",    "%g2 %Ev,CL",
++  "AAM %Ibb",      "AAD %Ibb",       0,               "XLAT",
++  "%f0",           "%f1",            "%f2",           "%f3",
++  "%f4",           "%f5",            "%f6",           "%f7",
++  /* e */
++  "LOOPNE %Jb",    "LOOPE %Jb",      "LOOP %Jb",      "JCXZ %Jb",
++  "IN AL,%Ibb",    "IN %eAX,%Ibb",   "OUT %Ibb,AL",   "OUT %Ibb,%eAX",
++  "CALL %Jv",      "JMP %Jv",        "JMP %Ap",       "JMP(S) %Jb",
++  "IN AL,DX",      "IN %eAX,DX",     "OUT DX,AL",     "OUT DX,%eAX",
++  /* f */
++  "LOCK %p ",      0,                "REPNE %p ",     "REP(E) %p ",
++  "HLT",           "CMC",            "%g3",           "%g0",
++  "CLC",           "STC",            "CLI",           "STI",
++  "CLD",           "STD",            "%g4",           "%g5"
++};
 +
-+   lastCommand = 0;
-+   lastCommandEntry = 0;
-+   lastDisplayLength = 0;
++unsigned char *second[] =
++{
++  /* 0 */
++  "%g6",           "%g7",            "LAR %Gv,%Ew",   "LSL %Gv,%Ew",
++  0,               0,                "CLTS",          0,
++  "INVD",          "WBINV",          0,               "UD2A",
++  0,               "%y0",            "FEMMS",         0,
++  /* 1 */
++  "%z8",	   "%z9",	     "MOVLPS",	      "MOVLPS",
++  "UNPCKLPS",	   "UNPCKHPS",	     "MOVHPS",	      "MOVHPS",
++  "%g14",	   0,		     0,		      0,
++  0,		   0,		     0,		      0,
++  /* 2 */
++  "MOV %Rd,%Cd",   "MOV %Rd,%Dd",    "MOV %Cd,%Rd",   "MOV %Dd,%Rd",
++  "MOV %Rd,%Td",   0,                "MOV %Td,%Rd",   0,
++  "MOVAPS",	   "MOVAPS",	     "%z2",	      "MOVNTPS",
++  "%z4",	   "%z3",	     "UCOMISS",       "COMISS",
++  /* 3 */
++  "WRMSR MSR[ECX],EDX:EAX", "RDTSC", "RDMSR EDX:EAX,MSR[ECX]",  "RDPMC",
++  "SYSENTER",      "SYSEXIT",	     0,		      0,
++  0,		   0,		     0,		      0,
++  0,               0,                0,               0,
++  /* 4 */
++  "CMOVO %Gv,%Ev", "CMOVNO %Gv,%Ev", "CMOVB %Gv,%Ev",  "CMOVAE %Gv,%Ev",
++  "CMOVE %Gv,%Ev", "CMOVNE %Gv,%Ev", "CMOVBE %Gv,%Ev", "CMOVA %Gv,%Ev",
++  "CMOVS %Gv,%Ev", "CMOVNS %Gv,%Ev", "CMOVP %Gv,%Ev",  "CMOVNP %Gv,%Ev",
++  "CMOVL %Gv,%Ev", "CMOVGE %Gv,%Ev", "CMOVLE %Gv,%Ev", "CMOVG %Gv,%Ev",
++  /* 5 */
++  "MOVMSKPS",	   "%z13",           "%z12",          "%z11",
++  "ANDPS",         "ANDNPS",         "ORPS",          "XORPS",
++  "%z0",	   "%z10",           0,               0,
++  "%z14",          "%z7",            "%z5",           "%z6",
++  /* 6 */
++  0,               0,                0,               0,
++  0,               0,                0,               0,
++  0,               0,                0,               0,
++  0,               0,               "MOVD %Pd,%Ed",  "MOVQ %Pq,%Qq",
++  /* 7 */
++  0,		   0,                0,               0,
++  0,               0,                0,               0,
++  0,		   0,                0,               0,
++  0,               0,               "MOVD %Ed,%Pd",  "MOVQ %Qq,%Pq",
++  /* 8 */
++  "JO %Jv",        "JNO %Jv",        "JC %Jv",        "JNC %Jv",
++  "JZ %Jv",        "JNZ %Jv",        "JBE %Jv",       "JNBE %Jv",
++  "JS %Jv",        "JNS %Jv",        "JPE %Jv",       "JPO %Jv",
++  "JL %Jv",        "JGE %Jv",        "JLE %Jv",       "JG %Jv",
++  /* 9 */
++  "SETO %Eb",      "SETNO %Eb",      "SETC %Eb",      "SETNC %Eb",
++  "SETZ %Eb",      "SETNZ %Eb",      "SETBE %Eb",     "SETNBE %Eb",
++  "SETS %Eb",      "SETNS %Eb",      "SETP %Eb",      "SETNP %Eb",
++  "SETL %Eb",      "SETGE %Eb",      "SETLE %Eb",     "SETG %Eb",
++  /* a */
++  "PUSH FS",       "POP FS",         "CPUID",         "BT %Ev,%Gv",
++  "SHLD %Ev,%Gv,%Ibb","SHLD %Ev,%Gv,CL", 0,           0,
++  "PUSH GS",       "POP GS",         "RSM",           "BTS %Ev,%Gv",
++  "SHRD %Ev,%Gv,%Ibb","SHRD %Ev,%Gv,CL", 0,           "IMUL %Gv,%Ev",
 +
-+   for (i = 0; i < MAX_PROCESSORS; i++)
-+   {
-+      BreakMask[i] = 0;
-+      ProcessorHold[i] = 0;
-+      ProcessorState[i] = 0;
-+   }
++  /* b */
++  "CMPXCHG %Eb,%Gb", "CMPXCHG %Ev,%Gv", "LSS %Mp",       "BTR %Ev,%Gv",
++  "LFS %Mp",         "LGS %Mp",         "MOVZX %Gv,%Eb", "MOVZX %Gv,%Ew",
++  0,                 "UD2B",            "%g8 %Ev,%Ibb",  "BTC %Ev,%Gv",
++  "BSF %Gv,%Ev",     "BSR %Gv,%Ev",     "MOVSX %Gv,%Eb", "MOVSX %Gv,%Ew",
 +
-+   for (i = 0; i < 4; i++)
-+   {
-+      BreakReserved[i] = 0;
-+      BreakPoints[i] = 0;
-+      BreakType[i] = 0;
-+      BreakLength[i] = 0;
-+      BreakProceed[i] = 0;
-+      BreakGo[i] = 0;
-+      BreakTemp[i] = 0;
-+      ConditionalBreakpoint[i] = 0;
-+      BreakCondition[i][0] = '\0';
-+   }
++  /* c */
++  "XADD %Eb,%Gb",  "XADD %Ev,%Gv",   0,		      0,
++  0,		   0,                0,               "%g9",
++  "BSWAP %eAX",    "BSWAP %eCX",     "BSWAP %eDX",    "BSWAP %eBX",
++  "BSWAP %eSP",    "BSWAP %eBP",     "BSWAP %eSI",    "BSWAP %eDI",
++  /* d */
++  0,		   0,                0,               0,
++  0,		   0,		     0,		      0,
++  0,		   0,		     0,		      0,
++  0,		   0,		     0,		      0,
++  /* e */
++  0,		   0,		     0,		      0,
++  0,		   0,		     0,		      0,
++  0,		   0,		     0,		      0,
++  0,		   0,		     0,		      0,
++  /* f */
++  0,		   0,		     0,		      0,
++  0,		   0,		     0,		      0,
++  0,		   0,		     0,		      0,
++  0,		   0,		     0,		      0
 +
-+   InitializeDebuggerRegisters();
++};
 +
-+   AddDebuggerCommandParser(&ReasonPE);
-+   AddDebuggerCommandParser(&backTraceAllPidPE);
-+   AddDebuggerCommandParser(&backTracePidPE);
-+   AddDebuggerCommandParser(&backTraceStackPE);
-+   AddDebuggerCommandParser(&eFramePE);
-+   AddDebuggerCommandParser(&cpuFramePE);
-+   AddDebuggerCommandParser(&ProcessorPE);
-+   AddDebuggerCommandParser(&HPE);
-+   AddDebuggerCommandParser(&HelpPE);
-+   AddDebuggerCommandParser(&clearScreenPE);
-+   AddDebuggerCommandParser(&asciiTablePE);
-+   AddDebuggerCommandParser(&TUTogglePE);
-+   AddDebuggerCommandParser(&TDTogglePE);
-+   AddDebuggerCommandParser(&TLTogglePE);
-+   AddDebuggerCommandParser(&TGTogglePE);
-+   AddDebuggerCommandParser(&TCTogglePE);
-+   AddDebuggerCommandParser(&TNTogglePE);
-+   AddDebuggerCommandParser(&TRTogglePE);
-+   AddDebuggerCommandParser(&TSTogglePE);
-+   AddDebuggerCommandParser(&TATogglePE);
-+   AddDebuggerCommandParser(&TTogglePE);
-+   AddDebuggerCommandParser(&versionPE);
-+   AddDebuggerCommandParser(&rebootPE);
-+   AddDebuggerCommandParser(&KernelProcessPE1);
-+   AddDebuggerCommandParser(&KernelProcessPE2);
-+/*
-+   AddDebuggerCommandParser(&SectionPE1);
-+   AddDebuggerCommandParser(&SectionPE2);
-+*/
-+   AddDebuggerCommandParser(&AllSymbolsPE);
-+   AddDebuggerCommandParser(&SymbolsPE);
++unsigned char *groups[][10] = {     /* group 0 is group 3 for %Ev set */
++/* g0 */
++{ "TEST %Ev,%Ivv", "TEST %Ev,%Ivv,", "NOT %Ev",       "NEG %Ev",
++  "MUL %eAX,%Ev",  "IMUL %eAX,%Ev",  "DIV %eAX,%Ev",  "IDIV %eAX,%Ev" },
 +
-+#if defined(CONFIG_MODULES)
-+   AddDebuggerCommandParser(&lsmodPE1);
-+   AddDebuggerCommandParser(&lsmodPE2);
-+   AddDebuggerCommandParser(&rmmodPE);
-+#endif
++/* g1 */
++{ "ADD%+-",        "OR",             "ADC%+-",        "SBB%+-",
++  "AND",           "SUB%+-",         "XOR",           "CMP%+-" },
 +
-+   AddDebuggerCommandParser(&ControlPE);
-+   AddDebuggerCommandParser(&AllPE);
-+   AddDebuggerCommandParser(&SegmentPE);
-+   AddDebuggerCommandParser(&NumericPE);
-+   AddDebuggerCommandParser(&GeneralPE);
-+   AddDebuggerCommandParser(&DefaultPE);
-+   AddDebuggerCommandParser(&SearchMemoryBPE);
-+   AddDebuggerCommandParser(&SearchMemoryWPE);
-+   AddDebuggerCommandParser(&SearchMemoryDPE);
-+   AddDebuggerCommandParser(&ChangeWordPE);
-+   AddDebuggerCommandParser(&ChangeDoublePE);
-+   AddDebuggerCommandParser(&ChangeBytePE);
-+   AddDebuggerCommandParser(&ChangeDefaultPE);
-+   AddDebuggerCommandParser(&CloseSymbolsPE);
-+   AddDebuggerCommandParser(&WalkPE);
-+   AddDebuggerCommandParser(&DumpLinkedPE);
-+   AddDebuggerCommandParser(&DumpWordPE);
-+   AddDebuggerCommandParser(&DumpStackPE);
-+   AddDebuggerCommandParser(&DumpDoubleStackPE);
-+   AddDebuggerCommandParser(&DumpDoublePE);
-+   AddDebuggerCommandParser(&DumpBytePE);
-+   AddDebuggerCommandParser(&DumpDefaultPE);
-+   AddDebuggerCommandParser(&Diss16PE);
-+   AddDebuggerCommandParser(&Diss32PE);
-+   AddDebuggerCommandParser(&Id32PE);
-+   AddDebuggerCommandParser(&ProceedPE);
-+   AddDebuggerCommandParser(&TracePE);
-+   AddDebuggerCommandParser(&SingleStepPE);
-+   AddDebuggerCommandParser(&TraceSSPE);
-+   AddDebuggerCommandParser(&TraceSSBPE);
-+   AddDebuggerCommandParser(&GPE);
-+   AddDebuggerCommandParser(&GoPE);
-+   AddDebuggerCommandParser(&QPE);
-+   AddDebuggerCommandParser(&XPE);
-+   AddDebuggerCommandParser(&BreakProcessorPE);
-+   AddDebuggerCommandParser(&ListProcessorsPE);
-+   AddDebuggerCommandParser(&EAXPE);
-+   AddDebuggerCommandParser(&ORIGEAXPE);
-+   AddDebuggerCommandParser(&EBXPE);
-+   AddDebuggerCommandParser(&ECXPE);
-+   AddDebuggerCommandParser(&EDXPE);
-+   AddDebuggerCommandParser(&ESIPE);
-+   AddDebuggerCommandParser(&EDIPE);
-+   AddDebuggerCommandParser(&EBPPE);
-+   AddDebuggerCommandParser(&ESPPE);
-+   AddDebuggerCommandParser(&EIPPE);
-+   AddDebuggerCommandParser(&CSPE);
-+   AddDebuggerCommandParser(&DSPE);
-+   AddDebuggerCommandParser(&ESPE);
-+   AddDebuggerCommandParser(&FSPE);
-+   AddDebuggerCommandParser(&GSPE);
-+   AddDebuggerCommandParser(&SSPE);
-+   AddDebuggerCommandParser(&RFPE);
-+   AddDebuggerCommandParser(&TFPE);
-+   AddDebuggerCommandParser(&ZFPE);
-+   AddDebuggerCommandParser(&SFPE);
-+   AddDebuggerCommandParser(&PFPE);
-+   AddDebuggerCommandParser(&CFPE);
-+   AddDebuggerCommandParser(&OFPE);
-+   AddDebuggerCommandParser(&IFPE);
-+   AddDebuggerCommandParser(&IDPE);
-+   AddDebuggerCommandParser(&DFPE);
-+   AddDebuggerCommandParser(&NTPE);
-+   AddDebuggerCommandParser(&VMPE);
-+   AddDebuggerCommandParser(&VIFPE);
-+   AddDebuggerCommandParser(&VIPPE);
-+   AddDebuggerCommandParser(&AFPE);
-+   AddDebuggerCommandParser(&ACPE);
-+   AddDebuggerCommandParser(&MTRRPE);
-+#if defined(CONFIG_SMP)
-+   AddDebuggerCommandParser(&APIC_PE);
-+   AddDebuggerCommandParser(&IOAPIC_PE);
-+   AddDebuggerCommandParser(&NMIProcessorPE);
-+#endif
-+   AddDebuggerCommandParser(&GDTPE);
-+   AddDebuggerCommandParser(&IDTPE);
-+   AddDebuggerCommandParser(&EvaluatePE);
-+   AddDebuggerCommandParser(&InputWordPE);
-+   AddDebuggerCommandParser(&InputDoublePE);
-+   AddDebuggerCommandParser(&InputBytePE);
-+   AddDebuggerCommandParser(&InputPE);
-+   AddDebuggerCommandParser(&OutputWordPE);
-+   AddDebuggerCommandParser(&OutputDoublePE);
-+   AddDebuggerCommandParser(&OutputBytePE);
-+   AddDebuggerCommandParser(&OutputPE);
-+   AddDebuggerCommandParser(&BreakClearAllPE);
-+   AddDebuggerCommandParser(&BreakClearPE);
-+   AddDebuggerCommandParser(&BreakMaskPE);
-+   AddDebuggerCommandParser(&BW1PE);
-+   AddDebuggerCommandParser(&BW2PE);
-+   AddDebuggerCommandParser(&BW4PE);
-+   AddDebuggerCommandParser(&BWPE);
-+   AddDebuggerCommandParser(&BR1PE);
-+   AddDebuggerCommandParser(&BR2PE);
-+   AddDebuggerCommandParser(&BR4PE);
-+   AddDebuggerCommandParser(&BRPE);
-+   AddDebuggerCommandParser(&BI1PE);
-+   AddDebuggerCommandParser(&BI2PE);
-+   AddDebuggerCommandParser(&BI4PE);
-+   AddDebuggerCommandParser(&BIPE);
-+   AddDebuggerCommandParser(&breakpointExecutePE);
-+   AddDebuggerCommandParser(&breakShowTemp);
-+   AddDebuggerCommandParser(&breakTimer);
-+   AddDebuggerCommandParser(&breakTimerClear);
++/* g2  */
++{ "ROL",           "ROR",            "RCL",           "RCR",
++  "SHL",           "SHR",            "SHL",           "SAR" },
 +
-+   AddAccelRoutine(&traceSSBACC);
-+   AddAccelRoutine(&traceACC);
-+   AddAccelRoutine(&proceedACC);
-+   AddAccelRoutine(&goACC);
-+   AddAccelRoutine(&enterACC);
++/* g3 */
++{ "TEST %Eb,%Ibb", "TEST %Eb,%Ibb,", "NOT %Eb",       "NEG %Eb",
++  "MUL AL,%Eb",    "IMUL AL,%Eb",    "DIV AL,%Eb",    "IDIV AL,%Eb" },
 +
-+   debuggerInitialized = 1;
-+   return;
++/* g4 */
++{ "INC %Eb",       "DEC %Eb",        0,               0,
++  0,               0,                0,               0 },
++
++/* g5 */
++{ "INC %Ev",       "DEC %Ev",        "CALL %Ev",      "CALL %Ep",
++  "JMP %Ev",       "JMP %Ep",        "PUSH %Ev",      0 },
++
++/* g6 */
++{ "SLDT %Ew",      "STR %Ew",        "LLDT %Ew",      "LTR %Ew",
++  "VERR %Ew",      "VERW %Ew",       0, 0 },
++
++/* g7 */
++{ "SGDT %Ms",      "SIDT %Ms",       "LGDT %Ms",      "LIDT %Ms",
++  "SMSW %Ew",      0,                "LMSW %Ew",      "INVLPG" },
++
++/* g8 */
++{ 0,               0,                0, 0,
++  "BT",            "BTS",            "BTR",           "BTC" },
++
++/* g9 */
++{ 0,               "CMPXCH8B %Mq",   0,               0,
++  0,               0,                0,               0 },
++
++/* g10 */
++{ 0,               0,                0,               0,
++  0,               0,                0,               0 },
++
++};
++
++/* zero here means invalid.  If first entry starts with '*', use st(i) */
++/* no assumed %EFs here.  Indexed by rm(modrm()) */
++
++unsigned char *f0[] = {
++  0,               0,                0,               0,
++  0,		   0,		     0,	              0
++};
++
++unsigned char *fop_9[]  = {
++  "*FXCH ST,%GF" };
++
++unsigned char *fop_10[] = {
++  "FNOP",	   0,		      0,	      0,
++  0,		   0,		      0,	      0 };
++
++unsigned char *fop_12[] = {
++  "FCHS",          "FABS",            0,              0,
++  "FTST",          "FXAM",	      0,	      0 };
++
++unsigned char *fop_13[] = {
++  "FLD1",	   "FLDL2T",	      "FLDL2E",       "FLDPL",
++  "FLDLG2",	   "FLDLN2",	      "FLDZ",	      0 };
++
++unsigned char *fop_14[] = {
++  "F2XM1",	   "FYL2X",	      "FPTAN",	      "FPATAN",
++  "FXTRACT",	   "FPREM1",	      "FDECSTP",      "FINCSTP" };
++
++unsigned char *fop_15[] = {
++  "FPREM",	   "FYL2XP1",	      "FSQRT",	      "FSINCOS",
++  "FRNDINT",	   "FSCALE",	      "FSIN",	      "FCOS" };
++
++unsigned char *fop_21[] = {
++   0, "FUCOMPP", 0, 0,
++   0, 0, 0, 0 };
++
++unsigned char *fop_28[] = {
++   0, 0, "FCLEX", "FINIT",
++   0, 0, 0, 0 };
++
++unsigned char *fop_32[] = {
++   "*FADD %GF,ST" };
++
++unsigned char *fop_33[] = {
++   "*FMUL %GF,ST" };
++
++unsigned char *fop_36[] = {
++   "*FSUBR %GF,ST" };
++
++unsigned char *fop_37[] = {
++   "*FSUB %GF,ST" };
++
++unsigned char *fop_38[] = {
++   "*FDIVR %GF,ST" };
++
++unsigned char *fop_39[] = {
++   "*FDIV %GF,ST" };
++
++unsigned char *fop_40[] = {
++   "*FFREE %GF" };
++
++unsigned char *fop_42[] = { "*FST %GF" };
++
++unsigned char *fop_43[] = { "*FSTP %GF" };
++
++unsigned char *fop_44[] = { "*FUCOM %GF" };
++
++unsigned char *fop_45[] = { "*FUCOMP %GF" };
++
++unsigned char *fop_48[] = { "*FADDP %GF,ST" };
++
++unsigned char *fop_49[] = { "*FMULP %GF,ST" };
++
++unsigned char *fop_51[] = { 0, "FCOMPP", 0, 0, 0, 0, 0, 0 };
++
++unsigned char *fop_52[] = { "*FSUBRP %GF,ST" };
++
++unsigned char *fop_53[] = { "*FSUBP %GF,ST" };
++
++unsigned char *fop_54[] = { "*FDIVRP %GF,ST" };
++
++unsigned char *fop_55[] = { "*FDIVP %GF,ST" };
++
++unsigned char *fop_60[] = { "FSTSW AX", 0, 0, 0, 0, 0, 0, 0 };
++
++unsigned char **fspecial[] = { /* 0=use st(i), 1=undefined 0 in fop_* means undefined */
++  0, 0, 0, 0, 0, 0, 0, 0,
++  0, fop_9, fop_10, 0, fop_12, fop_13, fop_14, fop_15,
++  f0, f0, f0, f0, f0, fop_21, f0, f0,
++  f0, f0, f0, f0, fop_28, f0, f0, f0,
++  fop_32, fop_33, f0, f0, fop_36, fop_37, fop_38, fop_39,
++  fop_40, f0, fop_42, fop_43, fop_44, fop_45, f0, f0,
++  fop_48, fop_49, f0, fop_51, fop_52, fop_53, fop_54, fop_55,
++  f0, f0, f0, f0, fop_60, f0, f0, f0,
++  };
++
++unsigned char *floatops[] = { /* assumed " %EF" at end of each.  mod != 3 only */
++/*00*/ "FADD", "FMUL", "FCOM", "FCOMP",
++       "FSUB", "FSUBR", "FDIV", "FDIVR",
++/*08*/ "FLD", 0, "FST", "FSTP",
++       "FLDENV", "FLDCW", "FSTENV", "FSTCW",
++/*16*/ "FIADD", "FIMUL", "FICOMW", "FICOMPW",
++       "FISUB", "FISUBR", "FIDIV", "FIDIVR",
++/*24*/ "FILD", 0, "FIST", "FISTP",
++       "FRSTOR", "FLDT", 0, "FSTPT",
++/*32*/ "FADDQ", "FMULQ", "FCOMQ", "FCOMPQ",
++       "FSUBQ", "FSUBRQ", "FDIVQ", "FDIVRQ",
++/*40*/ "FLDQ", 0, "FSTQ", "FSTPQ",
++       "FRESTOR", 0, "FSAVE", "FSTSW",
++/*48*/ "FIADDW", "FIMULW", "FICOMW", "FICOMPW",
++       "FISUBW", "FISUBRW", "FIDIVW", "FIDIVR",
++/*56*/ "FILDW", 0, "FISTW", "FISTPW",
++       "FBLDT", "FILDQ", "FBSTPT", "FISTPQ"
++};
++
++
++unsigned char *reg_names[3][8]={
++  {"AL","CL","DL","BL","AH","CH","DH","BH"},
++  {"AX","CX","DX","BX","SP","BP","SI","DI"},
++  {"EAX", /* 0 */
++   "ECX", /* 1 */
++   "EDX", /* 2 */
++   "EBX", /* 3 */
++   "ESP", /* 4 */
++   "EBP", /* 5 */
++   "ESI", /* 6 */
++   "EDI"} /* 7 */
++   };
++
++unsigned char *r_str[] = {
++   "BX+SI",
++   "BX+DI",
++   "BP+SI",
++   "BP+DI",
++   "SI",
++   "DI",
++   "BP",
++   "BX"
++};
++
++unsigned char *formats[5][4] = {
++    {"%08X", "%08X", "%08z", "%08z" },
++    {"%02X", "%02X", "%02z", "%02z" },
++    {"%04X", "%04X", "%04z", "%04z" },
++    {"%08X", "%08X", "%08z", "%08z" },
++    {"%08X", "%08X", "%08z", "%08z" } };
++
++unsigned char *i_str[] = {
++   "+EAX", /* 0 */
++   "+ECX", /* 1 */
++   "+EDX", /* 2 */
++   "+EBX", /* 3 */
++   "",     /* 4 */
++   "+EBP", /* 5 */
++   "+ESI", /* 6 */
++   "+EDI"  /* 7 */
++};
++
++unsigned char *sib_str[] = {
++   "%p:[EAX", /* 0 */
++   "%p:[ECX", /* 1 */
++   "%p:[EDX", /* 2 */
++   "%p:[EBX", /* 3 */
++   "%p:[ESP", /* 4 */
++   0,         /* 5 */
++   "%p:[ESI", /* 6 */
++   "%p:[EDI"  /* 7 */
++};
++
++long reg_get_value(unsigned long index, StackFrame *stackFrame)
++{
++     if (!stackFrame)
++        return 0;
++
++     switch (index)
++     {
++	case 0:
++	   return stackFrame->tEAX;
++
++	case 1:
++	   return stackFrame->tECX;
++
++	case 2:
++	   return stackFrame->tEDX;
++
++	case 3:
++	   return stackFrame->tEBX;
++
++	case 4:
++	   return stackFrame->tESP;
++
++	case 5:
++	   return stackFrame->tEBP;
++
++	case 6:
++	   return stackFrame->tESI;
++
++	case 7:
++	   return stackFrame->tEDI;
++
++	default:
++	   return 0;
++     }
 +}
 +
-+void MDBClearDebuggerState(void)
++long sib_get_value(unsigned long index, StackFrame *stackFrame)
 +{
-+   extern void ClearDebuggerRegisters(void);
++     if (!stackFrame)
++        return 0;
 +
-+   ClearDebuggerRegisters();
-+   debuggerInitialized = 0;
-+   return;
++     switch (index)
++     {
++	case 0:
++	   return stackFrame->tEAX;
++
++	case 1:
++	   return stackFrame->tECX;
++
++	case 2:
++	   return stackFrame->tEDX;
++
++	case 3:
++	   return stackFrame->tEBX;
++
++	case 4:
++	   return stackFrame->tESP;
++
++	case 6:
++	   return stackFrame->tESI;
++
++	case 7:
++	   return stackFrame->tEDI;
++
++	case 5:
++	default:
++	   return 0;
++     }
++}
++
++long istr_get_value(unsigned long index, StackFrame *stackFrame)
++{
++     if (!stackFrame)
++        return 0;
++
++     switch (index)
++     {
++	case 0:
++	   return stackFrame->tEAX;
++
++	case 1:
++	   return stackFrame->tECX;
++
++	case 2:
++	   return stackFrame->tEDX;
++
++	case 3:
++	   return stackFrame->tEBX;
++
++	case 5:
++	   return stackFrame->tEBP;
++
++	case 6:
++	   return stackFrame->tESI;
++
++	case 7:
++	   return stackFrame->tEDI;
++
++	case 4:
++	default:
++	   return 0;
++     }
 +}
 +
 +
-+void ClearTempBreakpoints(void)
++unsigned char *output_address(void *val, unsigned long *delta)
 +{
-+   register unsigned long i;
++    unsigned char *symbolName;
++    unsigned char *moduleName;
++    register int c = get_processor_id();
 +
-+   for (i = 0; i < 4; i++)
-+   {
-+      if (BreakTemp[i])
-+      {
-+	 BreakTemp[i] = 0;
-+	 BreakReserved[i] = 0;
-+	 BreakPoints[i] = 0;
-+	 BreakType[i] = 0;
-+	 BreakLength[i] = 0;
-+	 BreakGo[i] = 0;
-+	 BreakProceed[i] = 0;
-+      }
-+   }
-+   SetDebugRegisters();
-+   return;
-+}
++    if (delta)
++      *delta = 0;
 +
-+unsigned long ValidBreakpoint(unsigned long address)
-+{
-+
-+   register unsigned long i;
-+
-+   for (i = 0; i < 4; i++)
-+   {
-+      if (!BreakTemp[i])
-+	 if (BreakPoints[i] == address)
-+	    return 1;
-+   }
-+   return 0;
-+
-+}
-+
-+unsigned long GetIP(StackFrame *stackFrame)
-+{
-+    return (unsigned long)(stackFrame->tEIP);
-+}
-+
-+unsigned long GetStackAddress(StackFrame *stackFrame)
-+{
-+    return (unsigned long)(stackFrame->tESP);
-+}
-+
-+unsigned long GetStackSegment(StackFrame *stackFrame)
-+{
-+    return (unsigned long)(stackFrame->tSS);
-+}
-+
-+unsigned long SSBUpdate(StackFrame *stackFrame, unsigned long processor)
-+{
-+    if (!ssbmode)
-+       return 0;
-+
-+    if (jmp_active)
++    symbolName = GetSymbolFromValue((unsigned long) val, &symbuf[c][0],
++                                    MAX_SYMBOL_LEN);
++    if (symbolName)
 +    {
-+       ssbmode = 0;
-+       return 0;
-+    }
-+
-+    lastCommand = 'T';
-+    strcpy(debugCommand, "SSB");
-+    lastCR0 = ReadCR0();
-+    lastCR2 = ReadCR2();
-+    lastCR4 = ReadCR4();
-+    memmove((void *)&lastStackFrame, stackFrame,
-+		     sizeof(StackFrame));
-+
-+    stackFrame->tSystemFlags |= (SINGLE_STEP | RESUME);
-+    atomic_inc(&focusActive);
-+    atomic_inc(&traceProcessors[get_processor_id()]);
-+    return -1;
-+}
-+
-+/* F6 */
-+
-+unsigned long processTraceSSBACC(unsigned long key, void *p, ACCELERATOR *accel)
-+{
-+     register StackFrame *stackFrame = p;
-+
-+     DBGPrint("\n");
-+     ssbmode = 1;
-+     lastCommand = 'T';
-+     strcpy(debugCommand, "SSB");
-+     lastCR0 = ReadCR0();
-+     lastCR2 = ReadCR2();
-+     lastCR4 = ReadCR4();
-+     memmove((void *)&lastStackFrame, stackFrame, sizeof(StackFrame));
-+
-+     stackFrame->tSystemFlags |= (SINGLE_STEP | RESUME);
-+
-+     /* set as focus processor for trace, ssb, or proceed */
-+     atomic_inc(&focusActive);
-+     atomic_inc(&traceProcessors[get_processor_id()]);
-+     return -1;
-+}
-+
-+/* F8 */
-+
-+unsigned long processProceedACC(unsigned long key, void *p, ACCELERATOR *accel)
-+{
-+     register StackFrame *stackFrame = p;
-+     register unsigned long i;
-+
-+     ssbmode = 0;
-+     DBGPrint("\n");
-+     if (needs_proceed)
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = nextUnasmAddress;
-+	      BreakType[i] = BREAK_EXECUTE;
-+	      BreakLength[i] = ONE_BYTE_FIELD;
-+	      BreakTemp[i] = 1;
-+	      BreakProceed[i] = 1;
-+	      SetDebugRegisters();
-+	      lastCommand = 'P';
-+              strcpy(debugCommand, "P");
-+	      lastCR0 = ReadCR0();
-+	      lastCR2 = ReadCR2();
-+	      lastCR4 = ReadCR4();
-+	      memmove((void *)&lastStackFrame, stackFrame,
-+		      sizeof(StackFrame));
-+
-+	      stackFrame->tSystemFlags &= ~SINGLE_STEP;
-+	      stackFrame->tSystemFlags |= RESUME;
-+
-+              /* set as focus processor for trace, ssb, or proceed */
-+              atomic_inc(&focusActive);
-+              atomic_inc(&traceProcessors[get_processor_id()]);
-+	      return -1;
-+	   }
-+	}
-+	DBGPrint("\nNo breakpoint available for Proceed, (single step) instead");
-+     }
-+     lastCommand = 'P';
-+     strcpy(debugCommand, "P");
-+     lastCR0 = ReadCR0();
-+     lastCR2 = ReadCR2();
-+     lastCR4 = ReadCR4();
-+     memmove((void *)&lastStackFrame, stackFrame,
-+	       sizeof(StackFrame));
-+
-+     stackFrame->tSystemFlags |= (SINGLE_STEP | RESUME);
-+
-+     /* set as focus processor for trace, ssb, or proceed */
-+     atomic_inc(&focusActive);
-+     atomic_inc(&traceProcessors[get_processor_id()]);
-+     return -1;
-+}
-+
-+/* F7 */
-+
-+unsigned long processTraceACC(unsigned long key, void *p, ACCELERATOR *accel)
-+{
-+     register StackFrame *stackFrame = p;
-+
-+     ssbmode = 0;
-+     DBGPrint("\n");
-+     lastCommand = 'T';
-+     strcpy(debugCommand, "T");
-+     lastCR0 = ReadCR0();
-+     lastCR2 = ReadCR2();
-+     lastCR4 = ReadCR4();
-+     memmove((void *)&lastStackFrame, stackFrame,
-+		     sizeof(StackFrame));
-+
-+     stackFrame->tSystemFlags |= (SINGLE_STEP | RESUME);
-+
-+     /* set as focus processor for trace, ssb, or proceed */
-+     atomic_inc(&focusActive);
-+     atomic_inc(&traceProcessors[get_processor_id()]);
-+     return -1;
-+}
-+
-+/* F9 */
-+
-+unsigned long processGoACC(unsigned long key, void *p, ACCELERATOR *accel)
-+{
-+     register StackFrame *stackFrame = p;
-+
-+     ssbmode = 0;
-+     DBGPrint("\n");
-+     ClearTempBreakpoints();
-+     lastCommand = 'G';
-+     lastCR0 = ReadCR0();
-+     lastCR2 = ReadCR2();
-+     lastCR4 = ReadCR4();
-+     memmove((void *)&lastStackFrame, stackFrame, sizeof(StackFrame));
-+
-+     stackFrame->tSystemFlags &= ~SINGLE_STEP;
-+     stackFrame->tSystemFlags |= RESUME;
-+     return -1;
-+
-+}
-+
-+unsigned long executeCommandHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    DBGPrint("t                        - trace\n");
-+    DBGPrint("s                        - single step\n");
-+    DBGPrint("ss                       - single step\n");
-+    DBGPrint("ssb                      - single step til branch\n");
-+    DBGPrint("p                        - proceed\n");
-+    DBGPrint("g or g <address>         - go\n");
-+    DBGPrint("go or go <address>       - go\n");
-+    DBGPrint("q or q <address>         - quit\n");
-+    DBGPrint("x or x <address>         - exit\n");
-+    DBGPrint("F7                       - trace\n");
-+    DBGPrint("F8                       - proceed\n");
-+    DBGPrint("F9                       - go\n");
-+    DBGPrint("\n");
-+    return 1;
-+}
-+
-+/* P */
-+
-+unsigned long processProceed(unsigned char *cmd,
-+		    StackFrame *stackFrame, unsigned long Exception,
-+		    DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long i;
-+
-+     ssbmode = 0;
-+     if (needs_proceed)
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = nextUnasmAddress;
-+	      BreakType[i] = BREAK_EXECUTE;
-+	      BreakLength[i] = ONE_BYTE_FIELD;
-+	      BreakTemp[i] = 1;
-+	      BreakProceed[i] = 1;
-+	      SetDebugRegisters();
-+	      lastCommand = 'P';
-+	      lastCR0 = ReadCR0();
-+	      lastCR2 = ReadCR2();
-+	      lastCR4 = ReadCR4();
-+	      memmove((void *)&lastStackFrame, stackFrame,
-+		      sizeof(StackFrame));
-+
-+	      stackFrame->tSystemFlags &= ~SINGLE_STEP;
-+	      stackFrame->tSystemFlags |= RESUME;
-+
-+              /* set as focus processor for trace, ssb, or proceed */
-+              atomic_inc(&focusActive);
-+              atomic_inc(&traceProcessors[get_processor_id()]);
-+	      return -1;
-+	   }
-+	}
-+	DBGPrint("\nNo breakpoint available for Proceed, (single step) instead");
-+     }
-+     lastCommand = 'P';
-+     lastCR0 = ReadCR0();
-+     lastCR2 = ReadCR2();
-+     lastCR4 = ReadCR4();
-+     memmove((void *)&lastStackFrame, stackFrame,
-+	       sizeof(StackFrame));
-+
-+     stackFrame->tSystemFlags |= (SINGLE_STEP | RESUME);
-+
-+     /* set as focus processor for trace, ssb, or proceed */
-+     atomic_inc(&focusActive);
-+     atomic_inc(&traceProcessors[get_processor_id()]);
-+     return -1;
-+
-+}
-+
-+/* SSB */
-+
-+unsigned long processTraceSSB(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser)
-+{
-+     DBGPrint("\n");
-+     ssbmode = 1;
-+     lastCommand = 'T';
-+     lastCR0 = ReadCR0();
-+     lastCR2 = ReadCR2();
-+     lastCR4 = ReadCR4();
-+     memmove((void *)&lastStackFrame, stackFrame,
-+		     sizeof(StackFrame));
-+
-+     stackFrame->tSystemFlags |= (SINGLE_STEP | RESUME);
-+
-+     /* set as focus processor for trace, ssb, or proceed */
-+     atomic_inc(&focusActive);
-+     atomic_inc(&traceProcessors[get_processor_id()]);
-+     return -1;
-+
-+}
-+
-+
-+/* T */
-+
-+unsigned long processTrace(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser)
-+{
-+     ssbmode = 0;
-+     lastCommand = 'T';
-+     lastCR0 = ReadCR0();
-+     lastCR2 = ReadCR2();
-+     lastCR4 = ReadCR4();
-+     memmove((void *)&lastStackFrame, stackFrame,
-+		     sizeof(StackFrame));
-+
-+     stackFrame->tSystemFlags |= (SINGLE_STEP | RESUME);
-+
-+     /* set as focus processor for trace, ssb, or proceed */
-+     atomic_inc(&focusActive);
-+     atomic_inc(&traceProcessors[get_processor_id()]);
-+     return -1;
-+
-+}
-+
-+/* G */
-+
-+unsigned long processGo(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address;
-+     unsigned long valid;
-+     register unsigned long i;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     ssbmode = 0;
-+     ClearTempBreakpoints();
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = address;
-+	      BreakType[i] = BREAK_EXECUTE;
-+	      BreakLength[i] = ONE_BYTE_FIELD;
-+	      BreakTemp[i] = 1;
-+	      BreakGo[i] = 1;
-+	      SetDebugRegisters();
-+	      DBGPrint("\n");
-+	      lastCommand = 'G';
-+	      lastCR0 = ReadCR0();
-+	      lastCR2 = ReadCR2();
-+	      lastCR4 = ReadCR4();
-+	      memmove((void *)&lastStackFrame, stackFrame,
-+			      sizeof(StackFrame));
-+
-+	      stackFrame->tSystemFlags &= ~SINGLE_STEP;
-+	      stackFrame->tSystemFlags |= RESUME;
-+	      return -1;
-+	   }
-+	}
-+     }
-+     else
-+     {
-+	DBGPrint("\n");
-+	lastCommand = 'G';
-+	lastCR0 = ReadCR0();
-+	lastCR2 = ReadCR2();
-+	lastCR4 = ReadCR4();
-+	memmove((void *)&lastStackFrame, stackFrame,
-+			sizeof(StackFrame));
-+
-+	stackFrame->tSystemFlags &= ~SINGLE_STEP;
-+	stackFrame->tSystemFlags |= RESUME;
-+	return -1;
-+     }
-+     DBGPrint("no breakpoint available for GO\n");
-+     return 1;
-+
-+}
-+
-+unsigned long processorCommandHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    DBGPrint("lcpu                     - list processors\n");
-+    DBGPrint("cpu [p#]                 - switch processor\n");
-+    DBGPrint("lr  [p#]                 - display processor registers\n");
-+#if defined(CONFIG_SMP)
-+    DBGPrint("nmi [p#]                 - deliver hard nmi exception\n\n");
-+    DBGPrint("The 'nmi [p#]' command will deliver a level triggered\n");
-+    DBGPrint("NMI hardware interrupt to a specified processor and system\n");
-+    DBGPrint("recovery may not be possible in all cases after issuing this\n");
-+    DBGPrint("command.  This command is used to trigger debugger\n");
-+    DBGPrint("entry on a hard hung processor.\n\n");
-+    DBGPrint("If you just want to switch processors with a soft NMI\n");
-+    DBGPrint("exception (which is typically recoverable), then use the\n");
-+    DBGPrint("'cpu [p#]' command instead.  Only use the 'nmi [p#]' command\n");
-+    DBGPrint("for situations where you need to trigger a hardware NMI to\n");
-+    DBGPrint("force a hung processor to enter the debugger.\n");
-+#endif
-+    return 1;
-+}
-+
-+/* CPU */
-+
-+unsigned long breakProcessor(unsigned char *cmd,
-+		     StackFrame *stackFrame, unsigned long Exception,
-+		     DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long cpunum, cpu = get_processor_id();
-+     unsigned long valid, i;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     cpunum = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+        if (cpunum == cpu)
-+        {
-+           DBGPrint("debugger already running on processor %d\n", (int)cpunum);
-+           return 1;
-+        }
-+
-+	if ((cpunum > MAX_PROCESSORS) || !(cpu_online(cpunum)))
-+        {
-+	   DBGPrint("invalid processor specified\n");
-+           return 1;
-+        }
-+
-+        for (i = 0; i < MAX_PROCESSORS; i++)
-+        {
-+           if (cpu_online(i))
-+           {
-+	      if (i == cpunum)
-+              {
-+	         ProcessorState[i] = PROCESSOR_SWITCH;
-+                 ProcessorHold[cpu] = 1;
-+                 barrier();
-+                 break;
-+              }
-+	   }
-+        }
-+	DBGPrint("\n");
-+	lastCommand = 'G';
-+	lastCR0 = ReadCR0();
-+	lastCR2 = ReadCR2();
-+	lastCR4 = ReadCR4();
-+	memmove((void *)&lastStackFrame, stackFrame,
-+			   sizeof(StackFrame));
-+	return -1;
-+     }
-+     else
-+     {
-+	DBGPrint("no target processor specified\n");
-+        DBGPrint("Current Processor: %d\n", get_processor_id());
-+        DBGPrint("Active Processors: ");
-+
-+        for (i = 0; i < MAX_PROCESSORS; i++)
-+        {
-+           if (cpu_online(i))
-+           {
-+	      if (i)
-+                 DBGPrint(", ");
-+
-+	      DBGPrint("%d", i);
-+	   }
-+        }
-+        DBGPrint("\n");
-+     }
-+     return 1;
-+
-+}
-+
-+#if defined(CONFIG_SMP)
-+/* NMI */
-+
-+unsigned long nmiProcessor(unsigned char *cmd,
-+		     StackFrame *stackFrame, unsigned long Exception,
-+		     DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long cpunum, cpu = get_processor_id();
-+     unsigned long valid, i;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     cpunum = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+        if (cpunum == cpu)
-+        {
-+           DBGPrint("debugger already running on processor %d\n", (int)cpunum);
-+           return 1;
-+        }
-+
-+	if ((cpunum > MAX_PROCESSORS) || !(cpu_online(cpunum)))
-+        {
-+	   DBGPrint("invalid processor specified\n");
-+           return 1;
-+        }
-+
-+        for (i = 0; i < MAX_PROCESSORS; i++)
-+        {
-+           if (cpu_online(i))
-+           {
-+	      if (i == cpunum)
-+              {
-+	         ProcessorState[i] = PROCESSOR_SWITCH;
-+                 ProcessorHold[cpu] = 1;
-+                 barrier();
-+                 apic_directed_nmi(i);
-+                 break;
-+              }
-+	   }
-+        }
-+	DBGPrint("\n");
-+	lastCommand = 'G';
-+	lastCR0 = ReadCR0();
-+	lastCR2 = ReadCR2();
-+	lastCR4 = ReadCR4();
-+	memmove((void *)&lastStackFrame, stackFrame,
-+			   sizeof(StackFrame));
-+	return -1;
-+     }
-+     else
-+     {
-+	DBGPrint("no target processor specified\n");
-+        DBGPrint("Current Processor: %d\n", get_processor_id());
-+        DBGPrint("Active Processors: ");
-+
-+        for (i = 0; i < MAX_PROCESSORS; i++)
-+        {
-+           if (cpu_online(i))
-+           {
-+	      if (i)
-+                 DBGPrint(", ");
-+
-+	      DBGPrint("%d", i);
-+	   }
-+        }
-+        DBGPrint("\n");
-+     }
-+     return 1;
-+
-+}
-+#endif
-+
-+/* LR */
-+
-+extern  StackFrame CurrentStackFrame[MAX_PROCESSORS];
-+
-+unsigned long listProcessorFrame(unsigned char *cmd,
-+			StackFrame *stackFrame, unsigned long Exception,
-+			DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid, pnum;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     pnum = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid && (pnum < MAX_PROCESSORS) && (cpu_online(pnum)))
-+     {
-+	DBGPrint("Processor Frame %d -> (%08X)\n", pnum,
-+                 &CurrentStackFrame[pnum]);
-+	DisplayTSS((StackFrame *)&CurrentStackFrame[pnum]);
-+     }
-+     else
-+	DBGPrint("invalid processor frame\n");
-+
-+     return 1;
-+
-+}
-+
-+/* EF */
-+
-+unsigned long dump_ef(unsigned char *cmd,
-+	      StackFrame *stackFrame, unsigned long Exception,
-+	      DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     unsigned char *addr;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     addr = (unsigned char *)EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+        DBGPrint("invalid frame address\n");
-+     }
-+     else
-+     {
-+        addr = (unsigned char *)stackFrame->tReserved[2];
-+        DBGPrint("invalid frame pointer address\n");
-+     }
-+     return 1;
-+
-+}
-+
-+/* UF */
-+
-+unsigned long dump_uf(unsigned char *cmd,
-+	      StackFrame *stackFrame, unsigned long Exception,
-+	      DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     unsigned char *addr;
-+     extern int mdb_dumpregs(struct pt_regs *, const char *, const char *);
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     addr = (unsigned char *)EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+        DBGPrint("invalid frame address\n");
-+     }
-+     else
-+     {
-+        addr = (unsigned char *)stackFrame->tReserved[2];
-+        DBGPrint("invalid frame pointer address\n");
-+     }
-+     return 1;
-+
-+}
-+
-+/* .TA */
-+
-+unsigned long ProcessTAToggle(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     if (general_toggle)
-+     {
-+        general_toggle = 0;
-+        control_toggle = 0;
-+        segment_toggle = 0;
-+     }
-+     else
-+     {
-+        general_toggle = 1;
-+        control_toggle = 1;
-+        segment_toggle = 1;
-+     }
-+
-+     DBGPrint("toggle general registers (%s) \n",
-+					    general_toggle ? "ON" : "OFF");
-+     DBGPrint("toggle control registers (%s) \n",
-+					    control_toggle ? "ON" : "OFF");
-+     DBGPrint("toggle segment registers (%s) \n",
-+					    segment_toggle ? "ON" : "OFF");
-+     return 1;
-+
-+}
-+
-+unsigned long TSSDisplayHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    DBGPrint(".t <address>             - display task state regs\n");
-+    return 1;
-+}
-+
-+/* .T */
-+
-+unsigned long TSSDisplay(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address;
-+     unsigned long valid;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (!valid)
-+	DisplayTSS(stackFrame);
-+     else
-+	DisplayTSS((StackFrame *) address);
-+
-+     return 1;
-+}
-+
-+unsigned long displayRegistersHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    DBGPrint("r                        - display registers for a processor\n");
-+    DBGPrint("rc                       - display control registers \n");
-+    DBGPrint("rs                       - display segment registers \n");
-+    DBGPrint("rg                       - display general registers \n");
-+    DBGPrint("ra                       - display all registers\n");
-+    DBGPrint("rn                       - display coprocessor/MMX registers\n");
-+
-+    return 1;
-+}
-+
-+/* RC */
-+
-+unsigned long displayControlRegisters(unsigned char *cmd,
-+			     StackFrame *stackFrame, unsigned long Exception,
-+			     DEBUGGER_PARSER *parser)
-+{
-+     DBGPrint("Control Registers\n");
-+     DisplayControlRegisters(get_processor_id(), stackFrame);
-+     return 1;
-+
-+}
-+
-+/* RA */
-+
-+unsigned long displayAllRegisters(unsigned char *cmd,
-+			     StackFrame *stackFrame, unsigned long Exception,
-+			     DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long processor = get_processor_id();
-+
-+     DBGPrint("General Registers\n");
-+     DisplayGeneralRegisters(stackFrame);
-+
-+     DBGPrint("Segment Registers\n");
-+     DisplaySegmentRegisters(stackFrame);
-+
-+     DBGPrint("Control Registers\n");
-+     DisplayControlRegisters(processor, stackFrame);
-+
-+     if (fpu_present())
-+     {
-+	DBGPrint("Coprocessor Registers\n");
-+	DisplayNPXRegisters(processor);
-+     }
-+     else
-+     {
-+	DBGPrint("Coprocessor Not Present\n");
-+     }
-+     return 1;
-+
-+}
-+
-+
-+/* RS */
-+
-+unsigned long displaySegmentRegisters(unsigned char *cmd,
-+			     StackFrame *stackFrame, unsigned long Exception,
-+			     DEBUGGER_PARSER *parser)
-+{
-+     DBGPrint("Segment Registers\n");
-+     DisplaySegmentRegisters(stackFrame);
-+     return 1;
-+
-+}
-+
-+/* RN */
-+
-+unsigned long displayNumericRegisters(unsigned char *cmd,
-+			     StackFrame *stackFrame, unsigned long Exception,
-+			     DEBUGGER_PARSER *parser)
-+{
-+     if (fpu_present())
-+     {
-+	DBGPrint("Coprocessor Registers\n");
-+	DisplayNPXRegisters(get_processor_id());
-+     }
-+     else
-+     {
-+	DBGPrint("Coprocessor Not Present\n");
-+     }
-+     return 1;
-+
-+}
-+
-+/* RG */
-+
-+unsigned long displayGeneralRegisters(unsigned char *cmd,
-+			     StackFrame *stackFrame, unsigned long Exception,
-+			     DEBUGGER_PARSER *parser)
-+{
-+     DBGPrint("General Registers\n");
-+     DisplayGeneralRegisters(stackFrame);
-+     return 1;
-+}
-+
-+#ifdef RENDER_NPX_VALUES
-+double ldexp(double v, int e)
-+{
-+   double two = 2.0;
-+
-+   if (e < 0)
-+   {
-+      e = -e; /* This just might overflow on two-complement machines. */
-+      if (e < 0)
-+         return 0.0;
-+
-+      while (e > 0)
-+      {
-+	 if (e & 1)
-+         {
-+            v = v / two;
-+         }
-+	 two = two * two;
-+	 e >>= 1;
-+      }
-+   }
-+   else
-+   if (e > 0)
-+   {
-+      while (e > 0)
-+      {
-+	 if (e & 1)
-+            v = v * two;
-+	 two = two * two;
-+	 e >>= 1;
-+      }
-+   }
-+   return v;
-+}
-+#endif
-+
-+void DisplayNPXRegisters(unsigned long processor)
-+{
-+     register int i;
-+     int tag;
-+     int tos;
-+#ifdef RENDER_NPX_VALUES
-+     double d;
-+#endif
-+
-+     tos = (npx[processor].status >> 11) & 7;
-+     if (tos) {};
-+
-+     DBGPrint("Control: 0x%04X  Status: 0x%04X  Tag: 0x%04X  TOS: %i CPU: %i\n",
-+	       (unsigned)npx[processor].control & 0xFFFF,
-+               (unsigned)npx[processor].status & 0xFFFF,
-+               (unsigned)npx[processor].tag & 0xFFFF,
-+               (int)tos, (int)processor);
-+
-+     for (i = 0; i < 8; i++)
-+     {
-+	tos = (npx[processor].status >> 11) & 7;
-+	DBGPrint("st(%d)/MMX%d  ", i, (int)((tos + i) % 8));
-+
-+	if (npx[processor].reg[i].sign)
-+	    DBGPrint("-");
-+	else
-+	    DBGPrint("+");
-+
-+	DBGPrint(" %04X %04X %04X %04X e %04X    ",
-+		 (unsigned)npx[processor].reg[i].sig3,
-+		 (unsigned)npx[processor].reg[i].sig2,
-+		 (unsigned)npx[processor].reg[i].sig1,
-+		 (unsigned)npx[processor].reg[i].sig0,
-+		 (unsigned)npx[processor].reg[i].exponent);
-+
-+	 if (tos) {};
-+	 tag = (npx[processor].tag >> (((i + tos) % 8) * 2)) & 3;
-+	 switch (tag)
-+	 {
-+
-+	    case 0:
-+	       DBGPrint("Valid");
-+#ifdef RENDER_NPX_VALUES
-+	       if (((int) npx[processor].reg[i].exponent - 16382 < 1000) &&
-+		  ((int) npx[processor].reg[i].exponent - 16382 > -1000))
-+	       {
-+		  d =
-+                  npx[processor].reg[i].sig3 / 65536.0 +
-+                  npx[processor].reg[i].sig2 / 65536.0 / 65536.0 +
-+                  npx[processor].reg[i].sig1 / 65536.0 / 65536.0 / 65536.0;
-+
-+		  d = ldexp(d, (int) npx[processor].reg[i].exponent - 16382);
-+
-+	          if (npx[processor].reg[i].sign)
-+		     d = -d;
-+
-+		  DBGPrint("  %.16g", d);
-+	       }
-+	       else
-+		  DBGPrint("  (too big to display)");
-+#endif
-+	       DBGPrint("\n");
-+	       break;
-+
-+	    case 1:
-+	       DBGPrint("Zero\n");
-+	       break;
-+
-+	    case 2:
-+	       DBGPrint("Special\n");
-+	       break;
-+
-+	    case 3:
-+	       DBGPrint("Empty\n");
-+	       break;
-+	}
-+     }
-+}
-+
-+/* R */
-+
-+unsigned long displayDefaultRegisters(unsigned char *cmd,
-+			     StackFrame *stackFrame, unsigned long Exception,
-+			     DEBUGGER_PARSER *parser)
-+{
-+    register unsigned long processor = get_processor_id();
-+
-+    DisplayGeneralRegisters(stackFrame);
-+
-+    if (control_toggle)
-+       DisplayControlRegisters(processor, stackFrame);
-+
-+    if (numeric_toggle)
-+       DisplayNPXRegisters(processor);
-+
-+     disassemble(stackFrame, stackFrame->tEIP, 1, 1);
-+     return 1;
-+
-+}
-+
-+void displayRegisters(StackFrame *stackFrame, unsigned long processor)
-+{
-+    if (general_toggle)
-+       DisplayGeneralRegisters(stackFrame);
-+
-+    if (control_toggle)
-+       DisplayControlRegisters(processor, stackFrame);
-+
-+    if (numeric_toggle)
-+       DisplayNPXRegisters(processor);
-+
-+}
-+
-+unsigned long displayEAXHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* EAX */
-+
-+unsigned long ChangeEAXRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	stackFrame->tEAX = value;
-+	DBGPrint("EAX changed to 0x%08X\n", (unsigned)value);
-+     }
-+     else
-+	DBGPrint("invalid change register command or address\n");
-+     return 1;
-+
-+}
-+
-+
-+/* ORIGEAX */
-+
-+unsigned long ChangeORIGEAXRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	stackFrame->tReserved[1] = value;
-+	DBGPrint("ORIGEAX changed to 0x%08X\n", (unsigned)value);
-+     }
-+     else
-+	DBGPrint("invalid change register command or address\n");
-+     return 1;
-+
-+}
-+
-+
-+unsigned long displayEBXHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* EBX */
-+
-+unsigned long ChangeEBXRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	stackFrame->tEBX = value;
-+	DBGPrint("EBX changed to 0x%08X\n", (unsigned)value);
-+     }
-+     else
-+	DBGPrint("invalid change register command or address\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayECXHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* ECX */
-+
-+unsigned long ChangeECXRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	stackFrame->tECX = value;
-+	DBGPrint("ECX changed to 0x%08X\n", (unsigned)value);
-+     }
-+     else
-+	DBGPrint("invalid change register command or address\n");
-+     return 1;
-+
-+}
-+
-+
-+unsigned long displayEDXHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* EDX */
-+
-+unsigned long ChangeEDXRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	stackFrame->tEDX = value;
-+	DBGPrint("EDX changed to 0x%08X\n", (unsigned)value);
-+     }
-+     else
-+	DBGPrint("invalid change register command or address\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayESIHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* ESI */
-+
-+unsigned long ChangeESIRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	stackFrame->tESI = value;
-+	DBGPrint("ESI changed to 0x%08X\n", (unsigned)value);
-+     }
-+     else
-+	DBGPrint("invalid change register command or address\n");
-+     return 1;
-+
-+}
-+
-+
-+unsigned long displayEDIHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* EDI */
-+
-+unsigned long ChangeEDIRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	stackFrame->tEDI = value;
-+	DBGPrint("EDI changed to 0x%08X\n", (unsigned)value);
-+     }
-+     else
-+	DBGPrint("invalid change register command or address\n");
-+     return 1;
-+
-+}
-+
-+
-+unsigned long displayEBPHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* EBP */
-+
-+unsigned long ChangeEBPRegister(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	stackFrame->tEBP = value;
-+	DBGPrint("EBP changed to 0x%08X\n", (unsigned)value);
-+     }
-+     else
-+	DBGPrint("invalid change register command or address\n");
-+     return 1;
-+
-+}
-+
-+
-+unsigned long displayESPHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* ESP */
-+
-+unsigned long ChangeESPRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	stackFrame->tESP = value;
-+	DBGPrint("ESP changed to 0x%08X\n", (unsigned)value);
-+     }
-+     else
-+	DBGPrint("invalid change register command or address\n");
-+     return 1;
-+
-+}
-+
-+
-+unsigned long displayEIPHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* EIP */
-+
-+unsigned long ChangeEIPRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	stackFrame->tEIP = value;
-+	DBGPrint("EIP changed to 0x%08X\n", (unsigned)value);
-+     }
-+     else
-+	DBGPrint("invalid change register command or address\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayCSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* CS */
-+
-+unsigned long ChangeCSRegister(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+     register unsigned short oldW;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldW = stackFrame->tCS;
-+	stackFrame->tCS = (unsigned short) value;
-+	DBGPrint("CS: = [%04X] changed to CS: = [%04X]\n",
-+			(unsigned)oldW, (unsigned) value);
-+     }
-+     else
-+	DBGPrint("invalid change segment register command or address\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayDSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* DS */
-+
-+unsigned long ChangeDSRegister(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+     register unsigned short oldW;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldW = stackFrame->tDS;
-+	stackFrame->tDS = (unsigned short) value;
-+	DBGPrint("DS: = [%04X] changed to DS: = [%04X]\n",
-+			(unsigned)oldW, (unsigned)value);
-+     }
-+     else
-+	DBGPrint("invalid change segment register command or address\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayESHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* ES */
-+
-+unsigned long ChangeESRegister(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+     register unsigned short oldW;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldW = stackFrame->tES;
-+	stackFrame->tES = (unsigned short) value;
-+	DBGPrint("ES: = [%04X] changed to ES: = [%04X]\n",
-+			(unsigned)oldW, (unsigned) value);
-+     }
-+     else
-+	DBGPrint("invalid change segment register command or address\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayFSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* FS */
-+
-+unsigned long ChangeFSRegister(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+     register unsigned short oldW;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldW = stackFrame->tFS;
-+	stackFrame->tFS = (unsigned short) value;
-+	DBGPrint("FS: = [%04X] changed to FS: = [%04X]\n",
-+			(unsigned)oldW, (unsigned)value);
-+     }
-+     else
-+	DBGPrint("invalid change segment register command or address\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayGSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* GS */
-+
-+unsigned long ChangeGSRegister(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+     register unsigned short oldW;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldW = stackFrame->tGS;
-+	stackFrame->tGS = (unsigned short) value;
-+	DBGPrint("GS: = [%04X] changed to GS: = [%04X]\n",
-+			(unsigned)oldW, (unsigned)value);
-+     }
-+     else
-+	DBGPrint("invalid change segment register command or address\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displaySSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* SS */
-+
-+unsigned long ChangeSSRegister(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value;
-+     register unsigned short oldW;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldW = stackFrame->tSS;
-+	stackFrame->tSS = (unsigned short) value;
-+	DBGPrint("SS: = [%04X] changed to SS: = [%04X]\n",
-+			(unsigned)oldW, (unsigned)value);
-+     }
-+     else
-+	DBGPrint("invalid change segment register command or address\n");
-+
-+     return 1;
-+
-+}
-+
-+unsigned long displayRFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* RF */
-+
-+unsigned long ChangeRFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & RF_FLAG;
-+	(value) ? (stackFrame->tSystemFlags |= RF_FLAG) : (stackFrame->tSystemFlags &= ~RF_FLAG);
-+	DBGPrint("EFlag RF[%08X] changed to (%d)\n",
-+			(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayTFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* TF */
-+
-+unsigned long ChangeTFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & TF_FLAG;
-+	(value) ? (stackFrame->tSystemFlags |= TF_FLAG) : (stackFrame->tSystemFlags &= ~TF_FLAG);
-+	DBGPrint("EFlag TF[%08X] changed to (%d)\n",
-+			(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayZFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* ZF */
-+
-+unsigned long ChangeZFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & ZF_FLAG;
-+	(value) ? (stackFrame->tSystemFlags |= ZF_FLAG) : (stackFrame->tSystemFlags &= ~ZF_FLAG);
-+	DBGPrint("EFlag ZF[%08X] changed to (%d)\n",
-+				(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displaySFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* SF */
-+
-+unsigned long ChangeSFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & SF_FLAG;
-+	(value) ? (stackFrame->tSystemFlags |= SF_FLAG) : (stackFrame->tSystemFlags &= ~SF_FLAG);
-+	DBGPrint("EFlag SF[%08X] changed to (%d)\n",
-+				(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayPFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* PF */
-+
-+unsigned long ChangePFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & PF_FLAG;
-+	(value) ? (stackFrame->tSystemFlags |= PF_FLAG) : (stackFrame->tSystemFlags &= ~PF_FLAG);
-+	DBGPrint("EFlag PF[%08X] changed to (%d)\n",
-+				(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayCFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* CF */
-+
-+unsigned long ChangeCFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & CF_FLAG;
-+	(value) ? (stackFrame->tSystemFlags |= CF_FLAG) : (stackFrame->tSystemFlags &= ~CF_FLAG);
-+	DBGPrint("EFlag CF[%08X] changed to (%d)\n",
-+				(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayOFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* OF */
-+
-+unsigned long ChangeOFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & OF_FLAG;
-+	(value) ? (stackFrame->tSystemFlags |= OF_FLAG) : (stackFrame->tSystemFlags &= ~OF_FLAG);
-+	DBGPrint("EFlag OF[%08X] changed to (%d)\n",
-+				(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+
-+unsigned long displayIFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* IF */
-+
-+unsigned long ChangeIFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & IF_FLAG;
-+	(value) ? (stackFrame->tSystemFlags |= IF_FLAG) : (stackFrame->tSystemFlags &= ~IF_FLAG);
-+	DBGPrint("EFlag IF[%08X] changed to (%d)\n",
-+				(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayIDHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* ID */
-+
-+unsigned long ChangeIDFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & ID_FLAGS;
-+	(value) ? (stackFrame->tSystemFlags |= ID_FLAGS) : (stackFrame->tSystemFlags &= ~ID_FLAGS);
-+	DBGPrint("EFlag ID[%08X] changed to (%d)\n",
-+				(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayDFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* DF */
-+
-+unsigned long ChangeDFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser)
-+{
-+
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & DF_FLAG;
-+	(value) ? (stackFrame->tSystemFlags |= DF_FLAG) : (stackFrame->tSystemFlags &= ~DF_FLAG);
-+	DBGPrint("EFlag DF[%08X] changed to (%d)\n",
-+				(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayNTHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* NT */
-+
-+unsigned long ChangeNTFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & NT_FLAG;
-+	(value) ? (stackFrame->tSystemFlags |= NT_FLAG) : (stackFrame->tSystemFlags &= ~NT_FLAG);
-+	DBGPrint("EFlag NT[%08X] changed to (%d)\n",
-+				(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayVMHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* VM */
-+
-+unsigned long ChangeVMFlag(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & VM_FLAG;
-+	(value) ? (stackFrame->tSystemFlags |= VM_FLAG) : (stackFrame->tSystemFlags &= ~VM_FLAG);
-+	DBGPrint("EFlag VM[%08X] changed to (%d)\n",
-+				(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+
-+unsigned long displayVIFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* VIF */
-+
-+unsigned long ChangeVIFFlag(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & VIF_FLAG;
-+	(value) ? (stackFrame->tSystemFlags |= VIF_FLAG) : (stackFrame->tSystemFlags &= ~VIF_FLAG);
-+	DBGPrint("EFlag VIF[%08X] changed to (%d)\n",
-+				(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayVIPHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* VIP */
-+
-+unsigned long ChangeVIPFlag(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & VIP_FLAG;
-+	(value) ? (stackFrame->tSystemFlags |= VIP_FLAG) : (stackFrame->tSystemFlags &= ~VIP_FLAG);
-+	DBGPrint("EFlag VIP[%08X] changed to (%d)\n",
-+				(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayAFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* AF */
-+
-+unsigned long ChangeAFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & AF_FLAG;
-+	(value) ? (stackFrame->tSystemFlags |= AF_FLAG) : (stackFrame->tSystemFlags &= ~AF_FLAG);
-+	DBGPrint("EFlag AF[%08X] changed to (%d)\n",
-+				(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+
-+unsigned long displayACHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    return 1;
-+}
-+
-+/* AC */
-+
-+unsigned long ChangeACFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long value, oldD;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     value = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	oldD = stackFrame->tSystemFlags & AC_FLAG;
-+	(value) ? (stackFrame->tSystemFlags |= AC_FLAG) : (stackFrame->tSystemFlags &= ~AC_FLAG);
-+	DBGPrint("EFlag AC[%08X] changed to (%d)\n",
-+				(unsigned)oldD, (int)value);
-+     }
-+     else
-+	DBGPrint("invalid change flags command\n");
-+     return 1;
-+
-+}
-+
-+unsigned long displayMTRRHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    DBGPrint("mtrr                     - display memory type range registers\n");
-+    return 1;
-+}
-+
-+/* MTRR */
-+
-+unsigned long DisplayMTRRRegisters(unsigned char *cmd,
-+			  StackFrame *stackFrame, unsigned long Exception,
-+			  DEBUGGER_PARSER *parser)
-+{
-+     displayMTRRRegisters();
-+     return 1;
-+
-+}
-+
-+unsigned long displayGDTHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    DBGPrint(".g or .g <address>       - display global descriptor table\n");
-+    return 1;
-+}
-+
-+/* .G */
-+
-+unsigned long displayGDT(unsigned char *cmd,
-+		StackFrame *stackFrame, unsigned long Exception,
-+		DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address;
-+     unsigned long valid;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+	DisplayGDT((unsigned char *) address);
-+     else
-+	DisplayGDT((unsigned char *) 0);
-+     return 1;
-+}
-+
-+unsigned long displayIDTHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    DBGPrint(".i or .i <address>       - display interrupt descriptor table\n");
-+    return 1;
-+}
-+
-+/* .I */
-+
-+unsigned long displayIDT(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address;
-+     unsigned long valid;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+	DisplayIDT((unsigned char *) address);
-+     else
-+	DisplayIDT((unsigned char *) 0);
-+     return 1;
-+}
-+
-+unsigned long evaluateExpressionHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    extern void displayExpressionHelp(void);
-+
-+    displayExpressionHelp();
-+    return 1;
-+}
-+
-+/* .E */
-+
-+unsigned long evaluateExpression(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     extern void EvaluateCommandExpression(StackFrame *stackFrame,
-+                                           unsigned char *cmd);
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     EvaluateCommandExpression(stackFrame, cmd);
-+     return 1;
-+}
-+
-+unsigned long portCommandHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    DBGPrint("i   <port>               - input byte from port\n");
-+    DBGPrint("ib  <port>               - input byte from port\n");
-+    DBGPrint("iw  <port>               - input word from port\n");
-+    DBGPrint("il  <port>               - input double word from port\n");
-+    DBGPrint("o   <port> <val>         - output byte to port\n");
-+    DBGPrint("ob  <port> <val>         - output byte to port\n");
-+    DBGPrint("ow  <port> <val>         - output word to port\n");
-+    DBGPrint("ol  <port> <val>         - output double word to port\n");
-+    return 1;
-+}
-+
-+/* IW */
-+
-+unsigned long inputWordPort(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address;
-+     unsigned long valid;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	DBGPrint("inportw (%04X) = %04X\n",
-+                     (unsigned)address, (unsigned)inw(address));
-+     }
-+     else
-+     {
-+	DBGPrint("bad port command\n");
-+     }
-+     return 1;
-+
-+}
-+
-+/* ID */
-+
-+unsigned long inputDoublePort(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address;
-+     unsigned long valid;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	DBGPrint("inportd (%04X) = %08X\n",
-+			  (unsigned)address, (unsigned)inl(address));
-+     }
-+     else
-+     {
-+	DBGPrint("bad port command\n");
-+     }
-+     return 1;
-+
-+}
-+
-+/* IB */
-+
-+unsigned long inputBytePort(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address;
-+     unsigned long valid;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	DBGPrint("inportb (%04X) = %02X\n",
-+			  (unsigned)address, (unsigned)inb(address));
-+     }
-+     else
-+     {
-+	DBGPrint("bad port command\n");
-+     }
-+     return 1;
-+
-+}
-+
-+/* I */
-+
-+unsigned long inputPort(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address;
-+     unsigned long valid;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	DBGPrint("inportb (%04X) = %02X\n",
-+			  (unsigned)address, (unsigned)inb(address));
-+     }
-+     else
-+     {
-+	DBGPrint("bad port command\n");
-+     }
-+     return 1;
-+
-+}
-+
-+/* OW */
-+
-+unsigned long outputWordPort(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long port, value;
-+     unsigned long valid;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     port = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	value = EvaluateExpression(stackFrame, &cmd, &valid);
-+	if (valid)
-+	{
-+	   DBGPrint("outportw (%04X) = %04X\n",
-+				    (unsigned)port, (unsigned)value);
-+	   outw(port, value);
-+	   return 1;
-+	}
-+     }
-+     else
-+	DBGPrint("bad port command\n");
-+
-+     return 1;
-+
-+}
-+
-+/* OD */
-+
-+unsigned long outputDoublePort(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long port, value;
-+     unsigned long valid;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     port = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	value = EvaluateExpression(stackFrame, &cmd, &valid);
-+	if (valid)
-+	{
-+	   DBGPrint("outportd (%04X) = %08X\n",
-+			    (unsigned)port, (unsigned)value);
-+	   outl(port, value);
-+	   return 1;
-+	}
-+     }
-+     else
-+	DBGPrint("bad port command\n");
-+
-+     return 1;
-+
-+}
-+
-+/* OB */
-+
-+unsigned long outputBytePort(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long port, value;
-+     unsigned long valid;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     port = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	value = EvaluateExpression(stackFrame, &cmd, &valid);
-+	if (valid)
-+	{
-+	   DBGPrint("outportb (%04X) = %02X\n",
-+			    (unsigned)port, (unsigned)value);
-+	   outb(port, value);
-+	   return 1;
-+	}
-+     }
-+     else
-+	DBGPrint("bad port command\n");
-+
-+     return 1;
-+
-+}
-+
-+/* O */
-+
-+unsigned long outputPort(unsigned char *cmd,
-+		StackFrame *stackFrame, unsigned long Exception,
-+		DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long port, value;
-+     unsigned long valid;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     port = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	value = EvaluateExpression(stackFrame, &cmd, &valid);
-+	if (valid)
-+	{
-+	   DBGPrint("outportb (%04X) = %02X\n",
-+			    (unsigned)port, (unsigned)value);
-+	   outb(port, value);
-+	   return 1;
-+	}
-+     }
-+     else
-+	DBGPrint("bad port command\n");
-+
-+     return 1;
-+
-+}
-+
-+unsigned long breakpointCommandHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    DBGPrint("b                        - display all breakpoints\n");
-+    DBGPrint("b   <address>            - set execute breakpoint\n");
-+    DBGPrint("bc  [#] (1-4)            - clear breakpoint\n");
-+    DBGPrint("bca                      - clear all breakpoints\n");
-+    DBGPrint("br[#] <address>          - set read/write breakpoint #=1,2 or 4 byte len\n");
-+    DBGPrint("bw[#] <address>          - set write only breakpoint #=1,2 or 4 byte len\n");
-+    DBGPrint("bi[#] <address>          - set io address breakpoint #=1,2 or 4 byte len\n");
-+    DBGPrint("bm  [p#]                 - mask breaks for specific processor \n");
-+    DBGPrint("bst                      - display temporary (go/proceed) breakpoints\n");
-+    return 1;
-+}
-+
-+/* BCA */
-+
-+unsigned long breakpointClearAll(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long i;
-+
-+     for (i = 0; i < 4; i++)
-+     {
-+	BreakReserved[i] = 0;
-+	BreakPoints[i] = 0;
-+	BreakType[i] = 0;
-+	BreakLength[i] = 0;
-+	ConditionalBreakpoint[i] = 0;
-+     }
-+     SetDebugRegisters();
-+     DBGPrint("all breakpoints cleared\n");
-+
-+     return 1;
-+
-+}
-+
-+/* BC */
-+
-+unsigned long breakpointClear(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     unsigned long valid;
-+     register unsigned long i, address;
-+     register unsigned char *symbolName;
-+     register unsigned char *moduleName;
-+     register int c = get_processor_id();
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	i = address;
-+	if (i < 4)
-+	{
-+	   symbolName = GetSymbolFromValue(BreakPoints[i], &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	   moduleName = GetModuleInfoFromSymbolValue(BreakPoints[i],
-+                                           &modbuf[c][0], MAX_SYMBOL_LEN);
-+           if (moduleName)
-+	      DBGPrint("breakpoint %i at 0x%08X (%s %s) %s|%s cleared\n",
-+			     (int)i,
-+			     (unsigned)BreakPoints[i],
-+			     BreakDescription[(BreakType[i] & 3)],
-+			     BreakLengthDescription[(BreakLength[i] & 3)],
-+			     ((char *)(moduleName) ? (char *)(moduleName)
-+                             : (char *)("")),
-+			     ((char *)(symbolName) ? (char *)(symbolName)
-+                             : (char *)("")));
-+           else
-+	      DBGPrint("breakpoint %i at 0x%08X (%s %s) %s cleared\n",
-+			     (int)i,
-+			     (unsigned)BreakPoints[i],
-+			     BreakDescription[(BreakType[i] & 3)],
-+			     BreakLengthDescription[(BreakLength[i] & 3)],
-+			     ((char *)(symbolName) ? (char *)(symbolName)
-+                             : (char *)("")));
-+	   BreakReserved[i] = 0;
-+	   BreakPoints[i] = 0;
-+	   BreakType[i] = 0;
-+	   BreakLength[i] = 0;
-+	   ConditionalBreakpoint[i] = 0;
-+	   SetDebugRegisters();
-+	   return 1;
-+	}
-+	else
-+	   DBGPrint("breakpoint out of range\n");
-+	return 1;
-+     }
-+     DBGPrint("breakpoint not found\n");
-+     return 1;
-+}
-+
-+/* BM */
-+
-+unsigned long breakpointMask(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address, pnum, i;
-+     unsigned long valid;
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	pnum = address;
-+	if (pnum < MAX_PROCESSORS)
-+	{
-+	   if (BreakMask[pnum])
-+	      BreakMask[pnum] = 0;
-+	   else
-+	      BreakMask[pnum] = 1;
-+	   DBGPrint("processor %i : %s\n", (int)pnum,
-+		   BreakMask[pnum] ? "BREAKS_MASKED" : "BREAKS_UNMASKED");
-+	}
-+	else
-+	   DBGPrint("processor (%i) invalid\n", (int)pnum);
-+     }
-+     else
-+     {
-+	for (i = 0; i < MAX_PROCESSORS; i++)
-+	{
-+	   DBGPrint("processor %i : %s\n", (int)i,
-+		    BreakMask[i] ? "BREAKS_MASKED" : "BREAKS_UNMASKED");
-+	}
-+     }
-+     return 1;
-+
-+}
-+
-+/* BW1 */
-+
-+unsigned long breakpointWord1(unsigned char *cmd,
-+		    StackFrame *stackFrame, unsigned long Exception,
-+		    DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address, i, r;
-+     register unsigned char *pB, *symbolName;
-+     register unsigned char *moduleName;
-+     unsigned long valid;
-+     register int c = get_processor_id();
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      pB = cmd;
-+	      EvaluateExpression(stackFrame, &cmd, &valid);
-+	      if (valid)
-+	      {
-+		 ConditionalBreakpoint[i] = 1;
-+		 for (r = 0; (r < 255) && (*pB); r++)
-+		    BreakCondition[i][r] = *pB++;
-+		 BreakCondition[i][r] = '\0';
-+	      }
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = address;
-+	      BreakType[i] = BREAK_WRITE;
-+	      BreakLength[i] = ONE_BYTE_FIELD;
-+	      symbolName = GetSymbolFromValue(address, &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	      moduleName = GetModuleInfoFromSymbolValue(address, &modbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+              if (moduleName)
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s|%s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+		               ((char *)(moduleName) ? (char *)(moduleName)
-+                                 : (char *)("")),
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+              else
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+
-+	      if (ConditionalBreakpoint[i])
-+		 DBGPrint("if (%s) is TRUE\n", BreakCondition[i]);
-+
-+	      SetDebugRegisters();
-+	      return 1;
-+	   }
-+	}
-+	DBGPrint("no breakpoint available\n");
-+     }
-+     else
-+	DBGPrint("breakpoint parameters invalid\n");
-+     return 1;
-+
-+}
-+
-+/* BW2 */
-+
-+unsigned long breakpointWord2(unsigned char *cmd,
-+		    StackFrame *stackFrame, unsigned long Exception,
-+		    DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address, i, r;
-+     register unsigned char *pB, *symbolName;
-+     register unsigned char *moduleName;
-+     unsigned long valid;
-+     register int c = get_processor_id();
-+
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      pB = cmd;
-+	      EvaluateExpression(stackFrame, &cmd, &valid);
-+	      if (valid)
-+	      {
-+		 ConditionalBreakpoint[i] = 1;
-+		 for (r = 0; (r < 255) && (*pB); r++)
-+		    BreakCondition[i][r] = *pB++;
-+		 BreakCondition[i][r] = '\0';
-+	      }
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = address;
-+	      BreakType[i] = BREAK_WRITE;
-+	      BreakLength[i] = TWO_BYTE_FIELD;
-+	      symbolName = GetSymbolFromValue(address, &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	      moduleName = GetModuleInfoFromSymbolValue(address, &modbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+              if (moduleName)
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s|%s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			        ((char *)(moduleName) ? (char *)(moduleName)
-+                                 : (char *)("")),
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+              else
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+
-+	      if (ConditionalBreakpoint[i])
-+		 DBGPrint("if (%s) is TRUE\n", BreakCondition[i]);
-+
-+	      SetDebugRegisters();
-+	      return 1;
-+	   }
-+	}
-+	DBGPrint("no breakpoint available\n");
-+     }
-+     else
-+	DBGPrint("breakpoint parameters invalid\n");
-+     return 1;
-+
-+}
-+
-+/* BW4 */
-+
-+unsigned long breakpointWord4(unsigned char *cmd,
-+		    StackFrame *stackFrame, unsigned long Exception,
-+		    DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address, i, r;
-+     register unsigned char *pB, *symbolName;
-+     register unsigned char *moduleName;
-+     unsigned long valid;
-+     register int c = get_processor_id();
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      pB = cmd;
-+	      EvaluateExpression(stackFrame, &cmd, &valid);
-+	      if (valid)
-+	      {
-+		 ConditionalBreakpoint[i] = 1;
-+		 for (r = 0; (r < 255) && (*pB); r++)
-+		    BreakCondition[i][r] = *pB++;
-+		 BreakCondition[i][r] = '\0';
-+	      }
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = address;
-+	      BreakType[i] = BREAK_WRITE;
-+	      BreakLength[i] = FOUR_BYTE_FIELD;
-+	      symbolName = GetSymbolFromValue(address, &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	      moduleName = GetModuleInfoFromSymbolValue(address, &modbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+              if (moduleName)
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s|%s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			        ((char *)(moduleName) ? (char *)(moduleName)
-+                                 : (char *)("")),
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+              else
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+
-+	      if (ConditionalBreakpoint[i])
-+		 DBGPrint("if (%s) is TRUE\n", BreakCondition[i]);
-+
-+	      SetDebugRegisters();
-+	      return 1;
-+	   }
-+	}
-+	DBGPrint("no breakpoint available\n");
-+     }
-+     else
-+	DBGPrint("breakpoint parameters invalid\n");
-+     return 1;
-+
-+}
-+
-+/* BW */
-+
-+unsigned long breakpointWord(unsigned char *cmd,
-+		    StackFrame *stackFrame, unsigned long Exception,
-+		    DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address, i, r;
-+     register unsigned char *pB, *symbolName;
-+     register unsigned char *moduleName;
-+     unsigned long valid;
-+     register int c = get_processor_id();
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      pB = cmd;
-+	      EvaluateExpression(stackFrame, &cmd, &valid);
-+	      if (valid)
-+	      {
-+		 ConditionalBreakpoint[i] = 1;
-+		 for (r = 0; (r < 255) && (*pB); r++)
-+		    BreakCondition[i][r] = *pB++;
-+		 BreakCondition[i][r] = '\0';
-+	      }
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = address;
-+	      BreakType[i] = BREAK_WRITE;
-+	      BreakLength[i] = ONE_BYTE_FIELD;
-+	      symbolName = GetSymbolFromValue(address, &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	      moduleName = GetModuleInfoFromSymbolValue(address, &modbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+              if (moduleName)
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s|%s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			        ((char *)(moduleName) ? (char *)(moduleName)
-+                                 : (char *)("")),
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+              else
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+
-+	      if (ConditionalBreakpoint[i])
-+		 DBGPrint("if (%s) is TRUE\n", BreakCondition[i]);
-+
-+	      SetDebugRegisters();
-+	      return 1;
-+	   }
-+	}
-+	DBGPrint("no breakpoint available\n");
-+     }
-+     else
-+	DBGPrint("breakpoint parameters invalid\n");
-+     return 1;
-+
-+}
-+
-+
-+/* BR1 */
-+
-+unsigned long breakpointRead1(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address, i, r;
-+     register unsigned char *pB, *symbolName;
-+     register unsigned char *moduleName;
-+     unsigned long valid;
-+     register int c = get_processor_id();
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      pB = cmd;
-+	      EvaluateExpression(stackFrame, &cmd, &valid);
-+	      if (valid)
-+	      {
-+		 ConditionalBreakpoint[i] = 1;
-+		 for (r = 0; (r < 255) && (*pB); r++)
-+		    BreakCondition[i][r] = *pB++;
-+		 BreakCondition[i][r] = '\0';
-+	      }
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = address;
-+	      BreakType[i] = BREAK_READWRITE;
-+	      BreakLength[i] = ONE_BYTE_FIELD;
-+	      symbolName = GetSymbolFromValue(address, &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	      moduleName = GetModuleInfoFromSymbolValue(address, &modbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+              if (moduleName)
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s|%s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			        ((char *)(moduleName) ? (char *)(moduleName)
-+                                 : (char *)("")),
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+              else
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+
-+	      if (ConditionalBreakpoint[i])
-+		 DBGPrint("if (%s) is TRUE\n", BreakCondition[i]);
-+
-+	      SetDebugRegisters();
-+	      return 1;
-+	   }
-+	}
-+	DBGPrint("no breakpoint available\n");
-+     }
-+     else
-+	DBGPrint("breakpoint parameters invalid\n");
-+     return 1;
-+
-+}
-+
-+
-+/* BR2 */
-+
-+unsigned long breakpointRead2(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address, i, r;
-+     register unsigned char *pB, *symbolName;
-+     register unsigned char *moduleName;
-+     unsigned long valid;
-+     register int c = get_processor_id();
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      pB = cmd;
-+	      EvaluateExpression(stackFrame, &cmd, &valid);
-+	      if (valid)
-+	      {
-+		 ConditionalBreakpoint[i] = 1;
-+		 for (r = 0; (r < 255) && (*pB); r++)
-+		    BreakCondition[i][r] = *pB++;
-+		 BreakCondition[i][r] = '\0';
-+	      }
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = address;
-+	      BreakType[i] = BREAK_READWRITE;
-+	      BreakLength[i] = TWO_BYTE_FIELD;
-+	      symbolName = GetSymbolFromValue(address, &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	      moduleName = GetModuleInfoFromSymbolValue(address, &modbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+              if (moduleName)
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s|%s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			        ((char *)(moduleName) ? (char *)(moduleName)
-+                                 : (char *)("")),
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+              else
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+
-+	      if (ConditionalBreakpoint[i])
-+		 DBGPrint("if (%s) is TRUE\n", BreakCondition[i]);
-+
-+	      SetDebugRegisters();
-+	      return 1;
-+	   }
-+	}
-+	DBGPrint("no breakpoint available\n");
-+     }
-+     else
-+	DBGPrint("breakpoint parameters invalid\n");
-+     return 1;
-+
-+}
-+
-+
-+/* BR4 */
-+
-+unsigned long breakpointRead4(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address, i, r;
-+     register unsigned char *pB, *symbolName;
-+     register unsigned char *moduleName;
-+     unsigned long valid;
-+     register int c = get_processor_id();
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      pB = cmd;
-+	      EvaluateExpression(stackFrame, &cmd, &valid);
-+	      if (valid)
-+	      {
-+		 ConditionalBreakpoint[i] = 1;
-+		 for (r = 0; (r < 255) && (*pB); r++)
-+		    BreakCondition[i][r] = *pB++;
-+		 BreakCondition[i][r] = '\0';
-+	      }
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = address;
-+	      BreakType[i] = BREAK_READWRITE;
-+	      BreakLength[i] = FOUR_BYTE_FIELD;
-+	      symbolName = GetSymbolFromValue(address, &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	      moduleName = GetModuleInfoFromSymbolValue(address, &modbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+              if (moduleName)
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s|%s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			        ((char *)(moduleName) ? (char *)(moduleName)
-+                                 : (char *)("")),
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+              else
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+
-+	      if (ConditionalBreakpoint[i])
-+		 DBGPrint("if (%s) is TRUE\n", BreakCondition[i]);
-+
-+	      SetDebugRegisters();
-+	      return 1;
-+	   }
-+	}
-+	DBGPrint("no breakpoint available\n");
-+     }
-+     else
-+	DBGPrint("breakpoint parameters invalid\n");
-+     return 1;
-+
-+}
-+
-+
-+/* BR */
-+
-+unsigned long breakpointRead(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address, i, r;
-+     register unsigned char *pB, *symbolName;
-+     register unsigned char *moduleName;
-+     unsigned long valid;
-+     register int c = get_processor_id();
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      pB = cmd;
-+	      EvaluateExpression(stackFrame, &cmd, &valid);
-+	      if (valid)
-+	      {
-+		 ConditionalBreakpoint[i] = 1;
-+		 for (r = 0; (r < 255) && (*pB); r++)
-+		    BreakCondition[i][r] = *pB++;
-+		 BreakCondition[i][r] = '\0';
-+	      }
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = address;
-+	      BreakType[i] = BREAK_READWRITE;
-+	      BreakLength[i] = ONE_BYTE_FIELD;
-+	      symbolName = GetSymbolFromValue(address, &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	      moduleName = GetModuleInfoFromSymbolValue(address, &modbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+              if (moduleName)
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s|%s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			        ((char *)(moduleName) ? (char *)(moduleName)
-+                                 : (char *)("")),
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+              else
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+
-+	      if (ConditionalBreakpoint[i])
-+		 DBGPrint("if (%s) is TRUE\n", BreakCondition[i]);
-+
-+	      SetDebugRegisters();
-+	      return 1;
-+	   }
-+	}
-+	DBGPrint("no breakpoint available\n");
-+     }
-+     else
-+	DBGPrint("breakpoint parameters invalid\n");
-+     return 1;
-+
-+}
-+
-+/* BI1 */
-+
-+unsigned long breakpointIO1(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address, i, r;
-+     register unsigned char *pB, *symbolName;
-+     register unsigned char *moduleName;
-+     unsigned long valid;
-+     register int c = get_processor_id();
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      pB = cmd;
-+	      EvaluateExpression(stackFrame, &cmd, &valid);
-+	      if (valid)
-+	      {
-+		 ConditionalBreakpoint[i] = 1;
-+		 for (r = 0; (r < 255) && (*pB); r++)
-+		    BreakCondition[i][r] = *pB++;
-+		 BreakCondition[i][r] = '\0';
-+	      }
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = address;
-+	      BreakType[i] = BREAK_IOPORT;
-+	      BreakLength[i] = ONE_BYTE_FIELD;
-+	      symbolName = GetSymbolFromValue(address, &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	      moduleName = GetModuleInfoFromSymbolValue(address, &modbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+              if (moduleName)
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s|%s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			        ((char *)(moduleName) ? (char *)(moduleName)
-+                                 : (char *)("")),
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+              else
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+
-+	      if (ConditionalBreakpoint[i])
-+		 DBGPrint("if (%s) is TRUE\n", BreakCondition[i]);
-+
-+	      SetDebugRegisters();
-+	      return 1;
-+	   }
-+	}
-+	DBGPrint("no breakpoint available\n");
-+     }
-+     else
-+	DBGPrint("breakpoint parameters invalid\n");
-+     return 1;
-+
-+}
-+
-+/* BI2 */
-+
-+unsigned long breakpointIO2(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address, i, r;
-+     register unsigned char *pB, *symbolName;
-+     register unsigned char *moduleName;
-+     unsigned long valid;
-+     register int c = get_processor_id();
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      pB = cmd;
-+	      EvaluateExpression(stackFrame, &cmd, &valid);
-+	      if (valid)
-+	      {
-+		 ConditionalBreakpoint[i] = 1;
-+		 for (r = 0; (r < 255) && (*pB); r++)
-+		    BreakCondition[i][r] = *pB++;
-+		 BreakCondition[i][r] = '\0';
-+	      }
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = address;
-+	      BreakType[i] = BREAK_IOPORT;
-+	      BreakLength[i] = TWO_BYTE_FIELD;
-+	      symbolName = GetSymbolFromValue(address, &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	      moduleName = GetModuleInfoFromSymbolValue(address, &modbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+              if (moduleName)
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s|%s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			        ((char *)(moduleName) ? (char *)(moduleName)
-+                                 : (char *)("")),
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+              else
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+
-+	      if (ConditionalBreakpoint[i])
-+		 DBGPrint("if (%s) is TRUE\n", BreakCondition[i]);
-+
-+	      SetDebugRegisters();
-+	      return 1;
-+	   }
-+	}
-+	DBGPrint("no breakpoint available\n");
-+     }
-+     else
-+	DBGPrint("breakpoint parameters invalid\n");
-+     return 1;
-+
-+}
-+
-+/* BI4 */
-+
-+unsigned long breakpointIO4(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address, i, r;
-+     register unsigned char *pB, *symbolName;
-+     register unsigned char *moduleName;
-+     unsigned long valid;
-+     register int c = get_processor_id();
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      pB = cmd;
-+	      EvaluateExpression(stackFrame, &cmd, &valid);
-+	      if (valid)
-+	      {
-+		 ConditionalBreakpoint[i] = 1;
-+		 for (r = 0; (r < 255) && (*pB); r++)
-+		    BreakCondition[i][r] = *pB++;
-+		 BreakCondition[i][r] = '\0';
-+	      }
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = address;
-+	      BreakType[i] = BREAK_IOPORT;
-+	      BreakLength[i] = FOUR_BYTE_FIELD;
-+	      symbolName = GetSymbolFromValue(address, &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	      moduleName = GetModuleInfoFromSymbolValue(address, &modbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+              if (moduleName)
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s|%s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			        ((char *)(moduleName) ? (char *)(moduleName)
-+                                 : (char *)("")),
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+              else
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+
-+	      if (ConditionalBreakpoint[i])
-+		 DBGPrint("if (%s) is TRUE\n", BreakCondition[i]);
-+
-+	      SetDebugRegisters();
-+	      return 1;
-+	   }
-+	}
-+	DBGPrint("no breakpoint available\n");
-+     }
-+     else
-+	DBGPrint("breakpoint parameters invalid\n");
-+     return 1;
-+
-+}
-+
-+/* BI */
-+
-+unsigned long breakpointIO(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address, i, r;
-+     register unsigned char *pB, *symbolName;
-+     register unsigned char *moduleName;
-+     unsigned long valid;
-+     register int c = get_processor_id();
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (valid)
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      pB = cmd;
-+	      EvaluateExpression(stackFrame, &cmd, &valid);
-+	      if (valid)
-+	      {
-+		 ConditionalBreakpoint[i] = 1;
-+		 for (r = 0; (r < 255) && (*pB); r++)
-+		    BreakCondition[i][r] = *pB++;
-+		 BreakCondition[i][r] = '\0';
-+	      }
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = address;
-+	      BreakType[i] = BREAK_IOPORT;
-+	      BreakLength[i] = ONE_BYTE_FIELD;
-+	      symbolName = GetSymbolFromValue(address, &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	      moduleName = GetModuleInfoFromSymbolValue(address, &modbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+              if (moduleName)
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s|%s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			        ((char *)(moduleName) ? (char *)(moduleName)
-+                                 : (char *)("")),
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+              else
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+
-+	      if (ConditionalBreakpoint[i])
-+		 DBGPrint("if (%s) is TRUE\n", BreakCondition[i]);
-+
-+	      SetDebugRegisters();
-+	      return 1;
-+	   }
-+	}
-+	DBGPrint("no breakpoint available\n");
-+     }
-+     else
-+	DBGPrint("breakpoint parameters invalid\n");
-+     return 1;
-+
-+}
-+
-+/* B */
-+
-+unsigned long breakpointExecute(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long address, i, r;
-+     register unsigned char *pB, *symbolName;
-+     register unsigned char *moduleName;
-+     unsigned long valid;
-+     register int c = get_processor_id();
-+
-+     cmd = &cmd[parser->debugCommandNameLength];
-+     while (*cmd && *cmd == ' ')
-+        cmd++;
-+
-+     address = EvaluateExpression(stackFrame, &cmd, &valid);
-+     if (!valid)
-+     {
-+        register int found = 0;
-+
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (BreakReserved[i])
-+	   {
-+	      symbolName = GetSymbolFromValue(BreakPoints[i], &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	      moduleName = GetModuleInfoFromSymbolValue(BreakPoints[i],
-+                                           &modbuf[c][0], MAX_SYMBOL_LEN);
-+              if (moduleName)
-+	         DBGPrint("Break %i is at 0x%08X (%s %s) %s|%s\n",
-+				(int)i,
-+				(unsigned)BreakPoints[i],
-+				BreakDescription[(BreakType[i] & 3)],
-+				BreakLengthDescription[(BreakLength[i] & 3)],
-+			        ((char *)(moduleName) ? (char *)(moduleName)
-+                                : (char *)("")),
-+			        ((char *)(symbolName) ? (char *)(symbolName)
-+                                : (char *)("")));
-+              else
-+	         DBGPrint("Break %i is at 0x%08X (%s %s) %s\n",
-+				(int)i,
-+				(unsigned)BreakPoints[i],
-+				BreakDescription[(BreakType[i] & 3)],
-+				BreakLengthDescription[(BreakLength[i] & 3)],
-+			        ((char *)(symbolName) ? (char *)(symbolName)
-+                                : (char *)("")));
-+
-+	      if (ConditionalBreakpoint[i])
-+		 DBGPrint("if (%s) is TRUE\n", BreakCondition[i]);
-+              found = 1;
-+	   }
-+	}
-+        if (!found)
-+           DBGPrint("no breakpoints currently defined\n");
-+
-+     }
-+     else
-+     {
-+	for (i = 0; i < 4; i++)
-+	{
-+	   if (!BreakReserved[i])
-+	   {
-+	      pB = cmd;
-+	      EvaluateExpression(stackFrame, &cmd, &valid);
-+	      if (valid)
-+	      {
-+		 ConditionalBreakpoint[i] = 1;
-+		 for (r = 0; r < 255 && *pB; r++)
-+		    BreakCondition[i][r] = *pB++;
-+		 BreakCondition[i][r] = '\0';
-+	      }
-+	      BreakReserved[i] = 1;
-+	      BreakPoints[i] = address;
-+	      BreakType[i] = BREAK_EXECUTE;
-+	      BreakLength[i] = ONE_BYTE_FIELD;
-+	      symbolName = GetSymbolFromValue(address, &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	      moduleName = GetModuleInfoFromSymbolValue(address, &modbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+              if (moduleName)
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s|%s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			        ((char *)(moduleName) ? (char *)(moduleName)
-+                                 : (char *)("")),
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+              else
-+	         DBGPrint("breakpoint %i set to 0x%08X (%s %s) %s\n",
-+				 (int)i,
-+				 (unsigned)BreakPoints[i],
-+				 BreakDescription[(BreakType[i] & 3)],
-+				 BreakLengthDescription[(BreakLength[i] & 3)],
-+			         ((char *)(symbolName) ? (char *)(symbolName)
-+                                 : (char *)("")));
-+
-+	      if (ConditionalBreakpoint[i])
-+		 DBGPrint("if (%s) is TRUE\n", BreakCondition[i]);
-+
-+	      SetDebugRegisters();
-+	      return 1;
-+	   }
-+	}
-+	DBGPrint("no breakpoint available\n");
-+     }
-+     return 1;
-+
-+}
-+
-+/* BST */
-+
-+unsigned long breakpointShowTemp(unsigned char *cmd,
-+			StackFrame *stackFrame, unsigned long Exception,
-+			DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long i;
-+     register unsigned char *symbolName;
-+     register unsigned char *moduleName;
-+     register int found = 0;
-+     register int c = get_processor_id();
-+
-+     for (i = 0; i < 4; i++)
-+     {
-+	if (BreakReserved[i] && BreakTemp[i])
-+	{
-+	   symbolName = GetSymbolFromValue(BreakPoints[i], &symbuf[c][0],
-+                                           MAX_SYMBOL_LEN);
-+	   moduleName = GetModuleInfoFromSymbolValue(BreakPoints[i],
-+                                           &modbuf[c][0], MAX_SYMBOL_LEN);
-+           if (moduleName)
-+	      DBGPrint("Break %i is at 0x%08X (%s %s) %s|%s [%s]\n",
-+				(int)i,
-+				(unsigned)BreakPoints[i],
-+				BreakDescription[(BreakType[i] & 3)],
-+				BreakLengthDescription[(BreakLength[i] & 3)],
-+			       ((char *)(moduleName) ? (char *)(moduleName)
-+                                : (char *)("")),
-+			        ((char *)(symbolName) ? (char *)(symbolName)
-+                                : (char *)("")),
-+				BreakGo[i] ? "GO" : BreakProceed[i]
-+                                ? "PROCEED" : "");
-+           else
-+	      DBGPrint("Break %i is at 0x%08X (%s %s) %s [%s]\n",
-+				(int)i,
-+				(unsigned)BreakPoints[i],
-+				BreakDescription[(BreakType[i] & 3)],
-+				BreakLengthDescription[(BreakLength[i] & 3)],
-+			        ((char *)(symbolName) ? (char *)(symbolName)
-+                                : (char *)("")),
-+				BreakGo[i] ? "GO" : BreakProceed[i]
-+                                ? "PROCEED" : "");
-+	   if (ConditionalBreakpoint[i])
-+	      DBGPrint("if (%s) is TRUE\n", BreakCondition[i]);
-+
-+           found = 1;
-+	}
-+     }
-+     if (!found)
-+        DBGPrint("no temporary breakpoints defined\n");
-+
-+     return 1;
-+
-+}
-+
-+unsigned long displayProcessorStatusHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    DBGPrint("displays active processors and their current state\n");
-+    return 1;
-+}
-+
-+unsigned long displayProcessorStatus(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser)
-+{
-+     register unsigned long i;
-+
-+     for (i = 0; i < MAX_PROCESSORS; i++)
-+     {
-+        if (cpu_online(i))
-+        {
-+	   DBGPrint("Processor: (%i)  State:  %s\n",
-+	              i, procState[ProcessorState[i] & 0xF]);
-+        }
-+     }
-+     return 1;
-+}
-+
-+void displayMTRRRegisters(void)
-+{
-+    register int i;
-+    unsigned long base1, base2;
-+    unsigned long mask1, mask2;
-+    extern unsigned long cpu_mttr_on(void);
-+
-+    if (cpu_mttr_on())
-+    {
-+       DBGPrint("memory type range registers\n");
-+       for (i = 0; i < 8; i++)
-+       {
-+	  ReadMSR(MTRR_BASE_REGS[i], &base1, &base2);
-+	  ReadMSR(MTRR_MASK_VALUES[i], &mask1, &mask2);
-+	  DBGPrint("MTRR_BASE_%i  %08X:%08X   MTRR_MASK_%i  %08X:%08X\n",
-+			   (int)i,
-+                           (unsigned)base1, (unsigned)base2,
-+                           (int)i,
-+                           (unsigned)mask1, (unsigned)mask2);
-+       }
++       moduleName = GetModuleInfoFromSymbolValue((unsigned long) val, &modbuf[c][0],
++                                                 MAX_SYMBOL_LEN);
++       if (moduleName)
++          sprintf(NoNameBuffer, "%s|%s=%08X", moduleName, symbolName,
++                 (unsigned)val);
++       else
++          sprintf(NoNameBuffer, "%s=%08X", symbolName, (unsigned)val);
 +    }
 +    else
-+       DBGPrint("memory type range registers are Pentium Pro/II/Xeon and above\n");
-+    return;
++       sprintf(NoNameBuffer, "%08X", (unsigned)val);
++
++    return NoNameBuffer;
++
 +}
 +
-+void DisplayGDT(unsigned char *GDT_ADDRESS)
++unsigned char *output_jmp_address(StackFrame *stackFrame, long val, long *delta)
 +{
 +
-+    register int i, r;
-+    unsigned long count;
-+    unsigned long gdt_pointer;
-+    unsigned short gdt_index;
-+    unsigned char *p;
-+    unsigned char GDTR[8];
-+    GDT *gdt;
-+    TSS *tss;
-+    union
++    unsigned char *symbolName;
++    unsigned char *moduleName;
++    long va = (long) VirtualAddress;
++    long v;
++    long segment, offset, sym_offset = 0;
++    register int c = get_processor_id();
++
++    if (delta)
++      *delta = 0;
++
++    if (!stackFrame)
++       return NoNameBuffer;
++
++    if ((!strncmp(ubuf, "JBE", 3) &&
++           ((stackFrame->tSystemFlags & ZF_FLAG) ||
++            (stackFrame->tSystemFlags & CF_FLAG))) ||
++
++	(!strncmp(ubuf, "JCXZ", 4) &&
++           (!stackFrame->tECX)) ||
++
++	(!strncmp(ubuf, "JC", 2) &&
++           (stackFrame->tSystemFlags & CF_FLAG)) ||
++
++	(!strncmp(ubuf, "JLE", 3) &&
++           ((stackFrame->tSystemFlags & ZF_FLAG) ||
++           ((stackFrame->tSystemFlags & ~SF_FLAG) !=
++            (stackFrame->tSystemFlags & ~OF_FLAG)))) ||
++
++	(!strncmp(ubuf, "JL", 2) &&
++           ((stackFrame->tSystemFlags & ~SF_FLAG) !=
++            (stackFrame->tSystemFlags & ~OF_FLAG))) ||
++
++	(!strncmp(ubuf, "JMP", 3)) ||
++
++	(!strncmp(ubuf, "JGE", 3) &&
++           ((stackFrame->tSystemFlags & ~SF_FLAG) ==
++            (stackFrame->tSystemFlags & ~OF_FLAG))) ||
++
++	(!strncmp(ubuf, "JG", 2) &&
++           ((!(stackFrame->tSystemFlags & ZF_FLAG)) &&
++            ((stackFrame->tSystemFlags & ~SF_FLAG) ==
++            (stackFrame->tSystemFlags & ~OF_FLAG)))) ||
++
++	(!strncmp(ubuf, "JNBE", 4) &&
++            (!(stackFrame->tSystemFlags & CF_FLAG)) &&
++            (!(stackFrame->tSystemFlags & ZF_FLAG))) ||
++
++	(!strncmp(ubuf, "JNO", 3) &&
++           (!(stackFrame->tSystemFlags & OF_FLAG))) ||
++
++	(!strncmp(ubuf, "JNC", 3) &&
++           (!(stackFrame->tSystemFlags & CF_FLAG))) ||
++
++	(!strncmp(ubuf, "JNZ", 3) &&
++           (!(stackFrame->tSystemFlags & ZF_FLAG))) ||
++
++	(!strncmp(ubuf, "JNS", 3) &&
++           (!(stackFrame->tSystemFlags & SF_FLAG))) ||
++
++	(!strncmp(ubuf, "JO", 2) &&
++           (stackFrame->tSystemFlags & OF_FLAG)) ||
++
++	(!strncmp(ubuf, "JPE", 3) &&
++           (stackFrame->tSystemFlags & PF_FLAG)) ||
++
++	(!strncmp(ubuf, "JPO", 3) &&
++           (!(stackFrame->tSystemFlags & PF_FLAG))) ||
++
++	(!strncmp(ubuf, "JS", 2) &&
++           (stackFrame->tSystemFlags & SF_FLAG)) ||
++
++	(!strncmp(ubuf, "JZ", 2) &&
++           (stackFrame->tSystemFlags & ZF_FLAG)) ||
++
++	(!strncmp(ubuf, "LOOPNE", 6) &&
++           (stackFrame->tECX) &&
++           (!(stackFrame->tSystemFlags & ZF_FLAG))) ||
++
++	(!strncmp(ubuf, "LOOPE", 5) &&
++           (stackFrame->tECX) &&
++           (stackFrame->tSystemFlags & ZF_FLAG)) ||
++
++	(!strncmp(ubuf, "LOOP", 4)))
 +    {
-+       GDT lgdt;
-+       unsigned char data[8];
-+    } lg;
-+
-+    ReadGDTR((unsigned long *)&GDTR[0]);
-+    gdt_index = mdb_getword((unsigned long)&GDTR[0], 2);
-+    gdt_pointer = mdb_getword((unsigned long)&GDTR[2], 4);
-+
-+    DBGPrint("GDTR: %04X:%08X  Processor: %i\n",
-+                  (unsigned)gdt_index, (unsigned)gdt_pointer,
-+                  (int)get_processor_id());
-+
-+    count = 0;
-+    gdt_index = (gdt_index + 7) / 8;
-+    p = (unsigned char *) gdt_pointer;
-+    for (i = 0; i < gdt_index; i++)
-+    {
-+       if (DBGPrint("%08X (%04i):", (unsigned) count, (int)i)) return;
-+       for (r = 0; r < 8; r++)
++       jmp_active = 1;
++       if (SegmentSize == 32)
 +       {
-+	  lg.data[r] = (unsigned char) mdb_getword((unsigned long)&p[r], 1);
-+	  if (DBGPrint(" %02X", (unsigned char) lg.data[r])) return;
-+       }
-+
-+       gdt = (GDT *) &lg.lgdt;
-+       if ((gdt->GDTType & 0x92) == 0x92)
-+       {
-+	  if (DBGPrint("  b:%08X lim:%08X t:%02X ot:%02X",
-+		   ((gdt->Base3 << 24) | (gdt->Base2 << 16) |
-+                   (gdt->Base1)),
-+		   (((gdt->OtherType & 0xF) << 16) | (gdt->Limit)),
-+		   gdt->GDTType, gdt->OtherType)) return;
-+       }
-+       else if ((gdt->GDTType & 0x89) == 0x89)
-+       {
-+	  tss = (TSS *) gdt;
-+	  if (DBGPrint("  tss:%08X lim:%04X t:%02X ot:%02X",
-+		      ((tss->TSSBase3 << 24) | (tss->TSSBase2 << 16) |
-+                      (tss->TSSBase1)),
-+		      tss->TSSLimit, tss->TSSType,
-+                      tss->TSSOtherType)) return;
-+       }
-+       if (DBGPrint("\n")) return;
-+
-+       p = (void *)((unsigned long) p + (unsigned long) 8);
-+       count += 8;
-+    }
-+
-+    return;
-+
-+}
-+
-+void DisplayIDT(unsigned char *IDT_ADDRESS)
-+{
-+
-+    register int i, r;
-+    unsigned long count;
-+    unsigned long idt_pointer;
-+    unsigned short idt_index;
-+    unsigned char *p;
-+    unsigned char IDTR[8];
-+    IDT *idt;
-+    TSS_GATE *tss_gate;
-+    union
-+    {
-+       IDT lidt;
-+       unsigned char data[8];
-+    } id;
-+
-+    ReadIDTR((unsigned long *)&IDTR[0]);
-+    idt_index = mdb_getword((unsigned long)&IDTR[0], 2);
-+    idt_pointer = mdb_getword((unsigned long)&IDTR[2], 4);
-+
-+    DBGPrint("IDTR: %04X:%08X  Processor: %i\n",
-+                    (unsigned)idt_index, (unsigned)idt_pointer,
-+                    (int)get_processor_id());
-+
-+    count = 0;
-+    idt_index = (idt_index + 7) / 8;
-+    p = (unsigned char *) idt_pointer;
-+    for (i = 0; i < idt_index; i++)
-+    {
-+       if (DBGPrint("%08X (%04i):", (unsigned)count, (int)i)) return;
-+       for (r = 0; r < 8; r++)
-+       {
-+	   id.data[r] = mdb_getword((unsigned long)&p[r], 1);
-+	   if (DBGPrint(" %02X", (unsigned char) id.data[r])) return;
-+       }
-+       idt = (IDT *) &id.lidt;
-+       if ((idt->IDTFlags & 0x8E) == 0x8E)
-+       {
-+	  if (DBGPrint("  b:%08X s:%04X t:%02X ot:%02X",
-+			     ((idt->IDTHigh << 16) | (idt->IDTLow)),
-+			     idt->IDTSegment,
-+			     idt->IDTFlags, idt->IDTSkip)) return;
-+
-+       }
-+       else if ((idt->IDTFlags & 0x85) == 0x85)
-+       {
-+	  tss_gate = (TSS_GATE *) idt;
-+	  if (DBGPrint("  task_gate: %04X t:%02X",
-+		     tss_gate->TSSSelector, tss_gate->TSSFlags)) return;
-+       }
-+       if (DBGPrint("\n")) return;
-+
-+       p = (void *)((unsigned long) p + (unsigned long) 8);
-+       count += 8;
-+    }
-+
-+    return;
-+
-+}
-+
-+void DisplayTSS(StackFrame *stackFrame)
-+{
-+
-+    unsigned long i, f = 0;
-+
-+    DBGPrint("Task State Segment at 0x%08X\n",
-+        (unsigned)stackFrame);
-+
-+    DBGPrint("LDT: %08X  CR3: %08X  IOMAP: %08X  BLINK: %08X\n",
-+	(unsigned)stackFrame->tLDT,
-+        (unsigned)stackFrame->tCR3,
-+        (unsigned)stackFrame->tIOMap,
-+        (unsigned)stackFrame->tReserved[0]);
-+
-+    DBGPrint("CS: %04X  DS: %04X  ES: %04X  FS: %04X  GS: %04X  SS: %04X\n",
-+       (unsigned)stackFrame->tCS,
-+       (unsigned)stackFrame->tDS,
-+       (unsigned)stackFrame->tES,
-+       (unsigned)stackFrame->tFS,
-+       (unsigned)stackFrame->tGS,
-+       (unsigned)stackFrame->tSS);
-+
-+    DBGPrint("EAX: %08X  EBX: %08X  ECX: %08X  EDX: %08X\n",
-+       (unsigned)stackFrame->tEAX,
-+       (unsigned)stackFrame->tEBX,
-+       (unsigned)stackFrame->tECX,
-+       (unsigned)stackFrame->tEDX);
-+
-+    DBGPrint("ESI: %08X  EDI: %08X  ESP: %08X  EBP: %08X\n",
-+       (unsigned)stackFrame->tESI,
-+       (unsigned)stackFrame->tEDI,
-+       (unsigned)stackFrame->tESP,
-+       (unsigned)stackFrame->tEBP);
-+
-+    DBGPrint("EIP: %08X  FLAGS: %08X ",
-+       (unsigned)stackFrame->tEIP,
-+       (unsigned)stackFrame->tSystemFlags);
-+
-+    DBGPrint(" (");
-+    for (i = 0; i < 22; i++)
-+    {
-+       if (IA32Flags[i])
-+       {
-+	  if ((stackFrame->tSystemFlags >> i) & 0x00000001)
-+	  {
-+	     if (f)
-+		DBGPrint(" ");
-+	     f = 1;
-+	     DBGPrint("%s", IA32Flags[i]);
-+	  }
-+       }
-+    }
-+    DBGPrint(")\n");
-+
-+
-+}
-+
-+void DisplayGeneralRegisters(StackFrame *stackFrame)
-+{
-+
-+    unsigned long i, f = 0;
-+
-+    DBGPrint("EAX: %08X ", (unsigned)stackFrame->tEAX);
-+    DBGPrint("EBX: %08X ", (unsigned)stackFrame->tEBX);
-+    DBGPrint("ECX: %08X ", (unsigned)stackFrame->tECX);
-+    DBGPrint("EDX: %08X\n", (unsigned)stackFrame->tEDX);
-+    DBGPrint("ESI: %08X ", (unsigned)stackFrame->tESI);
-+    DBGPrint("EDI: %08X ", (unsigned)stackFrame->tEDI);
-+    DBGPrint("ESP: %08X ", (unsigned)stackFrame->tESP);
-+    DBGPrint("EBP: %08X\n", (unsigned)stackFrame->tEBP);
-+
-+    if (segment_toggle)
-+       DisplaySegmentRegisters(stackFrame);
-+
-+    DBGPrint("EIP: %08X ", (unsigned)stackFrame->tEIP);
-+    DBGPrint("ORGEAX: %08X ", (unsigned)stackFrame->tReserved[1]);
-+    DBGPrint("EFLAGS: %08X ", (unsigned)stackFrame->tSystemFlags);
-+
-+    DBGPrint(" (");
-+    for (i = 0; i < 22; i++)
-+    {
-+       if (IA32Flags[i])
-+       {
-+	  if ((stackFrame->tSystemFlags >> i) & 0x00000001)
-+	  {
-+	     if (f)
-+		DBGPrint(" ");
-+	     f = 1;
-+	     DBGPrint("%s", IA32Flags[i]);
-+	  }
-+       }
-+    }
-+    DBGPrint(")\n");
-+
-+}
-+
-+void DisplaySegmentRegisters(StackFrame *stackFrame)
-+{
-+
-+    DBGPrint("CS: %04X ", (unsigned)stackFrame->tCS);
-+    DBGPrint("DS: %04X ", (unsigned)stackFrame->tDS);
-+    DBGPrint("ES: %04X ", (unsigned)stackFrame->tES);
-+    DBGPrint("FS: %04X ", (unsigned)stackFrame->tFS);
-+    DBGPrint("GS: %04X ", (unsigned)stackFrame->tGS);
-+    DBGPrint("SS: %04X\n", (unsigned)stackFrame->tSS);
-+
-+}
-+
-+void DisplayControlRegisters(unsigned long processor, StackFrame *stackFrame)
-+{
-+
-+    unsigned char GDTR[8], IDTR[8];
-+
-+    if (stackFrame) {};
-+
-+    DBGPrint("CR0: %08X ", (unsigned)ReadCR0());
-+    DBGPrint("CR2: %08X ", (unsigned)ReadCR2());
-+    DBGPrint("CR3: %08X ", (unsigned)ReadCR3());
-+    DBGPrint("CR4: %08X\n", (unsigned)ReadCR4());
-+    DBGPrint("DR0: %08X ", (unsigned)ReadDR0());
-+    DBGPrint("DR1: %08X ", (unsigned)ReadDR1());
-+    DBGPrint("DR2: %08X ", (unsigned)ReadDR2());
-+    DBGPrint("DR3: %08X\n", (unsigned)ReadDR3());
-+    DBGPrint("DR6: %08X ", (unsigned)ReadDR6());
-+    DBGPrint("DR7: %08X ", (unsigned)ReadDR7());
-+    DBGPrint("VR6: %08X ", (unsigned)CurrentDR6[processor]);
-+    DBGPrint("VR7: %08X\n", (unsigned)CurrentDR7);
-+
-+    ReadGDTR((unsigned long *)&GDTR[0]);
-+    ReadIDTR((unsigned long *)&IDTR[0]);
-+    DBGPrint("GDTR: %04X:%08X IDTR: %04X:%08X  LDTR: %04X  TR: %04X\n",
-+			(unsigned)*(unsigned short *)&GDTR[0],
-+                        (unsigned)*(unsigned long *)&GDTR[2],
-+			(unsigned)*(unsigned short *)&IDTR[0],
-+                        (unsigned)*(unsigned long *)&IDTR[2],
-+			(unsigned)ReadLDTR(),
-+                        (unsigned)ReadTR());
-+
-+}
-+
-+unsigned long ConsoleDisplayBreakReason(StackFrame *stackFrame,
-+                                        unsigned long Exception,
-+                                        unsigned long processor,
-+                                        unsigned long lastCommand)
-+{
-+       if (last_mdb_oops)
-+          DBGPrint("\nKernel Oops reported (%s)\n", last_mdb_oops);
-+
-+       if ((CurrentDR6[processor] & B0_BIT) && (CurrentDR7 & G0_BIT) &&
-+            Exception == 1)
-+       {
-+	  if (BreakGo[0])
++	  symbolName = GetSymbolFromValueWithOffset(val + va, &sym_offset,
++                                            &symbuf[c][0], MAX_SYMBOL_LEN);
++	  if (symbolName)
 +          {
-+	     DBGPrint("\nBreak at 0x%08X due to - GO breakpoint (0)\n",
-+				 (unsigned)stackFrame->tEIP);
-+             return 1;
-+          }
-+	  else
-+          if (BreakProceed[0])
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - Proceed breakpoint (0)\n",
-+				 (unsigned)stackFrame->tEIP);
-+             return 1;
-+          }
-+	  else
-+          if (BreakPoints[0] && ConditionalBreakpoint[0])
-+	  {
-+	     DBGPrint("\nBreak at 0x%08X due to - breakpoint 0 (%s)\n",
-+				 (unsigned)stackFrame->tEIP,
-+                                 BreakDescription[(BreakType[0] & 3)]);
-+	     DBGPrint("expr: %s was TRUE\n", BreakCondition[0]);
-+             return 1;
-+	  }
-+	  else
-+          if (BreakPoints[0])
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - breakpoint 0 (%s)\n",
-+				 (unsigned)stackFrame->tEIP,
-+                                 BreakDescription[(BreakType[0] & 3)]);
-+             return 1;
-+          }
-+          else
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - INT1 breakpoint (B0)\n",
-+				 (unsigned)stackFrame->tEIP);
-+             return 1;  /* not one of ours */
-+          }
-+       }
-+       else
-+       if ((CurrentDR6[processor] & B1_BIT) && (CurrentDR7 & G1_BIT) &&
-+            Exception == 1)
-+       {
-+	  if (BreakGo[1])
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - GO breakpoint (1)\n",
-+				 (unsigned)stackFrame->tEIP);
-+             return 1;
-+          }
-+	  else
-+          if (BreakProceed[1])
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - Proceed breakpoint (1)\n",
-+				 (unsigned)stackFrame->tEIP);
-+             return 1;
-+          }
-+	  else
-+          if (BreakPoints[1] && ConditionalBreakpoint[1])
-+	  {
-+	     DBGPrint("\nBreak at 0x%08X due to - breakpoint 1 (%s)\n",
-+				 (unsigned)stackFrame->tEIP,
-+                                 BreakDescription[(BreakType[1] & 3)]);
-+	     DBGPrint("expr: %s was TRUE\n", BreakCondition[1]);
-+             return 1;
-+	  }
-+	  else
-+          if (BreakPoints[1])
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - breakpoint 1 (%s)\n",
-+				 (unsigned)stackFrame->tEIP,
-+                                 BreakDescription[(BreakType[1] & 3)]);
-+             return 1;
-+          }
-+          else
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - INT1 breakpoint (B1)\n",
-+				 (unsigned)stackFrame->tEIP);
-+             return 1;  /* not one of ours */
-+          }
-+       }
-+       else
-+       if ((CurrentDR6[processor] & B2_BIT) && (CurrentDR7 & G2_BIT) &&
-+            Exception == 1)
-+       {
-+	  if (BreakGo[2])
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - GO breakpoint (2)\n",
-+				 (unsigned)stackFrame->tEIP);
-+             return 1;
-+          }
-+	  else
-+          if (BreakProceed[2])
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - Proceed breakpoint (2)\n",
-+				 (unsigned)stackFrame->tEIP);
-+             return 1;
-+          }
-+	  else
-+          if (BreakPoints[2] && ConditionalBreakpoint[2])
-+	  {
-+	     DBGPrint("\nBreak at 0x%08X due to - breakpoint 2 (%s)\n",
-+				 (unsigned)stackFrame->tEIP,
-+                                 BreakDescription[(BreakType[2] & 3)]);
-+	     DBGPrint("expr: %s was TRUE\n", BreakCondition[2]);
-+             return 1;
-+	  }
-+	  else
-+          if (BreakPoints[2])
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - breakpoint 2 (%s)\n",
-+				 (unsigned)stackFrame->tEIP,
-+                                 BreakDescription[(BreakType[2] & 3)]);
-+             return 1;
-+          }
-+          else
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - INT1 breakpoint (B2)\n",
-+				 (unsigned)stackFrame->tEIP);
-+             return 1;  /* not one of ours */
-+          }
-+       }
-+       else
-+       if ((CurrentDR6[processor] & B3_BIT) && (CurrentDR7 & G3_BIT) &&
-+            Exception == 1)
-+       {
-+	  if (BreakGo[3])
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - GO breakpoint (3)\n",
-+				 (unsigned)stackFrame->tEIP);
-+             return 1;
-+          }
-+	  else
-+          if (BreakProceed[3])
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - Proceed breakpoint (3)\n",
-+				 (unsigned)stackFrame->tEIP);
-+             return 1;
-+          }
-+	  else
-+          if (BreakPoints[3] && ConditionalBreakpoint[3])
-+	  {
-+	     DBGPrint("\nBreak at 0x%08X due to - breakpoint 3 (%s)\n",
-+				 (unsigned)stackFrame->tEIP,
-+                                 BreakDescription[(BreakType[3] & 3)]);
-+	     DBGPrint("expr: %s was TRUE\n", BreakCondition[3]);
-+             return 1;
-+	  }
-+	  else
-+          if (BreakPoints[3])
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - breakpoint 3 (%s)\n",
-+				 (unsigned)stackFrame->tEIP,
-+                                 BreakDescription[(BreakType[3] & 3)]);
-+             return 1;
-+          }
-+          else
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - INT1 breakpoint (B3)\n",
-+				 (unsigned)stackFrame->tEIP);
-+             return 1;  /* not one of ours */
-+          }
-+       }
-+       else
-+       {
-+	  /* if the last command was a Proceed that was converted into a */
-+	  /* single step command, report proceed single step */
-+	  if (lastCommandEntry == 'P' && Exception == 1)
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - Proceed (single step)\n",
-+                      (unsigned)stackFrame->tEIP);
-+             return 1;
-+          }
-+	  else
-+          if (lastCommandEntry == 'T' && Exception == 1)
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - Trace (single step)\n",
-+                      (unsigned)stackFrame->tEIP);
-+             return 1;
-+          }
-+          else
-+	  if (lastCommandEntry == K_F8 && Exception == 1)
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - Proceed (single step)\n",
-+                      (unsigned)stackFrame->tEIP);
-+             return 1;
-+          }
-+	  else
-+          if (lastCommandEntry == K_F7 && Exception == 1)
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - Trace (single step)\n",
-+                      (unsigned)stackFrame->tEIP);
-+             return 1;
-+          }
-+	  else
-+          if (lastCommandEntry == K_F6 && Exception == 1)
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - SSB (step til branch)\n",
-+                      (unsigned)stackFrame->tEIP);
-+             return 1;
-+          }
-+          else
-+          if (Exception == 3)  /* not our exception */
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - INT3 breakpoint\n",
-+				 (unsigned)stackFrame->tEIP);
-+             return 1;
-+          }
-+          else
-+          if (Exception == 1)  /* not our exception, must be gdb */
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - INT1 breakpoint\n",
-+				 (unsigned)stackFrame->tEIP);
-+             return 1;
-+          }
-+	  else
-+          if ((Exception < exceptions) &&
-+              ExceptionDescription[Exception % exceptions])
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - %s\n",
-+                    (unsigned)stackFrame->tEIP,
-+                    ExceptionDescription[Exception % exceptions]);
-+             return 1;
-+          }
-+          else
-+          {
-+	     DBGPrint("\nBreak at 0x%08X due to - %lu\n",
-+                    (unsigned)stackFrame->tEIP, Exception);
-+             return 1;
-+          }
-+       }
-+       DBGPrint("\nBreak at 0x%08X due to - Unknown Reason\n",
-+	        (unsigned)stackFrame->tEIP);
-+       return 1;
-+
-+}
-+
-+unsigned long ReasonHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser)
-+{
-+    DBGPrint("display break reason\n");
-+    return 1;
-+}
-+
-+unsigned long ReasonDisplay(unsigned char *cmd,
-+		    StackFrame *stackFrame, unsigned long Exception,
-+		    DEBUGGER_PARSER *parser)
-+{
-+     ConsoleDisplayBreakReason(stackFrame, Exception, get_processor_id(), 0);
-+     return 1;
-+}
-+
-+void ReadStackFrame(void *frame, StackFrame *sf, unsigned long processor)
-+{
-+   struct pt_regs *regs = frame;
-+
-+   sf->tCR3 = (unsigned long *)ReadCR3();
-+   sf->tEIP = regs->ip;
-+   sf->tSystemFlags = regs->flags;
-+   sf->tReserved[1] = regs->orig_ax;
-+   sf->tReserved[2] = (unsigned long)regs;
-+   sf->tEAX = regs->ax;
-+   sf->tECX = regs->cx;
-+   sf->tEDX = regs->dx;
-+   sf->tEBX = regs->bx;
-+   sf->tEBP = regs->bp;
-+   sf->tESI = regs->si;
-+   sf->tEDI = regs->di;
-+   sf->tES = (unsigned short)regs->es;
-+   sf->tCS = (unsigned short)regs->cs;
-+   sf->tDS = (unsigned short)regs->ds;
-+   sf->tFS = (ReadFS() & 0xFFFF);
-+   sf->tGS = (ReadGS() & 0xFFFF);
-+   sf->tLDT = (ReadLDTR() & 0xFFFF);
-+   if ((regs->cs & 0xffff) == __KERNEL_CS)
-+   {
-+      sf->tESP = (unsigned long)((unsigned long)regs + sizeof(struct pt_regs) - 2*4);
-+      asm ("pushl %%ss\n"
-+		   "popl %0\n"
-+                  :"=m" (sf->tSS));
-+      sf->tSS &= 0xFFFF;
-+   }
-+   else
-+   {
-+      sf->tESP = regs->sp;
-+      sf->tSS = (unsigned short)regs->ss;
-+   }
-+   /* save state. */
-+   memmove((void *)&ReferenceFrame[processor], sf, sizeof(StackFrame));
-+   return;
-+}
-+
-+void WriteStackFrame(void *frame, StackFrame *sf, unsigned long processor)
-+{
-+   struct pt_regs *regs = frame;
-+
-+   if (ReferenceFrame[processor].tEIP != sf->tEIP)
-+      regs->ip = sf->tEIP;
-+   if (ReferenceFrame[processor].tSystemFlags != sf->tSystemFlags)
-+      regs->flags = sf->tSystemFlags;
-+   if (ReferenceFrame[processor].tReserved[1] != sf->tReserved[1])
-+      regs->orig_ax = sf->tReserved[1];
-+   if (ReferenceFrame[processor].tEAX != sf->tEAX)
-+      regs->ax = sf->tEAX;
-+   if (ReferenceFrame[processor].tECX != sf->tECX)
-+      regs->cx = sf->tECX;
-+   if (ReferenceFrame[processor].tEDX != sf->tEDX)
-+      regs->dx = sf->tEDX;
-+   if (ReferenceFrame[processor].tEBX != sf->tEBX)
-+      regs->bx = sf->tEBX;
-+   if (ReferenceFrame[processor].tESP != sf->tESP)
-+      regs->sp = sf->tESP;
-+   if (ReferenceFrame[processor].tEBP != sf->tEBP)
-+      regs->bp = sf->tEBP;
-+   if (ReferenceFrame[processor].tESI != sf->tESI)
-+      regs->si = sf->tESI;
-+   if (ReferenceFrame[processor].tEDI != sf->tEDI)
-+      regs->di = sf->tEDI;
-+   if (ReferenceFrame[processor].tES != sf->tES)
-+      regs->es = sf->tES;
-+   if (ReferenceFrame[processor].tCS != sf->tCS)
-+      regs->cs = sf->tCS;
-+   if (ReferenceFrame[processor].tSS != sf->tSS)
-+      regs->ss = sf->tSS;
-+   if (ReferenceFrame[processor].tDS != sf->tDS)
-+      regs->ds = sf->tDS;
-+   return;
-+}
-+
-+void SetDebugRegisters(void)
-+{
-+   register int i;
-+
-+   for (i = 0; i < 4; i++)
-+   {
-+      switch (i)
-+      {
-+	 case 0:
-+	    if (BreakReserved[i])
-+	    {
-+	       CurrentDR7 &= 0xFFF0FFFF;
-+	       CurrentDR7 |= G0_BIT;
-+	       CurrentDR7 |= ((BreakType[i] << ((i * 4) + 16)) |
-+			      (BreakLength[i] << ((i * 4) + 18)));
-+	    }
-+	    else
-+	    {
-+	       CurrentDR7 &= 0xFFF0FFFF;
-+	       CurrentDR7 &= ~G0_BIT;
-+	       CurrentDR7 &= ~L0_BIT;
-+	    }
-+	    WriteDR0(BreakPoints[i]);
-+	    break;
-+
-+	 case 1:
-+	    if (BreakReserved[i])
-+	    {
-+	       CurrentDR7 &= 0xFF0FFFFF;
-+	       CurrentDR7 |= G1_BIT;
-+	       CurrentDR7 |= ((BreakType[i] << ((i * 4) + 16)) |
-+			      (BreakLength[i] << ((i * 4) + 18)));
-+	    }
-+	    else
-+	    {
-+	       CurrentDR7 &= 0xFF0FFFFF;
-+	       CurrentDR7 &= ~G1_BIT;
-+	       CurrentDR7 &= ~L1_BIT;
-+	    }
-+	    WriteDR1(BreakPoints[i]);
-+	    break;
-+
-+	 case 2:
-+	    if (BreakReserved[i])
-+	    {
-+	       CurrentDR7 &= 0xF0FFFFFF;
-+	       CurrentDR7 |= G2_BIT;
-+	       CurrentDR7 |= ((BreakType[i] << ((i * 4) + 16)) |
-+			      (BreakLength[i] << ((i * 4) + 18)));
-+	    }
-+	    else
-+	    {
-+	       CurrentDR7 &= 0xF0FFFFFF;
-+	       CurrentDR7 &= ~G2_BIT;
-+	       CurrentDR7 &= ~L2_BIT;
-+	    }
-+	    WriteDR2(BreakPoints[i]);
-+	    break;
-+
-+	 case 3:
-+	    if (BreakReserved[i])
-+	    {
-+	       CurrentDR7 &= 0x0FFFFFFF;
-+	       CurrentDR7 |= G3_BIT;
-+	       CurrentDR7 |= ((BreakType[i] << ((i * 4) + 16)) |
-+			      (BreakLength[i] << ((i * 4) + 18)));
-+	    }
-+	    else
-+	    {
-+	       CurrentDR7 &= 0x0FFFFFFF;
-+	       CurrentDR7 &= ~G3_BIT;
-+	       CurrentDR7 &= ~L3_BIT;
-+	    }
-+	    WriteDR3(BreakPoints[i]);
-+	    break;
-+
-+      }
-+   }
-+   return;
-+
-+}
-+
-+void LoadDebugRegisters(void)
-+{
-+
-+   register int i;
-+
-+   WriteDR6(0);  /* clear last exception status */
-+   for (i = 0; i < 4; i++)
-+   {
-+      switch (i)
-+      {
-+	 case 0:
-+	    if (BreakReserved[i])
-+	       WriteDR0(BreakPoints[i]);
-+	    break;
-+
-+	 case 1:
-+	    if (BreakReserved[i])
-+	       WriteDR1(BreakPoints[i]);
-+	    break;
-+
-+	 case 2:
-+	    if (BreakReserved[i])
-+	       WriteDR2(BreakPoints[i]);
-+	    break;
-+
-+	 case 3:
-+	    if (BreakReserved[i])
-+	       WriteDR3(BreakPoints[i]);
-+	    break;
-+      }
-+   }
-+   WriteDR7(CurrentDR7);  /* set breakpoint enable/disable state */
-+
-+}
-+
-+/*
-+ *   processor synchronization
-+ *
-+ *   We have to handle multiple cpus with active breakpoints
-+ *   attempting to access the debugger.  We also have to handle
-+ *   double faulted situations.
-+ *
-+ */
-+
-+unsigned long debug_lock(rlock_t *rlock, unsigned long p)
-+{
-+#if defined(CONFIG_SMP)
-+    if (!spin_trylock_irqsave((spinlock_t *)&rlock->lock, rlock->flags[p]))
-+    {
-+       if (rlock->processor == p)
-+       {
-+          rlock->count++;
-+#if MDB_DEBUG_DEBUGGER
-+          DBGPrint("%i: debug lock(++) count (%lu) state:%s\n",
-+                   rlock->count, (int)p, procState[ProcessorState[p] & 0xF]);
-+#endif
-+       }
-+       else
-+       {
-+#if MDB_DEBUG_DEBUGGER
-+          DBGPrint("%i: debug trylock FAILED state:%s\n",
-+                   (int)p, procState[ProcessorState[p] & 0xF]);
-+#endif
-+          while (1)
-+          {
-+             mdelay(1);
-+             ProcessorState[p] = PROCESSOR_HOLD;
-+             while (atomic_read(&focusActive) &&
-+                   !atomic_read(&traceProcessors[p]))
++	     moduleName = GetModuleInfoFromSymbolValue(val + va, &modbuf[c][0],
++                                                       MAX_SYMBOL_LEN);
++             if (moduleName)
 +             {
-+                cpu_relax();
++                if (sym_offset)
++	           sprintf(NoNameBuffer, "%s|%s+0x%X=%08X %c",
++                     moduleName, symbolName,
++                     (unsigned)sym_offset, (unsigned)(val + va),
++		     ((val + va) < va) ? 0x18 : 0x19);
++                else
++	           sprintf(NoNameBuffer, "%s|%s=%08X %c",
++                     moduleName, symbolName,
++                     (unsigned)(val + va),
++		     ((val + va) < va) ? 0x18 : 0x19);
 +             }
-+
-+             if (spin_trylock_irqsave((spinlock_t *)&rlock->lock,
-+                                      rlock->flags[p]))
-+                break;
++             else
++             {
++                if (sym_offset)
++	           sprintf(NoNameBuffer, "%s+0x%X=%08X %c", symbolName,
++                     (unsigned)sym_offset, (unsigned)(val + va),
++		     ((val + va) < va) ? 0x18 : 0x19);
++                else
++	           sprintf(NoNameBuffer, "%s=%08X %c", symbolName,
++                     (unsigned)(val + va),
++		     ((val + va) < va) ? 0x18 : 0x19);
++             }
 +          }
-+          ProcessorState[p] = PROCESSOR_DEBUG;
-+          rlock->processor = p;
-+
-+#if MDB_DEBUG_DEBUGGER
-+          DBGPrint("%i: debug spinlock SUCCESS state:%s\n",
-+                   (int)p, procState[ProcessorState[p] & 0xF]);
-+#endif
++	  else
++	     sprintf(NoNameBuffer, "%08X %c",
++                    (unsigned)(val + va),
++		    ((val + va) < va) ? 0x18 : 0x19);
 +       }
-+    }
-+    else
-+       rlock->processor = p;
-+
-+#if MDB_DEBUG_DEBUGGER
-+    DBGPrint("%i: debug lock SUCCESS state:%s\n",
-+             (int)p, procState[ProcessorState[p] & 0xF]);
-+#endif
-+#endif /* CONFIG_SMP */
-+    return 1;
-+}
-+
-+void debug_unlock(rlock_t *rlock, unsigned long p)
-+{
-+#if defined(CONFIG_SMP)
-+    if (rlock->processor != p)
-+    {
-+#if MDB_DEBUG_DEBUGGER
-+       DBGPrint("%i: debug unlock FAILED state:%s (%lu/%lu)\n",
-+                (int)p, procState[ProcessorState[p] & 0xF],
-+                 rlock->processor, p);
-+#endif
-+    }
-+
-+    if (rlock->count)
-+    {
-+       rlock->count--;
-+#if MDB_DEBUG_DEBUGGER
-+       DBGPrint("%i: debug unlock(--) count (%lu) state:%s\n",
-+                (int)p, rlock->count, procState[ProcessorState[p] & 0xF]);
-+#endif
-+    }
-+    else
-+    {
-+       rlock->processor = -1;
-+       spin_unlock_irqrestore((spinlock_t *)&rlock->lock, rlock->flags[p]);
-+    }
-+#if MDB_DEBUG_DEBUGGER
-+    DBGPrint("%i: debug unlock count (%lu) state:%s\n",
-+             (int)p, rlock->count, procState[ProcessorState[p] & 0xF]);
-+#endif
-+#endif /* CONFIG_SMP */
-+    return;
-+}
-+
-+unsigned long StopProcessorsExclSelf(unsigned long self)
-+{
-+#if defined(CONFIG_SMP)
-+   register unsigned long failed;
-+   register int i;
-+
-+#if MDB_DEBUG_DEBUGGER
-+   if (atomic_read(&debuggerActive) > 1)
-+   {
-+      DBGPrint("%i: stop processors IPI waiters:%i state:%s\n",
-+               (int)self, (int)atomic_read(&debuggerActive),
-+               procState[ProcessorState[self] & 0xF]);
-+   }
-+   DBGPrint("%i: stop processors ENTER state:%s\n",
-+             (int)self, procState[ProcessorState[self] & 0xF]);
-+#endif
-+
-+   /*
-+      You need to delay before issuing NMI and allow any previously
-+      released processors to exit and issue their IRETD before
-+      triggering another NMI event or exception.
-+
-+      This fix seems to avoid lockup during APIC ICR write on some SMT
-+      capable and dual core laptop computers (Acer 9410). if an ICR xcall
-+      is issued before a target processor has exited an active
-+      exception or if a processor inside an active INT1 exception
-+      receives a directed NMI from the local APIC, it can result in
-+      a hard hang.   The reason for this behavior has not been fully
-+      investigated.
-+
-+      This lockup occurs if more than one processor is currently handling
-+      an INT1 debugger exception and one of the processors gets an NMI
-+      while still inside the INT1 exception (nested exceptions).  It
-+      does not happen all the time and appears timing dependent.
-+
-+      The symptom is a hard bus hang while attempting to write an ICR
-+      command to the local APIC ICR register.  The check for a busy bit
-+      in the ICR register succeeds and allows the ICR write to occur
-+      prior to the lockup.
-+   */
-+   mdelay(1);
-+
-+   for (i = 0; i < MAX_PROCESSORS; i++)
-+   {
-+      if (cpu_online(i))
-+      {
-+         if (i != self)
-+         {
-+            /* do not NMI a procesor already spinning inside the
-+               debugger.  It may result in a system lockup. */
-+            if (!atomic_read(&debuggerProcessors[i]))
-+            {
-+	       ProcessorHold[i] = 1;
-+               barrier();
-+#if MDB_DEBUG_DEBUGGER
-+               DBGPrint("%i:send_IPI_mask ENTER cpu:%lu state:%s\n",
-+                        (int)self, i, procState[ProcessorState[i] & 0xF]);
-+#endif
-+               send_IPI_mask(cpumask_of_cpu(i), APIC_DM_NMI);
-+#if MDB_DEBUG_DEBUGGER
-+               DBGPrint("%i:send_IPI_mask EXIT cpu:%lu state:%s\n",
-+                        (int)self, i, procState[ProcessorState[i] & 0xF]);
-+#endif
-+            }
-+         }
-+      }
-+   }
-+
-+#if 0
-+   /* This code can result in hard system lockup on certain laptop models
-+    * during NMI of the other processors. The cause has not been
-+    * determined. */
-+   DBGPrint("%i: Send_IPI_allbutself ...", (int)self);
-+   send_IPI_allbutself(APIC_DM_NMI);
-+   DBGPrint(" completed\n");
-+#endif
-+
-+   for (i = 0, failed=0; i < MAX_PROCESSORS; i++)
-+   {
-+      if (cpu_online(i))
-+      {
-+         if (i != self)
-+         {
-+	    register unsigned long msecs = 1000;
-+
-+	    while (!atomic_read(&debuggerProcessors[i]) && msecs)
-+	    {
-+	       mdelay(1);
-+	       msecs--;
-+	    }
-+
-+	    if (!msecs)
-+	    {
-+	       failed++;
-+	       DBGPrint("Processor %i could not be halted state:%s\n",
-+                        (int)i, procState[ProcessorState[i] & 0xF]);
-+	    }
-+         }
-+      }
-+   }
-+#if MDB_DEBUG_DEBUGGER
-+   DBGPrint("%i: stop processors EXITED state:%s\n",
-+             (int)self, procState[ProcessorState[self] & 0xF]);
-+#endif
-+
-+   return (unsigned long) failed;
-+#else
-+   return 0;
-+#endif
-+}
-+
-+unsigned long FreeProcessorsExclSelf(unsigned long self)
-+{
-+#if defined(CONFIG_SMP)
-+   register int i;
-+
-+#if MDB_DEBUG_DEBUGGER
-+   DBGPrint("%i: release processors ENTER state:%s\n",
-+             (int)self, procState[ProcessorState[self] & 0xF]);
-+#endif
-+
-+   for (i = 0; i < MAX_PROCESSORS; i++)
-+   {
-+      if (ProcessorState[i] != PROCESSOR_HOLD)
-+      {
-+         ProcessorState[i] = PROCESSOR_RESUME;
-+         barrier();
-+      }
-+   }
-+
-+#if MDB_DEBUG_DEBUGGER
-+   DBGPrint("%i: release processors EXITED state:%s\n",
-+             (int)self, procState[ProcessorState[self] & 0xF]);
-+#endif
-+
-+   return i;
-+#else
-+   return MAX_PROCESSORS;
-+#endif
-+
-+}
-+
-+unsigned long WaitRestartExclSelf(unsigned long self)
-+{
-+#if defined(CONFIG_SMP)
-+   register unsigned long failed;
-+   register int i;
-+
-+#if MDB_DEBUG_DEBUGGER
-+   DBGPrint("%i: wait processors ENTERED state:%s\n",
-+             (int)self, procState[ProcessorState[self] & 0xF]);
-+#endif
-+
-+   for (i = 0, failed=0; i < MAX_PROCESSORS; i++)
-+   {
-+      if (cpu_online(i))
-+      {
-+         if (i != self)
-+         {
-+	    register unsigned long msecs = 1000;
-+
-+	    while (atomic_read(&nmiProcessors[i]) && msecs)
-+	    {
-+	       mdelay(1);
-+	       msecs--;
-+	    }
-+
-+	    if (!msecs)
-+	    {
-+	       failed++;
-+	       DBGPrint("Processor %i did not restart state:%s\n",
-+                        (int)i, procState[ProcessorState[i] & 0xF]);
-+	    }
-+         }
-+      }
-+   }
-+
-+#if MDB_DEBUG_DEBUGGER
-+   DBGPrint("%i: wait processors EXITED state:%s\n",
-+             (int)self, procState[ProcessorState[self] & 0xF]);
-+#endif
-+
-+   return (unsigned long) failed;
-+#else
-+   return 0;
-+#endif
-+}
-+
-+unsigned long enter_debugger(unsigned long exception, StackFrame *stackFrame,
-+                             unsigned long processor)
-+{
-+    register unsigned long retCode;
-+
-+    if (debug_lock(&debug_mutex, processor))
-+    {
-+       /*  if the processors were already held in the debugger due to a
-+        *  trace, ssb, or proceed session on a focus processor, do not
-+        *  nest an xcall NMI or signal (not if you can help it). */
-+       if (!atomic_read(&traceProcessors[processor]))
-+          StopProcessorsExclSelf(processor);
-+
-+       retCode = debugger_command_entry(processor, exception, stackFrame);
-+
-+       /*  do not release the processors for active trace, ssb, or proceed
-+        *  sessions on a focus processor. */
-+       if (!atomic_read(&traceProcessors[processor]))
++       else
 +       {
-+          FreeProcessorsExclSelf(processor);
-+          WaitRestartExclSelf(processor);
++	  symbolName = GetSymbolFromValueWithOffset(val + va, &sym_offset,
++                                           &symbuf[c][0], MAX_SYMBOL_LEN);
++	  if (symbolName)
++          {
++	     moduleName = GetModuleInfoFromSymbolValue(val + va, &modbuf[c][0],
++                                                       MAX_SYMBOL_LEN);
++             if (moduleName)
++             {
++                if (sym_offset)
++	           sprintf(NoNameBuffer, "%s|%s+0x%X=%08X %c",
++                     moduleName, symbolName,
++                     (unsigned)sym_offset, (unsigned)(val + va),
++		     ((val + va) < va) ? 0x18 : 0x19);
++                else
++	           sprintf(NoNameBuffer, "%s|%s=%08X %c",
++                     moduleName, symbolName,
++                     (unsigned)(val + va),
++		     ((val + va) < va) ? 0x18 : 0x19);
++             }
++             else
++             {
++                if (sym_offset)
++	           sprintf(NoNameBuffer, "%s+0x%X=%08X %c", symbolName,
++                     (unsigned)sym_offset, (unsigned)(val + va),
++		     ((val + va) < va) ? 0x18 : 0x19);
++                else
++	           sprintf(NoNameBuffer, "%s=%08X %c", symbolName,
++                     (unsigned)(val + va),
++		     ((val + va) < va) ? 0x18 : 0x19);
++             }
++          }
++	  else
++	  {
++	     v = val + va;
++	     segment = (((unsigned long)v >> 4) & 0x0000FFFF);
++	     offset = ((unsigned long)v & 0x0000000F);
++	     sprintf(NoNameBuffer, "%04X:%04X %c",
++                    (unsigned)segment, (unsigned)offset,
++		    ((val + va) < va) ? 0x18 : 0x19);
++	  }
 +       }
-+       debug_unlock(&debug_mutex, processor);
-+       clocksource_touch_watchdog();
-+       return retCode;
 +    }
-+    clocksource_touch_watchdog();
++    else
++    {
++       if (SegmentSize == 32)
++       {
++	  symbolName = GetSymbolFromValueWithOffset(val + va, &sym_offset,
++                                           &symbuf[c][0], MAX_SYMBOL_LEN);
++	  if (symbolName)
++          {
++	     moduleName = GetModuleInfoFromSymbolValue(val + va, &modbuf[c][0],
++                                                       MAX_SYMBOL_LEN);
++             if (moduleName)
++             {
++                if (sym_offset)
++	           sprintf(NoNameBuffer, "%s|%s+0x%X=%08X",
++                     moduleName, symbolName,
++                     (unsigned)sym_offset, (unsigned)(val + va));
++                else
++	           sprintf(NoNameBuffer, "%s|%s=%08X",
++                     moduleName, symbolName,
++                     (unsigned)(val + va));
++             }
++             else
++             {
++                if (sym_offset)
++	           sprintf(NoNameBuffer, "%s+0x%X=%08X", symbolName,
++                     (unsigned)sym_offset, (unsigned)(val + va));
++                else
++	           sprintf(NoNameBuffer, "%s=%08X", symbolName,
++                      (unsigned)(val + va));
++             }
++          }
++	  else
++	     sprintf(NoNameBuffer, "%08X",
++                     (unsigned)(val + va));
++       }
++       else
++       {
++	  symbolName = GetSymbolFromValueWithOffset(val + va, &sym_offset,
++                                           &symbuf[c][0], MAX_SYMBOL_LEN);
++	  if (symbolName)
++          {
++	     moduleName = GetModuleInfoFromSymbolValue(val + va, &modbuf[c][0],
++                                                       MAX_SYMBOL_LEN);
++             if (moduleName)
++             {
++                if (sym_offset)
++	           sprintf(NoNameBuffer, "%s|%s+0x%X=%08X",
++                     moduleName, symbolName,
++                     (unsigned)sym_offset, (unsigned)(val + va));
++                else
++	           sprintf(NoNameBuffer, "%s|%s=%08X",
++                     moduleName, symbolName,
++                     (unsigned)(val + va));
++             }
++             else
++             {
++                if (sym_offset)
++	           sprintf(NoNameBuffer, "%s+0x%X=%08X", symbolName,
++                     (unsigned)sym_offset, (unsigned)(val + va));
++                else
++	           sprintf(NoNameBuffer, "%s=%08X", symbolName,
++                     (unsigned)(val + va));
++             }
++          }
++	  else
++	  {
++	     v = val + va;
++	     segment = (((unsigned long)v >> 4) & 0x0000FFFF);
++	     offset = ((unsigned long)v & 0x0000000F);
++	     sprintf(NoNameBuffer, "%04X:%04X",
++                     (unsigned)segment, (unsigned)offset);
++	  }
++       }
++    }
++    return NoNameBuffer;
++
++}
++
++unsigned short read_memory(void *addr, void *buf, unsigned len)
++{
++    register unsigned long i;
++    register unsigned char *s = buf;
++
++    for (i = 0; i < len; i++)
++       if (s)
++          s[i] = (unsigned char)mdb_getword((unsigned long)((unsigned long)addr + i), 1);
 +    return 0;
 +}
 +
-+
-+unsigned long debugger_entry(unsigned long Exception, StackFrame *stackFrame,
-+                     unsigned long processor)
++unsigned char getbyte(void)
 +{
-+    register unsigned long retCode = 1;
-+    unsigned char *cmd;
-+    unsigned long valid;
++    short s;
 +
-+    atomic_inc(&debuggerActive);
-+    atomic_inc(&debuggerProcessors[processor]);
-+
-+    ProcessorState[processor] = PROCESSOR_DEBUG;
-+    CurrentFrame[processor] = stackFrame;
-+
-+    WriteDR7(0);  /* disable breakpoints while debugger is running */
-+    CurrentDR6[processor] = ReadDR6();
-+
-+    if (fpu_present())
-+       save_npx(&npx[processor]);
-+
-+MDBLoop:;
-+    switch (Exception)
++    if (bufp >= bufe)
 +    {
-+          case 1:/* int 1 debug exception */
-+	    if (BreakMask[processor])
-+	    {
-+	       stackFrame->tSystemFlags &= ~SINGLE_STEP;
-+	       stackFrame->tSystemFlags |= RESUME;
-+	       break;
-+	    }
-+	    else
-+	    if ((CurrentDR6[processor] & B0_BIT) &&
-+                (CurrentDR7 & G0_BIT) &&
-+                (ConditionalBreakpoint[0]))
-+	    {
-+	       cmd = (unsigned char *)&BreakCondition[0][0];
-+	       if (!EvaluateExpression(stackFrame, &cmd, &valid))
-+	       {
-+		  stackFrame->tSystemFlags &= ~SINGLE_STEP;
-+		  stackFrame->tSystemFlags |= RESUME;
-+		  break;
-+	       }
-+	    }
-+	    else
-+	    if ((CurrentDR6[processor] & B1_BIT) &&
-+                (CurrentDR7 & G1_BIT) &&
-+                (ConditionalBreakpoint[1]))
-+	    {
-+	       cmd = (unsigned char *)&BreakCondition[1][0];
-+	       if (!EvaluateExpression(stackFrame, &cmd, &valid))
-+	       {
-+		  stackFrame->tSystemFlags &= ~SINGLE_STEP;
-+		  stackFrame->tSystemFlags |= RESUME;
-+		  break;
-+	       }
-+	    }
-+	    else
-+	    if ((CurrentDR6[processor] & B2_BIT) &&
-+                (CurrentDR7 & G2_BIT) &&
-+                (ConditionalBreakpoint[2]))
-+	    {
-+	       cmd = (unsigned char *)&BreakCondition[2][0];
-+	       if (!EvaluateExpression(stackFrame, &cmd, &valid))
-+	       {
-+		  stackFrame->tSystemFlags &= ~SINGLE_STEP;
-+		  stackFrame->tSystemFlags |= RESUME;
-+		  break;
-+	       }
-+	    }
-+	    else
-+	    if ((CurrentDR6[processor] & B3_BIT) &&
-+                (CurrentDR7 & G3_BIT) &&
-+                (ConditionalBreakpoint[3]))
-+	    {
-+	       cmd = (unsigned char *)&BreakCondition[3][0];
-+	       if (!EvaluateExpression(stackFrame, &cmd, &valid))
-+	       {
-+		  stackFrame->tSystemFlags &= ~SINGLE_STEP;
-+		  stackFrame->tSystemFlags |= RESUME;
-+		  break;
-+	       }
-+	    }
-+	    enter_debugger(Exception, stackFrame, processor);
-+	    break;
-+
-+
-+	 case 3:/* int 3 breakpoint */
-+	    if (BreakMask[processor])
-+	    {
-+	       stackFrame->tSystemFlags &= ~SINGLE_STEP;
-+	       stackFrame->tSystemFlags |= RESUME;
-+	       break;
-+	    }
-+	    enter_debugger(Exception, stackFrame, processor);
-+	    break;
-+
-+         case 2: /* nmi */
-+            barrier();
-+            if (ProcessorHold[processor])  /* hold processor */
-+            {
-+               ProcessorHold[processor] = 0;
-+	       ProcessorState[processor] = PROCESSOR_SUSPEND;
-+
-+               /* processor suspend loop */
-+               atomic_inc(&nmiProcessors[processor]);
-+	       while ((ProcessorState[processor] != PROCESSOR_RESUME) &&
-+	              (ProcessorState[processor] != PROCESSOR_SWITCH))
-+               {
-+                  barrier();
-+	          if ((ProcessorState[processor] == PROCESSOR_RESUME) ||
-+	              (ProcessorState[processor] == PROCESSOR_SWITCH))
-+                     break;
-+
-+                  touch_nmi_watchdog();
-+                  cpu_relax();
-+               }
-+               atomic_dec(&nmiProcessors[processor]);
-+
-+               if (ProcessorState[processor] == PROCESSOR_SWITCH)
-+	          enter_debugger(21, stackFrame, processor);
-+               break;
-+            }
-+            else   /* all other nmi exceptions fall through to here */
-+	       enter_debugger(Exception, stackFrame, processor);
-+            break;
-+
-+	 default:
-+	    enter_debugger(Exception, stackFrame, processor);
-+	    break;
++       s = 4;  /* byte read window is 4 */
++       read_memory((void *)VirtualAddress, buf, s);
++       bufe = s;
++       bufp = 0;
 +    }
++    VirtualAddress = (void *)((unsigned long) VirtualAddress + (unsigned long) 1);
 +
-+    if (ProcessorHold[processor])
++    DBGPrint("%02X", buf[bufp]);
++    Columns += 2;
++
++    return buf[bufp++];
++}
++
++unsigned short modrm(void)
++{
++    if (modrmv == -1)
++      modrmv = getbyte();
++
++    return modrmv;
++}
++
++unsigned short sib(void)
++{
++    if (sibv == -1)
++      sibv = getbyte();
++
++    return sibv;
++}
++
++void DebugPrint(char *s, ...)
++{
++    char **a = &s;
++
++    vsprintf(ubufp, s, (va_list)(a+1));
++
++    while (*ubufp) ubufp++;
++}
++
++void DebugPutChar(unsigned char c)
++{
++    if (c == '\t')
 +    {
-+       Exception = 2;
-+       goto MDBLoop;
++      do {
++	*ubufp++ = ' ';
++      } while ((ubufp-ubuf) % 8);
 +    }
++    else
++      *ubufp++ = c;
++    *ubufp = 0;
++}
 +
-+    LoadDebugRegisters();
++unsigned long dereference_address(unsigned long addr, unsigned long width)
++{
++    register unsigned long retCode;
 +
-+    if (fpu_present())
-+       load_npx(&npx[processor]);
++    retCode = mdb_verify_rw((void *)addr, width);
++    if (full_deref_toggle)
++    {
++       switch (retCode)
++       {
++	  case 0:
++	     if (width == 1)
++		DebugPrint("=(*%08X=%02X)", addr, (unsigned char)mdb_getword(addr, 1));
++	     else
++	     if (width == 2)
++		DebugPrint("=(*%08X=%04X)", addr, (unsigned short)mdb_getword(addr, 2));
++	     else
++	     if (width == 4)
++		DebugPrint("=(*%08X=%08X)", addr, (unsigned long)mdb_getword(addr, 4));
++	     else
++		DebugPrint("=(*%08X=?)", addr);
++	     return retCode;
 +
-+    CurrentFrame[processor] = 0;
-+    ProcessorState[processor] = PROCESSOR_ACTIVE;
++	  default:
++	     if (width == 1)
++		DebugPrint("=(*%08X=?)", addr);
++	     else
++	     if (width == 2)
++		DebugPrint("=(*%08X=?)", addr);
++	     else
++	     if (width == 4)
++		DebugPrint("=(*%08X=?)", addr);
++	     else
++		DebugPrint("=(*%08X=?)", addr);
++	     return retCode;
++       }
++    }
++    else
++    {
++       switch (retCode)
++       {
++	  case 0:
++	     if (width == 1)
++		DebugPrint("=%02X", (unsigned char)mdb_getword(addr, 1));
++	     else
++	     if (width == 2)
++		DebugPrint("=%04X", (unsigned short)mdb_getword(addr, 2));
++	     else
++	     if (width == 4)
++		DebugPrint("=%08X", (unsigned long)mdb_getword(addr, 4));
++	     else
++		DebugPrint("=?");
++	     return retCode;
 +
-+    atomic_dec(&debuggerProcessors[processor]);
-+    atomic_dec(&debuggerActive);
-+    return retCode;
++	  default:
++	     if (width == 1)
++		DebugPrint("=?");
++	     else
++	     if (width == 2)
++		DebugPrint("=?");
++	     else
++	     if (width == 4)
++		DebugPrint("=?");
++	     else
++		DebugPrint("=?");
++	     return retCode;
++       }
++    }
 +
 +}
 +
-+void InitializeDebuggerRegisters(void)
++short bytes(char c)
 +{
-+   CurrentDR7 = (DR7DEF | GEXACT | LEXACT); /* set mode to GLOBAL EXACT */
-+   WriteDR0(0);                      /* clear out DR0-DR6 */
-+   WriteDR1(0);
-+   WriteDR2(0);
-+   WriteDR3(0);
-+   WriteDR6(0);
-+   WriteDR7(CurrentDR7);            /* set DR7 register */
++    switch (c)
++    {
++      case 'b':
++	return 1;
++
++      case 'w':
++	return 2;
++
++      case 'd':
++	return 4;
++
++      case 'v':
++	if (OperandSize == 32)
++	  return 4;
++	else
++	  return 2;
++    }
++    return 0;
++
 +}
 +
-+void ClearDebuggerRegisters(void)
++void OutputHex(char c, short extend, short optional, short defsize,
++	       short sign, long *deref)
 +{
-+   WriteDR0(0);   /* clear out all breakpoints and breakpoint */
-+   WriteDR1(0);   /* registers DR0-DR7 */
-+   WriteDR2(0);
-+   WriteDR3(0);
-+   WriteDR6(0);
-+   WriteDR7(0);
++
++    unsigned char *fmt, *p;
++    short n=0, s=0, i;
++    long delta;
++    unsigned char buf1[6];
++    unsigned char *name;
++    unsigned char fmt2[16];
++
++    fmt = formats[0][sign];
++
++    if (deref) {};
++
++    switch (c)
++    {
++      case 'a':
++	break;
++
++      case 'b':
++	n = 1;
++	break;
++
++      case 'w':
++	n = 2;
++	break;
++
++      case 'd':
++	n = 4;
++	break;
++
++      case 's':
++	n = 6;
++	break;
++
++      case 'c':
++      case 'v':
++	if (defsize == 32)
++	  n = 4;
++	else
++	  n = 2;
++	break;
++
++      case 'p':
++	if (defsize == 32)
++	  n = 6;
++	else
++	  n = 4;
++	s = 1;
++	break;
++
++      case 'x':
++	return;
++    }
++
++    for (i = 0; i < n; i++)
++       buf1[i] = getbyte();
++
++    for (; i < extend; i++)
++       buf1[i] = (buf[i-1] & 0x80) ? 0xff : 0;
++
++    if (s)
++    {
++       DebugPrint("%02X%02X:", buf1[n-1], buf1[n-2]);
++       n -= 2;
++    }
++    switch (n)
++    {
++       case 1:
++	  delta = *(char *)buf1;
++	  break;
++
++       case 2:
++	  delta = *(short *)buf1;
++	  break;
++
++       case 4:
++	  delta = *(long *)buf1;
++	  break;
++    }
++    if (extend > n)
++    {
++       if (delta || !optional)
++       {
++	  if (extend <= 4)
++	     fmt = formats[extend][sign];
++
++	  if (deref)
++	     *deref += delta;
++
++          p = strchr(fmt, 'z');
++          if (p)
++          {
++             strcpy(fmt2, fmt);
++             p = strchr(fmt2, 'z');
++             if (delta < 0)
++                DebugPrint("-", delta);
++             else
++                DebugPrint("+", delta);
++             *p = 'X';
++             DebugPrint(fmt2, delta);
++          }
++          else
++             DebugPrint(fmt, delta);
++       }
++       return;
++    }
++    if ((n == 4) && sign < 2)
++    {
++       if (deref)
++	  *deref += delta;
++
++       name = output_address((void  *)delta, (unsigned long *) &delta);
++       if (name)
++       {
++	  DebugPrint("%s", name);
++	  if (delta)
++	     DebugPrint("+%X", delta);
++	  return;
++       }
++    }
++    switch (n)
++    {
++
++       case 1:
++	  fmt = formats[n][sign];
++
++          p = strchr(fmt, 'z');
++          if (p)
++          {
++             strcpy(fmt2, fmt);
++             p = strchr(fmt2, 'z');
++             if (delta < 0)
++                DebugPrint("-", delta);
++             else
++                DebugPrint("+", delta);
++             *p = 'X';
++	     DebugPrint(fmt2, (char) delta);
++          }
++          else
++	     DebugPrint(fmt, (char) delta);
++
++	  if (deref)
++	     *deref += (delta & 0xFF);
++
++	  break;
++
++       case 2:
++	  fmt = formats[n][sign];
++
++          p = strchr(fmt, 'z');
++          if (p)
++          {
++             strcpy(fmt2, fmt);
++             p = strchr(fmt2, 'z');
++             if (delta < 0)
++                DebugPrint("-", delta);
++             else
++                DebugPrint("+", delta);
++             *p = 'X';
++	     DebugPrint(fmt2, (unsigned short) delta);
++          }
++          else
++	     DebugPrint(fmt, (unsigned short) delta);
++
++	  if (deref)
++	     *deref += (delta & 0xFFFF);
++
++	  break;
++
++       case 4:
++	  fmt = formats[n][sign];
++
++          p = strchr(fmt, 'z');
++          if (p)
++          {
++             strcpy(fmt2, fmt);
++             p = strchr(fmt2, 'z');
++             if (delta < 0)
++                DebugPrint("-");
++             else
++                DebugPrint("+");
++             *p = 'X';
++	     DebugPrint(fmt2, (unsigned long) delta);
++          }
++          else
++	     DebugPrint(fmt, (unsigned long) delta);
++
++	  if (deref)
++	     *deref += delta;
++
++	  break;
++    }
++
++}
++
++
++void reg_name(short which, char size)
++{
++
++    if (size == 'F')
++    {
++       DebugPrint("ST(%d)", which);
++       return;
++    }
++
++    if (((size == 'v') && (OperandSize == 32)) || (size == 'd'))
++    {
++       DebugPutChar('E');
++    }
++
++    if (size == 'b')
++    {
++       DebugPutChar("ACDBACDB"[which]);
++       DebugPutChar("LLLLHHHH"[which]);
++    }
++    else
++    {
++       DebugPutChar("ACDBSBSD"[which]);
++       DebugPutChar("XXXXPPII"[which]);
++    }
++
++}
++
++
++short do_sib(StackFrame *stackFrame, short m, long *deref)
++{
++
++    long sib_val, istr_val, factor, offset = 0;
++    short pick_signed = DefaultPickSign;
++    short s, i, b, extra=0;
++
++    s = ss(sib());
++    i = indx(sib());
++    b = base(sib());
++    if (b == 5)
++    {
++       if (m == 0)
++       {
++	  if (deref)
++	     *deref = 0;
++	  ProcessInstruction(stackFrame, "%p:[");
++	  OutputHex('d', pSize, 0, AddressSize, 1, deref);
++       }
++       else
++       {
++
++	  if (debug_deref && stackFrame)
++	     DebugPrint("<EBP=%08X>", stackFrame->tEBP);
++
++	  if (deref && stackFrame)
++	     *deref += stackFrame->tEBP;
++	  ProcessInstruction(stackFrame, "%p:[EBP");
++	  pick_signed |= 2;
++       }
++    }
++    else
++    {
++       pick_signed |= 2;
++       sib_val = sib_get_value(b, stackFrame);
++
++       if (debug_deref)
++	  DebugPrint("<sib=%08X>", sib_val);
++
++       if (deref)
++	  *deref += sib_val;
++
++       ProcessInstruction(stackFrame, sib_str[b]);
++       if ((b == i) && (b != 4) && (i != 5))
++	  extra = 1;
++    }
++    if (extra == 0)
++    {
++       pick_signed |= 2;
++       istr_val = istr_get_value(i, stackFrame);
++
++       if (debug_deref)
++	  DebugPrint("<istr=%08X>", istr_val);
++
++       offset += istr_val;
++
++       DebugPrint(i_str[i]);
++    }
++
++    if (i != 4 && s)
++    {
++       DebugPrint("*%X", (1 << s) + extra);
++       factor = (1 << s) + extra;
++
++       if (debug_deref)
++	  DebugPrint("<factor=%08X>", factor);
++
++       offset = (offset * factor);
++    }
++
++    if (deref)
++       *deref += offset;
++
++    return pick_signed;
++
++}
++
++
++void do_modrm(StackFrame *stackFrame, char t)
++{
++
++    long reg_val;
++    short m = mod(modrm());
++    short r = rm(modrm());
++    short extend = (AddressSize == 32) ? 4 : 2;
++    short pick_signed = DefaultPickSign;
++
++    if (t == 'b')
++       pSize = 1;
++    else
++    if (t == 'v' && OperandSize == 32)
++       pSize = 4;
++    else
++    if (t == 'v' && OperandSize == 16)
++       pSize = 2;
++
++    if (m == 3)
++    {
++       reg_name(r, t);
++       return;
++    }
++    if ((m == 0) && (r == 5) && (AddressSize == 32))
++    {
++       DeRefValue = 0;
++       ProcessInstruction(stackFrame, "%p:[");
++       OutputHex('d', extend, 0, AddressSize, 0, (long *) &DeRefValue);
++       DebugPutChar(']');
++       dereference_address(DeRefValue, pSize);
++       return;
++    }
++    if ((m == 0) && (r == 6) && (AddressSize == 16))
++    {
++       DeRefValue = 0;
++       ProcessInstruction(stackFrame, "%p:[");
++       OutputHex('w', extend, 0, AddressSize, 0, (long *) &DeRefValue);
++       DebugPutChar(']');
++       dereference_address(DeRefValue, pSize);
++       return;
++    }
++    if ((AddressSize != 32) || (r != 4))
++    {
++       DeRefValue = 0;
++       ProcessInstruction(stackFrame, "%p:[");
++    }
++
++    if (AddressSize == 16)
++    {
++       DebugPrint(r_str[r]);
++       pick_signed |= 2;
++    }
++    else
++    {
++       DeRefValue = 0;
++       if (r == 4)
++	  pick_signed |= do_sib(stackFrame, m, (long *)&DeRefValue);
++       else
++       {
++	  reg_val = reg_get_value(r, stackFrame);
++	  DeRefValue += reg_val;
++
++	  if (debug_deref)
++	     DebugPrint("<%s=%08X>", reg_names[2][r], reg_val);
++
++	  DebugPrint(reg_names[2][r]);
++	  pick_signed |= 2;
++       }
++    }
++    MODRMExtend = extend;
++    OutputHex("xbv"[m], extend, 1, AddressSize, pick_signed, (long *) &DeRefValue);
++    DebugPutChar(']');
++    dereference_address(DeRefValue, pSize);
++
++}
++
++
++void floating_point(StackFrame *stackFrame, short e1)
++{
++
++    short esc = e1 * 8 + reg(modrm());
++
++    if (mod(modrm()) == 3)
++    {
++       if (fspecial[esc])
++       {
++	  if (fspecial[esc][0] && (fspecial[esc][0][0] == '*'))
++	  {
++	     ProcessInstruction(stackFrame, fspecial[esc][0]+1);
++	  }
++	  else
++	  {
++	     ProcessInstruction(stackFrame, fspecial[esc][rm(modrm())]);
++	  }
++       }
++       else
++       {
++	  ProcessInstruction(stackFrame, floatops[esc]);
++	  ProcessInstruction(stackFrame, " %EF");
++       }
++    }
++    else
++    {
++       ProcessInstruction(stackFrame, floatops[esc]);
++       ProcessInstruction(stackFrame, " %EF");
++    }
++}
++
++
++void percent(StackFrame *stackFrame, char c, unsigned char **tptr)
++{
++
++     long vofs, delta;
++     unsigned char *name;
++     short default_signed = DefaultPickSign;
++     char t = *(*tptr)++, it;
++     short extend = (AddressSize == 32) ? 4 : 2;
++     short iextend;
++
++     if (c != '+')
++     {
++	if (t == '-')
++	{
++	   default_signed = 1;
++	   t = *(*tptr)++;
++	}
++	else if (t == '+')
++	{
++	   default_signed = 2;
++	   t = *(*tptr)++;
++	}
++     }
++     switch (c)
++     {
++
++	case 'A':
++	   OutputHex(t, extend, 0, AddressSize, 0, 0);
++	   break;
++
++	case 'C':
++	   DebugPrint("CR%d", reg(modrm()));
++	   break;
++
++	case 'D':
++	   DebugPrint("DR%d", reg(modrm()));
++	   break;
++
++	case 'E':
++	   do_modrm(stackFrame, t);
++	   break;
++
++	case 'G':
++	   if (t == 'F')
++	      reg_name(rm(modrm()), t);
++	   else
++	      reg_name(reg(modrm()), t);
++	   break;
++
++	case 'I':
++	   switch (t)
++	   {
++	      case 'b':
++		 iextend = 1;
++		 it = *(*tptr)++;
++		 OutputHex(it, iextend, 0, OperandSize, default_signed, 0);
++		 break;
++
++	      case 'v':
++		 iextend = extend;
++		 it = *(*tptr)++;
++		 OutputHex(it, iextend, 0, OperandSize, default_signed, 0);
++		 break;
++
++	      default:
++		 iextend = 0;
++		 OutputHex(t, iextend, 0, OperandSize, default_signed, 0);
++		 break;
++	   }
++	   break;
++
++	case 'J':
++	   switch (bytes(t))
++	   {
++
++	      case 1:
++		 vofs = (char) getbyte();
++		 break;
++
++	      case 2:
++		 vofs = getbyte();
++		 vofs += getbyte() << 8;
++		 vofs = (int) vofs;
++		 break;
++
++	      case 4:
++		 vofs = (long)getbyte();
++		 vofs |= (long)getbyte() << 8;
++		 vofs |= (long)getbyte() << 16;
++		 vofs |= (long)getbyte() << 24;
++		 break;
++
++	      default:
++		 vofs = 0;	/* To avoid uninit error */
++	   }
++
++	   name = output_jmp_address(stackFrame, vofs, (long *) &delta);
++	   DebugPrint("%s", name);
++
++	   if (delta)
++	      DebugPrint("+%X (%X %c)", delta, ((long)vofs +
++                        (long)VirtualAddress),
++		        (vofs & 0x80000000UL) ? 0x1e : 0x1f);
++	   break;
++
++	case 'M':
++	   do_modrm(stackFrame, t);
++	   break;
++
++	case 'O':
++	   if (t == 'b')
++	      pSize = 1;
++	   else
++	   if (t == 'v' && OperandSize == 32)
++	      pSize = 4;
++	   else
++	   if (t == 'v' && OperandSize == 16)
++	      pSize = 2;
++	   DeRefValue = 0;
++	   ProcessInstruction(stackFrame, "%p:[");
++	   OutputHex(t, extend, 0, AddressSize, 0, (long *) &DeRefValue);
++	   DebugPutChar(']');
++	   dereference_address(DeRefValue, pSize);
++	   break;
++
++	case 'R':
++	   do_modrm(stackFrame, t);
++	   break;
++
++	case 'S':
++	   DebugPutChar("ECSDFG"[reg(modrm())]);
++	   DebugPutChar('S');
++	   break;
++
++	case 'T':
++	   DebugPrint("TR%d", reg(modrm()));
++	   break;
++
++	case 'X':
++	   if (t == 'b')
++	      pSize = 1;
++	   else
++	   if (t == 'v' && OperandSize == 32)
++	      pSize = 4;
++	   else
++	   if (t == 'v' && OperandSize == 16)
++	      pSize = 2;
++	   DebugPrint("DS:[");
++	   if (AddressSize == 32)
++	      DebugPutChar('E');
++	   DebugPrint("SI");
++	   if (AddressSize==32 && stackFrame)
++	      DebugPrint("=%08X", stackFrame->tESI);
++	   DebugPutChar(']');
++
++	   if (debug_deref && stackFrame)
++	      DebugPrint("<ESI=%08X>", stackFrame->tESI);
++
++           if (stackFrame)
++	      dereference_address(stackFrame->tESI, pSize);
++	   break;
++
++	case 'Y':
++	   if (t == 'b')
++	      pSize = 1;
++	   else
++	   if (t == 'v' && OperandSize == 32)
++	      pSize = 4;
++	   else
++	   if (t == 'v' && OperandSize == 16)
++	      pSize = 2;
++	   DebugPrint("ES:[");
++	   if (AddressSize == 32)
++	      DebugPutChar('E');
++	   DebugPrint("DI");
++	   if (AddressSize==32 && stackFrame)
++	      DebugPrint("=%08X", stackFrame->tEDI);
++	   DebugPutChar(']');
++
++	   if (debug_deref && stackFrame)
++	      DebugPrint("<EDI=%08X>", stackFrame->tEDI);
++
++           if (stackFrame)
++	      dereference_address(stackFrame->tEDI, pSize);
++	   break;
++
++	case '2':
++	   ProcessInstruction(stackFrame, second[getbyte()]);
++	   break;
++
++	case 'e':
++	   if (OperandSize == 32)
++	   {
++	      if (t == 'w')
++		 DebugPutChar('D');
++	      else
++	      {
++		 DebugPutChar('E');
++		 DebugPutChar(toupper(t));
++	      }
++	   }
++	   else
++	      DebugPutChar(toupper(t));
++	   break;
++
++	case 'f':
++	   floating_point(stackFrame, t - '0');
++	   break;
++
++	case 'g':
++	   ProcessInstruction(stackFrame, groups[t - '0'][reg(modrm())]);
++	   break;
++
++	case 'p':
++	   switch (t)
++	   {
++	      case 'c':
++	      case 'd':
++	      case 'e':
++	      case 'f':
++	      case 'g':
++	      case 's':
++		 Prefix = t;
++		 ProcessInstruction(stackFrame, opmap1[getbyte()]);
++		 break;
++
++	      case ':':
++		 if (Prefix)
++		    DebugPrint("%cS:", toupper(Prefix));
++		 break;
++
++	      case ' ':
++		 ProcessInstruction(stackFrame, opmap1[getbyte()]);
++		 break;
++
++	   }
++	   break;
++
++	case 's':
++	   switch (t)
++	   {
++	      case 'a':
++		 AddressSize = 48 - AddressSize;
++		 ProcessInstruction(stackFrame, opmap1[getbyte()]);
++		 break;
++
++	      case 'o':
++		 OperandSize = 48 - OperandSize;
++		 ProcessInstruction(stackFrame, opmap1[getbyte()]);
++		 break;
++	   }
++	   break;
++
++	case '+':
++	   switch (t)
++	   {
++
++	      case '-':
++		 DefaultPickSign = 1;
++		 break;
++
++	      case '+':
++		 DefaultPickSign = 2;
++		 break;
++
++	      default:
++		 DefaultPickSign = 0;
++		 break;
++	   }
++     }
++}
++
++unsigned long nestLevel;
++
++void ProcessInstruction(StackFrame *stackFrame, unsigned char *s)
++{
++
++     short c;
++
++     nestLevel++;
++     if (nestLevel > 5)
++     {
++	DebugPrint("<INVALID OPCODE [NESTED]>");
++	if (nestLevel)
++	   nestLevel--;
++	return;
++     }
++
++     if (s == 0)
++     {
++	DebugPrint("<INVALID OPCODE>");
++	if (nestLevel)
++	   nestLevel--;
++	return;
++     }
++
++     while ((c = *s++) != 0)
++     {
++	if (c == '%')
++	{
++	   c = *s++;
++	   percent(stackFrame, c, &s);
++	}
++	else
++	if (c == ' ')
++	   DebugPutChar('\t');
++	else
++	   DebugPutChar(c);
++     }
++     if (nestLevel)
++	nestLevel--;
++
++}
++
++unsigned long unassemble(StackFrame *stackFrame, unsigned long ip,
++                         unsigned long use, unsigned long *ret)
++{
++
++    long delta;
++    long segment, offset;
++    unsigned char *v = (unsigned char *) ip;
++
++    if (use)
++       SegmentSize = 32;
++    else
++       SegmentSize = 16;
++
++    DefaultPickSign = 0;
++    needs_proceed = 0;
++    jmp_active = 0;
++    nestLevel = 0;
++    pSize = 4;
++
++    output_address((void *)v, (unsigned long *) &delta);
++
++    if (SegmentSize == 32)
++    {
++       DBGPrint("%08X ", (unsigned)v);
++    }
++    else
++    {
++       segment = (((unsigned long)v >> 4) & 0x0000FFFF);
++       offset = ((unsigned long)v & 0x0000000F);
++       DBGPrint("%04X:%04X ", (unsigned)segment, (unsigned)offset);
++    }
++
++    Prefix = 0;
++    modrmv = sibv = -1;
++    OperandSize = AddressSize = SegmentSize;
++    VirtualAddress = (void *)v;
++    bufp = bufe = 0;
++    Columns = 0;
++    ubufp = ubuf;
++    ProcessInstruction(stackFrame, opmap1[getbyte()]);
++
++    do
++    {
++       DBGPrint(" ");
++       Columns++;
++    } while (Columns < 15);
++
++    Columns += strlen(ubuf);
++
++    do
++    {
++       DebugPutChar(' ');
++       Columns++;
++    } while (Columns < 43);
++
++    if (ret)
++       *ret = (unsigned long)VirtualAddress;
++
++    if (DBGPrint("%s\n", ubuf)) return 1;
++
++    /*
++    *  check for CALL, REP, INT, and LOOP instructions for proceed
++    *  breakpoint
++    */
++
++    if ((strncmp(ubuf, "CALL", 4) == 0) || (strncmp(ubuf, "REP", 3) == 0) ||
++	(strncmp(ubuf, "INT", 3) == 0)  || (strncmp(ubuf, "LOOP", 4) == 0))
++    {
++       needs_proceed = 1;
++       jmp_active = 1;
++    }
++
++    if ((strncmp(ubuf, "IRET", 4) == 0) || (strncmp(ubuf, "RET", 3) == 0))
++       jmp_active = 1;
++
++    return (unsigned long) 0;
++
++}
++
++int mdb_unasm_length(void *ip, int use)
++{
++    unsigned char *oldVAddress;
++    unsigned char *v = (unsigned char *) ip;
++
++    if (use)
++       SegmentSize = 32;
++    else
++       SegmentSize = 16;
++
++    DefaultPickSign = 0;
++    needs_proceed = 0;
++    jmp_active = 0;
++    nestLevel = 0;
++    pSize = 4;
++
++    Prefix = 0;
++    modrmv = sibv = -1;
++    OperandSize = AddressSize = SegmentSize;
++    oldVAddress = VirtualAddress = (void *)v;
++    bufp = bufe = 0;
++    Columns = 0;
++    ubufp = ubuf;
++    ProcessInstruction(NULL, opmap1[getbyte()]);
++
++    return (int)((unsigned long)VirtualAddress - (unsigned long)oldVAddress);
++
 +}
