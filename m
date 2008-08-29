@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbYH2Ikv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbYH2IlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754827AbYH2Ikv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 04:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbYH2Ikm
+	id S1755898AbYH2IlU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 04:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbYH2IlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 04:40:42 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:62089 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752862AbYH2Ikl (ORCPT
+	Fri, 29 Aug 2008 04:41:04 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:25561 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755122AbYH2IlB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 04:40:41 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
-Date: Fri, 29 Aug 2008 10:40:06 +0200
-User-Agent: KMail/1.9.9
-Cc: Jorn Engel <joern@logfs.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080827181904.GD1371@logfs.org> <200808290629.AA00218@capsicum.lab.ntt.co.jp>
-In-Reply-To: <200808290629.AA00218@capsicum.lab.ntt.co.jp>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 29 Aug 2008 04:41:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=rYnF+h50eYQJPuc8fP7YhV6JUn6QKWKqCCIojFnLt/u5SXgV6aN1dByGRWyKw46aNB
+         WuaefKc135gdD00EHiTr7UJqTB4++NvEZopqoIDfI7Ppj3j5pB7h5w0+o3LBvCBeYdM8
+         f/ubSgPReZE8DWrrXlMHwu2dkK9BwdQ7h2TOw=
+Message-ID: <48B7B618.7050409@tuffmail.co.uk>
+Date: Fri, 29 Aug 2008 09:40:56 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+CC: LKML <linux-kernel@vger.kernel.org>, kovlensky@interia.pl
+Subject: Re: mounting windows shares with path exactly like on windows
+References: <48B7B0F3.1050601@wpkg.org>
+In-Reply-To: <48B7B0F3.1050601@wpkg.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808291040.06917.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18puYSpORKsyenyZp7kS67GbKFPsFksmIVVVKN
- gcTkf6UR9Kz6+bllWZ8KKFyolHHyN5Jp1ukI7s60ZTK22/YABr
- iW7Qpqn3eYT7k/vCgLw1g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 29 August 2008, Ryusuke Konishi wrote:
-> >Do you do wear leveling or scrubbing?
-> 
-> NILFS does not support scrubbing. (as you guessed)
-> Under the current GC daemon, it writes logs sequentially and circularly
-> in the partition, and as you know, this leads to the wear levelling
-> except for superblock.
+Tomasz Chmielewski wrote:
+>> In short - I've got bunch of applications running both on windows and
+>> linux and these applications \
+>> exchange links to files mounted on both sides. The problem is that
+>> these paths are different, i.e. like \
+>> D:/dir/file on windows and /mountpoint/dir/file on Linux. What I need
+>> is unifying them. So my idea is to \
+>> have path translator on anything on kernel level, which will make
+>> Linux open call to D:/dir/file on Linux \
+>> work and open /mountpoint/dir/file. Was anything close to that ever
+>> incorporated in kernel?
+>
+> What's wrong with just:
+>
+> # mkdir -p /D:/dir
+> # mount.cifs ...
+> # touch /D:/dir/file
+>
+> ?
+>
+> Or, use symlinks from /D:/dir to /mountpoint/dir/
+That only works from the root directory though.  In unix, "C:/" is a
+relative path.
 
-I don't see how that would cope with file systems that have a lot
-of static data. The classic problem of most cheap devices that implement
-wear leveling in hardware is that they never move data in an erase block
-that is used for read-only data. If 90% of the file system is read-only,
-your wear leveling will only work on 10% of the medium, wearing it down
-10 times faster than it should.
+Alan
 
-Can the GC daemon handle this case, e.g. by moving around aging read-only
-erase blocks?
-
-	Arnd <><
