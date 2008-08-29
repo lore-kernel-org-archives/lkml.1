@@ -1,74 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbYH2Lzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757028AbYH2L4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757451AbYH2Lzx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 07:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756726AbYH2Lzo
+	id S1757028AbYH2L4L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 07:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756922AbYH2Lzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 07:55:44 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:14094 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753351AbYH2Lzo convert rfc822-to-8bit (ORCPT
+	Fri, 29 Aug 2008 07:55:47 -0400
+Received: from frankvm.xs4all.nl ([80.126.170.174]:44521 "EHLO
+	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756822AbYH2Lzq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 07:55:44 -0400
-Message-Id: <48B80029.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
-Date: Fri, 29 Aug 2008 12:56:57 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: "Nick Piggin" <npiggin@suse.de>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: use LOCK_PREFIX consistently in tick spin lock
-	 code
+	Fri, 29 Aug 2008 07:55:46 -0400
+X-Greylist: delayed 435 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Aug 2008 07:55:45 EDT
+Date: Fri, 29 Aug 2008 13:48:29 +0200
+From: Frank van Maarseveen <frankvm@frankvm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] rtc: fix deadlock: fixes regression since 2.6.24
+Message-ID: <20080829114829.GA9510@janus>
+References: <200808230948.m7N9mUc1016360@harpo.it.uu.se> <20080823160151.GB27974@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080823160151.GB27974@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Cc: Nick Piggin <npiggin@suse.de>
+On Sat, Aug 23, 2008 at 06:01:51PM +0200, Ingo Molnar wrote:
+> 
+> * Mikael Pettersson <mikpe@it.uu.se> wrote:
+> 
+> > Since 2.6.27-rc1 my Core2Duo has been getting sporadic oopses
+> > from hpet_rtc_interrupt, usually during shutdown or reboot,
+> > but occasionally also early in init. Today I finally managed
+> > to capture one via a serial cable:
+> > 
+> > INIT: version 2.86 booting
+> > 		Welcome to Fedora Core
+> > 		Press 'I' to enter interactive startup.
+> > BUG: NMI Watchdog detected LOCKUP on CPU0, ip c0117092, registers:
+> > Modules linked in: ehci_hcd uhci_hcd usbcore
+> > 
+> > Pid: 311, comm: nash-hotplug Not tainted (2.6.27-rc4 #1)
+> > EIP: 0060:[<c0117092>] EFLAGS: 00000097 CPU: 0
+> > EIP is at hpet_rtc_interrupt+0x2d2/0x310
+> > EAX: 00000000 EBX: 00000002 ECX: 00000046 EDX: 00000002
+> > ESI: 000000a6 EDI: ffff8e25 EBP: 00000008 ESP: f7bd7f28
+> >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> > Process nash-hotplug (pid: 311, ti=f7bd6000 task=f7b70460 task.ti=f7bd6000)
+> > Stack: f7bd7f6c c0139cc0 00000000 c035ba04 00000000 00000000 00000000 00000000 
+> >        00000000 00000000 00000000 00000000 00000000 f7b845a0 00000000 00000000 
+> >        00000008 c01478a8 c035bf80 f7b845a0 c035bfb0 00000008 c0148f71 00000400 
+> > Call Trace:
+> >  [<c0139cc0>] hrtimer_run_pending+0x20/0x90
+> >  [<c01478a8>] handle_IRQ_event+0x28/0x50
+> >  [<c0148f71>] handle_edge_irq+0xa1/0x120
+> >  [<c010615b>] do_IRQ+0x3b/0x70
+> >  [<c0113225>] smp_apic_timer_interrupt+0x55/0x80
+> >  [<c0103c4f>] common_interrupt+0x23/0x28
+> >  [<c02c0000>] unix_release_sock+0xc0/0x220
+> >  =======================
+> > Code: 89 44 24 18 0f b6 c2 e8 5d 74 0c 00 8b 0d d8 9c 3b c0 89 44 24 1c 8b 44 24 0c 48 89 44 24 20 e9 84 fd ff ff 90 8d 74 26 00 f3 90 <a1> 80 ba 35 c0 29 f8 83 f8 01 76 f2 e9 e1 fe ff ff 90 8d 74 26 
+> > 
+> > This points to the following loop in hpet_rtc_interrupt:
+> > 
+> > 0xc0117090 <hpet_rtc_interrupt+720>:    pause  
+> > 0xc0117092 <hpet_rtc_interrupt+722>:    mov    0xc035ba80,%eax
+> > 0xc0117097 <hpet_rtc_interrupt+727>:    sub    %edi,%eax
+> > 0xc0117099 <hpet_rtc_interrupt+729>:    cmp    $0x1,%eax
+> > 0xc011709c <hpet_rtc_interrupt+732>:    jbe    0xc0117090 <hpet_rtc_interrupt+720>
+> > 
+> > Note: 0xc035ba80 == &jiffies
+> > 
+> > This loop originates from asm-generic/rtc.h:get_rtc_time()
+> > 
+> > 		while (jiffies - uip_watchdog < 2*HZ/100) {
+> > 			barrier();
+> > 			cpu_relax();
+> > 		}
+> > 
+> > Note: HZ == CONFIG_HZ == 100
+> > 
+> > The bug may not originate from the 2.6.27-rc series as I only recently 
+> > enabled HPET in this machine's kernels (not due to HPET problems, it 
+> > inherited its .config way back from an older machine w/o HPET).
+> 
+> argh, that loop in asm-generic/rtc.h:get_rtc_time looks extremely 
+> fragile, we'll lock up if it's ever called with hardirqs off!
+> 
+> Does the patch below do the trick?
+> 
+> 	Ingo
+> 
+> ----------------->
+> >From 2273cc870b52a7ed09eb225142a6db97299e4f39 Mon Sep 17 00:00:00 2001
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Sat, 23 Aug 2008 17:59:07 +0200
+> Subject: [PATCH] rtc: fix deadlock
+> 
+> if get_rtc_time() is _ever_ called with IRQs off, we deadlock badly
+> in it, waiting for jiffies to increment.
+> 
+> So make the code more robust by doing an explicit mdelay(20).
+> 
+> This solves a very hard to reproduce/debug hard lockup reported
+> by Mikael Pettersson.
+> 
+> Reported-by: Mikael Pettersson <mikpe@it.uu.se>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  include/asm-generic/rtc.h |   12 ++++--------
+>  1 files changed, 4 insertions(+), 8 deletions(-)
+> 
+> diff --git a/include/asm-generic/rtc.h b/include/asm-generic/rtc.h
+> index be4af00..71ef3f0 100644
+> --- a/include/asm-generic/rtc.h
+> +++ b/include/asm-generic/rtc.h
+> @@ -15,6 +15,7 @@
+>  #include <linux/mc146818rtc.h>
+>  #include <linux/rtc.h>
+>  #include <linux/bcd.h>
+> +#include <linux/delay.h>
+>  
+>  #define RTC_PIE 0x40		/* periodic interrupt enable */
+>  #define RTC_AIE 0x20		/* alarm interrupt enable */
+> @@ -43,7 +44,6 @@ static inline unsigned char rtc_is_updating(void)
+>  
+>  static inline unsigned int get_rtc_time(struct rtc_time *time)
+>  {
+> -	unsigned long uip_watchdog = jiffies;
+>  	unsigned char ctrl;
+>  	unsigned long flags;
+>  
+> @@ -53,19 +53,15 @@ static inline unsigned int get_rtc_time(struct rtc_time *time)
+>  
+>  	/*
+>  	 * read RTC once any update in progress is done. The update
+> -	 * can take just over 2ms. We wait 10 to 20ms. There is no need to
+> +	 * can take just over 2ms. We wait 20ms. There is no need to
+>  	 * to poll-wait (up to 1s - eeccch) for the falling edge of RTC_UIP.
+>  	 * If you need to know *exactly* when a second has started, enable
+>  	 * periodic update complete interrupts, (via ioctl) and then 
+>  	 * immediately read /dev/rtc which will block until you get the IRQ.
+>  	 * Once the read clears, read the RTC time (again via ioctl). Easy.
+>  	 */
+> -
+> -	if (rtc_is_updating() != 0)
+> -		while (jiffies - uip_watchdog < 2*HZ/100) {
+> -			barrier();
+> -			cpu_relax();
+> -		}
+> +	if (rtc_is_updating())
+> +		mdelay(20);
+>  
+>  	/*
+>  	 * Only the values that we read from the RTC are set. We leave
 
----
- include/asm-x86/spinlock.h |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+This patch fixes a regression since 2.6.24: 2.6.25 and 2.6.26 occasionally
+locked up hard here without a trace and even alt-sysrq did not work
+anymore. It's easy to reproduce with
 
---- linux-2.6.27-rc5/include/asm-x86/spinlock.h	2008-08-21 14:37:34.000000000 +0200
-+++ 2.6.27-rc5-x86-spinlock-prefix/include/asm-x86/spinlock.h	2008-08-19 12:43:22.000000000 +0200
-@@ -97,8 +97,8 @@ static __always_inline int __ticket_spin
- 		     "jne 1f\n\t"
- 		     "movw %w0,%w1\n\t"
- 		     "incb %h1\n\t"
--		     "lock ; cmpxchgw %w1,%2\n\t"
--		     "1:"
-+		     LOCK_PREFIX "cmpxchgw %w1, %2\n"
-+		     "1:\t"
- 		     "sete %b1\n\t"
- 		     "movzbl %b1,%0\n\t"
- 		     : "=&a" (tmp), "=Q" (new), "+m" (lock->slock)
-@@ -135,9 +135,9 @@ static __always_inline void __ticket_spi
- 	int inc = 0x00010000;
- 	int tmp;
- 
--	asm volatile("lock ; xaddl %0, %1\n"
-+	asm volatile(LOCK_PREFIX "xaddl %0, %1\n\t"
- 		     "movzwl %w0, %2\n\t"
--		     "shrl $16, %0\n\t"
-+		     "shrl $16, %0\n"
- 		     "1:\t"
- 		     "cmpl %0, %2\n\t"
- 		     "je 2f\n\t"
-@@ -162,8 +162,8 @@ static __always_inline int __ticket_spin
- 		     "cmpl %0,%1\n\t"
- 		     "jne 1f\n\t"
- 		     "addl $0x00010000, %1\n\t"
--		     "lock ; cmpxchgl %1,%2\n\t"
--		     "1:"
-+		     LOCK_PREFIX "cmpxchgl %1, %2\n"
-+		     "1:\t"
- 		     "sete %b1\n\t"
- 		     "movzbl %b1,%0\n\t"
- 		     : "=&a" (tmp), "=r" (new), "+m" (lock->slock)
+	while :; do hwclock; done
+
+Others are experiencing this issue too:
+- http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=494036
+- http://kerneltrap.org/mailarchive/message-id/20080821163920.GA19140@gamma.logic.tuwien.ac.at/linux-kernel
+- people (me included) experienced booting problems because of
+  this (lockup after initscripts says "Setting the system clock").
+
+maybe this is 2.6.25.x and 2.6.26.x material too?
 
 
+Anyway, get_rtc_time() is called by interrupt handler(s). I think 20ms
+is a awful lot of time for an interrupt handler.
 
+-- 
+Frank
