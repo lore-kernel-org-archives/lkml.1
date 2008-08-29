@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbYH2Xgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbYH2Xgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758127AbYH2Xgf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 19:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbYH2Xg0
+	id S1753933AbYH2Xgy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 19:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYH2Xgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 19:36:26 -0400
-Received: from smtp.ono.com ([62.42.230.12]:7474 "EHLO resmaa01.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752449AbYH2XgZ convert rfc822-to-8bit (ORCPT
+	Fri, 29 Aug 2008 19:36:41 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:41611 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754383AbYH2Xgk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 19:36:25 -0400
-Date: Sat, 30 Aug 2008 01:36:22 +0200
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Unhiding devices in pci bus
-Message-ID: <20080830013622.4daecf8e@werewolf.home>
-In-Reply-To: <alpine.BSF.1.00.0808292135320.32255@anduin.net>
-References: <alpine.BSF.1.00.0808292135320.32255@anduin.net>
-X-Mailer: Claws Mail 3.5.0cvs31 (GTK+ 2.13.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 29 Aug 2008 19:36:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=veCU6fyYjkjrRIg5Ph6ojpjJZz+/PvwQ4qVbp5h+2zlDfEsGk9OPbeKJTMjj0fxs0J
+         ojP/C+zvbxI5galvLlBBH0c0UpnTgJofXrboXy4x3FK1uIqtN5LxT+X+GmQNJsVa19qM
+         vRLh4mJQ3eTP7XkB+gM3TIYQAjoLHdKvEHyRA=
+Date: Sat, 30 Aug 2008 03:38:15 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] BUILD_BUG_ON() should not use array type
+Message-ID: <20080829233815.GA3365@x200.localdomain>
+References: <48B7FDBA.76E4.0078.0@novell.com> <20080829132211.d0ed1932.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080829132211.d0ed1932.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008 21:43:32 +0200 (CEST), Erik Inge Bolsø <knan-lkml@anduin.net> wrote:
-
-> You are doing the setpci magic trick, I assume?
+> > +/* Force a compilation error if condition is constant and true */
+> > +#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
 > 
-> if not, add 
-> "setpci -d 197b:2381 AE=47"
-> to your boot scripts.
+> MAYBE_BUILD_BUG_ON() hurts my brain.  It's doing:
 > 
-> (From the stock linpus boot scripts.)
+> 	if (__builtin_constant_p(expr))
+> 		BUILD_BUG_ON(expr);
 > 
+> yes?  For inlined (or macro) callsites which can be used with constant
+> or non-constant args.
+> 
+> It's tempting to just zap the one callsite and not add this at all,
 
-It has never worked for me.
+Yes, please. There should be no maybes in kernel.
 
-But FYI, 2-6-27-rc5 boots fine with the card inserted and detects the
-reader. No hack needed.
-And ether and wifi both work.
-But it has other problems.
+Imagine probabilistic BUG_ON(). Imagine probabilistic refcounting: maybe_get_net().
 
--- 
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2009.0 (Cooker) for i586
-Linux 2.6.25-jam18 (gcc 4.3.1 20080626 (GCC) #1 SMP
