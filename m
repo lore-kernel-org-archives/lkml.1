@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518AbYH2OxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757015AbYH2Oxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755518AbYH2OxL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 10:53:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYH2Owj
+	id S1757015AbYH2Oxc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 10:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbYH2Owk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 10:52:39 -0400
+	Fri, 29 Aug 2008 10:52:40 -0400
 Received: from casper.infradead.org ([85.118.1.10]:35172 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751108AbYH2Owi (ORCPT
+	with ESMTP id S1751006AbYH2Owj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 10:52:38 -0400
-Subject: Re: sched_mc_power_savings broken with CGROUPS+CPUSETS
-From: Peter Zijlstra <peterz@infradead.org>
-To: svaidy@linux.vnet.ibm.com
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Gregory Haskins <ghaskins@novell.com>
-In-Reply-To: <20080829131514.GS4801@dirshya.in.ibm.com>
-References: <20080829131514.GS4801@dirshya.in.ibm.com>
-Content-Type: text/plain
-Date: Fri, 29 Aug 2008 15:23:57 +0200
-Message-Id: <1220016237.17355.48.camel@twins>
+	Fri, 29 Aug 2008 10:52:39 -0400
+Date: Fri, 29 Aug 2008 05:50:23 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: [RFC] export irq_set/get_affinity() for multiqueue network
+ drivers
+Message-ID: <20080829055023.07966b4a@infradead.org>
+In-Reply-To: <48B708E1.4070001@inria.fr>
+References: <48B708E1.4070001@inria.fr>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-29 at 18:45 +0530, Vaidyanathan Srinivasan wrote:
-> Hi,
-> 
-> sched_mc_power_savings seems to be broken with CGROUPS+CPUSETS.
-> When CONFIG_CPUSETS=y the attached BUG_ON() is being hit.
-> 
-> I added a BUG_ON to check if SD_POWERSAVINGS_BALANCE is set at
-> SD_LV_CPU whenever sched_mc_power_savings is set.
-> 
-> This BUG is hit when config CONFIG_CPUSETS (depends on CONFIG_CGROUPS)
-> is just compiled in while this is never hit when they are compiled
-> out.  The fact that SD_POWERSAVINGS_BALANCE being cleared even when
-> sched_mc_power_savings = 1 completely breaks the
-> sched_mc_power_savings heuristics.
-> 
-> To recreate the problem, 
-> Have sched_mc power savings enabled CONFIG_SCHED_MC=y
-> Add this BUG_ON()
-> 
-> echo 1 > /sys/devices/system/cpu/sched_mc_power_savings
-> 
-> Try these these on a multi core x86 box.
-> 
-> sched_mc_power_savings seems to be broken from 2.6.26-rc1, but
-> I do not have a confirmation that the root cause is same in all
-> successive versions. sched_mc_power_savings works perfect in 
-> 2.6.25.
-> 
-> Please help me root cause the issue.  Please point me to changes that
-> may potential cause this bug.
+On Thu, 28 Aug 2008 22:21:53 +0200
+Brice Goglin <Brice.Goglin@inria.fr> wrote:
 
-I'm still greatly mistified by all that power savings code.
+> Hello,
+> 
+> Is there any way to setup IRQ masks from within a driver? myri10ge
+> currently relies on an external script (writing in
+> /proc/irq/*/smp_affinity) to bind each queue/MSI-X to a different
+> processor. By default, Linux will either:
+> * round-robin the interrupts (killing the benefit of DCA for instance)
+> * put all IRQs on the same CPU (killing much of th
 
-Its hard to read and utterly hard to comprehend - I've been about to rip
-the whole stuff out on several occasions. But so far tried to carefully
-thread around it maintaining its operation even though not fully
-understood.
+* do the right thing with the userspace irq balancer
 
-Someone with clue - preferably the authors of the code in question -
-should enlighten us with a patch that adds some comments as to the
-intent of said lines of code.
-
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
