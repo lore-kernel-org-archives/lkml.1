@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbYH2Qlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYH2QnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757340AbYH2Qlq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 12:41:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbYH2Qlg
+	id S1758020AbYH2QnU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 12:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYH2QnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 12:41:36 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:57987 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751646AbYH2Qlf (ORCPT
+	Fri, 29 Aug 2008 12:43:10 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49634 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751867AbYH2QnJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 12:41:35 -0400
-From: Marcel Janssen <korgull@home.nl>
-Reply-To: korgull@home.nl
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] USB: add USB test and measurement class driver - round 2
-Date: Fri, 29 Aug 2008 18:41:15 +0200
-User-Agent: KMail/1.9.9
-Cc: stefan_kopp@agilent.com, stern@rowland.harvard.edu, oliver@neukum.org,
-       linux-usb@vger.kernel.org, me@felipebalbi.com,
-       linux-kernel@vger.kernel.org, Marcel Janssen <marcel.janssen@admesy.nl>
-References: <20080827183615.GA15692@kroah.com> <7D8F552F9FFBAC438A816966BEC4516BFBA328@cos-us-mb07.cos.agilent.com> <20080829143902.GC18136@kroah.com>
-In-Reply-To: <20080829143902.GC18136@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Fri, 29 Aug 2008 12:43:09 -0400
+Date: Fri, 29 Aug 2008 18:45:51 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <andi@firstfloor.org>,
+       Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH] seqlock: serialize against writers
+Message-ID: <20080829164551.GY26610@one.firstfloor.org>
+References: <20080829154237.1196.66825.stgit@dev.haskins.net> <87abevpzv7.fsf@basil.nowhere.org> <48B81F60.3080409@gmail.com> <20080829162216.GW26610@one.firstfloor.org> <48B82349.1020109@gmail.com> <alpine.DEB.1.10.0808291233280.17917@gandalf.stny.rr.com> <48B8254D.1010206@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808291841.15853.korgull@home.nl>
-X-Spam-Score: -0.5 (/)
+In-Reply-To: <48B8254D.1010206@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 29 August 2008 16:39:02 Greg KH wrote:
-> > The issue with using cat on the shell level is that it uses fread
-> > which has the (in this case) ugly behaviour of recalling the driver's
-> > read method until the full number of characters requested has been
-> > accumulated (or until zero characters are returned, indicating the end
-> > of file). With USBTMC instruments, this behavour is bad because the
-> > retry will not just return zero characters, it will cause a timeout
-> > with the associated error condition in the device. So, to enable the
-> > use of echo/cat, I added some fread handling to the driver (which
-> > catches the retries). I believe this also has been removed, so I
-> > assume cat/fread will not work (?).
->
-> I do not know, but we do not do wierd things in the kernel just because
-> of broken userspace programs.  This logic should be done in userspace,
-> and programs should look at the return value of read() and handle it
-> properly.  Otherwise it is a bug.
+> I could just force all of the seqbegins to hit the slowpath by hacking
+> the code and see what happens (aside from slowing down, of course ;)
 
-I don't think this is broken in user space. The problem is that when you issue 
-a measurement command it is not known how many bytes it will return. This is 
-probably due to ASCII output being very common in  T&M devices instead of raw 
-data (int, float etc). The ASCII formatting is done in the device and this 
-returns just a string which may or may not be terminated by the term char. 
-This is of course not true for all T&M devices, but the majority works this 
-way. 
+Only if you don't believe it will really crash? I think it's pretty
+clear even without trying it.
 
-I admit that the above produces a lot of overhead, but it's just a fact that 
-T&M devices work this way, including ours for most of their data processing 
-(not all though). 
+> Question: Which seqlock_t does userspace use?  I assume it uses
+> seqlock_t and not raw_seqlock_t. 
 
-I think the USBTMC spec is quite clear on how it should be implemented on 
-messaging level. Basically when you issue  the command "*IDN?" the device 
-will process this and return the device ID string. The length of this string 
-is set in the TransferSize of the 12 byte header that the device returns. The 
-problem when you issue a read command is that the read command does not yet 
-know how much data to expect. It should issue the  REQUEST_DEV_DEP_MSG_IN 
-first and set the TransferSize value high enough.
-In the USBTMC_488 extension you find an example (chapter 3.3.1 page 7) that 
-shows the REQUEST_DEV_DEP_MSG_IN TransferSize being set to 64 although the 
-actual data being returned from the device is less (only 36 bytes).
+> But the only reason that I ask is that
+> I converted raw_seqlock_t to use the new style as well to be consistent,
 
-What you do see in practice is that when someone would issue a read command 
-and asking for less bytes than are available is that the user program may 
-handle this as a warning telling the user that he did not request all 
-available data. 
+There's no raw_seqlock_t anywhere in mainline?
 
-Stefan's driver works exactly the way I would expect from a users point of 
-view. Whether the implementation can be improved is another issue, but the 
-behaviour is correct and compliant with other usbtmc drivers on other 
-platforms.
+Anyways the variable is declared (in mainline) in asm-x86/vgtod.h 
 
-Regards,
-Marcel
- 
+> even though it is not strictly necessary for the same reasons.  So if
+> perchance userspace uses the raw variant, I could solve this issue by
+> only re-working the seqlock_t variant.  Kind of a long shot, but figured
+> I would mention it :)
 
+I guess you could define a new seqlock_t which is explicitely user space
+safe. That might avoid such issues in the future. But then
+that would likely require some code duplication and be ugly.
+
+On the other hand whatever problem you fixing in the kernel
+(to be honest it's still unclear to me what the problem is)
+needs to be likely fixed for the userland lock too.
+
+-Andi
 
