@@ -1,79 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbYH2Knw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951AbYH2Kp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753128AbYH2Knw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 06:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbYH2Knl
+	id S1755951AbYH2Kp3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 06:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbYH2KpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 06:43:41 -0400
-Received: from www.tglx.de ([62.245.132.106]:43939 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755637AbYH2Knl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 06:43:41 -0400
-Date: Fri, 29 Aug 2008 12:42:44 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Daniel J Blueman <daniel.blueman@gmail.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH] debugobjects: fix lockdep warning #2
-In-Reply-To: <20080828153214.GA27653@localhost.localdomain>
-Message-ID: <alpine.LFD.1.10.0808291212100.3243@apollo.tec.linutronix.de>
-References: <20080828153214.GA27653@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 29 Aug 2008 06:45:16 -0400
+Received: from lazybastard.de ([212.112.238.170]:37413 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752815AbYH2KpO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 06:45:14 -0400
+Date: Fri, 29 Aug 2008 12:45:00 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
+Message-ID: <20080829104459.GB27647@logfs.org>
+References: <20080827181904.GD1371@logfs.org> <200808290629.AA00218@capsicum.lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200808290629.AA00218@capsicum.lab.ntt.co.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Aug 2008, Vegard Nossum wrote:
-> On Thu, Aug 28, 2008 at 3:56 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> > could you resend the final patch please? It's a candidate for .27, if it
-> > works out fine.
+On Fri, 29 August 2008 15:29:35 +0900, Ryusuke Konishi wrote:
+> On Wed, 27 Aug 2008 20:19:04 +0200,  Jorn Engel wrote:
 > 
-> Here is the combined patch. I've tested it only briefly, and I am
-> unsure of whether it still produces lockdep warnings for Daniel or
-> not. I wish it would not be applied anywhere unless it was
-> officially Reviewed-by: someone. In particular, I'm not quite
-> steady with the irq-safe locking (Thomas might want to have a look).
+> >Do you do wear leveling or scrubbing?
+> 
+> NILFS does not support scrubbing. (as you guessed)
+> Under the current GC daemon, it writes logs sequentially and circularly
+> in the partition, and as you know, this leads to the wear levelling
+> except for superblock.
 
-The irq safe locking is the easy part :) Calling free_object w/o the
-hash bucket lock held is fine as we removed it already from the bucket
-and there is no other reference than the pointer we hold at that point.
- 
->  
->  	printk(KERN_WARNING "ODEBUG: Out of memory. ODEBUG disabled\n");
->  
-> +	/* XXX: Could probably be optimized by transplantation of more than
-> +	 * one entry at a time. */
->  	for (i = 0; i < ODEBUG_HASH_SIZE; i++, db++) {
->  		spin_lock_irqsave(&db->lock, flags);
->  		hlist_for_each_entry_safe(obj, node, tmp, &db->list, node) {
->  			hlist_del(&obj->node);
-> -			free_object(obj);
-> +			hlist_add_head(&obj->node, &freelist);
->  		}
->  		spin_unlock_irqrestore(&db->lock, flags);
-> +
-> +		/* Now free them */
-> +		hlist_for_each_entry_safe(obj, node, tmp, &freelist, node) {
-> +			hlist_del(&obj->node);
-> +			free_object(obj);
-> +		}
->  	}
->  }
+I am a bit confused here.  My picture of log-structured filesystems was
+always that writes go round-robin _within_ a segment, but new segments
+can be picked in any order.  So there is a good chance of some segments
+simply never being picked and others constantly being reused.
 
-What you want is a helper function which moves the complete list from
-one head to the other. I'll whip one up.
+If nilfs works in the same way, it will by design spread the writes
+somewhat better than ext3, to pick an example, but can still lead to
+local wear-out if f.e. 98% of the filesystem is full and the remaining
+2% receive a high write load.
 
-I'll push it through the tip tree.
+True wear leveling requires a bit more work.  Either some probabilistic
+garbage collection of any random segment, as jffs2 does, or storing some
+write counters and keeping them roughly level as logfs does.
 
-Thanks,
+> >How does garbage collection work?  In particular, when the filesystem
+> >runs out of free space, do you depend on the userspace daemon to make
+> >some policy decisions or can the kernel make progress on its own?
+> 
+> The GC of NILFS depends on the userspace daemon to make policy decisions.
+> NILFS cannot reclaim disk space on its own though it can work 
+> (i.e. read, write, or do other operations) without the daemon.
+> After it runs out of free space, disk full errors will be returned
+> until GC makes new space.
 
-	tglx
+This looks problematic.  In logfs I was very careful to define a
+"filesystem full" condition that is independent of GC.  So with a single
+writer, -ENOSPC always means the filesystem is full and the only way to
+gain some free space is by deleting data again.
+
+In nilfs it appears possible that a single writer received -ENOSPC and
+can simply continue writing until - magically - there is space again
+because the GC daemon woke up and freed some more.  That is unexpected,
+to say the least.
+
+Which is also one of the reasons why I don't like the userspace daemon
+approach very much.  Decent behaviour now requires that you block the
+writes, wake up the userspace daemon and wait for it to do its job.  Or
+you would have to implement a backup-daemon in kernelspace which gets
+called into whenever -ENOSPC would be returned otherwise.
+
+> But, usually the GC will make enough disk space in the background
+> before that occurs.
+
+Usually, yes.  You just have to make sure that in the unusual cases the
+filesystem continues to behave correctly. ;)
+
+Jörn
+
+-- 
+Homo Sapiens is a goal, not a description.
+-- unknown
