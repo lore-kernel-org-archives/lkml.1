@@ -1,85 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbYH2Rd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbYH2Rh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758078AbYH2Rd5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 13:33:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbYH2Rdq
+	id S1758028AbYH2Rh1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 13:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYH2RhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 13:33:46 -0400
-Received: from cpsmtpo-eml06.kpnxchange.com ([213.75.38.155]:37310 "EHLO
-	cpsmtpo-eml06.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752831AbYH2Rdp (ORCPT
+	Fri, 29 Aug 2008 13:37:12 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:62923 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752095AbYH2RhL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 13:33:45 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [regression] usb: sometimes dead keyboard after boot (was: new errors during device detection)
-Date: Fri, 29 Aug 2008 19:33:42 +0200
-User-Agent: KMail/1.9.9
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0808291209260.4447-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0808291209260.4447-100000@netrider.rowland.org>
+	Fri, 29 Aug 2008 13:37:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=i5U5AdCWe4s4JDmglXSN6bpdVzJDPR2QnKxp5GwSSnba604zLwjIXuiwF7RnJHTyex
+         zto6d1SAIO8qDd7MvAdGAJMkq0eDSSJN1wlEulTuKir6JdNh6iUPNfpAB53mKhUDPOkU
+         DcC18KT0yDA7BtTCoqesmS+EXJBILYs2x3oxU=
+Message-ID: <86802c440808291037v688b72e0kda1a606e246223a9@mail.gmail.com>
+Date: Fri, 29 Aug 2008 10:37:09 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "=?ISO-8859-1?Q?J.A._Magall=F3n?=" <jamagallon@ono.com>
+Subject: Re: Out of mtrrs
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <8EF35F63-8FF6-483F-9DED-D573C40430C8@ono.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200808291933.43331.elendil@planet.nl>
-X-OriginalArrivalTime: 29 Aug 2008 17:33:43.0608 (UTC) FILETIME=[62397B80:01C909FD]
+References: <BEE3259F-0ED8-4030-9CA5-D8892C9096C2@ono.com>
+	 <20080829090139.30c69ead@infradead.org>
+	 <8EF35F63-8FF6-483F-9DED-D573C40430C8@ono.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just replying to one comment now, the rest will need more thought :-)
-
-On Friday 29 August 2008, Alan Stern wrote:
-> > Two problems:
-> > - CONFIG_USB_DEBUG causes such a huge load of output that it is
-> > totally unacceptable to have that enabled permanently for a running
-> > system
+On Fri, Aug 29, 2008 at 9:17 AM, "J.A. Magallón" <jamagallon@ono.com> wrote:
 >
-> It shouldn't do that.  Almost all of the extra output occurs when
-> devices are plugged in or unplugged; during normal operation there
-> should be very few extra messages.  (Depending on what USB drivers you
-> use, I suppose...)
+> On 2008.08.29, at 18:01, Arjan van de Ven wrote:
+>
+>> On Fri, 29 Aug 2008 17:32:49 +0200
+>> ""J.A. Magallón"" <jamagallon@ono.com> wrote:
+>>
+>>> Hi all...
+>>>
+>>> I'm using the xorg intel driver, and drm/X report it has no free mtrrs
+>>> in kernel to set up:
+>>>
+>>> one:~# cat /proc/mtrr
+>>> reg00: base=0xfffe0000 (4095MB), size= 128KB: write-protect, count=1
+>>> reg01: base=0xfffc0000 (4095MB), size= 128KB: uncachable, count=1
+>>> reg02: base=0x00000000 (   0MB), size= 256MB: write-back, count=1
+>>> reg03: base=0x10000000 ( 256MB), size= 256MB: write-back, count=1
+>>> reg04: base=0x1f800000 ( 504MB), size=   8MB: uncachable, count=1
+>>> reg05: base=0x1f600000 ( 502MB), size=   2MB: uncachable, count=1
+>>> reg06: base=0x1f500000 ( 501MB), size=   1MB: uncachable, count=1
+>>> reg07: base=0x00000000 (   0MB), size= 128KB: uncachable, count=1
+>>>
+>
+> with disable_mtrr_trim, I get te same:
+>
+> reg00: base=0xfffe0000 (4095MB), size= 128KB: write-protect, count=1
+> reg01: base=0xfffc0000 (4095MB), size= 128KB: uncachable, count=1
+> reg02: base=0x00000000 (   0MB), size= 256MB: write-back, count=1
+> reg03: base=0x10000000 ( 256MB), size= 256MB: write-back, count=1
+> reg04: base=0x1f800000 ( 504MB), size=   8MB: uncachable, count=1
+> reg05: base=0x1f600000 ( 502MB), size=   2MB: uncachable, count=1
+> reg06: base=0x1f500000 ( 501MB), size=   1MB: uncachable, count=1
+> reg07: base=0x00000000 (   0MB), size= 128KB: uncachable, count=1
+>
 
-Here's a snippet of what I got when I enabled USB debug recently:
-[...]
-Aug  6 22:06:23 faramir kernel: hub 2-0:1.0: hub_resume
-Aug  6 22:06:23 faramir kernel: hub 2-0:1.0: state 7 ports 2 chg 0000 evt 0000
-Aug  6 22:06:23 faramir kernel: usb usb1: usb auto-resume
-Aug  6 22:06:23 faramir kernel: usb usb1: wakeup_rh
-Aug  6 22:06:23 faramir kernel: hub 1-0:1.0: hub_resume
-Aug  6 22:06:23 faramir kernel: hub 1-0:1.0: state 7 ports 2 chg 0000 evt 0000
-Aug  6 22:06:24 faramir kernel: usb usb2: suspend_rh (auto-stop)
-Aug  6 22:06:24 faramir kernel: usb usb1: suspend_rh (auto-stop)
-Aug  6 22:06:25 faramir kernel: hub 5-0:1.0: hub_suspend
-Aug  6 22:06:25 faramir kernel: usb usb5: bus auto-suspend
-Aug  6 22:06:25 faramir kernel: ehci_hcd 0000:00:1d.7: suspend root hub
-Aug  6 22:06:25 faramir kernel: hub 2-0:1.0: hub_suspend
-Aug  6 22:06:25 faramir kernel: usb usb2: bus auto-suspend
-Aug  6 22:06:25 faramir kernel: usb usb2: suspend_rh
-Aug  6 22:06:25 faramir kernel: hub 1-0:1.0: hub_suspend
-Aug  6 22:06:25 faramir kernel: usb usb1: bus auto-suspend
-Aug  6 22:06:25 faramir kernel: usb usb1: suspend_rh
-Aug  6 22:06:28 faramir kernel: usb usb5: usb auto-resume
-Aug  6 22:06:28 faramir kernel: ehci_hcd 0000:00:1d.7: resume root hub
-Aug  6 22:06:28 faramir kernel: hub 5-0:1.0: hub_resume
-Aug  6 22:06:28 faramir kernel: hub 5-0:1.0: state 7 ports 8 chg 0000 evt fe00
-Aug  6 22:06:28 faramir kernel: usb usb2: usb auto-resume
-Aug  6 22:06:28 faramir kernel: usb usb2: wakeup_rh
-Aug  6 22:06:28 faramir kernel: hub 2-0:1.0: hub_resume
-Aug  6 22:06:28 faramir kernel: usb usb1: usb auto-resume
-Aug  6 22:06:28 faramir kernel: usb usb1: wakeup_rh
-Aug  6 22:06:28 faramir kernel: hub 2-0:1.0: state 7 ports 2 chg 0000 evt 0000
-Aug  6 22:06:28 faramir kernel: hub 1-0:1.0: hub_resume
-Aug  6 22:06:28 faramir kernel: hub 1-0:1.0: state 7 ports 2 chg 0000 evt 0000
-Aug  6 22:06:29 faramir kernel: usb usb2: suspend_rh (auto-stop)
-Aug  6 22:06:29 faramir kernel: usb usb1: suspend_rh (auto-stop)
-[...]
+the mtrr looks crazy from setting by BIOS...
 
-AFAIK I have not enabled anything special in userland when it comes to
-USB suspension; this is just a standard boot.
-I do have CONFIG_USB_SUSPEND enabled though, so maybe one should not do that
-when using USB_DEBUG?
+32bit or 64bit?
+
+please set
+CONFIG_MTRR=y
+CONFIG_MTRR_SANITIZER=y
+CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
+CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
+
+and boot with "debug" in boot command line...
+
+and send out
+
+dmesg -s 262144 > dmesg.txt
+
+YH
