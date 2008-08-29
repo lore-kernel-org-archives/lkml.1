@@ -1,47 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYH2Pga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756625AbYH2Pgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbYH2Pga (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 11:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbYH2PgW
+	id S1756625AbYH2Pgw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 11:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYH2Pgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 11:36:22 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:58926 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750971AbYH2PgV (ORCPT
+	Fri, 29 Aug 2008 11:36:43 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:51161 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751413AbYH2Pgm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 11:36:21 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 4/5] select: make select() use schedule_hrtimeout()
-Date: Fri, 29 Aug 2008 17:36:08 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de,
-       torvalds@linux-foundation.org
-References: <20080829080549.6906b744@infradead.org> <20080829080809.0e42a323@infradead.org>
-In-Reply-To: <20080829080809.0e42a323@infradead.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 29 Aug 2008 11:36:42 -0400
+Date: Fri, 29 Aug 2008 09:36:25 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Greg KH <greg@kroah.com>
+Cc: linux-usb@vger.kernel.org, bgmerrell@novell.com,
+       hirofuchi@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       usbip-devel@lists.sourceforge.net
+Subject: Re: USBIP protocol
+Message-ID: <20080829153625.GF1968@parisc-linux.org>
+References: <20080829140224.GC1968@parisc-linux.org> <20080829143017.GB18086@kroah.com> <20080829144354.GD1968@parisc-linux.org> <20080829145407.GB18423@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808291736.09400.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/awFnhnUfQrKBsX3V93Rhfv7tZtb4PrOke6oC
- nBkqWQjJ0hXTnVapN32Gg9sfxXz+tTxo+q0XtRzZACfPPox9fH
- a1sjA/8Q7q4RKNBygHjEA==
+In-Reply-To: <20080829145407.GB18423@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 29 August 2008, Arjan van de Ven wrote:
-> This is only done for delays shorter than 1 second; currently
-> the assumption is that longer delays have no desire to get the
-> higher accuracy.
+On Fri, Aug 29, 2008 at 07:54:07AM -0700, Greg KH wrote:
+> On Fri, Aug 29, 2008 at 08:43:54AM -0600, Matthew Wilcox wrote:
+> > On Fri, Aug 29, 2008 at 07:30:17AM -0700, Greg KH wrote:
+> > > On Fri, Aug 29, 2008 at 08:02:24AM -0600, Matthew Wilcox wrote:
+> > > > 
+> > > > I'm in the middle of implementing a userspace client for usbip and I
+> > > > strongly feel that the protocol needs to be changed before it is merged.
+> > > > 
+> > > >  - I'm unconvinced that TCP is the correct protocol to be running this over.
+> > > >    I understand the reluctance to use UDP, but the protocol is fundamentally
+> > > >    packet-based.  If TCP is used, the delimitation of packets within the
+> > > >    stream needs to be much more robust.  I've managed to wedge the VHCI driver
+> > > >    a number of times in ways that just wouldn't be possible if we were using
+> > > >    a packet protocol instead of a stream protocol.
+> > > 
+> > > USB is fundamentally packet-based, so it kind of fits very well.
+> > 
+> > Erm, did you not read what I wrote?  USB is packet based.  TCP isn't.
+> > We shouldn't be using TCP here.
+> 
+> Sorry, early morning, no coffee yet...
+> 
+> I think in the end, we should still use TCP otherwise you just end up
+> reinventing it with UDP :)
 
-What is the tradeoff here? Where is the advantage in using the
-traditional timer interface for longer timeouts?
+Which brings us to the alternate -- that we need better framing in the
+protocol.
 
-	Arnd <><
+> Ok, switch it all to be little endian, not a bit deal.
+
+No, but it does need agreement ;-)
+
+> > > >  - There are actually two completely different protocols in use.  First,
+> > > >    the usbipd daemon listens on port 3240, and handles device discovery.
+> > > >    When usbip successfully attaches to usbipd, both sides of the connection
+> > > >    pass the socket fd into the kernel and the protocol changes.
+> > > >  - The protocol sends a 48-byte packet header for every command (and every
+> > > >    response).  It's cunningly hidden as a union.
+> > > 
+> > > Is that a real problem?
+> > 
+> > Yes, it really is.  It complicates the protocol, complicates the
+> > implementation, introduces unnecessary state, and makes it impossible to
+> > renegotiate on the same connection.
+> 
+> Fair enough, patches welcome :)
+
+Patches don't seem appropriate for a design discussion.  I'm more than
+happy to make suggestions about how to unify the two protocols.  I'll
+send a followup to this with some ideas.
+
+> > Even if we don't go through the RFC process, just writing down the
+> > on-wire protocol should be mandatory for taking this kind of thing into
+> > the kernel.
+> 
+> Why, isn't the actual implementation better than a document?  :)
+
+Surely you know that writing things down forces you to understand it
+better?
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
