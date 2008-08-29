@@ -1,89 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755012AbYH2PXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbYH2PWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755012AbYH2PXN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 11:23:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbYH2PWS
+	id S1755757AbYH2PWe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 11:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbYH2PVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 11:22:18 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:51964 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755220AbYH2PWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 11:22:16 -0400
-Date: Sat, 30 Aug 2008 00:22:15 +0900 (JST)
-Message-Id: <20080830.002215.128620618.anemo@mba.ocn.ne.jp>
-To: david@fries.net
-Cc: linux-kernel@vger.kernel.org, p_gortmaker@yahoo.com
-Subject: Re: [PATCH] ne.c fix for hibernate and rmmod oops fix
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080828041110.GA9404@spacedout.fries.net>
-References: <20080828041110.GA9404@spacedout.fries.net>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 29 Aug 2008 11:21:30 -0400
+Received: from silene.metacarta.com ([208.80.142.18]:36937 "EHLO
+	silene.metacarta.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753327AbYH2PV2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 11:21:28 -0400
+Date: Fri, 29 Aug 2008 11:21:26 -0400 (EDT)
+From: Joe Malicki <jmalicki@metacarta.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: David Miller <davem@davemloft.net>, andi@firstfloor.org,
+       johnpol@2ka.mipt.ru, dada1@cosmosbay.com, denys@visp.net.lb,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       juhlenko@akamai.com, sammy@sammy.net
+Message-ID: <32566205.1357331220023286187.JavaMail.root@ouachita>
+In-Reply-To: <20080828072218.GI26610@one.firstfloor.org>
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
+X-Originating-IP: [208.80.142.151]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Aug 2008 23:11:15 -0500, David Fries <david@fries.net> wrote:
-> do_ne_probe uses dev->mem_end special value 0xbad as a flag to deal
-> specially when some bad, but usable devices.  The io port platform
-> resource has a start and end, but if start is 0x300 and end is 0xbad,
-> it will just fail with io ports in use and not probe the device.  Is
-> using the flag IORESOURCE_DISABLED acceptable?  There doesn't seem to
-> be any good way to pass some extra driver dependent data through to
-> the platform probe function.
+
+
+----- "Andi Kleen" <andi@firstfloor.org> wrote:
+> > I've worked with systems where SO_TIMESTAMP has been used for
+> > H.323 videoconferencing systems to synchronize audio and video
 > 
-> +	/* Bad, crippled, how about disabled?
-> +	 * Any other suggestions for passing this through?
-> +	 */
-> +	if (dev->mem_end == BAD)
-> +		r[0].flags |= IORESOURCE_DISABLED;
+> But didn't you really want a "end2end" time stamp in this case,
+> as in really at the end of all kernel/hardware queues on your side.
 
-I'm not sure IORESOURCE_DISABLED is OK, but (ab)using r[0].name might
-be safer. Something like this:
+No.
 
-	if (dev->mem_end == BAD)
-		r[0].name = "bad";
+That adds variance, and packets aren't comparable because they may
+suffer different kernel/hardware delays.
 
->     platform_driver support was added earlier, but without any
->     platform_device_register* calls I don't think it was being used.
+The goal is to approximate original sendtime when the application-level
+timestamps are unreliable.  The more queueing delays that can be
+taken out of the timestamp, the better.
 
-Well, I added platform_driver support for some MIPS board.  I did not
-touch ISA part at that time while it looks too complex for me.  Thank
-you for better integration.
+> A packet roughly travels this way on a normal NIC before it hits
+> recvmsg()
+> 
+> wire -> NIC on die buffers -> NIC RX ring -> interrupt handler -> 
+> NAPI or per CPU queue -> softirq socket lookup -> socket queue ->
+> recvmsg
+> 
+> These all do their own queuing and all queues can add delays
+> depending
+> on the load.  Right now SO_TIMESTAMP is in the interrupt handler,
+> but it's just an arbitary position in a multitude of queues.
+> 
 
->     Now all devices are registered using platform_device_register_simple and
->     pointers are kept to unregister the ones that the probe failed for or
->     unregister all devices on module shutdown.  ne_init and ne_exit are no
->     longer compiled into the module to reduce confusion (and multiple
->     unregister paths that caused the rmmod oops).  With the devices
->     now registered they are added to the platform driver and get suspend
->     and resume events.  A call to pnp_stop_dev and pnp_start_dev now
->     shutsdown and initializes plug and play devices.
+If it could be even earlier, it would be better.
 
-With your patch, cleanup_module() and ne_exit() is exactly same.  How
-about unifying them?
+> For video conferencing (or e.g. in general if you implement a
+> retransmit 
+> timeout in user space) scheduling delays on the local box
+> surely need to be taken into account too because they all add
+> to the final timing of the packets on the wire.
 
->     mdelay(10) replaced by msleep(10) to give up the CPU.
+For retransmit timeouts, that might be interesting, and might be
+one case where it is interesting.  But then what value does
+SO_TIMESTAMP have, since you could call gettimeofday() immediately
+after receipt, and also include application scheduling delays?
 
-I think this part is worth to do by separate patch.
+For videoconferencing, one wants to know when to display a packet
+as compared to other packets.
 
-> +	struct resource r[2] = {
-> +		{
-> +			.name = "io_port",
-> +			.flags = IORESOURCE_IO},
-> +		{
-> +			.name = "irq",
-> +			.flags = IORESOURCE_IRQ} };
+> The queues inside the system are really part of the network
+> too. In Linux for example the algorithms who size the TCP 
+> buffer space know that and especially take account for it
+> and reserve a local queue buffer. 
+> 
+> > where remote systems' timestamps on the protocol streams proved
+> > to be inaccurate (based off of different, unsynchronized clocks).
+> 
+> Yes, but why ignore local scheduling delays? 
 
-This .name initialization seems a bit redundant for me.  They can be
-left NULL.
+Because one would want to ignore even network scheduling delays
+if possible... unfortunately in some instances it's not.
 
-Also I'd suggest CC-ing your patch to netdev@vger.kerne.org for more
-reviews from genius people.
+> > 
+> > I can't see any other realistic use of this, but trying to get
+> > timestamps for quasi-realtime protocols may be an important use
+> > case - and in that case, you want the time when it hits the
+> > interface, NOT when it hits the socket.
+> 
+> I think it's the other way round. Why would the real time 
+> protocol care when it hits some arbitary queue in the network
+> stack instead of the time when the application can really
+> read the data?
+>  
+> > What utility does the time of hitting the socket get you?
+> 
+> SO_TIMESTAMP was originally invented for passive network
+> monitoring as in tcpdump (for which PACKET sockets were designed
+> originally, DHCP is really just abusing them imho). There it makes 
+> some sense to do the time stamp as near on the wire as possible
+> but really a hardware time stamp would be better because
+> it is even nearer. But for anything that does end2end it's
+> the wrong semantics anyways because ignoring local queueing 
+> delays would be just a bug, and SO_TIMESTAMP ignores them currently.
+> 
+> -Andi
+> 
+> -- 
+> ak@linux.intel.com
 
----
-Atsushi Nemoto
+Why would you want to do end-to-end with SO_TIMESTAMP, vs. gettimeofday
+after recv?
