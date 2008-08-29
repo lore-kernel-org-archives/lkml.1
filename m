@@ -1,164 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbYH2Acx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757724AbYH2AdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755883AbYH2Acx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Aug 2008 20:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbYH2Acn
+	id S1757724AbYH2AdU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Aug 2008 20:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbYH2AdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Aug 2008 20:32:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43619 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753683AbYH2Acm (ORCPT
+	Thu, 28 Aug 2008 20:33:00 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:42836 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753194AbYH2Ac7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Aug 2008 20:32:42 -0400
-Date: Thu, 28 Aug 2008 17:32:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: mgross@linux.intel.com
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       peterz@infradead.org, rostedt@goodmis.org, mingo@elte.hu,
-       tglx@linutronix.de, arjan@infradead.org, jkacur@gmail.com
-Subject: Re: [PATCH RFC] pm_qos_requirement might sleep
-Message-Id: <20080828173201.8912a1f3.akpm@linux-foundation.org>
-In-Reply-To: <20080828194420.GB6802@linux.intel.com>
-References: <20080812224926.GA20652@linux.intel.com>
-	<520f0cf10808130124o301b6691ra37ac9007120b9df@mail.gmail.com>
-	<20080814155241.GA31050@linux.intel.com>
-	<1218736137.10800.234.camel@twins>
-	<520f0cf10808141551k283aecb8y647d0f5ae321b81f@mail.gmail.com>
-	<20080825163412.GA21910@linux.intel.com>
-	<1219682129.8515.81.camel@twins>
-	<520f0cf10808260148k47368b71he2737ea1a59bbe4d@mail.gmail.com>
-	<20080826161802.GB9862@linux.intel.com>
-	<520f0cf10808261045v9dddcdcnd1a86b224aa3feb0@mail.gmail.com>
-	<20080828194420.GB6802@linux.intel.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 28 Aug 2008 20:32:59 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=y13lHWZPSzHL3SqpP/fNxI3++Ntx5LxJvf0n/+ZOZDC3X8vFN4RFEoPisGKx06+qQ5QuycyensNXUTDhfysSx+hn5P26/EHbZbXj1CI0m0SVK/L4AYDLvvtREuOHuzCOGU2T4Hz1VAEBQqJmbjZj2B24Y/+bTzDlPR4QQ4rCsv8=  ;
+X-YMail-OSG: Cn.iWqEVM1l0VJl6uduMYok5gMxsyGlNawyvpeqaUn5sj4uA8BT5YY277TaSkgOvGfvSMrYFiA0hYhsZorZUznDQzXOLkIJmVPY8DQ7NspHQ9NGREdBdGRlDudLMJVDmQs1pkqMhrjb757hpQj6CVqAa
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2.6.27-rc4] rtc-cmos: wakes again from S5
+Date: Thu, 28 Aug 2008 17:32:57 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Stefan.Becker@nokia.com, rjw@sisk.pl
+References: <200808281129.35611.david-b@pacbell.net> <20080828172206.5e083817.akpm@linux-foundation.org>
+In-Reply-To: <20080828172206.5e083817.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808281732.57394.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Aug 2008 12:44:20 -0700
-mark gross <mgross@linux.intel.com> wrote:
-
-> From: John Kacur <jkacur at gmail dot com>
-
-I tend to deobfuscate email addresses when preparing the changelogs.
-
-Not sure why, really, and I feel a bit guilty about doing it (hey, you
-can forward the resulting spam to me if you like).  One reason I guess
-is to avoid breaking all the emails which my scripts will automatically
-send out as the patch goes through its little lifecycle.  Some of which
-can sometimes be quite important.
-
-> Patch to make PM_QOS and CPU_IDLE play nicer when ran with the
-> RT-Preempt kernel.  CPU_IDLE polls the target_value's of some of the
-> pm_qos parameters from the idle loop causing sleeping locking
-> warnings.  Changing the target_value to an atomic avoids this issue.
+On Thursday 28 August 2008, Andrew Morton wrote:
+> On Thu, 28 Aug 2008 11:29:35 -0700
+> David Brownell <david-b@pacbell.net> wrote:
 > 
-> Signed-off-by: mark gross <mgross@linux.intel.com>
+> > +	if (system_state == SYSTEM_POWER_OFF && !cmos_poweroff(pdev))
 > 
-> Thanks,
+> erp, system_state is a pretty horrid thing.  It's a global with
+> relatively poorly defined transition conditions which have actually
+> changed over time.
+
+True, but it's the best we've got for this kind of thing.
+Globals ... yeech.
+
+
+> It was not my greatest ever idea.  It was simple and expedient at the
+> time and expanded use of it was "discouraged" (rofl).
 > 
-> --mgross
-> 
-> 
-> Remove the spinlock in pm_qos_requirement by making target_value an atomic type.
-> This is necessary for real-time since pm_qos_requirement is called by idle and
-> cannot be allowed to sleep.
-> Signed-off-by: John Kacur <jkacur at gmail dot com>
+> Is there no alternative?
 
-As usual when I get two different changelogs, I create a masterpiece
-which is better than either of the originals!
+My general belief is that there should be a set of predicates
+that drivers use to test whether or not the target system state
+satisfies various prerequisites.  Like whether a clock or power
+domain must be disabled, and so on.
 
-> Index: linux-2.6/kernel/pm_qos_params.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/pm_qos_params.c	2008-08-08 07:52:01.000000000 -0700
-> +++ linux-2.6/kernel/pm_qos_params.c	2008-08-28 12:14:55.000000000 -0700
-> @@ -43,7 +43,7 @@
->  #include <linux/uaccess.h>
->  
->  /*
-> - * locking rule: all changes to target_value or requirements or notifiers lists
-> + * locking rule: all changes to requirements or notifiers lists
->   * or pm_qos_object list and pm_qos_objects need to happen with pm_qos_lock
->   * held, taken with _irqsave.  One lock to rule them all
->   */
-> @@ -66,7 +66,7 @@
->  	struct miscdevice pm_qos_power_miscdev;
->  	char *name;
->  	s32 default_value;
-> -	s32 target_value;
-> +	atomic_t target_value;
->  	s32 (*comparitor)(s32, s32);
->  };
->  
-> @@ -77,7 +77,7 @@
->  	.notifiers = &cpu_dma_lat_notifier,
->  	.name = "cpu_dma_latency",
->  	.default_value = 2000 * USEC_PER_SEC,
-> -	.target_value = 2000 * USEC_PER_SEC,
-> +	.target_value = ATOMIC_INIT(2000 * USEC_PER_SEC),
->  	.comparitor = min_compare
->  };
->  
-> @@ -87,7 +87,7 @@
->  	.notifiers = &network_lat_notifier,
->  	.name = "network_latency",
->  	.default_value = 2000 * USEC_PER_SEC,
-> -	.target_value = 2000 * USEC_PER_SEC,
-> +	.target_value = ATOMIC_INIT(2000 * USEC_PER_SEC),
->  	.comparitor = min_compare
->  };
->  
-> @@ -99,7 +99,7 @@
->  	.notifiers = &network_throughput_notifier,
->  	.name = "network_throughput",
->  	.default_value = 0,
-> -	.target_value = 0,
-> +	.target_value = ATOMIC_INIT(0),
->  	.comparitor = max_compare
->  };
->  
-> @@ -150,11 +150,11 @@
->  		extreme_value = pm_qos_array[target]->comparitor(
->  				extreme_value, node->value);
->  	}
-> -	if (pm_qos_array[target]->target_value != extreme_value) {
-> +	if (atomic_read(&pm_qos_array[target]->target_value) != extreme_value) {
->  		call_notifier = 1;
-> -		pm_qos_array[target]->target_value = extreme_value;
-> +		atomic_set(&pm_qos_array[target]->target_value, extreme_value);
->  		pr_debug(KERN_ERR "new target for qos %d is %d\n", target,
-> -			pm_qos_array[target]->target_value);
-> +			atomic_read(&pm_qos_array[target]->target_value));
->  	}
->  	spin_unlock_irqrestore(&pm_qos_lock, flags);
->  
-> @@ -193,14 +193,7 @@
->   */
->  int pm_qos_requirement(int pm_qos_class)
->  {
-> -	int ret_val;
-> -	unsigned long flags;
-> -
-> -	spin_lock_irqsave(&pm_qos_lock, flags);
-> -	ret_val = pm_qos_array[pm_qos_class]->target_value;
-> -	spin_unlock_irqrestore(&pm_qos_lock, flags);
-> -
-> -	return ret_val;
-> +	return atomic_read(&pm_qos_array[pm_qos_class]->target_value);
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_requirement);
+In this specific case, a system_is_powering_down() predicate is
+the logical application of that policy to this problem.
 
-OK, so I've stared and stared.  This patch doesn't do anything.
+- Dave
 
-I'm suspecting that the rt patch might be doing something silly, like
-thinking that it needs to take pm_qos_lock to read a single word from
-memory, or something like that.
 
-But this patch is simply not understandable given the amount of
-information which you guys have provided.
-
-Help?
 
