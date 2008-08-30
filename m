@@ -1,103 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbYH3Dui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751895AbYH3EXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758135AbYH3Dui (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 23:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbYH3Du3
+	id S1751895AbYH3EXe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 00:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750777AbYH3EXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 23:50:29 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37333 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754247AbYH3Du2 (ORCPT
+	Sat, 30 Aug 2008 00:23:25 -0400
+Received: from mga11.intel.com ([192.55.52.93]:63193 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750756AbYH3EXY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 23:50:28 -0400
-Date: Fri, 29 Aug 2008 13:01:33 -0700
-From: Greg KH <greg@kroah.com>
-To: Marcel Janssen <korgull@home.nl>
-Cc: stefan_kopp@agilent.com, stern@rowland.harvard.edu, oliver@neukum.org,
-       linux-usb@vger.kernel.org, me@felipebalbi.com,
-       linux-kernel@vger.kernel.org, Marcel Janssen <marcel.janssen@admesy.nl>
-Subject: Re: [PATCH] USB: add USB test and measurement class driver - round
-	2
-Message-ID: <20080829200133.GA20682@kroah.com>
-References: <20080827183615.GA15692@kroah.com> <7D8F552F9FFBAC438A816966BEC4516BFBA328@cos-us-mb07.cos.agilent.com> <20080829143902.GC18136@kroah.com> <200808291841.15853.korgull@home.nl>
+	Sat, 30 Aug 2008 00:23:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,295,1217833200"; 
+   d="scan'208";a="610995161"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808291841.15853.korgull@home.nl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: refcount leak in pci_get_device()?
+Date: Sat, 30 Aug 2008 12:23:20 +0800
+Message-ID: <7A25B56E4BE99C4283EB931CD1A40E110177E488@pdsmsx414.ccr.corp.intel.com>
+In-Reply-To: <20080821221438.GC20014@ldl.fc.hp.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: refcount leak in pci_get_device()?
+Thread-Index: AckD23noVavNC9peTpiSOQNGwz4ySwGevwMg
+References: <20080821201918.GA24411@ldl.fc.hp.com> <20080821202504.GU8318@parisc-linux.org> <20080821204758.GB31543@suse.de> <20080821221438.GC20014@ldl.fc.hp.com>
+From: "Zhao, Yu" <yu.zhao@intel.com>
+To: "Alex Chiang" <achiang@hp.com>, "Greg KH" <gregkh@suse.de>
+Cc: "Matthew Wilcox" <matthew@wil.cx>, <linux-pci@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 30 Aug 2008 04:23:23.0060 (UTC) FILETIME=[23C9D740:01C90A58]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 29, 2008 at 06:41:15PM +0200, Marcel Janssen wrote:
-> On Friday 29 August 2008 16:39:02 Greg KH wrote:
-> > > The issue with using cat on the shell level is that it uses fread
-> > > which has the (in this case) ugly behaviour of recalling the driver's
-> > > read method until the full number of characters requested has been
-> > > accumulated (or until zero characters are returned, indicating the end
-> > > of file). With USBTMC instruments, this behavour is bad because the
-> > > retry will not just return zero characters, it will cause a timeout
-> > > with the associated error condition in the device. So, to enable the
-> > > use of echo/cat, I added some fread handling to the driver (which
-> > > catches the retries). I believe this also has been removed, so I
-> > > assume cat/fread will not work (?).
-> >
-> > I do not know, but we do not do wierd things in the kernel just because
-> > of broken userspace programs.  This logic should be done in userspace,
-> > and programs should look at the return value of read() and handle it
-> > properly.  Otherwise it is a bug.
-> 
-> I don't think this is broken in user space. The problem is that when you issue 
-> a measurement command it is not known how many bytes it will return. This is 
-> probably due to ASCII output being very common in  T&M devices instead of raw 
-> data (int, float etc). The ASCII formatting is done in the device and this 
-> returns just a string which may or may not be terminated by the term char. 
-> This is of course not true for all T&M devices, but the majority works this 
-> way. 
-> 
-> I admit that the above produces a lot of overhead, but it's just a fact that 
-> T&M devices work this way, including ours for most of their data processing 
-> (not all though). 
+And the pci_get_dev_by_id() is not safe again the PCI device removal. It might fire a warning in bus_find_device() when reference count of the knode_bus is decreased to 0 by pci_remove_bus().
 
-How is this overhead in userspace, just do something like the following:
-	char big_buffer[16000];		/* bigger than any possible request */
-	size = read(file_desc, &big_buffer[0], sizeof(big_buffer));
+Need to document this or a fix?
 
-and size is the amount of data you actually read from the device, i.e.
-one request.
+Thanks,
+Yu
 
-> I think the USBTMC spec is quite clear on how it should be implemented on 
-> messaging level. Basically when you issue  the command "*IDN?" the device 
-> will process this and return the device ID string. The length of this string 
-> is set in the TransferSize of the 12 byte header that the device returns. The 
-> problem when you issue a read command is that the read command does not yet 
-> know how much data to expect. It should issue the  REQUEST_DEV_DEP_MSG_IN 
-> first and set the TransferSize value high enough.
-> In the USBTMC_488 extension you find an example (chapter 3.3.1 page 7) that 
-> shows the REQUEST_DEV_DEP_MSG_IN TransferSize being set to 64 although the 
-> actual data being returned from the device is less (only 36 bytes).
-> 
-> What you do see in practice is that when someone would issue a read command 
-> and asking for less bytes than are available is that the user program may 
-> handle this as a warning telling the user that he did not request all 
-> available data. 
-
-Then that's a userspace bug, don't do that in your program that reads
-from these types of devices :)
-
-> Stefan's driver works exactly the way I would expect from a users point of 
-> view. Whether the implementation can be improved is another issue, but the 
-> behaviour is correct and compliant with other usbtmc drivers on other 
-> platforms.
-
-But it's not compliant with the "standard" way of using a file
-descriptor in unix, and might break some POSIX requirements as well (I'm
-not a good POSIX follower, so I don't know for sure...)
-
-As this is trivial to handle in userspace, and requires no additional
-wierd code in the kernel driver, I don't see this as something we should
-change the driver for.
-
-thanks,
-
-greg k-h
+On Friday, August 22, 2008 6:15 AM, Alex Chiang wrote:
+>* Greg KH <gregkh@suse.de>:
+>> On Thu, Aug 21, 2008 at 02:25:04PM -0600, Matthew Wilcox wrote:
+>> > On Thu, Aug 21, 2008 at 02:19:18PM -0600, Alex Chiang wrote:
+>> > > #define for_each_pci_dev(d) while ((d = pci_get_device(PCI_ANY_ID,
+>PCI_ANY_ID, d)) != NULL)
+>> > >
+>> > > That eventually calls pci_get_dev_by_id(), which increases the
+>> > > refcount on the device, but never decrements it.
+>> > >
+>> > > Looks like that change in behavior happened here:
+>> > >
+>> > > 	PCI: clean up search.c a lot
+>> > > 	95247b57ed844511a212265b45cf9a919753aea1
+>> > >
+>> > > pci_get_device() used to decrement the refcount, but no longer
+>> > > does.
+>> > >
+>> > > Thanks to Matthew Wilcox for helping me get this far...
+>> > >
+>> > > Like I said, I'm still trying to track down my particular issue,
+>> > > but I'd like to get your opinion on this.
+>> >
+>> > In particular, I'd like to know whether this should be fixed by
+>> > pci_get_dev_by_id() decrementing the refcount of from/dev_start,
+>> > pci_get_subsys() decrementing 'from', or by bus_find_device()
+>> > decrementing 'start'.  It looks like bus_find_device() is the place
+>> > where this should logically happen, but the kerneldoc doesn't document
+>> > the intended behaviour.
+>>
+>> Ah, no the driver core isn't supposed to do this, it's something the pci
+>> functions do out of "niceness" as that's how we can use them in an
+>> iterator properly.
+>>
+>> Does the following (untested) patch fix the issue for you all?
+>
+>Perfect, yes.
+>
+>I applied it, and observed the refcount on the device I was using
+>to debug this problem.
+>
+>I was able to modprobe acpiphp successfully, and echo 0 into the
+>device's 'power' file.
+>
+>I then watched the rest of the hotplug core do its thing,
+>decrementing the refcount properly along the way, and at the end,
+>we did call pci_release_dev(), as I originally expected to. :)
+>
+>Just to verify, I toggled the device's power a few times (echoing
+>a 1 and then a 0, etc.) and watched the refcounts. After each
+>offline, we properly called pci_release_dev().
+>
+>Thanks for fixing this. It fixes a pretty bad leak in the hotplug
+>core (we were leaking an entire struct pci_dev * # of functions
+>for each offlined card, the first time around; subsequent
+>onlines/offlines were ok).
+>
+>Tested-by: Alex Chiang <achiang@hp.com>
+>
+>/ac
+>
+>>
+>> thanks,
+>>
+>> greg k-h
+>>
+>> --------------
+>> Subject: PCI: fix reference leak in pci_get_dev_by_id()
+>>
+>> From: Greg Kroah-Hartman <gregkh@suse.de>
+>>
+>> Alex Chiang and Matthew Wilcox pointed out that pci_get_dev_by_id() does
+>> not properly decrement the reference on the from pointer if it is
+>> present, like the documentation for the function states it will.
+>>
+>> Cc: Matthew Wilcox <matthew@wil.cx>
+>> Cc: Alex Chiang <achiang@hp.com>
+>> Cc: stable <stable@kernel.org>
+>> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>>
+>>
+>> diff --git a/drivers/pci/search.c b/drivers/pci/search.c
+>> index 217814f..3b3b5f1 100644
+>> --- a/drivers/pci/search.c
+>> +++ b/drivers/pci/search.c
+>> @@ -280,6 +280,8 @@ static struct pci_dev *pci_get_dev_by_id(const struct
+>pci_device_id *id,
+>>  			      match_pci_dev_by_id);
+>>  	if (dev)
+>>  		pdev = to_pci_dev(dev);
+>> +	if (from)
+>> +		pci_dev_put(from);
+>>  	return pdev;
+>>  }
+>>
+>>
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
