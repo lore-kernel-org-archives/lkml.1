@@ -1,228 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbYH3Mgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756350AbYH3Mij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756080AbYH3Mgy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 08:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbYH3Mgq
+	id S1756350AbYH3Mij (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 08:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbYH3Mia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 08:36:46 -0400
-Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:4722 "EHLO
-	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751206AbYH3Mgp (ORCPT
+	Sat, 30 Aug 2008 08:38:30 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60753 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbYH3Mi3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 08:36:45 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 1/2] byteorder: add a new include/linux/swab.h to define byteswapping functions
-Date: Sat, 30 Aug 2008 14:36:22 +0200
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, v4l <video4linux-list@redhat.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-References: <1218324197.24441.20.camel@brick>
-In-Reply-To: <1218324197.24441.20.camel@brick>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Sat, 30 Aug 2008 08:38:29 -0400
+Subject: Re: [RT PATCH v2] seqlock: serialize against writers
+From: Peter Zijlstra <peterz@infradead.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       gregory.haskins@gmail.com, andi@firstfloor.org, shemminger@vyatta.com
+In-Reply-To: <48B93DCD.2010503@novell.com>
+References: <20080829154237.1196.66825.stgit@dev.haskins.net>
+	 <20080829180135.22450.54780.stgit@dev.haskins.net>
+	 <1220095043.8426.16.camel@twins>  <48B93DCD.2010503@novell.com>
+Content-Type: text/plain
+Date: Sat, 30 Aug 2008 14:38:19 +0200
+Message-Id: <1220099899.8426.34.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808301436.22322.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Harvey,
+On Sat, 2008-08-30 at 08:32 -0400, Gregory Haskins wrote:
+> Peter Zijlstra wrote:
+> > On Fri, 2008-08-29 at 14:03 -0400, Gregory Haskins wrote:
+> >   
+> >> *Patch submitted for inclusion in PREEMPT_RT 26-rt4.  Applies to 2.6.26.3-rt3*
+> >>
+> >> Hi Ingo, Steven, Thomas,
+> >>   Please consider for -rt4.  This fixes a nasty deadlock on my systems under
+> >>   heavy load.
+> >>
+> >> [
+> >> Changelog:
+> >> 	v2: only touch seqlock_t because raw_seqlock_t doesn't require
+> >> 	    serialization and userspace cannot modify data during a read
+> >>
+> >> 	v1: initial release
+> >> ]
+> >>
+> >> -Greg
+> >>
+> >> ----
+> >> seqlock: serialize against writers
+> >>
+> >> Seqlocks have always advertised that readers do not "block", but this was
+> >> never really true.  Readers have always logically blocked at the head of
+> >> the critical section under contention with writers, regardless of whether
+> >> they were allowed to run code or not.
+> >>
+> >> Recent changes in this space (88a411c07b6fedcfc97b8dc51ae18540bd2beda0)
+> >> have turned this into a more explicit blocking operation in mainline.
+> >> However, this change highlights a short-coming in -rt because the
+> >> normal seqlock_ts are preemptible.  This means that we can potentially
+> >> deadlock should a reader spin waiting for a write critical-section to end
+> >> while the writer is preempted.
+> >>     
+> >
+> > Ah, the point I was missing is higher-priority realtime task, in which
+> > case the write side will never run because it wont preempt.
+> >   
+> 
+> Yep
+> >   
+> >> This patch changes the internal implementation to use a rwlock and forces
+> >> the readers to serialize with the writers under contention.  This will
+> >> have the advantage that -rt seqlocks_t will sleep the reader if deadlock
+> >> were imminent, and it will pi-boost the writer to prevent inversion.
+> >>
+> >> This fixes a deadlock discovered under testing where all high prioritiy
+> >> readers were hogging the cpus and preventing a writer from releasing the
+> >> lock.
+> >>
+> >> Since seqlocks are designed to be used as rarely-write locks, this should
+> >> not affect the performance in the fast-path
+> >>     
+> >
+> > Still dont like this patch, once you have a rwlock you might as well go
+> > all the way.
+> 
+> Why?  
 
-On Sunday 10 August 2008 01:23:17 Harvey Harrison wrote:
-> Collect the implementations from include/linux/byteorder/swab.h,
-> swabb.h in swab.h
->
-> The functionality provided covers:
-> u16 swab16(u16 val) - return a byteswapped 16 bit value
-> u32 swab32(u32 val) - return a byteswapped 32 bit value
-> u64 swab64(u64 val) - return a byteswapped 64 bit value
-> u32 swahw32(u32 val) - return a wordswapped 32 bit value
-> u32 swahb32(u32 val) - return a high/low byteswapped 32 bit value
->
-> Similar to above, but return swapped value from a naturally-aligned
-> pointer u16 swab16p(u16 *p)
-> u32 swab32p(u32 *p)
-> u64 swab64p(u64 *p)
-> u32 swahw32p(u32 *p)
-> u32 swahb32p(u32 *p)
->
-> Similar to above, but swap the value in-place (in-situ)
-> void swab16s(u16 *p)
-> void swab32s(u32 *p)
-> void swab64s(u64 *p)
-> void swahw32s(u32 *p)
-> void swahb32s(u32 *p)
->
-> Arches can override any of these with an optimized version by
-> defining an inline in their asm/byteorder.h (example given for
-> swab16()):
->
-> u16 __arch_swab16() {}
->  #define __arch_swab16 __arch_swab16
->
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
-> Linus, please apply so I can start getting each arch moved over to
-> the consolidated implementation.  This is an opt-in process to avoid
-> breakage, the old implementation will be removed _after_ all arches
-> have moved over.
->
+Because the second point.
 
-Now that this is merged into 2.6.27-rc5 I'm getting broken builds for 
-linux/drivers/media/dvb/ttpci/av7110.c. It includes 
-<linux/byteorder/swabb.h>. Building on the arm gives this error:
+> A full rwlock will still be much slower since the readers will
+> always need an atomic op.  This construct only uses atomic ops in the
+> slow path under contention, which should be rare, and is thus still
+> superior when retries are permissible to the design.
+> 
+> >  Esp since this half-arsed construct defeats PI in certain
+> > cases.
+> >   
+> 
+> Ouch.  While I admit that you can still get into inversion scenarios
+> once the reader leaves the seqbegin, this is the nature of seqlocks. 
+> The only ways I can think of to get around this involve atomic ops in
+> the fast path, which I think should be avoided.  What would you suggest
+> otherwise?
 
-In file included from /marune/build/v4l-dvb/v4l/av7110.c:39:
-include/linux/byteorder/swabb.h:82:1: warning: "__swahw32" redefined
-In file included from include/linux/byteorder.h:5,
-                 
-from /marune/build/trees/armv5-ixp/linux-2.6.27-rc5/arch/arm/include/asm/byteorder.h:53,
-                 from include/linux/kernel.h:19,
-                 from include/linux/cache.h:4,
-                 from include/linux/time.h:7,
-                 from include/linux/stat.h:60,
-                 from include/linux/module.h:10,
-                 from /marune/build/v4l-dvb/v4l/av7110.c:33:
-include/linux/swab.h:138:1: warning: this is the location of the 
-previous definition
-In file included from /marune/build/v4l-dvb/v4l/av7110.c:39:
-include/linux/byteorder/swabb.h:86:1: warning: "__swahb32" redefined
-In file included from include/linux/byteorder.h:5,
-                 
-from /marune/build/trees/armv5-ixp/linux-2.6.27-rc5/arch/arm/include/asm/byteorder.h:53,
-                 from include/linux/kernel.h:19,
-                 from include/linux/cache.h:4,
-                 from include/linux/time.h:7,
-                 from include/linux/stat.h:60,
-                 from include/linux/module.h:10,
-                 from /marune/build/v4l-dvb/v4l/av7110.c:33:
-include/linux/swab.h:149:1: warning: this is the location of the 
-previous definition
-In file included from /marune/build/v4l-dvb/v4l/av7110.c:39:
-include/linux/byteorder/swabb.h:97: error: conflicting types 
-for '__swahw32p'
-include/linux/swab.h:200: error: previous definition of '__swahw32p' was 
-here
-include/linux/byteorder/swabb.h:102: error: redefinition of '__swahw32s'
-include/linux/swab.h:268: error: previous definition of '__swahw32s' was 
-here
-include/linux/byteorder/swabb.h:112: error: conflicting types 
-for '__swahb32p'
-include/linux/swab.h:215: error: previous definition of '__swahb32p' was 
-here
-include/linux/byteorder/swabb.h:117: error: redefinition of '__swahb32s'
-include/linux/swab.h:283: error: previous definition of '__swahb32s' was 
-here
-  CC [M]  /marune/build/v4l-dvb/v4l/af9005-remote.o
-  CC [M]  /marune/build/v4l-dvb/v4l/af9005.o
-make[3]: *** [/marune/build/v4l-dvb/v4l/av7110.o] Error 1
-make[3]: *** Waiting for unfinished jobs....
-make[2]: *** [_module_/marune/build/v4l-dvb/v4l] Error 2
-make[2]: Leaving directory 
-`/marune/build/trees/armv5-ixp/linux-2.6.27-rc5'
-make[1]: *** [default] Error 2
-make[1]: Leaving directory `/marune/build/v4l-dvb/v4l'
-make: *** [all] Error 2
+Since we're talking -rt here, determinism rules, so bite the bullet and
+do full PI.
+
+The only reason we made all that stuff preemptable is to gain
+determinism, that also means we have to do the PI thing.
 
 
 
-If I replace byteorder/swabb.h with <linux/swab.h> then the arm 
-compiles, but I get these compile errors for i686, powerpc64 and 
-x86_64:
-
-In file included from /marune/build/v4l-dvb/v4l/av7110.c:40:
-include/linux/swab.h:46: error: redefinition of '___swab16'
-include/linux/byteorder/swab.h:65: error: previous definition 
-of '___swab16' was here
-include/linux/swab.h:57: error: redefinition of '___swab32'
-include/linux/byteorder/swab.h:69: error: previous definition 
-of '___swab32' was here
-include/linux/swab.h:68: error: redefinition of '___swab64'
-include/linux/byteorder/swab.h:75: error: previous definition 
-of '___swab64' was here
-In file included from /marune/build/v4l-dvb/v4l/av7110.c:40:
-include/linux/swab.h:109:1: warning: "__swab16" redefined
-In file included from include/linux/byteorder/little_endian.h:12,
-                 from include/asm/byteorder.h:79,
-                 from include/asm-generic/bitops/le.h:5,
-                 from include/asm-generic/bitops/ext2-non-atomic.h:4,
-                 from include/asm/bitops.h:451,
-                 from include/linux/bitops.h:17,
-                 from include/linux/kernel.h:15,
-                 from include/linux/cache.h:4,
-                 from include/asm/pda.h:7,
-                 from include/asm/current.h:19,
-                 from include/asm/processor.h:15,
-                 from include/linux/prefetch.h:14,
-                 from include/linux/list.h:6,
-                 from include/linux/module.h:9,
-                 from /marune/build/v4l-dvb/v4l/av7110.c:33:
-include/linux/byteorder/swab.h:144:1: warning: this is the location of 
-the previous definition
-In file included from /marune/build/v4l-dvb/v4l/av7110.c:40:
-include/linux/swab.h:118:1: warning: "__swab32" redefined
-In file included from include/linux/byteorder/little_endian.h:12,
-                 from include/asm/byteorder.h:79,
-                 from include/asm-generic/bitops/le.h:5,
-                 from include/asm-generic/bitops/ext2-non-atomic.h:4,
-                 from include/asm/bitops.h:451,
-                 from include/linux/bitops.h:17,
-                 from include/linux/kernel.h:15,
-                 from include/linux/cache.h:4,
-                 from include/asm/pda.h:7,
-                 from include/asm/current.h:19,
-                 from include/asm/processor.h:15,
-                 from include/linux/prefetch.h:14,
-                 from include/linux/list.h:6,
-                 from include/linux/module.h:9,
-                 from /marune/build/v4l-dvb/v4l/av7110.c:33:
-include/linux/byteorder/swab.h:148:1: warning: this is the location of 
-the previous definition
-In file included from /marune/build/v4l-dvb/v4l/av7110.c:40:
-include/linux/swab.h:127:1: warning: "__swab64" redefined
-In file included from include/linux/byteorder/little_endian.h:12,
-                 from include/asm/byteorder.h:79,
-                 from include/asm-generic/bitops/le.h:5,
-                 from include/asm-generic/bitops/ext2-non-atomic.h:4,
-                 from include/asm/bitops.h:451,
-                 from include/linux/bitops.h:17,
-                 from include/linux/kernel.h:15,
-                 from include/linux/cache.h:4,
-                 from include/asm/pda.h:7,
-                 from include/asm/current.h:19,
-                 from include/asm/processor.h:15,
-                 from include/linux/prefetch.h:14,
-                 from include/linux/list.h:6,
-                 from include/linux/module.h:9,
-                 from /marune/build/v4l-dvb/v4l/av7110.c:33:
-include/linux/byteorder/swab.h:152:1: warning: this is the location of 
-the previous definition
-include/linux/swab.h:158: error: redefinition of '__swab16p'
-include/linux/byteorder/swab.h:168: error: previous definition 
-of '__swab16p' was here
-include/linux/swab.h:171: error: redefinition of '__swab32p'
-include/linux/byteorder/swab.h:181: error: previous definition 
-of '__swab32p' was here
-include/linux/swab.h:184: error: redefinition of '__swab64p'
-include/linux/byteorder/swab.h:201: error: previous definition 
-of '__swab64p' was here
-include/linux/swab.h:227: error: redefinition of '__swab16s'
-include/linux/byteorder/swab.h:172: error: previous definition 
-of '__swab16s' was here
-include/linux/swab.h:239: error: redefinition of '__swab32s'
-include/linux/byteorder/swab.h:185: error: previous definition 
-of '__swab32s' was here
-include/linux/swab.h:252: error: redefinition of '__swab64s'
-include/linux/byteorder/swab.h:205: error: previous definition 
-of '__swab64s' was here
-
-Can you take a look at this? My daily v4l-dvb build fails because of 
-this.
-
-Thanks,
-
-	Hans
