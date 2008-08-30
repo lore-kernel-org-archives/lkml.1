@@ -1,119 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbYH3T4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYH3T7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755495AbYH3T4e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 15:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYH3T4Z
+	id S1755205AbYH3T7S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 15:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYH3T7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 15:56:25 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:38763 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752887AbYH3T4Y (ORCPT
+	Sat, 30 Aug 2008 15:59:07 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:53890 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463AbYH3T7E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 15:56:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vvapoyLi4UEEiprzCa1peDYS59xPmsGtri96RBhdMUjSzVUP6sUeFTlSfUVFOo/zEp
-         AU1FHz/Wqs+wG9V/kvEf1SG40aFT+GR5QCI+IW28c+xe7KF7It7sTvjN/MJ7JphtaQeX
-         JYPiK66W4F7ZG1ESc0tVU9FdPBrnyiWiFUcKU=
-Date: Sat, 30 Aug 2008 23:56:22 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Tom Tucker <tom@opengridcomputing.com>, Neil Brown <neilb@suse.de>,
-       Chuck Lever <chuck.lever@oracle.com>, Greg Banks <gnb@sgi.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: buffer overflow in /proc/sys/sunrpc/transports
-Message-ID: <20080830195622.GH7611@lenovo>
-References: <20080830184422.GA9598@localhost.localdomain> <20080830190642.GC7611@lenovo> <19f34abd0808301242j63d357f5h7afd3eff796a4cf0@mail.gmail.com>
+	Sat, 30 Aug 2008 15:59:04 -0400
+Date: Sun, 31 Aug 2008 01:32:41 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: sched_mc_power_savings broken with CGROUPS+CPUSETS
+Message-ID: <20080830200241.GA6124@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: Max Krasnyansky <maxk@qualcomm.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+	Gautham R Shenoy <ego@in.ibm.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Suresh B Siddha <suresh.b.siddha@intel.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+References: <20080829131514.GS4801@dirshya.in.ibm.com> <48B8593E.7050205@qualcomm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <19f34abd0808301242j63d357f5h7afd3eff796a4cf0@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <48B8593E.7050205@qualcomm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Vegard Nossum - Sat, Aug 30, 2008 at 09:42:30PM +0200]
-| On Sat, Aug 30, 2008 at 9:06 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| > [Vegard Nossum - Sat, Aug 30, 2008 at 08:44:22PM +0200]
-| > | Hi,
-| > |
-| > | I noticed that something weird is going on with /proc/sys/sunrpc/transports.
-| > | This file is generated in net/sunrpc/sysctl.c, function proc_do_xprt(). When
-| > | I "cat" this file, I get the expected output:
-| > |
-| > |     $ cat /proc/sys/sunrpc/transports
-| > |     tcp 1048576
-| > |     udp 32768
-| > |
-| > | But I think that it does not check the length of the buffer supplied by
-| > | userspace to read(). With my original program, I found that the stack was
-| > | being overwritten by the characters above, even when the length given to
-| > | read() was just 1. So I have created a test program, see it at the bottom of
-| > | this e-mail. Here is its output:
-| > |
-| > ...
-| >
-| > Indeed, maybe just add checking for user buffer length?
-| > As proc_dodebug() in this file are doing. I don't think
-| > the user would be happy with his stack burned :)
-| >
-| > Something like:
-| > ---
-| >
-| > Index: linux-2.6.git/net/sunrpc/sysctl.c
-| > ===================================================================
-| > --- linux-2.6.git.orig/net/sunrpc/sysctl.c      2008-07-20 11:40:14.000000000 +0400
-| > +++ linux-2.6.git/net/sunrpc/sysctl.c   2008-08-30 23:05:30.000000000 +0400
-| > @@ -69,6 +69,8 @@ static int proc_do_xprt(ctl_table *table
-| >                return -EINVAL;
-| >        else {
-| >                len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
-| > +               if (*lenp < len)
-| > +                       return -EFAULT;
-| >                if (!access_ok(VERIFY_WRITE, buffer, len))
-| >                        return -EFAULT;
-| >
-| >
-| 
-| BTW, look at this:
-| 
-|     $ od -A x -t x1z /proc/sys/sunrpc/transports
-|     000000 74 63 70 20 31 30 34 38 35 37 36 0a 75 64 70 20  >tcp 1048576.udp <
-|     000010 33 32 37 36 38 0a 00 00 00 00 00 00 00 00 00 00  >32768...........<
-|     000020 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  >................<
-|     *
-|     0003e0 00 00 00 00 00 00 00 00 00 00                    >..........<
-|     0003ea
-| 
-| ...and:
-| 
-|     $ strace -e trace=read cat /proc/sys/sunrpc/transports > /dev/null
-|     read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0@G\316E4\0\0\0"...,
-| 512) = 512
-|     read(3, "tcp 1048576\nudp 32768\n\0\0\0\0\0\0\0\0\0\0"..., 4096) = 4074
-|     read(3, "", 4096)                       = 0
-| 
-| ...why does it have a huge return value? The output is only about 40
-| bytes... why add all the \0? Would your patch also fix this?
+* Max Krasnyansky <maxk@qualcomm.com> [2008-08-29 13:17:02]:
 
-I think it's from strace side - it pass 4096 zero'ed buffer.
-At least I don't see additional issues from kernel side in buffer
-filling - except from svc_print_xprts() which walk over list.
-But I think sunpc guys should know details :)
-Will send short-fix patch soon :)
+> Vaidyanathan Srinivasan wrote:
+> > Hi,
+> > 
+> > sched_mc_power_savings seems to be broken with CGROUPS+CPUSETS.
+> > When CONFIG_CPUSETS=y the attached BUG_ON() is being hit.
+> > 
+> > I added a BUG_ON to check if SD_POWERSAVINGS_BALANCE is set at
+> > SD_LV_CPU whenever sched_mc_power_savings is set.
+> > 
+> > This BUG is hit when config CONFIG_CPUSETS (depends on CONFIG_CGROUPS)
+> > is just compiled in while this is never hit when they are compiled
+> > out.  The fact that SD_POWERSAVINGS_BALANCE being cleared even when
+> > sched_mc_power_savings = 1 completely breaks the
+> > sched_mc_power_savings heuristics.
+> > 
+> > To recreate the problem,
+> > Have sched_mc power savings enabled CONFIG_SCHED_MC=y
+> > Add this BUG_ON()
+> > 
+> > echo 1 > /sys/devices/system/cpu/sched_mc_power_savings
+> > 
+> > Try these these on a multi core x86 box.
+> > 
+> > sched_mc_power_savings seems to be broken from 2.6.26-rc1, but
+> > I do not have a confirmation that the root cause is same in all
+> > successive versions. sched_mc_power_savings works perfect in
+> > 2.6.25.
+> > 
+> > Please help me root cause the issue.  Please point me to changes that
+> > may potential cause this bug.
+> 
+> That's my fault. I redid domain rebuild/hotplug handling awhile ago and missed
+> the fact that partition_sched_domains() is trying to avoid unnecessary domain
+> rebuilds. Primary issue at the time was circular locking issues and the the
+> testing that I was doing then was exercising a bunch of different scenarios
+> (ie cpu up/down, cpuset create/destroy, mcpowersave on/off) and I did not
+> notice that mcpowersave did not actually trigger domain rebuilds.
+> 
+> Anyway, I sent you guys a patch that should fix this issue.
+> Please confirm.
 
-| 
-| 
-| Vegard
-| 
-| -- 
-| "The animistic metaphor of the bug that maliciously sneaked in while
-| the programmer was not looking is intellectually dishonest as it
-| disguises that the error is the programmer's own creation."
-| 	-- E. W. Dijkstra, EWD1036
-| 
-		- Cyrill -
+Hi Max,
+
+Thank you very much for identifying the source of the problem.  I will
+test your patch and report.
+
+My BUG_ON() may still fail during the window of change.  I will watch
+out for that.
+
+--Vaidy
