@@ -1,110 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYH3UPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756340AbYH3URy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbYH3UPr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 16:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbYH3UPj
+	id S1756340AbYH3URy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 16:17:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYH3URq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 16:15:39 -0400
-Received: from qb-out-0506.google.com ([72.14.204.237]:9370 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753229AbYH3UPi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 16:15:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=lgmm7r5UbJibxghBQWpwGSijZMr0qaN6oM2sArbKx+nmNZ/jJbiGb+vBH/gqlq0J4H
-         bQs0y9369EzjwzxGr/NGH/Q2nMmzP6MUWaExQ9eQoXgO8NTSCpN6N+3nhxGA3Ucqx72A
-         OYsYuzKLyEIYGqm67ySUtPCnM2fqLBkRTOE8o=
-Date: Sun, 31 Aug 2008 00:15:36 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Tom Tucker <tom@opengridcomputing.com>, Neil Brown <neilb@suse.de>,
-       Chuck Lever <chuck.lever@oracle.com>, Greg Banks <gnb@sgi.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: buffer overflow in /proc/sys/sunrpc/transports
-Message-ID: <20080830201536.GA3659@lenovo>
-References: <20080830184422.GA9598@localhost.localdomain> <20080830190642.GC7611@lenovo> <19f34abd0808301242j63d357f5h7afd3eff796a4cf0@mail.gmail.com> <20080830195622.GH7611@lenovo> <19f34abd0808301259s385844efx13cd5b02d083da77@mail.gmail.com> <20080830200423.GI7611@lenovo> <19f34abd0808301313v640a47fbl7bc61fd35e7cf4d5@mail.gmail.com>
+	Sat, 30 Aug 2008 16:17:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57784 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752463AbYH3URp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 16:17:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH] Re: Linux 2.6.27-rc5
+Date: Sat, 30 Aug 2008 22:21:42 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Grant Grundler <grundler@parisc-linux.org>,
+       linux-parisc@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org> <g9b7oa$g8l$1@ger.gmane.org>
+In-Reply-To: <g9b7oa$g8l$1@ger.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <19f34abd0808301313v640a47fbl7bc61fd35e7cf4d5@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200808302221.43237.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Vegard Nossum - Sat, Aug 30, 2008 at 10:13:23PM +0200]
-| On Sat, Aug 30, 2008 at 10:04 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| > [Vegard Nossum - Sat, Aug 30, 2008 at 09:59:38PM +0200]
-| > | On Sat, Aug 30, 2008 at 9:56 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| > | > | BTW, look at this:
-| > | > |
-| > | > |     $ od -A x -t x1z /proc/sys/sunrpc/transports
-| > | > |     000000 74 63 70 20 31 30 34 38 35 37 36 0a 75 64 70 20  >tcp 1048576.udp <
-| > | > |     000010 33 32 37 36 38 0a 00 00 00 00 00 00 00 00 00 00  >32768...........<
-| > | > |     000020 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  >................<
-| > | > |     *
-| > | > |     0003e0 00 00 00 00 00 00 00 00 00 00                    >..........<
-| > | > |     0003ea
-| > | > |
-| > | > | ...and:
-| > | > |
-| > | > |     $ strace -e trace=read cat /proc/sys/sunrpc/transports > /dev/null
-| > | > |     read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0@G\316E4\0\0\0"...,
-| > | > | 512) = 512
-| > | > |     read(3, "tcp 1048576\nudp 32768\n\0\0\0\0\0\0\0\0\0\0"..., 4096) = 4074
-| > | > |     read(3, "", 4096)                       = 0
-| > | > |
-| > | > | ...why does it have a huge return value? The output is only about 40
-| > | > | bytes... why add all the \0? Would your patch also fix this?
-| > | >
-| > | > I think it's from strace side - it pass 4096 zero'ed buffer.
-| > |
-| > | "cat" passed buffer of size 4096, yes. But read() still returned 4074.
-| > | It should have returned 38 or so.
-| > |
-| > | > At least I don't see additional issues from kernel side in buffer
-| > | > filling - except from svc_print_xprts() which walk over list.
-| > | > But I think sunpc guys should know details :)
-| > | > Will send short-fix patch soon :)
-| > |
-| > | It looks like it's returning (sizeof(buffer) - x) where it really
-| > | should be returning x. Maybe it's this one that should be different?
-| > |
-| > |         *lenp -= len;
-| > |
-| >
-| > yes, but this is just a side effect, if we fix main error - it should
-| > resolve this problem too. Did you try the fix I sent a few msgs ago?
-| > (I don't have sunrpc on my machine)
-| 
-| Sorry, I did it now :-)
-| 
-|     $ uname -a
-|     Linux grianne 2.6.27-rc5-00006-gbef69ea-dirty #4 SMP PREEMPT Sat
-| Aug 30 22:07:18 CEST 2008 i686 i686 i386 GNU/Linux
-| 
-|     $ strace -e trace=read cat /proc/sys/sunrpc/transports > /dev/null
-|     read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0\320
-| \265\0004\0\0\0"..., 512) = 512
-|     read(3, "tcp 1048576\nudp 32768\n\0\0\0\0\0\0\0\0\0\0"..., 4096) = 4074
-|     read(3, "", 4096)                       = 0
-| 
-| So that problem seems to remain.
+[Adding CCs]
 
-thanks - will check... (if not fall into sleep :)
-
-| 
-| 
-| Vegard
-| 
-| -- 
-| "The animistic metaphor of the bug that maliciously sneaked in while
-| the programmer was not looking is intellectually dishonest as it
-| disguises that the error is the programmer's own creation."
-| 	-- E. W. Dijkstra, EWD1036
-| 
-		- Cyrill -
+On Saturday, 30 of August 2008, Helge Deller wrote:
+> commit da574983de9f9283ba35662c8723627096e160de
+> Author: Al Viro <viro@zeniv.linux.org.uk>
+> [PATCH] fix hpux_getdents() - Missing checks for -EFAULT, broken handling of
+> overflow.
+> 
+> introduced a build breakage:
+>   CC      arch/parisc/hpux/fs.o
+> arch/parisc/hpux/fs.c: In function `filldir':
+> arch/parisc/hpux/fs.c:107: error: `buffer' undeclared (first use in this
+> function)
+> make[1]: *** [arch/parisc/hpux/fs.o] Error 1
+> 
+> 
+> This patch fixes it.
+> 
+> Signed-off-by: Helge Deller <deller@gmx.de>
+> 
+> 
+> diff --git a/arch/parisc/hpux/fs.c b/arch/parisc/hpux/fs.c
+> index 69ff671..12c04c5 100644
+> --- a/arch/parisc/hpux/fs.c
+> +++ b/arch/parisc/hpux/fs.c
+> @@ -104,7 +104,7 @@ static int filldir(void * __buf, const char * name, int
+> namlen, loff_t offset,
+>         buf->count -= reclen;
+>         return 0;
+>  Efault:
+> -       buffer->error = -EFAULT;
+> +       buf->error = -EFAULT;
+>         return -EFAULT;
+>  }
+>  
+> 
+> 
