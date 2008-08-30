@@ -1,145 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYH3Uhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756835AbYH3Uig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbYH3Uhe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 16:37:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYH3UhX
+	id S1756835AbYH3Uig (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 16:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbYH3Ui1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 16:37:23 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:56555 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752887AbYH3UhX (ORCPT
+	Sat, 30 Aug 2008 16:38:27 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:50288 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752909AbYH3Ui0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 16:37:23 -0400
+	Sat, 30 Aug 2008 16:38:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=ccHnWoYuP0NUXjMcIekbx8TJRb2PqdyWrAuPKaI1chprHB4pX2HJrt+dpiy+rWk7oB
-         N9MFPR6bcGeTy7Ic0Fuf9N0Tu9USfkKLUpOGerSzVuTU8u0MBWOcEES6P7rBRSNPfMRH
-         B1fSw2oCopdH9O6svc/UwtHlXB5kT8Ef69YXw=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] x86: split e820 reserved entries record to late v4
-Date: Sat, 30 Aug 2008 13:36:24 -0700
-Message-Id: <1220128584-23232-1-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=BX4oHzuj4xRLNrcSTr46FmXwjgXhQHdtQW+SNo+Ya8erv/BuInA0+ymu2BbIZKBDyt
+         1isL/btEI1/nkW1jqcH4/nAhVzls6uhvGCdsBMS75CQfqyJV7KV/Qk2XeLu1hC/aIcWL
+         e9as6a7akOktmui7w6yUliGEIcbsgxfY/7rJ0=
+Message-ID: <86802c440808301338h59a5338rabe9e64560b55476@mail.gmail.com>
+Date: Sat, 30 Aug 2008 13:38:25 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "David Witbrodt" <dawitbro@sbcglobal.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Kernel Testers" <kernel-testers@vger.kernel.org>
+In-Reply-To: <86802c440808301314t525d1b75r9afcc73857cf5c79@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>
+	 <200808292157.24179.rjw@sisk.pl>
+	 <alpine.LFD.1.10.0808291434110.3300@nehalem.linux-foundation.org>
+	 <200808300030.32905.rjw@sisk.pl>
+	 <alpine.LFD.1.10.0808301012060.3290@nehalem.linux-foundation.org>
+	 <86802c440808301107n4561e815ldf53183c92a7bc93@mail.gmail.com>
+	 <alpine.LFD.1.10.0808301141590.3290@nehalem.linux-foundation.org>
+	 <86802c440808301210u6db1b4e7p4036bdc95db1a601@mail.gmail.com>
+	 <alpine.LFD.1.10.0808301214310.3290@nehalem.linux-foundation.org>
+	 <86802c440808301314t525d1b75r9afcc73857cf5c79@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus said we should register some entries in e820 later,
-so could let BAR res register at first, or even pnp?
+please check
 
-this one replace
-| commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
-| Author: Yinghai Lu <yhlu.kernel@gmail.com>
-| Date:   Mon Aug 25 00:56:08 2008 -0700
-|
-|    x86: fix HPET regression in 2.6.26 versus 2.6.25, check hpet against BAR, v3
+[PATCH] x86: split e820 reserved entries record to late v4
+[PATCH] x86: split e820 reserved entries record to late v4 - fix v6
 
-v2: insert e820 reserve resources before pnp_system_init
-v3: fix merging problem in tip/x86/core
-    please drop the one in tip/x86/core use this one instead
-v4: address Linus's review about comments and condition in _late()
-
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-
----
- arch/x86/kernel/e820.c |   24 +++++++++++++++++++++++-
- arch/x86/pci/i386.c    |    3 +++
- include/asm-x86/e820.h |    1 +
- 3 files changed, 27 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -1267,6 +1267,7 @@ static inline const char *e820_type_to_s
- /*
-  * Mark e820 reserved areas as busy for the resource manager.
-  */
-+static struct resource __initdata *e820_res;
- void __init e820_reserve_resources(void)
- {
- 	int i;
-@@ -1274,6 +1275,7 @@ void __init e820_reserve_resources(void)
- 	u64 end;
- 
- 	res = alloc_bootmem_low(sizeof(struct resource) * e820.nr_map);
-+	e820_res = res;
- 	for (i = 0; i < e820.nr_map; i++) {
- 		end = e820.map[i].addr + e820.map[i].size - 1;
- #ifndef CONFIG_RESOURCES_64BIT
-@@ -1287,7 +1289,14 @@ void __init e820_reserve_resources(void)
- 		res->end = end;
- 
- 		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
--		insert_resource(&iomem_resource, res);
-+
-+		/*
-+		 * don't register the region that could be conflicted with
-+		 * pci device BAR resource and insert them later in
-+		 * pcibios_resource_survey()
-+		 */
-+		if (e820.map[i].type != E820_RESERVED || res->start < (1ULL<<20))
-+			insert_resource(&iomem_resource, res);
- 		res++;
- 	}
- 
-@@ -1299,6 +1308,19 @@ void __init e820_reserve_resources(void)
- 	}
- }
- 
-+void __init e820_reserve_resources_late(void)
-+{
-+	int i;
-+	struct resource *res;
-+
-+	res = e820_res;
-+	for (i = 0; i < e820.nr_map; i++) {
-+		if (!res->parent && res->end)
-+			insert_resource(&iomem_resource, res);
-+		res++;
-+	}
-+}
-+
- char *__init default_machine_specific_memory_setup(void)
- {
- 	char *who = "BIOS-e820";
-Index: linux-2.6/arch/x86/pci/i386.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/i386.c
-+++ linux-2.6/arch/x86/pci/i386.c
-@@ -33,6 +33,7 @@
- #include <linux/bootmem.h>
- 
- #include <asm/pat.h>
-+#include <asm/e820.h>
- 
- #include "pci.h"
- 
-@@ -230,6 +231,8 @@ void __init pcibios_resource_survey(void
- 	pcibios_allocate_bus_resources(&pci_root_buses);
- 	pcibios_allocate_resources(0);
- 	pcibios_allocate_resources(1);
-+
-+	e820_reserve_resources_late();
- }
- 
- /**
-Index: linux-2.6/include/asm-x86/e820.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/e820.h
-+++ linux-2.6/include/asm-x86/e820.h
-@@ -120,6 +120,7 @@ extern void e820_register_active_regions
- extern u64 e820_hole_size(u64 start, u64 end);
- extern void finish_e820_parsing(void);
- extern void e820_reserve_resources(void);
-+extern void e820_reserve_resources_late(void);
- extern void setup_memory_map(void);
- extern char *default_machine_specific_memory_setup(void);
- extern char *machine_specific_memory_setup(void);
+YH
