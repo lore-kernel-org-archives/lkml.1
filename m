@@ -1,165 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbYH3UTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866AbYH3UUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756614AbYH3UTg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 16:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYH3UT2
+	id S1756866AbYH3UUf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 16:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbYH3UU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 16:19:28 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:42683 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752831AbYH3UT1 (ORCPT
+	Sat, 30 Aug 2008 16:20:27 -0400
+Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:53515 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752904AbYH3UU0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 16:19:27 -0400
-Date: Sun, 31 Aug 2008 01:53:04 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, peterz@infradead.org
-Subject: Re: [PATCH] sched: arch_reinit_sched_domains() must destroy
-	domains to force rebuild
-Message-ID: <20080830202304.GU4801@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-Mail-Followup-To: Max Krasnyansky <maxk@qualcomm.com>, mingo@elte.hu,
-	linux-kernel@vger.kernel.org, peterz@infradead.org
-References: <1220040701-3139-1-git-send-email-maxk@qualcomm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1220040701-3139-1-git-send-email-maxk@qualcomm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 30 Aug 2008 16:20:26 -0400
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: buffer overflow in /proc/sys/sunrpc/transports
+Date: Sat, 30 Aug 2008 20:20:24 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <g9ca28$pak$1@taverner.cs.berkeley.edu>
+References: <20080830184422.GA9598@localhost.localdomain>
+Reply-To: daw-news@cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1220127624 25940 128.32.168.222 (30 Aug 2008 20:20:24 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Sat, 30 Aug 2008 20:20:24 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Max Krasnyansky <maxk@qualcomm.com> [2008-08-29 13:11:41]:
+Vegard Nossum  wrote:
+>I don't know if this could be used in some malicious way. Maybe if a setuid
+>root program tried to open a user-supplied file (which could be this one in
+>/proc), it could crash the program quite easily. But since there is no way
+>to change the contents of the file... I don't know.
 
-> What I realized recently is that calling rebuild_sched_domains() in
-> arch_reinit_sched_domains() by itself is not enough when cpusets are enabled.
-> partition_sched_domains() code is trying to avoid unnecessary domain rebuilds
-> and will not actually rebuild anything if new domain masks match the old ones.
-> 
-> What this means is that doing
->      echo 1 > /sys/devices/system/cpu/sched_mc_power_savings
-> on a system with cpusets enabled will not take affect untill something changes
-> in the cpuset setup (ie new sets created or deleted).
-> 
-> This patch fixes restore correct behaviour where domains must be rebuilt in
-> order to enable MC powersaving flags.
-> 
-> Test on quad-core Core2 box with both CONFIG_CPUSETS and !CONFIG_CPUSETS.
-> Also tested on dual-core Core2 laptop. Lockdep is happy and things are working
-> as expected.
-> 
-> Ingo, please apply.
-> btw We also need to push my other cpuset patch into mainline. We currently
-> calling rebuild_sched_domains() without cgroup lock which is bad. When I made
-> original sched: changes the assumption was that cpuset patch will also go in.
-> I'm talking about
-> 	"cpuset: Rework sched domains and CPU hotplug handling"
-> It's been ACKed by Paul has been in the -tip for awhile now.
-> 
-> Signed-off-by: Max Krasnyansky <maxk@qualcomm.com>
-> Cc: svaidy@linux.vnet.ibm.com
-> Cc: peterz@infradead.org
-> Cc: mingo@elte.hu
+You don't necessarily need control over the values that are written past
+the end of the buffer to exploit a buffer overrun bug.  If those values
+are semi-random but predictable, it may still be possible to exploit the
+vulnerability by arranging to stash malicious code at the address that the
+return address will be overwritten with.  Even if those values are random
+and not predictable, it may still be able to fill a large fraction of the
+address space with malicious code and thus have a significant probability
+of successful exploitation.  See, e.g., NOP sleds, heap spraying, heap
+feng shui.  I would not want to rely on this bug being difficult to exploit.
 
-Tested-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-
-This fixes the problem on my 32-bit x86 quad-core, dual socket system.
-The sched domains are being rebuilt accurately as expected on changing
-sched_mc_power_savings.
-
-However, the fix as such should be further reviewed for correctness.
-I verified only the rebuilding of sched domains in my system.
-
-Thanks,
-Vaidy
-
-
-> ---
->  include/linux/cpuset.h |    2 +-
->  kernel/sched.c         |   19 +++++++++++++------
->  2 files changed, 14 insertions(+), 7 deletions(-)
-> 
-> diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
-> index e8f450c..2691926 100644
-> --- a/include/linux/cpuset.h
-> +++ b/include/linux/cpuset.h
-> @@ -160,7 +160,7 @@ static inline int current_cpuset_is_being_rebound(void)
-> 
->  static inline void rebuild_sched_domains(void)
->  {
-> -	partition_sched_domains(0, NULL, NULL);
-> +	partition_sched_domains(1, NULL, NULL);
->  }
-> 
->  #endif /* !CONFIG_CPUSETS */
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 9a1ddb8..5a38540 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -7637,24 +7637,27 @@ static int dattrs_equal(struct sched_domain_attr *cur, int idx_cur,
->   * and partition_sched_domains() will fallback to the single partition
->   * 'fallback_doms', it also forces the domains to be rebuilt.
->   *
-> + * If doms_new==NULL it will be replaced with cpu_online_map.
-> + * ndoms_new==0 is a special case for destroying existing domains.
-> + * It will not create the default domain.
-> + *
->   * Call with hotplug lock held
->   */
->  void partition_sched_domains(int ndoms_new, cpumask_t *doms_new,
->  			     struct sched_domain_attr *dattr_new)
->  {
-> -	int i, j;
-> +	int i, j, n;
-> 
->  	mutex_lock(&sched_domains_mutex);
-> 
->  	/* always unregister in case we don't destroy any domains */
->  	unregister_sched_domain_sysctl();
-> 
-> -	if (doms_new == NULL)
-> -		ndoms_new = 0;
-> +	n = doms_new ? ndoms_new : 0;
-> 
->  	/* Destroy deleted domains */
->  	for (i = 0; i < ndoms_cur; i++) {
-> -		for (j = 0; j < ndoms_new; j++) {
-> +		for (j = 0; j < n; j++) {
->  			if (cpus_equal(doms_cur[i], doms_new[j])
->  			    && dattrs_equal(dattr_cur, i, dattr_new, j))
->  				goto match1;
-> @@ -7667,7 +7670,6 @@ match1:
-> 
->  	if (doms_new == NULL) {
->  		ndoms_cur = 0;
-> -		ndoms_new = 1;
->  		doms_new = &fallback_doms;
->  		cpus_andnot(doms_new[0], cpu_online_map, cpu_isolated_map);
->  		dattr_new = NULL;
-> @@ -7704,8 +7706,13 @@ match2:
->  int arch_reinit_sched_domains(void)
->  {
->  	get_online_cpus();
-> +
-> +	/* Destroy domains first to force the rebuild */
-> +	partition_sched_domains(0, NULL, NULL);
-> +
->  	rebuild_sched_domains();
->  	put_online_cpus();
-> +
->  	return 0;
->  }
-> 
-> @@ -7789,7 +7796,7 @@ static int update_sched_domains(struct notifier_block *nfb,
->  	case CPU_ONLINE_FROZEN:
->  	case CPU_DEAD:
->  	case CPU_DEAD_FROZEN:
-> -		partition_sched_domains(0, NULL, NULL);
-> +		partition_sched_domains(1, NULL, NULL);
->  		return NOTIFY_OK;
-> 
->  	default:
-> -- 
-> 1.5.5.1
-> 
+Bottom line: I suspect it would be prudent to assume this bug may be
+fully exploitable.
