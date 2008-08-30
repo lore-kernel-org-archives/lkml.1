@@ -1,41 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbYH3JQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758690AbYH3JTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758907AbYH3JQn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 05:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751025AbYH3JQc
+	id S1758690AbYH3JTM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 05:19:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751356AbYH3JS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 05:16:32 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50378 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750777AbYH3JQb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 05:16:31 -0400
-Date: Sat, 30 Aug 2008 09:59:06 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Fries <david@fries.net>
-Cc: linux-kernel@vger.kernel.org, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
-       p_gortmaker@yahoo.com, netdev@vger.kernel.org
-Subject: Re: [PATCH 2/2] ne.c msleep not mdelay
-Message-ID: <20080830095906.6cad8647@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080830024453.GB24929@spacedout.fries.net>
-References: <20080830024453.GB24929@spacedout.fries.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sat, 30 Aug 2008 05:18:57 -0400
+Received: from main.gmane.org ([80.91.229.2]:47440 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750977AbYH3JS5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 05:18:57 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Matthias Urlichs <matthias@urlichs.de>
+Subject: [Regression] sshd hangs on close
+Date: Sat, 30 Aug 2008 09:18:47 +0000 (UTC)
+Message-ID: <g9b39n$4et$1@ger.gmane.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: smurf.noris.de
+User-Agent: Pan/0.132 (Waxed in Black)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008 21:44:53 -0500
-David Fries <david@fries.net> wrote:
+"top" sees multiple instances of:
 
-> mdelay(10) replaced by msleep(10) to give up the CPU, it's just
-> waiting for an interrupt, so timing isn't critical.
+ 6008 root      20 3184 D    0   0:00.06 flush_cpu sshd: root@pts/13            
 
-It is too critical for a reschedule to occur.
+This is 2.6.27rc5, preemption and tickless turned on, on a 4-CPU machine.
+(OK, two hyperthreaded ones :-P) strace() shows that this happens on the
+last close of its /dev/ptmx file descriptor, which hangs.
 
-NAK this one.
+I'll do a bisect early next week unless somebody else identifies a likely
+suspect.
+
+-- 
+Matthias Urlichs
+
