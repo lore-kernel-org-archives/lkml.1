@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbYH3OES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbYH3OIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753392AbYH3OES (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 10:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbYH3OEI
+	id S1753005AbYH3OIz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 10:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbYH3OIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 10:04:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58672 "EHLO hera.kernel.org"
+	Sat, 30 Aug 2008 10:08:47 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:57091 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750817AbYH3OEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 10:04:07 -0400
-Message-ID: <48B95307.8040902@kernel.org>
-Date: Sat, 30 Aug 2008 16:02:47 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	id S1751218AbYH3OIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 10:08:47 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding;
+	b=jrTc57+itNJxL+PN6mG1qzr0Do4m1A7WHAiPih9NIg33E4f4FOhTn/29HuQz8h5MofaGwp6Z5UAwM7ndqiX9ys8AfJF/vCbkUy4fCFht+SLSyDT0b+XaLcSSuymR7EFl;
+Message-ID: <48B9546B.4010004@simon.arlott.org.uk>
+Date: Sat, 30 Aug 2008 15:08:43 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH] block: restore original behavior of /proc/partition when
- there's no partition
-X-Enigmail-Version: 0.95.6
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James.Bottomley@HansenPartnership.com
+Subject: [PATCH] scsi/sd: Fix size output in MB
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 30 Aug 2008 14:03:57 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-/proc/partitions didn't use to write out the header if there was no
-partition.  However, recent commit 66c64afe changed the behavior.
-This is nothing major but there's no reason to change user visible
-behavior without a good rationale.  Restore the original behavior.
+The capacity printk'd in bytes is divided by 1000000,
+whereas 1048576 would be more consistent with the rest
+of the OS and disk-related utilities ('df' etc.).
 
-Note that 2.6.28 has clean up changes scheduled which will replace
-this rather hacky implementation.
+This change replaces the (sz - (sz/625 - 974))/1950
+calculation with a simple right shift by 11 bits
+(/2048).
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Greg KH <greg@kroah.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
 ---
- block/genhd.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
-diff --git a/block/genhd.c b/block/genhd.c
-index 656c2c7..e86b312 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -309,7 +309,7 @@ static void *part_start(struct seq_file *part, loff_t *pos)
- 	loff_t k = *pos;
+ drivers/scsi/sd.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index e5e7d78..e6fd6fd 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -1441,10 +1441,8 @@ got_data:
+ 		sector_t mb = sz;
  
- 	if (!k)
--		seq_puts(part, "major minor  #blocks  name\n\n");
-+		part->private = (void *)1LU;	/* tell show to print header */
+ 		blk_queue_hardsect_size(queue, hard_sector);
+-		/* avoid 64-bit division on 32-bit platforms */
+-		sector_div(sz, 625);
+-		mb -= sz - 974;
+-		sector_div(mb, 1950);
++		/* Convert to megabytes (/2048) */
++		mb = sz >> 11;
  
- 	mutex_lock(&block_class_lock);
- 	dev = class_find_device(&block_class, NULL, &k, find_start);
-@@ -351,6 +351,17 @@ static int show_partition(struct seq_file *part, void *v)
- 	int n;
- 	char buf[BDEVNAME_SIZE];
- 
-+	/*
-+	 * Print header if start told us to do.  This is to preserve
-+	 * the original behavior of not printing header if no
-+	 * partition exists.  This hackery will be removed later with
-+	 * class iteration clean up.
-+	 */
-+	if (part->private) {
-+		seq_puts(part, "major minor  #blocks  name\n\n");
-+		part->private = NULL;
-+	}
-+
- 	/* Don't show non-partitionable removeable devices or empty devices */
- 	if (!get_capacity(sgp) ||
- 			(sgp->minors == 1 && (sgp->flags & GENHD_FL_REMOVABLE)))
+ 		sd_printk(KERN_NOTICE, sdkp,
+ 			  "%llu %d-byte hardware sectors (%llu MB)\n",
+-- 
+1.5.6.5
+
+-- 
+Simon Arlott
+
+
+
