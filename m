@@ -1,177 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbYHaAQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756997AbYHaAT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756850AbYHaAQc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 20:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbYHaAQX
+	id S1756997AbYHaAT5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 20:19:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbYHaATu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 20:16:23 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:64509 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754624AbYHaAQW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 20:16:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=Uv4GP4s7HykBriQdC1cmTQxFCAnFoFUyfBHv+5Etj8Z+Q0tjF/UYojv1nwmiCp5nvR
-         aCWEdetNbwnEZMAlgxo48m/VMChHyImUMWkroqYBJcyyzP79f28U5xWpzxN6FeBhcjAx
-         Jq2YecjMngfhdGZPYOXLsVQWzZMdlsdug/Xos=
-Message-ID: <86802c440808301716j46674ab7i8f36d57fb9ed38c1@mail.gmail.com>
-Date: Sat, 30 Aug 2008 17:16:21 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "David Witbrodt" <dawitbro@sbcglobal.net>
-Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Kernel Testers" <kernel-testers@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <368766.37978.qm@web82106.mail.mud.yahoo.com>
+	Sat, 30 Aug 2008 20:19:50 -0400
+Received: from eloth.gjh.sk ([193.87.79.100]:40290 "EHLO eloth.gjh.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754003AbYHaATt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 20:19:49 -0400
+X-Greylist: delayed 1762 seconds by postgrey-1.27 at vger.kernel.org; Sat, 30 Aug 2008 20:19:49 EDT
+Message-ID: <48B9DCBE.3000306@gjh.sk>
+Date: Sun, 31 Aug 2008 01:50:22 +0200
+From: Peter Ambroz <comp@gjh.sk>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080830)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_18238_29942010.1220141781514"
-References: <368766.37978.qm@web82106.mail.mud.yahoo.com>
+To: linux kernel <linux-kernel@vger.kernel.org>
+Subject: Marvell 6145 PATA controller
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_18238_29942010.1220141781514
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hello!
 
-> So I decided to try applying the patches against the tree as it was
-> before bef69ea0...:
->
-> =================================
-> $ git checkout -f HEAD^
-> Note: moving to "HEAD^" which isn't a local branch
-> If you want to create a new branch from this checkout, you may do so
-> (now or later) by using -b with the checkout command again. Example:
->  git checkout -b <new_branch_name>
-> HEAD is now at 00aeb42... Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6
->
-> $ git apply --verbose --check ../split_e820_reserve.patch
-> Checking patch arch/x86/kernel/e820.c...
-> Checking patch arch/x86/pci/i386.c...
-> Checking patch include/asm-x86/e820.h...
->
-> $ git apply --verbose ../split_e820_reserve.patch
-> Checking patch arch/x86/kernel/e820.c...
-> Checking patch arch/x86/pci/i386.c...
-> Checking patch include/asm-x86/e820.h...
-> Applied patch arch/x86/kernel/e820.c cleanly.
-> Applied patch arch/x86/pci/i386.c cleanly.
-> Applied patch include/asm-x86/e820.h cleanly.
->
-> $ git apply --verbose --check ../split_e820_reserve_xx1.patch
-> Checking patch arch/x86/kernel/e820.c...
-> Checking patch include/linux/ioport.h...
-> Checking patch kernel/resource.c...
+Will talk about 2.6.25 kernel.
+I had recently a problem with marvell pata controllers. Exactly speaking 
+of "IDE interface: Marvell Technology Group Ltd. 88SE6145 SATA II PCI-E 
+controller", pci-id 11ab:6145.
+There is a (pseudo) driver in the kernel for handling that controller, 
+called pata_marvell, but it doesn't claim the device.
+Instead, ahci driver claims that device, and then just does nothing. 
+Devices connected to the marvell are not seen by kernel.
 
-please use split_e820_reserve_xx2.patch instead...
+After looking into the source code I found out that both ahci.c and 
+pata_marvell.c list that device in their pci_device_id structure (which 
+wouldn't be problem, if both drivers worked with the controller, but 
+ahci.c just doesn't)
 
-Thanks
+The first solution to this was found very quickly by using google: just 
+add kernel parameter all-generic-ide, and the marvell controller will be 
+recognized by ide-generic driver, and HDD's, CDROM's on that marvell 
+controller are also found (as hda, hdb).
 
-YH
+The second solution is to remove few lines from ahci.c which lists the 
+marvell 6145 device (and probably also marvell 6121).
+Short patch included below.
+After that, kernel finally uses the pata_marvell driver, and my pata 
+devices are registered with kernel (as sda, sdb).
 
-------=_Part_18238_29942010.1220141781514
-Content-Type: text/x-patch; name=split_e820_reserve_xx2.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fkiwuont0
-Content-Disposition: attachment; filename=split_e820_reserve_xx2.patch
+The third solution is to not use ahci driver when using pata_marvell. 
+But this is not possible with lots of motherboards which have Intel 
+corp. SATA controller + marvell sata / pata controller.
 
-RnJvbTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgpTdWJqZWN0OiBbUEFUQ0hd
-IHg4Njogc3BsaXQgZTgyMCByZXNlcnZlZCBlbnRyaWVzIHJlY29yZCB0byBsYXRlIHY0IC0gZml4
-IHY2Cgp0cnkgdG8gaW5zZXJ0X3Jlc291cmNlIHNlY29uZCB0aW1lLCBieSBleHBhbmQgdGhlIHJl
-c291cmNlLi4uCgpmb3IgY2FzZTogZTgyMCByZXNlcnZlZCBlbnRyeSBpcyBwYXJ0aWFsbHkgb3Zl
-cmxhcHBlZCB3aXRoIGJhciByZXMuLi4KCmhvcGUgaXQgd2lsbCBuZXZlciBoYXBwZW4KCnYyOiBh
-Y2NvcmRpbmcgdG8gTGludXMsIGFkZCBpbnNlcnRfcmVzb3VyY2VfZXhwYW5kX3RvX2ZpdCwgYW5k
-IGNoYW5nZQoJX19pbnNlcnRfcmVzb3VyY2UgdG8gc3RhdGljIHdpdGhvdXQgbG9jawoKdjM6IHVz
-ZSByZXNlcnZlX3JlZ2lvbl93aXRoX3NwbGl0KCkgaW5zdGVhZCB0byBoYW5kIG92ZXJsYXBwaW5n
-Cgl3aXRoIHRlc3QgY2FzZSBieSBleHRlbmQgMHhlMDAwMDAwMCAtIDB4ZWZmZmZmZiB0byAweGRk
-ODAwMDAwIC0KCWdldAoJCWUwMDAwMDAwLWVmZmZmZmZmIDogUENJIE1NQ09ORklHIDAKCQkJIGUw
-MDAwMDAwLWVmZmZmZmZmIDogcmVzZXJ2ZWQKCWluIC9wcm9jL2lvbWVtCglnZXQKCQlmb3VuZCBj
-b25mbGljdCBmb3IgcmVzZXJ2ZWQgW2RkODAwMDAwLCBlZmZmZmZmZl0sIHRyeSB0byByZXNlcnZl
-IHdpdGggc3BsaXQKCQkgICAgX19yZXNlcnZlX3JlZ2lvbl93aXRoX3NwbGl0OiAoUENJIEJ1cyAj
-ODApIFtkZDAwMDAwMCwgZGRmZmZmZmZdLCByZXM6IChyZXNlcnZlZCkgW2RkODAwMDAwLCBlZmZm
-ZmZmZl0KCQkgICAgX19yZXNlcnZlX3JlZ2lvbl93aXRoX3NwbGl0OiAoUENJIEJ1cyAjMDApIFtk
-ZTAwMDAwMCwgZGZmZmZmZmZdLCByZXM6IChyZXNlcnZlZCkgW2RlMDAwMDAwLCBlZmZmZmZmZl0K
-CQlpbml0Y2FsbCBwY2lfc3Vic3lzX2luaXQrMHgwLzB4MTIxIHJldHVybmVkIDAgYWZ0ZXIgMzgx
-IG1zZWNzCglpbiBkbWVzZwoKdjQ6IHRha2Ugb3V0IF9faW5zZXJ0X3Jlc291cmNlIGFuZCBpbnNl
-cnRfcmVzb3VyY2VfZXhwYW5kX3RvX2ZpdCA6IExpbnVzIGFscmVhZHkgY2hlY2sgaW4uCiAgICB1
-c2UgcmVzZXJ2ZV9yZWdpb25fd2l0aF9zcGxpdCBhdCB0aGUgZmlyc3QgcG9pbnQKICAgIHVzZSBj
-b25zdCBjaGFyICpuYW1lCgp2NTogZml4IGNoZWNraW5nIG9uIG92ZXJsYXBwaW5nCgp2Njogb25s
-eSByZXNlcnZlIGNvbW1vbiBhcmVhIGluIGNvbmZsaWN0CglzbyBnb3Qgc3RoIGluIC9wcm9jL2lv
-bWVtCgkJZDgwMDAwMDAtZGZmZmZmZmYgOiBQQ0kgQnVzICMwMAoJCSAgZGMwMDAwMDAtZGZmZmZm
-ZmYgOiBHQVJUCgkJICAgIGRjMDAwMDAwLWRmZmZmZmZmIDogcmVzZXJ2ZWQKCQllMDAwMDAwMC1l
-ZmZmZmZmZiA6IFBDSSBNTUNPTkZJRyAwCgkJICBlMDAwMDAwMC1lZmZmZmZmZiA6IHJlc2VydmVk
-Cgl3aGVuIHdlIGhhdmUgYmlnIHJhbmdlIGluIGU4MjAKCQkwMDAwMDAwMGRjMDAwMDAwLTAwMDAw
-MDAwZjAwMDAwMDAgKHJlc2VydmVkKQoKU2lnbmVkLW9mZi1ieTogWWluZ2hhaSBMdSA8eWhsdS5r
-ZXJuZWxAZ21haWwuY29tPgoKLS0tCiBhcmNoL3g4Ni9rZXJuZWwvZTgyMC5jIHwgICAgMiAtCiBp
-bmNsdWRlL2xpbnV4L2lvcG9ydC5oIHwgICAgMyArKwoga2VybmVsL3Jlc291cmNlLmMgICAgICB8
-ICAgNjkgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLQog
-MyBmaWxlcyBjaGFuZ2VkLCA3MiBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQoKSW5kZXg6
-IGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvZTgyMC5jCj09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIu
-Ni5vcmlnL2FyY2gveDg2L2tlcm5lbC9lODIwLmMKKysrIGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJu
-ZWwvZTgyMC5jCkBAIC0xMzIwLDcgKzEzMjAsNyBAQCB2b2lkIF9faW5pdCBlODIwX3Jlc2VydmVf
-cmVzb3VyY2VzX2xhdGUoCiAJcmVzID0gZTgyMF9yZXM7CiAJZm9yIChpID0gMDsgaSA8IGU4MjAu
-bnJfbWFwOyBpKyspIHsKIAkJaWYgKCFyZXMtPnBhcmVudCAmJiByZXMtPmVuZCkKLQkJCWluc2Vy
-dF9yZXNvdXJjZSgmaW9tZW1fcmVzb3VyY2UsIHJlcyk7CisJCQlyZXNlcnZlX3JlZ2lvbl93aXRo
-X3NwbGl0KCZpb21lbV9yZXNvdXJjZSwgcmVzLT5zdGFydCwgcmVzLT5lbmQsIHJlcy0+bmFtZSk7
-CiAJCXJlcysrOwogCX0KIH0KSW5kZXg6IGxpbnV4LTIuNi9pbmNsdWRlL2xpbnV4L2lvcG9ydC5o
-Cj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2luY2x1ZGUvbGludXgvaW9wb3J0LmgKKysr
-IGxpbnV4LTIuNi9pbmNsdWRlL2xpbnV4L2lvcG9ydC5oCkBAIC0xMDgsNiArMTA4LDkgQEAgZXh0
-ZXJuIHN0cnVjdCByZXNvdXJjZSBpb21lbV9yZXNvdXJjZTsKIAogZXh0ZXJuIGludCByZXF1ZXN0
-X3Jlc291cmNlKHN0cnVjdCByZXNvdXJjZSAqcm9vdCwgc3RydWN0IHJlc291cmNlICpuZXcpOwog
-ZXh0ZXJuIGludCByZWxlYXNlX3Jlc291cmNlKHN0cnVjdCByZXNvdXJjZSAqbmV3KTsKK2V4dGVy
-biB2b2lkIHJlc2VydmVfcmVnaW9uX3dpdGhfc3BsaXQoc3RydWN0IHJlc291cmNlICpyb290LAor
-CQkJICAgICByZXNvdXJjZV9zaXplX3Qgc3RhcnQsIHJlc291cmNlX3NpemVfdCBlbmQsCisJCQkg
-ICAgIGNvbnN0IGNoYXIgKm5hbWUpOwogZXh0ZXJuIGludCBpbnNlcnRfcmVzb3VyY2Uoc3RydWN0
-IHJlc291cmNlICpwYXJlbnQsIHN0cnVjdCByZXNvdXJjZSAqbmV3KTsKIGV4dGVybiB2b2lkIGlu
-c2VydF9yZXNvdXJjZV9leHBhbmRfdG9fZml0KHN0cnVjdCByZXNvdXJjZSAqcm9vdCwgc3RydWN0
-IHJlc291cmNlICpuZXcpOwogZXh0ZXJuIGludCBhbGxvY2F0ZV9yZXNvdXJjZShzdHJ1Y3QgcmVz
-b3VyY2UgKnJvb3QsIHN0cnVjdCByZXNvdXJjZSAqbmV3LApJbmRleDogbGludXgtMi42L2tlcm5l
-bC9yZXNvdXJjZS5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2tlcm5lbC9yZXNvdXJj
-ZS5jCisrKyBsaW51eC0yLjYva2VybmVsL3Jlc291cmNlLmMKQEAgLTUxMiwxMCArNTEyLDc3IEBA
-IGludCBhZGp1c3RfcmVzb3VyY2Uoc3RydWN0IHJlc291cmNlICpyZXMKIAlyZXN1bHQgPSAwOwog
-CiAgb3V0OgotCXdyaXRlX3VubG9jaygmcmVzb3VyY2VfbG9jayk7CiAJcmV0dXJuIHJlc3VsdDsK
-IH0KIAorc3RhdGljIHZvaWQgX19pbml0IF9fcmVzZXJ2ZV9yZWdpb25fd2l0aF9zcGxpdChzdHJ1
-Y3QgcmVzb3VyY2UgKnJvb3QsCisJCXJlc291cmNlX3NpemVfdCBzdGFydCwgcmVzb3VyY2Vfc2l6
-ZV90IGVuZCwKKwkJY29uc3QgY2hhciAqbmFtZSkKK3sKKwlzdHJ1Y3QgcmVzb3VyY2UgKnBhcmVu
-dCA9IHJvb3Q7CisJc3RydWN0IHJlc291cmNlICpjb25mbGljdDsKKwlzdHJ1Y3QgcmVzb3VyY2Ug
-KnJlcyA9IGt6YWxsb2Moc2l6ZW9mKCpyZXMpLCBHRlBfS0VSTkVMKTsKKworCWlmICghcmVzKQor
-CQlyZXR1cm47CisKKwlyZXMtPm5hbWUgPSBuYW1lOworCXJlcy0+c3RhcnQgPSBzdGFydDsKKwly
-ZXMtPmVuZCA9IGVuZDsKKwlyZXMtPmZsYWdzID0gSU9SRVNPVVJDRV9CVVNZOworCisJZm9yICg7
-OykgeworCQljb25mbGljdCA9IF9fcmVxdWVzdF9yZXNvdXJjZShwYXJlbnQsIHJlcyk7CisJCWlm
-ICghY29uZmxpY3QpCisJCQlicmVhazsKKwkJaWYgKGNvbmZsaWN0ICE9IHBhcmVudCkgeworCQkJ
-cGFyZW50ID0gY29uZmxpY3Q7CisJCQlpZiAoIShjb25mbGljdC0+ZmxhZ3MgJiBJT1JFU09VUkNF
-X0JVU1kpKQorCQkJCWNvbnRpbnVlOworCQl9CisKKwkJLyogVWhodWgsIHRoYXQgZGlkbid0IHdv
-cmsgb3V0Li4gKi8KKwkJa2ZyZWUocmVzKTsKKwkJcmVzID0gTlVMTDsKKwkJYnJlYWs7CisJfQor
-CisJaWYgKCFyZXMpIHsKKwkJcHJpbnRrKEtFUk5fREVCVUcgIiAgICBfX3Jlc2VydmVfcmVnaW9u
-X3dpdGhfc3BsaXQ6ICglcykgWyVsbHgsICVsbHhdLCByZXM6ICglcykgWyVsbHgsICVsbHhdXG4i
-LAorCQkJIGNvbmZsaWN0LT5uYW1lLCBjb25mbGljdC0+c3RhcnQsIGNvbmZsaWN0LT5lbmQsCisJ
-CQkgbmFtZSwgc3RhcnQsIGVuZCk7CisKKwkJLyogZmFpbGVkLCBzcGxpdCBhbmQgdHJ5IGFnYWlu
-ICovCisKKwkJLyogY29uZmxpY3QgY292ZXJyZWQgd2hvbGUgYXJlYSAqLworCQlpZiAoY29uZmxp
-Y3QtPnN0YXJ0IDw9IHN0YXJ0ICYmIGNvbmZsaWN0LT5lbmQgPj0gZW5kKQorCQkJcmV0dXJuOwor
-CisJCWlmIChjb25mbGljdC0+c3RhcnQgPiBzdGFydCkKKwkJCV9fcmVzZXJ2ZV9yZWdpb25fd2l0
-aF9zcGxpdChyb290LCBzdGFydCwgY29uZmxpY3QtPnN0YXJ0LTEsIG5hbWUpOworCQlpZiAoIShj
-b25mbGljdC0+ZmxhZ3MgJiBJT1JFU09VUkNFX0JVU1kpKSB7CisJCQlyZXNvdXJjZV9zaXplX3Qg
-Y29tbW9uX3N0YXJ0LCBjb21tb25fZW5kOworCisJCQljb21tb25fc3RhcnQgPSBtYXgoY29uZmxp
-Y3QtPnN0YXJ0LCBzdGFydCk7CisJCQljb21tb25fZW5kID0gbWluKGNvbmZsaWN0LT5lbmQsIGVu
-ZCk7CisJCQlpZiAoY29tbW9uX3N0YXJ0IDwgY29tbW9uX2VuZCkKKwkJCQlfX3Jlc2VydmVfcmVn
-aW9uX3dpdGhfc3BsaXQocm9vdCwgY29tbW9uX3N0YXJ0LCBjb21tb25fZW5kLCBuYW1lKTsKKwkJ
-fQorCQlpZiAoY29uZmxpY3QtPmVuZCA8IGVuZCkKKwkJCV9fcmVzZXJ2ZV9yZWdpb25fd2l0aF9z
-cGxpdChyb290LCBjb25mbGljdC0+ZW5kKzEsIGVuZCwgbmFtZSk7CisJfQorCit9CisKK3ZvaWQg
-cmVzZXJ2ZV9yZWdpb25fd2l0aF9zcGxpdChzdHJ1Y3QgcmVzb3VyY2UgKnJvb3QsCisJCXJlc291
-cmNlX3NpemVfdCBzdGFydCwgcmVzb3VyY2Vfc2l6ZV90IGVuZCwKKwkJY29uc3QgY2hhciAqbmFt
-ZSkKK3sKKwl3cml0ZV9sb2NrKCZyZXNvdXJjZV9sb2NrKTsKKwlfX3Jlc2VydmVfcmVnaW9uX3dp
-dGhfc3BsaXQocm9vdCwgc3RhcnQsIGVuZCwgbmFtZSk7CisJd3JpdGVfdW5sb2NrKCZyZXNvdXJj
-ZV9sb2NrKTsKK30KKwogRVhQT1JUX1NZTUJPTChhZGp1c3RfcmVzb3VyY2UpOwogCiAvKioK
-------=_Part_18238_29942010.1220141781514--
+AFAIK, the second idea (patch the source) would solve problems for lots 
+of people asking for the solution. (the first idea with the 
+all-generic-ide doesn't work for everybody)
+
+I would suggest patching the ahci.c, and I appreciate any 
+suggestions/comments.
+
+For the sake of completness, here are relevant parts of dmesg:
+(0000:03:00.0 is the mentioned marvell 6145 sata/pata controller)
+scenario 1: ahci takes the controller, no devices are detected
+
+----------CUT-----------
+ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 16 (level, low) -> IRQ 16
+ahci 0000:03:00.0: controller can't do NCQ, turning off CAP_NCQ
+ahci 0000:03:00.0: MV_AHCI HACK: port_map 1f -> f
+ahci 0000:03:00.0: AHCI 0001.0000 32 slots 5 ports 3 Gbps 0xf impl IDE mode
+ahci 0000:03:00.0: flags: 64bit stag pmp slum part
+PCI: Setting latency timer of device 0000:03:00.0 to 64
+scsi7 : ahci
+scsi8 : ahci
+scsi9 : ahci
+scsi10 : ahci
+scsi11 : ahci
+ata7: SATA max UDMA/133 abar m1024@0xfe8ffc00 port 0xfe8ffd00 irq 16
+ata8: SATA max UDMA/133 abar m1024@0xfe8ffc00 port 0xfe8ffd80 irq 16
+ata9: SATA max UDMA/133 abar m1024@0xfe8ffc00 port 0xfe8ffe00 irq 16
+ata10: SATA max UDMA/133 abar m1024@0xfe8ffc00 port 0xfe8ffe80 irq 16
+ata11: DUMMY
+ata7: SATA link down (SStatus 0 SControl 300)
+ata8: SATA link down (SStatus 0 SControl 300)
+ata9: SATA link down (SStatus 0 SControl 300)
+ata10: SATA link down (SStatus 0 SControl 300)
+----------CUT-----------
+
+
+
+scenario 2: pata_marvell takes the controller, everything is fine
+
+----------CUT-----------
+ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 16 (level, low) -> IRQ 16
+PCI: Setting latency timer of device 0000:03:00.0 to 64
+scsi7 : pata_marvell
+scsi8 : pata_marvell
+ata7: PATA max UDMA/100 cmd 0xcc00 ctl 0xc880 bmdma 0xc400 irq 16
+ata8: PATA max UDMA/133 cmd 0xc800 ctl 0xc480 bmdma 0xc408 irq 16
+BAR5:00:04 01:7F 02:22 03:C8 04:00 05:00 06:00 07:00 08:00 09:00 0A:00 
+0B:00 0C:1F 0D:00 0E:00 0F:00
+ata7.00: ATA-7: Maxtor 7L250R0, BAJ41G20, max UDMA/133
+ata7.00: 490234752 sectors, multi 0: LBA48
+ata7.01: ATAPI: HL-DT-ST DVDRAM GSA-H42N, RL00, max UDMA/66
+ata7.00: configured for UDMA/100
+ata7.01: configured for UDMA/66
+BAR5:00:04 01:7F 02:22 03:C8 04:00 05:00 06:00 07:00 08:00 09:00 0A:00 
+0B:00 0C:1F 0D:00 0E:00 0F:00
+scsi 7:0:0:0: Direct-Access     ATA      Maxtor 7L250R0   BAJ4 PQ: 0 ANSI: 5
+sd 7:0:0:0: [sdb] 490234752 512-byte hardware sectors (251000 MB)
+sd 7:0:0:0: [sdb] Write Protect is off
+sd 7:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+sd 7:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't 
+support DPO or FUA
+sd 7:0:0:0: [sdb] 490234752 512-byte hardware sectors (251000 MB)
+sd 7:0:0:0: [sdb] Write Protect is off
+sd 7:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+sd 7:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't 
+support DPO or FUA
+  sdb: sdb1
+sd 7:0:0:0: [sdb] Attached SCSI disk
+sd 7:0:0:0: Attached scsi generic sg1 type 0
+scsi 7:0:1:0: CD-ROM            HL-DT-ST DVDRAM GSA-H42N  RL00 PQ: 0 ANSI: 5
+sr0: scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
+Uniform CD-ROM driver Revision: 3.20
+sr 7:0:1:0: Attached scsi CD-ROM sr0
+sr 7:0:1:0: Attached scsi generic sg2 type 5
+----------CUT-----------
+
+
+..and the patch that was used (very simple):
+----------CUT-----------
+--- drivers/ata/ahci.c	2008-08-28 23:11:37.000000000 +0200
++++ drivers/ata/ahci.c	2008-08-30 20:08:59.000000000 +0200
+@@ -590,10 +590,6 @@
+  	{ PCI_VDEVICE(SI, 0x1185), board_ahci }, /* SiS 966 */
+  	{ PCI_VDEVICE(SI, 0x0186), board_ahci }, /* SiS 968 */
+
+-	/* Marvell */
+-	{ PCI_VDEVICE(MARVELL, 0x6145), board_ahci_mv },	/* 6145 */
+-	{ PCI_VDEVICE(MARVELL, 0x6121), board_ahci_mv },	/* 6121 */
+-
+  	/* Generic, PCI class code for AHCI */
+  	{ PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
+  	  PCI_CLASS_STORAGE_SATA_AHCI, 0xffffff, board_ahci },
+----------CUT-----------
+
+
+With regards,
+    Peter Ambroz
