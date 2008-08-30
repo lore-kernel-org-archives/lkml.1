@@ -1,78 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756617AbYH3VGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbYH3VMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756617AbYH3VGi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 17:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbYH3VGa
+	id S1756195AbYH3VMZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 17:12:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbYH3VMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 17:06:30 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:50355 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752887AbYH3VGa (ORCPT
+	Sat, 30 Aug 2008 17:12:16 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:55224 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753695AbYH3VMO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 17:06:30 -0400
+	Sat, 30 Aug 2008 17:12:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=RjXC82q5a00vLsWKJxNUAQ8K5tqHvVkAN6UD0nExnaAUXu+BeIK0eZGGHR41DyH48X
-         l54KNrO+qxSB2oQNfZnqxI9xdrZBIKIr9Xc7gfN3o32ekJLNz9ufc3OkYE7ax2gfyMuS
-         AjUlT6q+S+858fD12lo4+4k47uDqsNUfrohVY=
-Message-ID: <21d7e9970808301406x6310c7b9w2ef663cbf40b5e61@mail.gmail.com>
-Date: Sun, 31 Aug 2008 07:06:26 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Gene Heskett" <gene.heskett@verizon.net>
-Subject: Re: Linux-2.6.27-rc5, drm errors in log
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jaswinder Singh" <jaswinder@infradead.org>, xorg@lists.freedesktop.org
-In-Reply-To: <200808301452.04634.gene.heskett@verizon.net>
+         :content-type:references;
+        b=gcvo7bJeWU0wr1/uELemjqGsssheXA49ZyjlGy24hlIJT6HIazjUT+i5y+al45sqI7
+         AZ/MEIbmm8hnuV+1v//uph59BHub/41erzOpt5FhfhDUymBb7aBUijcsmE1hdsD2tRQp
+         lir0GG07/bzFuukFF2JUn11CdrgHA/+Ypgvvs=
+Message-ID: <86802c440808301412k4e0b5562ie03ce41547ddab9a@mail.gmail.com>
+Date: Sat, 30 Aug 2008 14:12:12 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "David Witbrodt" <dawitbro@sbcglobal.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Kernel Testers" <kernel-testers@vger.kernel.org>
+In-Reply-To: <200808302246.48199.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200808301452.04634.gene.heskett@verizon.net>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_17891_21428210.1220130733879"
+References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>
+	 <86802c440808301314t525d1b75r9afcc73857cf5c79@mail.gmail.com>
+	 <86802c440808301338h59a5338rabe9e64560b55476@mail.gmail.com>
+	 <200808302246.48199.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 31, 2008 at 4:52 AM, Gene Heskett <gene.heskett@verizon.net> wrote:
-> Greetings all;
->
-> A re-repeat of a previous posting which has not drawn a comment. With added
-> content, added CC to a patch author, and some new questions.
->
-> Machine is an F8 install, Athlon xp-2800 on an nforce2 motherboard, running
-> an older radeon 9200SE (RV280 based) video card.  No problems if I reboot
-> to 2.6.27-rc4.
->
-> I'm drowning in these errors:
->
-> Aug 30 13:21:05 coyote kernel: [14927.850078] [drm] wait for fifo failed status : 0x80076100 0x00000000
-> Aug 30 13:21:05 coyote kernel: [14927.861335] [drm] wait for fifo failed status : 0x80076100 0x00000000
-> Aug 30 13:21:05 coyote kernel: [14928.060233] [drm] wait idle failed status : 0x80076100 0x00000000
-> Aug 30 13:21:07 coyote kernel: [14929.557075] [drm] wait for fifo failed status : 0x80076100 0x00000000
-> Aug 30 13:21:07 coyote kernel: [14929.568869] [drm] wait for fifo failed status : 0x80076100 0x00000000
-> Aug 30 13:21:08 coyote kernel: [14931.028882] [drm] wait for fifo failed status : 0x80036100 0x00000000
-> Aug 30 13:21:08 coyote kernel: [14931.039896] [drm] wait for fifo failed status : 0x80076100 0x00000000
-> Aug 30 13:21:18 coyote kernel: [14940.515114] [drm] wait for fifo failed status : 0x80076100 0x00000000
-> Aug 30 13:27:27 coyote kernel: [15310.125656] [drm] wait for fifo failed status : 0x80066107 0x00000000
->
-> I have rebuilt and rebooted several times now, adjusting things like the
-> timer frequency, and modular vs builtin for ati and drm stuff with no
-> apparent effect.
+------=_Part_17891_21428210.1220130733879
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Before now we never had this error in here, and its showing up a real
-problem with your card, reading the r300 register doesn't matter at
-all,
-as things have already gone wrong by the time you hit this debug.
+On Sat, Aug 30, 2008 at 1:46 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Saturday, 30 of August 2008, Yinghai Lu wrote:
+>> please check
+>>
+>> [PATCH] x86: split e820 reserved entries record to late v4
+>> [PATCH] x86: split e820 reserved entries record to late v4 - fix v6
+>
+> What kernel should I apply those to and in what order?
 
-The question is if you add the 3 lines into radeon_cp.c at the same
-place in -rc4 without the other patches does it still happen..
-       DRM_INFO("wait for fifo failed status : 0x%08X 0x%08X\n",
-                RADEON_READ(RADEON_RBBM_STATUS),
-                RADEON_READ(R300_VAP_CNTL_STATUS));
+linus git tree
+1. [PATCH] x86: split e820 reserved entries record to late v4
+2. [PATCH] x86: split e820 reserved entries record to late v4 - fix v6
 
-If so I'll just make DRM_INFO into DRM_DEBUG for now and we can work
-it out later.
+tip/master
+1. Resource handling: add 'insert_resource_expand_to_fit()' function
+2. [PATCH] x86: split e820 reserved entries record to late v4 - fix v6
 
-Dave.
+YH
+
+------=_Part_17891_21428210.1220130733879
+Content-Type: text/x-patch; name=insert_resource_expand_to_fit.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fkiq9nm70
+Content-Disposition: attachment;
+ filename=insert_resource_expand_to_fit.patch
+
+Y29tbWl0IGJlZjY5ZWEwZGNjZTU3NGE0MjVmZWIwYTVhYTRjNjNkZDEwOGI5YTYKQXV0aG9yOiBM
+aW51cyBUb3J2YWxkcyA8dG9ydmFsZHNAbGludXgtZm91bmRhdGlvbi5vcmc+CkRhdGU6ICAgRnJp
+IEF1ZyAyOSAyMDoxODozMSAyMDA4IC0wNzAwCgogICAgUmVzb3VyY2UgaGFuZGxpbmc6IGFkZCAn
+aW5zZXJ0X3Jlc291cmNlX2V4cGFuZF90b19maXQoKScgZnVuY3Rpb24KICAgIAogICAgTm90IHVz
+ZWQgYW55d2hlcmUgeWV0LCBidXQgdGhpcyBjb21wbGVtZW50cyB0aGUgZXhpc3RpbmcgcGxhaW4K
+ICAgICdpbnNlcnRfcmVzb3VyY2UoKScgZnVuY3Rpb25hbGl0eSB3aXRoIGEgdmVyc2lvbiB0aGF0
+IGNhbiBleHBhbmQgdGhlCiAgICByZXNvdXJjZSB3ZSBhcmUgYWRkaW5nIGluIG9yZGVyIHRvIGZp
+eCB1cCBhbnkgY29uZmxpY3RzIGl0IGhhcyB3aXRoCiAgICBleGlzdGluZyByZXNvdXJjZXMuCiAg
+ICAKICAgIFNpZ25lZC1vZmYtYnk6IExpbnVzIFRvcnZhbGRzIDx0b3J2YWxkc0BsaW51eC1mb3Vu
+ZGF0aW9uLm9yZz4KCmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L2lvcG9ydC5oIGIvaW5jbHVk
+ZS9saW51eC9pb3BvcnQuaAppbmRleCAyMmQyMTE1Li44ZDNiN2E5IDEwMDY0NAotLS0gYS9pbmNs
+dWRlL2xpbnV4L2lvcG9ydC5oCisrKyBiL2luY2x1ZGUvbGludXgvaW9wb3J0LmgKQEAgLTEwOSw2
+ICsxMDksNyBAQCBleHRlcm4gc3RydWN0IHJlc291cmNlIGlvbWVtX3Jlc291cmNlOwogZXh0ZXJu
+IGludCByZXF1ZXN0X3Jlc291cmNlKHN0cnVjdCByZXNvdXJjZSAqcm9vdCwgc3RydWN0IHJlc291
+cmNlICpuZXcpOwogZXh0ZXJuIGludCByZWxlYXNlX3Jlc291cmNlKHN0cnVjdCByZXNvdXJjZSAq
+bmV3KTsKIGV4dGVybiBpbnQgaW5zZXJ0X3Jlc291cmNlKHN0cnVjdCByZXNvdXJjZSAqcGFyZW50
+LCBzdHJ1Y3QgcmVzb3VyY2UgKm5ldyk7CitleHRlcm4gdm9pZCBpbnNlcnRfcmVzb3VyY2VfZXhw
+YW5kX3RvX2ZpdChzdHJ1Y3QgcmVzb3VyY2UgKnJvb3QsIHN0cnVjdCByZXNvdXJjZSAqbmV3KTsK
+IGV4dGVybiBpbnQgYWxsb2NhdGVfcmVzb3VyY2Uoc3RydWN0IHJlc291cmNlICpyb290LCBzdHJ1
+Y3QgcmVzb3VyY2UgKm5ldywKIAkJCSAgICAgcmVzb3VyY2Vfc2l6ZV90IHNpemUsIHJlc291cmNl
+X3NpemVfdCBtaW4sCiAJCQkgICAgIHJlc291cmNlX3NpemVfdCBtYXgsIHJlc291cmNlX3NpemVf
+dCBhbGlnbiwKZGlmZiAtLWdpdCBhL2tlcm5lbC9yZXNvdXJjZS5jIGIva2VybmVsL3Jlc291cmNl
+LmMKaW5kZXggZjViNTE4ZS4uY2YwYTE3OCAxMDA2NDQKLS0tIGEva2VybmVsL3Jlc291cmNlLmMK
+KysrIGIva2VybmVsL3Jlc291cmNlLmMKQEAgLTM2MiwzNSArMzYyLDIxIEBAIGludCBhbGxvY2F0
+ZV9yZXNvdXJjZShzdHJ1Y3QgcmVzb3VyY2UgKnJvb3QsIHN0cnVjdCByZXNvdXJjZSAqbmV3LAog
+CiBFWFBPUlRfU1lNQk9MKGFsbG9jYXRlX3Jlc291cmNlKTsKIAotLyoqCi0gKiBpbnNlcnRfcmVz
+b3VyY2UgLSBJbnNlcnRzIGEgcmVzb3VyY2UgaW4gdGhlIHJlc291cmNlIHRyZWUKLSAqIEBwYXJl
+bnQ6IHBhcmVudCBvZiB0aGUgbmV3IHJlc291cmNlCi0gKiBAbmV3OiBuZXcgcmVzb3VyY2UgdG8g
+aW5zZXJ0Ci0gKgotICogUmV0dXJucyAwIG9uIHN1Y2Nlc3MsIC1FQlVTWSBpZiB0aGUgcmVzb3Vy
+Y2UgY2FuJ3QgYmUgaW5zZXJ0ZWQuCi0gKgotICogVGhpcyBmdW5jdGlvbiBpcyBlcXVpdmFsZW50
+IHRvIHJlcXVlc3RfcmVzb3VyY2Ugd2hlbiBubyBjb25mbGljdAotICogaGFwcGVucy4gSWYgYSBj
+b25mbGljdCBoYXBwZW5zLCBhbmQgdGhlIGNvbmZsaWN0aW5nIHJlc291cmNlcwotICogZW50aXJl
+bHkgZml0IHdpdGhpbiB0aGUgcmFuZ2Ugb2YgdGhlIG5ldyByZXNvdXJjZSwgdGhlbiB0aGUgbmV3
+Ci0gKiByZXNvdXJjZSBpcyBpbnNlcnRlZCBhbmQgdGhlIGNvbmZsaWN0aW5nIHJlc291cmNlcyBi
+ZWNvbWUgY2hpbGRyZW4gb2YKLSAqIHRoZSBuZXcgcmVzb3VyY2UuCisvKgorICogSW5zZXJ0IGEg
+cmVzb3VyY2UgaW50byB0aGUgcmVzb3VyY2UgdHJlZS4gSWYgc3VjY2Vzc2Z1bCwgcmV0dXJuIE5V
+TEwsCisgKiBvdGhlcndpc2UgcmV0dXJuIHRoZSBjb25mbGljdGluZyByZXNvdXJjZSAoY29tcGFy
+ZSB0byBfX3JlcXVlc3RfcmVzb3VyY2UoKSkKICAqLwotaW50IGluc2VydF9yZXNvdXJjZShzdHJ1
+Y3QgcmVzb3VyY2UgKnBhcmVudCwgc3RydWN0IHJlc291cmNlICpuZXcpCitzdGF0aWMgc3RydWN0
+IHJlc291cmNlICogX19pbnNlcnRfcmVzb3VyY2Uoc3RydWN0IHJlc291cmNlICpwYXJlbnQsIHN0
+cnVjdCByZXNvdXJjZSAqbmV3KQogewotCWludCByZXN1bHQ7CiAJc3RydWN0IHJlc291cmNlICpm
+aXJzdCwgKm5leHQ7CiAKLQl3cml0ZV9sb2NrKCZyZXNvdXJjZV9sb2NrKTsKLQogCWZvciAoOzsg
+cGFyZW50ID0gZmlyc3QpIHsKLQkgCXJlc3VsdCA9IDA7CiAJCWZpcnN0ID0gX19yZXF1ZXN0X3Jl
+c291cmNlKHBhcmVudCwgbmV3KTsKIAkJaWYgKCFmaXJzdCkKLQkJCWdvdG8gb3V0OworCQkJcmV0
+dXJuIGZpcnN0OwogCi0JCXJlc3VsdCA9IC1FQlVTWTsKIAkJaWYgKGZpcnN0ID09IHBhcmVudCkK
+LQkJCWdvdG8gb3V0OworCQkJcmV0dXJuIGZpcnN0OwogCiAJCWlmICgoZmlyc3QtPnN0YXJ0ID4g
+bmV3LT5zdGFydCkgfHwgKGZpcnN0LT5lbmQgPCBuZXctPmVuZCkpCiAJCQlicmVhazsKQEAgLTQw
+MSwxNSArMzg3LDEzIEBAIGludCBpbnNlcnRfcmVzb3VyY2Uoc3RydWN0IHJlc291cmNlICpwYXJl
+bnQsIHN0cnVjdCByZXNvdXJjZSAqbmV3KQogCWZvciAobmV4dCA9IGZpcnN0OyA7IG5leHQgPSBu
+ZXh0LT5zaWJsaW5nKSB7CiAJCS8qIFBhcnRpYWwgb3ZlcmxhcD8gQmFkLCBhbmQgdW5maXhhYmxl
+ICovCiAJCWlmIChuZXh0LT5zdGFydCA8IG5ldy0+c3RhcnQgfHwgbmV4dC0+ZW5kID4gbmV3LT5l
+bmQpCi0JCQlnb3RvIG91dDsKKwkJCXJldHVybiBuZXh0OwogCQlpZiAoIW5leHQtPnNpYmxpbmcp
+CiAJCQlicmVhazsKIAkJaWYgKG5leHQtPnNpYmxpbmctPnN0YXJ0ID4gbmV3LT5lbmQpCiAJCQli
+cmVhazsKIAl9CiAKLQlyZXN1bHQgPSAwOwotCiAJbmV3LT5wYXJlbnQgPSBwYXJlbnQ7CiAJbmV3
+LT5zaWJsaW5nID0gbmV4dC0+c2libGluZzsKIAluZXctPmNoaWxkID0gZmlyc3Q7CkBAIC00MjYs
+MTAgKzQxMCw2NCBAQCBpbnQgaW5zZXJ0X3Jlc291cmNlKHN0cnVjdCByZXNvdXJjZSAqcGFyZW50
+LCBzdHJ1Y3QgcmVzb3VyY2UgKm5ldykKIAkJCW5leHQgPSBuZXh0LT5zaWJsaW5nOwogCQluZXh0
+LT5zaWJsaW5nID0gbmV3OwogCX0KKwlyZXR1cm4gTlVMTDsKK30KIAotIG91dDoKKy8qKgorICog
+aW5zZXJ0X3Jlc291cmNlIC0gSW5zZXJ0cyBhIHJlc291cmNlIGluIHRoZSByZXNvdXJjZSB0cmVl
+CisgKiBAcGFyZW50OiBwYXJlbnQgb2YgdGhlIG5ldyByZXNvdXJjZQorICogQG5ldzogbmV3IHJl
+c291cmNlIHRvIGluc2VydAorICoKKyAqIFJldHVybnMgMCBvbiBzdWNjZXNzLCAtRUJVU1kgaWYg
+dGhlIHJlc291cmNlIGNhbid0IGJlIGluc2VydGVkLgorICoKKyAqIFRoaXMgZnVuY3Rpb24gaXMg
+ZXF1aXZhbGVudCB0byByZXF1ZXN0X3Jlc291cmNlIHdoZW4gbm8gY29uZmxpY3QKKyAqIGhhcHBl
+bnMuIElmIGEgY29uZmxpY3QgaGFwcGVucywgYW5kIHRoZSBjb25mbGljdGluZyByZXNvdXJjZXMK
+KyAqIGVudGlyZWx5IGZpdCB3aXRoaW4gdGhlIHJhbmdlIG9mIHRoZSBuZXcgcmVzb3VyY2UsIHRo
+ZW4gdGhlIG5ldworICogcmVzb3VyY2UgaXMgaW5zZXJ0ZWQgYW5kIHRoZSBjb25mbGljdGluZyBy
+ZXNvdXJjZXMgYmVjb21lIGNoaWxkcmVuIG9mCisgKiB0aGUgbmV3IHJlc291cmNlLgorICovCitp
+bnQgaW5zZXJ0X3Jlc291cmNlKHN0cnVjdCByZXNvdXJjZSAqcGFyZW50LCBzdHJ1Y3QgcmVzb3Vy
+Y2UgKm5ldykKK3sKKwlzdHJ1Y3QgcmVzb3VyY2UgKmNvbmZsaWN0OworCisJd3JpdGVfbG9jaygm
+cmVzb3VyY2VfbG9jayk7CisJY29uZmxpY3QgPSBfX2luc2VydF9yZXNvdXJjZShwYXJlbnQsIG5l
+dyk7CisJd3JpdGVfdW5sb2NrKCZyZXNvdXJjZV9sb2NrKTsKKwlyZXR1cm4gY29uZmxpY3QgPyAt
+RUJVU1kgOiAwOworfQorCisvKioKKyAqIGluc2VydF9yZXNvdXJjZV9leHBhbmRfdG9fZml0IC0g
+SW5zZXJ0IGEgcmVzb3VyY2UgaW50byB0aGUgcmVzb3VyY2UgdHJlZQorICogQHBhcmVudDogcGFy
+ZW50IG9mIHRoZSBuZXcgcmVzb3VyY2UKKyAqIEBuZXc6IG5ldyByZXNvdXJjZSB0byBpbnNlcnQK
+KyAqCisgKiBJbnNlcnQgYSByZXNvdXJjZSBpbnRvIHRoZSByZXNvdXJjZSB0cmVlLCBwb3NzaWJs
+eSBleHBhbmRpbmcgaXQgaW4gb3JkZXIKKyAqIHRvIG1ha2UgaXQgZW5jb21wYXNzIGFueSBjb25m
+bGljdGluZyByZXNvdXJjZXMuCisgKi8KK3ZvaWQgaW5zZXJ0X3Jlc291cmNlX2V4cGFuZF90b19m
+aXQoc3RydWN0IHJlc291cmNlICpyb290LCBzdHJ1Y3QgcmVzb3VyY2UgKm5ldykKK3sKKwlpZiAo
+bmV3LT5wYXJlbnQpCisJCXJldHVybjsKKworCXdyaXRlX2xvY2soJnJlc291cmNlX2xvY2spOwor
+CWZvciAoOzspIHsKKwkJc3RydWN0IHJlc291cmNlICpjb25mbGljdDsKKworCQljb25mbGljdCA9
+IF9faW5zZXJ0X3Jlc291cmNlKHJvb3QsIG5ldyk7CisJCWlmICghY29uZmxpY3QpCisJCQlicmVh
+azsKKwkJaWYgKGNvbmZsaWN0ID09IHJvb3QpCisJCQlicmVhazsKKworCQkvKiBPaywgZXhwYW5k
+IHJlc291cmNlIHRvIGNvdmVyIHRoZSBjb25mbGljdCwgdGhlbiB0cnkgYWdhaW4gLi4gKi8KKwkJ
+aWYgKGNvbmZsaWN0LT5zdGFydCA8IG5ldy0+c3RhcnQpCisJCQluZXctPnN0YXJ0ID0gY29uZmxp
+Y3QtPnN0YXJ0OworCQlpZiAoY29uZmxpY3QtPmVuZCA+IG5ldy0+ZW5kKQorCQkJbmV3LT5lbmQg
+PSBjb25mbGljdC0+ZW5kOworCisJCXByaW50aygiRXhwYW5kZWQgcmVzb3VyY2UgJXMgZHVlIHRv
+IGNvbmZsaWN0IHdpdGggJXNcbiIsIG5ldy0+bmFtZSwgY29uZmxpY3QtPm5hbWUpOworCX0KIAl3
+cml0ZV91bmxvY2soJnJlc291cmNlX2xvY2spOwotCXJldHVybiByZXN1bHQ7CiB9CiAKIC8qKgo=
+
+------=_Part_17891_21428210.1220130733879--
