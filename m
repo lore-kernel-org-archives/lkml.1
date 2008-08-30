@@ -1,127 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbYH3Bfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756279AbYH3Bsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756245AbYH3Bfh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 21:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbYH3Bf3
+	id S1756279AbYH3Bsx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 21:48:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbYH3Bsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 21:35:29 -0400
-Received: from sh.osrg.net ([192.16.179.4]:44357 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752620AbYH3Bf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 21:35:28 -0400
-Date: Sat, 30 Aug 2008 10:34:12 +0900
-To: haavard.skinnemoen@atmel.com
-Cc: eaa@wprmedical.com, linux-mtd@lists.infradead.org, kernel@avr32linux.org,
-       dwmw2@infradead.org, fujita.tomonori@lab.ntt.co.jp,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: MTD/block regression (was Re: Slub debugging NAND error in
- 2.6.25.10.atmel.2)
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080829162824.17f8746b@hskinnemo-gx745.norway.atmel.com>
-References: <6B5648EA2E2C2D42AF2FF7691522AD92417CA6@wpr01.wprmedical.local>
-	<20080829114828.279b79bc@hskinnemo-gx745.norway.atmel.com>
-	<20080829162824.17f8746b@hskinnemo-gx745.norway.atmel.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 29 Aug 2008 21:48:41 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:61515 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752961AbYH3Bsk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 21:48:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=cqA19jK/9geqHx1g2XLGI9nxC1inWbSPYM5YEgY7pl/hl0CKekVS2g9N8vgIvxwcF8
+         3FEBfcERNJ0GgQMfR2NjUJwmI6QcShpeX9oLdYxHSPpoHgtAUVYrseLHEQYlBnIZkclU
+         2c6maXLwUoqeMvQWJcJaaVvqKNKJn0Hlrq6sQ=
+Message-ID: <a08621850808291848q5660148fx57d576ecfcbfce8@mail.gmail.com>
+Date: Sat, 30 Aug 2008 03:48:39 +0200
+From: "Dushan Tcholich" <dusanc@gmail.com>
+To: "Francois Romieu" <romieu@fr.zoreil.com>
+Subject: Re: ksoftirqd high cpu load on kernels 2.6.24 to 2.6.27-rc1-mm1
+Cc: "Robert Hancock" <hancockr@shaw.ca>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <a08621850808110053j5cbf23e6xdf52c9e7440abf19@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080830103318N.fujita.tomonori@lab.ntt.co.jp>
+Content-Disposition: inline
+References: <fa.wTMiBcGRgw2fBtdHwtX7y0lkc8s@ifi.uio.no>
+	 <48975BD3.6040709@shaw.ca>
+	 <a08621850808041337k1d1deb6fk78098d9fcd4930dd@mail.gmail.com>
+	 <20080807185802.GA16327@electric-eye.fr.zoreil.com>
+	 <a08621850808101200n220afd2dve58abe67830b7a4f@mail.gmail.com>
+	 <a08621850808110053j5cbf23e6xdf52c9e7440abf19@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008 16:28:24 +0200
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-
-> Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-> > Hmm...I just saw this when booting 2.6.27-rc5 on the NGW100:
-> > 
-> > physmap platform flash device: 00800000 at 00000000
-> > physmap-flash.0: Found 1 x16 devices at 0x0 in 16-bit bank
-> >  Amd/Fujitsu Extended Query Table at 0x0041
-> > number of CFI chips: 1
-> > cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
-> > RedBoot partition parsing not available
-> > Using physmap partition information
-> > Creating 3 MTD partitions on "physmap-flash.0":
-> > 0x00000000-0x00020000 : "u-boot"
-> > 0x00020000-0x007f0000 : "root"
-> > kobject (91ce8410): tried to init an initialized object, something is seriously wrong.
-> > Call trace:
-> >  [<90017184>] dump_stack+0x18/0x20
-> >  [<900c1894>] kobject_init+0x28/0x5c
-> >  [<900c1bf6>] kobject_init_and_add+0xe/0x24
-> >  [<900beff0>] blk_register_filter+0x28/0x40
-> >  [<900be224>] add_disk+0x38/0x68
-> >  [<900e70f0>] add_mtd_blktrans_dev+0x174/0x184
-> >  [<900e748e>] mtdblock_add_mtd+0x36/0x3c
-> >  [<900e6e38>] blktrans_notify_add+0x1a/0x3a
-> >  [<900e533c>] add_mtd_device+0x60/0xa0
-> >  [<900e5f7e>] add_mtd_partitions+0x37a/0x3a0
-> >  [<900ec4d0>] physmap_flash_probe+0x1ec/0x21c
-> >  [<900e0f24>] platform_drv_probe+0x10/0x12
-> >  [<900e06d0>] driver_probe_device+0x84/0xf0
-> >  [<900e076a>] __driver_attach+0x2e/0x44
-> >  [<900e0096>] bus_for_each_dev+0x2e/0x4c
-> >  [<900e05b6>] driver_attach+0x12/0x14
-> >  [<900e036c>] bus_add_driver+0x6c/0x178
-> >  [<900e08a4>] driver_register+0x58/0xb0
-> >  [<900e1126>] platform_driver_register+0x56/0x5c
-> >  [<9000aaf6>] physmap_init+0xa/0x10
-> >  [<9001422a>] do_one_initcall+0x2a/0x10c
-> >  [<900005b8>] kernel_init+0x48/0x90
-> >  [<9001fcc0>] do_exit+0x0/0x4cc
-> > 
-> > 0x007f0000-0x00800000 : "env"
-> > kobject (91ce8410): tried to init an initialized object, something is seriously wrong.
-> > Call trace:
-> >  [<90017184>] dump_stack+0x18/0x20
-> >  [<900c1894>] kobject_init+0x28/0x5c
-> >  [<900c1bf6>] kobject_init_and_add+0xe/0x24
-> >  [<900beff0>] blk_register_filter+0x28/0x40
-> >  [<900be224>] add_disk+0x38/0x68
-> >  [<900e70f0>] add_mtd_blktrans_dev+0x174/0x184
-> >  [<900e748e>] mtdblock_add_mtd+0x36/0x3c
-> >  [<900e6e38>] blktrans_notify_add+0x1a/0x3a
-> >  [<900e533c>] add_mtd_device+0x60/0xa0
-> >  [<900e5f7e>] add_mtd_partitions+0x37a/0x3a0
-> >  [<900ec4d0>] physmap_flash_probe+0x1ec/0x21c
-> >  [<900e0f24>] platform_drv_probe+0x10/0x12
-> >  [<900e06d0>] driver_probe_device+0x84/0xf0
-> >  [<900e076a>] __driver_attach+0x2e/0x44
-> >  [<900e0096>] bus_for_each_dev+0x2e/0x4c
-> >  [<900e05b6>] driver_attach+0x12/0x14
-> >  [<900e036c>] bus_add_driver+0x6c/0x178
-> >  [<900e08a4>] driver_register+0x58/0xb0
-> >  [<900e1126>] platform_driver_register+0x56/0x5c
-> >  [<9000aaf6>] physmap_init+0xa/0x10
-> >  [<9001422a>] do_one_initcall+0x2a/0x10c
-> >  [<900005b8>] kernel_init+0x48/0x90
-> >  [<9001fcc0>] do_exit+0x0/0x4cc
-> > 
-> > I wonder if it's related?
-> 
-> Ok, it turns out it's not related. It's a newly introduced regression
-> which I've bisected down to:
-> 
-> commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4
-> Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Date:   Sat Aug 16 14:10:05 2008 +0900
-> 
->     block: move cmdfilter from gendisk to request_queue
-
-Really sorry about that. A fix was queued in Jens' tree:
-
-http://marc.info/?l=linux-kernel&m=122000748432301&w=2
+Hello again
 
 
-> Unfortunately, I can't revert it cleanly, so it could be a false
-> positive. But it does sort of make sense, since it makes the filter
-> per-queue instead of per-gendisk, so if MTD uses the same queue for
-> several block devices, the filter kobject might end up being
-> initialized multiple times. Or something.
+On Mon, Aug 11, 2008 at 9:53 AM, Dushan Tcholich <dusanc@gmail.com> wrote:
+> Hi
+>
+> On Sun, Aug 10, 2008 at 9:00 PM, Dushan Tcholich <dusanc@gmail.com> wrote:
+>> Hi
+>> Sorry for answering this late, but I was short on time and couldn't
+>> get reiser4 to work with 2.6.27-rc2
+>>
+>> On Thu, Aug 7, 2008 at 8:58 PM, Francois Romieu <romieu@fr.zoreil.com> wrote:
+>>> Dushan Tcholich <dusanc@gmail.com> :
+>>> [...]
+>>>> I googled a little and found out that oprofile is a little above my head.
+>>>> So as I thought that some driver or HW might be responsible for this I
+>>>> tried to disable various onboard HW and found out that if I disable
+>>>> onboard ethernet problem dissapears, so now I've added netdev and
+>>>> maintainer of R8169 driver to cc.
+>>>
+>>> Can you try 2.6.27-rc2 and send the content of /proc/interrupts, dmesg,
+>>> ifconfig as well as a capture of the strange output from top ?
+>>>
+>
+> I tried some more kernels and I had the same problem with 2.6.23.17
+> and 2.6.27-rc1-mm1, but I couldn't reproduce it with kernel from
+> sysresccd 1.0.1 http://www.sysresccd.org/ which is a patched version
+> of 2.6.24 i think .7 when I booted it to change fs.
+> Could it be that something in userspace is creating this?
+>
 
-Right, the problem is that MTD uses the same queue for multiple
-gendisks. It would be great if a MTD developer could fix it.
+I dug a little more and found out some new info.
+Unsolved bugreport with same symptoms:
+http://marc.info/?l=linux-kernel&m=119613299024398&w=2
+Problems appear if I start br0 interface, as context switch rate
+increases 200 times. If I start eth0 instead everything looks ok.
+The bugreport above had bridging enabled too.
 
+When using eth0 I get:
+ vmstat -n 1 10
+procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
+ 2  0  17720 162288  25024 576852    0    0    21    22    6    9 10  4 85  0
+ 0  0  17720 162196  25024 576880    0    0     0     0   13  473  0  0 99  0
+ 0  0  17720 162196  25028 576880    0    0     0     4   36 1122  1  0 99  0
+ 0  0  17720 162196  25028 576880    0    0     0     0   83  844  0  0 99  0
+ 0  0  17720 162196  25028 576880    0    0     0     0   55  691  1  0 99  0
+ 0  0  17720 162556  25028 576880    0    0     0     0   13  490  1  0 100  0
+ 0  0  17720 162100  25028 576880    0    0     0     0   39  561  6  0 94  0
+ 1  0  17720 162028  25028 576880    0    0     0     0   16 1030  4  0 96  0
+ 0  0  17720 162028  25028 576880    0    0     0     0   40  597  1  0 99  0
+ 0  0  17720 162028  25028 576880    0    0     0     0   12  512  2  0 97  0
 
-Thanks,
+ top
+
+top - 03:30:07 up 6 days,  5:40,  4 users,  load average: 0.02, 0.11, 0.28
+Tasks: 149 total,   2 running, 147 sleeping,   0 stopped,   0 zombie
+Cpu(s): 12.1%us,  3.3%sy,  0.0%ni, 84.6%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+Mem:   1033388k total,   871336k used,   162052k free,    25016k buffers
+Swap:   610460k total,    17720k used,   592740k free,   576852k cached
+
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+
+    4 root      15  -5     0    0    0 S    0  0.0 554:23.44 ksoftirqd/0
+
+If I use br0 I get:
+ vmstat -n 1 10
+procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
+ 0  0  17720 162112  25048 577120    0    0    21    22    6   11 10  4 86  0
+ 0  0  17720 162152  25048 577120    0    0     0     0   14 111082  0  3 97  0
+ 0  0  17720 162152  25048 577120    0    0     0     0   23 107134  1  3 96  0
+ 1  0  17720 160148  25048 577120    0    0     0     0   11 109888  2  3 95  0
+ 0  0  17720 162032  25048 577120    0    0     0     0   33 108163  1  2 97  0
+ 0  0  17720 162032  25048 577120    0    0     0     0    7 104642  2  2 95  0
+ 0  0  17720 162020  25048 577120    0    0     0     0   41 109135  0  2 98  0
+ 0  0  17720 162036  25048 577120    0    0     0     0    9 105133  0  3 96  0
+ 0  0  17720 162020  25048 577120    0    0     0     0   42 107605  1  2 97  0
+ 1  0  17720 162032  25048 577120    0    0     0     0    5 110768  0  2 98  0
+
+top
+
+top - 03:32:03 up 6 days,  5:41,  4 users,  load average: 0.09, 0.10, 0.26
+Tasks: 148 total,   2 running, 146 sleeping,   0 stopped,   0 zombie
+Cpu(s):  4.8%us,  2.0%sy,  0.0%ni, 93.0%id,  0.0%wa,  0.0%hi,  0.2%si,  0.0%st
+Mem:   1033388k total,   871564k used,   161824k free,    25048k buffers
+Swap:   610460k total,    17720k used,   592740k free,   577120k cached
+
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+11489 dusan     20   0  235m  85m  24m R    6  8.5   1:03.51 firefox
+    4 root      15  -5     0    0    0 S   7  0.0 554:24.04 ksoftirqd/0
+
+I start br0 like this in /etc/conf.d/net
+
+bridge_br0="eth0"
+config_eth0=( "null" )
+config_br0=( "192.168.1.3/24" )
+RC_NEED_br0="net.eth0"
+brctl_br0=( "setfd 0" "sethello 0" "stp off" )
+#routes_br0=( "default gw 192.168.1.3" )
+depend_br0() {
+        need net.eth0
+}
+
+I start eth0 like this in /etc/conf.d/net
+config_eth0=( "192.168.1.3/24" )
+
+>> I've copied my root to ext3 partition and with vanilla 2.6.27-rc2 I got:
+>> -With my .config problem is still here
+>> -With only rtl8169 removed from config there is no problem
+>>
+>>> It seems rather benign though.
+>>>
+>> Well I wouldn't agree from power managment standpoint :). This nic is
+>> in a lot of laptops.
+>> 8% of 2.13GHz Core2Duo CPU is a lot :)
+>>
+>> Btw. should LKML be removed from cc?
+>> If you need any more help please ask.
+>> I hope I'm not harrasing you too much :)
+>>> --
+>>> Ueimor
+>>>
+>> Have a nice day
+>> Dushan
+>>
+> ...
+>
+Have a nice day
+Dushan
