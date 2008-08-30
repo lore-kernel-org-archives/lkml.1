@@ -1,132 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbYH3DAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758521AbYH3DCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758273AbYH3DAm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 23:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbYH3DAd
+	id S1758521AbYH3DCS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 23:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbYH3DCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 23:00:33 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:45163 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754506AbYH3DAc (ORCPT
+	Fri, 29 Aug 2008 23:02:07 -0400
+Received: from main.gmane.org ([80.91.229.2]:39978 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754627AbYH3DCG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 23:00:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=qIhBvp9B6O3gS7vUzxwx8vXKwqjHitDYMoXLzUvB/5JDzTqrSjR2Dh24ZzHGtIWsIK
-         a1atauPjl/nUF90rg6M3Rui0QsV9KU3jaJKHZU2bpzQ1dBRovfSDFIja+4rWVPNEKkfW
-         jSPXDj2ZMAxp1vew3eDTHBO7bEvQLZrZAqHCM=
-Message-ID: <86802c440808292000v767ce75fn80f665f2cf79ce3d@mail.gmail.com>
-Date: Fri, 29 Aug 2008 20:00:31 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "David Witbrodt" <dawitbro@sbcglobal.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Kernel Testers" <kernel-testers@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.10.0808291919080.3300@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>
-	 <86802c440808291413t4f31993fmba59a65aefd906ca@mail.gmail.com>
-	 <200808300031.16708.rjw@sisk.pl>
-	 <86802c440808291624t2bd0229w2da36dfc6c794b18@mail.gmail.com>
-	 <alpine.LFD.1.10.0808291704070.3300@nehalem.linux-foundation.org>
-	 <86802c440808291711t32d3e76dsf804856b0a8f4939@mail.gmail.com>
-	 <alpine.LFD.1.10.0808291733260.3300@nehalem.linux-foundation.org>
-	 <alpine.LFD.1.10.0808291751480.3300@nehalem.linux-foundation.org>
-	 <86802c440808291830t4547140dx9b12353649edd975@mail.gmail.com>
-	 <alpine.LFD.1.10.0808291919080.3300@nehalem.linux-foundation.org>
+	Fri, 29 Aug 2008 23:02:06 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: Out of mtrrs
+Date: Fri, 29 Aug 2008 23:16:00 -0400
+Message-ID: <g9ad75$o1k$1@ger.gmane.org>
+References: <BEE3259F-0ED8-4030-9CA5-D8892C9096C2@ono.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: pool-71-245-142-197.albyny.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+In-Reply-To: <BEE3259F-0ED8-4030-9CA5-D8892C9096C2@ono.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 29, 2008 at 7:33 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Fri, 29 Aug 2008, Yinghai Lu wrote:
->>
->> the root cause is:
->> before 2.6.26, call init_apic_mapping and will insert_resource for
->> lapic address.
->> and then call e820_resource_resouce (with request_resource) to
->> register e820 entries.
->
-> So the problem there was that traditionally, e820_reserve_resource()
-> expected to be the first one to populate any resources. That's changed,
-> and that's why it now needs to use "insert_resource()" rather than
-> "request_resource()".
->
->> so the lapic entry in the resource tree will prevent some entry in
->> e820 to be registered.
->> later request_resource for BAR res (==hpet) will succeed.
->>
->> from 2.6.26. we move lapic address registering to late_initcall, so
->> the entry is reserved in e820 getting into resource tree at first.
->> and later pci_resource_survey::request_resource for BAR res (==hpet,
->> 0xfed00000) will fail. so pci_assign_unsigned... will get new
->> res for the BAR, so it messed up hpet setting.
->
-> So this didn't work _originally_ either?
+J.A. Magallón wrote:
+> Hi all...
+> 
+> I'm using the xorg intel driver, and drm/X report it has no free mtrrs
+> in kernel to set up:
+> 
+> one:~# cat /proc/mtrr
+> reg00: base=0xfffe0000 (4095MB), size= 128KB: write-protect, count=1
+> reg01: base=0xfffc0000 (4095MB), size= 128KB: uncachable, count=1
+> reg02: base=0x00000000 (   0MB), size= 256MB: write-back, count=1
+> reg03: base=0x10000000 ( 256MB), size= 256MB: write-back, count=1
+> reg04: base=0x1f800000 ( 504MB), size=   8MB: uncachable, count=1
+> reg05: base=0x1f600000 ( 502MB), size=   2MB: uncachable, count=1
+> reg06: base=0x1f500000 ( 501MB), size=   1MB: uncachable, count=1
+> reg07: base=0x00000000 (   0MB), size= 128KB: uncachable, count=1
+> 
+> dmesg:
+> 
+> [drm] Initialized i915 1.6.0 20060119 on minor 0
+> mtrr: no more MTRRs available
+> 
+> one:/var/log# grep Linear x.log
+> (--) intel(0): Linear framebuffer at 0x20000000
+> 
+> I think X tries to get a mtrr at 0x20000000, but kernel has no free one
+> to offer.
+> 
+> Does this have any solution ?
 
-orginally it works, because lapic address entry open the big hole for
-near address.
+I don't, but there have been a LOT of mtrr issues recently. I see that 
+there were patches to -rc5 in that area. Many of my systems have RAM 
+they can't use, even in 32bit PAE mode, and I just have the feeling that 
+there is room for improvement here. For various reasons I would rather 
+run 32 bit on some machines, and to have 3.2GB RAM used in a 8 or 16GB 
+machine seems undesirable at the least, and with PAE and at least three 
+unused mtrr I assume that the problem is soluable, just not today. :-(
 
->
->> solutions will be
->> 1. use quirk to protect hpet in BAR, Ingo said it is not generic.
->
-> Yeah, I don't like it. The quirk I was talking about was the one about
-> apparetly bogus MMIO address:
->
->>> pci 0000:00:00.0: BAR has MMCONFIG at e0000000-ffffffff
->>        PCI: Using MMCONFIG at e0000000 - efffffff
->>
->> Where did it get that bogus "ffffffff" end address?
->
-> which you said came from another BAR. That isn't the HPET.
+I will try a 2.6.27-rc5 build late next week, I have another box to build.
+> 
+> TIA
+> 
+> (Oh, this is 2.6.26.3, intel driver 2.4.2)
+> 00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME, 
+> 943/940GML Express Integrated Graphics Controller (rev 03)
+> 
+> -- 
+> J.A. Magallon <jamagallon()ono!com>     \               Software is like 
+> sex:
+>                                          \         It's better when it's 
+> free
+> Mandriva Linux release 2009.0 (Cooker) for i586
+> Linux 2.6.25-jam13 (gcc 4.3.1 20080515 (GCC) #1 SMP
+> 
+> 
+> 
 
-that is from Rafael's system mmconfig BAR in 00:00.0. that chipset is broken ...
 
->
->
->> 2. or the one you are reverted... check_bar_with_valid. (hpet, ioapic,
->> mmconfig) --> happenly reveal another problem with Rafael's
->> system/chipset.
->
-> Yeah, no, that's horrid. I'm happy it's reverted.
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
-if update res->end according mmconfig end, before insert it forcibly,
-then could fix the chipset BAR problem too.
-
->
->> 3. or sticky resource... , but could have particallly overlapping
->
-> And no, this doesn't work.
->
->> 4. or don't register reserved entries in e820.. Eric, Nacked.
->
-> Yeah, no, we do want reserved entries from e820 to show up to at least
-> stop late _dynamic_ allocations from taking over.
->
->> 5. or you sugges, regiser some reserved entries later...., and have
->> insert_resource_expand_to_fit...
->
-> Yes. And I do think this is a workable model.
-
-BTW, insert_resource_expand_to_fit need to be replaced with
-insert_resource_split_to_fit....
-test stub reveal expand will make __request_region not working for
-some devices...because reserved_entries from e820 take
-IORESOUCE_BUSY...
-
-YH
