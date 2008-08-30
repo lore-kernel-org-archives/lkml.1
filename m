@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbYH3UBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbYH3UBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755982AbYH3UBS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 16:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYH3UBD
+	id S1756769AbYH3UBc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 16:01:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754292AbYH3UBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 16:01:03 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:37648 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752834AbYH3UBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 16:01:01 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 30 Aug 2008 16:01:07 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59214
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754206AbYH3UBG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 16:01:06 -0400
+Date: Sat, 30 Aug 2008 13:01:01 -0700 (PDT)
+Message-Id: <20080830.130101.155904510.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Sparc
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18617.42725.154568.720643@harpo.it.uu.se>
-Date: Sat, 30 Aug 2008 22:00:37 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: David Woodhouse <dwmw2@infradead.org>, fujita.tomonori@lab.ntt.co.jp,
-       gregkh@suse.de, jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION 2.6.27-rc4-git7] mtd broken by cmdfilter move
-In-Reply-To: <18617.36094.513546.806196@harpo.it.uu.se>
-References: <200808301704.m7UH48Bn019083@harpo.it.uu.se>
-	<1220116997.2982.5.camel@pmac.infradead.org>
-	<18617.36094.513546.806196@harpo.it.uu.se>
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson writes:
- > David Woodhouse writes:
- >  > On Sat, 2008-08-30 at 19:04 +0200, Mikael Pettersson wrote:
- >  > > I'll leave it to you guys to decide what the proper fix for this mess
- >  > > should be.
- >  > 
- >  > I believe it's already been sent to Linus.
- > 
- > I can't find any mention of this in the post 2.6.27-rc5 commit log in
- > Linus' git tree as of right now. Care to provide a pointer to the fix?
 
-Never mind, found it:
-<http://lists.infradead.org/pipermail/linux-mtd/2008-August/022874.html>
+Three Sparc bug fixes:
+
+1) CONFIG_RELAY recently started using smp_call_function_single()
+   even though that was not previously referenced from generic
+   code.
+
+   Anyways, add an implementation to 32-bit sparc to fix the
+   build with RELAY enabled.
+
+2) Resource flag setting fix for PCI sub-devices.
+
+3) Section mismatch fix in sparc64 MM initialization code.
+
+Please pull, thanks a lot!
+
+The following changes since commit 349101da8e1f8e5eb1476b02823da80495224485:
+  Martin Habets (1):
+        sparc: Add target for a stripped kernel
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+
+David S. Miller (3):
+      sparc32: Implement smp_call_function_single().
+      sparc: Fix resource flags for PCI children in OF device tree.
+      sparc64: setup_valid_addr_bitmap_from_pavail() should be __init
+
+ arch/sparc/include/asm/smp_32.h |   25 +++++++++++++++----------
+ arch/sparc/kernel/of_device.c   |   19 ++++++++++++++-----
+ arch/sparc/kernel/sun4d_smp.c   |   16 ++++++++++------
+ arch/sparc/kernel/sun4m_smp.c   |   12 ++++++++----
+ arch/sparc64/kernel/of_device.c |   20 ++++++++++++++------
+ arch/sparc64/mm/init.c          |    2 +-
+ 6 files changed, 62 insertions(+), 32 deletions(-)
