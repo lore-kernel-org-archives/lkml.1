@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbYH3O6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbYH3PCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753456AbYH3O6U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 10:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbYH3O6F
+	id S1753847AbYH3PCT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 11:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbYH3PCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 10:58:05 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:50219 "EHLO
-	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751404AbYH3O6E (ORCPT
+	Sat, 30 Aug 2008 11:02:00 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33635 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751054AbYH3PB7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 10:58:04 -0400
-Date: Sat, 30 Aug 2008 09:57:46 -0500
-From: David Fries <david@fries.net>
+	Sat, 30 Aug 2008 11:01:59 -0400
+Date: Sat, 30 Aug 2008 15:44:47 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       p_gortmaker@yahoo.com, netdev@vger.kernel.org
+Cc: david@fries.net, linux-kernel@vger.kernel.org, p_gortmaker@yahoo.com,
+       netdev@vger.kernel.org
 Subject: Re: [PATCH 2/2] ne.c msleep not mdelay
-Message-ID: <20080830145746.GG25161@spacedout.fries.net>
-References: <20080830024453.GB24929@spacedout.fries.net> <20080830095906.6cad8647@lxorguk.ukuu.org.uk> <20080830.233647.05599714.anemo@mba.ocn.ne.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Message-ID: <20080830154447.770aaca0@lxorguk.ukuu.org.uk>
 In-Reply-To: <20080830.233647.05599714.anemo@mba.ocn.ne.jp>
-User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Sat, 30 Aug 2008 09:57:48 -0500 (CDT)
+References: <20080830024453.GB24929@spacedout.fries.net>
+	<20080830095906.6cad8647@lxorguk.ukuu.org.uk>
+	<20080830.233647.05599714.anemo@mba.ocn.ne.jp>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 30, 2008 at 11:36:47PM +0900, Atsushi Nemoto wrote:
-> On Sat, 30 Aug 2008 09:59:06 +0100, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > > mdelay(10) replaced by msleep(10) to give up the CPU, it's just
-> > > waiting for an interrupt, so timing isn't critical.
-> > 
-> > It is too critical for a reschedule to occur.
-> > 
-> > NAK this one.
-> 
 > There are already some msleep() in probe_irq_on() which is called just
 > before here.  And this part is not protected by any spinlock or
 > preempt_disable.
-
-There is a probing_active mutex.  probe_irq_off has the comment
-"nothing prevents two IRQ probe callers from overlapping."  Looks to me
-like probing_active would prevent multiple probes from happening.
-
+> 
 > So, if rescheduling was dangerous here, we already have potential
 > problems, no?
 
-I was just going to make the argument that any task that could be run
-during msleep, could just as easily run on the other cpu in mdelay (if
-there was one).
-
--- 
-David Fries <david@fries.net>
-http://fries.net/~david/ (PGP encryption key available)
+Yes we do but I didn't manage to stop the other mistakes getting in when
+they did. If you take a schedule you get results back from the probe_irq
+that tend to suck in other random ISA device events (ISA being edge
+triggered nobody was ever careful about spurious irq)
