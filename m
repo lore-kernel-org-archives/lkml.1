@@ -1,135 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbYH3RLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYH3RN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753469AbYH3RLT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 13:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYH3RLH
+	id S1754209AbYH3RN3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 13:13:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYH3RNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 13:11:07 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57108 "EHLO ogre.sisk.pl"
+	Sat, 30 Aug 2008 13:13:18 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:36050 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751494AbYH3RLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 13:11:05 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
-Date: Sat, 30 Aug 2008 19:14:59 +0200
-User-Agent: KMail/1.9.9
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "David Witbrodt" <dawitbro@sbcglobal.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Kernel Testers" <kernel-testers@vger.kernel.org>
-References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org> <200808301532.57307.rjw@sisk.pl> <86802c440808300905v5056fe0apdc6e328d99dff090@mail.gmail.com>
-In-Reply-To: <86802c440808300905v5056fe0apdc6e328d99dff090@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808301915.00381.rjw@sisk.pl>
+	id S1751816AbYH3RNR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 13:13:17 -0400
+Date: Sat, 30 Aug 2008 19:04:08 +0200 (MEST)
+Message-Id: <200808301704.m7UH48Bn019083@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: fujita.tomonori@lab.ntt.co.jp
+Subject: [REGRESSION 2.6.27-rc4-git7] mtd broken by cmdfilter move
+Cc: dwmw2@infradead.org, gregkh@suse.de, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 30 of August 2008, Yinghai Lu wrote:
-> On Sat, Aug 30, 2008 at 6:32 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Saturday, 30 of August 2008, Yinghai Lu wrote:
-> >> On Fri, Aug 29, 2008 at 5:20 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >> > On Fri, Aug 29, 2008 at 5:08 PM, Linus Torvalds
-> >> > <torvalds@linux-foundation.org> wrote:
-> >> >>
-> >> >>
-> >> >> On Fri, 29 Aug 2008, Yinghai Lu wrote:
-> >> >>> >
-> >> >>> > http://www.sisk.pl/kernel/debug/mainline/2.6.27-rc5/broken.log
-> >> >>>
-> >> >>> pci 0000:00:00.0: BAR has MMCONFIG at e0000000-ffffffff
-> >> >>
-> >> >> And that seems utter crap to begin with.
-> >> >>
-> >> >>        PCI: Using MMCONFIG at e0000000 - efffffff
-> >> >>
-> >> >> Where did it get that bogus "ffffffff" end address?
-> >> >>
-> >> >> Anyway, that whole MMCONFIG/BAR thing was totally broken to begin with,
-> >> >> and it's reverted now in my tree, so I guess it doesn't much matter.
-> >> >
-> >> > we need to handle it. otherwise if the BAR go first, and it will stop
-> >> > other BARs to be registered...
-> >> >
-> >> > a quirk should do the work....
-> >> >
-> >> > Rafael, can you send out lspci -tv and lspci --vvxxx too.
-> >>
-> >> cat /proc/iomem please.
-> >
-> > http://www.sisk.pl/kernel/debug/mainline/2.6.27-rc5/lspci-tv.txt
-> > http://www.sisk.pl/kernel/debug/mainline/2.6.27-rc5/lspci-vvxxx.txt
-> > http://www.sisk.pl/kernel/debug/mainline/2.6.27-rc5/proc_iomem.txt
-> >
-> 
-> 00:00.0 Host bridge: ATI Technologies Inc RD790 Northbridge only dual
-> slot PCI-e_GFX and HT3 K8 part
-> 	Subsystem: ATI Technologies Inc RD790 Northbridge only dual slot
-> PCI-e_GFX and HT3 K8 part
-> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B-
-> 	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort+ >SERR- <PERR-
-> 	Latency: 0
-> 	Region 3: Memory at <ignored> (64-bit, non-prefetchable)
-> 	Capabilities: [c4] HyperTransport: Slave or Primary Interface
-> 		Command: BaseUnitID=0 UnitCnt=12 MastHost- DefDir- DUL-
-> 		Link Control 0: CFlE- CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=0
-> IsocEn- LSEn- ExtCTL- 64b-
-> 		Link Config 0: MLWI=16bit DwFcIn- MLWO=16bit DwFcOut- LWI=16bit
-> DwFcInEn- LWO=16bit DwFcOutEn-
-> 		Link Control 1: CFlE- CST- CFE- <LkFail+ Init- EOC+ TXO+ <CRCErr=0
-> IsocEn- LSEn- ExtCTL- 64b-
-> 		Link Config 1: MLWI=8bit DwFcIn- MLWO=8bit DwFcOut- LWI=8bit
-> DwFcInEn- LWO=8bit DwFcOutEn-
-> 		Revision ID: 3.00
-> 		Link Frequency 0: [b]
-> 		Link Error 0: <Prot- <Ovfl- <EOC- CTLTm-
-> 		Link Frequency Capability 0: 200MHz+ 300MHz- 400MHz+ 500MHz- 600MHz+
-> 800MHz+ 1.0GHz+ 1.2GHz+ 1.4GHz- 1.6GHz- Vend-
-> 		Feature Capability: IsocFC- LDTSTOP+ CRCTM- ECTLT- 64bA- UIDRD-
-> 		Link Frequency 1: 200MHz
-> 		Link Error 1: <Prot- <Ovfl- <EOC- CTLTm-
-> 		Link Frequency Capability 1: 200MHz- 300MHz- 400MHz- 500MHz- 600MHz-
-> 800MHz- 1.0GHz- 1.2GHz- 1.4GHz- 1.6GHz- Vend-
-> 		Error Handling: PFlE- OFlE- PFE- OFE- EOCFE- RFE- CRCFE- SERRFE- CF-
-> RE- PNFE- ONFE- EOCNFE- RNFE- CRCNFE- SERRNFE-
-> 		Prefetchable memory behind bridge Upper: 00-00
-> 		Bus Number: 00
-> 	Capabilities: [40] HyperTransport: Retry Mode
-> 	Capabilities: [54] HyperTransport: UnitID Clumping
-> 	Capabilities: [9c] HyperTransport: #1a
-> 00: 02 10 56 59 06 00 30 22 00 00 00 06 00 00 00 00
-> 10: 00 00 00 00 00 00 00 00 00 00 00 00 04 00 00 e0
-> 
-> so bar3 of 00:00.0 has oxe0000000 - 0xffffffff
-> and request_resource failed, so
-> 	Region 3: Memory at <ignored> (64-bit, non-prefetchable)
-> 
-> BIOS should hide that region, and because AMD quad core has MMCONFIG
-> set in NB MSR already.
-> 
-> please try to apply attached patches, and boot with "debug initcall_debug"
-> 
-> applying sequence:
-> 
-> split_e820_reserve=.patch
-> pci_res_print_out.patch
-> split_e820_reserve_xx1.patch
+Starting with kernel 2.6.27-rc4-git7 my n2100 arm box throws a bunch
+of kobject errors at boot:
 
-The above one doesn't apply.
+Creating 6 MTD partitions on "physmap-flash.0":
+0x00000000-0x00040000 : "RedBoot"
+0x00040000-0x00d40000 : "ramdisk"
+kobject (df8fd510): tried to init an initialized object, something is seriously wrong.
+[<c0024c68>] (dump_stack+0x0/0x14) from [<c01136f4>] (kobject_init+0x40/0x78)
+[<c01136b4>] (kobject_init+0x0/0x78) from [<c0113c28>] (kobject_init_and_add+0x20/0x44)
+ r5:df8fd510 r4:df9ee8b0
+[<c0113c0c>] (kobject_init_and_add+0x4/0x44) from [<c010a92c>] (blk_register_filter+0x4c/0x60)
+ r5:df8f6d20 r4:df8fd108
+[<c010a8e0>] (blk_register_filter+0x0/0x60) from [<c010983c>] (add_disk+0x60/0xb8)
+ r4:df9ee800
+[<c01097dc>] (add_disk+0x0/0xb8) from [<c0170bb4>] (add_mtd_blktrans_dev+0x248/0x284)
+ r5:df8f6d20 r4:00000001
+[<c017096c>] (add_mtd_blktrans_dev+0x0/0x284) from [<c01711a8>] (mtdblock_add_mtd+0x5c/0x68)
+ r8:00040000 r7:df8604cc r6:c02c5c98 r5:c02c5cc8 r4:df8602a0
+[<c017114c>] (mtdblock_add_mtd+0x0/0x68) from [<c017075c>] (blktrans_notify_add+0x38/0x64)
+ r5:df8602a0 r4:c02c5cc8
+[<c0170724>] (blktrans_notify_add+0x0/0x64) from [<c016daec>] (add_mtd_device+0xb4/0x110)
+ r6:c02c5c34 r5:df8602a0 r4:c02c5c88
+[<c016da38>] (add_mtd_device+0x0/0x110) from [<c016ee70>] (add_mtd_partitions+0x490/0x54c)
+ r6:df844080 r5:00000c00 r4:df8602a0
+[<c016e9e0>] (add_mtd_partitions+0x0/0x54c) from [<c01789b8>] (physmap_flash_probe+0x27c/0x2e8)
+[<c017873c>] (physmap_flash_probe+0x0/0x2e8) from [<c01468b8>] (platform_drv_probe+0x20/0x24)
+[<c0146898>] (platform_drv_probe+0x0/0x24) from [<c0145b20>] (driver_probe_device+0xd8/0x18c)
+[<c0145a48>] (driver_probe_device+0x0/0x18c) from [<c0145c20>] (__driver_attach+0x4c/0x70)
+ r7:c02c5e1c r6:c02c5e1c r5:c02b8338 r4:c02b828c
+[<c0145bd4>] (__driver_attach+0x0/0x70) from [<c0145180>] (bus_for_each_dev+0x54/0x88)
+ r6:c0145bd4 r5:df821ec0 r4:00000000
+[<c014512c>] (bus_for_each_dev+0x0/0x88) from [<c0145960>] (driver_attach+0x20/0x28)
+ r7:df88c620 r6:00000000 r5:c02c5e1c r4:00000000
+[<c0145940>] (driver_attach+0x0/0x28) from [<c0145618>] (bus_add_driver+0xa8/0x214)
+[<c0145570>] (bus_add_driver+0x0/0x214) from [<c0145e14>] (driver_register+0x98/0x120)
+ r8:00000000 r7:00000000 r6:00000000 r5:c02c5e1c r4:c02cd924
+[<c0145d7c>] (driver_register+0x0/0x120) from [<c0146a78>] (platform_driver_register+0x78/0x94)
+[<c0146a00>] (platform_driver_register+0x0/0x94) from [<c0016ee4>] (physmap_init+0x14/0x1c)
+[<c0016ed0>] (physmap_init+0x0/0x1c) from [<c00202b8>] (__exception_text_end+0x50/0x184)
+[<c0020268>] (__exception_text_end+0x0/0x184) from [<c000874c>] (kernel_init+0x70/0xd8)
+[<c00086dc>] (kernel_init+0x0/0xd8) from [<c003750c>] (do_exit+0x0/0x708)
+ r5:00000000 r4:00000000
+0x00d40000-0x00ea0000 : "kernel"
+kobject (df8fd510): tried to init an initialized object, something is seriously wrong.
 
-> insert_resource_debug.patch
-> pci_mmconf.patch
+and so on for every partition except the first one.
 
-Could you please rebase them on top of current -git?
+I bisected this to commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4,
+"block: move cmdfilter from gendisk to request_queue".
 
-Rafael
+There is a many-to-one mapping from gendisks to queues, so when this commit
+moved the cmd_filter object from the gendisk to the gendisk's queue it
+allowed (by design or by accident, I don't know) gendisks to share cmd_filters.
+However, the commit didn't update blk_register_filter() to handle shared
+cmd_filters: it still unconditionally calls kobject_init_and_add() for the
+gendisk's cmd_filter kobject. When queue and thus cmd_filter sharing is present,
+reinitialisation of already initialised kobjects occur, resulting in loud
+complaints from lib/kobject.c.
+
+As a quick workaround I added a check to blk_register_filter() to avoid
+reinitialising already initialised cmd_filters, and to log the addresses
+of the disks, queues, and cmd_filters passed to it:
+
+--- linux-2.6.27-rc4-git6/block/cmd-filter.c.~1~	2008-08-30 17:08:58.000000000 +0200
++++ linux-2.6.27-rc4-git6/block/cmd-filter.c	2008-08-30 17:36:36.000000000 +0200
+@@ -215,6 +215,13 @@ int blk_register_filter(struct gendisk *
+ 	if (!parent)
+ 		return -ENODEV;
+ 
++	printk("%s: disk %p queue %p filter %p &filter->kobj %p\n",
++	       __func__, disk, disk->queue, filter, &filter->kobj);
++	if (filter->kobj.state_initialized) {
++		printk("%s: kobj %p already inited, bailing out\n",
++		       __func__, &filter->kobj);
++		return 0;
++	}
+ 	ret = kobject_init_and_add(&filter->kobj, &rcf_ktype, parent,
+ 				   "%s", "cmd_filter");
+ 
+This eliminated the kobject complaints for me. The log messages also showed
+that the mtd gendisks indeed share queue and thus cmd_filter and its kobject:
+
+6 RedBoot partitions found on MTD device physmap-flash.0
+Creating 6 MTD partitions on "physmap-flash.0":
+0x00000000-0x00040000 : "RedBoot"
+blk_register_filter: disk df8f4000 queue df8fd108 filter df8fd4d0 &filter->kobj df8fd510
+0x00040000-0x00d40000 : "ramdisk"
+blk_register_filter: disk df9f0800 queue df8fd108 filter df8fd4d0 &filter->kobj df8fd510
+blk_register_filter: kobj df8fd510 already inited, bailing out
+0x00d40000-0x00ea0000 : "kernel"
+blk_register_filter: disk df9f0000 queue df8fd108 filter df8fd4d0 &filter->kobj df8fd510
+blk_register_filter: kobj df8fd510 already inited, bailing out
+0x00ea0000-0x00fc0000 : "user"
+blk_register_filter: disk df9ed800 queue df8fd108 filter df8fd4d0 &filter->kobj df8fd510
+blk_register_filter: kobj df8fd510 already inited, bailing out
+0x00fc0000-0x00fc1000 : "RedBoot config"
+blk_register_filter: disk df9ed000 queue df8fd108 filter df8fd4d0 &filter->kobj df8fd510
+blk_register_filter: kobj df8fd510 already inited, bailing out
+0x00fe0000-0x01000000 : "FIS directory"
+blk_register_filter: disk df9ea800 queue df8fd108 filter df8fd4d0 &filter->kobj df8fd510
+blk_register_filter: kobj df8fd510 already inited, bailing out
+
+I'll leave it to you guys to decide what the proper fix for this mess should be.
+
+/Mikael
