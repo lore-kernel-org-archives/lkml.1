@@ -1,67 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757146AbYH3GVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbYH3GXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757146AbYH3GVW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 02:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYH3GVO
+	id S1757357AbYH3GXc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 02:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYH3GXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 02:21:14 -0400
-Received: from mga14.intel.com ([143.182.124.37]:47636 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751266AbYH3GVN convert rfc822-to-8bit (ORCPT
+	Sat, 30 Aug 2008 02:23:23 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:44801 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751357AbYH3GXW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 02:21:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,296,1217833200"; 
-   d="scan'208";a="39335307"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Sat, 30 Aug 2008 02:23:22 -0400
+Date: Sat, 30 Aug 2008 16:23:15 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: linux-crypto@vger.kernel.org, squashfs-devel@lists.sourceforge.net,
+       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/3] crypto: Add a zlib crypto module
+Message-ID: <20080830062315.GA18441@gondor.apana.org.au>
+References: <20080829134158.108976037@vixen.sonytel.be> <20080829134418.874948211@vixen.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: refcount leak in pci_get_device()?
-Date: Sat, 30 Aug 2008 14:20:52 +0800
-Message-ID: <7A25B56E4BE99C4283EB931CD1A40E110177E490@pdsmsx414.ccr.corp.intel.com>
-In-Reply-To: <20080830053755.GA16219@suse.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: refcount leak in pci_get_device()?
-Thread-Index: AckKYq7Nz0ZfxC9ASHifJs16Et9eRgABI+4g
-References: <20080821201918.GA24411@ldl.fc.hp.com> <20080821202504.GU8318@parisc-linux.org> <20080821204758.GB31543@suse.de> <20080821221438.GC20014@ldl.fc.hp.com> <7A25B56E4BE99C4283EB931CD1A40E110177E488@pdsmsx414.ccr.corp.intel.com> <20080830053755.GA16219@suse.de>
-From: "Zhao, Yu" <yu.zhao@intel.com>
-To: "Greg KH" <gregkh@suse.de>
-Cc: "Alex Chiang" <achiang@hp.com>, "Matthew Wilcox" <matthew@wil.cx>,
-       <linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 30 Aug 2008 06:20:55.0129 (UTC) FILETIME=[8F262C90:01C90A68]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080829134418.874948211@vixen.sonytel.be>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's been so for a while, guess since 2.5. I meant to say the pci_remove_bus_device(), not pci_remove_bus(), is used by pci hotplug code. If a device is being plugged off, and some drivers are calling pci_get_dev_by_id() to search something, then the warning might be fired through bus_find_device -> klist_iter_init_node ->kref_get.
+On Fri, Aug 29, 2008 at 01:41:59PM +0000, Geert Uytterhoeven wrote:
+> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> 
+> Add a (de)compression module for the "zlib" format using the crypto API.
 
-Thanks,
-Yu
+I think we can safely conclude that our current compression
+interface sucks for what you're trying to achieve :)
 
->-----Original Message-----
->From: linux-pci-owner@vger.kernel.org
->[mailto:linux-pci-owner@vger.kernel.org] On Behalf Of Greg KH
->Sent: Saturday, August 30, 2008 1:38 PM
->To: Zhao, Yu
->Cc: Alex Chiang; Matthew Wilcox; linux-pci@vger.kernel.org;
->linux-kernel@vger.kernel.org
->Subject: Re: refcount leak in pci_get_device()?
->
->On Sat, Aug 30, 2008 at 12:23:20PM +0800, Zhao, Yu wrote:
->> And the pci_get_dev_by_id() is not safe again the PCI device removal.
->> It might fire a warning in bus_find_device() when reference count of
->> the knode_bus is decreased to 0 by pci_remove_bus().
->
->Is this something new?  Hasn't this always been that way?  Why would you
->be wanting to call this function anyway?
->
->thanks,
->
->greg k-h
->--
->To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> While both the "zlib" and "deflate" crypto modules are implemented on top of
+> the zlib library, they differ in the following aspects:
+>   - The "deflate" crypto module (used by IPSec and UBIFS) does not support
+>     partial decompression, i.e. all compressed data has to be passed at once.
+>     The "zlib" crypto module does support partial decompression;
+>     zlib_decompress() will return -EAGAIN if not all compressed data has been
+>     passed.
+>   - The deflate crypto module uses the raw deflate data format (zlib is
+>     initialized with a windowBits parameter of -DEFLATE_DEF_WINBITS = -11),
+>     while e.g. squashfs and axfs use the zlib data format, with the default
+>     windowBits parameter DEF_WBITS = 15.
+>     Both parameters are incompatible with each other due to the different data
+>     formats, as indicated by the sign of the windowbits parameter.
+>     The absolute value of this parameter is the base two logarithm of the
+>     maximum window size, and larger values are backwards compatible with
+>     smaller values (as far as decompression is concerned).
+
+Therefore I suggest that we change the interface rather than
+mutilate the implementations.
+
+So here are a few things we should add:
+
+1) Separate alloc functions for comp/decomp to avoid the memory
+   wastage you've identified.
+
+2) Provide parameters to these alloc functions through an opaque
+   pointer.  The format of the paramters will be determined by the
+   name of the algorithm, i.e., if you want to change the parameters
+   then you should change the name as well (e.g., deflate => deflate2).
+
+   This removes the need to dupliate the implementation just because
+   you want 15 instead of -11.
+
+3) Provide init/update/final (one set each for comp and decomp)
+   functions similar to crypto_hash, in addition to the current
+   comp/decomp functions.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
