@@ -1,105 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbYH3Tku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbYH3TmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756194AbYH3Tku (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 15:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYH3Tkg
+	id S1756251AbYH3TmP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 15:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbYH3TmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 15:40:36 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:48437 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752552AbYH3Tkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 15:40:35 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	b=Fb72TnmblBQt+1ml+LRApgtlCqX2yh6RoxmxpgakiLR+QDm6afrF8Bd29hvemrvuBw0NP2N96lOgcA2iYbBOfG3li9aWSEEyidUHoPeR8cuBkwbTSFRMnipoI2+ty6is;
-Message-ID: <48B9A1F6.9030006@simon.arlott.org.uk>
-Date: Sat, 30 Aug 2008 20:39:34 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
+	Sat, 30 Aug 2008 15:42:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42438 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752887AbYH3Tl7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 15:41:59 -0400
+Date: Sat, 30 Aug 2008 12:41:04 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, David Witbrodt <dawitbro@sbcglobal.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers <kernel-testers@vger.kernel.org>
+Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit
+ a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
+In-Reply-To: <86802c440808301226h1e7a9bb6g721ecdb0f93c5220@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0808301238390.3290@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>  <200808292157.24179.rjw@sisk.pl>  <alpine.LFD.1.10.0808291434110.3300@nehalem.linux-foundation.org>  <200808300030.32905.rjw@sisk.pl>  <alpine.LFD.1.10.0808301012060.3290@nehalem.linux-foundation.org>
+  <86802c440808301107n4561e815ldf53183c92a7bc93@mail.gmail.com>  <alpine.LFD.1.10.0808301141590.3290@nehalem.linux-foundation.org>  <alpine.LFD.1.10.0808301150150.3290@nehalem.linux-foundation.org>
+ <86802c440808301226h1e7a9bb6g721ecdb0f93c5220@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, Jeff Garzik <jgarzik@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev <netdev@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot
- - v2
-References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <200808191958.45886.rjw@sisk.pl> <48AB11E2.3040705@simon.arlott.org.uk> <200808192309.37317.rjw@sisk.pl>
-In-Reply-To: <200808192309.37317.rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19/08/08 22:09, Rafael J. Wysocki wrote:
-> On Tuesday, 19 of August 2008, Simon Arlott wrote:
->> On 19/08/08 18:58, Rafael J. Wysocki wrote:
->> > On Tuesday, 19 of August 2008, Simon Arlott wrote:
->> >> On 18/08/08 23:08, Rafael J. Wysocki wrote:
->> >> > On Monday, 18 of August 2008, Yinghai Lu wrote:
->> >> >> On Mon, Aug 18, 2008 at 3:22 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> >> 
->> >> >> >> > >  drivers/net/forcedeth.c |    8 +++++---
->> >> >> >> > >  1 file changed, 5 insertions(+), 3 deletions(-)
->> >> >> >> > >
->> >> >> >> > > Index: linux-2.6/drivers/net/forcedeth.c
->> >> >> >> > > ===================================================================
->> >> >> >> > > --- linux-2.6.orig/drivers/net/forcedeth.c
->> >> >> >> > > +++ linux-2.6/drivers/net/forcedeth.c
->> >> >> >> > > @@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
->> >> >> >> > >        if (netif_running(dev))
->> >> >> >> > >                nv_close(dev);
->> >> >> >> > >
->> >> >> >> > > -       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
->> >> >> >> > > -       pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
->> >> >> >> > >        pci_disable_device(pdev);
->> >> >> >> > > -       pci_set_power_state(pdev, PCI_D3hot);
->> >> >> >> > > +       if (system_state == SYSTEM_POWER_OFF) {
->> >> >> >> > > +               if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
->> >> >> >> > > +                       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
->> >> >> >> > > +               pci_set_power_state(pdev, PCI_D3hot);
->> >> >> >> > > +       }
->> >> >> >> > >  }
->> >> >> >> > >  #else
->> >> >> >> > >  #define nv_suspend NULL
->> >> >> >> > >
->> >> >> >> >
->> >> >> 
->> >> >> > Does the last patch work for you BTW?
->> >> >> >
->> >> >> 
->> >> >> it works.
->> >> > 
->> >> > OK, thanks for testing.
->> >> > 
->> >> > I think we can use it as a quick fix for 2.6.27.  Do you agree?
->> >> > 
->> >> > Still, it would be helpful to verify if this is the same MSI issue reported by
->> >> > Simon.
->> >> 
->> >> I tried to test that patch but even without it standby/resume has stopped working:
->> > 
->> > Which kernel is this?
->> 
->> linus-2.6 a7f5aaf36ded825477c4d7167cc6eb1bcdc63191
->> 
->> I've reverted to 2b12a4c524812fb3f6ee590a02e65b95c8c32229 where standby/resume still 
->> works and applied the above patch plus the pci_enable_device patch. It still doesn't 
->> work after resume if MSI is enabled.
+
+
+On Sat, 30 Aug 2008, Yinghai Lu wrote:
 > 
-> My patch only affects the shutdown code path and is not related to
-> suspend/standby etc.
-> 
-> Could you identify the commit that broke standby/resume for you between
-> 2b12a4c524812fb3f6ee590a02e65b95c8c32229 and
-> a7f5aaf36ded825477c4d7167cc6eb1bcdc63191 ?  It looks like that should be
-> bisectable.
+> AMD CPU/NB (quad core aka fam 10h later) has MSR to state MMCONFIG, and
+>  the ATI bridge BAR that have same address for MMCONFIG not even have
+> chance to decode that, because NB intercept that already.
 
-It appears to be working again as of ee096f75b69913dbad0e6f7f2572513de5c90002.
+Ok, so it's similar to the local APIC in that respect (and presumably IO 
+APIC too, I haven't checked).
 
--- 
-Simon Arlott
+But that still just implies that the BAR probably means something else 
+totally, and the fact that it happens to have the same value as the MCFG 
+is just random luck.
 
+> it seems ATI chipset doesn't have public version of doc...like reg
+> info and BIOS/Kernel porting guide.
+
+Yeah, I'm not finding anything either. The 690G databook that Rafael 
+pointed to does mention the config registers in passing, but it's really 
+just about electricals (pin setup etc). No BIOS writers guide indeed..
+
+			Linus
