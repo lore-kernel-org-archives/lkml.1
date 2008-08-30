@@ -1,107 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755996AbYH3TXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYH3TZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755996AbYH3TXf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 15:23:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbYH3TX1
+	id S1755325AbYH3TZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 15:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbYH3TZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 15:23:27 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:31769 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752880AbYH3TXZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 15:23:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=wqZgScxypV+yuZzhihOoXK8dXywX9CBLmLxmIR06Z6bakVoEOzewv5G7zcTJJnsN6/
-         zK4XnZNs4Shwxvi4yUJmgGUlgCXe9S1XYyrJTfSh9bWM9AD+wkSkBOAsMULDApnqpijA
-         jKvAxE4XIZIHZFKhgfnXc94+OWadEr6jwe3ic=
-Date: Sat, 30 Aug 2008 23:23:24 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>,
-       Tom Tucker <tom@opengridcomputing.com>, Neil Brown <neilb@suse.de>,
-       Chuck Lever <chuck.lever@oracle.com>, Greg Banks <gnb@sgi.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: buffer overflow in /proc/sys/sunrpc/transports
-Message-ID: <20080830192324.GE7611@lenovo>
-References: <20080830184422.GA9598@localhost.localdomain> <20080830190642.GC7611@lenovo> <19f34abd0808301215i445e8411q987c864c0b478d30@mail.gmail.com> <20080830192112.GD7611@lenovo>
+	Sat, 30 Aug 2008 15:25:12 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57594 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752898AbYH3TZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 15:25:11 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
+Date: Sat, 30 Aug 2008 21:29:23 +0200
+User-Agent: KMail/1.9.9
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, David Witbrodt <dawitbro@sbcglobal.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers <kernel-testers@vger.kernel.org>
+References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808301141590.3290@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808301150150.3290@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0808301150150.3290@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080830192112.GD7611@lenovo>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200808302129.24584.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Sat, Aug 30, 2008 at 11:21:12PM +0400]
-| [Vegard Nossum - Sat, Aug 30, 2008 at 09:15:16PM +0200]
-| | On Sat, Aug 30, 2008 at 9:06 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| | > [Vegard Nossum - Sat, Aug 30, 2008 at 08:44:22PM +0200]
-| | > | Hi,
-| | > |
-| | > | I noticed that something weird is going on with /proc/sys/sunrpc/transports.
-| | > | This file is generated in net/sunrpc/sysctl.c, function proc_do_xprt(). When
-| | > | I "cat" this file, I get the expected output:
-| | > |
-| | > |     $ cat /proc/sys/sunrpc/transports
-| | > |     tcp 1048576
-| | > |     udp 32768
-| | > |
-| | > | But I think that it does not check the length of the buffer supplied by
-| | > | userspace to read(). With my original program, I found that the stack was
-| | > | being overwritten by the characters above, even when the length given to
-| | > | read() was just 1. So I have created a test program, see it at the bottom of
-| | > | this e-mail. Here is its output:
-| | > |
-| | > ...
-| | >
-| | > Indeed, maybe just add checking for user buffer length?
-| | > As proc_dodebug() in this file are doing. I don't think
-| | > the user would be happy with his stack burned :)
-| | >
-| | > Something like:
-| | > ---
-| | >
-| | > Index: linux-2.6.git/net/sunrpc/sysctl.c
-| | > ===================================================================
-| | > --- linux-2.6.git.orig/net/sunrpc/sysctl.c      2008-07-20 11:40:14.000000000 +0400
-| | > +++ linux-2.6.git/net/sunrpc/sysctl.c   2008-08-30 23:05:30.000000000 +0400
-| | > @@ -69,6 +69,8 @@ static int proc_do_xprt(ctl_table *table
-| | >                return -EINVAL;
-| | >        else {
-| | >                len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
-| | > +               if (*lenp < len)
-| | > +                       return -EFAULT;
-| | >                if (!access_ok(VERIFY_WRITE, buffer, len))
-| | >                        return -EFAULT;
-| | >
-| | 
-| | Hm. I think this is wrong. Shouldn't we copy as many bytes as the user
-| | indicated?
-| 
-| Well, hard to say what user-space programmer is expecting from us.
-| I mean - maybe he (reader) wants only part of results not the whole
-| contents BUT by this way he never know what the whole conetnts would be
-| until trying to read more (ie to check if there no more data from
-| kernel side). What is preferred behaviour - i don't know :)
-| 
-| | 
-| | 
-| | Vegard
-| | 
-| | -- 
-| | "The animistic metaphor of the bug that maliciously sneaked in while
-| | the programmer was not looking is intellectually dishonest as it
-| | disguises that the error is the programmer's own creation."
-| | 	-- E. W. Dijkstra, EWD1036
-| | 
-| 
-| 		- Cyrill -
+On Saturday, 30 of August 2008, Linus Torvalds wrote:
+> 
+> On Sat, 30 Aug 2008, Linus Torvalds wrote:
+> > 
+> > We simply shouldn't try to compare the BAR start with randomly chosen 
+> > things.
+> 
+> Btw, looking at that bogus BAR#3 some more: I don't actually think it's 
+> even an MCFG resource.
+> 
+> I think it's literally the resource that describes the HT window for the 
+> host bridge. So it's literally like the "root" resource - all external 
+> MMIO resources that go over HT have to be in that window.
+> 
+> IOW, I'm starting to think that it's not even broken. It is probably 
+> perfectly real. It's not a "PCI bridge" in the sense that it doesn't 
+> bridge one PCI bus to another, but it's a host bridge, and it bridges the 
+> CPU memory accesses to another bus. 
+> 
+> The fact that the MCFG area happens to be at the start of that window is 
+> probably just a random detail.
+> 
+> Does anybody know how to find chipset docs for AMD/ATI chipsets? I find 
+> CPU docs, and the GPU docs, but not the 790 chipset docs anywhere (yeah, 
+> it looks promising with a link that says "AMD 790FX Chipset 
+> Specifications", but the link just takes you to some trivial overview, not 
+> any actual specs.
+> 
+> Anybody?
 
-Btw, I didn't try to get size of sysfs file - will such an action return
-size of data from kernel side?
+There are some at:
+http://www.amd.com/us-en/Processors/TechnicalResources/0,,30_182_739_15137,00.html
 
-		- Cyrill -
+Well, that's 690/SB600 only and I'm not sure how useful this is.
+
+Thanks,
+Rafael
