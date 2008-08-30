@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbYH3Wg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbYH3Wjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758519AbYH3Wg3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 18:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757115AbYH3WgS
+	id S1758055AbYH3Wjj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 18:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755533AbYH3Wjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 18:36:18 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:52995 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757583AbYH3WgR (ORCPT
+	Sat, 30 Aug 2008 18:39:32 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:36227 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752887AbYH3Wjb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 18:36:17 -0400
-Date: Sat, 30 Aug 2008 16:36:00 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH] scsi/sd: Fix size output in MB
-Message-ID: <20080830223600.GF1239@parisc-linux.org>
-References: <48B9546B.4010004@simon.arlott.org.uk> <1220117091.3615.3.camel@localhost.localdomain> <20080830174516.GD1239@parisc-linux.org> <20080830225950.4828dcf6@mjolnir.drzeus.cx> <1220132749.3615.14.camel@localhost.localdomain> <20080831001314.694df795@mjolnir.drzeus.cx>
+	Sat, 30 Aug 2008 18:39:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=pY0f1Wo/tfHve9250jrt4LueV3h/sORbLFPwJ46w2CxTCNTr4jT7btCJ/IPjzkuhTH
+         TI29p/HyPXWF80aujqPkUDcWBoH7Pu1IdEuyTM6jvLoH4BevyEyTE4lF13r4wEdFQTgz
+         7BE6WgJFDeZt+ZfvXs+y6zbxm7gkd4glkM8iQ=
+Message-ID: <3bc8237c0808301539v7b131b5fw4fa7a820170c3eae@mail.gmail.com>
+Date: Sat, 30 Aug 2008 17:39:29 -0500
+From: "Archie Cobbs" <archie@dellroad.org>
+To: "Tejun Heo" <tj@kernel.org>
+Subject: Re: [fuse-devel] [PATCHSET] CUSE: implement CUSE
+Cc: "Mike Hommey" <mh@glandium.org>, fuse-devel@lists.sourceforge.net,
+       greg@kroah.com, linux-kernel@vger.kernel.org, miklos@szeredi.hu
+In-Reply-To: <48B93D68.6040506@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080831001314.694df795@mjolnir.drzeus.cx>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <1219947544-666-1-git-send-email-tj@kernel.org>
+	 <20080829055000.GB18930@glandium.org> <48B78EBA.609@kernel.org>
+	 <3bc8237c0808291150t2f18ba64vf445bdf4c2c8360c@mail.gmail.com>
+	 <48B93D68.6040506@kernel.org>
+X-Google-Sender-Auth: 82e80aae2016248a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 31, 2008 at 12:13:14AM +0200, Pierre Ossman wrote:
-> On Sat, 30 Aug 2008 16:45:49 -0500
-> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > Does MMC have the 10^3 requirement like SCSI/ATA disks do, or can you
-> > use 2^10 like standard computer stuff for capacities?
-> 
-> Some do, some don't. I prefer the 2^10 and MiB variants as it avoids
-> ambiguity.
+On Sat, Aug 30, 2008 at 7:30 AM, Tejun Heo <tj@kernel.org> wrote:
+> Yeah, compared to loopback over FUSE, anything would have less
+> problem. :-) I don't know much about nbd but it's pretty much solving
+> the same problem so I think it's logical to extend nbd including
+> giving it a new transport if necessary?  Or is there something
+> fundamentally better when it's done via FUSE?
 
-I think the most compelling reason for ensuring they're the same is
-that you can plug these devices into both an MMC slot directly and a
-card-reader and have them show up over USB.  You don't want the reported
-capacity to change when you do that.
+Well, NBD is the bird in hand, but that doesn't mean it's the best way
+to do things generically for all block device emulation applications.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+I'd even argue that NBD should be removed from the kernel and replaced
+by BUSE plus a user-land daemon. A BUSE interface could be a lot more
+general, and simpler.
+
+Not to mention that converting all block reads and writes to TCP
+operations that talk to another process on the same machine via the
+loopback interface seems awfully inefficient.
+
+-Archie
+
+--
+Archie L. Cobbs
