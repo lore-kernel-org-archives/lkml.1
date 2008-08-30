@@ -1,73 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbYH3RZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbYH3RaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755172AbYH3RZF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 13:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbYH3RYv
+	id S1755033AbYH3RaT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 13:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbYH3RaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 13:24:51 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:47533 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752344AbYH3RYv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 13:24:51 -0400
-Subject: Re: [PATCH] scsi/sd: Fix size output in MB
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Simon Arlott <simon@fire.lp0.eu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <48B9546B.4010004@simon.arlott.org.uk>
-References: <48B9546B.4010004@simon.arlott.org.uk>
-Content-Type: text/plain
-Date: Sat, 30 Aug 2008 12:24:50 -0500
-Message-Id: <1220117091.3615.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sat, 30 Aug 2008 13:30:05 -0400
+Received: from nebensachen.de ([195.34.83.29]:41011 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753141AbYH3RaD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 13:30:03 -0400
+X-Hashcash: 1:20:080830:sshtylyov@ru.mvista.com::0vdVNMXOSw9h8uVJ:000000000000000000000000000000000000002Py5
+X-Hashcash: 1:20:080830:alan@lxorguk.ukuu.org.uk::LxOaVAv+UYNGk45k:00000000000000000000000000000000000000gxi
+X-Hashcash: 1:20:080830:akpm@linux-foundation.org::doZ99hQgVWMmz5Pa:0000000000000000000000000000000000001Tqh
+X-Hashcash: 1:20:080830:bzolnier@gmail.com::qmTM/W12xN0lixAp:00000000000000000000000000000000000000000002rxb
+X-Hashcash: 1:20:080830:jeff@garzik.org::VcyBuLE4JGdW8e1d:003XiV
+X-Hashcash: 1:20:080830:randy.dunlap@oracle.com::LdK0KlfkZIH+qy1y:000000000000000000000000000000000000005baA
+X-Hashcash: 1:20:080830:htejun@gmail.com::1zcDQW3zMfskqfSK:03JR9
+X-Hashcash: 1:20:080830:linux-ide@vger.kernel.org::8qtBz0qxacWSxaeW:00000000000000000000000000000000000023rd
+X-Hashcash: 1:20:080830:linux-kernel@vger.kernel.org::i6ai/qmqGZuI2yHr:0000000000000000000000000000000001R53
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] Introduce ata_id_has_unload()
+References: <87wshzplvk.fsf@denkblock.local>
+	<20080829211345.4355.63012.stgit@denkblock.local>
+	<48B9357A.3040508@ru.mvista.com>
+Date: Sat, 30 Aug 2008 19:29:27 +0200
+In-Reply-To: <48B9357A.3040508@ru.mvista.com> (Sergei Shtylyov's message of
+	"Sat, 30 Aug 2008 15:56:42 +0400")
+Message-ID: <87sksmmmx4.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux-scsi is the correct list for this, cc's added
+Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
+> Hello.
+>
+> Elias Oltmanns wrote:
+>
+>> Add a function to check an ATA device's id for head unload support as
+>> specified in ATA-7.
+>>
+>> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
+>>   
+> [...]
+>> diff --git a/include/linux/ata.h b/include/linux/ata.h
+>> index 80364b6..d9a94bd 100644
+>> --- a/include/linux/ata.h
+>> +++ b/include/linux/ata.h
+>> @@ -707,6 +707,23 @@ static inline int ata_id_has_dword_io(const u16 *id)
+>>  	return 0;
+>>  }
+>>  +static inline int ata_id_has_unload(const u16 *id)
+>> +{
+>> +	/*
+>> +	 * ATA-7 specifies two places to indicate unload feature
+>> +	 * support. Since I don't really understand the difference,
+>> +	 * I'll just check both and only return zero if none of them
+>> +	 * indicates otherwise.
+>>   
+>
+>   If you read the comments to the words 82:84 and 85:87, they say that
+> the former indicate the supported features, and the latter indicate
+> the enabed features AND in case a feature can't be disabled, the
+> latter words will have the corresponding bit set. So it should be
+> sufficient to check only one word.
 
-On Sat, 2008-08-30 at 15:08 +0100, Simon Arlott wrote:
-> The capacity printk'd in bytes is divided by 1000000,
-> whereas 1048576 would be more consistent with the rest
-> of the OS and disk-related utilities ('df' etc.).
-> 
-> This change replaces the (sz - (sz/625 - 974))/1950
-> calculation with a simple right shift by 11 bits
-> (/2048).
-> 
-> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
-> ---
->  drivers/scsi/sd.c |    6 ++----
->  1 files changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-> index e5e7d78..e6fd6fd 100644
-> --- a/drivers/scsi/sd.c
-> +++ b/drivers/scsi/sd.c
-> @@ -1441,10 +1441,8 @@ got_data:
->  		sector_t mb = sz;
->  
->  		blk_queue_hardsect_size(queue, hard_sector);
-> -		/* avoid 64-bit division on 32-bit platforms */
-> -		sector_div(sz, 625);
-> -		mb -= sz - 974;
-> -		sector_div(mb, 1950);
-> +		/* Convert to megabytes (/2048) */
-> +		mb = sz >> 11;
->  
->  		sd_printk(KERN_NOTICE, sdkp,
->  			  "%llu %d-byte hardware sectors (%llu MB)\n",
+Yes, I tend to agree with you and, in fact, I have been leaning in this
+direction myself. However, there is something that really bothers me.
+Both entries describing bit 13 of word 87 and 84 are worded alike. In
+particular, it says *supported* in both places, whereas in the case of the
+other features it would say enabled in one and supported in the other
+place.
 
-No, this is wrong.  By mandated standards the manufacturers are allowed
-to calculate MB by dividing by 10^6.  This is a fiddle to allow them to
-make their drives look slightly bigger.  However, we want the printed
-information to match that written on the drive, so in this printk, we
-use the manufacturer standard for calculation (and then do everything
-else in bytes so we don't have to bother with it ever again).
+Well, I'm willing to drop the check for word 87 since I don't like it
+myself. Due to my lack of personal experience with inexplicable
+implemenations of ATA standards in hardware though, I have to take your
+word that this is safe.
 
-James
+>
+>> +	 */
+>> +	if (ata_id_major_version(id) >= 7
+>> +	    && (((id[ATA_ID_CFSSE] & 0xC000) == 0x4000
+>> +		 && id[ATA_ID_CFSSE] & (1 << 13))
+>> +		|| ((id[ATA_ID_CSF_DEFAULT] & 0xC000) == 0x4000
+>> +		    && (id[ATA_ID_CSF_DEFAULT] & (1 << 13)))))
+>>   
+>
+>
+>   I think that it's preferrable to leave the operator on the same line
+> with the first operand...
 
+Not having too strong an opinion about it, I just thought that an
+operator at the beginning of the line was another indication (apart from
+indentation) that this still belongs to the condition. Still, I can
+change it for the next series round.
 
+Regards,
+
+Elias
