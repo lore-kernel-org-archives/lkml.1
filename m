@@ -1,48 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbYH3HSI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756498AbYH3H7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610AbYH3HSI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 03:18:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbYH3HR4
+	id S1756498AbYH3H7w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 03:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbYH3H7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 03:17:56 -0400
-Received: from n6.bullet.mail.ac4.yahoo.com ([76.13.13.234]:46781 "HELO
-	n6.bullet.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751061AbYH3HR4 (ORCPT
+	Sat, 30 Aug 2008 03:59:42 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:38181 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751429AbYH3H7l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 03:17:56 -0400
-X-Greylist: delayed 344 seconds by postgrey-1.27 at vger.kernel.org; Sat, 30 Aug 2008 03:17:56 EDT
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 504605.63708.bm@omp108.mail.ac4.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=bGuZH3HCVy4AQSJAJ07xLreWZYncu1or14necEYZu8fNniYAg4Uq4rRO64CRX+1xEFIoSlfu55w5y74SldVrn4o7qIGYqEyv+wr/uyx5PgpcIXeA3+9IkEnJEIJTTN0dNEQQjPCRAWGnls4iNi2axc+4Zv9MWsGvjlJDEisq60E=;
-X-YMail-OSG: MPvkAg4VM1n88ndesD4LUDrWMJQouzlrimkZnvXlQPirp2m1w8uk_Towv7FMSEnEz_ltMupdOlMdJVX3JOVesUk9B40SlfD1RolaLdp87A--
-X-Mailer: YahooMailRC/1096.28 YahooMailWebService/0.7.218.2
-Date: Sat, 30 Aug 2008 00:12:12 -0700 (PDT)
-From: Firstname Lastname <skb632@yahoo.com>
-Subject: targets of function pointer invocations
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <269784.46170.qm@web59506.mail.ac4.yahoo.com>
+	Sat, 30 Aug 2008 03:59:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=VEEN2fIIL17cJD86VJeqai1r/FJAnZ0f8frZDK6DWPJBxCqXBu6yoDy00zIQcOh1Uo
+         E//lf7ISEBcTwgI4/c/3zDHWmpTFqVNKL+rvFdUMFFjvZjpwVqkXNFTw+BGOkNoEx7G+
+         oW9M4rZDEWpOeb3mLOZo1RCTnP5u5QEUvsX+Q=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: unify using pci_mmcfg_insert_resource
+Date: Sat, 30 Aug 2008 00:58:39 -0700
+Message-Id: <1220083122-4058-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+even with known_bridge insert them late too.
 
-The lines 522-523 in function do_acct_process in file kernel/acct.c in version 2.6.26.3 are:
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
- file->f_op->write(file, (char *)&ac,sizeof(acct_t), &file->f_pos);
-
-What are the full set of targets of this function pointer invocation and how can one be sure, by examining the code, that this is in fact the complete set?
-
-Thanks.
-
-SKB
-
-
-
-      
-
+Index: linux-2.6/arch/x86/pci/mmconfig-shared.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/mmconfig-shared.c
++++ linux-2.6/arch/x86/pci/mmconfig-shared.c
+@@ -209,7 +209,7 @@ static int __init pci_mmcfg_check_hostbr
+ 	return name != NULL;
+ }
+ 
+-static void __init pci_mmcfg_insert_resources(unsigned long resource_flags)
++static void __init pci_mmcfg_insert_resources(void)
+ {
+ #define PCI_MMCFG_RESOURCE_NAME_LEN 19
+ 	int i;
+@@ -233,7 +233,7 @@ static void __init pci_mmcfg_insert_reso
+ 			 cfg->pci_segment);
+ 		res->start = cfg->address;
+ 		res->end = res->start + (num_buses << 20) - 1;
+-		res->flags = IORESOURCE_MEM | resource_flags;
++		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+ 		insert_resource(&iomem_resource, res);
+ 		names += PCI_MMCFG_RESOURCE_NAME_LEN;
+ 	}
+@@ -434,11 +434,9 @@ static void __init __pci_mmcfg_init(int
+ 	    (pci_mmcfg_config[0].address == 0))
+ 		return;
+ 
+-	if (pci_mmcfg_arch_init()) {
+-		if (known_bridge)
+-			pci_mmcfg_insert_resources(IORESOURCE_BUSY);
++	if (pci_mmcfg_arch_init())
+ 		pci_probe = (pci_probe & ~PCI_PROBE_MASK) | PCI_PROBE_MMCONF;
+-	} else {
++	else {
+ 		/*
+ 		 * Signal not to attempt to insert mmcfg resources because
+ 		 * the architecture mmcfg setup could not initialize.
+@@ -475,7 +473,7 @@ static int __init pci_mmcfg_late_insert_
+ 	 * marked so it won't cause request errors when __request_region is
+ 	 * called.
+ 	 */
+-	pci_mmcfg_insert_resources(0);
++	pci_mmcfg_insert_resources();
+ 
+ 	return 0;
+ }
