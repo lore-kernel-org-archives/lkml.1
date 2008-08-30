@@ -1,111 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbYH3ULF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbYH3UNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351AbYH3ULF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 16:11:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbYH3UKy
+	id S1755909AbYH3UNd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 16:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752929AbYH3UNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 16:10:54 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:52341 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753065AbYH3UKw (ORCPT
+	Sat, 30 Aug 2008 16:13:25 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:3300 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752831AbYH3UNY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 16:10:52 -0400
+	Sat, 30 Aug 2008 16:13:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=JVuNnNWR7o4RmE0Q80Oj/qynzX+Ij4vFyulrCJATqKCGy1IhlZNn/XNlAntidk5UhH
-         AJF5ZYdNSYa+gyWe7IzTnQMeyL5OrLnDHuTdSbI44kd1VNAx3uSu7H/SfVNAao1H5vjP
-         wGUgj49yIVqGerssC+1SxbGyvCNcuQ7YQREdg=
-Message-ID: <86802c440808301310v439344a5k2e5a1ce1ed9b0be@mail.gmail.com>
-Date: Sat, 30 Aug 2008 13:10:52 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "David Witbrodt" <dawitbro@sbcglobal.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Kernel Testers" <kernel-testers@vger.kernel.org>
-In-Reply-To: <200808302151.43092.rjw@sisk.pl>
+        b=fYuUGLGolWMtZBAIcHSfLiywJs2yTL8Q4LdNZSkl5hQ6QgnA5fiYWgeJApy8sX4837
+         7Fz/BS8wT5mGgGxaKjnWH3oy1dlX1+vGG9c9hsk0hmuvyzAklF9D8sVIcvL0LkEEyxd1
+         SEmXsE0Jn/+/1ooOIpgPyRyF55jglMDRwwsQc=
+Message-ID: <19f34abd0808301313v640a47fbl7bc61fd35e7cf4d5@mail.gmail.com>
+Date: Sat, 30 Aug 2008 22:13:23 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+Subject: Re: buffer overflow in /proc/sys/sunrpc/transports
+Cc: "Tom Tucker" <tom@opengridcomputing.com>, "Neil Brown" <neilb@suse.de>,
+       "Chuck Lever" <chuck.lever@oracle.com>, "Greg Banks" <gnb@sgi.com>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080830200423.GI7611@lenovo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>
-	 <86802c440808301111i2880a13eq61155b8c7b1ed3dd@mail.gmail.com>
-	 <86802c440808301206u2407b77dx6c7119bc398f9529@mail.gmail.com>
-	 <200808302151.43092.rjw@sisk.pl>
+References: <20080830184422.GA9598@localhost.localdomain>
+	 <20080830190642.GC7611@lenovo>
+	 <19f34abd0808301242j63d357f5h7afd3eff796a4cf0@mail.gmail.com>
+	 <20080830195622.GH7611@lenovo>
+	 <19f34abd0808301259s385844efx13cd5b02d083da77@mail.gmail.com>
+	 <20080830200423.GI7611@lenovo>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 30, 2008 at 12:51 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Saturday, 30 of August 2008, Yinghai Lu wrote:
->> On Sat, Aug 30, 2008 at 11:11 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->> > On Sat, Aug 30, 2008 at 10:55 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->> >> On Sat, Aug 30, 2008 at 10:14 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >>
->> >>>
->> >>> Could you please rebase them on top of current -git?
->> >>
->> >> please check attached quilt series based on linus tree.
->> >
->> > there is some problem with fix -v4...on one test machine.
->> >
->>
->> this one should work.
+On Sat, Aug 30, 2008 at 10:04 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> [Vegard Nossum - Sat, Aug 30, 2008 at 09:59:38PM +0200]
+> | On Sat, Aug 30, 2008 at 9:56 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> | > | BTW, look at this:
+> | > |
+> | > |     $ od -A x -t x1z /proc/sys/sunrpc/transports
+> | > |     000000 74 63 70 20 31 30 34 38 35 37 36 0a 75 64 70 20  >tcp 1048576.udp <
+> | > |     000010 33 32 37 36 38 0a 00 00 00 00 00 00 00 00 00 00  >32768...........<
+> | > |     000020 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  >................<
+> | > |     *
+> | > |     0003e0 00 00 00 00 00 00 00 00 00 00                    >..........<
+> | > |     0003ea
+> | > |
+> | > | ...and:
+> | > |
+> | > |     $ strace -e trace=read cat /proc/sys/sunrpc/transports > /dev/null
+> | > |     read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0@G\316E4\0\0\0"...,
+> | > | 512) = 512
+> | > |     read(3, "tcp 1048576\nudp 32768\n\0\0\0\0\0\0\0\0\0\0"..., 4096) = 4074
+> | > |     read(3, "", 4096)                       = 0
+> | > |
+> | > | ...why does it have a huge return value? The output is only about 40
+> | > | bytes... why add all the \0? Would your patch also fix this?
+> | >
+> | > I think it's from strace side - it pass 4096 zero'ed buffer.
+> |
+> | "cat" passed buffer of size 4096, yes. But read() still returned 4074.
+> | It should have returned 38 or so.
+> |
+> | > At least I don't see additional issues from kernel side in buffer
+> | > filling - except from svc_print_xprts() which walk over list.
+> | > But I think sunpc guys should know details :)
+> | > Will send short-fix patch soon :)
+> |
+> | It looks like it's returning (sizeof(buffer) - x) where it really
+> | should be returning x. Maybe it's this one that should be different?
+> |
+> |         *lenp -= len;
+> |
 >
-> dmesg -s 262144
->
-> http://www.sisk.pl/kernel/debug/mainline/2.6.27-rc5/dmesg-test.log
->
-> cat /proc/iomem
->
-> http://www.sisk.pl/kernel/debug/mainline/2.6.27-rc5/iomem-test.txt
+> yes, but this is just a side effect, if we fix main error - it should
+> resolve this problem too. Did you try the fix I sent a few msgs ago?
+> (I don't have sunrpc on my machine)
 
-calling  pci_subsys_init+0x0/0x120
-PCI: Using ACPI for IRQ routing
-request_resource: root: (PCI IO) [0, ffff], new: (PCI Bus 0000:01)
-[9000, 9fff] conflict 0
-request_resource: root: (PCI mem) [0, ffffffffffffffff], new: (PCI Bus
-0000:01) [fe700000, fe7fffff] conflict 0
-request_resource: root: (PCI mem) [0, ffffffffffffffff], new: (PCI Bus
-0000:01) [d8000000, dfffffff] conflict 0
-request_resource: root: (PCI IO) [0, ffff], new: (PCI Bus 0000:02)
-[a000, bfff] conflict 0
-request_resource: root: (PCI mem) [0, ffffffffffffffff], new: (PCI Bus
-0000:02) [fe800000, fe8fffff] conflict 0
-request_resource: root: (PCI IO) [0, ffff], new: (PCI Bus 0000:03)
-[c000, cfff] conflict 0
-request_resource: root: (PCI mem) [0, ffffffffffffffff], new: (PCI Bus
-0000:03) [fe900000, fe9fffff] conflict 0
-request_resource: root: (PCI IO) [0, ffff], new: (PCI Bus 0000:04)
-[d000, efff] conflict 0
-request_resource: root: (PCI mem) [0, ffffffffffffffff], new: (PCI Bus
-0000:04) [fea00000, feafffff] conflict 0
-request_resource: root: (PCI mem) [0, ffffffffffffffff], new: (PCI Bus
-0000:05) [feb00000, febfffff] conflict 0
-request_resource: root: (PCI mem) [0, ffffffffffffffff], new:
-(0000:00:00.0) [e0000000, ffffffff] conflict 1
-pci 0000:00:00.0: BAR 3: can't allocate resource
+Sorry, I did it now :-)
 
-so pci_resource_survey is depth first. sub buses request some resource
-at first...
+    $ uname -a
+    Linux grianne 2.6.27-rc5-00006-gbef69ea-dirty #4 SMP PREEMPT Sat
+Aug 30 22:07:18 CEST 2008 i686 i686 i386 GNU/Linux
 
-we don't need quirk to handle that strange BAR res.
+    $ strace -e trace=read cat /proc/sys/sunrpc/transports > /dev/null
+    read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0\320
+\265\0004\0\0\0"..., 512) = 512
+    read(3, "tcp 1048576\nudp 32768\n\0\0\0\0\0\0\0\0\0\0"..., 4096) = 4074
+    read(3, "", 4096)                       = 0
 
-and we got reserved register correctly
-in /proc/iomem
-d7fe0000-d7ffffff : reserved
-..
-fff00000-ffffffff : reserved
+So that problem seems to remain.
 
-for
- BIOS-e820: 00000000d7fe0000 - 00000000d8000000 (reserved)
- BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
 
-YH
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
