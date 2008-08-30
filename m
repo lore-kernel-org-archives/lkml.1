@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbYH3TPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755624AbYH3TQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072AbYH3TPn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 15:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbYH3TP3
+	id S1755624AbYH3TQZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 15:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYH3TQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 15:15:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50308 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754553AbYH3TP2 (ORCPT
+	Sat, 30 Aug 2008 15:16:15 -0400
+Received: from cpsmtpo-eml04.kpnxchange.com ([213.75.38.153]:13226 "EHLO
+	cpsmtpo-eml04.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752552AbYH3TQP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 15:15:28 -0400
-Date: Sat, 30 Aug 2008 12:14:02 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, David Witbrodt <dawitbro@sbcglobal.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers <kernel-testers@vger.kernel.org>
-Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit
- a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
-In-Reply-To: <alpine.LFD.1.10.0808301141590.3290@nehalem.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0808301150150.3290@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>  <200808292157.24179.rjw@sisk.pl>  <alpine.LFD.1.10.0808291434110.3300@nehalem.linux-foundation.org>  <200808300030.32905.rjw@sisk.pl>  <alpine.LFD.1.10.0808301012060.3290@nehalem.linux-foundation.org>
- <86802c440808301107n4561e815ldf53183c92a7bc93@mail.gmail.com> <alpine.LFD.1.10.0808301141590.3290@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 30 Aug 2008 15:16:15 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: 2.6.27-rc3: 'APIC error on CPU1: 00(40)', but only on resume!
+Date: Sat, 30 Aug 2008 21:16:06 +0200
+User-Agent: KMail/1.9.9
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>
+References: <200808202106.41058.elendil@planet.nl> <200808202356.33036.rjw@sisk.pl> <Pine.LNX.4.55.0808211023020.22938@cliff.in.clinika.pl>
+In-Reply-To: <Pine.LNX.4.55.0808211023020.22938@cliff.in.clinika.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808302116.07421.elendil@planet.nl>
+X-OriginalArrivalTime: 30 Aug 2008 19:16:09.0659 (UTC) FILETIME=[DBF830B0:01C90AD4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 21 August 2008, Maciej W. Rozycki wrote:
+> On Wed, 20 Aug 2008, Rafael J. Wysocki wrote:
+> > On my box I see many "APIC error on CPU1: 00(40)" messages that don't
+> > seem to be related to anything obviously bad and I've alwas been
+> > seeing them.
+>
+>  Barring a hardware erratum, this is a bug in the kernel.  It should be
+> moderately easy to track down with some debugging added to writes
+> accessing LVT and redirection table entries.
 
+Could you please provide some more specific debugging instructions? I'm at 
+a complete loss what I should do here.
 
-On Sat, 30 Aug 2008, Linus Torvalds wrote:
-> 
-> We simply shouldn't try to compare the BAR start with randomly chosen 
-> things.
+I just re-read the rest of the thread, but I'm afraid most of it is Greek 
+to me :-/
 
-Btw, looking at that bogus BAR#3 some more: I don't actually think it's 
-even an MCFG resource.
-
-I think it's literally the resource that describes the HT window for the 
-host bridge. So it's literally like the "root" resource - all external 
-MMIO resources that go over HT have to be in that window.
-
-IOW, I'm starting to think that it's not even broken. It is probably 
-perfectly real. It's not a "PCI bridge" in the sense that it doesn't 
-bridge one PCI bus to another, but it's a host bridge, and it bridges the 
-CPU memory accesses to another bus. 
-
-The fact that the MCFG area happens to be at the start of that window is 
-probably just a random detail.
-
-Does anybody know how to find chipset docs for AMD/ATI chipsets? I find 
-CPU docs, and the GPU docs, but not the 790 chipset docs anywhere (yeah, 
-it looks promising with a link that says "AMD 790FX Chipset 
-Specifications", but the link just takes you to some trivial overview, not 
-any actual specs.
-
-Anybody?
-
-			Linus
+TIA,
+FJP
