@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761746AbYH3Vl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759711AbYH3Vlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761746AbYH3Vl3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 17:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759793AbYH3Vgx
+	id S1759711AbYH3Vlo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 17:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760550AbYH3ViS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 17:36:53 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58017 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760213AbYH3Vgw (ORCPT
+	Sat, 30 Aug 2008 17:38:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58428 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760541AbYH3ViQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 17:36:52 -0400
-Subject: Re: [Bug #11438] Upcoming oops in lockdep
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <N8SeMoDzuxC.A.C9D.FibuIB@albercik>
-References: <q6jBvyFdWbL.A.K4C.fhbuIB@albercik>
-	 <N8SeMoDzuxC.A.C9D.FibuIB@albercik>
-Content-Type: text/plain
-Date: Sat, 30 Aug 2008 23:36:45 +0200
-Message-Id: <1220132205.8426.40.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 30 Aug 2008 17:38:16 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Miller <davem@davemloft.net>
+Subject: Re: 2.6.27-rc5-git2: Reported regressions from 2.6.26
+Date: Sat, 30 Aug 2008 23:42:25 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, bunk@kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, protasnb@gmail.com,
+       kernel-testers@vger.kernel.org
+References: <q6jBvyFdWbL.A.K4C.fhbuIB@albercik> <20080830.143256.62760515.davem@davemloft.net>
+In-Reply-To: <20080830.143256.62760515.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808302342.27062.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-08-30 at 21:50 +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Saturday, 30 of August 2008, David Miller wrote:
+> From: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Date: Sat, 30 Aug 2008 21:46:30 +0200 (CEST)
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11409
+> > Subject		: build issue #564 for v2.6.27-rc4 : undefined reference to `NS8390p_init'
+> > Submitter	: Toralf Förster <toralf.foerster@gmx.de>
+> > Date		: 2008-08-22 8:33 (9 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=121939410214677&w=4
+> > Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> > Patch		: http://marc.info/?l=linux-kernel&m=121943097320451&w=4
 > 
+> Should be fixed by:
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11438
-> Subject		: Upcoming oops in lockdep
-> Submitter	: Arjan van de Ven <arjan@infradead.org>
-> Date		: 2008-08-23 20:49 (8 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121952463613140&w=4
-> 		  http://www.kerneloops.org/searchweek.php?search=mark_lock
-> Handled-By	: Peter Zijlstra <peterz@infradead.org>
+> commit d3d7b53d1ae46534cd73e1073a5c29e3b61a0552
+> Author: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Date:   Fri Aug 22 19:24:15 2008 +0100
+> 
+>     [netdrvr] fix build issue: undefined reference to `NS8390p_init'
+>     
+>     Signed-off-by: Alan 'pass the paper bags' Cox <alan@redhat.com>
+>     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
-as far as I'm concerned this has nothing to do with lockdep
+Thanks, closed.
 
-
+Rafael
