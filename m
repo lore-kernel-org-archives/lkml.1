@@ -1,89 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753786AbYH3K6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbYH3LBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753786AbYH3K6M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 06:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbYH3K55
+	id S1754255AbYH3LBr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 07:01:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYH3LBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 06:57:57 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:58705 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750978AbYH3K54 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 06:57:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=ZZ0m8mOAZvi5+hUVw8RXMj9gqOSGZHSuiBbEGgHCPd2s19kfys/xUEUPd3LbXV0uIQ
-         AabLjbqiOIUFpyCBeMILTigKvfKtnwA9wh/fLt/nzhQ3BOcHdPetPzzc1IUVUw4xe3KW
-         ELECu7H2NWWQ2uvTy8tnLmQvENT5Ht+lXjQ0I=
-Message-ID: <84144f020808300357l9dddda4y726622641ac7f592@mail.gmail.com>
-Date: Sat, 30 Aug 2008 13:57:55 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Steve VanDeBogart" <vandebo-lkml@nerdbox.net>
-Subject: Re: [PATCH 4/6] VM: Annotate pagealloc
-Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
-       jiayingz@google.com, dkegel@google.com
-In-Reply-To: <alpine.DEB.1.00.0808291616170.15543@abydos.NerdBox.Net>
+	Sat, 30 Aug 2008 07:01:39 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38903 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751053AbYH3LBi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 07:01:38 -0400
+Message-ID: <48B92846.7050004@kernel.org>
+Date: Sat, 30 Aug 2008 13:00:22 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: xerces8 <xerces8@butn.net>
+CC: Sergey Spiridonov <sena@hurd.homeunix.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: GA-MA790FX-DS5 SATA ahci NCQ erros on Jmicron 20360/20363 	(JMB363)
+ kernel 2.6.25-2 Debian/Lenny
+References: <g8p6po$nm$1@ger.gmane.org> <48B0916C.4080805@garzik.org> <g8q9mg$v2p$1@ger.gmane.org> <WorldClient-F200808241844.AA44240046@butn.net>
+In-Reply-To: <WorldClient-F200808241844.AA44240046@butn.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.DEB.1.00.0808281139420.15543@abydos.NerdBox.Net>
-	 <alpine.DEB.1.00.0808291616170.15543@abydos.NerdBox.Net>
-X-Google-Sender-Auth: f25a0e90947d5a62
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 30 Aug 2008 11:01:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steve,
+xerces8 wrote:
+> I have a JMB363 myself and it has its share of problems.
+> I would say it is buggy hardware. (why would they otherwise
+> release a new windows driver every week ? if not to workaround
+> bugs in HW ;-)
 
-On Sat, Aug 30, 2008 at 2:16 AM, Steve VanDeBogart
-<vandebo-lkml@nerdbox.net> wrote:
-> Valgrind annotations for valgrind: memory is addressable once it's been
-> alloced, and unaddressable when it is freed again.  Can't use malloc-like
-> and free-like because valgrind considers a malloc-like chunk indivisible.
->
-> Signed-off-by: Steve VanDeBogart <vandebo-lkml@nerdbox.net>
-> ---
->
-> Index: linux-2.6.27-rc5/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6.27-rc5.orig/mm/page_alloc.c       2008-08-29
-> 14:24:27.000000000 -0700
-> +++ linux-2.6.27-rc5/mm/page_alloc.c    2008-08-29 14:24:37.000000000 -0700
-> @@ -46,6 +46,7 @@
->  #include <linux/page-isolation.h>
->  #include <linux/memcontrol.h>
->  #include <linux/debugobjects.h>
-> +#include <linux/memcheck.h>
->
->  #include <asm/tlbflush.h>
->  #include <asm/div64.h>
-> @@ -1080,6 +1081,7 @@
->                if (!page)
->                        goto failed;
->        }
-> +       VALGRIND_MAKE_MEM_UNDEFINED(page_address(page), PAGE_SIZE << order);
+Well, FWIW, JMB ahci's are one of my favorites and usually very well
+behaved.
 
-No SHOUTING macros please, and I think you should just pass page and
-order here and do the calculation elsewhere.
+> My WD MyBook Studio Edition 500 GB external eSATA drive does not
+> work on the JMB363 correctly no matter what I try. Both
+> under linux and windows. I think the best was 30 minutes of
+> (apparent) error free operation under windows.
 
->
->        __count_zone_vm_events(PGALLOC, zone, 1 << order);
->        zone_statistics(preferred_zone, zone);
-> @@ -1679,6 +1681,8 @@
->  void __free_pages(struct page *page, unsigned int order)
->  {
->        if (put_page_testzero(page)) {
-> +               VALGRIND_MAKE_MEM_NOACCESS(page_address(page),
-> +                                               PAGE_SIZE << order);
+This one is being discussed both with JMB and WD.  It seems the bridge
+chip used in the WD external drives is somehow incompatible with the
+JMB ahci's.  Don't know whose fault it is or how it can be worked
+around yet.  The issue is being tracked in the following bugzilla.
 
-Same here.
+  http://bugzilla.kernel.org/show_bug.cgi?id=9913
 
->                if (order == 0)
->                        free_hot_page(page);
->                else
-
-Other than that, looks good to me.
+-- 
+tejun
