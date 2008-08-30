@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759548AbYH3Vkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761588AbYH3Vkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759548AbYH3Vkd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 17:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759815AbYH3VdE
+	id S1761588AbYH3Vkw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 17:40:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759798AbYH3VfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 17:33:04 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46354
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757836AbYH3VdC convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 17:33:02 -0400
-Date: Sat, 30 Aug 2008 14:32:56 -0700 (PDT)
-Message-Id: <20080830.143256.62760515.davem@davemloft.net>
-To: rjw@sisk.pl
-Cc: linux-kernel@vger.kernel.org, bunk@kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, protasnb@gmail.com,
-       kernel-testers@vger.kernel.org
-Subject: Re: 2.6.27-rc5-git2: Reported regressions from 2.6.26
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <q6jBvyFdWbL.A.K4C.fhbuIB@albercik>
-References: <q6jBvyFdWbL.A.K4C.fhbuIB@albercik>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 30 Aug 2008 17:35:06 -0400
+Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:61270 "EHLO
+	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759277AbYH3VfC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 17:35:02 -0400
+Message-ID: <48B9BCFF.6070803@lwfinger.net>
+Date: Sat, 30 Aug 2008 16:34:55 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [Bug #11355] Regression in 2.6.27-rc2 when cross-building the
+ kernel
+References: <q6jBvyFdWbL.A.K4C.fhbuIB@albercik> <N8SeMoDzuxC.A.XNF.7ibuIB@albercik>
+In-Reply-To: <N8SeMoDzuxC.A.XNF.7ibuIB@albercik>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Sat, 30 Aug 2008 21:46:30 +0200 (CEST)
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11355
+> Subject		: Regression in 2.6.27-rc2 when cross-building the kernel
+> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+> Date		: 2008-08-16 2:38 (15 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121885432118368&w=4
+> Handled-By	: Sam Ravnborg <sam@ravnborg.org>
+> 		  David Woodhouse <dwmw2@infradead.org>
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11409
-> Subject		: build issue #564 for v2.6.27-rc4 : undefined reference to `NS8390p_init'
-> Submitter	: Toralf Förster <toralf.foerster@gmx.de>
-> Date		: 2008-08-22 8:33 (9 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121939410214677&w=4
-> Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Patch		: http://marc.info/?l=linux-kernel&m=121943097320451&w=4
+Not fixed yet.
 
-Should be fixed by:
-
-commit d3d7b53d1ae46534cd73e1073a5c29e3b61a0552
-Author: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date:   Fri Aug 22 19:24:15 2008 +0100
-
-    [netdrvr] fix build issue: undefined reference to `NS8390p_init'
-    
-    Signed-off-by: Alan 'pass the paper bags' Cox <alan@redhat.com>
-    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-
+Larry
