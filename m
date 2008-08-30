@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbYH3F2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbYH3Fcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754496AbYH3F2S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 01:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbYH3F2H
+	id S1754486AbYH3Fcq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 01:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbYH3Fch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 01:28:07 -0400
-Received: from ns.suse.de ([195.135.220.2]:44147 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750849AbYH3F2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 01:28:06 -0400
-Date: Sat, 30 Aug 2008 07:28:01 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix ticket spin lock asm constraints
-Message-ID: <20080830052801.GA16897@wotan.suse.de>
-References: <48B7FFB3.76E4.0078.0@novell.com>
-Mime-Version: 1.0
+	Sat, 30 Aug 2008 01:32:37 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:25563 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056AbYH3Fch (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 01:32:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=Lv3xjqoLRqI1OnpVSLuVwq/FgVoOunTsWa6FcDZdtBgKaY0bPzUmXDQc3e10kx9CqB
+         Q8aHZbDAfYjuocBMSBtqwV6m7RWJT3qlimHe1Rz8fotAVop3BmvFeiOXWOD5jmY3BXzX
+         UK8ztNVUgz3Mz1zEyLlF7ZjCQdSoXFdN2mFiE=
+Date: Sat, 30 Aug 2008 09:34:12 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] proc: fix return value of proc_reg_open() in "too late"
+	case
+Message-ID: <20080830053412.GB25179@x200.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48B7FFB3.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+If ->open() wasn't called, returning 0 is misleading and, theoretically,
+oopsable:
+1. remove_proc_entry clears ->proc_fops, drops lock,
+2. ->open "succeeds",
+3. ->release oopses, because it assumes ->open was called (single_release()).
 
-All these ticket lock patches look pretty good to me. Thanks for going over
-it so thoroughly.
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-On Fri, Aug 29, 2008 at 12:54:59PM +0100, Jan Beulich wrote:
-> In addition to these changes I doubt the 'volatile' on all the ticket
-> lock asm()-s are really necessary.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> Cc: Nick Piggin <npiggin@suse.de>
-> 
-> ---
->  include/asm-x86/spinlock.h |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> --- linux-2.6.27-rc5/include/asm-x86/spinlock.h	2008-08-21 14:37:34.000000000 +0200
-> +++ 2.6.27-rc5-x86-spinlock-constraints/include/asm-x86/spinlock.h	2008-08-19 12:43:22.000000000 +0200
-> @@ -101,7 +101,7 @@ static __always_inline int __ticket_spin
->  		     "1:"
->  		     "sete %b1\n\t"
->  		     "movzbl %b1,%0\n\t"
-> -		     : "=&a" (tmp), "=Q" (new), "+m" (lock->slock)
-> +		     : "=&a" (tmp), "=&Q" (new), "+m" (lock->slock)
->  		     :
->  		     : "memory", "cc");
->  
-> @@ -146,7 +146,7 @@ static __always_inline void __ticket_spi
->  		     /* don't need lfence here, because loads are in-order */
->  		     "jmp 1b\n"
->  		     "2:"
-> -		     : "+Q" (inc), "+m" (lock->slock), "=r" (tmp)
-> +		     : "+r" (inc), "+m" (lock->slock), "=&r" (tmp)
->  		     :
->  		     : "memory", "cc");
->  }
-> @@ -166,7 +166,7 @@ static __always_inline int __ticket_spin
->  		     "1:"
->  		     "sete %b1\n\t"
->  		     "movzbl %b1,%0\n\t"
-> -		     : "=&a" (tmp), "=r" (new), "+m" (lock->slock)
-> +		     : "=&a" (tmp), "=&q" (new), "+m" (lock->slock)
->  		     :
->  		     : "memory", "cc");
->  
-> 
-> 
+ fs/proc/inode.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/fs/proc/inode.c
++++ b/fs/proc/inode.c
+@@ -350,7 +350,7 @@ static int proc_reg_open(struct inode *inode, struct file *file)
+ 	if (!pde->proc_fops) {
+ 		spin_unlock(&pde->pde_unload_lock);
+ 		kfree(pdeo);
+-		return rv;
++		return -EINVAL;
+ 	}
+ 	pde->pde_users++;
+ 	open = pde->proc_fops->open;
+
