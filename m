@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbYH3Gtw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbYH3G6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756777AbYH3Gtw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 02:49:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbYH3Gtm
+	id S1754706AbYH3G6u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 02:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbYH3G6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 02:49:42 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50962 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266AbYH3Gtl (ORCPT
+	Sat, 30 Aug 2008 02:58:40 -0400
+Received: from web82102.mail.mud.yahoo.com ([209.191.84.215]:27146 "HELO
+	web82102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751061AbYH3G6k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 02:49:41 -0400
-Subject: Re: [patch 1/3] crypto: Add a zlib crypto module
-From: David Woodhouse <dwmw2@infradead.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       linux-crypto@vger.kernel.org, squashfs-devel@lists.sourceforge.net,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080830062315.GA18441@gondor.apana.org.au>
-References: <20080829134158.108976037@vixen.sonytel.be>
-	 <20080829134418.874948211@vixen.sonytel.be>
-	 <20080830062315.GA18441@gondor.apana.org.au>
-Content-Type: text/plain
-Date: Sat, 30 Aug 2008 07:39:57 +0100
-Message-Id: <1220078397.7107.433.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 30 Aug 2008 02:58:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=OrMQz65iNnznvfFYcq3zT0PlnREGl/SoUj+6sYtcMPgU1g+KrzLMHsM97Etywv8zaMMdhHsPzNeQhItIrutG87E7Wx1GfIOqwF+12Z3ORaitWygTC5EW+XNzsh2R4tBEOsBqh7e4Bd9EpwX+YMobQ+pmYZF1qSHKLhQ0ytyCTxY=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218.2
+Date: Fri, 29 Aug 2008 23:58:39 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers <kernel-testers@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <734251.73444.qm@web82102.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-08-30 at 16:23 +1000, Herbert Xu wrote:
-> On Fri, Aug 29, 2008 at 01:41:59PM +0000, Geert Uytterhoeven wrote:
-> > From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> > 
-> > Add a (de)compression module for the "zlib" format using the crypto API.
+
+> > Sorry if I am interfering... just wanted to inject this data, in case
+> > it's meaningful!
 > 
-> I think we can safely conclude that our current compression
-> interface sucks for what you're trying to achieve :)
+> Yeah, nothing has changed yet for your case. What should change your case 
+> is the thing Yinghai is working on with the "late add of e820 data to the 
+> resource tree".
 
-The main thing that's missing for JFFS2 is 
- "Compress as much of this as you can into X bytes"
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+OK.
 
 
+> His earlier version already worked for you, didn't it? We're really now 
+> just finalizing details (in fact, "insert_resource_expand_to_fit()" is 
+> just a helper function for a detail that may not even matter all that 
+> much).
 
+Yes, it worked fine!  :D
+
+BTW, there was an individual who reported a regression back in May on the
+very same commit.  I was not able to get him to participate in the process
+of tracking this down, but he did (suddenly) write a post on his blog a
+couple of days ago that he had success using some unspecified git tree HEAD.
+
+I believe that was probably the patch that you have reverted, so once I
+know that a new candidate is in place I will let him know on his blog and
+see if I can talk him into trying it.  This has been a month-long quest
+for me -- beginning on Aug. 4 -- and I can understand why he gave up in
+May without resolving the issue.  It's too bad for all of us that he didn't
+pursue it then, huh?
+
+
+Thanks,
+Dave W.
