@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbYH3CCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757137AbYH3CFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756242AbYH3CCR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 22:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYH3CCA
+	id S1757137AbYH3CFp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 22:05:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbYH3CFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 22:02:00 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:28795 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750842AbYH3CCA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 22:02:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=pBpjzVqj1icwMx5ATrXcjxehXyHTSnXWRcyKeXu5HQ+czBXzEe3fGxHT3EoiPZd3uQ
-         cbVzMr2M233LpnR2nxAdtSQbsdyYJ+BYStneCcrvJCMmZ74oxHZ9PEeARRtDeKqPCAhM
-         bzul7oNfB7RiI5sALGRka3O4yw8MM9SKgkSpw=
-Date: Sat, 30 Aug 2008 06:03:34 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: mingo@redhat.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH -next] x86: make setup_xstate_init() __init
-Message-ID: <20080830020334.GA22978@x200.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 29 Aug 2008 22:05:35 -0400
+Received: from igw2.br.ibm.com ([32.104.18.25]:58680 "EHLO igw2.br.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753746AbYH3CFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 22:05:34 -0400
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmoriss@namei.org>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>,
+       Peter Dolding <oiaohm@gmail.com>, Kenneth Goldman <kgoldman@us.ibm.com>,
+       Debora Velarde <debora@linux.vnet.ibm.com>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>, Pavel Machek <pavel@suse.cz>,
+       Greg KH <greg@kroah.com>, Christoph Hellwig <hch@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+Subject: [PATCH 0/2] TPM
+Date: Sat, 30 Aug 2008 00:05:02 -0300
+Message-Id: <cover.1220065144.git.srajiv@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WARNING: vmlinux.o(.text+0x22453): Section mismatch in reference from the function setup_xstate_init() to the function .init.text:__alloc_bootmem()
-The function setup_xstate_init() references the function __init __alloc_bootmem().
-This is often because setup_xstate_init lacks a __init annotation or the annotation of __alloc_bootmem is wrong.
+Based on Christoph Hellwig's TPM internal kernel interface 
+locking question, the following TPM changes were made: 
+        - removal of the BKL calls from the TPM driver, which were
+          added in the overall misc-char-dev-BKL-pushdown.patch
+        - continue to protect the tpm_chip_list using the 
+          driver_lock, and add an rcu to protect readers.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+The TPM internal kernel interface patch will be posted as 
+part of the integrity patchset.
 
- arch/x86/kernel/xsave.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/arch/x86/kernel/xsave.c
-+++ b/arch/x86/kernel/xsave.c
-@@ -272,7 +272,7 @@ void __cpuinit xsave_init(void)
- /*
-  * setup the xstate image representing the init state
-  */
--void setup_xstate_init(void)
-+static void __init setup_xstate_init(void)
- {
- 	init_xstate_buf = alloc_bootmem(xstate_size);
- 	init_xstate_buf->i387.mxcsr = MXCSR_DEFAULT;
+ drivers/char/tpm/tpm.c |  285 +++++++++++++++++++++++++++++++-----------------
+ drivers/char/tpm/tpm.h |    2 +-
+ 2 files changed, 188 insertions(+), 99 deletions(-)
 
