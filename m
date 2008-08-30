@@ -1,101 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbYH3Bas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbYH3Bfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756024AbYH3Bas (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 21:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbYH3Bai
+	id S1756245AbYH3Bfh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 21:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbYH3Bf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 21:30:38 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:40070 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752620AbYH3Bag (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 21:30:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=rKtmIjqe72G0YzDX/eyeQohRrLE6i3Vo4E9VwePFIrl5JHKmWspV1Oo2ed/+qP0wFO
-         jl5P/548k3iqTp8qxwvBlqcrQJacUusK2So/CxEr7FHwOcHohVGyzWKCpGglAxi4OroS
-         GyUCY7p8HFuy7nbKPU2zMzwohHkHeuhDRgj8U=
-Message-ID: <86802c440808291830t4547140dx9b12353649edd975@mail.gmail.com>
-Date: Fri, 29 Aug 2008 18:30:35 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "David Witbrodt" <dawitbro@sbcglobal.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Kernel Testers" <kernel-testers@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.10.0808291751480.3300@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 29 Aug 2008 21:35:29 -0400
+Received: from sh.osrg.net ([192.16.179.4]:44357 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752620AbYH3Bf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Aug 2008 21:35:28 -0400
+Date: Sat, 30 Aug 2008 10:34:12 +0900
+To: haavard.skinnemoen@atmel.com
+Cc: eaa@wprmedical.com, linux-mtd@lists.infradead.org, kernel@avr32linux.org,
+       dwmw2@infradead.org, fujita.tomonori@lab.ntt.co.jp,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: MTD/block regression (was Re: Slub debugging NAND error in
+ 2.6.25.10.atmel.2)
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080829162824.17f8746b@hskinnemo-gx745.norway.atmel.com>
+References: <6B5648EA2E2C2D42AF2FF7691522AD92417CA6@wpr01.wprmedical.local>
+	<20080829114828.279b79bc@hskinnemo-gx745.norway.atmel.com>
+	<20080829162824.17f8746b@hskinnemo-gx745.norway.atmel.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>
-	 <200808292157.24179.rjw@sisk.pl>
-	 <86802c440808291413t4f31993fmba59a65aefd906ca@mail.gmail.com>
-	 <200808300031.16708.rjw@sisk.pl>
-	 <86802c440808291624t2bd0229w2da36dfc6c794b18@mail.gmail.com>
-	 <alpine.LFD.1.10.0808291704070.3300@nehalem.linux-foundation.org>
-	 <86802c440808291711t32d3e76dsf804856b0a8f4939@mail.gmail.com>
-	 <alpine.LFD.1.10.0808291733260.3300@nehalem.linux-foundation.org>
-	 <alpine.LFD.1.10.0808291751480.3300@nehalem.linux-foundation.org>
+Message-Id: <20080830103318N.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 29, 2008 at 6:11 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> Btw, what was the original regression that commit was
-> a2bd7274b47124d2fc4dfdb8c0591f545ba749dd trying to fix?
->
-> It's not listed in that commit, even though the commit has a "Bisected-by:
-> David Witbrodt <dawitbro@sbcglobal.net>".
->
-> In fact, I can find it with google by searching for
->
->        David Witbrodt bisect
->
-> and I see that it is 3def3d6ddf43dbe20c00c3cbc38dfacc8586998f.
->
-> I'm wondering why that commit wasn't just reverted? Because now that I see
-> it, I notice that _that_ is the real bug to begin with.
->
-> That commit really was buggy. NO WAY can you insert the code/bss/data
-> resources before you've done e820 handling, because it may well be that
-> some strange e820 table contains things that cross the resources.
+On Fri, 29 Aug 2008 16:28:24 +0200
+Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
 
-we reverted the commit , David's problem still happen.
+> Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+> > Hmm...I just saw this when booting 2.6.27-rc5 on the NGW100:
+> > 
+> > physmap platform flash device: 00800000 at 00000000
+> > physmap-flash.0: Found 1 x16 devices at 0x0 in 16-bit bank
+> >  Amd/Fujitsu Extended Query Table at 0x0041
+> > number of CFI chips: 1
+> > cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
+> > RedBoot partition parsing not available
+> > Using physmap partition information
+> > Creating 3 MTD partitions on "physmap-flash.0":
+> > 0x00000000-0x00020000 : "u-boot"
+> > 0x00020000-0x007f0000 : "root"
+> > kobject (91ce8410): tried to init an initialized object, something is seriously wrong.
+> > Call trace:
+> >  [<90017184>] dump_stack+0x18/0x20
+> >  [<900c1894>] kobject_init+0x28/0x5c
+> >  [<900c1bf6>] kobject_init_and_add+0xe/0x24
+> >  [<900beff0>] blk_register_filter+0x28/0x40
+> >  [<900be224>] add_disk+0x38/0x68
+> >  [<900e70f0>] add_mtd_blktrans_dev+0x174/0x184
+> >  [<900e748e>] mtdblock_add_mtd+0x36/0x3c
+> >  [<900e6e38>] blktrans_notify_add+0x1a/0x3a
+> >  [<900e533c>] add_mtd_device+0x60/0xa0
+> >  [<900e5f7e>] add_mtd_partitions+0x37a/0x3a0
+> >  [<900ec4d0>] physmap_flash_probe+0x1ec/0x21c
+> >  [<900e0f24>] platform_drv_probe+0x10/0x12
+> >  [<900e06d0>] driver_probe_device+0x84/0xf0
+> >  [<900e076a>] __driver_attach+0x2e/0x44
+> >  [<900e0096>] bus_for_each_dev+0x2e/0x4c
+> >  [<900e05b6>] driver_attach+0x12/0x14
+> >  [<900e036c>] bus_add_driver+0x6c/0x178
+> >  [<900e08a4>] driver_register+0x58/0xb0
+> >  [<900e1126>] platform_driver_register+0x56/0x5c
+> >  [<9000aaf6>] physmap_init+0xa/0x10
+> >  [<9001422a>] do_one_initcall+0x2a/0x10c
+> >  [<900005b8>] kernel_init+0x48/0x90
+> >  [<9001fcc0>] do_exit+0x0/0x4cc
+> > 
+> > 0x007f0000-0x00800000 : "env"
+> > kobject (91ce8410): tried to init an initialized object, something is seriously wrong.
+> > Call trace:
+> >  [<90017184>] dump_stack+0x18/0x20
+> >  [<900c1894>] kobject_init+0x28/0x5c
+> >  [<900c1bf6>] kobject_init_and_add+0xe/0x24
+> >  [<900beff0>] blk_register_filter+0x28/0x40
+> >  [<900be224>] add_disk+0x38/0x68
+> >  [<900e70f0>] add_mtd_blktrans_dev+0x174/0x184
+> >  [<900e748e>] mtdblock_add_mtd+0x36/0x3c
+> >  [<900e6e38>] blktrans_notify_add+0x1a/0x3a
+> >  [<900e533c>] add_mtd_device+0x60/0xa0
+> >  [<900e5f7e>] add_mtd_partitions+0x37a/0x3a0
+> >  [<900ec4d0>] physmap_flash_probe+0x1ec/0x21c
+> >  [<900e0f24>] platform_drv_probe+0x10/0x12
+> >  [<900e06d0>] driver_probe_device+0x84/0xf0
+> >  [<900e076a>] __driver_attach+0x2e/0x44
+> >  [<900e0096>] bus_for_each_dev+0x2e/0x4c
+> >  [<900e05b6>] driver_attach+0x12/0x14
+> >  [<900e036c>] bus_add_driver+0x6c/0x178
+> >  [<900e08a4>] driver_register+0x58/0xb0
+> >  [<900e1126>] platform_driver_register+0x56/0x5c
+> >  [<9000aaf6>] physmap_init+0xa/0x10
+> >  [<9001422a>] do_one_initcall+0x2a/0x10c
+> >  [<900005b8>] kernel_init+0x48/0x90
+> >  [<9001fcc0>] do_exit+0x0/0x4cc
+> > 
+> > I wonder if it's related?
+> 
+> Ok, it turns out it's not related. It's a newly introduced regression
+> which I've bisected down to:
+> 
+> commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4
+> Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Date:   Sat Aug 16 14:10:05 2008 +0900
+> 
+>     block: move cmdfilter from gendisk to request_queue
 
-the root cause is:
-before 2.6.26, call init_apic_mapping and will insert_resource for
-lapic address.
-and then call e820_resource_resouce (with request_resource) to
-register e820 entries.
-so the lapic entry in the resource tree will prevent some entry in
-e820 to be registered.
-later request_resource for BAR res (==hpet) will succeed.
+Really sorry about that. A fix was queued in Jens' tree:
 
-from 2.6.26. we move lapic address registering to late_initcall, so
-the entry is reserved in e820 getting into resource tree at first.
-and later pci_resource_survey::request_resource for BAR res (==hpet,
-0xfed00000) will fail. so pci_assign_unsigned... will get new
-res for the BAR, so it messed up hpet setting.
+http://marc.info/?l=linux-kernel&m=122000748432301&w=2
 
-solutions will be
-1. use quirk to protect hpet in BAR, Ingo said it is not generic.
-2. or the one you are reverted... check_bar_with_valid. (hpet, ioapic,
-mmconfig) --> happenly reveal another problem with Rafael's
-system/chipset.
-3. or sticky resource... , but could have particallly overlapping
-4. or don't register reserved entries in e820.. Eric, Nacked.
-5. or you sugges, regiser some reserved entries later...., and have
-insert_resource_expand_to_fit...
 
-YH
+> Unfortunately, I can't revert it cleanly, so it could be a false
+> positive. But it does sort of make sense, since it makes the filter
+> per-queue instead of per-gendisk, so if MTD uses the same queue for
+> several block devices, the filter kobject might end up being
+> initialized multiple times. Or something.
+
+Right, the problem is that MTD uses the same queue for multiple
+gendisks. It would be great if a MTD developer could fix it.
+
+
+Thanks,
