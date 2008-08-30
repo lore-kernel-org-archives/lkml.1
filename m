@@ -1,44 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbYH3CL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757510AbYH3CSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757392AbYH3CL1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 22:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbYH3CLT
+	id S1757510AbYH3CSU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 22:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbYH3CSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 22:11:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59627 "EHLO
+	Fri, 29 Aug 2008 22:18:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44632 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754045AbYH3CLT (ORCPT
+	by vger.kernel.org with ESMTP id S1753423AbYH3CSG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 22:11:19 -0400
-Date: Fri, 29 Aug 2008 19:10:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 1/5] select: add a timespec version of the timeout to
- select/poll
-Message-Id: <20080829191032.077ca1c8.akpm@linux-foundation.org>
-In-Reply-To: <20080829080630.5e0ea608@infradead.org>
-References: <20080829080549.6906b744@infradead.org>
-	<20080829080630.5e0ea608@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 29 Aug 2008 22:18:06 -0400
+Date: Fri, 29 Aug 2008 19:16:47 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+cc: Jordan Crouse <jordan.crouse@amd.com>,
+       David Witbrodt <dawitbro@sbcglobal.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers <kernel-testers@vger.kernel.org>
+Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit
+ a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
+In-Reply-To: <86802c440808291814v4037f83eu943b9ad23297309b@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0808291912360.3300@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>  <200808292157.24179.rjw@sisk.pl>  <86802c440808291413t4f31993fmba59a65aefd906ca@mail.gmail.com>  <200808300031.16708.rjw@sisk.pl>  <86802c440808291624t2bd0229w2da36dfc6c794b18@mail.gmail.com>
+  <alpine.LFD.1.10.0808291704070.3300@nehalem.linux-foundation.org>  <86802c440808291711t32d3e76dsf804856b0a8f4939@mail.gmail.com>  <alpine.LFD.1.10.0808291733260.3300@nehalem.linux-foundation.org>
+ <86802c440808291814v4037f83eu943b9ad23297309b@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008 08:06:30 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
 
-> +	memset(&end_time, 0, sizeof(end_time));
 
-It's a bit dorkward using memset to clear out a structure which
-zillions of code sites already know contains only two members.
+On Fri, 29 Aug 2008, Yinghai Lu wrote:
+> > Ok, can we please
+> >
+> >  - *do* get a quirk for known-broken chipsets (at a *PCI* level, this is
+> >   not an x86 issue)
+> 
+> the quirk work at the first point for David' system.
 
-It could be that two plain old writes is more efficient.  (and it could
-be that this is how the compiler implements the memset anyway?)
+That was not what I meant - meant the known-broken MMIO bar.
 
-But I'd suggest that adding a new inlined timespec_zero(timespec*) or
-timespec_set(timespec*,int,int) would be nicer.
+> [PATCH] x86: protect hpet in BAR for one ATI chipset v3
 
+Now, this is probably fine too in theory, but
+
+ - you didn't check if the BAR is even enabled, afaik
+
+ - the other patch - to move the reserved e820 range later - should make 
+   this pointless, no?
+
+> >  - *not* get any more random PCI work-arounds that go through the x86 tree
+> >   and aren't even looked at by the (very few) people who actually
+> >   understand the PCI resource handling?
+> 
+> stop working on following path?
+> [PATCH] x86: split e820 reserved entries record to late v4
+> [PATCH] x86: split e820 reserved entries record to late v4 - fix v2
+
+No, I think this is worth doing, BUT IT MUST NOT BE MERGED BY JUST SENDING 
+IT TO INGO.
+
+It's not an "x86 patch". It's about the PCI resources.
+
+And those kinds of patches need to be acked by people who know and 
+understand the PCI resource issues and have some memory of just how 
+broken machines can exist.
+
+			Linus
