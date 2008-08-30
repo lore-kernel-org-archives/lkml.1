@@ -1,241 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752404AbYH3KAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753695AbYH3KAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752404AbYH3KAX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 06:00:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbYH3KAJ
+	id S1753695AbYH3KAo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 06:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbYH3KAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 06:00:09 -0400
-Received: from smtpauth.hypersurf.com ([209.237.0.8]:58174 "EHLO
-	smtpauth.hypersurf.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750777AbYH3KAI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 06:00:08 -0400
-Message-ID: <48B919CB.3090509@hypersurf.com>
-Date: Sat, 30 Aug 2008 02:58:35 -0700
-From: Kevin Diggs <kevdig@hypersurf.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i486; en-US; rv:1.8b2) Gecko/20050724
+	Sat, 30 Aug 2008 06:00:32 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58537 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753077AbYH3KAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 06:00:30 -0400
+Message-ID: <48B919C2.1040809@cn.fujitsu.com>
+Date: Sat, 30 Aug 2008 17:58:26 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 4/5] Add kernel doc for the completion, fix kernel-doc-nano-HOWTO.txt
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: paulmck@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, manfred@colorfullife.com,
+       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, schamp@sgi.com,
+       niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com, rostedt@goodmis.org,
+       peterz@infradead.org
+Subject: Re: [PATCH, RFC, tip/core/rcu] v3 scalable classic RCU implementation
+References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com>
+In-Reply-To: <20080830004935.GA28548@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds kernel doc for the completion feature. It is in kernel/sched.c
-and include/linux/completion.h.
+I just had a fast review. so my comments is nothing but cleanup.
 
-An error in the split-man.pl PERL snippet in kernel-doc-nano-HOWTO.txt is
-also fixed.
+          Thanks, Lai.
 
-My name is Kevin Diggs and I approve this patch.
+Paul E. McKenney wrote:
+> Hello!
 
-Signed-off-by: Kevin Diggs <kevdig@hypersurf.com>
+> +rcu_start_gp(struct rcu_state *rsp, unsigned long iflg)
+> +	__releases(rsp->rda[smp_processor_id()]->lock)
+> +{
+> +	unsigned long flags = iflg;
+> +	struct rcu_data *rdp = rsp->rda[smp_processor_id()];
+> +	struct rcu_node *rnp = rcu_get_root(rsp);
+> +	struct rcu_node *rnp_cur;
+> +	struct rcu_node *rnp_end;
+> +
+> +	if (!cpu_needs_another_gp(rsp, rdp)) {
+>  
+>  		/*
+> -		 * Accessing nohz_cpu_mask before incrementing rcp->cur needs a
+> -		 * Barrier  Otherwise it can cause tickless idle CPUs to be
+> -		 * included in rcp->cpumask, which will extend graceperiods
+> -		 * unnecessarily.
+> +		 * Either there is no need to detect any more grace periods
+> +		 * at the moment, or we are already in the process of
+> +		 * detecting one.  Either way, we should not start a new
+> +		 * RCU grace period, so drop the lock and return.
+>  		 */
+> -		smp_mb();
+> -		cpus_andnot(rcp->cpumask, cpu_online_map, nohz_cpu_mask);
+> +		spin_unlock_irqrestore(&rnp->lock, flags);
+> +		return;
+> +	}
+> +
+> +	/* Advance to a new grace period and initialize state. */
+> +
+> +	rsp->gpnum++;
+> +	rsp->signaled = RCU_SIGNAL_INIT;
+> +	rsp->jiffies_force_qs = jiffies + RCU_JIFFIES_TILL_FORCE_QS;
+> +	record_gp_stall_check_time();
+> +	dyntick_save_completed(rsp, rsp->completed - 1);
+> +	note_new_gpnum(rsp, rdp);
+> +
+> +	/*
+> +	 * Because we are first, we know that all our callbacks will
+> +	 * be covered by this upcoming grace period, even the ones
+> +	 * that were registered arbitrarily recently.
+> +	 */
+> +
+> +	rcu_next_callbacks_are_ready(rdp);
+> +	rdp->nxttail[RCU_WAIT_TAIL] = rdp->nxttail[RCU_NEXT_TAIL];
+>  
+> -		rcp->signaled = 0;
+> +	/* Special-case the common single-level case. */
+> +
+> +	if (NUM_RCU_NODES == 1) {
+> +		rnp->qsmask = rnp->qsmaskinit;
+
+I tried a mask like qsmaskinit before. The system came to deadlock
+when I did on/offline cpus.
+I didn't find out the whys for I bethought of these two problem:
+
+problem 1:
+----race condition 1:
+<cpu_down>
+synchronize_rcu <called from offline handler in other subsystem>
+rcu_offline_cpu
 
 
-Index: Documentation/kernel-doc-nano-HOWTO.txt
-===================================================================
---- Documentation/kernel-doc-nano-HOWTO.txt.orig	2008-08-13 02:18:53.000000000 -0700
-+++ Documentation/kernel-doc-nano-HOWTO.txt	2008-08-19 14:21:43.000000000 -0700
-@@ -168,10 +168,10 @@ if ($#ARGV < 0) {
-  mkdir $ARGV[0],0777;
-  $state = 0;
-  while (<STDIN>) {
--    if (/^\.TH \"[^\"]*\" 4 \"([^\"]*)\"/) {
-+    if (/^\.TH \"[^\"]*\" 9 \"([^\"]*)\"/) {
-  	if ($state == 1) { close OUT }
-  	$state = 1;
--	$fn = "$ARGV[0]/$1.4";
-+	$fn = "$ARGV[0]/$1.9";
-  	print STDERR "Creating $fn\n";
-  	open OUT, ">$fn" or die "can't open $fn: $!\n";
-  	print OUT $_;
-Index: include/linux/completion.h
-===================================================================
---- include/linux/completion.h.orig	2008-08-13 00:56:52.000000000 -0700
-+++ include/linux/completion.h	2008-08-20 01:47:21.000000000 -0700
-@@ -10,6 +10,18 @@
+-----race condition 2:
+rcu_online_cpu
+synchronize_rcu <called from online handler in other subsystem>
+<cpu_up>
 
-  #include <linux/wait.h>
+in these two condition, synchronize_rcu isblocked for ever for
+synchronize_rcu have to wait a cpu in rnp->qsmask, but this
+cpu don't run.
 
-+/**
-+ * struct completion - structure used to maintain state for a "completion"
-+ *
-+ * This is the opaque structure used to maintain the state for a "completion".
-+ * Completions currently use a FIFO to queue threads that have to wait for
-+ * the "completion" event.
-+ *
-+ * See also:  complete(), wait_for_completion() (and friends _timeout,
-+ * _interruptible, _interruptible_timeout, and _killable), init_completion(),
-+ * and macros DECLARE_COMPLETION(), DECLARE_COMPLETION_ONSTACK(), and
-+ * INIT_COMPLETION().
-+ */
-  struct completion {
-  	unsigned int done;
-  	wait_queue_head_t wait;
-@@ -21,6 +33,14 @@ struct completion {
-  #define COMPLETION_INITIALIZER_ONSTACK(work) \
-  	({ init_completion(&work); work; })
 
-+/**
-+ * DECLARE_COMPLETION: - declare and initialize a completion structure
-+ * @work:  identifier for the completion structure
-+ *
-+ * This macro declares and initializes a completion structure. Generally used
-+ * for static declarations. You should use the _ONSTACK variant for automatic
-+ * variables.
-+ */
-  #define DECLARE_COMPLETION(work) \
-  	struct completion work = COMPLETION_INITIALIZER(work)
 
-@@ -29,6 +49,13 @@ struct completion {
-   * completions - so we use the _ONSTACK() variant for those that
-   * are on the kernel stack:
-   */
-+/**
-+ * DECLARE_COMPLETION_ONSTACK: - declare and initialize a completion structure
-+ * @work:  identifier for the completion structure
-+ *
-+ * This macro declares and initializes a completion structure on the kernel
-+ * stack.
-+ */
-  #ifdef CONFIG_LOCKDEP
-  # define DECLARE_COMPLETION_ONSTACK(work) \
-  	struct completion work = COMPLETION_INITIALIZER_ONSTACK(work)
-@@ -36,6 +63,13 @@ struct completion {
-  # define DECLARE_COMPLETION_ONSTACK(work) DECLARE_COMPLETION(work)
-  #endif
+problem 2:
+we need call rcu_offline_cpu() in these two cases in rcu_cpu_notify()
+since qsmaskinit had changed by rcu_online_cpu()
 
-+/**
-+ * init_completion: - Initialize a dynamically allocated completion
-+ * @x:  completion structure that is to be initialized
-+ *
-+ * This inline function will initialize a dynamically created completion
-+ * structure.
-+ */
-  static inline void init_completion(struct completion *x)
-  {
-  	x->done = 0;
-@@ -53,6 +87,13 @@ extern unsigned long wait_for_completion
-  extern void complete(struct completion *);
-  extern void complete_all(struct completion *);
+	case CPU_UP_CANCELED:
+	case CPU_UP_CANCELED_FROZEN:
 
-+/**
-+ * INIT_COMPLETION: - reinitialize a completion structure
-+ * @x:  completion structure to be reinitialized
-+ *
-+ * This macro should be used to reinitialize a completion structure so it can
-+ * be reused. This is especially important after complete_all() is used.
-+ */
-  #define INIT_COMPLETION(x)	((x).done = 0)
 
-  #endif
-Index: kernel/sched.c
-===================================================================
---- kernel/sched.c.orig	2008-08-13 02:22:42.000000000 -0700
-+++ kernel/sched.c	2008-08-20 12:36:01.000000000 -0700
-@@ -4363,6 +4363,15 @@ __wake_up_sync(wait_queue_head_t *q, uns
-  }
-  EXPORT_SYMBOL_GPL(__wake_up_sync);	/* For internal use only */
+> +static void
+> +cpu_quiet(int cpu, struct rcu_state *rsp, struct rcu_data *rdp, long *lastcomp)
+>  {
+>  	unsigned long flags;
+> +	long mask;
 
-+/**
-+ * complete: - signals a single thread waiting on this completion
-+ * @x:  holds the state of this particular completion
-+ *
-+ * This will wake up a single thread waiting on this completion. Threads will be
-+ * awakened in the same order in which they were queued.
-+ *
-+ * See also complete_all(), wait_for_completion() and related routines.
-+ */
-  void complete(struct completion *x)
-  {
-  	unsigned long flags;
-@@ -4374,6 +4383,12 @@ void complete(struct completion *x)
-  }
-  EXPORT_SYMBOL(complete);
+long mask -> unsigned long mask
 
-+/**
-+ * complete_all: - signals all threads waiting on this completion
-+ * @x:  holds the state of this particular completion
-+ *
-+ * This will wake up all threads waiting on this particular completion event.
-+ */
-  void complete_all(struct completion *x)
-  {
-  	unsigned long flags;
-@@ -4425,12 +4440,31 @@ wait_for_common(struct completion *x, lo
-  	return timeout;
-  }
 
-+/**
-+ * wait_for_completion: - waits for completion of a task
-+ * @x:  holds the state of this particular completion
-+ *
-+ * This waits to be signaled for completion of a specific task. It is NOT
-+ * interruptible and there is no timeout.
-+ *
-+ * See also similar routines (i.e. wait_for_completion_timeout()) with timeout
-+ * and interrupt capability. Also see complete().
-+ */
-  void __sched wait_for_completion(struct completion *x)
-  {
-  	wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_UNINTERRUPTIBLE);
-  }
-  EXPORT_SYMBOL(wait_for_completion);
+> +static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
+>  {
+> -	if (list) {
+> -		local_irq_disable();
+> -		this_rdp->batch = batch;
+> -		*this_rdp->nxttail[2] = list;
+> -		this_rdp->nxttail[2] = tail;
+> -		local_irq_enable();
+> +	int i;
+> +	unsigned long flags;
+> +	long mask;
 
-+/**
-+ * wait_for_completion_timeout: - waits for completion of a task (w/timeout)
-+ * @x:  holds the state of this particular completion
-+ * @timeout:  timeout value in jiffies
-+ *
-+ * This waits for either a completion of a specific task to be signaled or for a
-+ * specified timeout to expire. The timeout is in jiffies. It is not
-+ * interruptible.
-+ */
-  unsigned long __sched
-  wait_for_completion_timeout(struct completion *x, unsigned long timeout)
-  {
-@@ -4438,6 +4472,13 @@ wait_for_completion_timeout(struct compl
-  }
-  EXPORT_SYMBOL(wait_for_completion_timeout);
+long mask -> unsigned long mask
 
-+/**
-+ * wait_for_completion_interruptible: - waits for completion of a task (w/intr)
-+ * @x:  holds the state of this particular completion
-+ *
-+ * This waits for completion of a specific task to be signaled. It is
-+ * interruptible.
-+ */
-  int __sched wait_for_completion_interruptible(struct completion *x)
-  {
-  	long t = wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_INTERRUPTIBLE);
-@@ -4447,6 +4488,14 @@ int __sched wait_for_completion_interrup
-  }
-  EXPORT_SYMBOL(wait_for_completion_interruptible);
 
-+/**
-+ * wait_for_completion_interruptible_timeout: - waits for completion (w/(to,intr))
-+ * @x:  holds the state of this particular completion
-+ * @timeout:  timeout value in jiffies
-+ *
-+ * This waits for either a completion of a specific task to be signaled or for a
-+ * specified timeout to expire. It is interruptible. The timeout is in jiffies.
-+ */
-  unsigned long __sched
-  wait_for_completion_interruptible_timeout(struct completion *x,
-  					  unsigned long timeout)
-@@ -4455,6 +4504,13 @@ wait_for_completion_interruptible_timeou
-  }
-  EXPORT_SYMBOL(wait_for_completion_interruptible_timeout);
+> + * Queue an RCU callback for invocation after a grace period.
+> + */
+> +void call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
+> +{
+> +	unsigned long flags;
+> +
+> +	head->func = func;
+> +	head->next = NULL;
+> +	local_irq_save(flags);
+> +	__call_rcu(head, &rcu_state, &__get_cpu_var(rcu_data));
+> +	local_irq_restore(flags);
+> +}
 
-+/**
-+ * wait_for_completion_killable: - waits for completion of a task (killable)
-+ * @x:  holds the state of this particular completion
-+ *
-+ * This waits to be signaled for completion of a specific task. It can be
-+ * interrupted by a kill signal.
-+ */
-  int __sched wait_for_completion_killable(struct completion *x)
-  {
-  	long t = wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_KILLABLE);
+struct rcu_state has a field: struct rcu_data *rda[NR_CPUS]
+so we can move these lines around __call_rcu into __call_rcu.
+
+__call_rcu(struct rcu_head *head, struct rcu_state *rsp)
+{
+	local_irq_save(flags);
+	struct rcu_data *rdp = rsp->rda[smp_processor_id()];
+.....
+	local_irq_save(flags);
+}
+
+
+> +static void
+> +rcu_init_percpu_data(int cpu, struct rcu_state *rsp)
+>  {
+> -	if (user ||
+> -	    (idle_cpu(cpu) && !in_softirq() &&
+> -				hardirq_count() <= (1 << HARDIRQ_SHIFT))) {
+> -
+> -		/*
+> -		 * Get here if this CPU took its interrupt from user
+> -		 * mode or from the idle loop, and if this is not a
+> -		 * nested interrupt.  In this case, the CPU is in
+> -		 * a quiescent state, so count it.
+> -		 *
+> -		 * Also do a memory barrier.  This is needed to handle
+> -		 * the case where writes from a preempt-disable section
+> -		 * of code get reordered into schedule() by this CPU's
+> -		 * write buffer.  The memory barrier makes sure that
+> -		 * the rcu_qsctr_inc() and rcu_bh_qsctr_inc() are see
+> -		 * by other CPUs to happen after any such write.
+> -		 */
+> +	unsigned long flags;
+> +	int i;
+> +	long mask;
+
+long mask -> unsigned long mask
+
+
+> +
+> +/*
+> + * Helper function for rcu_init() that initializes one rcu_state structure.
+> + */
+> +static void __init rcu_init_one(struct rcu_state *rsp)
+> +{
+> +	int i;
+> +	int j;
+> +	struct rcu_node *rnp;
+> +
+> +	/* Initialize the level-tracking arrays. */
+> +
+> +	for (i = 1; i < NUM_RCU_LVLS; i++) {
+> +		rsp->level[i] = rsp->level[i - 1] + rsp->levelcnt[i - 1];
+> +	}
+> +	rcu_init_levelspread(rsp);
+> +
+> +	/* Initialize the elements themselves, starting from the leaves. */
+> +
+> +	for (i = NUM_RCU_LVLS - 1; i >= 0; i--) {
+> +		rnp = rsp->level[i];
+> +		for (j = 0; j < rsp->levelcnt[i]; j++, rnp++) {
+> +			spin_lock_init(&rnp->lock);
+> +			rnp->qsmask = 0;
+> +			rnp->grplo = j * rsp->levelspread[i];
+> +			rnp->grphi = (j + 1) * rsp->levelspread[i] - 1;
+> +			if (rnp->grphi >= rsp->levelcnt[i + 1])
+> +				rnp->grphi = rsp->levelcnt[i + 1] - 1;
+> +			rnp->qsmaskinit = 0;
+
+if no other reason, I will init fields with the order as they are declared.
+
+> +			if (i != NUM_RCU_LVLS - 1)
+> +				rnp->grplo = rnp->grphi = 0;
+> +			if (i == 0) {
+> +				rnp->grpnum = 0;
+> +				rnp->parent = NULL;
+> +			} else {
+> +				rnp->grpnum = j % rsp->levelspread[i - 1];
+> +				rnp->parent = rsp->level[i - 1] + 
+> +					      j / rsp->levelspread[i - 1];
+> +			}
+> +			rnp->level = i;
+> +		}
+> +	}
+> +}
+> +
+> +/*
+> + * Helper macro for rcu_init().  To be used nowhere else!
+
+rcu_init -> __rcu_init
+
+> + * Assigns leaf node pointers into each CPU's rcu_data structure.
+> + */
+> +#define RCU_DATA_PTR_INIT(rsp, rcu_data) \
+> +do { \
+> +	rnp = (rsp)->level[NUM_RCU_LVLS - 1]; \
+> +	j = 0; \
+> +	for_each_possible_cpu(i) { \
+> +		if (i > rnp[j].grphi) \
+> +			j++; \
+> +		per_cpu(rcu_data, i).mynode = &rnp[j]; \
+> +		(rsp)->rda[i] = &per_cpu(rcu_data, i); \
+> +	} \
+> +} while (0)
+> +
+>  static struct notifier_block __cpuinitdata rcu_nb = {
+>  	.notifier_call	= rcu_cpu_notify,
+>  };
+>  
+
