@@ -1,82 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754403AbYH3AX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755770AbYH3AYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754403AbYH3AX6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Aug 2008 20:23:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbYH3AXt
+	id S1755770AbYH3AYc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Aug 2008 20:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbYH3AYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Aug 2008 20:23:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47132 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751296AbYH3AXs (ORCPT
+	Fri, 29 Aug 2008 20:24:23 -0400
+Received: from smtp117.mail.mud.yahoo.com ([209.191.84.166]:32274 "HELO
+	smtp117.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751472AbYH3AYX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Aug 2008 20:23:48 -0400
-Date: Fri, 29 Aug 2008 17:23:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dyn_array: using %pF instead of
- print_fn_descriptor_symbol
-Message-Id: <20080829172304.bcfa5f9d.akpm@linux-foundation.org>
-In-Reply-To: <86802c440808291634h1904b7ffmeb1697b2050e364b@mail.gmail.com>
-References: <1220047669-15029-1-git-send-email-yhlu.kernel@gmail.com>
-	<20080829152053.92fa6fd4.akpm@linux-foundation.org>
-	<86802c440808291532r15dd581cj3f69755985578c2b@mail.gmail.com>
-	<20080829155319.dc76b1c0.akpm@linux-foundation.org>
-	<86802c440808291634h1904b7ffmeb1697b2050e364b@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 29 Aug 2008 20:24:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.ar;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding;
+  b=6ilUNCf/kvN9ElC555/Onh6im7XTdT+cAnzGncVYP7x1SwvXwbF1vwgYPQY2/Ph9QNm31G1Unz5Mhf5kmP42fjde0Z6KjOR6XJPfAN764GE4P8LeTjtUAf/XQn+679zvDUpZz1ii32mm7zf7MkJpzZZeJu1zFSgsAFa2pEXrzuY=  ;
+X-YMail-OSG: qGQd7q0VM1mr4veTKjeVz31HJ8gExqQPTSLtjEncpaAsVE0Cnlt8BwgfYIdGBp3ZLfliyysRe17h3UArfdvt3wbygYHwnRlspN3hDnwBDqoPUw3yaA621UBHSz6SIdBk4ZLIeMHQt0kFYPkMJF799hBi
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <48B89325.90801@yahoo.com.ar>
+Date: Fri, 29 Aug 2008 21:24:05 -0300
+From: Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: [ 2.6.27-rc5 ] x86-32 results of CONFIG_DEBUG_SECTION_MISMATCH
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008 16:34:26 -0700
-"Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+Hi,
 
-> On Fri, Aug 29, 2008 at 3:53 PM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
-> >>       ptr = __alloc_bootmem_nopanic(total_size, max_align, 0);
-> >>       if (!ptr)
-> >>               panic("Can not alloc dyn_alloc\n");
-> 
-> like to give exact error message.
+Using:
+http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.27-rc5.tar.bz2
 
-It's pointless.  panic() will do a dump_stack().
-
-> >
-> > Why duplicate the panic()?  Just call __alloc_bootmem().
-> >
-> >> #ifdef CONFIF_GENERIC_HARDIRQS
-> >
-> > That doesn't appear to have been very well tested?
-> 
-> ah!
-> it should break sparc, m68k, and s390...
-> 
-> >
-> > The code has a few coding-style glitches which checkpatch can detect.
-> >
-> 
-> should only have 80 char length warning...
-> 
-
-sure.  The code looks rather miserable in an 80-col display.
-
-there's also
-
-WARNING: braces {} are not necessary for single statement blocks
-#119: FILE: dyn_array.c:119:
-+               if (da->init_work) {
-+                       da->init_work(da);
-+               }
+The config is here: http://pastebin.com/f1754954e
 
 
+WARNING: vmlinux.o(.text+0x85a4): Section mismatch in reference from the
+function setup_trampoline() to the variable .cpuinit.data:trampoline_end
+The function setup_trampoline() references
+the variable __cpuinitdata trampoline_end.
+This is often because setup_trampoline lacks a __cpuinitdata
+annotation or the annotation of trampoline_end is wrong.
 
-and checkpatch should have detected the misplaced semicolon here:
+WARNING: vmlinux.o(.text+0x85ac): Section mismatch in reference from the
+function setup_trampoline() to the variable .cpuinit.data:trampoline_data
+The function setup_trampoline() references
+the variable __cpuinitdata trampoline_data.
+This is often because setup_trampoline lacks a __cpuinitdata
+annotation or the annotation of trampoline_data is wrong.
 
-+       for (daa = __per_cpu_dyn_array_start ; daa < __per_cpu_dyn_array_end; daa++) {
+WARNING: vmlinux.o(.data+0x57f4): Section mismatch in reference from the
+variable contig_page_data to the variable .init.data:bootmem_node_data
+The variable contig_page_data references
+the variable __initdata bootmem_node_data
+If the reference is valid then annotate the
+variable with __init* (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
 
-but didn't.
+WARNING: vmlinux.o(.cpuinit.data+0x0): Section mismatch in reference
+from the variable initial_code to the function
+.init.text:i386_start_kernel()
+The variable __cpuinitdata initial_code references
+a function __init i386_start_kernel().
+If i386_start_kernel is only used by initial_code then
+annotate i386_start_kernel with a matching annotation.
 
-		
+WARNING: vmlinux.o(.cpuinit.data+0xfd0): Section mismatch in reference
+from the variable trampoline_data to the variable .init.text:startup_32_smp
+The variable __cpuinitdata trampoline_data references
+a variable __init startup_32_smp.
+If startup_32_smp is only used by trampoline_data then
+annotate startup_32_smp with a matching annotation.
+
+Chau,
+
+-- 
+Gerardo Exequiel Pozzi ( djgera )
+http://www.djgera.com.ar
+KeyID: 0x1B8C330D
+Key fingerprint = 0CAA D5D4 CD85 4434 A219  76ED 39AB 221B 1B8C 330D
+
