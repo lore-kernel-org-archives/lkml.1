@@ -1,182 +1,430 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbYH3Pyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbYH3P4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754344AbYH3Pyx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 11:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYH3Pyn
+	id S1754531AbYH3P4x (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 11:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbYH3P4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 11:54:43 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:28842 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752441AbYH3Pym (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 11:54:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Lx+BK4Mqg5PC2WxHB6v0uK2iuhvrVCpdkS1CkZCKol6OsgeflsYGOa0wfjAbCUejQJ
-         jvAGls1lnMU++qPD/lq4c0e6c2Zfvu4tsp1iVC89kN8PuiA2EtCzFY4cj9+DKSgWEnZn
-         uI9IeAJNij4JA/aQDSKnvr88as3obIrBUPI3U=
-Message-ID: <19f34abd0808300854t33db98b2l37d35c08297e59d0@mail.gmail.com>
-Date: Sat, 30 Aug 2008 17:54:40 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Thomas Backlund" <tmb@mandriva.org>
-Subject: Re: BUG: kernel-2.6.27-rc5: soft lockup - CPU#X stuck for 61s!
-Cc: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
-       "Rusty Russell" <rusty@rustcorp.com.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <19f34abd0808300830q25cef20chf5f905af210198c4@mail.gmail.com>
+	Sat, 30 Aug 2008 11:56:44 -0400
+Received: from usul.saidi.cx ([204.11.33.34]:33933 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752505AbYH3P4n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 11:56:43 -0400
+Message-ID: <42593.67.164.5.76.1220111859.squirrel@overt.org>
+Date: Sat, 30 Aug 2008 11:57:39 -0400 (EDT)
+Subject: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling 
+     through rfkill (v8)
+From: philipl@overt.org
+To: "John W. Linville" <linville@tuxdriver.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>, toshiba_acpi@memebeam.org
+Cc: "Ivo van Doorn" <ivdoorn@gmail.com>, linux-wireless@vger.kernel.org,
+       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
+       "Matthew Garrett" <mjg59@srcf.ucam.org>
+User-Agent: SquirrelMail/1.4.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48B94120.1010108@mandriva.org>
-	 <19f34abd0808300830q25cef20chf5f905af210198c4@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 30, 2008 at 5:30 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> On Sat, Aug 30, 2008 at 2:46 PM, Thomas Backlund <tmb@mandriva.org> wrote:
->> Hi, (please cc me as I'm not subscribed)
->>
->> thought I would post this right now, I'll try to reproduce it with vanilla
->> 2.6.27-rc5 as soon as the buildhost is back up...
->>
->> (vanilla 2.6.27-rc5 x86_64 also locked up my laptop wich is a
->>  Core2 Duo T8300 during kernel build with make -j3, but
->>  I dont have any logs of that yet)
->>
->> Kernel: 2.6.27-rc5 + Mandriva patches
->> Config:
->> http://svn.mandriva.com/cgi-bin/viewvc.cgi/packages/cooker/kernel/branches/rebase-to-2.6.27/PATCHES/configs/x86_64.config?revision=276760&view=markup
->> Arch: x86_64
->>
->> System: Intel Quad Core Q9300
->>
->> getting this with netconsole while building kernel rpms with make -j5:
->
-> Hi,
->
-> I tried your recipe. Well, not exactly. But I also got this during a
-> kernel build. Notice that the kernel version is a clean v2.6.27-rc5
-> (i.e. latest Linus -git):
->
-> BUG: soft lockup - CPU#1 stuck for 61s! [swapper:0]
-> irq event stamp: 3585444
-> hardirqs last  enabled at (3585443): [<c015927b>] trace_hardirqs_on+0xb/0x10
-> hardirqs last disabled at (3585444): [<c0290614>] trace_hardirqs_off_thunk+0xc/8
-> softirqs last  enabled at (3585438): [<c0139fb1>] __do_softirq+0xe1/0x100
-> softirqs last disabled at (3585427): [<c013a075>] do_softirq+0xa5/0xb0
->
-> Pid: 0, comm: swapper Not tainted (2.6.27-rc5-00006-gbef69ea #3)
-> EIP: 0060:[<c011eb55>] EFLAGS: 00000202 CPU: 1
-> EIP is at native_safe_halt+0x5/0x10
-> EAX: 0036b5a3 EBX: c2161b80 ECX: 00000000 EDX: 00000000
-> ESI: 00000001 EDI: c090fb80 EBP: f7855f80 ESP: f7855f80
->  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> CR0: 8005003b CR2: 0807a0b0 CR3: 3695d000 CR4: 000006d0
-> DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> DR6: ffff0ff0 DR7: 00000400
->  [<c010ad80>] default_idle+0x50/0x70
->  [<c01029c8>] cpu_idle+0x68/0x130
->  [<c059e120>] start_secondary+0x160/0x1c0
->  =======================
->
-> c011eb50 <native_safe_halt>:
-> c011eb50:       55                      push   %ebp
-> c011eb51:       89 e5                   mov    %esp,%ebp
-> c011eb53:       fb                      sti
-> c011eb54:       f4                      hlt
-> c011eb55:       5d                      pop    %ebp
-> c011eb56:       c3                      ret
-> c011eb57:       89 f6                   mov    %esi,%esi
-> c011eb59:       8d bc 27 00 00 00 00    lea    0x0(%edi),%edi
->
-> ...there's not many clues here as to what went wrong. Curious.
->
-> (Yes, I played with CPU hotplug and hibernate as well.)
+There's been a patch floating around for toshiba_acpi that exports an ad-hoc
+/proc interface to toggle the bluetooth adapter in a large number of Toshiba
+laptops. I'm not sure if it's still relevant for the latest models, but it is
+still required for older models such as my Tecra M3.
 
-Ok, mine is definitely because of hotplug. The issue you are seeing is
-probably more important, though, sorry for hijacking your thread. You
-should be able to do the SysRq thing as well, though. SysRq-w (dump
-blocked tasks) and SysRq-d (held locks) here:
+This change pulls in the low level Toshiba-specific code from the old patch and
+sets up an rfkill device and a polled input device to track the state of the
+hardware kill-switch.
 
-SysRq : Show Blocked State
-  task                PC stack   pid father
-bash          D d450a1ee  5912  3772   3720
-       f68e1df4 00200046 2fb00387 d450a1ee 2fb00387 00000004 f68e1df0 c015aa4a
-       c2036d80 f7830cc0 1e881e2a 000000bc f67d72c0 f67d7534 c2036d80 f68e0000
-       f86e8552 00000000 6db5f2ce 00000000 f86e8552 f67d781c f67d72c0 c0d1dcf4
-Call Trace:
- [<c015aa4a>] ? __lock_acquire+0x27a/0xa00
- [<c05a1a38>] schedule_timeout+0x78/0xc0
- [<c015904f>] ? mark_held_locks+0x6f/0x90
- [<c015927b>] ? trace_hardirqs_on+0xb/0x10
- [<c01591e4>] ? trace_hardirqs_on_caller+0xd4/0x160
- [<c015927b>] ? trace_hardirqs_on+0xb/0x10
- [<c05a0e33>] wait_for_common+0xb3/0x130
- [<c012c860>] ? default_wake_function+0x0/0x10
- [<c05a0f42>] wait_for_completion+0x12/0x20
- [<c016c264>] __stop_machine+0x184/0x1f0
- [<c016c310>] ? stop_cpu+0x0/0xa0
- [<c016c0d0>] ? chill+0x0/0x10
- [<c057e920>] ? take_cpu_down+0x0/0x30
- [<c057ea77>] _cpu_down+0xd7/0x270
- [<c0179d1d>] ? __synchronize_sched+0x2d/0x40
- [<c0146ef0>] ? wakeme_after_rcu+0x0/0x10
- [<c057ec5a>] cpu_down+0x4a/0x70
- [<c057ff68>] store_online+0x38/0x80
- [<c057ff30>] ? store_online+0x0/0x80
- [<c0312f5c>] sysdev_store+0x2c/0x40
- [<c01e67b2>] sysfs_write_file+0xa2/0x100
- [<c01a8606>] vfs_write+0x96/0x130
- [<c01e6710>] ? sysfs_write_file+0x0/0x100
- [<c01a8b4d>] sys_write+0x3d/0x70
- [<c01040db>] sysenter_do_call+0x12/0x3f
- =======================
+Signed-off-by: Philip Langdale <philipl@overt.org>
+Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+---
+ Kconfig        |    3
+ toshiba_acpi.c |  261 +++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 256 insertions(+), 8 deletions(-)
 
+diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+index 735f5ea..12cf5d4 100644
+--- a/drivers/acpi/Kconfig
++++ b/drivers/acpi/Kconfig
+@@ -260,6 +260,9 @@ config ACPI_ASUS
+ config ACPI_TOSHIBA
+ 	tristate "Toshiba Laptop Extras"
+ 	depends on X86
++	select INPUT_POLLDEV
++	select NET
++	select RFKILL
+ 	select BACKLIGHT_CLASS_DEVICE
+ 	---help---
+ 	  This driver adds support for access to certain system settings
+diff --git a/drivers/acpi/toshiba_acpi.c b/drivers/acpi/toshiba_acpi.c
+index 0a43c8e..8a649f4 100644
+--- a/drivers/acpi/toshiba_acpi.c
++++ b/drivers/acpi/toshiba_acpi.c
+@@ -3,6 +3,7 @@
+  *
+  *
+  *  Copyright (C) 2002-2004 John Belmonte
++ *  Copyright (C) 2008 Philip Langdale
+  *
+  *  This program is free software; you can redistribute it and/or modify
+  *  it under the terms of the GNU General Public License as published by
+@@ -33,7 +34,7 @@
+  *
+  */
 
-SysRq : Show Locks Held
+-#define TOSHIBA_ACPI_VERSION	"0.18"
++#define TOSHIBA_ACPI_VERSION	"0.19"
+ #define PROC_INTERFACE_VERSION	1
 
-Showing all locks held in the system:
-1 lock held by mingetty/3520:
- #0:  (&tty->atomic_read_lock){--..}, at: [<c02f3004>] read_chan+0x424/0x640
-1 lock held by mingetty/3521:
- #0:  (&tty->atomic_read_lock){--..}, at: [<c02f3004>] read_chan+0x424/0x640
-1 lock held by mingetty/3522:
- #0:  (&tty->atomic_read_lock){--..}, at: [<c02f3004>] read_chan+0x424/0x640
-1 lock held by mingetty/3523:
- #0:  (&tty->atomic_read_lock){--..}, at: [<c02f3004>] read_chan+0x424/0x640
-1 lock held by mingetty/3524:
- #0:  (&tty->atomic_read_lock){--..}, at: [<c02f3004>] read_chan+0x424/0x640
-4 locks held by bash/3772:
- #0:  (&buffer->mutex){--..}, at: [<c01e673b>] sysfs_write_file+0x2b/0x100
- #1:  (cpu_add_remove_lock){--..}, at: [<c01367af>] cpu_maps_update_begin+0xf/00
- #2:  (&cpu_hotplug.lock){--..}, at: [<c013680a>] cpu_hotplug_begin+0x1a/0x50
- #3:  (lock){--..}, at: [<c016c132>] __stop_machine+0x52/0x1f0
-1 lock held by bash/5074:
- #0:  (&tty->atomic_read_lock){--..}, at: [<c02f3004>] read_chan+0x424/0x640
-2 locks held by bash/6363:
- #0:  (sysrq_key_table_lock){++..}, at: [<c030094a>] __handle_sysrq+0x1a/0x120
- #1:  (tasklist_lock){..--}, at: [<c01574a1>] debug_show_all_locks+0x31/0x180
+ #include <linux/kernel.h>
+@@ -42,6 +43,9 @@
+ #include <linux/types.h>
+ #include <linux/proc_fs.h>
+ #include <linux/backlight.h>
++#include <linux/platform_device.h>
++#include <linux/rfkill.h>
++#include <linux/input-polldev.h>
 
-=============================================
+ #include <asm/uaccess.h>
 
-So it seems (in my case) to be waiting for &finished to complete
-(__stop_machine()):
+@@ -90,6 +94,7 @@ MODULE_LICENSE("GPL");
+ #define HCI_VIDEO_OUT			0x001c
+ #define HCI_HOTKEY_EVENT		0x001e
+ #define HCI_LCD_BRIGHTNESS		0x002a
++#define HCI_WIRELESS			0x0056
 
-        /* This will release the thread on our CPU. */
-        put_cpu();
-        wait_for_completion(&finished);
-        mutex_unlock(&lock);
+ /* field definitions */
+ #define HCI_LCD_BRIGHTNESS_BITS		3
+@@ -98,9 +103,14 @@ MODULE_LICENSE("GPL");
+ #define HCI_VIDEO_OUT_LCD		0x1
+ #define HCI_VIDEO_OUT_CRT		0x2
+ #define HCI_VIDEO_OUT_TV		0x4
++#define HCI_WIRELESS_KILL_SWITCH	0x01
++#define HCI_WIRELESS_BT_PRESENT		0x0f
++#define HCI_WIRELESS_BT_ATTACH		0x40
++#define HCI_WIRELESS_BT_POWER		0x80
 
+ static const struct acpi_device_id toshiba_device_ids[] = {
+ 	{"TOS6200", 0},
++	{"TOS6208", 0},
+ 	{"TOS1900", 0},
+ 	{"", 0},
+ };
+@@ -193,7 +203,7 @@ static acpi_status hci_raw(const u32 in[HCI_WORDS], u32 out[HCI_WORDS])
+ 	return status;
+ }
 
-Vegard
+-/* common hci tasks (get or set one value)
++/* common hci tasks (get or set one or two value)
+  *
+  * In addition to the ACPI status, the HCI system returns a result which
+  * may be useful (such as "not supported").
+@@ -218,6 +228,152 @@ static acpi_status hci_read1(u32 reg, u32 * out1, u32 * result)
+ 	return status;
+ }
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
++static acpi_status hci_write2(u32 reg, u32 in1, u32 in2, u32 *result)
++{
++	u32 in[HCI_WORDS] = { HCI_SET, reg, in1, in2, 0, 0 };
++	u32 out[HCI_WORDS];
++	acpi_status status = hci_raw(in, out);
++	*result = (status == AE_OK) ? out[0] : HCI_FAILURE;
++	return status;
++}
++
++static acpi_status hci_read2(u32 reg, u32 *out1, u32 *out2, u32 *result)
++{
++	u32 in[HCI_WORDS] = { HCI_GET, reg, *out1, *out2, 0, 0 };
++	u32 out[HCI_WORDS];
++	acpi_status status = hci_raw(in, out);
++	*out1 = out[2];
++	*out2 = out[3];
++	*result = (status == AE_OK) ? out[0] : HCI_FAILURE;
++	return status;
++}
++
++struct toshiba_acpi_dev {
++	struct platform_device *p_dev;
++	struct rfkill *rfk_dev;
++	struct input_polled_dev *poll_dev;
++
++	const char *bt_name;
++	const char *rfk_name;
++
++	bool last_rfk_state;
++
++	struct mutex mutex;
++};
++
++static struct toshiba_acpi_dev toshiba_acpi = {
++	.bt_name = "Toshiba Bluetooth",
++	.rfk_name = "Toshiba RFKill Switch",
++	.last_rfk_state = false,
++};
++
++/* Bluetooth rfkill handlers */
++
++static u32 hci_get_bt_present(bool *present)
++{
++	u32 hci_result;
++	u32 value, value2;
++
++	value = 0;
++	value2 = 0;
++	hci_read2(HCI_WIRELESS, &value, &value2, &hci_result);
++	if (hci_result == HCI_SUCCESS)
++		*present = (value & HCI_WIRELESS_BT_PRESENT) ? true : false;
++
++	return hci_result;
++}
++
++static u32 hci_get_bt_on(bool *on)
++{
++	u32 hci_result;
++	u32 value, value2;
++
++	value = 0;
++	value2 = 0x0001;
++	hci_read2(HCI_WIRELESS, &value, &value2, &hci_result);
++	if (hci_result == HCI_SUCCESS)
++		*on = (value & HCI_WIRELESS_BT_POWER) &&
++		      (value & HCI_WIRELESS_BT_ATTACH);
++
++	return hci_result;
++}
++
++static u32 hci_get_radio_state(bool *radio_state)
++{
++	u32 hci_result;
++	u32 value, value2;
++
++	value = 0;
++	value2 = 0x0001;
++	hci_read2(HCI_WIRELESS, &value, &value2, &hci_result);
++
++	*radio_state = value & HCI_WIRELESS_KILL_SWITCH;
++	return hci_result;
++}
++
++static int bt_rfkill_toggle_radio(void *data, enum rfkill_state state)
++{
++	u32 result1, result2;
++	u32 value;
++	bool radio_state;
++	struct toshiba_acpi_dev *dev = data;
++
++	value = (state == RFKILL_STATE_UNBLOCKED);
++
++	if (hci_get_radio_state(&radio_state) != HCI_SUCCESS)
++		return -EFAULT;
++
++	switch (state) {
++	case RFKILL_STATE_UNBLOCKED:
++		if (!radio_state)
++			return -EPERM;
++		break;
++	case RFKILL_STATE_SOFT_BLOCKED:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	mutex_lock(&dev->mutex);
++	hci_write2(HCI_WIRELESS, value, HCI_WIRELESS_BT_POWER, &result1);
++	hci_write2(HCI_WIRELESS, value, HCI_WIRELESS_BT_ATTACH, &result2);
++	mutex_unlock(&dev->mutex);
++
++	if (result1 != HCI_SUCCESS || result2 != HCI_SUCCESS)
++		return -EFAULT;
++
++	return 0;
++}
++
++static void bt_poll_rfkill(struct input_polled_dev *poll_dev)
++{
++	bool state_changed;
++	bool new_rfk_state;
++	bool value;
++	u32 hci_result;
++	struct toshiba_acpi_dev *dev = poll_dev->private;
++
++	hci_result = hci_get_radio_state(&value);
++	if (hci_result != HCI_SUCCESS)
++		return; /* Can't do anything useful */
++
++	new_rfk_state = value;
++
++	mutex_lock(&dev->mutex);
++	state_changed = new_rfk_state != dev->last_rfk_state;
++	dev->last_rfk_state = new_rfk_state;
++	mutex_unlock(&dev->mutex);
++
++	if (unlikely(state_changed)) {
++		rfkill_force_state(dev->rfk_dev,
++				   new_rfk_state ?
++				   RFKILL_STATE_SOFT_BLOCKED :
++				   RFKILL_STATE_HARD_BLOCKED);
++		input_report_switch(poll_dev->input, SW_RFKILL_ALL,
++				    new_rfk_state);
++	}
++}
++
+ static struct proc_dir_entry *toshiba_proc_dir /*= 0*/ ;
+ static struct backlight_device *toshiba_backlight_device;
+ static int force_fan;
+@@ -547,6 +703,14 @@ static struct backlight_ops toshiba_backlight_data = {
+
+ static void toshiba_acpi_exit(void)
+ {
++	if (toshiba_acpi.poll_dev) {
++		input_unregister_polled_device(toshiba_acpi.poll_dev);
++		input_free_polled_device(toshiba_acpi.poll_dev);
++	}
++
++	if (toshiba_acpi.rfk_dev)
++		rfkill_unregister(toshiba_acpi.rfk_dev);
++
+ 	if (toshiba_backlight_device)
+ 		backlight_device_unregister(toshiba_backlight_device);
+
+@@ -555,6 +719,8 @@ static void toshiba_acpi_exit(void)
+ 	if (toshiba_proc_dir)
+ 		remove_proc_entry(PROC_TOSHIBA, acpi_root_dir);
+
++	platform_device_unregister(toshiba_acpi.p_dev);
++
+ 	return;
+ }
+
+@@ -562,6 +728,10 @@ static int __init toshiba_acpi_init(void)
+ {
+ 	acpi_status status = AE_OK;
+ 	u32 hci_result;
++	bool bt_present;
++	bool bt_on;
++	bool radio_on;
++	int ret = 0;
+
+ 	if (acpi_disabled)
+ 		return -ENODEV;
+@@ -578,6 +748,18 @@ static int __init toshiba_acpi_init(void)
+ 	       TOSHIBA_ACPI_VERSION);
+ 	printk(MY_INFO "    HCI method: %s\n", method_hci);
+
++	mutex_init(&toshiba_acpi.mutex);
++
++	toshiba_acpi.p_dev = platform_device_register_simple("toshiba_acpi",
++							      -1, NULL, 0);
++	if (IS_ERR(toshiba_acpi.p_dev)) {
++		ret = PTR_ERR(toshiba_acpi.p_dev);
++		printk(MY_ERR "unable to register platform device\n");
++		toshiba_acpi.p_dev = NULL;
++		toshiba_acpi_exit();
++		return ret;
++	}
++
+ 	force_fan = 0;
+ 	key_event_valid = 0;
+
+@@ -586,19 +768,23 @@ static int __init toshiba_acpi_init(void)
+
+ 	toshiba_proc_dir = proc_mkdir(PROC_TOSHIBA, acpi_root_dir);
+ 	if (!toshiba_proc_dir) {
+-		status = AE_ERROR;
++		toshiba_acpi_exit();
++		return -ENODEV;
+ 	} else {
+ 		toshiba_proc_dir->owner = THIS_MODULE;
+ 		status = add_device();
+-		if (ACPI_FAILURE(status))
+-			remove_proc_entry(PROC_TOSHIBA, acpi_root_dir);
++		if (ACPI_FAILURE(status)) {
++			toshiba_acpi_exit();
++			return -ENODEV;
++		}
+ 	}
+
+-	toshiba_backlight_device = backlight_device_register("toshiba",NULL,
++	toshiba_backlight_device = backlight_device_register("toshiba",
++						&toshiba_acpi.p_dev->dev,
+ 						NULL,
+ 						&toshiba_backlight_data);
+         if (IS_ERR(toshiba_backlight_device)) {
+-		int ret = PTR_ERR(toshiba_backlight_device);
++		ret = PTR_ERR(toshiba_backlight_device);
+
+ 		printk(KERN_ERR "Could not register toshiba backlight device\n");
+ 		toshiba_backlight_device = NULL;
+@@ -607,7 +793,66 @@ static int __init toshiba_acpi_init(void)
+ 	}
+         toshiba_backlight_device->props.max_brightness = HCI_LCD_BRIGHTNESS_LEVELS - 1;
+
+-	return (ACPI_SUCCESS(status)) ? 0 : -ENODEV;
++	/* Register rfkill switch for Bluetooth */
++	if (hci_get_bt_present(&bt_present) == HCI_SUCCESS && bt_present) {
++		toshiba_acpi.rfk_dev = rfkill_allocate(&toshiba_acpi.p_dev->dev,
++							RFKILL_TYPE_BLUETOOTH);
++		if (!toshiba_acpi.rfk_dev) {
++			printk(MY_ERR "unable to allocate rfkill device\n");
++			toshiba_acpi_exit();
++			return -ENOMEM;
++		}
++
++		toshiba_acpi.rfk_dev->name = toshiba_acpi.bt_name;
++		toshiba_acpi.rfk_dev->toggle_radio = bt_rfkill_toggle_radio;
++		toshiba_acpi.rfk_dev->user_claim_unsupported = 1;
++		toshiba_acpi.rfk_dev->data = &toshiba_acpi;
++
++		if (hci_get_bt_on(&bt_on) == HCI_SUCCESS && bt_on) {
++			toshiba_acpi.rfk_dev->state = RFKILL_STATE_UNBLOCKED;
++		} else if (hci_get_radio_state(&radio_on) == HCI_SUCCESS &&
++			   radio_on) {
++			toshiba_acpi.rfk_dev->state = RFKILL_STATE_SOFT_BLOCKED;
++		} else {
++			toshiba_acpi.rfk_dev->state = RFKILL_STATE_HARD_BLOCKED;
++		}
++
++		ret = rfkill_register(toshiba_acpi.rfk_dev);
++		if (ret) {
++			printk(MY_ERR "unable to register rfkill device\n");
++			toshiba_acpi_exit();
++			return -ENOMEM;
++		}
++	}
++
++	/* Register input device for kill switch */
++	toshiba_acpi.poll_dev = input_allocate_polled_device();
++	if (!toshiba_acpi.poll_dev) {
++		printk(MY_ERR "unable to allocate kill-switch input device\n");
++		toshiba_acpi_exit();
++		return -ENOMEM;
++	}
++	toshiba_acpi.poll_dev->private = &toshiba_acpi;
++	toshiba_acpi.poll_dev->poll = bt_poll_rfkill;
++	toshiba_acpi.poll_dev->poll_interval = 1000; /* msecs */
++
++	toshiba_acpi.poll_dev->input->name = toshiba_acpi.rfk_name;
++	toshiba_acpi.poll_dev->input->id.bustype = BUS_HOST;
++	toshiba_acpi.poll_dev->input->id.vendor = 0x0930; /* Toshiba USB ID */
++	set_bit(EV_SW, toshiba_acpi.poll_dev->input->evbit);
++	set_bit(SW_RFKILL_ALL, toshiba_acpi.poll_dev->input->swbit);
++	input_report_switch(toshiba_acpi.poll_dev->input, SW_RFKILL_ALL, TRUE);
++
++	ret = input_register_polled_device(toshiba_acpi.poll_dev);
++	if (ret) {
++		printk(MY_ERR "unable to register kill-switch input device\n");
++		rfkill_free(toshiba_acpi.rfk_dev);
++		toshiba_acpi.rfk_dev = NULL;
++		toshiba_acpi_exit();
++		return ret;
++	}
++
++	return 0;
+ }
+
+ module_init(toshiba_acpi_init);
+
