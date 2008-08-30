@@ -1,206 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbYH3IJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbYH3I21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757543AbYH3IJX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 04:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbYH3IJI
+	id S1757279AbYH3I21 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 04:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbYH3I2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 04:09:08 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44899 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751507AbYH3IJG (ORCPT
+	Sat, 30 Aug 2008 04:28:18 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:32949 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751507AbYH3I2R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 04:09:06 -0400
-Date: Sat, 30 Aug 2008 10:09:00 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: linux-kernel@vger.kernel.org, akpm@osdl.org, rusty@rustcorp.com.au,
-       paulmck@us.ibm.com
-Subject: [PATCH] Remove stop_machine during module load v2
-Message-ID: <20080830080900.GA19870@basil.nowhere.org>
+	Sat, 30 Aug 2008 04:28:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent:from;
+        b=pVH9ejpcdqqV1yrnenA2BI4v7Ur0VSlis9wrpf+5K5eN4RQvhregrI2VVvElStskFz
+         /3oUlkZ8MoTLHKztBLpkeBRPLx4+ur2Dh6gisTgwPMUIR6DxciDFOHLDiJ/PyX9oS9Tr
+         CTTqm5OGWHXAOHqvs8Nt42TzKSLos7TgwKC60=
+Date: Sat, 30 Aug 2008 10:28:16 +0200
+To: Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Cc: David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] bitfields API
+Message-ID: <20080830082816.GA21198@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <19f34abd0808281238w18a53b90wc55591a572c225da@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove stop_machine during module load v2
+On Thu, Aug 28, 2008 at 9:38 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> On Thu, Aug 28, 2008 at 9:02 PM, Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+>> Why not do something like this (as suggested by Ingo, I think)? Yeah, the
+>> macro should go into kmemcheck.h but I don't have a tree handy...
+>>
+>>                Pekka
+>>
+>> Index: linux-2.6/include/linux/bitfield.h
+>> ===================================================================
+>> --- /dev/null
+>> +++ linux-2.6/include/linux/bitfield.h
+>> @@ -0,0 +1,10 @@
+>> +#ifndef __LINUX_BITFIELD_H
+>> +#define __LINUX_BITFIELD_H
+>> +
+>> +#ifdef CONFIG_KMEMCHECK
+>> +#define KMEMCHECK_BIT_FIELD(field) do { field = 0; } while (0)
+>> +#else
+>> +#define KMEMCHECK_BIT_FIELD(field) do { } while (0)
+>> +#endif /* CONFIG_KMEMCHECK */
+>> +
+>> +#endif /* __LINUX_BITFIELD_H */
+>>
+>> Index: linux-2.6/net/core/skbuff.c
+>> ===================================================================
+>> --- linux-2.6.orig/net/core/skbuff.c
+>> +++ linux-2.6/net/core/skbuff.c
+>> @@ -55,6 +55,7 @@
+>>  #include <linux/rtnetlink.h>
+>>  #include <linux/init.h>
+>>  #include <linux/scatterlist.h>
+>> +#include <linux/bitfield.h>
+>>
+>>  #include <net/protocol.h>
+>>  #include <net/dst.h>
+>> @@ -209,6 +210,11 @@ struct sk_buff *__alloc_skb(unsigned int
+>>        skb->data = data;
+>>        skb_reset_tail_pointer(skb);
+>>        skb->end = skb->tail + size;
+>> +       KMEMCHECK_BIT_FIELD(skb->local_df);
+>> +       KMEMCHECK_BIT_FIELD(skb->cloned);
+>> +       KMEMCHECK_BIT_FIELD(skb->ip_summed);
+>> +       KMEMCHECK_BIT_FIELD(skb->nohdr);
+>> +       KMEMCHECK_BIT_FIELD(skb->nfctinfo);
+>>        /* make sure we initialize shinfo sequentially */
+>>        shinfo = skb_shinfo(skb);
+>>        atomic_set(&shinfo->dataref, 1);
+>>
+>
+> That looks good to me. If the extra lines are okay with net people, we
+> can put this in the fixlets branch and make it the norm for dealing
+> with bitfields in kmemcheck.
+>
+> One thing to keep in mind that if the members of the bitfield does not
+> span the entire width of the bitfield, the remaining bits must also be
+> assigned (as an extra "filler" member), otherwise GCC will not
+> optimize it to a single store. But that is not an issue in this
+> particular case since all the bits are used.
 
-module loading currently does a stop_machine on each module load to insert
-the module into the global module lists.  Especially on larger systems this 
-can be quite expensive.
+Hm, and this is exactly the case for the "do_not_encrypt" field of skbuff:
 
-It does that to handle concurrent lock lessmodule list readers
-like kallsyms.
+#ifdef CONFIG_IPV6_NDISC_NODETYPE
+        __u8                    ndisc_nodetype:2;
+#endif
+#if defined(CONFIG_MAC80211) || defined(CONFIG_MAC80211_MODULE)
+        __u8                    do_not_encrypt:1;
+#endif  
 
-I don't think stop_machine() is actually needed to insert something
-into a list though. There are no concurrent writers because the
-module mutex is taken. And the RCU list functions know how to insert
-a node into a list with the right memory ordering so that concurrent
-readers don't go off into the wood.
+So we have no way to know where or how big the filler should be. This is
+why the simple patch above is not sufficient.
 
-So remove the stop_machine for the module list insert and just
-do a list_add_rcu() instead. 
-
-Module removal will still do a stop_machine of course, it needs
-that for other reasons.
-
-v2: Revised readers based on Paul's comments. All readers that only
-    rely on disabled preemption need to be changed to list_for_each_rcu().
-    Done that. The others are ok because they have the modules mutex.
-    Also added a possible missing preempt disable for print_modules().
-
-[cc Paul McKenney for review. It's not RCU, but quite similar.]
-
-Cc: rusty@rustcorp.com.au
-Cc: paulmck@us.ibm.com
+Alexey: I have a modified proposal with slightly different syntax for
+DEFINE_BITFIELD. Can you say whether this is acceptable or not? Please
+see this short mockup example:
 
 
-Index: linux-2.6.27-rc4-misc/kernel/module.c
-===================================================================
---- linux-2.6.27-rc4-misc.orig/kernel/module.c
-+++ linux-2.6.27-rc4-misc/kernel/module.c
-@@ -42,6 +42,7 @@
- #include <linux/string.h>
- #include <linux/mutex.h>
- #include <linux/unwind.h>
-+#include <linux/rculist.h>
- #include <asm/uaccess.h>
- #include <asm/cacheflush.h>
- #include <linux/license.h>
-@@ -61,7 +62,7 @@
- #define INIT_OFFSET_MASK (1UL << (BITS_PER_LONG-1))
- 
- /* List of modules, protected by module_mutex or preempt_disable
-- * (add/delete uses stop_machine). */
-+ * (delete uses stop_machine/add uses RCU list operations). */
- static DEFINE_MUTEX(module_mutex);
- static LIST_HEAD(modules);
- 
-@@ -216,7 +217,7 @@ static bool each_symbol(bool (*fn)(const
- 	if (each_symbol_in_section(arr, ARRAY_SIZE(arr), NULL, fn, data))
- 		return true;
- 
--	list_for_each_entry(mod, &modules, list) {
-+	list_for_each_entry_rcu(mod, &modules, list) {
- 		struct symsearch arr[] = {
- 			{ mod->syms, mod->syms + mod->num_syms, mod->crcs,
- 			  NOT_GPL_ONLY, false },
-@@ -1391,17 +1392,6 @@ static void mod_kobject_remove(struct mo
- }
- 
- /*
-- * link the module with the whole machine is stopped with interrupts off
-- * - this defends against kallsyms not taking locks
-- */
--static int __link_module(void *_mod)
--{
--	struct module *mod = _mod;
--	list_add(&mod->list, &modules);
--	return 0;
--}
--
--/*
-  * unlink the module with the whole machine is stopped with interrupts off
-  * - this defends against kallsyms not taking locks
-  */
-@@ -2196,8 +2186,12 @@ static struct module *load_module(void _
- 
- 	/* Now sew it into the lists so we can get lockdep and oops
-          * info during argument parsing.  Noone should access us, since
--         * strong_try_module_get() will fail. */
--	stop_machine(__link_module, mod, NULL);
-+         * strong_try_module_get() will fail.
-+	 * lockdep/oops can run asynchronous, so use the RCU list insertion
-+	 * function to insert in a way safe to concurrent readers.
-+	 * The mutex protects against concurrent writers.
-+	 */
-+	list_add_rcu(&mod->list, &modules);
- 
- 	/* Size of section 0 is 0, so this works well if no params */
- 	err = parse_args(mod->name, mod->args,
-@@ -2401,7 +2395,7 @@ const char *module_address_lookup(unsign
- 	const char *ret = NULL;
- 
- 	preempt_disable();
--	list_for_each_entry(mod, &modules, list) {
-+	list_for_each_entry_rcu(mod, &modules, list) {
- 		if (within(addr, mod->module_init, mod->init_size)
- 		    || within(addr, mod->module_core, mod->core_size)) {
- 			if (modname)
-@@ -2424,7 +2418,7 @@ int lookup_module_symbol_name(unsigned l
- 	struct module *mod;
- 
- 	preempt_disable();
--	list_for_each_entry(mod, &modules, list) {
-+	list_for_each_entry_rcu(mod, &modules, list) {
- 		if (within(addr, mod->module_init, mod->init_size) ||
- 		    within(addr, mod->module_core, mod->core_size)) {
- 			const char *sym;
-@@ -2448,7 +2442,7 @@ int lookup_module_symbol_attrs(unsigned 
- 	struct module *mod;
- 
- 	preempt_disable();
--	list_for_each_entry(mod, &modules, list) {
-+	list_for_each_entry_rcu(mod, &modules, list) {
- 		if (within(addr, mod->module_init, mod->init_size) ||
- 		    within(addr, mod->module_core, mod->core_size)) {
- 			const char *sym;
-@@ -2475,7 +2469,7 @@ int module_get_kallsym(unsigned int symn
- 	struct module *mod;
- 
- 	preempt_disable();
--	list_for_each_entry(mod, &modules, list) {
-+	list_for_each_entry_rcu(mod, &modules, list) {
- 		if (symnum < mod->num_symtab) {
- 			*value = mod->symtab[symnum].st_value;
- 			*type = mod->symtab[symnum].st_info;
-@@ -2518,7 +2512,7 @@ unsigned long module_kallsyms_lookup_nam
- 			ret = mod_find_symname(mod, colon+1);
- 		*colon = ':';
- 	} else {
--		list_for_each_entry(mod, &modules, list)
-+		list_for_each_entry_rcu(mod, &modules, list)
- 			if ((ret = mod_find_symname(mod, name)) != 0)
- 				break;
- 	}
-@@ -2619,7 +2613,7 @@ const struct exception_table_entry *sear
- 	struct module *mod;
- 
- 	preempt_disable();
--	list_for_each_entry(mod, &modules, list) {
-+	list_for_each_entry_rcu(mod, &modules, list) {
- 		if (mod->num_exentries == 0)
- 			continue;
- 
-@@ -2645,7 +2639,7 @@ int is_module_address(unsigned long addr
- 
- 	preempt_disable();
- 
--	list_for_each_entry(mod, &modules, list) {
-+	list_for_each_entry_rcu(mod, &modules, list) {
- 		if (within(addr, mod->module_core, mod->core_size)) {
- 			preempt_enable();
- 			return 1;
-@@ -2666,7 +2660,7 @@ struct module *__module_text_address(uns
- 	if (addr < module_addr_min || addr > module_addr_max)
- 		return NULL;
- 
--	list_for_each_entry(mod, &modules, list)
-+	list_for_each_entry_rcu(mod, &modules, list)
- 		if (within(addr, mod->module_init, mod->init_text_size)
- 		    || within(addr, mod->module_core, mod->core_text_size))
- 			return mod;
-@@ -2691,8 +2685,11 @@ void print_modules(void)
- 	char buf[8];
- 
- 	printk("Modules linked in:");
--	list_for_each_entry(mod, &modules, list)
-+	/* Most callers should already have preempt disabled, but make sure */
-+	preempt_disable();
-+	list_for_each_entry_rcu(mod, &modules, list)
- 		printk(" %s%s", mod->name, module_flags(mod, buf));
-+	preempt_enable();
- 	if (last_unloaded_module[0])
- 		printk(" [last unloaded: %s]", last_unloaded_module);
- 	printk("\n");
+<--- cut --->
+
+#include <stdint.h>
+#include <string.h>
+
+#define DEFINE_BITFIELD(name, fields...)	\
+	union {					\
+		struct fields name;		\
+		struct fields;			\
+	};
+
+#define KMEMCHECK_ANNOTATE_BITFIELD(bitfield)			\
+	do {							\
+		memset(&(bitfield), 0, sizeof(bitfield));	\
+	} while(0)
+
+struct skbuff {
+	DEFINE_BITFIELD(flags1, {
+		uint8_t			pkt_type:3,
+					fclone:2,
+					ipvs_property:1,
+					peeked:1,
+					nf_trace:1;
+		uint16_t		protocol;
+	});
+
+	DEFINE_BITFIELD(flags2, {
+#ifdef CONFIG_IPV6_NDISC_NODETYPE
+		uint8_t			ndisc_nodetype:2;
+#endif
+#if defined(CONFIG_MAC80211) || defined(CONFIG_MAC80211_MODULE)
+		uint8_t			do_not_encrypt:1;
+#endif
+	});
+};
+
+void __alloc_skb(struct skbuff *skb)
+{
+	KMEMCHECK_ANNOTATE_BITFIELD(skb->flags1);
+	KMEMCHECK_ANNOTATE_BITFIELD(skb->flags2);
+}
+
+<--- cut --->
+
+
+Thanks,
+
+
+Vegard
