@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbYH3OIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418AbYH3OKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753005AbYH3OIz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 10:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbYH3OIr
+	id S1753418AbYH3OKU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 10:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbYH3OKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 10:08:47 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:57091 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751218AbYH3OIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 10:08:47 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding;
-	b=jrTc57+itNJxL+PN6mG1qzr0Do4m1A7WHAiPih9NIg33E4f4FOhTn/29HuQz8h5MofaGwp6Z5UAwM7ndqiX9ys8AfJF/vCbkUy4fCFht+SLSyDT0b+XaLcSSuymR7EFl;
-Message-ID: <48B9546B.4010004@simon.arlott.org.uk>
-Date: Sat, 30 Aug 2008 15:08:43 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
+	Sat, 30 Aug 2008 10:10:07 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:45453 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750808AbYH3OKF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 10:10:05 -0400
+Date: Sat, 30 Aug 2008 07:10:01 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, manfred@colorfullife.com,
+       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, schamp@sgi.com,
+       niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH, RFC, tip/core/rcu] v3 scalable classic RCU
+	implementation
+Message-ID: <20080830141001.GD7107@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <1220088780.8426.1.camel@twins>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James.Bottomley@HansenPartnership.com
-Subject: [PATCH] scsi/sd: Fix size output in MB
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1220088780.8426.1.camel@twins>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The capacity printk'd in bytes is divided by 1000000,
-whereas 1048576 would be more consistent with the rest
-of the OS and disk-related utilities ('df' etc.).
+On Sat, Aug 30, 2008 at 11:33:00AM +0200, Peter Zijlstra wrote:
+> On Fri, 2008-08-29 at 17:49 -0700, Paul E. McKenney wrote:
+> 
+> > Some shortcomings:
+> > 
+> > o	Entering and leaving dynticks idle mode is a quiescent state,
+> > 	but the current patch doesn't take advantage of this (noted
+> > 	by Manfred).  It appears that it should be possible to make
+> > 	nmi_enter() and nmi_exit() provide an in_nmi(), which would make
+> > 	it possible for rcu_irq_enter() and rcu_irq_exit() to figure
+> > 	out whether it is safe to tell RCU about the quiescent state --
+> > 	and also greatly simplify the code.
+> 
+> Already done and available in the -tip tree, curtesy of Mathieu.
 
-This change replaces the (sz - (sz/625 - 974))/1950
-calculation with a simple right shift by 11 bits
-(/2048).
+Very cool!!!  I see one of his patches at http://lkml.org/lkml/2008/4/17/342,
+but how do I find out which branch of -tip this is on?  (I am learning
+git, but it is a slow process...)
 
-Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
----
- drivers/scsi/sd.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+This would also simplify preemptable RCU's dyntick interface, removing
+the need for proofs.
 
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index e5e7d78..e6fd6fd 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -1441,10 +1441,8 @@ got_data:
- 		sector_t mb = sz;
- 
- 		blk_queue_hardsect_size(queue, hard_sector);
--		/* avoid 64-bit division on 32-bit platforms */
--		sector_div(sz, 625);
--		mb -= sz - 974;
--		sector_div(mb, 1950);
-+		/* Convert to megabytes (/2048) */
-+		mb = sz >> 11;
- 
- 		sd_printk(KERN_NOTICE, sdkp,
- 			  "%llu %d-byte hardware sectors (%llu MB)\n",
--- 
-1.5.6.5
-
--- 
-Simon Arlott
-
-
-
+							Thanx, Paul
