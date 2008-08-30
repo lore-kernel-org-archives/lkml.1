@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755719AbYH3Ufm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYH3Uhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755719AbYH3Ufm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 16:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYH3Ufe
+	id S1756541AbYH3Uhe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 16:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYH3UhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 16:35:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:56373 "EHLO
+	Sat, 30 Aug 2008 16:37:23 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:56555 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752887AbYH3Ufd (ORCPT
+	with ESMTP id S1752887AbYH3UhX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 16:35:33 -0400
+	Sat, 30 Aug 2008 16:37:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Qs+6LnZwotWf+CAOEZfF3z8suXByxeNIEaHtCUD5Z9k3P2eC7ZBP5p6JEfq5dgAWzf
-         Fl1fTqgF4OA6liFOesBVDaoi0IWams9Q1sDCDy5Uq6dsqaQJceyycly9Zo6mdDiW1yOK
-         njJIlppO+CidThh8+OoCUsQXP74LIvnjbcL2s=
+        b=ccHnWoYuP0NUXjMcIekbx8TJRb2PqdyWrAuPKaI1chprHB4pX2HJrt+dpiy+rWk7oB
+         N9MFPR6bcGeTy7Ic0Fuf9N0Tu9USfkKLUpOGerSzVuTU8u0MBWOcEES6P7rBRSNPfMRH
+         B1fSw2oCopdH9O6svc/UwtHlXB5kT8Ef69YXw=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,167 +23,123 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] x86: split e820 reserved entries record to late v4 - fix v6
-Date: Sat, 30 Aug 2008 13:34:34 -0700
-Message-Id: <1220128474-23115-1-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: split e820 reserved entries record to late v4
+Date: Sat, 30 Aug 2008 13:36:24 -0700
+Message-Id: <1220128584-23232-1-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-try to insert_resource second time, by expand the resource...
+Linus said we should register some entries in e820 later,
+so could let BAR res register at first, or even pnp?
 
-for case: e820 reserved entry is partially overlapped with bar res...
+this one replace
+| commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
+| Author: Yinghai Lu <yhlu.kernel@gmail.com>
+| Date:   Mon Aug 25 00:56:08 2008 -0700
+|
+|    x86: fix HPET regression in 2.6.26 versus 2.6.25, check hpet against BAR, v3
 
-hope it will never happen
-
-v2: according to Linus, add insert_resource_expand_to_fit, and change
-	__insert_resource to static without lock
-
-v3: use reserve_region_with_split() instead to hand overlapping
-	with test case by extend 0xe0000000 - 0xeffffff to 0xdd800000 -
-	get
-		e0000000-efffffff : PCI MMCONFIG 0
-			 e0000000-efffffff : reserved
-	in /proc/iomem
-	get
-		found conflict for reserved [dd800000, efffffff], try to reserve with split
-		    __reserve_region_with_split: (PCI Bus #80) [dd000000, ddffffff], res: (reserved) [dd800000, efffffff]
-		    __reserve_region_with_split: (PCI Bus #00) [de000000, dfffffff], res: (reserved) [de000000, efffffff]
-		initcall pci_subsys_init+0x0/0x121 returned 0 after 381 msecs
-	in dmesg
-
-v4: take out __insert_resource and insert_resource_expand_to_fit : Linus already check in.
-    use reserve_region_with_split at the first point
-    use const char *name
-
-v5: fix checking on overlapping
-
-v6: only reserve common area in conflict
-	so got sth in /proc/iomem
-		d8000000-dfffffff : PCI Bus #00
-		  dc000000-dfffffff : GART
-		    dc000000-dfffffff : reserved
-		e0000000-efffffff : PCI MMCONFIG 0
-		  e0000000-efffffff : reserved
-	when we have big range in e820
-		00000000dc000000-00000000f0000000 (reserved)
+v2: insert e820 reserve resources before pnp_system_init
+v3: fix merging problem in tip/x86/core
+    please drop the one in tip/x86/core use this one instead
+v4: address Linus's review about comments and condition in _late()
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
 ---
- arch/x86/kernel/e820.c |    2 -
- include/linux/ioport.h |    3 ++
- kernel/resource.c      |   69 ++++++++++++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 72 insertions(+), 2 deletions(-)
+ arch/x86/kernel/e820.c |   24 +++++++++++++++++++++++-
+ arch/x86/pci/i386.c    |    3 +++
+ include/asm-x86/e820.h |    1 +
+ 3 files changed, 27 insertions(+), 1 deletion(-)
 
 Index: linux-2.6/arch/x86/kernel/e820.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/e820.c
 +++ linux-2.6/arch/x86/kernel/e820.c
-@@ -1320,7 +1320,7 @@ void __init e820_reserve_resources_late(
- 	res = e820_res;
+@@ -1267,6 +1267,7 @@ static inline const char *e820_type_to_s
+ /*
+  * Mark e820 reserved areas as busy for the resource manager.
+  */
++static struct resource __initdata *e820_res;
+ void __init e820_reserve_resources(void)
+ {
+ 	int i;
+@@ -1274,6 +1275,7 @@ void __init e820_reserve_resources(void)
+ 	u64 end;
+ 
+ 	res = alloc_bootmem_low(sizeof(struct resource) * e820.nr_map);
++	e820_res = res;
  	for (i = 0; i < e820.nr_map; i++) {
- 		if (!res->parent && res->end)
--			insert_resource(&iomem_resource, res);
-+			reserve_region_with_split(&iomem_resource, res->start, res->end, res->name);
+ 		end = e820.map[i].addr + e820.map[i].size - 1;
+ #ifndef CONFIG_RESOURCES_64BIT
+@@ -1287,7 +1289,14 @@ void __init e820_reserve_resources(void)
+ 		res->end = end;
+ 
+ 		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+-		insert_resource(&iomem_resource, res);
++
++		/*
++		 * don't register the region that could be conflicted with
++		 * pci device BAR resource and insert them later in
++		 * pcibios_resource_survey()
++		 */
++		if (e820.map[i].type != E820_RESERVED || res->start < (1ULL<<20))
++			insert_resource(&iomem_resource, res);
  		res++;
  	}
- }
-Index: linux-2.6/include/linux/ioport.h
-===================================================================
---- linux-2.6.orig/include/linux/ioport.h
-+++ linux-2.6/include/linux/ioport.h
-@@ -108,6 +108,9 @@ extern struct resource iomem_resource;
  
- extern int request_resource(struct resource *root, struct resource *new);
- extern int release_resource(struct resource *new);
-+extern void reserve_region_with_split(struct resource *root,
-+			     resource_size_t start, resource_size_t end,
-+			     const char *name);
- extern int insert_resource(struct resource *parent, struct resource *new);
- extern void insert_resource_expand_to_fit(struct resource *root, struct resource *new);
- extern int allocate_resource(struct resource *root, struct resource *new,
-Index: linux-2.6/kernel/resource.c
-===================================================================
---- linux-2.6.orig/kernel/resource.c
-+++ linux-2.6/kernel/resource.c
-@@ -512,10 +512,77 @@ int adjust_resource(struct resource *res
- 	result = 0;
- 
-  out:
--	write_unlock(&resource_lock);
- 	return result;
+@@ -1299,6 +1308,19 @@ void __init e820_reserve_resources(void)
+ 	}
  }
  
-+static void __init __reserve_region_with_split(struct resource *root,
-+		resource_size_t start, resource_size_t end,
-+		const char *name)
++void __init e820_reserve_resources_late(void)
 +{
-+	struct resource *parent = root;
-+	struct resource *conflict;
-+	struct resource *res = kzalloc(sizeof(*res), GFP_KERNEL);
++	int i;
++	struct resource *res;
 +
-+	if (!res)
-+		return;
-+
-+	res->name = name;
-+	res->start = start;
-+	res->end = end;
-+	res->flags = IORESOURCE_BUSY;
-+
-+	for (;;) {
-+		conflict = __request_resource(parent, res);
-+		if (!conflict)
-+			break;
-+		if (conflict != parent) {
-+			parent = conflict;
-+			if (!(conflict->flags & IORESOURCE_BUSY))
-+				continue;
-+		}
-+
-+		/* Uhhuh, that didn't work out.. */
-+		kfree(res);
-+		res = NULL;
-+		break;
++	res = e820_res;
++	for (i = 0; i < e820.nr_map; i++) {
++		if (!res->parent && res->end)
++			insert_resource(&iomem_resource, res);
++		res++;
 +	}
-+
-+	if (!res) {
-+		printk(KERN_DEBUG "    __reserve_region_with_split: (%s) [%llx, %llx], res: (%s) [%llx, %llx]\n",
-+			 conflict->name, conflict->start, conflict->end,
-+			 name, start, end);
-+
-+		/* failed, split and try again */
-+
-+		/* conflict coverred whole area */
-+		if (conflict->start <= start && conflict->end >= end)
-+			return;
-+
-+		if (conflict->start > start)
-+			__reserve_region_with_split(root, start, conflict->start-1, name);
-+		if (!(conflict->flags & IORESOURCE_BUSY)) {
-+			resource_size_t common_start, common_end;
-+
-+			common_start = max(conflict->start, start);
-+			common_end = min(conflict->end, end);
-+			if (common_start < common_end)
-+				__reserve_region_with_split(root, common_start, common_end, name);
-+		}
-+		if (conflict->end < end)
-+			__reserve_region_with_split(root, conflict->end+1, end, name);
-+	}
-+
 +}
 +
-+void reserve_region_with_split(struct resource *root,
-+		resource_size_t start, resource_size_t end,
-+		const char *name)
-+{
-+	write_lock(&resource_lock);
-+	__reserve_region_with_split(root, start, end, name);
-+	write_unlock(&resource_lock);
-+}
+ char *__init default_machine_specific_memory_setup(void)
+ {
+ 	char *who = "BIOS-e820";
+Index: linux-2.6/arch/x86/pci/i386.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/i386.c
++++ linux-2.6/arch/x86/pci/i386.c
+@@ -33,6 +33,7 @@
+ #include <linux/bootmem.h>
+ 
+ #include <asm/pat.h>
++#include <asm/e820.h>
+ 
+ #include "pci.h"
+ 
+@@ -230,6 +231,8 @@ void __init pcibios_resource_survey(void
+ 	pcibios_allocate_bus_resources(&pci_root_buses);
+ 	pcibios_allocate_resources(0);
+ 	pcibios_allocate_resources(1);
 +
- EXPORT_SYMBOL(adjust_resource);
++	e820_reserve_resources_late();
+ }
  
  /**
+Index: linux-2.6/include/asm-x86/e820.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/e820.h
++++ linux-2.6/include/asm-x86/e820.h
+@@ -120,6 +120,7 @@ extern void e820_register_active_regions
+ extern u64 e820_hole_size(u64 start, u64 end);
+ extern void finish_e820_parsing(void);
+ extern void e820_reserve_resources(void);
++extern void e820_reserve_resources_late(void);
+ extern void setup_memory_map(void);
+ extern char *default_machine_specific_memory_setup(void);
+ extern char *machine_specific_memory_setup(void);
