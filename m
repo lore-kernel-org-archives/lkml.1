@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYH3IhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbYH3JMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756862AbYH3IhX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 04:37:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbYH3IhJ
+	id S1756108AbYH3JMh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 05:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYH3JM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 04:37:09 -0400
-Received: from smtp1.dnsmadeeasy.com ([205.234.170.134]:53183 "EHLO
-	smtp1.dnsmadeeasy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751413AbYH3IhI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 04:37:08 -0400
-X-Authenticated-Name: js.dnsmadeeasy
-X-Transit-System: In case of SPAM please contact abuse@dnsmadeeasy.com
-Message-ID: <48B906B1.3030708@avtrex.com>
-Date: Sat, 30 Aug 2008 01:37:05 -0700
-From: David Daney <ddaney@avtrex.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Sat, 30 Aug 2008 05:12:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55465 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751025AbYH3JM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 05:12:26 -0400
+Message-ID: <48B90E81.5060905@kernel.org>
+Date: Sat, 30 Aug 2008 11:10:25 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: linux-mips@linux-mips.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Patch 0/6] MIPS: Hardware watch register support for gdb (version
- 3).
-References: <48B71ADD.601@avtrex.com>
-In-Reply-To: <48B71ADD.601@avtrex.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 30 Aug 2008 08:37:06.0169 (UTC) FILETIME=[9577EE90:01C90A7B]
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       dm-devel@redhat.com
+Subject: Re: linux-next: Tree for August 27
+References: <20080827183453.eb651f50.sfr@canb.auug.org.au> <48B7C361.9070008@kernel.org> <20080829094249.GQ20055@kernel.dk> <200808292123.07246.bzolnier@gmail.com>
+In-Reply-To: <200808292123.07246.bzolnier@gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 30 Aug 2008 09:11:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Daney wrote:
-> Esteemed kernel hackers,
+Hello,
+
+Bartlomiej Zolnierkiewicz wrote:
+>>> Hmmm... it broke booting?  Bart, can you please elaborate a bit what got
+>>> broken?  Did it fail to locate the root partition or were you using
+>>> static device nodes?
+>> It works fine for me, fwiw.
 > 
-> To follow is my third pass at MIPS watch register support.
-> 
+> It fails to locate the root partition if you are using the default root
+> device on x86 (the one hard-wired into bzImage, it uses hard-coded 8-bit
+> major/minor numbers).
 
-I think there will have to be at least one more pass at this.
+Right.  That would break it too.
 
-The current design assumes that all debug registers support an identical
-set of the I, R, and W bits and Mask.
+> Now I see that the issue is easily fixed by passing the root device name
+> with "root=" (since it will figure out the actual major/minor numbers
+> later) and that the default root device is said to be deprecated according
+> to Documentation/x86/boot.txt (OTOH there is no warning at all that it is
+> deprecated and that you should be using "root=" so I'm not convinced that
+> I'm the only one who would hit the unfortunate combination).
 
-However sections 8.23 and 8.24 of my
+Yeap, in retrospect, enabling BLOCK_EXT_DEVT by default seems too
+disruptive.  There also are people running off static /dev.  I hope
+distros enable it during their alphas and betas tho so that they can
+spot problems in configuration utilities and stuff early.
 
-  MIPS32® Architecture For Programmers
-Volume III: The MIPS32® Privileged Resource Architecture
+> Actually it seems that CONFIG_DEBUG_BLOCK_EXT_DEVT introduction (which I
+> think is a nice step forward) is a good oportunity to put the deprecation
+> of the default root device further, i.e. it may be worth to hook the
+> default root device check and/or CONFIG_DEBUG_BLOCK_EXT_DEVT one into
+> mount_block_root().
 
-indicate that they do not have to uniform.  I will have to augment the
-ptrace structures to report the values for each register instead of a
-single global value.
+Maybe we can add a warning there if BLOCK_EXT_DEVT is enabled or do
+you have something else on mind?
 
-David Daney
+Thanks.
 
+-- 
+tejun
