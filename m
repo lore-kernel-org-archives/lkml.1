@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbYH3S4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYH3S54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbYH3S4n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 14:56:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbYH3S4f
+	id S1755915AbYH3S54 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 14:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbYH3S5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 14:56:35 -0400
-Received: from vuizook.err.no ([194.24.252.247]:32902 "EHLO vuizook.err.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753349AbYH3S4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 14:56:34 -0400
-Date: Sat, 30 Aug 2008 20:56:13 +0200
-From: Mike Hommey <mh@glandium.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: Archie Cobbs <archie@dellroad.org>, fuse-devel@lists.sourceforge.net,
-       miklos@szeredi.hu, linux-kernel@vger.kernel.org, greg@kroah.com
-Subject: Re: [fuse-devel] [PATCHSET] CUSE: implement CUSE
-Message-ID: <20080830185613.GC12546@glandium.org>
-References: <1219947544-666-1-git-send-email-tj@kernel.org> <20080829055000.GB18930@glandium.org> <48B78EBA.609@kernel.org> <3bc8237c0808291150t2f18ba64vf445bdf4c2c8360c@mail.gmail.com> <48B93D68.6040506@kernel.org>
-MIME-Version: 1.0
+	Sat, 30 Aug 2008 14:57:49 -0400
+Received: from flusers.ccur.com ([12.192.68.2]:57271 "EHLO gamx.iccur.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753569AbYH3S5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 14:57:48 -0400
+Date: Sat, 30 Aug 2008 14:57:30 -0400
+From: Joe Korty <joe.korty@ccur.com>
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] shrink printk timestamp field
+Message-ID: <20080830185730.GA12660@tsunami.ccur.com>
+Reply-To: Joe Korty <joe.korty@ccur.com>
+References: <20080827151759.GA10678@tsunami.ccur.com> <20080829163540.634e86d9.akpm@linux-foundation.org> <20080830143808.GA10821@tsunami.ccur.com> <20080830101618.b6c2e1ab.akpm@linux-foundation.org> <c384c5ea0808301047g7b3658can77b41e5906d306b6@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48B93D68.6040506@kernel.org>
-X-GPG-Fingerprint: A479 A824 265C B2A5 FC54  8D1E DE4B DA2C 54FD 2A58
-Organization: glandium.org
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <c384c5ea0808301047g7b3658can77b41e5906d306b6@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 30, 2008 at 02:30:32PM +0200, Tejun Heo wrote:
-> Hello,
+On Sat, Aug 30, 2008 at 01:47:06PM -0400, Leon Woestenberg wrote:
+> On Sat, Aug 30, 2008 at 7:16 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+>> On Sat, 30 Aug 2008 10:38:08 -0400 Joe Korty <joe.korty@ccur.com> wrote:
+>>> On Fri, Aug 29, 2008 at 07:35:40PM -0400, Andrew Morton wrote:
+>>>> On Wed, 27 Aug 2008 11:17:59 -0400 Joe Korty <joe.korty@ccur.com> wrote:
+>>>>
+>>>>> Shrink the printk timestamp field.
+>>>
+>>> I was looking at it from the point of view of finding out where the
+>>> boot process was too slow.  For that millisecs is enough.  I am not
+>>> sure where knowing printk output to the microsec would be useful for
+>>> solving anything.
+>>
+>> Of course it's useful.  If you're working on performance or latency in
+>> a disk, network or USB driver, microsecond resolution is about right.
+>>
+> I second this. If we have timestamps enables, let it be useful for all
+> current uses. The 3 digits extra are very cheap useful information in
+> that area (without resorting to more elaborate methods like the
+> recently merged latency tracer).
 > 
-> Archie Cobbs wrote:
-> >> Thought about that but it's really no different from nbd or loop
-> >> depending on your application and block devices don't really implement
-> >> the file operations so it won't have too much in common with FUSE.
-> > 
-> > I think BUSE would be useful. For one, it allows you to avoid problems with
-> > the extra caching you get with a loopback device. And NBD is too limiting
-> > for some applications.
-> > 
-> > For my half-ignorant analysis of the caching issues, see:
-> >   http://code.google.com/p/s3backer/wiki/PerformanceConsiderations#Caching
-> > 
-> > This is also an example of an application where NBD doesn't suffice.
-> > 
-> >> Also, there's the complication of going out to disk for more memory cases.
-> > 
-> > Not sure what you mean exactly (my fault), but it seems BUSE would have fewer
-> > places for memory problems (including deadlocks) than loopback over FUSE,
-> > which is the only way to do this kind of stuff now.
+> Rather than cut 3 digits off, maybe fix some of the too-wide prints
+> would solve the posters issue better.
 > 
-> Yeah, compared to loopback over FUSE, anything would have less
-> problem. :-) I don't know much about nbd but it's pretty much solving
-> the same problem so I think it's logical to extend nbd including
-> giving it a new transport if necessary?  Or is there something
-> fundamentally better when it's done via FUSE?
+> Can we please have this patch non-committed or reverted?
 
-My gutt feeling is that it would have less overhead when done via FUSE
-than through nbd, but that could be wrong.
-
-Mike
+I have no objection...
+Joe
