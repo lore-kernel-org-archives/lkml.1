@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756340AbYH3URy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbYH3USW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756340AbYH3URy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 16:17:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYH3URq
+	id S1756780AbYH3USW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 16:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYH3USM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 16:17:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57784 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752463AbYH3URp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 16:17:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH] Re: Linux 2.6.27-rc5
-Date: Sat, 30 Aug 2008 22:21:42 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Grant Grundler <grundler@parisc-linux.org>,
-       linux-parisc@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org> <g9b7oa$g8l$1@ger.gmane.org>
-In-Reply-To: <g9b7oa$g8l$1@ger.gmane.org>
+	Sat, 30 Aug 2008 16:18:12 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62891 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753229AbYH3USL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 16:18:11 -0400
+Date: Sat, 30 Aug 2008 21:16:58 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Frans Pop <elendil@planet.nl>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.27-rc3: 'APIC error on CPU1: 00(40)', but only on resume!
+In-Reply-To: <200808302116.07421.elendil@planet.nl>
+Message-ID: <Pine.LNX.4.55.0808302106140.29414@cliff.in.clinika.pl>
+References: <200808202106.41058.elendil@planet.nl> <200808202356.33036.rjw@sisk.pl>
+ <Pine.LNX.4.55.0808211023020.22938@cliff.in.clinika.pl>
+ <200808302116.07421.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808302221.43237.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Adding CCs]
+On Sat, 30 Aug 2008, Frans Pop wrote:
 
-On Saturday, 30 of August 2008, Helge Deller wrote:
-> commit da574983de9f9283ba35662c8723627096e160de
-> Author: Al Viro <viro@zeniv.linux.org.uk>
-> [PATCH] fix hpux_getdents() - Missing checks for -EFAULT, broken handling of
-> overflow.
+> >  Barring a hardware erratum, this is a bug in the kernel.  It should be
+> > moderately easy to track down with some debugging added to writes
+> > accessing LVT and redirection table entries.
 > 
-> introduced a build breakage:
->   CC      arch/parisc/hpux/fs.o
-> arch/parisc/hpux/fs.c: In function `filldir':
-> arch/parisc/hpux/fs.c:107: error: `buffer' undeclared (first use in this
-> function)
-> make[1]: *** [arch/parisc/hpux/fs.o] Error 1
-> 
-> 
-> This patch fixes it.
-> 
-> Signed-off-by: Helge Deller <deller@gmx.de>
-> 
-> 
-> diff --git a/arch/parisc/hpux/fs.c b/arch/parisc/hpux/fs.c
-> index 69ff671..12c04c5 100644
-> --- a/arch/parisc/hpux/fs.c
-> +++ b/arch/parisc/hpux/fs.c
-> @@ -104,7 +104,7 @@ static int filldir(void * __buf, const char * name, int
-> namlen, loff_t offset,
->         buf->count -= reclen;
->         return 0;
->  Efault:
-> -       buffer->error = -EFAULT;
-> +       buf->error = -EFAULT;
->         return -EFAULT;
->  }
->  
-> 
-> 
+> Could you please provide some more specific debugging instructions? I'm at 
+> a complete loss what I should do here.
+
+ Debugging code can be added to apic_write() and io_apic_{write,modify}()  
+so that a warning is output into the kernel log whenever a suspicious
+value is written to one of the vector registers.  Similarly for MSI/HT
+interrupts, although I do not know names of the functions involved off the
+head.  Due to performance considerations it is unfortunately infeasible to
+have such debugging enabled in production kernels.
+
+  Maciej
