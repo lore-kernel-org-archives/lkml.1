@@ -1,128 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbYH3U3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755719AbYH3Ufm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbYH3U3i (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 16:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbYH3U3b
+	id S1755719AbYH3Ufm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 16:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYH3Ufe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 16:29:31 -0400
-Received: from qb-out-0506.google.com ([72.14.204.232]:13000 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752929AbYH3U3a (ORCPT
+	Sat, 30 Aug 2008 16:35:34 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:56373 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752887AbYH3Ufd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 16:29:30 -0400
+	Sat, 30 Aug 2008 16:35:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Hmkio7BoFdwbQ2mkZpepgRxPTzzIWFJBz9CVEWXkFY/eXRfUyDweT5Ruc0JQfC37vj
-         2lNpUAdQRlEwMUzHdJ5CEzvvoKvjezDhs9Sc8bX7HMDxF+OAh8neioi3ry6B8PhVGFbQ
-         MEurQXmUCuRnFwNWyTsrm+9BLbWpqeEsPbZmQ=
-Date: Sun, 31 Aug 2008 00:29:28 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Tom Tucker <tom@opengridcomputing.com>, Neil Brown <neilb@suse.de>,
-       Chuck Lever <chuck.lever@oracle.com>, Greg Banks <gnb@sgi.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: buffer overflow in /proc/sys/sunrpc/transports
-Message-ID: <20080830202928.GB3659@lenovo>
-References: <20080830184422.GA9598@localhost.localdomain> <20080830190642.GC7611@lenovo> <19f34abd0808301242j63d357f5h7afd3eff796a4cf0@mail.gmail.com> <20080830195622.GH7611@lenovo> <19f34abd0808301259s385844efx13cd5b02d083da77@mail.gmail.com> <20080830200423.GI7611@lenovo> <19f34abd0808301313v640a47fbl7bc61fd35e7cf4d5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0808301313v640a47fbl7bc61fd35e7cf4d5@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=Qs+6LnZwotWf+CAOEZfF3z8suXByxeNIEaHtCUD5Z9k3P2eC7ZBP5p6JEfq5dgAWzf
+         Fl1fTqgF4OA6liFOesBVDaoi0IWams9Q1sDCDy5Uq6dsqaQJceyycly9Zo6mdDiW1yOK
+         njJIlppO+CidThh8+OoCUsQXP74LIvnjbcL2s=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: split e820 reserved entries record to late v4 - fix v6
+Date: Sat, 30 Aug 2008 13:34:34 -0700
+Message-Id: <1220128474-23115-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Vegard Nossum - Sat, Aug 30, 2008 at 10:13:23PM +0200]
-| On Sat, Aug 30, 2008 at 10:04 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| > [Vegard Nossum - Sat, Aug 30, 2008 at 09:59:38PM +0200]
-| > | On Sat, Aug 30, 2008 at 9:56 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| > | > | BTW, look at this:
-| > | > |
-| > | > |     $ od -A x -t x1z /proc/sys/sunrpc/transports
-| > | > |     000000 74 63 70 20 31 30 34 38 35 37 36 0a 75 64 70 20  >tcp 1048576.udp <
-| > | > |     000010 33 32 37 36 38 0a 00 00 00 00 00 00 00 00 00 00  >32768...........<
-| > | > |     000020 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  >................<
-| > | > |     *
-| > | > |     0003e0 00 00 00 00 00 00 00 00 00 00                    >..........<
-| > | > |     0003ea
-| > | > |
-| > | > | ...and:
-| > | > |
-| > | > |     $ strace -e trace=read cat /proc/sys/sunrpc/transports > /dev/null
-| > | > |     read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0@G\316E4\0\0\0"...,
-| > | > | 512) = 512
-| > | > |     read(3, "tcp 1048576\nudp 32768\n\0\0\0\0\0\0\0\0\0\0"..., 4096) = 4074
-| > | > |     read(3, "", 4096)                       = 0
-| > | > |
-| > | > | ...why does it have a huge return value? The output is only about 40
-| > | > | bytes... why add all the \0? Would your patch also fix this?
-| > | >
-| > | > I think it's from strace side - it pass 4096 zero'ed buffer.
-| > |
-| > | "cat" passed buffer of size 4096, yes. But read() still returned 4074.
-| > | It should have returned 38 or so.
-| > |
-| > | > At least I don't see additional issues from kernel side in buffer
-| > | > filling - except from svc_print_xprts() which walk over list.
-| > | > But I think sunpc guys should know details :)
-| > | > Will send short-fix patch soon :)
-| > |
-| > | It looks like it's returning (sizeof(buffer) - x) where it really
-| > | should be returning x. Maybe it's this one that should be different?
-| > |
-| > |         *lenp -= len;
-| > |
-| >
-| > yes, but this is just a side effect, if we fix main error - it should
-| > resolve this problem too. Did you try the fix I sent a few msgs ago?
-| > (I don't have sunrpc on my machine)
-| 
-| Sorry, I did it now :-)
-| 
-|     $ uname -a
-|     Linux grianne 2.6.27-rc5-00006-gbef69ea-dirty #4 SMP PREEMPT Sat
-| Aug 30 22:07:18 CEST 2008 i686 i686 i386 GNU/Linux
-| 
-|     $ strace -e trace=read cat /proc/sys/sunrpc/transports > /dev/null
-|     read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0\320
-| \265\0004\0\0\0"..., 512) = 512
-|     read(3, "tcp 1048576\nudp 32768\n\0\0\0\0\0\0\0\0\0\0"..., 4096) = 4074
-|     read(3, "", 4096)                       = 0
-| 
-| So that problem seems to remain.
-| 
-| 
-| Vegard
+try to insert_resource second time, by expand the resource...
 
-Vegard, are you sure you test it with this patch (a bit updated)?
+for case: e820 reserved entry is partially overlapped with bar res...
 
-| 
-| -- 
-| "The animistic metaphor of the bug that maliciously sneaked in while
-| the programmer was not looking is intellectually dishonest as it
-| disguises that the error is the programmer's own creation."
-| 	-- E. W. Dijkstra, EWD1036
-| 
-		- Cyrill -
+hope it will never happen
+
+v2: according to Linus, add insert_resource_expand_to_fit, and change
+	__insert_resource to static without lock
+
+v3: use reserve_region_with_split() instead to hand overlapping
+	with test case by extend 0xe0000000 - 0xeffffff to 0xdd800000 -
+	get
+		e0000000-efffffff : PCI MMCONFIG 0
+			 e0000000-efffffff : reserved
+	in /proc/iomem
+	get
+		found conflict for reserved [dd800000, efffffff], try to reserve with split
+		    __reserve_region_with_split: (PCI Bus #80) [dd000000, ddffffff], res: (reserved) [dd800000, efffffff]
+		    __reserve_region_with_split: (PCI Bus #00) [de000000, dfffffff], res: (reserved) [de000000, efffffff]
+		initcall pci_subsys_init+0x0/0x121 returned 0 after 381 msecs
+	in dmesg
+
+v4: take out __insert_resource and insert_resource_expand_to_fit : Linus already check in.
+    use reserve_region_with_split at the first point
+    use const char *name
+
+v5: fix checking on overlapping
+
+v6: only reserve common area in conflict
+	so got sth in /proc/iomem
+		d8000000-dfffffff : PCI Bus #00
+		  dc000000-dfffffff : GART
+		    dc000000-dfffffff : reserved
+		e0000000-efffffff : PCI MMCONFIG 0
+		  e0000000-efffffff : reserved
+	when we have big range in e820
+		00000000dc000000-00000000f0000000 (reserved)
+
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+
 ---
+ arch/x86/kernel/e820.c |    2 -
+ include/linux/ioport.h |    3 ++
+ kernel/resource.c      |   69 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 72 insertions(+), 2 deletions(-)
 
-Index: linux-2.6.git/net/sunrpc/sysctl.c
+Index: linux-2.6/arch/x86/kernel/e820.c
 ===================================================================
---- linux-2.6.git.orig/net/sunrpc/sysctl.c	2008-07-20 11:40:14.000000000 +0400
-+++ linux-2.6.git/net/sunrpc/sysctl.c	2008-08-31 00:19:42.000000000 +0400
-@@ -69,9 +69,10 @@ static int proc_do_xprt(ctl_table *table
- 		return -EINVAL;
- 	else {
- 		len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
-+		if (*lenp < len)
-+			len = *lenp;
- 		if (!access_ok(VERIFY_WRITE, buffer, len))
- 			return -EFAULT;
--
- 		if (__copy_to_user(buffer, tmpbuf, len))
- 			return -EFAULT;
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -1320,7 +1320,7 @@ void __init e820_reserve_resources_late(
+ 	res = e820_res;
+ 	for (i = 0; i < e820.nr_map; i++) {
+ 		if (!res->parent && res->end)
+-			insert_resource(&iomem_resource, res);
++			reserve_region_with_split(&iomem_resource, res->start, res->end, res->name);
+ 		res++;
  	}
+ }
+Index: linux-2.6/include/linux/ioport.h
+===================================================================
+--- linux-2.6.orig/include/linux/ioport.h
++++ linux-2.6/include/linux/ioport.h
+@@ -108,6 +108,9 @@ extern struct resource iomem_resource;
+ 
+ extern int request_resource(struct resource *root, struct resource *new);
+ extern int release_resource(struct resource *new);
++extern void reserve_region_with_split(struct resource *root,
++			     resource_size_t start, resource_size_t end,
++			     const char *name);
+ extern int insert_resource(struct resource *parent, struct resource *new);
+ extern void insert_resource_expand_to_fit(struct resource *root, struct resource *new);
+ extern int allocate_resource(struct resource *root, struct resource *new,
+Index: linux-2.6/kernel/resource.c
+===================================================================
+--- linux-2.6.orig/kernel/resource.c
++++ linux-2.6/kernel/resource.c
+@@ -512,10 +512,77 @@ int adjust_resource(struct resource *res
+ 	result = 0;
+ 
+  out:
+-	write_unlock(&resource_lock);
+ 	return result;
+ }
+ 
++static void __init __reserve_region_with_split(struct resource *root,
++		resource_size_t start, resource_size_t end,
++		const char *name)
++{
++	struct resource *parent = root;
++	struct resource *conflict;
++	struct resource *res = kzalloc(sizeof(*res), GFP_KERNEL);
++
++	if (!res)
++		return;
++
++	res->name = name;
++	res->start = start;
++	res->end = end;
++	res->flags = IORESOURCE_BUSY;
++
++	for (;;) {
++		conflict = __request_resource(parent, res);
++		if (!conflict)
++			break;
++		if (conflict != parent) {
++			parent = conflict;
++			if (!(conflict->flags & IORESOURCE_BUSY))
++				continue;
++		}
++
++		/* Uhhuh, that didn't work out.. */
++		kfree(res);
++		res = NULL;
++		break;
++	}
++
++	if (!res) {
++		printk(KERN_DEBUG "    __reserve_region_with_split: (%s) [%llx, %llx], res: (%s) [%llx, %llx]\n",
++			 conflict->name, conflict->start, conflict->end,
++			 name, start, end);
++
++		/* failed, split and try again */
++
++		/* conflict coverred whole area */
++		if (conflict->start <= start && conflict->end >= end)
++			return;
++
++		if (conflict->start > start)
++			__reserve_region_with_split(root, start, conflict->start-1, name);
++		if (!(conflict->flags & IORESOURCE_BUSY)) {
++			resource_size_t common_start, common_end;
++
++			common_start = max(conflict->start, start);
++			common_end = min(conflict->end, end);
++			if (common_start < common_end)
++				__reserve_region_with_split(root, common_start, common_end, name);
++		}
++		if (conflict->end < end)
++			__reserve_region_with_split(root, conflict->end+1, end, name);
++	}
++
++}
++
++void reserve_region_with_split(struct resource *root,
++		resource_size_t start, resource_size_t end,
++		const char *name)
++{
++	write_lock(&resource_lock);
++	__reserve_region_with_split(root, start, end, name);
++	write_unlock(&resource_lock);
++}
++
+ EXPORT_SYMBOL(adjust_resource);
+ 
+ /**
