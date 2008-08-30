@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbYH3GXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757888AbYH3GY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757357AbYH3GXc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 02:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYH3GXX
+	id S1757888AbYH3GY4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 02:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbYH3GYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 02:23:23 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:44801 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751357AbYH3GXW (ORCPT
+	Sat, 30 Aug 2008 02:24:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53679 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751218AbYH3GYq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 02:23:22 -0400
-Date: Sat, 30 Aug 2008 16:23:15 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: linux-crypto@vger.kernel.org, squashfs-devel@lists.sourceforge.net,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/3] crypto: Add a zlib crypto module
-Message-ID: <20080830062315.GA18441@gondor.apana.org.au>
-References: <20080829134158.108976037@vixen.sonytel.be> <20080829134418.874948211@vixen.sonytel.be>
+	Sat, 30 Aug 2008 02:24:46 -0400
+Date: Fri, 29 Aug 2008 23:21:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Witbrodt <dawitbro@sbcglobal.net>
+cc: Yinghai Lu <yhlu.kernel@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers <kernel-testers@vger.kernel.org>
+Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit
+ a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
+In-Reply-To: <724017.46804.qm@web82108.mail.mud.yahoo.com>
+Message-ID: <alpine.LFD.1.10.0808292318300.3290@nehalem.linux-foundation.org>
+References: <724017.46804.qm@web82108.mail.mud.yahoo.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080829134418.874948211@vixen.sonytel.be>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 29, 2008 at 01:41:59PM +0000, Geert Uytterhoeven wrote:
-> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+
+
+On Fri, 29 Aug 2008, David Witbrodt wrote:
 > 
-> Add a (de)compression module for the "zlib" format using the crypto API.
+> Not sure if you wanted ME to test this, but I've been watching this
+> argument with Yinghai and became curious...
 
-I think we can safely conclude that our current compression
-interface sucks for what you're trying to achieve :)
+You'll eventually have something to test, this part was just 
+infrastructure and didn't change anything at all.
 
-> While both the "zlib" and "deflate" crypto modules are implemented on top of
-> the zlib library, they differ in the following aspects:
->   - The "deflate" crypto module (used by IPSec and UBIFS) does not support
->     partial decompression, i.e. all compressed data has to be passed at once.
->     The "zlib" crypto module does support partial decompression;
->     zlib_decompress() will return -EAGAIN if not all compressed data has been
->     passed.
->   - The deflate crypto module uses the raw deflate data format (zlib is
->     initialized with a windowBits parameter of -DEFLATE_DEF_WINBITS = -11),
->     while e.g. squashfs and axfs use the zlib data format, with the default
->     windowBits parameter DEF_WBITS = 15.
->     Both parameters are incompatible with each other due to the different data
->     formats, as indicated by the sign of the windowbits parameter.
->     The absolute value of this parameter is the base two logarithm of the
->     maximum window size, and larger values are backwards compatible with
->     smaller values (as far as decompression is concerned).
+> I updated my git tree so that I have the insert_resource_expand_to_fit()
+> changes, and the kernel builds fine.  Unfortunately, it hangs like all
+> 2.6.2[67] kernels without reverting 3def3d6d... and 1e934dda... (or
+> without the later patches provided by Ingo and Yinghai).
+> 
+> Sorry if I am interfering... just wanted to inject this data, in case
+> it's meaningful!
 
-Therefore I suggest that we change the interface rather than
-mutilate the implementations.
+Yeah, nothing has changed yet for your case. What should change your case 
+is the thing Yinghai is working on with the "late add of e820 data to the 
+resource tree".
 
-So here are a few things we should add:
+His earlier version already worked for you, didn't it? We're really now 
+just finalizing details (in fact, "insert_resource_expand_to_fit()" is 
+just a helper function for a detail that may not even matter all that 
+much).
 
-1) Separate alloc functions for comp/decomp to avoid the memory
-   wastage you've identified.
-
-2) Provide parameters to these alloc functions through an opaque
-   pointer.  The format of the paramters will be determined by the
-   name of the algorithm, i.e., if you want to change the parameters
-   then you should change the name as well (e.g., deflate => deflate2).
-
-   This removes the need to dupliate the implementation just because
-   you want 15 instead of -11.
-
-3) Provide init/update/final (one set each for comp and decomp)
-   functions similar to crypto_hash, in addition to the current
-   comp/decomp functions.
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+		Linus
