@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbYH3PE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbYH3PPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754627AbYH3PE2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 11:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbYH3PEO
+	id S1753546AbYH3PPu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 11:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbYH3PPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 11:04:14 -0400
-Received: from ik-out-1112.google.com ([66.249.90.176]:43993 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753254AbYH3PEM (ORCPT
+	Sat, 30 Aug 2008 11:15:38 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44447 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751988AbYH3PPi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 11:04:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=cLSI2rCC3DEDfNRJ/qpllRdLqBG0jmrOMhQXibQWzXzz5+55dwfO0k3/93MkiKs5GS
-         VCfVbDC1hjrjlylRAv/IX9cPlZDsd9sufQ+H/UO0aYwoCkzRbASc6d0wr+xocXeaYGfx
-         IHu+icfMHMHJaVP2AkAYGmxhkMEJEqevIC7v8=
-Date: Sat, 30 Aug 2008 19:05:45 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] utrace core
-Message-ID: <20080830150545.GA29686@x200.localdomain>
-References: <20080826220102.89635154233@magilla.localdomain> <20080826220157.397C7154233@magilla.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080826220157.397C7154233@magilla.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 30 Aug 2008 11:15:38 -0400
+Date: Sat, 30 Aug 2008 15:58:26 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Fries <david@fries.net>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org,
+       p_gortmaker@yahoo.com, netdev@vger.kernel.org
+Subject: Re: [PATCH 2/2] ne.c msleep not mdelay
+Message-ID: <20080830155826.06743636@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080830145746.GG25161@spacedout.fries.net>
+References: <20080830024453.GB24929@spacedout.fries.net>
+	<20080830095906.6cad8647@lxorguk.ukuu.org.uk>
+	<20080830.233647.05599714.anemo@mba.ocn.ne.jp>
+	<20080830145746.GG25161@spacedout.fries.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 03:01:57PM -0700, Roland McGrath wrote:
-> +/**
-> + * struct utrace_attached_engine - per-engine structure
-> + * @ops:	&struct utrace_engine_ops pointer passed to utrace_attach_task()
-> + * @data:	engine-private &void * passed to utrace_attach_task()
-> + * @flags:	event mask set by utrace_set_events() plus internal flag bits
-> + *
-> + * The task itself never has to worry about engines detaching while
-> + * it's doing event callbacks.  These structures are removed from the
-> + * task's active list only when it's stopped, or by the task itself.
-> + *
-> + * utrace_engine_get() and utrace_engine_put() maintain a reference count.
-> + * When it drops to zero, the structure is freed.  One reference is held
-> + * implicitly while the engine is attached to its task.
-> + */
-> +struct utrace_attached_engine {
-> +/* private: */
-> +	struct kref kref;
+> I was just going to make the argument that any task that could be run
+> during msleep, could just as easily run on the other cpu in mdelay (if
+> there was one).
 
-Engine grew a refcount.
-
-Was it added to fix some bug?
-
-Old utrace git doesn't have this, new utrace git has only two
-posted patches, so asking.
+ISA bus auto-probing doesn't actually work at all well on SMP. The number
+of people who have ever been affected by that has always been effectively
+nil.
 
