@@ -1,104 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753929AbYH3PaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbYH3Pck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753929AbYH3PaT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 11:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbYH3PaG
+	id S1754106AbYH3Pck (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 11:32:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbYH3Pcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 11:30:06 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:29792 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751988AbYH3PaE (ORCPT
+	Sat, 30 Aug 2008 11:32:32 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53575 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751786AbYH3Pcb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 11:30:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=HptHmPUaZh5lc9TORTQmFbl9f+gaF+wMEOcg3OfZFN79VvRw7d1snp6G7LjDzPs+yO
-         AXTND8b/+jMYFCAJ4l0cfpq+6rHjd8l95evD4tJb97FWNcJxMgYiemG3IAIZEA/QRgem
-         wsb6K32+u7miJZqwIwv/5ChYD4t2BlYcGLUEA=
-Message-ID: <19f34abd0808300830q25cef20chf5f905af210198c4@mail.gmail.com>
-Date: Sat, 30 Aug 2008 17:30:00 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Thomas Backlund" <tmb@mandriva.org>
-Subject: Re: BUG: kernel-2.6.27-rc5: soft lockup - CPU#X stuck for 61s!
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <48B94120.1010108@mandriva.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sat, 30 Aug 2008 11:32:31 -0400
+Subject: Re: Still seeing decreasing stime/utime
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: balbir@linux.vnet.ibm.com
+Cc: Spencer Candland <spencer@bluehost.com>, dmitry.adamushko@gmail.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <20080830135557.GA24039@balbir.in.ibm.com>
+References: <48B5C4C7.8040509@bluehost.com>
+	 <48B66BCC.8030207@linux.vnet.ibm.com> <48B702FA.8060308@bluehost.com>
+	 <20080828224502.GA1540@balbir.in.ibm.com> <48B859C8.5000001@bluehost.com>
+	 <48B8E102.5050503@linux.vnet.ibm.com> <1220095656.8426.23.camel@twins>
+	 <20080830135557.GA24039@balbir.in.ibm.com>
+Content-Type: text/plain
+Date: Sat, 30 Aug 2008 17:32:07 +0200
+Message-Id: <1220110327.14894.40.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48B94120.1010108@mandriva.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 30, 2008 at 2:46 PM, Thomas Backlund <tmb@mandriva.org> wrote:
-> Hi, (please cc me as I'm not subscribed)
->
-> thought I would post this right now, I'll try to reproduce it with vanilla
-> 2.6.27-rc5 as soon as the buildhost is back up...
->
-> (vanilla 2.6.27-rc5 x86_64 also locked up my laptop wich is a
->  Core2 Duo T8300 during kernel build with make -j3, but
->  I dont have any logs of that yet)
->
-> Kernel: 2.6.27-rc5 + Mandriva patches
-> Config:
-> http://svn.mandriva.com/cgi-bin/viewvc.cgi/packages/cooker/kernel/branches/rebase-to-2.6.27/PATCHES/configs/x86_64.config?revision=276760&view=markup
-> Arch: x86_64
->
-> System: Intel Quad Core Q9300
->
-> getting this with netconsole while building kernel rpms with make -j5:
+On Sat, 2008-08-30 at 19:25 +0530, Balbir Singh wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-08-30 13:27:36]:
+> 
+> > On Sat, 2008-08-30 at 11:26 +0530, Balbir Singh wrote:
+> > > Spencer Candland wrote:
+> > > >> Here is an experimental patch (I've just compiled and booted a machine
+> > > >> with it, I am unable to reproduce your problem), could you please test
+> > > >> it for me and see if it helps solve the problem
+> > > > 
+> > > > Looks like this fixed it.  I have been testing this for the last 16
+> > > > hours and everything is looking good.
+> > > > 
+> > > 
+> > > Excellent! Ingo, Peter, do you like the patch? If so, could you please pick it
+> > > up Ingo. I think we should even push the fix to stable releases.
+> > 
+> > Looks good, except for the issue you yourself earlier raised, a few of
+> > those functions looks too large to be inlined.
+> >
+> 
+> Here's the updated revision with task_*time functions moved to sched.c
+> and inlining removed, except for task_gtime(). I've compiled and
+> booted a machine (x86_64) with this patch applied.
+> 
+> Reported-by: spencer@bluehost.com
+> 
+> Spencer reported a problem where utime and stime were going negative despite
+> the fixes in commit b27f03d4bdc145a09fb7b0c0e004b29f1ee555fa. The suspected
+> reason for the problem is that signal_struct maintains it's own utime and
+> stime (of exited tasks), these are not updated using the new task_utime()
+> routine, hence sig->utime can go backwards and cause the same problem
+> to occur (sig->utime, adds tsk->utime and not task_utime()). This patch
+> fixes the problem
+> 
+> TODO: using max(task->prev_utime, derived utime) works for now, but a more
+> generic solution is to implement cputime_max() and use the cputime_gt()
+> function for comparison.
+> 
+> Comments?
+> 
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-Hi,
+Thanks Balbir!
 
-I tried your recipe. Well, not exactly. But I also got this during a
-kernel build. Notice that the kernel version is a clean v2.6.27-rc5
-(i.e. latest Linus -git):
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-BUG: soft lockup - CPU#1 stuck for 61s! [swapper:0]
-irq event stamp: 3585444
-hardirqs last  enabled at (3585443): [<c015927b>] trace_hardirqs_on+0xb/0x10
-hardirqs last disabled at (3585444): [<c0290614>] trace_hardirqs_off_thunk+0xc/8
-softirqs last  enabled at (3585438): [<c0139fb1>] __do_softirq+0xe1/0x100
-softirqs last disabled at (3585427): [<c013a075>] do_softirq+0xa5/0xb0
+> ---
+> 
+>  fs/proc/array.c       |   59 --------------------------------------------------
+>  include/linux/sched.h |    4 +++
+>  kernel/exit.c         |    6 ++---
+>  kernel/sched.c        |   59 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 66 insertions(+), 62 deletions(-)
+> 
+> diff -puN kernel/exit.c~fix-utime-stime-moving-backwards kernel/exit.c
+> --- linux-2.6.27-rc3/kernel/exit.c~fix-utime-stime-moving-backwards	2008-08-29 03:14:57.000000000 +0530
+> +++ linux-2.6.27-rc3-balbir/kernel/exit.c	2008-08-29 03:21:18.000000000 +0530
+> @@ -115,9 +115,9 @@ static void __exit_signal(struct task_st
+>  		 * We won't ever get here for the group leader, since it
+>  		 * will have been the last reference on the signal_struct.
+>  		 */
+> -		sig->utime = cputime_add(sig->utime, tsk->utime);
+> -		sig->stime = cputime_add(sig->stime, tsk->stime);
+> -		sig->gtime = cputime_add(sig->gtime, tsk->gtime);
+> +		sig->utime = cputime_add(sig->utime, task_utime(tsk));
+> +		sig->stime = cputime_add(sig->stime, task_stime(tsk));
+> +		sig->gtime = cputime_add(sig->gtime, task_gtime(tsk));
+>  		sig->min_flt += tsk->min_flt;
+>  		sig->maj_flt += tsk->maj_flt;
+>  		sig->nvcsw += tsk->nvcsw;
+> diff -puN fs/proc/array.c~fix-utime-stime-moving-backwards fs/proc/array.c
+> --- linux-2.6.27-rc3/fs/proc/array.c~fix-utime-stime-moving-backwards	2008-08-29 03:14:58.000000000 +0530
+> +++ linux-2.6.27-rc3-balbir/fs/proc/array.c	2008-08-29 03:16:09.000000000 +0530
+> @@ -349,65 +349,6 @@ int proc_pid_status(struct seq_file *m, 
+>  	return 0;
+>  }
+>  
+> -/*
+> - * Use precise platform statistics if available:
+> - */
+> -#ifdef CONFIG_VIRT_CPU_ACCOUNTING
+> -static cputime_t task_utime(struct task_struct *p)
+> -{
+> -	return p->utime;
+> -}
+> -
+> -static cputime_t task_stime(struct task_struct *p)
+> -{
+> -	return p->stime;
+> -}
+> -#else
+> -static cputime_t task_utime(struct task_struct *p)
+> -{
+> -	clock_t utime = cputime_to_clock_t(p->utime),
+> -		total = utime + cputime_to_clock_t(p->stime);
+> -	u64 temp;
+> -
+> -	/*
+> -	 * Use CFS's precise accounting:
+> -	 */
+> -	temp = (u64)nsec_to_clock_t(p->se.sum_exec_runtime);
+> -
+> -	if (total) {
+> -		temp *= utime;
+> -		do_div(temp, total);
+> -	}
+> -	utime = (clock_t)temp;
+> -
+> -	p->prev_utime = max(p->prev_utime, clock_t_to_cputime(utime));
+> -	return p->prev_utime;
+> -}
+> -
+> -static cputime_t task_stime(struct task_struct *p)
+> -{
+> -	clock_t stime;
+> -
+> -	/*
+> -	 * Use CFS's precise accounting. (we subtract utime from
+> -	 * the total, to make sure the total observed by userspace
+> -	 * grows monotonically - apps rely on that):
+> -	 */
+> -	stime = nsec_to_clock_t(p->se.sum_exec_runtime) -
+> -			cputime_to_clock_t(task_utime(p));
+> -
+> -	if (stime >= 0)
+> -		p->prev_stime = max(p->prev_stime, clock_t_to_cputime(stime));
+> -
+> -	return p->prev_stime;
+> -}
+> -#endif
+> -
+> -static cputime_t task_gtime(struct task_struct *p)
+> -{
+> -	return p->gtime;
+> -}
+> -
+>  static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
+>  			struct pid *pid, struct task_struct *task, int whole)
+>  {
+> diff -puN include/linux/sched.h~fix-utime-stime-moving-backwards include/linux/sched.h
+> --- linux-2.6.27-rc3/include/linux/sched.h~fix-utime-stime-moving-backwards	2008-08-29 03:14:58.000000000 +0530
+> +++ linux-2.6.27-rc3-balbir/include/linux/sched.h	2008-08-30 18:43:56.000000000 +0530
+> @@ -1430,6 +1430,10 @@ static inline void put_task_struct(struc
+>  		__put_task_struct(t);
+>  }
+>  
+> +extern cputime_t task_utime(struct task_struct *p);
+> +extern cputime_t task_stime(struct task_struct *p);
+> +extern cputime_t task_gtime(struct task_struct *p);
+> +
+>  /*
+>   * Per process flags
+>   */
+> diff -puN kernel/sched.c~fix-utime-stime-moving-backwards kernel/sched.c
+> --- linux-2.6.27-rc3/kernel/sched.c~fix-utime-stime-moving-backwards	2008-08-30 18:38:15.000000000 +0530
+> +++ linux-2.6.27-rc3-balbir/kernel/sched.c	2008-08-30 18:41:40.000000000 +0530
+> @@ -4176,6 +4176,65 @@ void account_steal_time(struct task_stru
+>  }
+>  
+>  /*
+> + * Use precise platform statistics if available:
+> + */
+> +#ifdef CONFIG_VIRT_CPU_ACCOUNTING
+> +cputime_t task_utime(struct task_struct *p)
+> +{
+> +	return p->utime;
+> +}
+> +
+> +cputime_t task_stime(struct task_struct *p)
+> +{
+> +	return p->stime;
+> +}
+> +#else
+> +cputime_t task_utime(struct task_struct *p)
+> +{
+> +	clock_t utime = cputime_to_clock_t(p->utime),
+> +		total = utime + cputime_to_clock_t(p->stime);
+> +	u64 temp;
+> +
+> +	/*
+> +	 * Use CFS's precise accounting:
+> +	 */
+> +	temp = (u64)nsec_to_clock_t(p->se.sum_exec_runtime);
+> +
+> +	if (total) {
+> +		temp *= utime;
+> +		do_div(temp, total);
+> +	}
+> +	utime = (clock_t)temp;
+> +
+> +	p->prev_utime = max(p->prev_utime, clock_t_to_cputime(utime));
+> +	return p->prev_utime;
+> +}
+> +
+> +cputime_t task_stime(struct task_struct *p)
+> +{
+> +	clock_t stime;
+> +
+> +	/*
+> +	 * Use CFS's precise accounting. (we subtract utime from
+> +	 * the total, to make sure the total observed by userspace
+> +	 * grows monotonically - apps rely on that):
+> +	 */
+> +	stime = nsec_to_clock_t(p->se.sum_exec_runtime) -
+> +			cputime_to_clock_t(task_utime(p));
+> +
+> +	if (stime >= 0)
+> +		p->prev_stime = max(p->prev_stime, clock_t_to_cputime(stime));
+> +
+> +	return p->prev_stime;
+> +}
+> +#endif
+> +
+> +inline cputime_t task_gtime(struct task_struct *p)
+> +{
+> +	return p->gtime;
+> +}
+> +
+> +/*
+>   * This function gets called by the timer code, with HZ frequency.
+>   * We call it with interrupts disabled.
+>   *
+> _
+> 
 
-Pid: 0, comm: swapper Not tainted (2.6.27-rc5-00006-gbef69ea #3)
-EIP: 0060:[<c011eb55>] EFLAGS: 00000202 CPU: 1
-EIP is at native_safe_halt+0x5/0x10
-EAX: 0036b5a3 EBX: c2161b80 ECX: 00000000 EDX: 00000000
-ESI: 00000001 EDI: c090fb80 EBP: f7855f80 ESP: f7855f80
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-CR0: 8005003b CR2: 0807a0b0 CR3: 3695d000 CR4: 000006d0
-DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-DR6: ffff0ff0 DR7: 00000400
- [<c010ad80>] default_idle+0x50/0x70
- [<c01029c8>] cpu_idle+0x68/0x130
- [<c059e120>] start_secondary+0x160/0x1c0
- =======================
-
-c011eb50 <native_safe_halt>:
-c011eb50:       55                      push   %ebp
-c011eb51:       89 e5                   mov    %esp,%ebp
-c011eb53:       fb                      sti
-c011eb54:       f4                      hlt
-c011eb55:       5d                      pop    %ebp
-c011eb56:       c3                      ret
-c011eb57:       89 f6                   mov    %esi,%esi
-c011eb59:       8d bc 27 00 00 00 00    lea    0x0(%edi),%edi
-
-...there's not many clues here as to what went wrong. Curious.
-
-(Yes, I played with CPU hotplug and hibernate as well.)
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
