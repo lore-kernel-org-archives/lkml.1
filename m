@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756330AbYH3Mkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755822AbYH3Mrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756330AbYH3Mkr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 08:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbYH3Mkj
+	id S1755822AbYH3Mrb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 08:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbYH3MrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 08:40:39 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40153 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751426AbYH3Mki (ORCPT
+	Sat, 30 Aug 2008 08:47:21 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:44553 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751364AbYH3MrV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 08:40:38 -0400
-Subject: Re: Merge multiproto tree
-From: Peter Zijlstra <peterz@infradead.org>
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: v4l-dvb-maintainer@linuxtv.org, mchehab@infradead.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <1220099043.8426.25.camel@twins>
-References: <48B9360D.7030303@gmail.com>  <1220099043.8426.25.camel@twins>
-Content-Type: text/plain
-Date: Sat, 30 Aug 2008 14:40:34 +0200
-Message-Id: <1220100034.8426.38.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 30 Aug 2008 08:47:21 -0400
+Date: Sat, 30 Aug 2008 13:47:13 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>, linux-acpi@vger.kernel.org,
+       Len Brown <lenb@kernel.org>, Andi Kleen <ak@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE] ACPI BIOS Guideline for Linux
+Message-ID: <20080830124713.GA5910@srcf.ucam.org>
+References: <200807241732.23412.trenn@suse.de> <200808281416.57193.trenn@suse.de> <20080828122227.GA26285@srcf.ucam.org> <200808291729.53628.trenn@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808291729.53628.trenn@suse.de>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[dropped linux-dvb]
+On Fri, Aug 29, 2008 at 05:29:52PM +0200, Thomas Renninger wrote:
+> On Thursday 28 August 2008 14:22:29 Matthew Garrett wrote:
+> > Little. But what advantage do we get in the same functionality being
+> > implemented in an entirely custom way? Even less.
+> It is all about documentation, right.
+> WMI is complicating things by one needless and complicated layer.
 
-On Sat, 2008-08-30 at 14:24 +0200, Peter Zijlstra wrote:
-> On Sat, 2008-08-30 at 15:59 +0400, Manu Abraham wrote:
-> > Hello Mauro,
-> > 
-> > Please pull from http://jusst.de/hg/multiproto_api_merge/
-> > to merge the following Changesets from the multiproto tree.
+Not really. It provides approximately no complexity for Linux drivers, 
+and makes it easier for vendors to provide Windows support. WMI has not 
+been the hard bit of the drivers I've written. I don't see any reason to 
+ask vendors not to use it, as long as they're willing to document their 
+implementation.
 
-> > The tree is being pushed out, it might take a little while for the
-> > repository to be populated due to the slow connect.
-> 
-> This must absolutely be the least informative pull request ever!
-
-Also, this:
-
-On Sat, 2008-08-30 at 14:24 +0200, linux-dvb-owner@linuxtv.org wrote:
-> You are not allowed to post to this mailing list, and your message has
-> been automatically rejected.  If you think that your messages are
-> being rejected in error, contact the mailing list owner at
-> linux-dvb-owner@linuxtv.org.
-
-Don't do that!
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
