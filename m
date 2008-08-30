@@ -1,123 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbYH3RlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754936AbYH3Rpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755032AbYH3RlV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 13:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbYH3RlN
+	id S1754936AbYH3Rpo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 13:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYH3Rpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 13:41:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42967 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752554AbYH3RlM (ORCPT
+	Sat, 30 Aug 2008 13:45:34 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:43514 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752344AbYH3Rpd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 13:41:12 -0400
-Date: Sat, 30 Aug 2008 10:39:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       David Witbrodt <dawitbro@sbcglobal.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers <kernel-testers@vger.kernel.org>
-Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit
- a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
-In-Reply-To: <200808300030.32905.rjw@sisk.pl>
-Message-ID: <alpine.LFD.1.10.0808301012060.3290@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org> <200808292157.24179.rjw@sisk.pl> <alpine.LFD.1.10.0808291434110.3300@nehalem.linux-foundation.org> <200808300030.32905.rjw@sisk.pl>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 30 Aug 2008 13:45:33 -0400
+Date: Sat, 30 Aug 2008 11:45:16 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH] scsi/sd: Fix size output in MB
+Message-ID: <20080830174516.GD1239@parisc-linux.org>
+References: <48B9546B.4010004@simon.arlott.org.uk> <1220117091.3615.3.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1220117091.3615.3.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 30 Aug 2008, Rafael J. Wysocki wrote:
+On Sat, Aug 30, 2008 at 12:24:50PM -0500, James Bottomley wrote:
+> linux-scsi is the correct list for this, cc's added
 > 
-> > And if you have the whole dmesg, that would be useful.
+> On Sat, 2008-08-30 at 15:08 +0100, Simon Arlott wrote:
+> > The capacity printk'd in bytes is divided by 1000000,
+> > whereas 1048576 would be more consistent with the rest
+> > of the OS and disk-related utilities ('df' etc.).
+
+> > -		/* avoid 64-bit division on 32-bit platforms */
+> > -		sector_div(sz, 625);
+> > -		mb -= sz - 974;
+> > -		sector_div(mb, 1950);
+> > +		/* Convert to megabytes (/2048) */
+> > +		mb = sz >> 11;
+> >  
+> >  		sd_printk(KERN_NOTICE, sdkp,
+> >  			  "%llu %d-byte hardware sectors (%llu MB)\n",
 > 
-> dmesg from -rc5 with the offending commit reverted and with the patch
-> below applied is at:
-> 
-> http://www.sisk.pl/kernel/debug/mainline/2.6.27-rc5/2.6.27-rc5-git.log
+> No, this is wrong.  By mandated standards the manufacturers are allowed
+> to calculate MB by dividing by 10^6.  This is a fiddle to allow them to
+> make their drives look slightly bigger.  However, we want the printed
+> information to match that written on the drive, so in this printk, we
+> use the manufacturer standard for calculation (and then do everything
+> else in bytes so we don't have to bother with it ever again).
 
-Ok, the more I look at this, the more interesting it gets.
+I was looking at this code recently because it looks really bizarre when
+you create a half-petabyte filesystem:
 
-In particular, this:
+$ sudo insmod drivers/ata/ata_ram.ko capacity=1099511627776 preallocate=0
 
-	...
-	ACPI: bus type pnp registered
-	pnp 00:08: mem resource (0xfec00000-0xfec00fff) overlaps 0000:00:00.0 BAR 3 (0xe0000000-0xffffffff), disabling
-	pnp 00:08: mem resource (0xfee00000-0xfee00fff) overlaps 0000:00:00.0 BAR 3 (0xe0000000-0xffffffff), disabling
-	pnp 00:09: mem resource (0xffb80000-0xffbfffff) overlaps 0000:00:00.0 BAR 3 (0xe0000000-0xffffffff), disabling
-	pnp 00:09: mem resource (0xfff00000-0xffffffff) overlaps 0000:00:00.0 BAR 3 (0xe0000000-0xffffffff), disabling
-	pnp 00:0b: mem resource (0xe0000000-0xefffffff) overlaps 0000:00:00.0 BAR 3 (0xe0000000-0xffffffff), disabling
-	pnp 00:0c: mem resource (0xfec00000-0xffffffff) overlaps 0000:00:00.0 BAR 3 (0xe0000000-0xffffffff), disabling
-	pnp: PnP ACPI: found 13 devices
-	ACPI: ACPI bus type pnp unregistered
-	SCSI subsystem initialized
-	libata version 3.00 loaded.
-	usbcore: registered new interface driver usbfs
-	usbcore: registered new interface driver hub
-	usbcore: registered new device driver usb
-	PCI: Using ACPI for IRQ routing
-	pci 0000:00:00.0: BAR 3: can't allocate resource
-	...
+[12095.028093] ata7.00: 1099511627776 sectors, multi 0: LBA48 NCQ (depth 31/32)
+[12095.028093] ata7.00: configured for UDMA/133
+[12095.041915] scsi 7:0:0:0: Direct-Access     ATA      Linux RAM Drive 0.01 PQ: 0 ANSI: 5
+[12095.041915] sd 7:0:0:0: [sdc] Very big device. Trying to use READ CAPACITY(16).
+[12095.041915] sd 7:0:0:0: [sdc] 1099511627776 512-byte hardware sectors (562949953 MB)
+[12095.041915] sd 7:0:0:0: [sdc] Write Protect is off
+[12095.041915] sd 7:0:0:0: [sdc] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
 
-there's a few things to note here:
+1. Avoiding 64-bit divisions is _so_ last decade.  We have
+linux/math64.h, we should use it.
 
- - the resource at 0000:00:00.0 BAR 3 is totally bogus.
+2. We should report in GB or TB when appropriate.  The exact definition
+of 'appropriate' is going to vary from person to person.  Might I
+suggest that we should report between two and four significant digits.
+eg 9543 MB is ok, 10543 MB should be 10 GB.
 
-   We know it's totally bogus because you actually have other resources in 
-   the 0xf....... range, and they work fine. It's also likely to be 
-   totally bogus because it so happens that the end-point of 0xffffffff is 
-   commonly something that the BIOS leaves as a "I sized this resource", 
-   because that's how resources are sized (you write all ones into them 
-   and look what you can read back).
+3. I hate myself for saying this ... but maybe we should be using the
+horrific MiB/GiB/TiB instead of MB/GB/TB.
 
-   But your lspci -vxx output clearly shows that (a) MEM is enabled in 
-   the command word, and yes, the BAR register at 0x18 does indeed have 
-   value 0xe0000000. So it's just the length that is really bogus.
+4. I've been far too busy to write said patch.  Simon, would you mind
+doing the honours?
 
- - pnp clearly sees that bogus resource at 0xe0000000-0xffffffff
-
- - BUT: the "can't allocate resource" thing is from 
-   pcibios_allocate_resources(), and means that the request_resource() 
-   failed _despite_ the fact that you hadn't reserved the e820 resources 
-   yet with the new patch.
-
-The thing that seems to save you is that we've already allocated something 
-in that region. There's a few things there, like:
-
-	fee00000-fee00fff : Local APIC
-
-but that particular one is actually reserved much later, so that doesn't 
-explain it. I think that what happens is that we have allocated the _bus_ 
-resources earlier in "pcibios_allocate_bus_resources()", and that means 
-that we already have these resources:
-
-	fe700000-fe7fffff : PCI Bus 0000:01
-	fe800000-fe8fffff : PCI Bus 0000:02
-	fe900000-fe9fffff : PCI Bus 0000:03
-	fea00000-feafffff : PCI Bus 0000:04
-	feb00000-febfffff : PCI Bus 0000:05
-
-in the resource tree, and that in turn means that when we try to allocate 
-the bogus MCFG resource, it fails.
-
-Which is good - it mustn't succeed.
-
-What _broke_ for you is that the horrible patch that got reverted said 
-that "if we recognize this as an MCFG resource, we will _always_ try to 
-insert it", so it fundamentally broke the whole resource tree, because it 
-force-inserted that totally crap resource.
-
-Now, the thing that worries me a bit is that I wonder how common this kind 
-of crap is. And in particular, I wonder how often we've been saved from 
-horrible issues like this by the fact that we've inserted the e820 
-resources first. Of course - it can work both ways - sometimes it saves 
-us, and sometimes it just causes more problems (eg when we then 
-re-allocate the resource successfully somewhere else).
-
-		Linus
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
