@@ -1,149 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758487AbYH3Vwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332AbYH3V5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758487AbYH3Vwx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 17:52:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966AbYH3Vwq
+	id S1757332AbYH3V5l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 17:57:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbYH3V5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 17:52:46 -0400
-Received: from ikar.perftech.si ([195.246.0.20]:1905 "EHLO ikar.perftech.si"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754829AbYH3Vwp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 17:52:45 -0400
-X-ASG-Debug-ID: 1220133159-390200080000-xx1T2L
-X-Barracuda-URL: http://10.12.0.14:5000/cgi-bin/mark.cgi
-X-Spam-Processed: dedal.perftech.si, Sat, 30 Aug 2008 23:52:39 +0200
-	(not processed: spam filter heuristic analysis disabled)
-X-Authenticated-Sender: xerces8@butn.net
-X-Return-Path: xerces8@butn.net
-X-Envelope-From: xerces8@butn.net
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Date: Sat, 30 Aug 2008 23:52:33 +0200
-From: "xerces8" <xerces8@butn.net>
-To: linux-kernel@vger.kernel.org
-X-ASG-Orig-Subj: oops during reboot in device_shutdown()
-Subject: oops during reboot in device_shutdown()
+	Sat, 30 Aug 2008 17:57:31 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:40421 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754054AbYH3V5a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 17:57:30 -0400
+Date: Sat, 30 Aug 2008 15:57:14 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH] scsi/sd: Fix size output in MB
+Message-ID: <20080830215714.GE1239@parisc-linux.org>
+References: <48B9546B.4010004@simon.arlott.org.uk> <1220117091.3615.3.camel@localhost.localdomain> <20080830174516.GD1239@parisc-linux.org> <48B9B552.8060406@simon.arlott.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-ID: <WorldClient-F200808302352.AA52330038@butn.net>
-X-Mailer: WorldClient 9.6.4
-X-MDAV-Processed: dedal.perftech.si, Sat, 30 Aug 2008 23:52:39 +0200
-X-Barracuda-Connect: UNKNOWN[10.12.0.44]
-X-Barracuda-Start-Time: 1220133160
-X-Barracuda-Virus-Scanned: by OUTBOUND - ikar.perftech.si at perftech.si
-X-Barracuda-Spam-Score: 0.50
-X-Barracuda-Spam-Status: No, SCORE=0.50 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=7.0 tests=BSF_RULE7568M
-X-Barracuda-Spam-Report: Code version 3.2, rules version 3.2.1.4187
-	Rule breakdown below
-	 pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	0.50 BSF_RULE7568M          Custom Rule 7568M
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48B9B552.8060406@simon.arlott.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sat, Aug 30, 2008 at 10:02:10PM +0100, Simon Arlott wrote:
+> On 30/08/08 18:45, Matthew Wilcox wrote:
+> > On Sat, Aug 30, 2008 at 12:24:50PM -0500, James Bottomley wrote:
+> >> No, this is wrong.  By mandated standards the manufacturers are allowed
+> >> to calculate MB by dividing by 10^6.  This is a fiddle to allow them to
+> >> make their drives look slightly bigger.  However, we want the printed
+> >> information to match that written on the drive, so in this printk, we
+> >> use the manufacturer standard for calculation (and then do everything
+> >> else in bytes so we don't have to bother with it ever again).
+> 
+> It's unlikely to match what's on the drive, "1000204886016" isn't 1TB 
+> by any standard.
 
-While running RIPLinux* 6.3, I got the below oops.
+Hm.  I bought a 500GB drive last year:
 
-What I did was boot up riplinux from USB key, start X, the run "reboot -f" on VT2.
+sd 1:0:0:0: [sda] 976773168 512-byte hardware sectors (500108 MB)
 
-* - http://www.tux.org/pub/people/kent-robotti/looplinux/rip/
+512 * 976773168
+500107862016
 
-After the oops I run "reboot" again and got the same oops again.
-Note: I am not sure if I ran the 32 or 64 bit kernel.
+512 * 976773168 / (1024 * 1024 * 1024)
+465.76174163818359375000
 
-For kernel config and (3 smallish) patches see:
-http://www.tux.org/pub/people/kent-robotti/looplinux/rip/docs/kernel.txt
-(or http://www.tux.org/pub/people/kent-robotti/looplinux/rip/docs/kernel64.txt)
+If we report it as 465GB, we will get questions.  Even pretending it's
+1024 * 1000 * 1000 doesn't work:
 
+512 * 976773168 / (1000 * 1000 * 1024)
+488.38658400000000000000
 
-HW: Asus P5K-E WiFi maonboard, BIOS version 1013
-(Intel P35/ICH9R), CPU: Intel Core2 Q6600
+I think we have to stick with dividing by multiples of 1000.  It's what
+the drive manufacturers do (and I do understand their reasons for doing
+it).
 
-The oops (both):
+> This looks useful for testing this... do you have an updated version?
 
-md: stopping all md devices.
-BUG: unable to handle kernel NULL pointer dereference at 00000004
-IP: [<c030b110>] device_shutdown+0x39/0x4c
-*pde = 00000000 
-Oops: 0000 [#1] 
-Modules linked in: snd_mixer_oss snd_hda_intel snd_pcm snd_timer snd_page_alloc snd_hwdep snd
-soundcore rtl8187 eeprom_93cx6
+Yes.
+http://git.kernel.org/?p=linux/kernel/git/willy/ata.git;a=shortlog;h=ata-ram
 
-Pid: 1982, comm: reboot Not tainted (2.6.26 #8)
-EIP: 0060:[<c030b110>] EFLAGS: 00010246 CPU: 0
-EIP is at device_shutdown+0x39/0x4c
-EAX: 00000000 EBX: ffffff90 ECX: 00000000 EDX: ffffff90
-ESI: 28121969 EDI: b7fb2ff4 EBP: f7d0c000 ESP: f7d0de98
- DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-Process reboot (pid: 1982, ti=f7d0c000 task=f3052740 task.ti=f7d0c000)
-Stack: 00000000 c011e1bd c011e2ad 01234567 c011e3ec f7d0df14 f7d0df3c 0000002b 
-       f28d552c c0149ba1 f28d55c8 c0150d11 ffffff9c ffffff9c 00000401 ffffff9c 
-       f28d552c c0949308 00000001 f30528a4 f3052768 c0111cc7 c0111bc9 f30d6ac8 
-Call Trace:
- [<c011e1bd>] kernel_restart_prepare+0x20/0x25
- [<c011e2ad>] kernel_restart+0x8/0x2e
- [<c011e3ec>] sys_reboot+0x112/0x14f
- [<c0149ba1>] put_filp+0x14/0x31
- [<c0150d11>] __path_lookup_intent_open+0x6a/0x72
- [<c0111cc7>] dequeue_entity+0xf/0x8d
- [<c0111bc9>] __dequeue_entity+0x1f/0x71
- [<c0111c2c>] set_next_entity+0x11/0x38
- [<c065eb56>] schedule+0x22e/0x24a
- [<c01241d1>] hrtimer_cancel+0xa/0x14
- [<c065f085>] do_nanosleep+0x4e/0x7b
- [<c01244ba>] hrtimer_nanosleep+0x50/0xab
- [<c012412a>] hrtimer_wakeup+0x0/0x18
- [<c0124556>] sys_nanosleep+0x41/0x51
- [<c01036f2>] syscall_call+0x7/0xb
- =======================
-Code: 74 eb 2b 8b 82 b4 00 00 00 85 c0 74 07 8b 48 20 85 c9 75 11 8b 82 b8 00 00 00 85 c0 74 0b 8b
-48 18 85 c9 74 04 89 d0 ff d1 89 da <8b> 5b 74 83 eb 70 8d 42 70 3b 05 a4 bc 96 c0 75 c7 5b c3 55 89 
-EIP: [<c030b110>] device_shutdown+0x39/0x4c SS:ESP 0068:f7d0de98
----[ end trace e0383ca117e3155e ]---
-md: stopping all md devices.
-BUG: unable to handle kernel NULL pointer dereference at 00000004
-IP: [<c030b110>] device_shutdown+0x39/0x4c
-*pde = 00000000 
-Oops: 0000 [#2] 
-Modules linked in: snd_mixer_oss snd_hda_intel snd_pcm snd_timer snd_page_alloc snd_hwdep snd
-soundcore rtl8187 eeprom_93cx6
+> > 2. We should report in GB or TB when appropriate.  The exact definition
+> > of 'appropriate' is going to vary from person to person.  Might I
+> > suggest that we should report between two and four significant digits.
+> > eg 9543 MB is ok, 10543 MB should be 10 GB.
+> 
+> I've gone with five digits, it switches to GB at ~98GB, and to TB 
+> at ~98TB etc.
 
-Pid: 2007, comm: reboot Tainted: G      D   (2.6.26 #8)
-EIP: 0060:[<c030b110>] EFLAGS: 00010246 CPU: 0
-EIP is at device_shutdown+0x39/0x4c
-EAX: 00000000 EBX: ffffff90 ECX: 00000000 EDX: ffffff90
-ESI: 28121969 EDI: b7f2cff4 EBP: f7d22000 ESP: f7d23e98
- DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-Process reboot (pid: 2007, ti=f7d22000 task=f30aeb60 task.ti=f7d22000)
-Stack: 00000000 c011e1bd c011e2ad 01234567 c011e3ec f7d23f14 f7d23f3c 0000002b 
-       f28d552c c0149ba1 f28d55c8 c0150d11 ffffff9c ffffff9c 00000401 ffffff9c 
-       f28d552c c0949308 00000001 f30aecc4 f30aeb88 c0111cc7 c0111bc9 f30d6ac8 
-Call Trace:
- [<c011e1bd>] kernel_restart_prepare+0x20/0x25
- [<c011e2ad>] kernel_restart+0x8/0x2e
- [<c011e3ec>] sys_reboot+0x112/0x14f
- [<c0149ba1>] put_filp+0x14/0x31
- [<c0150d11>] __path_lookup_intent_open+0x6a/0x72
- [<c0111cc7>] dequeue_entity+0xf/0x8d
- [<c0111bc9>] __dequeue_entity+0x1f/0x71
- [<c0111c2c>] set_next_entity+0x11/0x38
- [<c065eb56>] schedule+0x22e/0x24a
- [<c01241d1>] hrtimer_cancel+0xa/0x14
- [<c065f085>] do_nanosleep+0x4e/0x7b
- [<c01244ba>] hrtimer_nanosleep+0x50/0xab
- [<c012412a>] hrtimer_wakeup+0x0/0x18
- [<c0124556>] sys_nanosleep+0x41/0x51
- [<c01036f2>] syscall_call+0x7/0xb
- =======================
-Code: 74 eb 2b 8b 82 b4 00 00 00 85 c0 74 07 8b 48 20 85 c9 75 11 8b 82 b8 00 00 00 85 c0 74 0b 8b
-48 18 85 c9 74 04 89 d0 ff d1 89 da <8b> 5b 74 83 eb 70 8d 42 70 3b 05 a4 bc 96 c0 75 c7 5b c3 55 89 
-EIP: [<c030b110>] device_shutdown+0x39/0x4c SS:ESP 0068:f7d23e98
----[ end trace e0383ca117e3155e ]---
+Reasonable minds can certainly disagree on this one.  I respectfully
+submit that reporting a 97415MB capacity is less useful than reporting a
+97GB capacity.  If you look at drive advertisements, they sell 1TB,
+1.5TB, 80GB, 750GB, 360GB, ... we should be trying to match that.  I'm a
+little dubious about trying to match the 1.5TB; I think 1500GB is close
+enough, but a 50GB drive shouldn't be reported as 50000MB.  IMO, anyway.
 
+> > 3. I hate myself for saying this ... but maybe we should be using the
+> > horrific MiB/GiB/TiB instead of MB/GB/TB.
+> 
+> Somehow this stuff got into net-tools (ifconfig) too, so I have a
+> patch to remove it from my systems.
 
+I understand why networking tools are particularly cautious about this.
+The line rate (eg 1Gbps) is 1000,000,000 bps, but the amount of traffic
+reported might well use either binary SI or decimal SI.  Reporting the
+wrong one makes a 7% difference at the GB/GiB level, and that's the kind
+of amount that people can spend a week or more chasing.
 
-Regards,
-David
+> > 4. I've been far too busy to write said patch.  Simon, would you mind
+> > doing the honours?
+> 
+> Sure, patch will follow this email... it can only go as far as 8192EB 
+> and then there's not enough space to store more than 2^64 512-byte 
+> sectors.
 
+I think it'll be a while before we get drives of that capacity.  ATA is
+limited to 48 bits for the number of sectors, and while you can increase
+the sector size (4k is currently planned), that still doesn't bring you
+close.  I suppose you could get ata_ram to have multiple drives and
+raid-0 them together, but you'd still need to allocate 2^13 of them.
 
+scsi_debug can probably go to the full 2^64 sectors.  I haven't looked
+into it.
+
+> (And if you only modify drivers/scsi/sd.c, the kernel make system 
+> won't recompile sd.o!)
+
+That sounds odd to me; what command are you using to rebuild?
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
