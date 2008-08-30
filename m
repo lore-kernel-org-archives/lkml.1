@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbYH3VOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757353AbYH3VPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755100AbYH3VOS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 17:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbYH3VOG
+	id S1757353AbYH3VPa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 17:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbYH3VPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 17:14:06 -0400
-Received: from mbox2.netikka.net ([213.250.81.203]:56665 "EHLO
-	mbox2.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754630AbYH3VOF (ORCPT
+	Sat, 30 Aug 2008 17:15:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46321 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754519AbYH3VPT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 17:14:05 -0400
-Message-ID: <48B9B81A.3070306@mandriva.org>
-Date: Sun, 31 Aug 2008 00:14:02 +0300
-From: Thomas Backlund <tmb@mandriva.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080808)
-MIME-Version: 1.0
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: BUG: kernel-2.6.27-rc5: soft lockup - CPU#X stuck for 61s!
-References: <48B94120.1010108@mandriva.org>
-In-Reply-To: <48B94120.1010108@mandriva.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 30 Aug 2008 17:15:19 -0400
+Date: Sat, 30 Aug 2008 14:14:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthias Urlichs <matthias@urlichs.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Regression] sshd hangs on close
+Message-Id: <20080830141431.7bb34048.akpm@linux-foundation.org>
+In-Reply-To: <200808302228.58255.rjw@sisk.pl>
+References: <g9b39n$4et$1@ger.gmane.org>
+	<200808302228.58255.rjw@sisk.pl>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Backlund skrev:
-> Hi, (please cc me as I'm not subscribed)
+On Sat, 30 Aug 2008 22:28:57 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> [Adding CCs]
 > 
-> thought I would post this right now, I'll try to reproduce it with 
-> vanilla 2.6.27-rc5 as soon as the buildhost is back up...
-> 
+> On Saturday, 30 of August 2008, Matthias Urlichs wrote:
+> > "top" sees multiple instances of:
+> > 
+> >  6008 root      20 3184 D    0   0:00.06 flush_cpu sshd: root@pts/13            
+> > 
+> > This is 2.6.27rc5, preemption and tickless turned on, on a 4-CPU machine.
+> > (OK, two hyperthreaded ones :-P) strace() shows that this happens on the
+> > last close of its /dev/ptmx file descriptor, which hangs.
+> > 
+> > I'll do a bisect early next week unless somebody else identifies a likely
+> > suspect.
+> > 
 
-Nevermind this "BUG: kernel-2.6.27-rc5: soft lockup - CPU#X stuck for 
-61s!." part ...
-
-It was caused by a Tomoyo patch that was not correct...
-
-I just assumed it was the same as the laptop locked up too...
-
-> (vanilla 2.6.27-rc5 x86_64 also locked up my laptop wich is a
->  Core2 Duo T8300 during kernel build with make -j3, but
->  I dont have any logs of that yet)
-> 
-
-This issue is still a real one, but I need to get some oops on it...
-
-I'll report back when I know more
-
---
-Thomas
+Please do `echo w > /proc/sysrq-trigger', send the resulting trace.
