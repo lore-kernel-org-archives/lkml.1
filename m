@@ -1,137 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbYH3VDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756617AbYH3VGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756908AbYH3VDS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 17:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbYH3VDJ
+	id S1756617AbYH3VGi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 17:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbYH3VGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 17:03:09 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:54444 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753866AbYH3VDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 17:03:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	b=eylKm1wt+LsmyP2yltRU06cpEW5psc81HTCN1Vlr/W7QluZEOdKoIRBcNSNnpWWCJAR7LH493v0GzTizjn6wULJflzfXPEgh0tYFoyHlg3uBuoX8LSfAal2bWzokfOGe;
-Message-ID: <48B9B588.7060709@simon.arlott.org.uk>
-Date: Sat, 30 Aug 2008 22:03:04 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
+	Sat, 30 Aug 2008 17:06:30 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:50355 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752887AbYH3VGa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 17:06:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=RjXC82q5a00vLsWKJxNUAQ8K5tqHvVkAN6UD0nExnaAUXu+BeIK0eZGGHR41DyH48X
+         l54KNrO+qxSB2oQNfZnqxI9xdrZBIKIr9Xc7gfN3o32ekJLNz9ufc3OkYE7ax2gfyMuS
+         AjUlT6q+S+858fD12lo4+4k47uDqsNUfrohVY=
+Message-ID: <21d7e9970808301406x6310c7b9w2ef663cbf40b5e61@mail.gmail.com>
+Date: Sun, 31 Aug 2008 07:06:26 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Gene Heskett" <gene.heskett@verizon.net>
+Subject: Re: Linux-2.6.27-rc5, drm errors in log
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jaswinder Singh" <jaswinder@infradead.org>, xorg@lists.freedesktop.org
+In-Reply-To: <200808301452.04634.gene.heskett@verizon.net>
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: [PATCH] scsi/sd: Fix capacity output to show MB/GB/TB/...
-References: <48B9546B.4010004@simon.arlott.org.uk> <1220117091.3615.3.camel@localhost.localdomain> <20080830174516.GD1239@parisc-linux.org> <48B9B552.8060406@simon.arlott.org.uk>
-In-Reply-To: <48B9B552.8060406@simon.arlott.org.uk>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200808301452.04634.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The capacity printk'd in bytes is divided by 1000000,
-whereas 1048576 would be more consistent with the rest
-of the OS and disk-related utilities ('df' etc.).
+On Sun, Aug 31, 2008 at 4:52 AM, Gene Heskett <gene.heskett@verizon.net> wrote:
+> Greetings all;
+>
+> A re-repeat of a previous posting which has not drawn a comment. With added
+> content, added CC to a patch author, and some new questions.
+>
+> Machine is an F8 install, Athlon xp-2800 on an nforce2 motherboard, running
+> an older radeon 9200SE (RV280 based) video card.  No problems if I reboot
+> to 2.6.27-rc4.
+>
+> I'm drowning in these errors:
+>
+> Aug 30 13:21:05 coyote kernel: [14927.850078] [drm] wait for fifo failed status : 0x80076100 0x00000000
+> Aug 30 13:21:05 coyote kernel: [14927.861335] [drm] wait for fifo failed status : 0x80076100 0x00000000
+> Aug 30 13:21:05 coyote kernel: [14928.060233] [drm] wait idle failed status : 0x80076100 0x00000000
+> Aug 30 13:21:07 coyote kernel: [14929.557075] [drm] wait for fifo failed status : 0x80076100 0x00000000
+> Aug 30 13:21:07 coyote kernel: [14929.568869] [drm] wait for fifo failed status : 0x80076100 0x00000000
+> Aug 30 13:21:08 coyote kernel: [14931.028882] [drm] wait for fifo failed status : 0x80036100 0x00000000
+> Aug 30 13:21:08 coyote kernel: [14931.039896] [drm] wait for fifo failed status : 0x80076100 0x00000000
+> Aug 30 13:21:18 coyote kernel: [14940.515114] [drm] wait for fifo failed status : 0x80076100 0x00000000
+> Aug 30 13:27:27 coyote kernel: [15310.125656] [drm] wait for fifo failed status : 0x80066107 0x00000000
+>
+> I have rebuilt and rebooted several times now, adjusting things like the
+> timer frequency, and modular vs builtin for ati and drm stuff with no
+> apparent effect.
 
-This change replaces the (sz - (sz/625 - 974))/1950
-calculation with a simple right shift to output with
-five significant digits the capacity in KB, MB, GB, TB,
-PB, or EB. Anything beyond this becomes too large...
----
- drivers/scsi/sd.c |   62 ++++++++++++++++++++++++++++++++++------------------
- 1 files changed, 40 insertions(+), 22 deletions(-)
+Before now we never had this error in here, and its showing up a real
+problem with your card, reading the r300 register doesn't matter at
+all,
+as things have already gone wrong by the time you hit this debug.
 
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index e5e7d78..c47a071 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -1290,6 +1290,8 @@ sd_read_capacity(struct scsi_disk *sdkp, unsigned char *buffer)
- 	struct scsi_sense_hdr sshdr;
- 	int sense_valid = 0;
- 	struct scsi_device *sdp = sdkp->device;
-+	unsigned long long orig_capacity, sz;
-+	char *units;
- 
- repeat:
- 	retries = 3;
-@@ -1429,30 +1431,16 @@ got_data:
- 		 */
- 		sector_size = 512;
- 	}
--	{
--		/*
--		 * The msdos fs needs to know the hardware sector size
--		 * So I have created this table. See ll_rw_blk.c
--		 * Jacques Gelinas (Jacques@solucorp.qc.ca)
--		 */
--		int hard_sector = sector_size;
--		sector_t sz = (sdkp->capacity/2) * (hard_sector/256);
--		struct request_queue *queue = sdp->request_queue;
--		sector_t mb = sz;
--
--		blk_queue_hardsect_size(queue, hard_sector);
--		/* avoid 64-bit division on 32-bit platforms */
--		sector_div(sz, 625);
--		mb -= sz - 974;
--		sector_div(mb, 1950);
- 
--		sd_printk(KERN_NOTICE, sdkp,
--			  "%llu %d-byte hardware sectors (%llu MB)\n",
--			  (unsigned long long)sdkp->capacity,
--			  hard_sector, (unsigned long long)mb);
--	}
-+	/*
-+	 * The msdos fs needs to know the hardware sector size
-+	 * So I have created this table. See ll_rw_blk.c
-+	 * Jacques Gelinas (Jacques@solucorp.qc.ca)
-+	 */
-+	blk_queue_hardsect_size(sdp->request_queue, sector_size);
- 
- 	/* Rescale capacity to 512-byte units */
-+	orig_capacity = sdkp->capacity;
- 	if (sector_size == 4096)
- 		sdkp->capacity <<= 3;
- 	else if (sector_size == 2048)
-@@ -1463,6 +1451,36 @@ got_data:
- 		sdkp->capacity >>= 1;
- 
- 	sdkp->device->sector_size = sector_size;
-+
-+	/* Output device size with at most 5 digits,
-+	 * this assumes sz is based on a 512-byte
-+	 * sector size.
-+	 */
-+	sz = sdkp->capacity;
-+	if (sz >= (unsigned long long)100000*((unsigned long long)2<<40)) {
-+		// 100000PB
-+		sz >>= 51;
-+		units = "EB";
-+	} else if (sz >= (unsigned long long)100000*(2<<30)) { // 100000TB
-+		sz >>= 41;
-+		units = "PB";
-+	} else if (sz >= (unsigned long long)100000*(2<<20)) { // 100000GB
-+		sz >>= 31;
-+		units = "TB";
-+	} else if (sz >= 100000*(2<<10)) { // 100000MB
-+		sz >>= 21;
-+		units = "GB";
-+	} else if (sz >= 100000*2) { // 100000KB
-+		sz >>= 11;
-+		units = "MB";
-+	} else {
-+		sz >>= 1;
-+		units = "KB";
-+	}
-+	sd_printk(KERN_NOTICE, sdkp,
-+		  "%llu %d-byte hardware sectors (%llu %s)\n",
-+		  (unsigned long long)orig_capacity, sector_size,
-+		  (unsigned long long)sz, units);
- }
- 
- /* called with buffer of length 512 */
--- 
-1.5.6.5
+The question is if you add the 3 lines into radeon_cp.c at the same
+place in -rc4 without the other patches does it still happen..
+       DRM_INFO("wait for fifo failed status : 0x%08X 0x%08X\n",
+                RADEON_READ(RADEON_RBBM_STATUS),
+                RADEON_READ(R300_VAP_CNTL_STATUS));
 
--- 
-Simon Arlott
+If so I'll just make DRM_INFO into DRM_DEBUG for now and we can work
+it out later.
+
+Dave.
