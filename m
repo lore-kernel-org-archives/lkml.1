@@ -1,53 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbYH3TWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755996AbYH3TXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755158AbYH3TWs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 15:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbYH3TWl
+	id S1755996AbYH3TXf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 15:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbYH3TX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 15:22:41 -0400
-Received: from casper.infradead.org ([85.118.1.10]:57257 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752552AbYH3TWk (ORCPT
+	Sat, 30 Aug 2008 15:23:27 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:31769 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752880AbYH3TXZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 15:22:40 -0400
-Date: Sat, 30 Aug 2008 12:22:42 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Gene Heskett <gene.heskett@verizon.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jaswinder Singh <jaswinder@infradead.org>, xorg@lists.freedesktop.org
-Subject: Re: Linux-2.6.27-rc5, drm errors in log
-Message-ID: <20080830122242.32d73b32@infradead.org>
-In-Reply-To: <200808301452.04634.gene.heskett@verizon.net>
-References: <200808301452.04634.gene.heskett@verizon.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 30 Aug 2008 15:23:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wqZgScxypV+yuZzhihOoXK8dXywX9CBLmLxmIR06Z6bakVoEOzewv5G7zcTJJnsN6/
+         zK4XnZNs4Shwxvi4yUJmgGUlgCXe9S1XYyrJTfSh9bWM9AD+wkSkBOAsMULDApnqpijA
+         jKvAxE4XIZIHZFKhgfnXc94+OWadEr6jwe3ic=
+Date: Sat, 30 Aug 2008 23:23:24 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>,
+       Tom Tucker <tom@opengridcomputing.com>, Neil Brown <neilb@suse.de>,
+       Chuck Lever <chuck.lever@oracle.com>, Greg Banks <gnb@sgi.com>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: buffer overflow in /proc/sys/sunrpc/transports
+Message-ID: <20080830192324.GE7611@lenovo>
+References: <20080830184422.GA9598@localhost.localdomain> <20080830190642.GC7611@lenovo> <19f34abd0808301215i445e8411q987c864c0b478d30@mail.gmail.com> <20080830192112.GD7611@lenovo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080830192112.GD7611@lenovo>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 30 Aug 2008 14:52:04 -0400
-Gene Heskett <gene.heskett@verizon.net> wrote:
+[Cyrill Gorcunov - Sat, Aug 30, 2008 at 11:21:12PM +0400]
+| [Vegard Nossum - Sat, Aug 30, 2008 at 09:15:16PM +0200]
+| | On Sat, Aug 30, 2008 at 9:06 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| | > [Vegard Nossum - Sat, Aug 30, 2008 at 08:44:22PM +0200]
+| | > | Hi,
+| | > |
+| | > | I noticed that something weird is going on with /proc/sys/sunrpc/transports.
+| | > | This file is generated in net/sunrpc/sysctl.c, function proc_do_xprt(). When
+| | > | I "cat" this file, I get the expected output:
+| | > |
+| | > |     $ cat /proc/sys/sunrpc/transports
+| | > |     tcp 1048576
+| | > |     udp 32768
+| | > |
+| | > | But I think that it does not check the length of the buffer supplied by
+| | > | userspace to read(). With my original program, I found that the stack was
+| | > | being overwritten by the characters above, even when the length given to
+| | > | read() was just 1. So I have created a test program, see it at the bottom of
+| | > | this e-mail. Here is its output:
+| | > |
+| | > ...
+| | >
+| | > Indeed, maybe just add checking for user buffer length?
+| | > As proc_dodebug() in this file are doing. I don't think
+| | > the user would be happy with his stack burned :)
+| | >
+| | > Something like:
+| | > ---
+| | >
+| | > Index: linux-2.6.git/net/sunrpc/sysctl.c
+| | > ===================================================================
+| | > --- linux-2.6.git.orig/net/sunrpc/sysctl.c      2008-07-20 11:40:14.000000000 +0400
+| | > +++ linux-2.6.git/net/sunrpc/sysctl.c   2008-08-30 23:05:30.000000000 +0400
+| | > @@ -69,6 +69,8 @@ static int proc_do_xprt(ctl_table *table
+| | >                return -EINVAL;
+| | >        else {
+| | >                len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
+| | > +               if (*lenp < len)
+| | > +                       return -EFAULT;
+| | >                if (!access_ok(VERIFY_WRITE, buffer, len))
+| | >                        return -EFAULT;
+| | >
+| | 
+| | Hm. I think this is wrong. Shouldn't we copy as many bytes as the user
+| | indicated?
+| 
+| Well, hard to say what user-space programmer is expecting from us.
+| I mean - maybe he (reader) wants only part of results not the whole
+| contents BUT by this way he never know what the whole conetnts would be
+| until trying to read more (ie to check if there no more data from
+| kernel side). What is preferred behaviour - i don't know :)
+| 
+| | 
+| | 
+| | Vegard
+| | 
+| | -- 
+| | "The animistic metaphor of the bug that maliciously sneaked in while
+| | the programmer was not looking is intellectually dishonest as it
+| | disguises that the error is the programmer's own creation."
+| | 	-- E. W. Dijkstra, EWD1036
+| | 
+| 
+| 		- Cyrill -
 
-> Greetings all;
-> 
-> A re-repeat of a previous posting which has not drawn a comment. With
-> added content, added CC to a patch author, and some new questions.
-> 
-> Machine is an F8 install, Athlon xp-2800 on an nforce2 motherboard,
-> running an older radeon 9200SE (RV280 based) video card.  No problems
-> if I reboot to 2.6.27-rc4.
+Btw, I didn't try to get size of sysfs file - will such an action return
+size of data from kernel side?
 
-
-since half this sort of driver is in userspace it helps if you also add
-the version of the userspace driver you are using (and if you changed
-it recently)
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+		- Cyrill -
