@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbYH3LWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbYH3LXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754412AbYH3LWu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 07:22:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbYH3LWl
+	id S1755557AbYH3LXa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 07:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbYH3LXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 07:22:41 -0400
-Received: from h155.mvista.com ([63.81.120.155]:30585 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751210AbYH3LWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 07:22:40 -0400
-Message-ID: <48B92D7A.7020701@ru.mvista.com>
-Date: Sat, 30 Aug 2008 15:22:34 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Elias Oltmanns <eo@nebensachen.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ide: Build fix for CONFIG_IDE_PROC_FS=n
-References: <20080829213217.4826.91622.stgit@denkblock.local> <48B92CB6.2090702@ru.mvista.com>
-In-Reply-To: <48B92CB6.2090702@ru.mvista.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sat, 30 Aug 2008 07:23:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51297 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751869AbYH3LXW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 07:23:22 -0400
+Date: Sat, 30 Aug 2008 08:22:48 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: linux-kernel@vger.kernel.org
+Subject: Fw: [PATCH 3/5] V4L/DVB: follow lspci device/vendor style
+Message-ID: <20080830082248.6e27ae97@mchehab.chehab.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I have just written:
->> Recent changes have broken compilation when CONFIG_IDE_PROC_FS is not 
->> set.
->>
->> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
->>   
-> [...]
->> diff --git a/drivers/ide/ide-disk.h b/drivers/ide/ide-disk.h
->> index f937772..5254cae 100644
->> --- a/drivers/ide/ide-disk.h
->> +++ b/drivers/ide/ide-disk.h
->> @@ -23,8 +23,10 @@ ide_decl_devset(acoustic);
->>  /* ide-disk_ioctl.c */
->>  int ide_disk_ioctl(struct inode *, struct file *, unsigned int, 
->> unsigned long);
->>  
->> +#ifdef CONFIG_IDE_PROC_FS
->>  /* ide-disk_proc.c */
->>  extern ide_proc_entry_t ide_disk_proc[];
->>  extern const struct ide_proc_devset ide_disk_settings[];
->> +#endif /* CONFIG_IDE_PROC_FS */
->>  
->>  #endif /* __IDE_DISK_H */
->> diff --git a/drivers/ide/ide-floppy.h b/drivers/ide/ide-floppy.h
->> index 2ad373e..86ee37e 100644
->> --- a/drivers/ide/ide-floppy.h
->> +++ b/drivers/ide/ide-floppy.h
->> @@ -53,8 +53,10 @@ sector_t ide_floppy_capacity(ide_drive_t *);
->>  /* ide-floppy_ioctl.c */
->>  int ide_floppy_ioctl(struct inode *, struct file *, unsigned, 
->> unsigned long);
->>  
->> +#ifdef CONFIG_IDE_PROC_FS
->>  /* ide-floppy_proc.c */
->>  extern ide_proc_entry_t ide_floppy_proc[];
->>  extern const struct ide_proc_devset ide_floppy_settings[];
->> +#endif /* CONFIG_IDE_PROC_FS */
->>   
->
->   Is surrounding 'extern' declarations by #ifdef's really of any value?
->   They shouldn't be used if CONFIG_IDE_PROC_FS=n, so no object file 
-> records should be generated.
 
-   Ah, you probably mean to turn the possible link time errors if the do 
-get referenced into the compile time errors...
+I'm forwarding this message to LKML, since the previous one got rejected there, due
+to an error at CC list.
 
-MBR, Sergei
+Cheers,
+Mauro.
+
+Forwarded message:
+
+Date: Fri, 29 Aug 2008 17:57:56 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, H. Peter Anvin <hpa@zytor.com>, David Airlie <airlied@linux.ie>, Samuel Ortiz <samuel@sortiz.org>, Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] V4L/DVB: follow lspci device/vendor style
 
 
+On Mon, 25 Aug 2008 15:45:09 -0600
+Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+
+> 
+> Use "[%04x:%04x]" for PCI vendor/device IDs to follow the format
+> used by lspci(8).
+> 
+I've applied at V4L/DVB ML and should add it at linux-next. Thanks.
+
+
+
+Cheers,
+Mauro
+
+
+
+
+Cheers,
+Mauro
