@@ -1,253 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbYH3N4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbYH3OCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753533AbYH3N4S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 09:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbYH3N4F
+	id S1753202AbYH3OCp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 10:02:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750817AbYH3OCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 09:56:05 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:49136 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751405AbYH3N4E (ORCPT
+	Sat, 30 Aug 2008 10:02:36 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:45498 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750786AbYH3OCf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 09:56:04 -0400
-Date: Sat, 30 Aug 2008 19:25:57 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Spencer Candland <spencer@bluehost.com>, dmitry.adamushko@gmail.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: Still seeing decreasing stime/utime
-Message-ID: <20080830135557.GA24039@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Spencer Candland <spencer@bluehost.com>, dmitry.adamushko@gmail.com,
-	mingo@elte.hu, linux-kernel@vger.kernel.org
-References: <48B5C4C7.8040509@bluehost.com> <48B66BCC.8030207@linux.vnet.ibm.com> <48B702FA.8060308@bluehost.com> <20080828224502.GA1540@balbir.in.ibm.com> <48B859C8.5000001@bluehost.com> <48B8E102.5050503@linux.vnet.ibm.com> <1220095656.8426.23.camel@twins>
+	Sat, 30 Aug 2008 10:02:35 -0400
+Date: Sat, 30 Aug 2008 07:02:33 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, rusty@rustcorp.com.au
+Subject: Re: [PATCH] Remove stop_machine during module load v2
+Message-ID: <20080830140233.GC7107@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080830080900.GA19870@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1220095656.8426.23.camel@twins>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080830080900.GA19870@basil.nowhere.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-08-30 13:27:36]:
-
-> On Sat, 2008-08-30 at 11:26 +0530, Balbir Singh wrote:
-> > Spencer Candland wrote:
-> > >> Here is an experimental patch (I've just compiled and booted a machine
-> > >> with it, I am unable to reproduce your problem), could you please test
-> > >> it for me and see if it helps solve the problem
-> > > 
-> > > Looks like this fixed it.  I have been testing this for the last 16
-> > > hours and everything is looking good.
-> > > 
-> > 
-> > Excellent! Ingo, Peter, do you like the patch? If so, could you please pick it
-> > up Ingo. I think we should even push the fix to stable releases.
+On Sat, Aug 30, 2008 at 10:09:00AM +0200, Andi Kleen wrote:
+> Remove stop_machine during module load v2
 > 
-> Looks good, except for the issue you yourself earlier raised, a few of
-> those functions looks too large to be inlined.
->
+> module loading currently does a stop_machine on each module load to insert
+> the module into the global module lists.  Especially on larger systems this 
+> can be quite expensive.
+> 
+> It does that to handle concurrent lock lessmodule list readers
+> like kallsyms.
+> 
+> I don't think stop_machine() is actually needed to insert something
+> into a list though. There are no concurrent writers because the
+> module mutex is taken. And the RCU list functions know how to insert
+> a node into a list with the right memory ordering so that concurrent
+> readers don't go off into the wood.
+> 
+> So remove the stop_machine for the module list insert and just
+> do a list_add_rcu() instead. 
+> 
+> Module removal will still do a stop_machine of course, it needs
+> that for other reasons.
+> 
+> v2: Revised readers based on Paul's comments. All readers that only
+>     rely on disabled preemption need to be changed to list_for_each_rcu().
+>     Done that. The others are ok because they have the modules mutex.
+>     Also added a possible missing preempt disable for print_modules().
+> 
+> [cc Paul McKenney for review. It's not RCU, but quite similar.]
 
-Here's the updated revision with task_*time functions moved to sched.c
-and inlining removed, except for task_gtime(). I've compiled and
-booted a machine (x86_64) with this patch applied.
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Reported-by: spencer@bluehost.com
-
-Spencer reported a problem where utime and stime were going negative despite
-the fixes in commit b27f03d4bdc145a09fb7b0c0e004b29f1ee555fa. The suspected
-reason for the problem is that signal_struct maintains it's own utime and
-stime (of exited tasks), these are not updated using the new task_utime()
-routine, hence sig->utime can go backwards and cause the same problem
-to occur (sig->utime, adds tsk->utime and not task_utime()). This patch
-fixes the problem
-
-TODO: using max(task->prev_utime, derived utime) works for now, but a more
-generic solution is to implement cputime_max() and use the cputime_gt()
-function for comparison.
-
-Comments?
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- fs/proc/array.c       |   59 --------------------------------------------------
- include/linux/sched.h |    4 +++
- kernel/exit.c         |    6 ++---
- kernel/sched.c        |   59 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 66 insertions(+), 62 deletions(-)
-
-diff -puN kernel/exit.c~fix-utime-stime-moving-backwards kernel/exit.c
---- linux-2.6.27-rc3/kernel/exit.c~fix-utime-stime-moving-backwards	2008-08-29 03:14:57.000000000 +0530
-+++ linux-2.6.27-rc3-balbir/kernel/exit.c	2008-08-29 03:21:18.000000000 +0530
-@@ -115,9 +115,9 @@ static void __exit_signal(struct task_st
- 		 * We won't ever get here for the group leader, since it
- 		 * will have been the last reference on the signal_struct.
- 		 */
--		sig->utime = cputime_add(sig->utime, tsk->utime);
--		sig->stime = cputime_add(sig->stime, tsk->stime);
--		sig->gtime = cputime_add(sig->gtime, tsk->gtime);
-+		sig->utime = cputime_add(sig->utime, task_utime(tsk));
-+		sig->stime = cputime_add(sig->stime, task_stime(tsk));
-+		sig->gtime = cputime_add(sig->gtime, task_gtime(tsk));
- 		sig->min_flt += tsk->min_flt;
- 		sig->maj_flt += tsk->maj_flt;
- 		sig->nvcsw += tsk->nvcsw;
-diff -puN fs/proc/array.c~fix-utime-stime-moving-backwards fs/proc/array.c
---- linux-2.6.27-rc3/fs/proc/array.c~fix-utime-stime-moving-backwards	2008-08-29 03:14:58.000000000 +0530
-+++ linux-2.6.27-rc3-balbir/fs/proc/array.c	2008-08-29 03:16:09.000000000 +0530
-@@ -349,65 +349,6 @@ int proc_pid_status(struct seq_file *m, 
- 	return 0;
- }
- 
--/*
-- * Use precise platform statistics if available:
-- */
--#ifdef CONFIG_VIRT_CPU_ACCOUNTING
--static cputime_t task_utime(struct task_struct *p)
--{
--	return p->utime;
--}
--
--static cputime_t task_stime(struct task_struct *p)
--{
--	return p->stime;
--}
--#else
--static cputime_t task_utime(struct task_struct *p)
--{
--	clock_t utime = cputime_to_clock_t(p->utime),
--		total = utime + cputime_to_clock_t(p->stime);
--	u64 temp;
--
--	/*
--	 * Use CFS's precise accounting:
--	 */
--	temp = (u64)nsec_to_clock_t(p->se.sum_exec_runtime);
--
--	if (total) {
--		temp *= utime;
--		do_div(temp, total);
--	}
--	utime = (clock_t)temp;
--
--	p->prev_utime = max(p->prev_utime, clock_t_to_cputime(utime));
--	return p->prev_utime;
--}
--
--static cputime_t task_stime(struct task_struct *p)
--{
--	clock_t stime;
--
--	/*
--	 * Use CFS's precise accounting. (we subtract utime from
--	 * the total, to make sure the total observed by userspace
--	 * grows monotonically - apps rely on that):
--	 */
--	stime = nsec_to_clock_t(p->se.sum_exec_runtime) -
--			cputime_to_clock_t(task_utime(p));
--
--	if (stime >= 0)
--		p->prev_stime = max(p->prev_stime, clock_t_to_cputime(stime));
--
--	return p->prev_stime;
--}
--#endif
--
--static cputime_t task_gtime(struct task_struct *p)
--{
--	return p->gtime;
--}
--
- static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
- 			struct pid *pid, struct task_struct *task, int whole)
- {
-diff -puN include/linux/sched.h~fix-utime-stime-moving-backwards include/linux/sched.h
---- linux-2.6.27-rc3/include/linux/sched.h~fix-utime-stime-moving-backwards	2008-08-29 03:14:58.000000000 +0530
-+++ linux-2.6.27-rc3-balbir/include/linux/sched.h	2008-08-30 18:43:56.000000000 +0530
-@@ -1430,6 +1430,10 @@ static inline void put_task_struct(struc
- 		__put_task_struct(t);
- }
- 
-+extern cputime_t task_utime(struct task_struct *p);
-+extern cputime_t task_stime(struct task_struct *p);
-+extern cputime_t task_gtime(struct task_struct *p);
-+
- /*
-  * Per process flags
-  */
-diff -puN kernel/sched.c~fix-utime-stime-moving-backwards kernel/sched.c
---- linux-2.6.27-rc3/kernel/sched.c~fix-utime-stime-moving-backwards	2008-08-30 18:38:15.000000000 +0530
-+++ linux-2.6.27-rc3-balbir/kernel/sched.c	2008-08-30 18:41:40.000000000 +0530
-@@ -4176,6 +4176,65 @@ void account_steal_time(struct task_stru
- }
- 
- /*
-+ * Use precise platform statistics if available:
-+ */
-+#ifdef CONFIG_VIRT_CPU_ACCOUNTING
-+cputime_t task_utime(struct task_struct *p)
-+{
-+	return p->utime;
-+}
-+
-+cputime_t task_stime(struct task_struct *p)
-+{
-+	return p->stime;
-+}
-+#else
-+cputime_t task_utime(struct task_struct *p)
-+{
-+	clock_t utime = cputime_to_clock_t(p->utime),
-+		total = utime + cputime_to_clock_t(p->stime);
-+	u64 temp;
-+
-+	/*
-+	 * Use CFS's precise accounting:
-+	 */
-+	temp = (u64)nsec_to_clock_t(p->se.sum_exec_runtime);
-+
-+	if (total) {
-+		temp *= utime;
-+		do_div(temp, total);
-+	}
-+	utime = (clock_t)temp;
-+
-+	p->prev_utime = max(p->prev_utime, clock_t_to_cputime(utime));
-+	return p->prev_utime;
-+}
-+
-+cputime_t task_stime(struct task_struct *p)
-+{
-+	clock_t stime;
-+
-+	/*
-+	 * Use CFS's precise accounting. (we subtract utime from
-+	 * the total, to make sure the total observed by userspace
-+	 * grows monotonically - apps rely on that):
-+	 */
-+	stime = nsec_to_clock_t(p->se.sum_exec_runtime) -
-+			cputime_to_clock_t(task_utime(p));
-+
-+	if (stime >= 0)
-+		p->prev_stime = max(p->prev_stime, clock_t_to_cputime(stime));
-+
-+	return p->prev_stime;
-+}
-+#endif
-+
-+inline cputime_t task_gtime(struct task_struct *p)
-+{
-+	return p->gtime;
-+}
-+
-+/*
-  * This function gets called by the timer code, with HZ frequency.
-  * We call it with interrupts disabled.
-  *
-_
-
--- 
-	Balbir
+> Cc: rusty@rustcorp.com.au
+> Cc: paulmck@us.ibm.com
+> 
+> 
+> Index: linux-2.6.27-rc4-misc/kernel/module.c
+> ===================================================================
+> --- linux-2.6.27-rc4-misc.orig/kernel/module.c
+> +++ linux-2.6.27-rc4-misc/kernel/module.c
+> @@ -42,6 +42,7 @@
+>  #include <linux/string.h>
+>  #include <linux/mutex.h>
+>  #include <linux/unwind.h>
+> +#include <linux/rculist.h>
+>  #include <asm/uaccess.h>
+>  #include <asm/cacheflush.h>
+>  #include <linux/license.h>
+> @@ -61,7 +62,7 @@
+>  #define INIT_OFFSET_MASK (1UL << (BITS_PER_LONG-1))
+> 
+>  /* List of modules, protected by module_mutex or preempt_disable
+> - * (add/delete uses stop_machine). */
+> + * (delete uses stop_machine/add uses RCU list operations). */
+>  static DEFINE_MUTEX(module_mutex);
+>  static LIST_HEAD(modules);
+> 
+> @@ -216,7 +217,7 @@ static bool each_symbol(bool (*fn)(const
+>  	if (each_symbol_in_section(arr, ARRAY_SIZE(arr), NULL, fn, data))
+>  		return true;
+> 
+> -	list_for_each_entry(mod, &modules, list) {
+> +	list_for_each_entry_rcu(mod, &modules, list) {
+>  		struct symsearch arr[] = {
+>  			{ mod->syms, mod->syms + mod->num_syms, mod->crcs,
+>  			  NOT_GPL_ONLY, false },
+> @@ -1391,17 +1392,6 @@ static void mod_kobject_remove(struct mo
+>  }
+> 
+>  /*
+> - * link the module with the whole machine is stopped with interrupts off
+> - * - this defends against kallsyms not taking locks
+> - */
+> -static int __link_module(void *_mod)
+> -{
+> -	struct module *mod = _mod;
+> -	list_add(&mod->list, &modules);
+> -	return 0;
+> -}
+> -
+> -/*
+>   * unlink the module with the whole machine is stopped with interrupts off
+>   * - this defends against kallsyms not taking locks
+>   */
+> @@ -2196,8 +2186,12 @@ static struct module *load_module(void _
+> 
+>  	/* Now sew it into the lists so we can get lockdep and oops
+>           * info during argument parsing.  Noone should access us, since
+> -         * strong_try_module_get() will fail. */
+> -	stop_machine(__link_module, mod, NULL);
+> +         * strong_try_module_get() will fail.
+> +	 * lockdep/oops can run asynchronous, so use the RCU list insertion
+> +	 * function to insert in a way safe to concurrent readers.
+> +	 * The mutex protects against concurrent writers.
+> +	 */
+> +	list_add_rcu(&mod->list, &modules);
+> 
+>  	/* Size of section 0 is 0, so this works well if no params */
+>  	err = parse_args(mod->name, mod->args,
+> @@ -2401,7 +2395,7 @@ const char *module_address_lookup(unsign
+>  	const char *ret = NULL;
+> 
+>  	preempt_disable();
+> -	list_for_each_entry(mod, &modules, list) {
+> +	list_for_each_entry_rcu(mod, &modules, list) {
+>  		if (within(addr, mod->module_init, mod->init_size)
+>  		    || within(addr, mod->module_core, mod->core_size)) {
+>  			if (modname)
+> @@ -2424,7 +2418,7 @@ int lookup_module_symbol_name(unsigned l
+>  	struct module *mod;
+> 
+>  	preempt_disable();
+> -	list_for_each_entry(mod, &modules, list) {
+> +	list_for_each_entry_rcu(mod, &modules, list) {
+>  		if (within(addr, mod->module_init, mod->init_size) ||
+>  		    within(addr, mod->module_core, mod->core_size)) {
+>  			const char *sym;
+> @@ -2448,7 +2442,7 @@ int lookup_module_symbol_attrs(unsigned 
+>  	struct module *mod;
+> 
+>  	preempt_disable();
+> -	list_for_each_entry(mod, &modules, list) {
+> +	list_for_each_entry_rcu(mod, &modules, list) {
+>  		if (within(addr, mod->module_init, mod->init_size) ||
+>  		    within(addr, mod->module_core, mod->core_size)) {
+>  			const char *sym;
+> @@ -2475,7 +2469,7 @@ int module_get_kallsym(unsigned int symn
+>  	struct module *mod;
+> 
+>  	preempt_disable();
+> -	list_for_each_entry(mod, &modules, list) {
+> +	list_for_each_entry_rcu(mod, &modules, list) {
+>  		if (symnum < mod->num_symtab) {
+>  			*value = mod->symtab[symnum].st_value;
+>  			*type = mod->symtab[symnum].st_info;
+> @@ -2518,7 +2512,7 @@ unsigned long module_kallsyms_lookup_nam
+>  			ret = mod_find_symname(mod, colon+1);
+>  		*colon = ':';
+>  	} else {
+> -		list_for_each_entry(mod, &modules, list)
+> +		list_for_each_entry_rcu(mod, &modules, list)
+>  			if ((ret = mod_find_symname(mod, name)) != 0)
+>  				break;
+>  	}
+> @@ -2619,7 +2613,7 @@ const struct exception_table_entry *sear
+>  	struct module *mod;
+> 
+>  	preempt_disable();
+> -	list_for_each_entry(mod, &modules, list) {
+> +	list_for_each_entry_rcu(mod, &modules, list) {
+>  		if (mod->num_exentries == 0)
+>  			continue;
+> 
+> @@ -2645,7 +2639,7 @@ int is_module_address(unsigned long addr
+> 
+>  	preempt_disable();
+> 
+> -	list_for_each_entry(mod, &modules, list) {
+> +	list_for_each_entry_rcu(mod, &modules, list) {
+>  		if (within(addr, mod->module_core, mod->core_size)) {
+>  			preempt_enable();
+>  			return 1;
+> @@ -2666,7 +2660,7 @@ struct module *__module_text_address(uns
+>  	if (addr < module_addr_min || addr > module_addr_max)
+>  		return NULL;
+> 
+> -	list_for_each_entry(mod, &modules, list)
+> +	list_for_each_entry_rcu(mod, &modules, list)
+>  		if (within(addr, mod->module_init, mod->init_text_size)
+>  		    || within(addr, mod->module_core, mod->core_text_size))
+>  			return mod;
+> @@ -2691,8 +2685,11 @@ void print_modules(void)
+>  	char buf[8];
+> 
+>  	printk("Modules linked in:");
+> -	list_for_each_entry(mod, &modules, list)
+> +	/* Most callers should already have preempt disabled, but make sure */
+> +	preempt_disable();
+> +	list_for_each_entry_rcu(mod, &modules, list)
+>  		printk(" %s%s", mod->name, module_flags(mod, buf));
+> +	preempt_enable();
+>  	if (last_unloaded_module[0])
+>  		printk(" [last unloaded: %s]", last_unloaded_module);
+>  	printk("\n");
