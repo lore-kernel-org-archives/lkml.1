@@ -1,108 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759271AbYHaMBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759246AbYHaMJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759271AbYHaMBA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 08:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758133AbYHaMAv
+	id S1759246AbYHaMJG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 08:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757959AbYHaMIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 08:00:51 -0400
-Received: from gerard.telenet-ops.be ([195.130.132.48]:58407 "EHLO
-	gerard.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757587AbYHaMAt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 08:00:49 -0400
-Date: Sun, 31 Aug 2008 14:00:38 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-cc: haavard.skinnemoen@atmel.com, eaa@wprmedical.com,
-       linux-mtd@lists.infradead.org, kernel@avr32linux.org,
-       dwmw2@infradead.org, jens.axboe@oracle.com,
+	Sun, 31 Aug 2008 08:08:55 -0400
+Received: from nebensachen.de ([195.34.83.29]:42856 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757738AbYHaMIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 08:08:53 -0400
+X-Hashcash: 1:20:080831:htejun@gmail.com::W4Ch6WGFjZ980/Sw:03Fbi
+X-Hashcash: 1:20:080831:alan@lxorguk.ukuu.org.uk::+D3xzVgl0J5yaijI:00000000000000000000000000000000000002V3Q
+X-Hashcash: 1:20:080831:akpm@linux-foundation.org::FITNJuRUj2SiBoir:0000000000000000000000000000000000001KQA
+X-Hashcash: 1:20:080831:bzolnier@gmail.com::KQuVCswmQvOTsjeO:00000000000000000000000000000000000000000008zFS
+X-Hashcash: 1:20:080831:jeff@garzik.org::zS0v2AT9avhWC3Um:001+qL
+X-Hashcash: 1:20:080831:randy.dunlap@oracle.com::W+j5c2JKnxf7p4PR:000000000000000000000000000000000000000QWA
+X-Hashcash: 1:20:080831:linux-ide@vger.kernel.org::g+tC19ydgwV1/Ny4:0000000000000000000000000000000000000+JU
+X-Hashcash: 1:20:080831:linux-kernel@vger.kernel.org::+hlItEwTVXfn0d3L:000000000000000000000000000000000K8wk
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: MTD/block regression (was Re: Slub debugging NAND error in
- 2.6.25.10.atmel.2)
-In-Reply-To: <20080830103318N.fujita.tomonori@lab.ntt.co.jp>
-Message-ID: <Pine.LNX.4.64.0808311357020.8062@anakin>
-References: <6B5648EA2E2C2D42AF2FF7691522AD92417CA6@wpr01.wprmedical.local>
- <20080829114828.279b79bc@hskinnemo-gx745.norway.atmel.com>
- <20080829162824.17f8746b@hskinnemo-gx745.norway.atmel.com>
- <20080830103318N.fujita.tomonori@lab.ntt.co.jp>
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] libata: Implement disk shock protection support
+References: <87wshzplvk.fsf@denkblock.local>
+	<20080829211345.4355.89284.stgit@denkblock.local>
+	<48B913E6.1000104@gmail.com> <87k5dym5t9.fsf@denkblock.local>
+	<48BA638B.2030001@gmail.com>
+Date: Sun, 31 Aug 2008 14:08:08 +0200
+In-Reply-To: <48BA638B.2030001@gmail.com> (Tejun Heo's message of "Sun, 31 Aug
+	2008 11:25:31 +0200")
+Message-ID: <87ej45mlp3.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 30 Aug 2008, FUJITA Tomonori wrote:
-> On Fri, 29 Aug 2008 16:28:24 +0200
-> Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-> > Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-> > > Hmm...I just saw this when booting 2.6.27-rc5 on the NGW100:
-> > > 
-> > > kobject (91ce8410): tried to init an initialized object, something is seriously wrong.
-> > > Call trace:
-> > >  [<90017184>] dump_stack+0x18/0x20
-> > >  [<900c1894>] kobject_init+0x28/0x5c
-> > >  [<900c1bf6>] kobject_init_and_add+0xe/0x24
-> > >  [<900beff0>] blk_register_filter+0x28/0x40
-> > >  [<900be224>] add_disk+0x38/0x68
-> > >  [<900e70f0>] add_mtd_blktrans_dev+0x174/0x184
-> > >  [<900e748e>] mtdblock_add_mtd+0x36/0x3c
-> > >  [<900e6e38>] blktrans_notify_add+0x1a/0x3a
-> > >  [<900e533c>] add_mtd_device+0x60/0xa0
-> > >  [<900e5f7e>] add_mtd_partitions+0x37a/0x3a0
-> > >  [<900ec4d0>] physmap_flash_probe+0x1ec/0x21c
-> > >  [<900e0f24>] platform_drv_probe+0x10/0x12
-> > >  [<900e06d0>] driver_probe_device+0x84/0xf0
-> > >  [<900e076a>] __driver_attach+0x2e/0x44
-> > >  [<900e0096>] bus_for_each_dev+0x2e/0x4c
-> > >  [<900e05b6>] driver_attach+0x12/0x14
-> > >  [<900e036c>] bus_add_driver+0x6c/0x178
-> > >  [<900e08a4>] driver_register+0x58/0xb0
-> > >  [<900e1126>] platform_driver_register+0x56/0x5c
-> > >  [<9000aaf6>] physmap_init+0xa/0x10
-> > >  [<9001422a>] do_one_initcall+0x2a/0x10c
-> > >  [<900005b8>] kernel_init+0x48/0x90
-> > >  [<9001fcc0>] do_exit+0x0/0x4cc
-> > 
-> > Ok, it turns out it's not related. It's a newly introduced regression
-> > which I've bisected down to:
-> > 
-> > commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4
-> > Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Date:   Sat Aug 16 14:10:05 2008 +0900
-> > 
-> >     block: move cmdfilter from gendisk to request_queue
-> 
-> Really sorry about that. A fix was queued in Jens' tree:
-> 
-> http://marc.info/?l=linux-kernel&m=122000748432301&w=2
-> 
-> 
-> > Unfortunately, I can't revert it cleanly, so it could be a false
-> > positive. But it does sort of make sense, since it makes the filter
-> > per-queue instead of per-gendisk, so if MTD uses the same queue for
-> > several block devices, the filter kobject might end up being
-> > initialized multiple times. Or something.
-> 
-> Right, the problem is that MTD uses the same queue for multiple
-> gendisks. It would be great if a MTD developer could fix it.
+Tejun Heo <htejun@gmail.com> wrote:
+> Hello,
+>
+> Elias Oltmanns wrote:
+>> Tejun Heo <htejun@gmail.com> wrote:
+>>>> +	ata_port_for_each_link(link, ap) {
+>>>> +		ata_link_for_each_dev(dev, link) {
+>>>> +			if (!dev->sdev)
+>>>> +				continue;
+>>> You probably want to do if (dev->class != ATA_DEV_ATA) here.
+>> 
+>> Well, I really am concerned about dev->sdev. So far, I haven't quite
+>> figured out yet whether under which circumstances I can safely assume
+>> that the scsi counter part of dev including the block layer request
+>> queue has been completely set up and configured so there won't be any
+>> null pointer dereferences. However, if you think that I needn't bother
+>> with stopping the request queue anyway, checking for ATA_DEV_ATA (what
+>> about ATA_DEV_ATAPI?) should definitely be enough.
+>
+> Ah.. you need to part ATAPI too?  If so, just test for
+> ata_dev_enabled().
 
-I'm also seeing it with drivers/block/ataflop.c (also a single queue) on
-ARAnyM.
+Well, I'm not quite sure really. Perhaps you are right and I'd better
+leave ATAPI alone, especially given the problem that the unload command
+might mess up a CD/DVD write operation. As long as no laptop HDs are
+identified as ATAPI devices, there should be no problem with that.
 
-And from looking at drivers/block/floppy.c and drivers/block/amiflop.c,
-I guess it happens there, too.
+> One way or the other, there's no need to care about SCSI or block
+> layer when you're in EH.
+>
+>>>> +			ata_tf_init(dev, &tf);
+>>>> +			q = dev->sdev->request_queue;
+>>>> +			spin_lock_irq(q->queue_lock);
+>>>> +			if (park) {
+>>>> +				blk_stop_queue(q);
+>>> Queue is already plugged when EH is entered.  No need for this.
+>> 
+>> Quite right. It's just that it will be un- and replugged every
+>> (3 * HZ) / 1000, so I thought it might be worthwhile to stop the queue
+>> anyway. Perhaps it really isn't worth bothering and the code would
+>> certainly be nicer to look at.
+>
+> While the EH is running, nothing gets through other than commands
+> issued by EH itself, so no need to worry about how upper layers would
+> behave.
 
-Any other single-queue drivers that got broken???
+Alright, I'll drop it.
 
-Gr{oetje,eeting}s,
+>
+>>>> +			spin_unlock(q->queue_lock);
+>>>> +			spin_lock(ap->lock);
+>>> And no need to play with locks at all.
+>> 
+>> Just to be sure, are you just referring to the queue lock, or to the host
+>> lock as well? Am I wrong in thinking that we have to protect all access
+>> to dev->flags because bit operations are performed non atomically
+>> virtually at any time?
+>
+> Yes, when modifying the flags.  You don't need to when testing a
+> feature.
 
-						Geert
+Right.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+[...]
+>>>> +int ata_scsi_register_pm_notifier(void)
+>>>> +{
+>>>> +	return register_pm_notifier(&ata_scsi_pm_notifier_block);
+>>>> +}
+>>>> +
+>>>> +int ata_scsi_unregister_pm_notifier(void)
+>>>> +{
+>>>> +	return unregister_pm_notifier(&ata_scsi_pm_notifier_block);
+>>>> +}
+>>> Why are these PM notifiers necessary?
+>> 
+>> Since it's a user process that controls when we have to keep the heads
+>> off the platter, a suspend operation has to be blocked *before* process
+>> freezing when we happen to be in a precarious situation.
+>
+> Can you please elaborate a bit?  The reloading is done by the kernel
+> after a timeout, right?  What kind of precarious situation can the
+> kernel get into regarding suspend?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Sorry, I haven't expressed myself very clearly there, it seems. The user
+space process detects some acceleration and starts writing timeouts to
+the sysfs file. This causes the unload command to be issued to the
+device and stops all I/O until the user space daemon decides that the
+danger has passed, writes 0 to the sysfs file and leaves it alone
+afterwards. Now, if the daemon happens to request head parking right at
+the beginning of a suspend sequence, this means that we are in danger of
+falling, i.e. we have to make sure that I/O is stopped until that user
+space daemon gives the all-clear. However, suspending implies freezing
+all processes which means that the daemon can't keep checking and
+signalling to the kernel. The last timeout received before the daemon
+has been frozen will expire and the suspend procedure goes ahead. By
+means of the notifiers we can make sure that suspend is blocked until
+the daemon says that everything is alright.
+
+>
+>>> And these all can go.  If you're worried about recurring events you
+>>> can just update timestamp from the sysfs write function and do...
+>>>
+>>>     deadline = last_timestamp + delay;
+>>>     while ((now = jiffies) < deadline) {
+>>>         set_current_state(TASK_UNINTERRUPTIBLE);
+>>> 	schedule_timeout(deadline - now);
+>>> 	set_current_state(TASK_RUNNING);
+>>>     }
+>> 
+>> Ah, I can see that this while loop can replace my call to wait_event() in
+>> the eh sequence earlier on. However, I wonder how I am to replace the
+>> call to mod_timer(). As you can see, we perform different actions
+>> depending on whether the timer has merely been updated, or a new timer
+>> has been started. Only in the latter case we want to schedule eh. In
+>> order to achieve the equivalent in your setting while preventing any
+>> races, I'd have to protect the deadline field in struct ata_port by the
+>> host lock, i.e. something like:
+>> 
+>>     spin_lock_irq(ap->lock);
+>>     now = jiffies;
+>>     rc = now > ap->deadline;
+>>     ap->deadline = now + timeout;
+>>     if (rc) {
+>>         ap->link.eh_info.action |= ATA_EH_PARK;
+>>         ata_port_schedule_eh(ap);
+>>     }
+>>     ...
+>>     spin_unlock_irq(ap->lock);
+>
+> You can just do
+>
+>     spin_lock_irq(ap->lock);
+>     ap->deadline = jiffies + timeout;
+>     ap->link.eh_info.action |= ATA_EH_PARK;
+>     ata_port_schedule_eh(ap);
+>     spin_unlock_irq(ap->lock);
+
+Please note that I want to schedule EH (and thus the head unload -
+check power command sequence) only once in the event of overlapping
+timeouts. For instance, when the daemon sets a timeout of 2 seconds and
+does so again after one second has elapsed, I want the following to
+happen:
+
+[ Daemon writes 2 to the unload_heads file ]
+1. Set timer / deadline;
+2. eh_info.action |= ATA_EH_PARK;
+3. schedule EH;
+4. execute EH and sleep, waiting for the timeout to expire;
+
+[ Daemon writes 2 to the unload_heads file before the previous timeout
+has expired. ]
+
+5. update timer / deadline;
+6. the EH thread keeps blocking until the new timeout has expired.
+
+In particular, I don't want to reschedule EH in response to the second
+write to the unload_heads file. Also, we have to consider the case where
+the daemon signals to resume I/O prematurely by writing a timeout of 0.
+In this case, the EH thread should be woken up immediately.
+
+>
+>> and in the eh code a modified version of your loop:
+>> 
+>>     spin_lock_irq(ap->lock);
+>>     while ((now = jiffies) < deadline) {
+>>         spin_unlock_irq(ap->lock);
+>>         set_current_state(TASK_UNINTERRUPTIBLE);
+>>         schedule_timeout(deadline - now);
+>>         set_current_state(TASK_RUNNING);
+>>         spin_lock_irq(ap->lock);
+>>     }
+>>     spin_unlock_irq(ap->lock);
+>
+> Yeah, this looks about right, but you can make it a bit simpler...
+>
+>     while (time_before((now = jiffies), ap->deadline))
+> 	schedule_timeout_uninterruptible(ap->deadline - now);
+>
+> As locking on reader side doesn't mean much in cases like this.  The
+> deadline update which triggered EH is guaranteed to be visible and the
+> the window between waking up from schedule_timeout and ap->deadline
+> dereference is way too small to be any meaningful.
+
+Well, I'm persuaded as far as locking is concerned. Still, the problems
+described above remain.
+
+[...]
+>>>> +DEVICE_ATTR(unload_feature, S_IRUGO | S_IWUSR,
+>>>> +	    ata_scsi_unload_feature_show, ata_scsi_unload_feature_store);
+>>>> +EXPORT_SYMBOL_GPL(dev_attr_unload_feature);
+>>> Hmmm.... Maybe you can just disable it by echoing -1 to the unload file?
+>> 
+>> Even though disabling it may be desirable in some cases, it's typically
+>> *enabling* it that users will care about. Still, we can always accept -1
+>> and -2 and I have to say I rather like the idea. Thanks for the
+>> suggestion. Indeed, thank you very much for the thorough review.
+>
+> Oh.. what I meant was whether we need a separate sysfs node to
+> indicate whether unload feature is enabled or not but now I come to
+> think about it, that is per-device and the timer is per-port.  :-)
+
+That's no problem. The unload_heads node is per-device too even though
+the timer is per port. I really don't think we need the extra node.
+
+Regards,
+
+Elias
