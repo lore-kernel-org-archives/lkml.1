@@ -1,762 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYHaQdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbYHaQz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483AbYHaQdA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 12:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755206AbYHaQbe
+	id S1754692AbYHaQz5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 12:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbYHaQzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 12:31:34 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36236 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755128AbYHaQbc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 12:31:32 -0400
-Date: Sun, 31 Aug 2008 09:31:08 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: Arjan van de Ven <arjan@infradead.org>, tglx@tglx.de, mingo@elte.hu,
-       torvalds@linux-foundation.org, Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 5/5] select: switch select() and poll() over to hrtimers
-Message-ID: <20080831093108.27c5bdda@infradead.org>
-In-Reply-To: <20080831092828.13ae0279@infradead.org>
-References: <20080831092828.13ae0279@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 31 Aug 2008 12:55:47 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:56021 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751812AbYHaQzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 12:55:46 -0400
+Date: Sun, 31 Aug 2008 18:55:40 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       haavard.skinnemoen@atmel.com, eaa@wprmedical.com,
+       linux-mtd@lists.infradead.org, kernel@avr32linux.org,
+       dwmw2@infradead.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: MTD/block regression (was Re: Slub debugging NAND error in  2.6.25.10.atmel.2)
+Message-ID: <20080831165540.GY20055@kernel.dk>
+References: <6B5648EA2E2C2D42AF2FF7691522AD92417CA6@wpr01.wprmedical.local> <20080829114828.279b79bc@hskinnemo-gx745.norway.atmel.com> <20080829162824.17f8746b@hskinnemo-gx745.norway.atmel.com> <20080830103318N.fujita.tomonori@lab.ntt.co.jp> <Pine.LNX.4.64.0808311357020.8062@anakin>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0808311357020.8062@anakin>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Aug 31 2008, Geert Uytterhoeven wrote:
+> On Sat, 30 Aug 2008, FUJITA Tomonori wrote:
+> > On Fri, 29 Aug 2008 16:28:24 +0200
+> > Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+> > > Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+> > > > Hmm...I just saw this when booting 2.6.27-rc5 on the NGW100:
+> > > > 
+> > > > kobject (91ce8410): tried to init an initialized object, something is seriously wrong.
+> > > > Call trace:
+> > > >  [<90017184>] dump_stack+0x18/0x20
+> > > >  [<900c1894>] kobject_init+0x28/0x5c
+> > > >  [<900c1bf6>] kobject_init_and_add+0xe/0x24
+> > > >  [<900beff0>] blk_register_filter+0x28/0x40
+> > > >  [<900be224>] add_disk+0x38/0x68
+> > > >  [<900e70f0>] add_mtd_blktrans_dev+0x174/0x184
+> > > >  [<900e748e>] mtdblock_add_mtd+0x36/0x3c
+> > > >  [<900e6e38>] blktrans_notify_add+0x1a/0x3a
+> > > >  [<900e533c>] add_mtd_device+0x60/0xa0
+> > > >  [<900e5f7e>] add_mtd_partitions+0x37a/0x3a0
+> > > >  [<900ec4d0>] physmap_flash_probe+0x1ec/0x21c
+> > > >  [<900e0f24>] platform_drv_probe+0x10/0x12
+> > > >  [<900e06d0>] driver_probe_device+0x84/0xf0
+> > > >  [<900e076a>] __driver_attach+0x2e/0x44
+> > > >  [<900e0096>] bus_for_each_dev+0x2e/0x4c
+> > > >  [<900e05b6>] driver_attach+0x12/0x14
+> > > >  [<900e036c>] bus_add_driver+0x6c/0x178
+> > > >  [<900e08a4>] driver_register+0x58/0xb0
+> > > >  [<900e1126>] platform_driver_register+0x56/0x5c
+> > > >  [<9000aaf6>] physmap_init+0xa/0x10
+> > > >  [<9001422a>] do_one_initcall+0x2a/0x10c
+> > > >  [<900005b8>] kernel_init+0x48/0x90
+> > > >  [<9001fcc0>] do_exit+0x0/0x4cc
+> > > 
+> > > Ok, it turns out it's not related. It's a newly introduced regression
+> > > which I've bisected down to:
+> > > 
+> > > commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4
+> > > Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > > Date:   Sat Aug 16 14:10:05 2008 +0900
+> > > 
+> > >     block: move cmdfilter from gendisk to request_queue
+> > 
+> > Really sorry about that. A fix was queued in Jens' tree:
+> > 
+> > http://marc.info/?l=linux-kernel&m=122000748432301&w=2
+> > 
+> > 
+> > > Unfortunately, I can't revert it cleanly, so it could be a false
+> > > positive. But it does sort of make sense, since it makes the filter
+> > > per-queue instead of per-gendisk, so if MTD uses the same queue for
+> > > several block devices, the filter kobject might end up being
+> > > initialized multiple times. Or something.
+> > 
+> > Right, the problem is that MTD uses the same queue for multiple
+> > gendisks. It would be great if a MTD developer could fix it.
+> 
+> I'm also seeing it with drivers/block/ataflop.c (also a single queue) on
+> ARAnyM.
+> 
+> And from looking at drivers/block/floppy.c and drivers/block/amiflop.c,
+> I guess it happens there, too.
+> 
+> Any other single-queue drivers that got broken???
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 31 Aug 2008 08:26:40 -0700
-Subject: [PATCH] select: switch select() and poll() over to hrtimers
+The pending change will eliminate this problem so that single queue
+devices will work fine again. They should still work fine in -rc5, just
+with the annoying WARN_ON() for each device per queue.
 
-With lots of help, input and cleanups from Thomas Gleixner
-
-This patch switches select() and poll() over to hrtimers.
-
-The core of the patch is replacing the "s64 timeout" with a
-"struct timespec end_time" in all the plumbing.
-
-But most of the diffstat comes from using the just introduced helpers:
-	poll_select_set_timeout
-	poll_select_copy_remaining
-	timespec_add_safe
-which make manipulating the timespec easier and less error-prone.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- fs/compat.c          |  136 ++++----------------------
- fs/select.c          |  263 +++++++++++++++++---------------------------------
- include/linux/poll.h |    6 +-
- 3 files changed, 111 insertions(+), 294 deletions(-)
-
-diff --git a/fs/compat.c b/fs/compat.c
-index 424767c..133ed7f 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -1568,7 +1568,8 @@ int compat_set_fd_set(unsigned long nr, compat_ulong_t __user *ufdset,
- 	((unsigned long) (MAX_SCHEDULE_TIMEOUT / HZ)-1)
- 
- int compat_core_sys_select(int n, compat_ulong_t __user *inp,
--	compat_ulong_t __user *outp, compat_ulong_t __user *exp, s64 *timeout)
-+	compat_ulong_t __user *outp, compat_ulong_t __user *exp,
-+	struct timespec *end_time)
- {
- 	fd_set_bits fds;
- 	void *bits;
-@@ -1615,7 +1616,7 @@ int compat_core_sys_select(int n, compat_ulong_t __user *inp,
- 	zero_fd_set(n, fds.res_out);
- 	zero_fd_set(n, fds.res_ex);
- 
--	ret = do_select(n, &fds, timeout);
-+	ret = do_select(n, &fds, end_time);
- 
- 	if (ret < 0)
- 		goto out;
-@@ -1641,7 +1642,7 @@ asmlinkage long compat_sys_select(int n, compat_ulong_t __user *inp,
- 	compat_ulong_t __user *outp, compat_ulong_t __user *exp,
- 	struct compat_timeval __user *tvp)
- {
--	s64 timeout = -1;
-+	struct timespec end_time, *to = NULL;
- 	struct compat_timeval tv;
- 	int ret;
- 
-@@ -1649,43 +1650,14 @@ asmlinkage long compat_sys_select(int n, compat_ulong_t __user *inp,
- 		if (copy_from_user(&tv, tvp, sizeof(tv)))
- 			return -EFAULT;
- 
--		if (tv.tv_sec < 0 || tv.tv_usec < 0)
-+		to = &end_time;
-+		if (poll_select_set_timeout(to, tv.tv_sec,
-+					    tv.tv_usec * NSEC_PER_USEC))
- 			return -EINVAL;
--
--		/* Cast to u64 to make GCC stop complaining */
--		if ((u64)tv.tv_sec >= (u64)MAX_INT64_SECONDS)
--			timeout = -1;	/* infinite */
--		else {
--			timeout = DIV_ROUND_UP(tv.tv_usec, 1000000/HZ);
--			timeout += tv.tv_sec * HZ;
--		}
- 	}
- 
--	ret = compat_core_sys_select(n, inp, outp, exp, &timeout);
--
--	if (tvp) {
--		struct compat_timeval rtv;
--
--		if (current->personality & STICKY_TIMEOUTS)
--			goto sticky;
--		rtv.tv_usec = jiffies_to_usecs(do_div((*(u64*)&timeout), HZ));
--		rtv.tv_sec = timeout;
--		if (compat_timeval_compare(&rtv, &tv) >= 0)
--			rtv = tv;
--		if (copy_to_user(tvp, &rtv, sizeof(rtv))) {
--sticky:
--			/*
--			 * If an application puts its timeval in read-only
--			 * memory, we don't want the Linux-specific update to
--			 * the timeval to cause a fault after the select has
--			 * completed successfully. However, because we're not
--			 * updating the timeval, we can't restart the system
--			 * call.
--			 */
--			if (ret == -ERESTARTNOHAND)
--				ret = -EINTR;
--		}
--	}
-+	ret = compat_core_sys_select(n, inp, outp, exp, to);
-+	ret = poll_select_copy_remaining(&end_time, tvp, 1, ret);
- 
- 	return ret;
- }
-@@ -1698,15 +1670,16 @@ asmlinkage long compat_sys_pselect7(int n, compat_ulong_t __user *inp,
- {
- 	compat_sigset_t ss32;
- 	sigset_t ksigmask, sigsaved;
--	s64 timeout = MAX_SCHEDULE_TIMEOUT;
- 	struct compat_timespec ts;
-+	struct timespec end_time, *to = NULL;
- 	int ret;
- 
- 	if (tsp) {
- 		if (copy_from_user(&ts, tsp, sizeof(ts)))
- 			return -EFAULT;
- 
--		if (ts.tv_sec < 0 || ts.tv_nsec < 0)
-+		to = &end_time;
-+		if (poll_select_set_timeout(to, ts.tv_sec, ts.tv_nsec))
- 			return -EINVAL;
- 	}
- 
-@@ -1721,51 +1694,8 @@ asmlinkage long compat_sys_pselect7(int n, compat_ulong_t __user *inp,
- 		sigprocmask(SIG_SETMASK, &ksigmask, &sigsaved);
- 	}
- 
--	do {
--		if (tsp) {
--			if ((unsigned long)ts.tv_sec < MAX_SELECT_SECONDS) {
--				timeout = DIV_ROUND_UP(ts.tv_nsec, 1000000000/HZ);
--				timeout += ts.tv_sec * (unsigned long)HZ;
--				ts.tv_sec = 0;
--				ts.tv_nsec = 0;
--			} else {
--				ts.tv_sec -= MAX_SELECT_SECONDS;
--				timeout = MAX_SELECT_SECONDS * HZ;
--			}
--		}
--
--		ret = compat_core_sys_select(n, inp, outp, exp, &timeout);
--
--	} while (!ret && !timeout && tsp && (ts.tv_sec || ts.tv_nsec));
--
--	if (tsp) {
--		struct compat_timespec rts;
--
--		if (current->personality & STICKY_TIMEOUTS)
--			goto sticky;
--
--		rts.tv_sec = timeout / HZ;
--		rts.tv_nsec = (timeout % HZ) * (NSEC_PER_SEC/HZ);
--		if (rts.tv_nsec >= NSEC_PER_SEC) {
--			rts.tv_sec++;
--			rts.tv_nsec -= NSEC_PER_SEC;
--		}
--		if (compat_timespec_compare(&rts, &ts) >= 0)
--			rts = ts;
--		if (copy_to_user(tsp, &rts, sizeof(rts))) {
--sticky:
--			/*
--			 * If an application puts its timeval in read-only
--			 * memory, we don't want the Linux-specific update to
--			 * the timeval to cause a fault after the select has
--			 * completed successfully. However, because we're not
--			 * updating the timeval, we can't restart the system
--			 * call.
--			 */
--			if (ret == -ERESTARTNOHAND)
--				ret = -EINTR;
--		}
--	}
-+	ret = compat_core_sys_select(n, inp, outp, exp, to);
-+	ret = poll_select_copy_remaining(&end_time, tsp, 0, ret);
- 
- 	if (ret == -ERESTARTNOHAND) {
- 		/*
-@@ -1810,18 +1740,16 @@ asmlinkage long compat_sys_ppoll(struct pollfd __user *ufds,
- 	compat_sigset_t ss32;
- 	sigset_t ksigmask, sigsaved;
- 	struct compat_timespec ts;
--	s64 timeout = -1;
-+	struct timespec end_time, *to = NULL;
- 	int ret;
- 
- 	if (tsp) {
- 		if (copy_from_user(&ts, tsp, sizeof(ts)))
- 			return -EFAULT;
- 
--		/* We assume that ts.tv_sec is always lower than
--		   the number of seconds that can be expressed in
--		   an s64. Otherwise the compiler bitches at us */
--		timeout = DIV_ROUND_UP(ts.tv_nsec, 1000000000/HZ);
--		timeout += ts.tv_sec * HZ;
-+		to = &end_time;
-+		if (poll_select_set_timeout(to, ts.tv_sec, ts.tv_nsec))
-+			return -EINVAL;
- 	}
- 
- 	if (sigmask) {
-@@ -1835,7 +1763,7 @@ asmlinkage long compat_sys_ppoll(struct pollfd __user *ufds,
- 		sigprocmask(SIG_SETMASK, &ksigmask, &sigsaved);
- 	}
- 
--	ret = do_sys_poll(ufds, nfds, &timeout);
-+	ret = do_sys_poll(ufds, nfds, to);
- 
- 	/* We can restart this syscall, usually */
- 	if (ret == -EINTR) {
-@@ -1853,31 +1781,7 @@ asmlinkage long compat_sys_ppoll(struct pollfd __user *ufds,
- 	} else if (sigmask)
- 		sigprocmask(SIG_SETMASK, &sigsaved, NULL);
- 
--	if (tsp && timeout >= 0) {
--		struct compat_timespec rts;
--
--		if (current->personality & STICKY_TIMEOUTS)
--			goto sticky;
--		/* Yes, we know it's actually an s64, but it's also positive. */
--		rts.tv_nsec = jiffies_to_usecs(do_div((*(u64*)&timeout), HZ)) *
--					1000;
--		rts.tv_sec = timeout;
--		if (compat_timespec_compare(&rts, &ts) >= 0)
--			rts = ts;
--		if (copy_to_user(tsp, &rts, sizeof(rts))) {
--sticky:
--			/*
--			 * If an application puts its timeval in read-only
--			 * memory, we don't want the Linux-specific update to
--			 * the timeval to cause a fault after the select has
--			 * completed successfully. However, because we're not
--			 * updating the timeval, we can't restart the system
--			 * call.
--			 */
--			if (ret == -ERESTARTNOHAND && timeout >= 0)
--				ret = -EINTR;
--		}
--	}
-+	ret = poll_select_copy_remaining(&end_time, tsp, 0, ret);
- 
- 	return ret;
- }
-diff --git a/fs/select.c b/fs/select.c
-index 1180a62..f6dceb5 100644
---- a/fs/select.c
-+++ b/fs/select.c
-@@ -24,6 +24,7 @@
- #include <linux/fdtable.h>
- #include <linux/fs.h>
- #include <linux/rcupdate.h>
-+#include <linux/hrtimer.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -203,8 +204,6 @@ sticky:
- 	return ret;
- }
- 
--
--
- #define FDS_IN(fds, n)		(fds->in + n)
- #define FDS_OUT(fds, n)		(fds->out + n)
- #define FDS_EX(fds, n)		(fds->ex + n)
-@@ -257,11 +256,12 @@ get_max:
- #define POLLOUT_SET (POLLWRBAND | POLLWRNORM | POLLOUT | POLLERR)
- #define POLLEX_SET (POLLPRI)
- 
--int do_select(int n, fd_set_bits *fds, s64 *timeout)
-+int do_select(int n, fd_set_bits *fds, struct timespec *end_time)
- {
-+	ktime_t expire, *to = NULL;
- 	struct poll_wqueues table;
- 	poll_table *wait;
--	int retval, i;
-+	int retval, i, timed_out = 0;
- 
- 	rcu_read_lock();
- 	retval = max_select_fd(n, fds);
-@@ -273,12 +273,14 @@ int do_select(int n, fd_set_bits *fds, s64 *timeout)
- 
- 	poll_initwait(&table);
- 	wait = &table.pt;
--	if (!*timeout)
-+	if (end_time && !end_time->tv_sec && !end_time->tv_nsec) {
- 		wait = NULL;
-+		timed_out = 1;
-+	}
-+
- 	retval = 0;
- 	for (;;) {
- 		unsigned long *rinp, *routp, *rexp, *inp, *outp, *exp;
--		long __timeout;
- 
- 		set_current_state(TASK_INTERRUPTIBLE);
- 
-@@ -334,27 +336,25 @@ int do_select(int n, fd_set_bits *fds, s64 *timeout)
- 			cond_resched();
- 		}
- 		wait = NULL;
--		if (retval || !*timeout || signal_pending(current))
-+		if (retval || timed_out || signal_pending(current))
- 			break;
- 		if (table.error) {
- 			retval = table.error;
- 			break;
- 		}
- 
--		if (*timeout < 0) {
--			/* Wait indefinitely */
--			__timeout = MAX_SCHEDULE_TIMEOUT;
--		} else if (unlikely(*timeout >= (s64)MAX_SCHEDULE_TIMEOUT - 1)) {
--			/* Wait for longer than MAX_SCHEDULE_TIMEOUT. Do it in a loop */
--			__timeout = MAX_SCHEDULE_TIMEOUT - 1;
--			*timeout -= __timeout;
--		} else {
--			__timeout = *timeout;
--			*timeout = 0;
-+		/*
-+		 * If this is the first loop and we have a timeout
-+		 * given, then we convert to ktime_t and set the to
-+		 * pointer to the expiry value.
-+		 */
-+		if (end_time && !to) {
-+			expire = timespec_to_ktime(*end_time);
-+			to = &expire;
- 		}
--		__timeout = schedule_timeout(__timeout);
--		if (*timeout >= 0)
--			*timeout += __timeout;
-+
-+		if (!schedule_hrtimeout(to, HRTIMER_MODE_ABS))
-+			timed_out = 1;
- 	}
- 	__set_current_state(TASK_RUNNING);
- 
-@@ -375,7 +375,7 @@ int do_select(int n, fd_set_bits *fds, s64 *timeout)
- 	((unsigned long) (MAX_SCHEDULE_TIMEOUT / HZ)-1)
- 
- int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
--			   fd_set __user *exp, s64 *timeout)
-+			   fd_set __user *exp, struct timespec *end_time)
- {
- 	fd_set_bits fds;
- 	void *bits;
-@@ -426,7 +426,7 @@ int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
- 	zero_fd_set(n, fds.res_out);
- 	zero_fd_set(n, fds.res_ex);
- 
--	ret = do_select(n, &fds, timeout);
-+	ret = do_select(n, &fds, end_time);
- 
- 	if (ret < 0)
- 		goto out;
-@@ -452,7 +452,7 @@ out_nofds:
- asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp,
- 			fd_set __user *exp, struct timeval __user *tvp)
- {
--	s64 timeout = -1;
-+	struct timespec end_time, *to = NULL;
- 	struct timeval tv;
- 	int ret;
- 
-@@ -460,43 +460,14 @@ asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp,
- 		if (copy_from_user(&tv, tvp, sizeof(tv)))
- 			return -EFAULT;
- 
--		if (tv.tv_sec < 0 || tv.tv_usec < 0)
-+		to = &end_time;
-+		if (poll_select_set_timeout(to, tv.tv_sec,
-+					    tv.tv_usec * NSEC_PER_USEC))
- 			return -EINVAL;
--
--		/* Cast to u64 to make GCC stop complaining */
--		if ((u64)tv.tv_sec >= (u64)MAX_INT64_SECONDS)
--			timeout = -1;	/* infinite */
--		else {
--			timeout = DIV_ROUND_UP(tv.tv_usec, USEC_PER_SEC/HZ);
--			timeout += tv.tv_sec * HZ;
--		}
- 	}
- 
--	ret = core_sys_select(n, inp, outp, exp, &timeout);
--
--	if (tvp) {
--		struct timeval rtv;
--
--		if (current->personality & STICKY_TIMEOUTS)
--			goto sticky;
--		rtv.tv_usec = jiffies_to_usecs(do_div((*(u64*)&timeout), HZ));
--		rtv.tv_sec = timeout;
--		if (timeval_compare(&rtv, &tv) >= 0)
--			rtv = tv;
--		if (copy_to_user(tvp, &rtv, sizeof(rtv))) {
--sticky:
--			/*
--			 * If an application puts its timeval in read-only
--			 * memory, we don't want the Linux-specific update to
--			 * the timeval to cause a fault after the select has
--			 * completed successfully. However, because we're not
--			 * updating the timeval, we can't restart the system
--			 * call.
--			 */
--			if (ret == -ERESTARTNOHAND)
--				ret = -EINTR;
--		}
--	}
-+	ret = core_sys_select(n, inp, outp, exp, to);
-+	ret = poll_select_copy_remaining(&end_time, tvp, 1, ret);
- 
- 	return ret;
- }
-@@ -506,25 +477,17 @@ asmlinkage long sys_pselect7(int n, fd_set __user *inp, fd_set __user *outp,
- 		fd_set __user *exp, struct timespec __user *tsp,
- 		const sigset_t __user *sigmask, size_t sigsetsize)
- {
--	s64 timeout = MAX_SCHEDULE_TIMEOUT;
- 	sigset_t ksigmask, sigsaved;
--	struct timespec ts;
-+	struct timespec ts, end_time, *to = NULL;
- 	int ret;
- 
- 	if (tsp) {
- 		if (copy_from_user(&ts, tsp, sizeof(ts)))
- 			return -EFAULT;
- 
--		if (ts.tv_sec < 0 || ts.tv_nsec < 0)
-+		to = &end_time;
-+		if (poll_select_set_timeout(to, ts.tv_sec, ts.tv_nsec))
- 			return -EINVAL;
--
--		/* Cast to u64 to make GCC stop complaining */
--		if ((u64)ts.tv_sec >= (u64)MAX_INT64_SECONDS)
--			timeout = -1;	/* infinite */
--		else {
--			timeout = DIV_ROUND_UP(ts.tv_nsec, NSEC_PER_SEC/HZ);
--			timeout += ts.tv_sec * HZ;
--		}
- 	}
- 
- 	if (sigmask) {
-@@ -538,32 +501,8 @@ asmlinkage long sys_pselect7(int n, fd_set __user *inp, fd_set __user *outp,
- 		sigprocmask(SIG_SETMASK, &ksigmask, &sigsaved);
- 	}
- 
--	ret = core_sys_select(n, inp, outp, exp, &timeout);
--
--	if (tsp) {
--		struct timespec rts;
--
--		if (current->personality & STICKY_TIMEOUTS)
--			goto sticky;
--		rts.tv_nsec = jiffies_to_usecs(do_div((*(u64*)&timeout), HZ)) *
--						1000;
--		rts.tv_sec = timeout;
--		if (timespec_compare(&rts, &ts) >= 0)
--			rts = ts;
--		if (copy_to_user(tsp, &rts, sizeof(rts))) {
--sticky:
--			/*
--			 * If an application puts its timeval in read-only
--			 * memory, we don't want the Linux-specific update to
--			 * the timeval to cause a fault after the select has
--			 * completed successfully. However, because we're not
--			 * updating the timeval, we can't restart the system
--			 * call.
--			 */
--			if (ret == -ERESTARTNOHAND)
--				ret = -EINTR;
--		}
--	}
-+	ret = core_sys_select(n, inp, outp, exp, &end_time);
-+	ret = poll_select_copy_remaining(&end_time, tsp, 0, ret);
- 
- 	if (ret == -ERESTARTNOHAND) {
- 		/*
-@@ -649,18 +588,20 @@ static inline unsigned int do_pollfd(struct pollfd *pollfd, poll_table *pwait)
- }
- 
- static int do_poll(unsigned int nfds,  struct poll_list *list,
--		   struct poll_wqueues *wait, s64 *timeout)
-+		   struct poll_wqueues *wait, struct timespec *end_time)
- {
--	int count = 0;
- 	poll_table* pt = &wait->pt;
-+	ktime_t expire, *to = NULL;
-+	int timed_out = 0, count = 0;
- 
- 	/* Optimise the no-wait case */
--	if (!(*timeout))
-+	if (end_time && !end_time->tv_sec && !end_time->tv_nsec) {
- 		pt = NULL;
-+		timed_out = 1;
-+	}
- 
- 	for (;;) {
- 		struct poll_list *walk;
--		long __timeout;
- 
- 		set_current_state(TASK_INTERRUPTIBLE);
- 		for (walk = list; walk != NULL; walk = walk->next) {
-@@ -692,27 +633,21 @@ static int do_poll(unsigned int nfds,  struct poll_list *list,
- 			if (signal_pending(current))
- 				count = -EINTR;
- 		}
--		if (count || !*timeout)
-+		if (count || timed_out)
- 			break;
- 
--		if (*timeout < 0) {
--			/* Wait indefinitely */
--			__timeout = MAX_SCHEDULE_TIMEOUT;
--		} else if (unlikely(*timeout >= (s64)MAX_SCHEDULE_TIMEOUT-1)) {
--			/*
--			 * Wait for longer than MAX_SCHEDULE_TIMEOUT. Do it in
--			 * a loop
--			 */
--			__timeout = MAX_SCHEDULE_TIMEOUT - 1;
--			*timeout -= __timeout;
--		} else {
--			__timeout = *timeout;
--			*timeout = 0;
-+		/*
-+		 * If this is the first loop and we have a timeout
-+		 * given, then we convert to ktime_t and set the to
-+		 * pointer to the expiry value.
-+		 */
-+		if (end_time && !to) {
-+			expire = timespec_to_ktime(*end_time);
-+			to = &expire;
- 		}
- 
--		__timeout = schedule_timeout(__timeout);
--		if (*timeout >= 0)
--			*timeout += __timeout;
-+		if (!schedule_hrtimeout(to, HRTIMER_MODE_ABS))
-+			timed_out = 1;
- 	}
- 	__set_current_state(TASK_RUNNING);
- 	return count;
-@@ -721,7 +656,8 @@ static int do_poll(unsigned int nfds,  struct poll_list *list,
- #define N_STACK_PPS ((sizeof(stack_pps) - sizeof(struct poll_list))  / \
- 			sizeof(struct pollfd))
- 
--int do_sys_poll(struct pollfd __user *ufds, unsigned int nfds, s64 *timeout)
-+int do_sys_poll(struct pollfd __user *ufds, unsigned int nfds,
-+		struct timespec *end_time)
- {
- 	struct poll_wqueues table;
-  	int err = -EFAULT, fdcount, len, size;
-@@ -761,7 +697,7 @@ int do_sys_poll(struct pollfd __user *ufds, unsigned int nfds, s64 *timeout)
- 	}
- 
- 	poll_initwait(&table);
--	fdcount = do_poll(nfds, head, &table, timeout);
-+	fdcount = do_poll(nfds, head, &table, end_time);
- 	poll_freewait(&table);
- 
- 	for (walk = head; walk; walk = walk->next) {
-@@ -787,16 +723,21 @@ out_fds:
- 
- static long do_restart_poll(struct restart_block *restart_block)
- {
--	struct pollfd __user *ufds = (struct pollfd __user*)restart_block->arg0;
--	int nfds = restart_block->arg1;
--	s64 timeout = ((s64)restart_block->arg3<<32) | (s64)restart_block->arg2;
-+	struct pollfd __user *ufds = restart_block->poll.ufds;
-+	int nfds = restart_block->poll.nfds;
-+	struct timespec *to = NULL, end_time;
- 	int ret;
- 
--	ret = do_sys_poll(ufds, nfds, &timeout);
-+	if (restart_block->poll.has_timeout) {
-+		end_time.tv_sec = restart_block->poll.tv_sec;
-+		end_time.tv_nsec = restart_block->poll.tv_nsec;
-+		to = &end_time;
-+	}
-+
-+	ret = do_sys_poll(ufds, nfds, to);
-+
- 	if (ret == -EINTR) {
- 		restart_block->fn = do_restart_poll;
--		restart_block->arg2 = timeout & 0xFFFFFFFF;
--		restart_block->arg3 = (u64)timeout >> 32;
- 		ret = -ERESTART_RESTARTBLOCK;
- 	}
- 	return ret;
-@@ -805,31 +746,32 @@ static long do_restart_poll(struct restart_block *restart_block)
- asmlinkage long sys_poll(struct pollfd __user *ufds, unsigned int nfds,
- 			long timeout_msecs)
- {
--	s64 timeout_jiffies;
-+	struct timespec end_time, *to = NULL;
- 	int ret;
- 
--	if (timeout_msecs > 0) {
--#if HZ > 1000
--		/* We can only overflow if HZ > 1000 */
--		if (timeout_msecs / 1000 > (s64)0x7fffffffffffffffULL / (s64)HZ)
--			timeout_jiffies = -1;
--		else
--#endif
--			timeout_jiffies = msecs_to_jiffies(timeout_msecs) + 1;
--	} else {
--		/* Infinite (< 0) or no (0) timeout */
--		timeout_jiffies = timeout_msecs;
-+	if (timeout_msecs >= 0) {
-+		to = &end_time;
-+		poll_select_set_timeout(to, timeout_msecs / MSEC_PER_SEC,
-+			NSEC_PER_MSEC * (timeout_msecs % MSEC_PER_SEC));
- 	}
- 
--	ret = do_sys_poll(ufds, nfds, &timeout_jiffies);
-+	ret = do_sys_poll(ufds, nfds, to);
-+
- 	if (ret == -EINTR) {
- 		struct restart_block *restart_block;
-+
- 		restart_block = &current_thread_info()->restart_block;
- 		restart_block->fn = do_restart_poll;
--		restart_block->arg0 = (unsigned long)ufds;
--		restart_block->arg1 = nfds;
--		restart_block->arg2 = timeout_jiffies & 0xFFFFFFFF;
--		restart_block->arg3 = (u64)timeout_jiffies >> 32;
-+		restart_block->poll.ufds = ufds;
-+		restart_block->poll.nfds = nfds;
-+
-+		if (timeout_msecs >= 0) {
-+			restart_block->poll.tv_sec = end_time.tv_sec;
-+			restart_block->poll.tv_nsec = end_time.tv_nsec;
-+			restart_block->poll.has_timeout = 1;
-+		} else
-+			restart_block->poll.has_timeout = 0;
-+
- 		ret = -ERESTART_RESTARTBLOCK;
- 	}
- 	return ret;
-@@ -841,21 +783,16 @@ asmlinkage long sys_ppoll(struct pollfd __user *ufds, unsigned int nfds,
- 	size_t sigsetsize)
- {
- 	sigset_t ksigmask, sigsaved;
--	struct timespec ts;
--	s64 timeout = -1;
-+	struct timespec ts, end_time, *to = NULL;
- 	int ret;
- 
- 	if (tsp) {
- 		if (copy_from_user(&ts, tsp, sizeof(ts)))
- 			return -EFAULT;
- 
--		/* Cast to u64 to make GCC stop complaining */
--		if ((u64)ts.tv_sec >= (u64)MAX_INT64_SECONDS)
--			timeout = -1;	/* infinite */
--		else {
--			timeout = DIV_ROUND_UP(ts.tv_nsec, NSEC_PER_SEC/HZ);
--			timeout += ts.tv_sec * HZ;
--		}
-+		to = &end_time;
-+		if (poll_select_set_timeout(to, ts.tv_sec, ts.tv_nsec))
-+			return -EINVAL;
- 	}
- 
- 	if (sigmask) {
-@@ -869,7 +806,7 @@ asmlinkage long sys_ppoll(struct pollfd __user *ufds, unsigned int nfds,
- 		sigprocmask(SIG_SETMASK, &ksigmask, &sigsaved);
- 	}
- 
--	ret = do_sys_poll(ufds, nfds, &timeout);
-+	ret = do_sys_poll(ufds, nfds, to);
- 
- 	/* We can restart this syscall, usually */
- 	if (ret == -EINTR) {
-@@ -887,31 +824,7 @@ asmlinkage long sys_ppoll(struct pollfd __user *ufds, unsigned int nfds,
- 	} else if (sigmask)
- 		sigprocmask(SIG_SETMASK, &sigsaved, NULL);
- 
--	if (tsp && timeout >= 0) {
--		struct timespec rts;
--
--		if (current->personality & STICKY_TIMEOUTS)
--			goto sticky;
--		/* Yes, we know it's actually an s64, but it's also positive. */
--		rts.tv_nsec = jiffies_to_usecs(do_div((*(u64*)&timeout), HZ)) *
--						1000;
--		rts.tv_sec = timeout;
--		if (timespec_compare(&rts, &ts) >= 0)
--			rts = ts;
--		if (copy_to_user(tsp, &rts, sizeof(rts))) {
--		sticky:
--			/*
--			 * If an application puts its timeval in read-only
--			 * memory, we don't want the Linux-specific update to
--			 * the timeval to cause a fault after the select has
--			 * completed successfully. However, because we're not
--			 * updating the timeval, we can't restart the system
--			 * call.
--			 */
--			if (ret == -ERESTARTNOHAND && timeout >= 0)
--				ret = -EINTR;
--		}
--	}
-+	ret = poll_select_copy_remaining(&end_time, tsp, 0, ret);
- 
- 	return ret;
- }
-diff --git a/include/linux/poll.h b/include/linux/poll.h
-index f65de51..badd98a 100644
---- a/include/linux/poll.h
-+++ b/include/linux/poll.h
-@@ -114,11 +114,11 @@ void zero_fd_set(unsigned long nr, unsigned long *fdset)
- 
- #define MAX_INT64_SECONDS (((s64)(~((u64)0)>>1)/HZ)-1)
- 
--extern int do_select(int n, fd_set_bits *fds, s64 *timeout);
-+extern int do_select(int n, fd_set_bits *fds, struct timespec *end_time);
- extern int do_sys_poll(struct pollfd __user * ufds, unsigned int nfds,
--		       s64 *timeout);
-+		       struct timespec *end_time);
- extern int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
--			   fd_set __user *exp, s64 *timeout);
-+			   fd_set __user *exp, struct timespec *end_time);
- 
- extern int poll_select_set_timeout(struct timespec *to, long sec, long nsec);
- 
 -- 
-1.5.5.1
+Jens Axboe
 
