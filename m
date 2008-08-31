@@ -1,75 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbYHaRyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbYHaRz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755895AbYHaRyW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 13:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbYHaRyN
+	id S1757427AbYHaRz1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 13:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755152AbYHaRzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 13:54:13 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:4058 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753900AbYHaRyM (ORCPT
+	Sun, 31 Aug 2008 13:55:19 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:36579 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754335AbYHaRzS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 13:54:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=QIyCTYYRVVxQ29QI1Wq4bAuWnHvJ4h/RTbDnVrmdPiLrRtJ749apobpdGpn0TQMjcy
-         +OE/0HB8rCL+4L0gNHg9Jf7ZX9PlwlY8oyF50A/UV91XMw4Mx7PMhRq8PNDdywXVvtkp
-         HL4mnqViH+XZ4ResirHbiBU9VSwKg+MoWZRo4=
-Message-ID: <86802c440808311054q4b8e8921qa9f090527b456e34@mail.gmail.com>
-Date: Sun, 31 Aug 2008 10:54:11 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "David Witbrodt" <dawitbro@sbcglobal.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Kernel Testers" <kernel-testers@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.10.0808311039330.12958@nehalem.linux-foundation.org>
+	Sun, 31 Aug 2008 13:55:18 -0400
+Date: Sun, 31 Aug 2008 10:55:14 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, mingo@elte.hu, akpm@linux-foundation.org,
+       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, schamp@sgi.com,
+       niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com, rostedt@goodmis.org,
+       peterz@infradead.org, benh@kernel.crashing.org, davem@davemloft.net,
+       tony.luck@intel.com
+Subject: Re: [PATCH, RFC, tip/core/rcu] v3 scalable classic RCU
+	implementation
+Message-ID: <20080831175514.GE7015@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <48B919C2.1040809@cn.fujitsu.com> <48B94BF4.9090103@colorfullife.com> <20080830143438.GF7107@linux.vnet.ibm.com> <48BA7944.8070402@colorfullife.com> <20080831172001.GA7015@linux.vnet.ibm.com> <48BAD89E.20206@colorfullife.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>
-	 <200808302334.29156.rjw@sisk.pl>
-	 <86802c440808301810r17657f3fnb3c8af5496955e0d@mail.gmail.com>
-	 <200808311427.19369.rjw@sisk.pl>
-	 <alpine.LFD.1.10.0808311039330.12958@nehalem.linux-foundation.org>
+In-Reply-To: <48BAD89E.20206@colorfullife.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 31, 2008 at 10:42 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Sun, 31 Aug 2008, Rafael J. Wysocki wrote:
+On Sun, Aug 31, 2008 at 07:45:02PM +0200, Manfred Spraul wrote:
+> Paul E. McKenney wrote:
+>> Assuming that the ordering of processing pending irqs and marking the
+>> CPU offline in cpu_online_mask can be resolved as noted above, it should
+>> work fine -- if a CPU's bit is clear, we can safely ignore it.  The race
+>> can be resolved by checking the CPU's bit in force_quiescent_state().
 >>
->> Works, dmesg is at:
->> http://www.sisk.pl/kernel/debug/mainline/2.6.27-rc5/2.6.27-rc5-test.log
+>> Or am I missing something?
+>>   
+> Yes, that would work:
+> Rule 1: after CPU_DEAD, a cpu is gone. The cpu is quiet, rcu callbacks must 
+> be moved to other cpus, ...
+> Rule 2: if a cpu is not listed in cpu_online_mask, then it can be 
+> considered as outside a read-side critical section.
 >
-> That BAR is indeed "locked". Now that we try to reallocate it, you get
-> this in the log:
->
->        pci 0000:00:00.0: BAR 3: error updating (0x40000004 != 0xe0000004)
->        pci 0000:00:00.0: BAR 3: error updating (high 0x000001 != 0x000000)
->
-> ie now the code _tried_ to update the BAR to point to 0x1_4000_0000
-> instead, but the hardware refused, and it is still at 0x0_e000_0000.
->
-> So Yinghai's patch "worked", but it worked by doing nothing.
->
-> See my earlier guess about locked read-only resources a few emails back.
-> IOW, I'm not at all surprised. I really do suspect that that BAR is some
-> very special "this is the HT->PCIE region" BAR.
+> The problem with rule 2 is that it means someone [force_quiescent_state()] 
+> must poll the cpu_online_mask and look for changes.
+> I'd really prefer a notifier. CPU_DYING is nearly the correct thing, it 
+> only has to be moved down 3 lines ;-)
+> (I want to kill the bitmaps, not add a hierarchical bitmap polling system!)
 
-so the code could allocate the 64 bit resource above 4g,...
+But some later CPU_DYING notifier might decide that the CPU cannot be
+removed after all, which would mean bringing the CPU back.  And then
+whatever the CPU was needed for might have actually happened in the
+meantime, which does not sound good to me...
 
-wonder how the probe could find out the size of is 1fff_ffff..
+>> It is entirely possible that rcu_try_flip_waitack() and
+>> rcu_try_flip_waitmb() need to check the AND of rcu_cpu_online_map and
+>> cpu_online_map.  If this really is a problem (and it might well be),
+>> then the easiest fix is to check for cpu_is_offline(cpu) in both
+>> rcu_try_flip_waitmb_needed() and rcu_try_flip_waitack_needed(), and
+>> that in both versions of both functions.  Thoughts?
+>>   
+> I made a mistake, get_online_cpus() stores current, not a cpu number. Thus 
+> the described race it not possible. Perhaps there are other users that 
+> could deadlock.
+> I don't know enough about the preempt algorithm, thus I can't confirm if 
+> your proposal would work or not.
 
-YH
+Well, that is on my list of things to look into...
+
+							Thanx, Paul
