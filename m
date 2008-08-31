@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbYHaT2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbYHaTa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758047AbYHaT2R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 15:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbYHaT2D
+	id S1758139AbYHaTa7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 15:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756141AbYHaTav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 15:28:03 -0400
-Received: from casper.infradead.org ([85.118.1.10]:51352 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755906AbYHaT2B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 15:28:01 -0400
-Date: Sun, 31 Aug 2008 12:27:51 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Sanders <linux@sandersweb.net>, linux-kernel@vger.kernel.org,
-       Jan Beulich <jbeulich@novell.com>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
-Message-ID: <20080831122751.72afafb5@infradead.org>
-In-Reply-To: <alpine.LFD.1.10.0808311140060.12958@nehalem.linux-foundation.org>
-References: <200808311422.12525.linux@sandersweb.net>
-	<alpine.LFD.1.10.0808311140060.12958@nehalem.linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 31 Aug 2008 15:30:51 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:37369 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756120AbYHaTau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 15:30:50 -0400
+Date: Sun, 31 Aug 2008 15:30:37 -0400
+To: Ian Campbell <ijc@hellion.org.uk>
+Cc: Tom Tucker <tom@opengridcomputing.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       John Ronciak <john.ronciak@gmail.com>,
+       Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
+       neilb@suse.de, linux-nfs@vger.kernel.org,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Bruce Allan <bruce.w.allan@intel.com>,
+       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
+       John Ronciak <john.ronciak@intel.com>,
+       e1000-devel@lists.sourceforge.net
+Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
+Message-ID: <20080831193037.GB14876@fieldses.org>
+References: <1219442213.9097.25.camel@localhost> <1219603981.27921.145.camel@localhost.localdomain> <1219605422.14389.2.camel@localhost> <1219605596.14389.5.camel@localhost> <1219615789.27921.152.camel@localhost.localdomain> <1219616136.14389.12.camel@localhost> <48B2D7F8.5020206@opengridcomputing.com> <20080826192711.GJ4380@fieldses.org> <48B567F5.2090605@opengridcomputing.com> <1220111261.31172.14.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1220111261.31172.14.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 31 Aug 2008 11:47:04 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Sat, Aug 30, 2008 at 04:47:41PM +0100, Ian Campbell wrote:
+> On Wed, 2008-08-27 at 09:43 -0500, Tom Tucker wrote:
+> > Sure. I've actually tried to reproduce it here unsuccessfully.
+> > 
+> > As a starter, I would suggest turning on transport debugging:
+> > 
+> > # echo 256 > /proc/sys/sunrpc/rpc_debug
+> > [...]
+> > If Ian is willing to create the log (or already has one), I'm
+> > certainly willing to look at it.
+> 
+> It produced only the following (is that what was expected?):
+> 
+> [146866.448112] -pid- proc flgs status -client- -prog- --rqstp- -timeout -rpcwait -action- ---ops--
+> [146866.448112] 30576 0001 00a0      0 f77a1600 100003 f7903340    15000 xprt_pending fa0ba88e fa0c9df4
+> [146866.448112] 30577 0004 0080    -11 f77a1600 100003 f7903000        0 xprt_sending fa0ba88e fa0c9df4
 
-> 
-> 
-> On Sun, 31 Aug 2008, David Sanders wrote:
-> >
-> > I recently discovered that x86 kernels won't boot under Virtual PC.
-> 
-> What CPU does Virtual PC emulate? As far as Wikipedia is concerned
-> (not that I'd take it on complete faith) it emulates a 32-bit Intel
-> Pentium II.
-> 
-> And that commit makes the kernel use the "P6 nops" for such hardware. 
-> Maybe Virtual PC doesn't support the newer intel nop things?
-> 
-> Intel docs say that it should be available on any intel CPU that has 
-> CPUID.01H.EAX[11:8] = 0110B or 1111B. That's the "family ID", and
-> Pentium II should have a family ID of 6 (ie that 0110B case).
-> 
-> So it sounds like a Virtual PC bug, but I dunno. And maybe we should
-> just use the legcay nops for anything that isn't modern (ie P4+ or
-> Core)?
+It's normal to get something like that when you turn it on, yes (unless
+someone else spots anything odd about that...) but what's really needed
+is to turn this on and then reproduce the problem--it's the debugging
+output that goes to the logs during the problem that'll be interesting.
 
-it's probably even a security bug in that I don't see what would be
-stopping a ring 3 user process from executing these instructions...
-
+--b.
