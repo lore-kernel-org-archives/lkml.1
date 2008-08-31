@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759812AbYHaNPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbYHaNPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759812AbYHaNPk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 09:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758911AbYHaNOp
+	id S1759941AbYHaNPx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 09:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758996AbYHaNOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 09:14:45 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:61150 "EHLO
+	Sun, 31 Aug 2008 09:14:47 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:61151 "EHLO
 	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758802AbYHaNOo (ORCPT
+	with ESMTP id S1758883AbYHaNOp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 09:14:44 -0400
+	Sun, 31 Aug 2008 09:14:45 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: linux-fsdevel-owner@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Adrian Hunter <ext-adrian.hunter@nokia.com>
-Subject: [PATCH] UBIFS: always read hashed-key nodes under TNC mutex
-Date: Sun, 31 Aug 2008 17:52:36 +0300
-Message-Id: <1220194366-12731-3-git-send-email-dedekind@infradead.org>
+Subject: [PATCH] UBIFS: allow for racing between GC and TNC
+Date: Sun, 31 Aug 2008 17:52:37 +0300
+Message-Id: <1220194366-12731-4-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
 References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 31 Aug 2008 13:14:25.0509 (UTC) FILETIME=[7DB37950:01C90B6B]
+X-OriginalArrivalTime: 31 Aug 2008 13:14:25.0525 (UTC) FILETIME=[7DB5EA50:01C90B6B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,42 +27,261 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Adrian Hunter <ext-adrian.hunter@nokia.com>
 
-Leaf-nodes that have a hashed key are stored in the
-leaf-node-cache (LNC) which is protected by the TNC
-mutex.  Consequently, when reading a leaf node with
-a hashed key (i.e. directory entries, xattr entries)
-the TNC mutex is always required.
+The TNC mutex is unlocked prematurely when reading leaf nodes
+with non-hashed keys.  This is unsafe because the node may be
+moved by garbage collection and the eraseblock unmapped, although
+that has never actually happened during stress testing.
+
+This patch fixes the flaw by detecting the race and retrying with
+the TNC mutex locked.
 
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/ubifs/tnc.c |    7 +------
- 1 files changed, 1 insertions(+), 6 deletions(-)
+ fs/ubifs/gc.c    |    6 +++
+ fs/ubifs/misc.h  |   17 ++++++++
+ fs/ubifs/tnc.c   |  109 +++++++++++++++++++++++++++++------------------------
+ fs/ubifs/ubifs.h |    6 ++-
+ 4 files changed, 87 insertions(+), 51 deletions(-)
 
+diff --git a/fs/ubifs/gc.c b/fs/ubifs/gc.c
+index d0f3dac..13f1019 100644
+--- a/fs/ubifs/gc.c
++++ b/fs/ubifs/gc.c
+@@ -344,6 +344,12 @@ int ubifs_garbage_collect_leb(struct ubifs_info *c, struct ubifs_lprops *lp)
+ 		if (err)
+ 			goto out;
+ 
++		/* Allow for races with TNC */
++		c->gced_lnum = lnum;
++		smp_wmb();
++		c->gc_seq += 1;
++		smp_wmb();
++
+ 		if (c->gc_lnum == -1) {
+ 			c->gc_lnum = lnum;
+ 			err = LEB_RETAINED;
+diff --git a/fs/ubifs/misc.h b/fs/ubifs/misc.h
+index 87dabf9..87ced4c 100644
+--- a/fs/ubifs/misc.h
++++ b/fs/ubifs/misc.h
+@@ -325,4 +325,21 @@ static inline struct timespec ubifs_current_time(struct inode *inode)
+ 		current_fs_time(inode->i_sb) : CURRENT_TIME_SEC;
+ }
+ 
++/**
++ * ubifs_tnc_lookup - look up a file-system node.
++ * @c: UBIFS file-system description object
++ * @key: node key to lookup
++ * @node: the node is returned here
++ *
++ * This function look up and reads node with key @key. The caller has to make
++ * sure the @node buffer is large enough to fit the node. Returns zero in case
++ * of success, %-ENOENT if the node was not found, and a negative error code in
++ * case of failure.
++ */
++static inline int ubifs_tnc_lookup(struct ubifs_info *c,
++				   const union ubifs_key *key, void *node)
++{
++	return ubifs_tnc_locate(c, key, node, NULL, NULL);
++}
++
+ #endif /* __UBIFS_MISC_H__ */
 diff --git a/fs/ubifs/tnc.c b/fs/ubifs/tnc.c
-index e909f4a..4fbc592 100644
+index 4fbc592..7da209a 100644
 --- a/fs/ubifs/tnc.c
 +++ b/fs/ubifs/tnc.c
-@@ -1498,7 +1498,6 @@ static int do_lookup_nm(struct ubifs_info *c, const union ubifs_key *key,
- {
- 	int found, n, err;
- 	struct ubifs_znode *znode;
--	struct ubifs_zbranch zbr;
- 
- 	dbg_tnc("name '%.*s' key %s", nm->len, nm->name, DBGKEY(key));
- 	mutex_lock(&c->tnc_mutex);
-@@ -1522,11 +1521,7 @@ static int do_lookup_nm(struct ubifs_info *c, const union ubifs_key *key,
- 		goto out_unlock;
+@@ -506,7 +506,7 @@ static int fallible_read_node(struct ubifs_info *c, const union ubifs_key *key,
+ 		if (keys_cmp(c, key, &node_key) != 0)
+ 			ret = 0;
  	}
+-	if (ret == 0)
++	if (ret == 0 && c->replaying)
+ 		dbg_mnt("dangling branch LEB %d:%d len %d, key %s",
+ 			zbr->lnum, zbr->offs, zbr->len, DBGKEY(key));
+ 	return ret;
+@@ -1382,50 +1382,39 @@ static int lookup_level0_dirty(struct ubifs_info *c, const union ubifs_key *key,
+ }
  
+ /**
+- * ubifs_tnc_lookup - look up a file-system node.
++ * maybe_leb_gced - determine if a LEB may have been garbage collected.
+  * @c: UBIFS file-system description object
+- * @key: node key to lookup
+- * @node: the node is returned here
++ * @lnum: LEB number
++ * @gc_seq1: garbage collection sequence number
+  *
+- * This function look up and reads node with key @key. The caller has to make
+- * sure the @node buffer is large enough to fit the node. Returns zero in case
+- * of success, %-ENOENT if the node was not found, and a negative error code in
+- * case of failure.
++ * This function determines if @lnum may have been garbage collected since
++ * sequence number @gc_seq1. If it may have been then %1 is returned, otherwise
++ * %0 is returned.
+  */
+-int ubifs_tnc_lookup(struct ubifs_info *c, const union ubifs_key *key,
+-		     void *node)
++static int maybe_leb_gced(struct ubifs_info *c, int lnum, int gc_seq1)
+ {
+-	int found, n, err;
+-	struct ubifs_znode *znode;
+-	struct ubifs_zbranch zbr, *zt;
+-
+-	mutex_lock(&c->tnc_mutex);
+-	found = ubifs_lookup_level0(c, key, &znode, &n);
+-	if (!found) {
+-		err = -ENOENT;
+-		goto out;
+-	} else if (found < 0) {
+-		err = found;
+-		goto out;
+-	}
+-	zt = &znode->zbranch[n];
+-	if (is_hash_key(c, key)) {
+-		/*
+-		 * In this case the leaf node cache gets used, so we pass the
+-		 * address of the zbranch and keep the mutex locked
+-		 */
+-		err = tnc_read_node_nm(c, zt, node);
+-		goto out;
+-	}
 -	zbr = znode->zbranch[n];
 -	mutex_unlock(&c->tnc_mutex);
 -
--	err = tnc_read_node_nm(c, &zbr, node);
+-	err = ubifs_tnc_read_node(c, &zbr, node);
 -	return err;
-+	err = tnc_read_node_nm(c, &znode->zbranch[n], node);
++	int gc_seq2, gced_lnum;
  
- out_unlock:
+-out:
+-	mutex_unlock(&c->tnc_mutex);
+-	return err;
++	gced_lnum = c->gced_lnum;
++	smp_rmb();
++	gc_seq2 = c->gc_seq;
++	/* Same seq means no GC */
++	if (gc_seq1 == gc_seq2)
++		return 0;
++	/* Different by more than 1 means we don't know */
++	if (gc_seq1 + 1 != gc_seq2)
++		return 1;
++	/*
++	 * We have seen the sequence number has increased by 1. Now we need to
++	 * be sure we read the right LEB number, so read it again.
++	 */
++	smp_rmb();
++	if (gced_lnum != c->gced_lnum)
++		return 1;
++	/* Finally we can check lnum */
++	if (gced_lnum == lnum)
++		return 1;
++	return 0;
+ }
+ 
+ /**
+@@ -1436,16 +1425,19 @@ out:
+  * @lnum: LEB number is returned here
+  * @offs: offset is returned here
+  *
+- * This function is the same as 'ubifs_tnc_lookup()' but it returns the node
+- * location also. See 'ubifs_tnc_lookup()'.
++ * This function look up and reads node with key @key. The caller has to make
++ * sure the @node buffer is large enough to fit the node. Returns zero in case
++ * of success, %-ENOENT if the node was not found, and a negative error code in
++ * case of failure. The node location can be returned in @lnum and @offs.
+  */
+ int ubifs_tnc_locate(struct ubifs_info *c, const union ubifs_key *key,
+ 		     void *node, int *lnum, int *offs)
+ {
+-	int found, n, err;
++	int found, n, err, safely = 0, gc_seq1;
+ 	struct ubifs_znode *znode;
+ 	struct ubifs_zbranch zbr, *zt;
+ 
++again:
+ 	mutex_lock(&c->tnc_mutex);
+ 	found = ubifs_lookup_level0(c, key, &znode, &n);
+ 	if (!found) {
+@@ -1456,24 +1448,43 @@ int ubifs_tnc_locate(struct ubifs_info *c, const union ubifs_key *key,
+ 		goto out;
+ 	}
+ 	zt = &znode->zbranch[n];
++	if (lnum) {
++		*lnum = zt->lnum;
++		*offs = zt->offs;
++	}
+ 	if (is_hash_key(c, key)) {
+ 		/*
+ 		 * In this case the leaf node cache gets used, so we pass the
+ 		 * address of the zbranch and keep the mutex locked
+ 		 */
+-		*lnum = zt->lnum;
+-		*offs = zt->offs;
+ 		err = tnc_read_node_nm(c, zt, node);
+ 		goto out;
+ 	}
++	if (safely) {
++		err = ubifs_tnc_read_node(c, zt, node);
++		goto out;
++	}
++	/* Drop the TNC mutex prematurely and race with garbage collection */
+ 	zbr = znode->zbranch[n];
++	gc_seq1 = c->gc_seq;
  	mutex_unlock(&c->tnc_mutex);
+ 
+-	*lnum = zbr.lnum;
+-	*offs = zbr.offs;
++	if (ubifs_get_wbuf(c, zbr.lnum)) {
++		/* We do not GC journal heads */
++		err = ubifs_tnc_read_node(c, &zbr, node);
++		return err;
++	}
+ 
+-	err = ubifs_tnc_read_node(c, &zbr, node);
+-	return err;
++	err = fallible_read_node(c, key, &zbr, node);
++	if (maybe_leb_gced(c, zbr.lnum, gc_seq1)) {
++		/*
++		 * The node may have been GC'ed out from under us so try again
++		 * while keeping the TNC mutex locked.
++		 */
++		safely = 1;
++		goto again;
++	}
++	return 0;
+ 
+ out:
+ 	mutex_unlock(&c->tnc_mutex);
+diff --git a/fs/ubifs/ubifs.h b/fs/ubifs/ubifs.h
+index d7f706f..7828d69 100644
+--- a/fs/ubifs/ubifs.h
++++ b/fs/ubifs/ubifs.h
+@@ -1028,6 +1028,8 @@ struct ubifs_mount_opts {
+  * @sbuf: a buffer of LEB size used by GC and replay for scanning
+  * @idx_gc: list of index LEBs that have been garbage collected
+  * @idx_gc_cnt: number of elements on the idx_gc list
++ * @gc_seq: incremented for every non-index LEB garbage collected
++ * @gced_lnum: last non-index LEB that was garbage collected
+  *
+  * @infos_list: links all 'ubifs_info' objects
+  * @umount_mutex: serializes shrinker and un-mount
+@@ -1257,6 +1259,8 @@ struct ubifs_info {
+ 	void *sbuf;
+ 	struct list_head idx_gc;
+ 	int idx_gc_cnt;
++	volatile int gc_seq;
++	volatile int gced_lnum;
+ 
+ 	struct list_head infos_list;
+ 	struct mutex umount_mutex;
+@@ -1451,8 +1455,6 @@ int ubifs_save_dirty_idx_lnums(struct ubifs_info *c);
+ /* tnc.c */
+ int ubifs_lookup_level0(struct ubifs_info *c, const union ubifs_key *key,
+ 			struct ubifs_znode **zn, int *n);
+-int ubifs_tnc_lookup(struct ubifs_info *c, const union ubifs_key *key,
+-		     void *node);
+ int ubifs_tnc_lookup_nm(struct ubifs_info *c, const union ubifs_key *key,
+ 			void *node, const struct qstr *nm);
+ int ubifs_tnc_locate(struct ubifs_info *c, const union ubifs_key *key,
 -- 
 1.5.4.1
 
