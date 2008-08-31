@@ -1,245 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbYHaRnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbYHaRoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756608AbYHaRnY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 13:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbYHaRnN
+	id S1755399AbYHaRoP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 13:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755160AbYHaRoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 13:43:13 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:55703 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754698AbYHaRnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 13:43:11 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -1.67
-Date: Sun, 31 Aug 2008 10:43:09 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: David Miller <davem@davemloft.net>, "Dushan Tcholich" <dusanc@gmail.com>
-Cc: "Francois Romieu" <romieu@fr.zoreil.com>,
-       "Robert Hancock" <hancockr@shaw.ca>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, bridge@lists.linux-foundation.org
-Subject: [RFC] bridge: STP timer management range checking
-Message-ID: <20080831104309.780cc01f@extreme>
-In-Reply-To: <20080831100537.6929c51e@extreme>
-References: <fa.wTMiBcGRgw2fBtdHwtX7y0lkc8s@ifi.uio.no>
-	<48975BD3.6040709@shaw.ca>
-	<a08621850808041337k1d1deb6fk78098d9fcd4930dd@mail.gmail.com>
-	<20080807185802.GA16327@electric-eye.fr.zoreil.com>
-	<a08621850808101200n220afd2dve58abe67830b7a4f@mail.gmail.com>
-	<a08621850808110053j5cbf23e6xdf52c9e7440abf19@mail.gmail.com>
-	<a08621850808291848q5660148fx57d576ecfcbfce8@mail.gmail.com>
-	<a08621850808310151o143845h195a8658d02270d9@mail.gmail.com>
-	<20080831100537.6929c51e@extreme>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 31 Aug 2008 13:44:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52529 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753174AbYHaRn7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 13:43:59 -0400
+Date: Sun, 31 Aug 2008 10:42:41 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, David Witbrodt <dawitbro@sbcglobal.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers <kernel-testers@vger.kernel.org>
+Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit
+ a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
+In-Reply-To: <200808311427.19369.rjw@sisk.pl>
+Message-ID: <alpine.LFD.1.10.0808311039330.12958@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org> <200808302334.29156.rjw@sisk.pl> <86802c440808301810r17657f3fnb3c8af5496955e0d@mail.gmail.com> <200808311427.19369.rjw@sisk.pl>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Spanning Tree Protocol timers need to be set within certain boundaries
-to keep the internal protocol engine working, and to be interoperable.
-This patch restricts changes to those timers to the values defined in IEEE 802.1D
-specification.
 
-The only exception to the standards are:
-  * if STP is disabled allow forwarding delay to be turned off
-  * allow wider range of ageing timer since this isn't directly part of
-    STP, and setting it to zero allows for non-remembering bridge.
 
-Warning: this may cause user backlash since apparently working but standards
-  conforming configurations will get configuration errors that they didn't
-  see before.
+On Sun, 31 Aug 2008, Rafael J. Wysocki wrote:
+> 
+> Works, dmesg is at:
+> http://www.sisk.pl/kernel/debug/mainline/2.6.27-rc5/2.6.27-rc5-test.log
 
---- a/net/bridge/br_ioctl.c	2008-08-31 10:00:44.000000000 -0700
-+++ b/net/bridge/br_ioctl.c	2008-08-31 10:34:00.000000000 -0700
-@@ -177,38 +177,63 @@ static int old_dev_ioctl(struct net_devi
- 	}
- 
- 	case BRCTL_SET_BRIDGE_FORWARD_DELAY:
-+	{
-+		unsigned long t = clock_t_to_jiffies(args[1]);
- 		if (!capable(CAP_NET_ADMIN))
- 			return -EPERM;
- 
-+		/* enforce range checking per IEEE 802.1D 17.14 */
-+		if (br->stp_enabled != BR_NO_STP &&
-+		    (t < 4*HZ || t > 30 * HZ))
-+			return -EINVAL;
-+
- 		spin_lock_bh(&br->lock);
--		br->bridge_forward_delay = clock_t_to_jiffies(args[1]);
-+		br->bridge_forward_delay = t;
- 		if (br_is_root_bridge(br))
- 			br->forward_delay = br->bridge_forward_delay;
- 		spin_unlock_bh(&br->lock);
- 		return 0;
--
-+	}
- 	case BRCTL_SET_BRIDGE_HELLO_TIME:
-+	{
-+		unsigned long t = clock_t_to_jiffies(args[1]);
-+
- 		if (!capable(CAP_NET_ADMIN))
- 			return -EPERM;
- 
-+		if (t < HZ || t > 15 * HZ)
-+			return -EINVAL;
-+
- 		spin_lock_bh(&br->lock);
--		br->bridge_hello_time = clock_t_to_jiffies(args[1]);
-+		br->bridge_hello_time = t;
- 		if (br_is_root_bridge(br))
- 			br->hello_time = br->bridge_hello_time;
- 		spin_unlock_bh(&br->lock);
- 		return 0;
--
-+	}
- 	case BRCTL_SET_BRIDGE_MAX_AGE:
-+	{
-+		unsigned long t = clock_t_to_jiffies(args[1]);
- 		if (!capable(CAP_NET_ADMIN))
- 			return -EPERM;
- 
-+		/* enforce range checking per IEEE 802.1D 17.14 */
-+		if (t < 6 * HZ || t > 40 * HZ)
-+			return -EINVAL;
-+
-+		if (t < 2 * (br->bridge_hello_time + HZ))
-+			return -EINVAL;
-+
-+		if (t / 2 + HZ > br->bridge_forward_delay)
-+			return -EINVAL;
-+
- 		spin_lock_bh(&br->lock);
- 		br->bridge_max_age = clock_t_to_jiffies(args[1]);
- 		if (br_is_root_bridge(br))
- 			br->max_age = br->bridge_max_age;
- 		spin_unlock_bh(&br->lock);
- 		return 0;
--
-+	}
- 	case BRCTL_SET_AGEING_TIME:
- 		if (!capable(CAP_NET_ADMIN))
- 			return -EPERM;
---- a/net/bridge/br_sysfs_br.c	2008-08-31 10:23:59.000000000 -0700
-+++ b/net/bridge/br_sysfs_br.c	2008-08-31 10:32:53.000000000 -0700
-@@ -29,11 +29,12 @@
-  */
- static ssize_t store_bridge_parm(struct device *d,
- 				 const char *buf, size_t len,
--				 void (*set)(struct net_bridge *, unsigned long))
-+				 int (*set)(struct net_bridge *, unsigned long))
- {
- 	struct net_bridge *br = to_bridge(d);
- 	char *endp;
- 	unsigned long val;
-+	int rc;
- 
- 	if (!capable(CAP_NET_ADMIN))
- 		return -EPERM;
-@@ -43,9 +44,10 @@ static ssize_t store_bridge_parm(struct 
- 		return -EINVAL;
- 
- 	spin_lock_bh(&br->lock);
--	(*set)(br, val);
-+	rc = (*set)(br, val);
- 	spin_unlock_bh(&br->lock);
--	return len;
-+
-+	return rc ? rc : len;
- }
- 
- 
-@@ -56,12 +58,19 @@ static ssize_t show_forward_delay(struct
- 	return sprintf(buf, "%lu\n", jiffies_to_clock_t(br->forward_delay));
- }
- 
--static void set_forward_delay(struct net_bridge *br, unsigned long val)
-+static int set_forward_delay(struct net_bridge *br, unsigned long val)
- {
- 	unsigned long delay = clock_t_to_jiffies(val);
-+
-+	if (br->stp_enabled != BR_NO_STP &&
-+	    (delay < 4*HZ || delay > 30 * HZ))
-+		return -EINVAL;
-+
- 	br->forward_delay = delay;
- 	if (br_is_root_bridge(br))
- 		br->bridge_forward_delay = delay;
-+
-+	return 0;
- }
- 
- static ssize_t store_forward_delay(struct device *d,
-@@ -80,12 +89,18 @@ static ssize_t show_hello_time(struct de
- 		       jiffies_to_clock_t(to_bridge(d)->hello_time));
- }
- 
--static void set_hello_time(struct net_bridge *br, unsigned long val)
-+static int set_hello_time(struct net_bridge *br, unsigned long val)
- {
- 	unsigned long t = clock_t_to_jiffies(val);
-+
-+	if (t < HZ || t > 15 * HZ)
-+		return -EINVAL;
-+
- 	br->hello_time = t;
- 	if (br_is_root_bridge(br))
- 		br->bridge_hello_time = t;
-+
-+	return 0;
- }
- 
- static ssize_t store_hello_time(struct device *d,
-@@ -104,12 +119,24 @@ static ssize_t show_max_age(struct devic
- 		       jiffies_to_clock_t(to_bridge(d)->max_age));
- }
- 
--static void set_max_age(struct net_bridge *br, unsigned long val)
-+static int set_max_age(struct net_bridge *br, unsigned long val)
- {
- 	unsigned long t = clock_t_to_jiffies(val);
-+
-+	/* enforce range checking per IEEE 802.1D 17.14 */
-+	if (t < 6 * HZ || t > 40 * HZ)
-+		return -EINVAL;
-+
-+	if (t < 2 * (br->bridge_hello_time + HZ))
-+		return -EINVAL;
-+
-+	if (t / 2 + HZ > br->bridge_forward_delay)
-+		return -EINVAL;
-+
- 	br->max_age = t;
- 	if (br_is_root_bridge(br))
- 		br->bridge_max_age = t;
-+	return 0;
- }
- 
- static ssize_t store_max_age(struct device *d, struct device_attribute *attr,
-@@ -126,9 +153,10 @@ static ssize_t show_ageing_time(struct d
- 	return sprintf(buf, "%lu\n", jiffies_to_clock_t(br->ageing_time));
- }
- 
--static void set_ageing_time(struct net_bridge *br, unsigned long val)
-+static int set_ageing_time(struct net_bridge *br, unsigned long val)
- {
- 	br->ageing_time = clock_t_to_jiffies(val);
-+	return 0;
- }
- 
- static ssize_t store_ageing_time(struct device *d,
-@@ -180,9 +208,10 @@ static ssize_t show_priority(struct devi
- 		       (br->bridge_id.prio[0] << 8) | br->bridge_id.prio[1]);
- }
- 
--static void set_priority(struct net_bridge *br, unsigned long val)
-+static int set_priority(struct net_bridge *br, unsigned long val)
- {
- 	br_stp_set_bridge_priority(br, (u16) val);
-+	return 0;
- }
- 
- static ssize_t store_priority(struct device *d, struct device_attribute *attr,
+That BAR is indeed "locked". Now that we try to reallocate it, you get 
+this in the log:
+
+	pci 0000:00:00.0: BAR 3: error updating (0x40000004 != 0xe0000004)
+	pci 0000:00:00.0: BAR 3: error updating (high 0x000001 != 0x000000)
+
+ie now the code _tried_ to update the BAR to point to 0x1_4000_0000 
+instead, but the hardware refused, and it is still at 0x0_e000_0000.
+
+So Yinghai's patch "worked", but it worked by doing nothing.
+
+See my earlier guess about locked read-only resources a few emails back. 
+IOW, I'm not at all surprised. I really do suspect that that BAR is some 
+very special "this is the HT->PCIE region" BAR.
+
+			Linus
