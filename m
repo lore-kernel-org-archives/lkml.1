@@ -1,96 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbYHaT6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbYHaUDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758406AbYHaT6u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 15:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756559AbYHaT6j
+	id S1758406AbYHaUDf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 16:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757061AbYHaUD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 15:58:39 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:43180 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756217AbYHaT6h (ORCPT
+	Sun, 31 Aug 2008 16:03:26 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:34682 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757041AbYHaUD0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 15:58:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=QSxOI+7gxkNKz+XHrL69QJ/MaelQTDljSuBQqGlpEaj6ctg9Bm8FIgCpdt96uTT6mE
-         TdIrO+PqLDWPt5Z2/Jp7plUkFpb/+dqi6RSpct9ny5HfdbPkOJ96eVMYjiOCEvtpuzv9
-         5H4rUE84RYULnAjj2a1mwDaFxS+jW/ptPC8AQ=
-Message-ID: <40f31dec0808311258q7598dfe3he81b7575375faff5@mail.gmail.com>
-Date: Sun, 31 Aug 2008 22:58:36 +0300
-From: "Nick Kossifidis" <mickflemm@gmail.com>
-To: "Rui Santos" <rsantos@grupopie.com>
-Subject: Re: [GIT]: Networking
-Cc: "Ivo van Doorn" <ivdoorn@gmail.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "David Miller" <davem@davemloft.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <48B7CBA7.4060107@grupopie.com>
+	Sun, 31 Aug 2008 16:03:26 -0400
+From: David Sanders <linux@sandersweb.net>
+Reply-To: linux@sandersweb.net
+To: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
+Date: Sun, 31 Aug 2008 16:03:48 -0400
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jan Beulich <jbeulich@novell.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+References: <200808311422.12525.linux@sandersweb.net> <alpine.LFD.1.10.0808311140060.12958@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0808311140060.12958@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080805.190020.244441681.davem@davemloft.net>
-	 <alpine.LFD.1.10.0808051937410.15995@nehalem.linux-foundation.org>
-	 <200808061021.56150.IvDoorn@gmail.com> <48B7CBA7.4060107@grupopie.com>
+Message-Id: <200808311603.49056.linux@sandersweb.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/29 Rui Santos <rsantos@grupopie.com>:
-> Ivo van Doorn wrote:
->> On Wednesday 06 August 2008, Linus Torvalds wrote:
->>> On Tue, 5 Aug 2008, David Miller wrote:
->>>> There was going to be the addition of the ath9k wireless driver but
->>>> there was some fallout that is being worked on right now (linux/list.h
->>>> changes needed lkml review, ath9k driver triggered some gcc aborts,
->>>> all kinds of fun stuff :-) so hopefully it will make it in the next
->>>> pass.  I tried to wait an extra day for it to be resolved, but that
->>>> was optimistic.
->>> Talking about wireless driver updates - has anybody looked at the RaLink
->>> wireless driver?  It's in the newer EeePC's (901 and 1000), and it
->>> actually has a driver from the company which the comments make clear is
->>> GPLv2 too, no apparent oddness or anything:
->>>
->>>      http://www.ralinktech.com.tw/data/drivers/2008_0708_RT2860_Linux_STA_v1.7.0.0.tar.bz2
->>>
->>> which admittedly apparently has some trivial problems (with a trivial
->>> patch as seen at
->>>
->>>      http://fedoraforum.org/forum/showthread.php?t=195429
->>>
->>> I'd love to have that one working, since I have the hardware, and it's
->>> actually reasonable (much more so than the original EeePC, in fact). What
->>> channels should I go through? Is anybody working on integrating it
->>> already?
->>
->> Like the earlier rt2x00 drivers I am rewriting the driver as released by Ralink and
->> have put it in the rt2x00lib/mac80211 framework. Most of the code is currently done, and the
->> last part should be done this week. After that it is a matter of testing and comparing
->> register values with the Ralink driver for the last tweaks.
+On Sunday 31 August 2008 14:47, Linus Torvalds wrote:
+> On Sun, 31 Aug 2008, David Sanders wrote:
+> > I recently discovered that x86 kernels won't boot under Virtual PC.
 >
-> Hi Ivo,
+> What CPU does Virtual PC emulate? As far as Wikipedia is concerned (not
+> that I'd take it on complete faith) it emulates a 32-bit Intel Pentium II.
 >
-> I'm now a EeePc 901 owner. I'd also like to have wireless working on
-> this machine.
-> I'm available for any test you might want to undertake so, do not
-> hesitate to ask.
+> And that commit makes the kernel use the "P6 nops" for such hardware.
+> Maybe Virtual PC doesn't support the newer intel nop things?
 >
+> Intel docs say that it should be available on any intel CPU that has
+> CPUID.01H.EAX[11:8] = 0110B or 1111B. That's the "family ID", and Pentium
+> II should have a family ID of 6 (ie that 0110B case).
+>
+> So it sounds like a Virtual PC bug, but I dunno. And maybe we should just
+> use the legcay nops for anything that isn't modern (ie P4+ or Core)?
+>
+> 		Linus
 
-EeePC is working, the patch series i submitted adds support for RF2425
-chip which is included on EeePCs as far as i know (i have tested it on
-an EeePC 900 surf, i think EeePC 901 has the same card) ;-)
+Virtual PC does not emulate a processor like it does with the motherboard, 
+video, NIC ,etc.  What you see in the virtual machine is the actual 
+processor, except that Virtual PC looks at all of your instructions and 
+modifies ring 0 code and the like.  It may be that Virtual PC was not 
+designed with an awareness of these nops that the commit added.
 
-We have some performance issues with ath5k but we are working on it
-you can try and lock on b rates for better performance (we miss some
-RF calibration stuff and CCK rates seem to perform better).
+I would suggest an configuration option to select legacy-nops or newer-nops 
+and a kernel boot-time parameter so it can be disabled to allow installation 
+of a distribution for example.
 
-Happy wardriving ;-)
-
--- 
-GPG ID: 0xD21DB2DB
-As you read this post global entropy rises. Have Fun ;-)
-Nick
+I would be happy to submit such a patch if you agree (or I'll try to anyway).
