@@ -1,124 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbYHaSXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbYHaSh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757354AbYHaSXq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 14:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbYHaSXj
+	id S1756728AbYHaSh1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 14:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbYHaShR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 14:23:39 -0400
-Received: from vms044pub.verizon.net ([206.46.252.44]:34584 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753141AbYHaSXi (ORCPT
+	Sun, 31 Aug 2008 14:37:17 -0400
+Received: from ti-out-0910.google.com ([209.85.142.187]:21879 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753707AbYHaShQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 14:23:38 -0400
-Date: Sun, 31 Aug 2008 14:23:11 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: Linux-2.6.27-rc5, drm errors in log
-In-reply-to: <200808310655.45464.gene.heskett@gmail.com>
-To: "Dave Airlie" <airlied@gmail.com>
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-Message-id: <200808311423.11311.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <898503EB1E15BA4F944D1BE69D55AAC8AB540A@storexmb1.amd.com>
- <21d7e9970808302340w71483645macb34f8470a85c66@mail.gmail.com>
- <200808310655.45464.gene.heskett@gmail.com>
-User-Agent: KMail/1.9.9
+	Sun, 31 Aug 2008 14:37:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=o61ZaSvMM0tHrTF/sXrAsqnbQhoOmDAB8+EHuEfrK6xlhgvfItStIDx7fDWn7cwxMQ
+         72QCEYb9SPzJobZxx9MF8hMqd59aHN3s27odG+hkI7XS86pO+xQvzCIFs+lwtfQhTbi2
+         rBnn1Gt1juz78W89g9iyHBBH8/e58vNy6BSJU=
+Date: Sun, 31 Aug 2008 21:36:52 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rdunlap@xenotime.net,
+       mpm@selenic.com, tglx@linutronix.de, rostedt@goodmis.org,
+       cl@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       tzanussi@gmail.com
+Subject: Re: [PATCH] kmemtrace: SLUB hooks for caller-tracking functions.
+Message-ID: <20080831183652.GA5220@localhost>
+References: <1219600175-5253-1-git-send-email-eduard.munteanu@linux360.ro> <48BAAC3C.4050309@cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48BAAC3C.4050309@cs.helsinki.fi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 31 August 2008, Gene Heskett wrote:
->On Sunday 31 August 2008, Dave Airlie wrote:
->>On Sun, Aug 31, 2008 at 12:19 PM, Gene Heskett <gene.heskett@verizon.net> 
-wrote:
->>> On Saturday 30 August 2008, Bridgman, John wrote:
->>>>))I'm drowning in these errors:
->>>>))
->>>>))Aug 30 13:21:05 coyote kernel: [14927.850078] [drm] wait for fifo
->>>> failed status : 0x80076100 0x00000000
->>>>
->>>>I'm just going on the code in your email - can't view git until later
->>>> today - but in this case it seems like the timeouts were always
->>>> happening and now there is code to print an error message.
->>>>
->>>>IIRC the usual fix is to bump the timeout but (Michael ?) has suggested a
->>>> couple of times that the ideal solution would be to change the logic so
->>>> that the driver never times out while the chip is making progress (ie
->>>> while the number of slots available in the fifo is increasing, even if
->>>> it hasn't increased enough yet).
->>>
->>> FWIW, I added the 3 lines that cause that printout to the 2.6.27-rc4 tree
->>> and rebuilt it.  There are no more errors being reported now by
->>> 2.6.27-rc4, and there were none without those 3 added lines prior to
->>> this, so it is rc5 specific.
->>
->>Hmm I'm just looking at the patches I put in for rc5, and there is no
->>functional difference to the
->>r200 codepath that I can see from those patches apart from the debug
->> prints.
+On Sun, Aug 31, 2008 at 05:35:40PM +0300, Pekka Enberg wrote:
+> Eduard - Gabriel Munteanu wrote:
+>> This patch adds kmemtrace hooks for __kmalloc_track_caller() and
+>> __kmalloc_node_track_caller(). Currently, they set the call site pointer
+>> to the value recieved as a parameter. (This could change if we implement
+>> stack trace exporting in kmemtrace.)
+>> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 >
->Update: there were 3 of those in the log after I sent the denial msg.
->======
->Aug 30 23:48:34 coyote kernel: [ 7242.890000] [drm] wait for fifo failed
-> status : 0x80076100 0x00000000 Aug 30 23:57:51 coyote kernel: [
-> 7800.370001] [drm] wait for fifo failed status : 0x8003C100 0x00000000 Aug
-> 30 23:57:51 coyote kernel: [ 7800.458000] [drm] wait for fifo failed status
-> : 0x8007C100 0x00000000 ======
->So this is a real, pre-rc5 problem, but without the reporting that enabled.
+> Applied. I had to do some manual tweaking, so can you please double-check 
+> the result:
 >
->>Can you get a clean -rc4 and apply just
->> 54f961a628b737f66710eca0b0d95346645dd33e to it.
+> http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=b9f1ecc6428f0ba391845b2ac7df8618da287e4f
 >
->Yes I can, but how do I get that specific patch?  Or is that the git # for
-> the patch I first applied to -rc2, which added the firmware/radeon stuff? 
-> I'm familiar with patch, but not on a first name basis with git, sorry.
->
->So I'm going to do a bisect, my style.  I will rebuild, starting with -rc3,
->using only the -rcX patch and the firmware addition patch, which applied to
->-rc3 as follows:
->now applying [PATCH]radeon_cp-use-request_firmware
->
->patching file drivers/gpu/drm/radeon/radeon_cp.c
->patching file drivers/gpu/drm/radeon/radeon_drv.h
->patching file drivers/gpu/drm/radeon/radeon_microcode.h
->patching file firmware/Makefile
->Hunk #1 FAILED at 34.
->1 out of 1 hunk FAILED -- saving rejects to file firmware/Makefile.rej
->===So I added that into the firmware/Makefile at line 28 by hand===
->patching file firmware/WHENCE
->Hunk #1 succeeded at 339 (offset -233 lines).
->patching file firmware/radeon/R100_cp.bin.ihex
->patching file firmware/radeon/R200_cp.bin.ihex
->patching file firmware/radeon/R300_cp.bin.ihex
->patching file firmware/radeon/R420_cp.bin.ihex
->patching file firmware/radeon/R520_cp.bin.ihex
->patching file firmware/radeon/RS600_cp.bin.ihex
->patching file firmware/radeon/RS690_cp.bin.ihex
->
->patch [PATCH]radeon_cp-use-request_firmware done
->
->=== and I'm watching the build for errors===
->It got past the MK_FW for those ok.
->However there were 6 section miss-matches reported, and the suggested
->addition to .config did not make it any noisier so I'm no smarter.
->Now I've added those 3 reporter lines to radeon_cp.c, rebuilt again and
->will reboot to -rc3 for effects, reporting after a few hours uptime.
+> Thanks!
 
-Ok Dave, I have chased it all the way back to rc1 by adding those 3 lines of 
-reporter, and at 2.6.27-rc1 it is still doing it.  This is without the radeon 
-firmware patch, but since the microcode is still there in /lib/firmware, the 
-log says it is still being loaded.
+Looks fine to me. However, you can now remove the casts to unsigned long
+from 'caller', i.e. "s/(unsigned long) caller/caller/g"
 
-I am beginning to think this is a very old bug, and this evening I will try 
-those 3 reporter lines added to 2.6.25.4 as I still have that src tree here.
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Have you seen the latest Japanese camera?  Apparently it is so fast it can
-photograph an American with his mouth shut!
