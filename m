@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759235AbYHaOYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759324AbYHaOf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759235AbYHaOYS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 10:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756620AbYHaOYF
+	id S1759324AbYHaOf3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 10:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757487AbYHaOfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 10:24:05 -0400
-Received: from smtprelay04.ispgateway.de ([80.67.18.16]:56318 "EHLO
-	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757230AbYHaOYE (ORCPT
+	Sun, 31 Aug 2008 10:35:16 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:4521 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757270AbYHaOfP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 10:24:04 -0400
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: [PATCH] sunrpc - fixup userspace buffer possible overrun v2
-Date: Sun, 31 Aug 2008 16:09:10 +0200
-User-Agent: KMail/1.9.10
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>, bfields@fieldses.org,
-       neilb@suse.de
-References: <20080831100806.GD7391@lenovo>
-In-Reply-To: <20080831100806.GD7391@lenovo>
+	Sun, 31 Aug 2008 10:35:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=qRSHg15p91sYgH7aSoFykb7fSTQpxi8qGxstV1IxIMt4e01GtejHZ/APQiQaCckcqb
+         h3fXgO7HwCGc4d2Jebt6x2z/lOHLATW2eeeaoENJnglA8PwafCl5ez8NZkycDLPtJYSM
+         47hL3SkATwQBzpuykrT+aIubUFf5KsF4B1/GI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: linux-next: Tree for August 27
+Date: Sun, 31 Aug 2008 15:38:38 +0200
+User-Agent: KMail/1.9.9
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       dm-devel@redhat.com
+References: <20080827183453.eb651f50.sfr@canb.auug.org.au> <200808292123.07246.bzolnier@gmail.com> <48B90E81.5060905@kernel.org>
+In-Reply-To: <48B90E81.5060905@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808311609.12275.ioe-lkml@rameria.de>
-X-Df-Sender: 849595
+Message-Id: <200808311538.38918.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Cyrill,
+On Saturday 30 August 2008, Tejun Heo wrote:
 
-On Sunday 31 August 2008, Cyrill Gorcunov wrote:
-> The conclusion is that proc_do_xprt doesn't check for userside buffer
-> size indeed so fix. Also set lenp to number of bytes were really written.
+[...]
 
-Why not use  simple_read_from_buffer() for the read case and
-keep the -EINVAL for the write case.
-
-> Reported-by: Vegard Nossum <vegard.nossum@gmail.com>
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> CC: David Wagner <daw@cs.berkeley.edu>
-> ---
+> > Actually it seems that CONFIG_DEBUG_BLOCK_EXT_DEVT introduction (which I
+> > think is a nice step forward) is a good oportunity to put the deprecation
+> > of the default root device further, i.e. it may be worth to hook the
+> > default root device check and/or CONFIG_DEBUG_BLOCK_EXT_DEVT one into
+> > mount_block_root().
 > 
-> Please review.
-> 
-> Index: linux-2.6.git/net/sunrpc/sysctl.c
-> ===================================================================
-> --- linux-2.6.git.orig/net/sunrpc/sysctl.c	2008-08-31 13:43:46.000000000 +0400
-> +++ linux-2.6.git/net/sunrpc/sysctl.c	2008-08-31 13:58:14.000000000 +0400
-> @@ -60,23 +60,26 @@ static int proc_do_xprt(ctl_table *table
->  			void __user *buffer, size_t *lenp, loff_t *ppos)
->  {
->  	char tmpbuf[256];
-> -	int len;
-> +	size_t len;
-> +
-+ ssize_t ret;
->  	if ((*ppos && !write) || !*lenp) {
->  		*lenp = 0;
->  		return 0;
->  	}
-> +
->  	if (write)
->  		return -EINVAL;
+> Maybe we can add a warning there if BLOCK_EXT_DEVT is enabled or do
+> you have something else on mind?
 
-        len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
-	ret = simple_read_from_buffer(buffer, ppos, tmpbuf, len);
-	if (ret >= 0) {
-		*lenp = ret;
-		ret = 0;
-	}
+Yes, this is would be nice, having warning on using the default root
+device (instead of "root=") would be even nicer.
 
-	return ret;
-   }
-
-
-Best Regards
-
-Ingo Oeser
+Thanks,
+Bart
