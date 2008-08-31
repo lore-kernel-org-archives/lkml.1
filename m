@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757549AbYHaTIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbYHaTKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757549AbYHaTIo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 15:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755484AbYHaTIg
+	id S1757777AbYHaTKV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 15:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755906AbYHaTKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 15:08:36 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:44635 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755547AbYHaTIf (ORCPT
+	Sun, 31 Aug 2008 15:10:09 -0400
+Received: from web82104.mail.mud.yahoo.com ([209.191.84.217]:35841 "HELO
+	web82104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755792AbYHaTKI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 15:08:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Kfu+gv4uJ2u7V747Ym49QUSUfq0/B6k/akc/dgH61sCny0SFTLRZ33G36yWBoRD7tc
-         pP5c+kZXj+C3gQCdZeizPJdL3lGkoeSnGQgbEIwihBzlnOrkWvOzMv+of7NVTUkXNFbp
-         f/vqjCdK13NAPhTiFTROwzlK3SH0fTfxy3WZ4=
-Message-ID: <19f34abd0808311208v4caa9bdbhaac6ca5177c1994a@mail.gmail.com>
-Date: Sun, 31 Aug 2008 21:08:34 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH] prevent ia64 from invoking irq handlers on offline CPUs
-Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com, jes@sgi.com,
-       manfred@colorfullife.com, akpm@linux-foundation.org
-In-Reply-To: <20080831180630.GF7015@linux.vnet.ibm.com>
+	Sun, 31 Aug 2008 15:10:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=Lq+82FCu/194ac9Fov6i91nXhiCPRUsCDK6I1x9CbEpDWh8ICN3VvjCScbKl2QwWyyFAL4pfp3JJclavJtiQgj1eAc4hwy11SeI9SETV4cNCgRV0qioOxys8xEHDc0zre1vdX+kBJMs9b/tfnIDs7z7jxHXyE9d3CQHORqw/s38=;
+X-YMail-OSG: 6IX2jR0VM1k_Fm_x1yNwFCmxLyNLW4MRzVpgA6mk3Ge1GSC9f_W7x023aAUnsSQ0eGdvH2SpSwC1p080dyJQdIwpn1AUCijdxmCytrionbrP5bq_knBvlZl5y49ghQg-
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218.2
+Date: Sun, 31 Aug 2008 12:10:07 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: [PATCH] x86: split e820 reserved entries record to late v2
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080831172814.GA15087@linux.vnet.ibm.com>
-	 <19f34abd0808311046g47907414wf3ef939d0a7bbfdb@mail.gmail.com>
-	 <20080831175100.GD7015@linux.vnet.ibm.com>
-	 <19f34abd0808311053m2fbaa711j5bfc846d81cf34b4@mail.gmail.com>
-	 <20080831180630.GF7015@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <308581.79965.qm@web82104.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 31, 2008 at 8:06 PM, Paul E. McKenney
-<paulmck@linux.vnet.ibm.com> wrote:
-> On Sun, Aug 31, 2008 at 07:53:32PM +0200, Vegard Nossum wrote:
->> On Sun, Aug 31, 2008 at 7:51 PM, Paul E. McKenney
->> <paulmck@linux.vnet.ibm.com> wrote:
->> >> > @@ -751,6 +749,7 @@ int __cpu_disable(void)
->> >> >        remove_siblinginfo(cpu);
->> >> >        cpu_clear(cpu, cpu_online_map);
->>
->> Here ^^^
->>
->> >> >        fixup_irqs();
->> >> > +       cpu_clear(cpu, cpu_online_map);
->> >> >        local_flush_tlb_all();
->> >> >        cpu_clear(cpu, cpu_callin_map);
->> >> >        return 0;
->> >>
->> >> Hm. Maybe my eyes are going bad. But isn't that now clearing the cpu
->> >> both before and after calling fixup_irqs()?
->> >
->> > I don't believe so...  I removed the earlier one and added the later
->> > one.  Or is there another one hidden somewhere that I missed?
->>
->> See marker above. It's not removed, is it?
->
-> Right you are!!!  There were two to begin with, and I moved the first
-> one only.  The attached updated patch removes the extra one.
-
-Good, I am not blind yet! (Though I did have to look more than once.)
-
-On the other hand... Paul; human after all!
 
 
-Vegard
+> David Witbrodt :
+> [...]
+> > ===== SETTERM OUTPUT =====
+> > Clocksource tsc unstable (delta = -98677795 ns)
+> > NETDEV WATCHDOG: eth0 (r8169): transmit timed out
+> > ------------[ cut here ]------------
+> > WARNING: at net/sched/sch_generic.c:221 dev_watchdog+0x21e/0x250()
+> > Modules linked in: ipv6 cpufreq_userspace pcspkr 8250_pnp 8250 serial_core 
+> evdev
+> > Pid: 0, comm: swapper Not tainted 2.6.27-rc4.080829.yh-patches-tip #1
+> > Call Trace:
+> [...]
+> >  [] cpu_idle+0x56/0xa0
+> > ---[ end trace 28095e4c2b529c2a ]---
+> > r8169: eth0: link up
+> > ===== END SETTERM OUTPUT =====
+> > 
+> > Other than this strangeness, everything seems OK with your patches.  This
+> > looks like some random networking annoyance to me, not really related to
+> > the regression patches, but I'll let better minds be the judge of that.
+> 
+> Could you enable CONFIG_PRINTK_TIME ?
+> 
+> Even if the networking driver manages to negotiate the link, this is
+> the kind of message which upsets people (myself included :o) ).
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Will do.
+
+FYI, that kernel would not reproduce the call trace after several reboots.
+I had never seen a trace like that before, and have not seen one since.
+
+
+DW
