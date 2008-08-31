@@ -1,662 +1,302 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758566AbYHaU2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758555AbYHaUqK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758566AbYHaU2X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 16:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757443AbYHaU2O
+	id S1758555AbYHaUqK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 16:46:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYHaUp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 16:28:14 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:46341 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757061AbYHaU2M (ORCPT
+	Sun, 31 Aug 2008 16:45:56 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:40703 "EHLO
+	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751246AbYHaUpz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 16:28:12 -0400
-Date: Sun, 31 Aug 2008 13:28:08 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmoriss@namei.org>, Peter Dolding <oiaohm@gmail.com>,
-       Kenneth Goldman <kgoldman@us.ibm.com>,
-       Debora Velarde <debora@linux.vnet.ibm.com>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>, Pavel Machek <pavel@suse.cz>,
-       Greg KH <greg@kroah.com>, Christoph Hellwig <hch@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 2/2] TPM: rcu locking
-Message-ID: <20080831202808.GK7015@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <cover.1220065144.git.srajiv@linux.vnet.ibm.com> <5cc709bcd66c62c9e55c9bd10788fbb27efb3ede.1220065144.git.srajiv@linux.vnet.ibm.com>
-MIME-Version: 1.0
+	Sun, 31 Aug 2008 16:45:55 -0400
+Date: Sun, 31 Aug 2008 15:45:45 -0500
+From: David Fries <david@fries.net>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: linux-kernel@vger.kernel.org, p_gortmaker@yahoo.com, netdev@vger.kerne.org
+Subject: Re: [PATCH] ne.c fix for hibernate and rmmod oops fix
+Message-ID: <20080831204545.GA28469@spacedout.fries.net>
+References: <20080828041110.GA9404@spacedout.fries.net> <20080830.002215.128620618.anemo@mba.ocn.ne.jp> <20080830022749.GF17528@spacedout.fries.net> <20080830.235226.108118828.anemo@mba.ocn.ne.jp>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <5cc709bcd66c62c9e55c9bd10788fbb27efb3ede.1220065144.git.srajiv@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20080830.235226.108118828.anemo@mba.ocn.ne.jp>
+User-Agent: Mutt/1.5.4i
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Sun, 31 Aug 2008 15:45:48 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 30, 2008 at 12:05:04AM -0300, Rajiv Andrade wrote:
-> Continue to protect the tpm_chip_list using the driver_lock
-> as before, and add an rcu to protect readers.
+On Sat, Aug 30, 2008 at 11:52:26PM +0900, Atsushi Nemoto wrote:
 
-A few questions interspersed below...
+This patch is the changes since [PATCH 1/2], if it looks good I'll
+submit the git changeset next.
 
-							Thanx, Paul
+> The name "cleanup_module" is special.  I think this should not be used
+> outside #ifdef MODULE.  Please rename it something like
+> ne_cleanup_module() and make it static.  Or just use ne_exit().
 
-> Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
-> Acked-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-> ---
->  drivers/char/tpm/tpm.c |  268 ++++++++++++++++++++++++++++++++----------------
->  1 files changed, 178 insertions(+), 90 deletions(-)
-> 
-> diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
-> index 59b31e1..704ab01 100644
-> --- a/drivers/char/tpm/tpm.c
-> +++ b/drivers/char/tpm/tpm.c
-> @@ -587,14 +587,22 @@ ssize_t tpm_show_enabled(struct device * dev, struct device_attribute * attr,
->  {
->  	u8 *data;
->  	ssize_t rc;
-> +	struct tpm_chip *chip;
-> +
+I created ne_add_devices to register the platform devices now in one
+place and ne_probe and init_module call it.
 
-The following five lines of code appear repeatedly.  Why not put them
-into an inline function or a macro?
+> Thanks.  You killed two .name and there are still two .name in ne_probe.
 
-Also, doesn't there need to be an rcu_dereference() somewhere either in
-this sequence of code or in either dev_get_drvdata() or get_device()?
-Or am I missing something subtle here?
+No more cleanup_module, just ne_exit.
 
->From what I see of the code, I actually don't understand why the
-rcu_read_lock() is needed here -- only tpm_chip_list is covered by
-the RCU list addition/deletion primitives in this patch.  If you are
-adding a multilinked data structure into an RCU-protected list, you
-need RCU traversal primitives only when traversing the list, not the
-data structure contained in the list.  (Of course, any changes to the
-data structure contained in the list must be protected somehow or other,
-unless there are no such changes.)
+I moved the BAD #define and module parameters up to the top of the
+file, it's a better place for it.  ne_probe was moved down to the rest
+of the module initialization code.
 
-> +	rcu_read_lock();
-> +	chip = dev_get_drvdata(dev);
-> +	if (chip)
-> +		get_device(chip->dev);	/* protect from disappearing */
-> +	rcu_read_unlock();
-> 
-> -	struct tpm_chip *chip = dev_get_drvdata(dev);
->  	if (chip == NULL)
->  		return -ENODEV;
-> 
->  	data = kzalloc(TPM_INTERNAL_RESULT_SIZE, GFP_KERNEL);
-> -	if (!data)
-> -		return -ENOMEM;
-> +	if (!data) {
-> +		rc = -ENOMEM;
-> +		goto out_alloc;
-> +	}
-> 
->  	memcpy(data, tpm_cap, sizeof(tpm_cap));
->  	data[TPM_CAP_IDX] = TPM_CAP_FLAG;
-> @@ -603,13 +611,15 @@ ssize_t tpm_show_enabled(struct device * dev, struct device_attribute * attr,
->  	rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
->  			"attemtping to determine the permanent enabled state");
->  	if (rc) {
-> -		kfree(data);
-> -		return 0;
-> +		rc = 0;
-> +		goto out;
->  	}
-> 
->  	rc = sprintf(buf, "%d\n", !data[TPM_GET_CAP_PERM_DISABLE_IDX]);
-> -
-> +out:
->  	kfree(data);
-> +out_alloc:
-> +	put_device(chip->dev);
->  	return rc;
->  }
->  EXPORT_SYMBOL_GPL(tpm_show_enabled);
-> @@ -619,14 +629,24 @@ ssize_t tpm_show_active(struct device * dev, struct device_attribute * attr,
->  {
->  	u8 *data;
->  	ssize_t rc;
-> +	struct tpm_chip *chip;
-> 
-> -	struct tpm_chip *chip = dev_get_drvdata(dev);
-> -	if (chip == NULL)
-> -		return -ENODEV;
-> +	rcu_read_lock();
-> +	chip = dev_get_drvdata(dev);
-> +	if (chip)
-> +		get_device(chip->dev);	/* protect from disappearing */
-> +	rcu_read_unlock();
-> +
-> +	if (chip == NULL) {
-> +		rc = -ENODEV;
-> +		goto out_alloc;
-> +	}
-> 
->  	data = kzalloc(TPM_INTERNAL_RESULT_SIZE, GFP_KERNEL);
-> -	if (!data)
-> -		return -ENOMEM;
-> +	if (!data) {
-> +		rc = -ENOMEM;
-> +		goto out;
-> +	}
-> 
->  	memcpy(data, tpm_cap, sizeof(tpm_cap));
->  	data[TPM_CAP_IDX] = TPM_CAP_FLAG;
-> @@ -635,13 +655,15 @@ ssize_t tpm_show_active(struct device * dev, struct device_attribute * attr,
->  	rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
->  			"attemtping to determine the permanent active state");
->  	if (rc) {
-> -		kfree(data);
-> -		return 0;
-> +		rc = 0;
-> +		goto out;
->  	}
-> 
->  	rc = sprintf(buf, "%d\n", !data[TPM_GET_CAP_PERM_INACTIVE_IDX]);
-> -
-> +out:
->  	kfree(data);
-> +out_alloc:
-> +	put_device(chip->dev);
->  	return rc;
->  }
->  EXPORT_SYMBOL_GPL(tpm_show_active);
-> @@ -651,14 +673,22 @@ ssize_t tpm_show_owned(struct device * dev, struct device_attribute * attr,
->  {
->  	u8 *data;
->  	ssize_t rc;
-> +	struct tpm_chip *chip;
-> +
-> +	rcu_read_lock();
-> +	chip = dev_get_drvdata(dev);
-> +	if (chip)
-> +		get_device(chip->dev);	/* protect from disappearing */
-> +	rcu_read_unlock();
-> 
-> -	struct tpm_chip *chip = dev_get_drvdata(dev);
->  	if (chip == NULL)
->  		return -ENODEV;
-> 
->  	data = kzalloc(TPM_INTERNAL_RESULT_SIZE, GFP_KERNEL);
-> -	if (!data)
-> -		return -ENOMEM;
-> +	if (!data) {
-> +		rc = -ENOMEM;
-> +		goto out_alloc;
-> +	}
-> 
->  	memcpy(data, tpm_cap, sizeof(tpm_cap));
->  	data[TPM_CAP_IDX] = TPM_CAP_PROP;
-> @@ -667,13 +697,15 @@ ssize_t tpm_show_owned(struct device * dev, struct device_attribute * attr,
->  	rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
->  			"attempting to determine the owner state");
->  	if (rc) {
-> -		kfree(data);
-> -		return 0;
-> +		rc = 0;
-> +		goto out;
->  	}
-> 
->  	rc = sprintf(buf, "%d\n", data[TPM_GET_CAP_RET_BOOL_1_IDX]);
-> -
-> +out:
->  	kfree(data);
-> +out_alloc:
-> +	put_device(chip->dev);
->  	return rc;
->  }
->  EXPORT_SYMBOL_GPL(tpm_show_owned);
-> @@ -683,14 +715,22 @@ ssize_t tpm_show_temp_deactivated(struct device * dev,
->  {
->  	u8 *data;
->  	ssize_t rc;
-> +	struct tpm_chip *chip;
-> +
-> +	rcu_read_lock();
-> +	chip = dev_get_drvdata(dev);
-> +	if (chip)
-> +		get_device(chip->dev);	/* protect from disappearing */
-> +	rcu_read_unlock();
-> 
-> -	struct tpm_chip *chip = dev_get_drvdata(dev);
->  	if (chip == NULL)
->  		return -ENODEV;
-> 
->  	data = kzalloc(TPM_INTERNAL_RESULT_SIZE, GFP_KERNEL);
-> -	if (!data)
-> -		return -ENOMEM;
-> +	if (!data) {
-> +		rc = -ENOMEM;
-> +		goto out_alloc;
-> +	}
-> 
->  	memcpy(data, tpm_cap, sizeof(tpm_cap));
->  	data[TPM_CAP_IDX] = TPM_CAP_FLAG;
-> @@ -699,13 +739,15 @@ ssize_t tpm_show_temp_deactivated(struct device * dev,
->  	rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
->  			"attempting to determine the temporary state");
->  	if (rc) {
-> -		kfree(data);
-> -		return 0;
-> +		rc = 0;
-> +		goto out;
->  	}
-> 
->  	rc = sprintf(buf, "%d\n", data[TPM_GET_CAP_TEMP_INACTIVE_IDX]);
-> -
-> +out:
->  	kfree(data);
-> +out_alloc:
-> +	put_device(chip->dev);
->  	return rc;
->  }
->  EXPORT_SYMBOL_GPL(tpm_show_temp_deactivated);
-> @@ -725,14 +767,22 @@ ssize_t tpm_show_pcrs(struct device *dev, struct device_attribute *attr,
->  	int i, j, num_pcrs;
->  	__be32 index;
->  	char *str = buf;
-> +	struct tpm_chip *chip;
-> +
-> +	rcu_read_lock();
-> +	chip = dev_get_drvdata(dev);
-> +	if (chip)
-> +		get_device(chip->dev);	/* protect from disappearing */
-> +	rcu_read_unlock();
-> 
-> -	struct tpm_chip *chip = dev_get_drvdata(dev);
->  	if (chip == NULL)
->  		return -ENODEV;
-> 
->  	data = kzalloc(TPM_INTERNAL_RESULT_SIZE, GFP_KERNEL);
-> -	if (!data)
-> -		return -ENOMEM;
-> +	if (!data) {
-> +		rc = -ENOMEM;
-> +		goto out_alloc;
-> +	}
-> 
->  	memcpy(data, tpm_cap, sizeof(tpm_cap));
->  	data[TPM_CAP_IDX] = TPM_CAP_PROP;
-> @@ -741,8 +791,8 @@ ssize_t tpm_show_pcrs(struct device *dev, struct device_attribute *attr,
->  	rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
->  			"attempting to determine the number of PCRS");
->  	if (rc) {
-> -		kfree(data);
-> -		return 0;
-> +		rc = 0;
-> +		goto out;
->  	}
-> 
->  	num_pcrs = be32_to_cpu(*((__be32 *) (data + 14)));
-> @@ -753,15 +803,18 @@ ssize_t tpm_show_pcrs(struct device *dev, struct device_attribute *attr,
->  		rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
->  				"attempting to read a PCR");
->  		if (rc)
-> -			goto out;
-> +			break;
->  		str += sprintf(str, "PCR-%02d: ", i);
->  		for (j = 0; j < TPM_DIGEST_SIZE; j++)
->  			str += sprintf(str, "%02X ", *(data + 10 + j));
->  		str += sprintf(str, "\n");
->  	}
-> +	rc = str - buf;
->  out:
->  	kfree(data);
-> -	return str - buf;
-> +out_alloc:
-> +	put_device(chip->dev);
-> +	return rc;
->  }
->  EXPORT_SYMBOL_GPL(tpm_show_pcrs);
-> 
-> @@ -779,21 +832,31 @@ ssize_t tpm_show_pubek(struct device *dev, struct device_attribute *attr,
->  	ssize_t err;
->  	int i, rc;
->  	char *str = buf;
-> +	struct tpm_chip *chip;
-> +
-> +	rcu_read_lock();
-> +	chip = dev_get_drvdata(dev);
-> +	if (chip)
-> +		get_device(chip->dev);	/* protect from disappearing */
-> +	rcu_read_unlock();
-> 
-> -	struct tpm_chip *chip = dev_get_drvdata(dev);
->  	if (chip == NULL)
->  		return -ENODEV;
-> 
->  	data = kzalloc(READ_PUBEK_RESULT_SIZE, GFP_KERNEL);
-> -	if (!data)
-> -		return -ENOMEM;
-> +	if (!data) {
-> +		rc = -ENOMEM;
-> +		goto out_alloc;
-> +	}
-> 
->  	memcpy(data, readpubek, sizeof(readpubek));
-> 
->  	err = transmit_cmd(chip, data, READ_PUBEK_RESULT_SIZE,
->  			"attempting to read the PUBEK");
-> -	if (err)
-> +	if (err) {
-> +		rc = str - buf;
->  		goto out;
-> +	}
-> 
->  	/* 
->  	   ignore header 10 bytes
-> @@ -823,9 +886,11 @@ ssize_t tpm_show_pubek(struct device *dev, struct device_attribute *attr,
->  		if ((i + 1) % 16 == 0)
->  			str += sprintf(str, "\n");
->  	}
-> -out:
->  	rc = str - buf;
-> +out:
->  	kfree(data);
-> +out_alloc:
-> +	put_device(chip->dev);
->  	return rc;
->  }
->  EXPORT_SYMBOL_GPL(tpm_show_pubek);
-> @@ -847,14 +912,22 @@ ssize_t tpm_show_caps(struct device *dev, struct device_attribute *attr,
->  	u8 *data;
->  	ssize_t rc;
->  	char *str = buf;
-> +	struct tpm_chip *chip;
-> +
-> +	rcu_read_lock();
-> +	chip = dev_get_drvdata(dev);
-> +	if (chip)
-> +		get_device(chip->dev);	/* protect from disappearing */
-> +	rcu_read_unlock();
-> 
-> -	struct tpm_chip *chip = dev_get_drvdata(dev);
->  	if (chip == NULL)
->  		return -ENODEV;
-> 
->  	data = kzalloc(TPM_INTERNAL_RESULT_SIZE, GFP_KERNEL);
-> -	if (!data)
-> -		return -ENOMEM;
-> +	if (!data) {
-> +		rc = -ENOMEM;
-> +		goto out_alloc;
-> +	}
-> 
->  	memcpy(data, tpm_cap, sizeof(tpm_cap));
->  	data[TPM_CAP_IDX] = TPM_CAP_PROP;
-> @@ -863,8 +936,8 @@ ssize_t tpm_show_caps(struct device *dev, struct device_attribute *attr,
->  	rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
->  			"attempting to determine the manufacturer");
->  	if (rc) {
-> -		kfree(data);
-> -		return 0;
-> +		rc = 0;
-> +		goto out;
->  	}
-> 
->  	str += sprintf(str, "Manufacturer: 0x%x\n",
-> @@ -874,17 +947,22 @@ ssize_t tpm_show_caps(struct device *dev, struct device_attribute *attr,
->  	data[CAP_VERSION_IDX] = CAP_VERSION_1_1;
->  	rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
->  			"attempting to determine the 1.1 version");
-> -	if (rc)
-> +	if (rc) {
-> +		rc = str - buf;
->  		goto out;
-> +	}
-> 
->  	str += sprintf(str,
->  		       "TCG version: %d.%d\nFirmware version: %d.%d\n",
->  		       (int) data[14], (int) data[15], (int) data[16],
->  		       (int) data[17]);
-> 
-> +	rc = str - buf;
->  out:
->  	kfree(data);
-> -	return str - buf;
-> +out_alloc:
-> +	put_device(chip->dev);
-> +	return rc;
->  }
->  EXPORT_SYMBOL_GPL(tpm_show_caps);
-> 
-> @@ -892,16 +970,25 @@ ssize_t tpm_show_caps_1_2(struct device * dev,
->  			  struct device_attribute * attr, char *buf)
->  {
->  	u8 *data;
-> +	ssize_t rc;
->  	ssize_t len;
->  	char *str = buf;
-> +	struct tpm_chip *chip;
-> +
-> +	rcu_read_lock();
-> +	chip = dev_get_drvdata(dev);
-> +	if (chip)
-> +		get_device(chip->dev);	/* protect from disappearing */
-> +	rcu_read_unlock();
-> 
-> -	struct tpm_chip *chip = dev_get_drvdata(dev);
->  	if (chip == NULL)
->  		return -ENODEV;
-> 
->  	data = kzalloc(TPM_INTERNAL_RESULT_SIZE, GFP_KERNEL);
-> -	if (!data)
-> -		return -ENOMEM;
-> +	if (!data) {
-> +		rc = -ENOMEM;
-> +		goto out_alloc;
-> +	}
-> 
->  	memcpy(data, tpm_cap, sizeof(tpm_cap));
->  	data[TPM_CAP_IDX] = TPM_CAP_PROP;
-> @@ -913,7 +1000,8 @@ ssize_t tpm_show_caps_1_2(struct device * dev,
->  			"attempting to determine the manufacturer\n",
->  			be32_to_cpu(*((__be32 *) (data + TPM_RET_CODE_IDX))));
->  		kfree(data);
-> -		return 0;
-> +		rc = 0;
-> +		goto out;
->  	}
-> 
->  	str += sprintf(str, "Manufacturer: 0x%x\n",
-> @@ -927,6 +1015,7 @@ ssize_t tpm_show_caps_1_2(struct device * dev,
->  		dev_err(chip->dev, "A TPM error (%d) occurred "
->  			"attempting to determine the 1.2 version\n",
->  			be32_to_cpu(*((__be32 *) (data + TPM_RET_CODE_IDX))));
-> +		rc = str - buf;
->  		goto out;
->  	}
->  	str += sprintf(str,
-> @@ -934,20 +1023,29 @@ ssize_t tpm_show_caps_1_2(struct device * dev,
->  		       (int) data[16], (int) data[17], (int) data[18],
->  		       (int) data[19]);
-> 
-> +	rc = str - buf;
->  out:
->  	kfree(data);
-> -	return str - buf;
-> +out_alloc:
-> +	put_device(chip->dev);
-> +	return rc;
->  }
->  EXPORT_SYMBOL_GPL(tpm_show_caps_1_2);
-> 
->  ssize_t tpm_store_cancel(struct device *dev, struct device_attribute *attr,
->  			const char *buf, size_t count)
->  {
-> -	struct tpm_chip *chip = dev_get_drvdata(dev);
-> +	struct tpm_chip *chip;
-> +
-> +	rcu_read_lock();
-> +	chip = dev_get_drvdata(dev);
-> +	if (chip)
-> +		get_device(chip->dev);	/* protect from disappearing */
-> +	rcu_read_unlock();
->  	if (chip == NULL)
->  		return 0;
-> -
->  	chip->vendor.cancel(chip);
-> +	put_device(chip->dev);
->  	return count;
->  }
->  EXPORT_SYMBOL_GPL(tpm_store_cancel);
-> @@ -956,70 +1054,59 @@ EXPORT_SYMBOL_GPL(tpm_store_cancel);
->   * Device file system interface to the TPM
->   *
->   * It's assured that the chip will be opened just once,
-> - * by the check of is_open variable, which is protected
-> - * by driver_lock.
-> + * by the check of is_open variable.
->   */
->  int tpm_open(struct inode *inode, struct file *file)
->  {
-> -	int rc = 0, minor = iminor(inode);
-> +	int minor = iminor(inode);
->  	struct tpm_chip *chip = NULL, *pos;
-> 
-> -	spin_lock(&driver_lock);
-> -
-> -	list_for_each_entry(pos, &tpm_chip_list, list) {
-> +	rcu_read_lock();
-> +	list_for_each_entry_rcu(pos, &tpm_chip_list, list) {
->  		if (pos->vendor.miscdev.minor == minor) {
->  			chip = pos;
-> +			get_device(chip->dev); /* protect from disappearing */
->  			break;
->  		}
->  	}
-> +	rcu_read_unlock();
-> +	if (!chip)
-> +		return -ENODEV;
-> 
-> -	if (chip == NULL) {
-> -		rc = -ENODEV;
-> -		goto err_out;
-> -	}
-> -
-> -	if (chip->is_open) {
-> +	if (!test_and_set_bit(0, &chip->is_open)) {
->  		dev_dbg(chip->dev, "Another process owns this TPM\n");
-> -		rc = -EBUSY;
-> -		goto err_out;
-> +		return -EBUSY;
->  	}
-> 
-> -	chip->is_open = 1;
-> -	get_device(chip->dev); /* protect from chip disappearing */
-> -
-> -	spin_unlock(&driver_lock);
-> -
->  	chip->data_buffer = kmalloc(TPM_BUFSIZE * sizeof(u8), GFP_KERNEL);
->  	if (chip->data_buffer == NULL) {
-> -		chip->is_open = 0;
-> +		clear_bit(0, &chip->is_open);
->  		put_device(chip->dev);
->  		return -ENOMEM;
->  	}
-> 
->  	atomic_set(&chip->data_pending, 0);
-> -
->  	file->private_data = chip;
->  	return 0;
-> -
-> -err_out:
-> -	spin_unlock(&driver_lock);
-> -	return rc;
->  }
->  EXPORT_SYMBOL_GPL(tpm_open);
-> 
-> +/*
-> + * Called on file close
-> + */
->  int tpm_release(struct inode *inode, struct file *file)
->  {
->  	struct tpm_chip *chip = file->private_data;
-> 
->  	flush_scheduled_work();
-> -	spin_lock(&driver_lock);
->  	file->private_data = NULL;
->  	del_singleshot_timer_sync(&chip->user_read_timer);
->  	atomic_set(&chip->data_pending, 0);
-> -	chip->is_open = 0;
-> -	put_device(chip->dev);
->  	kfree(chip->data_buffer);
-> -	spin_unlock(&driver_lock);
-> +
-> +	clear_bit(0, &chip->is_open);
-> +
-> +	put_device(chip->dev);
->  	return 0;
->  }
->  EXPORT_SYMBOL_GPL(tpm_release);
-> @@ -1082,6 +1169,7 @@ ssize_t tpm_read(struct file *file, char __user *buf,
->  	return ret_size;
->  }
->  EXPORT_SYMBOL_GPL(tpm_read);
-> +
->  /*
->   *   Called on unloading the driver.
->   *
-> @@ -1098,13 +1186,11 @@ void tpm_remove_hardware(struct device *dev)
->  	}
-> 
->  	spin_lock(&driver_lock);
-> -
-> -	list_del(&chip->list);
-> -
-> +	list_del_rcu(&chip->list);
->  	spin_unlock(&driver_lock);
-> +	synchronize_rcu();
-> 
->  	misc_deregister(&chip->vendor.miscdev);
-> -
->  	sysfs_remove_group(&dev->kobj, chip->vendor.attr_group);
->  	tpm_bios_log_teardown(chip->bios_dir);
-> 
-> @@ -1152,8 +1238,7 @@ EXPORT_SYMBOL_GPL(tpm_pm_resume);
->  /*
->   * Once all references to platform device are down to 0,
->   * release all allocated structures.
-> - * In case vendor provided release function,
-> - * call it too.
-> + * In case vendor provided release function, call it too.
->   */
->  static void tpm_dev_release(struct device *dev)
->  {
-> @@ -1176,8 +1261,8 @@ static void tpm_dev_release(struct device *dev)
->   * upon errant exit from this function specific probe function should call
->   * pci_disable_device
->   */
-> -struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vendor_specific
-> -				       *entry)
-> +struct tpm_chip *tpm_register_hardware(struct device *dev,
-> +		const struct tpm_vendor_specific *entry)
->  {
->  #define DEVNAME_SIZE 7
-> 
-> @@ -1243,9 +1328,12 @@ struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vend
->  	}
-> 
->  	chip->bios_dir = tpm_bios_log_setup(devname);
-> +
-> +	/* Make chip available */
->  	spin_lock(&driver_lock);
-> -	list_add(&chip->list, &tpm_chip_list);
-> +	list_add_rcu(&chip->list, &tpm_chip_list);
->  	spin_unlock(&driver_lock);
-> +	synchronize_rcu();
+ne_init will now remove unused devices added by ne_probe.
 
-The above synchronize_rcu() is not needed -- unless it is required that
-tpm_register_hardware() not return until it can be guaranteed that all
-subsequent readers will see the new entry.  (Of course, the current
-CPU/task is guaranteed to see it in any subsequent call, even without
-the synchronize_rcu().)
+-- 
+David Fries <david@fries.net>
+http://fries.net/~david/ (PGP encryption key available)
 
->  	return chip;
->  }
-> -- 
-> 1.5.6.3
-> 
+
+diff --git a/drivers/net/ne.c b/drivers/net/ne.c
+index ef4df0e..7980cf0 100644
+--- a/drivers/net/ne.c
++++ b/drivers/net/ne.c
+@@ -64,6 +64,27 @@ static const char version2[] =
+ 
+ /* Do we support clones that don't adhere to 14,15 of the SAprom ? */
+ #define SUPPORT_NE_BAD_CLONES
++/* 0xbad = bad sig or no reset ack */
++#define BAD 0xbad
++#define BAD_STR "0xbad"
++
++#define MAX_NE_CARDS	4	/* Max number of NE cards per module */
++static struct platform_device *pdev_ne[MAX_NE_CARDS];
++
++static int io[MAX_NE_CARDS];
++static int irq[MAX_NE_CARDS];
++static int bad[MAX_NE_CARDS];
++
++#ifdef MODULE
++module_param_array(io, int, NULL, 0);
++module_param_array(irq, int, NULL, 0);
++module_param_array(bad, int, NULL, 0);
++MODULE_PARM_DESC(io, "I/O base address(es),required");
++MODULE_PARM_DESC(irq, "IRQ number(s)");
++MODULE_PARM_DESC(bad, "Accept card(s) with bad signatures");
++MODULE_DESCRIPTION("NE1000/NE2000 ISA/PnP Ethernet driver");
++MODULE_LICENSE("GPL");
++#endif /* MODULE */
+ 
+ /* Do we perform extra sanity checks on stuff ? */
+ /* #define NE_SANITY_CHECK */
+@@ -162,7 +183,6 @@ static void ne_block_input(struct net_device *dev, int count,
+ static void ne_block_output(struct net_device *dev, const int count,
+ 		const unsigned char *buf, const int start_page);
+ 
+-
+ /*  Probe for various non-shared-memory ethercards.
+ 
+    NEx000-clone boards have a Station Address PROM (SAPROM) in the packet
+@@ -219,80 +239,6 @@ static int __init do_ne_probe(struct net_device *dev)
+ 	return -ENODEV;
+ }
+ 
+-#define MAX_NE_CARDS	4	/* Max number of NE cards per module */
+-static struct platform_device *pdev_ne[MAX_NE_CARDS];
+-/* 0xbad = bad sig or no reset ack */
+-#define BAD 0xbad
+-#define BAD_STR "0xbad"
+-
+-#ifdef MODULE
+-static int io[MAX_NE_CARDS];
+-static int irq[MAX_NE_CARDS];
+-static int bad[MAX_NE_CARDS];
+-
+-module_param_array(io, int, NULL, 0);
+-module_param_array(irq, int, NULL, 0);
+-module_param_array(bad, int, NULL, 0);
+-MODULE_PARM_DESC(io, "I/O base address(es),required");
+-MODULE_PARM_DESC(irq, "IRQ number(s)");
+-MODULE_PARM_DESC(bad, "Accept card(s) with bad signatures");
+-MODULE_DESCRIPTION("NE1000/NE2000 ISA/PnP Ethernet driver");
+-MODULE_LICENSE("GPL");
+-#endif /* MODULE */
+-
+-#ifndef MODULE
+-struct net_device * __init ne_probe(int unit)
+-{
+-	struct net_device *dev;
+-	struct platform_device *pdev;
+-	struct resource r[2] = {
+-		{
+-			.name = "io_port",
+-			.flags = IORESOURCE_IO},
+-		{
+-			.name = "irq",
+-			.flags = IORESOURCE_IRQ} };
+-	/* Find an empty slot. */
+-	int this_dev = 0;
+-	while (pdev_ne[this_dev]) {
+-		if (++this_dev == MAX_NE_CARDS)
+-			return ERR_PTR(-ENOMEM);
+-	}
+-
+-	/* Get irq, io from kernel command line */
+-	dev = alloc_eip_netdev();
+-
+-	if (!dev)
+-		return ERR_PTR(-ENOMEM);
+-
+-	sprintf(dev->name, "eth%d", unit);
+-	netdev_boot_setup_check(dev);
+-
+-	r[0].start = dev->base_addr;
+-	r[0].end = r[0].start+NE_IO_EXTENT-1;
+-
+-	if (dev->mem_end == BAD)
+-		r[0].name = BAD_STR;
+-
+-	r[1].start = dev->irq;
+-
+-	free_netdev(dev);
+-
+-	pdev = platform_device_register_simple(
+-		DRV_NAME, unit, r, ARRAY_SIZE(r));
+-	if (IS_ERR(pdev))
+-		return ERR_CAST(pdev);
+-	pdev_ne[this_dev] = pdev;
+-
+-	/* Why is ne_probe being called before ne_init? */
+-	dev = platform_get_drvdata(pdev);
+-	if (!dev)
+-		return ERR_PTR(-ENODEV);
+-
+-	return dev;
+-}
+-#endif
+-
+ static int __init ne_probe_isapnp(struct net_device *dev)
+ {
+ 	int i;
+@@ -969,16 +915,16 @@ static struct platform_driver ne_driver = {
+ 	},
+ };
+ 
+-#ifdef MODULE
+-
+ /* This is set up so that no ISA autoprobe takes place. We can't guarantee
+ that the ne2k probe is the last 8390 based probe to take place (as it
+ is at boot) and so the probe will get confused by any other 8390 cards.
+ ISA device autoprobes on a running machine are not recommended anyway. */
+ 
+-int __init init_module(void)
++/* Register platform devices for each non-zero io[] (and one 0 io for probe
++ * or pnp probing), then probe to see if we found any.
++ */
++static void __init ne_add_devices(void)
+ {
+-	int retval;
+ 	int this_dev;
+ 	int probed_zero = 0;
+ 	struct platform_device *pdev;
+@@ -998,6 +944,8 @@ int __init init_module(void)
+ 				continue;
+ 			probed_zero = 1;
+ 		}
++		if (pdev_ne[this_dev])
++			continue;
+ 		if (bad[this_dev] == BAD)
+ 			r[0].name = BAD_STR;
+ 		pdev = platform_device_register_simple(
+@@ -1006,14 +954,16 @@ int __init init_module(void)
+ 			continue;
+ 		pdev_ne[this_dev] = pdev;
+ 	}
++}
+ 
+-	/* Need to find out if any devices are found, if not the driver
+-	 * has been unregistered, so re-register it for suspend and
+-	 * resume notifications and because cleanup_module unregisters it.
+-	 */
++#ifdef MODULE
++int __init init_module()
++{
++	int retval;
++	ne_add_devices();
+ 	retval = platform_driver_probe(&ne_driver, ne_drv_probe);
+ 	if (retval) {
+-		if (io[this_dev] == 0)
++		if (io[0] == 0)
+ 			printk(KERN_NOTICE "ne.c: You must supply \"io=0xNNN\""
+ 				" value(s) for ISA cards.\n");
+ 		ne_loop_rm_unreg(1);
+@@ -1022,24 +972,61 @@ int __init init_module(void)
+ 
+ 	/* Unregister unused platform_devices. */
+ 	ne_loop_rm_unreg(0);
++	return retval;
++}
++#else /* MODULE */
++static int __init ne_init(void)
++{
++	int retval = platform_driver_probe(&ne_driver, ne_drv_probe);
+ 
++	/* Unregister unused platform_devices. */
++	ne_loop_rm_unreg(0);
+ 	return retval;
+ }
+-#endif /* MODULE */
++module_init(ne_init);
+ 
+-static void __exit ne_exit(void)
++struct net_device * __init ne_probe(int unit)
+ {
+-	platform_driver_unregister(&ne_driver);
++	int this_dev;
++	struct net_device *dev;
++	struct platform_device *pdev;
+ 
+-	ne_loop_rm_unreg(1);
++	/* Find an empty slot. */
++	this_dev = 0;
++	while (pdev_ne[this_dev] || io[this_dev]) {
++		if (++this_dev == MAX_NE_CARDS)
++			return ERR_PTR(-ENOMEM);
++	}
++
++	/* Get irq, io from kernel command line */
++	dev = alloc_eip_netdev();
++	if (!dev)
++		return ERR_PTR(-ENOMEM);
++
++	sprintf(dev->name, "eth%d", unit);
++	netdev_boot_setup_check(dev);
++
++	io[this_dev] = dev->base_addr;
++	irq[this_dev] = dev->irq;
++	bad[this_dev] = dev->mem_end;
++
++	free_netdev(dev);
++
++	ne_add_devices();
++
++	/* return the first device found */
++	for (this_dev = 0; this_dev < MAX_NE_CARDS; this_dev++)
++		if ((pdev = pdev_ne[this_dev]) &&
++			(dev = platform_get_drvdata(pdev)))
++			return dev;
++
++	return ERR_PTR(-ENODEV);
+ }
++#endif /* MODULE */
+ 
+-#ifndef MODULE
+-static int __init ne_init(void)
++static void __exit ne_exit(void)
+ {
+-	return platform_driver_probe(&ne_driver, ne_drv_probe);
++	platform_driver_unregister(&ne_driver);
++	ne_loop_rm_unreg(1);
+ }
+-
+-module_init(ne_init);
+-#endif
+-module_exit(ne_cleanup);
++module_exit(ne_exit);
