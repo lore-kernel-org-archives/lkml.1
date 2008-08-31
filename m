@@ -1,49 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759152AbYHaVN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759327AbYHaVRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759152AbYHaVN5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 17:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbYHaVNs
+	id S1759327AbYHaVRR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 17:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757961AbYHaVRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 17:13:48 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:59768 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752253AbYHaVNr (ORCPT
+	Sun, 31 Aug 2008 17:17:06 -0400
+Received: from mx.ntu-kpi.kiev.ua ([77.47.128.137]:43673 "EHLO
+	mx.ntu-kpi.kiev.ua" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757955AbYHaVRF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 17:13:47 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 31 Aug 2008 14:13:45 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tglx@tglx.de,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [patch v2   0/5] Nano/Microsecond resolution for select() and
- poll()
-In-Reply-To: <20080831092828.13ae0279@infradead.org>
-Message-ID: <Pine.LNX.4.64.0808311411450.6096@alien.or.mcafeemobile.com>
-References: <20080831092828.13ae0279@infradead.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 31 Aug 2008 17:17:05 -0400
+X-Greylist: delayed 1991 seconds by postgrey-1.27 at vger.kernel.org; Sun, 31 Aug 2008 17:17:05 EDT
+Date: Sun, 31 Aug 2008 23:43:45 +0300
+From: post-factum <pfactum@omega.ntu-kpi.kiev.ua>
+To: linux-kernel@vger.kernel.org
+Subject: SKY2 official driver
+Message-ID: <20080831234345.70d300be@omega.ntu-kpi.kiev.ua>
+Organization: StreamOS Developing Community
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 31 Aug 2008, Arjan van de Ven wrote:
+Hi to all!
 
-> Note: 
-> even though poll() (as opposed to ppoll()) only accepts milliseconds
-> as userspace interface, the behavior will still improve because the current
-> time no longer needs to be rounded up to the next jiffie, so on average
-> a 500 microseconds behavior improvement.
+Please, include official SKY2 ethernet wired network driver from
+Marvell to vanilla Linux kernel. It's less buggy, works more stable and
+is under GPL2.
 
-Another way to get down in the timeout resolution for newer kernels, and 
-still supporting the syscalls with millisec timeouts, is to use timerfds.
+It can be obtained here:
+http://www.marvell.com/drivers/files/install_v10.61.3.3.tar.bz2
 
-
-- Davide
-
-
+Regards,
+  post-factum
