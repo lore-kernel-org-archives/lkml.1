@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760390AbYHaNRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759872AbYHaNR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760390AbYHaNRo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 09:17:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759613AbYHaNPE
+	id S1759872AbYHaNR3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 09:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759596AbYHaNPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 09:15:04 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:44049 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759605AbYHaNPD (ORCPT
+	Sun, 31 Aug 2008 09:15:00 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:61166 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759574AbYHaNO7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 09:15:03 -0400
+	Sun, 31 Aug 2008 09:14:59 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: linux-fsdevel-owner@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Adrian Hunter <ext-adrian.hunter@nokia.com>
-Subject: [PATCH] UBIFS: add forgotten gc_idx_lebs component
-Date: Sun, 31 Aug 2008 17:52:43 +0300
-Message-Id: <1220194366-12731-10-git-send-email-dedekind@infradead.org>
+Subject: [PATCH] UBIFS: fix assertion
+Date: Sun, 31 Aug 2008 17:52:42 +0300
+Message-Id: <1220194366-12731-9-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
 References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 31 Aug 2008 13:14:25.0947 (UTC) FILETIME=[7DF64EB0:01C90B6B]
+X-OriginalArrivalTime: 31 Aug 2008 13:14:25.0931 (UTC) FILETIME=[7DF3DDB0:01C90B6B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,27 +27,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 
-We add this component at other similar places, but not in this
-one.
+The assertion was incorrect, because it did not take into
+account free space.
+
+This patch also amends the comments correspondingly, and
+cleans them up a little.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 ---
- fs/ubifs/find.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/ubifs/find.c |   16 +++++++---------
+ 1 files changed, 7 insertions(+), 9 deletions(-)
 
 diff --git a/fs/ubifs/find.c b/fs/ubifs/find.c
-index 9fc55ae..e045c8b 100644
+index adee7b5..9fc55ae 100644
 --- a/fs/ubifs/find.c
 +++ b/fs/ubifs/find.c
-@@ -243,7 +243,7 @@ int ubifs_find_dirty_leb(struct ubifs_info *c, struct ubifs_lprops *ret_lp,
- 		int lebs, rsvd_idx_lebs = 0;
+@@ -211,14 +211,8 @@ static const struct ubifs_lprops *scan_for_dirty(struct ubifs_info *c,
+  * dirty index heap, and it falls-back to LPT scanning if the heaps are empty
+  * or do not have an LEB which satisfies the @min_space criteria.
+  *
+- * Note:
+- *   o LEBs which have less than dead watermark of dirty space are never picked
+- *   by this function;
+- *
+- * Returns zero and the LEB properties of
+- * found dirty LEB in case of success, %-ENOSPC if no dirty LEB was found and a
+- * negative error code in case of other failures. The returned LEB is marked as
+- * "taken".
++ * Note, LEBs which have less than dead watermark of free + dirty space are
++ * never picked by this function.
+  *
+  * The additional @pick_free argument controls if this function has to return a
+  * free or freeable LEB if one is present. For example, GC must to set it to %1,
+@@ -231,6 +225,10 @@ static const struct ubifs_lprops *scan_for_dirty(struct ubifs_info *c,
+  *
+  * In addition @pick_free is set to %2 by the recovery process in order to
+  * recover gc_lnum in which case an index LEB must not be returned.
++ *
++ * This function returns zero and the LEB properties of found dirty LEB in case
++ * of success, %-ENOSPC if no dirty LEB was found and a negative error code in
++ * case of other failures. The returned LEB is marked as "taken".
+  */
+ int ubifs_find_dirty_leb(struct ubifs_info *c, struct ubifs_lprops *ret_lp,
+ 			 int min_space, int pick_free)
+@@ -317,7 +315,7 @@ int ubifs_find_dirty_leb(struct ubifs_info *c, struct ubifs_lprops *ret_lp,
+ 		lp = idx_lp;
  
- 		spin_lock(&c->space_lock);
--		lebs = c->lst.empty_lebs;
-+		lebs = c->lst.empty_lebs + c->idx_gc_cnt;
- 		lebs += c->freeable_cnt - c->lst.taken_empty_lebs;
+ 	if (lp) {
+-		ubifs_assert(lp->dirty >= c->dead_wm);
++		ubifs_assert(lp->free + lp->dirty >= c->dead_wm);
+ 		goto found;
+ 	}
  
- 		/*
 -- 
 1.5.4.1
 
