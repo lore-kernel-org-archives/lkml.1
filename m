@@ -1,102 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbYHaQz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbYHaQ4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbYHaQz5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 12:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbYHaQzr
+	id S1755228AbYHaQ4s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 12:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYHaQ4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 12:55:47 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:56021 "EHLO pasmtpB.tele.dk"
+	Sun, 31 Aug 2008 12:56:40 -0400
+Received: from 1wt.eu ([62.212.114.60]:3099 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751812AbYHaQzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 12:55:46 -0400
-Date: Sun, 31 Aug 2008 18:55:40 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       haavard.skinnemoen@atmel.com, eaa@wprmedical.com,
-       linux-mtd@lists.infradead.org, kernel@avr32linux.org,
-       dwmw2@infradead.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: MTD/block regression (was Re: Slub debugging NAND error in  2.6.25.10.atmel.2)
-Message-ID: <20080831165540.GY20055@kernel.dk>
-References: <6B5648EA2E2C2D42AF2FF7691522AD92417CA6@wpr01.wprmedical.local> <20080829114828.279b79bc@hskinnemo-gx745.norway.atmel.com> <20080829162824.17f8746b@hskinnemo-gx745.norway.atmel.com> <20080830103318N.fujita.tomonori@lab.ntt.co.jp> <Pine.LNX.4.64.0808311357020.8062@anakin>
-MIME-Version: 1.0
+	id S1751994AbYHaQ4k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 12:56:40 -0400
+Date: Sun, 31 Aug 2008 18:55:54 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, tglx@tglx.de, mingo@elte.hu,
+       torvalds@linux-foundation.org, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [patch v2   0/5] Nano/Microsecond resolution for select() and poll()
+Message-ID: <20080831165554.GG19337@1wt.eu>
+References: <20080831092828.13ae0279@infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0808311357020.8062@anakin>
+In-Reply-To: <20080831092828.13ae0279@infradead.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 31 2008, Geert Uytterhoeven wrote:
-> On Sat, 30 Aug 2008, FUJITA Tomonori wrote:
-> > On Fri, 29 Aug 2008 16:28:24 +0200
-> > Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-> > > Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-> > > > Hmm...I just saw this when booting 2.6.27-rc5 on the NGW100:
-> > > > 
-> > > > kobject (91ce8410): tried to init an initialized object, something is seriously wrong.
-> > > > Call trace:
-> > > >  [<90017184>] dump_stack+0x18/0x20
-> > > >  [<900c1894>] kobject_init+0x28/0x5c
-> > > >  [<900c1bf6>] kobject_init_and_add+0xe/0x24
-> > > >  [<900beff0>] blk_register_filter+0x28/0x40
-> > > >  [<900be224>] add_disk+0x38/0x68
-> > > >  [<900e70f0>] add_mtd_blktrans_dev+0x174/0x184
-> > > >  [<900e748e>] mtdblock_add_mtd+0x36/0x3c
-> > > >  [<900e6e38>] blktrans_notify_add+0x1a/0x3a
-> > > >  [<900e533c>] add_mtd_device+0x60/0xa0
-> > > >  [<900e5f7e>] add_mtd_partitions+0x37a/0x3a0
-> > > >  [<900ec4d0>] physmap_flash_probe+0x1ec/0x21c
-> > > >  [<900e0f24>] platform_drv_probe+0x10/0x12
-> > > >  [<900e06d0>] driver_probe_device+0x84/0xf0
-> > > >  [<900e076a>] __driver_attach+0x2e/0x44
-> > > >  [<900e0096>] bus_for_each_dev+0x2e/0x4c
-> > > >  [<900e05b6>] driver_attach+0x12/0x14
-> > > >  [<900e036c>] bus_add_driver+0x6c/0x178
-> > > >  [<900e08a4>] driver_register+0x58/0xb0
-> > > >  [<900e1126>] platform_driver_register+0x56/0x5c
-> > > >  [<9000aaf6>] physmap_init+0xa/0x10
-> > > >  [<9001422a>] do_one_initcall+0x2a/0x10c
-> > > >  [<900005b8>] kernel_init+0x48/0x90
-> > > >  [<9001fcc0>] do_exit+0x0/0x4cc
-> > > 
-> > > Ok, it turns out it's not related. It's a newly introduced regression
-> > > which I've bisected down to:
-> > > 
-> > > commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4
-> > > Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > Date:   Sat Aug 16 14:10:05 2008 +0900
-> > > 
-> > >     block: move cmdfilter from gendisk to request_queue
-> > 
-> > Really sorry about that. A fix was queued in Jens' tree:
-> > 
-> > http://marc.info/?l=linux-kernel&m=122000748432301&w=2
-> > 
-> > 
-> > > Unfortunately, I can't revert it cleanly, so it could be a false
-> > > positive. But it does sort of make sense, since it makes the filter
-> > > per-queue instead of per-gendisk, so if MTD uses the same queue for
-> > > several block devices, the filter kobject might end up being
-> > > initialized multiple times. Or something.
-> > 
-> > Right, the problem is that MTD uses the same queue for multiple
-> > gendisks. It would be great if a MTD developer could fix it.
-> 
-> I'm also seeing it with drivers/block/ataflop.c (also a single queue) on
-> ARAnyM.
-> 
-> And from looking at drivers/block/floppy.c and drivers/block/amiflop.c,
-> I guess it happens there, too.
-> 
-> Any other single-queue drivers that got broken???
+Hi Arjan,
 
-The pending change will eliminate this problem so that single queue
-devices will work fine again. They should still work fine in -rc5, just
-with the annoying WARN_ON() for each device per queue.
+On Sun, Aug 31, 2008 at 09:28:28AM -0700, Arjan van de Ven wrote:
+> One thing to note is that on my machine, the current select() implementation
+> will return after 1997 microseconds when asked for 1999 microseconds; this
+> can be seen in a zoom in of the graph above:
+> http://www.tglx.de/~arjan/zoom.png
+> E.g. select() is returning too early in current Linux kernels; and this is
+> also fixed (by nature) by this patch series.
 
--- 
-Jens Axboe
+This is a good news. I've been bothered by this problem for a long time
+and got used to add 99999 us to any delay fed to select() (that started
+when HZ=100). I remember having noticed performance improvements in my
+applications using this trick even on other systems, so I don't think
+that Linux is the only one with this anomaly. I think it's simply caused
+by the rounding methods which make it hard to compute an accurate deadline
+when a value is converted before being added to jiffies.
+
+I do not remember noticing this on epoll though. Maybe it's just because
+I did not look close enough :-/
+
+Cheers,
+Willy
 
