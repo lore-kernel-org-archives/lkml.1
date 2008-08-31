@@ -1,101 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbYHaP0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbYHaPfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754055AbYHaP0A (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 11:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbYHaPZw
+	id S1754077AbYHaPfT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 11:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbYHaPfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 11:25:52 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:15483 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751089AbYHaPZw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 11:25:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=HxB4uJn761nmfe9tJu5Nk3L2/EyehS8/AuaJe4ih9dO+LJLYY3/FxixRFb9ltftwIR
-         5XOQDYVAoQFDo7dRsmPX1qz7R5RvpMNXvk2h3itVDo1CDOWSx4ghhOSKoVmo6bpUPR7G
-         SNeiX+aWK0gLW39cmCxHn740Ef7blVsTBqCfw=
-Date: Sun, 31 Aug 2008 19:25:49 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Oeser <ioe-lkml@rameria.de>,
-       bfields@fieldses.org, neilb@suse.de
-Subject: [PATCH] sunrpc - fixup userspace buffer possible overrun v3
-Message-ID: <20080831152549.GD2884@lenovo>
+	Sun, 31 Aug 2008 11:35:07 -0400
+Received: from japan.chezphil.org ([77.240.5.4]:5960 "EHLO japan.chezphil.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752247AbYHaPfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 11:35:06 -0400
+X-Greylist: delayed 2649 seconds by postgrey-1.27 at vger.kernel.org; Sun, 31 Aug 2008 11:35:06 EDT
+To: "Krzysztof Helt" <krzysztof.h1@poczta.fm>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       <sylvain.meyer@worldonline.fr>,
+       <linux-fbdev-devel@lists.sourceforge.net>
+Date: Sun, 31 Aug 2008 15:50:54 +0100
+Subject: Re: [Linux-fbdev-devel] [PATCH] intelfb: support 945GME (as used in
+	ASUS Eee 901)
+Message-ID: <1220194254502@dmwebmail.dmwebmail.chezphil.org>
+In-Reply-To: <20080831092722.c80c73c5.krzysztof.h1@poczta.fm>
+References: <20080831092722.c80c73c5.krzysztof.h1@poczta.fm>
+X-Mailer: Decimail Webmail 3alpha16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; format="flowed"
+From: "Phil Endecott" <phil_utscv_endecott@chezphil.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum reported
-----------------------
-> I noticed that something weird is going on with /proc/sys/sunrpc/transports.
-> This file is generated in net/sunrpc/sysctl.c, function proc_do_xprt(). When
-> I "cat" this file, I get the expected output:
->    $ cat /proc/sys/sunrpc/transports
->    tcp 1048576
->    udp 32768
+Krzysztof Helt wrote:
+> On Fri, 29 Aug 2008 12:50:45 +0100
+> "Phil Endecott" <phil_utscv_endecott@chezphil.org> wrote:
+>
+>> The following patch adds support for Intel's 945GME graphics chip to
+>> the intelfb driver.  I have assumed that the 945GME is identical to the
+>> already-supported 945GM apart from its PCI IDs; this is based on a quick
+>> look at the X driver for these chips which seems to treat them
+>> identically.
 
-> But I think that it does not check the length of the buffer supplied by
-> userspace to read(). With my original program, I found that the stack was
-> being overwritten by the characters above, even when the length given to
-> read() was just 1.
+[snip]
 
-David Wagner added (among other things) that copy_to_user could be
-probably used here.
+>> -#define SUPPORTED_CHIPSETS	"830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM"
+>> +#define SUPPORTED_CHIPSETS  "830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/945GME/965G/965GM"
+>>  
+>
+> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+>
+> BTW, Is it possible to shorten this list by something like "830/845/852/865/915/945/965 models G, GM and GME" or 
+> "830M/8x5G/8x5GM/9x5G/9x5GM/9x5GME" or maybe something else?
 
-Ingo Oeser suggested to use simple_read_from_buffer() here.
+Doing so would reduce grep-ability.  I did a lot of "grep -r 945GM ." 
+while trying to understand this.
 
-The conclusion is that proc_do_xprt doesn't check for userside buffer
-size indeed so fix this by using Ingo's suggestion.
 
-Reported-by: Vegard Nossum <vegard.nossum@gmail.com>
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Ingo Oeser <ioe-lkml@rameria.de>
----
+Phil.
 
-Index: linux-2.6.git/net/sunrpc/sysctl.c
-===================================================================
---- linux-2.6.git.orig/net/sunrpc/sysctl.c	2008-08-31 18:58:50.000000000 +0400
-+++ linux-2.6.git/net/sunrpc/sysctl.c	2008-08-31 19:15:57.000000000 +0400
-@@ -60,23 +60,27 @@ static int proc_do_xprt(ctl_table *table
- 			void __user *buffer, size_t *lenp, loff_t *ppos)
- {
- 	char tmpbuf[256];
--	int len;
-+	size_t len;
-+	ssize_t ret;
-+
- 	if ((*ppos && !write) || !*lenp) {
- 		*lenp = 0;
- 		return 0;
- 	}
-+
- 	if (write)
- 		return -EINVAL;
- 	else {
- 		len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
--		if (!access_ok(VERIFY_WRITE, buffer, len))
--			return -EFAULT;
--
--		if (__copy_to_user(buffer, tmpbuf, len))
--			return -EFAULT;
-+		ret = simple_read_from_buffer(buffer, *lenp, ppos,
-+						tmpbuf, len);
-+		if (ret >= 0) {
-+			*lenp = ret;
-+			ret = 0;
-+		}
-+		return ret;
- 	}
--	*lenp -= len;
--	*ppos += len;
-+
- 	return 0;
- }
- 
+
+
