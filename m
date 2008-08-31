@@ -1,494 +1,817 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbYHaQLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbYHaQMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755228AbYHaQLz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 12:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbYHaQL2
+	id S1755405AbYHaQMT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 12:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbYHaQLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 12:11:28 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:44243 "EHLO smtp5.pp.htv.fi"
+	Sun, 31 Aug 2008 12:11:35 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:54796 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754509AbYHaQLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 12:11:25 -0400
-Date: Sun, 31 Aug 2008 19:10:11 +0300
+	id S1754651AbYHaQLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 12:11:30 -0400
+Date: Sun, 31 Aug 2008 19:10:16 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Douglas Thompson <dougthompson@xmission.com>,
-       Tim Small <tim@buttersideup.com>, Greg KH <greg@kroah.com>
-Cc: bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [RFC: 2.6 patch] remove the broken i82443bxgx_edac driver
-Message-ID: <20080831161011.GD3695@cs181140183.pp.htv.fi>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Greg Ungerer <gerg@snapgear.com>, jbarnes@virtuousgeek.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: [2.6 patch] m68k: remove the dead PCI code
+Message-ID: <20080831161016.GE3695@cs181140183.pp.htv.fi>
+References: <20080819134718.GH8852@cs181140183.pp.htv.fi> <48B24E2C.9060703@snapgear.com> <20080825204333.GA13027@cs181140183.pp.htv.fi> <48B77764.6060607@snapgear.com> <20080829070103.GD16462@cs181140183.pp.htv.fi> <Pine.LNX.4.64.0808290929280.22326@anakin>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0808290929280.22326@anakin>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The i82443bxgx_edac driver was added more than one year ago, but after 
-only 3 seconds in Linus' tree it got a dependency on BROKEN with Andrew 
-stating:
+On Fri, Aug 29, 2008 at 09:31:43AM +0200, Geert Uytterhoeven wrote:
+> On Fri, 29 Aug 2008, Adrian Bunk wrote:
+> > On Fri, Aug 29, 2008 at 02:13:24PM +1000, Greg Ungerer wrote:
+> > > Adrian Bunk wrote:
+> > >> A patch for removing the comempci code is below.
+> > >>
+> > >> It's a bit suspicious that asm/elia.h is now removed since comempci.c  
+> > >> was the only user. What's the sttus of the eLIA platform?
+> > >
+> > > Only ever a handful where made, and that was in 1999.
+> > > I doubt anyone could ever use the PCI interface on it
+> > > in any useful way.
+> > 
+> > So I can send a patch to remove the platform?
+> > 
+> > >> But COMEMPCI fails with a different error - this init/main.o build 
+> > >> error is present for CONFIG_PCI=y, CONFIG_COMEMPCI=n, so the dependency 
+> > >> of PCI on BROKEN is still required (unless it gets fixed).
+> > >
+> > > Unless I am mistaken there is now no need for the CONFIG_PCI option
+> > > if selecting m68knommu. The only m68knommu platforms that had PCI
+> > > as far as I know where those that use the comempci part.
+> > 
+> > That implies I can also kill the m68k PCI code since m68knommu will 
+> > never use it?
+> 
+> Sure. If the FreeScale guys ever forward-port their ColdFire/MMU code to
+> current mainline, we can readd it.
 
-    It will claim the PCI devices from under intel_agp.ko's feet.
-    Greg is brewing some fix for that.
+Patch (on top of my Hades removal patch) is below.
 
-Since noone seems to care enough about this driver to get it working we 
-can as well remove it.
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
+
+cu
+Adrian
+
+
+<--  snip    -->
+
+
+This patch removes the no longer used m68k PCI code.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/edac/Kconfig           |    8 
- drivers/edac/Makefile          |    1 
- drivers/edac/i82443bxgx_edac.c |  409 ---------------------------------
- 3 files changed, 418 deletions(-)
+ arch/m68k/Kconfig         |    4 
+ arch/m68k/kernel/Makefile |    1 
+ arch/m68k/kernel/bios32.c |  516 --------------------------------------
+ include/asm-m68k/dma.h    |    4 
+ include/asm-m68k/io.h     |   66 ----
+ include/asm-m68k/pci.h    |   51 ---
+ 6 files changed, 7 insertions(+), 635 deletions(-)
 
 
-diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
-index 5a11e3c..49ab1ed 100644
---- a/drivers/edac/Kconfig
-+++ b/drivers/edac/Kconfig
-@@ -73,14 +73,6 @@ config EDAC_E752X
- 	  Support for error detection and correction on the Intel
- 	  E7520, E7525, E7320 server chipsets.
+diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
+index 7bacc1c..4b046fa 100644
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -136,10 +136,6 @@ config ATARI
+ 	  this kernel on an Atari, say Y here and browse the material
+ 	  available in <file:Documentation/m68k>; otherwise say N.
  
--config EDAC_I82443BXGX
--	tristate "Intel 82443BX/GX (440BX/GX)"
--	depends on EDAC_MM_EDAC && PCI && X86_32
--	depends on BROKEN
+-config PCI
+-	bool
 -	help
--	  Support for error detection and correction on the Intel
--	  82443BX/GX memory controllers (440BX/GX chipsets).
 -
- config EDAC_I82875P
- 	tristate "Intel 82875p (D82875P, E7210)"
- 	depends on EDAC_MM_EDAC && PCI && X86_32
-diff --git a/drivers/edac/Makefile b/drivers/edac/Makefile
-index e5e9104..f06ceb4 100644
---- a/drivers/edac/Makefile
-+++ b/drivers/edac/Makefile
-@@ -22,7 +22,6 @@ obj-$(CONFIG_EDAC_I5000)		+= i5000_edac.o
- obj-$(CONFIG_EDAC_I5100)		+= i5100_edac.o
- obj-$(CONFIG_EDAC_E7XXX)		+= e7xxx_edac.o
- obj-$(CONFIG_EDAC_E752X)		+= e752x_edac.o
--obj-$(CONFIG_EDAC_I82443BXGX)		+= i82443bxgx_edac.o
- obj-$(CONFIG_EDAC_I82875P)		+= i82875p_edac.o
- obj-$(CONFIG_EDAC_I82975X)		+= i82975x_edac.o
- obj-$(CONFIG_EDAC_I3000)		+= i3000_edac.o
-diff --git a/drivers/edac/i82443bxgx_edac.c b/drivers/edac/i82443bxgx_edac.c
+ config MAC
+ 	bool "Macintosh support"
+ 	depends on !MMU_SUN3
+diff --git a/arch/m68k/kernel/Makefile b/arch/m68k/kernel/Makefile
+index 3a7f622..55d5d6b 100644
+--- a/arch/m68k/kernel/Makefile
++++ b/arch/m68k/kernel/Makefile
+@@ -14,5 +14,4 @@ obj-y	:= entry.o process.o traps.o ints.o signal.o ptrace.o module.o \
+ 
+ devres-y = ../../../kernel/irq/devres.o
+ 
+-obj-$(CONFIG_PCI)	+= bios32.o
+ obj-y$(CONFIG_MMU_SUN3) += dma.o	# no, it's not a typo
+diff --git a/arch/m68k/kernel/bios32.c b/arch/m68k/kernel/bios32.c
 deleted file mode 100644
-index c5305e3..0000000
---- a/drivers/edac/i82443bxgx_edac.c
+index 1c3b752..0000000
+--- a/arch/m68k/kernel/bios32.c
 +++ /dev/null
-@@ -1,409 +0,0 @@
+@@ -1,516 +0,0 @@
 -/*
-- * Intel 82443BX/GX (440BX/GX chipset) Memory Controller EDAC kernel
-- * module (C) 2006 Tim Small
+- * bios32.c - PCI BIOS functions for m68k systems.
 - *
-- * This file may be distributed under the terms of the GNU General
-- * Public License.
+- * Written by Wout Klaren.
 - *
-- * Written by Tim Small <tim@buttersideup.com>, based on work by Linux
-- * Networx, Thayne Harbaugh, Dan Hollis <goemon at anime dot net> and
-- * others.
-- *
-- * 440GX fix by Jason Uhlenkott <juhlenko@akamai.com>.
-- *
-- * Written with reference to 82443BX Host Bridge Datasheet:
-- * http://www.intel.com/design/chipsets/440/documentation.htm
-- * references to this document given in [].
-- *
-- * This module doesn't support the 440LX, but it may be possible to
-- * make it do so (the 440LX's register definitions are different, but
-- * not completely so - I haven't studied them in enough detail to know
-- * how easy this would be).
+- * Based on the DEC Alpha bios32.c by Dave Rusling and David Mosberger.
 - */
 -
--#include <linux/module.h>
 -#include <linux/init.h>
+-#include <linux/kernel.h>
+-
+-#if 0
+-# define DBG_DEVS(args)		printk args
+-#else
+-# define DBG_DEVS(args)
+-#endif
+-
+-#ifdef CONFIG_PCI
+-
+-/*
+- * PCI support for Linux/m68k. Currently only the Hades is supported.
+- *
+- * The support for PCI bridges in the DEC Alpha version has
+- * been removed in this version.
+- */
 -
 -#include <linux/pci.h>
--#include <linux/pci_ids.h>
--
 -#include <linux/slab.h>
+-#include <linux/mm.h>
 -
--#include <linux/edac.h>
--#include "edac_core.h"
+-#include <asm/io.h>
+-#include <asm/pci.h>
+-#include <asm/uaccess.h>
 -
--#define I82443_REVISION	"0.1"
+-#define KB		1024
+-#define MB		(1024*KB)
+-#define GB		(1024*MB)
 -
--#define EDAC_MOD_STR    "i82443bxgx_edac"
+-#define MAJOR_REV	0
+-#define MINOR_REV	5
 -
--/* The 82443BX supports SDRAM, or EDO (EDO for mobile only), "Memory
-- * Size: 8 MB to 512 MB (1GB with Registered DIMMs) with eight memory
-- * rows" "The 82443BX supports multiple-bit error detection and
-- * single-bit error correction when ECC mode is enabled and
-- * single/multi-bit error detection when correction is disabled.
-- * During writes to the DRAM, the 82443BX generates ECC for the data
-- * on a QWord basis. Partial QWord writes require a read-modify-write
-- * cycle when ECC is enabled."
--*/
--
--/* "Additionally, the 82443BX ensures that the data is corrected in
-- * main memory so that accumulation of errors is prevented. Another
-- * error within the same QWord would result in a double-bit error
-- * which is unrecoverable. This is known as hardware scrubbing since
-- * it requires no software intervention to correct the data in memory."
+-/*
+- * Align VAL to ALIGN, which must be a power of two.
 - */
 -
--/* [Also see page 100 (section 4.3), "DRAM Interface"]
-- * [Also see page 112 (section 4.6.1.4), ECC]
+-#define ALIGN(val,align)	(((val) + ((align) - 1)) & ~((align) - 1))
+-
+-/*
+- * Offsets relative to the I/O and memory base addresses from where resources
+- * are allocated.
 - */
 -
--#define I82443BXGX_NR_CSROWS 8
--#define I82443BXGX_NR_CHANS  1
--#define I82443BXGX_NR_DIMMS  4
+-#define IO_ALLOC_OFFSET		0x00004000
+-#define MEM_ALLOC_OFFSET	0x04000000
 -
--/* 82443 PCI Device 0 */
--#define I82443BXGX_NBXCFG 0x50	/* 32bit register starting at this PCI
--				 * config space offset */
--#define I82443BXGX_NBXCFG_OFFSET_NON_ECCROW 24	/* Array of bits, zero if
--						 * row is non-ECC */
--#define I82443BXGX_NBXCFG_OFFSET_DRAM_FREQ 12	/* 2 bits,00=100MHz,10=66 MHz */
+-/*
+- * Declarations of hardware specific initialisation functions.
+- */
 -
--#define I82443BXGX_NBXCFG_OFFSET_DRAM_INTEGRITY 7	/* 2 bits:       */
--#define I82443BXGX_NBXCFG_INTEGRITY_NONE   0x0	/* 00 = Non-ECC */
--#define I82443BXGX_NBXCFG_INTEGRITY_EC     0x1	/* 01 = EC (only) */
--#define I82443BXGX_NBXCFG_INTEGRITY_ECC    0x2	/* 10 = ECC */
--#define I82443BXGX_NBXCFG_INTEGRITY_SCRUB  0x3	/* 11 = ECC + HW Scrub */
+-extern struct pci_bus_info *init_hades_pci(void);
 -
--#define I82443BXGX_NBXCFG_OFFSET_ECC_DIAG_ENABLE  6
+-/*
+- * Bus info structure of the PCI bus. A pointer to this structure is
+- * put in the sysdata member of the pci_bus structure.
+- */
 -
--/* 82443 PCI Device 0 */
--#define I82443BXGX_EAP   0x80	/* 32bit register starting at this PCI
--				 * config space offset, Error Address
--				 * Pointer Register */
--#define I82443BXGX_EAP_OFFSET_EAP  12	/* High 20 bits of error address */
--#define I82443BXGX_EAP_OFFSET_MBE  BIT(1)	/* Err at EAP was multi-bit (W1TC) */
--#define I82443BXGX_EAP_OFFSET_SBE  BIT(0)	/* Err at EAP was single-bit (W1TC) */
+-static struct pci_bus_info *bus_info;
 -
--#define I82443BXGX_ERRCMD  0x90	/* 8bit register starting at this PCI
--				 * config space offset. */
--#define I82443BXGX_ERRCMD_OFFSET_SERR_ON_MBE BIT(1)	/* 1 = enable */
--#define I82443BXGX_ERRCMD_OFFSET_SERR_ON_SBE BIT(0)	/* 1 = enable */
+-static int pci_modify = 1;		/* If set, layout the PCI bus ourself. */
+-static int skip_vga;			/* If set do not modify base addresses
+-					   of vga cards.*/
+-static int disable_pci_burst;		/* If set do not allow PCI bursts. */
 -
--#define I82443BXGX_ERRSTS  0x91	/* 16bit register starting at this PCI
--				 * config space offset. */
--#define I82443BXGX_ERRSTS_OFFSET_MBFRE 5	/* 3 bits - first err row multibit */
--#define I82443BXGX_ERRSTS_OFFSET_MEF   BIT(4)	/* 1 = MBE occurred */
--#define I82443BXGX_ERRSTS_OFFSET_SBFRE 1	/* 3 bits - first err row singlebit */
--#define I82443BXGX_ERRSTS_OFFSET_SEF   BIT(0)	/* 1 = SBE occurred */
+-static unsigned int io_base;
+-static unsigned int mem_base;
 -
--#define I82443BXGX_DRAMC 0x57	/* 8bit register starting at this PCI
--				 * config space offset. */
--#define I82443BXGX_DRAMC_OFFSET_DT 3	/* 2 bits, DRAM Type */
--#define I82443BXGX_DRAMC_DRAM_IS_EDO 0	/* 00 = EDO */
--#define I82443BXGX_DRAMC_DRAM_IS_SDRAM 1	/* 01 = SDRAM */
--#define I82443BXGX_DRAMC_DRAM_IS_RSDRAM 2	/* 10 = Registered SDRAM */
+-/*
+- * static void disable_dev(struct pci_dev *dev)
+- *
+- * Disable PCI device DEV so that it does not respond to I/O or memory
+- * accesses.
+- *
+- * Parameters:
+- *
+- * dev	- device to disable.
+- */
 -
--#define I82443BXGX_DRB 0x60	/* 8x 8bit registers starting at this PCI
--				 * config space offset. */
--
--/* FIXME - don't poll when ECC disabled? */
--
--struct i82443bxgx_edacmc_error_info {
--	u32 eap;
--};
--
--static struct edac_pci_ctl_info *i82443bxgx_pci;
--
--static void i82443bxgx_edacmc_get_error_info(struct mem_ctl_info *mci,
--				struct i82443bxgx_edacmc_error_info
--				*info)
+-static void __init disable_dev(struct pci_dev *dev)
 -{
--	struct pci_dev *pdev;
--	pdev = to_pci_dev(mci->dev);
--	pci_read_config_dword(pdev, I82443BXGX_EAP, &info->eap);
--	if (info->eap & I82443BXGX_EAP_OFFSET_SBE)
--		/* Clear error to allow next error to be reported [p.61] */
--		pci_write_bits32(pdev, I82443BXGX_EAP,
--				 I82443BXGX_EAP_OFFSET_SBE,
--				 I82443BXGX_EAP_OFFSET_SBE);
+-	unsigned short cmd;
 -
--	if (info->eap & I82443BXGX_EAP_OFFSET_MBE)
--		/* Clear error to allow next error to be reported [p.61] */
--		pci_write_bits32(pdev, I82443BXGX_EAP,
--				 I82443BXGX_EAP_OFFSET_MBE,
--				 I82443BXGX_EAP_OFFSET_MBE);
--}
--
--static int i82443bxgx_edacmc_process_error_info(struct mem_ctl_info *mci,
--						struct
--						i82443bxgx_edacmc_error_info
--						*info, int handle_errors)
--{
--	int error_found = 0;
--	u32 eapaddr, page, pageoffset;
--
--	/* bits 30:12 hold the 4kb block in which the error occurred
--	 * [p.61] */
--	eapaddr = (info->eap & 0xfffff000);
--	page = eapaddr >> PAGE_SHIFT;
--	pageoffset = eapaddr - (page << PAGE_SHIFT);
--
--	if (info->eap & I82443BXGX_EAP_OFFSET_SBE) {
--		error_found = 1;
--		if (handle_errors)
--			edac_mc_handle_ce(mci, page, pageoffset,
--				/* 440BX/GX don't make syndrome information
--				 * available */
--				0, edac_mc_find_csrow_by_page(mci, page), 0,
--				mci->ctl_name);
--	}
--
--	if (info->eap & I82443BXGX_EAP_OFFSET_MBE) {
--		error_found = 1;
--		if (handle_errors)
--			edac_mc_handle_ue(mci, page, pageoffset,
--					edac_mc_find_csrow_by_page(mci, page),
--					mci->ctl_name);
--	}
--
--	return error_found;
--}
--
--static void i82443bxgx_edacmc_check(struct mem_ctl_info *mci)
--{
--	struct i82443bxgx_edacmc_error_info info;
--
--	debugf1("MC%d: " __FILE__ ": %s()\n", mci->mc_idx, __func__);
--	i82443bxgx_edacmc_get_error_info(mci, &info);
--	i82443bxgx_edacmc_process_error_info(mci, &info, 1);
--}
--
--static void i82443bxgx_init_csrows(struct mem_ctl_info *mci,
--				struct pci_dev *pdev,
--				enum edac_type edac_mode,
--				enum mem_type mtype)
--{
--	struct csrow_info *csrow;
--	int index;
--	u8 drbar, dramc;
--	u32 row_base, row_high_limit, row_high_limit_last;
--
--	pci_read_config_byte(pdev, I82443BXGX_DRAMC, &dramc);
--	row_high_limit_last = 0;
--	for (index = 0; index < mci->nr_csrows; index++) {
--		csrow = &mci->csrows[index];
--		pci_read_config_byte(pdev, I82443BXGX_DRB + index, &drbar);
--		debugf1("MC%d: " __FILE__ ": %s() Row=%d DRB = %#0x\n",
--			mci->mc_idx, __func__, index, drbar);
--		row_high_limit = ((u32) drbar << 23);
--		/* find the DRAM Chip Select Base address and mask */
--		debugf1("MC%d: " __FILE__ ": %s() Row=%d, "
--			"Boundry Address=%#0x, Last = %#0x \n",
--			mci->mc_idx, __func__, index, row_high_limit,
--			row_high_limit_last);
--
--		/* 440GX goes to 2GB, represented with a DRB of 0. */
--		if (row_high_limit_last && !row_high_limit)
--			row_high_limit = 1UL << 31;
--
--		/* This row is empty [p.49] */
--		if (row_high_limit == row_high_limit_last)
--			continue;
--		row_base = row_high_limit_last;
--		csrow->first_page = row_base >> PAGE_SHIFT;
--		csrow->last_page = (row_high_limit >> PAGE_SHIFT) - 1;
--		csrow->nr_pages = csrow->last_page - csrow->first_page + 1;
--		/* EAP reports in 4kilobyte granularity [61] */
--		csrow->grain = 1 << 12;
--		csrow->mtype = mtype;
--		/* I don't think 440BX can tell you device type? FIXME? */
--		csrow->dtype = DEV_UNKNOWN;
--		/* Mode is global to all rows on 440BX */
--		csrow->edac_mode = edac_mode;
--		row_high_limit_last = row_high_limit;
--	}
--}
--
--static int i82443bxgx_edacmc_probe1(struct pci_dev *pdev, int dev_idx)
--{
--	struct mem_ctl_info *mci;
--	u8 dramc;
--	u32 nbxcfg, ecc_mode;
--	enum mem_type mtype;
--	enum edac_type edac_mode;
--
--	debugf0("MC: " __FILE__ ": %s()\n", __func__);
--
--	/* Something is really hosed if PCI config space reads from
--	 * the MC aren't working.
--	 */
--	if (pci_read_config_dword(pdev, I82443BXGX_NBXCFG, &nbxcfg))
--		return -EIO;
--
--	mci = edac_mc_alloc(0, I82443BXGX_NR_CSROWS, I82443BXGX_NR_CHANS, 0);
--
--	if (mci == NULL)
--		return -ENOMEM;
--
--	debugf0("MC: " __FILE__ ": %s(): mci = %p\n", __func__, mci);
--	mci->dev = &pdev->dev;
--	mci->mtype_cap = MEM_FLAG_EDO | MEM_FLAG_SDR | MEM_FLAG_RDR;
--	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_EC | EDAC_FLAG_SECDED;
--	pci_read_config_byte(pdev, I82443BXGX_DRAMC, &dramc);
--	switch ((dramc >> I82443BXGX_DRAMC_OFFSET_DT) & (BIT(0) | BIT(1))) {
--	case I82443BXGX_DRAMC_DRAM_IS_EDO:
--		mtype = MEM_EDO;
--		break;
--	case I82443BXGX_DRAMC_DRAM_IS_SDRAM:
--		mtype = MEM_SDR;
--		break;
--	case I82443BXGX_DRAMC_DRAM_IS_RSDRAM:
--		mtype = MEM_RDR;
--		break;
--	default:
--		debugf0("Unknown/reserved DRAM type value "
--			"in DRAMC register!\n");
--		mtype = -MEM_UNKNOWN;
--	}
--
--	if ((mtype == MEM_SDR) || (mtype == MEM_RDR))
--		mci->edac_cap = mci->edac_ctl_cap;
--	else
--		mci->edac_cap = EDAC_FLAG_NONE;
--
--	mci->scrub_cap = SCRUB_FLAG_HW_SRC;
--	pci_read_config_dword(pdev, I82443BXGX_NBXCFG, &nbxcfg);
--	ecc_mode = ((nbxcfg >> I82443BXGX_NBXCFG_OFFSET_DRAM_INTEGRITY) &
--		(BIT(0) | BIT(1)));
--
--	mci->scrub_mode = (ecc_mode == I82443BXGX_NBXCFG_INTEGRITY_SCRUB)
--		? SCRUB_HW_SRC : SCRUB_NONE;
--
--	switch (ecc_mode) {
--	case I82443BXGX_NBXCFG_INTEGRITY_NONE:
--		edac_mode = EDAC_NONE;
--		break;
--	case I82443BXGX_NBXCFG_INTEGRITY_EC:
--		edac_mode = EDAC_EC;
--		break;
--	case I82443BXGX_NBXCFG_INTEGRITY_ECC:
--	case I82443BXGX_NBXCFG_INTEGRITY_SCRUB:
--		edac_mode = EDAC_SECDED;
--		break;
--	default:
--		debugf0("%s(): Unknown/reserved ECC state "
--			"in NBXCFG register!\n", __func__);
--		edac_mode = EDAC_UNKNOWN;
--		break;
--	}
--
--	i82443bxgx_init_csrows(mci, pdev, edac_mode, mtype);
--
--	/* Many BIOSes don't clear error flags on boot, so do this
--	 * here, or we get "phantom" errors occuring at module-load
--	 * time. */
--	pci_write_bits32(pdev, I82443BXGX_EAP,
--			(I82443BXGX_EAP_OFFSET_SBE |
--				I82443BXGX_EAP_OFFSET_MBE),
--			(I82443BXGX_EAP_OFFSET_SBE |
--				I82443BXGX_EAP_OFFSET_MBE));
--
--	mci->mod_name = EDAC_MOD_STR;
--	mci->mod_ver = I82443_REVISION;
--	mci->ctl_name = "I82443BXGX";
--	mci->dev_name = pci_name(pdev);
--	mci->edac_check = i82443bxgx_edacmc_check;
--	mci->ctl_page_to_phys = NULL;
--
--	if (edac_mc_add_mc(mci)) {
--		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
--		goto fail;
--	}
--
--	/* allocating generic PCI control info */
--	i82443bxgx_pci = edac_pci_create_generic_ctl(&pdev->dev, EDAC_MOD_STR);
--	if (!i82443bxgx_pci) {
--		printk(KERN_WARNING
--			"%s(): Unable to create PCI control\n",
--			__func__);
--		printk(KERN_WARNING
--			"%s(): PCI error report via EDAC not setup\n",
--			__func__);
--	}
--
--	debugf3("MC: " __FILE__ ": %s(): success\n", __func__);
--	return 0;
--
--fail:
--	edac_mc_free(mci);
--	return -ENODEV;
--}
--
--EXPORT_SYMBOL_GPL(i82443bxgx_edacmc_probe1);
--
--/* returns count (>= 0), or negative on error */
--static int __devinit i82443bxgx_edacmc_init_one(struct pci_dev *pdev,
--						const struct pci_device_id *ent)
--{
--	debugf0("MC: " __FILE__ ": %s()\n", __func__);
--
--	/* don't need to call pci_device_enable() */
--	return i82443bxgx_edacmc_probe1(pdev, ent->driver_data);
--}
--
--static void __devexit i82443bxgx_edacmc_remove_one(struct pci_dev *pdev)
--{
--	struct mem_ctl_info *mci;
--
--	debugf0(__FILE__ ": %s()\n", __func__);
--
--	if (i82443bxgx_pci)
--		edac_pci_release_generic_ctl(i82443bxgx_pci);
--
--	if ((mci = edac_mc_del_mc(&pdev->dev)) == NULL)
+-	if (((dev->class >> 8 == PCI_CLASS_NOT_DEFINED_VGA) ||
+-	     (dev->class >> 8 == PCI_CLASS_DISPLAY_VGA) ||
+-	     (dev->class >> 8 == PCI_CLASS_DISPLAY_XGA)) && skip_vga)
 -		return;
 -
--	edac_mc_free(mci);
+-	pci_read_config_word(dev, PCI_COMMAND, &cmd);
+-
+-	cmd &= (~PCI_COMMAND_IO & ~PCI_COMMAND_MEMORY & ~PCI_COMMAND_MASTER);
+-	pci_write_config_word(dev, PCI_COMMAND, cmd);
 -}
 -
--EXPORT_SYMBOL_GPL(i82443bxgx_edacmc_remove_one);
+-/*
+- * static void layout_dev(struct pci_dev *dev)
+- *
+- * Layout memory and I/O for a device.
+- *
+- * Parameters:
+- *
+- * device	- device to layout memory and I/O for.
+- */
 -
--static const struct pci_device_id i82443bxgx_pci_tbl[] __devinitdata = {
--	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82443BX_0)},
--	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82443BX_2)},
--	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82443GX_0)},
--	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82443GX_2)},
--	{0,}			/* 0 terminated list. */
+-static void __init layout_dev(struct pci_dev *dev)
+-{
+-	unsigned short cmd;
+-	unsigned int base, mask, size, reg;
+-	unsigned int alignto;
+-	int i;
+-
+-	/*
+-	 * Skip video cards if requested.
+-	 */
+-
+-	if (((dev->class >> 8 == PCI_CLASS_NOT_DEFINED_VGA) ||
+-	     (dev->class >> 8 == PCI_CLASS_DISPLAY_VGA) ||
+-	     (dev->class >> 8 == PCI_CLASS_DISPLAY_XGA)) && skip_vga)
+-		return;
+-
+-	pci_read_config_word(dev, PCI_COMMAND, &cmd);
+-
+-	for (reg = PCI_BASE_ADDRESS_0, i = 0; reg <= PCI_BASE_ADDRESS_5; reg += 4, i++)
+-	{
+-		/*
+-		 * Figure out how much space and of what type this
+-		 * device wants.
+-		 */
+-
+-		pci_write_config_dword(dev, reg, 0xffffffff);
+-		pci_read_config_dword(dev, reg, &base);
+-
+-		if (!base)
+-		{
+-			/* this base-address register is unused */
+-			dev->resource[i].start = 0;
+-			dev->resource[i].end = 0;
+-			dev->resource[i].flags = 0;
+-			continue;
+-		}
+-
+-		/*
+-		 * We've read the base address register back after
+-		 * writing all ones and so now we must decode it.
+-		 */
+-
+-		if (base & PCI_BASE_ADDRESS_SPACE_IO)
+-		{
+-			/*
+-			 * I/O space base address register.
+-			 */
+-
+-			cmd |= PCI_COMMAND_IO;
+-
+-			base &= PCI_BASE_ADDRESS_IO_MASK;
+-			mask = (~base << 1) | 0x1;
+-			size = (mask & base) & 0xffffffff;
+-
+-			/*
+-			 * Align to multiple of size of minimum base.
+-			 */
+-
+-			alignto = max_t(unsigned int, 0x040, size);
+-			base = ALIGN(io_base, alignto);
+-			io_base = base + size;
+-			pci_write_config_dword(dev, reg, base | PCI_BASE_ADDRESS_SPACE_IO);
+-
+-			dev->resource[i].start = base;
+-			dev->resource[i].end = dev->resource[i].start + size - 1;
+-			dev->resource[i].flags = IORESOURCE_IO | PCI_BASE_ADDRESS_SPACE_IO;
+-
+-			DBG_DEVS(("layout_dev: IO address: %lX\n", base));
+-		}
+-		else
+-		{
+-			unsigned int type;
+-
+-			/*
+-			 * Memory space base address register.
+-			 */
+-
+-			cmd |= PCI_COMMAND_MEMORY;
+-			type = base & PCI_BASE_ADDRESS_MEM_TYPE_MASK;
+-			base &= PCI_BASE_ADDRESS_MEM_MASK;
+-			mask = (~base << 1) | 0x1;
+-			size = (mask & base) & 0xffffffff;
+-			switch (type)
+-			{
+-			case PCI_BASE_ADDRESS_MEM_TYPE_32:
+-			case PCI_BASE_ADDRESS_MEM_TYPE_64:
+-				break;
+-
+-			case PCI_BASE_ADDRESS_MEM_TYPE_1M:
+-				printk("bios32 WARNING: slot %d, function %d "
+-				       "requests memory below 1MB---don't "
+-				       "know how to do that.\n",
+-				       PCI_SLOT(dev->devfn),
+-				       PCI_FUNC(dev->devfn));
+-				continue;
+-			}
+-
+-			/*
+-			 * Align to multiple of size of minimum base.
+-			 */
+-
+-			alignto = max_t(unsigned int, 0x1000, size);
+-			base = ALIGN(mem_base, alignto);
+-			mem_base = base + size;
+-			pci_write_config_dword(dev, reg, base);
+-
+-			dev->resource[i].start = base;
+-			dev->resource[i].end = dev->resource[i].start + size - 1;
+-			dev->resource[i].flags = IORESOURCE_MEM;
+-
+-			if (type == PCI_BASE_ADDRESS_MEM_TYPE_64)
+-			{
+-				/*
+-				 * 64-bit address, set the highest 32 bits
+-				 * to zero.
+-				 */
+-
+-				reg += 4;
+-				pci_write_config_dword(dev, reg, 0);
+-
+-				i++;
+-				dev->resource[i].start = 0;
+-				dev->resource[i].end = 0;
+-				dev->resource[i].flags = 0;
+-			}
+-		}
+-	}
+-
+-	/*
+-	 * Enable device:
+-	 */
+-
+-	if (dev->class >> 8 == PCI_CLASS_NOT_DEFINED ||
+-	    dev->class >> 8 == PCI_CLASS_NOT_DEFINED_VGA ||
+-	    dev->class >> 8 == PCI_CLASS_DISPLAY_VGA ||
+-	    dev->class >> 8 == PCI_CLASS_DISPLAY_XGA)
+-	{
+-		/*
+-		 * All of these (may) have I/O scattered all around
+-		 * and may not use i/o-base address registers at all.
+-		 * So we just have to always enable I/O to these
+-		 * devices.
+-		 */
+-		cmd |= PCI_COMMAND_IO;
+-	}
+-
+-	pci_write_config_word(dev, PCI_COMMAND, cmd | PCI_COMMAND_MASTER);
+-
+-	pci_write_config_byte(dev, PCI_LATENCY_TIMER, (disable_pci_burst) ? 0 : 32);
+-
+-	if (bus_info != NULL)
+-		bus_info->conf_device(dev);	/* Machine dependent configuration. */
+-
+-	DBG_DEVS(("layout_dev: bus %d  slot 0x%x  VID 0x%x  DID 0x%x  class 0x%x\n",
+-		  dev->bus->number, PCI_SLOT(dev->devfn), dev->vendor, dev->device, dev->class));
+-}
+-
+-/*
+- * static void layout_bus(struct pci_bus *bus)
+- *
+- * Layout memory and I/O for all devices on the given bus.
+- *
+- * Parameters:
+- *
+- * bus	- bus.
+- */
+-
+-static void __init layout_bus(struct pci_bus *bus)
+-{
+-	unsigned int bio, bmem;
+-	struct pci_dev *dev;
+-
+-	DBG_DEVS(("layout_bus: starting bus %d\n", bus->number));
+-
+-	if (!bus->devices && !bus->children)
+-		return;
+-
+-	/*
+-	 * Align the current bases on appropriate boundaries (4K for
+-	 * IO and 1MB for memory).
+-	 */
+-
+-	bio = io_base = ALIGN(io_base, 4*KB);
+-	bmem = mem_base = ALIGN(mem_base, 1*MB);
+-
+-	/*
+-	 * PCI devices might have been setup by a PCI BIOS emulation
+-	 * running under TOS. In these cases there is a
+-	 * window during which two devices may have an overlapping
+-	 * address range. To avoid this causing trouble, we first
+-	 * turn off the I/O and memory address decoders for all PCI
+-	 * devices.  They'll be re-enabled only once all address
+-	 * decoders are programmed consistently.
+-	 */
+-
+-	DBG_DEVS(("layout_bus: disable_dev for bus %d\n", bus->number));
+-
+-	for (dev = bus->devices; dev; dev = dev->sibling)
+-	{
+-		if ((dev->class >> 16 != PCI_BASE_CLASS_BRIDGE) ||
+-		    (dev->class >> 8 == PCI_CLASS_BRIDGE_PCMCIA))
+-			disable_dev(dev);
+-	}
+-
+-	/*
+-	 * Allocate space to each device:
+-	 */
+-
+-	DBG_DEVS(("layout_bus: starting bus %d devices\n", bus->number));
+-
+-	for (dev = bus->devices; dev; dev = dev->sibling)
+-	{
+-		if ((dev->class >> 16 != PCI_BASE_CLASS_BRIDGE) ||
+-		    (dev->class >> 8 == PCI_CLASS_BRIDGE_PCMCIA))
+-			layout_dev(dev);
+-	}
+-
+-	DBG_DEVS(("layout_bus: bus %d finished\n", bus->number));
+-}
+-
+-/*
+- * static void pcibios_fixup(void)
+- *
+- * Layout memory and I/O of all devices on the PCI bus if 'pci_modify' is
+- * true. This might be necessary because not every m68k machine with a PCI
+- * bus has a PCI BIOS. This function should be called right after
+- * pci_scan_bus() in pcibios_init().
+- */
+-
+-static void __init pcibios_fixup(void)
+-{
+-	if (pci_modify)
+-	{
+-		/*
+-		 * Set base addresses for allocation of I/O and memory space.
+-		 */
+-
+-		io_base = bus_info->io_space.start + IO_ALLOC_OFFSET;
+-		mem_base = bus_info->mem_space.start + MEM_ALLOC_OFFSET;
+-
+-		/*
+-		 * Scan the tree, allocating PCI memory and I/O space.
+-		 */
+-
+-		layout_bus(pci_bus_b(pci_root.next));
+-	}
+-
+-	/*
+-	 * Fix interrupt assignments, etc.
+-	 */
+-
+-	bus_info->fixup(pci_modify);
+-}
+-
+-/*
+- * static void pcibios_claim_resources(struct pci_bus *bus)
+- *
+- * Claim all resources that are assigned to devices on the given bus.
+- *
+- * Parameters:
+- *
+- * bus	- bus.
+- */
+-
+-static void __init pcibios_claim_resources(struct pci_bus *bus)
+-{
+-	struct pci_dev *dev;
+-	int i;
+-
+-	while (bus)
+-	{
+-		for (dev = bus->devices; (dev != NULL); dev = dev->sibling)
+-		{
+-			for (i = 0; i < PCI_NUM_RESOURCES; i++)
+-			{
+-				struct resource *r = &dev->resource[i];
+-				struct resource *pr;
+-				struct pci_bus_info *bus_info = (struct pci_bus_info *) dev->sysdata;
+-
+-				if ((r->start == 0) || (r->parent != NULL))
+-					continue;
+-#if 1
+-				if (r->flags & IORESOURCE_IO)
+-					pr = &bus_info->io_space;
+-				else
+-					pr = &bus_info->mem_space;
+-#else
+-				if (r->flags & IORESOURCE_IO)
+-					pr = &ioport_resource;
+-				else
+-					pr = &iomem_resource;
+-#endif
+-				if (request_resource(pr, r) < 0)
+-				{
+-					printk(KERN_ERR "PCI: Address space collision on region %d of device %s\n", i, dev->name);
+-				}
+-			}
+-		}
+-
+-		if (bus->children)
+-			pcibios_claim_resources(bus->children);
+-
+-		bus = bus->next;
+-	}
+-}
+-
+-/*
+- * int pcibios_assign_resource(struct pci_dev *dev, int i)
+- *
+- * Assign a new address to a PCI resource.
+- *
+- * Parameters:
+- *
+- * dev	- device.
+- * i	- resource.
+- *
+- * Result: 0 if successful.
+- */
+-
+-int __init pcibios_assign_resource(struct pci_dev *dev, int i)
+-{
+-	struct resource *r = &dev->resource[i];
+-	struct resource *pr = pci_find_parent_resource(dev, r);
+-	unsigned long size = r->end + 1;
+-
+-	if (!pr)
+-		return -EINVAL;
+-
+-	if (r->flags & IORESOURCE_IO)
+-	{
+-		if (size > 0x100)
+-			return -EFBIG;
+-
+-		if (allocate_resource(pr, r, size, bus_info->io_space.start +
+-				      IO_ALLOC_OFFSET,  bus_info->io_space.end, 1024))
+-			return -EBUSY;
+-	}
+-	else
+-	{
+-		if (allocate_resource(pr, r, size, bus_info->mem_space.start +
+-				      MEM_ALLOC_OFFSET, bus_info->mem_space.end, size))
+-			return -EBUSY;
+-	}
+-
+-	if (i < 6)
+-		pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + 4 * i, r->start);
+-
+-	return 0;
+-}
+-
+-void __init pcibios_fixup_bus(struct pci_bus *bus)
+-{
+-	struct pci_dev *dev;
+-	void *sysdata;
+-
+-	sysdata = (bus->parent) ? bus->parent->sysdata : bus->sysdata;
+-
+-	for (dev = bus->devices; (dev != NULL); dev = dev->sibling)
+-		dev->sysdata = sysdata;
+-}
+-
+-void __init pcibios_init(void)
+-{
+-	printk("Linux/m68k PCI BIOS32 revision %x.%02x\n", MAJOR_REV, MINOR_REV);
+-
+-	bus_info = NULL;
+-
+-/* Hades code was:
+-	if (MACH_IS_HADES)
+-		bus_info = init_hades_pci();
+-*/
+-
+-	if (bus_info != NULL)
+-	{
+-		printk("PCI: Probing PCI hardware\n");
+-		pci_scan_bus(0, bus_info->m68k_pci_ops, bus_info);
+-		pcibios_fixup();
+-		pcibios_claim_resources(pci_root);
+-	}
+-	else
+-		printk("PCI: No PCI bus detected\n");
+-}
+-
+-char * __init pcibios_setup(char *str)
+-{
+-	if (!strcmp(str, "nomodify"))
+-	{
+-		pci_modify = 0;
+-		return NULL;
+-	}
+-	else if (!strcmp(str, "skipvga"))
+-	{
+-		skip_vga = 1;
+-		return NULL;
+-	}
+-	else if (!strcmp(str, "noburst"))
+-	{
+-		disable_pci_burst = 1;
+-		return NULL;
+-	}
+-
+-	return str;
+-}
+-#endif /* CONFIG_PCI */
+diff --git a/include/asm-m68k/dma.h b/include/asm-m68k/dma.h
+index d0c9e61..4240fbc 100644
+--- a/include/asm-m68k/dma.h
++++ b/include/asm-m68k/dma.h
+@@ -11,10 +11,6 @@
+ extern int request_dma(unsigned int dmanr, const char * device_id);	/* reserve a DMA channel */
+ extern void free_dma(unsigned int dmanr);	/* release it again */
+ 
+-#ifdef CONFIG_PCI
+-extern int isa_dma_bridge_buggy;
+-#else
+ #define isa_dma_bridge_buggy    (0)
+-#endif
+ 
+ #endif /* _M68K_DMA_H */
+diff --git a/include/asm-m68k/io.h b/include/asm-m68k/io.h
+index 657187f..9e673e3 100644
+--- a/include/asm-m68k/io.h
++++ b/include/asm-m68k/io.h
+@@ -7,15 +7,12 @@
+  *            - added skeleton for GG-II and Amiga PCMCIA
+  * 2/3/01 RZ: - moved a few more defs into raw_io.h
+  *
+- * inX/outX/readX/writeX should not be used by any driver unless it does
+- * ISA or PCI access. Other drivers should use function defined in raw_io.h
++ * inX/outX should not be used by any driver unless it does
++ * ISA access. Other drivers should use function defined in raw_io.h
+  * or define its own macros on top of these.
+  *
+- *    inX(),outX()              are for PCI and ISA I/O
+- *    readX(),writeX()          are for PCI memory
++ *    inX(),outX()              are for ISA I/O
+  *    isa_readX(),isa_writeX()  are for ISA memory
+- *
+- * moved mem{cpy,set}_*io inside CONFIG_PCI
+  */
+ 
+ #ifndef _IO_H
+@@ -256,10 +253,7 @@ static inline void isa_delay(void)
+        (ISA_SEX ? raw_outsl(isa_itl(port), (u32 *)(buf), (nr)) :  \
+                   raw_outsw_swapw(isa_itw(port), (u16 *)(buf), (nr)<<1))
+ 
+-#endif  /* CONFIG_ISA */
+-
+ 
+-#if defined(CONFIG_ISA) && !defined(CONFIG_PCI)
+ #define inb     isa_inb
+ #define inb_p   isa_inb_p
+ #define outb    isa_outb
+@@ -282,55 +276,9 @@ static inline void isa_delay(void)
+ #define readw   isa_readw
+ #define writeb  isa_writeb
+ #define writew  isa_writew
+-#endif /* CONFIG_ISA */
+-
+-#if defined(CONFIG_PCI)
+-
+-#define readl(addr)      in_le32(addr)
+-#define writel(val,addr) out_le32((addr),(val))
+-
+-/* those can be defined for both ISA and PCI - it won't work though */
+-#define readb(addr)       in_8(addr)
+-#define readw(addr)       in_le16(addr)
+-#define writeb(val,addr)  out_8((addr),(val))
+-#define writew(val,addr)  out_le16((addr),(val))
+ 
+-#define readb_relaxed(addr) readb(addr)
+-#define readw_relaxed(addr) readw(addr)
+-#define readl_relaxed(addr) readl(addr)
++#else  /* CONFIG_ISA */
+ 
+-#ifndef CONFIG_ISA
+-#define inb(port)      in_8(port)
+-#define outb(val,port) out_8((port),(val))
+-#define inw(port)      in_le16(port)
+-#define outw(val,port) out_le16((port),(val))
+-#define inl(port)      in_le32(port)
+-#define outl(val,port) out_le32((port),(val))
+-
+-#else
+-/*
+- * kernel with both ISA and PCI compiled in, those have
+- * conflicting defs for in/out. Simply consider port < 1024
+- * ISA and everything else PCI. read,write not defined
+- * in this case
+- */
+-#define inb(port) ((port)<1024 ? isa_inb(port) : in_8(port))
+-#define inb_p(port) ((port)<1024 ? isa_inb_p(port) : in_8(port))
+-#define inw(port) ((port)<1024 ? isa_inw(port) : in_le16(port))
+-#define inw_p(port) ((port)<1024 ? isa_inw_p(port) : in_le16(port))
+-#define inl(port) ((port)<1024 ? isa_inl(port) : in_le32(port))
+-#define inl_p(port) ((port)<1024 ? isa_inl_p(port) : in_le32(port))
+-
+-#define outb(val,port) ((port)<1024 ? isa_outb((val),(port)) : out_8((port),(val)))
+-#define outb_p(val,port) ((port)<1024 ? isa_outb_p((val),(port)) : out_8((port),(val)))
+-#define outw(val,port) ((port)<1024 ? isa_outw((val),(port)) : out_le16((port),(val)))
+-#define outw_p(val,port) ((port)<1024 ? isa_outw_p((val),(port)) : out_le16((port),(val)))
+-#define outl(val,port) ((port)<1024 ? isa_outl((val),(port)) : out_le32((port),(val)))
+-#define outl_p(val,port) ((port)<1024 ? isa_outl_p((val),(port)) : out_le32((port),(val)))
+-#endif
+-#endif /* CONFIG_PCI */
+-
+-#if !defined(CONFIG_ISA) && !defined(CONFIG_PCI)
+ /*
+  * We need to define dummy functions for GENERIC_IOMAP support.
+  */
+@@ -357,11 +305,11 @@ static inline void isa_delay(void)
+ #define writeb(val,addr) out_8((addr),(val))
+ #define readw(addr)      in_le16(addr)
+ #define writew(val,addr) out_le16((addr),(val))
+-#endif
+-#if !defined(CONFIG_PCI)
++
++#endif /* CONFIG_ISA */
++
+ #define readl(addr)      in_le32(addr)
+ #define writel(val,addr) out_le32((addr),(val))
+-#endif
+ 
+ #define mmiowb()
+ 
+diff --git a/include/asm-m68k/pci.h b/include/asm-m68k/pci.h
+index 678cb0b..aa8eb33 100644
+--- a/include/asm-m68k/pci.h
++++ b/include/asm-m68k/pci.h
+@@ -1,57 +1,6 @@
+ #ifndef _ASM_M68K_PCI_H
+ #define _ASM_M68K_PCI_H
+ 
+-/*
+- * asm-m68k/pci_m68k.h - m68k specific PCI declarations.
+- *
+- * Written by Wout Klaren.
+- */
+-
+-#include <asm/scatterlist.h>
+-
+-struct pci_ops;
+-
+-/*
+- * Structure with hardware dependent information and functions of the
+- * PCI bus.
+- */
+-
+-struct pci_bus_info
+-{
+-	/*
+-	 * Resources of the PCI bus.
+-	 */
+-
+-	struct resource mem_space;
+-	struct resource io_space;
+-
+-	/*
+-	 * System dependent functions.
+-	 */
+-
+-	struct pci_ops *m68k_pci_ops;
+-
+-	void (*fixup)(int pci_modify);
+-	void (*conf_device)(struct pci_dev *dev);
 -};
 -
--MODULE_DEVICE_TABLE(pci, i82443bxgx_pci_tbl);
+-#define pcibios_assign_all_busses()	0
+-#define pcibios_scan_all_fns(a, b)	0
 -
--static struct pci_driver i82443bxgx_edacmc_driver = {
--	.name = EDAC_MOD_STR,
--	.probe = i82443bxgx_edacmc_init_one,
--	.remove = __devexit_p(i82443bxgx_edacmc_remove_one),
--	.id_table = i82443bxgx_pci_tbl,
--};
--
--static int __init i82443bxgx_edacmc_init(void)
+-static inline void pcibios_set_master(struct pci_dev *dev)
 -{
--       /* Ensure that the OPSTATE is set correctly for POLL or NMI */
--       opstate_init();
--
--	return pci_register_driver(&i82443bxgx_edacmc_driver);
+-	/* No special bus mastering setup handling */
 -}
 -
--static void __exit i82443bxgx_edacmc_exit(void)
+-static inline void pcibios_penalize_isa_irq(int irq, int active)
 -{
--	pci_unregister_driver(&i82443bxgx_edacmc_driver);
+-	/* We don't do dynamic PCI IRQ allocation */
 -}
 -
--module_init(i82443bxgx_edacmc_init);
--module_exit(i82443bxgx_edacmc_exit);
--
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Tim Small <tim@buttersideup.com> - WPAD");
--MODULE_DESCRIPTION("EDAC MC support for Intel 82443BX/GX memory controllers");
--
--module_param(edac_op_state, int, 0444);
--MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
+-/* The PCI address space does equal the physical memory
+- * address space.  The networking and block device layers use
+- * this boolean for bounce buffer decisions.
+- */
+ #define PCI_DMA_BUS_IS_PHYS	(1)
+ 
+ #endif /* _ASM_M68K_PCI_H */
 
