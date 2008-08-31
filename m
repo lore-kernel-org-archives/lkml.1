@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753279AbYHaQbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbYHaQb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753279AbYHaQbl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 12:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753661AbYHaQbU
+	id S1754098AbYHaQb6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 12:31:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754129AbYHaQbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 12:31:20 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36212 "EHLO
+	Sun, 31 Aug 2008 12:31:22 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36216 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753461AbYHaQbT (ORCPT
+	with ESMTP id S1753936AbYHaQbV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 12:31:19 -0400
-Date: Sun, 31 Aug 2008 09:29:03 -0700
+	Sun, 31 Aug 2008 12:31:21 -0400
+Date: Sun, 31 Aug 2008 09:29:35 -0700
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: Arjan van de Ven <arjan@infradead.org>, tglx@tglx.de, mingo@elte.hu,
        torvalds@linux-foundation.org, Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 1/5] select: Introduce a hrtimeout function
-Message-ID: <20080831092903.633d0173@infradead.org>
+Subject: [PATCH 2/5] select: add a timespec_add_safe() function
+Message-ID: <20080831092935.3f84524c@infradead.org>
 In-Reply-To: <20080831092828.13ae0279@infradead.org>
 References: <20080831092828.13ae0279@infradead.org>
 Organization: Intel
@@ -32,108 +32,70 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH] select: Introduce a hrtimeout function
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] select: add a timespec_add_safe() function
 
-This patch adds a schedule_hrtimeout() function, to be used by select() and
-poll() in a later patch. This function works similar to schedule_timeout()
-in most ways, but takes a timespec rather than jiffies.
+For the select() rework, it's important to be able to add timespec
+structures in an overflow-safe manner.
 
-With a lot of contributions/fixes from Thomas
+This patch adds a timespec_add_safe() function for this which is similar in
+operation to ktime_add_safe(), but works on a struct timespec.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- include/linux/hrtimer.h |    2 +
- kernel/hrtimer.c        |   65 +++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 67 insertions(+), 0 deletions(-)
+ include/linux/time.h |    4 ++++
+ kernel/time.c        |   18 ++++++++++++++++++
+ 2 files changed, 22 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-index 6d93dce..becd17d 100644
---- a/include/linux/hrtimer.h
-+++ b/include/linux/hrtimer.h
-@@ -346,6 +346,8 @@ extern long hrtimer_nanosleep_restart(struct restart_block *restart_block);
- extern void hrtimer_init_sleeper(struct hrtimer_sleeper *sl,
- 				 struct task_struct *tsk);
+diff --git a/include/linux/time.h b/include/linux/time.h
+index e15206a..7269764 100644
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -38,6 +38,8 @@ struct timezone {
+ #define NSEC_PER_SEC	1000000000L
+ #define FSEC_PER_SEC	1000000000000000L
  
-+extern int schedule_hrtimeout(ktime_t *expires, const enum hrtimer_mode mode);
++#define TIME_T_MAX	(time_t)((1UL << ((sizeof(time_t) << 3) - 1)) - 1)
 +
- /* Soft interrupt function to run the hrtimer queues: */
- extern void hrtimer_run_queues(void);
- extern void hrtimer_run_pending(void);
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index b8e4dce..782137d 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -1678,3 +1678,68 @@ void __init hrtimers_init(void)
+ static inline int timespec_equal(const struct timespec *a,
+                                  const struct timespec *b)
+ {
+@@ -72,6 +74,8 @@ extern unsigned long mktime(const unsigned int year, const unsigned int mon,
+ 			    const unsigned int min, const unsigned int sec);
+ 
+ extern void set_normalized_timespec(struct timespec *ts, time_t sec, long nsec);
++extern struct timespec timespec_add_safe(const struct timespec lhs,
++					 const struct timespec rhs);
+ 
+ /*
+  * sub = lhs - rhs, in normalized form
+diff --git a/kernel/time.c b/kernel/time.c
+index 6a08660..d63a433 100644
+--- a/kernel/time.c
++++ b/kernel/time.c
+@@ -669,3 +669,21 @@ EXPORT_SYMBOL(get_jiffies_64);
  #endif
- }
  
-+/**
-+ * schedule_hrtimeout - sleep until timeout
-+ * @expires:	timeout value (ktime_t)
-+ * @mode:	timer mode, HRTIMER_MODE_ABS or HRTIMER_MODE_REL
-+ *
-+ * Make the current task sleep until the given expiry time has
-+ * elapsed. The routine will return immediately unless
-+ * the current task state has been set (see set_current_state()).
-+ *
-+ * You can set the task state as follows -
-+ *
-+ * %TASK_UNINTERRUPTIBLE - at least @timeout time is guaranteed to
-+ * pass before the routine returns.
-+ *
-+ * %TASK_INTERRUPTIBLE - the routine may return early if a signal is
-+ * delivered to the current task.
-+ *
-+ * The current task state is guaranteed to be TASK_RUNNING when this
-+ * routine returns.
-+ *
-+ * Returns 0 when the timer has expired otherwise -EINTR
+ EXPORT_SYMBOL(jiffies);
++
++/*
++ * Add two timespec values and do a safety check for overflow.
++ * It's assumed that both values are valid (>= 0)
 + */
-+int __sched schedule_hrtimeout(ktime_t *expires,
-+			       const enum hrtimer_mode mode)
++struct timespec timespec_add_safe(const struct timespec lhs,
++				  const struct timespec rhs)
 +{
-+	struct hrtimer_sleeper t;
++	struct timespec res;
 +
-+	/*
-+	 * Optimize when a zero timeout value is given. It does not
-+	 * matter whether this is an absolute or a relative time.
-+	 */
-+	if (expires && !expires->tv64) {
-+		__set_current_state(TASK_RUNNING);
-+		return 0;
-+	}
++	set_normalized_timespec(&res, lhs.tv_sec + rhs.tv_sec,
++				lhs.tv_nsec + rhs.tv_nsec);
 +
-+	/*
-+	 * A NULL parameter means "inifinte"
-+	 */
-+	if (!expires) {
-+		schedule();
-+		__set_current_state(TASK_RUNNING);
-+		return -EINTR;
-+	}
++	if (res.tv_sec < lhs.tv_sec || res.tv_sec < rhs.tv_sec)
++		res.tv_sec = TIME_T_MAX;
 +
-+	hrtimer_init_on_stack(&t.timer, CLOCK_MONOTONIC, mode);
-+	t.timer.expires = *expires;
-+
-+	hrtimer_init_sleeper(&t, current);
-+
-+	hrtimer_start(&t.timer, t.timer.expires, mode);
-+	if (!hrtimer_active(&t.timer))
-+		t.task = NULL;
-+
-+	if (likely(t.task))
-+		schedule();
-+
-+	hrtimer_cancel(&t.timer);
-+	destroy_hrtimer_on_stack(&t.timer);
-+
-+	__set_current_state(TASK_RUNNING);
-+
-+	return !t.task ? 0 : -EINTR;
++	return res;
 +}
-+EXPORT_SYMBOL_GPL(schedule_hrtimeout);
 -- 
 1.5.5.1
 
