@@ -1,135 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYHaRfD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbYHaRhD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbYHaRfD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 13:35:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbYHaRey
+	id S1756801AbYHaRhD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 13:37:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbYHaRgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 13:34:54 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:52516 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754509AbYHaRex (ORCPT
+	Sun, 31 Aug 2008 13:36:54 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:15584 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754262AbYHaRgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 13:34:53 -0400
-Message-ID: <48BAD637.2050505@fr.ibm.com>
-Date: Sun, 31 Aug 2008 19:34:47 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Sun, 31 Aug 2008 13:36:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=dKFGdWFibi0ixGhg5srWtPEr/EzDTngTAmpUu8pLbx3z3p0AN5KxwQzvbjJqyA7jpL
+         wE109RnWLppr6OCOcz2qyCNKxSto539KNI0PsPUPzSlsBxeB9JpxRezQmazSM825BnyY
+         ggSc6an3LMyIb55+M3ncVVcbsrOBxiA/96pI0=
+Message-ID: <91b13c310808311036k2792d1fqaeb94a814f0bee81@mail.gmail.com>
+Date: Mon, 1 Sep 2008 01:36:51 +0800
+From: "rae l" <crquan@gmail.com>
+To: "Ross S. W. Walker" <RWalker@medallion.com>
+Subject: Re: [Iscsitarget-devel] [RFC] future IET development
+Cc: "Arne Redlich" <agr@powerkom-dd.de>,
+       iscsitarget-devel <iscsitarget-devel@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org, unh-iscsi-checkins@lists.sourceforge.net
+In-Reply-To: <E2BB8074E5500C42984D980D4BD78EF9022A73D4@MFG-NYC-EXCH2.mfg.prv>
 MIME-Version: 1.0
-To: Oren Laadan <orenl@cs.columbia.edu>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>,
-       containers@lists.linux-foundation.org, jeremy@goop.org, arnd@arndb.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC v2][PATCH 4/9] Memory management - dump state
-References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu>	<Pine.LNX.4.64.0808202304490.17436@takamine.ncl.cs.columbia.edu>	<1219437422.20559.146.camel@nimitz>	<48B0F449.2000006@cs.columbia.edu>	<1219768406.8680.17.camel@nimitz>	<48B49C61.1040003@cs.columbia.edu>	<1219851696.8680.67.camel@nimitz>	<20080827203427.GA1158@us.ibm.com>	<1219869510.8680.90.camel@nimitz>	<20080827204853.GA4189@us.ibm.com>	<1219870576.8680.96.camel@nimitz> <48BA454F.7050308@cs.columbia.edu>
-In-Reply-To: <48BA454F.7050308@cs.columbia.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1218829367.3145.31.camel@blackadder>
+	 <91b13c310808282007u7fc90eeah2b27661a7a5f595@mail.gmail.com>
+	 <E2BB8074E5500C42984D980D4BD78EF9022A73D4@MFG-NYC-EXCH2.mfg.prv>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oren Laadan wrote:
-> Dave, Serge:
-> 
-> I'm currently away so I must keep this short. I think we have so far
-> more discussion than an actual problem. I'm happy to coordinate with
-> every interested party to eventually see this work go into main stream.
-
-thanks. We do need a moderator and federator.
-
-> My only concerns are twofold: first, to get more feedback I believe we
-> need to get the code a bit more usable; including FDs is an excellent
-> way to actually do that. That will add significant value to the patch.
-
-hmm, yes and no.
-
-fd's are a must have but I would be more interested to see an external
-checkpoint/restart and signal support first. why ? because it would be 
-already usable for most computational programs in HPC, like this stupid 
-one :
-
-	https://www.ccs.uky.edu/~bmadhu/pi/pi1.c
-
-signals are required because it's how 'load' and/or 'system' managers
-interact with the jobs they spawn. external checkpoint/restart for the
-same reason.
-
-for files, I would first only care about stdios (make sure they're 
-relinked to something safe on restart) and file states of regular files. 
-contents is generally handled externally (deleted files being an annoying 
-exception)
-
-then, support for openmp application is a nice to have, so I'd probably 
-go on with thread support.
-
-> I think it's important to demonstrate how shared resources and multiple
-> processes are handled. FDs demonstrate the former (with a fixed version
-> of the recent patchset - I will post soon).
-
-shared resources are only useful in a multiprocess/multitask context. 
-I'd start working on this first. here we jump directly in the pid namespace
-issues, how we start a set of process in a pidnamespace ? how do we 
-relink it to its parent pidnamespace ? are signals well propagated ? etc. 
-but hey, we'll have to solve it one day.
-
-FD's are shared but have many types which are pain to handle. (it would 
-interesting to see if we can add checkpoint() and restart() operations in 
-fileops) So, for shared resources demonstration, I'd work on sysvipc, 
-there are less types to handle and they force us to think how we are going 
-to merge with the sysvipc namespaces. 
-
-> The latter will increase the size of the patchset significantly, so 
-> perhaps can indeed wait for now.
-
-hmm, that depends how you do it.
-
-If you restart all the hierarchy in the kernel, It will increase for sure 
-the patch footprint. However if you restore the hierarchy from user space 
-and then let each process restore itself from some binary blob, it should
-not. This, of course, means that the binary blob representing the state of 
-the container (we call it statefile) is not totally opaque. It see it a bit 
-like  /proc, a directory containing shared states (all namespaces) and tasks 
-states. That's something to discuss.
-
-I do prefer the second option for many reasons: 
-
-. each process restarts itself from its current context, this makes it easier 
-  to reuse kernel services depending on current. 
-
-. user tools can evaluate more precisely what they are going to restart from 
-  the statefile. see this as a generalised 'readelf' that would be run on 
-  the statefile, like we do on a core file today.
-   
-
-> It should not be hard for me to add functionality on top of a more
-> basic patchset. The question is, what is "basic" ?  Anyway, I will be
-> back towards the end of the week. Let's try to discuss this over IRC
-> then (e.g. Friday afternoon ?).
-
-IHMO, the first one is to support a 'basic' computational program in 
-a real environment (under a load manager HPC). your POC nearly reaches
-it but the user space API (how to launch, checkpoint, restart) needs to 
-be worked on.
+On Fri, Aug 29, 2008 at 10:38 PM, Ross S. W. Walker
+<RWalker@medallion.com> wrote:
+> rae l wrote:
+>>
+>> I care that if IETD has some plan to push the iscsitarget kernel
+>> module (iscsitgt.ko) into the kenrel?
+>>
+>> I think the iscsitarget kernel module is stable enough to submit into
+>> the kernel, if it's inlined in the kernel, everything will go better.
+>
+> IET kernel module will not be included in the base Linux tree.
 
 
-There are some big steps in the development.
+>
+> Other iSCSI modules have been included in the tree, and that is
+> OK. At least for myself I do not see any real advantage to
+> inclusion in the tree. If it were, then one would only find it
+> in the latest kernel versions which one wouldn't see available
+> in production systems for a number of years. Our development group
+> is also too small for us to keep on top on the kernel development
+> as we would need to do if it were included. We are quite happy
+> keeping IET as a third party utility driver and hope to add
+> some functionality for distribution maintainers to easily
+> build packages for IET inclusion (.spec and .deb files).
+>
+> Going forward, Arne does a brilliant job of keeping informed
+> of the latest kernel API changes which allows us to keep IET
+> working on the latest kernels, but we don't shadow the kernel
+> developments on a day-by-day basis, so we recommend it best
+> to run IET on mature kernel versions.
 
-Multi-task is a big step which opens plenty of other big steps with
-shared resources : mem, ipc, fds, etc. Not all have to be solved
-but at least detected if we don't have the support.
+Have you read the Documentation/ of the kernel?
+Didn't you know the benefits of getting the kernel code into the main
+kernel tree?
 
-Network is another one. This is an interesting step to support 
-distributed application using MPI over TCP. May be a priority.
+Here is some reasons from Documentation/stable_api_nonsense.txt:
 
-there are also plenty of funky kernel resources used by misc servers,
-database that will need special attention.
+The very good side effects of having your driver in the main kernel tree
+are:
+  - The quality of the driver will rise as the maintenance costs (to the
+    original developer) will decrease.
+  - Other developers will add features to your driver.
+  - Other people will find and fix bugs in your driver.
+  - Other people will find tuning opportunities in your driver.
+  - Other people will update the driver for you when external interface
+    changes require it.
+  - The driver automatically gets shipped in all Linux distributions
+    without having to ask the distros to add it.
+
+First, the demand for one iscsi target code inclusion into the main
+kernel tree is ongoing,
+We need an iscsi target that can run on as much as possible kernels,
+not only the mature kernel versions.
+In all kinds of our developments, the iscsi target is one basic
+functionality we want, we want iscsi can always be buildable at least,
+inclusion into the kernel is the best approach.
+
+Second, I hope there will be more people who are interested in
+iscsi-target can test and review IET code, and improve IET to better.
+Indeed, in sometimes I observed IET kernel module not very stable on
+the latest 2.6.26 and 27-rcX kernels, sometimes it's kernel oops
+after serveral stop-ietd-unload-ko-load-ko-start-ietd loops, but not
+always reproducible, I'm still tracing on it;
+the read-iscsi-consuming-100%-CPU is also another problem we observed
+in our lab.
+All in one word, I hope more people can lay focus on IET to improve its quality.
+If we can improved it to production stable earlier, why not?
+
+Last but not least significant, if you think iscsi target development
+group is too small to push the code into main kernel tree,
+I can help on this, in fact, I have already a latest
+keep-up-with-linus git tree with iet kernel code integrated.
+If someone is interested on this, we will collate and publish it some later.
+
+>
+> -Ross
+
+Thanks.
 
 
+-- 
+Denis Cheng
+Linux Application Developer
 
-I'll be happy to start with the basic menu first as I know that it will
-be useful for many applications ! 
-
-Thanks,
-
-C.
- 
+"One of my most productive days was throwing away 1000 lines of code."
+ - Ken Thompson.
