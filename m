@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbYHaSS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbYHaSWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756611AbYHaSS6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 14:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbYHaSSu
+	id S1756348AbYHaSWZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 14:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbYHaSWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 14:18:50 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:3524 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752869AbYHaSSu (ORCPT
+	Sun, 31 Aug 2008 14:22:17 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:8202 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752318AbYHaSWQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 14:18:50 -0400
-Message-ID: <48BAE082.3000300@colorfullife.com>
-Date: Sun, 31 Aug 2008 20:18:42 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Sun, 31 Aug 2008 14:22:16 -0400
+From: David Sanders <linux@sandersweb.net>
+Reply-To: linux@sandersweb.net
+To: linux-kernel@vger.kernel.org
+Subject: [BUG] x86 kenel won't boot under Virtual PC
+Date: Sun, 31 Aug 2008 14:22:11 -0400
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jan Beulich <jbeulich@novell.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Lai Jiangshan <laijs@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org, mingo@elte.hu, akpm@linux-foundation.org,
-       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, schamp@sgi.com,
-       niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com, rostedt@goodmis.org,
-       peterz@infradead.org, benh@kernel.crashing.org, davem@davemloft.net,
-       tony.luck@intel.com
-Subject: Re: [PATCH, RFC, tip/core/rcu] v3 scalable classic RCU implementation
-References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <48B919C2.1040809@cn.fujitsu.com> <48B94BF4.9090103@colorfullife.com> <20080830143438.GF7107@linux.vnet.ibm.com> <48BA7944.8070402@colorfullife.com> <20080831172001.GA7015@linux.vnet.ibm.com> <48BAD89E.20206@colorfullife.com> <20080831175514.GE7015@linux.vnet.ibm.com>
-In-Reply-To: <20080831175514.GE7015@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808311422.12525.linux@sandersweb.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Sun, Aug 31, 2008 at 07:45:02PM +0200, Manfred Spraul wrote:
->   
->> Paul E. McKenney wrote:
->>     
->>> Assuming that the ordering of processing pending irqs and marking the
->>> CPU offline in cpu_online_mask can be resolved as noted above, it should
->>> work fine -- if a CPU's bit is clear, we can safely ignore it.  The race
->>> can be resolved by checking the CPU's bit in force_quiescent_state().
->>>
->>> Or am I missing something?
->>>   
->>>       
->> Yes, that would work:
->> Rule 1: after CPU_DEAD, a cpu is gone. The cpu is quiet, rcu callbacks must 
->> be moved to other cpus, ...
->> Rule 2: if a cpu is not listed in cpu_online_mask, then it can be 
->> considered as outside a read-side critical section.
->>
->> The problem with rule 2 is that it means someone [force_quiescent_state()] 
->> must poll the cpu_online_mask and look for changes.
->> I'd really prefer a notifier. CPU_DYING is nearly the correct thing, it 
->> only has to be moved down 3 lines ;-)
->> (I want to kill the bitmaps, not add a hierarchical bitmap polling system!)
->>     
->
-> But some later CPU_DYING notifier might decide that the CPU cannot be
-> removed after all, which would mean bringing the CPU back.  And then
-> whatever the CPU was needed for might have actually happened in the
-> meantime, which does not sound good to me...
->   
-CPU_DYING must not fail, the current code doesn't support that.
+I recently discovered that x86 kernels won't boot under Virtual PC.  In this 
+case paravirt was not built into the kernel.  The kernel just "hangs" on 
+attempted boot with no error messages.  Git-bisect pinpointed the following 
+commit as the problem:
 
---
-    Manfred
+commit 32c464f5d9701db45bc1673288594e664065388e
+Author: Jan Beulich <jbeulich@novell.com>
+Date:   Wed Oct 17 18:04:41 2007 +0200
+
+    x86: multi-byte single instruction NOPs
+
+    Add support for and use the multi-byte NOPs recently documented to be
+    available on all PentiumPro and later processors.
+
+    This patch only applies cleanly on top of the "x86: misc.
+    constifications" patch sent earlier.
+
+    [ tglx: arch/x86 adaptation ]
+
+    Signed-off-by: Jan Beulich <jbeulich@novell.com>
+    Signed-off-by: Andi Kleen <ak@suse.de>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+     arch/x86/kernel/alternative.c  |   23 ++++++++++++++++++++++-
+     include/asm-x86/processor_32.h |   22 ++++++++++++++++++++++
+     include/asm-x86/processor_64.h |   22 ++++++++++++++++++++++
+     3 files changed, 66 insertions(+), 1 deletion(-)
+
+:040000 040000 9226efb160ea180e8c419134b82e0a6938868c1a 
+12daabe81d9cda0d574815c0957a24c1028c8fb0 M      arch
+:040000 040000 7ab3918741abcb203bd25289d2c6e789bed64fc1 
+eb662fea6ed7904074c87dd004b9f6d23964c844 M      include
+
+Any suggestion on where to go from here would be appreciated.
