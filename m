@@ -1,95 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbYHaAu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756995AbYHaBLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756933AbYHaAu3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 20:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755925AbYHaAuT
+	id S1756995AbYHaBLQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 21:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755925AbYHaBLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 20:50:19 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:1248 "EHLO
+	Sat, 30 Aug 2008 21:11:03 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:2975 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755561AbYHaAuS (ORCPT
+	with ESMTP id S1755561AbYHaBLA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 20:50:18 -0400
+	Sat, 30 Aug 2008 21:11:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=LxZVnOemcAXolfqMCd4ysjJ3ZgaFLEeOSM9QaJZPDoo3TUghwJGhHFIt/GIWls/cEQ
-         G9Znv3QrHFUAcbRX+jJcf1M5BKX0X150Wpvzdp6afrShU2fVKNlV95Hnj1Hs0pHWhzkP
-         k2V4eacRJk9f7yiGAWANNYp1Bekh/cCUGtmSQ=
-Message-ID: <86802c440808301750w6655bbek557e6a23b8036654@mail.gmail.com>
-Date: Sat, 30 Aug 2008 17:50:16 -0700
+         :content-type:references;
+        b=YISwLEotCrVJQpWaAvArCSyTej2vUERNoeR5vwIdQnZM3vyuMI25XrUDD51+STqDb2
+         UfwknHFONegvFtMVEgGM5UlwFJEaYcRXixbJxYNsDjxcoSapUKkgYjNn+DaRUqzm01TZ
+         ZNP5e1OYh7XulwK9XogyeD4DZ/WKikGjy714M=
+Message-ID: <86802c440808301810r17657f3fnb3c8af5496955e0d@mail.gmail.com>
+Date: Sat, 30 Aug 2008 18:10:59 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ivan Kokshaysky" <ink@jurassic.park.msu.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
-Cc: "Jordan Crouse" <jordan.crouse@amd.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
        "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
        "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
        "Ingo Molnar" <mingo@elte.hu>,
        "David Witbrodt" <dawitbro@sbcglobal.net>,
        "Andrew Morton" <akpm@linux-foundation.org>,
        "Kernel Testers" <kernel-testers@vger.kernel.org>
-In-Reply-To: <86802c440808301727k3e86c816j323eca0fb5e3f4fc@mail.gmail.com>
+In-Reply-To: <200808302334.29156.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_18297_13614387.1220145060079"
 References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>
-	 <alpine.LFD.1.10.0808301141590.3290@nehalem.linux-foundation.org>
-	 <86802c440808301210u6db1b4e7p4036bdc95db1a601@mail.gmail.com>
-	 <alpine.LFD.1.10.0808301214310.3290@nehalem.linux-foundation.org>
-	 <86802c440808301314t525d1b75r9afcc73857cf5c79@mail.gmail.com>
-	 <alpine.LFD.1.10.0808301539391.3290@nehalem.linux-foundation.org>
-	 <86802c440808301550s627dfcb0h7ff8971c8248703a@mail.gmail.com>
-	 <alpine.LFD.1.10.0808301615450.3290@nehalem.linux-foundation.org>
-	 <86802c440808301639j137ebef1r1ecadeebd351fc03@mail.gmail.com>
-	 <86802c440808301727k3e86c816j323eca0fb5e3f4fc@mail.gmail.com>
+	 <86802c440808301412k4e0b5562ie03ce41547ddab9a@mail.gmail.com>
+	 <86802c440808301413g7f496e8bxd21adc60b328cd24@mail.gmail.com>
+	 <200808302334.29156.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 30, 2008 at 5:27 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> On Sat, Aug 30, 2008 at 4:39 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->> On Sat, Aug 30, 2008 at 4:28 PM, Linus Torvalds
->> <torvalds@linux-foundation.org> wrote:
->>>
->>>
->>> On Sat, 30 Aug 2008, Yinghai Lu wrote:
->>>>
->>>> wait, THAT BAR is 64BIT capable, So kernel should assign 64bit range to it...
->>>> it request_resource fails...
->>>
->>> I don't think we've ever done new allocations in 64 bits. Although looking
->>> for it, I have to admit that I don't see what would limit us right now.
->>> There used to be some paths that weren't 64-bit clean, but I think we
->>> fixed all of those.
->>
->> would be some corner case...
->>
->
-> pci_assign_unassigned_resources==>pci_bus_assign_resources==>pbus_assign_resources_sorted(struct
->
-> static void pbus_assign_resources_sorted(struct pci_bus *bus)
-> {
->        struct pci_dev *dev;
->        struct resource *res;
->        struct resource_list head, *list, *tmp;
->        int idx;
->
->        head.next = NULL;
->        list_for_each_entry(dev, &bus->devices, bus_list) {
->                u16 class = dev->class >> 8;
->
->                /* Don't touch classless devices or host bridges or ioapics.  */
->                if (class == PCI_CLASS_NOT_DEFINED ||
->                    class == PCI_CLASS_BRIDGE_HOST)
->                        continue;
->
->
-> it skips the host bridge...
+------=_Part_18297_13614387.1220145060079
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-what's story for not touching host bridges?
+On Sat, Aug 30, 2008 at 2:34 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Saturday, 30 of August 2008, Yinghai Lu wrote:
+>> On Sat, Aug 30, 2008 at 2:12 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>> > On Sat, Aug 30, 2008 at 1:46 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >> On Saturday, 30 of August 2008, Yinghai Lu wrote:
+>> >>> please check
+>> >>>
+>> >>> [PATCH] x86: split e820 reserved entries record to late v4
+>> >>> [PATCH] x86: split e820 reserved entries record to late v4 - fix v6
+>> >>
+>> >> What kernel should I apply those to and in what order?
+>> >
+>> > linus git tree
+>> > 1. [PATCH] x86: split e820 reserved entries record to late v4
+>> > 2. [PATCH] x86: split e820 reserved entries record to late v4 - fix v6
+>> >
+>> > tip/master
+>> > 1. Resource handling: add 'insert_resource_expand_to_fit()' function
+>> > 2. [PATCH] x86: split e820 reserved entries record to late v4 - fix v6
+>>
+>> actually it is almost the same to tar ball send you for your system...
+>
+> I've just tested these two patches on top of the current Linus' tree and the
+> system works normally.
+>
+
+Can you try attached in addition to those to patches ?
+
+want to check if the BAR3 get new resource..., and after that what
+could happen...
 
 YH
+
+------=_Part_18297_13614387.1220145060079
+Content-Type: text/x-patch;
+ name=assign_resource_for_bar_in_host_bridge.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fkiysq0i0
+Content-Disposition: attachment;
+ filename=assign_resource_for_bar_in_host_bridge.patch
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvcGNpL3NldHVwLWJ1cy5jIGIvZHJpdmVycy9wY2kvc2V0dXAt
+YnVzLmMKaW5kZXggODI2MzRhMi4uNGUwZGYwYSAxMDA2NDQKLS0tIGEvZHJpdmVycy9wY2kvc2V0
+dXAtYnVzLmMKKysrIGIvZHJpdmVycy9wY2kvc2V0dXAtYnVzLmMKQEAgLTM4LDkgKzM4LDggQEAg
+c3RhdGljIHZvaWQgcGJ1c19hc3NpZ25fcmVzb3VyY2VzX3NvcnRlZChzdHJ1Y3QgcGNpX2J1cyAq
+YnVzKQogCWxpc3RfZm9yX2VhY2hfZW50cnkoZGV2LCAmYnVzLT5kZXZpY2VzLCBidXNfbGlzdCkg
+ewogCQl1MTYgY2xhc3MgPSBkZXYtPmNsYXNzID4+IDg7CiAKLQkJLyogRG9uJ3QgdG91Y2ggY2xh
+c3NsZXNzIGRldmljZXMgb3IgaG9zdCBicmlkZ2VzIG9yIGlvYXBpY3MuICAqLwotCQlpZiAoY2xh
+c3MgPT0gUENJX0NMQVNTX05PVF9ERUZJTkVEIHx8Ci0JCSAgICBjbGFzcyA9PSBQQ0lfQ0xBU1Nf
+QlJJREdFX0hPU1QpCisJCS8qIERvbid0IHRvdWNoIGNsYXNzbGVzcyBkZXZpY2VzIG9yIGlvYXBp
+Y3MuICAqLworCQlpZiAoY2xhc3MgPT0gUENJX0NMQVNTX05PVF9ERUZJTkVEKQogCQkJY29udGlu
+dWU7CiAKIAkJLyogRG9uJ3QgdG91Y2ggaW9hcGljIGRldmljZXMgYWxyZWFkeSBlbmFibGVkIGJ5
+IGZpcm13YXJlICovCg==
+------=_Part_18297_13614387.1220145060079--
