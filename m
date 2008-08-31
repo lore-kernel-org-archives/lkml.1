@@ -1,134 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbYHaEwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbYHaExR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756453AbYHaEwQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 00:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbYHaEwA
+	id S1757397AbYHaExR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 00:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751104AbYHaExE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 00:52:00 -0400
-Received: from mail.atheros.com ([12.36.123.2]:39473 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750796AbYHaEv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 00:51:59 -0400
-From: <jie.yang@atheros.com>
-To: <akpm@linux-foundation.org>
-CC: <bugme-daemon@bugzilla.kernel.org>, <harn-solo@gmx.de>, <jeff@garzik.org>,
-       <matthew@wil.cx>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, Jie Yang <jie.yang@atheros.com>
-Subject: [PATCH]atl1e:fix bug [Bug 11454] New: atl1e - BUG: scheduling while atomic: modprobe/678/0x00000002
-Date: Sun, 31 Aug 2008 12:51:58 +0800
-Message-ID: <12201583182726-git-send-email-jie.yang@atheros.com>
-X-Mailer: git-send-email 1.5.2.2
-MIME-Version: 1.0
-Content-Type: text/plain
+	Sun, 31 Aug 2008 00:53:04 -0400
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:39652 "EHLO
+	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751011AbYHaExD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 00:53:03 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: [fuse-devel] [PATCHSET] CUSE: implement CUSE 
+To: Mike Hommey <mh@glandium.org>
+Cc: Tejun Heo <tj@kernel.org>, fuse-devel@lists.sourceforge.net,
+       miklos@szeredi.hu, greg@kroah.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080829055000.GB18930@glandium.org>
+References: <1219947544-666-1-git-send-email-tj@kernel.org> <20080829055000.GB18930@glandium.org>
+Date: Sun, 31 Aug 2008 13:52:06 +0900
+Message-ID: <7423.1220158326@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-from Jie Yang <jie.yang@atheros.com>
 
- On Saturday, August 30, 2008 5:27 AM
- Andrew Morton <akpm@linux-foundation.org]>
-> On Fri, 29 Aug 2008 14:08:09 -0700 (PDT) 
-> bugme-daemon@bugzilla.kernel.org wrote:
-> 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=11454
-> >
-> >            Summary: atl1e - BUG: scheduling while atomic:
-> >                     modprobe/678/0x00000002
-> >            Product: Drivers
-> >            Version: 2.5
-> >      KernelVersion: 2.6.27-rc5
-> >           Platform: All
-> >         OS/Version: Linux
-> >               Tree: Mainline
-> >             Status: NEW
-> >           Severity: high
-> >           Priority: P1
-> >          Component: Network
-> >         AssignedTo: jgarzik@pobox.com
-> >         ReportedBy: harn-solo@gmx.de
-> >
-> >
-> > Latest working kernel version: -
-> > Earliest failing kernel version: 2.6.27-rc1
-> > Software: x86_64
-> >
-> 
-> drivers/net/atl1e/atl1e_hw.c:   struct atl1e_adapter *adapter 
-> = (struct atl1e_adapter *)hw->adapter;
-> drivers/net/atl1e/atl1e_hw.c:   struct atl1e_adapter *adapter 
-> = (struct atl1e_adapter *)hw->adapter;
-> drivers/net/atl1e/atl1e_hw.c:   struct atl1e_adapter *adapter 
-> = (struct atl1e_adapter *)hw->adapter;
-> 
-> are unneeded and undesirable.  hw->adapter already has type 
-> atl1e_adapter*.
-> 
+Mike Hommey:
+> It would be nice to have BUSE, Block device in Userspace, too.
 
-just as Matthew Wilcox <matthew@wil.cx> mentioned:
-> Lockdep warns about the mdio_lock taken with interrupts enabled then 
-> later taken from interrupt context.  Initially, I considered changing 
-> these to spin_lock_irq/spin_unlock_irq, but then I looked at 
-> atl1e_phy_init() and saw that it calls msleep().  Sleeping while 
-> holding a spinlock is not allowed either.
-> 
-> In the probe path, we haven't registered the interrupt handler, so it 
-> can't poke at this card yet.  It's before we call register_netdev(), 
-> so I don't think any other threads can reach this card either.  If I'm 
-> right, we don't need a spinlock at all.
+While it is not based upon FUSE, you may be interested in ULOOP driver
+which is based upon the loopback block device.
+Here is a README file from http://aufs.sourceforge.net/uloop.txt.
+If you want to checkout the source files, please refer to
+http://aufs.sourceforge.net/.
 
-So, just do not take mdio_lock lock in atl1e_probe, and remove the
-unneeded (struct atl1e_adapter *)
 
-Signed-off-by: Jie Yang <jie.yang@atheros.com>
----
+Junjiro R. Okajima
 
-BTW: I do not know if this format is suitable for repling [Bugme-new],
-if it is not suitable, just let me know.
+----------------------------------------------------------------------
 
-diff --git a/drivers/net/atl1e/atl1e_hw.c b/drivers/net/atl1e/atl1e_hw.c
-index 949e753..8cbc1b5 100644
---- a/drivers/net/atl1e/atl1e_hw.c
-+++ b/drivers/net/atl1e/atl1e_hw.c
-@@ -397,7 +397,7 @@ static int atl1e_phy_setup_autoneg_adv(struct atl1e_hw *hw)
-  */
- int atl1e_phy_commit(struct atl1e_hw *hw)
- {
--       struct atl1e_adapter *adapter = (struct atl1e_adapter *)hw->adapter;
-+       struct atl1e_adapter *adapter = hw->adapter;
-        struct pci_dev *pdev = adapter->pdev;
-        int ret_val;
-        u16 phy_data;
-@@ -431,7 +431,7 @@ int atl1e_phy_commit(struct atl1e_hw *hw)
+ULOOP -- Loopback block device in userspace
+(and a sample for HTTP and generic block device)
+Junjiro Okajima
 
- int atl1e_phy_init(struct atl1e_hw *hw)
- {
--       struct atl1e_adapter *adapter = (struct atl1e_adapter *)hw->adapter;
-+       struct atl1e_adapter *adapter = hw->adapter;
-        struct pci_dev *pdev = adapter->pdev;
-        s32 ret_val;
-        u16 phy_val;
-@@ -525,7 +525,7 @@ int atl1e_phy_init(struct atl1e_hw *hw)
-  */
- int atl1e_reset_hw(struct atl1e_hw *hw)
- {
--       struct atl1e_adapter *adapter = (struct atl1e_adapter *)hw->adapter;
-+       struct atl1e_adapter *adapter = hw->adapter;
-        struct pci_dev *pdev = adapter->pdev;
+# $Id: 00readme.txt,v 1.6 2008/08/17 23:04:29 sfjro Exp $
 
-        u32 idle_status_data = 0;
-diff --git a/drivers/net/atl1e/atl1e_main.c b/drivers/net/atl1e/atl1e_main.c
-index 7685b99..9b60352 100644
---- a/drivers/net/atl1e/atl1e_main.c
-+++ b/drivers/net/atl1e/atl1e_main.c
-@@ -2390,9 +2390,7 @@ static int __devinit atl1e_probe(struct pci_dev *pdev,
-        }
 
-        /* Init GPHY as early as possible due to power saving issue  */
--       spin_lock(&adapter->mdio_lock);
-        atl1e_phy_init(&adapter->hw);
--       spin_unlock(&adapter->mdio_lock);
-        /* reset the controller to
-         * put the device in a known good starting state */
-        err = atl1e_reset_hw(&adapter->hw);
+0. Introduction
+As you know, there is a Loopback block device in Linux, /dev/loop,
+which enables you to mount a fs-image local file.
+Also it can adopt a userspace program, such as cryptloop.
+This sample ULOOP driver makes it generic, and enables to adopt any
+userspace program.
+You can give an empty or non-existing file to /dev/loop backend.
+When a process reads from /dev/loop, this dirver wakes a user process
+up and passes the I/O transaction to it. A user process makes the
+required block ready and tells the driver. Then the driver completes
+the I/O transaction.
+Also there is sample scripts or usage for diskless nodes working with
+aufs. This driver may work with it well.
+The name is unrelated to YouTube. :-)
 
+
+1. sample for HTTP
+Simple 'make' will build ./drivers/block/uloop.ko and ./ulohttp.
+Ulohttp application behaves like losetup(8). Additionally, ulohttp is
+an actual daemon which handles I/O request.
+Here is a syntax.
+
+ulohttp [-b bitmap] [-c cache] device URL
+
+The device is /dev/loopN and the URL is a URL for fs-image file via
+HTTP. The http server must support byte range (Range: header).
+The bitmap is a new filename or previously specified as the bitmap for
+the same URL. Its filesize will be 'the size of the specified fs-image
+/ pagesize (usually 4k) / bits in a byte (8)', and round-up to
+pagesize.
+The cache is a new filename or previously specified as the cache for
+the same URL. Its filesize will be 'the size of the specified
+fs-image', and round-up to pagesize.
+Note that both the bitmap and the cache are re-usable as long as you
+don't change the filedata and URL.
+
+When someone reads from the specified /dev/loopN, or accesses a file
+on a filesystem after mounting /dev/loopN, ULOOP driver first checks
+the corresponding bit in the bitmap file. When the bit is not set,
+which means the block is not retrieved yet, it passes the offset and
+size of the I/O request to ulohttp daemon.
+Ulohttp converts the offset and the size into HTTP GET request with
+Range header and send it to the http server.
+Retriving the data from the http server, ulohttp stores it to the
+cache file, and tells ULOOP driver that the HTTP transfer completes.
+Then the ULOOP driver sets the corresponding bit in the bitmap, and
+finishes the I/O/request.
+
+In other words, it is equivalent to this operation.
+$ wget URL_for_fsimage
+$ sudo mount -o loop retrieved_fsimage /mnt
+But ULOOP driver and ulohttp retrieves only the data (block) on-demand,
+and stores into the cache file. The first access to a block is slow
+since it involves HTTP GET, but the next access to the same block is
+fast since it is in the local cache file. In this case, the behaviour
+is equivalent to the simple /dev/loop device.
+
+o Note
+- ulohttp requires libcurl.
+- ulohttp doesn't support HTTP PUT or POST, so the device rejects
+  WRITE operation.
+- ulohttp doesn't have a smart exit routine.
+- This sample is "proof-of-concepts", do not expect the maturity level
+  too much.
+- This driver and the sample is developed and tested on linux-2.6.21.3.
+- If you implement other protocols such like nbd/enbd, iscsi, aoe or
+  something, instead of http, I guess it will be fantastic. :-)
+
+o Usage
+$ make
+$ sudo modprobe loop
+$ sudo insmod ./drivers/block/uloop.ko
+$ dev=/dev/loop7
+$ ./ulohttp -b /tmp/b -c /tmp/c $dev http://whatever/you/like
+$ sudo mount -o ro $dev /mnt
+$ ls /mnt
+	:::
+$ sudo umount /mnt
+$ killall ulohttp
+$ sudo losetup -d $dev
+
+
+2. sample for generic block device
+The sample `ulohttp' (above) retrieves data from a remote host via
+HTTP, and stores it into a local file as a cache. It means you can
+reduce the network traffic and the workload on a remote server.
+As you can guess easily, this scheme is also effective to a local disk
+device, especially when you want to make your disk and spin down/off
+it. Recent flash memory is getting larger and cheaper. You can cache
+the whole contents of your harddrive into a file on your flash.
+Here is a sample for it, `ulobdev.' The basic usage is very similar to
+`ulohttp'. See above.
+Of course, it is available for remote block devices too, such as
+nbd/enbd, iscsi and aoe.
+
+You should not mount the backend block device as readwrite, since it
+modifies the superblock of the filesystem on the block device even if
+you don't write anything to it.
+
+Currently this sample supports readonly mode only.
+If someone is interested in this approach and sample, I will add some
+features which will support read/write mode and write-back to the
+harddrive periodically, and discard/re-create the cache file.
+
+
+3. libuloop API
+- int ulo_init(struct ulo_init *init);
+  struct ulo_init {
+	char *path[ULO_Last];
+	int dev_flags;
+	unsigned long long size;
+  };
+  enum {ULO_DEV, ULO_CACHE, ULO_BITMAP, ULO_Last};
+
+  Initializes ULOOP driver. All members in struct ulo_init must be set
+  before you call ulo_init().
+	+ path[ULO_DEV]
+	  pathname of loopback device such as "/dev/loopN".
+	+ path[ULO_CACHE]
+	  pathname of a cache file. A userspace program stores the
+	  real data to this file.
+	+ path[ULO_BITMAP]
+	  pathname of a bitmap file. The ULOOP driver sets the bit
+	  which is corresponding the block number when the block is
+	  filled by a userspace program. When the bit is not set,
+	  ULOOP driver invokes the userspace program.
+	+ dev_flags
+	  Flags for open(2) of path[ULO_DEV].
+	+ size
+	  the size of real data. the ULOOP library set this size to
+	  the cache file after creating it internally.
+
+- int ulo_loop(int sig, ulo_cb_t store, void *arg);
+  typedef int (*ulo_cb_t)(unsigned long long start, int size, void *arg);
+
+  Waits for a I/O request from ULOOP driver. When a user accesses a
+  ULOOP device, ULOOP driver translates the request to the offset in
+  the cache file and the requested size, and invokes the user-defined
+  callback function which is specified by `store.' The function `store'
+  must fill the data in the cache file following the given offset and
+  size. You can add an argument `arg' for the callback function.
+
+- extern const struct uloop *uloop;
+  struct uloop {
+	int fd[ULO_Last];
+	int pagesize;
+	unsigned long long tgt_size, cache_size;
+  };
+
+  A global variable in ULOOP library. Usually you will need
+  'ulo_cache_fd` only. See below.
+	#define ulo_dev_fd	({ uloop->fd[ULO_DEV]; })
+	#define ulo_cache_fd	({ uloop->fd[ULO_CACHE]; })
+	#define ulo_bitmap_fd	({ uloop->fd[ULO_BITMAP]; })
+
+
+Enjoy!
