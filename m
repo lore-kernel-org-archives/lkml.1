@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbYHaR2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756413AbYHaRaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754509AbYHaR2n (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 13:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756407AbYHaR2d
+	id S1756413AbYHaRaf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 13:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbYHaRaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 13:28:33 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:51693 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754415AbYHaR2b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 13:28:31 -0400
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-From: Hannes Eder <hannes@hanneseder.net>
-Date: Fri, 29 Aug 2008 21:01:21 +0200
-Subject: [PATCH] proc: fix sparse warning: make function grab_header static
-Message-ID: <48bad4bb.0aaa660a.7eb7.ffff80b2@mx.google.com>
+	Sun, 31 Aug 2008 13:30:25 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:64663 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753298AbYHaRaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 13:30:24 -0400
+Date: Mon, 01 Sep 2008 02:30:26 +0900 (JST)
+Message-Id: <20080901.023026.55145642.anemo@mba.ocn.ne.jp>
+To: alan@lxorguk.ukuu.org.uk
+Cc: david@fries.net, linux-kernel@vger.kernel.org, p_gortmaker@yahoo.com,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2/2] ne.c msleep not mdelay
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20080830154447.770aaca0@lxorguk.ukuu.org.uk>
+References: <20080830095906.6cad8647@lxorguk.ukuu.org.uk>
+	<20080830.233647.05599714.anemo@mba.ocn.ne.jp>
+	<20080830154447.770aaca0@lxorguk.ukuu.org.uk>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the following sparse warning in fs/proc/proc_sysctl.c, by making
-the function grab_header static.
+On Sat, 30 Aug 2008 15:44:47 +0100, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > So, if rescheduling was dangerous here, we already have potential
+> > problems, no?
+> 
+> Yes we do but I didn't manage to stop the other mistakes getting in when
+> they did. If you take a schedule you get results back from the probe_irq
+> that tend to suck in other random ISA device events (ISA being edge
+> triggered nobody was ever careful about spurious irq)
 
-warning: symbol 'grab_header' was not declared. Should it be static?
+OK, I see your point.  Thanks.
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- fs/proc/proc_sysctl.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/proc/proc_sysctl.c b/fs/proc/proc_sysctl.c
-index f9a8b89..84f58e8 100644
---- a/fs/proc/proc_sysctl.c
-+++ b/fs/proc/proc_sysctl.c
-@@ -66,7 +66,7 @@ static struct ctl_table *find_in_table(struct ctl_table *p, struct qstr *name)
- 	return NULL;
- }
- 
--struct ctl_table_header *grab_header(struct inode *inode)
-+static struct ctl_table_header *grab_header(struct inode *inode)
- {
- 	if (PROC_I(inode)->sysctl)
- 		return sysctl_head_grab(PROC_I(inode)->sysctl);
+Atsushi Nemoto
