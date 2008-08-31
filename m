@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbYHaTXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbYHaT2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756348AbYHaTXo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 15:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757809AbYHaTXe
+	id S1758047AbYHaT2R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 15:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbYHaT2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 15:23:34 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:39517 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757354AbYHaTXd (ORCPT
+	Sun, 31 Aug 2008 15:28:03 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51352 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755906AbYHaT2B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 15:23:33 -0400
-Date: Sun, 31 Aug 2008 12:23:27 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org, mingo@elte.hu, akpm@linux-foundation.org,
-       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, schamp@sgi.com,
-       niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com, rostedt@goodmis.org,
-       peterz@infradead.org, benh@kernel.crashing.org, davem@davemloft.net,
-       tony.luck@intel.com
-Subject: Re: [PATCH, RFC, tip/core/rcu] v3 scalable classic RCU
-	implementation
-Message-ID: <20080831192327.GI7015@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <48B919C2.1040809@cn.fujitsu.com> <48B94BF4.9090103@colorfullife.com> <20080830143438.GF7107@linux.vnet.ibm.com> <48BA7944.8070402@colorfullife.com> <20080831172001.GA7015@linux.vnet.ibm.com> <48BAD89E.20206@colorfullife.com> <20080831175514.GE7015@linux.vnet.ibm.com> <48BAE082.3000300@colorfullife.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48BAE082.3000300@colorfullife.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Sun, 31 Aug 2008 15:28:01 -0400
+Date: Sun, 31 Aug 2008 12:27:51 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Sanders <linux@sandersweb.net>, linux-kernel@vger.kernel.org,
+       Jan Beulich <jbeulich@novell.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
+Message-ID: <20080831122751.72afafb5@infradead.org>
+In-Reply-To: <alpine.LFD.1.10.0808311140060.12958@nehalem.linux-foundation.org>
+References: <200808311422.12525.linux@sandersweb.net>
+	<alpine.LFD.1.10.0808311140060.12958@nehalem.linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 31, 2008 at 08:18:42PM +0200, Manfred Spraul wrote:
-> Paul E. McKenney wrote:
->> On Sun, Aug 31, 2008 at 07:45:02PM +0200, Manfred Spraul wrote:
->>   
->>> Paul E. McKenney wrote:
->>>     
->>>> Assuming that the ordering of processing pending irqs and marking the
->>>> CPU offline in cpu_online_mask can be resolved as noted above, it should
->>>> work fine -- if a CPU's bit is clear, we can safely ignore it.  The race
->>>> can be resolved by checking the CPU's bit in force_quiescent_state().
->>>>
->>>> Or am I missing something?
->>>>         
->>> Yes, that would work:
->>> Rule 1: after CPU_DEAD, a cpu is gone. The cpu is quiet, rcu callbacks 
->>> must be moved to other cpus, ...
->>> Rule 2: if a cpu is not listed in cpu_online_mask, then it can be 
->>> considered as outside a read-side critical section.
->>>
->>> The problem with rule 2 is that it means someone 
->>> [force_quiescent_state()] must poll the cpu_online_mask and look for 
->>> changes.
->>> I'd really prefer a notifier. CPU_DYING is nearly the correct thing, it 
->>> only has to be moved down 3 lines ;-)
->>> (I want to kill the bitmaps, not add a hierarchical bitmap polling 
->>> system!)
->>>     
->>
->> But some later CPU_DYING notifier might decide that the CPU cannot be
->> removed after all, which would mean bringing the CPU back.  And then
->> whatever the CPU was needed for might have actually happened in the
->> meantime, which does not sound good to me...
->>   
-> CPU_DYING must not fail, the current code doesn't support that.
+On Sun, 31 Aug 2008 11:47:04 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Good point!
+> 
+> 
+> On Sun, 31 Aug 2008, David Sanders wrote:
+> >
+> > I recently discovered that x86 kernels won't boot under Virtual PC.
+> 
+> What CPU does Virtual PC emulate? As far as Wikipedia is concerned
+> (not that I'd take it on complete faith) it emulates a 32-bit Intel
+> Pentium II.
+> 
+> And that commit makes the kernel use the "P6 nops" for such hardware. 
+> Maybe Virtual PC doesn't support the newer intel nop things?
+> 
+> Intel docs say that it should be available on any intel CPU that has 
+> CPUID.01H.EAX[11:8] = 0110B or 1111B. That's the "family ID", and
+> Pentium II should have a family ID of 6 (ie that 0110B case).
+> 
+> So it sounds like a Virtual PC bug, but I dunno. And maybe we should
+> just use the legcay nops for anything that isn't modern (ie P4+ or
+> Core)?
 
-							Thanx, Paul
+it's probably even a security bug in that I don't see what would be
+stopping a ring 3 user process from executing these instructions...
+
