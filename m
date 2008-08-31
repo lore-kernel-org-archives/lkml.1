@@ -1,367 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757920AbYH3Xk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbYHaAQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757920AbYH3Xk2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 19:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755891AbYH3XkN
+	id S1756850AbYHaAQc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 20:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbYHaAQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 19:40:13 -0400
-Received: from nebensachen.de ([195.34.83.29]:59041 "EHLO mail.nebensachen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755158AbYH3XkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 19:40:11 -0400
-X-Hashcash: 1:20:080830:htejun@gmail.com::WTC+f22SPOy8RyoR:09MkQ
-X-Hashcash: 1:20:080830:alan@lxorguk.ukuu.org.uk::zKeXDiyplMlIOjqT:00000000000000000000000000000000000001Rej
-X-Hashcash: 1:20:080830:akpm@linux-foundation.org::dVn51OXZDTii+tFm:00000000000000000000000000000000000025Of
-X-Hashcash: 1:20:080830:bzolnier@gmail.com::mIx33eNOJBn7zWtk:00000000000000000000000000000000000000000003B7w
-X-Hashcash: 1:20:080830:jeff@garzik.org::j/Nql5ufhHkkagum:00CQ+N
-X-Hashcash: 1:20:080830:randy.dunlap@oracle.com::A2Y7infW+YODRZju:00000000000000000000000000000000000000B573
-X-Hashcash: 1:20:080830:linux-ide@vger.kernel.org::5XMXvmbDk4SUv/S5:0000000000000000000000000000000000000Hdj
-X-Hashcash: 1:20:080830:linux-kernel@vger.kernel.org::vAWW6wVDn5BcA9Rq:0000000000000000000000000000000003sGs
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] libata: Implement disk shock protection support
-References: <87wshzplvk.fsf@denkblock.local>
-	<20080829211345.4355.89284.stgit@denkblock.local>
-	<48B913E6.1000104@gmail.com>
-Date: Sun, 31 Aug 2008 01:38:58 +0200
-Message-ID: <87k5dym5t9.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
+	Sat, 30 Aug 2008 20:16:23 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:64509 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754624AbYHaAQW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Aug 2008 20:16:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=Uv4GP4s7HykBriQdC1cmTQxFCAnFoFUyfBHv+5Etj8Z+Q0tjF/UYojv1nwmiCp5nvR
+         aCWEdetNbwnEZMAlgxo48m/VMChHyImUMWkroqYBJcyyzP79f28U5xWpzxN6FeBhcjAx
+         Jq2YecjMngfhdGZPYOXLsVQWzZMdlsdug/Xos=
+Message-ID: <86802c440808301716j46674ab7i8f36d57fb9ed38c1@mail.gmail.com>
+Date: Sat, 30 Aug 2008 17:16:21 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "David Witbrodt" <dawitbro@sbcglobal.net>
+Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Kernel Testers" <kernel-testers@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <368766.37978.qm@web82106.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_18238_29942010.1220141781514"
+References: <368766.37978.qm@web82106.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <htejun@gmail.com> wrote:
-> Hello,
+------=_Part_18238_29942010.1220141781514
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+> So I decided to try applying the patches against the tree as it was
+> before bef69ea0...:
 >
-> Elias Oltmanns wrote:
->> diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
->> index c729e69..78281af 100644
->> --- a/drivers/ata/ahci.c
->> +++ b/drivers/ata/ahci.c
->> @@ -316,6 +316,8 @@ static struct device_attribute *ahci_shost_attrs[] = {
->>  
->>  static struct device_attribute *ahci_sdev_attrs[] = {
->>  	&dev_attr_sw_activity,
->> +	&dev_attr_unload_feature,
->> +	&dev_attr_unload_heads,
->>  	NULL
+> =================================
+> $ git checkout -f HEAD^
+> Note: moving to "HEAD^" which isn't a local branch
+> If you want to create a new branch from this checkout, you may do so
+> (now or later) by using -b with the checkout command again. Example:
+>  git checkout -b <new_branch_name>
+> HEAD is now at 00aeb42... Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6
 >
-> Ehhh... This really should be in libata core layer.  Please create the
-> default attrs and let ahci define its own.
-
-Right, will do.
-
-[...]
->> @@ -5267,6 +5267,8 @@ struct ata_port *ata_port_alloc(struct ata_host *host)
->>  	init_timer_deferrable(&ap->fastdrain_timer);
->>  	ap->fastdrain_timer.function = ata_eh_fastdrain_timerfn;
->>  	ap->fastdrain_timer.data = (unsigned long)ap;
->> +	ap->park_timer.function = ata_scsi_park_timeout;
->> +	init_timer(&ap->park_timer);
+> $ git apply --verbose --check ../split_e820_reserve.patch
+> Checking patch arch/x86/kernel/e820.c...
+> Checking patch arch/x86/pci/i386.c...
+> Checking patch include/asm-x86/e820.h...
 >
-> Why do you need a timeout when you can just msleep()?
-
-Maybe I'm missing something but I don't see how I could use msleep()
-here, see below.
-
+> $ git apply --verbose ../split_e820_reserve.patch
+> Checking patch arch/x86/kernel/e820.c...
+> Checking patch arch/x86/pci/i386.c...
+> Checking patch include/asm-x86/e820.h...
+> Applied patch arch/x86/kernel/e820.c cleanly.
+> Applied patch arch/x86/pci/i386.c cleanly.
+> Applied patch include/asm-x86/e820.h cleanly.
 >
->> +static void ata_eh_park_devs(struct ata_port *ap, int park)
->> +{
->> +	struct ata_link *link;
->> +	struct ata_device *dev;
->> +	struct ata_taskfile tf;
->> +	struct request_queue *q;
->> +	unsigned int err_mask;
->> +
->> +	ata_port_for_each_link(link, ap) {
->> +		ata_link_for_each_dev(dev, link) {
->> +			if (!dev->sdev)
->> +				continue;
->
-> You probably want to do if (dev->class != ATA_DEV_ATA) here.
+> $ git apply --verbose --check ../split_e820_reserve_xx1.patch
+> Checking patch arch/x86/kernel/e820.c...
+> Checking patch include/linux/ioport.h...
+> Checking patch kernel/resource.c...
 
-Well, I really am concerned about dev->sdev. So far, I haven't quite
-figured out yet whether under which circumstances I can safely assume
-that the scsi counter part of dev including the block layer request
-queue has been completely set up and configured so there won't be any
-null pointer dereferences. However, if you think that I needn't bother
-with stopping the request queue anyway, checking for ATA_DEV_ATA (what
-about ATA_DEV_ATAPI?) should definitely be enough.
+please use split_e820_reserve_xx2.patch instead...
 
->
->> +			ata_tf_init(dev, &tf);
->> +			q = dev->sdev->request_queue;
->> +			spin_lock_irq(q->queue_lock);
->> +			if (park) {
->> +				blk_stop_queue(q);
->
-> Queue is already plugged when EH is entered.  No need for this.
+Thanks
 
-Quite right. It's just that it will be un- and replugged every
-(3 * HZ) / 1000, so I thought it might be worthwhile to stop the queue
-anyway. Perhaps it really isn't worth bothering and the code would
-certainly be nicer to look at.
+YH
 
->
->> +				tf.command = ATA_CMD_IDLEIMMEDIATE;
->> +				tf.feature = 0x44;
->> +				tf.lbal = 0x4c;
->> +				tf.lbam = 0x4e;
->> +				tf.lbah = 0x55;
-> n> +			} else {
->> +				blk_start_queue(q);
->
-> Neither this.
->
->> +				tf.command = ATA_CMD_CHK_POWER;
->> +			}
->> +			spin_unlock(q->queue_lock);
->> +			spin_lock(ap->lock);
->
-> And no need to play with locks at all.
+------=_Part_18238_29942010.1220141781514
+Content-Type: text/x-patch; name=split_e820_reserve_xx2.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fkiwuont0
+Content-Disposition: attachment; filename=split_e820_reserve_xx2.patch
 
-Just to be sure, are you just referring to the queue lock, or to the host
-lock as well? Am I wrong in thinking that we have to protect all access
-to dev->flags because bit operations are performed non atomically
-virtually at any time?
-
->
->> +			if (dev->flags & ATA_DFLAG_NO_UNLOAD) {
->> +				spin_unlock_irq(ap->lock);
->> +				continue;
->> +			}
->> +			spin_unlock_irq(ap->lock);
->> +
->> +			tf.flags |= ATA_TFLAG_DEVICE | ATA_TFLAG_ISADDR;
->> +			tf.protocol |= ATA_PROT_NODATA;
->> +			err_mask = ata_exec_internal(dev, &tf, NULL, DMA_NONE,
->> +						     NULL, 0, 0);
->> +			if ((err_mask || tf.lbal != 0xc4) && park)
->> +				ata_dev_printk(dev, KERN_ERR,
->> +					       "head unload failed\n");
->> +		}
->> +	}
->> +}
->> +
->>  static int ata_eh_revalidate_and_attach(struct ata_link *link,
->>  					struct ata_device **r_failed_dev)
->>  {
->> @@ -2829,6 +2874,12 @@ int ata_eh_recover(struct ata_port *ap, ata_prereset_fn_t prereset,
->>  		}
->>  	}
->>  
->> +	if (ap->link.eh_context.i.action & ATA_EH_PARK) {
->> +		ata_eh_park_devs(ap, 1);
->> +		wait_event(ata_scsi_park_wq, !timer_pending(&ap->park_timer));
->
-> I would just msleep() here.
-
-Again, see below.
-
->
->> +		ata_eh_park_devs(ap, 0);
->
-> And does the device need this explicit wake up?  It will wake up when
-> it's necessary.
-
-Probably, I should insert a comment somewhere. The problem is that
-device internal power management will be disabled until the next command
-is received. If you have laptop mode enabled and the device has received
-the unload command while spinning with no more commands in the queue to
-follow, the device may keep spinning for quite a while and won't go into
-standby which rather defeats the purpose of laptop mode. This behaviour
-is compliant with the specs and I can observe it on my system.
-
->
->> diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
->> index 4d066ad..ffcc016 100644
->> --- a/drivers/ata/libata-scsi.c
->> +++ b/drivers/ata/libata-scsi.c
->> @@ -46,6 +46,7 @@
->>  #include <linux/libata.h>
->>  #include <linux/hdreg.h>
->>  #include <linux/uaccess.h>
->> +#include <linux/suspend.h>
->>  
->>  #include "libata.h"
->>  
->> @@ -113,6 +114,77 @@ static struct scsi_transport_template ata_scsi_transport_template = {
->>  	.user_scan		= ata_scsi_user_scan,
->>  };
->>  
->> +DECLARE_WAIT_QUEUE_HEAD(ata_scsi_park_wq);
->> +
->> +#if defined(CONFIG_PM_SLEEP) || defined(CONFIG_HIBERNATION)
->> +static atomic_t ata_scsi_park_count = ATOMIC_INIT(0);
->> +
->> +static int ata_scsi_pm_notifier(struct notifier_block *nb, unsigned long val,
->> +				void *null)
->> +{
->> +	switch (val) {
->> +	case PM_SUSPEND_PREPARE:
->> +		atomic_dec(&ata_scsi_park_count);
->> +		wait_event(ata_scsi_park_wq,
->> +			   atomic_read(&ata_scsi_park_count) == -1);
->> +		break;
->> +	case PM_POST_SUSPEND:
->> +		atomic_inc(&ata_scsi_park_count);
->> +		break;
->> +	default:
->> +		return NOTIFY_DONE;
->> +	}
->> +
->> +	return NOTIFY_OK;
->> +}
->> +
->> +static struct notifier_block ata_scsi_pm_notifier_block = {
->> +	.notifier_call = ata_scsi_pm_notifier,
->> +};
->> +
->> +int ata_scsi_register_pm_notifier(void)
->> +{
->> +	return register_pm_notifier(&ata_scsi_pm_notifier_block);
->> +}
->> +
->> +int ata_scsi_unregister_pm_notifier(void)
->> +{
->> +	return unregister_pm_notifier(&ata_scsi_pm_notifier_block);
->> +}
->
-> Why are these PM notifiers necessary?
-
-Since it's a user process that controls when we have to keep the heads
-off the platter, a suspend operation has to be blocked *before* process
-freezing when we happen to be in a precarious situation.
-
->
->> +static inline void ata_scsi_signal_unpark(void)
->> +{
->> +	atomic_dec(&ata_scsi_park_count);
->> +	wake_up_all(&ata_scsi_park_wq);
->> +}
->> +
->> +static inline int ata_scsi_mod_park_timer(struct timer_list *timer,
->> +					  unsigned long timeout)
->> +{
->> +	if (unlikely(atomic_inc_and_test(&ata_scsi_park_count))) {
->> +		ata_scsi_signal_unpark();
->> +		return -EBUSY;
->> +	}
->> +	if (mod_timer(timer, timeout)) {
->> +		atomic_dec(&ata_scsi_park_count);
->> +		return 1;
->> +	}
->> +
->> +	return 0;
->> +}
->>
->> +#else /* defined(CONFIG_PM_SLEEP) || defined(CONFIG_HIBERNATION) */
->> +static inline void ata_scsi_signal_unpark(void)
->> +{
->> +	wake_up_all(&ata_scsi_park_wq);
->> +}
->> +
->> +static inline int ata_scsi_mod_park_timer(struct timer_list *timer,
->> +					  unsigned long timeout)
->> +{
->> +	return mod_timer(timer, timeout);
->> +}
->> +#endif /* defined(CONFIG_PM_SLEEP) || defined(CONFIG_HIBERNATION) */
->
-> And these all can go.  If you're worried about recurring events you
-> can just update timestamp from the sysfs write function and do...
->
->     deadline = last_timestamp + delay;
->     while ((now = jiffies) < deadline) {
->         set_current_state(TASK_UNINTERRUPTIBLE);
-> 	schedule_timeout(deadline - now);
-> 	set_current_state(TASK_RUNNING);
->     }
-
-Ah, I can see that this while loop can replace my call to wait_event() in
-the eh sequence earlier on. However, I wonder how I am to replace the
-call to mod_timer(). As you can see, we perform different actions
-depending on whether the timer has merely been updated, or a new timer
-has been started. Only in the latter case we want to schedule eh. In
-order to achieve the equivalent in your setting while preventing any
-races, I'd have to protect the deadline field in struct ata_port by the
-host lock, i.e. something like:
-
-    spin_lock_irq(ap->lock);
-    now = jiffies;
-    rc = now > ap->deadline;
-    ap->deadline = now + timeout;
-    if (rc) {
-        ap->link.eh_info.action |= ATA_EH_PARK;
-        ata_port_schedule_eh(ap);
-    }
-    ...
-    spin_unlock_irq(ap->lock);
-
-and in the eh code a modified version of your loop:
-
-    spin_lock_irq(ap->lock);
-    while ((now = jiffies) < deadline) {
-        spin_unlock_irq(ap->lock);
-        set_current_state(TASK_UNINTERRUPTIBLE);
-        schedule_timeout(deadline - now);
-        set_current_state(TASK_RUNNING);
-        spin_lock_irq(ap->lock);
-    }
-    spin_unlock_irq(ap->lock);
-
-Is it worth all that or am I missing something? On the other hand, a
-deadline field would occupy less space in the ata_port structure than a
-timer_list field. What are your thoughts?
-
->
->> +static ssize_t ata_scsi_unload_feature_store(struct device *device,
->> +					     struct device_attribute *attr,
->> +					     const char *buf, size_t len)
->> +{
->> +	struct scsi_device *sdev = to_scsi_device(device);
->> +	struct ata_port *ap;
->> +	struct ata_device *dev;
->> +	int val;
->> +
->> +	val = buf[0] - '0';
->> +	if ((val != 0 && val != 1) || (buf[1] != '\0' && buf[1] != '\n')
->> +	    || buf[2] != '\0')
->> +		return -EINVAL;
->> +	ap = ata_shost_to_port(sdev->host);
->> +	dev = ata_scsi_find_dev(ap, sdev);
->> +	if (!dev)
->> +		return -ENODEV;
->> +	if (dev->class != ATA_DEV_ATA && dev->class != ATA_DEV_ATAPI)
->> +		return -EOPNOTSUPP;
->> +
->> +	spin_lock_irq(ap->lock);
->> +	if (val == 1)
->> +		dev->flags &= ~ATA_DFLAG_NO_UNLOAD;
->> +	else
->> +		dev->flags |= ATA_DFLAG_NO_UNLOAD;
->> +	spin_unlock_irq(ap->lock);
->> +
->> +	return len;
->> +}
->> +DEVICE_ATTR(unload_feature, S_IRUGO | S_IWUSR,
->> +	    ata_scsi_unload_feature_show, ata_scsi_unload_feature_store);
->> +EXPORT_SYMBOL_GPL(dev_attr_unload_feature);
->
-> Hmmm.... Maybe you can just disable it by echoing -1 to the unload file?
-
-Even though disabling it may be desirable in some cases, it's typically
-*enabling* it that users will care about. Still, we can always accept -1
-and -2 and I have to say I rather like the idea. Thanks for the
-suggestion. Indeed, thank you very much for the thorough review.
-
-Regards,
-
-Elias
+RnJvbTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgpTdWJqZWN0OiBbUEFUQ0hd
+IHg4Njogc3BsaXQgZTgyMCByZXNlcnZlZCBlbnRyaWVzIHJlY29yZCB0byBsYXRlIHY0IC0gZml4
+IHY2Cgp0cnkgdG8gaW5zZXJ0X3Jlc291cmNlIHNlY29uZCB0aW1lLCBieSBleHBhbmQgdGhlIHJl
+c291cmNlLi4uCgpmb3IgY2FzZTogZTgyMCByZXNlcnZlZCBlbnRyeSBpcyBwYXJ0aWFsbHkgb3Zl
+cmxhcHBlZCB3aXRoIGJhciByZXMuLi4KCmhvcGUgaXQgd2lsbCBuZXZlciBoYXBwZW4KCnYyOiBh
+Y2NvcmRpbmcgdG8gTGludXMsIGFkZCBpbnNlcnRfcmVzb3VyY2VfZXhwYW5kX3RvX2ZpdCwgYW5k
+IGNoYW5nZQoJX19pbnNlcnRfcmVzb3VyY2UgdG8gc3RhdGljIHdpdGhvdXQgbG9jawoKdjM6IHVz
+ZSByZXNlcnZlX3JlZ2lvbl93aXRoX3NwbGl0KCkgaW5zdGVhZCB0byBoYW5kIG92ZXJsYXBwaW5n
+Cgl3aXRoIHRlc3QgY2FzZSBieSBleHRlbmQgMHhlMDAwMDAwMCAtIDB4ZWZmZmZmZiB0byAweGRk
+ODAwMDAwIC0KCWdldAoJCWUwMDAwMDAwLWVmZmZmZmZmIDogUENJIE1NQ09ORklHIDAKCQkJIGUw
+MDAwMDAwLWVmZmZmZmZmIDogcmVzZXJ2ZWQKCWluIC9wcm9jL2lvbWVtCglnZXQKCQlmb3VuZCBj
+b25mbGljdCBmb3IgcmVzZXJ2ZWQgW2RkODAwMDAwLCBlZmZmZmZmZl0sIHRyeSB0byByZXNlcnZl
+IHdpdGggc3BsaXQKCQkgICAgX19yZXNlcnZlX3JlZ2lvbl93aXRoX3NwbGl0OiAoUENJIEJ1cyAj
+ODApIFtkZDAwMDAwMCwgZGRmZmZmZmZdLCByZXM6IChyZXNlcnZlZCkgW2RkODAwMDAwLCBlZmZm
+ZmZmZl0KCQkgICAgX19yZXNlcnZlX3JlZ2lvbl93aXRoX3NwbGl0OiAoUENJIEJ1cyAjMDApIFtk
+ZTAwMDAwMCwgZGZmZmZmZmZdLCByZXM6IChyZXNlcnZlZCkgW2RlMDAwMDAwLCBlZmZmZmZmZl0K
+CQlpbml0Y2FsbCBwY2lfc3Vic3lzX2luaXQrMHgwLzB4MTIxIHJldHVybmVkIDAgYWZ0ZXIgMzgx
+IG1zZWNzCglpbiBkbWVzZwoKdjQ6IHRha2Ugb3V0IF9faW5zZXJ0X3Jlc291cmNlIGFuZCBpbnNl
+cnRfcmVzb3VyY2VfZXhwYW5kX3RvX2ZpdCA6IExpbnVzIGFscmVhZHkgY2hlY2sgaW4uCiAgICB1
+c2UgcmVzZXJ2ZV9yZWdpb25fd2l0aF9zcGxpdCBhdCB0aGUgZmlyc3QgcG9pbnQKICAgIHVzZSBj
+b25zdCBjaGFyICpuYW1lCgp2NTogZml4IGNoZWNraW5nIG9uIG92ZXJsYXBwaW5nCgp2Njogb25s
+eSByZXNlcnZlIGNvbW1vbiBhcmVhIGluIGNvbmZsaWN0CglzbyBnb3Qgc3RoIGluIC9wcm9jL2lv
+bWVtCgkJZDgwMDAwMDAtZGZmZmZmZmYgOiBQQ0kgQnVzICMwMAoJCSAgZGMwMDAwMDAtZGZmZmZm
+ZmYgOiBHQVJUCgkJICAgIGRjMDAwMDAwLWRmZmZmZmZmIDogcmVzZXJ2ZWQKCQllMDAwMDAwMC1l
+ZmZmZmZmZiA6IFBDSSBNTUNPTkZJRyAwCgkJICBlMDAwMDAwMC1lZmZmZmZmZiA6IHJlc2VydmVk
+Cgl3aGVuIHdlIGhhdmUgYmlnIHJhbmdlIGluIGU4MjAKCQkwMDAwMDAwMGRjMDAwMDAwLTAwMDAw
+MDAwZjAwMDAwMDAgKHJlc2VydmVkKQoKU2lnbmVkLW9mZi1ieTogWWluZ2hhaSBMdSA8eWhsdS5r
+ZXJuZWxAZ21haWwuY29tPgoKLS0tCiBhcmNoL3g4Ni9rZXJuZWwvZTgyMC5jIHwgICAgMiAtCiBp
+bmNsdWRlL2xpbnV4L2lvcG9ydC5oIHwgICAgMyArKwoga2VybmVsL3Jlc291cmNlLmMgICAgICB8
+ICAgNjkgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLQog
+MyBmaWxlcyBjaGFuZ2VkLCA3MiBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQoKSW5kZXg6
+IGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvZTgyMC5jCj09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIu
+Ni5vcmlnL2FyY2gveDg2L2tlcm5lbC9lODIwLmMKKysrIGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJu
+ZWwvZTgyMC5jCkBAIC0xMzIwLDcgKzEzMjAsNyBAQCB2b2lkIF9faW5pdCBlODIwX3Jlc2VydmVf
+cmVzb3VyY2VzX2xhdGUoCiAJcmVzID0gZTgyMF9yZXM7CiAJZm9yIChpID0gMDsgaSA8IGU4MjAu
+bnJfbWFwOyBpKyspIHsKIAkJaWYgKCFyZXMtPnBhcmVudCAmJiByZXMtPmVuZCkKLQkJCWluc2Vy
+dF9yZXNvdXJjZSgmaW9tZW1fcmVzb3VyY2UsIHJlcyk7CisJCQlyZXNlcnZlX3JlZ2lvbl93aXRo
+X3NwbGl0KCZpb21lbV9yZXNvdXJjZSwgcmVzLT5zdGFydCwgcmVzLT5lbmQsIHJlcy0+bmFtZSk7
+CiAJCXJlcysrOwogCX0KIH0KSW5kZXg6IGxpbnV4LTIuNi9pbmNsdWRlL2xpbnV4L2lvcG9ydC5o
+Cj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2luY2x1ZGUvbGludXgvaW9wb3J0LmgKKysr
+IGxpbnV4LTIuNi9pbmNsdWRlL2xpbnV4L2lvcG9ydC5oCkBAIC0xMDgsNiArMTA4LDkgQEAgZXh0
+ZXJuIHN0cnVjdCByZXNvdXJjZSBpb21lbV9yZXNvdXJjZTsKIAogZXh0ZXJuIGludCByZXF1ZXN0
+X3Jlc291cmNlKHN0cnVjdCByZXNvdXJjZSAqcm9vdCwgc3RydWN0IHJlc291cmNlICpuZXcpOwog
+ZXh0ZXJuIGludCByZWxlYXNlX3Jlc291cmNlKHN0cnVjdCByZXNvdXJjZSAqbmV3KTsKK2V4dGVy
+biB2b2lkIHJlc2VydmVfcmVnaW9uX3dpdGhfc3BsaXQoc3RydWN0IHJlc291cmNlICpyb290LAor
+CQkJICAgICByZXNvdXJjZV9zaXplX3Qgc3RhcnQsIHJlc291cmNlX3NpemVfdCBlbmQsCisJCQkg
+ICAgIGNvbnN0IGNoYXIgKm5hbWUpOwogZXh0ZXJuIGludCBpbnNlcnRfcmVzb3VyY2Uoc3RydWN0
+IHJlc291cmNlICpwYXJlbnQsIHN0cnVjdCByZXNvdXJjZSAqbmV3KTsKIGV4dGVybiB2b2lkIGlu
+c2VydF9yZXNvdXJjZV9leHBhbmRfdG9fZml0KHN0cnVjdCByZXNvdXJjZSAqcm9vdCwgc3RydWN0
+IHJlc291cmNlICpuZXcpOwogZXh0ZXJuIGludCBhbGxvY2F0ZV9yZXNvdXJjZShzdHJ1Y3QgcmVz
+b3VyY2UgKnJvb3QsIHN0cnVjdCByZXNvdXJjZSAqbmV3LApJbmRleDogbGludXgtMi42L2tlcm5l
+bC9yZXNvdXJjZS5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2tlcm5lbC9yZXNvdXJj
+ZS5jCisrKyBsaW51eC0yLjYva2VybmVsL3Jlc291cmNlLmMKQEAgLTUxMiwxMCArNTEyLDc3IEBA
+IGludCBhZGp1c3RfcmVzb3VyY2Uoc3RydWN0IHJlc291cmNlICpyZXMKIAlyZXN1bHQgPSAwOwog
+CiAgb3V0OgotCXdyaXRlX3VubG9jaygmcmVzb3VyY2VfbG9jayk7CiAJcmV0dXJuIHJlc3VsdDsK
+IH0KIAorc3RhdGljIHZvaWQgX19pbml0IF9fcmVzZXJ2ZV9yZWdpb25fd2l0aF9zcGxpdChzdHJ1
+Y3QgcmVzb3VyY2UgKnJvb3QsCisJCXJlc291cmNlX3NpemVfdCBzdGFydCwgcmVzb3VyY2Vfc2l6
+ZV90IGVuZCwKKwkJY29uc3QgY2hhciAqbmFtZSkKK3sKKwlzdHJ1Y3QgcmVzb3VyY2UgKnBhcmVu
+dCA9IHJvb3Q7CisJc3RydWN0IHJlc291cmNlICpjb25mbGljdDsKKwlzdHJ1Y3QgcmVzb3VyY2Ug
+KnJlcyA9IGt6YWxsb2Moc2l6ZW9mKCpyZXMpLCBHRlBfS0VSTkVMKTsKKworCWlmICghcmVzKQor
+CQlyZXR1cm47CisKKwlyZXMtPm5hbWUgPSBuYW1lOworCXJlcy0+c3RhcnQgPSBzdGFydDsKKwly
+ZXMtPmVuZCA9IGVuZDsKKwlyZXMtPmZsYWdzID0gSU9SRVNPVVJDRV9CVVNZOworCisJZm9yICg7
+OykgeworCQljb25mbGljdCA9IF9fcmVxdWVzdF9yZXNvdXJjZShwYXJlbnQsIHJlcyk7CisJCWlm
+ICghY29uZmxpY3QpCisJCQlicmVhazsKKwkJaWYgKGNvbmZsaWN0ICE9IHBhcmVudCkgeworCQkJ
+cGFyZW50ID0gY29uZmxpY3Q7CisJCQlpZiAoIShjb25mbGljdC0+ZmxhZ3MgJiBJT1JFU09VUkNF
+X0JVU1kpKQorCQkJCWNvbnRpbnVlOworCQl9CisKKwkJLyogVWhodWgsIHRoYXQgZGlkbid0IHdv
+cmsgb3V0Li4gKi8KKwkJa2ZyZWUocmVzKTsKKwkJcmVzID0gTlVMTDsKKwkJYnJlYWs7CisJfQor
+CisJaWYgKCFyZXMpIHsKKwkJcHJpbnRrKEtFUk5fREVCVUcgIiAgICBfX3Jlc2VydmVfcmVnaW9u
+X3dpdGhfc3BsaXQ6ICglcykgWyVsbHgsICVsbHhdLCByZXM6ICglcykgWyVsbHgsICVsbHhdXG4i
+LAorCQkJIGNvbmZsaWN0LT5uYW1lLCBjb25mbGljdC0+c3RhcnQsIGNvbmZsaWN0LT5lbmQsCisJ
+CQkgbmFtZSwgc3RhcnQsIGVuZCk7CisKKwkJLyogZmFpbGVkLCBzcGxpdCBhbmQgdHJ5IGFnYWlu
+ICovCisKKwkJLyogY29uZmxpY3QgY292ZXJyZWQgd2hvbGUgYXJlYSAqLworCQlpZiAoY29uZmxp
+Y3QtPnN0YXJ0IDw9IHN0YXJ0ICYmIGNvbmZsaWN0LT5lbmQgPj0gZW5kKQorCQkJcmV0dXJuOwor
+CisJCWlmIChjb25mbGljdC0+c3RhcnQgPiBzdGFydCkKKwkJCV9fcmVzZXJ2ZV9yZWdpb25fd2l0
+aF9zcGxpdChyb290LCBzdGFydCwgY29uZmxpY3QtPnN0YXJ0LTEsIG5hbWUpOworCQlpZiAoIShj
+b25mbGljdC0+ZmxhZ3MgJiBJT1JFU09VUkNFX0JVU1kpKSB7CisJCQlyZXNvdXJjZV9zaXplX3Qg
+Y29tbW9uX3N0YXJ0LCBjb21tb25fZW5kOworCisJCQljb21tb25fc3RhcnQgPSBtYXgoY29uZmxp
+Y3QtPnN0YXJ0LCBzdGFydCk7CisJCQljb21tb25fZW5kID0gbWluKGNvbmZsaWN0LT5lbmQsIGVu
+ZCk7CisJCQlpZiAoY29tbW9uX3N0YXJ0IDwgY29tbW9uX2VuZCkKKwkJCQlfX3Jlc2VydmVfcmVn
+aW9uX3dpdGhfc3BsaXQocm9vdCwgY29tbW9uX3N0YXJ0LCBjb21tb25fZW5kLCBuYW1lKTsKKwkJ
+fQorCQlpZiAoY29uZmxpY3QtPmVuZCA8IGVuZCkKKwkJCV9fcmVzZXJ2ZV9yZWdpb25fd2l0aF9z
+cGxpdChyb290LCBjb25mbGljdC0+ZW5kKzEsIGVuZCwgbmFtZSk7CisJfQorCit9CisKK3ZvaWQg
+cmVzZXJ2ZV9yZWdpb25fd2l0aF9zcGxpdChzdHJ1Y3QgcmVzb3VyY2UgKnJvb3QsCisJCXJlc291
+cmNlX3NpemVfdCBzdGFydCwgcmVzb3VyY2Vfc2l6ZV90IGVuZCwKKwkJY29uc3QgY2hhciAqbmFt
+ZSkKK3sKKwl3cml0ZV9sb2NrKCZyZXNvdXJjZV9sb2NrKTsKKwlfX3Jlc2VydmVfcmVnaW9uX3dp
+dGhfc3BsaXQocm9vdCwgc3RhcnQsIGVuZCwgbmFtZSk7CisJd3JpdGVfdW5sb2NrKCZyZXNvdXJj
+ZV9sb2NrKTsKK30KKwogRVhQT1JUX1NZTUJPTChhZGp1c3RfcmVzb3VyY2UpOwogCiAvKioK
+------=_Part_18238_29942010.1220141781514--
