@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbYHaXOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbYHaX1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755529AbYHaXOc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 19:14:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYHaXOX
+	id S1755363AbYHaX1j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 19:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbYHaX1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 19:14:23 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:5944 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751091AbYHaXOX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 19:14:23 -0400
-Date: Mon, 1 Sep 2008 03:14:19 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] power-supply: Add function to return system-wide power
-	state
-Message-ID: <20080831231419.GA31902@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080826200849.GA26114@srcf.ucam.org> <20080826200959.GB26114@srcf.ucam.org> <20080826202542.GA10090@oksana.dev.rtsoft.ru> <20080826203327.GA26691@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Content-Disposition: inline
-In-Reply-To: <20080826203327.GA26691@srcf.ucam.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 31 Aug 2008 19:27:30 -0400
+Received: from smtp3.ono.com ([62.42.230.176]:55517 "EHLO resmaa06.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751664AbYHaX1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 19:27:30 -0400
+Date: Mon, 1 Sep 2008 01:27:26 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.27-rc5
+Message-ID: <20080901012726.7c717aaf@werewolf.home>
+In-Reply-To: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0cvs31 (GTK+ 2.13.7; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 09:33:27PM +0100, Matthew Garrett wrote:
-> Something like this?
+On Thu, 28 Aug 2008 16:26:45 -0700 (PDT), Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I just applied it to battery-2.6.git with the following changes:
+> 
+> Another week (my weeks do seem to be eight days, don't they? Very odd), 
+> another -rc.
+> 
 
-[...]
-> +int power_supply_is_system_supplied()
+r8169 is not working on an Aspire One. It looked like working some time,
+but now it has begun to say:
 
--()
-+(void)
+Sep  1 01:09:35 one klogd: r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+Sep  1 01:09:35 one klogd: r8169 0000:02:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+Sep  1 01:09:35 one klogd: r8169 0000:02:00.0: cache line size of 32 is not supported
+Sep  1 01:09:35 one klogd: r8169 0000:02:00.0: PCI INT A disabled
+Sep  1 01:09:35 one klogd: r8169: probe of 0000:02:00.0 failed with error -22
 
-[...]
-> +#ifdef CONFIG_POWER_SUPPLY
+Any ideas ? Any more info needed ?
 
-Added || defined(CONFIG_POWER_SUPPLY_MODULE)
+TIA
 
-> +extern int power_supply_is_system_supplied(void);
-> +#else
-> +static int power_supply_is_system_supplied(void) { return -ENOSYS; }
+one:/var/log# lspci -vv -s 02:00.0
+02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8101E PCI Express Fast Ethernet controller (rev ff) (prog-if ff)
+    !!! Unknown header type 7f
+    Kernel modules: r8169
 
-Added inline keyword, otherwise gcc might warn about defined but
-not used function.
-
-
-Please test battery-2.6.git tree (or simply next `-next` tree ;-)
-if everything is okay.
-
-Thanks again!
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2009.0 (Cooker) for i586
+Linux 2.6.25-jam18 (gcc 4.3.1 20080626 (GCC) #1 SMP
