@@ -1,193 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757339AbYHaIwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757455AbYHaJJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757339AbYHaIwA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 04:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYHaIvu
+	id S1757455AbYHaJJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 05:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYHaJJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 04:51:50 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:6640 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751495AbYHaIvs (ORCPT
+	Sun, 31 Aug 2008 05:09:18 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33065 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751495AbYHaJJQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 04:51:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=tLpAhcuGYgWitB86LZaQXjfszjcPtAZBxrO8LumAXwgzIcuvmjlLt3zvOBmAhgHST+
-         pwoxkWwbCEfWi8Z2JgvC9KgnvipoeVeJI+QZB6GEMIjAQHNHBlRNjbEjAKNGdZewCThy
-         lLxXgNSAL2tnZXg7LRxsY427l7O2zNNf9+dIw=
-Message-ID: <a08621850808310151o143845h195a8658d02270d9@mail.gmail.com>
-Date: Sun, 31 Aug 2008 10:51:46 +0200
-From: "Dushan Tcholich" <dusanc@gmail.com>
-To: "Francois Romieu" <romieu@fr.zoreil.com>
-Subject: Re: ksoftirqd high cpu load on kernels 2.6.24 to 2.6.27-rc1-mm1
-Cc: "Robert Hancock" <hancockr@shaw.ca>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <a08621850808291848q5660148fx57d576ecfcbfce8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sun, 31 Aug 2008 05:09:16 -0400
+Date: Sun, 31 Aug 2008 18:14:10 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: mingo@elte.hu
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: Tree for August 29
+Message-Id: <20080831181410.1894289c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080829194010.5ca53e33.sfr@canb.auug.org.au>
+References: <20080829194010.5ca53e33.sfr@canb.auug.org.au>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fa.wTMiBcGRgw2fBtdHwtX7y0lkc8s@ifi.uio.no>
-	 <48975BD3.6040709@shaw.ca>
-	 <a08621850808041337k1d1deb6fk78098d9fcd4930dd@mail.gmail.com>
-	 <20080807185802.GA16327@electric-eye.fr.zoreil.com>
-	 <a08621850808101200n220afd2dve58abe67830b7a4f@mail.gmail.com>
-	 <a08621850808110053j5cbf23e6xdf52c9e7440abf19@mail.gmail.com>
-	 <a08621850808291848q5660148fx57d576ecfcbfce8@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
-I found the culprit.
+On Fri, 29 Aug 2008 19:40:10 +1000
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-When using powertop I get:
-Top causes for wakeups:
-  35,2% (251,0)                ip : br_stp_enable_bridge (br_hello_timer_expired
+> Hi all,
+> 
+> Changes since next-20080828:
+> 
+> The block tree lost 3 conflicts but gained a build fix patch.
+> 
+> The firmware tree lost its 2 conflicts.
+> 
+> The pcmcia tree gained a build fix patch.
+> 
+> The creds tree gained a conflict against the security-testing tree.
+> 
 
-So I tried to turn them off with:
-brctl sethello br0 0
-but the problem persisted.
-If I do
-brctl sethello br0 5
-context switch rate drops 200 times and problem is gone.
-I think that the command brctl sethello br0 0 doesn't turn off hello
-messages, but sends them 250 times per second.
+Hi, I got boot trouble on x86_64.
 
-Thanks for your time
-Dushan
-On Sat, Aug 30, 2008 at 3:48 AM, Dushan Tcholich <dusanc@gmail.com> wrote:
-> Hello again
->
->
-> On Mon, Aug 11, 2008 at 9:53 AM, Dushan Tcholich <dusanc@gmail.com> wrote:
->> Hi
->>
->> On Sun, Aug 10, 2008 at 9:00 PM, Dushan Tcholich <dusanc@gmail.com> wrote:
->>> Hi
->>> Sorry for answering this late, but I was short on time and couldn't
->>> get reiser4 to work with 2.6.27-rc2
->>>
->>> On Thu, Aug 7, 2008 at 8:58 PM, Francois Romieu <romieu@fr.zoreil.com> wrote:
->>>> Dushan Tcholich <dusanc@gmail.com> :
->>>> [...]
->>>>> I googled a little and found out that oprofile is a little above my head.
->>>>> So as I thought that some driver or HW might be responsible for this I
->>>>> tried to disable various onboard HW and found out that if I disable
->>>>> onboard ethernet problem dissapears, so now I've added netdev and
->>>>> maintainer of R8169 driver to cc.
->>>>
->>>> Can you try 2.6.27-rc2 and send the content of /proc/interrupts, dmesg,
->>>> ifconfig as well as a capture of the strange output from top ?
->>>>
->>
->> I tried some more kernels and I had the same problem with 2.6.23.17
->> and 2.6.27-rc1-mm1, but I couldn't reproduce it with kernel from
->> sysresccd 1.0.1 http://www.sysresccd.org/ which is a patched version
->> of 2.6.24 i think .7 when I booted it to change fs.
->> Could it be that something in userspace is creating this?
->>
->
-> I dug a little more and found out some new info.
-> Unsolved bugreport with same symptoms:
-> http://marc.info/?l=linux-kernel&m=119613299024398&w=2
-> Problems appear if I start br0 interface, as context switch rate
-> increases 200 times. If I start eth0 instead everything looks ok.
-> The bugreport above had bridging enabled too.
->
-> When using eth0 I get:
->  vmstat -n 1 10
-> procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
->  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
->  2  0  17720 162288  25024 576852    0    0    21    22    6    9 10  4 85  0
->  0  0  17720 162196  25024 576880    0    0     0     0   13  473  0  0 99  0
->  0  0  17720 162196  25028 576880    0    0     0     4   36 1122  1  0 99  0
->  0  0  17720 162196  25028 576880    0    0     0     0   83  844  0  0 99  0
->  0  0  17720 162196  25028 576880    0    0     0     0   55  691  1  0 99  0
->  0  0  17720 162556  25028 576880    0    0     0     0   13  490  1  0 100  0
->  0  0  17720 162100  25028 576880    0    0     0     0   39  561  6  0 94  0
->  1  0  17720 162028  25028 576880    0    0     0     0   16 1030  4  0 96  0
->  0  0  17720 162028  25028 576880    0    0     0     0   40  597  1  0 99  0
->  0  0  17720 162028  25028 576880    0    0     0     0   12  512  2  0 97  0
->
->  top
->
-> top - 03:30:07 up 6 days,  5:40,  4 users,  load average: 0.02, 0.11, 0.28
-> Tasks: 149 total,   2 running, 147 sleeping,   0 stopped,   0 zombie
-> Cpu(s): 12.1%us,  3.3%sy,  0.0%ni, 84.6%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
-> Mem:   1033388k total,   871336k used,   162052k free,    25016k buffers
-> Swap:   610460k total,    17720k used,   592740k free,   576852k cached
->
->  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
->
->    4 root      15  -5     0    0    0 S    0  0.0 554:23.44 ksoftirqd/0
->
-> If I use br0 I get:
->  vmstat -n 1 10
-> procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
->  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
->  0  0  17720 162112  25048 577120    0    0    21    22    6   11 10  4 86  0
->  0  0  17720 162152  25048 577120    0    0     0     0   14 111082  0  3 97  0
->  0  0  17720 162152  25048 577120    0    0     0     0   23 107134  1  3 96  0
->  1  0  17720 160148  25048 577120    0    0     0     0   11 109888  2  3 95  0
->  0  0  17720 162032  25048 577120    0    0     0     0   33 108163  1  2 97  0
->  0  0  17720 162032  25048 577120    0    0     0     0    7 104642  2  2 95  0
->  0  0  17720 162020  25048 577120    0    0     0     0   41 109135  0  2 98  0
->  0  0  17720 162036  25048 577120    0    0     0     0    9 105133  0  3 96  0
->  0  0  17720 162020  25048 577120    0    0     0     0   42 107605  1  2 97  0
->  1  0  17720 162032  25048 577120    0    0     0     0    5 110768  0  2 98  0
->
-> top
->
-> top - 03:32:03 up 6 days,  5:41,  4 users,  load average: 0.09, 0.10, 0.26
-> Tasks: 148 total,   2 running, 146 sleeping,   0 stopped,   0 zombie
-> Cpu(s):  4.8%us,  2.0%sy,  0.0%ni, 93.0%id,  0.0%wa,  0.0%hi,  0.2%si,  0.0%st
-> Mem:   1033388k total,   871564k used,   161824k free,    25048k buffers
-> Swap:   610460k total,    17720k used,   592740k free,   577120k cached
->
->  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-> 11489 dusan     20   0  235m  85m  24m R    6  8.5   1:03.51 firefox
->    4 root      15  -5     0    0    0 S   7  0.0 554:24.04 ksoftirqd/0
->
-> I start br0 like this in /etc/conf.d/net
->
-> bridge_br0="eth0"
-> config_eth0=( "null" )
-> config_br0=( "192.168.1.3/24" )
-> RC_NEED_br0="net.eth0"
-> brctl_br0=( "setfd 0" "sethello 0" "stp off" )
-> #routes_br0=( "default gw 192.168.1.3" )
-> depend_br0() {
->        need net.eth0
-> }
->
-> I start eth0 like this in /etc/conf.d/net
-> config_eth0=( "192.168.1.3/24" )
->
->>> I've copied my root to ext3 partition and with vanilla 2.6.27-rc2 I got:
->>> -With my .config problem is still here
->>> -With only rtl8169 removed from config there is no problem
->>>
->>>> It seems rather benign though.
->>>>
->>> Well I wouldn't agree from power managment standpoint :). This nic is
->>> in a lot of laptops.
->>> 8% of 2.13GHz Core2Duo CPU is a lot :)
->>>
->>> Btw. should LKML be removed from cc?
->>> If you need any more help please ask.
->>> I hope I'm not harrasing you too much :)
->>>> --
->>>> Ueimor
->>>>
->>> Have a nice day
->>> Dushan
->>>
->> ...
->>
-> Have a nice day
-> Dushan
->
+I'm now trying recent mmtom tree but megaraid_sas get "page allocation failure"
+at megasas_probe_one() in boot because of __GFP_DMA.
+
+It seems dma_alloc_xxx patch set (in linux-next) changes the logic of pci_alloc_consistent().
+
+For quick workaround, I'm now using this patch.
+
+This patch just tries to make use of usual pages before using __GFP_DMA.
+(But I don't think this is a correct patch. )
+
+new dma_alloc_coherent() seems to drop almost all logics used in
+old /arch/x86/kernel/pci-dma.c::dma_alloc_coherent().
+
+Thanks,
+-Kame
+
+---
+ arch/x86/kernel/pci-swiotlb_64.c     |   34 +++++++++++++++++++++++++++++++++-
+ drivers/scsi/megaraid/megaraid_sas.c |    1 +
+ mm/page_alloc.c                      |    3 ++-
+ 3 files changed, 36 insertions(+), 2 deletions(-)
+
+Index: mmtom-2.6.27-rc5+/drivers/scsi/megaraid/megaraid_sas.c
+===================================================================
+--- mmtom-2.6.27-rc5+.orig/drivers/scsi/megaraid/megaraid_sas.c
++++ mmtom-2.6.27-rc5+/drivers/scsi/megaraid/megaraid_sas.c
+@@ -2501,6 +2501,7 @@ megasas_set_dma_mask(struct pci_dev *pde
+ 			if (pci_set_dma_mask(pdev, DMA_32BIT_MASK) != 0)
+ 				goto fail_set_dma_mask;
+ 		}
++		pci_set_consistent_dma_mask(pdev, DMA_32BIT_MASK);
+ 	} else {
+ 		if (pci_set_dma_mask(pdev, DMA_32BIT_MASK) != 0)
+ 			goto fail_set_dma_mask;
+Index: mmtom-2.6.27-rc5+/arch/x86/kernel/pci-swiotlb_64.c
+===================================================================
+--- mmtom-2.6.27-rc5+.orig/arch/x86/kernel/pci-swiotlb_64.c
++++ mmtom-2.6.27-rc5+/arch/x86/kernel/pci-swiotlb_64.c
+@@ -18,9 +18,41 @@ swiotlb_map_single_phys(struct device *h
+ 	return swiotlb_map_single(hwdev, phys_to_virt(paddr), size, direction);
+ }
+ 
++/*
++ * We're only architecture which has DMA32.
++ */
++void *x86_64_swiotlb_alloc_coherent(struct device *hwdev, size_t size,
++				dma_addr_t *dma_handle, gfp_t flags)
++{
++	unsigned long dma_mask;
++	struct page *page;
++	int node = node = dev_to_node(hwdev);
++	int myflags = flags | __GFP_ZERO;
++
++	dma_mask = hwdev->coherent_dma_mask;
++	if (!dma_mask)
++		return swiotlb_alloc_coherent(hwdev, size, dma_handle, flags);
++	if (dma_mask >= (max_pfn << PAGE_SHIFT)) {
++		page = alloc_pages_node(node, myflags, get_order(size));
++		if (page) {
++			*dma_handle = page_to_phys(page);
++			return page_address(page);
++		}
++	}
++	if (dma_mask >= DMA_32BIT_MASK) {
++		page = alloc_pages_node(node,
++				myflags | GFP_DMA32, get_order(size));
++		if (page) {
++			*dma_handle = page_to_phys(page);
++			return page_address(page);
++		}
++	}
++	return swiotlb_alloc_coherent(hwdev, size, dma_handle, flags);
++}
++
+ struct dma_mapping_ops swiotlb_dma_ops = {
+ 	.mapping_error = swiotlb_dma_mapping_error,
+-	.alloc_coherent = swiotlb_alloc_coherent,
++	.alloc_coherent = x86_64_swiotlb_alloc_coherent,
+ 	.free_coherent = swiotlb_free_coherent,
+ 	.map_single = swiotlb_map_single_phys,
+ 	.unmap_single = swiotlb_unmap_single,
+
