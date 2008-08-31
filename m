@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759645AbYHaV2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759770AbYHaV3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759645AbYHaV2j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 17:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758219AbYHaV2c
+	id S1759770AbYHaV3b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 17:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758402AbYHaV3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 17:28:32 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44856 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758059AbYHaV2b (ORCPT
+	Sun, 31 Aug 2008 17:29:19 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:62856 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758333AbYHaV3S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 17:28:31 -0400
-Date: Sun, 31 Aug 2008 14:28:20 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tglx@tglx.de,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [patch v2   0/5] Nano/Microsecond resolution for select() and
- poll()
-Message-ID: <20080831142820.40029b56@infradead.org>
-In-Reply-To: <Pine.LNX.4.64.0808311411450.6096@alien.or.mcafeemobile.com>
-References: <20080831092828.13ae0279@infradead.org>
-	<Pine.LNX.4.64.0808311411450.6096@alien.or.mcafeemobile.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 31 Aug 2008 17:29:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=nEzet5PRkcBHGwao7kLqMsUdveJ+mEIUXzVxDgb8pePfbLdkfbIE6u4ux12TQMdtMg
+         uAQcRXokW2WwSdEYT//Pm7K6BV0ZZJ6m31J5wSycL5HN3d4OONYifHW7sx9Mwu5O5F4x
+         xjusXCtu5neJudaK2AhtpFZvmSGH57YxHStjc=
+From: Jakub Narebski <jnareb@gmail.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] Git User's Survey 2008
+Date: Sun, 31 Aug 2008 23:29:16 +0200
+User-Agent: KMail/1.9.3
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200808312329.17312.jnareb@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 31 Aug 2008 14:13:45 -0700 (PDT)
-Davide Libenzi <davidel@xmailserver.org> wrote:
+Hi all,
 
-> On Sun, 31 Aug 2008, Arjan van de Ven wrote:
-> 
-> > Note: 
-> > even though poll() (as opposed to ppoll()) only accepts milliseconds
-> > as userspace interface, the behavior will still improve because the
-> > current time no longer needs to be rounded up to the next jiffie,
-> > so on average a 500 microseconds behavior improvement.
-> 
-> Another way to get down in the timeout resolution for newer kernels,
-> and still supporting the syscalls with millisec timeouts, is to use
-> timerfds.
+We would like to ask you a few questions about your use of the Git
+version control system. This survey is mainly to understand who is
+using Git, how and why.
 
-perhaps, but once you have to change the app you can also make it use
-ppoll() rather than poll().. that's a VERY minute change.
+The results will be published to the Git wiki and discussed on the git
+mailing list.
 
+The survey would be open from 1 September till 10 October.
+
+Please devote a few minutes of your time to fill this simple
+questionnaire, it will help a lot the git community to understand your
+needs, what you like of git, and of course what you don't like  of it.
+
+The survey can be found here:
+  http://www.survs.com/survey?id=M3PIVU72&channel=2WXE4BVTW8
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Git Development Community
