@@ -1,89 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbYHaSGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757863AbYHaSG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756857AbYHaSGn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 14:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbYHaSGe
+	id S1757863AbYHaSG4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 14:06:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756407AbYHaSGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 14:06:34 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:36730 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754780AbYHaSGd (ORCPT
+	Sun, 31 Aug 2008 14:06:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52217 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756197AbYHaSGk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 14:06:33 -0400
-Date: Sun, 31 Aug 2008 11:06:30 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com, jes@sgi.com,
-       manfred@colorfullife.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] prevent ia64 from invoking irq handlers on offline CPUs
-Message-ID: <20080831180630.GF7015@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080831172814.GA15087@linux.vnet.ibm.com> <19f34abd0808311046g47907414wf3ef939d0a7bbfdb@mail.gmail.com> <20080831175100.GD7015@linux.vnet.ibm.com> <19f34abd0808311053m2fbaa711j5bfc846d81cf34b4@mail.gmail.com>
+	Sun, 31 Aug 2008 14:06:40 -0400
+Date: Sun, 31 Aug 2008 11:03:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, David Witbrodt <dawitbro@sbcglobal.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers <kernel-testers@vger.kernel.org>
+Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit
+ a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
+In-Reply-To: <86802c440808311054q4b8e8921qa9f090527b456e34@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0808311100520.12958@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>  <200808302334.29156.rjw@sisk.pl>  <86802c440808301810r17657f3fnb3c8af5496955e0d@mail.gmail.com>  <200808311427.19369.rjw@sisk.pl>  <alpine.LFD.1.10.0808311039330.12958@nehalem.linux-foundation.org>
+ <86802c440808311054q4b8e8921qa9f090527b456e34@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0808311053m2fbaa711j5bfc846d81cf34b4@mail.gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 31, 2008 at 07:53:32PM +0200, Vegard Nossum wrote:
-> On Sun, Aug 31, 2008 at 7:51 PM, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
-> >> > @@ -751,6 +749,7 @@ int __cpu_disable(void)
-> >> >        remove_siblinginfo(cpu);
-> >> >        cpu_clear(cpu, cpu_online_map);
+
+
+On Sun, 31 Aug 2008, Yinghai Lu wrote:
 > 
-> Here ^^^
-> 
-> >> >        fixup_irqs();
-> >> > +       cpu_clear(cpu, cpu_online_map);
-> >> >        local_flush_tlb_all();
-> >> >        cpu_clear(cpu, cpu_callin_map);
-> >> >        return 0;
-> >>
-> >> Hm. Maybe my eyes are going bad. But isn't that now clearing the cpu
-> >> both before and after calling fixup_irqs()?
-> >
-> > I don't believe so...  I removed the earlier one and added the later
-> > one.  Or is there another one hidden somewhere that I missed?
-> 
-> See marker above. It's not removed, is it?
+> wonder how the probe could find out the size of is 1fff_ffff..
 
-Right you are!!!  There were two to begin with, and I moved the first
-one only.  The attached updated patch removes the extra one.
+Heh. That's how PCI sizing works: you write all ones to the register, and 
+read back the result. The low bits won't change, and that indicates the 
+size.
 
-						Thanx, Paul
+But if _none_ of the bits change, then that simply means that the size 
+will be calculated to be 0xffffffff-start.
 
-Make ia64 refrain from clearing a given to-be-offlined CPU's bit in the
-cpu_online_mask until it has processed pending irqs.  This change
-prevents other CPUs from being blindsided by an apparently offline CPU
-nevertheless changing globally visible state.  Also remove the existing
-redundant cpu_clear(cpu, cpu_online_map).
+So the sizing will "work", it will just always report that the BAR covers 
+everything from start to the 4G limit.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
-diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
-index bcea81e..d8f05e5 100644
---- a/arch/ia64/kernel/smpboot.c
-+++ b/arch/ia64/kernel/smpboot.c
-@@ -741,16 +741,14 @@ int __cpu_disable(void)
- 			return -EBUSY;
- 	}
- 
--	cpu_clear(cpu, cpu_online_map);
--
- 	if (migrate_platform_irqs(cpu)) {
- 		cpu_set(cpu, cpu_online_map);
- 		return (-EBUSY);
- 	}
- 
- 	remove_siblinginfo(cpu);
--	cpu_clear(cpu, cpu_online_map);
- 	fixup_irqs();
-+	cpu_clear(cpu, cpu_online_map);
- 	local_flush_tlb_all();
- 	cpu_clear(cpu, cpu_callin_map);
- 	return 0;
+		Linus
