@@ -1,63 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbYHaJxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758526AbYHaKIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758548AbYHaJxb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 05:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756542AbYHaJxW
+	id S1758526AbYHaKIZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 06:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756542AbYHaKIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 05:53:22 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35463 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756533AbYHaJxV (ORCPT
+	Sun, 31 Aug 2008 06:08:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:45497 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755561AbYHaKIQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 05:53:21 -0400
-Date: Sun, 31 Aug 2008 10:36:08 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Peter Ambroz <comp@gjh.sk>
-Cc: linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Marvell 6145 PATA controller
-Message-ID: <20080831103608.69499247@lxorguk.ukuu.org.uk>
-In-Reply-To: <48B9DCBE.3000306@gjh.sk>
-References: <48B9DCBE.3000306@gjh.sk>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 31 Aug 2008 06:08:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=ueP96oGbhuR7qEsJR9iob73YH3OpWIHZR8QiHJFi4FbrEeSoG1JaEZdFXSOBR/yHru
+         DRPpzfhxnB4KDpQnXAANYcVjiuZ2h+nRa+5uVXQSR1RynS/2kGrCePyWd2R+uQ3eQEw3
+         OR6zpMK6GCjus8VNLwQE45N4L2NAT7x8BWEJM=
+Date: Sun, 31 Aug 2008 14:08:06 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, bfields@fieldses.org,
+       neilb@suse.de
+Subject: [PATCH] sunrpc - fixup userspace buffer possible overrun v2
+Message-ID: <20080831100806.GD7391@lenovo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The second solution is to remove few lines from ahci.c which lists the 
-> marvell 6145 device (and probably also marvell 6121).
-> Short patch included below.
+Vegard Nossum reported
+----------------------
+> I noticed that something weird is going on with /proc/sys/sunrpc/transports.
+> This file is generated in net/sunrpc/sysctl.c, function proc_do_xprt(). When
+> I "cat" this file, I get the expected output:
+>    $ cat /proc/sys/sunrpc/transports
+>    tcp 1048576
+>    udp 32768
 
-Yes. I know or to teach the AHCI driver how to drive the PATA part of the
-device. Unfortunately I've been trying - privately and now publically to
-get Jeff Garzik to fix that one for *months*.
+> But I think that it does not check the length of the buffer supplied by
+> userspace to read(). With my original program, I found that the stack was
+> being overwritten by the characters above, even when the length given to
+> read() was just 1.
 
-I also don't have the docs for it and requests to Jeff for the relevant
-documentation have never received replies even to confirm if he has it
+David Wagner added (among other things) that copy_to_user could be
+probably used here.
 
-> ----------CUT-----------
-> --- drivers/ata/ahci.c	2008-08-28 23:11:37.000000000 +0200
-> +++ drivers/ata/ahci.c	2008-08-30 20:08:59.000000000 +0200
-> @@ -590,10 +590,6 @@
->   	{ PCI_VDEVICE(SI, 0x1185), board_ahci }, /* SiS 966 */
->   	{ PCI_VDEVICE(SI, 0x0186), board_ahci }, /* SiS 968 */
-> 
-> -	/* Marvell */
-> -	{ PCI_VDEVICE(MARVELL, 0x6145), board_ahci_mv },	/* 6145 */
-> -	{ PCI_VDEVICE(MARVELL, 0x6121), board_ahci_mv },	/* 6121 */
-> -
->   	/* Generic, PCI class code for AHCI */
->   	{ PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
->   	  PCI_CLASS_STORAGE_SATA_AHCI, 0xffffff, board_ahci },
-> ----------CUT-----------
+The conclusion is that proc_do_xprt doesn't check for userside buffer
+size indeed so fix. Also set lenp to number of bytes were really written.
 
-And you can have my ack for it, but don't expect anything to happen
+Reported-by: Vegard Nossum <vegard.nossum@gmail.com>
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: David Wagner <daw@cs.berkeley.edu>
+---
 
-(and yes I *am* cross about this)
+Please review.
 
-Alan
+Index: linux-2.6.git/net/sunrpc/sysctl.c
+===================================================================
+--- linux-2.6.git.orig/net/sunrpc/sysctl.c	2008-08-31 13:43:46.000000000 +0400
++++ linux-2.6.git/net/sunrpc/sysctl.c	2008-08-31 13:58:14.000000000 +0400
+@@ -60,23 +60,26 @@ static int proc_do_xprt(ctl_table *table
+ 			void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+ 	char tmpbuf[256];
+-	int len;
++	size_t len;
++
+ 	if ((*ppos && !write) || !*lenp) {
+ 		*lenp = 0;
+ 		return 0;
+ 	}
++
+ 	if (write)
+ 		return -EINVAL;
+ 	else {
+ 		len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
+-		if (!access_ok(VERIFY_WRITE, buffer, len))
+-			return -EFAULT;
+-
+-		if (__copy_to_user(buffer, tmpbuf, len))
++		if (len > *lenp)
++			len = *lenp;
++		if (copy_to_user(buffer, tmpbuf, len))
+ 			return -EFAULT;
+ 	}
+-	*lenp -= len;
++
++	*lenp = len;
+ 	*ppos += len;
++
+ 	return 0;
+ }
+ 
