@@ -1,82 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbYHaCyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757799AbYHaC4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757385AbYHaCyA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 22:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbYHaCxv
+	id S1757799AbYHaC4S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 22:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbYHaC4B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 22:53:51 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2913 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752746AbYHaCxu (ORCPT
+	Sat, 30 Aug 2008 22:56:01 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:57594 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752835AbYHaC4A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 22:53:50 -0400
-Date: Sat, 30 Aug 2008 22:53:49 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Frans Pop <elendil@planet.nl>
-cc: linux-kernel@vger.kernel.org,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: [regression] usb: sometimes dead keyboard after boot (with debug
- log)
-In-Reply-To: <200808301736.27377.elendil@planet.nl>
-Message-ID: <Pine.LNX.4.44L0.0808302232230.514-100000@netrider.rowland.org>
+	Sat, 30 Aug 2008 22:56:00 -0400
+Date: Sat, 30 Aug 2008 20:54:12 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH] scsi/sd: Fix capacity output to show MB/GB/TB/...
+Message-ID: <20080831025412.GJ1239@parisc-linux.org>
+References: <48B9546B.4010004@simon.arlott.org.uk> <1220117091.3615.3.camel@localhost.localdomain> <20080830174516.GD1239@parisc-linux.org> <48B9B552.8060406@simon.arlott.org.uk> <48B9B588.7060709@simon.arlott.org.uk> <1220147947.3615.18.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1220147947.3615.18.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 30 Aug 2008, Frans Pop wrote:
+On Sat, Aug 30, 2008 at 08:59:07PM -0500, James Bottomley wrote:
+> However, I'm afraid it needs to be a bit more sophisticated:  for
+> instance, under these calculations, a 1.75TB disk will show up as 1TB.
+> Thus, I think we need to print the capacity to 3 significant figures to
+> cope with this case.
 
-> On Tuesday 26 August 2008, Alan Stern wrote:
-> > > Attached a full diff between dmesg from two consecutive boots: first
-> > > without keyboard; after reboot the keyboard is detected. The actual
-> > > difference is fairly small and clearly shows that usb 3-1 is not
-> > > handed off correctly, probably due to a small difference in timing.
-> > >
-> > > Note that I've never seen this problem with earlier kernels.
-> >
-> > I can't tell exactly what's going on because your usbcore module wasn't
-> > built with CONFIG_USB_DEBUG enabled.
-> 
-> I got lucky on the second boot with -rc5 and USB_DEBUG enabled.
-> Attached the output of dmesg. After this boot the keyboard was dead and 
-> the telltale "reset low speed USB device" message is present.
+Do you have an objection to my original suggestion of 1750GB in that
+case?  It saves faffing around with fractions and it's unlikely to
+confuse the user.
 
-Okay, now I can tell what happened.
+BTW, I do appreciate Simon's point about df showing a different number.
+How about we print:
 
-It's kind of amusing.  You ran across a side effect of some new code I
-added fairly recently.  The new code was supposed to make device
-operation _more_ reliable!  But in your case it backfired.  :-(
+sd 7:0:0:0: [sdc] 1099511627776 512-byte hardware sectors (563TB / 512TiB)
 
-Here's the story.  As you'd expect, ehci-hcd initialization interrupted
-the keyboard probing procedure.  The interruption occurred just before
-the point where the keyboard was configured.  As a result the
-configuration was not installed, but this isn't a fatal error and the
-kernel continued normally.
+(or perhaps a more realistic number ...)
 
-It turns out that the EHCI init had finished and the keyboard's
-connection was handed back to the UHCI controller before the hub driver
-got around to noticing the disconnection.  Here's where the new code
-came into play.  The idea is to prevent transient errors from causing
-lasting effects -- if the hub driver sees that a device _was_
-disconnected but after a hundred ms or so the same device appears to be
-plugged in to the same port as before, it resets the device and
-otherwise leaves it alone.  In particular it does not treat the event
-as a regular disconnection.  That's exactly what happened to you: EHCI
-init caused the keyboard to be disconnected from the UHCI controller,
-and it was reconnected again by the time the hub driver looked at it.
+sd 7:0:0:0: [sdc] 976562500000 512-byte hardware sectors (500TB / 455TiB)
 
-That's why there was no "USB disconnect" message and there was a "reset 
-low speed USB device" instead.  The end effect was that the _same_ 
-instantiation of the keyboard device remained present, and since it had 
-never been configured, of course it didn't work.
+It's perhaps a more gentle way of informing our users that they may not
+have quite as much capacity as they thought they had.
 
-This odd scenario might provide a valid reason for accepting the new 
-patch.  Or on the other hand, it might provide a reason for removing 
-the "ignore transient disconnect" changes.  At this point I'm not sure 
-what's best.
-
-Alan Stern
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
