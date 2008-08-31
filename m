@@ -1,817 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbYHaQMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbYHaQMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755405AbYHaQMT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 12:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbYHaQLf
+	id S1755568AbYHaQMo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 12:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbYHaQLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 12:11:35 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:54796 "EHLO smtp4.pp.htv.fi"
+	Sun, 31 Aug 2008 12:11:37 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:54804 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754651AbYHaQLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 12:11:30 -0400
-Date: Sun, 31 Aug 2008 19:10:16 +0300
+	id S1754724AbYHaQLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 12:11:34 -0400
+Date: Sun, 31 Aug 2008 19:10:21 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Greg Ungerer <gerg@snapgear.com>, jbarnes@virtuousgeek.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: [2.6 patch] m68k: remove the dead PCI code
-Message-ID: <20080831161016.GE3695@cs181140183.pp.htv.fi>
-References: <20080819134718.GH8852@cs181140183.pp.htv.fi> <48B24E2C.9060703@snapgear.com> <20080825204333.GA13027@cs181140183.pp.htv.fi> <48B77764.6060607@snapgear.com> <20080829070103.GD16462@cs181140183.pp.htv.fi> <Pine.LNX.4.64.0808290929280.22326@anakin>
+To: Greg Ungerer <gerg@snapgear.com>
+Cc: jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, geert@linux-m68k.org
+Subject: [2.6 patch] m68knommu: remove the eLIA support
+Message-ID: <20080831161021.GF3695@cs181140183.pp.htv.fi>
+References: <20080819134718.GH8852@cs181140183.pp.htv.fi> <48B24E2C.9060703@snapgear.com> <20080825204333.GA13027@cs181140183.pp.htv.fi> <48B77764.6060607@snapgear.com> <20080829070103.GD16462@cs181140183.pp.htv.fi> <48B7D88C.2070804@snapgear.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0808290929280.22326@anakin>
+In-Reply-To: <48B7D88C.2070804@snapgear.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 29, 2008 at 09:31:43AM +0200, Geert Uytterhoeven wrote:
-> On Fri, 29 Aug 2008, Adrian Bunk wrote:
-> > On Fri, Aug 29, 2008 at 02:13:24PM +1000, Greg Ungerer wrote:
-> > > Adrian Bunk wrote:
-> > >> A patch for removing the comempci code is below.
-> > >>
-> > >> It's a bit suspicious that asm/elia.h is now removed since comempci.c  
-> > >> was the only user. What's the sttus of the eLIA platform?
-> > >
-> > > Only ever a handful where made, and that was in 1999.
-> > > I doubt anyone could ever use the PCI interface on it
-> > > in any useful way.
-> > 
-> > So I can send a patch to remove the platform?
-> > 
-> > >> But COMEMPCI fails with a different error - this init/main.o build 
-> > >> error is present for CONFIG_PCI=y, CONFIG_COMEMPCI=n, so the dependency 
-> > >> of PCI on BROKEN is still required (unless it gets fixed).
-> > >
-> > > Unless I am mistaken there is now no need for the CONFIG_PCI option
-> > > if selecting m68knommu. The only m68knommu platforms that had PCI
-> > > as far as I know where those that use the comempci part.
-> > 
-> > That implies I can also kill the m68k PCI code since m68knommu will 
-> > never use it?
-> 
-> Sure. If the FreeScale guys ever forward-port their ColdFire/MMU code to
-> current mainline, we can readd it.
+On Fri, Aug 29, 2008 at 09:07:56PM +1000, Greg Ungerer wrote:
+>
+> Hi Adrian,
 
-Patch (on top of my Hades removal patch) is below.
+Hi Greg,
 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
+> Adrian Bunk wrote:
+>> On Fri, Aug 29, 2008 at 02:13:24PM +1000, Greg Ungerer wrote:
+>...
+>>> Only ever a handful where made, and that was in 1999.
+>>> I doubt anyone could ever use the PCI interface on it
+>>> in any useful way.
+>>
+>> So I can send a patch to remove the platform?
+>
+> Yeah, I guess we can add in back in of anyone complains.
+> I don't know of any users of it anymore.
+>...
+
+Patch below.
+
+> Regards
+> Greg
 
 cu
 Adrian
 
 
-<--  snip    -->
+<--  snip  -->
 
 
-This patch removes the no longer used m68k PCI code.
+Greg Ungerer said about this board:
+Only ever a handful where made, and that was in 1999.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- arch/m68k/Kconfig         |    4 
- arch/m68k/kernel/Makefile |    1 
- arch/m68k/kernel/bios32.c |  516 --------------------------------------
- include/asm-m68k/dma.h    |    4 
- include/asm-m68k/io.h     |   66 ----
- include/asm-m68k/pci.h    |   51 ---
- 6 files changed, 7 insertions(+), 635 deletions(-)
+ arch/m68knommu/Kconfig                |    6 ------
+ arch/m68knommu/Makefile               |    1 -
+ arch/m68knommu/include/asm/system.h   |    2 +-
+ arch/m68knommu/platform/5307/config.c |    2 +-
+ 4 files changed, 2 insertions(+), 9 deletions(-)
 
 
-diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
-index 7bacc1c..4b046fa 100644
---- a/arch/m68k/Kconfig
-+++ b/arch/m68k/Kconfig
-@@ -136,10 +136,6 @@ config ATARI
- 	  this kernel on an Atari, say Y here and browse the material
- 	  available in <file:Documentation/m68k>; otherwise say N.
+diff --git a/arch/m68knommu/Kconfig b/arch/m68knommu/Kconfig
+index 15ffd55..f43d50f 100644
+--- a/arch/m68knommu/Kconfig
++++ b/arch/m68knommu/Kconfig
+@@ -399,12 +399,6 @@ config M5307C3
+ 	help
+ 	  Support for the Motorola M5307C3 board.
  
--config PCI
--	bool
+-config eLIA
+-	bool "Moreton Bay eLIA board support"
+-	depends on M5307
 -	help
+-	  Support for the Moreton Bay eLIA board.
 -
- config MAC
- 	bool "Macintosh support"
- 	depends on !MMU_SUN3
-diff --git a/arch/m68k/kernel/Makefile b/arch/m68k/kernel/Makefile
-index 3a7f622..55d5d6b 100644
---- a/arch/m68k/kernel/Makefile
-+++ b/arch/m68k/kernel/Makefile
-@@ -14,5 +14,4 @@ obj-y	:= entry.o process.o traps.o ints.o signal.o ptrace.o module.o \
+ config SECUREEDGEMP3
+ 	bool "SnapGear SecureEdge/MP3 platform support"
+ 	depends on M5307
+diff --git a/arch/m68knommu/Makefile b/arch/m68knommu/Makefile
+index b63bbcf..fd0fb30 100644
+--- a/arch/m68knommu/Makefile
++++ b/arch/m68knommu/Makefile
+@@ -41,7 +41,6 @@ board-$(CONFIG_M5271EVB)	:= M5271EVB
+ board-$(CONFIG_M5275EVB)	:= M5275EVB
+ board-$(CONFIG_M5282EVB)	:= M5282EVB
+ board-$(CONFIG_ELITE)		:= eLITE
+-board-$(CONFIG_eLIA)		:= eLIA
+ board-$(CONFIG_NETtel)		:= NETtel
+ board-$(CONFIG_SECUREEDGEMP3)	:= MP3
+ board-$(CONFIG_CLEOPATRA)	:= CLEOPATRA
+diff --git a/arch/m68knommu/include/asm/system.h b/arch/m68knommu/include/asm/system.h
+index 40f49de..4496c0a 100644
+--- a/arch/m68knommu/include/asm/system.h
++++ b/arch/m68knommu/include/asm/system.h
+@@ -230,7 +230,7 @@ static inline unsigned long __xchg(unsigned long x, volatile void * ptr, int siz
+         jmp 0xf0000400;			\
+         ");				\
+ })
+-#elif defined(CONFIG_NETtel) || defined(CONFIG_eLIA) || \
++#elif defined(CONFIG_NETtel) || \
+       defined(CONFIG_SECUREEDGEMP3) || defined(CONFIG_CLEOPATRA)
+ #define HARD_RESET_NOW() ({		\
+         asm("				\
+diff --git a/arch/m68knommu/platform/5307/config.c b/arch/m68knommu/platform/5307/config.c
+index 11cff66..724faf0 100644
+--- a/arch/m68knommu/platform/5307/config.c
++++ b/arch/m68knommu/platform/5307/config.c
+@@ -123,7 +123,7 @@ void __init config_BSP(char *commandp, int size)
+ {
+ 	mcf_setimr(MCFSIM_IMR_MASKALL);
  
- devres-y = ../../../kernel/irq/devres.o
- 
--obj-$(CONFIG_PCI)	+= bios32.o
- obj-y$(CONFIG_MMU_SUN3) += dma.o	# no, it's not a typo
-diff --git a/arch/m68k/kernel/bios32.c b/arch/m68k/kernel/bios32.c
-deleted file mode 100644
-index 1c3b752..0000000
---- a/arch/m68k/kernel/bios32.c
-+++ /dev/null
-@@ -1,516 +0,0 @@
--/*
-- * bios32.c - PCI BIOS functions for m68k systems.
-- *
-- * Written by Wout Klaren.
-- *
-- * Based on the DEC Alpha bios32.c by Dave Rusling and David Mosberger.
-- */
--
--#include <linux/init.h>
--#include <linux/kernel.h>
--
--#if 0
--# define DBG_DEVS(args)		printk args
--#else
--# define DBG_DEVS(args)
--#endif
--
--#ifdef CONFIG_PCI
--
--/*
-- * PCI support for Linux/m68k. Currently only the Hades is supported.
-- *
-- * The support for PCI bridges in the DEC Alpha version has
-- * been removed in this version.
-- */
--
--#include <linux/pci.h>
--#include <linux/slab.h>
--#include <linux/mm.h>
--
--#include <asm/io.h>
--#include <asm/pci.h>
--#include <asm/uaccess.h>
--
--#define KB		1024
--#define MB		(1024*KB)
--#define GB		(1024*MB)
--
--#define MAJOR_REV	0
--#define MINOR_REV	5
--
--/*
-- * Align VAL to ALIGN, which must be a power of two.
-- */
--
--#define ALIGN(val,align)	(((val) + ((align) - 1)) & ~((align) - 1))
--
--/*
-- * Offsets relative to the I/O and memory base addresses from where resources
-- * are allocated.
-- */
--
--#define IO_ALLOC_OFFSET		0x00004000
--#define MEM_ALLOC_OFFSET	0x04000000
--
--/*
-- * Declarations of hardware specific initialisation functions.
-- */
--
--extern struct pci_bus_info *init_hades_pci(void);
--
--/*
-- * Bus info structure of the PCI bus. A pointer to this structure is
-- * put in the sysdata member of the pci_bus structure.
-- */
--
--static struct pci_bus_info *bus_info;
--
--static int pci_modify = 1;		/* If set, layout the PCI bus ourself. */
--static int skip_vga;			/* If set do not modify base addresses
--					   of vga cards.*/
--static int disable_pci_burst;		/* If set do not allow PCI bursts. */
--
--static unsigned int io_base;
--static unsigned int mem_base;
--
--/*
-- * static void disable_dev(struct pci_dev *dev)
-- *
-- * Disable PCI device DEV so that it does not respond to I/O or memory
-- * accesses.
-- *
-- * Parameters:
-- *
-- * dev	- device to disable.
-- */
--
--static void __init disable_dev(struct pci_dev *dev)
--{
--	unsigned short cmd;
--
--	if (((dev->class >> 8 == PCI_CLASS_NOT_DEFINED_VGA) ||
--	     (dev->class >> 8 == PCI_CLASS_DISPLAY_VGA) ||
--	     (dev->class >> 8 == PCI_CLASS_DISPLAY_XGA)) && skip_vga)
--		return;
--
--	pci_read_config_word(dev, PCI_COMMAND, &cmd);
--
--	cmd &= (~PCI_COMMAND_IO & ~PCI_COMMAND_MEMORY & ~PCI_COMMAND_MASTER);
--	pci_write_config_word(dev, PCI_COMMAND, cmd);
--}
--
--/*
-- * static void layout_dev(struct pci_dev *dev)
-- *
-- * Layout memory and I/O for a device.
-- *
-- * Parameters:
-- *
-- * device	- device to layout memory and I/O for.
-- */
--
--static void __init layout_dev(struct pci_dev *dev)
--{
--	unsigned short cmd;
--	unsigned int base, mask, size, reg;
--	unsigned int alignto;
--	int i;
--
--	/*
--	 * Skip video cards if requested.
--	 */
--
--	if (((dev->class >> 8 == PCI_CLASS_NOT_DEFINED_VGA) ||
--	     (dev->class >> 8 == PCI_CLASS_DISPLAY_VGA) ||
--	     (dev->class >> 8 == PCI_CLASS_DISPLAY_XGA)) && skip_vga)
--		return;
--
--	pci_read_config_word(dev, PCI_COMMAND, &cmd);
--
--	for (reg = PCI_BASE_ADDRESS_0, i = 0; reg <= PCI_BASE_ADDRESS_5; reg += 4, i++)
--	{
--		/*
--		 * Figure out how much space and of what type this
--		 * device wants.
--		 */
--
--		pci_write_config_dword(dev, reg, 0xffffffff);
--		pci_read_config_dword(dev, reg, &base);
--
--		if (!base)
--		{
--			/* this base-address register is unused */
--			dev->resource[i].start = 0;
--			dev->resource[i].end = 0;
--			dev->resource[i].flags = 0;
--			continue;
--		}
--
--		/*
--		 * We've read the base address register back after
--		 * writing all ones and so now we must decode it.
--		 */
--
--		if (base & PCI_BASE_ADDRESS_SPACE_IO)
--		{
--			/*
--			 * I/O space base address register.
--			 */
--
--			cmd |= PCI_COMMAND_IO;
--
--			base &= PCI_BASE_ADDRESS_IO_MASK;
--			mask = (~base << 1) | 0x1;
--			size = (mask & base) & 0xffffffff;
--
--			/*
--			 * Align to multiple of size of minimum base.
--			 */
--
--			alignto = max_t(unsigned int, 0x040, size);
--			base = ALIGN(io_base, alignto);
--			io_base = base + size;
--			pci_write_config_dword(dev, reg, base | PCI_BASE_ADDRESS_SPACE_IO);
--
--			dev->resource[i].start = base;
--			dev->resource[i].end = dev->resource[i].start + size - 1;
--			dev->resource[i].flags = IORESOURCE_IO | PCI_BASE_ADDRESS_SPACE_IO;
--
--			DBG_DEVS(("layout_dev: IO address: %lX\n", base));
--		}
--		else
--		{
--			unsigned int type;
--
--			/*
--			 * Memory space base address register.
--			 */
--
--			cmd |= PCI_COMMAND_MEMORY;
--			type = base & PCI_BASE_ADDRESS_MEM_TYPE_MASK;
--			base &= PCI_BASE_ADDRESS_MEM_MASK;
--			mask = (~base << 1) | 0x1;
--			size = (mask & base) & 0xffffffff;
--			switch (type)
--			{
--			case PCI_BASE_ADDRESS_MEM_TYPE_32:
--			case PCI_BASE_ADDRESS_MEM_TYPE_64:
--				break;
--
--			case PCI_BASE_ADDRESS_MEM_TYPE_1M:
--				printk("bios32 WARNING: slot %d, function %d "
--				       "requests memory below 1MB---don't "
--				       "know how to do that.\n",
--				       PCI_SLOT(dev->devfn),
--				       PCI_FUNC(dev->devfn));
--				continue;
--			}
--
--			/*
--			 * Align to multiple of size of minimum base.
--			 */
--
--			alignto = max_t(unsigned int, 0x1000, size);
--			base = ALIGN(mem_base, alignto);
--			mem_base = base + size;
--			pci_write_config_dword(dev, reg, base);
--
--			dev->resource[i].start = base;
--			dev->resource[i].end = dev->resource[i].start + size - 1;
--			dev->resource[i].flags = IORESOURCE_MEM;
--
--			if (type == PCI_BASE_ADDRESS_MEM_TYPE_64)
--			{
--				/*
--				 * 64-bit address, set the highest 32 bits
--				 * to zero.
--				 */
--
--				reg += 4;
--				pci_write_config_dword(dev, reg, 0);
--
--				i++;
--				dev->resource[i].start = 0;
--				dev->resource[i].end = 0;
--				dev->resource[i].flags = 0;
--			}
--		}
--	}
--
--	/*
--	 * Enable device:
--	 */
--
--	if (dev->class >> 8 == PCI_CLASS_NOT_DEFINED ||
--	    dev->class >> 8 == PCI_CLASS_NOT_DEFINED_VGA ||
--	    dev->class >> 8 == PCI_CLASS_DISPLAY_VGA ||
--	    dev->class >> 8 == PCI_CLASS_DISPLAY_XGA)
--	{
--		/*
--		 * All of these (may) have I/O scattered all around
--		 * and may not use i/o-base address registers at all.
--		 * So we just have to always enable I/O to these
--		 * devices.
--		 */
--		cmd |= PCI_COMMAND_IO;
--	}
--
--	pci_write_config_word(dev, PCI_COMMAND, cmd | PCI_COMMAND_MASTER);
--
--	pci_write_config_byte(dev, PCI_LATENCY_TIMER, (disable_pci_burst) ? 0 : 32);
--
--	if (bus_info != NULL)
--		bus_info->conf_device(dev);	/* Machine dependent configuration. */
--
--	DBG_DEVS(("layout_dev: bus %d  slot 0x%x  VID 0x%x  DID 0x%x  class 0x%x\n",
--		  dev->bus->number, PCI_SLOT(dev->devfn), dev->vendor, dev->device, dev->class));
--}
--
--/*
-- * static void layout_bus(struct pci_bus *bus)
-- *
-- * Layout memory and I/O for all devices on the given bus.
-- *
-- * Parameters:
-- *
-- * bus	- bus.
-- */
--
--static void __init layout_bus(struct pci_bus *bus)
--{
--	unsigned int bio, bmem;
--	struct pci_dev *dev;
--
--	DBG_DEVS(("layout_bus: starting bus %d\n", bus->number));
--
--	if (!bus->devices && !bus->children)
--		return;
--
--	/*
--	 * Align the current bases on appropriate boundaries (4K for
--	 * IO and 1MB for memory).
--	 */
--
--	bio = io_base = ALIGN(io_base, 4*KB);
--	bmem = mem_base = ALIGN(mem_base, 1*MB);
--
--	/*
--	 * PCI devices might have been setup by a PCI BIOS emulation
--	 * running under TOS. In these cases there is a
--	 * window during which two devices may have an overlapping
--	 * address range. To avoid this causing trouble, we first
--	 * turn off the I/O and memory address decoders for all PCI
--	 * devices.  They'll be re-enabled only once all address
--	 * decoders are programmed consistently.
--	 */
--
--	DBG_DEVS(("layout_bus: disable_dev for bus %d\n", bus->number));
--
--	for (dev = bus->devices; dev; dev = dev->sibling)
--	{
--		if ((dev->class >> 16 != PCI_BASE_CLASS_BRIDGE) ||
--		    (dev->class >> 8 == PCI_CLASS_BRIDGE_PCMCIA))
--			disable_dev(dev);
--	}
--
--	/*
--	 * Allocate space to each device:
--	 */
--
--	DBG_DEVS(("layout_bus: starting bus %d devices\n", bus->number));
--
--	for (dev = bus->devices; dev; dev = dev->sibling)
--	{
--		if ((dev->class >> 16 != PCI_BASE_CLASS_BRIDGE) ||
--		    (dev->class >> 8 == PCI_CLASS_BRIDGE_PCMCIA))
--			layout_dev(dev);
--	}
--
--	DBG_DEVS(("layout_bus: bus %d finished\n", bus->number));
--}
--
--/*
-- * static void pcibios_fixup(void)
-- *
-- * Layout memory and I/O of all devices on the PCI bus if 'pci_modify' is
-- * true. This might be necessary because not every m68k machine with a PCI
-- * bus has a PCI BIOS. This function should be called right after
-- * pci_scan_bus() in pcibios_init().
-- */
--
--static void __init pcibios_fixup(void)
--{
--	if (pci_modify)
--	{
--		/*
--		 * Set base addresses for allocation of I/O and memory space.
--		 */
--
--		io_base = bus_info->io_space.start + IO_ALLOC_OFFSET;
--		mem_base = bus_info->mem_space.start + MEM_ALLOC_OFFSET;
--
--		/*
--		 * Scan the tree, allocating PCI memory and I/O space.
--		 */
--
--		layout_bus(pci_bus_b(pci_root.next));
--	}
--
--	/*
--	 * Fix interrupt assignments, etc.
--	 */
--
--	bus_info->fixup(pci_modify);
--}
--
--/*
-- * static void pcibios_claim_resources(struct pci_bus *bus)
-- *
-- * Claim all resources that are assigned to devices on the given bus.
-- *
-- * Parameters:
-- *
-- * bus	- bus.
-- */
--
--static void __init pcibios_claim_resources(struct pci_bus *bus)
--{
--	struct pci_dev *dev;
--	int i;
--
--	while (bus)
--	{
--		for (dev = bus->devices; (dev != NULL); dev = dev->sibling)
--		{
--			for (i = 0; i < PCI_NUM_RESOURCES; i++)
--			{
--				struct resource *r = &dev->resource[i];
--				struct resource *pr;
--				struct pci_bus_info *bus_info = (struct pci_bus_info *) dev->sysdata;
--
--				if ((r->start == 0) || (r->parent != NULL))
--					continue;
--#if 1
--				if (r->flags & IORESOURCE_IO)
--					pr = &bus_info->io_space;
--				else
--					pr = &bus_info->mem_space;
--#else
--				if (r->flags & IORESOURCE_IO)
--					pr = &ioport_resource;
--				else
--					pr = &iomem_resource;
--#endif
--				if (request_resource(pr, r) < 0)
--				{
--					printk(KERN_ERR "PCI: Address space collision on region %d of device %s\n", i, dev->name);
--				}
--			}
--		}
--
--		if (bus->children)
--			pcibios_claim_resources(bus->children);
--
--		bus = bus->next;
--	}
--}
--
--/*
-- * int pcibios_assign_resource(struct pci_dev *dev, int i)
-- *
-- * Assign a new address to a PCI resource.
-- *
-- * Parameters:
-- *
-- * dev	- device.
-- * i	- resource.
-- *
-- * Result: 0 if successful.
-- */
--
--int __init pcibios_assign_resource(struct pci_dev *dev, int i)
--{
--	struct resource *r = &dev->resource[i];
--	struct resource *pr = pci_find_parent_resource(dev, r);
--	unsigned long size = r->end + 1;
--
--	if (!pr)
--		return -EINVAL;
--
--	if (r->flags & IORESOURCE_IO)
--	{
--		if (size > 0x100)
--			return -EFBIG;
--
--		if (allocate_resource(pr, r, size, bus_info->io_space.start +
--				      IO_ALLOC_OFFSET,  bus_info->io_space.end, 1024))
--			return -EBUSY;
--	}
--	else
--	{
--		if (allocate_resource(pr, r, size, bus_info->mem_space.start +
--				      MEM_ALLOC_OFFSET, bus_info->mem_space.end, size))
--			return -EBUSY;
--	}
--
--	if (i < 6)
--		pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + 4 * i, r->start);
--
--	return 0;
--}
--
--void __init pcibios_fixup_bus(struct pci_bus *bus)
--{
--	struct pci_dev *dev;
--	void *sysdata;
--
--	sysdata = (bus->parent) ? bus->parent->sysdata : bus->sysdata;
--
--	for (dev = bus->devices; (dev != NULL); dev = dev->sibling)
--		dev->sysdata = sysdata;
--}
--
--void __init pcibios_init(void)
--{
--	printk("Linux/m68k PCI BIOS32 revision %x.%02x\n", MAJOR_REV, MINOR_REV);
--
--	bus_info = NULL;
--
--/* Hades code was:
--	if (MACH_IS_HADES)
--		bus_info = init_hades_pci();
--*/
--
--	if (bus_info != NULL)
--	{
--		printk("PCI: Probing PCI hardware\n");
--		pci_scan_bus(0, bus_info->m68k_pci_ops, bus_info);
--		pcibios_fixup();
--		pcibios_claim_resources(pci_root);
--	}
--	else
--		printk("PCI: No PCI bus detected\n");
--}
--
--char * __init pcibios_setup(char *str)
--{
--	if (!strcmp(str, "nomodify"))
--	{
--		pci_modify = 0;
--		return NULL;
--	}
--	else if (!strcmp(str, "skipvga"))
--	{
--		skip_vga = 1;
--		return NULL;
--	}
--	else if (!strcmp(str, "noburst"))
--	{
--		disable_pci_burst = 1;
--		return NULL;
--	}
--
--	return str;
--}
--#endif /* CONFIG_PCI */
-diff --git a/include/asm-m68k/dma.h b/include/asm-m68k/dma.h
-index d0c9e61..4240fbc 100644
---- a/include/asm-m68k/dma.h
-+++ b/include/asm-m68k/dma.h
-@@ -11,10 +11,6 @@
- extern int request_dma(unsigned int dmanr, const char * device_id);	/* reserve a DMA channel */
- extern void free_dma(unsigned int dmanr);	/* release it again */
- 
--#ifdef CONFIG_PCI
--extern int isa_dma_bridge_buggy;
--#else
- #define isa_dma_bridge_buggy    (0)
--#endif
- 
- #endif /* _M68K_DMA_H */
-diff --git a/include/asm-m68k/io.h b/include/asm-m68k/io.h
-index 657187f..9e673e3 100644
---- a/include/asm-m68k/io.h
-+++ b/include/asm-m68k/io.h
-@@ -7,15 +7,12 @@
-  *            - added skeleton for GG-II and Amiga PCMCIA
-  * 2/3/01 RZ: - moved a few more defs into raw_io.h
-  *
-- * inX/outX/readX/writeX should not be used by any driver unless it does
-- * ISA or PCI access. Other drivers should use function defined in raw_io.h
-+ * inX/outX should not be used by any driver unless it does
-+ * ISA access. Other drivers should use function defined in raw_io.h
-  * or define its own macros on top of these.
-  *
-- *    inX(),outX()              are for PCI and ISA I/O
-- *    readX(),writeX()          are for PCI memory
-+ *    inX(),outX()              are for ISA I/O
-  *    isa_readX(),isa_writeX()  are for ISA memory
-- *
-- * moved mem{cpy,set}_*io inside CONFIG_PCI
-  */
- 
- #ifndef _IO_H
-@@ -256,10 +253,7 @@ static inline void isa_delay(void)
-        (ISA_SEX ? raw_outsl(isa_itl(port), (u32 *)(buf), (nr)) :  \
-                   raw_outsw_swapw(isa_itw(port), (u16 *)(buf), (nr)<<1))
- 
--#endif  /* CONFIG_ISA */
--
- 
--#if defined(CONFIG_ISA) && !defined(CONFIG_PCI)
- #define inb     isa_inb
- #define inb_p   isa_inb_p
- #define outb    isa_outb
-@@ -282,55 +276,9 @@ static inline void isa_delay(void)
- #define readw   isa_readw
- #define writeb  isa_writeb
- #define writew  isa_writew
--#endif /* CONFIG_ISA */
--
--#if defined(CONFIG_PCI)
--
--#define readl(addr)      in_le32(addr)
--#define writel(val,addr) out_le32((addr),(val))
--
--/* those can be defined for both ISA and PCI - it won't work though */
--#define readb(addr)       in_8(addr)
--#define readw(addr)       in_le16(addr)
--#define writeb(val,addr)  out_8((addr),(val))
--#define writew(val,addr)  out_le16((addr),(val))
- 
--#define readb_relaxed(addr) readb(addr)
--#define readw_relaxed(addr) readw(addr)
--#define readl_relaxed(addr) readl(addr)
-+#else  /* CONFIG_ISA */
- 
--#ifndef CONFIG_ISA
--#define inb(port)      in_8(port)
--#define outb(val,port) out_8((port),(val))
--#define inw(port)      in_le16(port)
--#define outw(val,port) out_le16((port),(val))
--#define inl(port)      in_le32(port)
--#define outl(val,port) out_le32((port),(val))
--
--#else
--/*
-- * kernel with both ISA and PCI compiled in, those have
-- * conflicting defs for in/out. Simply consider port < 1024
-- * ISA and everything else PCI. read,write not defined
-- * in this case
-- */
--#define inb(port) ((port)<1024 ? isa_inb(port) : in_8(port))
--#define inb_p(port) ((port)<1024 ? isa_inb_p(port) : in_8(port))
--#define inw(port) ((port)<1024 ? isa_inw(port) : in_le16(port))
--#define inw_p(port) ((port)<1024 ? isa_inw_p(port) : in_le16(port))
--#define inl(port) ((port)<1024 ? isa_inl(port) : in_le32(port))
--#define inl_p(port) ((port)<1024 ? isa_inl_p(port) : in_le32(port))
--
--#define outb(val,port) ((port)<1024 ? isa_outb((val),(port)) : out_8((port),(val)))
--#define outb_p(val,port) ((port)<1024 ? isa_outb_p((val),(port)) : out_8((port),(val)))
--#define outw(val,port) ((port)<1024 ? isa_outw((val),(port)) : out_le16((port),(val)))
--#define outw_p(val,port) ((port)<1024 ? isa_outw_p((val),(port)) : out_le16((port),(val)))
--#define outl(val,port) ((port)<1024 ? isa_outl((val),(port)) : out_le32((port),(val)))
--#define outl_p(val,port) ((port)<1024 ? isa_outl_p((val),(port)) : out_le32((port),(val)))
--#endif
--#endif /* CONFIG_PCI */
--
--#if !defined(CONFIG_ISA) && !defined(CONFIG_PCI)
- /*
-  * We need to define dummy functions for GENERIC_IOMAP support.
-  */
-@@ -357,11 +305,11 @@ static inline void isa_delay(void)
- #define writeb(val,addr) out_8((addr),(val))
- #define readw(addr)      in_le16(addr)
- #define writew(val,addr) out_le16((addr),(val))
--#endif
--#if !defined(CONFIG_PCI)
-+
-+#endif /* CONFIG_ISA */
-+
- #define readl(addr)      in_le32(addr)
- #define writel(val,addr) out_le32((addr),(val))
--#endif
- 
- #define mmiowb()
- 
-diff --git a/include/asm-m68k/pci.h b/include/asm-m68k/pci.h
-index 678cb0b..aa8eb33 100644
---- a/include/asm-m68k/pci.h
-+++ b/include/asm-m68k/pci.h
-@@ -1,57 +1,6 @@
- #ifndef _ASM_M68K_PCI_H
- #define _ASM_M68K_PCI_H
- 
--/*
-- * asm-m68k/pci_m68k.h - m68k specific PCI declarations.
-- *
-- * Written by Wout Klaren.
-- */
--
--#include <asm/scatterlist.h>
--
--struct pci_ops;
--
--/*
-- * Structure with hardware dependent information and functions of the
-- * PCI bus.
-- */
--
--struct pci_bus_info
--{
--	/*
--	 * Resources of the PCI bus.
--	 */
--
--	struct resource mem_space;
--	struct resource io_space;
--
--	/*
--	 * System dependent functions.
--	 */
--
--	struct pci_ops *m68k_pci_ops;
--
--	void (*fixup)(int pci_modify);
--	void (*conf_device)(struct pci_dev *dev);
--};
--
--#define pcibios_assign_all_busses()	0
--#define pcibios_scan_all_fns(a, b)	0
--
--static inline void pcibios_set_master(struct pci_dev *dev)
--{
--	/* No special bus mastering setup handling */
--}
--
--static inline void pcibios_penalize_isa_irq(int irq, int active)
--{
--	/* We don't do dynamic PCI IRQ allocation */
--}
--
--/* The PCI address space does equal the physical memory
-- * address space.  The networking and block device layers use
-- * this boolean for bounce buffer decisions.
-- */
- #define PCI_DMA_BUS_IS_PHYS	(1)
- 
- #endif /* _ASM_M68K_PCI_H */
+-#if defined(CONFIG_NETtel) || defined(CONFIG_eLIA) || \
++#if defined(CONFIG_NETtel) || \
+     defined(CONFIG_SECUREEDGEMP3) || defined(CONFIG_CLEOPATRA)
+ 	/* Copy command line from FLASH to local buffer... */
+ 	memcpy(commandp, (char *) 0xf0004000, size);
 
