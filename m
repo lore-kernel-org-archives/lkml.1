@@ -1,83 +1,426 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbYHaRqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbYHaRuE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756824AbYHaRqo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 13:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755328AbYHaRqg
+	id S1756492AbYHaRuE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 13:50:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbYHaRtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 13:46:36 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:29717 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755140AbYHaRqf (ORCPT
+	Sun, 31 Aug 2008 13:49:55 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:52346 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754557AbYHaRty (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 13:46:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=iD18IcY5wwDjM5QXE+5PV70MvQO490J41ZjlCMnAdEUeKXHV/Awql6wbsL8yVx9Utk
-         Wx1Npapi4XASoA4Xr95Iaq1Cc7tVnpj/8uSQ8z99cC4vA+gZ0t38Z16mbPIPlbXSDJG4
-         k7O34cytPl0mtAzaQfdHebSJp3fQhkBnUtn0A=
-Message-ID: <19f34abd0808311046g47907414wf3ef939d0a7bbfdb@mail.gmail.com>
-Date: Sun, 31 Aug 2008 19:46:33 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH] prevent ia64 from invoking irq handlers on offline CPUs
-Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com, jes@sgi.com,
-       manfred@colorfullife.com, akpm@linux-foundation.org
-In-Reply-To: <20080831172814.GA15087@linux.vnet.ibm.com>
+	Sun, 31 Aug 2008 13:49:54 -0400
+Date: Sun, 31 Aug 2008 23:17:56 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: hugh@veritas.com, kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
+       xemul@openvz.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [RFC][PATCH] Remove cgroup member from struct page
+Message-ID: <20080831174756.GA25790@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	hugh@veritas.com, kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
+	xemul@openvz.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <20080831172814.GA15087@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 31, 2008 at 7:28 PM, Paul E. McKenney
-<paulmck@linux.vnet.ibm.com> wrote:
-> Make ia64 refrain from clearing a given to-be-offlined CPU's bit in the
-> cpu_online_mask until it has processed pending irqs.  This change
-> prevents other CPUs from being blindsided by an apparently offline CPU
-> nevertheless changing globally visible state.
->
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
->
->  smpboot.c |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->
-> diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
-> index bcea81e..7a90f42 100644
-> --- a/arch/ia64/kernel/smpboot.c
-> +++ b/arch/ia64/kernel/smpboot.c
-> @@ -741,8 +741,6 @@ int __cpu_disable(void)
->                        return -EBUSY;
->        }
->
-> -       cpu_clear(cpu, cpu_online_map);
-> -
->        if (migrate_platform_irqs(cpu)) {
->                cpu_set(cpu, cpu_online_map);
->                return (-EBUSY);
-> @@ -751,6 +749,7 @@ int __cpu_disable(void)
->        remove_siblinginfo(cpu);
->        cpu_clear(cpu, cpu_online_map);
->        fixup_irqs();
-> +       cpu_clear(cpu, cpu_online_map);
->        local_flush_tlb_all();
->        cpu_clear(cpu, cpu_callin_map);
->        return 0;
 
-Hm. Maybe my eyes are going bad. But isn't that now clearing the cpu
-both before and after calling fixup_irqs()?
+This is a rewrite of a patch I had written long back to remove struct page
+(I shared the patches with Kamezawa, but never posted them anywhere else).
+I spent the weekend, cleaning them up for 2.6.27-rc5-mmotm (29 Aug 2008).
 
+I've tested the patches on an x86_64 box, I've run a simple test running
+under the memory control group and the same test running concurrently under
+two different groups (and creating pressure within their groups). I've also
+compiled the patch with CGROUP_MEM_RES_CTLR turned off.
 
-Vegard
+Advantages of the patch
+
+1. It removes the extra pointer in struct page
+
+Disadvantages
+
+1. It adds an additional lock structure to struct page_cgroup
+2. Radix tree lookup is not an O(1) operation, once the page is known
+   getting to the page_cgroup (pc) is a little more expensive now.
+
+This is an initial RFC for comments
+
+TODOs
+
+1. Test the page migration changes
+2. Test the performance impact of the patch/approach
+
+Comments/Reviews?
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ include/linux/memcontrol.h |   23 +++++-
+ include/linux/mm_types.h   |    4 -
+ mm/memcontrol.c            |  165 +++++++++++++++++++++++++++++++++------------
+ 3 files changed, 144 insertions(+), 48 deletions(-)
+
+diff -puN mm/memcontrol.c~memcg_move_to_radix_tree mm/memcontrol.c
+--- linux-2.6.27-rc5/mm/memcontrol.c~memcg_move_to_radix_tree	2008-08-30 22:49:28.000000000 +0530
++++ linux-2.6.27-rc5-balbir/mm/memcontrol.c	2008-08-31 23:03:06.000000000 +0530
+@@ -24,7 +24,7 @@
+ #include <linux/smp.h>
+ #include <linux/page-flags.h>
+ #include <linux/backing-dev.h>
+-#include <linux/bit_spinlock.h>
++#include <linux/radix-tree.h>
+ #include <linux/rcupdate.h>
+ #include <linux/slab.h>
+ #include <linux/swap.h>
+@@ -40,6 +40,9 @@ struct cgroup_subsys mem_cgroup_subsys _
+ static struct kmem_cache *page_cgroup_cache __read_mostly;
+ #define MEM_CGROUP_RECLAIM_RETRIES	5
+ 
++static struct radix_tree_root mem_cgroup_tree;
++static spinlock_t mem_cgroup_tree_lock;
++
+ /*
+  * Statistics for memory cgroup.
+  */
+@@ -159,6 +162,7 @@ struct page_cgroup {
+ 	struct page *page;
+ 	struct mem_cgroup *mem_cgroup;
+ 	int flags;
++	spinlock_t lock;
+ };
+ #define PAGE_CGROUP_FLAG_CACHE	   (0x1)	/* charged as cache */
+ #define PAGE_CGROUP_FLAG_ACTIVE    (0x2)	/* page is active in this cgroup */
+@@ -248,35 +252,94 @@ struct mem_cgroup *mem_cgroup_from_task(
+ 				struct mem_cgroup, css);
+ }
+ 
+-static inline int page_cgroup_locked(struct page *page)
++static int page_assign_page_cgroup(struct page *page, struct page_cgroup *pc,
++					gfp_t gfp_mask)
+ {
+-	return bit_spin_is_locked(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
++	unsigned long pfn = page_to_pfn(page);
++	unsigned long flags;
++	int err = 0;
++	struct page_cgroup *old_pc;
++
++	if (pc) {
++		err = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
++		if (err) {
++			printk(KERN_WARNING "could not preload radix tree "
++				"in %s\n", __func__);
++			goto done;
++		}
++	}
++
++	spin_lock_irqsave(&mem_cgroup_tree_lock, flags);
++	old_pc = radix_tree_lookup(&mem_cgroup_tree, pfn);
++	if (pc && old_pc) {
++		err = -EEXIST;
++		goto pc_race;
++	}
++	if (pc) {
++		err = radix_tree_insert(&mem_cgroup_tree, pfn, pc);
++		if (err)
++			printk(KERN_WARNING "Inserting into radix tree failed "
++				"in %s\n", __func__);
++	} else
++		radix_tree_delete(&mem_cgroup_tree, pfn);
++pc_race:
++	spin_unlock_irqrestore(&mem_cgroup_tree_lock, flags);
++done:
++	if (pc)
++		radix_tree_preload_end();
++	return err;
+ }
+ 
+-static void page_assign_page_cgroup(struct page *page, struct page_cgroup *pc)
++struct page_cgroup *__page_get_page_cgroup(struct page *page, bool lock,
++						bool trylock)
+ {
+-	VM_BUG_ON(!page_cgroup_locked(page));
+-	page->page_cgroup = ((unsigned long)pc | PAGE_CGROUP_LOCK);
++	unsigned long pfn = page_to_pfn(page);
++	struct page_cgroup *pc;
++	int ret;
++
++	BUG_ON(lock && trylock);
++
++	rcu_read_lock();
++	pc = radix_tree_lookup(&mem_cgroup_tree, pfn);
++
++	if (pc && lock)
++		spin_lock(&pc->lock);
++
++	if (pc && trylock) {
++		ret = spin_trylock(&pc->lock);
++		if (!ret)
++			pc = NULL;
++	}
++
++	rcu_read_unlock();
++
++	return pc;
+ }
+ 
+-struct page_cgroup *page_get_page_cgroup(struct page *page)
++static inline void lock_page_cgroup(struct page_cgroup *pc)
+ {
+-	return (struct page_cgroup *) (page->page_cgroup & ~PAGE_CGROUP_LOCK);
++	BUG_ON(!pc);
++	spin_lock(&pc->lock);
+ }
+ 
+-static void lock_page_cgroup(struct page *page)
++static __always_inline void lock_page_cgroup_irqsave(struct page_cgroup *pc,
++							unsigned long *flags)
+ {
+-	bit_spin_lock(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
++	BUG_ON(!pc);
++	spin_lock_irqsave(&pc->lock, *flags);
+ }
+ 
+-static int try_lock_page_cgroup(struct page *page)
++static inline void unlock_page_cgroup_irqrestore(struct page_cgroup *pc,
++							unsigned long flags)
+ {
+-	return bit_spin_trylock(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
++	BUG_ON(!pc);
++	spin_unlock_irqrestore(&pc->lock, flags);
+ }
+ 
+-static void unlock_page_cgroup(struct page *page)
++static inline void unlock_page_cgroup(struct page_cgroup *pc)
+ {
+-	bit_spin_unlock(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
++	BUG_ON(!pc);
++	spin_unlock(&pc->lock);
+ }
+ 
+ static void __mem_cgroup_remove_list(struct mem_cgroup_per_zone *mz,
+@@ -377,17 +440,15 @@ void mem_cgroup_move_lists(struct page *
+ 	 * safely get to page_cgroup without it, so just try_lock it:
+ 	 * mem_cgroup_isolate_pages allows for page left on wrong list.
+ 	 */
+-	if (!try_lock_page_cgroup(page))
++	pc = page_get_page_cgroup_trylock(page);
++	if (!pc)
+ 		return;
+ 
+-	pc = page_get_page_cgroup(page);
+-	if (pc) {
+-		mz = page_cgroup_zoneinfo(pc);
+-		spin_lock_irqsave(&mz->lru_lock, flags);
+-		__mem_cgroup_move_lists(pc, lru);
+-		spin_unlock_irqrestore(&mz->lru_lock, flags);
+-	}
+-	unlock_page_cgroup(page);
++	mz = page_cgroup_zoneinfo(pc);
++	spin_lock_irqsave(&mz->lru_lock, flags);
++	__mem_cgroup_move_lists(pc, lru);
++	spin_unlock_irqrestore(&mz->lru_lock, flags);
++	unlock_page_cgroup(pc);
+ }
+ 
+ /*
+@@ -516,7 +577,7 @@ static int mem_cgroup_charge_common(stru
+ 				struct mem_cgroup *memcg)
+ {
+ 	struct mem_cgroup *mem;
+-	struct page_cgroup *pc;
++	struct page_cgroup *pc, *old_pc;
+ 	unsigned long flags;
+ 	unsigned long nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+ 	struct mem_cgroup_per_zone *mz;
+@@ -569,6 +630,8 @@ static int mem_cgroup_charge_common(stru
+ 
+ 	pc->mem_cgroup = mem;
+ 	pc->page = page;
++	spin_lock_init(&pc->lock);
++
+ 	/*
+ 	 * If a page is accounted as a page cache, insert to inactive list.
+ 	 * If anon, insert to active list.
+@@ -582,22 +645,34 @@ static int mem_cgroup_charge_common(stru
+ 	} else
+ 		pc->flags = PAGE_CGROUP_FLAG_ACTIVE;
+ 
+-	lock_page_cgroup(page);
+-	if (unlikely(page_get_page_cgroup(page))) {
+-		unlock_page_cgroup(page);
++	old_pc = page_get_page_cgroup_locked(page);
++	if (old_pc) {
++		unlock_page_cgroup(old_pc);
++		res_counter_uncharge(&mem->res, PAGE_SIZE);
++		css_put(&mem->css);
++		kmem_cache_free(page_cgroup_cache, old_pc);
++		goto done;
++	}
++
++	lock_page_cgroup(pc);
++	/*
++	 * page_get_page_cgroup() does not necessarily guarantee that
++	 * there will be no race in checking for pc, page_assign_page_pc()
++	 * will definitely catch it.
++	 */
++	if (page_assign_page_cgroup(page, pc, gfp_mask)) {
++		unlock_page_cgroup(pc);
+ 		res_counter_uncharge(&mem->res, PAGE_SIZE);
+ 		css_put(&mem->css);
+ 		kmem_cache_free(page_cgroup_cache, pc);
+ 		goto done;
+ 	}
+-	page_assign_page_cgroup(page, pc);
+ 
+ 	mz = page_cgroup_zoneinfo(pc);
+ 	spin_lock_irqsave(&mz->lru_lock, flags);
+ 	__mem_cgroup_add_list(mz, pc);
+ 	spin_unlock_irqrestore(&mz->lru_lock, flags);
+-
+-	unlock_page_cgroup(page);
++	unlock_page_cgroup(pc);
+ done:
+ 	return 0;
+ out:
+@@ -645,15 +720,14 @@ int mem_cgroup_cache_charge(struct page 
+ 	if (!(gfp_mask & __GFP_WAIT)) {
+ 		struct page_cgroup *pc;
+ 
+-		lock_page_cgroup(page);
+-		pc = page_get_page_cgroup(page);
++		pc = page_get_page_cgroup_locked(page);
+ 		if (pc) {
+ 			VM_BUG_ON(pc->page != page);
+ 			VM_BUG_ON(!pc->mem_cgroup);
+-			unlock_page_cgroup(page);
++			unlock_page_cgroup(pc);
+ 			return 0;
+ 		}
+-		unlock_page_cgroup(page);
++		unlock_page_cgroup(pc);
+ 	}
+ 
+ 	if (unlikely(!mm))
+@@ -673,6 +747,7 @@ __mem_cgroup_uncharge_common(struct page
+ 	struct mem_cgroup *mem;
+ 	struct mem_cgroup_per_zone *mz;
+ 	unsigned long flags;
++	int ret;
+ 
+ 	if (mem_cgroup_subsys.disabled)
+ 		return;
+@@ -680,8 +755,7 @@ __mem_cgroup_uncharge_common(struct page
+ 	/*
+ 	 * Check if our page_cgroup is valid
+ 	 */
+-	lock_page_cgroup(page);
+-	pc = page_get_page_cgroup(page);
++	pc = page_get_page_cgroup_locked(page);
+ 	if (unlikely(!pc))
+ 		goto unlock;
+ 
+@@ -697,8 +771,9 @@ __mem_cgroup_uncharge_common(struct page
+ 	__mem_cgroup_remove_list(mz, pc);
+ 	spin_unlock_irqrestore(&mz->lru_lock, flags);
+ 
+-	page_assign_page_cgroup(page, NULL);
+-	unlock_page_cgroup(page);
++	ret = page_assign_page_cgroup(page, NULL, GFP_KERNEL);
++	VM_BUG_ON(ret);
++	unlock_page_cgroup(pc);
+ 
+ 	mem = pc->mem_cgroup;
+ 	res_counter_uncharge(&mem->res, PAGE_SIZE);
+@@ -707,7 +782,14 @@ __mem_cgroup_uncharge_common(struct page
+ 	kmem_cache_free(page_cgroup_cache, pc);
+ 	return;
+ unlock:
+-	unlock_page_cgroup(page);
++	unlock_page_cgroup(pc);
++}
++
++void page_reset_bad_cgroup(struct page *page)
++{
++	int ret;
++	ret = page_assign_page_cgroup(page, NULL, GFP_KERNEL);
++	VM_BUG_ON(ret);
+ }
+ 
+ void mem_cgroup_uncharge_page(struct page *page)
+@@ -734,15 +816,14 @@ int mem_cgroup_prepare_migration(struct 
+ 	if (mem_cgroup_subsys.disabled)
+ 		return 0;
+ 
+-	lock_page_cgroup(page);
+-	pc = page_get_page_cgroup(page);
++	pc = page_get_page_cgroup_locked(page);
+ 	if (pc) {
+ 		mem = pc->mem_cgroup;
+ 		css_get(&mem->css);
+ 		if (pc->flags & PAGE_CGROUP_FLAG_CACHE)
+ 			ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
+ 	}
+-	unlock_page_cgroup(page);
++	unlock_page_cgroup(pc);
+ 	if (mem) {
+ 		ret = mem_cgroup_charge_common(newpage, NULL, GFP_KERNEL,
+ 			ctype, mem);
+diff -puN include/linux/memcontrol.h~memcg_move_to_radix_tree include/linux/memcontrol.h
+--- linux-2.6.27-rc5/include/linux/memcontrol.h~memcg_move_to_radix_tree	2008-08-30 22:49:28.000000000 +0530
++++ linux-2.6.27-rc5-balbir/include/linux/memcontrol.h	2008-08-31 22:57:08.000000000 +0530
+@@ -27,9 +27,28 @@ struct mm_struct;
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+ 
+-#define page_reset_bad_cgroup(page)	((page)->page_cgroup = 0)
++extern void page_reset_bad_cgroup(struct page *page);
++extern struct page_cgroup *__page_get_page_cgroup(struct page *page, bool lock,
++							bool trylock);
++
++static __always_inline
++struct page_cgroup *page_get_page_cgroup(struct page *page)
++{
++	return __page_get_page_cgroup(page, false, false);
++}
++
++static __always_inline
++struct page_cgroup *page_get_page_cgroup_trylock(struct page *page)
++{
++	return __page_get_page_cgroup(page, false, true);
++}
++
++static __always_inline
++struct page_cgroup *page_get_page_cgroup_locked(struct page *page)
++{
++	return __page_get_page_cgroup(page, true, false);
++}
+ 
+-extern struct page_cgroup *page_get_page_cgroup(struct page *page);
+ extern int mem_cgroup_charge(struct page *page, struct mm_struct *mm,
+ 				gfp_t gfp_mask);
+ extern int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
+diff -puN include/linux/mm_types.h~memcg_move_to_radix_tree include/linux/mm_types.h
+--- linux-2.6.27-rc5/include/linux/mm_types.h~memcg_move_to_radix_tree	2008-08-31 13:30:57.000000000 +0530
++++ linux-2.6.27-rc5-balbir/include/linux/mm_types.h	2008-08-31 13:32:03.000000000 +0530
+@@ -92,10 +92,6 @@ struct page {
+ 	void *virtual;			/* Kernel virtual address (NULL if
+ 					   not kmapped, ie. highmem) */
+ #endif /* WANT_PAGE_VIRTUAL */
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+-	unsigned long page_cgroup;
+-#endif
+-
+ #ifdef CONFIG_KMEMCHECK
+ 	void *shadow;
+ #endif
+diff -puN mm/page_alloc.c~memcg_move_to_radix_tree mm/page_alloc.c
+_
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+	Balbir
