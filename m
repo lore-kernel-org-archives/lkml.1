@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755135AbYHaROV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbYHaRPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755135AbYHaROV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 13:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbYHaRON
+	id S1754534AbYHaRPW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 13:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbYHaRPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 13:14:13 -0400
-Received: from ns1.suse.de ([195.135.220.2]:45281 "EHLO mx1.suse.de"
+	Sun, 31 Aug 2008 13:15:06 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:55939 "EHLO smtp.mba.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752689AbYHaROM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 13:14:12 -0400
-From: Thomas Renninger <trenn@suse.de>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [ANNOUNCE] ACPI BIOS Guideline for Linux
-Date: Sun, 31 Aug 2008 15:18:24 +0200
-User-Agent: KMail/1.9.9
-Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>, linux-acpi@vger.kernel.org,
-       Len Brown <lenb@kernel.org>, Andi Kleen <ak@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200807241732.23412.trenn@suse.de> <200808291729.53628.trenn@suse.de> <20080830124713.GA5910@srcf.ucam.org>
-In-Reply-To: <20080830124713.GA5910@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1753528AbYHaRPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 13:15:05 -0400
+Date: Mon, 01 Sep 2008 02:15:05 +0900 (JST)
+Message-Id: <20080901.021505.108307990.anemo@mba.ocn.ne.jp>
+To: david@fries.net
+Cc: linux-kernel@vger.kernel.org, p_gortmaker@yahoo.com,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] ne.c fix, res->name
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20080830180503.GI25161@spacedout.fries.net>
+References: <20080830024425.GA24929@spacedout.fries.net>
+	<20080831.000357.70223885.anemo@mba.ocn.ne.jp>
+	<20080830180503.GI25161@spacedout.fries.net>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808311518.25421.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 30 August 2008 02:47:13 pm Matthew Garrett wrote:
-> On Fri, Aug 29, 2008 at 05:29:52PM +0200, Thomas Renninger wrote:
-> > On Thursday 28 August 2008 14:22:29 Matthew Garrett wrote:
-> > > Little. But what advantage do we get in the same functionality being
-> > > implemented in an entirely custom way? Even less.
-> >
-> > It is all about documentation, right.
-> > WMI is complicating things by one needless and complicated layer.
->
-> Not really. It provides approximately no complexity for Linux drivers,
-> and makes it easier for vendors to provide Windows support. WMI has not
-> been the hard bit of the drivers I've written. I don't see any reason to
-> ask vendors not to use it,
-Autoloading does not work yet?
-It is working fine with ordinary ACPI devices providing a HID.
-> as long as they're willing to document their 
-> implementation.
-I'll point that out, something like:
-If you really have to use WMI for Windows compatibility reason, make
-sure the important parts (is there already something to mention?
-Against what is the driver loaded -> autoloading?) are documented well.
+On Sat, 30 Aug 2008 13:05:03 -0500, David Fries <david@fries.net> wrote:
+> On Sun, Aug 31, 2008 at 12:03:57AM +0900, Atsushi Nemoto wrote:
+> > On Fri, 29 Aug 2008 21:44:25 -0500, David Fries <david@fries.net> wrote:
+> > > +	if (!strcmp(res->name, BAD_STR))
+> > > +		dev->mem_end = BAD;
+> > 
+> > The res->name might be NULL.  You should check it first.
+> > 
+> > 	if (res->name && !strcmp(res->name, BAD_STR))
+> > 		dev->mem_end = BAD;
+> 
+> The name gets a valid string by that point in time.
+> 
+> drivers/base/platform.c:257
 
-      Thomas
+Oh, you are right.  Sorry for noise.
+
+---
+Atsushi Nemoto
