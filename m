@@ -1,55 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759770AbYHaV3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758245AbYHaVtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759770AbYHaV3b (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 17:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758402AbYHaV3T
+	id S1758245AbYHaVtO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 17:49:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYHaVs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 17:29:19 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:62856 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758333AbYHaV3S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 17:29:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=nEzet5PRkcBHGwao7kLqMsUdveJ+mEIUXzVxDgb8pePfbLdkfbIE6u4ux12TQMdtMg
-         uAQcRXokW2WwSdEYT//Pm7K6BV0ZZJ6m31J5wSycL5HN3d4OONYifHW7sx9Mwu5O5F4x
-         xjusXCtu5neJudaK2AhtpFZvmSGH57YxHStjc=
-From: Jakub Narebski <jnareb@gmail.com>
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] Git User's Survey 2008
-Date: Sun, 31 Aug 2008 23:29:16 +0200
-User-Agent: KMail/1.9.3
-Cc: linux-kernel@vger.kernel.org
+	Sun, 31 Aug 2008 17:48:58 -0400
+Received: from master.nsys.by ([194.158.194.5]:41705 "EHLO master.nsys.by"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753769AbYHaVs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 17:48:58 -0400
+X-Greylist: delayed 1093 seconds by postgrey-1.27 at vger.kernel.org; Sun, 31 Aug 2008 17:48:56 EDT
+Message-ID: <48BB0D62.7070407@nsys.by>
+Date: Mon, 01 Sep 2008 00:30:10 +0300
+From: Vladislav Bogdanov <slava_reg@nsys.by>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+To: Adrian Bunk <bunk@kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Douglas Thompson <dougthompson@xmission.com>,
+       Tim Small <tim@buttersideup.com>, Greg KH <greg@kroah.com>,
+       bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] remove the broken i82443bxgx_edac driver
+References: <20080831161011.GD3695@cs181140183.pp.htv.fi>
+In-Reply-To: <20080831161011.GD3695@cs181140183.pp.htv.fi>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808312329.17312.jnareb@gmail.com>
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.1.1 (master.nsys.by [194.158.194.186]); Mon, 01 Sep 2008 00:30:12 +0300 (EEST)
+X-DCC-CollegeOfNewCaledonia-Metrics: master.nsys.by 1189; Body=7 Fuz1=7
+	Fuz2=7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Adrian Bunk wrote:
+ > The i82443bxgx_edac driver was added more than one year ago, but after
+ > only 3 seconds in Linus' tree it got a dependency on BROKEN with Andrew
+ > stating:
+ >
+ >     It will claim the PCI devices from under intel_agp.ko's feet.
+ >     Greg is brewing some fix for that.
+ >
+ > Since noone seems to care enough about this driver to get it working we
+ > can as well remove it.
+ >
 
-We would like to ask you a few questions about your use of the Git
-version control system. This survey is mainly to understand who is
-using Git, how and why.
+Why not just make the same hack as in i3000_edac.c, i82860_edac.c, 
+i82875p_edac.c and i82975x_edac.c?
+I mean code around all occuriencies of 'mci_pdev'.
+This hack still needs some polishing (at least for i82875p and i82975x), but it 
+works for me (I have AGP stuff compiled into kernel).
+I attach 10-minutes copy-paste patch (completely untested, sorry, idea only).
+I have 443gx just upgraded to 2.6 so I'll try to test it in next few days.
 
-The results will be published to the Git wiki and discussed on the git
-mailing list.
+Best,
+Vladislav
 
-The survey would be open from 1 September till 10 October.
+Signed-off-by: Vladislav Bogdanov <slava@nsys.by>
+---
 
-Please devote a few minutes of your time to fill this simple
-questionnaire, it will help a lot the git community to understand your
-needs, what you like of git, and of course what you don't like  of it.
+--- a/drivers/edac/i82443bxgx_edac.c    2008-02-18 15:04:39.000000000 +0200
++++ a/drivers/edac/i82443bxgx_edac.c    2008-09-01 00:14:45.000000000 +0300
+@@ -114,6 +114,12 @@ struct i82443bxgx_edacmc_error_info {
 
-The survey can be found here:
-  http://www.survs.com/survey?id=M3PIVU72&channel=2WXE4BVTW8
+  static struct edac_pci_ctl_info *i82443bxgx_pci;
 
--- 
-Git Development Community
++static struct pci_dev *mci_pdev;       /* init dev: in case that AGP code has
++                                        * already registered driver
++                                        */
++
++static int 82443bxgx_registered = 1;
++
+  static void i82443bxgx_edacmc_get_error_info(struct mem_ctl_info *mci,
+                                 struct i82443bxgx_edacmc_error_info
+                                 *info)
+@@ -345,10 +351,17 @@ EXPORT_SYMBOL_GPL(i82443bxgx_edacmc_prob
+  static int __devinit i82443bxgx_edacmc_init_one(struct pci_dev *pdev,
+                                                 const struct pci_device_id *ent)
+  {
++       int rc;
++
+         debugf0("MC: " __FILE__ ": %s()\n", __func__);
+
+         /* don't need to call pci_device_enable() */
+-       return i82443bxgx_edacmc_probe1(pdev, ent->driver_data);
++       rc = i82443bxgx_edacmc_probe1(pdev, ent->driver_data);
++
++       if (!mci_pdev)
++               mci_pdev = pci_dev_get(pdev);
++
++       return rc;
+  }
+
+  static void __devexit i82443bxgx_edacmc_remove_one(struct pci_dev *pdev)
+@@ -390,12 +403,57 @@ static int __init i82443bxgx_edacmc_init
+         /* Ensure that the OPSTATE is set correctly for POLL or NMI */
+         opstate_init();
+
+-       return pci_register_driver(&i82443bxgx_edacmc_driver);
++       pci_rc = pci_register_driver(&i82443bxgx_edacmc_driver);
++       if (pci_rc < 0)
++               goto fail0;
++
++       if (!mci_pdev) {
++               const struct pci_device_id *id = &i82443bxgx_pci_tbl[0];
++               int i = 0;
++               82443bxgx_registered = 0;
++
++               while (mci_pdev == NULL && id->vendor != 0) {
++                       mci_pdev = pci_get_device(id->vendor,
++                                       id->device, NULL);
++                       i++;
++                       id = &i82443bxgx_pci_tbl[i];
++               }
++               if (!mci_pdev) {
++                       debugf0("i82443bxgx pci_get_device fail\n");
++                       pci_rc = -ENODEV;
++                       goto fail1;
++               }
++
++               pci_rc = i82443bxgx_init_one(mci_pdev, i82443bxgx_pci_tbl);
++
++               if (pci_rc < 0) {
++                       debugf0("i82443bxgx init fail\n");
++                       pci_rc = -ENODEV;
++                       goto fail1;
++               }
++       }
++
++       return 0;
++
++fail1:
++       pci_unregister_driver(&i82975x_driver);
++
++fail0:
++       if (mci_pdev)
++               pci_dev_put(mci_pdev);
++
++       return pci_rc;
+  }
+
+  static void __exit i82443bxgx_edacmc_exit(void)
+  {
+         pci_unregister_driver(&i82443bxgx_edacmc_driver);
++
++       if (!i82443bxgx_registered)
++               i82443bxgx_remove_one(mci_pdev);
++
++       if (mci_pdev)
++               pci_dev_put(mci_pdev);
+  }
+
+  module_init(i82443bxgx_edacmc_init);
