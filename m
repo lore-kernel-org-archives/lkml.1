@@ -1,432 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759352AbYHaNA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759448AbYHaNEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759352AbYHaNA5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 09:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758124AbYHaNAs
+	id S1759448AbYHaNEr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 09:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758672AbYHaNEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 09:00:48 -0400
-Received: from ikar.perftech.si ([195.246.0.20]:3873 "EHLO ikar.perftech.si"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757992AbYHaNAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 09:00:47 -0400
-X-ASG-Debug-ID: 1220187643-1caa00010000-xx1T2L
-X-Barracuda-URL: http://10.12.0.14:5000/cgi-bin/mark.cgi
-X-Spam-Processed: dedal.perftech.si, Sun, 31 Aug 2008 15:00:42 +0200
-	(not processed: spam filter heuristic analysis disabled)
-X-Authenticated-Sender: xerces8@butn.net
-X-Return-Path: xerces8@butn.net
-X-Envelope-From: xerces8@butn.net
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Date: Sun, 31 Aug 2008 15:00:40 +0200
-From: "xerces8" <xerces8@butn.net>
-To: "Marcin Slusarz" <marcin.slusarz@gmail.com>
-CC: linux-kernel@vger.kernel.org
-X-ASG-Orig-Subj: Re: oops during reboot in device_shutdown()
-Subject: Re: oops during reboot in device_shutdown()
+	Sun, 31 Aug 2008 09:04:38 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:49608 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758124AbYHaNEh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 09:04:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=eLOJksxEGdf/Mpn5IU25kJ5o8zFAmAmhaa3J3HP1q3cHUo6/0uDgr6SxCwnvmcgxFp
+         l2vIMmBzUcaqQdK7ScmlnHnz7zVjR/3KFBe2ye8NcFTWT+FJOkrDpLrhZpsTb5GN29ch
+         6ziwAxOHe01H8FxKBZtz0hB6jeqveI3ecEcL0=
+Message-ID: <48BA969C.4060207@gmail.com>
+Date: Sun, 31 Aug 2008 15:03:24 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="0831-1500-40-PART-BREAK"
-Message-ID: <WorldClient-F200808311500.AA00400048@butn.net>
-X-Mailer: WorldClient 9.6.4
-In-Reply-To: <20080831102242.GA5514@joi>
-References: <WorldClient-F200808302352.AA52330038@butn.net> <20080831102242.GA5514@joi>
-X-MDAV-Processed: dedal.perftech.si, Sun, 31 Aug 2008 15:00:43 +0200
-X-Barracuda-Connect: UNKNOWN[10.12.0.44]
-X-Barracuda-Start-Time: 1220187643
-X-Barracuda-Virus-Scanned: by OUTBOUND - ikar.perftech.si at perftech.si
-X-Barracuda-Spam-Score: 0.50
-X-Barracuda-Spam-Status: No, SCORE=0.50 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=7.0 tests=BSF_RULE7568M
-X-Barracuda-Spam-Report: Code version 3.2, rules version 3.2.1.4247
-	Rule breakdown below
-	 pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	0.50 BSF_RULE7568M          Custom Rule 7568M
+To: Elias Oltmanns <eo@nebensachen.de>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] libata: Implement disk shock protection support
+References: <87wshzplvk.fsf@denkblock.local>	<20080829211345.4355.89284.stgit@denkblock.local>	<48B913E6.1000104@gmail.com> <87k5dym5t9.fsf@denkblock.local>	<48BA638B.2030001@gmail.com> <87ej45mlp3.fsf@denkblock.local>
+In-Reply-To: <87ej45mlp3.fsf@denkblock.local>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0831-1500-40-PART-BREAK
-Content-Type: text/plain; charset="us-ascii"
+Hello,
 
-Marcin Slusarz wrote:
-
-> On Sat, Aug 30, 2008 at 11:52:33PM +0200, xerces8 wrote:
-> > Hi!
-> > 
-> > While running RIPLinux* 6.3, I got the below oops.
-> > 
-> > What I did was boot up riplinux from USB key, start X, the run "reboot -f" on VT2.
-> > 
-> > * - http://www.tux.org/pub/people/kent-robotti/looplinux/rip/
-> > 
-> > After the oops I run "reboot" again and got the same oops again.
-> > Note: I am not sure if I ran the 32 or 64 bit kernel.
+Elias Oltmanns wrote:
+>> Ah.. you need to part ATAPI too?  If so, just test for
+>> ata_dev_enabled().
 > 
-> They are from 32 bit kernel.
+> Well, I'm not quite sure really. Perhaps you are right and I'd better
+> leave ATAPI alone, especially given the problem that the unload command
+> might mess up a CD/DVD write operation. As long as no laptop HDs are
+> identified as ATAPI devices, there should be no problem with that.
 
-Yes they are. I reproduced the problem.
+Hmm... I think it would be safer to stick with ATA for the time being.
 
-
-> > For kernel config and (3 smallish) patches see:
-> > http://www.tux.org/pub/people/kent-robotti/looplinux/rip/docs/kernel.txt
-> > (or http://www.tux.org/pub/people/kent-robotti/looplinux/rip/docs/kernel64.txt)
-> > 
-> > 
-> > HW: Asus P5K-E WiFi maonboard, BIOS version 1013
-> > (Intel P35/ICH9R), CPU: Intel Core2 Q6600
-> > 
-> > The oops (both):
-> > 
-> > md: stopping all md devices.
-> > BUG: unable to handle kernel NULL pointer dereference at 00000004
-> > IP: [<c030b110>] device_shutdown+0x39/0x4c
-> > *pde = 00000000 
-> > Oops: 0000 [#1] 
-> > Modules linked in: snd_mixer_oss snd_hda_intel snd_pcm snd_timer snd_page_alloc snd_hwdep snd
-> > soundcore rtl8187 eeprom_93cx6
-> > 
-> > Pid: 1982, comm: reboot Not tainted (2.6.26 #8)
-> > EIP: 0060:[<c030b110>] EFLAGS: 00010246 CPU: 0
-> > EIP is at device_shutdown+0x39/0x4c
-> > EAX: 00000000 EBX: ffffff90 ECX: 00000000 EDX: ffffff90
-> > ESI: 28121969 EDI: b7fb2ff4 EBP: f7d0c000 ESP: f7d0de98
-> >  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-> > Process reboot (pid: 1982, ti=f7d0c000 task=f3052740 task.ti=f7d0c000)
-> > Stack: 00000000 c011e1bd c011e2ad 01234567 c011e3ec f7d0df14 f7d0df3c 0000002b 
-> >        f28d552c c0149ba1 f28d55c8 c0150d11 ffffff9c ffffff9c 00000401 ffffff9c 
-> >        f28d552c c0949308 00000001 f30528a4 f3052768 c0111cc7 c0111bc9 f30d6ac8 
-> > Call Trace:
-> >  [<c011e1bd>] kernel_restart_prepare+0x20/0x25
-> >  [<c011e2ad>] kernel_restart+0x8/0x2e
-> >  [<c011e3ec>] sys_reboot+0x112/0x14f
-> >  [<c0149ba1>] put_filp+0x14/0x31
-> >  [<c0150d11>] __path_lookup_intent_open+0x6a/0x72
-> >  [<c0111cc7>] dequeue_entity+0xf/0x8d
-> >  [<c0111bc9>] __dequeue_entity+0x1f/0x71
-> >  [<c0111c2c>] set_next_entity+0x11/0x38
-> >  [<c065eb56>] schedule+0x22e/0x24a
-> >  [<c01241d1>] hrtimer_cancel+0xa/0x14
-> >  [<c065f085>] do_nanosleep+0x4e/0x7b
-> >  [<c01244ba>] hrtimer_nanosleep+0x50/0xab
-> >  [<c012412a>] hrtimer_wakeup+0x0/0x18
-> >  [<c0124556>] sys_nanosleep+0x41/0x51
-> >  [<c01036f2>] syscall_call+0x7/0xb
-> >  =======================
-> > Code: 74 eb 2b 8b 82 b4 00 00 00 85 c0 74 07 8b 48 20 85 c9 75 11 8b 82 b8 00 00 00 85 c0 74 0b
-> 8b
-> > 48 18 85 c9 74 04 89 d0 ff d1 89 da <8b> 5b 74 83 eb 70 8d 42 70 3b 05 a4 bc 96 c0 75 c7 5b c3
-> 55 89 
-> > EIP: [<c030b110>] device_shutdown+0x39/0x4c SS:ESP 0068:f7d0de98
-> > ---[ end trace e0383ca117e3155e ]---
+>> Can you please elaborate a bit?  The reloading is done by the kernel
+>> after a timeout, right?  What kind of precarious situation can the
+>> kernel get into regarding suspend?
 > 
-> Try to rmmod all modules and see whether reboot works, if it is try to
-> unload only half of them, etc... (And tell us which module blocks your reboot)
+> Sorry, I haven't expressed myself very clearly there, it seems. The user
+> space process detects some acceleration and starts writing timeouts to
+> the sysfs file. This causes the unload command to be issued to the
+> device and stops all I/O until the user space daemon decides that the
+> danger has passed, writes 0 to the sysfs file and leaves it alone
+> afterwards. Now, if the daemon happens to request head parking right at
+> the beginning of a suspend sequence, this means that we are in danger of
+> falling, i.e. we have to make sure that I/O is stopped until that user
+> space daemon gives the all-clear. However, suspending implies freezing
+> all processes which means that the daemon can't keep checking and
+> signalling to the kernel. The last timeout received before the daemon
+> has been frozen will expire and the suspend procedure goes ahead. By
+> means of the notifiers we can make sure that suspend is blocked until
+> the daemon says that everything is alright.
+
+Is it really worth protecting against that?  What if the machine
+started to fall after the userland tasks have been frozen?  And how
+long the usual timeout would be?  If the machine has been falling for
+10 secs, there really isn't much point in trying to protect anything
+unless there also is ATA DEPLOY PARACHUTE command somewhere in the new
+revision.
+
+In libata, as with any other exceptions, suspend/resume are handled by
+EH so while emergency head unload is in progress, suspend won't
+commence which is about the same effect as the posted code sans the
+timeout extension part.  I don't really think there's any significant
+danger in not being able to extend timeout while suspend is in
+progress.  It's not a very big window after all.  If you're really
+worried about it, you can also let libata reject suspend if head
+unload is in progress.
+
+Also, the suspend operation is unloading the head and spin down the
+drive which sound like a good thing to do before crashing.  Maybe we
+can modify the suspend sequence such that it always unload the head
+first and then issue spindown.  That will ensure the head is in safe
+position as soon as possible.  If it's done this way, it'll be
+probably a good idea to split unloading and loading operations and do
+loading only when EH is being finished and the disk is not spun down.
+
+To me, much more serious problem seems to be during hibernation.  The
+kernel is actively writing memory image to userland and it takes quite
+a while and there's no protection whatsoever during that time.
+
+>>     spin_lock_irq(ap->lock);
+>>     ap->deadline = jiffies + timeout;
+>>     ap->link.eh_info.action |= ATA_EH_PARK;
+>>     ata_port_schedule_eh(ap);
+>>     spin_unlock_irq(ap->lock);
 > 
-> If it will be hard to reproduce or procedure above won't work, please
-> enable "Kernel debugging" (CONFIG_DEBUG_KERNEL), "Driver Core verbose
-> debug messages" (CONFIG_DEBUG_DRIVER) and copy messages from dmesg which
-> happen before oops.
+> Please note that I want to schedule EH (and thus the head unload -
+> check power command sequence) only once in the event of overlapping
+> timeouts. For instance, when the daemon sets a timeout of 2 seconds and
+> does so again after one second has elapsed, I want the following to
+> happen:
+> 
+> [ Daemon writes 2 to the unload_heads file ]
+> 1. Set timer / deadline;
+> 2. eh_info.action |= ATA_EH_PARK;
+> 3. schedule EH;
+> 4. execute EH and sleep, waiting for the timeout to expire;
+> 
+> [ Daemon writes 2 to the unload_heads file before the previous timeout
+> has expired. ]
+> 
+> 5. update timer / deadline;
+> 6. the EH thread keeps blocking until the new timeout has expired.
+> 
+> In particular, I don't want to reschedule EH in response to the second
+> write to the unload_heads file. Also, we have to consider the case where
+> the daemon signals to resume I/O prematurely by writing a timeout of 0.
+> In this case, the EH thread should be woken up immediately.
 
-I managed to reproduce the problem. But it is not "exact science".
-What I did was:
- - boot RIPLinux 6.3 USB stick
- - in boot menu select first option (boot 32 bit kernel)
- - when asked opt for keyboard selection
- - select "Slovene"
- - login as root on VT1
- - enter startx
- - in X right click and select XTerm in menu
- - in same menu select Setup/<fist option> (for wired network)
- - wait for the DHCP dialog to appear and click OK
- - from right click menu select Firefox/Start
- - ctrl-alt-f2 to VT2
- - login as root
- - enter: reboot -f
+Whether EH is scheduled multiple times or not doesn't matter at all.
+EH can be happily scheduled without any actual action to do and that
+does happen from time to time due to asynchronous nature of events.
+libata EH doesn't have any problem with that.  The only thing that's
+required is there's at least one ata_schedule_eh() after the latest
+EH-worthy event.  So, the simpler code might enter EH one more time
+once in the blue moon, but it won't do any harm.  EH will just look
+around and realize that there's nothing much to do and just exit.
 
-It gives the oops in 75% of cases.
-The steps above do not load any modules that are not loaded by default anyway.
+Thanks.
 
-I attach the full dmesg output.
-
-Regards,
-David
-
---0831-1500-40-PART-BREAK
-Content-Type: application/octet-stream
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="crash_dmesg"
-
-cmUgOTAwMCBTdG9yYWdlIENvbnRyb2xsZXIgZGV2aWNlIGRyaXZlciBmb3IgTGludXggdjIuMjYu
-MDIuMDEwLgpSb2NrZXRSQUlEIDN4eHgvNHh4eCBDb250cm9sbGVyIGRyaXZlciB2MS4zICgwNzEy
-MDMpCnN0OiBWZXJzaW9uIDIwMDgwMjI0LCBmaXhlZCBidWZzaXplIDMyNzY4LCBzL2cgc2VncyAy
-NTYKRHJpdmVyICdzdCcgbmVlZHMgdXBkYXRpbmcgLSBwbGVhc2UgdXNlIGJ1c190eXBlIG1ldGhv
-ZHMKb3NzdCA6STogVGFwZSBkcml2ZXIgd2l0aCBPblN0cmVhbSBzdXBwb3J0IHZlcnNpb24gMC45
-OS40Cm9zc3QgOkk6ICRJZDogb3NzdC5jLHYgMS43MyAyMDA1LzAxLzAxIDIxOjEzOjM0IHdyaWVk
-ZSBFeHAgJApEcml2ZXIgJ29zc3QnIG5lZWRzIHVwZGF0aW5nIC0gcGxlYXNlIHVzZSBidXNfdHlw
-ZSBtZXRob2RzCkRyaXZlciAnc2QnIG5lZWRzIHVwZGF0aW5nIC0gcGxlYXNlIHVzZSBidXNfdHlw
-ZSBtZXRob2RzCkRyaXZlciAnc3InIG5lZWRzIHVwZGF0aW5nIC0gcGxlYXNlIHVzZSBidXNfdHlw
-ZSBtZXRob2RzCmFoY2kgMDAwMDowMzowMC4wOiB2ZXJzaW9uIDMuMApBQ1BJOiBQQ0kgSW50ZXJy
-dXB0IDAwMDA6MDM6MDAuMFtBXSAtPiBMaW5rIFtMTktBXSAtPiBHU0kgMTEgKGxldmVsLCBsb3cp
-IC0+IElSUSAxMQphaGNpIDAwMDA6MDM6MDAuMDogQUhDSSAwMDAxLjAwMDAgMzIgc2xvdHMgMiBw
-b3J0cyAzIEdicHMgMHgzIGltcGwgU0FUQSBtb2RlCmFoY2kgMDAwMDowMzowMC4wOiBmbGFnczog
-NjRiaXQgbmNxIHBtIGxlZCBjbG8gcG1wIHBpbyBzbHVtIHBhcnQgClBDSTogU2V0dGluZyBsYXRl
-bmN5IHRpbWVyIG9mIGRldmljZSAwMDAwOjAzOjAwLjAgdG8gNjQKc2NzaTIgOiBhaGNpCnNjc2kz
-IDogYWhjaQphdGExOiBTQVRBIG1heCBVRE1BLzEzMyBhYmFyIG04MTkyQDB4ZmVhZmUwMDAgcG9y
-dCAweGZlYWZlMTAwIGlycSAxMQphdGEyOiBTQVRBIG1heCBVRE1BLzEzMyBhYmFyIG04MTkyQDB4
-ZmVhZmUwMDAgcG9ydCAweGZlYWZlMTgwIGlycSAxMQphdGExOiBTQVRBIGxpbmsgZG93biAoU1N0
-YXR1cyAwIFNDb250cm9sIDMwMCkKYXRhMjogU0FUQSBsaW5rIGRvd24gKFNTdGF0dXMgMCBTQ29u
-dHJvbCAzMDApCmF0YV9waWl4IDAwMDA6MDA6MWYuMjogdmVyc2lvbiAyLjEyCkFDUEk6IFBDSSBJ
-bnRlcnJ1cHQgTGluayBbTE5LR10gZW5hYmxlZCBhdCBJUlEgMTUKUENJOiBzZXR0aW5nIElSUSAx
-NSBhcyBsZXZlbC10cmlnZ2VyZWQKQUNQSTogUENJIEludGVycnVwdCAwMDAwOjAwOjFmLjJbQl0g
-LT4gTGluayBbTE5LR10gLT4gR1NJIDE1IChsZXZlbCwgbG93KSAtPiBJUlEgMTUKYXRhX3BpaXgg
-MDAwMDowMDoxZi4yOiBNQVAgWyBQMCBQMiBQMSBQMyBdClBDSTogU2V0dGluZyBsYXRlbmN5IHRp
-bWVyIG9mIGRldmljZSAwMDAwOjAwOjFmLjIgdG8gNjQKQUNQSTogUENJIGludGVycnVwdCBmb3Ig
-ZGV2aWNlIDAwMDA6MDA6MWYuMiBkaXNhYmxlZAphdGFfcGlpeDogcHJvYmUgb2YgMDAwMDowMDox
-Zi4yIGZhaWxlZCB3aXRoIGVycm9yIC0xNgpBQ1BJOiBQQ0kgSW50ZXJydXB0IDAwMDA6MDA6MWYu
-NVtCXSAtPiBMaW5rIFtMTktHXSAtPiBHU0kgMTUgKGxldmVsLCBsb3cpIC0+IElSUSAxNQphdGFf
-cGlpeCAwMDAwOjAwOjFmLjU6IE1BUCBbIFAwIC0tIFAxIC0tIF0KUENJOiBTZXR0aW5nIGxhdGVu
-Y3kgdGltZXIgb2YgZGV2aWNlIDAwMDA6MDA6MWYuNSB0byA2NApBQ1BJOiBQQ0kgaW50ZXJydXB0
-IGZvciBkZXZpY2UgMDAwMDowMDoxZi41IGRpc2FibGVkCmF0YV9waWl4OiBwcm9iZSBvZiAwMDAw
-OjAwOjFmLjUgZmFpbGVkIHdpdGggZXJyb3IgLTE2CkFDUEk6IFBDSSBJbnRlcnJ1cHQgMDAwMDow
-MzowMC4xW0JdIC0+IExpbmsgW0xOS0JdIC0+IEdTSSAxMCAobGV2ZWwsIGxvdykgLT4gSVJRIDEw
-ClBDSTogU2V0dGluZyBsYXRlbmN5IHRpbWVyIG9mIGRldmljZSAwMDAwOjAzOjAwLjEgdG8gNjQK
-c2NzaTQgOiBwYXRhX2ptaWNyb24Kc2NzaTUgOiBwYXRhX2ptaWNyb24KYXRhMzogUEFUQSBtYXgg
-VURNQS8xMDAgY21kIDB4ZWMwMCBjdGwgMHhlODgwIGJtZG1hIDB4ZTQwMCBpcnEgMTAKYXRhNDog
-UEFUQSBtYXggVURNQS8xMDAgY21kIDB4ZTgwMCBjdGwgMHhlNDgwIGJtZG1hIDB4ZTQwOCBpcnEg
-MTAKQUNQSTogUENJIEludGVycnVwdCAwMDAwOjAwOjFmLjJbQl0gLT4gTGluayBbTE5LR10gLT4g
-R1NJIDE1IChsZXZlbCwgbG93KSAtPiBJUlEgMTUKUENJOiBTZXR0aW5nIGxhdGVuY3kgdGltZXIg
-b2YgZGV2aWNlIDAwMDA6MDA6MWYuMiB0byA2NApBQ1BJOiBQQ0kgaW50ZXJydXB0IGZvciBkZXZp
-Y2UgMDAwMDowMDoxZi4yIGRpc2FibGVkCkFDUEk6IFBDSSBJbnRlcnJ1cHQgMDAwMDowMDoxZi41
-W0JdIC0+IExpbmsgW0xOS0ddIC0+IEdTSSAxNSAobGV2ZWwsIGxvdykgLT4gSVJRIDE1ClBDSTog
-U2V0dGluZyBsYXRlbmN5IHRpbWVyIG9mIGRldmljZSAwMDAwOjAwOjFmLjUgdG8gNjQKQUNQSTog
-UENJIGludGVycnVwdCBmb3IgZGV2aWNlIDAwMDA6MDA6MWYuNSBkaXNhYmxlZApGdXNpb24gTVBU
-IGJhc2UgZHJpdmVyIDMuMDQuMDYKQ29weXJpZ2h0IChjKSAxOTk5LTIwMDcgTFNJIENvcnBvcmF0
-aW9uCkZ1c2lvbiBNUFQgU1BJIEhvc3QgZHJpdmVyIDMuMDQuMDYKRnVzaW9uIE1QVCBGQyBIb3N0
-IGRyaXZlciAzLjA0LjA2CkZ1c2lvbiBNUFQgU0FTIEhvc3QgZHJpdmVyIDMuMDQuMDYKRnVzaW9u
-IE1QVCBtaXNjIGRldmljZSAoaW9jdGwpIGRyaXZlciAzLjA0LjA2Cm1wdGN0bDogUmVnaXN0ZXJl
-ZCB3aXRoIEZ1c2lvbiBNUFQgYmFzZSBkcml2ZXIKbXB0Y3RsOiAvZGV2L21wdGN0bCBAIChtYWpv
-cixtaW5vcj0xMCwyMjApCkFDUEk6IFBDSSBJbnRlcnJ1cHQgTGluayBbTE5LRF0gZW5hYmxlZCBh
-dCBJUlEgMTQKUENJOiBzZXR0aW5nIElSUSAxNCBhcyBsZXZlbC10cmlnZ2VyZWQKQUNQSTogUENJ
-IEludGVycnVwdCAwMDAwOjA1OjAzLjBbQV0gLT4gTGluayBbTE5LRF0gLT4gR1NJIDE0IChsZXZl
-bCwgbG93KSAtPiBJUlEgMTQKb2hjaTEzOTQ6IEZhaWxlZCB0byBhbGxvY2F0ZSBpbnRlcnJ1cHQg
-MTQKb2hjaTEzOTQ6IHByb2JlIG9mIDAwMDA6MDU6MDMuMCBmYWlsZWQgd2l0aCBlcnJvciAtMTIK
-aWVlZTEzOTQ6IHJhdzEzOTQ6IC9kZXYvcmF3MTM5NCBkZXZpY2UgaW5pdGlhbGl6ZWQKZXRoMTM5
-NDogQ2Fubm90IHJlZ2lzdGVyIENTUiBzcGFjZQpBQ1BJOiBQQ0kgSW50ZXJydXB0IExpbmsgW0xO
-S0NdIGVuYWJsZWQgYXQgSVJRIDUKUENJOiBzZXR0aW5nIElSUSA1IGFzIGxldmVsLXRyaWdnZXJl
-ZApBQ1BJOiBQQ0kgSW50ZXJydXB0IDAwMDA6MDA6MWEuN1tDXSAtPiBMaW5rIFtMTktDXSAtPiBH
-U0kgNSAobGV2ZWwsIGxvdykgLT4gSVJRIDUKUENJOiBTZXR0aW5nIGxhdGVuY3kgdGltZXIgb2Yg
-ZGV2aWNlIDAwMDA6MDA6MWEuNyB0byA2NAplaGNpX2hjZCAwMDAwOjAwOjFhLjc6IEVIQ0kgSG9z
-dCBDb250cm9sbGVyCmVoY2lfaGNkIDAwMDA6MDA6MWEuNzogbmV3IFVTQiBidXMgcmVnaXN0ZXJl
-ZCwgYXNzaWduZWQgYnVzIG51bWJlciAxCmVoY2lfaGNkIDAwMDA6MDA6MWEuNzogZGVidWcgcG9y
-dCAxClBDSTogY2FjaGUgbGluZSBzaXplIG9mIDMyIGlzIG5vdCBzdXBwb3J0ZWQgYnkgZGV2aWNl
-IDAwMDA6MDA6MWEuNwplaGNpX2hjZCAwMDAwOjAwOjFhLjc6IGlycSA1LCBpbyBtZW0gMHhmOWZm
-ZmMwMAplaGNpX2hjZCAwMDAwOjAwOjFhLjc6IFVTQiAyLjAgc3RhcnRlZCwgRUhDSSAxLjAwLCBk
-cml2ZXIgMTAgRGVjIDIwMDQKdXNiIHVzYjE6IGNvbmZpZ3VyYXRpb24gIzEgY2hvc2VuIGZyb20g
-MSBjaG9pY2UKaHViIDEtMDoxLjA6IFVTQiBodWIgZm91bmQKaHViIDEtMDoxLjA6IDYgcG9ydHMg
-ZGV0ZWN0ZWQKQUNQSTogUENJIEludGVycnVwdCBMaW5rIFtMTktIXSBlbmFibGVkIGF0IElSUSA3
-ClBDSTogc2V0dGluZyBJUlEgNyBhcyBsZXZlbC10cmlnZ2VyZWQKQUNQSTogUENJIEludGVycnVw
-dCAwMDAwOjAwOjFkLjdbQV0gLT4gTGluayBbTE5LSF0gLT4gR1NJIDcgKGxldmVsLCBsb3cpIC0+
-IElSUSA3ClBDSTogU2V0dGluZyBsYXRlbmN5IHRpbWVyIG9mIGRldmljZSAwMDAwOjAwOjFkLjcg
-dG8gNjQKZWhjaV9oY2QgMDAwMDowMDoxZC43OiBFSENJIEhvc3QgQ29udHJvbGxlcgplaGNpX2hj
-ZCAwMDAwOjAwOjFkLjc6IG5ldyBVU0IgYnVzIHJlZ2lzdGVyZWQsIGFzc2lnbmVkIGJ1cyBudW1i
-ZXIgMgplaGNpX2hjZCAwMDAwOjAwOjFkLjc6IGRlYnVnIHBvcnQgMQpQQ0k6IGNhY2hlIGxpbmUg
-c2l6ZSBvZiAzMiBpcyBub3Qgc3VwcG9ydGVkIGJ5IGRldmljZSAwMDAwOjAwOjFkLjcKZWhjaV9o
-Y2QgMDAwMDowMDoxZC43OiBpcnEgNywgaW8gbWVtIDB4ZjlmZmY4MDAKZWhjaV9oY2QgMDAwMDow
-MDoxZC43OiBVU0IgMi4wIHN0YXJ0ZWQsIEVIQ0kgMS4wMCwgZHJpdmVyIDEwIERlYyAyMDA0CnVz
-YiB1c2IyOiBjb25maWd1cmF0aW9uICMxIGNob3NlbiBmcm9tIDEgY2hvaWNlCmh1YiAyLTA6MS4w
-OiBVU0IgaHViIGZvdW5kCmh1YiAyLTA6MS4wOiA2IHBvcnRzIGRldGVjdGVkCjExNng6IGRyaXZl
-ciBpc3AxMTZ4LWhjZCwgMDMgTm92IDIwMDUKb2hjaV9oY2Q6IDIwMDYgQXVndXN0IDA0IFVTQiAx
-LjEgJ09wZW4nIEhvc3QgQ29udHJvbGxlciAoT0hDSSkgRHJpdmVyClVTQiBVbml2ZXJzYWwgSG9z
-dCBDb250cm9sbGVyIEludGVyZmFjZSBkcml2ZXIgdjMuMApBQ1BJOiBQQ0kgSW50ZXJydXB0IDAw
-MDA6MDA6MWEuMFtBXSAtPiBMaW5rIFtMTktBXSAtPiBHU0kgMTEgKGxldmVsLCBsb3cpIC0+IElS
-USAxMQpQQ0k6IFNldHRpbmcgbGF0ZW5jeSB0aW1lciBvZiBkZXZpY2UgMDAwMDowMDoxYS4wIHRv
-IDY0CnVoY2lfaGNkIDAwMDA6MDA6MWEuMDogVUhDSSBIb3N0IENvbnRyb2xsZXIKdWhjaV9oY2Qg
-MDAwMDowMDoxYS4wOiBuZXcgVVNCIGJ1cyByZWdpc3RlcmVkLCBhc3NpZ25lZCBidXMgbnVtYmVy
-IDMKdWhjaV9oY2QgMDAwMDowMDoxYS4wOiBpcnEgMTEsIGlvIGJhc2UgMHgwMDAwYjgwMAp1c2Ig
-dXNiMzogY29uZmlndXJhdGlvbiAjMSBjaG9zZW4gZnJvbSAxIGNob2ljZQpodWIgMy0wOjEuMDog
-VVNCIGh1YiBmb3VuZApodWIgMy0wOjEuMDogMiBwb3J0cyBkZXRlY3RlZApBQ1BJOiBQQ0kgSW50
-ZXJydXB0IExpbmsgW0xOS0ZdIGVuYWJsZWQgYXQgSVJRIDMKUENJOiBzZXR0aW5nIElSUSAzIGFz
-IGxldmVsLXRyaWdnZXJlZApBQ1BJOiBQQ0kgSW50ZXJydXB0IDAwMDA6MDA6MWEuMVtCXSAtPiBM
-aW5rIFtMTktGXSAtPiBHU0kgMyAobGV2ZWwsIGxvdykgLT4gSVJRIDMKUENJOiBTZXR0aW5nIGxh
-dGVuY3kgdGltZXIgb2YgZGV2aWNlIDAwMDA6MDA6MWEuMSB0byA2NAp1aGNpX2hjZCAwMDAwOjAw
-OjFhLjE6IFVIQ0kgSG9zdCBDb250cm9sbGVyCnVoY2lfaGNkIDAwMDA6MDA6MWEuMTogbmV3IFVT
-QiBidXMgcmVnaXN0ZXJlZCwgYXNzaWduZWQgYnVzIG51bWJlciA0CnVoY2lfaGNkIDAwMDA6MDA6
-MWEuMTogaXJxIDMsIGlvIGJhc2UgMHgwMDAwYjg4MAp1c2IgdXNiNDogY29uZmlndXJhdGlvbiAj
-MSBjaG9zZW4gZnJvbSAxIGNob2ljZQpodWIgNC0wOjEuMDogVVNCIGh1YiBmb3VuZApodWIgNC0w
-OjEuMDogMiBwb3J0cyBkZXRlY3RlZAp1c2IgMS0zOiBuZXcgaGlnaCBzcGVlZCBVU0IgZGV2aWNl
-IHVzaW5nIGVoY2lfaGNkIGFuZCBhZGRyZXNzIDIKQUNQSTogUENJIEludGVycnVwdCAwMDAwOjAw
-OjFhLjJbQ10gLT4gTGluayBbTE5LQ10gLT4gR1NJIDUgKGxldmVsLCBsb3cpIC0+IElSUSA1ClBD
-STogU2V0dGluZyBsYXRlbmN5IHRpbWVyIG9mIGRldmljZSAwMDAwOjAwOjFhLjIgdG8gNjQKdWhj
-aV9oY2QgMDAwMDowMDoxYS4yOiBVSENJIEhvc3QgQ29udHJvbGxlcgp1aGNpX2hjZCAwMDAwOjAw
-OjFhLjI6IG5ldyBVU0IgYnVzIHJlZ2lzdGVyZWQsIGFzc2lnbmVkIGJ1cyBudW1iZXIgNQp1aGNp
-X2hjZCAwMDAwOjAwOjFhLjI6IGlycSA1LCBpbyBiYXNlIDB4MDAwMGJjMDAKdXNiIHVzYjU6IGNv
-bmZpZ3VyYXRpb24gIzEgY2hvc2VuIGZyb20gMSBjaG9pY2UKaHViIDUtMDoxLjA6IFVTQiBodWIg
-Zm91bmQKaHViIDUtMDoxLjA6IDIgcG9ydHMgZGV0ZWN0ZWQKdXNiIDEtMzogY29uZmlndXJhdGlv
-biAjMSBjaG9zZW4gZnJvbSAxIGNob2ljZQpBQ1BJOiBQQ0kgSW50ZXJydXB0IDAwMDA6MDA6MWQu
-MFtBXSAtPiBMaW5rIFtMTktIXSAtPiBHU0kgNyAobGV2ZWwsIGxvdykgLT4gSVJRIDcKUENJOiBT
-ZXR0aW5nIGxhdGVuY3kgdGltZXIgb2YgZGV2aWNlIDAwMDA6MDA6MWQuMCB0byA2NAp1aGNpX2hj
-ZCAwMDAwOjAwOjFkLjA6IFVIQ0kgSG9zdCBDb250cm9sbGVyCnVoY2lfaGNkIDAwMDA6MDA6MWQu
-MDogbmV3IFVTQiBidXMgcmVnaXN0ZXJlZCwgYXNzaWduZWQgYnVzIG51bWJlciA2CnVoY2lfaGNk
-IDAwMDA6MDA6MWQuMDogaXJxIDcsIGlvIGJhc2UgMHgwMDAwYjA4MAp1c2IgdXNiNjogY29uZmln
-dXJhdGlvbiAjMSBjaG9zZW4gZnJvbSAxIGNob2ljZQpodWIgNi0wOjEuMDogVVNCIGh1YiBmb3Vu
-ZApodWIgNi0wOjEuMDogMiBwb3J0cyBkZXRlY3RlZApBQ1BJOiBQQ0kgSW50ZXJydXB0IDAwMDA6
-MDA6MWQuMVtCXSAtPiBMaW5rIFtMTktEXSAtPiBHU0kgMTQgKGxldmVsLCBsb3cpIC0+IElSUSAx
-NApQQ0k6IFNldHRpbmcgbGF0ZW5jeSB0aW1lciBvZiBkZXZpY2UgMDAwMDowMDoxZC4xIHRvIDY0
-CnVoY2lfaGNkIDAwMDA6MDA6MWQuMTogVUhDSSBIb3N0IENvbnRyb2xsZXIKdWhjaV9oY2QgMDAw
-MDowMDoxZC4xOiBuZXcgVVNCIGJ1cyByZWdpc3RlcmVkLCBhc3NpZ25lZCBidXMgbnVtYmVyIDcK
-dWhjaV9oY2QgMDAwMDowMDoxZC4xOiByZXF1ZXN0IGludGVycnVwdCAxNCBmYWlsZWQKdWhjaV9o
-Y2QgMDAwMDowMDoxZC4xOiBVU0IgYnVzIDcgZGVyZWdpc3RlcmVkCkFDUEk6IFBDSSBpbnRlcnJ1
-cHQgZm9yIGRldmljZSAwMDAwOjAwOjFkLjEgZGlzYWJsZWQKdWhjaV9oY2QgMDAwMDowMDoxZC4x
-OiBpbml0IDAwMDA6MDA6MWQuMSBmYWlsLCAtMTYKdWhjaV9oY2Q6IHByb2JlIG9mIDAwMDA6MDA6
-MWQuMSBmYWlsZWQgd2l0aCBlcnJvciAtMTYKQUNQSTogUENJIEludGVycnVwdCAwMDAwOjAwOjFk
-LjJbQ10gLT4gTGluayBbTE5LQ10gLT4gR1NJIDUgKGxldmVsLCBsb3cpIC0+IElSUSA1ClBDSTog
-U2V0dGluZyBsYXRlbmN5IHRpbWVyIG9mIGRldmljZSAwMDAwOjAwOjFkLjIgdG8gNjQKdWhjaV9o
-Y2QgMDAwMDowMDoxZC4yOiBVSENJIEhvc3QgQ29udHJvbGxlcgp1aGNpX2hjZCAwMDAwOjAwOjFk
-LjI6IG5ldyBVU0IgYnVzIHJlZ2lzdGVyZWQsIGFzc2lnbmVkIGJ1cyBudW1iZXIgNwp1aGNpX2hj
-ZCAwMDAwOjAwOjFkLjI6IGlycSA1LCBpbyBiYXNlIDB4MDAwMGI0ODAKdXNiIHVzYjc6IGNvbmZp
-Z3VyYXRpb24gIzEgY2hvc2VuIGZyb20gMSBjaG9pY2UKaHViIDctMDoxLjA6IFVTQiBodWIgZm91
-bmQKaHViIDctMDoxLjA6IDIgcG9ydHMgZGV0ZWN0ZWQKdXNiIDItMjogbmV3IGhpZ2ggc3BlZWQg
-VVNCIGRldmljZSB1c2luZyBlaGNpX2hjZCBhbmQgYWRkcmVzcyAyCnNsODExOiBkcml2ZXIgc2w4
-MTEtaGNkLCAxOSBNYXkgMjAwNQp1c2IgMi0yOiBjb25maWd1cmF0aW9uICMxIGNob3NlbiBmcm9t
-IDEgY2hvaWNlCnVzYiA3LTE6IG5ldyBsb3cgc3BlZWQgVVNCIGRldmljZSB1c2luZyB1aGNpX2hj
-ZCBhbmQgYWRkcmVzcyAyCnVzYiA3LTE6IGNvbmZpZ3VyYXRpb24gIzEgY2hvc2VuIGZyb20gMSBj
-aG9pY2UKdXNiIDctMjogbmV3IGxvdyBzcGVlZCBVU0IgZGV2aWNlIHVzaW5nIHVoY2lfaGNkIGFu
-ZCBhZGRyZXNzIDMKdXNiIDctMjogY29uZmlndXJhdGlvbiAjMSBjaG9zZW4gZnJvbSAxIGNob2lj
-ZQp1c2Jjb3JlOiByZWdpc3RlcmVkIG5ldyBpbnRlcmZhY2UgZHJpdmVyIHVzYmxwCkluaXRpYWxp
-emluZyBVU0IgTWFzcyBTdG9yYWdlIGRyaXZlci4uLgpzY3NpNiA6IFNDU0kgZW11bGF0aW9uIGZv
-ciBVU0IgTWFzcyBTdG9yYWdlIGRldmljZXMKdXNiY29yZTogcmVnaXN0ZXJlZCBuZXcgaW50ZXJm
-YWNlIGRyaXZlciB1c2Itc3RvcmFnZQpVU0IgTWFzcyBTdG9yYWdlIHN1cHBvcnQgcmVnaXN0ZXJl
-ZC4KdXNiLXN0b3JhZ2U6IGRldmljZSBmb3VuZCBhdCAyCnVzYi1zdG9yYWdlOiB3YWl0aW5nIGZv
-ciBkZXZpY2UgdG8gc2V0dGxlIGJlZm9yZSBzY2FubmluZwp1c2Jjb3JlOiByZWdpc3RlcmVkIG5l
-dyBpbnRlcmZhY2UgZHJpdmVyIHVzYmxjZApQTlA6IFBTLzIgQ29udHJvbGxlciBbUE5QMDMwMzpQ
-UzJLXSBhdCAweDYwLDB4NjQgaXJxIDEKUE5QOiBQUy8yIGFwcGVhcnMgdG8gaGF2ZSBBVVggcG9y
-dCBkaXNhYmxlZCwgaWYgdGhpcyBpcyBpbmNvcnJlY3QgcGxlYXNlIGJvb3Qgd2l0aCBpODA0Mi5u
-b3BucApzZXJpbzogaTgwNDIgS0JEIHBvcnQgYXQgMHg2MCwweDY0IGlycSAxCm1pY2U6IFBTLzIg
-bW91c2UgZGV2aWNlIGNvbW1vbiBmb3IgYWxsIG1pY2UKbWQ6IGxpbmVhciBwZXJzb25hbGl0eSBy
-ZWdpc3RlcmVkIGZvciBsZXZlbCAtMQptZDogcmFpZDAgcGVyc29uYWxpdHkgcmVnaXN0ZXJlZCBm
-b3IgbGV2ZWwgMAptZDogcmFpZDEgcGVyc29uYWxpdHkgcmVnaXN0ZXJlZCBmb3IgbGV2ZWwgMQpt
-ZDogcmFpZDEwIHBlcnNvbmFsaXR5IHJlZ2lzdGVyZWQgZm9yIGxldmVsIDEwCnJhaWQ2OiBpbnQz
-MngxICAgIDk2MCBNQi9zCnJhaWQ2OiBpbnQzMngyICAgIDkwNCBNQi9zCnJhaWQ2OiBpbnQzMng0
-ICAgIDc4MSBNQi9zCnJhaWQ2OiBpbnQzMng4ICAgIDcwMiBNQi9zCnJhaWQ2OiBtbXh4MSAgICAg
-MzEwMSBNQi9zCnJhaWQ2OiBtbXh4MiAgICAgMzUyNCBNQi9zCnJhaWQ2OiBzc2UxeDEgICAgMjEw
-OCBNQi9zCnJhaWQ2OiBzc2UxeDIgICAgMjcyMSBNQi9zCnJhaWQ2OiBzc2UyeDEgICAgMzc2OCBN
-Qi9zCnJhaWQ2OiBzc2UyeDIgICAgNDMxMiBNQi9zCnJhaWQ2OiB1c2luZyBhbGdvcml0aG0gc3Nl
-MngyICg0MzEyIE1CL3MpCm1kOiByYWlkNiBwZXJzb25hbGl0eSByZWdpc3RlcmVkIGZvciBsZXZl
-bCA2Cm1kOiByYWlkNSBwZXJzb25hbGl0eSByZWdpc3RlcmVkIGZvciBsZXZlbCA1Cm1kOiByYWlk
-NCBwZXJzb25hbGl0eSByZWdpc3RlcmVkIGZvciBsZXZlbCA0Cm1kOiBtdWx0aXBhdGggcGVyc29u
-YWxpdHkgcmVnaXN0ZXJlZCBmb3IgbGV2ZWwgLTQKZGV2aWNlLW1hcHBlcjogaW9jdGw6IDQuMTMu
-MC1pb2N0bCAoMjAwNy0xMC0xOCkgaW5pdGlhbGlzZWQ6IGRtLWRldmVsQHJlZGhhdC5jb20KZGV2
-aWNlLW1hcHBlcjogbXVsdGlwYXRoOiB2ZXJzaW9uIDEuMC41IGxvYWRlZApkZXZpY2UtbWFwcGVy
-OiBtdWx0aXBhdGggcm91bmQtcm9iaW46IHZlcnNpb24gMS4wLjAgbG9hZGVkCmRldmljZS1tYXBw
-ZXI6IG11bHRpcGF0aCBlbWM6IHZlcnNpb24gMC4wLjMgbG9hZGVkCmNwdWlkbGU6IHVzaW5nIGdv
-dmVybm9yIGxhZGRlcgpzZGhjaTogU2VjdXJlIERpZ2l0YWwgSG9zdCBDb250cm9sbGVyIEludGVy
-ZmFjZSBkcml2ZXIKc2RoY2k6IENvcHlyaWdodChjKSBQaWVycmUgT3NzbWFuCndic2Q6IFdpbmJv
-bmQgVzgzTDUxeEQgU0QvTU1DIGNhcmQgaW50ZXJmYWNlIGRyaXZlcgp3YnNkOiBDb3B5cmlnaHQo
-YykgUGllcnJlIE9zc21hbgpwYWRsb2NrOiBWSUEgUGFkTG9jayBub3QgZGV0ZWN0ZWQuCnVzYmNv
-cmU6IHJlZ2lzdGVyZWQgbmV3IGludGVyZmFjZSBkcml2ZXIgaGlkZGV2CmlucHV0OiBDSElDT05Z
-IFVTQiBLZXlib2FyZCBhcyAvY2xhc3MvaW5wdXQvaW5wdXQyCmlucHV0OiBVU0IgSElEIHYxLjEw
-IEtleWJvYXJkIFtDSElDT05ZIFVTQiBLZXlib2FyZF0gb24gdXNiLTAwMDA6MDA6MWQuMi0xCmlu
-cHV0OiBDSEVTRU4gUFMyIHRvIFVTQiBDb252ZXJ0ZXIgYXMgL2NsYXNzL2lucHV0L2lucHV0Mwpp
-bnB1dDogVVNCIEhJRCB2MS4xMCBLZXlib2FyZCBbQ0hFU0VOIFBTMiB0byBVU0IgQ29udmVydGVy
-XSBvbiB1c2ItMDAwMDowMDoxZC4yLTIKaW5wdXQ6IENIRVNFTiBQUzIgdG8gVVNCIENvbnZlcnRl
-ciBhcyAvY2xhc3MvaW5wdXQvaW5wdXQ0CmlucHV0OiBVU0IgSElEIHYxLjEwIE1vdXNlIFtDSEVT
-RU4gUFMyIHRvIFVTQiBDb252ZXJ0ZXJdIG9uIHVzYi0wMDAwOjAwOjFkLjItMgp1c2Jjb3JlOiBy
-ZWdpc3RlcmVkIG5ldyBpbnRlcmZhY2UgZHJpdmVyIHVzYmhpZAp1c2JoaWQ6IHYyLjY6VVNCIEhJ
-RCBjb3JlIGRyaXZlcgpUQ1AgY3ViaWMgcmVnaXN0ZXJlZApORVQ6IFJlZ2lzdGVyZWQgcHJvdG9j
-b2wgZmFtaWx5IDE3ClJQQzogUmVnaXN0ZXJlZCB1ZHAgdHJhbnNwb3J0IG1vZHVsZS4KUlBDOiBS
-ZWdpc3RlcmVkIHRjcCB0cmFuc3BvcnQgbW9kdWxlLgo4MDIuMVEgVkxBTiBTdXBwb3J0IHYxLjgg
-QmVuIEdyZWVhciA8Z3JlZWFyYkBjYW5kZWxhdGVjaC5jb20+CkFsbCBidWdzIGFkZGVkIGJ5IERh
-dmlkIFMuIE1pbGxlciA8ZGF2ZW1AcmVkaGF0LmNvbT4KVXNpbmcgSVBJIFNob3J0Y3V0IG1vZGUK
-QklPUyBFREQgZmFjaWxpdHkgdjAuMTYgMjAwNC1KdW4tMjUsIDYgZGV2aWNlcyBmb3VuZApGcmVl
-aW5nIHVudXNlZCBrZXJuZWwgbWVtb3J5OiAzMDBrIGZyZWVkCkFDUEk6IFBDSSBJbnRlcnJ1cHQg
-MDAwMDowMDoxYi4wW0FdIC0+IExpbmsgW0xOS0ddIC0+IEdTSSAxNSAobGV2ZWwsIGxvdykgLT4g
-SVJRIDE1CmhkYS1pbnRlbDogdW5hYmxlIHRvIGdyYWIgSVJRIDE1LCBkaXNhYmxpbmcgZGV2aWNl
-CkFDUEk6IFBDSSBpbnRlcnJ1cHQgZm9yIGRldmljZSAwMDAwOjAwOjFiLjAgZGlzYWJsZWQKSERB
-IEludGVsOiBwcm9iZSBvZiAwMDAwOjAwOjFiLjAgZmFpbGVkIHdpdGggZXJyb3IgLTE2CnBoeTA6
-IFNlbGVjdGVkIHJhdGUgY29udHJvbCBhbGdvcml0aG0gJ3BpZCcKcGh5MDogaHdhZGRyIDAwOjE1
-OmFmOjNlOmQzOjViLCBydGw4MTg3IFYxICsgcnRsODIyNXoyCnVzYmNvcmU6IHJlZ2lzdGVyZWQg
-bmV3IGludGVyZmFjZSBkcml2ZXIgcnRsODE4NwpzY3NpIDY6MDowOjA6IERpcmVjdC1BY2Nlc3Mg
-ICAgIFNhbkRpc2sgIFUzIFRpdGFuaXVtICAgICAgMi4xOCBQUTogMCBBTlNJOiAyCnNkIDY6MDow
-OjA6IFtzZGFdIDIwMDY2NzMgNTEyLWJ5dGUgaGFyZHdhcmUgc2VjdG9ycyAoMTAyNyBNQikKc2Qg
-NjowOjA6MDogW3NkYV0gV3JpdGUgUHJvdGVjdCBpcyBvZmYKc2QgNjowOjA6MDogW3NkYV0gTW9k
-ZSBTZW5zZTogMDMgMDAgMDAgMDAKc2QgNjowOjA6MDogW3NkYV0gQXNzdW1pbmcgZHJpdmUgY2Fj
-aGU6IHdyaXRlIHRocm91Z2gKc2QgNjowOjA6MDogW3NkYV0gMjAwNjY3MyA1MTItYnl0ZSBoYXJk
-d2FyZSBzZWN0b3JzICgxMDI3IE1CKQpzZCA2OjA6MDowOiBbc2RhXSBXcml0ZSBQcm90ZWN0IGlz
-IG9mZgpzZCA2OjA6MDowOiBbc2RhXSBNb2RlIFNlbnNlOiAwMyAwMCAwMCAwMApzZCA2OjA6MDow
-OiBbc2RhXSBBc3N1bWluZyBkcml2ZSBjYWNoZTogd3JpdGUgdGhyb3VnaAogc2RhOiBzZGExCnNk
-IDY6MDowOjA6IFtzZGFdIEF0dGFjaGVkIFNDU0kgcmVtb3ZhYmxlIGRpc2sKc2QgNjowOjA6MDog
-QXR0YWNoZWQgc2NzaSBnZW5lcmljIHNnMCB0eXBlIDAKdXNiLXN0b3JhZ2U6IGRldmljZSBzY2Fu
-IGNvbXBsZXRlCm9oY2kxMzk0OiBmdy1ob3N0MDogU2V0IFBIWSBSZWcgdGltZW91dCBbMHhmZmZm
-ZmZmZi8weDAwMDA0MDAwLzEwMF0KbXRycjogdHlwZSBtaXNtYXRjaCBmb3IgZmJjMDAwMDAsMjAw
-MDAwIG9sZDogd3JpdGUtYmFjayBuZXc6IHdyaXRlLWNvbWJpbmluZwptdHJyOiB0eXBlIG1pc21h
-dGNoIGZvciBmYjgwMDAwMCw0MDAwMDAgb2xkOiB3cml0ZS1iYWNrIG5ldzogd3JpdGUtY29tYmlu
-aW5nCm10cnI6IHR5cGUgbWlzbWF0Y2ggZm9yIGZiMDAwMDAwLDgwMDAwMCBvbGQ6IHdyaXRlLWJh
-Y2sgbmV3OiB3cml0ZS1jb21iaW5pbmcKc2t5MiBldGgwOiBlbmFibGluZyBpbnRlcmZhY2UKc2t5
-MiBldGgwOiBMaW5rIGlzIHVwIGF0IDEwMCBNYnBzLCBmdWxsIGR1cGxleCwgZmxvdyBjb250cm9s
-IGJvdGgKbWQ6IHN0b3BwaW5nIGFsbCBtZCBkZXZpY2VzLgpCVUc6IHVuYWJsZSB0byBoYW5kbGUg
-a2VybmVsIE5VTEwgcG9pbnRlciBkZXJlZmVyZW5jZSBhdCAwMDAwMDAwNApJUDogWzxjMDMwYjEx
-MD5dIGRldmljZV9zaHV0ZG93bisweDM5LzB4NGMKKnBkZSA9IDAwMDAwMDAwIApPb3BzOiAwMDAw
-IFsjMV0gCk1vZHVsZXMgbGlua2VkIGluOiBzbmRfbWl4ZXJfb3NzIHNuZF9oZGFfaW50ZWwgc25k
-X3BjbSBzbmRfdGltZXIgc25kX3BhZ2VfYWxsb2Mgc25kX2h3ZGVwIHNuZCBzb3VuZGNvcmUgcnRs
-ODE4NyBlZXByb21fOTNjeDYKClBpZDogMTk4MiwgY29tbTogcmVib290IE5vdCB0YWludGVkICgy
-LjYuMjYgIzgpCkVJUDogMDA2MDpbPGMwMzBiMTEwPl0gRUZMQUdTOiAwMDAxMDI0NiBDUFU6IDAK
-RUlQIGlzIGF0IGRldmljZV9zaHV0ZG93bisweDM5LzB4NGMKRUFYOiAwMDAwMDAwMCBFQlg6IGZm
-ZmZmZjkwIEVDWDogMDAwMDAwMDAgRURYOiBmZmZmZmY5MApFU0k6IDI4MTIxOTY5IEVESTogYjdm
-YjJmZjQgRUJQOiBmN2QwYzAwMCBFU1A6IGY3ZDBkZTk4CiBEUzogMDA3YiBFUzogMDA3YiBGUzog
-MDAwMCBHUzogMDAzMyBTUzogMDA2OApQcm9jZXNzIHJlYm9vdCAocGlkOiAxOTgyLCB0aT1mN2Qw
-YzAwMCB0YXNrPWYzMDUyNzQwIHRhc2sudGk9ZjdkMGMwMDApClN0YWNrOiAwMDAwMDAwMCBjMDEx
-ZTFiZCBjMDExZTJhZCAwMTIzNDU2NyBjMDExZTNlYyBmN2QwZGYxNCBmN2QwZGYzYyAwMDAwMDAy
-YiAKICAgICAgIGYyOGQ1NTJjIGMwMTQ5YmExIGYyOGQ1NWM4IGMwMTUwZDExIGZmZmZmZjljIGZm
-ZmZmZjljIDAwMDAwNDAxIGZmZmZmZjljIAogICAgICAgZjI4ZDU1MmMgYzA5NDkzMDggMDAwMDAw
-MDEgZjMwNTI4YTQgZjMwNTI3NjggYzAxMTFjYzcgYzAxMTFiYzkgZjMwZDZhYzggCkNhbGwgVHJh
-Y2U6CiBbPGMwMTFlMWJkPl0ga2VybmVsX3Jlc3RhcnRfcHJlcGFyZSsweDIwLzB4MjUKIFs8YzAx
-MWUyYWQ+XSBrZXJuZWxfcmVzdGFydCsweDgvMHgyZQogWzxjMDExZTNlYz5dIHN5c19yZWJvb3Qr
-MHgxMTIvMHgxNGYKIFs8YzAxNDliYTE+XSBwdXRfZmlscCsweDE0LzB4MzEKIFs8YzAxNTBkMTE+
-XSBfX3BhdGhfbG9va3VwX2ludGVudF9vcGVuKzB4NmEvMHg3MgogWzxjMDExMWNjNz5dIGRlcXVl
-dWVfZW50aXR5KzB4Zi8weDhkCiBbPGMwMTExYmM5Pl0gX19kZXF1ZXVlX2VudGl0eSsweDFmLzB4
-NzEKIFs8YzAxMTFjMmM+XSBzZXRfbmV4dF9lbnRpdHkrMHgxMS8weDM4CiBbPGMwNjVlYjU2Pl0g
-c2NoZWR1bGUrMHgyMmUvMHgyNGEKIFs8YzAxMjQxZDE+XSBocnRpbWVyX2NhbmNlbCsweGEvMHgx
-NAogWzxjMDY1ZjA4NT5dIGRvX25hbm9zbGVlcCsweDRlLzB4N2IKIFs8YzAxMjQ0YmE+XSBocnRp
-bWVyX25hbm9zbGVlcCsweDUwLzB4YWIKIFs8YzAxMjQxMmE+XSBocnRpbWVyX3dha2V1cCsweDAv
-MHgxOAogWzxjMDEyNDU1Nj5dIHN5c19uYW5vc2xlZXArMHg0MS8weDUxCiBbPGMwMTAzNmYyPl0g
-c3lzY2FsbF9jYWxsKzB4Ny8weGIKID09PT09PT09PT09PT09PT09PT09PT09CkNvZGU6IDc0IGVi
-IDJiIDhiIDgyIGI0IDAwIDAwIDAwIDg1IGMwIDc0IDA3IDhiIDQ4IDIwIDg1IGM5IDc1IDExIDhi
-IDgyIGI4IDAwIDAwIDAwIDg1IGMwIDc0IDBiIDhiIDQ4IDE4IDg1IGM5IDc0IDA0IDg5IGQwIGZm
-IGQxIDg5IGRhIDw4Yj4gNWIgNzQgODMgZWIgNzAgOGQgNDIgNzAgM2IgMDUgYTQgYmMgOTYgYzAg
-NzUgYzcgNWIgYzMgNTUgODkgCkVJUDogWzxjMDMwYjExMD5dIGRldmljZV9zaHV0ZG93bisweDM5
-LzB4NGMgU1M6RVNQIDAwNjg6ZjdkMGRlOTgKLS0tWyBlbmQgdHJhY2UgZTAzODNjYTExN2UzMTU1
-ZSBdLS0tCm1kOiBzdG9wcGluZyBhbGwgbWQgZGV2aWNlcy4KQlVHOiB1bmFibGUgdG8gaGFuZGxl
-IGtlcm5lbCBOVUxMIHBvaW50ZXIgZGVyZWZlcmVuY2UgYXQgMDAwMDAwMDQKSVA6IFs8YzAzMGIx
-MTA+XSBkZXZpY2Vfc2h1dGRvd24rMHgzOS8weDRjCipwZGUgPSAwMDAwMDAwMCAKT29wczogMDAw
-MCBbIzJdIApNb2R1bGVzIGxpbmtlZCBpbjogc25kX21peGVyX29zcyBzbmRfaGRhX2ludGVsIHNu
-ZF9wY20gc25kX3RpbWVyIHNuZF9wYWdlX2FsbG9jIHNuZF9od2RlcCBzbmQgc291bmRjb3JlIHJ0
-bDgxODcgZWVwcm9tXzkzY3g2CgpQaWQ6IDIwMDcsIGNvbW06IHJlYm9vdCBUYWludGVkOiBHICAg
-ICAgRCAgICgyLjYuMjYgIzgpCkVJUDogMDA2MDpbPGMwMzBiMTEwPl0gRUZMQUdTOiAwMDAxMDI0
-NiBDUFU6IDAKRUlQIGlzIGF0IGRldmljZV9zaHV0ZG93bisweDM5LzB4NGMKRUFYOiAwMDAwMDAw
-MCBFQlg6IGZmZmZmZjkwIEVDWDogMDAwMDAwMDAgRURYOiBmZmZmZmY5MApFU0k6IDI4MTIxOTY5
-IEVESTogYjdmMmNmZjQgRUJQOiBmN2QyMjAwMCBFU1A6IGY3ZDIzZTk4CiBEUzogMDA3YiBFUzog
-MDA3YiBGUzogMDAwMCBHUzogMDAzMyBTUzogMDA2OApQcm9jZXNzIHJlYm9vdCAocGlkOiAyMDA3
-LCB0aT1mN2QyMjAwMCB0YXNrPWYzMGFlYjYwIHRhc2sudGk9ZjdkMjIwMDApClN0YWNrOiAwMDAw
-MDAwMCBjMDExZTFiZCBjMDExZTJhZCAwMTIzNDU2NyBjMDExZTNlYyBmN2QyM2YxNCBmN2QyM2Yz
-YyAwMDAwMDAyYiAKICAgICAgIGYyOGQ1NTJjIGMwMTQ5YmExIGYyOGQ1NWM4IGMwMTUwZDExIGZm
-ZmZmZjljIGZmZmZmZjljIDAwMDAwNDAxIGZmZmZmZjljIAogICAgICAgZjI4ZDU1MmMgYzA5NDkz
-MDggMDAwMDAwMDEgZjMwYWVjYzQgZjMwYWViODggYzAxMTFjYzcgYzAxMTFiYzkgZjMwZDZhYzgg
-CkNhbGwgVHJhY2U6CiBbPGMwMTFlMWJkPl0ga2VybmVsX3Jlc3RhcnRfcHJlcGFyZSsweDIwLzB4
-MjUKIFs8YzAxMWUyYWQ+XSBrZXJuZWxfcmVzdGFydCsweDgvMHgyZQogWzxjMDExZTNlYz5dIHN5
-c19yZWJvb3QrMHgxMTIvMHgxNGYKIFs8YzAxNDliYTE+XSBwdXRfZmlscCsweDE0LzB4MzEKIFs8
-YzAxNTBkMTE+XSBfX3BhdGhfbG9va3VwX2ludGVudF9vcGVuKzB4NmEvMHg3MgogWzxjMDExMWNj
-Nz5dIGRlcXVldWVfZW50aXR5KzB4Zi8weDhkCiBbPGMwMTExYmM5Pl0gX19kZXF1ZXVlX2VudGl0
-eSsweDFmLzB4NzEKIFs8YzAxMTFjMmM+XSBzZXRfbmV4dF9lbnRpdHkrMHgxMS8weDM4CiBbPGMw
-NjVlYjU2Pl0gc2NoZWR1bGUrMHgyMmUvMHgyNGEKIFs8YzAxMjQxZDE+XSBocnRpbWVyX2NhbmNl
-bCsweGEvMHgxNAogWzxjMDY1ZjA4NT5dIGRvX25hbm9zbGVlcCsweDRlLzB4N2IKIFs8YzAxMjQ0
-YmE+XSBocnRpbWVyX25hbm9zbGVlcCsweDUwLzB4YWIKIFs8YzAxMjQxMmE+XSBocnRpbWVyX3dh
-a2V1cCsweDAvMHgxOAogWzxjMDEyNDU1Nj5dIHN5c19uYW5vc2xlZXArMHg0MS8weDUxCiBbPGMw
-MTAzNmYyPl0gc3lzY2FsbF9jYWxsKzB4Ny8weGIKID09PT09PT09PT09PT09PT09PT09PT09CkNv
-ZGU6IDc0IGViIDJiIDhiIDgyIGI0IDAwIDAwIDAwIDg1IGMwIDc0IDA3IDhiIDQ4IDIwIDg1IGM5
-IDc1IDExIDhiIDgyIGI4IDAwIDAwIDAwIDg1IGMwIDc0IDBiIDhiIDQ4IDE4IDg1IGM5IDc0IDA0
-IDg5IGQwIGZmIGQxIDg5IGRhIDw4Yj4gNWIgNzQgODMgZWIgNzAgOGQgNDIgNzAgM2IgMDUgYTQg
-YmMgOTYgYzAgNzUgYzcgNWIgYzMgNTUgODkgCkVJUDogWzxjMDMwYjExMD5dIGRldmljZV9zaHV0
-ZG93bisweDM5LzB4NGMgU1M6RVNQIDAwNjg6ZjdkMjNlOTgKLS0tWyBlbmQgdHJhY2UgZTAzODNj
-YTExN2UzMTU1ZSBdLS0tCg==
-
---0831-1500-40-PART-BREAK--
-
+-- 
+tejun
