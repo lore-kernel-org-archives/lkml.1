@@ -1,121 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbYHaPmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbYHaPnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753794AbYHaPmH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 11:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbYHaPlx
+	id S1754428AbYHaPnc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 11:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbYHaPnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 11:41:53 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:55423 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752379AbYHaPlw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 11:41:52 -0400
-Subject: Re: [PATCH 1/2] lib: add generic helper to print sizes rounded to
-	the	correct SI range
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Simon Arlott <simon@fire.lp0.eu>
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <48BAB6C4.20007@simon.arlott.org.uk>
-References: <48B9546B.4010004@simon.arlott.org.uk>
-	 <1220117091.3615.3.camel@localhost.localdomain>
-	 <20080830174516.GD1239@parisc-linux.org>
-	 <48B9B552.8060406@simon.arlott.org.uk>
-	 <48B9B588.7060709@simon.arlott.org.uk>
-	 <1220147947.3615.18.camel@localhost.localdomain>
-	 <20080831025412.GJ1239@parisc-linux.org>
-	 <1220195310.4021.4.camel@localhost.localdomain>
-	 <1220195634.4021.9.camel@localhost.localdomain>
-	 <48BAB6C4.20007@simon.arlott.org.uk>
-Content-Type: text/plain
-Date: Sun, 31 Aug 2008 10:41:52 -0500
-Message-Id: <1220197312.4021.19.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Sun, 31 Aug 2008 11:43:23 -0400
+Received: from il.qumranet.com ([212.179.150.194]:39525 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752137AbYHaPnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 11:43:22 -0400
+Message-ID: <48BABC19.1060509@qumranet.com>
+Date: Sun, 31 Aug 2008 18:43:21 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       KVM list <kvm@vger.kernel.org>
+Subject: [REGRESSION] High, likely incorrect process cpu usage counters with
+ kvm and 2.6.2[67]
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-08-31 at 16:20 +0100, Simon Arlott wrote:
-> On 31/08/08 16:13, James Bottomley wrote:
-> > This patch adds the ability to print sizes in either units of 10^3 (SI)
-> > or 2^10 (Binary) units.  It rounds up to three significant figures and
-> > can be used for either memory or storage capacities.
-> 
-> > +	const char *units_2[] = {"B", "Kib", "MiB", "GiB", "TiB", "PiB",
-> 
-> I think this should have been "KiB".
+Running an idle Windows VM on Linux 2.6.26+ with kvm, one sees high 
+values for the kvm process in top (30%-70% cpu), where one would 
+normally expect 0%-1%.  Surprisingly, the per-cpu system counters show 
+almost 100% idle, leading me to believe this is an accounting error and 
+that the process does not actually consume this much cpu.
 
-Yes, shift slip.
+I bisected this to a scheduler change, namely
 
-> I'd prefer an option to display these without the "i"...
+commit 3e51f33fcc7f55e6df25d15b55ed10c8b4da84cd
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Sat May 3 18:29:28 2008 +0200
 
-If anyone ever finds a use for that, possibly ... but with the i is the
-NIST way now, so we follow the standards.
+    sched: add optional support for CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
+   
+    this replaces the rq->clock stuff (and possibly cpu_clock()).
+   
+     - architectures that have an 'imperfect' hardware clock can set
+       CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
+   
+     - the 'jiffie' window might be superfulous when we update tick_gtod
+       before the __update_sched_clock() call in sched_clock_tick()
+   
+     - cpu_clock() might be implemented as:
+   
+         sched_clock_cpu(smp_processor_id())
+   
+       if the accuracy proves good enough - how far can TSC drift in a
+       single jiffie when considering the filtering and idle hooks?
+   
+    [ mingo@elte.hu: various fixes and cleanups ]
+   
+    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-> Oh and you need to store the original capacity before it's re-scaled to 
-> 512 bytes. Outputting sdkp->capacity at that stage it'll be a count of 
-> 512-byte sectors.
+Which is a bit too complex for me to work out.
 
-Yes, just trying to avoid a multiplication.  I should have just used ffz
-instead.
+Further information:
+- the kvm thread which has the incorrect counter is the one that 
+actually executes guest code
+- this thread mostly sleeps in schedule(), as one would expect
+- it is periodically woken up by a timer; perhaps the problem is that 
+the process is sampled using the same timer, so it always shows as 
+running (though I'd expect it to report 100% cpu in that case).
 
-James
+Any help will be appreciated (or provided).
 
----
-
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index e5e7d78..ef1c06c 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -47,6 +47,7 @@
- #include <linux/blkpg.h>
- #include <linux/delay.h>
- #include <linux/mutex.h>
-+#include <linux/string_helpers.h>
- #include <asm/uaccess.h>
- 
- #include <scsi/scsi.h>
-@@ -1429,27 +1430,21 @@ got_data:
- 		 */
- 		sector_size = 512;
- 	}
-+	blk_queue_hardsect_size(sdp->request_queue, sector_size);
-+		
- 	{
--		/*
--		 * The msdos fs needs to know the hardware sector size
--		 * So I have created this table. See ll_rw_blk.c
--		 * Jacques Gelinas (Jacques@solucorp.qc.ca)
--		 */
--		int hard_sector = sector_size;
--		sector_t sz = (sdkp->capacity/2) * (hard_sector/256);
--		struct request_queue *queue = sdp->request_queue;
--		sector_t mb = sz;
-+		char cap_str_2[10], cap_str_10[10];
-+		u64 sz = sdkp->capacity << ffz(~sector_size);
- 
--		blk_queue_hardsect_size(queue, hard_sector);
--		/* avoid 64-bit division on 32-bit platforms */
--		sector_div(sz, 625);
--		mb -= sz - 974;
--		sector_div(mb, 1950);
-+		string_get_size(sz, STRING_UNITS_2, cap_str_2,
-+				sizeof(cap_str_2));
-+		string_get_size(sz, STRING_UNITS_10, cap_str_10,
-+				sizeof(cap_str_10));
- 
- 		sd_printk(KERN_NOTICE, sdkp,
--			  "%llu %d-byte hardware sectors (%llu MB)\n",
-+			  "%llu %d-byte hardware sectors: (%s/%s)\n",
- 			  (unsigned long long)sdkp->capacity,
--			  hard_sector, (unsigned long long)mb);
-+			  sector_size, cap_str_10, cap_str_2);
- 	}
- 
- 	/* Rescale capacity to 512-byte units */
-
-
+-- 
+error compiling committee.c: too many arguments to function
 
