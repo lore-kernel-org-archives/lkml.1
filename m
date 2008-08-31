@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753044AbYHaPE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753311AbYHaPIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753044AbYHaPE4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 11:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbYHaPEr
+	id S1753311AbYHaPIk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 11:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbYHaPIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 11:04:47 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:54898 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750871AbYHaPEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 11:04:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	b=V7wHjBWkGn8kS1TewcxOQOGP+OkODCV4p8oewn5rl39kK8PTSAiwkrv4xQQUHEZ9CZW2vER9yEo3ifR+yk0hWS3xja4mOOFeUoKny1pbJsk1jlNCkm+BNPrHBvMIT8pS;
-Message-ID: <48BAB306.4050207@simon.arlott.org.uk>
-Date: Sun, 31 Aug 2008 16:04:38 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
-MIME-Version: 1.0
-To: Ingo Oeser <ioe-lkml@rameria.de>
-CC: Matthew Wilcox <matthew@wil.cx>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
+	Sun, 31 Aug 2008 11:08:31 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:40256 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750871AbYHaPIa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 11:08:30 -0400
+Subject: Re: [PATCH] scsi/sd: Fix capacity output to show MB/GB/TB/...
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Simon Arlott <simon@fire.lp0.eu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH] scsi/sd: Fix capacity output to show MB/GB/TB/...
-References: <48B9546B.4010004@simon.arlott.org.uk> <1220147947.3615.18.camel@localhost.localdomain> <20080831025412.GJ1239@parisc-linux.org> <200808311625.15655.ioe-lkml@rameria.de>
-In-Reply-To: <200808311625.15655.ioe-lkml@rameria.de>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20080831025412.GJ1239@parisc-linux.org>
+References: <48B9546B.4010004@simon.arlott.org.uk>
+	 <1220117091.3615.3.camel@localhost.localdomain>
+	 <20080830174516.GD1239@parisc-linux.org>
+	 <48B9B552.8060406@simon.arlott.org.uk>
+	 <48B9B588.7060709@simon.arlott.org.uk>
+	 <1220147947.3615.18.camel@localhost.localdomain>
+	 <20080831025412.GJ1239@parisc-linux.org>
+Content-Type: text/plain
+Date: Sun, 31 Aug 2008 10:08:29 -0500
+Message-Id: <1220195310.4021.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 31/08/08 15:25, Ingo Oeser wrote:
-> Hi Matthew,
+On Sat, 2008-08-30 at 20:54 -0600, Matthew Wilcox wrote:
+> On Sat, Aug 30, 2008 at 08:59:07PM -0500, James Bottomley wrote:
+> > However, I'm afraid it needs to be a bit more sophisticated:  for
+> > instance, under these calculations, a 1.75TB disk will show up as 1TB.
+> > Thus, I think we need to print the capacity to 3 significant figures to
+> > cope with this case.
 > 
-> On Sunday 31 August 2008, Matthew Wilcox wrote:
->> BTW, I do appreciate Simon's point about df showing a different number.
->> How about we print:
->> 
->> sd 7:0:0:0: [sdc] 1099511627776 512-byte hardware sectors (563TB / 512TiB)
->> 
->> (or perhaps a more realistic number ...)
->> 
->> sd 7:0:0:0: [sdc] 976562500000 512-byte hardware sectors (500TB / 455TiB)
->> 
->> It's perhaps a more gentle way of informing our users that they may not
->> have quite as much capacity as they thought they had.
+> Do you have an objection to my original suggestion of 1750GB in that
+> case?  It saves faffing around with fractions and it's unlikely to
+> confuse the user.
 > 
-> Great idea! As a user/admin I would find this the best one of all.
+> BTW, I do appreciate Simon's point about df showing a different number.
+> How about we print:
 > 
-> 1. All variants given.
-> 2. Correct scientific units used.
+> sd 7:0:0:0: [sdc] 1099511627776 512-byte hardware sectors (563TB / 512TiB)
+> 
+> (or perhaps a more realistic number ...)
+> 
+> sd 7:0:0:0: [sdc] 976562500000 512-byte hardware sectors (500TB / 455TiB)
+> 
+> It's perhaps a more gentle way of informing our users that they may not
+> have quite as much capacity as they thought they had.
 
-I oppose all the "iB" forms. Has anyone tried pronouncing these?
-Pee-bee-bytes?
+OK, uncle.  We're wasting far more time on this email thread than it
+would take to code the damn thing.  So, here it is as a generic helper:
+both forms of calculation correctly to 3sf.
 
-Alternatively we could just remove the part in brackets from the message...
+James
 
--- 
-Simon Arlott
+
+
