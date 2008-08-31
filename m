@@ -1,88 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbYHaTXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbYHaTXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757902AbYHaTXU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 15:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbYHaTXM
+	id S1756348AbYHaTXo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 15:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757809AbYHaTXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 15:23:12 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:39127 "EHLO
+	Sun, 31 Aug 2008 15:23:34 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:39517 "EHLO
 	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755960AbYHaTXM (ORCPT
+	with ESMTP id S1757354AbYHaTXd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 15:23:12 -0400
-Date: Sun, 31 Aug 2008 12:23:09 -0700
+	Sun, 31 Aug 2008 15:23:33 -0400
+Date: Sun, 31 Aug 2008 12:23:27 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: Manfred Spraul <manfred@colorfullife.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] kernel/cpu.c: Move the CPU_DYING notifiers
-Message-ID: <20080831192309.GB30283@linux.vnet.ibm.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, mingo@elte.hu, akpm@linux-foundation.org,
+       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, schamp@sgi.com,
+       niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com, rostedt@goodmis.org,
+       peterz@infradead.org, benh@kernel.crashing.org, davem@davemloft.net,
+       tony.luck@intel.com
+Subject: Re: [PATCH, RFC, tip/core/rcu] v3 scalable classic RCU
+	implementation
+Message-ID: <20080831192327.GI7015@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <200808311809.m7VI9whf014532@mail.q-ag.de> <20080831191721.GH7015@linux.vnet.ibm.com>
+References: <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <48B919C2.1040809@cn.fujitsu.com> <48B94BF4.9090103@colorfullife.com> <20080830143438.GF7107@linux.vnet.ibm.com> <48BA7944.8070402@colorfullife.com> <20080831172001.GA7015@linux.vnet.ibm.com> <48BAD89E.20206@colorfullife.com> <20080831175514.GE7015@linux.vnet.ibm.com> <48BAE082.3000300@colorfullife.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080831191721.GH7015@linux.vnet.ibm.com>
+In-Reply-To: <48BAE082.3000300@colorfullife.com>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 31, 2008 at 12:17:21PM -0700, Paul E. McKenney wrote:
-> On Sun, Aug 31, 2008 at 07:58:49PM +0200, Manfred Spraul wrote:
-> > When a cpu is taken offline, the CPU_DYING notifiers are called on the
-> > dying cpu. According to <linux/notifiers.h>, the cpu should be "not
-> > running any task, not handling interrupts, soon dead".
-> > 
-> > For the current implementation, this is not true:
-> > - __cpu_disable can fail. If it fails, then the cpu will remain alive
-> >   and happy.
-> > - At least on x86, __cpu_disable() briefly enables the local interrupts
-> >   to handle any outstanding interrupts.
-> > 
-> > What about moving CPU_DYING down a few lines, behind the __cpu_disable()
-> > line?
-> > There are only two CPU_DYING handlers in the kernel right now: one in
-> > kvm, one in the scheduler. Both should work with the patch applied
-> > [and: I'm not sure if either one handles a failing __cpu_disable()]
-> > 
-> > The patch survives simple offlining a cpu. kvm untested due to lack
-> > of a test setup.
-> 
-> Several architectures re-enable interrupts in __cpu_disable() or in
-> functions called from __cpu_disable(), which happens after CPU_DYING,
-> if I understand correctly.  :-(
+On Sun, Aug 31, 2008 at 08:18:42PM +0200, Manfred Spraul wrote:
+> Paul E. McKenney wrote:
+>> On Sun, Aug 31, 2008 at 07:45:02PM +0200, Manfred Spraul wrote:
+>>   
+>>> Paul E. McKenney wrote:
+>>>     
+>>>> Assuming that the ordering of processing pending irqs and marking the
+>>>> CPU offline in cpu_online_mask can be resolved as noted above, it should
+>>>> work fine -- if a CPU's bit is clear, we can safely ignore it.  The race
+>>>> can be resolved by checking the CPU's bit in force_quiescent_state().
+>>>>
+>>>> Or am I missing something?
+>>>>         
+>>> Yes, that would work:
+>>> Rule 1: after CPU_DEAD, a cpu is gone. The cpu is quiet, rcu callbacks 
+>>> must be moved to other cpus, ...
+>>> Rule 2: if a cpu is not listed in cpu_online_mask, then it can be 
+>>> considered as outside a read-side critical section.
+>>>
+>>> The problem with rule 2 is that it means someone 
+>>> [force_quiescent_state()] must poll the cpu_online_mask and look for 
+>>> changes.
+>>> I'd really prefer a notifier. CPU_DYING is nearly the correct thing, it 
+>>> only has to be moved down 3 lines ;-)
+>>> (I want to kill the bitmaps, not add a hierarchical bitmap polling 
+>>> system!)
+>>>     
+>>
+>> But some later CPU_DYING notifier might decide that the CPU cannot be
+>> removed after all, which would mean bringing the CPU back.  And then
+>> whatever the CPU was needed for might have actually happened in the
+>> meantime, which does not sound good to me...
+>>   
+> CPU_DYING must not fail, the current code doesn't support that.
 
-Never mind -- you are moving CPU_DYING after __cpu_disable().  :-/
+Good point!
 
 							Thanx, Paul
-
-> > Signed-Off-By: Manfred Spraul <manfred@colorfullife.com>
-> > ---
-> >  kernel/cpu.c |    5 +++--
-> >  1 files changed, 3 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/kernel/cpu.c b/kernel/cpu.c
-> > index e202a68..5b7c88f 100644
-> > --- a/kernel/cpu.c
-> > +++ b/kernel/cpu.c
-> > @@ -199,13 +199,14 @@ static int __ref take_cpu_down(void *_param)
-> >  	struct take_cpu_down_param *param = _param;
-> >  	int err;
-> > 
-> > -	raw_notifier_call_chain(&cpu_chain, CPU_DYING | param->mod,
-> > -				param->hcpu);
-> >  	/* Ensure this CPU doesn't handle any more interrupts. */
-> >  	err = __cpu_disable();
-> >  	if (err < 0)
-> >  		return err;
-> > 
-> > +	raw_notifier_call_chain(&cpu_chain, CPU_DYING | param->mod,
-> > +				param->hcpu);
-> > +
-> >  	/* Force idle task to run as soon as we yield: it should
-> >  	   immediately notice cpu is offline and die quickly. */
-> >  	sched_idle_next();
-> > -- 
-> > 1.5.5.1
-> > 
