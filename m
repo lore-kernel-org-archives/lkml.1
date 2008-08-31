@@ -1,49 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbYHaSrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757098AbYHaSzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757292AbYHaSrl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 14:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755537AbYHaSrd
+	id S1757098AbYHaSzM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 14:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755484AbYHaSy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 14:47:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43119 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755503AbYHaSrd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 14:47:33 -0400
-Date: Sun, 31 Aug 2008 11:47:04 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Sanders <linux@sandersweb.net>
-cc: linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>,
-       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
-In-Reply-To: <200808311422.12525.linux@sandersweb.net>
-Message-ID: <alpine.LFD.1.10.0808311140060.12958@nehalem.linux-foundation.org>
-References: <200808311422.12525.linux@sandersweb.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 31 Aug 2008 14:54:57 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:53079 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754808AbYHaSy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 14:54:56 -0400
+Date: Sun, 31 Aug 2008 20:54:48 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: [PATCH] mmc_block: use generic helper to print capacities
+Message-ID: <20080831205448.5b23507d@mjolnir.drzeus.cx>
+In-Reply-To: <1220195634.4021.9.camel@localhost.localdomain>
+References: <48B9546B.4010004@simon.arlott.org.uk>
+	<1220117091.3615.3.camel@localhost.localdomain>
+	<20080830174516.GD1239@parisc-linux.org>
+	<48B9B552.8060406@simon.arlott.org.uk>
+	<48B9B588.7060709@simon.arlott.org.uk>
+	<1220147947.3615.18.camel@localhost.localdomain>
+	<20080831025412.GJ1239@parisc-linux.org>
+	<1220195310.4021.4.camel@localhost.localdomain>
+	<1220195634.4021.9.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-27280-1220208895-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
+
+--=_freyr.drzeus.cx-27280-1220208895-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+
+From: Pierre Ossman <drzeus@drzeus.cx>
+
+Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+
+---
+
+diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
+index 62a4c91..dad8edb 100644
+--- a/drivers/mmc/card/block.c
++++ b/drivers/mmc/card/block.c
+@@ -29,6 +29,7 @@
+ #include <linux/blkdev.h>
+ #include <linux/mutex.h>
+ #include <linux/scatterlist.h>
++#include <linux/string_helpers.h>
+=20
+ #include <linux/mmc/card.h>
+ #include <linux/mmc/host.h>
+@@ -496,6 +497,8 @@ static int mmc_blk_probe(struct mmc_card *card)
+        struct mmc_blk_data *md;
+        int err;
+=20
++       char cap_str[10];
++
+        /*
+         * Check that the card supports the command class(es) we need.
+         */
+@@ -510,10 +513,11 @@ static int mmc_blk_probe(struct mmc_card *card)
+        if (err)
+                goto out;
+=20
+-       printk(KERN_INFO "%s: %s %s %lluKiB %s\n",
++       string_get_size(get_capacity(md->disk) << 9, STRING_UNITS_2,
++                       cap_str, sizeof(cap_str));
++       printk(KERN_INFO "%s: %s %s %s %s\n",
+                md->disk->disk_name, mmc_card_id(card), mmc_card_name(card),
+-               (unsigned long long)(get_capacity(md->disk) >> 1),
+-               md->read_only ? "(ro)" : "");
++               cap_str, md->read_only ? "(ro)" : "");
+=20
+        mmc_set_drvdata(card, md);
+        add_disk(md->disk);
 
 
-On Sun, 31 Aug 2008, David Sanders wrote:
->
-> I recently discovered that x86 kernels won't boot under Virtual PC.
+--=20
+     -- Pierre Ossman
 
-What CPU does Virtual PC emulate? As far as Wikipedia is concerned (not 
-that I'd take it on complete faith) it emulates a 32-bit Intel Pentium II.
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-And that commit makes the kernel use the "P6 nops" for such hardware. 
-Maybe Virtual PC doesn't support the newer intel nop things?
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
 
-Intel docs say that it should be available on any intel CPU that has 
-CPUID.01H.EAX[11:8] = 0110B or 1111B. That's the "family ID", and Pentium 
-II should have a family ID of 6 (ie that 0110B case).
+--=_freyr.drzeus.cx-27280-1220208895-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
-So it sounds like a Virtual PC bug, but I dunno. And maybe we should just 
-use the legcay nops for anything that isn't modern (ie P4+ or Core)?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
-		Linus
+iEYEARECAAYFAki66PwACgkQ7b8eESbyJLhZWwCfb3D89aa4WJz8tnEtU/2NuPCR
+7/4Anj/91OnqfPFeWsOjgNsRyyzyzTlE
+=ajmH
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-27280-1220208895-0001-2--
