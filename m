@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758247AbYHaNis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758753AbYHaNwG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758247AbYHaNis (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 09:38:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbYHaNij
+	id S1758753AbYHaNwG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 09:52:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756620AbYHaNvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 09:38:39 -0400
-Received: from puma.cosy.sbg.ac.at ([141.201.2.23]:52919 "EHLO
-	puma.cosy.sbg.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754149AbYHaNij (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 09:38:39 -0400
-Message-ID: <48BA9EB9.3040701@cosy.sbg.ac.at>
-Date: Sun, 31 Aug 2008 15:38:01 +0200
-From: Michael Noisternig <mnoist@cosy.sbg.ac.at>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
+	Sun, 31 Aug 2008 09:51:54 -0400
+Received: from mx1.wp.pl ([212.77.101.5]:63089 "EHLO mx1.wp.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756548AbYHaNvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 09:51:54 -0400
+Date: Sun, 31 Aug 2008 15:58:28 +0200
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 To: linux-kernel@vger.kernel.org
-Subject: (more) epoll troubles
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com
+Subject: [PATCH] x86: amd k6-2 mtrr not detected fix
+Message-Id: <20080831155828.d7dd0a76.krzysztof.h1@wp.pl>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
+X-WP-SPAM: NO 0000000 [obP1]                               
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-and sorry again if this is the wrong place to ask (again, please hint to 
-me to an appropriate place to ask in that case).
+The AMD K6-2 cpus have 2 mtrr registers 
+which are not detected by the latest Linux
+kernel.
+The mtrr capability is not reported through
+the cpuid on these cpus. This fools early
+detection function [mtrr_bp_init()] as the
+mtrr capability bit is set later in
+the init_amd() function.
+Fix it by setting the K6 mtrr capability bit
+just before the check in mtrr_bp_init().
+The added condition is copied from the init_amd().
 
-After experimenting with epoll edge-triggered mode I am clueless why on 
-a few occassions I seem to not get any input notification despite data 
-is available.
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
 
-In detail: I have set up sockets with epoll events 
-EPOLLET|EPOLLRDHUP|EPOLLIN. When I get EPOLLIN for a socket, I read() as 
-long as I get what I asked for, i.e. whenever read() returns either 
-EAGAIN or less data than I asked for I take this as indication that I 
-must wait for another EPOLLIN notification. However, this does not seem 
-to work always.
+It seems that the same problem affects Cyrix and
+Centaur/VIA cpus. Can some x86 guy inspect the
+mtrr initialization code ?
 
-Here is some log from my program:
+ arch/x86/kernel/cpu/mtrr/main.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-0x9e6b8a8: read not avail (1460/2048 read)
-i.e. tried to read 2048 bytes, got 1460 -> assume must wait for EPOLLIN 
-for more data to read
-(note that the fd is always in the epoll set with 
-EPOLLET|EPOLLRDHUP|EPOLLIN)
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index 58ac5d3..4bef914 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -1612,6 +1612,12 @@ void __init mtrr_bp_init(void)
+ 	} else {
+ 		switch (boot_cpu_data.x86_vendor) {
+ 		case X86_VENDOR_AMD:
++			if (boot_cpu_data.x86_model == 13 ||
++			    boot_cpu_data.x86_model == 9 ||
++			    (boot_cpu_data.x86_model == 8 &&
++			     boot_cpu_data.x86_mask >= 8))
++				set_cpu_cap(&boot_cpu_data,
++					    X86_FEATURE_K6_MTRR);
+ 			if (cpu_has_k6_mtrr) {
+ 				/* Pre-Athlon (K6) AMD CPU MTRRs */
+ 				mtrr_if = mtrr_ops[X86_VENDOR_AMD];
+-- 
+1.5.2.2
 
-0x9e6b8a8: read not avail (1460/2048 read)
-got EPOLLIN notification, read 1460 bytes again -> wait for another 
-notification
-
-...after a few minutes without any notification...
-
-0x9e6b8a8: GOT RDHUP (2001:0/80002001:0)
-i.e. got notification for EPOLLRDHUP|EPOLLIN (2001), was waiting for 
-EPOLLET|EPOLLRDHUP|EPOLLIN (80002001)
-
-0x9e6b8a8: read not avail (342/2048 read)
-then on trying to read we find data in the buffer (???)
-
-0x9e6b8a8: stored 16384 bytes
-this is the amount of data we expected to get /immediately/, i.e. 
-without a minutes delay and rdhup
-
-Of course you might think that the other side sent the data only just 
-before closing its side, but it is unlikely since we expected to get the 
-16384 bytes in one go (this is how that L7 protocol works), and I see 
-this odd behaviour of missing input notifications now and then.
-
-Does anybody know/have an idea why I am missing EPOLLIN notifications?
-
-Any help is appreciated!!! Thanks in advance,
-Michael
-(please CC me when replying)
