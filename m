@@ -1,51 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757863AbYHaSG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbYHaSKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757863AbYHaSG4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 14:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756407AbYHaSGl
+	id S1757461AbYHaSKG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 14:10:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755681AbYHaSJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 14:06:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52217 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756197AbYHaSGk (ORCPT
+	Sun, 31 Aug 2008 14:09:54 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:64306 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755446AbYHaSJx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 14:06:40 -0400
-Date: Sun, 31 Aug 2008 11:03:44 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, David Witbrodt <dawitbro@sbcglobal.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers <kernel-testers@vger.kernel.org>
-Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit
- a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
-In-Reply-To: <86802c440808311054q4b8e8921qa9f090527b456e34@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0808311100520.12958@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>  <200808302334.29156.rjw@sisk.pl>  <86802c440808301810r17657f3fnb3c8af5496955e0d@mail.gmail.com>  <200808311427.19369.rjw@sisk.pl>  <alpine.LFD.1.10.0808311039330.12958@nehalem.linux-foundation.org>
- <86802c440808311054q4b8e8921qa9f090527b456e34@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sun, 31 Aug 2008 14:09:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=PNKwzLnHaD/Ueja+Q7fvf6hFjM3yiUEhk8VnIsM7eHEKg2hTef45EdGXwcPLxHeY5y
+         48zAl5m/eruetG+QHj/hg+MDJPShP13viVic9NoxRFzlFRU11mUvZ1vPdWrdlmcW86AL
+         HYnwoEFCsNDAJ9mg7xNSjmhhm3SGLpUZSeR8Y=
+Message-ID: <f7848160808311109v70db1e99hb6af3b89c34d0d8c@mail.gmail.com>
+Date: Sun, 31 Aug 2008 14:09:51 -0400
+From: "Parag Warudkar" <parag.lkml@gmail.com>
+To: "Avi Kivity" <avi@qumranet.com>
+Subject: Re: [REGRESSION] High, likely incorrect process cpu usage counters with kvm and 2.6.2[67]
+Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "KVM list" <kvm@vger.kernel.org>
+In-Reply-To: <48BABC19.1060509@qumranet.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48BABC19.1060509@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Aug 31, 2008 at 11:43 AM, Avi Kivity <avi@qumranet.com> wrote:
+> Running an idle Windows VM on Linux 2.6.26+ with kvm, one sees high values
+> for the kvm process in top (30%-70% cpu), where one would normally expect
+> 0%-1%.  Surprisingly, the per-cpu system counters show almost 100% idle,
+> leading me to believe this is an accounting error and that the process does
+> not actually consume this much cpu.
 
+Busted process accounting - This looks the same as
+http://bugzilla.kernel.org/show_bug.cgi?id=11209 .
+Please verify. Peter's patch in latest git stops showing "incorrect
+looking" CPU usage but at least the process times are still wrong,
+horribly.
+In fact the CPU usage thing in -rc5 is likely also incorrect but I
+need to analyze that bit a little more.
 
-On Sun, 31 Aug 2008, Yinghai Lu wrote:
-> 
-> wonder how the probe could find out the size of is 1fff_ffff..
+>From Today's Git -
 
-Heh. That's how PCI sizing works: you write all ones to the register, and 
-read back the result. The low bits won't change, and that indicates the 
-size.
+PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
 
-But if _none_ of the bits change, then that simply means that the size 
-will be calculated to be 0xffffffff-start.
+12961 parag     20   0 83000 8908 6628 R    0  0.1  5124415h npviewer.bin
 
-So the sizing will "work", it will just always report that the BAR covers 
-everything from start to the 4G limit.
+>
+> I bisected this to a scheduler change, namely
+>
+> commit 3e51f33fcc7f55e6df25d15b55ed10c8b4da84cd
+> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date:   Sat May 3 18:29:28 2008 +0200
+>
+>   sched: add optional support for CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
+>     this replaces the rq->clock stuff (and possibly cpu_clock()).
+>      - architectures that have an 'imperfect' hardware clock can set
+>      CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
+>      - the 'jiffie' window might be superfulous when we update tick_gtod
+>      before the __update_sched_clock() call in sched_clock_tick()
+>      - cpu_clock() might be implemented as:
+>          sched_clock_cpu(smp_processor_id())
+>        if the accuracy proves good enough - how far can TSC drift in a
+>      single jiffie when considering the filtering and idle hooks?
+>     [ mingo@elte.hu: various fixes and cleanups ]
+>     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>   Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-		Linus
+That patch sounds like it had open questions?
+Really giving this is a long standing bad regression, all the
+offending patches should be reverted in absence of a fix, no?
+
+Parag
