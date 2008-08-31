@@ -1,57 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbYHaCRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757689AbYHaCSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756914AbYHaCRr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 22:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755531AbYHaCRi
+	id S1757689AbYHaCSv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 22:18:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755531AbYHaCSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 22:17:38 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:7386 "EHLO
+	Sat, 30 Aug 2008 22:18:43 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:2829 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753310AbYHaCRh (ORCPT
+	with ESMTP id S1755005AbYHaCSn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 22:17:37 -0400
+	Sat, 30 Aug 2008 22:18:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=clFYkTnhJ6WBKxtGJ3+vEbfBLFhs9i2rD0+NnOcgaISuMQMejP1YUVDTEtreREHN4g
-         0r2fRQUJuDEOpjjit4HvD24DLbpAQcsAUwEuNCeJc0EbuBhsIdxCYbmWQFfeqlaqR4M3
-         tL33hFb57EwXhSGAd4W+bnWC4vUofy295YTmA=
-Message-ID: <86802c440808301917n67d2fb34k96137829a49d36ac@mail.gmail.com>
-Date: Sat, 30 Aug 2008 19:17:36 -0700
+        b=DeRVkzXlawBtYk7+JFlSV8zVx3yfUecGBDi4RmSO0pNuyNCu3dcNWw7tvtf4X/rEci
+         vHoj31ns9yxd05AQGen0HW2bPoyqOJfXrEKYWaRXzwF7FJ17B6h0L2RZccJ0+DTaLkdM
+         Qsh1eFgPgdRZiUb/hTK43HJV9J8tY8KCienzQ=
+Message-ID: <86802c440808301918i76dc68ebk7dc4257ad7ba4d15@mail.gmail.com>
+Date: Sat, 30 Aug 2008 19:18:42 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "David Witbrodt" <dawitbro@sbcglobal.net>
-Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
+To: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
        "Andrew Morton" <akpm@linux-foundation.org>,
-       "Kernel Testers" <kernel-testers@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <349034.72587.qm@web82104.mail.mud.yahoo.com>
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ivan Kokshaysky" <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH] x86: split e820 reserved entries record to late v4
+Cc: linux-kernel@vger.kernel.org, "Yinghai Lu" <yhlu.kernel@gmail.com>
+In-Reply-To: <1220128584-23232-1-git-send-email-yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <349034.72587.qm@web82104.mail.mud.yahoo.com>
+References: <1220128584-23232-1-git-send-email-yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 30, 2008 at 6:25 PM, David Witbrodt <dawitbro@sbcglobal.net> wrote:
->
->
->> please use split_e820_reserve_xx2.patch instead...
->
-> OK, that produces the same result:  a happy kernel!
->
-> I compared the full 'dmesg' output from the previous build and the
-> current build using diff:  the only differences were trivial --
-> return times from initcall functions, and the order in which some
-> initcalls were performed was different very late in the boot process.
+add to: Ivan.
 
-good, let wait for Ingo back to check the two patches too.
-
-YH
+On Sat, Aug 30, 2008 at 1:36 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> Linus said we should register some entries in e820 later,
+> so could let BAR res register at first, or even pnp?
+>
+> this one replace
+> | commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
+> | Author: Yinghai Lu <yhlu.kernel@gmail.com>
+> | Date:   Mon Aug 25 00:56:08 2008 -0700
+> |
+> |    x86: fix HPET regression in 2.6.26 versus 2.6.25, check hpet against BAR, v3
+>
+> v2: insert e820 reserve resources before pnp_system_init
+> v3: fix merging problem in tip/x86/core
+>    please drop the one in tip/x86/core use this one instead
+> v4: address Linus's review about comments and condition in _late()
+>
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>
+> ---
+>  arch/x86/kernel/e820.c |   24 +++++++++++++++++++++++-
+>  arch/x86/pci/i386.c    |    3 +++
+>  include/asm-x86/e820.h |    1 +
+>  3 files changed, 27 insertions(+), 1 deletion(-)
+>
+> Index: linux-2.6/arch/x86/kernel/e820.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/e820.c
+> +++ linux-2.6/arch/x86/kernel/e820.c
+> @@ -1267,6 +1267,7 @@ static inline const char *e820_type_to_s
+>  /*
+>  * Mark e820 reserved areas as busy for the resource manager.
+>  */
+> +static struct resource __initdata *e820_res;
+>  void __init e820_reserve_resources(void)
+>  {
+>        int i;
+> @@ -1274,6 +1275,7 @@ void __init e820_reserve_resources(void)
+>        u64 end;
+>
+>        res = alloc_bootmem_low(sizeof(struct resource) * e820.nr_map);
+> +       e820_res = res;
+>        for (i = 0; i < e820.nr_map; i++) {
+>                end = e820.map[i].addr + e820.map[i].size - 1;
+>  #ifndef CONFIG_RESOURCES_64BIT
+> @@ -1287,7 +1289,14 @@ void __init e820_reserve_resources(void)
+>                res->end = end;
+>
+>                res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+> -               insert_resource(&iomem_resource, res);
+> +
+> +               /*
+> +                * don't register the region that could be conflicted with
+> +                * pci device BAR resource and insert them later in
+> +                * pcibios_resource_survey()
+> +                */
+> +               if (e820.map[i].type != E820_RESERVED || res->start < (1ULL<<20))
+> +                       insert_resource(&iomem_resource, res);
+>                res++;
+>        }
+>
+> @@ -1299,6 +1308,19 @@ void __init e820_reserve_resources(void)
+>        }
+>  }
+>
+> +void __init e820_reserve_resources_late(void)
+> +{
+> +       int i;
+> +       struct resource *res;
+> +
+> +       res = e820_res;
+> +       for (i = 0; i < e820.nr_map; i++) {
+> +               if (!res->parent && res->end)
+> +                       insert_resource(&iomem_resource, res);
+> +               res++;
+> +       }
+> +}
+> +
+>  char *__init default_machine_specific_memory_setup(void)
+>  {
+>        char *who = "BIOS-e820";
+> Index: linux-2.6/arch/x86/pci/i386.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/pci/i386.c
+> +++ linux-2.6/arch/x86/pci/i386.c
+> @@ -33,6 +33,7 @@
+>  #include <linux/bootmem.h>
+>
+>  #include <asm/pat.h>
+> +#include <asm/e820.h>
+>
+>  #include "pci.h"
+>
+> @@ -230,6 +231,8 @@ void __init pcibios_resource_survey(void
+>        pcibios_allocate_bus_resources(&pci_root_buses);
+>        pcibios_allocate_resources(0);
+>        pcibios_allocate_resources(1);
+> +
+> +       e820_reserve_resources_late();
+>  }
+>
+>  /**
+> Index: linux-2.6/include/asm-x86/e820.h
+> ===================================================================
+> --- linux-2.6.orig/include/asm-x86/e820.h
+> +++ linux-2.6/include/asm-x86/e820.h
+> @@ -120,6 +120,7 @@ extern void e820_register_active_regions
+>  extern u64 e820_hole_size(u64 start, u64 end);
+>  extern void finish_e820_parsing(void);
+>  extern void e820_reserve_resources(void);
+> +extern void e820_reserve_resources_late(void);
+>  extern void setup_memory_map(void);
+>  extern char *default_machine_specific_memory_setup(void);
+>  extern char *machine_specific_memory_setup(void);
+>
