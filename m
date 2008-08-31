@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbYHaQb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753279AbYHaQbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754757AbYHaQb0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 12:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYHaQbQ
+	id S1753279AbYHaQbl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 12:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753661AbYHaQbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 12:31:16 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36208 "EHLO
+	Sun, 31 Aug 2008 12:31:20 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36212 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752546AbYHaQbP (ORCPT
+	with ESMTP id S1753461AbYHaQbT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 12:31:15 -0400
-Date: Sun, 31 Aug 2008 09:28:28 -0700
+	Sun, 31 Aug 2008 12:31:19 -0400
+Date: Sun, 31 Aug 2008 09:29:03 -0700
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
-Cc: tglx@tglx.de, mingo@elte.hu, torvalds@linux-foundation.org,
-       Arnd Bergmann <arnd@arndb.de>
-Subject: [patch v2   0/5] Nano/Microsecond resolution for select() and
- poll()
-Message-ID: <20080831092828.13ae0279@infradead.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, tglx@tglx.de, mingo@elte.hu,
+       torvalds@linux-foundation.org, Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH 1/5] select: Introduce a hrtimeout function
+Message-ID: <20080831092903.633d0173@infradead.org>
+In-Reply-To: <20080831092828.13ae0279@infradead.org>
+References: <20080831092828.13ae0279@infradead.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,73 +32,108 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-New in this version:
-* With lots of help from Thomas Gleixner, select() and poll() now
-  exclusively use hrtimers
-* Several key cleanups from Thomas actually simplify and clean the
-  code up so that it's an overall improvement in code quality
-* Various interesting bugs were encountered during the switchover on this
-  level. The Fedora/Red Hat "nash" program deserves a special mention for
-  both asking for a 1 nanosecond ppoll() timeout AND depending on the
-  implementation to set this to 0 nanoseconds in userspace memory at
-  the end of the first iteration.
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH] select: Introduce a hrtimeout function
 
+This patch adds a schedule_hrtimeout() function, to be used by select() and
+poll() in a later patch. This function works similar to schedule_timeout()
+in most ways, but takes a timespec rather than jiffies.
 
- fs/compat.c                 |  187 +++++++++--------------
- fs/select.c                 |  346 +++++++++++++++++++++-----------------------
- include/linux/hrtimer.h     |    2 
- include/linux/poll.h        |    8 -
- include/linux/thread_info.h |    8 +
- include/linux/time.h        |    4 
- kernel/hrtimer.c            |   65 ++++++++
- kernel/time.c               |   18 ++
- 8 files changed, 344 insertions(+), 294 deletions(-)
+With a lot of contributions/fixes from Thomas
 
-(the bulk of actual linecount growth is just newly added comments)
-----
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ include/linux/hrtimer.h |    2 +
+ kernel/hrtimer.c        |   65 +++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 67 insertions(+), 0 deletions(-)
 
-Today in Linux, select() and poll() operate in jiffies resolution
-(granularity), meaning an effective resolution of 1 millisecond (HZ=1000) to
-10 milliseconds (HZ=100). Delays shorter than this are not possible, and all
-delays are in multiples of this granularity.
-
-The effect is that applications that want (on average) to specify more
-accurate delays (for example multimedia or other interactive apps) just
-cannot do that; this creates more than needed jitter.
-
-With this patch series, the internals of select() and poll() interfaces are
-changed such that they work on the nanosecond level (using hrtimers). The
-userspace interface for select() is in microseconds, for pselect() and
-ppoll() this is in nanoseconds.
-
-[actual behavior obviously on what resolution the hardware timers work, on
-modern PCs this is pretty good though]
-
-To show this effect I made a test application to measure the error made
-in the select() timing.
-
-For example, a userspace application asking for a 1200 microsecond delay, on
-a HZ=1000 kernel, will in practice get a 1997 microsecond delay, a delta of
-almost 800 microseconds (which is of course a high percentage of 1200). The
-extreme case is asking for 1 microsecond, and getting 998 microseconds
-delay... with the patch we get a 250 times improvement in behavior (!).
-
-A graph of various inputs with the jitter can be seen at
-http://www.tglx.de/~arjan/select_benefits.png
-
-One thing to note is that on my machine, the current select() implementation
-will return after 1997 microseconds when asked for 1999 microseconds; this
-can be seen in a zoom in of the graph above:
-http://www.tglx.de/~arjan/zoom.png
-E.g. select() is returning too early in current Linux kernels; and this is
-also fixed (by nature) by this patch series.
-In the graph there's a 4 microsecond delta for most data points, this is
-basically the measurement overhead (C-state exit, a few system calls, a 
-loop and some math).
-
-Note: 
-even though poll() (as opposed to ppoll()) only accepts milliseconds
-as userspace interface, the behavior will still improve because the current
-time no longer needs to be rounded up to the next jiffie, so on average
-a 500 microseconds behavior improvement.
+diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
+index 6d93dce..becd17d 100644
+--- a/include/linux/hrtimer.h
++++ b/include/linux/hrtimer.h
+@@ -346,6 +346,8 @@ extern long hrtimer_nanosleep_restart(struct restart_block *restart_block);
+ extern void hrtimer_init_sleeper(struct hrtimer_sleeper *sl,
+ 				 struct task_struct *tsk);
+ 
++extern int schedule_hrtimeout(ktime_t *expires, const enum hrtimer_mode mode);
++
+ /* Soft interrupt function to run the hrtimer queues: */
+ extern void hrtimer_run_queues(void);
+ extern void hrtimer_run_pending(void);
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index b8e4dce..782137d 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1678,3 +1678,68 @@ void __init hrtimers_init(void)
+ #endif
+ }
+ 
++/**
++ * schedule_hrtimeout - sleep until timeout
++ * @expires:	timeout value (ktime_t)
++ * @mode:	timer mode, HRTIMER_MODE_ABS or HRTIMER_MODE_REL
++ *
++ * Make the current task sleep until the given expiry time has
++ * elapsed. The routine will return immediately unless
++ * the current task state has been set (see set_current_state()).
++ *
++ * You can set the task state as follows -
++ *
++ * %TASK_UNINTERRUPTIBLE - at least @timeout time is guaranteed to
++ * pass before the routine returns.
++ *
++ * %TASK_INTERRUPTIBLE - the routine may return early if a signal is
++ * delivered to the current task.
++ *
++ * The current task state is guaranteed to be TASK_RUNNING when this
++ * routine returns.
++ *
++ * Returns 0 when the timer has expired otherwise -EINTR
++ */
++int __sched schedule_hrtimeout(ktime_t *expires,
++			       const enum hrtimer_mode mode)
++{
++	struct hrtimer_sleeper t;
++
++	/*
++	 * Optimize when a zero timeout value is given. It does not
++	 * matter whether this is an absolute or a relative time.
++	 */
++	if (expires && !expires->tv64) {
++		__set_current_state(TASK_RUNNING);
++		return 0;
++	}
++
++	/*
++	 * A NULL parameter means "inifinte"
++	 */
++	if (!expires) {
++		schedule();
++		__set_current_state(TASK_RUNNING);
++		return -EINTR;
++	}
++
++	hrtimer_init_on_stack(&t.timer, CLOCK_MONOTONIC, mode);
++	t.timer.expires = *expires;
++
++	hrtimer_init_sleeper(&t, current);
++
++	hrtimer_start(&t.timer, t.timer.expires, mode);
++	if (!hrtimer_active(&t.timer))
++		t.task = NULL;
++
++	if (likely(t.task))
++		schedule();
++
++	hrtimer_cancel(&t.timer);
++	destroy_hrtimer_on_stack(&t.timer);
++
++	__set_current_state(TASK_RUNNING);
++
++	return !t.task ? 0 : -EINTR;
++}
++EXPORT_SYMBOL_GPL(schedule_hrtimeout);
+-- 
+1.5.5.1
 
