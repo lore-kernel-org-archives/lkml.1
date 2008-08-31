@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbYHaQ4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755128AbYHaRFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755228AbYHaQ4s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 12:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYHaQ4k
+	id S1755128AbYHaRFv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 13:05:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbYHaRFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 12:56:40 -0400
-Received: from 1wt.eu ([62.212.114.60]:3099 "EHLO 1wt.eu"
+	Sun, 31 Aug 2008 13:05:40 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:54248 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751994AbYHaQ4k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 12:56:40 -0400
-Date: Sun, 31 Aug 2008 18:55:54 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, tglx@tglx.de, mingo@elte.hu,
-       torvalds@linux-foundation.org, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [patch v2   0/5] Nano/Microsecond resolution for select() and poll()
-Message-ID: <20080831165554.GG19337@1wt.eu>
-References: <20080831092828.13ae0279@infradead.org>
+	id S1753292AbYHaRFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 13:05:39 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -1.652
+Date: Sun, 31 Aug 2008 10:05:37 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: "Dushan Tcholich" <dusanc@gmail.com>
+Cc: "Francois Romieu" <romieu@fr.zoreil.com>,
+       "Robert Hancock" <hancockr@shaw.ca>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: ksoftirqd high cpu load on kernels 2.6.24 to 2.6.27-rc1-mm1
+Message-ID: <20080831100537.6929c51e@extreme>
+In-Reply-To: <a08621850808310151o143845h195a8658d02270d9@mail.gmail.com>
+References: <fa.wTMiBcGRgw2fBtdHwtX7y0lkc8s@ifi.uio.no>
+	<48975BD3.6040709@shaw.ca>
+	<a08621850808041337k1d1deb6fk78098d9fcd4930dd@mail.gmail.com>
+	<20080807185802.GA16327@electric-eye.fr.zoreil.com>
+	<a08621850808101200n220afd2dve58abe67830b7a4f@mail.gmail.com>
+	<a08621850808110053j5cbf23e6xdf52c9e7440abf19@mail.gmail.com>
+	<a08621850808291848q5660148fx57d576ecfcbfce8@mail.gmail.com>
+	<a08621850808310151o143845h195a8658d02270d9@mail.gmail.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080831092828.13ae0279@infradead.org>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arjan,
+On Sun, 31 Aug 2008 10:51:46 +0200
+"Dushan Tcholich" <dusanc@gmail.com> wrote:
 
-On Sun, Aug 31, 2008 at 09:28:28AM -0700, Arjan van de Ven wrote:
-> One thing to note is that on my machine, the current select() implementation
-> will return after 1997 microseconds when asked for 1999 microseconds; this
-> can be seen in a zoom in of the graph above:
-> http://www.tglx.de/~arjan/zoom.png
-> E.g. select() is returning too early in current Linux kernels; and this is
-> also fixed (by nature) by this patch series.
+> Hello
+> I found the culprit.
+> 
+> When using powertop I get:
+> Top causes for wakeups:
+>   35,2% (251,0)                ip : br_stp_enable_bridge (br_hello_timer_expired
+> 
+> So I tried to turn them off with:
+> brctl sethello br0 0
+> but the problem persisted.
 
-This is a good news. I've been bothered by this problem for a long time
-and got used to add 99999 us to any delay fed to select() (that started
-when HZ=100). I remember having noticed performance improvements in my
-applications using this trick even on other systems, so I don't think
-that Linux is the only one with this anomaly. I think it's simply caused
-by the rounding methods which make it hard to compute an accurate deadline
-when a value is converted before being added to jiffies.
 
-I do not remember noticing this on epoll though. Maybe it's just because
-I did not look close enough :-/
+You can't turn off the hello timer, it is needed for Spanning Tree to
+work. The kernel should reject requests to set hello timer < 1sec.
+Most routers allow 1 - 10sec.
 
-Cheers,
-Willy
-
+I am going to do a new patch to add tighter range checking for STP timer
+settings and another to default fowarding delay of zero if STP is disabled.
