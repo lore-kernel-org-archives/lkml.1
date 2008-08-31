@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758465AbYHaUIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758480AbYHaUQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758465AbYHaUIp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 16:08:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756482AbYHaUIh
+	id S1758480AbYHaUQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 16:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756976AbYHaUQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 16:08:37 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:42929 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751827AbYHaUIg (ORCPT
+	Sun, 31 Aug 2008 16:16:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34789 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756559AbYHaUQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 16:08:36 -0400
-Date: Sun, 31 Aug 2008 13:08:33 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com, jes@sgi.com,
-       manfred@colorfullife.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] prevent ia64 from invoking irq handlers on offline CPUs
-Message-ID: <20080831200833.GJ7015@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080831172814.GA15087@linux.vnet.ibm.com> <19f34abd0808311046g47907414wf3ef939d0a7bbfdb@mail.gmail.com> <20080831175100.GD7015@linux.vnet.ibm.com> <19f34abd0808311053m2fbaa711j5bfc846d81cf34b4@mail.gmail.com> <20080831180630.GF7015@linux.vnet.ibm.com> <19f34abd0808311208v4caa9bdbhaac6ca5177c1994a@mail.gmail.com>
+	Sun, 31 Aug 2008 16:16:14 -0400
+Date: Sun, 31 Aug 2008 13:15:55 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Nick Kossifidis <mickflemm@gmail.com>
+cc: Rui Santos <rsantos@grupopie.com>, Ivo van Doorn <ivdoorn@gmail.com>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT]: Networking
+In-Reply-To: <40f31dec0808311258q7598dfe3he81b7575375faff5@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0808311313260.12958@nehalem.linux-foundation.org>
+References: <20080805.190020.244441681.davem@davemloft.net>  <alpine.LFD.1.10.0808051937410.15995@nehalem.linux-foundation.org>  <200808061021.56150.IvDoorn@gmail.com> <48B7CBA7.4060107@grupopie.com>
+ <40f31dec0808311258q7598dfe3he81b7575375faff5@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0808311208v4caa9bdbhaac6ca5177c1994a@mail.gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 31, 2008 at 09:08:34PM +0200, Vegard Nossum wrote:
-> On Sun, Aug 31, 2008 at 8:06 PM, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
-> > On Sun, Aug 31, 2008 at 07:53:32PM +0200, Vegard Nossum wrote:
-> >> On Sun, Aug 31, 2008 at 7:51 PM, Paul E. McKenney
-> >> <paulmck@linux.vnet.ibm.com> wrote:
-> >> >> > @@ -751,6 +749,7 @@ int __cpu_disable(void)
-> >> >> >        remove_siblinginfo(cpu);
-> >> >> >        cpu_clear(cpu, cpu_online_map);
-> >>
-> >> Here ^^^
-> >>
-> >> >> >        fixup_irqs();
-> >> >> > +       cpu_clear(cpu, cpu_online_map);
-> >> >> >        local_flush_tlb_all();
-> >> >> >        cpu_clear(cpu, cpu_callin_map);
-> >> >> >        return 0;
-> >> >>
-> >> >> Hm. Maybe my eyes are going bad. But isn't that now clearing the cpu
-> >> >> both before and after calling fixup_irqs()?
-> >> >
-> >> > I don't believe so...  I removed the earlier one and added the later
-> >> > one.  Or is there another one hidden somewhere that I missed?
-> >>
-> >> See marker above. It's not removed, is it?
-> >
-> > Right you are!!!  There were two to begin with, and I moved the first
-> > one only.  The attached updated patch removes the extra one.
-> 
-> Good, I am not blind yet! (Though I did have to look more than once.)
-> 
-> On the other hand... Paul; human after all!
 
-Very much so, I am afraid!  ;-)
 
-							Thanx, Paul
+On Sun, 31 Aug 2008, Nick Kossifidis wrote:
+> 
+> EeePC is working, the patch series i submitted adds support for RF2425
+> chip which is included on EeePCs as far as i know (i have tested it on
+> an EeePC 900 surf, i think EeePC 901 has the same card) ;-)
+
+I think the EeePC 900 has a ath5k chip, and the 901/1000 has some totally 
+different RaLink chip afaik.
+
+I think the design change came when moving from Celeron to Atom.
+
+		Linus
