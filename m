@@ -1,130 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758992AbYHaK4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759377AbYHaK4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758992AbYHaK4Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 06:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757401AbYHaKz7
+	id S1759377AbYHaK4a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 06:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758410AbYHaK4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 06:55:59 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:39409 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756990AbYHaKz6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 06:55:58 -0400
-Date: Sun, 31 Aug 2008 06:55:45 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: Linux-2.6.27-rc5, drm errors in log
-In-reply-to: <21d7e9970808302340w71483645macb34f8470a85c66@mail.gmail.com>
-To: "Dave Airlie" <airlied@gmail.com>
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-Message-id: <200808310655.45464.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <898503EB1E15BA4F944D1BE69D55AAC8AB540A@storexmb1.amd.com>
- <200808302219.45103.gene.heskett@verizon.net>
- <21d7e9970808302340w71483645macb34f8470a85c66@mail.gmail.com>
-User-Agent: KMail/1.9.9
+	Sun, 31 Aug 2008 06:56:07 -0400
+Received: from lucidpixels.com ([75.144.35.66]:34923 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758259AbYHaK4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 06:56:06 -0400
+Date: Sun, 31 Aug 2008 06:56:04 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+cc: linux-raid@vger.kernel.org
+Subject: 2.6.26 (x86 vs. x86_64) different /sys directory structure for md?
+Message-ID: <alpine.DEB.1.10.0808310649390.4772@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 31 August 2008, Dave Airlie wrote:
->On Sun, Aug 31, 2008 at 12:19 PM, Gene Heskett <gene.heskett@verizon.net> wrote:
->> On Saturday 30 August 2008, Bridgman, John wrote:
->>>))I'm drowning in these errors:
->>>))
->>>))Aug 30 13:21:05 coyote kernel: [14927.850078] [drm] wait for fifo failed
->>> status : 0x80076100 0x00000000
->>>
->>>I'm just going on the code in your email - can't view git until later
->>> today - but in this case it seems like the timeouts were always happening
->>> and now there is code to print an error message.
->>>
->>>IIRC the usual fix is to bump the timeout but (Michael ?) has suggested a
->>> couple of times that the ideal solution would be to change the logic so
->>> that the driver never times out while the chip is making progress (ie
->>> while the number of slots available in the fifo is increasing, even if it
->>> hasn't increased enough yet).
->>
->> FWIW, I added the 3 lines that cause that printout to the 2.6.27-rc4 tree
->> and rebuilt it.  There are no more errors being reported now by
->> 2.6.27-rc4, and there were none without those 3 added lines prior to this,
->> so it is rc5 specific.
->
->Hmm I'm just looking at the patches I put in for rc5, and there is no
->functional difference to the
->r200 codepath that I can see from those patches apart from the debug prints.
+Have two hosts, an (md) raid5 on each:
 
-Update: there were 3 of those in the log after I sent the denial msg.
-======
-Aug 30 23:48:34 coyote kernel: [ 7242.890000] [drm] wait for fifo failed status : 0x80076100 0x00000000
-Aug 30 23:57:51 coyote kernel: [ 7800.370001] [drm] wait for fifo failed status : 0x8003C100 0x00000000
-Aug 30 23:57:51 coyote kernel: [ 7800.458000] [drm] wait for fifo failed status : 0x8007C100 0x00000000
-======
-So this is a real, pre-rc5 problem, but without the reporting that enabled.
+Linux p26 2.6.26 #2 SMP Sat Jul 26 13:23:40 EDT 2008 i686 GNU/Linux
+Linux p63 2.6.26 #2 SMP Sat Jul 26 08:21:07 EDT 2008 x86_64 GNU/Linux
 
->Can you get a clean -rc4 and apply just
-> 54f961a628b737f66710eca0b0d95346645dd33e to it.
+Was going to run a check on my raids:
 
-Yes I can, but how do I get that specific patch?  Or is that the git # for the
-patch I first applied to -rc2, which added the firmware/radeon stuff?  I'm 
-familiar with patch, but not on a first name basis with git, sorry.
+echo check > sync_action
 
-So I'm going to do a bisect, my style.  I will rebuild, starting with -rc3, 
-using only the -rcX patch and the firmware addition patch, which applied to
--rc3 as follows:
-now applying [PATCH]radeon_cp-use-request_firmware
+I noticed:
 
-patching file drivers/gpu/drm/radeon/radeon_cp.c
-patching file drivers/gpu/drm/radeon/radeon_drv.h
-patching file drivers/gpu/drm/radeon/radeon_microcode.h
-patching file firmware/Makefile
-Hunk #1 FAILED at 34.
-1 out of 1 hunk FAILED -- saving rejects to file firmware/Makefile.rej
-===So I added that into the firmware/Makefile at line 28 by hand===
-patching file firmware/WHENCE
-Hunk #1 succeeded at 339 (offset -233 lines).
-patching file firmware/radeon/R100_cp.bin.ihex
-patching file firmware/radeon/R200_cp.bin.ihex
-patching file firmware/radeon/R300_cp.bin.ihex
-patching file firmware/radeon/R420_cp.bin.ihex
-patching file firmware/radeon/R520_cp.bin.ihex
-patching file firmware/radeon/RS600_cp.bin.ihex
-patching file firmware/radeon/RS690_cp.bin.ihex
+For x86 (Debian Testing), the path to sync_action is:
+/sys/block/md0/md/sync_action
 
-patch [PATCH]radeon_cp-use-request_firmware done
+For x86_64 (Debian Testing), the path to sync_action is:
+/sys/devices/virtual/block/md0/md/sync_action
 
-=== and I'm watching the build for errors===
-It got past the MK_FW for those ok. 
-However there were 6 section miss-matches reported, and the suggested
-addition to .config did not make it any noisier so I'm no smarter.
-Now I've added those 3 reporter lines to radeon_cp.c, rebuilt again and 
-will reboot to -rc3 for effects, reporting after a few hours uptime.
+p26:/dev# find /sys/|grep -i sync_action
+/sys/block/md0/md/sync_action
+p26:/dev#
 
-Unless you have a better plan I can learn of course.
+p63:~# find /sys/|grep -i sync_action
+/sys/devices/virtual/block/md0/md/sync_action
+/sys/devices/virtual/block/md3/md/sync_action
+/sys/devices/virtual/block/md2/md/sync_action
+/sys/devices/virtual/block/md1/md/sync_action
+p63:~#
 
->See if you can get that to produce the errors, if it does, apply just
->the drm info chunks, try again, if that works, try adding
->the isync cntl chunk. and re-testing. I can't see how writing isync
->cntl here would affect things though.
+The kernels are compiled similarly in terms of overall configuration, I 
+will need to take this into account for scripting array checks etc, but I 
+was curious why are they different between architectures and is it going 
+to change in the future?  Should one take the path to sync_action with a 
+grain of salt?  Or do I have an incorrect configuration option specified 
+somewhere that had made this occur?
 
->Dave.
+http://home.comcast.net/~jpiszcz/20080831/p26-config.txt
+http://home.comcast.net/~jpiszcz/20080831/p63-config.txt
 
-
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-It is always the best policy to tell the truth, unless, of course,
-you are an exceptionally good liar.
-		-- Jerome K. Jerome
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Equal bytes for women.
+Justin.
