@@ -1,302 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758555AbYHaUqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758935AbYHaU4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758555AbYHaUqK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 16:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYHaUp4
+	id S1758935AbYHaU4z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 16:56:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757756AbYHaU4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 16:45:56 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:40703 "EHLO
-	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751246AbYHaUpz (ORCPT
+	Sun, 31 Aug 2008 16:56:46 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:42971 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757767AbYHaU4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 16:45:55 -0400
-Date: Sun, 31 Aug 2008 15:45:45 -0500
-From: David Fries <david@fries.net>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: linux-kernel@vger.kernel.org, p_gortmaker@yahoo.com, netdev@vger.kerne.org
-Subject: Re: [PATCH] ne.c fix for hibernate and rmmod oops fix
-Message-ID: <20080831204545.GA28469@spacedout.fries.net>
-References: <20080828041110.GA9404@spacedout.fries.net> <20080830.002215.128620618.anemo@mba.ocn.ne.jp> <20080830022749.GF17528@spacedout.fries.net> <20080830.235226.108118828.anemo@mba.ocn.ne.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 31 Aug 2008 16:56:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xgCRF0uesMRENPsooJRt/5UyL91r2w74Wyjnn0NernU7FMeI84U58EYacihnS4g+Nb
+         FirgkhkwwNqDZHZ3gVpmlakOBMQoIVVaKknfIyWdLcWus2E0BW+gbrENX30vbFOSGoyt
+         2B6X7NiUo/YaZ5H0Uu44hBTmNYwudzQHrHjNE=
+Message-ID: <21d7e9970808311356n47285341s217353ee892a295e@mail.gmail.com>
+Date: Mon, 1 Sep 2008 06:56:44 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Gene Heskett" <gene.heskett@gmail.com>
+Subject: Re: Linux-2.6.27-rc5, drm errors in log
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200808311423.11311.gene.heskett@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080830.235226.108118828.anemo@mba.ocn.ne.jp>
-User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Sun, 31 Aug 2008 15:45:48 -0500 (CDT)
+References: <898503EB1E15BA4F944D1BE69D55AAC8AB540A@storexmb1.amd.com>
+	 <21d7e9970808302340w71483645macb34f8470a85c66@mail.gmail.com>
+	 <200808310655.45464.gene.heskett@gmail.com>
+	 <200808311423.11311.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 30, 2008 at 11:52:26PM +0900, Atsushi Nemoto wrote:
+On Mon, Sep 1, 2008 at 4:23 AM, Gene Heskett <gene.heskett@gmail.com> wrote:
+> On Sunday 31 August 2008, Gene Heskett wrote:
+>>On Sunday 31 August 2008, Dave Airlie wrote:
+>>>On Sun, Aug 31, 2008 at 12:19 PM, Gene Heskett <gene.heskett@verizon.net>
+> wrote:
+>>>> On Saturday 30 August 2008, Bridgman, John wrote:
+>>>>>))I'm drowning in these errors:
+>>>>>))
+>>>>>))Aug 30 13:21:05 coyote kernel: [14927.850078] [drm] wait for fifo
+>>>>> failed status : 0x80076100 0x00000000
+>>>>>
+>>>>>I'm just going on the code in your email - can't view git until later
+>>>>> today - but in this case it seems like the timeouts were always
+>>>>> happening and now there is code to print an error message.
+>>>>>
+>>>>>IIRC the usual fix is to bump the timeout but (Michael ?) has suggested a
+>>>>> couple of times that the ideal solution would be to change the logic so
+>>>>> that the driver never times out while the chip is making progress (ie
+>>>>> while the number of slots available in the fifo is increasing, even if
+>>>>> it hasn't increased enough yet).
+>>>>
+>>>> FWIW, I added the 3 lines that cause that printout to the 2.6.27-rc4 tree
+>>>> and rebuilt it.  There are no more errors being reported now by
+>>>> 2.6.27-rc4, and there were none without those 3 added lines prior to
+>>>> this, so it is rc5 specific.
+>>>
+>>>Hmm I'm just looking at the patches I put in for rc5, and there is no
+>>>functional difference to the
+>>>r200 codepath that I can see from those patches apart from the debug
+>>> prints.
+>>
+>>Update: there were 3 of those in the log after I sent the denial msg.
+>>======
+>>Aug 30 23:48:34 coyote kernel: [ 7242.890000] [drm] wait for fifo failed
+>> status : 0x80076100 0x00000000 Aug 30 23:57:51 coyote kernel: [
+>> 7800.370001] [drm] wait for fifo failed status : 0x8003C100 0x00000000 Aug
+>> 30 23:57:51 coyote kernel: [ 7800.458000] [drm] wait for fifo failed status
+>> : 0x8007C100 0x00000000 ======
+>>So this is a real, pre-rc5 problem, but without the reporting that enabled.
+>>
+>>>Can you get a clean -rc4 and apply just
+>>> 54f961a628b737f66710eca0b0d95346645dd33e to it.
+>>
+>>Yes I can, but how do I get that specific patch?  Or is that the git # for
+>> the patch I first applied to -rc2, which added the firmware/radeon stuff?
+>> I'm familiar with patch, but not on a first name basis with git, sorry.
+>>
+>>So I'm going to do a bisect, my style.  I will rebuild, starting with -rc3,
+>>using only the -rcX patch and the firmware addition patch, which applied to
+>>-rc3 as follows:
+>>now applying [PATCH]radeon_cp-use-request_firmware
+>>
+>>patching file drivers/gpu/drm/radeon/radeon_cp.c
+>>patching file drivers/gpu/drm/radeon/radeon_drv.h
+>>patching file drivers/gpu/drm/radeon/radeon_microcode.h
+>>patching file firmware/Makefile
+>>Hunk #1 FAILED at 34.
+>>1 out of 1 hunk FAILED -- saving rejects to file firmware/Makefile.rej
+>>===So I added that into the firmware/Makefile at line 28 by hand===
+>>patching file firmware/WHENCE
+>>Hunk #1 succeeded at 339 (offset -233 lines).
+>>patching file firmware/radeon/R100_cp.bin.ihex
+>>patching file firmware/radeon/R200_cp.bin.ihex
+>>patching file firmware/radeon/R300_cp.bin.ihex
+>>patching file firmware/radeon/R420_cp.bin.ihex
+>>patching file firmware/radeon/R520_cp.bin.ihex
+>>patching file firmware/radeon/RS600_cp.bin.ihex
+>>patching file firmware/radeon/RS690_cp.bin.ihex
+>>
+>>patch [PATCH]radeon_cp-use-request_firmware done
+>>
+>>=== and I'm watching the build for errors===
+>>It got past the MK_FW for those ok.
+>>However there were 6 section miss-matches reported, and the suggested
+>>addition to .config did not make it any noisier so I'm no smarter.
+>>Now I've added those 3 reporter lines to radeon_cp.c, rebuilt again and
+>>will reboot to -rc3 for effects, reporting after a few hours uptime.
+>
+> Ok Dave, I have chased it all the way back to rc1 by adding those 3 lines of
+> reporter, and at 2.6.27-rc1 it is still doing it.  This is without the radeon
+> firmware patch, but since the microcode is still there in /lib/firmware, the
+> log says it is still being loaded.
+>
+> I am beginning to think this is a very old bug, and this evening I will try
+> those 3 reporter lines added to 2.6.25.4 as I still have that src tree here.
+>
 
-This patch is the changes since [PATCH 1/2], if it looks good I'll
-submit the git changeset next.
+I think you've probably always had the problem, we just never reported
+it before.
 
-> The name "cleanup_module" is special.  I think this should not be used
-> outside #ifdef MODULE.  Please rename it something like
-> ne_cleanup_module() and make it static.  Or just use ne_exit().
+There are some timeouts that may be set too low somewhere in userspace
+and we may need to adjust them.
 
-I created ne_add_devices to register the platform devices now in one
-place and ne_probe and init_module call it.
-
-> Thanks.  You killed two .name and there are still two .name in ne_probe.
-
-No more cleanup_module, just ne_exit.
-
-I moved the BAD #define and module parameters up to the top of the
-file, it's a better place for it.  ne_probe was moved down to the rest
-of the module initialization code.
-
-ne_init will now remove unused devices added by ne_probe.
-
--- 
-David Fries <david@fries.net>
-http://fries.net/~david/ (PGP encryption key available)
-
-
-diff --git a/drivers/net/ne.c b/drivers/net/ne.c
-index ef4df0e..7980cf0 100644
---- a/drivers/net/ne.c
-+++ b/drivers/net/ne.c
-@@ -64,6 +64,27 @@ static const char version2[] =
- 
- /* Do we support clones that don't adhere to 14,15 of the SAprom ? */
- #define SUPPORT_NE_BAD_CLONES
-+/* 0xbad = bad sig or no reset ack */
-+#define BAD 0xbad
-+#define BAD_STR "0xbad"
-+
-+#define MAX_NE_CARDS	4	/* Max number of NE cards per module */
-+static struct platform_device *pdev_ne[MAX_NE_CARDS];
-+
-+static int io[MAX_NE_CARDS];
-+static int irq[MAX_NE_CARDS];
-+static int bad[MAX_NE_CARDS];
-+
-+#ifdef MODULE
-+module_param_array(io, int, NULL, 0);
-+module_param_array(irq, int, NULL, 0);
-+module_param_array(bad, int, NULL, 0);
-+MODULE_PARM_DESC(io, "I/O base address(es),required");
-+MODULE_PARM_DESC(irq, "IRQ number(s)");
-+MODULE_PARM_DESC(bad, "Accept card(s) with bad signatures");
-+MODULE_DESCRIPTION("NE1000/NE2000 ISA/PnP Ethernet driver");
-+MODULE_LICENSE("GPL");
-+#endif /* MODULE */
- 
- /* Do we perform extra sanity checks on stuff ? */
- /* #define NE_SANITY_CHECK */
-@@ -162,7 +183,6 @@ static void ne_block_input(struct net_device *dev, int count,
- static void ne_block_output(struct net_device *dev, const int count,
- 		const unsigned char *buf, const int start_page);
- 
--
- /*  Probe for various non-shared-memory ethercards.
- 
-    NEx000-clone boards have a Station Address PROM (SAPROM) in the packet
-@@ -219,80 +239,6 @@ static int __init do_ne_probe(struct net_device *dev)
- 	return -ENODEV;
- }
- 
--#define MAX_NE_CARDS	4	/* Max number of NE cards per module */
--static struct platform_device *pdev_ne[MAX_NE_CARDS];
--/* 0xbad = bad sig or no reset ack */
--#define BAD 0xbad
--#define BAD_STR "0xbad"
--
--#ifdef MODULE
--static int io[MAX_NE_CARDS];
--static int irq[MAX_NE_CARDS];
--static int bad[MAX_NE_CARDS];
--
--module_param_array(io, int, NULL, 0);
--module_param_array(irq, int, NULL, 0);
--module_param_array(bad, int, NULL, 0);
--MODULE_PARM_DESC(io, "I/O base address(es),required");
--MODULE_PARM_DESC(irq, "IRQ number(s)");
--MODULE_PARM_DESC(bad, "Accept card(s) with bad signatures");
--MODULE_DESCRIPTION("NE1000/NE2000 ISA/PnP Ethernet driver");
--MODULE_LICENSE("GPL");
--#endif /* MODULE */
--
--#ifndef MODULE
--struct net_device * __init ne_probe(int unit)
--{
--	struct net_device *dev;
--	struct platform_device *pdev;
--	struct resource r[2] = {
--		{
--			.name = "io_port",
--			.flags = IORESOURCE_IO},
--		{
--			.name = "irq",
--			.flags = IORESOURCE_IRQ} };
--	/* Find an empty slot. */
--	int this_dev = 0;
--	while (pdev_ne[this_dev]) {
--		if (++this_dev == MAX_NE_CARDS)
--			return ERR_PTR(-ENOMEM);
--	}
--
--	/* Get irq, io from kernel command line */
--	dev = alloc_eip_netdev();
--
--	if (!dev)
--		return ERR_PTR(-ENOMEM);
--
--	sprintf(dev->name, "eth%d", unit);
--	netdev_boot_setup_check(dev);
--
--	r[0].start = dev->base_addr;
--	r[0].end = r[0].start+NE_IO_EXTENT-1;
--
--	if (dev->mem_end == BAD)
--		r[0].name = BAD_STR;
--
--	r[1].start = dev->irq;
--
--	free_netdev(dev);
--
--	pdev = platform_device_register_simple(
--		DRV_NAME, unit, r, ARRAY_SIZE(r));
--	if (IS_ERR(pdev))
--		return ERR_CAST(pdev);
--	pdev_ne[this_dev] = pdev;
--
--	/* Why is ne_probe being called before ne_init? */
--	dev = platform_get_drvdata(pdev);
--	if (!dev)
--		return ERR_PTR(-ENODEV);
--
--	return dev;
--}
--#endif
--
- static int __init ne_probe_isapnp(struct net_device *dev)
- {
- 	int i;
-@@ -969,16 +915,16 @@ static struct platform_driver ne_driver = {
- 	},
- };
- 
--#ifdef MODULE
--
- /* This is set up so that no ISA autoprobe takes place. We can't guarantee
- that the ne2k probe is the last 8390 based probe to take place (as it
- is at boot) and so the probe will get confused by any other 8390 cards.
- ISA device autoprobes on a running machine are not recommended anyway. */
- 
--int __init init_module(void)
-+/* Register platform devices for each non-zero io[] (and one 0 io for probe
-+ * or pnp probing), then probe to see if we found any.
-+ */
-+static void __init ne_add_devices(void)
- {
--	int retval;
- 	int this_dev;
- 	int probed_zero = 0;
- 	struct platform_device *pdev;
-@@ -998,6 +944,8 @@ int __init init_module(void)
- 				continue;
- 			probed_zero = 1;
- 		}
-+		if (pdev_ne[this_dev])
-+			continue;
- 		if (bad[this_dev] == BAD)
- 			r[0].name = BAD_STR;
- 		pdev = platform_device_register_simple(
-@@ -1006,14 +954,16 @@ int __init init_module(void)
- 			continue;
- 		pdev_ne[this_dev] = pdev;
- 	}
-+}
- 
--	/* Need to find out if any devices are found, if not the driver
--	 * has been unregistered, so re-register it for suspend and
--	 * resume notifications and because cleanup_module unregisters it.
--	 */
-+#ifdef MODULE
-+int __init init_module()
-+{
-+	int retval;
-+	ne_add_devices();
- 	retval = platform_driver_probe(&ne_driver, ne_drv_probe);
- 	if (retval) {
--		if (io[this_dev] == 0)
-+		if (io[0] == 0)
- 			printk(KERN_NOTICE "ne.c: You must supply \"io=0xNNN\""
- 				" value(s) for ISA cards.\n");
- 		ne_loop_rm_unreg(1);
-@@ -1022,24 +972,61 @@ int __init init_module(void)
- 
- 	/* Unregister unused platform_devices. */
- 	ne_loop_rm_unreg(0);
-+	return retval;
-+}
-+#else /* MODULE */
-+static int __init ne_init(void)
-+{
-+	int retval = platform_driver_probe(&ne_driver, ne_drv_probe);
- 
-+	/* Unregister unused platform_devices. */
-+	ne_loop_rm_unreg(0);
- 	return retval;
- }
--#endif /* MODULE */
-+module_init(ne_init);
- 
--static void __exit ne_exit(void)
-+struct net_device * __init ne_probe(int unit)
- {
--	platform_driver_unregister(&ne_driver);
-+	int this_dev;
-+	struct net_device *dev;
-+	struct platform_device *pdev;
- 
--	ne_loop_rm_unreg(1);
-+	/* Find an empty slot. */
-+	this_dev = 0;
-+	while (pdev_ne[this_dev] || io[this_dev]) {
-+		if (++this_dev == MAX_NE_CARDS)
-+			return ERR_PTR(-ENOMEM);
-+	}
-+
-+	/* Get irq, io from kernel command line */
-+	dev = alloc_eip_netdev();
-+	if (!dev)
-+		return ERR_PTR(-ENOMEM);
-+
-+	sprintf(dev->name, "eth%d", unit);
-+	netdev_boot_setup_check(dev);
-+
-+	io[this_dev] = dev->base_addr;
-+	irq[this_dev] = dev->irq;
-+	bad[this_dev] = dev->mem_end;
-+
-+	free_netdev(dev);
-+
-+	ne_add_devices();
-+
-+	/* return the first device found */
-+	for (this_dev = 0; this_dev < MAX_NE_CARDS; this_dev++)
-+		if ((pdev = pdev_ne[this_dev]) &&
-+			(dev = platform_get_drvdata(pdev)))
-+			return dev;
-+
-+	return ERR_PTR(-ENODEV);
- }
-+#endif /* MODULE */
- 
--#ifndef MODULE
--static int __init ne_init(void)
-+static void __exit ne_exit(void)
- {
--	return platform_driver_probe(&ne_driver, ne_drv_probe);
-+	platform_driver_unregister(&ne_driver);
-+	ne_loop_rm_unreg(1);
- }
--
--module_init(ne_init);
--#endif
--module_exit(ne_cleanup);
-+module_exit(ne_exit);
+Dave.
