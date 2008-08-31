@@ -1,91 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbYHaVSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbYHaV06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759449AbYHaVSm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 17:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757961AbYHaVSe
+	id S1759384AbYHaV06 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 17:26:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758043AbYHaV0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 17:18:34 -0400
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:60307 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752412AbYHaVSd (ORCPT
+	Sun, 31 Aug 2008 17:26:49 -0400
+Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:47801 "EHLO
+	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757974AbYHaV0t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 17:18:33 -0400
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Tom Tucker <tom@opengridcomputing.com>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       John Ronciak <john.ronciak@gmail.com>,
-       Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
-       neilb@suse.de, linux-nfs@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       e1000-devel@lists.sourceforge.net
-In-Reply-To: <48BAF643.4070808@opengridcomputing.com>
-References: <1219442213.9097.25.camel@localhost>
-	 <1219603981.27921.145.camel@localhost.localdomain>
-	 <1219605422.14389.2.camel@localhost> <1219605596.14389.5.camel@localhost>
-	 <1219615789.27921.152.camel@localhost.localdomain>
-	 <1219616136.14389.12.camel@localhost>
-	 <48B2D7F8.5020206@opengridcomputing.com>
-	 <20080826192711.GJ4380@fieldses.org>
-	 <48B567F5.2090605@opengridcomputing.com>
-	 <1220111261.31172.14.camel@localhost.localdomain>
-	 <20080831193037.GB14876@fieldses.org>
-	 <1220211842.31172.18.camel@localhost.localdomain>
-	 <48BAF643.4070808@opengridcomputing.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-5cFuHFFWM7no6u50eDd+"
-Date: Sun, 31 Aug 2008 22:18:25 +0100
-Message-Id: <1220217505.31172.26.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-SA-Exim-Connect-IP: 192.168.1.5
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+	Sun, 31 Aug 2008 17:26:49 -0400
+Date: Sun, 31 Aug 2008 17:26:47 -0400
+From: Steven Toth <stoth@linuxtv.org>
+Subject: Re: [linux-dvb] DVB-S2 / Multiproto and future modulation support
+In-reply-to: <d9def9db0808302057u25e7ce5yfb2967c893255df0@mail.gmail.com>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Charles Price <cpwp@w3z.co.uk>,
+       linux-dvb@linuxtv.org, mrechberger@sundtek.com
+Message-id: <48BB0C97.80101@linuxtv.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <48B8400A.9030409@linuxtv.org> <48B98914.1020800@w3z.co.uk>
+ <48B98B89.80803@linuxtv.org>
+ <d9def9db0808302057u25e7ce5yfb2967c893255df0@mail.gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Markus Rechberger wrote:
+> On Sat, Aug 30, 2008 at 8:03 PM, Steven Toth <stoth@linuxtv.org> wrote:
+>> Charles Price wrote:
+>>>> If you also feel frustrated by the multiproto situation and agree in
+>>>> principle with this new approach, and the overall direction of the API
+>>>> changes, then we welcome you and ask you to help us.
+>>>>
+>>> I wholeheartedly agree.
+>>>
+>>> Although I can't offer any programming input, I do have a variety of DVB
+>>> hardware and different architectures on which I can test your creations.
+>>>
+>>> Happy to help.
+> 
+> not reading the parts above, but saying this is Steven, not caring
+> about the main people who work on something.
+> 
+> There's a split between a few people here (including myself) and other
+> people from that scene who just don't care about anything.
+> 
+> Manu and the others put in alot work, why screw what he wrote (code)
+> he has been on vacation (I know he married a few weeks ago - since I
+> got the invitation) Hauppauge people (Michael Krufky and Steven Toth)
+> are running their personal own game .. sorry to say that but it's that
+> way.
+> 
+> I have logs and mails here where Steven and Mike wrote hey that would
+> be a cool idea about compatibility but when "I" mentioned it again and
+> spent work on it it was like hey we're linux only (I don't only care
+> about linux since I also work alot with commercial companies in that
+> area look at the dibcom website - Job requirement 'independent' code
+> neither do I want to depend on Windows nor Linux but having something
+> that works on both in case of hardware is fine - especially I2C is
+> trivial to realize for everything).
+> 
+> Rethink your position and try to get people onboard but don't try to
+> screw people and run your own game.
+> 
+> Seeing the comments Acked-By: xyz - I cannot review neither contribute
+> code but I can provide webspace .. hilarious. get down on earth again
+> Steven, Mike expecially Mauro - try to get Manufacturers onboard
+> instead working against you.
+> I talked alot with Manu he has good connections and is avoing to work
+> together just as I am because of certain Monopoly and copyright
+> infringements which you are building here (I see Mauro using leaked
+> code here!) . Mauro is spreading foo, Manu has the specs for xyz. I
+> fully understand Manu's point since Mauro did the same with me,
+> however .. I better don't comment it.
+> 
+> Let's put another thing in here: Greg Kroah Hartman Linux Guy reverted
+> my patch in favour of supporting the binary Firmware upload tool of
+> Dell (I fully support Dell here too) although claiming to be
+> opensource but still running after someone (please comment this one -
+> it confused me at 'your' position). It was just like ok let's revert
+> it but not asking why?!
+> I'm just getting up with this just because I saw following yesterday:
+> 21:07 < pmp> hmm: request_firmware(&fw, CX24116_DEFAULT_FIRMWARE,
+> &state->i2c->dev) ?
+> 21:08 < pmp> the &state->i2c->dev looks strange and the kernel is
+> saying that about it: kobject_add failed
+>              for i2c-1 with -EEXIST, don't try to re....
+> 21:09 < pmp> other fe-driver have a callback in their config-struct...
+> 21:09 < pmp> I start to believe there is a reason ;)
+> 
+> I better cut it now.
 
---=-5cFuHFFWM7no6u50eDd+
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I've learned never to expect anything different from you, such a pity.
 
-On Sun, 2008-08-31 at 14:51 -0500, Tom Tucker wrote:
->=20
-> Looks like you ran this on the client. Sorry, Ian, I should have been
-> more specific. You need to modify the rpc_debug file on the server.
-
-I tried this on the server but it's pretty crippling (the server is
-quite weedy, 300MHz K3 or something).
-
-I'll leave it logging overnight since things should be pretty quiet (and
-that's often when the problem occurs) but if there's a less aggressive
-setting than 256 but which would still be useful I could leave it on
-permanently until the problem happens.
-
-Ian.
---=20
-Ian Campbell
-
-Marriages are made in heaven and consummated on earth.
-		-- John Lyly
-
---=-5cFuHFFWM7no6u50eDd+
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAki7CqEACgkQM0+0qS9rzVlzCwCgmRve7F25dzDC+NeywP0hF4gr
-F+cAoLhNPR1btyuZkr31AfLYHwg6pQAZ
-=9h3S
------END PGP SIGNATURE-----
-
---=-5cFuHFFWM7no6u50eDd+--
-
+Steve
