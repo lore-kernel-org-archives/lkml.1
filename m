@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbYHaSh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbYHaSq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728AbYHaSh1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 14:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbYHaShR
+	id S1756660AbYHaSq0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 14:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755433AbYHaSqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 14:37:17 -0400
-Received: from ti-out-0910.google.com ([209.85.142.187]:21879 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753707AbYHaShQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 14:37:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=o61ZaSvMM0tHrTF/sXrAsqnbQhoOmDAB8+EHuEfrK6xlhgvfItStIDx7fDWn7cwxMQ
-         72QCEYb9SPzJobZxx9MF8hMqd59aHN3s27odG+hkI7XS86pO+xQvzCIFs+lwtfQhTbi2
-         rBnn1Gt1juz78W89g9iyHBBH8/e58vNy6BSJU=
-Date: Sun, 31 Aug 2008 21:36:52 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rdunlap@xenotime.net,
-       mpm@selenic.com, tglx@linutronix.de, rostedt@goodmis.org,
-       cl@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       tzanussi@gmail.com
-Subject: Re: [PATCH] kmemtrace: SLUB hooks for caller-tracking functions.
-Message-ID: <20080831183652.GA5220@localhost>
-References: <1219600175-5253-1-git-send-email-eduard.munteanu@linux360.ro> <48BAAC3C.4050309@cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48BAAC3C.4050309@cs.helsinki.fi>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sun, 31 Aug 2008 14:46:18 -0400
+Received: from sing.entic.net ([208.64.63.147]:36464 "EHLO mail.q-ag.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754892AbYHaSqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 14:46:18 -0400
+X-Greylist: delayed 2171 seconds by postgrey-1.27 at vger.kernel.org; Sun, 31 Aug 2008 14:46:18 EDT
+Message-Id: <200808311809.m7VI9whf014532@mail.q-ag.de>
+From: Manfred Spraul <manfred@colorfullife.com>
+Cc: paulmck@linux.vnet.ibm.com
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: akpm@linux-foundation.org
+Date: Sun, 31 Aug 2008 19:58:49 +0200
+Subject: [PATCH] kernel/cpu.c: Move the CPU_DYING notifiers
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 31, 2008 at 05:35:40PM +0300, Pekka Enberg wrote:
-> Eduard - Gabriel Munteanu wrote:
->> This patch adds kmemtrace hooks for __kmalloc_track_caller() and
->> __kmalloc_node_track_caller(). Currently, they set the call site pointer
->> to the value recieved as a parameter. (This could change if we implement
->> stack trace exporting in kmemtrace.)
->> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
->
-> Applied. I had to do some manual tweaking, so can you please double-check 
-> the result:
->
-> http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=b9f1ecc6428f0ba391845b2ac7df8618da287e4f
->
-> Thanks!
+When a cpu is taken offline, the CPU_DYING notifiers are called on the
+dying cpu. According to <linux/notifiers.h>, the cpu should be "not
+running any task, not handling interrupts, soon dead".
 
-Looks fine to me. However, you can now remove the casts to unsigned long
-from 'caller', i.e. "s/(unsigned long) caller/caller/g"
+For the current implementation, this is not true:
+- __cpu_disable can fail. If it fails, then the cpu will remain alive
+  and happy.
+- At least on x86, __cpu_disable() briefly enables the local interrupts
+  to handle any outstanding interrupts.
+
+What about moving CPU_DYING down a few lines, behind the __cpu_disable()
+line?
+There are only two CPU_DYING handlers in the kernel right now: one in
+kvm, one in the scheduler. Both should work with the patch applied
+[and: I'm not sure if either one handles a failing __cpu_disable()]
+
+The patch survives simple offlining a cpu. kvm untested due to lack
+of a test setup.
+
+Signed-Off-By: Manfred Spraul <manfred@colorfullife.com>
+---
+ kernel/cpu.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index e202a68..5b7c88f 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -199,13 +199,14 @@ static int __ref take_cpu_down(void *_param)
+ 	struct take_cpu_down_param *param = _param;
+ 	int err;
+ 
+-	raw_notifier_call_chain(&cpu_chain, CPU_DYING | param->mod,
+-				param->hcpu);
+ 	/* Ensure this CPU doesn't handle any more interrupts. */
+ 	err = __cpu_disable();
+ 	if (err < 0)
+ 		return err;
+ 
++	raw_notifier_call_chain(&cpu_chain, CPU_DYING | param->mod,
++				param->hcpu);
++
+ 	/* Force idle task to run as soon as we yield: it should
+ 	   immediately notice cpu is offline and die quickly. */
+ 	sched_idle_next();
+-- 
+1.5.5.1
 
