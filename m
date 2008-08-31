@@ -1,59 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbYHaPfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbYHaPmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077AbYHaPfT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 11:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbYHaPfH
+	id S1753794AbYHaPmH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 11:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbYHaPlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 11:35:07 -0400
-Received: from japan.chezphil.org ([77.240.5.4]:5960 "EHLO japan.chezphil.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752247AbYHaPfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 11:35:06 -0400
-X-Greylist: delayed 2649 seconds by postgrey-1.27 at vger.kernel.org; Sun, 31 Aug 2008 11:35:06 EDT
-To: "Krzysztof Helt" <krzysztof.h1@poczta.fm>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       <sylvain.meyer@worldonline.fr>,
-       <linux-fbdev-devel@lists.sourceforge.net>
-Date: Sun, 31 Aug 2008 15:50:54 +0100
-Subject: Re: [Linux-fbdev-devel] [PATCH] intelfb: support 945GME (as used in
-	ASUS Eee 901)
-Message-ID: <1220194254502@dmwebmail.dmwebmail.chezphil.org>
-In-Reply-To: <20080831092722.c80c73c5.krzysztof.h1@poczta.fm>
-References: <20080831092722.c80c73c5.krzysztof.h1@poczta.fm>
-X-Mailer: Decimail Webmail 3alpha16
-MIME-Version: 1.0
-Content-Type: text/plain; format="flowed"
-From: "Phil Endecott" <phil_utscv_endecott@chezphil.org>
+	Sun, 31 Aug 2008 11:41:53 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:55423 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752379AbYHaPlw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 11:41:52 -0400
+Subject: Re: [PATCH 1/2] lib: add generic helper to print sizes rounded to
+	the	correct SI range
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <48BAB6C4.20007@simon.arlott.org.uk>
+References: <48B9546B.4010004@simon.arlott.org.uk>
+	 <1220117091.3615.3.camel@localhost.localdomain>
+	 <20080830174516.GD1239@parisc-linux.org>
+	 <48B9B552.8060406@simon.arlott.org.uk>
+	 <48B9B588.7060709@simon.arlott.org.uk>
+	 <1220147947.3615.18.camel@localhost.localdomain>
+	 <20080831025412.GJ1239@parisc-linux.org>
+	 <1220195310.4021.4.camel@localhost.localdomain>
+	 <1220195634.4021.9.camel@localhost.localdomain>
+	 <48BAB6C4.20007@simon.arlott.org.uk>
+Content-Type: text/plain
+Date: Sun, 31 Aug 2008 10:41:52 -0500
+Message-Id: <1220197312.4021.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Helt wrote:
-> On Fri, 29 Aug 2008 12:50:45 +0100
-> "Phil Endecott" <phil_utscv_endecott@chezphil.org> wrote:
->
->> The following patch adds support for Intel's 945GME graphics chip to
->> the intelfb driver.  I have assumed that the 945GME is identical to the
->> already-supported 945GM apart from its PCI IDs; this is based on a quick
->> look at the X driver for these chips which seems to treat them
->> identically.
+On Sun, 2008-08-31 at 16:20 +0100, Simon Arlott wrote:
+> On 31/08/08 16:13, James Bottomley wrote:
+> > This patch adds the ability to print sizes in either units of 10^3 (SI)
+> > or 2^10 (Binary) units.  It rounds up to three significant figures and
+> > can be used for either memory or storage capacities.
+> 
+> > +	const char *units_2[] = {"B", "Kib", "MiB", "GiB", "TiB", "PiB",
+> 
+> I think this should have been "KiB".
 
-[snip]
+Yes, shift slip.
 
->> -#define SUPPORTED_CHIPSETS	"830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM"
->> +#define SUPPORTED_CHIPSETS  "830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/945GME/965G/965GM"
->>  
->
-> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
->
-> BTW, Is it possible to shorten this list by something like "830/845/852/865/915/945/965 models G, GM and GME" or 
-> "830M/8x5G/8x5GM/9x5G/9x5GM/9x5GME" or maybe something else?
+> I'd prefer an option to display these without the "i"...
 
-Doing so would reduce grep-ability.  I did a lot of "grep -r 945GM ." 
-while trying to understand this.
+If anyone ever finds a use for that, possibly ... but with the i is the
+NIST way now, so we follow the standards.
 
+> Oh and you need to store the original capacity before it's re-scaled to 
+> 512 bytes. Outputting sdkp->capacity at that stage it'll be a count of 
+> 512-byte sectors.
 
-Phil.
+Yes, just trying to avoid a multiplication.  I should have just used ffz
+instead.
+
+James
+
+---
+
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index e5e7d78..ef1c06c 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -47,6 +47,7 @@
+ #include <linux/blkpg.h>
+ #include <linux/delay.h>
+ #include <linux/mutex.h>
++#include <linux/string_helpers.h>
+ #include <asm/uaccess.h>
+ 
+ #include <scsi/scsi.h>
+@@ -1429,27 +1430,21 @@ got_data:
+ 		 */
+ 		sector_size = 512;
+ 	}
++	blk_queue_hardsect_size(sdp->request_queue, sector_size);
++		
+ 	{
+-		/*
+-		 * The msdos fs needs to know the hardware sector size
+-		 * So I have created this table. See ll_rw_blk.c
+-		 * Jacques Gelinas (Jacques@solucorp.qc.ca)
+-		 */
+-		int hard_sector = sector_size;
+-		sector_t sz = (sdkp->capacity/2) * (hard_sector/256);
+-		struct request_queue *queue = sdp->request_queue;
+-		sector_t mb = sz;
++		char cap_str_2[10], cap_str_10[10];
++		u64 sz = sdkp->capacity << ffz(~sector_size);
+ 
+-		blk_queue_hardsect_size(queue, hard_sector);
+-		/* avoid 64-bit division on 32-bit platforms */
+-		sector_div(sz, 625);
+-		mb -= sz - 974;
+-		sector_div(mb, 1950);
++		string_get_size(sz, STRING_UNITS_2, cap_str_2,
++				sizeof(cap_str_2));
++		string_get_size(sz, STRING_UNITS_10, cap_str_10,
++				sizeof(cap_str_10));
+ 
+ 		sd_printk(KERN_NOTICE, sdkp,
+-			  "%llu %d-byte hardware sectors (%llu MB)\n",
++			  "%llu %d-byte hardware sectors: (%s/%s)\n",
+ 			  (unsigned long long)sdkp->capacity,
+-			  hard_sector, (unsigned long long)mb);
++			  sector_size, cap_str_10, cap_str_2);
+ 	}
+ 
+ 	/* Rescale capacity to 512-byte units */
 
 
 
