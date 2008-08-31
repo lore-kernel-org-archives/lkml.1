@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbYHaRxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbYHaRyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756348AbYHaRxm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 13:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbYHaRxe
+	id S1755895AbYHaRyW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 13:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbYHaRyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 13:53:34 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:30951 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753900AbYHaRxd (ORCPT
+	Sun, 31 Aug 2008 13:54:13 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:4058 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753900AbYHaRyM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 13:53:33 -0400
+	Sun, 31 Aug 2008 13:54:12 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=cWi7cg5U97UVEcYSxyCVT0+o/Nax6SXrO2+wa5GEKKtt3+4b7HHACb6j13FzO3ldNI
-         Ap9sm3YJXI4BSeDoq72xsHGINGYzs77YDpLNU/Smhc3mhC6b3c82kxLKlvSPs1zHNSMn
-         JBUZ2Sp4GdIghcNl7UqQSgkN4uuULvlUTf1cU=
-Message-ID: <19f34abd0808311053m2fbaa711j5bfc846d81cf34b4@mail.gmail.com>
-Date: Sun, 31 Aug 2008 19:53:32 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH] prevent ia64 from invoking irq handlers on offline CPUs
-Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com, jes@sgi.com,
-       manfred@colorfullife.com, akpm@linux-foundation.org
-In-Reply-To: <20080831175100.GD7015@linux.vnet.ibm.com>
+        b=QIyCTYYRVVxQ29QI1Wq4bAuWnHvJ4h/RTbDnVrmdPiLrRtJ749apobpdGpn0TQMjcy
+         +OE/0HB8rCL+4L0gNHg9Jf7ZX9PlwlY8oyF50A/UV91XMw4Mx7PMhRq8PNDdywXVvtkp
+         HL4mnqViH+XZ4ResirHbiBU9VSwKg+MoWZRo4=
+Message-ID: <86802c440808311054q4b8e8921qa9f090527b456e34@mail.gmail.com>
+Date: Sun, 31 Aug 2008 10:54:11 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "David Witbrodt" <dawitbro@sbcglobal.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Kernel Testers" <kernel-testers@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0808311039330.12958@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080831172814.GA15087@linux.vnet.ibm.com>
-	 <19f34abd0808311046g47907414wf3ef939d0a7bbfdb@mail.gmail.com>
-	 <20080831175100.GD7015@linux.vnet.ibm.com>
+References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>
+	 <200808302334.29156.rjw@sisk.pl>
+	 <86802c440808301810r17657f3fnb3c8af5496955e0d@mail.gmail.com>
+	 <200808311427.19369.rjw@sisk.pl>
+	 <alpine.LFD.1.10.0808311039330.12958@nehalem.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 31, 2008 at 7:51 PM, Paul E. McKenney
-<paulmck@linux.vnet.ibm.com> wrote:
->> > @@ -751,6 +749,7 @@ int __cpu_disable(void)
->> >        remove_siblinginfo(cpu);
->> >        cpu_clear(cpu, cpu_online_map);
-
-Here ^^^
-
->> >        fixup_irqs();
->> > +       cpu_clear(cpu, cpu_online_map);
->> >        local_flush_tlb_all();
->> >        cpu_clear(cpu, cpu_callin_map);
->> >        return 0;
->>
->> Hm. Maybe my eyes are going bad. But isn't that now clearing the cpu
->> both before and after calling fixup_irqs()?
+On Sun, Aug 31, 2008 at 10:42 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
 >
-> I don't believe so...  I removed the earlier one and added the later
-> one.  Or is there another one hidden somewhere that I missed?
+>
+> On Sun, 31 Aug 2008, Rafael J. Wysocki wrote:
+>>
+>> Works, dmesg is at:
+>> http://www.sisk.pl/kernel/debug/mainline/2.6.27-rc5/2.6.27-rc5-test.log
+>
+> That BAR is indeed "locked". Now that we try to reallocate it, you get
+> this in the log:
+>
+>        pci 0000:00:00.0: BAR 3: error updating (0x40000004 != 0xe0000004)
+>        pci 0000:00:00.0: BAR 3: error updating (high 0x000001 != 0x000000)
+>
+> ie now the code _tried_ to update the BAR to point to 0x1_4000_0000
+> instead, but the hardware refused, and it is still at 0x0_e000_0000.
+>
+> So Yinghai's patch "worked", but it worked by doing nothing.
+>
+> See my earlier guess about locked read-only resources a few emails back.
+> IOW, I'm not at all surprised. I really do suspect that that BAR is some
+> very special "this is the HT->PCIE region" BAR.
 
-See marker above. It's not removed, is it?
+so the code could allocate the 64 bit resource above 4g,...
 
+wonder how the probe could find out the size of is 1fff_ffff..
 
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+YH
