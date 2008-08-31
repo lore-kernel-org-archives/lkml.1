@@ -1,60 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755128AbYHaRFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbYHaRIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755128AbYHaRFv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 13:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbYHaRFk
+	id S1755311AbYHaRIR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 13:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbYHaRIB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 13:05:40 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:54248 "EHLO mail.vyatta.com"
+	Sun, 31 Aug 2008 13:08:01 -0400
+Received: from nebensachen.de ([195.34.83.29]:49940 "EHLO mail.nebensachen.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753292AbYHaRFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 13:05:39 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -1.652
-Date: Sun, 31 Aug 2008 10:05:37 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: "Dushan Tcholich" <dusanc@gmail.com>
-Cc: "Francois Romieu" <romieu@fr.zoreil.com>,
-       "Robert Hancock" <hancockr@shaw.ca>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: ksoftirqd high cpu load on kernels 2.6.24 to 2.6.27-rc1-mm1
-Message-ID: <20080831100537.6929c51e@extreme>
-In-Reply-To: <a08621850808310151o143845h195a8658d02270d9@mail.gmail.com>
-References: <fa.wTMiBcGRgw2fBtdHwtX7y0lkc8s@ifi.uio.no>
-	<48975BD3.6040709@shaw.ca>
-	<a08621850808041337k1d1deb6fk78098d9fcd4930dd@mail.gmail.com>
-	<20080807185802.GA16327@electric-eye.fr.zoreil.com>
-	<a08621850808101200n220afd2dve58abe67830b7a4f@mail.gmail.com>
-	<a08621850808110053j5cbf23e6xdf52c9e7440abf19@mail.gmail.com>
-	<a08621850808291848q5660148fx57d576ecfcbfce8@mail.gmail.com>
-	<a08621850808310151o143845h195a8658d02270d9@mail.gmail.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753421AbYHaRIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 13:08:00 -0400
+X-Hashcash: 1:20:080831:bzolnier@gmail.com::RV+r8jrQ2Iso2CWK:00000000000000000000000000000000000000000007SKU
+X-Hashcash: 1:20:080831:htejun@gmail.com::6zZ3mQ4bo8U22v+s:03297
+X-Hashcash: 1:20:080831:alan@lxorguk.ukuu.org.uk::ZFjsYtFocghdGehL:00000000000000000000000000000000000000he6
+X-Hashcash: 1:20:080831:akpm@linux-foundation.org::CZdwpTeQ119REfMm:0000000000000000000000000000000000001FSv
+X-Hashcash: 1:20:080831:hmh@hmh.eng.br::Ued9YuVhEAclMURa:000C1EV
+X-Hashcash: 1:20:080831:jeff@garzik.org::QY1J1/17Ccx51BDq:000E8h
+X-Hashcash: 1:20:080831:randy.dunlap@oracle.com::piDjnHV9BlXcuOvx:000000000000000000000000000000000000001Cgc
+X-Hashcash: 1:20:080831:linux-ide@vger.kernel.org::SXShZkgdgTCB1cLc:00000000000000000000000000000000000024pj
+X-Hashcash: 1:20:080831:linux-kernel@vger.kernel.org::gjEWnSiXeUE5nJij:0000000000000000000000000000000001mjF
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Tejun Heo <htejun@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] libata: Implement disk shock protection support
+References: <87wshzplvk.fsf@denkblock.local> <87ej45mlp3.fsf@denkblock.local>
+	<48BA969C.4060207@gmail.com> <200808311632.04584.bzolnier@gmail.com>
+Date: Sun, 31 Aug 2008 19:07:43 +0200
+Message-ID: <87wshxkt9c.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 31 Aug 2008 10:51:46 +0200
-"Dushan Tcholich" <dusanc@gmail.com> wrote:
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> Hi,
+>
+> On Sunday 31 August 2008, Tejun Heo wrote:
+>> Hello,
+>> 
+>> Elias Oltmanns wrote:
+>> >> Ah.. you need to part ATAPI too?  If so, just test for
+>> >> ata_dev_enabled().
+>> > 
+>> > Well, I'm not quite sure really. Perhaps you are right and I'd better
+>> > leave ATAPI alone, especially given the problem that the unload command
+>> > might mess up a CD/DVD write operation. As long as no laptop HDs are
+>> > identified as ATAPI devices, there should be no problem with that.
+>> 
+>> Hmm... I think it would be safer to stick with ATA for the time being.
+>
+> Seconded.  To be honest I also don't like the change to issue UNLOAD to
+> all devices on the port (it only needlessly increases complexity right now
+> since the _only_ use case at the moment is ThinkPad w/ hdaps + 1 HD).
 
-> Hello
-> I found the culprit.
-> 
-> When using powertop I get:
-> Top causes for wakeups:
->   35,2% (251,0)                ip : br_stp_enable_bridge (br_hello_timer_expired
-> 
-> So I tried to turn them off with:
-> brctl sethello br0 0
-> but the problem persisted.
+Admittedly, I don't know very much about it myself but I seem to
+remember that there are other vendors now shipping similar technology.
+Even in the Thinkpad case I don't *know* that all relevant models have
+HD and optical drives on seperate ports although I'm willing to believe
+it if somebody tells me so.
 
+Anyway, I've added Henrique to the Cc: list since he knows far more
+about Thinkpads than I do and possibly about other notebooks too.
 
-You can't turn off the hello timer, it is needed for Spanning Tree to
-work. The kernel should reject requests to set hello timer < 1sec.
-Most routers allow 1 - 10sec.
+>
+> [ I really hoped for the minimal initial implementation. ]
 
-I am going to do a new patch to add tighter range checking for STP timer
-settings and another to default fowarding delay of zero if STP is disabled.
+There is a lot to be said for the per-port solution as far as libata is
+concerned. For the sake of consistency I tried to mimic the same
+behaviour in ide but I agree that it makes things more complex there.
+
+>
+>> >> Can you please elaborate a bit?  The reloading is done by the kernel
+>> >> after a timeout, right?  What kind of precarious situation can the
+>> >> kernel get into regarding suspend?
+>> > 
+>> > Sorry, I haven't expressed myself very clearly there, it seems. The user
+>> > space process detects some acceleration and starts writing timeouts to
+>> > the sysfs file. This causes the unload command to be issued to the
+>> > device and stops all I/O until the user space daemon decides that the
+>> > danger has passed, writes 0 to the sysfs file and leaves it alone
+>> > afterwards. Now, if the daemon happens to request head parking right at
+>> > the beginning of a suspend sequence, this means that we are in danger of
+>> > falling, i.e. we have to make sure that I/O is stopped until that user
+>> > space daemon gives the all-clear. However, suspending implies freezing
+>> > all processes which means that the daemon can't keep checking and
+>> > signalling to the kernel. The last timeout received before the daemon
+>> > has been frozen will expire and the suspend procedure goes ahead. By
+>> > means of the notifiers we can make sure that suspend is blocked until
+>> > the daemon says that everything is alright.
+>> 
+>> Is it really worth protecting against that?  What if the machine
+>> started to fall after the userland tasks have been frozen?  And how
+>> long the usual timeout would be?  If the machine has been falling for
+>> 10 secs, there really isn't much point in trying to protect anything
+>> unless there also is ATA DEPLOY PARACHUTE command somewhere in the new
+>> revision.
+>> 
+>> In libata, as with any other exceptions, suspend/resume are handled by
+>> EH so while emergency head unload is in progress, suspend won't
+>> commence which is about the same effect as the posted code sans the
+>> timeout extension part.  I don't really think there's any significant
+>> danger in not being able to extend timeout while suspend is in
+>> progress.  It's not a very big window after all.  If you're really
+>> worried about it, you can also let libata reject suspend if head
+>> unload is in progress.
+>> 
+>> Also, the suspend operation is unloading the head and spin down the
+>> drive which sound like a good thing to do before crashing.  Maybe we
+>> can modify the suspend sequence such that it always unload the head
+>> first and then issue spindown.  That will ensure the head is in safe
+>> position as soon as possible.  If it's done this way, it'll be
+>> probably a good idea to split unloading and loading operations and do
+>> loading only when EH is being finished and the disk is not spun down.
+>> 
+>> To me, much more serious problem seems to be during hibernation.  The
+>> kernel is actively writing memory image to userland and it takes quite
+>> a while and there's no protection whatsoever during that time.
+>
+> Which also brings again the question whether it is really the best to
+> use user-space solution instead of kernel thread?
+>
+> After taking the look into the deamon program and hdaps driver I tend
+> to "Nope." answer.  The kernel-space solution would be more reliable,
+> should result in significatly less code and would free us from having
+> a special purpose libata/ide interfaces.  It should also make the
+> maintainance and future enhancements (i.e. making hibernation unload
+> friendly) a lot easier.
+>
+> I imagine that this comes a bit late but can we at least give it an
+> another thought, please?
+
+Right, I'll try to give a concise statement of the problem. First
+though, I absolutely agree that with regard to the suspend / hibernate
+problem, an in kernel solution would ultimately be the safest option.
+However, the way I see it, we would need a module with the following
+characteristics:
+
+- Policy: logic to decide when to park / unpark disks and an interface
+  to export tunables to user space.
+- Input: capability to recognise and register with acceleration sensors
+  in the system and to gather data in an efficient manner. Since this is
+  kernel space, we have to make it bulletproof and account for the
+  possibility that there may be more than one such sensor installed in
+  the system (think: plug and play).
+- Action: find all rotating media in the system and decide which of them
+  to protect how. Probably, some tunables for the user to fiddle with
+  are required here too. Remember that we have docking stations and the
+  like so more than one HD may show up on the bus.
+
+All these corner cases that most users don't care or even tink about
+won't hurt anyone as long as the daemon is in user space. This way, we
+have a very simple solution for all of them: The user decides for each
+instance of the daemon which accelerometer it gets its data from and
+which HD it is supposed to protect. I don't like giving impressively
+high percentages when all I'm doing is intelligent guess work, but the
+vast majority of users will have only one daemon running, getting its
+data from one accelerometer and protecting exactly one HD. However, it
+is hard to imagine anything disastrous to happen *if* somebody should
+happen to install a second accelerometer or connect to the docking
+station. In kernel space we would have to take care of the oddest things
+because a system supposed to increase security would suffer under a
+reputation of locking the machine for good.
+
+Regards,
+
+Elias
