@@ -1,55 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758957AbYHaKxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758992AbYHaK4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758957AbYHaKxa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 06:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756990AbYHaKxV
+	id S1758992AbYHaK4Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 06:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757401AbYHaKz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 06:53:21 -0400
-Received: from yumi.tdiedrich.de ([85.10.210.183]:52914 "EHLO mx.tdiedrich.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756861AbYHaKxU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 06:53:20 -0400
-Date: Sun, 31 Aug 2008 10:48:32 +0200
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: Joe Korty <joe.korty@ccur.com>
-Cc: Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jgarzik@redhat.com>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [ETH] forcdeth: increase max_interrupt_work
-Message-ID: <20080831084824.GB2698@yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	Joe Korty <joe.korty@ccur.com>, Ayaz Abdulla <aabdulla@nvidia.com>,
-	Jeff Garzik <jgarzik@redhat.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20080827142136.GA22262@tsunami.ccur.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080827142136.GA22262@tsunami.ccur.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 31 Aug 2008 06:55:59 -0400
+Received: from vms173005pub.verizon.net ([206.46.173.5]:39409 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756990AbYHaKz6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 06:55:58 -0400
+Date: Sun, 31 Aug 2008 06:55:45 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Linux-2.6.27-rc5, drm errors in log
+In-reply-to: <21d7e9970808302340w71483645macb34f8470a85c66@mail.gmail.com>
+To: "Dave Airlie" <airlied@gmail.com>
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+Message-id: <200808310655.45464.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <898503EB1E15BA4F944D1BE69D55AAC8AB540A@storexmb1.amd.com>
+ <200808302219.45103.gene.heskett@verizon.net>
+ <21d7e9970808302340w71483645macb34f8470a85c66@mail.gmail.com>
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Korty wrote:
-> Forcedeth: increase max_interrupt_work
-> 
-> This eliminates the following often-generated warning from
-> my 64 bit Opteron SMP test stand:
-> 
-> 	eth0: too many iterations (6) in nv_nic_irq
-> 
-> According to the web, the problem is that the forcedeth
-> driver has a too-low value for max_interrupt_work.
-> Grepping the kernel I see that forcedeth has the second
-> lowest value of all ethernet drivers (ie, 6).  Most are
-> in the 20-40 range.  So this patch increases this a bit,
-> from 6 to 15 (at 15 forcedeth becomes the driver with
-> third-lowest max_interrupt_work value).
+On Sunday 31 August 2008, Dave Airlie wrote:
+>On Sun, Aug 31, 2008 at 12:19 PM, Gene Heskett <gene.heskett@verizon.net> wrote:
+>> On Saturday 30 August 2008, Bridgman, John wrote:
+>>>))I'm drowning in these errors:
+>>>))
+>>>))Aug 30 13:21:05 coyote kernel: [14927.850078] [drm] wait for fifo failed
+>>> status : 0x80076100 0x00000000
+>>>
+>>>I'm just going on the code in your email - can't view git until later
+>>> today - but in this case it seems like the timeouts were always happening
+>>> and now there is code to print an error message.
+>>>
+>>>IIRC the usual fix is to bump the timeout but (Michael ?) has suggested a
+>>> couple of times that the ideal solution would be to change the logic so
+>>> that the driver never times out while the chip is making progress (ie
+>>> while the number of slots available in the fifo is increasing, even if it
+>>> hasn't increased enough yet).
+>>
+>> FWIW, I added the 3 lines that cause that printout to the 2.6.27-rc4 tree
+>> and rebuilt it.  There are no more errors being reported now by
+>> 2.6.27-rc4, and there were none without those 3 added lines prior to this,
+>> so it is rc5 specific.
+>
+>Hmm I'm just looking at the patches I put in for rc5, and there is no
+>functional difference to the
+>r200 codepath that I can see from those patches apart from the debug prints.
 
-I'll add that I also see this warning now and then.
+Update: there were 3 of those in the log after I sent the denial msg.
+======
+Aug 30 23:48:34 coyote kernel: [ 7242.890000] [drm] wait for fifo failed status : 0x80076100 0x00000000
+Aug 30 23:57:51 coyote kernel: [ 7800.370001] [drm] wait for fifo failed status : 0x8003C100 0x00000000
+Aug 30 23:57:51 coyote kernel: [ 7800.458000] [drm] wait for fifo failed status : 0x8007C100 0x00000000
+======
+So this is a real, pre-rc5 problem, but without the reporting that enabled.
+
+>Can you get a clean -rc4 and apply just
+> 54f961a628b737f66710eca0b0d95346645dd33e to it.
+
+Yes I can, but how do I get that specific patch?  Or is that the git # for the
+patch I first applied to -rc2, which added the firmware/radeon stuff?  I'm 
+familiar with patch, but not on a first name basis with git, sorry.
+
+So I'm going to do a bisect, my style.  I will rebuild, starting with -rc3, 
+using only the -rcX patch and the firmware addition patch, which applied to
+-rc3 as follows:
+now applying [PATCH]radeon_cp-use-request_firmware
+
+patching file drivers/gpu/drm/radeon/radeon_cp.c
+patching file drivers/gpu/drm/radeon/radeon_drv.h
+patching file drivers/gpu/drm/radeon/radeon_microcode.h
+patching file firmware/Makefile
+Hunk #1 FAILED at 34.
+1 out of 1 hunk FAILED -- saving rejects to file firmware/Makefile.rej
+===So I added that into the firmware/Makefile at line 28 by hand===
+patching file firmware/WHENCE
+Hunk #1 succeeded at 339 (offset -233 lines).
+patching file firmware/radeon/R100_cp.bin.ihex
+patching file firmware/radeon/R200_cp.bin.ihex
+patching file firmware/radeon/R300_cp.bin.ihex
+patching file firmware/radeon/R420_cp.bin.ihex
+patching file firmware/radeon/R520_cp.bin.ihex
+patching file firmware/radeon/RS600_cp.bin.ihex
+patching file firmware/radeon/RS690_cp.bin.ihex
+
+patch [PATCH]radeon_cp-use-request_firmware done
+
+=== and I'm watching the build for errors===
+It got past the MK_FW for those ok. 
+However there were 6 section miss-matches reported, and the suggested
+addition to .config did not make it any noisier so I'm no smarter.
+Now I've added those 3 reporter lines to radeon_cp.c, rebuilt again and 
+will reboot to -rc3 for effects, reporting after a few hours uptime.
+
+Unless you have a better plan I can learn of course.
+
+>See if you can get that to produce the errors, if it does, apply just
+>the drm info chunks, try again, if that works, try adding
+>the isync cntl chunk. and re-testing. I can't see how writing isync
+>cntl here would affect things though.
+
+>Dave.
+
+
 
 -- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+It is always the best policy to tell the truth, unless, of course,
+you are an exceptionally good liar.
+		-- Jerome K. Jerome
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Equal bytes for women.
