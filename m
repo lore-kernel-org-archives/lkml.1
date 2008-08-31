@@ -1,97 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756998AbYHaSC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbYHaSGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756998AbYHaSC5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 14:02:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbYHaSCs
+	id S1756857AbYHaSGn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 14:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbYHaSGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 14:02:48 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:4466 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754815AbYHaSCr (ORCPT
+	Sun, 31 Aug 2008 14:06:34 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:36730 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754780AbYHaSGd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 14:02:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YemJr0sKTuRiZEMJzITObCjbutZQT1x19hsGt4fUi9hmuSu8fE5PENjUyTV6b8maYO
-         nkiv22+482zSN+IyRXrahmb1WpcASTbo9ybP+UTeDy7bJUffJKGOU0Uu8nlJpZvk9wv7
-         ETN5Isl4zl4Lo+bgco+RG7Ukoqv9GwMDjJN/c=
-Message-ID: <86802c440808311102jffbaa48n4c5b46d8a9ba1d0@mail.gmail.com>
-Date: Sun, 31 Aug 2008 11:02:46 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Tobias Diedrich" <ranma+kernel@tdiedrich.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>, "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [Bug #11358] net: forcedeth call restore mac addr in nv_shutdown path
-In-Reply-To: <20080831130904.GA4070@yamamaya.is-a-geek.org>
+	Sun, 31 Aug 2008 14:06:33 -0400
+Date: Sun, 31 Aug 2008 11:06:30 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com, jes@sgi.com,
+       manfred@colorfullife.com, akpm@linux-foundation.org
+Subject: Re: [PATCH] prevent ia64 from invoking irq handlers on offline CPUs
+Message-ID: <20080831180630.GF7015@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080831172814.GA15087@linux.vnet.ibm.com> <19f34abd0808311046g47907414wf3ef939d0a7bbfdb@mail.gmail.com> <20080831175100.GD7015@linux.vnet.ibm.com> <19f34abd0808311053m2fbaa711j5bfc846d81cf34b4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <q6jBvyFdWbL.A.K4C.fhbuIB@albercik>
-	 <N8SeMoDzuxC.A.nFF.0ibuIB@albercik>
-	 <20080831084135.GA2698@yamamaya.is-a-geek.org>
-	 <20080831130904.GA4070@yamamaya.is-a-geek.org>
+In-Reply-To: <19f34abd0808311053m2fbaa711j5bfc846d81cf34b4@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 31, 2008 at 6:09 AM, Tobias Diedrich
-<ranma+kernel@tdiedrich.de> wrote:
-> Tobias Diedrich wrote:
->> I got around to try kexec and found that on 2.6.27-rc5, without
->> Yinghai Lu's patch, when I kexec while forecdeth is loaded I get the
->> following when the new kernel tries to load the module (on my Asus
->> M2N-SLI Deluxe):
->>
->> |Aug 31 10:10:42 melchior kernel: [   10.578053] forcedeth: Reverse Engineered nForce ethernet driver. Version 0.61.
->> |Aug 31 10:10:42 melchior kernel: [   10.578256] forcedeth 0000:00:08.0: BAR 0: error updating (0xfe02a000 != 0x000000)
->> |Aug 31 10:10:42 melchior kernel: [   10.580901] forcedeth 0000:00:08.0: enabling device (0000 -> 0003)
->> |Aug 31 10:10:42 melchior kernel: [   10.581405] ACPI: PCI Interrupt Link [APCH] enabled at IRQ 22
->> |Aug 31 10:10:42 melchior kernel: [   10.581509] forcedeth 0000:00:08.0: PCI INT A -> Link[APCH] -> GSI 22 (level, low) -> IRQ 22
->> |Aug 31 10:10:42 melchior kernel: [   10.581699] forcedeth 0000:00:08.0: setting latency timer to 64
->> |Aug 31 10:10:42 melchior kernel: [   10.581748] forcedeth 0000:00:08.0: Invalid Mac address detected: ff:ff:ff:ff:ff:ff
->> |Aug 31 10:10:42 melchior kernel: [   10.581936] forcedeth 0000:00:08.0: Please complain to your hardware vendor. Switching to a random MAC.
->> |Aug 31 10:10:42 melchior kernel: [   15.981960] forcedeth 0000:00:08.0: open: Could not find a valid PHY.
->> |Aug 31 10:10:42 melchior kernel: [   15.982131] forcedeth 0000:00:08.0: PCI INT A disabled
->> |Aug 31 10:10:42 melchior kernel: [   15.982283] forcedeth: probe of 0000:00:08.0 failed with error -12
->> |Aug 31 10:10:42 melchior kernel: [   16.017545] forcedeth 0000:00:09.0: BAR 0: error updating (0xfe027000 != 0x000000)
->> |Aug 31 10:10:42 melchior kernel: [   16.017766] forcedeth 0000:00:09.0: enabling device (0000 -> 0003)
->> |Aug 31 10:10:42 melchior kernel: [   16.018720] ACPI: PCI Interrupt Link [AMC1] enabled at IRQ 21
->> |Aug 31 10:10:42 melchior kernel: [   16.018839] forcedeth 0000:00:09.0: PCI INT A -> Link[AMC1] -> GSI 21 (level, low) -> IRQ 21
->> |Aug 31 10:10:42 melchior kernel: [   16.019050] forcedeth 0000:00:09.0: setting latency timer to 64
->> |Aug 31 10:10:42 melchior kernel: [   16.019129] forcedeth 0000:00:09.0: Invalid Mac address detected: ff:ff:ff:ff:ff:ff
->> |Aug 31 10:10:42 melchior kernel: [   16.019339] forcedeth 0000:00:09.0: Please complain to your hardware vendor. Switching to a random MAC.
->> |Aug 31 10:10:42 melchior kernel: [   21.399400] forcedeth 0000:00:09.0: open: Could not find a valid PHY.
->> |Aug 31 10:10:42 melchior kernel: [   21.399572] forcedeth 0000:00:09.0: PCI INT A disabled
->> |Aug 31 10:10:42 melchior kernel: [   21.399723] forcedeth: probe of 0000:00:09.0 failed with error -12
->>
->> If I rmmod forcedeth before kexec, it loads fine later.
-> [...]
->> Maybe also calling nv_restore_phy() and/or pci_release_regions() in
->> the shutdown hook would help.
->>
->> TODO:
->> Try with the patch, maybe try nv_restore_phy, test if WOL is
->> affected by the patch.
->
-> I just tried with the patch and both options above in the shutdown
-> path and the kexec'd kernel still had the same problems as above.
->
-> Interestingly the message comes from drivers/pci/setup-res.c, where
-> it updates the BAR register and reads it back to make sure it was
-> updated and somehow reads back zeroes?
->
-> I wonder what's going on there, that should never happen AFAIK...
-> Maybe the pci device was not properly reenabled, but OTOH when I
-> just rmmod before kexec it seems to work and nv_remove also calls
-> pci_disable_device()...
+On Sun, Aug 31, 2008 at 07:53:32PM +0200, Vegard Nossum wrote:
+> On Sun, Aug 31, 2008 at 7:51 PM, Paul E. McKenney
+> <paulmck@linux.vnet.ibm.com> wrote:
+> >> > @@ -751,6 +749,7 @@ int __cpu_disable(void)
+> >> >        remove_siblinginfo(cpu);
+> >> >        cpu_clear(cpu, cpu_online_map);
+> 
+> Here ^^^
+> 
+> >> >        fixup_irqs();
+> >> > +       cpu_clear(cpu, cpu_online_map);
+> >> >        local_flush_tlb_all();
+> >> >        cpu_clear(cpu, cpu_callin_map);
+> >> >        return 0;
+> >>
+> >> Hm. Maybe my eyes are going bad. But isn't that now clearing the cpu
+> >> both before and after calling fixup_irqs()?
+> >
+> > I don't believe so...  I removed the earlier one and added the later
+> > one.  Or is there another one hidden somewhere that I missed?
+> 
+> See marker above. It's not removed, is it?
 
-in addition to this patch, you may need another patch from Rafael...,
-that one fix the MSI...etc,
+Right you are!!!  There were two to begin with, and I moved the first
+one only.  The attached updated patch removes the extra one.
 
-YH
+						Thanx, Paul
+
+Make ia64 refrain from clearing a given to-be-offlined CPU's bit in the
+cpu_online_mask until it has processed pending irqs.  This change
+prevents other CPUs from being blindsided by an apparently offline CPU
+nevertheless changing globally visible state.  Also remove the existing
+redundant cpu_clear(cpu, cpu_online_map).
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
+index bcea81e..d8f05e5 100644
+--- a/arch/ia64/kernel/smpboot.c
++++ b/arch/ia64/kernel/smpboot.c
+@@ -741,16 +741,14 @@ int __cpu_disable(void)
+ 			return -EBUSY;
+ 	}
+ 
+-	cpu_clear(cpu, cpu_online_map);
+-
+ 	if (migrate_platform_irqs(cpu)) {
+ 		cpu_set(cpu, cpu_online_map);
+ 		return (-EBUSY);
+ 	}
+ 
+ 	remove_siblinginfo(cpu);
+-	cpu_clear(cpu, cpu_online_map);
+ 	fixup_irqs();
++	cpu_clear(cpu, cpu_online_map);
+ 	local_flush_tlb_all();
+ 	cpu_clear(cpu, cpu_callin_map);
+ 	return 0;
