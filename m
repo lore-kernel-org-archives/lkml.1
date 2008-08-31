@@ -1,88 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758833AbYHaKaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758868AbYHaKgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758833AbYHaKaj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 06:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756725AbYHaKab
+	id S1758868AbYHaKgP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 06:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756776AbYHaKgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 06:30:31 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:52010 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756733AbYHaKaa (ORCPT
+	Sun, 31 Aug 2008 06:36:00 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:15811 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756748AbYHaKf7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 06:30:30 -0400
+	Sun, 31 Aug 2008 06:35:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=OBwIrHYT+fl8JBD0xRCZIShXXLD9wRh+Cst5/1RNyoYBNs0vYsMhPAvtHDtLPnQogu
-         dWDfYUOu/n+Ikl9JhL6zdKJfXxtewQpXTL+4MwBgAG86rH6AEoSOq576MIhI0/Nk0T2D
-         bjz0mHZWc0egM3i9F4kLdRnbU+9AvHWZkqfAE=
-Date: Sun, 31 Aug 2008 14:30:26 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: David Wagner <daw-news@cs.berkeley.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: buffer overflow in /proc/sys/sunrpc/transports
-Message-ID: <20080831103026.GF7391@lenovo>
-References: <20080830184422.GA9598@localhost.localdomain> <20080830190642.GC7611@lenovo> <g9cj5n$tjv$1@taverner.cs.berkeley.edu>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=h2XdJBwA46UnOuG3Vq7PWvLDgsrdJOOpEUqB38xgajvQrgvh157IRXqifvAC/SZdcK
+         kDg+4l0qaHnGLEcW4rX5Xoa32S22yfbw2g6XpXr7f0z27ivCfNOWV/2UWjovNPwteFYt
+         46LMA0Ec/0Gjqdu/xTXH/O4j2qF4DD1mROOJk=
+Message-ID: <19f34abd0808310335u12242a3fode17effccf1e9533@mail.gmail.com>
+Date: Sun, 31 Aug 2008 12:35:57 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+Subject: Re: [PATCH] sunrpc - fixup userspace buffer possible overrun v2
+Cc: LKML <linux-kernel@vger.kernel.org>, bfields@fieldses.org, neilb@suse.de
+In-Reply-To: <20080831100806.GD7391@lenovo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <g9cj5n$tjv$1@taverner.cs.berkeley.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <20080831100806.GD7391@lenovo>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[David Wagner - Sat, Aug 30, 2008 at 10:55:51PM +0000]
-| Cyrill Gorcunov  wrote:
-| >Index: linux-2.6.git/net/sunrpc/sysctl.c
-| >===================================================================
-| >--- linux-2.6.git.orig/net/sunrpc/sysctl.c	2008-07-20 11:40:14.000000000 +0400
-| >+++ linux-2.6.git/net/sunrpc/sysctl.c	2008-08-30 23:05:30.000000000 +0400
-| >@@ -69,6 +69,8 @@ static int proc_do_xprt(ctl_table *table
-| > 		return -EINVAL;
-| > 	else {
-| > 		len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
-| >+		if (*lenp < len)
-| >+			return -EFAULT;
-| > 		if (!access_ok(VERIFY_WRITE, buffer, len))
-| > 			return -EFAULT;
-| 
-| 1. Would it be better to use copy_to_user() rather than
-| access_ok() followed immediately by __copy_to_user()?
+On Sun, Aug 31, 2008 at 12:08 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> Vegard Nossum reported
+> ----------------------
+>> I noticed that something weird is going on with /proc/sys/sunrpc/transports.
+>> This file is generated in net/sunrpc/sysctl.c, function proc_do_xprt(). When
+>> I "cat" this file, I get the expected output:
+>>    $ cat /proc/sys/sunrpc/transports
+>>    tcp 1048576
+>>    udp 32768
+>
+>> But I think that it does not check the length of the buffer supplied by
+>> userspace to read(). With my original program, I found that the stack was
+>> being overwritten by the characters above, even when the length given to
+>> read() was just 1.
+>
+> David Wagner added (among other things) that copy_to_user could be
+> probably used here.
+>
+> The conclusion is that proc_do_xprt doesn't check for userside buffer
+> size indeed so fix. Also set lenp to number of bytes were really written.
+>
+> Reported-by: Vegard Nossum <vegard.nossum@gmail.com>
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> CC: David Wagner <daw@cs.berkeley.edu>
+> ---
+>
+> Please review.
 
-Yes, thanks
+read() returns the correct number of bytes written in to the buffer.
+read() does not overwrite the buffer past the length that the user supplied.
+Too small buffer results in a partial data.
 
-| 
-| 2. Is it OK to dereference *lenp directly?  Is lenp a pointer into user
-| memory or kernel memory?  If it points to user memory, why is it safe to
-| dereference it directly?  (What about TOCTTOU bugs?)  Should there be
-| some sparse annotations here to ensure the code is not dereferencing
-| user pointers directly?  Later on, proc_do_xprt() also dereferences
-| *lenp and *ppos directly.
+But trying to call read() twice results in first a partial buffer, then EOF:
 
-Not only proc_do_xprt do that so I think it's safe (check for NULL
-on highr level I suspect).
+open("/proc/sys/sunrpc/transports", O_RDONLY) = 3
+read(3, "tc", 2)                        = 2
+read(3, "", 2)                          = 0
 
-| 
-| 3. 'len' is declared as a signed int.  len will be converted to size_t
-| before doing the comparison, so if len can ever be negative (e.g.,
-| svc_print_xprts() returns -1 because of an error), this patch will do
-| the wrong thing.  Looks like the current definition of svc_print_xprts()
-| won't ever do that, as that code currently stands, so at present this
-| is not a bug.  However from a security point of view there are benefits
-| to code whose correctness is 'locally obvious', all else being equal.
-| In particular this seems like a possible maintenance hazard.  Would it be
-| better to use type size_t for lengths like this that are never supposed
-| to be negative?
+Maybe this can be fixed later.
 
-thanks, I changed it to size_t and as you mentoined negative is never coming
-from called svc_print_xprts.
+Tested-by: Vegard Nossum <vegard.nossum@gmail.com>
 
-| 
-| 4. Is proc_dostring() relevant here?
 
-it's not possible to use for now this function (one of my patches
-was quite wrong by using it :)
+Vegard
 
-		- Cyrill -
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
