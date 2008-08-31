@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbYHaBVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbYHaBZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756897AbYHaBVw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Aug 2008 21:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbYHaBVn
+	id S1756879AbYHaBZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Aug 2008 21:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbYHaBZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Aug 2008 21:21:43 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:37931 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752887AbYHaBVm (ORCPT
+	Sat, 30 Aug 2008 21:25:17 -0400
+Received: from web82104.mail.mud.yahoo.com ([209.191.84.217]:41021 "HELO
+	web82104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754239AbYHaBZP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Aug 2008 21:21:42 -0400
-Date: Sat, 30 Aug 2008 21:21:25 -0400
-From: Gene Heskett <gene.heskett@verizon.net>
-Subject: Re: [Bug #11465] Linux-2.6.27-rc5, drm errors in log
-In-reply-to: <N8SeMoDzuxC.A.M9C.jhbuIB@albercik>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Arjan van de Ven" <arjan@infradead.org>
-Message-id: <200808302121.26078.gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <q6jBvyFdWbL.A.K4C.fhbuIB@albercik>
- <N8SeMoDzuxC.A.M9C.jhbuIB@albercik>
-User-Agent: KMail/1.9.9
+	Sat, 30 Aug 2008 21:25:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=Xnsan++9uY34yJBVgzhVf3eY7BwU412yiDX9XTD6MgFF+KWOEBTB0EjHNIC6BY8cUwYRxgIWFGBo1rn2/Bl+FohxyqGSpvetuEzhJ5xZhSZ4JhSSNXJw2glU3WVzazVpcoUNClw+q/3Jywydr9hBbT3Wt+NQv9LQZ7s6jeCQJUE=;
+X-YMail-OSG: Q01mzL0VM1kf57NA7oT2tR0vk6m5V.FUMQF2nyypCVW.yv05qgpFS.F_SVE.qQmVew--
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218.2
+Date: Sat, 30 Aug 2008 18:25:14 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers <kernel-testers@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <349034.72587.qm@web82104.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 30 August 2008, Rafael J. Wysocki wrote:
->This message has been generated automatically as a part of a report
->of recent regressions.
->
->The following bug entry is on the current list of known regressions
->from 2.6.26.  Please verify if it still should be listed and let me know
->(either way).
->
->
->Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11465
->Subject		: Linux-2.6.27-rc5, drm errors in log
->Submitter	: Gene Heskett <gene.heskett@verizon.net>
->Date		: 2008-08-30 18:52 (1 days old)
->References	: http://marc.info/?l=linux-kernel&m=122012238925775&w=4
->Handled-By	: Arjan van de Ven <arjan@infradead.org>
 
-Yes, is still valid as of 08/30/08 21:21 ESDT.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Should I start with the time I SWITCHED personalities with a BEATNIK
-hair stylist or my failure to refer five TEENAGERS to a good OCULIST?
+> please use split_e820_reserve_xx2.patch instead...
+
+OK, that produces the same result:  a happy kernel!
+
+I compared the full 'dmesg' output from the previous build and the
+current build using diff:  the only differences were trivial --
+return times from initcall functions, and the order in which some
+initcalls were performed was different very late in the boot process.
+
+
+Thanks Yinghai,
+Dave W.
