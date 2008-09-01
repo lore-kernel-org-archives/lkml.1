@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbYIAMAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbYIAMEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758792AbYIAMAz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 08:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbYIAMAp
+	id S1757511AbYIAMEh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 08:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbYIAME2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 08:00:45 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:40148 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752055AbYIAMAp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 08:00:45 -0400
-Message-ID: <48BBD875.40705@yandex.ru>
-Date: Mon, 01 Sep 2008 14:56:37 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Mon, 1 Sep 2008 08:04:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35259 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752718AbYIAME1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 08:04:27 -0400
+Message-ID: <48BBD9F5.8060906@kernel.org>
+Date: Mon, 01 Sep 2008 14:03:01 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: dedekind@infradead.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Subject: Re: [PATCH] UBIFS: fill f_fsid
-References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>	 <1220194366-12731-13-git-send-email-dedekind@infradead.org>	 <1220262187.2982.58.camel@pmac.infradead.org>	 <1220267810.4036.24.camel@sauron>	 <1220268480.2982.68.camel@pmac.infradead.org>	 <1220269436.4036.29.camel@sauron> <1220269804.2982.72.camel@pmac.infradead.org>
-In-Reply-To: <1220269804.2982.72.camel@pmac.infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 01 Sep 2008 12:00:02.0327 (UTC) FILETIME=[43D9B270:01C90C2A]
-X-Nokia-AV: Clean
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: ebiederm@xmission.com, serue@us.ibm.com, greg@kroah.com,
+       fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
+References: <1219945263-21074-1-git-send-email-tj@kernel.org>	<1219945263-21074-6-git-send-email-tj@kernel.org>	<20080828175116.GB18461@kroah.com> <48B6E79E.6020702@kernel.org>	<48B6E801.9080102@kernel.org> <E1KYm0D-0003q0-IQ@pomaz-ex.szeredi.hu>	<48B6EBBD.6050406@kernel.org> <E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu>	<48B6EF98.4070008@kernel.org> <E1KYn7T-00048J-Qj@pomaz-ex.szeredi.hu>	<48B6FFB6.7000104@kernel.org> <E1KYnhA-0004Ei-3t@pomaz-ex.szeredi.hu>	<48B75C94.7030604@kernel.org> <E1KYyt9-0005Ur-Eu@pomaz-ex.szeredi.hu>	<48B7AF60.8040709@kernel.org> <E1KYzMd-0005aR-28@pomaz-ex.szeredi.hu>	<48B7BB4C.4060907@kernel.org> <m163pjr5qf.fsf@frodo.ebiederm.org> <E1Ka82g-0003NU-4D@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1Ka82g-0003NU-4D@pomaz-ex.szeredi.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 01 Sep 2008 12:04:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Mon, 2008-09-01 at 14:43 +0300, Artem Bityutskiy wrote:
->> May be, but there are only 5 bytes left. 
-> 
-> There are 5 uint32_ts left. And then there would be 3.
-O, right.
+Hello,
 
-> But there's no overriding reason to do it, really.
-Yeah, I would not go for it unless there is a specific problem
-which should be solved with this.
+Miklos Szeredi wrote:
+>> So why not just only support well defined ioctls and serialize them
+>> in the kernel and allow the receiving process to deserialize them?
+> 
+> I'd like the idea of limiting to well behaved ioctls, but Tejun
+> doesn't...
+
+I'm not dead against it.  I'm just a bit more inclined to my
+implementation (naturally), which means if you're dead against the
+current implementation, supporting only the proper ones definitely is
+an option, but comparing the pros and cons, I'm not quite convinced
+yet.
+
+Thanks.
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+tejun
