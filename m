@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759706AbYIALWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbYIALWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759706AbYIALWa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 07:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbYIALVd
+	id S1755169AbYIALWP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 07:22:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758715AbYIALVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 07:21:33 -0400
-Received: from mga03.intel.com ([143.182.124.21]:9651 "EHLO mga03.intel.com"
+	Mon, 1 Sep 2008 07:21:04 -0400
+Received: from mga11.intel.com ([192.55.52.93]:45789 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759008AbYIALVa convert rfc822-to-8bit (ORCPT
+	id S1758599AbYIALVA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 07:21:30 -0400
+	Mon, 1 Sep 2008 07:21:00 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.32,307,1217833200"; 
-   d="scan'208";a="40044610"
+   d="scan'208";a="375462253"
 X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Subject: [PATCH 4/4 v2] PCI: document the change
-Date: Mon, 1 Sep 2008 19:21:06 +0800
-Message-ID: <7A25B56E4BE99C4283EB931CD1A40E110177EB70@pdsmsx414.ccr.corp.intel.com>
+Subject: [PATCH 2/4 v2] PCI: support ARI capability
+Date: Mon, 1 Sep 2008 19:20:56 +0800
+Message-ID: <7A25B56E4BE99C4283EB931CD1A40E110177EB6E@pdsmsx414.ccr.corp.intel.com>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 4/4 v2] PCI: document the change
-Thread-Index: AckMJNNs4wGff54MSr+UTWjd37C7Zw==
+Thread-Topic: [PATCH 2/4 v2] PCI: support ARI capability
+Thread-Index: AckMJM1m9UecPzImTSqDwBr2UDhCDA==
 From: "Zhao, Yu" <yu.zhao@intel.com>
 To: "Jesse Barnes" <jbarnes@virtuousgeek.org>, <linux-pci@vger.kernel.org>
 Cc: "Randy Dunlap" <randy.dunlap@oracle.com>, "Greg KH" <greg@kroah.com>,
@@ -32,302 +32,241 @@ Cc: "Randy Dunlap" <randy.dunlap@oracle.com>, "Greg KH" <greg@kroah.com>,
        "Matthew Wilcox" <matthew@wil.cx>, <linux-kernel@vger.kernel.org>,
        <kvm@vger.kernel.org>, <virtualization@lists.linux-foundation.org>,
        <xen-devel@lists.xensource.com>
-X-OriginalArrivalTime: 01 Sep 2008 11:21:08.0848 (UTC) FILETIME=[D4FD0F00:01C90C24]
+X-OriginalArrivalTime: 01 Sep 2008 11:20:58.0895 (UTC) FILETIME=[CF0E59F0:01C90C24]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Complete the hotplug ABI document, and add SR-IOV HOWTO.
+Support Alternative Routing-ID Interpretation (ARI), which increases the number of functions that can be supported by a PCIe endpoint. ARI is required by SR-IOV.
+
+PCI-SIG ARI specification can be found at http://www.pcisig.com/specifications/pciexpress/specifications/ECN-alt-rid-interpretation-070604.pdf
 
 Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 Signed-off-by: Eddie Dong <eddie.dong@intel.com>
 
 ---
- Documentation/ABI/testing/sysfs-bus-pci |   67 ++++++++++++
- Documentation/DocBook/kernel-api.tmpl   |    3 +
- Documentation/PCI/pci-iov-howto.txt     |  177 +++++++++++++++++++++++++++++++
- 3 files changed, 247 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/PCI/pci-iov-howto.txt
+ drivers/pci/Kconfig      |    7 ++++
+ drivers/pci/Makefile     |    2 +
+ drivers/pci/ari.c        |   71 ++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/pci/pci.h        |    8 +++++
+ drivers/pci/probe.c      |    3 ++
+ include/linux/pci.h      |   25 ++++++++++++++++
+ include/linux/pci_regs.h |   14 +++++++++
+ 7 files changed, 130 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/pci/ari.c
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-pci b/Documentation/ABI/testing/sysfs-bus-pci
-index ceddcff..374e87b 100644
---- a/Documentation/ABI/testing/sysfs-bus-pci
-+++ b/Documentation/ABI/testing/sysfs-bus-pci
-@@ -9,3 +9,70 @@ Description:
- 		that some devices may have malformatted data.  If the
- 		underlying VPD has a writable section then the
- 		corresponding section of this file will be writable.
-+
-+What:		/sys/bus/pci/slots/.../power
-+Date:		Unknown
-+Contact:	linux-pci@vger.kernel.org
-+Description:
-+		This file will appear when PCI hotplug is enabled and
-+		the hotplug driver supports this operation.
-+		It indicates power status of a slot, and could be written
-+		to enable or disable the slot.
-+
-+What:		/sys/bus/pci/slots/.../attention
-+Date:		Unknown
-+Contact:	linux-pci@vger.kernel.org
-+Description:
-+		This file will appear when PCI hotplug is enabled and
-+		the hotplug driver supports this operation.
-+		It indicates attention LED status of a slot, and could
-+		be written to set the LED status.
-+
-+What:		/sys/bus/pci/slots/.../latch
-+Date:		Unknown
-+Contact:	linux-pci@vger.kernel.org
-+Description:
-+		This file will appear when PCI hotplug is enabled and
-+		the hotplug driver supports this operation.
-+		It indicates latch status of a slot.
-+
-+What:		/sys/bus/pci/slots/.../adapter
-+Date:		Unknown
-+Contact:	linux-pci@vger.kernel.org
-+Description:
-+		This file will appear when PCI hotplug is enabled and
-+		the hotplug driver supports this operation.
-+		It indicates presence of the adapter.
-+
-+What:		/sys/bus/pci/slots/.../max_bus_speed
-+Date:		Unknown
-+Contact:	linux-pci@vger.kernel.org
-+Description:
-+		This file will appear when PCI hotplug is enabled and
-+		the hotplug driver supports this operation.
-+		It indicates max bus speed of a slot.
-+
-+What:		/sys/bus/pci/slots/.../cur_bus_speed
-+Date:		Unknown
-+Contact:	linux-pci@vger.kernel.org
-+Description:
-+		This file will appear when PCI hotplug is enabled and
-+		the hotplug driver supports this operation.
-+		It indicates current bus speed of a slot.
-+
-+What:		/sys/bus/pci/slots/.../test
-+Date:		Unknown
-+Contact:	linux-pci@vger.kernel.org
-+Description:
-+		This file will appear when PCI hotplug is enabled and
-+		the hotplug driver supports this operation.
-+		It triggers adapter hardware test upon writing.
-+
-+What:		/sys/bus/pci/slots/.../param
-+Date:		August 2008
-+Contact:	linux-pci@vger.kernel.org
-+Description:
-+		This file will appear when PCI hotplug is enabled and
-+		the hotplug driver supports this operation.
-+		It holds device specific parameters, and could be written
-+		to configure the adapter in a slot.
-diff --git a/Documentation/DocBook/kernel-api.tmpl b/Documentation/DocBook/kernel-api.tmpl
-index b7b1482..36273af 100644
---- a/Documentation/DocBook/kernel-api.tmpl
-+++ b/Documentation/DocBook/kernel-api.tmpl
-@@ -239,6 +239,7 @@ X!Ekernel/module.c
-      </sect1>
+diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
+index e1ca425..f43cc46 100644
+--- a/drivers/pci/Kconfig
++++ b/drivers/pci/Kconfig
+@@ -50,3 +50,10 @@ config HT_IRQ
+ 	   This allows native hypertransport devices to use interrupts.
  
-      <sect1><title>PCI Support Library</title>
-+!Iinclude/linux/pci.h
- !Edrivers/pci/pci.c
- !Edrivers/pci/pci-driver.c
- !Edrivers/pci/remove.c
-@@ -251,6 +252,8 @@ X!Edrivers/pci/hotplug.c
- -->
- !Edrivers/pci/probe.c
- !Edrivers/pci/rom.c
-+!Edrivers/pci/ari.c
-+!Edrivers/pci/iov.c
-      </sect1>
-      <sect1><title>PCI Hotplug Support Library</title>
- !Edrivers/pci/hotplug/pci_hotplug_core.c
-diff --git a/Documentation/PCI/pci-iov-howto.txt b/Documentation/PCI/pci-iov-howto.txt
+ 	   If unsure say Y.
++
++config PCI_ARI
++	bool "PCI ARI support"
++	depends on PCI
++	default n
++	help
++	  This enables PCI Alternative Routing-ID Interpretation.
+diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
+index 7d63f8c..96f2767 100644
+--- a/drivers/pci/Makefile
++++ b/drivers/pci/Makefile
+@@ -53,3 +53,5 @@ obj-$(CONFIG_PCI_SYSCALL) += syscall.o
+ ifeq ($(CONFIG_PCI_DEBUG),y)
+ EXTRA_CFLAGS += -DDEBUG
+ endif
++
++obj-$(CONFIG_PCI_ARI) += ari.o
+diff --git a/drivers/pci/ari.c b/drivers/pci/ari.c
 new file mode 100644
-index 0000000..147e80f
+index 0000000..3f1a47a
 --- /dev/null
-+++ b/Documentation/PCI/pci-iov-howto.txt
-@@ -0,0 +1,177 @@
-+		PCI Express Single Root I/O Virtualization HOWTO
-+			Copyright (C) 2008 Intel Corporation
-+			    Yu Zhao <yu.zhao@intel.com>
-+
-+
-+1. Overview
-+
-+1.1 What is SR-IOV
-+
-+Single Root I/O Virtualization (SR-IOV) is a PCI Express Extended
-+capability which makes one physical device appear as multiple virtual
-+devices. The physical device is referred to as Physical Function while
-+the virtual devices are referred to as Virtual Functions. Allocation
-+of Virtual Functions can be dynamically controlled by Physical Function
-+via registers encapsulated in the capability. By default, this feature
-+is not enabled and the Physical Function behaves as traditional PCIe
-+device. Once it's turned on, each Virtual Function's PCI configuration
-+space can be accessed by its own Bus, Device and Function Number (Routing
-+ID). And each Virtual Function also has PCI Memory Space, which is used
-+to map its register set. Virtual Function device driver operates on the
-+register set so it can be functional and appear as a real existing PCI
-+device.
-+
-+1.2 What is ARI
-+
-+Alternative Routing-ID Interpretation (ARI) allows a PCI Express Endpoint
-+to use its device number field as part of function number. Traditionally,
-+an Endpoint can only have 8 functions, and the device number of all
-+Endpoints is zero. With ARI enabled, an Endpoint can have up to 256
-+functions by using device number in conjunction with function number to
-+indicate a function in the device. This is almost transparent to the Linux
-+kernel because the Linux kernel still can use 8-bit bus number field plus
-+8-bit devfn number field to locate a function. ARI is managed via the ARI
-+Forwarding bit in the Device Capabilities 2 register of the PCI Express
-+Capability on the Root Port or the Downstream Port and a new ARI Capability
-+on the Endpoint.
-+
-+
-+2. User Guide
-+
-+2.1 How can I manage SR-IOV
-+
-+If a device supports SR-IOV, then there should be some entires under
-+/sys/bus/pci/slots/. The names of the entires are XXXX:BB:DD.F-iov-NNNN,
-+where the first part (XXXX:BB:DD.F) is the domain, bus, device and function
-+number of the device, and the third part (NNNN) is the index of a Virtual
-+Function. There are three files under the entry: power, param and address.
-+	- Writing 1 to the "power" will enable the Virtual Function,
-+	and 0 will disable the Virtual Function; Reading it will get
-+	status of the Virtual Function.
-+	- Reading the "address" will get the bus, device and function
-+	number of the Virtual Function.
-+	- The "param" is the device specific parameters which may be
-+	used by the Physical or Virtual Functions drivers.
-+
-+2.2 How can I use Virtual Functions
-+
-+Virtual Functions is treated as hot-plugged PCI devices in the kernel,
-+so they should be able to work in the same way as real PCI devices.
-+NOTE: Virtual Function device driver must be loaded to make it work.
-+
-+
-+3. Developer Guide
-+
-+3.1 SR-IOV APIs
-+
-+To enable SR-IOV, Physical Function device driver needs to call:
-+	int pci_iov_enable(struct pci_dev *dev, 
-+			   int (*cb)(struct pci_dev *, int, int, char *))
-+The pointer to the callback function could be NULL if Physical Function
-+wants to ignore the events.
-+
-+To disable SR-IOV, Physical Function device driver needs to call:
-+	void pci_iov_disable(struct pci_dev *dev)
-+
-+NOTE: these two functions sleeps 1 second waiting on hardware transaction
-+completion according to SR-IOV specification.
-+
-+3.2 Usage example
-+
-+Following piece of code illustrates the usage of APIs above.
-+
-+static int callback(struct pci_dev *dev, int event, int arg, char *param)
-+{
-+	int err;
-+
-+	switch (event) {
-+	case PCI_IOV_VF_ENABLE:
-+		/*
-+		 * request to enable a Virtual Function, setup hardware
-+		 * resource to this Virtual Function if needed.
-+		 */
-+		break;
-+	case PCI_IOV_VF_DISABLE:
-+		/*
-+		 * a Virtual Function has been disabled, reclaim hardware
-+		 * resource if needed.
-+		 */
-+		break;
-+	case PCI_IOV_VF_SETPARAM:
-+		/*
-+		 * parameter of a Virtual Function has been changed, take
-+		 * corresponding actions if needed.
-+		 */
-+		break;
-+	case PCI_IOV_VF_GETPARAM:
-+		/*
-+		 * return the parameters of a Virtual Function if any.
-+		 */
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return err;
-+}
-+
-+static int __devinit dev_probe(struct pci_dev *dev,
-+				const struct pci_device_id *id)
-+{
-+	int err;
-+
-+	...
-+
-+	err = pci_iov_enable(dev, callback);
-+	if (err)
-+		return err;
-+
-+	...
-+}
-+
-+static void __devexit dev_remove(struct pci_dev *dev)
-+{
-+	...
-+
-+	pci_iov_disable(dev);
-+
-+	...
-+}
-+
-+#ifdef CONFIG_PM
++++ b/drivers/pci/ari.c
+@@ -0,0 +1,71 @@
 +/*
-+ * If the device supports the power management, then the SR-IOV
-+ * may be disabled before the adapter goes to sleep, because
-+ * Virtual Functions may not work when the adapter is in the\
-+ * power-saving mode.
-+ * The SR-IOV can be enabled again after the adapter wakes up.
++ * drivers/pci/ari.c
++ *
++ * Copyright (C) 2008 Intel Corporation, Yu Zhao <yu.zhao@intel.com>
++ *
++ * PCI Express Alternative Routing-ID Interpretation capability support.
 + */
-+static int dev_suspend(struct pci_dev *dev, pm_message_t state)
++
++#include <linux/pci.h>
++
++#include "pci.h"
++
++/**
++ * pci_ari_enable_fwd - enable ARI forwarding
++ * @dev: the PCI device
++ */
++void pci_ari_enable_fwd(struct pci_dev *dev)
 +{
-+	...
++	int pos;
++	u32 cap;
++	u16 ctrl;
 +
-+	pci_iov_disable(dev);
++	if (dev->pcie_type != PCI_EXP_TYPE_ROOT_PORT &&
++	    dev->pcie_type != PCI_EXP_TYPE_DOWNSTREAM &&
++	    dev->ari_enabled)
++		return;
 +
-+	...
++	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
++	if (!pos)
++		return;
++
++	pci_read_config_dword(dev, pos + PCI_EXP_DEVCAP2, &cap);
++
++	if (!(cap & PCI_EXP_DEVCAP2_ARI))
++		return;
++
++	dev->ari_enabled = 1;
++	dev_info(&dev->dev, "ARI forwarding enabled.\n");
++
++	pci_read_config_word(dev, pos + PCI_EXP_DEVCTL2, &ctrl);
++	if (ctrl & PCI_EXP_DEVCTL2_ARI)
++		return;
++
++	ctrl |= PCI_EXP_DEVCTL2_ARI;
++	pci_write_config_word(dev, pos + PCI_EXP_DEVCTL2, ctrl);
 +}
 +
-+static int dev_resume(struct pci_dev *dev)
++/**
++ * pci_ari_next_fn - find next function number
++ * @dev: the PCI device
++ *
++ * Returns function number, or 0 if there are no higher numbered
++ * functions; returns negative on failure.
++ */
++int pci_ari_next_fn(struct pci_dev *dev)
 +{
-+	...
++	int pos;
++	u16 cap;
 +
-+	pci_iov_enable(dev, nvfs, callback);
++	if (dev->pcie_type != PCI_EXP_TYPE_ENDPOINT)
++		return -EINVAL;
 +
-+	...
++	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ARI);
++	if (!pos)
++		return -EIO;
++
++	pci_read_config_word(dev, pos + PCI_ARI_CAP, &cap);
++
++	return PCI_ARI_CAP_NFN(cap);
 +}
-+#endif
++EXPORT_SYMBOL_GPL(pci_ari_next_fn);
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 5abd69c..720a607 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -147,3 +147,11 @@ struct pci_slot_attribute {
+ extern int pci_resource_alignment(struct pci_dev *dev, int resno);
+ extern int pci_resource_bar(struct pci_dev *dev, int resno,
+ 			    enum pci_bar_type *type);
 +
-+static struct pci_driver dev_driver = {
-+	.name =		"SR-IOV PF driver",
-+	.id_table =	dev_id_table,
-+	.probe =	dev_probe,
-+	.remove =	__devexit_p(dev_remove),
-+#ifdef CONFIG_PM
-+	.suspend =	dev_suspend,
-+	.resume =	dev_resume,
-+#endif
-+};
++#ifdef CONFIG_PCI_ARI
++extern void pci_ari_enable_fwd(struct pci_dev *dev);
++#else
++static inline void pci_ari_enable_fwd(struct pci_dev *dev)
++{
++}
++#endif /* CONFIG_PCI_ARI */
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 3994ea3..ad7ad35 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -1059,6 +1059,9 @@ int pci_scan_slot(struct pci_bus *bus, int devfn)
+ 	int func, nr = 0;
+ 	int scan_all_fns;
+ 
++	if (bus->self)
++		pci_ari_enable_fwd(bus->self);
++
+ 	scan_all_fns = pcibios_scan_all_fns(bus, devfn);
+ 
+ 	for (func = 0; func < 8; func++, devfn++) {
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 4b8018f..8ed7405 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -236,6 +236,7 @@ struct pci_dev {
+ 	unsigned int	broken_parity_status:1;	/* Device generates false positive parity */
+ 	unsigned int 	msi_enabled:1;
+ 	unsigned int	msix_enabled:1;
++	unsigned int	ari_enabled:1;	/* ARI forwarding */
+ 	unsigned int	is_managed:1;
+ 	unsigned int	is_pcie:1;
+ 	pci_dev_flags_t dev_flags;
+@@ -1137,5 +1138,29 @@ static inline void pci_mmcfg_early_init(void) { }
+ static inline void pci_mmcfg_late_init(void) { }
+ #endif
+ 
++#ifdef CONFIG_PCI_ARI
++/**
++ * pci_ari_fwd_enabled - query ARI forwarding status
++ * @dev: the PCI device
++ *
++ * Returns 1 if ARI forwarding is enabled, or 0 if not enabled;
++ * returns negative on failure.
++ */
++static inline int pci_ari_fwd_enabled(struct pci_dev *dev)
++{
++	return dev->ari_enabled;
++}
++extern int pci_ari_next_fn(struct pci_dev *dev);
++#else
++static inline int pci_ari_fwd_enabled(struct pci_dev *dev)
++{
++	return -EIO;
++}
++static inline int pci_ari_next_fn(struct pci_dev *dev)
++{
++	return -EIO;
++}
++#endif /* CONFIG_PCI_ARI */
++
+ #endif /* __KERNEL__ */
+ #endif /* LINUX_PCI_H */
+diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
+index 450684f..eb6686b 100644
+--- a/include/linux/pci_regs.h
++++ b/include/linux/pci_regs.h
+@@ -419,6 +419,10 @@
+ #define  PCI_EXP_RTCTL_CRSSVE	0x10	/* CRS Software Visibility Enable */
+ #define PCI_EXP_RTCAP		30	/* Root Capabilities */
+ #define PCI_EXP_RTSTA		32	/* Root Status */
++#define PCI_EXP_DEVCAP2		36	/* Device Capabilities 2 */
++#define  PCI_EXP_DEVCAP2_ARI	0x20	/* Alternative Routing-ID */
++#define PCI_EXP_DEVCTL2		40	/* Device Control 2 */
++#define  PCI_EXP_DEVCTL2_ARI	0x20	/* Alternative Routing-ID */
+ 
+ /* Extended Capabilities (PCI-X 2.0 and Express) */
+ #define PCI_EXT_CAP_ID(header)		(header & 0x0000ffff)
+@@ -429,6 +433,7 @@
+ #define PCI_EXT_CAP_ID_VC	2
+ #define PCI_EXT_CAP_ID_DSN	3
+ #define PCI_EXT_CAP_ID_PWR	4
++#define PCI_EXT_CAP_ID_ARI	14
+ 
+ /* Advanced Error Reporting */
+ #define PCI_ERR_UNCOR_STATUS	4	/* Uncorrectable Error Status */
+@@ -536,5 +541,14 @@
+ #define HT_CAPTYPE_GEN3		0xD0	/* Generation 3 hypertransport configuration */
+ #define HT_CAPTYPE_PM		0xE0	/* Hypertransport powermanagement configuration */
+ 
++/* Alternative Routing-ID Interpretation */
++#define PCI_ARI_CAP		0x04	/* ARI Capability Register */
++#define  PCI_ARI_CAP_MFVC	0x0001	/* MFVC Function Groups Capability */
++#define  PCI_ARI_CAP_ACS	0x0002	/* ACS Function Groups Capability */
++#define  PCI_ARI_CAP_NFN(x)	(((x) >> 8) & 0xff) /* Next Function Number */
++#define PCI_ARI_CTRL		0x06	/* ARI Control Register */
++#define  PCI_ARI_CTRL_MFVC	0x0001	/* MFVC Function Groups Enable */
++#define  PCI_ARI_CTRL_ACS	0x0002	/* ACS Function Groups Enable */
++#define  PCI_ARI_CTRL_FG(x)	(((x) >> 4) & 7) /* Function Group */
+ 
+ #endif /* LINUX_PCI_REGS_H */
 -- 
 1.5.6.4
 
