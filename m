@@ -1,75 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbYIARdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753474AbYIARiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752746AbYIARdF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 13:33:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbYIARcy
+	id S1753474AbYIARiP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 13:38:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbYIARiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 13:32:54 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:44604 "EHLO
-	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750989AbYIARcx (ORCPT
+	Mon, 1 Sep 2008 13:38:00 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33419 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750957AbYIARh7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 13:32:53 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=JMnnF-g5AAAA:8 a=BAc8T9eJTx2-vJsIN1IA:9 a=2vicnz_o6cpw1vCx_YUA:7 a=36qO1hOtuJwRtHGoLu_ZvZrndDYA:4
-Message-ID: <48BC2746.1090006@shaw.ca>
-Date: Mon, 01 Sep 2008 11:32:54 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Michael Noisternig <mnoist@cosy.sbg.ac.at>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: (more) epoll troubles
-References: <fa.zt4K08zThcs3bS6QJSiWmdw4amQ@ifi.uio.no> <48BC26D9.1040300@shaw.ca>
-In-Reply-To: <48BC26D9.1040300@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Mon, 1 Sep 2008 13:37:59 -0400
+Subject: Re: [Bug #11355] Regression in 2.6.27-rc2 when cross-building the
+	kernel
+From: David Woodhouse <dwmw2@infradead.org>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <48BC1D8E.9050608@lwfinger.net>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>
+	 <VSpL6AnBTS.A.jvH.vaGsIB@albercik>  <200808242334.05993.rjw@sisk.pl>
+	 <1220261720.2982.51.camel@pmac.infradead.org>
+	 <48BC1D8E.9050608@lwfinger.net>
+Content-Type: text/plain
+Date: Mon, 01 Sep 2008 18:37:47 +0100
+Message-Id: <1220290667.2982.95.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Michael Noisternig wrote:
->> Hello,
->>
->> and sorry again if this is the wrong place to ask (again, please hint 
->> to me to an appropriate place to ask in that case).
->>
->> After experimenting with epoll edge-triggered mode I am clueless why 
->> on a few occassions I seem to not get any input notification despite 
->> data is available.
->>
->> In detail: I have set up sockets with epoll events 
->> EPOLLET|EPOLLRDHUP|EPOLLIN. When I get EPOLLIN for a socket, I read() 
->> as long as I get what I asked for, i.e. whenever read() returns either 
->> EAGAIN or less data than I asked for I take this as indication that I 
->> must wait for another EPOLLIN notification. However, this does not 
->> seem to work always.
->>
->> Here is some log from my program:
->>
->> 0x9e6b8a8: read not avail (1460/2048 read)
->> i.e. tried to read 2048 bytes, got 1460 -> assume must wait for 
->> EPOLLIN for more data to read
->> (note that the fd is always in the epoll set with 
->> EPOLLET|EPOLLRDHUP|EPOLLIN)
+On Mon, 2008-09-01 at 11:51 -0500, Larry Finger wrote:
+> David Woodhouse wrote:
+> > On Sun, 2008-08-24 at 23:34 +0200, Rafael J. Wysocki wrote:
+> >> On Saturday, 23 of August 2008, Rafael J. Wysocki wrote:
+> >>> This message has been generated automatically as a part of a report
+> >>> of recent regressions.
+> >>>
+> >>> The following bug entry is on the current list of known regressions
+> >>> from 2.6.26.  Please verify if it still should be listed and let me know
+> >>> (either way).
+> >>>
+> >>>
+> >>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11355
+> >>> Subject		: Regression in 2.6.27-rc2 when cross-building the kernel
+> >>> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+> >>> Date		: 2008-08-16 2:38 (8 days old)
+> >>> References	: http://marc.info/?l=linux-kernel&m=121885432118368&w=4
+> >> As I wrote in the Bugzilla, I'm seeing a related problem.
+> >>
+> >> Namely, I build kernels on one box, with 'make O=<target>', then I mount
+> >> <target> on another one over NFS, 'cd' to it and try to install the kernel
+> >> modules with 'make modules_install'.  This results in 'HOSTCC firmware/ihex2fw'
+> >> and 'fatal error: ...: Read-only file system'.  It's readily reproducible.
+> >>
+> >> Commenting out line 1130 of Makefile
+> >> ("$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.fwinst obj=firmware __fw_modinst")
+> >> obviously helps, so it looks like Makefile.fwinst needs fixing.
+> > 
+> > I don't like this much, but it should do the trick... please confirm.
 > 
-> It would likely be better to always continue trying to read until EAGAIN 
-> is returned, even if the read returned less than the requested amount, 
-> as implied here:
-> 
-> http://linux.die.net/man/7/epoll
-> 
-> "The function do_use_fd() uses the new ready file descriptor until 
-> EAGAIN is returned by either read(2) or write(2). An event driven state 
-> machine application should, after having received EAGAIN, record its 
-> current state so that at the next call to do_use_fd() it will continue 
-> to read(2) or write(2) from where it stopped before. "
+> Yes, the patch fixes the problem. Thanks.
 
-Though, this is somewhat contradicted by the FAQ section:
+Ok, I have a small handful of fixes to send to Linus for 2.6.27; Unless
+Sam (or someone else) comes up with a better answer, I'll make sure that
+goes with them.
 
-"the condition that the read/write I/O space is exhausted can be 
-detected by checking the amount of data read/write from/to the target 
-file descriptor. For example, if you call read(2) by asking to read a 
-certain amount of data and read(2) returns a lower number of bytes, you 
-can be sure to have exhausted the read I/O space for such file descriptor."
+Thanks.
+
+-- 
+dwmw2
+
