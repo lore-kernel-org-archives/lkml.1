@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752374AbYIAWx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752471AbYIAW5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752374AbYIAWx3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 18:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbYIAWxT
+	id S1752471AbYIAW5V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 18:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbYIAW5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 18:53:19 -0400
-Received: from nebensachen.de ([195.34.83.29]:48180 "EHLO mail.nebensachen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750984AbYIAWxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 18:53:18 -0400
-X-Hashcash: 1:20:080901:bzolnier@gmail.com::QWeo1EdsTi+Msh/s:00000000000000000000000000000000000000000000Zyw
-X-Hashcash: 1:20:080901:linux-ide@vger.kernel.org::fAg2/sA5FBsX03B6:000000000000000000000000000000000000HVeh
-X-Hashcash: 1:20:080901:linux-kernel@vger.kernel.org::5YGrh6YIA7E/lNtT:0000000000000000000000000000000008tP6
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ide: Build fix for CONFIG_IDE_PROC_FS=n
-References: <20080829213217.4826.91622.stgit@denkblock.local>
-	<200808311752.06818.bzolnier@gmail.com>
-Date: Tue, 02 Sep 2008 00:52:55 +0200
-In-Reply-To: <200808311752.06818.bzolnier@gmail.com> (Bartlomiej
-	Zolnierkiewicz's message of "Sun, 31 Aug 2008 17:52:05 +0200")
-Message-ID: <878wub1nso.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
+	Mon, 1 Sep 2008 18:57:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50201 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750722AbYIAW5M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 18:57:12 -0400
+Date: Mon, 1 Sep 2008 15:56:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alok Kataria <akataria@vmware.com>, Michael Buesch <mb@bu3sch.de>
+Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
+In-Reply-To: <alpine.LFD.1.10.0809020033060.3243@apollo.tec.linutronix.de>
+Message-ID: <alpine.LFD.1.10.0809011545020.12958@nehalem.linux-foundation.org>
+References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net> <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011142520.12958@nehalem.linux-foundation.org>
+ <alpine.LFD.1.10.0809012114050.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011500460.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809020033060.3243@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> On Friday 29 August 2008, Elias Oltmanns wrote:
->> Recent changes have broken compilation when CONFIG_IDE_PROC_FS is not set.
->> 
->> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
->
-> Thanks!
->
-> I integrated your fixes into guilty patches ("ide-floppy: move /proc handling
-> to ide-floppy_proc.c" and "ide-disk: move /proc handling to ide-disk_proc.c")
-> to preserve bisection.
 
-Yes, that's fine with me, but in the case of ide-disk_proc.h things
-apparently went wrong. As of next-20080901, I still have the line
 
-ide-disk_mod-y += ide-disk.o ide-disk_ioctl.o ide-disk_proc.o
+On Tue, 2 Sep 2008, Thomas Gleixner wrote:
+> > 
+> > Umm. Which one. The 32-bit or the 64-bit?
+> 
+> The 32 bit version.
 
-in the Makefile. Could you please truncate that line appropriately?
+So then the PIT isn't going to work on that machine. Do you have HPET?
 
-Regards,
+Because if so, the most obvious choice would be to say:
 
-Elias
+ - on old machines, the PIT is likely more reliable than PM_TIMER
+
+ - on new machines, the HPET is likely more reliable than PIT
+
+and there's actually a fairly obvious place to distinguish between old and 
+new: if ti has a HPET, consider it a new one.
+
+But that just means that there's never any reason to use PM_TIMER anyway, 
+and the proper patch would probably be to just ignore it. No?
+
+		Linus
