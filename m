@@ -1,71 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbYIAEKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbYIAEKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754030AbYIAEKU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 00:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbYIAEKE
+	id S1755083AbYIAEKi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 00:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYIAEKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 00:10:04 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45866 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751182AbYIAEKD (ORCPT
+	Mon, 1 Sep 2008 00:10:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46156
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752377AbYIAEKL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 00:10:03 -0400
-Subject: Re: [v4l-dvb-maintainer] Merge multiproto tree
-From: Peter Zijlstra <peterz@infradead.org>
-To: hermann pitton <hermann-pitton@arcor.de>
-Cc: Manu Abraham <abraham.manu@gmail.com>, v4l-dvb-maintainer@linuxtv.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mchehab@infradead.org
-In-Reply-To: <1220231286.2669.97.camel@pc10.localdom.local>
-References: <48B9360D.7030303@gmail.com>  <1220099043.8426.25.camel@twins>
-	 <1220100034.8426.38.camel@twins>
-	 <1220231286.2669.97.camel@pc10.localdom.local>
-Content-Type: text/plain
-Date: Mon, 01 Sep 2008 06:08:10 +0200
-Message-Id: <1220242090.8426.49.camel@twins>
+	Mon, 1 Sep 2008 00:10:11 -0400
+Date: Sun, 31 Aug 2008 21:10:05 -0700 (PDT)
+Message-Id: <20080831.211005.22750451.davem@davemloft.net>
+To: Valdis.Kletnieks@vt.edu
+Cc: rick.jones2@hp.com, jmalicki@metacarta.com, andi@firstfloor.org,
+       johnpol@2ka.mipt.ru, dada1@cosmosbay.com, denys@visp.net.lb,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       juhlenko@akamai.com, sammy@sammy.net
+Subject: Re: loaded router, excessive getnstimeofday in oprofile
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <6720.1220242094@turing-police.cc.vt.edu>
+References: <20031.1220236756@turing-police.cc.vt.edu>
+	<20080831.205145.225080276.davem@davemloft.net>
+	<6720.1220242094@turing-police.cc.vt.edu>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-09-01 at 03:08 +0200, hermann pitton wrote:
-> Hi,
-> 
-> Am Samstag, den 30.08.2008, 14:40 +0200 schrieb Peter Zijlstra:
-> > [dropped linux-dvb]
-> > 
-> > On Sat, 2008-08-30 at 14:24 +0200, Peter Zijlstra wrote:
-> > > On Sat, 2008-08-30 at 15:59 +0400, Manu Abraham wrote:
-> > > > Hello Mauro,
-> > > > 
-> > > > Please pull from http://jusst.de/hg/multiproto_api_merge/
-> > > > to merge the following Changesets from the multiproto tree.
-> > 
-> > > > The tree is being pushed out, it might take a little while for the
-> > > > repository to be populated due to the slow connect.
-> > > 
-> > > This must absolutely be the least informative pull request ever!
-> > 
-> > Also, this:
-> > 
-> > On Sat, 2008-08-30 at 14:24 +0200, linux-dvb-owner@linuxtv.org wrote:
-> > > You are not allowed to post to this mailing list, and your message has
-> > > been automatically rejected.  If you think that your messages are
-> > > being rejected in error, contact the mailing list owner at
-> > > linux-dvb-owner@linuxtv.org.
-> > 
-> > Don't do that!
-> > 
-> 
-> I still try to understand it until today too,
-> 
-> but the latter is only a simple notifier, that you are not subscribed
-> and has no further meanings.
+From: Valdis.Kletnieks@vt.edu
+Date: Mon, 01 Sep 2008 00:08:14 -0400
 
-I know full well what that is. However,
+> Quite frankly, unless somebody *IS* planning to become an expert on how the
+> IT stuff for them are designed and run, we *should not* be doing any code
+> changes that we don't understand, just because they say so and we should
+> trust them...
 
-Its rude to cross-post with a subscriber only list. Imagine everybody
-doing it - you'd go mad with these stupid bounces.
+Exactly!  We should not change where and how packet timestamps are
+taken!  Thanks!
 
+It is what I have been advocating this whole thread :-)
