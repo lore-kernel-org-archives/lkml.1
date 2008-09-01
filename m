@@ -1,99 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbYIAQa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbYIAQej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508AbYIAQa1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 12:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbYIAQaQ
+	id S1755992AbYIAQej (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 12:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbYIAQeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 12:30:16 -0400
-Received: from mx1.renzel.net ([195.243.213.130]:52150 "EHLO
-	nijmegen.renzel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751627AbYIAQaO (ORCPT
+	Mon, 1 Sep 2008 12:34:31 -0400
+Received: from qb-out-0506.google.com ([72.14.204.233]:15318 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751615AbYIAQea (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 12:30:14 -0400
-X-Greylist: delayed 404 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Sep 2008 12:30:14 EDT
-Message-ID: <48BC16E3.20500@linuxtv.org>
-Date: Mon, 01 Sep 2008 18:22:59 +0200
-From: Marcel Siegert <mws@linuxtv.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Mon, 1 Sep 2008 12:34:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=VsRlDKpBjZR2mSS1Yh/R/DAZlk4tJn7txLFhRYz061QlB2pr7v/rF25K8GjxkbVlte
+         sR0K2GqE/9THliEBTkj875Cp0Z1XlYc06Y1U1GunRdQSnGTMcopkA3M/BTVFN7hxEfZ0
+         De27tGYrR4mhYQkXT2Y7nQKmNJH4+NCE/ECtQ=
+Message-ID: <3f9a31f40809010934k468914d8sc43f323e9f32e9e7@mail.gmail.com>
+Date: Mon, 1 Sep 2008 12:34:28 -0400
+From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+To: "Gene Heskett" <gene.heskett@verizon.net>
+Subject: Re: Linux-2.6.27-rc5, drm errors in log
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jaswinder Singh" <jaswinder@infradead.org>, xorg@lists.freedesktop.org,
+       davem@davemloft.net, torvalds@linux-foundation.org, nhaehnle@gmail.com,
+       airlied@linux.ie, glisse@freedesktop.org, khali@linux-fr.org,
+       tony@bakeyournoodle.com
+In-Reply-To: <200808301452.04634.gene.heskett@verizon.net>
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: Manu Abraham <abraham.manu@gmail.com>, v4l-dvb-maintainer@linuxtv.org,
-       linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [linux-dvb] Merge multiproto tree
-References: <48B9360D.7030303@gmail.com> <20080901120601.044ddc30@mchehab.chehab.org>
-In-Reply-To: <20080901120601.044ddc30@mchehab.chehab.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200808301452.04634.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello mauro,
+Hello Gene,
 
-Mauro Carvalho Chehab schrieb:
-> Hello, Manu,
-> 
-> On Sat, 30 Aug 2008, Manu Abraham wrote:
-> 
->>  Hello Mauro,
->>
->>  Please pull from http://jusst.de/hg/multiproto_api_merge/
->>  to merge the following Changesets from the multiproto tree.
-> 
-> The need for supporting newer DTV protocols increases day by day, since when
-> the first multiproto proposal started to be discussed, about two years ago.
-> 
-> At the end of the last year, Steven send one email to the ML with a different 
-> API proposal. Yet, people decided to wait for your work to be done. People then 
-> pinged you, from time to time, asking about the completion of multiproto. All 
-> the times, your answer were that multiproto were not ready yet for production.
-> 
-how is the actual state of his proposal? 
+On Sat, Aug 30, 2008 at 2:52 PM, Gene Heskett <gene.heskett@verizon.net> wrote:
+>
+> A re-repeat of a previous posting which has not drawn a comment. With added
+> content, added CC to a patch author, and some new questions.
+>
 
-> I'm aware that your solution seems to be more code-complete than Steven's 
-> proposal.
+This is not because of my radeon firmware patch, my patch is still in
+pipeline. Here is the list of developers who played with radeon :-
 
-> 
-> But the recent activity on the mailing list regarding his idea (and its, 
-> so far, positive feedback) and the fact that I was anyway planning to 
-> have a discussion about the future of the DVB-API at the Linux Plumbers 
-> Conference 2008 are supporting me in my idea of post-poning such a pull to 
-> a point in time shortly after this event.
-with whom? the linuxtv developers or with an attending audience?
+1. 4 days ago 	Linus Torvalds 	Merge branch 'drm-patches' of
+git://git.kernel.org ...
+2. 7 days ago 	Nicolai Haehnle 	drm/radeon: r300_cmdbuf: Always emit
+INDX_BUFFER immediately ...
+3. 7 days ago 	Jerome Glisse 	radeon: fix some hard lockups on r3/4/500s
+4. 2008-08-12 	David Miller 	radeonfb: fix accel engine hangs
+5. 2008-08-05 	Jean Delvare 	radeonfb: give i2c buses nicer names
+6. 2008-08-05 	David Miller 	radeon: misc corrections
+7. 2008-07-24 	Tony Breeds 	drivers/video/aty/radeon_base.c: notify
+user if sysfs ...
 
-i havent been on the list and that active since the "nearly two years war" begun,
-thus i am not the one to ack or nack in this pull request.
+> Machine is an F8 install, Athlon xp-2800 on an nforce2 motherboard, running
+> an older radeon 9200SE (RV280 based) video card.  No problems if I reboot
+> to 2.6.27-rc4.
+>
+> I'm drowning in these errors:
+>
+> Aug 30 13:21:05 coyote kernel: [14927.850078] [drm] wait for fifo failed status : 0x80076100 0x00000000
+> Aug 30 13:21:05 coyote kernel: [14927.861335] [drm] wait for fifo failed status : 0x80076100 0x00000000
+> Aug 30 13:21:05 coyote kernel: [14928.060233] [drm] wait idle failed status : 0x80076100 0x00000000
+> Aug 30 13:21:07 coyote kernel: [14929.557075] [drm] wait for fifo failed status : 0x80076100 0x00000000
+> Aug 30 13:21:07 coyote kernel: [14929.568869] [drm] wait for fifo failed status : 0x80076100 0x00000000
+> Aug 30 13:21:08 coyote kernel: [14931.028882] [drm] wait for fifo failed status : 0x80036100 0x00000000
+> Aug 30 13:21:08 coyote kernel: [14931.039896] [drm] wait for fifo failed status : 0x80076100 0x00000000
+> Aug 30 13:21:18 coyote kernel: [14940.515114] [drm] wait for fifo failed status : 0x80076100 0x00000000
+> Aug 30 13:27:27 coyote kernel: [15310.125656] [drm] wait for fifo failed status : 0x80066107 0x00000000
+>
 
-what i did in the past was just watching what was happening and what was taking
-progress - even if it is slow. 
+On F8 machine with radeon 9200SE with 2.6.27-rc5, I am also getting
+similar messages :
 
-users on the linuxtv list started to ask over and over again, when multiproto is
-going to be merged. vdr started to support it in a kind of experiment.
+[drm] Loading R200 Microcode
+[drm] writeback test succeeded in 1 usecs
+[drm] wait idle failed status : 0x83E8C13D 0x00000000
+[drm] wait idle failed status : 0x83E8C13D 0x00000000
+[drm] wait idle failed status : 0x83E8C13D 0x00000000
+[drm] wait idle failed status : 0x83E8C13D 0x00000000
+[drm] wait for fifo failed status : 0x8006613B 0x00000000
+[drm] wait for fifo failed status : 0x80066121 0x00000000
+[drm] wait for fifo failed status : 0x8006613B 0x00000000
+[drm] wait for fifo failed status : 0x80076100 0x00000000
+[drm] wait for fifo failed status : 0x80076100 0x00000000
+[drm] wait for fifo failed status : 0x80076100 0x00000000
+[drm] wait for fifo failed status : 0x80076100 0x00000000
+[drm] wait for fifo failed status : 0x80076100 0x00000000
+[drm] wait for fifo failed status : 0x80076100 0x00000000
+[drm] wait for fifo failed status : 0x80076100 0x00000000
+[drm] wait for fifo failed status : 0x80076100 0x00000000
+[drm] wait for fifo failed status : 0x80076100 0x00000000
+[drm] wait for fifo failed status : 0x80076100 0x00000000
+[drm] wait for fifo failed status : 0x80076100 0x00000000
+[drm] wait for fifo failed status : 0x80076100 0x00000000
+[drm] wait for fifo failed status : 0x80076100 0x00000000
+[drm] wait for fifo failed status : 0x80076100 0x00000000
+[drm] wait for fifo failed status : 0x80076100 0x00000000
 
-due to the lack of spare time and devices :) i do not actually know how productive 
-the vdr multiproto implementation is, but we should not start the whole discussions again.
 
-if we do not merge multiproto now, we will never do it, i am afraid. 
+Thank you,
 
-for the future of this project it is more than neccessary to get some progress.
-
-if there are no serious objections to multiproto, mauro, please pull/merge it 
-within the next few days. to wait until the end of september is time spending without
-any sense.
-
-regards
-marcel
-
-
-
- 
-> Cheers,
-> Mauro
-> 
-> _______________________________________________
-> linux-dvb mailing list
-> linux-dvb@linuxtv.org
-> http://www.linuxtv.org/cgi-bin/mailman/listinfo/linux-dvb
-> 
-
+Jaswinder Singh.
