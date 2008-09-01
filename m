@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbYIARv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbYIARxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758051AbYIARv2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 13:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbYIARvU
+	id S1758218AbYIARxN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 13:53:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbYIARw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 13:51:20 -0400
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:21840 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750957AbYIARvT (ORCPT
+	Mon, 1 Sep 2008 13:52:58 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:34953 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbYIARw6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 13:51:19 -0400
-Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Tom Tucker <tom@opengridcomputing.com>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       John Ronciak <john.ronciak@gmail.com>,
-       Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
-       neilb@suse.de, linux-nfs@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       e1000-devel@lists.sourceforge.net
-In-Reply-To: <48BC2466.2070806@opengridcomputing.com>
-References: <1219442213.9097.25.camel@localhost>
-	 <1219603981.27921.145.camel@localhost.localdomain>
-	 <1219605422.14389.2.camel@localhost> <1219605596.14389.5.camel@localhost>
-	 <1219615789.27921.152.camel@localhost.localdomain>
-	 <1219616136.14389.12.camel@localhost>
-	 <48B2D7F8.5020206@opengridcomputing.com>
-	 <20080826192711.GJ4380@fieldses.org>
-	 <48B567F5.2090605@opengridcomputing.com>
-	 <1220111261.31172.14.camel@localhost.localdomain>
-	 <20080831193037.GB14876@fieldses.org>
-	 <1220211842.31172.18.camel@localhost.localdomain>
-	 <48BAF643.4070808@opengridcomputing.com>
-	 <1220217505.31172.26.camel@localhost.localdomain>
-	 <48BC2466.2070806@opengridcomputing.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-sUCVRBzqQpsesCtSuDxl"
-Date: Mon, 01 Sep 2008 18:46:03 +0100
-Message-Id: <1220291163.31172.29.camel@localhost.localdomain>
+	Mon, 1 Sep 2008 13:52:58 -0400
+Date: Mon, 1 Sep 2008 19:52:25 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+Cc: "Gene Heskett" <gene.heskett@verizon.net>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jaswinder Singh" <jaswinder@infradead.org>, xorg@lists.freedesktop.org,
+       davem@davemloft.net, torvalds@linux-foundation.org, nhaehnle@gmail.com,
+       airlied@linux.ie, glisse@freedesktop.org, tony@bakeyournoodle.com
+Subject: Re: Linux-2.6.27-rc5, drm errors in log
+Message-ID: <20080901195225.3dcc50bc@hyperion.delvare>
+In-Reply-To: <3f9a31f40809010934k468914d8sc43f323e9f32e9e7@mail.gmail.com>
+References: <200808301452.04634.gene.heskett@verizon.net>
+	<3f9a31f40809010934k468914d8sc43f323e9f32e9e7@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-SA-Exim-Connect-IP: 192.168.1.5
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-X-SA-Exim-Scanned: No (on hopkins.hellion.org.uk); SA Timed out after 240 secs
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 1 Sep 2008 12:34:28 -0400, Jaswinder Singh wrote:
+> Hello Gene,
+> 
+> On Sat, Aug 30, 2008 at 2:52 PM, Gene Heskett <gene.heskett@verizon.net> wrote:
+> >
+> > A re-repeat of a previous posting which has not drawn a comment. With added
+> > content, added CC to a patch author, and some new questions.
+> >
+> 
+> This is not because of my radeon firmware patch, my patch is still in
+> pipeline. Here is the list of developers who played with radeon :-
+> 
+> 1. 4 days ago 	Linus Torvalds 	Merge branch 'drm-patches' of
+> git://git.kernel.org ...
+> 2. 7 days ago 	Nicolai Haehnle 	drm/radeon: r300_cmdbuf: Always emit
+> INDX_BUFFER immediately ...
+> 3. 7 days ago 	Jerome Glisse 	radeon: fix some hard lockups on r3/4/500s
+> 4. 2008-08-12 	David Miller 	radeonfb: fix accel engine hangs
+> 5. 2008-08-05 	Jean Delvare 	radeonfb: give i2c buses nicer names
+> 6. 2008-08-05 	David Miller 	radeon: misc corrections
+> 7. 2008-07-24 	Tony Breeds 	drivers/video/aty/radeon_base.c: notify
+> user if sysfs ...
 
---=-sUCVRBzqQpsesCtSuDxl
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+radeonfb != drm/radeon
 
-On Mon, 2008-09-01 at 12:20 -0500, Tom Tucker wrote:
-> Thanks Ian. Unfortunately, that's as fine grained as it gets. 256=20
-> (0x100) is the bit for transport logging.
-
-Doh, of course, I was thinking of 255...
-
-No repro today. I'll let you know when I see something.
-
-Ian.
-
---=20
-Ian Campbell
-
-History is nothing but a collection of fables and useless trifles,
-cluttered up with a mass of unnecessary figures and proper names.
-		-- Leo Tolstoy
-
---=-sUCVRBzqQpsesCtSuDxl
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAki8KlsACgkQM0+0qS9rzVkPHQCgsAOGAHSt3eYeEJudAZWeR5KQ
-ma4AoNoZlWra64hyjHMdTY5jc3cYWrtI
-=pHPO
------END PGP SIGNATURE-----
-
---=-sUCVRBzqQpsesCtSuDxl--
-
+-- 
+Jean Delvare
