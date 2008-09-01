@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252AbYIAF7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbYIAGAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754252AbYIAF7z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 01:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYIAF7q
+	id S1755408AbYIAGAv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 02:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYIAGAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 01:59:46 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57702 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750927AbYIAF7q (ORCPT
+	Mon, 1 Sep 2008 02:00:43 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:39547 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751798AbYIAGAm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 01:59:46 -0400
-Date: Mon, 1 Sep 2008 15:04:17 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelianov <xemul@openvz.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] res_counter: fix off-by-one bug in setting limit
-Message-Id: <20080901150417.96a6a322.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <48BB811D.6070106@cn.fujitsu.com>
-References: <48BB78E7.5080001@cn.fujitsu.com>
-	<20080901143007.9c623ef4.kamezawa.hiroyu@jp.fujitsu.com>
-	<48BB811D.6070106@cn.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 1 Sep 2008 02:00:42 -0400
+X-AuditID: 0ac90647-aca3eba0000039ee-ff-48bb8508476b
+Message-ID: <48BB8501.6070806@hitachi.com>
+Date: Mon, 01 Sep 2008 15:00:33 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
+MIME-Version: 1.0
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Hugh Dickins <hugh@veritas.com>, William Irwin <wli@holomorphy.com>,
+       Adam Litke <agl@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>, agl@us.ibm.com
+Subject: Re: [PATCH] coredump_filter: add hugepage core dumping
+References: <20080828142352.6ABC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080828142352.6ABC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 01 Sep 2008 13:43:57 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
+Hi Kosaki-san,
 
-> KAMEZAWA Hiroyuki wrote:
-> > On Mon, 01 Sep 2008 13:08:55 +0800
-> > Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > 
-> >> I found we can no longer set limit to 0 with 2.6.27-rcX:
-> >>  # mount -t cgroup -omemory xxx /mnt
-> >>  # mkdir /mnt/0
-> >>  # echo 0 > /mnt/0/memory.limit_in_bytes
-> >>  bash: echo: write error: Device or resource busy
-> >>
-> >> It turned out 'limit' can't be set to 'usage', which is wrong IMO.
-> >>
-> >> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> > 
-> > But setting limit to 0(usage) in memcg is buggy operation unless you want to see OOM..
-> > Hmm..
-> > 
-> 
-> I used to set 0 limit to test OOM in memcg. I don't think 0 limit is buggy, there's no
-> much difference with 0 limit and a very low limit.
-> 
-> And the real issue is, now we can set limit to > usage, but not >= usage. It's odd that
-> usage can reach to limit but limit can't be shrinked to usage.
-> 
-ok.
+KOSAKI Motohiro wrote:
 
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Now, hugepage's vma has VM_RESERVED flag because it cannot be swapped.
+> 
+> and VM_RESERVED vma isn't core dumped because its flag often be used for
+> kernel internal vma (e.g. vmalloc, sound related).
+> 
+> So, hugepage is never dumped and it indicate hugepages's program can't be debugged easily.
+> 
+> In these days, demand on making use of hugepage is increasing.
+> IMO, native support for coredump of hugepage is useful.
+> 
+> 
+> I think VM_RESERVED default dumping bahavior is good,
+> then I'd like to add coredump_filter mask.
+
+> Index: b/Documentation/filesystems/proc.txt
+> ===================================================================
+> --- a/Documentation/filesystems/proc.txt
+> +++ b/Documentation/filesystems/proc.txt
+> @@ -2389,11 +2389,12 @@ will be dumped when the <pid> process is
+>  of memory types. If a bit of the bitmask is set, memory segments of the
+>  corresponding memory type are dumped, otherwise they are not dumped.
+>  
+> -The following 4 memory types are supported:
+> +The following 5 memory types are supported:
+>    - (bit 0) anonymous private memory
+>    - (bit 1) anonymous shared memory
+>    - (bit 2) file-backed private memory
+>    - (bit 3) file-backed shared memory
+> +  - (bit 5) hugetlb memory
+
+Hugetlb VMAs fall also into one of the lowest 4 bit case.
+If you introduce the hugetlb bit (bit 5), you'd better describe that
+the hugetlb bit takes precedence over the lowest 4 bits.
+
+Thanks,
+-- 
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
 
