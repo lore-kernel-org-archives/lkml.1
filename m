@@ -1,89 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbYIAPBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbYIAPCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754797AbYIAPBv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 11:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYIAPBn
+	id S1755507AbYIAPCN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 11:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbYIAPBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 11:01:43 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:20556 "EHLO
-	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751457AbYIAPBm (ORCPT
+	Mon, 1 Sep 2008 11:01:51 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49678 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754531AbYIAPBu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 11:01:42 -0400
-Message-ID: <48BC037F.5010305@panasas.com>
-Date: Mon, 01 Sep 2008 18:00:15 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 1 Sep 2008 11:01:50 -0400
+Date: Mon, 1 Sep 2008 11:01:47 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Artem Bityutskiy <dedekind@infradead.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+Subject: Re: [PATCH] UBIFS: fill f_fsid
+Message-ID: <20080901150147.GA20323@infradead.org>
+References: <1220194366-12731-1-git-send-email-dedekind@infradead.org> <1220194366-12731-13-git-send-email-dedekind@infradead.org> <1220262187.2982.58.camel@pmac.infradead.org>
 MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Ivo van Doorn <IvDoorn@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Rusty Russell <rusty@rustcorp.com.au>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/5] debug: BUILD_BUG_ON: error on non-const		 expressions
-References: <48BBE77D.7070007@panasas.com> <48BBEE04.30903@panasas.com> <48BC1065.76E4.0078.0@novell.com> <48BBFA67.9070305@panasas.com> <48BC1A10.76E4.0078.0@novell.com>
-In-Reply-To: <48BC1A10.76E4.0078.0@novell.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Sep 2008 14:59:33.0008 (UTC) FILETIME=[57AD3100:01C90C43]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1220262187.2982.58.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
->>>> Boaz Harrosh <bharrosh@panasas.com> 01.09.08 16:21 >>>
->>> I have to admit that I'm surprise this compiles: You replace an expression
->>> with a statement, and hence you reduce the places where BUILD_BUG_ON()
->>> can validly be used. 
->> it is only an expression because of the (void)() cast, which is what
->> I'm trying to avoid.
+On Mon, Sep 01, 2008 at 10:43:07AM +0100, David Woodhouse wrote:
+> On Sun, 2008-08-31 at 17:52 +0300, Artem Bityutskiy wrote:
+> > From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+> > 
+> > UBIFS stores 16-bit UUID in the superblock, and it is a good
+> > idea to return part of it in 'f_fsid' filed of kstatfs structure.
 > 
-> No, sizeof() alone is an expression, too. 
-
-Using only sizeof() produces tons of "expression has no effect" warning
-all over the place.
-
-> Also, by using a statement you'll
-> have more problems with fixing BUILD_BUG_ON_ZERO(), which must be
-> an expression.
+> I think you mean a 16-byte UUID, not 16-bit?
 > 
-
-What is broken with my BUILD_BUG_ON_ZERO(). I tried all tests and
-it works fine. Do you have a test with unwanted results?
-(Actually it's the original one I have not touched it).
-
->>> Of course you could wrap the whole thing in ({}),
->> "do{}while(0)" is effectively an "{}" plus the added bonus
->> of demanding an ";" ;-)
+> > +	memcpy(&buf->f_fsid, c->uuid, sizeof(__kernel_fsid_t));
 > 
-> An expression likewise demands a terminating ; (or a continuation of the
-> expression, i.e. by using an operator)
-> 
+> For btrfs I xor the first 64 bits with the second 64 bits, and put
+> _that_ into f_fsid. You're just putting the first 64 bits in and
+> ignoring the second 64 bits. Neither is really _better_ than the other;
+> you just alter the circumstances in which you get collisions. But I
+> suppose we might as well be consistent about how we do it?
 
-I was not criticizing your approach, I was commenting on:
-"{}" vs. do{}while(0) 
+XFS just puts in the st_dev.  And I can't realy find any useful
+defintion of what it's supposed to b anyway..
 
->>> Also, are you sure the compiler will eliminate the dead variable in all
->>> cases?
->>>
->>> Finally, using as common a variable as 'x' here seems dangerous, too:
->>> What if somewhere x is #define-d to something more complex than a
->>> simple identifier?
->> No it is scoped in a dead do{}while(0). What gets optimized out most
->> is the do nothing do{}while(0). The inside is just ignored.
-> 
-> I don't think compilers in general and gcc in particular work this way
-> (i.e. automatically throwing away everything included in a dead block).
-> 
-
-I've tested and nothing is produced, even without any optimization.
-But I'm not an expert.
-
-> Jan
-> 
-
-Boaz
