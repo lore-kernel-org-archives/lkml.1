@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbYIAM0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbYIAMao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757037AbYIAM0k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 08:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbYIAM0a
+	id S1757474AbYIAMao (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 08:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbYIAMag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 08:26:30 -0400
-Received: from sh.osrg.net ([192.16.179.4]:42030 "EHLO sh.osrg.net"
+	Mon, 1 Sep 2008 08:30:36 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:57398 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752671AbYIAM03 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 08:26:29 -0400
-Date: Mon, 01 Sep 2008 21:25:40 +0900 (JST)
-Message-Id: <20080901.212540.68831117.ryusuke@osrg.net>
-To: joern@logfs.org
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC] nilfs2: continuous snapshotting file system
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-In-Reply-To: <20080829191621.GD27647@logfs.org>
-References: <20080829104459.GB27647@logfs.org>
-	<20080830.013729.49169215.ryusuke@osrg.net>
-	<20080829191621.GD27647@logfs.org>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	id S1752663AbYIAMaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 08:30:35 -0400
+Date: Mon, 1 Sep 2008 14:30:29 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Julien Brunel <brunel@diku.dk>, perex@perex.cz,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] sound/arm: Bad NULL test
+In-Reply-To: <s5hsksk12vh.wl%tiwai@suse.de>
+Message-ID: <Pine.LNX.4.64.0809011428010.9596@pc-004.diku.dk>
+References: <200809011059.54939.brunel@diku.dk> <s5hsksk12vh.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008 21:16:22 +0200, Jörn Engel wrote:
-> On Sat, 30 August 2008 01:37:29 +0900, Ryusuke Konishi wrote:
-> > On the other hand, there are some differences in premise because nilfs
-> > is aiming at racking up past user data and makes it a top priority to
-> > keep data which is overwritten by recent updates.  If users want to
-> > preserve much data in nilfs, it will increase the chance of disk fulls
-> > than regular file systems.
+On Mon, 1 Sep 2008, Takashi Iwai wrote:
+
+> At Mon, 1 Sep 2008 10:59:54 +0200,
+> Julien Brunel wrote:
+> > 
+> > From: Julien Brunel <brunel@diku.dk>
+> > 
+> > In case of error, the function aaci_init_card returns an ERR pointer,
+> > but never returns a NULL pointer. We have noticed a bad NULL test,
+> > which comes after a call to this function. Rather than doing an IS_ERR
+> > test, we suggest to duplicate the label out: one label for the case where
+> > aaci_init_card returns a valid pointer, and another for the case where
+> > aaci_init_card returns an ERR pointer.
+> > 
+> > The semantic match that finds this problem is as follows:
+> > (http://www.emn.fr/x-info/coccinelle/)
+> > 
+> > // <smpl>
+> > @match_bad_null_test@
+> > expression x, E;
+> > statement S1,S2;
+> > @@
+> > x =  aaci_init_card(...)
+> > ... when != x = E
+> > *  if (x != NULL) 
+> > S1 else S2
+> > // </smpl>
+> > 
+> > Signed-off-by:  Julien Brunel <brunel@diku.dk>
+> > Signed-off-by:  Julia Lawall <julia@diku.dk>
 > 
-> Hm, good point.  With continuous snapshots the rules of the game change
-> considerably.  So maybe it is ok to depend on the userspace daemon here,
-> because the space is unreclaimable anyway.
+> The fix below is simpler.  Could you check whether it's OK?
+
+It is indeed simpler, and looks correct, but it seems a little odd to take 
+a value that can never be NULL and set it to NULL just to avoid changing a 
+test.  Another alternative would be to leave the value as it is, and put 
+an IS_ERR test at the out label.  But the value of the test is statically 
+determined by the goto that reaches it, so the original patch proposes 
+just getting rid of the test completely.
+
+I guess it depends on which sort of solution is preferred.
+
+julia
+
+
+> thanks,
 > 
-> What is the policy on deleting continuous snapshots?  Or can it even be
-> configured by the administrator (which would be cool)?
-
-First, nilfs never deletes the checkpoints marked as snapshot nor the
-recent checkpoints whose elapsed time from its creation is smaller than
-``protection period''.  These are ground rules.
-
-Based on the rules, the userland GC daemon can delete arbitrary
-checkpoints among removable checkpoints.  But the current GC just
-deletes the removable checkpoints in chronological order.  More
-sophisticated policies, for example, the one detects landmark
-checkpoints and tries to keep them (a known policy in versioning
-filesystems), may be conceivable.
-
-But I feel the current policy is simple and satisfactory, so I'd like
-to leave others to someone who wants to implement them (e.g. one of my
-colleagues).
-
-Regards,
-Ryusuke Konishi
+> Takashi
+> 
+> 
+> diff --git a/sound/arm/aaci.c b/sound/arm/aaci.c
+> index b0a4744..e46b7cb 100644
+> --- a/sound/arm/aaci.c
+> +++ b/sound/arm/aaci.c
+> @@ -1085,6 +1085,7 @@ static int __devinit aaci_probe(struct amba_device *dev, void *id)
+>  	aaci = aaci_init_card(dev);
+>  	if (IS_ERR(aaci)) {
+>  		ret = PTR_ERR(aaci);
+> +		aaci = NULL;
+>  		goto out;
+>  	}
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
