@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752131AbYIAHSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbYIAHTX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752131AbYIAHSs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 03:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756117AbYIAHSf
+	id S1756757AbYIAHTX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 03:19:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYIAHTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 03:18:35 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:17555 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756079AbYIAHSe (ORCPT
+	Mon, 1 Sep 2008 03:19:10 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:13315 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752114AbYIAHTG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 03:18:34 -0400
+	Mon, 1 Sep 2008 03:19:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=TLrubdmYygY+aYc1bjn20iWVA8Xxzdmggve8DWV32Jzput1FzY6tGISn9QrY+4nJP/
-         lpmbqt+M9Nn3JuYdPLb5irm1GqkI0+b5UVXrEiQmXbbQdgRFId3FmMT/cJvfzB3snHYx
-         CaLrgBGecFMK09Rsvtx06xDaEUVyap7Tsd6EE=
-Message-ID: <48BB9742.3000109@gmail.com>
-Date: Mon, 01 Sep 2008 12:48:26 +0530
-From: David John <davidjonx@gmail.com>
-Reply-To: davidjonx@gmail.com
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=StmCwzEEA6Px/csbUBqFNYNji9WELFZo6nIPZktMttWsTJR8kG2ubEr7oULWIlEO/b
+         zlQLbKKNP0MRu9B69/kEtk8LN3bi1V9jiiqQn7vOsNEjiOYm0zfSCBrBXLJZLNYK15mn
+         DNjvdCqzWbpyz/wCZi3/21pla8skMsgPw4lvE=
+Message-ID: <40f31dec0809010019x54d14f43ub614f98ec6420ad7@mail.gmail.com>
+Date: Mon, 1 Sep 2008 10:19:05 +0300
+From: "Nick Kossifidis" <mickflemm@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [GIT]: Networking
+Cc: "Rui Santos" <rsantos@grupopie.com>, "Ivo van Doorn" <ivdoorn@gmail.com>,
+       "David Miller" <davem@davemloft.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0808311313260.12958@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-To: Jakub Narebski <jnareb@gmail.com>
-CC: git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Git User's Survey 2008
-References: <200808312329.17312.jnareb@gmail.com>
-In-Reply-To: <200808312329.17312.jnareb@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080805.190020.244441681.davem@davemloft.net>
+	 <alpine.LFD.1.10.0808051937410.15995@nehalem.linux-foundation.org>
+	 <200808061021.56150.IvDoorn@gmail.com> <48B7CBA7.4060107@grupopie.com>
+	 <40f31dec0808311258q7598dfe3he81b7575375faff5@mail.gmail.com>
+	 <alpine.LFD.1.10.0808311313260.12958@nehalem.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's too long IMO. I gave up on it half way. Do you really need to know
-the frequency of use of _each_ command? :(
+2008/8/31 Linus Torvalds <torvalds@linux-foundation.org>:
+>
+>
+> On Sun, 31 Aug 2008, Nick Kossifidis wrote:
+>>
+>> EeePC is working, the patch series i submitted adds support for RF2425
+>> chip which is included on EeePCs as far as i know (i have tested it on
+>> an EeePC 900 surf, i think EeePC 901 has the same card) ;-)
+>
+> I think the EeePC 900 has a ath5k chip, and the 901/1000 has some totally
+> different RaLink chip afaik.
+>
+> I think the design change came when moving from Celeron to Atom.
+>
+>                Linus
+>
 
-Jakub Narebski wrote:
+Hmm i missed that part, sorry for the spam...
 
-> Hi all,
->
-> We would like to ask you a few questions about your use of the Git
-> version control system. This survey is mainly to understand who is
-> using Git, how and why.
->
-> The results will be published to the Git wiki and discussed on the git
-> mailing list.
->
-> The survey would be open from 1 September till 10 October.
->
-> Please devote a few minutes of your time to fill this simple
-> questionnaire, it will help a lot the git community to understand your
-> needs, what you like of git, and of course what you don't like  of it.
->
-> The survey can be found here:
->   http://www.survs.com/survey?id=M3PIVU72&channel=2WXE4BVTW8
->
->   
+01:00.0 Network controller: RaLink Unknown device 0781
 
+-- 
+GPG ID: 0xD21DB2DB
+As you read this post global entropy rises. Have Fun ;-)
+Nick
