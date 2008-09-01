@@ -1,86 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbYIACRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbYIACZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756912AbYIACRa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 22:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYIACRT
+	id S1756642AbYIACZx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 22:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbYIACZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 22:17:19 -0400
-Received: from mail.suse.de ([195.135.220.2]:60112 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751912AbYIACRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 22:17:18 -0400
-From: Neil Brown <neilb@suse.de>
-To: Alistair John Strachan <alistair@devzero.co.uk>
-Date: Mon, 1 Sep 2008 12:17:06 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 31 Aug 2008 22:25:41 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:34944 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752055AbYIACZl (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 22:25:41 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: David Miller <davem@davemloft.net>, Dushan Tcholich <dusanc@gmail.com>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Robert Hancock <hancockr@shaw.ca>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, bridge@lists.linux-foundation.org
+Subject: Re: [RFC] bridge: STP timer management range checking
+In-Reply-To: Your message of "Sun, 31 Aug 2008 10:43:09 PDT."
+             <20080831104309.780cc01f@extreme>
+From: Valdis.Kletnieks@vt.edu
+References: <fa.wTMiBcGRgw2fBtdHwtX7y0lkc8s@ifi.uio.no> <48975BD3.6040709@shaw.ca> <a08621850808041337k1d1deb6fk78098d9fcd4930dd@mail.gmail.com> <20080807185802.GA16327@electric-eye.fr.zoreil.com> <a08621850808101200n220afd2dve58abe67830b7a4f@mail.gmail.com> <a08621850808110053j5cbf23e6xdf52c9e7440abf19@mail.gmail.com> <a08621850808291848q5660148fx57d576ecfcbfce8@mail.gmail.com> <a08621850808310151o143845h195a8658d02270d9@mail.gmail.com> <20080831100537.6929c51e@extreme>
+            <20080831104309.780cc01f@extreme>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1220235929_12805P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18619.20642.697691.541752@notabene.brown>
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: md (regression): reboot/shutdown hangs
-In-Reply-To: message from Alistair John Strachan on Thursday August 28
-References: <200808282005.09416.alistair@devzero.co.uk>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Date: Sun, 31 Aug 2008 22:25:30 -0400
+Message-ID: <19455.1220235930@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday August 28, alistair@devzero.co.uk wrote:
-> Hi Neil,
-> 
-> Commit 2b25000bf5157c28d8591f03f0575248a8cbd900 ("Restore force switch of md 
-> array to readonly at reboot time.") causes a reboot/shutdown to hang 
-> indefinitely on my box. Reverting this single commit makes the problem go 
-> away. It was first released with 2.6.27-rc3, I believe, and so this is a 
-> regression vs 2.6.26 (Rafael CCed).
-> 
-> I think the problem might be because my rootfs is on a RAID5 and my distro 
-> fails to stop it completely before halt/reboot.
-> 
-> Please let me know if there's any more information you need from me.
+--==_Exmh_1220235929_12805P
+Content-Type: text/plain; charset=us-ascii
 
-Thanks for the report.
+On Sun, 31 Aug 2008 10:43:09 PDT, Stephen Hemminger said:
 
-I'm having trouble figuring out why this ever worked.  I must be
-missing something.
+> Warning: this may cause user backlash since apparently working but standards
+>   conforming configurations will get configuration errors that they didn't
+>   see before.
 
-I can only reproduce a hang when calling reboot when a sync is needed.
-I dirty a file and then 
-   reboot -f -n
+Did you mean "apparently working but *non*-standards conforming"?
 
-This will always have blocked except between the commit that you
-mention and an earlier commit which broke something which that commit
-was fixing.
+Other than that, seems to be a sane application of "Be conservative in what you
+send".  Our network is some 30K cat-5 ports, 1100 switches, 1300 wireless
+access points, and we appreciate it every time somebody makes things more
+bulletproof.  And yes, we prefer things to out-and-out *fail* rather than
+run in a wonky configuration - hard failures usually get fixed in a few
+minutes, wonkiness can drag on for months of mystifying symptoms...
 
-This is because the reboot calls do_md_stop while holding the mddev
-lock, and do_md_stop calls invalidate_partition.  If this finds any dirty
-data to flush, the writeout will (most likely) need to mark the
-superblock as dirty first, which cannot happen while the mddev lock is
-held.  So we get a deadlock.
 
-The call to invalidate_partition should not be needed in any case except a
-reboot, and in that case you really don't want it (if you wanted to
-sync, you would have done that first).
-So I plan to remove it.  With it gone I cannot reproduce a hang.  If
-you can, I would love to hear about it.
+--==_Exmh_1220235929_12805P
+Content-Type: application/pgp-signature
 
-Thanks,
-NeilBrown
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index 8cfadc5..4790c83 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -3841,8 +3841,6 @@ static int do_md_stop(mddev_t * mddev, int mode, int is_open)
- 
- 		del_timer_sync(&mddev->safemode_timer);
- 
--		invalidate_partition(disk, 0);
--
- 		switch(mode) {
- 		case 1: /* readonly */
- 			err  = -ENXIO;
+iD8DBQFIu1KZcC3lWbTT17ARAmJaAKD+LZ/6wS6BV8FrmwpE/v41tXfNtACfT7+d
+7vnicwD7pqOc9q10nWXNz/4=
+=uKnV
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1220235929_12805P--
