@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbYIAEIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbYIAEKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754925AbYIAEIt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 00:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbYIAEIi
+	id S1754030AbYIAEKU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 00:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbYIAEKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 00:08:38 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:40552 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750987AbYIAEIg (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 00:08:36 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: David Miller <davem@davemloft.net>
-Cc: rick.jones2@hp.com, jmalicki@metacarta.com, andi@firstfloor.org,
-       johnpol@2ka.mipt.ru, dada1@cosmosbay.com, denys@visp.net.lb,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       juhlenko@akamai.com, sammy@sammy.net
-Subject: Re: loaded router, excessive getnstimeofday in oprofile
-In-Reply-To: Your message of "Sun, 31 Aug 2008 20:51:45 PDT."
-             <20080831.205145.225080276.davem@davemloft.net>
-From: Valdis.Kletnieks@vt.edu
-References: <21915755.1327801219904892242.JavaMail.root@ouachita> <48B6E7D0.5070307@hp.com> <20031.1220236756@turing-police.cc.vt.edu>
-            <20080831.205145.225080276.davem@davemloft.net>
+	Mon, 1 Sep 2008 00:10:04 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45866 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751182AbYIAEKD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 00:10:03 -0400
+Subject: Re: [v4l-dvb-maintainer] Merge multiproto tree
+From: Peter Zijlstra <peterz@infradead.org>
+To: hermann pitton <hermann-pitton@arcor.de>
+Cc: Manu Abraham <abraham.manu@gmail.com>, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mchehab@infradead.org
+In-Reply-To: <1220231286.2669.97.camel@pc10.localdom.local>
+References: <48B9360D.7030303@gmail.com>  <1220099043.8426.25.camel@twins>
+	 <1220100034.8426.38.camel@twins>
+	 <1220231286.2669.97.camel@pc10.localdom.local>
+Content-Type: text/plain
+Date: Mon, 01 Sep 2008 06:08:10 +0200
+Message-Id: <1220242090.8426.49.camel@twins>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1220242094_3529P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Date: Mon, 01 Sep 2008 00:08:14 -0400
-Message-ID: <6720.1220242094@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1220242094_3529P
-Content-Type: text/plain; charset=us-ascii
-
-On Sun, 31 Aug 2008 20:51:45 PDT, David Miller said:
-
-> Many trades are made programaticcally using formulas and computer
-> algorithms in response to market activity and other trades of the
-> same security.
+On Mon, 2008-09-01 at 03:08 +0200, hermann pitton wrote:
+> Hi,
 > 
-> There is no typing involved :)
+> Am Samstag, den 30.08.2008, 14:40 +0200 schrieb Peter Zijlstra:
+> > [dropped linux-dvb]
+> > 
+> > On Sat, 2008-08-30 at 14:24 +0200, Peter Zijlstra wrote:
+> > > On Sat, 2008-08-30 at 15:59 +0400, Manu Abraham wrote:
+> > > > Hello Mauro,
+> > > > 
+> > > > Please pull from http://jusst.de/hg/multiproto_api_merge/
+> > > > to merge the following Changesets from the multiproto tree.
+> > 
+> > > > The tree is being pushed out, it might take a little while for the
+> > > > repository to be populated due to the slow connect.
+> > > 
+> > > This must absolutely be the least informative pull request ever!
+> > 
+> > Also, this:
+> > 
+> > On Sat, 2008-08-30 at 14:24 +0200, linux-dvb-owner@linuxtv.org wrote:
+> > > You are not allowed to post to this mailing list, and your message has
+> > > been automatically rejected.  If you think that your messages are
+> > > being rejected in error, contact the mailing list owner at
+> > > linux-dvb-owner@linuxtv.org.
+> > 
+> > Don't do that!
+> > 
+> 
+> I still try to understand it until today too,
+> 
+> but the latter is only a simple notifier, that you are not subscribed
+> and has no further meanings.
 
-Still the same issue - the time delay in getting the ticker tape values
-back, making the decision, and launching the transaction are *way* bigger
-than the packet queueing order.  Think - trading a few billion shares a day,
-if that ticker is even 5 seconds behind, *that* is a much bigger issue than
-what order the transactions happen in...
+I know full well what that is. However,
 
-> If the financial folks say they need this stuff, then unless we're
-> prepared to become experts in financial markets and how the IT stuff
-> for them are designed and run, we might as well just trust them on
-> this one.
+Its rude to cross-post with a subscriber only list. Imagine everybody
+doing it - you'd go mad with these stupid bounces.
 
-The toughest part of systems analysis is getting the user to shut up about
-what they say they need long enough for you to find out what it is they
-are actually trying to do.
-
-Quite frankly, unless somebody *IS* planning to become an expert on how the
-IT stuff for them are designed and run, we *should not* be doing any code
-changes that we don't understand, just because they say so and we should
-trust them...
-
---==_Exmh_1220242094_3529P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFIu2qucC3lWbTT17ARAjxJAJ0ZfkmllygrI6OHbfwiffyUUcRdeACfYtjn
-r5t5NmUR4CWzJ4A+tBY9+PY=
-=9cER
------END PGP SIGNATURE-----
-
---==_Exmh_1220242094_3529P--
