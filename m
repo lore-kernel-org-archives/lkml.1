@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759639AbYIAUeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbYIAUp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759639AbYIAUeS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 16:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYIAUeI
+	id S1758092AbYIAUp2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 16:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbYIAUpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 16:34:08 -0400
-Received: from mail.work.de ([212.12.32.20]:53072 "EHLO mail.work.de"
+	Mon, 1 Sep 2008 16:45:19 -0400
+Received: from www.tglx.de ([62.245.132.106]:54668 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750933AbYIAUeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 16:34:07 -0400
-Message-ID: <48BC51A4.9030903@gmail.com>
-Date: Tue, 02 Sep 2008 00:33:40 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+	id S1751364AbYIAUpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 16:45:18 -0400
+Date: Mon, 1 Sep 2008 22:45:05 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+cc: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alok Kataria <akataria@vmware.com>, Michael Buesch <mb@bu3sch.de>
+Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
+In-Reply-To: <48BC4F3A.9020608@lwfinger.net>
+Message-ID: <alpine.LFD.1.10.0809012226080.3243@apollo.tec.linutronix.de>
+References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net> <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de> <48BC444D.5030601@lwfinger.net>
+ <alpine.LFD.1.10.0809012208010.3243@apollo.tec.linutronix.de> <48BC4F3A.9020608@lwfinger.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: linux-dvb@linuxtv.org, v4l-dvb-maintainer@linuxtv.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: Merge multiproto tree
-References: <48B9360D.7030303@gmail.com> <20080901120601.044ddc30@mchehab.chehab.org>
-In-Reply-To: <20080901120601.044ddc30@mchehab.chehab.org>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab wrote:
-> Hello, Manu,
+On Mon, 1 Sep 2008, Larry Finger wrote:
+> Thomas Gleixner wrote:
+> > On Mon, 1 Sep 2008, Larry Finger wrote:
+> > > The timed sleep is as accurate as I can measure.
+> > > 
+> > > I put in some test prints. The value of pm2 is zero when the else branch
+> > > of
+> > > the "if (hpet)" is entered; however, pm1 is 15768471. When we reach the
+> > > do_div(tsc2, tsc1) statement, tsc2 is zero, which I think means that the
+> > > two
+> > > calls to tsc_read_refs() are returning the same junk value.
+> > 
+> > Ok, so the pmtimer is probably detected later as unusable and disabled.
+> > Please check your logs for: "PM-Timer had inconsistent results:"
 > 
-> On Sat, 30 Aug 2008, Manu Abraham wrote:
+> Booting 2.6.26, the dmesg output has a line that says:
 > 
->>  Hello Mauro,
->>
->>  Please pull from http://jusst.de/hg/multiproto_api_merge/
->>  to merge the following Changesets from the multiproto tree.
+> PM-Timer running at invalid rate: 200% of normal - aborting.
 > 
-> The need for supporting newer DTV protocols increases day by day, since when
-> the first multiproto proposal started to be discussed, about two years ago.
-> 
-> At the end of the last year, Steven send one email to the ML with a different 
-> API proposal. Yet, people decided to wait for your work to be done. People then 
-> pinged you, from time to time, asking about the completion of multiproto. All 
-> the times, your answer were that multiproto were not ready yet for production.
-> 
-> I'm aware that your solution seems to be more code-complete than Steven's 
-> proposal.
+> Amazing that it should be exactly 200%. Why is the CPU running at half speed
+> when the PM-Timer rate is measured?
 
-It's not my personal solution, it was contributed by many people. You
-can read the details from the linux-dvb ML archives.
+The kernel assumes that the PM timer frequency is normal, so it does:
 
-> But the recent activity on the mailing list regarding his idea (and its, 
-> so far, positive feedback) and the fact that I was anyway planning to 
-> have a discussion about the future of the DVB-API at the Linux Plumbers 
-> Conference 2008 are supporting me in my idea of post-poning such a pull to 
-> a point in time shortly after this event.
+    read pm-timer start value, read TSC start value
+    wait for a some time
+    read pm-timer end value, read TSC end value
 
-Something seems to be stinking. There is no reason to legitimately delay
-so much. If the intention is for a merge, please do so within the next
-few days.
+And the TSC frequency is calculated via:
 
-Regards,
-Manu
+                  TSC-End - TSC-Start
+TSC-Frequency =  -------------------- * PM-Frequency
+                   PM-End - PM-Start
 
+So if your PM-Timer runs at the double frequency for reasons only
+known to the Chip Manufacturer the kernel miscalculates the TSC
+frequency by factor 0.5.
 
+Simple rule of three.
+
+Thanks,
+
+	tglx
