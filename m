@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755624AbYIAG0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbYIAG3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755624AbYIAG0Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 02:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYIAG0O
+	id S1754116AbYIAG3d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 02:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYIAG30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 02:26:14 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4480 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753758AbYIAG0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 02:26:13 -0400
-Date: Mon, 1 Sep 2008 08:25:13 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "Leisner, Martin" <Martin.Leisner@xerox.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Subject: Re: FW: [linux-pm] select with timeout across S3
-Message-ID: <20080901062513.GA9851@ucw.cz>
-References: <556445368AFA1C438794ABDA8901891C09639B7A@USA0300MS03.na.xerox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <556445368AFA1C438794ABDA8901891C09639B7A@USA0300MS03.na.xerox.net>
-User-Agent: Mutt/1.5.9i
+	Mon, 1 Sep 2008 02:29:26 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:35987 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490AbYIAG3Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 02:29:25 -0400
+Message-ID: <48BB8B77.7060508@linux.vnet.ibm.com>
+Date: Mon, 01 Sep 2008 11:58:07 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Pavel Emelianov <xemul@openvz.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] res_counter: fix off-by-one bug in setting limit
+References: <48BB78E7.5080001@cn.fujitsu.com>
+In-Reply-To: <48BB78E7.5080001@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> The behavior of linux (in both 2.4.x and 2.6.x) is when the processor
-> sleeps, timeouts on select don't take into account the sleep time,
-> only the run time.
+Li Zefan wrote:
+> I found we can no longer set limit to 0 with 2.6.27-rcX:
+>  # mount -t cgroup -omemory xxx /mnt
+>  # mkdir /mnt/0
+>  # echo 0 > /mnt/0/memory.limit_in_bytes
+>  bash: echo: write error: Device or resource busy
 > 
-> For example, this program should pause for 10 minutes -- however
-> if we go into S3 in the middle its pausing for (10 minutes + time in
-> S3)
+> It turned out 'limit' can't be set to 'usage', which is wrong IMO.
 > 
-> I saw this on both 2.6.20 and 2.6.22...
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-Can you test this on 2.6.27-rc? We did have some fixes in that
-area....
+OK, based on Kamezawa's feedback and looking at the patch
 
-							Pavel
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Balbir
