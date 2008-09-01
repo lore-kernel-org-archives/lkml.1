@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbYIAEHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYIAEIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752541AbYIAEHN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 00:07:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbYIAEG7
+	id S1753211AbYIAEIR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 00:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbYIAEIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 00:06:59 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:58499 "EHLO
+	Mon, 1 Sep 2008 00:08:06 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:60666 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750980AbYIAEG6 (ORCPT
+	with ESMTP id S1750753AbYIAEID (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 00:06:58 -0400
+	Mon, 1 Sep 2008 00:08:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer;
-        b=j9EvDY8hAJJY7xt1DnbIX4Y0TngilnbYftYHkIunn8YVPAGJB57pHZvCofhLiqM+w4
-         RhbnxkIuE8bO/asWAen+vVVi2RaxpKdpYOjY3daLckQBkZdNyxRBU+92fHR/x7oenvcm
-         3gHoM+s7i35E/ZSRzuToIM3Qf7hEiGcKTjq0Y=
+        b=NwtUViSI3IIjN5a3ad6Va2CzXQX5IIG+L6gW55YVoMPw5H2EzBY8d+8lzesCslhyN0
+         zu3n6Ik3ssXH090cvQNQ8JnXna8ZwYMeo+Dn6+8c1XDI4k58hPM05R/esV61SiBjbvxX
+         FJDASAsFDUWir1a1h7tYxkUbMDAqHLY5GG5OU=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
 Subject: [PATCH] x86: move mtrr cpu cap setting early in early_init_xxxx
-Date: Sun, 31 Aug 2008 21:06:00 -0700
-Message-Id: <1220241960-15042-1-git-send-email-yhlu.kernel@gmail.com>
+Date: Sun, 31 Aug 2008 21:07:05 -0700
+Message-Id: <1220242025-15113-1-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -43,6 +44,7 @@ this patch is for 2.6.27
 
 Reported-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
 
 ---
  arch/x86/kernel/cpu/amd.c     |    9 +++++----
