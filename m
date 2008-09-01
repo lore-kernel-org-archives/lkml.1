@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbYIAJle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbYIAJnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758278AbYIAJle (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 05:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbYIAJl0
+	id S1757899AbYIAJnX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 05:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbYIAJnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 05:41:26 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:54150 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751694AbYIAJlZ (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 05:41:25 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Tejun Heo <tj@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: 2.6.27-rc5-mmotm0829 - lvm issues at boot, possible disk_devt() related?
-In-Reply-To: Your message of "Mon, 01 Sep 2008 09:58:40 +0200."
-             <48BBA0B0.5070309@kernel.org>
-From: Valdis.Kletnieks@vt.edu
-References: <4963.1220240176@turing-police.cc.vt.edu>
-            <48BBA0B0.5070309@kernel.org>
+	Mon, 1 Sep 2008 05:43:13 -0400
+Received: from casper.infradead.org ([85.118.1.10]:40248 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753472AbYIAJnL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 05:43:11 -0400
+Subject: Re: [PATCH] UBIFS: fill f_fsid
+From: David Woodhouse <dwmw2@infradead.org>
+To: Artem Bityutskiy <dedekind@infradead.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+In-Reply-To: <1220194366-12731-13-git-send-email-dedekind@infradead.org>
+References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
+	 <1220194366-12731-13-git-send-email-dedekind@infradead.org>
+Content-Type: text/plain
+Date: Mon, 01 Sep 2008 10:43:07 +0100
+Message-Id: <1220262187.2982.58.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1220260557_4797P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Date: Mon, 01 Sep 2008 05:15:58 -0400
-Message-ID: <7045.1220260558@turing-police.cc.vt.edu>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1220260557_4797P
-Content-Type: text/plain; charset=us-ascii
-
-On Mon, 01 Sep 2008 09:58:40 +0200, Tejun Heo said:
-
-> Yeah, I made a mistake converting two of them and devt lookup fails when
-> the disk is zero sized.  Bartlomiej debugged the problem and posted a
-> patch and I followed up with an updated patch.  It should be fine in the
-> next round.
+On Sun, 2008-08-31 at 17:52 +0300, Artem Bityutskiy wrote:
+> From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 > 
->   http://article.gmane.org/gmane.linux.kernel.next/2663
->   http://article.gmane.org/gmane.linux.kernel.next/2676
-> 
-> If you're seeing other problems, please let me know.
+> UBIFS stores 16-bit UUID in the superblock, and it is a good
+> idea to return part of it in 'f_fsid' filed of kstatfs structure.
 
-Confirming - 2.6.27-rc5-mmotm0829 plus the merge of the 2 above patches
-does find the LVM volumes and come up.  Thanks for the clue.. :)
+I think you mean a 16-byte UUID, not 16-bit?
 
---==_Exmh_1220260557_4797P
-Content-Type: application/pgp-signature
+> +	memcpy(&buf->f_fsid, c->uuid, sizeof(__kernel_fsid_t));
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+For btrfs I xor the first 64 bits with the second 64 bits, and put
+_that_ into f_fsid. You're just putting the first 64 bits in and
+ignoring the second 64 bits. Neither is really _better_ than the other;
+you just alter the circumstances in which you get collisions. But I
+suppose we might as well be consistent about how we do it?
 
-iD8DBQFIu7LNcC3lWbTT17ARAk3JAKDWhw+6mgL97kR88bdONijSEwd6YgCgribv
-PeS8S4SHIWwfW1Rb9+b5vUQ=
-=7mPo
------END PGP SIGNATURE-----
+(Actually I XOR in the root object ID for the subvol too, but you don't
+need to worry about that).
 
---==_Exmh_1220260557_4797P--
+Alternatively, there's space in the struct statfs to export a couple
+more uint32_ts, and thus the _whole_ of the uuid. Perhaps we should do
+that?
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+
+
