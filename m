@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbYIAAiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759150AbYIAAin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756667AbYIAAiV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 20:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbYIAAiM
+	id S1759150AbYIAAin (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 20:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756123AbYIAAid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 20:38:12 -0400
-Received: from gate.crashing.org ([63.228.1.57]:36168 "EHLO gate.crashing.org"
+	Sun, 31 Aug 2008 20:38:33 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36183 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752253AbYIAAiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 20:38:12 -0400
-Subject: Re: [PATCH] ibm_newemac: MAL[12]_IER_EVENTS definition: 2x *_OTE
-	-> *_DE
+	id S1752377AbYIAAid (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 20:38:33 -0400
+Subject: Re: [PATCH] prevent powerpc from invoking irq handlers on offline
+	CPUs
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Reply-To: benh@kernel.crashing.org
-To: roel kluin <roel.kluin@gmail.com>
-Cc: david@gibson.dropbear.id.au, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <48B9B218.6060506@gmail.com>
-References: <48B9B218.6060506@gmail.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, jwboyer@linux.vnet.ibm.com,
+       tnt@246tNt.com, grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
+       manfred@colorfullife.com, akpm@linux-foundation.org
+In-Reply-To: <20080831173127.GA15296@linux.vnet.ibm.com>
+References: <20080831173127.GA15296@linux.vnet.ibm.com>
 Content-Type: text/plain
-Date: Mon, 01 Sep 2008 10:30:47 +1000
-Message-Id: <1220229047.13162.405.camel@pasglop>
+Date: Mon, 01 Sep 2008 10:34:44 +1000
+Message-Id: <1220229284.13162.411.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -28,38 +29,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-08-30 at 22:48 +0200, roel kluin wrote:
-> MAL[12]_IER_EVENTS definitions have MAL_IER_OTE twice
-> but lack MAL_IER_DE
+On Sun, 2008-08-31 at 10:31 -0700, Paul E. McKenney wrote:
+> Make powerpc refrain from clearing a given to-be-offlined CPU's bit in the
+> cpu_online_mask until it has processed pending irqs.  This change
+> prevents other CPUs from being blindsided by an apparently offline CPU
+> nevertheless changing globally visible state.
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-
-Thanks.
-
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 > ---
->  drivers/net/ibm_newemac/mal.h |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+
+Sounds reasonable... the only possible worry here is if somebody tries
+an IPI ... The IPI code will and the target CPU mask with the online
+map, so it may try to send to the to-be-offlined CPU and timeout, no ?
+
+Cheers,
+Ben.
+
+>  smp.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/net/ibm_newemac/mal.h b/drivers/net/ibm_newemac/mal.h
-> index eaa7262..717dc38 100644
-> --- a/drivers/net/ibm_newemac/mal.h
-> +++ b/drivers/net/ibm_newemac/mal.h
-> @@ -102,7 +102,7 @@
->  /* MAL V1 IER bits */
->  #define   MAL1_IER_NWE		0x00000008
->  #define   MAL1_IER_SOC_EVENTS	MAL1_IER_NWE
-> -#define   MAL1_IER_EVENTS	(MAL1_IER_SOC_EVENTS | MAL_IER_OTE | \
-> +#define   MAL1_IER_EVENTS	(MAL1_IER_SOC_EVENTS | MAL_IER_DE | \
->  				 MAL_IER_OTE | MAL_IER_OE | MAL_IER_PE)
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 5337ca7..1fedd7d 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -250,11 +250,11 @@ int generic_cpu_disable(void)
+>  	if (cpu == boot_cpuid)
+>  		return -EBUSY;
 >  
->  /* MAL V2 IER bits */
-> @@ -110,7 +110,7 @@
->  #define   MAL2_IER_PRE		0x00000040
->  #define   MAL2_IER_PWE		0x00000020
->  #define   MAL2_IER_SOC_EVENTS	(MAL2_IER_PT | MAL2_IER_PRE | MAL2_IER_PWE)
-> -#define   MAL2_IER_EVENTS	(MAL2_IER_SOC_EVENTS | MAL_IER_OTE | \
-> +#define   MAL2_IER_EVENTS	(MAL2_IER_SOC_EVENTS | MAL_IER_DE | \
->  				 MAL_IER_OTE | MAL_IER_OE | MAL_IER_PE)
+> -	cpu_clear(cpu, cpu_online_map);
+>  #ifdef CONFIG_PPC64
+>  	vdso_data->processorCount--;
+>  	fixup_irqs(cpu_online_map);
+>  #endif
+> +	cpu_clear(cpu, cpu_online_map);
+>  	return 0;
+>  }
 >  
-> 
 
