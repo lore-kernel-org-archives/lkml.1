@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752474AbYIAXMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752813AbYIAXPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752474AbYIAXMu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 19:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908AbYIAXMm
+	id S1752813AbYIAXPY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 19:15:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbYIAXPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 19:12:42 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:46448 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbYIAXMl (ORCPT
+	Mon, 1 Sep 2008 19:15:11 -0400
+Received: from casper.infradead.org ([85.118.1.10]:40528 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751457AbYIAXPK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 19:12:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vpNYEXFowfEYxbiMdmYy1caHbeTNefK6PYLlAc+2gBO9rDU/4rmkuz9RVgwwc0TO5j
-         V+oSy7N+cYOonlib/uToHha6EG02NoEho1R/5StpkJuZ20iyRd0G8BwqWQFnRXzdE5Mf
-         bkerp4uMjv3Rta13Jr7TuLluxSbhdP0AdNgFU=
-Date: Tue, 2 Sep 2008 03:14:19 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       torvalds@linux-foundation.org
-Subject: Re: [path] don't diff generated firmware files
-Message-ID: <20080901231419.GA5602@x200.localdomain>
-References: <20080901150951.5cba4dc7@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080901150951.5cba4dc7@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 1 Sep 2008 19:15:10 -0400
+Date: Mon, 1 Sep 2008 16:03:43 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@linux-foundation.org, dwmw2@infradead.org, drepper@redhat.com,
+       mingo@elte.hu, tglx@tglx.de
+Subject: [PATCH 0/13] Turn hrtimers into a range capable timer
+Message-ID: <20080901160343.75a89ec9@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 01, 2008 at 03:09:51PM -0700, Arjan van de Ven wrote:
-> With the new firmware infrastructure in 2.6.27, some files are generated and shouldn't be
-> diffed; add these 2 to the "dontdiff" file
+This series is a follow-on the the nanosecond select/poll series.
 
-> --- linux.trees.git/Documentation/dontdiff
-> +++ linux.trees.git/Documentation/dontdiff
-> @@ -5,6 +5,8 @@
->  *.css
->  *.dvi
->  *.eps
-> +*.fw.gen.S
-> +*.fw
+The goal of this series is to introduce the capability into hrtimers to
+deal with a "range" rather than a specific point in time.
+(Several people discussed this recently, but we've been toying with the
+concept for a while)
 
-Dontdiff is obsoleted because of .gitignore and should probably be auto-generated
-from them.
+In addition, in the last patch of the series, the patches make select()
+and poll() use these range timers with a standard "slack" that comes
+from
+1) a per process task_struct value
+2) a "the longer the sleep the more the slack" function that Linus wrote
 
