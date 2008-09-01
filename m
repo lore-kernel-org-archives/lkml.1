@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbYIAJnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756371AbYIAJoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757899AbYIAJnX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 05:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbYIAJnN
+	id S1756371AbYIAJoA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 05:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbYIAJnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 05:43:13 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40248 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753472AbYIAJnL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 05:43:11 -0400
-Subject: Re: [PATCH] UBIFS: fill f_fsid
-From: David Woodhouse <dwmw2@infradead.org>
-To: Artem Bityutskiy <dedekind@infradead.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-In-Reply-To: <1220194366-12731-13-git-send-email-dedekind@infradead.org>
-References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
-	 <1220194366-12731-13-git-send-email-dedekind@infradead.org>
-Content-Type: text/plain
-Date: Mon, 01 Sep 2008 10:43:07 +0100
-Message-Id: <1220262187.2982.58.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Mon, 1 Sep 2008 05:43:52 -0400
+Received: from sacred.ru ([62.205.161.221]:37404 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753801AbYIAJnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 05:43:51 -0400
+Message-ID: <48BBB936.5040002@openvz.org>
+Date: Mon, 01 Sep 2008 13:43:18 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: balbir@linux.vnet.ibm.com
+CC: Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [RFC][PATCH] Remove cgroup member from struct page
+References: <20080831174756.GA25790@balbir.in.ibm.com> <48BBAFDD.1000902@openvz.org> <48BBB326.3080505@linux.vnet.ibm.com>
+In-Reply-To: <48BBB326.3080505@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 01 Sep 2008 13:43:18 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-08-31 at 17:52 +0300, Artem Bityutskiy wrote:
-> From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Balbir Singh wrote:
+> Pavel Emelyanov wrote:
+>> Balbir Singh wrote:
+>>> This is a rewrite of a patch I had written long back to remove struct page
+>>> (I shared the patches with Kamezawa, but never posted them anywhere else).
+>>> I spent the weekend, cleaning them up for 2.6.27-rc5-mmotm (29 Aug 2008).
+>>>
+>>> I've tested the patches on an x86_64 box, I've run a simple test running
+>>> under the memory control group and the same test running concurrently under
+>>> two different groups (and creating pressure within their groups). I've also
+>>> compiled the patch with CGROUP_MEM_RES_CTLR turned off.
+>>>
+>>> Advantages of the patch
+>>>
+>>> 1. It removes the extra pointer in struct page
+>>>
+>>> Disadvantages
+>>>
+>>> 1. It adds an additional lock structure to struct page_cgroup
+>>> 2. Radix tree lookup is not an O(1) operation, once the page is known
+>>>    getting to the page_cgroup (pc) is a little more expensive now.
+>> And besides, we also have a global lock, that protects even lookup
+>> from this structure. Won't this affect us too much on bug-smp nodes?
 > 
-> UBIFS stores 16-bit UUID in the superblock, and it is a good
-> idea to return part of it in 'f_fsid' filed of kstatfs structure.
+> Sorry, not sure I understand. The lookup is done under RCU. Updates are done
+> using the global lock. It should not be hard to make the radix tree per node
+> later (as an iterative refinement).
+> 
 
-I think you mean a 16-byte UUID, not 16-bit?
-
-> +	memcpy(&buf->f_fsid, c->uuid, sizeof(__kernel_fsid_t));
-
-For btrfs I xor the first 64 bits with the second 64 bits, and put
-_that_ into f_fsid. You're just putting the first 64 bits in and
-ignoring the second 64 bits. Neither is really _better_ than the other;
-you just alter the circumstances in which you get collisions. But I
-suppose we might as well be consistent about how we do it?
-
-(Actually I XOR in the root object ID for the subvol too, but you don't
-need to worry about that).
-
-Alternatively, there's space in the struct statfs to export a couple
-more uint32_ts, and thus the _whole_ of the uuid. Perhaps we should do
-that?
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
-
-
+OOPS, indeed. Sorry for the confusion, then. :)
