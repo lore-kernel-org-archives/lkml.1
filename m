@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbYIALBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756417AbYIALCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756606AbYIALBi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 07:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984AbYIALBa
+	id S1756417AbYIALCx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 07:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbYIALCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 07:01:30 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58775 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbYIALB3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 07:01:29 -0400
-Subject: Re: [PATCH] [MTD] mtdchar.c: Fix regression in MEMGETREGIONINFO
-	ioctl()
-From: David Woodhouse <dwmw2@infradead.org>
-To: Zev Weiss <zevweiss@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Rodolfo Giometti <giometti@enneenne.com>
-In-Reply-To: <48B4D884.5040204@gmail.com>
-References: <48ABCC0B.40607@gmail.com>
-	 <20080822153451.bb79bd1f.akpm@linux-foundation.org>
-	 <48AFC5ED.50005@gmail.com>
-	 <20080823222707.2fb972b5.akpm@linux-foundation.org>
-	 <48B13F88.3080306@gmail.com>  <48B4D884.5040204@gmail.com>
-Content-Type: text/plain
-Date: Mon, 01 Sep 2008 12:01:24 +0100
-Message-Id: <1220266884.2982.62.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Mon, 1 Sep 2008 07:02:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37033 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750839AbYIALCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 07:02:45 -0400
+Message-ID: <48BBCB62.4040309@kernel.org>
+Date: Mon, 01 Sep 2008 13:00:50 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       dm-devel@redhat.com
+Subject: [PATCH #blk-for-2.8] init: DEBUG_BLOCK_EXT_DEVT requires explicit
+ root= param
+References: <20080827183453.eb651f50.sfr@canb.auug.org.au> <200808292123.07246.bzolnier@gmail.com> <48B90E81.5060905@kernel.org> <200808311538.38918.bzolnier@gmail.com>
+In-Reply-To: <200808311538.38918.bzolnier@gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 01 Sep 2008 11:01:58 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-26 at 21:31 -0700, Zev Weiss wrote:
-> Well, for what little it's probably worth, I've now tested this patch, with no 
-> resulting surprises (seems to work fine for me).  Though I see now that, much to 
-> my chagrin, something in my email chain seems to have spacified my code.  If 
-> there's any need I can resend appropriately.
+DEBUG_BLOCK_EXT_DEVT shuffles SCSI and IDE device numbers and root
+device number set using rdev become meaningless.  Root devices should
+be explicitly specified using textual names.  Warn about it if root
+can't be found and DEBUG_BLOCK_EXT_DEVT is enabled.
 
-Please. With a signed-off-by.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+There are other ways to specify device numbers directly (ie. root=8:0)
+and DEBUG_BLOCK_EXT_DEVT being a debug option I don't think it
+warrants a complex logic, so I just added simple warning message.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+ init/do_mounts.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-
-
+Index: work/init/do_mounts.c
+===================================================================
+--- work.orig/init/do_mounts.c
++++ work/init/do_mounts.c
+@@ -263,6 +263,10 @@ retry:
+ 		printk("Please append a correct \"root=\" boot option; here are the available partitions:\n");
+ 
+ 		printk_all_partitions();
++#ifdef CONFIG_DEBUG_BLOCK_EXT_DEVT
++		printk("DEBUG_BLOCK_EXT_DEVT is enabled, you need to specify "
++		       "explicit textual name for \"root=\" boot option.\n");
++#endif
+ 		panic("VFS: Unable to mount root fs on %s", b);
+ 	}
+ 
