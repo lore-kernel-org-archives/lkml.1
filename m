@@ -1,109 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbYIANXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752238AbYIAN1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbYIANXu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 09:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYIANXj
+	id S1752238AbYIAN1S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 09:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750762AbYIAN1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 09:23:39 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:52906 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751099AbYIANXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 09:23:37 -0400
-Date: Mon, 1 Sep 2008 15:23:25 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Julien Brunel <brunel@diku.dk>, perex@perex.cz,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] sound/arm: Bad NULL test
-In-Reply-To: <s5hod3811gf.wl%tiwai@suse.de>
-Message-ID: <Pine.LNX.4.64.0809011521230.9596@pc-004.diku.dk>
-References: <200809011059.54939.brunel@diku.dk> <s5hsksk12vh.wl%tiwai@suse.de>
- <Pine.LNX.4.64.0809011428010.9596@pc-004.diku.dk> <s5hod3811gf.wl%tiwai@suse.de>
+	Mon, 1 Sep 2008 09:27:04 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:15503 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750800AbYIAN1C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 09:27:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Eh38LEn7egJLH7EDgvZUVbdMUWI0kRy8ybq5Im8CVSSsgWCSV7lUvpLUG2Nup8zcId
+         hCkMeuwSOu+ound/DytNf50gYe5WRvf6jaCkiJz2VDNFM/x/5H6lFZxgxddJK9gWMIpk
+         ipGY8tq1BloQNdhndtavlA83eziD8e392+C3M=
+Message-ID: <a32f33a40809010627m1a030307y84d54182203c6efd@mail.gmail.com>
+Date: Mon, 1 Sep 2008 15:27:01 +0200
+From: "Ivo Van Doorn" <ivdoorn@gmail.com>
+To: "Boaz Harrosh" <bharrosh@panasas.com>
+Subject: Re: [PATCH 4/5] rt2x00: Compiler warning unmasked by fix of BUILD_BUG_ON
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Rusty Russell" <rusty@rustcorp.com.au>,
+       "David S. Miller" <davem@davemloft.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Theodore Tso" <tytso@mit.edu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Jan Beulich" <jbeulich@novell.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <48BBEC6C.1050301@panasas.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48BBE77D.7070007@panasas.com> <48BBEC6C.1050301@panasas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Sep 2008, Takashi Iwai wrote:
+On Mon, Sep 1, 2008 at 3:21 PM, Boaz Harrosh <bharrosh@panasas.com> wrote:
+>
+> A "Set" of the sign-bit in an "&" operation causes a compiler warning.
+> Make calculations unsigned.
+>
+> [ The warning was masked by the use of (void)() cast in the old
+>  BUILD_BUG_ON() ]
+>
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> TO: Ivo van Doorn <IvDoorn@gmail.com>
+> TO: John W. Linville <linville@tuxdriver.com>
+> CC: Ingo Molnar <mingo@elte.hu>
+> CC: Rusty Russell <rusty@rustcorp.com.au>
+> ---
+>  drivers/net/wireless/rt2x00/rt2x00reg.h |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/wireless/rt2x00/rt2x00reg.h b/drivers/net/wireless/rt2x00/rt2x00reg.h
+> index 7e88ce5..c0e8706 100644
+> --- a/drivers/net/wireless/rt2x00/rt2x00reg.h
+> +++ b/drivers/net/wireless/rt2x00/rt2x00reg.h
+> @@ -134,8 +134,8 @@ struct rt2x00_field32 {
+>  * Note that we cannot use the is_power_of_2() function since this
+>  * check must be done at compile-time.
+>  */
+> -#define is_power_of_two(x)     ( !((x) & ((x)-1)) )
+> -#define low_bit_mask(x)                ( ((x)-1) & ~(x) )
+> +#define is_power_of_two(x)     ( !((unsigned)(x) & ((x)-1)) )
+> +#define low_bit_mask(x)                ( ((unsigned)(x)-1) & ~(x) )
+>  #define is_valid_mask(x)       is_power_of_two(1 + (x) + low_bit_mask(x))
 
-> At Mon, 1 Sep 2008 14:30:29 +0200 (CEST),
-> Julia Lawall wrote:
-> > 
-> > On Mon, 1 Sep 2008, Takashi Iwai wrote:
-> > 
-> > > At Mon, 1 Sep 2008 10:59:54 +0200,
-> > > Julien Brunel wrote:
-> > > > 
-> > > > From: Julien Brunel <brunel@diku.dk>
-> > > > 
-> > > > In case of error, the function aaci_init_card returns an ERR pointer,
-> > > > but never returns a NULL pointer. We have noticed a bad NULL test,
-> > > > which comes after a call to this function. Rather than doing an IS_ERR
-> > > > test, we suggest to duplicate the label out: one label for the case where
-> > > > aaci_init_card returns a valid pointer, and another for the case where
-> > > > aaci_init_card returns an ERR pointer.
-> > > > 
-> > > > The semantic match that finds this problem is as follows:
-> > > > (http://www.emn.fr/x-info/coccinelle/)
-> > > > 
-> > > > // <smpl>
-> > > > @match_bad_null_test@
-> > > > expression x, E;
-> > > > statement S1,S2;
-> > > > @@
-> > > > x =  aaci_init_card(...)
-> > > > ... when != x = E
-> > > > *  if (x != NULL) 
-> > > > S1 else S2
-> > > > // </smpl>
-> > > > 
-> > > > Signed-off-by:  Julien Brunel <brunel@diku.dk>
-> > > > Signed-off-by:  Julia Lawall <julia@diku.dk>
-> > > 
-> > > The fix below is simpler.  Could you check whether it's OK?
-> > 
-> > It is indeed simpler, and looks correct, but it seems a little odd to take 
-> > a value that can never be NULL and set it to NULL just to avoid changing a 
-> > test.  Another alternative would be to leave the value as it is, and put 
-> > an IS_ERR test at the out label.  But the value of the test is statically 
-> > determined by the goto that reaches it, so the original patch proposes 
-> > just getting rid of the test completely.
-> 
-> OTOH, double labels are pretty ugly and hard to follow.
-> Maybe the patch like below is a bit cleaner.
+Could the patch not become a lot easier (and perhaps cleaner) when the
+only change is:
+#define is_valid_mask(x)       is_power_of_two(1 + (x) +
+low_bit_mask((unsigned)x))
+that way all instances of x will be cast to unsigned...
 
-OK, this seems like a reasonable compromise.  The function aaci_init_card 
-is indeed only used in one place, and -ENOMEM is the only possible error 
-value.  So perhaps it is just as easy to create that where it is called 
-rather than in aaci_init_card itself.
-
-julia
-
-> Takashi
-> 
-> diff --git a/sound/arm/aaci.c b/sound/arm/aaci.c
-> index b0a4744..89096e8 100644
-> --- a/sound/arm/aaci.c
-> +++ b/sound/arm/aaci.c
-> @@ -999,7 +999,7 @@ static struct aaci * __devinit aaci_init_card(struct amba_device *dev)
->  	card = snd_card_new(SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1,
->  			    THIS_MODULE, sizeof(struct aaci));
->  	if (card == NULL)
-> -		return ERR_PTR(-ENOMEM);
-> +		return NULL;
->  
->  	card->private_free = aaci_free_card;
->  
-> @@ -1083,8 +1083,8 @@ static int __devinit aaci_probe(struct amba_device *dev, void *id)
->  		return ret;
->  
->  	aaci = aaci_init_card(dev);
-> -	if (IS_ERR(aaci)) {
-> -		ret = PTR_ERR(aaci);
-> +	if (!aaci) {
-> +		ret = -ENOMEM;
->  		goto out;
->  	}
->  
-> 
+Ivo
