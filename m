@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759468AbYIALou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759613AbYIALr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759468AbYIALou (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 07:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbYIALom
+	id S1759613AbYIALr5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 07:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbYIALrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 07:44:42 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36168 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752538AbYIALol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 07:44:41 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [Bug #11438] Upcoming oops in lockdep
-Date: Mon, 1 Sep 2008 13:48:29 +0200
-User-Agent: KMail/1.9.9
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <q6jBvyFdWbL.A.K4C.fhbuIB@albercik> <1220132205.8426.40.camel@twins> <20080831210115.4fdff99f@infradead.org>
-In-Reply-To: <20080831210115.4fdff99f@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809011348.29917.rjw@sisk.pl>
+	Mon, 1 Sep 2008 07:47:42 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:38703 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751733AbYIALri convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 07:47:38 -0400
+Subject: Re: [PATCH] UBIFS: fill f_fsid
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+In-Reply-To: <1220268480.2982.68.camel@pmac.infradead.org>
+References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
+	 <1220194366-12731-13-git-send-email-dedekind@infradead.org>
+	 <1220262187.2982.58.camel@pmac.infradead.org>
+	 <1220267810.4036.24.camel@sauron>
+	 <1220268480.2982.68.camel@pmac.infradead.org>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 01 Sep 2008 14:43:56 +0300
+Message-Id: <1220269436.4036.29.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 01 Sep 2008 11:47:21.0300 (UTC) FILETIME=[7E3E3140:01C90C28]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 1 of September 2008, Arjan van de Ven wrote:
-> On Sat, 30 Aug 2008 23:36:45 +0200
-> Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > On Sat, 2008-08-30 at 21:50 +0200, Rafael J. Wysocki wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.26.  Please verify if it still should be listed and let me
-> > > know (either way).
-> > > 
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11438
-> > > Subject		: Upcoming oops in lockdep
-> > > Submitter	: Arjan van de Ven <arjan@infradead.org>
-> > > Date		: 2008-08-23 20:49 (8 days old)
-> > > References	:
-> > > http://marc.info/?l=linux-kernel&m=121952463613140&w=4
-> > > http://www.kerneloops.org/searchweek.php?search=mark_lock
-> > > Handled-By	: Peter Zijlstra <peterz@infradead.org>
+On Mon, 2008-09-01 at 12:28 +0100, David Woodhouse wrote:
+> > > Alternatively, there's space in the struct statfs to export a couple
+> > > more uint32_ts, and thus the _whole_ of the uuid. Perhaps we should do
+> > > that?
 > > 
-> > as far as I'm concerned this has nothing to do with lockdep
-> > 
-> >
+> > You mean f_spare? I do not think any application would use it so I doubt
+> > it is good idea to use it.
 > 
-> yeah the pattern increasing looks like a fedora special; eg the fedora
-> utrace patches seem to be utter bust. As long as we keep utrace out of
-> mainline we're fine ;-)
+> Well, it wouldn't be called f_spare any more, and applications would
+> know that it contains the rest of the UUID if it's non-zero.
 
-Should I close it, then?
+May be, but there are only 5 bytes left. But why would you need more
+UUID bytes?
 
-Rafael
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
