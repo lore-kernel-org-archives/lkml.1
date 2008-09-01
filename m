@@ -1,60 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbYIADVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbYIAD2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753986AbYIADVf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 23:21:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYIADV1
+	id S1753898AbYIAD2p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 23:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYIAD2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 23:21:27 -0400
-Received: from gate.crashing.org ([63.228.1.57]:45641 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750878AbYIADV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 23:21:27 -0400
-Subject: Re: [PATCH] prevent powerpc from invoking irq handlers on offline
-	CPUs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, jwboyer@linux.vnet.ibm.com,
-       tnt@246tNt.com, grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-       manfred@colorfullife.com, akpm@linux-foundation.org
-In-Reply-To: <20080901020640.GM7015@linux.vnet.ibm.com>
-References: <20080831173127.GA15296@linux.vnet.ibm.com>
-	 <1220229284.13162.411.camel@pasglop>
-	 <20080901020640.GM7015@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Mon, 01 Sep 2008 13:14:40 +1000
-Message-Id: <1220238880.13010.4.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sun, 31 Aug 2008 23:28:36 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:52622 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750983AbYIAD2f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 23:28:35 -0400
+Message-ID: <48BB6160.4070904@linux.vnet.ibm.com>
+Date: Mon, 01 Sep 2008 08:58:32 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>
+Subject: Re: [RFC][PATCH] Remove cgroup member from struct page
+References: <20080831174756.GA25790@balbir.in.ibm.com> <20080901090102.46b75141.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080901090102.46b75141.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-08-31 at 19:06 -0700, Paul E. McKenney wrote:
-> On Mon, Sep 01, 2008 at 10:34:44AM +1000, Benjamin Herrenschmidt wrote:
-> > On Sun, 2008-08-31 at 10:31 -0700, Paul E. McKenney wrote:
-> > > Make powerpc refrain from clearing a given to-be-offlined CPU's bit in the
-> > > cpu_online_mask until it has processed pending irqs.  This change
-> > > prevents other CPUs from being blindsided by an apparently offline CPU
-> > > nevertheless changing globally visible state.
-> > > 
-> > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > ---
-> > 
-> > Sounds reasonable... the only possible worry here is if somebody tries
-> > an IPI ... The IPI code will and the target CPU mask with the online
-> > map, so it may try to send to the to-be-offlined CPU and timeout, no ?
+KAMEZAWA Hiroyuki wrote:
+> On Sun, 31 Aug 2008 23:17:56 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> OK.  Do we need separate IPI and online masks?
+>> This is a rewrite of a patch I had written long back to remove struct page
+>> (I shared the patches with Kamezawa, but never posted them anywhere else).
+>> I spent the weekend, cleaning them up for 2.6.27-rc5-mmotm (29 Aug 2008).
+>>
+> It's just because I think there is no strong requirements for 64bit count/mapcount.
+> There is no ZERO_PAGE() for ANON (by Nick Piggin. I add him to CC.)
+> (shmem still use it but impact is not big.)
+> 
 
-Shouldn't we already have routed all interrupts to other CPUs anyway ?
+I understand the comment, but not it's context. Are you suggesting that the
+sizeof _count and _mapcount can be reduced? Hence the impact of having a member
+in struct page is not all that large? I think the patch is definitely very
+important for 32 bit systems.
 
-IE. The affinity of all interrupts should have been updated. So the
-only thing we're going to get here are possibly IPIs and decrementer, 
-I don't see it being a big deal making sure we test we are online when
-receiving it.
+>> I've tested the patches on an x86_64 box, I've run a simple test running
+>> under the memory control group and the same test running concurrently under
+>> two different groups (and creating pressure within their groups). I've also
+>> compiled the patch with CGROUP_MEM_RES_CTLR turned off.
+>>
+>> Advantages of the patch
+>>
+>> 1. It removes the extra pointer in struct page
+>>
+>> Disadvantages
+>>
+>> 1. It adds an additional lock structure to struct page_cgroup
+>> 2. Radix tree lookup is not an O(1) operation, once the page is known
+>>    getting to the page_cgroup (pc) is a little more expensive now.
+>>
+>> This is an initial RFC for comments
+>>
+>> TODOs
+>>
+>> 1. Test the page migration changes
+>> 2. Test the performance impact of the patch/approach
+>>
+>> Comments/Reviews?
+>>
+> plz wait until lockless page cgroup....
+> 
 
-Ben.
+That depends, if we can get the lockless page cgroup done quickly, I don't mind
+waiting, but if it is going to take longer, I would rather push these changes
+in. There should not be too much overhead in porting lockless page cgroup patch
+on top of this (remove pc->lock and use pc->flags). I'll help out, so as to
+avoid wastage of your effort.
 
+> And If you don't support radix-tree-delete(), pre-allocating all at boot is better.
+> 
 
+We do use radix-tree-delete() in the code, please see below. Pre-allocating has
+the disadvantage that we will pre-allocate even for kernel pages, etc.
+
+> BTW, why pc->lock is necessary ? It increases size of struct page_cgroup and reduce 
+> the advantege of your patch's to half (8bytes -> 4bytes).
+> 
+
+Yes, I've mentioned that as a disadvantage. Are you suggesting that with
+lockless page cgroup we won't need pc->lock?
+
+> Thanks,
+> -Kame
+
+-- 
+	Balbir
