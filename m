@@ -1,40 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbYIAGZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755099AbYIAGZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753019AbYIAGZU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 02:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbYIAGZI
+	id S1755099AbYIAGZy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 02:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbYIAGZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 02:25:08 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:35727 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750757AbYIAGZG (ORCPT
+	Mon, 1 Sep 2008 02:25:45 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:48267 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751016AbYIAGZo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 02:25:06 -0400
-X-IronPort-AV: E=Sophos;i="4.32,305,1217808000"; 
-   d="scan'208";a="79569669"
-From: Roland Dreier <rdreier@cisco.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: C language lawyers needed
-References: <adaod3ef82e.fsf@cisco.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Sun, 31 Aug 2008 23:25:04 -0700
-In-Reply-To: <adaod3ef82e.fsf@cisco.com> (Roland Dreier's message of "Wed, 27
-	Aug 2008 14:43:05 -0700")
-Message-ID: <adabpz8idrz.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Mon, 1 Sep 2008 02:25:44 -0400
+Message-ID: <48BB8AE3.7070704@linux.vnet.ibm.com>
+Date: Mon, 01 Sep 2008 11:55:39 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 01 Sep 2008 06:25:04.0363 (UTC) FILETIME=[7887C3B0:01C90BFB]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>
+Subject: Re: [RFC][PATCH] Remove cgroup member from struct page
+References: <20080831174756.GA25790@balbir.in.ibm.com> <20080901090102.46b75141.kamezawa.hiroyu@jp.fujitsu.com> <48BB6160.4070904@linux.vnet.ibm.com> <20080901130351.f005d5b6.kamezawa.hiroyu@jp.fujitsu.com> <48BB8716.5090805@linux.vnet.ibm.com> <20080901152424.d9adfe47.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080901152424.d9adfe47.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- >     drivers/net/mlx4/mcg.c:217: warning: integer overflow in expression
+KAMEZAWA Hiroyuki wrote:
+> On Mon, 01 Sep 2008 11:39:26 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> 
+>>> The development of lockless-page_cgroup is not stalled. I'm just waiting for
+>>> my 8cpu box comes back from maintainance...
+>>> If you want to see, I'll post v3 with brief result on small (2cpu) box.
+>>>
+>> I understand and I am not pushing you to completing it, but at the same time I
+>> don't want to queue up behind it for long. I suspect the cost of porting
+>> lockless page cache on top of my patches should not be high, but I'll never know
+>> till I try :)
+>>
+> My point is, your patch adds big lock. Then, I don't have to do meaningless effort
+> to reduce lock.
 
-In case anyone cares, this was indeed a gcc bug
-(http://gcc.gnu.org/bugzilla/show_bug.cgi?id=37261) and it is apparently
-already fixed in the upstream gcc repository.
+My patch does not add a big lock, it moves the lock from struct
+page->page_cgroup to struct page_cgroup. The other locking added is the locking
+overhead associated with inserting entries into the radix tree, true. I ran
+oprofile along with lockdep and lockstats enabled on my patches. I don't see the
+radix_tree or page_cgroup->lock showing up, I see __slab_free and __slab_alloc
+showing up. I'll poke a little further.
 
- - R.
+Please don't let my patch stop you, we'll integrate the best of both worlds and
+what is good for memcg.
+
+-- 
+	Balbir
