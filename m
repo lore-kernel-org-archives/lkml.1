@@ -1,82 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbYIACIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbYIACRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbYIACIk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 22:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbYIACIb
+	id S1756912AbYIACRa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 22:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYIACRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 22:08:31 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:41710 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752054AbYIACIa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 22:08:30 -0400
-X-Sasl-enc: BOdRDOzJQvqb5OBYmn25NoKHdje8+mErlRdnh6LO3tYh 1220234906
-Date: Sun, 31 Aug 2008 23:08:21 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Elias Oltmanns <eo@nebensachen.de>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Tejun Heo <htejun@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] libata: Implement disk shock protection support
-Message-ID: <20080901020821.GA12532@khazad-dum.debian.net>
-References: <87wshzplvk.fsf@denkblock.local> <87ej45mlp3.fsf@denkblock.local> <48BA969C.4060207@gmail.com> <200808311632.04584.bzolnier@gmail.com> <87wshxkt9c.fsf@denkblock.local>
+	Sun, 31 Aug 2008 22:17:19 -0400
+Received: from mail.suse.de ([195.135.220.2]:60112 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751912AbYIACRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 22:17:18 -0400
+From: Neil Brown <neilb@suse.de>
+To: Alistair John Strachan <alistair@devzero.co.uk>
+Date: Mon, 1 Sep 2008 12:17:06 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87wshxkt9c.fsf@denkblock.local>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18619.20642.697691.541752@notabene.brown>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: md (regression): reboot/shutdown hangs
+In-Reply-To: message from Alistair John Strachan on Thursday August 28
+References: <200808282005.09416.alistair@devzero.co.uk>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 31 Aug 2008, Elias Oltmanns wrote:
-> Admittedly, I don't know very much about it myself but I seem to
-> remember that there are other vendors now shipping similar technology.
+On Thursday August 28, alistair@devzero.co.uk wrote:
+> Hi Neil,
+> 
+> Commit 2b25000bf5157c28d8591f03f0575248a8cbd900 ("Restore force switch of md 
+> array to readonly at reboot time.") causes a reboot/shutdown to hang 
+> indefinitely on my box. Reverting this single commit makes the problem go 
+> away. It was first released with 2.6.27-rc3, I believe, and so this is a 
+> regression vs 2.6.26 (Rafael CCed).
+> 
+> I think the problem might be because my rootfs is on a RAID5 and my distro 
+> fails to stop it completely before halt/reboot.
+> 
+> Please let me know if there's any more information you need from me.
 
-Apple, HP.
+Thanks for the report.
 
-> Even in the Thinkpad case I don't *know* that all relevant models have
-> HD and optical drives on seperate ports although I'm willing to believe
-> it if somebody tells me so.
+I'm having trouble figuring out why this ever worked.  I must be
+missing something.
 
-All the models I know of have them on separate ports/channels.
+I can only reproduce a hang when calling reboot when a sync is needed.
+I dirty a file and then 
+   reboot -f -n
 
-> Anyway, I've added Henrique to the Cc: list since he knows far more
-> about Thinkpads than I do and possibly about other notebooks too.
+This will always have blocked except between the commit that you
+mention and an earlier commit which broke something which that commit
+was fixing.
 
-I know Apple does it, and they need exactly the same queue freeze + ATA
-unload immediate to have APS working.  But they will want both a kernel
-interface (just using the firmware) and the userspace interface (to use
-something better than whatever is in Apple's firmware).
+This is because the reboot calls do_md_stop while holding the mddev
+lock, and do_md_stop calls invalidate_partition.  If this finds any dirty
+data to flush, the writeout will (most likely) need to mark the
+superblock as dirty first, which cannot happen while the mddev lock is
+held.  So we get a deadlock.
 
-> There is a lot to be said for the per-port solution as far as libata is
-> concerned. For the sake of consistency I tried to mimic the same
-> behaviour in ide but I agree that it makes things more complex there.
+The call to invalidate_partition should not be needed in any case except a
+reboot, and in that case you really don't want it (if you wanted to
+sync, you would have done that first).
+So I plan to remove it.  With it gone I cannot reproduce a hang.  If
+you can, I would love to hear about it.
 
-Frankly?  I doubt anybody really cares about the old ide driver for this
-particular functionality.
+Thanks,
+NeilBrown
 
-How many systems have an accelerometer, are portable enough to need APS, and
-have a SATA or PATA bridge that is not better driven by libata instead of
-ide?
-
-> > Which also brings again the question whether it is really the best to
-> > use user-space solution instead of kernel thread?
-
-Choice is good here.  A really good imminent-shock predictor needs to do
-some fairly decent ammount of digital signal processing (in 2d or 3d,
-depending on the sensor).  That stuff is a lot easier to do if you have
-floating point math available to you, for example.  That means userspace.
-
-And some firmware can tell you "please do APS NOW!", so, for those you want
-a kernel interface.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+diff --git a/drivers/md/md.c b/drivers/md/md.c
+index 8cfadc5..4790c83 100644
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -3841,8 +3841,6 @@ static int do_md_stop(mddev_t * mddev, int mode, int is_open)
+ 
+ 		del_timer_sync(&mddev->safemode_timer);
+ 
+-		invalidate_partition(disk, 0);
+-
+ 		switch(mode) {
+ 		case 1: /* readonly */
+ 			err  = -ENXIO;
