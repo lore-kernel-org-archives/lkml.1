@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbYIALUD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbYIALUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756298AbYIALUD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 07:20:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbYIALTy
+	id S1754904AbYIALUs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 07:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbYIALUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 07:19:54 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58734 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750984AbYIALTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 07:19:53 -0400
-Message-ID: <48BBCF98.4070003@kernel.org>
-Date: Mon, 01 Sep 2008 13:18:48 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
-References: <fa.CVrJhjm3R8sjl5Z+EEIzYm7QtW0@ifi.uio.no> <48B80B40.5060002@shaw.ca> <48B80D33.5050806@gmail.com> <20080829212146.GA4321@anita> <48B90F7F.8040308@kernel.org> <20080830205143.GA9726@anita>
-In-Reply-To: <20080830205143.GA9726@anita>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/mixed;
- boundary="------------040007080304060402050603"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 01 Sep 2008 11:19:52 +0000 (UTC)
+	Mon, 1 Sep 2008 07:20:38 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:36408 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751182AbYIALUh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 07:20:37 -0400
+Subject: Re: [PATCH] UBIFS: fill f_fsid
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+In-Reply-To: <1220262187.2982.58.camel@pmac.infradead.org>
+References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
+	 <1220194366-12731-13-git-send-email-dedekind@infradead.org>
+	 <1220262187.2982.58.camel@pmac.infradead.org>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 01 Sep 2008 14:16:50 +0300
+Message-Id: <1220267810.4036.24.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 01 Sep 2008 11:20:15.0154 (UTC) FILETIME=[B4FC0120:01C90C24]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040007080304060402050603
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-Konstantin Kletschke wrote:
->> when ATAPI CHECK SENSE handling somehow failed to tell EH that it was an
->> exception not worth whining about.  Maybe EH action mask is not being
->> cleared properly?
+On Mon, 2008-09-01 at 10:43 +0100, David Woodhouse wrote:
+> > UBIFS stores 16-bit UUID in the superblock, and it is a good
+> > idea to return part of it in 'f_fsid' filed of kstatfs structure.
 > 
-> Hmn, to take my pants down entirely: What is this "EH"?
+> I think you mean a 16-byte UUID, not 16-bit?
 
-libata EH == libatata exception handling.
+Oh, right.
 
-> And how does the change of the .reset function affect this? May be, I
-> will take a look onto this.
+> 
+> > +	memcpy(&buf->f_fsid, c->uuid, sizeof(__kernel_fsid_t));
+> 
+> For btrfs I xor the first 64 bits with the second 64 bits, and put
+> _that_ into f_fsid. You're just putting the first 64 bits in and
+> ignoring the second 64 bits. Neither is really _better_ than the other;
+> you just alter the circumstances in which you get collisions. But I
+> suppose we might as well be consistent about how we do it?
 
-Your controller is raising exception continuously for some reason.
-Have no idea yet.
+Well, xor-ing should not make the random UUID more random, but for
+consistency purposes sure, I may use xor as well.
 
-Can you please apply the attached patch and post the resulting dmesg?
+> Alternatively, there's space in the struct statfs to export a couple
+> more uint32_ts, and thus the _whole_ of the uuid. Perhaps we should do
+> that?
+
+You mean f_spare? I do not think any application would use it so I doubt
+it is good idea to use it.
 
 -- 
-tejun
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
---------------040007080304060402050603
-Content-Type: text/plain;
- name="debug"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="debug"
-
-LS0tCiBkcml2ZXJzL2F0YS9saWJhdGEtZWguYyB8ICAgIDQgKystLQogMSBmaWxlIGNoYW5n
-ZWQsIDIgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkKCkluZGV4OiB0cmVlMC9kcml2
-ZXJzL2F0YS9saWJhdGEtZWguYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSB0cmVlMC5vcmlnL2RyaXZl
-cnMvYXRhL2xpYmF0YS1laC5jCisrKyB0cmVlMC9kcml2ZXJzL2F0YS9saWJhdGEtZWguYwpA
-QCAtMTg5MCw4ICsxODkwLDggQEAgc3RhdGljIHZvaWQgYXRhX2VoX2xpbmtfcmVwb3J0KHN0
-cnVjdCBhdAogCQlucl9mYWlsZWQrKzsKIAl9CiAKLQlpZiAoIW5yX2ZhaWxlZCAmJiAhZWhj
-LT5pLmVycl9tYXNrKQotCQlyZXR1cm47CisJLy9pZiAoIW5yX2ZhaWxlZCAmJiAhZWhjLT5p
-LmVycl9tYXNrKQorCS8vCXJldHVybjsKIAogCWZyb3plbiA9ICIiOwogCWlmIChhcC0+cGZs
-YWdzICYgQVRBX1BGTEFHX0ZST1pFTikK
---------------040007080304060402050603--
