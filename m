@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbYIAKQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756388AbYIAKiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757710AbYIAKQR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 06:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYIAKQF
+	id S1756388AbYIAKiY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 06:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYIAKiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 06:16:05 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:51852 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751657AbYIAKQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 06:16:04 -0400
-Date: Mon, 1 Sep 2008 12:15:43 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alasdair G Kergon <agk@redhat.com>
-Cc: Tejun Heo <tj@kernel.org>, device-mapper development <dm-devel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, lvm-devel@redhat.com
-Subject: Re: [dm-devel] Re: 2.6.27-rc5-mmotm0829 - lvm issues at boot, possible disk_devt() related?
-Message-ID: <20080901101543.GL20055@kernel.dk>
-References: <4963.1220240176@turing-police.cc.vt.edu> <48BBA0B0.5070309@kernel.org> <7045.1220260558@turing-police.cc.vt.edu> <20080901095651.GI15123@agk.fab.redhat.com>
+	Mon, 1 Sep 2008 06:38:17 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:19598 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751528AbYIAKiQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 06:38:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=vwJqR3BHhJFbCMYKHcT+Pji8Mi9X1IdhdYbXKYIMq6vY9/lVC/eKk1D7cGDUZqCy3G
+         6fKWYslRN0IEGEa1bw4B7gwFSInYwutzBcEbI1WIC5eni3MN9tbE4R6i42j/ncCO4Qzv
+         jf3PFdXcj+gysBBCXB/vw/essXfKk/9q4+5wQ=
+Message-ID: <5ff4a1e50809010338o77fffec4w625ed48b3987d51@mail.gmail.com>
+Date: Mon, 1 Sep 2008 11:38:15 +0100
+From: "Matt Fleming" <mattjfleming@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Subject: ktime_set() does not check for nanoseconds > one second
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080901095651.GI15123@agk.fab.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 01 2008, Alasdair G Kergon wrote:
-> On Mon, Sep 01, 2008 at 05:15:58AM -0400, Valdis.Kletnieks@vt.edu wrote:
-> > On Mon, 01 Sep 2008 09:58:40 +0200, Tejun Heo said:
-> > > Yeah, I made a mistake converting two of them and devt lookup fails when
-> > > the disk is zero sized.  Bartlomiej debugged the problem and posted a
-> > > patch and I followed up with an updated patch.  It should be fine in the
-> > > next round.
-> > >   http://article.gmane.org/gmane.linux.kernel.next/2663
-> > >   http://article.gmane.org/gmane.linux.kernel.next/2676
-> > > If you're seeing other problems, please let me know.
-> > Confirming - 2.6.27-rc5-mmotm0829 plus the merge of the 2 above patches
-> > does find the LVM volumes and come up.  Thanks for the clue.. :)
-> 
-> I expect we'll need some patches to userspace lvm2 to support these extended
-> device numbers properly too...
-> 
-> Alasdair (back from holiday)
+Hi,
 
-They'll be defaulting to off from now on, so it should not be a big
-worry. But Alan Brunelle did find that the "10-character limit
-in dm/lib/libdm-deptree is too small".
+is it intentional that ktime_set() does not check whether the
+nanoseconds argument is greater than the number of nanoseconds in a
+second? I've run into a problem where a value of 1600000000
+nanoseconds was passed as an argument to ktime_set() and the return
+value was then used in a ktime_add() call, which returned an incorrect
+result. Should the caller of ktime_set() make this check or is it
+possible to move this logic in to the function itself?
 
--- 
-Jens Axboe
-
+Matt
