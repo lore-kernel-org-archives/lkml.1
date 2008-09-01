@@ -1,94 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752881AbYIANNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751492AbYIANRJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752881AbYIANNx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 09:13:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180AbYIANNp
+	id S1751492AbYIANRJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 09:17:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbYIANQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 09:13:45 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:34768 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750984AbYIANNo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 09:13:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=p3iKLNuaMKdgW+6hEFA5VA6XVny48u7xFQ+9/OSwpSEO3GMPqplUljEip5ZhR3wHSe
-         XYlKDPGQSrFrLnbneSBoglCn/V+wKoCzHK+ZIPCumv3eOFZ8CBPhJ5GbiZ0T9nLjXj+N
-         1wmn+70bBr6UG5PoTW3LUMYgKcAG5y4pBYOOo=
-Message-ID: <48BBEA82.4020903@panasas.com>
-Date: Mon, 01 Sep 2008 16:13:38 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 1 Sep 2008 09:16:57 -0400
+Received: from www.tglx.de ([62.245.132.106]:59896 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750989AbYIANQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 09:16:56 -0400
+Date: Mon, 1 Sep 2008 15:16:51 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Matt Fleming <mattjfleming@googlemail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: ktime_set() does not check for nanoseconds > one second
+In-Reply-To: <5ff4a1e50809010611x3d8940e0n282da0b1ec5b321b@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0809011515060.3243@apollo.tec.linutronix.de>
+References: <5ff4a1e50809010338o77fffec4w625ed48b3987d51@mail.gmail.com>  <alpine.LFD.1.10.0809011317460.3243@apollo.tec.linutronix.de>  <5ff4a1e50809010457l7051b7e8vc7f86d68ae42e529@mail.gmail.com>  <alpine.LFD.1.10.0809011501450.3243@apollo.tec.linutronix.de>
+ <5ff4a1e50809010611x3d8940e0n282da0b1ec5b321b@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       "David S. Miller" <davem@davemloft.net>,
-       Ivo van Doorn <IvDoorn@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-CC: Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/5] virtio: Fix none-const BUILD_BUG_ON usage
-References: <48BBE77D.7070007@panasas.com>
-In-Reply-To: <48BBE77D.7070007@panasas.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 1 Sep 2008, Matt Fleming wrote:
 
-BUILD_BUG_ON can not be used cross inline parametrization boundary.
-I've put the BUILD_BUG_ON(_ZERO) in a macro outside of the inline
-definition. (So it is in the caller scope).
+> 2008/9/1 Thomas Gleixner <tglx@linutronix.de>:
+> >
+> > Won't work with arbitrary numbers. i.e. >= 2* NSEC_PER_SEC. Looking at
+> > it, I'm even less convinced that it is a good idea.
+> >
+> >      tglx
+> >
+> 
+> Do you have another suggestion? Or should I just account for the >= 1
+> sec case in the calling code?
 
-NOTE to Rusty:
-  If I remove the "__builtin_constant_p ?" part then code compiles
-  just fine, because all call sights of virtio_has_feature() use
-  constants for fbit. But it seems like it was not intended to be
-  forced.
+If you use runtime generated nsec values, why don't you use
+ktime_add_ns() and feed the nsec value into it ?
 
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>
----
- include/linux/virtio_config.h |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+Thanks,
 
-diff --git a/include/linux/virtio_config.h b/include/linux/virtio_config.h
-index bf8ec28..d9402d8 100644
---- a/include/linux/virtio_config.h
-+++ b/include/linux/virtio_config.h
-@@ -92,17 +92,19 @@ void virtio_check_driver_offered_feature(const struct virtio_device *vdev,
-  * @vdev: the device
-  * @fbit: the feature bit
-  */
--static inline bool virtio_has_feature(const struct virtio_device *vdev,
-+static inline bool __virtio_has_feature(const struct virtio_device *vdev,
- 				      unsigned int fbit)
- {
--	/* Did you forget to fix assumptions on max features? */
--	if (__builtin_constant_p(fbit))
--		BUILD_BUG_ON(fbit >= 32);
--
- 	virtio_check_driver_offered_feature(vdev, fbit);
- 	return test_bit(fbit, vdev->features);
- }
- 
-+/* Did you forget to fix assumptions on max features? */
-+#define virtio_has_feature(vdev, fbit) \
-+	((__builtin_constant_p(fbit) ? BUILD_BUG_ON_ZERO(fbit >= 32) : 0) + \
-+	__virtio_has_feature(vdev, fbit))
-+	
-+
- /**
-  * virtio_config_val - look for a feature and get a virtio config entry.
-  * @vdev: the virtio device
--- 
-1.5.6.rc1.5.gadf6
-
-
+	tglx
