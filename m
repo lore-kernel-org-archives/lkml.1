@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753117AbYIANyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752481AbYIAN5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753117AbYIANyR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 09:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbYIANyB
+	id S1752481AbYIAN5a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 09:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbYIAN5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 09:54:01 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:25050 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933AbYIANyA convert rfc822-to-8bit (ORCPT
+	Mon, 1 Sep 2008 09:57:23 -0400
+Received: from smtp-out-3.talktalk.net ([62.24.128.233]:44419 "EHLO
+	smtp.talktalk.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750871AbYIAN5W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 09:54:00 -0400
-Message-Id: <48BC1065.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
-Date: Mon, 01 Sep 2008 14:55:17 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Boaz Harrosh" <bharrosh@panasas.com>,
-       "Rusty Russell" <rusty@rustcorp.com.au>
-Cc: "David S. Miller" <davem@davemloft.net>, "Ingo Molnar" <mingo@elte.hu>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>,
-       "Ivo van Doorn" <IvDoorn@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Theodore Tso" <tytso@mit.edu>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/5] debug: BUILD_BUG_ON: error on non-const
-	 expressions
-References: <48BBE77D.7070007@panasas.com> <48BBEE04.30903@panasas.com>
-In-Reply-To: <48BBEE04.30903@panasas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Mon, 1 Sep 2008 09:57:22 -0400
+X-Greylist: delayed 625 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Sep 2008 09:57:22 EDT
+X-Path: TTSMTP
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAHGPu0hOkbYa/2dsb2JhbACzGoFp
+From: Alan Horstmann <gineera@aspect135.co.uk>
+To: Bryan Wu <cooloney@kernel.org>, Cliff Cai <cliff.cai@analog.com>,
+       alsa-devel@alsa-project.org
+Subject: Re: [alsa-devel] [PATCH 3/4] ASOC: WM8731 codec: add SPI support as well as I2C
+Date: Mon, 1 Sep 2008 14:52:08 +0100
+User-Agent: KMail/1.5.4
+References: <1219829968-6431-1-git-send-email-cooloney@kernel.org> <1219829968-6431-4-git-send-email-cooloney@kernel.org>
+In-Reply-To: <1219829968-6431-4-git-send-email-cooloney@kernel.org>
+Cc: liam.girdwood@wolfsonmicro.com, broonie@opensource.wolfsonmicro.com,
+       linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200809011452.08070.gineera@aspect135.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Boaz Harrosh <bharrosh@panasas.com> 01.09.08 15:28 >>>
->--- a/include/linux/compiler.h
->+++ b/include/linux/compiler.h
->@@ -195,7 +195,10 @@ extern void __chk_io_ptr(const volatile void __iomem *);
-> #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
-> 
-> /* Force a compilation error if condition is true */
->-#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
->+#define BUILD_BUG_ON(condition)					  \
->+do {									  \
->+	static struct { char arr[1 - 2*!!(condition)]; } x __maybe_unused;\
->+} while(0)
-> 
-> /* Force a compilation error if condition is true, but also produce a
->    result (of value 0 and type size_t), so the expression can be used
+We have just started trying this out as an alternative to i2c, and picked out 
+the following:
 
-I have to admit that I'm surprise this compiles: You replace an expression
-with a statement, and hence you reduce the places where BUILD_BUG_ON()
-can validly be used. Of course you could wrap the whole thing in ({}),
-but I can't see why not to use a bit-field to achieve the intended effect.
+On Wednesday 27 August 2008 10:39, Bryan Wu wrote:
+> -#if defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE)
+> +#if defined (CONFIG_I2C) || defined (CONFIG_I2C_MODULE) && !defined
+> (CONFIG_SND_SOC_WM8731_SPI)
 
-Also, are you sure the compiler will eliminate the dead variable in all
-cases?
+I think this needs extra brackets round the ||'s before the && thus:
 
-Finally, using as common a variable as 'x' here seems dangerous, too:
-What if somewhere x is #define-d to something more complex than a
-simple identifier?
+> +#if (defined (CONFIG_I2C) || defined (CONFIG_I2C_MODULE)) && !defined
+> (CONFIG_SND_SOC_WM8731_SPI)
 
-Jan
+in order to force use of SPI when (CONFIG_SND_SOC_WM8731_SPI) and (CONFIG_I2C) 
+are both defined.  Or have we misunderstood the intention?  This is in 2 
+other places also in the patch.
+
+Alan
 
