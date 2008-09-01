@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbYIAPCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbYIAPHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755507AbYIAPCN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 11:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbYIAPBv
+	id S1754797AbYIAPHh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 11:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYIAPH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 11:01:51 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49678 "EHLO
+	Mon, 1 Sep 2008 11:07:29 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54650 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754531AbYIAPBu (ORCPT
+	with ESMTP id S1751259AbYIAPH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 11:01:50 -0400
-Date: Mon, 1 Sep 2008 11:01:47 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Artem Bityutskiy <dedekind@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Subject: Re: [PATCH] UBIFS: fill f_fsid
-Message-ID: <20080901150147.GA20323@infradead.org>
-References: <1220194366-12731-1-git-send-email-dedekind@infradead.org> <1220194366-12731-13-git-send-email-dedekind@infradead.org> <1220262187.2982.58.camel@pmac.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1220262187.2982.58.camel@pmac.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	Mon, 1 Sep 2008 11:07:29 -0400
+Date: Mon, 1 Sep 2008 12:06:01 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Manu Abraham <abraham.manu@gmail.com>
+Cc: linux-dvb@linuxtv.org, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: Merge multiproto tree
+Message-ID: <20080901120601.044ddc30@mchehab.chehab.org>
+In-Reply-To: <48B9360D.7030303@gmail.com>
+References: <48B9360D.7030303@gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 01, 2008 at 10:43:07AM +0100, David Woodhouse wrote:
-> On Sun, 2008-08-31 at 17:52 +0300, Artem Bityutskiy wrote:
-> > From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-> > 
-> > UBIFS stores 16-bit UUID in the superblock, and it is a good
-> > idea to return part of it in 'f_fsid' filed of kstatfs structure.
-> 
-> I think you mean a 16-byte UUID, not 16-bit?
-> 
-> > +	memcpy(&buf->f_fsid, c->uuid, sizeof(__kernel_fsid_t));
-> 
-> For btrfs I xor the first 64 bits with the second 64 bits, and put
-> _that_ into f_fsid. You're just putting the first 64 bits in and
-> ignoring the second 64 bits. Neither is really _better_ than the other;
-> you just alter the circumstances in which you get collisions. But I
-> suppose we might as well be consistent about how we do it?
+Hello, Manu,
 
-XFS just puts in the st_dev.  And I can't realy find any useful
-defintion of what it's supposed to b anyway..
+On Sat, 30 Aug 2008, Manu Abraham wrote:
 
+>  Hello Mauro,
+>
+>  Please pull from http://jusst.de/hg/multiproto_api_merge/
+>  to merge the following Changesets from the multiproto tree.
+
+The need for supporting newer DTV protocols increases day by day, since when
+the first multiproto proposal started to be discussed, about two years ago.
+
+At the end of the last year, Steven send one email to the ML with a different 
+API proposal. Yet, people decided to wait for your work to be done. People then 
+pinged you, from time to time, asking about the completion of multiproto. All 
+the times, your answer were that multiproto were not ready yet for production.
+
+I'm aware that your solution seems to be more code-complete than Steven's 
+proposal.
+
+But the recent activity on the mailing list regarding his idea (and its, 
+so far, positive feedback) and the fact that I was anyway planning to 
+have a discussion about the future of the DVB-API at the Linux Plumbers 
+Conference 2008 are supporting me in my idea of post-poning such a pull to 
+a point in time shortly after this event.
+
+Cheers,
+Mauro
