@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755769AbYIAHKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbYIAHM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755769AbYIAHKY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 03:10:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYIAHKK
+	id S1755582AbYIAHM1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 03:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYIAHMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 03:10:10 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:53090 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750914AbYIAHKI (ORCPT
+	Mon, 1 Sep 2008 03:12:19 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:58922 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751052AbYIAHMT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 03:10:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=QYzVmo5wUOgSf7Ccw7On/NJKUXMh9Kcj/6oE2wPPYufBbY9hXyPigWcFfaSatJQSyo
-         JFKEYhQTTTfwUwJX/8RRoRcihRTRu133s7Aks4HOnIcc+hNXhHSkSeSXFh3bULT6RIgd
-         qw5eateJcY+MKEThfV8/4q8neZTKQ2XwomC44=
-Message-ID: <94a0d4530809010010yd46f2fevedac2682a330b8e2@mail.gmail.com>
-Date: Mon, 1 Sep 2008 10:10:08 +0300
-From: "Felipe Contreras" <felipe.contreras@gmail.com>
-To: "Scott Chacon" <schacon@gmail.com>
-Subject: Re: [ANNOUNCE] Git User's Survey 2008
-Cc: "Jakub Narebski" <jnareb@gmail.com>, git@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <d411cc4a0808312213k5414b0e2s82d122cf37fea778@mail.gmail.com>
+	Mon, 1 Sep 2008 03:12:19 -0400
+Date: Mon, 1 Sep 2008 09:12:06 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Zid Null <zidsoft@gmail.com>
+Cc: =?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: Linux 2.6.27-rc5
+Message-ID: <20080901071206.GA5536@electric-eye.fr.zoreil.com>
+References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org> <20080901012726.7c717aaf@werewolf.home> <328e43f00808311825r71164541pd4159a4a33b9b038@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <200808312329.17312.jnareb@gmail.com>
-	 <d411cc4a0808312213k5414b0e2s82d122cf37fea778@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <328e43f00808311825r71164541pd4159a4a33b9b038@mail.gmail.com>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 1, 2008 at 8:13 AM, Scott Chacon <schacon@gmail.com> wrote:
-> This got on Hacker News and got a few comments on the length of the
-> survey.  It did take me a pretty good amount of time to do.
->
-> http://news.ycombinator.com/item?id=291560
->
-> I'm afraid the length and time required to fill it out will skew the
-> answers away from beginning type users, even though a lot of the
-> questions are aimed at them.
->
-> It may be a good idea next year to do an adaptive survey, where there
-> are a few of the basic questions that could be answered in a few
-> minutes and if the user is a beginner it stops there, if they are more
-> advanced, it asks more advanced questions. I would be happy to help
-> set this up if there is interest, whoever is in charge of this.
+(thanks for the forward Zid)
 
-Well, the changes are saved even if you don't finish it, right?
+Zid Null <zidsoft@gmail.com> :
+> 2008/9/1 J.A. Magallón <jamagallon@ono.com>
+> > On Thu, 28 Aug 2008 16:26:45 -0700 (PDT), Linus Torvalds <
+> > torvalds@linux-foundation.org> wrote:
+[...]
+> > > Another week (my weeks do seem to be eight days, don't they? Very odd),
+> > > another -rc.
+[...]
+> > r8169 is not working on an Aspire One. It looked like working some time,
+> > but now it has begun to say:
+> >
+> > Sep  1 01:09:35 one klogd: r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+> > Sep  1 01:09:35 one klogd: r8169 0000:02:00.0: PCI INT A -> GSI 17 (level,
+> > low) -> IRQ 17
+> > Sep  1 01:09:35 one klogd: r8169 0000:02:00.0: cache line size of 32 is not
+> > supported
+> > Sep  1 01:09:35 one klogd: r8169 0000:02:00.0: PCI INT A disabled
+> > Sep  1 01:09:35 one klogd: r8169: probe of 0000:02:00.0 failed with error
+> > -22
+> >
+> > Any ideas ? Any more info needed ?
+> >
+> > TIA
+> >
+> > one:/var/log# lspci -vv -s 02:00.0
+> > 02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8101E PCI
+> > Express Fast Ethernet controller (rev ff) (prog-if ff)
+> >    !!! Unknown header type 7f
+> >    Kernel modules: r8169
 
-So you can fill it in different sessions.
+Send a lspci -vvx but I guess that it is all 'ff' when the problem happens.
+
+Either it is reliably fixed with patches #0001 ... #0006 at
+http://userweb.kernel.org/~romieu/r8169/2.6.27-rc3/20080818/
+or something broke in the PCI configuration space.
 
 -- 
-Felipe Contreras
+Ueimor
