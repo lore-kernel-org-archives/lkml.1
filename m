@@ -1,193 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbYIAQll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758747AbYIAQmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753615AbYIAQll (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 12:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbYIAQlb
+	id S1758747AbYIAQmX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 12:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbYIAQmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 12:41:31 -0400
-Received: from qb-out-0506.google.com ([72.14.204.230]:11909 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755108AbYIAQla (ORCPT
+	Mon, 1 Sep 2008 12:42:13 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:39407 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753829AbYIAQmL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 12:41:30 -0400
+	Mon, 1 Sep 2008 12:42:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=EsDzOYBM2sxi4TqxRoV4AmrTpW56jGBH8ENGyVPotXvohz72p3m+nxs36kNRgfejKi
-         v93CRFPG6IC8Vm7Z04fsiqwHrfKT7CM7u2c/M0cOr9i6+eAHyoEzjmDD8dXBRXz4mThI
-         gs/e7YCv2kq2PDAV3B6AJ/+v2Ybb/nOZj12us=
-Message-ID: <48BC1B31.1050306@panasas.com>
-Date: Mon, 01 Sep 2008 19:41:21 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=gdvyC0l3bEncnNXS4nRm0H/JzGPkd8CWCZC6z+Fgr73UcE7cn0jVnQFC4DOxKtHvD8
+         ga/PIVQsQEo5HxzSsCnrGbLCgxgc6O6Ks9lQAQxsg0WN3yRGQRjrLMMupWOwTeznyglU
+         aElWM00LZYpdW89tcNGyDVNN0PSFs5e8E/F5k=
+Message-ID: <86802c440809010942k7b789f09t920bbe8140dfea04@mail.gmail.com>
+Date: Mon, 1 Sep 2008 09:42:10 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Krzysztof Helt" <krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] x86: move mtrr cpu cap setting early in early_init_xxxx
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Krzysztof Helt" <krzysztof.h1@wp.pl>
+In-Reply-To: <20080901181642.14bfb17f.krzysztof.h1@poczta.fm>
 MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Ivo van Doorn <IvDoorn@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Rusty Russell <rusty@rustcorp.com.au>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/5] debug: BUILD_BUG_ON: error on non-const			 expressions
-References: <48BBE77D.7070007@panasas.com> <48BBEE04.30903@panasas.com> <48BC1065.76E4.0078.0@novell.com> <48BBFA67.9070305@panasas.com> <48BC1A10.76E4.0078.0@novell.com> <48BC037F.5010305@panasas.com> <48BC267E.76E4.0078.0@novell.com>
-In-Reply-To: <48BC267E.76E4.0078.0@novell.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1220242025-15113-1-git-send-email-yhlu.kernel@gmail.com>
+	 <20080901181642.14bfb17f.krzysztof.h1@poczta.fm>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
->>>> Boaz Harrosh <bharrosh@panasas.com> 01.09.08 17:00 >>>
->> What is broken with my BUILD_BUG_ON_ZERO(). I tried all tests and
->> it works fine. Do you have a test with unwanted results?
->> (Actually it's the original one I have not touched it).
-> 
-> That's the problem - it uses the same sizeof(char[]) approach, and hence
-> has the same problems that you just try to fix for BUILD_BUG_ON().
-> 
+On Mon, Sep 1, 2008 at 9:16 AM, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+> On Sun, 31 Aug 2008 21:07:05 -0700
+> Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+>> Krzysztof Helt <krzysztof.h1@wp.pl> found mtrr is not detected on k6-2
+>>
+>> root case:
+>>       we move mtrr_bp_init early for mtrr trimming.
+>> and in early_detect, only read cap from cpuid, so some cpu doesn't have
+>> that bit in cpuid and need to set workaround bit will have problem.
+>>
+>> need to add early_init_xxxx to preset those bit before mtrr_bp_init
+>> for those earlier cpus.
+>>
+>> this patch is for 2.6.27
+>>
+>> Reported-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+>> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>> Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
+>>
+>> ---
+>
+> Your patch works only if the the fix below is applied.
+>
+> Otherwise, the caps set in the early_cpu_init are reset
+> in the early_get_cap.
+>
+> Regards,
+> Krzysztof
+>
+> ---
+> From 808cfe180c1400594a01d6229239d4bf01ca4eea Mon Sep 17 00:00:00 2001
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> Date: Tue, 2 Sep 2008 17:29:51 +0200
+> Subject: [PATCH] x86: delay early cpu initialization until cpuid is done
+>
+> Move early cpu initialization after cpu
+> early get cap so the early cpu initialization
+> can fix up cpu caps.
+>
+> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> ---
+>  arch/x86/kernel/cpu/common.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+> index d3bc82f..f970cbf 100644
+> --- a/arch/x86/kernel/cpu/common.c
+> +++ b/arch/x86/kernel/cpu/common.c
+> @@ -335,11 +335,11 @@ static void __init early_cpu_detect(void)
+>
+>        get_cpu_vendor(c, 1);
+>
+> +       early_get_cap(c);
+> +
+>        if (c->x86_vendor != X86_VENDOR_UNKNOWN &&
+>            cpu_devs[c->x86_vendor]->c_early_init)
+>                cpu_devs[c->x86_vendor]->c_early_init(c);
+> -
+> -       early_get_cap(c);
+>  }
+>
+>  /*
 
-No it does not have this problem. Have you tested it? 
-I have! It works fine. (Complains on non-const expressions)
+thanks.
 
-The problem with the original BUILD_BUG_ON was the 
-(void)() cast and the interaction with the optimizer.
+Ingo,
+[PATCH] x86: delay early cpu initialization until cpuid is done
+should be applied before
+[PATCH] x86: move mtrr cpu cap setting early in early_init_xxxx
 
->>>>> Of course you could wrap the whole thing in ({}),
->>>> "do{}while(0)" is effectively an "{}" plus the added bonus
->>>> of demanding an ";" ;-)
->>> An expression likewise demands a terminating ; (or a continuation of the
->>> expression, i.e. by using an operator)
->>>
->> I was not criticizing your approach, I was commenting on:
->> "{}" vs. do{}while(0) 
-> 
-> I think we're having some mis-understanding here: What I'm concerned
-> about is that you can't use statements where-ever expressions can be
-> used (the opposite is true, because expressions are statements). My
-> main concern is the limitation of its use inside macros, where one could
-> try to use comma expressions to combine multiple BUILD_BUG_ON()-s.
-> 
-
-So it has not been used and it will not in the future.
-In macros just use multiple statements separated by ";"
-and surrounded by do{}while(0). To reach the same effect.
-
-Note that BUG_ON is a statement and now BUILD_BUG_ON() is also.
-for expressions use BUILD_BUG_ON_ZERO() 
-
-> Jan
-> 
-
-OK I have tested with your version of BUILD_BUG_ON{,_ZERO} and I have
-two problems with it.
-
-[1] Problem number one is with this sequence of code:
-
-(a)
-static inline bool __virtio_has_feature(const struct virtio_device *vdev,
-				      unsigned int fbit)
-{
-	virtio_check_driver_offered_feature(vdev, fbit);
-	return test_bit(fbit, vdev->features);
-}
-
-/* Did you forget to fix assumptions on max features? */
-#define virtio_has_feature(vdev, fbit) \
-	((__builtin_constant_p(fbit) ? BUILD_BUG_ON_ZERO(fbit >= 32) : 0) + \
-	__virtio_has_feature(vdev, fbit))
-
-...
-(b)
-static inline int virtio_config_buf(struct virtio_device *vdev,
-				    unsigned int fbit,
-				    unsigned int offset,
-				    void *buf, unsigned len)
-{
-	if (!virtio_has_feature(vdev, fbit))
-		return -ENOENT;
-...
-(c)
-	if (data && !virtio_has_feature(vdev, VIRTIO_NET_F_CSUM))
-		return -ENOSYS;
-
-I have not fount a way to code (a) in a way that actually works
-for both (b) and (c). That is, good with const expressions and
-bypassed with non-const. (See explanations below)
-
-with your code:
-> --- linux-2.6.27-rc5/include/linux/virtio_config.h	2008-08-21 14:37:35.000000000 +0200
-> +++ 2.6.27-rc5-build-bug-on/include/linux/virtio_config.h	2008-08-28 15:08:47.000000000 +0200
-> @@ -96,8 +96,7 @@ static inline bool virtio_has_feature(co
->  				      unsigned int fbit)
->  {
->  	/* Did you forget to fix assumptions on max features? */
-> -	if (__builtin_constant_p(fbit))
-> -		BUILD_BUG_ON(fbit >= 32);
-> +	MAYBE_BUILD_BUG_ON(fbit >= 32);
->  
->  	virtio_check_driver_offered_feature(vdev, fbit);
->  	return test_bit(fbit, vdev->features);
-
-The MAYBE_BUILD_BUG_ON just gets ignored in all cases and
-coding (c) as:
-
-	if (data && !virtio_has_feature(vdev, 717))
-		return -ENOSYS;
-
-Will not complain at all.
-
-[2] Problem number two is with this sequence of code:
-
-#define is_power_of_two(x)	( !((x) & ((x)-1)) )
-#define low_bit_mask(x)		( ((x)-1) & ~(x) )
-#define is_valid_mask(x)	is_power_of_two(1 + (x) + \
-					low_bit_mask(x))
-
-#define FIELD_CHECK(__mask, __type)			\
-	BUILD_BUG_ON(!__builtin_constant_p(__mask) ||	\
-		     !(__mask) ||			\
-		     !is_valid_mask(__mask) ||		\
-		     (__mask) != (__type)(__mask))	\
-
-#define FIELD8(__mask)				\
-({						\
-	FIELD_CHECK(__mask, u8);		\
-	(struct rt2x00_field8) {		\
-		compile_ffs8(__mask), (__mask)	\
-	};					\
-})
-
-I expect the compiler to complain since I'm abusing the
-"sign-bit" and need unsigned calculations, but the 
-(void)() cast musks the all operation off. Actually the 
-all FIELD_CHECK is ignored, I have tried illegal values
-and they are let through.
-
-
-
->From what I understand the (void)() cast gets thrown away
-by the optimizer very fast before it is fully generated hence
-the silence in lots of "bad" cases. The BUILD_BUG_ON_ZERO does
-not have this problem because it cannot be optimized out.
-On the other hand with your bit field approach the constant-expression
-is requested by the compiler very early and cannot be
-"optimized out" earlier like in the problem [1] case.
-
-I agree that this is all very ugly in theory. But in practice
-it is simple, works(*), and lets me do things like problem[1]
-that still produce results.
-
-(*) By works I mean:
- Has no false-positives and no false-negatives. On two accounts:
- constness is enforced, condition is fully checked.
-
-Please show example code that fails my bold (maybe even blunt)
-statements, where you would expect one result and the compiler
-does something else.
-
-Boaz
+YH
