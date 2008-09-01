@@ -1,93 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbYIASkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758820AbYIASnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759300AbYIASkq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 14:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbYIASk2
+	id S1758820AbYIASnT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 14:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbYIASnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 14:40:28 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:48523 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751948AbYIASk1 (ORCPT
+	Mon, 1 Sep 2008 14:43:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58627 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750738AbYIASnJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 14:40:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=i/Ztt3hNfi2GJuV/sdb/v4ps7HOFIvTX6mUv9TRTDKNHL8BoVMgjM3OS9gbN/dh6iS
-         bdxSXlN6mi4qer+YboP9pugTJmTEUdU8lM9GgG1Gbl/WhJ0Lg/07FCBH4J9lbtTOC088
-         M1/JVr8+8MPrMoXOCPRoZQkRv7fGXIrC7gM9s=
-Message-ID: <3f9a31f40809011140t5c69b62ci41f20a306bb4a7f1@mail.gmail.com>
-Date: Mon, 1 Sep 2008 14:40:25 -0400
-From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: Linux-2.6.27-rc5, drm errors in log
-Cc: "Gene Heskett" <gene.heskett@verizon.net>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jaswinder Singh" <jaswinder@infradead.org>, xorg@lists.freedesktop.org,
-       davem@davemloft.net, torvalds@linux-foundation.org, nhaehnle@gmail.com,
-       airlied@linux.ie, glisse@freedesktop.org, tony@bakeyournoodle.com
-In-Reply-To: <20080901195225.3dcc50bc@hyperion.delvare>
+	Mon, 1 Sep 2008 14:43:09 -0400
+Date: Mon, 1 Sep 2008 11:42:38 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Alok Kataria <akataria@vmware.com>,
+       Michael Buesch <mb@bu3sch.de>
+Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
+In-Reply-To: <48BC2A03.9000104@lwfinger.net>
+Message-ID: <alpine.LFD.1.10.0809011136340.12958@nehalem.linux-foundation.org>
+References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200808301452.04634.gene.heskett@verizon.net>
-	 <3f9a31f40809010934k468914d8sc43f323e9f32e9e7@mail.gmail.com>
-	 <20080901195225.3dcc50bc@hyperion.delvare>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Jean,
 
-On Mon, Sep 1, 2008 at 1:52 PM, Jean Delvare <khali@linux-fr.org> wrote:
-> On Mon, 1 Sep 2008 12:34:28 -0400, Jaswinder Singh wrote:
->> Hello Gene,
->>
->> On Sat, Aug 30, 2008 at 2:52 PM, Gene Heskett <gene.heskett@verizon.net> wrote:
->> >
->> > A re-repeat of a previous posting which has not drawn a comment. With added
->> > content, added CC to a patch author, and some new questions.
->> >
->>
->> This is not because of my radeon firmware patch, my patch is still in
->> pipeline. Here is the list of developers who played with radeon :-
->>
->> 1. 4 days ago         Linus Torvalds  Merge branch 'drm-patches' of
->> git://git.kernel.org ...
->> 2. 7 days ago         Nicolai Haehnle         drm/radeon: r300_cmdbuf: Always emit
->> INDX_BUFFER immediately ...
->> 3. 7 days ago         Jerome Glisse   radeon: fix some hard lockups on r3/4/500s
->> 4. 2008-08-12         David Miller    radeonfb: fix accel engine hangs
->> 5. 2008-08-05         Jean Delvare    radeonfb: give i2c buses nicer names
->> 6. 2008-08-05         David Miller    radeon: misc corrections
->> 7. 2008-07-24         Tony Breeds     drivers/video/aty/radeon_base.c: notify
->> user if sysfs ...
+
+On Mon, 1 Sep 2008, Larry Finger wrote:
 >
-> radeonfb != drm/radeon
->
+> TSC calibrated against PIT
+> Detected 428.823 MHz processor.
 
-yes you are right.
+Ok, Thomas, that means that the PIT is reliable (not surprising), and the 
+PM_TIMER isn't (again, I'm not horribly surprised). And HPET isn't 
+available, of course.
 
-Sorry, to disturb other guy. Messages are coming from :
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=54f961a628b737f66710eca0b0d95346645dd33e
+The old x86-32 code never even bothered with the PM_TIMER for calibration. 
+I don't understand why the x86-64 code bothers with it either. Why not 
+just drop that whole broken thing, and just depend on the PIT if there is 
+no HPET?
 
-Jerome Glisse and Dave Airlie :
+I would also like to point out that the 32-bit code actually had a much 
+nicer PIT setup, using the much better documented mach_prepare_counter() 
+and mach_countup() helper functions. I'm unhappy to note that the new 
+"common" code uses what appears to be the inferior code.
 
-+       DRM_INFO("wait for fifo failed status : 0x%08X 0x%08X\n",
-+                RADEON_READ(RADEON_RBBM_STATUS),
-+                RADEON_READ(R300_VAP_CNTL_STATUS));
+Also, note that this is _not_ a new issue. See "verify_pmtmr_rate()" in 
+drivers/clocksource/acpi_pm.c, along with all the code to check that the 
+reads are stable in "init_acpi_pm_clocksource()".
 
-+       DRM_INFO("wait idle failed status : 0x%08X 0x%08X\n",
-+                RADEON_READ(RADEON_RBBM_STATUS),
-+                RADEON_READ(R300_VAP_CNTL_STATUS));
+IOW, the PM_TIMER has been found to be broken before. Depending on it for 
+calibration is broken.
 
-what is the idea of printing R300 STATUS on R200 code or common code ?
-
-Please let me know what is the solution of R200 problem ?
-
-Thank you,
-
-Jaswinder Singh.
+			Linus
