@@ -1,79 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbYIASb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757843AbYIASe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758426AbYIASb4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 14:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYIASbs
+	id S1757843AbYIASe4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 14:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYIASeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 14:31:48 -0400
-Received: from www.tglx.de ([62.245.132.106]:37144 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751289AbYIASbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 14:31:48 -0400
-Date: Mon, 1 Sep 2008 20:31:07 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-cc: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alok Kataria <akataria@vmware.com>, Michael Buesch <mb@bu3sch.de>
-Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
-In-Reply-To: <48BC2A03.9000104@lwfinger.net>
-Message-ID: <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de>
-References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 1 Sep 2008 14:34:46 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:52174 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751180AbYIASep (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 14:34:45 -0400
+Date: Mon, 1 Sep 2008 19:34:36 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Tomas Carnecky <tom@dbservice.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Zhang Rui <rui.zhang@intel.com>, Steven King <sfking@fdwdc.com>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       ibm-acpi-devel@lists.sourceforge.net
+Subject: Re: 2.6.26.[1-3] + x61 tablet + x6ultrabase: no resume after	undocking
+Message-ID: <20080901183435.GA21829@srcf.ucam.org>
+References: <200808301535.22419.sfking@fdwdc.com> <1220239048.24775.152.camel@rzhang-dt> <48BBC8FC.1020809@dbservice.com> <20080901112816.GA21970@khazad-dum.debian.net> <48BBDD2C.5020804@dbservice.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48BBDD2C.5020804@dbservice.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Sep 2008, Larry Finger wrote:
-> Thomas Gleixner wrote:
-> > > The critical differences in the dmesg output between the "good" and "bad"
-> > > results indicate a factor of 2 difference in the clock speed, and are
-> > > shown
-> > > below:
-> > 
-> > > +Clocksource tsc unstable (delta = 500037272 ns)
-> > 
-> > > -Clocksource tsc unstable (delta = 83950402 ns)
-> > 
-> > In both cases the TSC is ahead of the pm_timer, which looks like the
-> > pm_timer is behaving strange.
-> > 
-> > Can you please disable the pm_timer (in the kernel config,
-> > unfortunately there is no command line option for that) for a test and
-> > provide the relevant output of demsg ?
-> 
-> It took a while to figure out how to kill the pm_timer. I finally did it by
-> changing the default to no rather than yes. I also reset the bisection and
-> compiled a full -rc4 kernel.
-> 
-> What I hope is the relevant output of dmesg is below. The clock rate is
-> correctly determined, and the b43legacy errors are gone.
+On Mon, Sep 01, 2008 at 02:16:44PM +0200, Tomas Carnecky wrote:
 
-Hmm. Haven't seen that before, but if confirms what I guessed from
-your previous dmesg information. I wonder why you did not observe
-strange behaviour with older kernel versions. I don't mean the
-b43legacy errors, which might be caused by the wrong calibrated TSC,
-but those even should show strange behaviour vs. time.
+> I just tested suspend/resume with the CDROM drive removed (an empty
+> bay). Suspend/resume now works just fine, regardless how I dock/undock
+> the laptop.
 
-Can you please provide the output of an older "working" kernel version
-from:
+Huh, interesting. We may be doing something wrong with the libata ACPI 
+calls on resume in that case, and it would explain why I haven't seen 
+this on my T-series (there's no bay in the dock :) ). Unfortunately all 
+the other docks I have present the bay as USB mass storage, so I don't 
+have anything to test here. I'll look into this tomorrow.
 
-# cat /sys/devices/system/clocksource/clocksource0/current_clocksource
-
-after the TSC was set to unstable. It should say acpi_pm.
-
-If that's the case please run
- 
-# time sleep 60
-
-on a shell and provide the output and verify it against a knwn to be
-halfways correct stopwatch.
-
-Then do the same on the current mainline with pm_timer
-disabled. current clocksource should be either jiffies or tsc.
-
-Thanks,
-
-	tglx
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
