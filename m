@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbYIACZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbYIACeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756642AbYIACZx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 22:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbYIACZl
+	id S1757913AbYIACeY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 22:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbYIACeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 22:25:41 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34944 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752055AbYIACZl (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 22:25:41 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: David Miller <davem@davemloft.net>, Dushan Tcholich <dusanc@gmail.com>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Robert Hancock <hancockr@shaw.ca>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, bridge@lists.linux-foundation.org
-Subject: Re: [RFC] bridge: STP timer management range checking
-In-Reply-To: Your message of "Sun, 31 Aug 2008 10:43:09 PDT."
-             <20080831104309.780cc01f@extreme>
-From: Valdis.Kletnieks@vt.edu
-References: <fa.wTMiBcGRgw2fBtdHwtX7y0lkc8s@ifi.uio.no> <48975BD3.6040709@shaw.ca> <a08621850808041337k1d1deb6fk78098d9fcd4930dd@mail.gmail.com> <20080807185802.GA16327@electric-eye.fr.zoreil.com> <a08621850808101200n220afd2dve58abe67830b7a4f@mail.gmail.com> <a08621850808110053j5cbf23e6xdf52c9e7440abf19@mail.gmail.com> <a08621850808291848q5660148fx57d576ecfcbfce8@mail.gmail.com> <a08621850808310151o143845h195a8658d02270d9@mail.gmail.com> <20080831100537.6929c51e@extreme>
-            <20080831104309.780cc01f@extreme>
+	Sun, 31 Aug 2008 22:34:16 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48937 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752054AbYIACeP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 22:34:15 -0400
+Date: Mon, 1 Sep 2008 11:39:18 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [RFC][PATCH] Remove cgroup member from struct page
+Message-Id: <20080901113918.b6f05ca6.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080831174756.GA25790@balbir.in.ibm.com>
+References: <20080831174756.GA25790@balbir.in.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1220235929_12805P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Sun, 31 Aug 2008 22:25:30 -0400
-Message-ID: <19455.1220235930@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1220235929_12805P
-Content-Type: text/plain; charset=us-ascii
+On Sun, 31 Aug 2008 23:17:56 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-On Sun, 31 Aug 2008 10:43:09 PDT, Stephen Hemminger said:
+> 
+> This is a rewrite of a patch I had written long back to remove struct page
+> (I shared the patches with Kamezawa, but never posted them anywhere else).
+> I spent the weekend, cleaning them up for 2.6.27-rc5-mmotm (29 Aug 2008).
+> 
+> I've tested the patches on an x86_64 box, I've run a simple test running
+> under the memory control group and the same test running concurrently under
+> two different groups (and creating pressure within their groups). I've also
+> compiled the patch with CGROUP_MEM_RES_CTLR turned off.
+> 
+> Advantages of the patch
+> 
+> 1. It removes the extra pointer in struct page
+> 
+> Disadvantages
+> 
+> 1. It adds an additional lock structure to struct page_cgroup
+> 2. Radix tree lookup is not an O(1) operation, once the page is known
+>    getting to the page_cgroup (pc) is a little more expensive now.
+> 
+> This is an initial RFC for comments
+> 
+> TODOs
+> 
+> 1. Test the page migration changes
+> 2. Test the performance impact of the patch/approach
+> 
+> Comments/Reviews?
+> 
+BTW, how deep this radix-tree on 4GB/32GB/64GB/256GB machine ?
 
-> Warning: this may cause user backlash since apparently working but standards
->   conforming configurations will get configuration errors that they didn't
->   see before.
+Thanks,
+-Kame
 
-Did you mean "apparently working but *non*-standards conforming"?
-
-Other than that, seems to be a sane application of "Be conservative in what you
-send".  Our network is some 30K cat-5 ports, 1100 switches, 1300 wireless
-access points, and we appreciate it every time somebody makes things more
-bulletproof.  And yes, we prefer things to out-and-out *fail* rather than
-run in a wonky configuration - hard failures usually get fixed in a few
-minutes, wonkiness can drag on for months of mystifying symptoms...
-
-
---==_Exmh_1220235929_12805P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFIu1KZcC3lWbTT17ARAmJaAKD+LZ/6wS6BV8FrmwpE/v41tXfNtACfT7+d
-7vnicwD7pqOc9q10nWXNz/4=
-=uKnV
------END PGP SIGNATURE-----
-
---==_Exmh_1220235929_12805P--
