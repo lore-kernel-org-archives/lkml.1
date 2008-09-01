@@ -1,37 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbYIAIvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbYIAIxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbYIAIvi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 04:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbYIAIva
+	id S1755991AbYIAIxu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 04:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYIAIxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 04:51:30 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:39012 "EHLO mgw1.diku.dk"
+	Mon, 1 Sep 2008 04:53:39 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:51286 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751728AbYIAIv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 04:51:29 -0400
+	id S1751424AbYIAIxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 04:53:38 -0400
 From: Julien Brunel <brunel@diku.dk>
-To: swhiteho@redhat.com, cluster-devel@redhat.com,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] fs/gfs2: Use an IS_ERR test rather than a NULL test
-Date: Mon, 1 Sep 2008 10:51:22 +0200
+To: davem@davemloft.net, kuznet@ms2.inr.ac.ru, pekkas@netcore.fi,
+       jmorris@namei.org, yoshfuji@linux-ipv6.org, kaber@trash.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] net/xfrm: Use an IS_ERR test rather than a NULL test
+Date: Mon, 1 Sep 2008 10:53:33 +0200
 User-Agent: KMail/1.9.9
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809011051.22862.brunel@diku.dk>
+Message-Id: <200809011053.34028.brunel@diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julien Brunel <brunel@diku.dk>
 
-In case of error, the function gfs2_inode_lookup returns an
-ERR pointer, but never returns a NULL pointer. So a NULL test that
-necessarily comes after an IS_ERR test should be deleted, and a NULL
-test that may come after a call to this function should be
-strengthened by an IS_ERR test.
+In case of error, the function xfrm_bundle_create returns an ERR
+pointer, but never returns a NULL pointer. So a NULL test that comes
+after an IS_ERR test should be deleted.
 
 The semantic match that finds this problem is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
@@ -41,9 +41,9 @@ The semantic match that finds this problem is as follows:
 expression x, E;
 statement S1,S2;
 @@
-x = gfs2_inode_lookup(...)
+x =  xfrm_bundle_create(...)
 ... when != x = E
-* if (x != NULL) 
+*  if (x != NULL) 
 S1 else S2
 // </smpl>
 
@@ -51,24 +51,29 @@ Signed-off-by:  Julien Brunel <brunel@diku.dk>
 Signed-off-by:  Julia Lawall <julia@diku.dk>
 
 ---
- fs/gfs2/inode.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ net/xfrm/xfrm_policy.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff -u -p a/fs/gfs2/inode.c b/fs/gfs2/inode.c
---- a/fs/gfs2/inode.c
-+++ b/fs/gfs2/inode.c
-@@ -1033,13 +1033,11 @@ struct inode *gfs2_createi(struct gfs2_h
+diff -u -p a/net/xfrm/xfrm_policy.c b/net/xfrm/xfrm_policy.c
+--- a/net/xfrm/xfrm_policy.c
++++ b/net/xfrm/xfrm_policy.c
+@@ -1731,8 +1731,7 @@ restart:
+ 			 * We can't enlist stable bundles either.
+ 			 */
+ 			write_unlock_bh(&policy->lock);
+-			if (dst)
+-				dst_free(dst);
++			dst_free(dst);
  
- 	if (bh)
- 		brelse(bh);
--	if (!inode)
--		return ERR_PTR(-ENOMEM);
- 	return inode;
- 
- fail_gunlock2:
- 	gfs2_glock_dq_uninit(ghs + 1);
--	if (inode)
-+	if (inode && !IS_ERR(inode))
- 		iput(inode);
- fail_gunlock:
- 	gfs2_glock_dq(ghs);
+ 			if (pol_dead)
+ 				XFRM_INC_STATS(LINUX_MIB_XFRMOUTPOLDEAD);
+@@ -1748,8 +1747,7 @@ restart:
+ 			err = xfrm_dst_update_origin(dst, fl);
+ 		if (unlikely(err)) {
+ 			write_unlock_bh(&policy->lock);
+-			if (dst)
+-				dst_free(dst);
++			dst_free(dst);
+ 			XFRM_INC_STATS(LINUX_MIB_XFRMOUTBUNDLECHECKERROR);
+ 			goto error;
+ 		}
