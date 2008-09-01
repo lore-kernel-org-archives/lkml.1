@@ -1,48 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757843AbYIASe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbYIASkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757843AbYIASe4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 14:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYIASeq
+	id S1756186AbYIASkc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 14:40:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbYIASkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 14:34:46 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:52174 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751180AbYIASep (ORCPT
+	Mon, 1 Sep 2008 14:40:23 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:29703 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751270AbYIASkW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 14:34:45 -0400
-Date: Mon, 1 Sep 2008 19:34:36 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Tomas Carnecky <tom@dbservice.com>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Zhang Rui <rui.zhang@intel.com>, Steven King <sfking@fdwdc.com>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       ibm-acpi-devel@lists.sourceforge.net
-Subject: Re: 2.6.26.[1-3] + x61 tablet + x6ultrabase: no resume after	undocking
-Message-ID: <20080901183435.GA21829@srcf.ucam.org>
-References: <200808301535.22419.sfking@fdwdc.com> <1220239048.24775.152.camel@rzhang-dt> <48BBC8FC.1020809@dbservice.com> <20080901112816.GA21970@khazad-dum.debian.net> <48BBDD2C.5020804@dbservice.com>
+	Mon, 1 Sep 2008 14:40:22 -0400
+Date: Mon, 1 Sep 2008 12:40:18 -0600
+From: Alex Chiang <achiang@hp.com>
+To: "Zhao, Yu" <yu.zhao@intel.com>, jbarnes@virtuousgeek.org
+Cc: Greg KH <gregkh@suse.de>, Matthew Wilcox <matthew@wil.cx>,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] PCI Hotplug: fakephp: fix deadlock... again
+Message-ID: <20080901184018.GA14492@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	"Zhao, Yu" <yu.zhao@intel.com>, jbarnes@virtuousgeek.org,
+	Greg KH <gregkh@suse.de>, Matthew Wilcox <matthew@wil.cx>,
+	linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080821201918.GA24411@ldl.fc.hp.com> <20080821202504.GU8318@parisc-linux.org> <20080821204758.GB31543@suse.de> <20080821221438.GC20014@ldl.fc.hp.com> <7A25B56E4BE99C4283EB931CD1A40E110177E488@pdsmsx414.ccr.corp.intel.com> <20080830053755.GA16219@suse.de> <7A25B56E4BE99C4283EB931CD1A40E110177E490@pdsmsx414.ccr.corp.intel.com> <7A25B56E4BE99C4283EB931CD1A40E110177E4DA@pdsmsx414.ccr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48BBDD2C.5020804@dbservice.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <7A25B56E4BE99C4283EB931CD1A40E110177E4DA@pdsmsx414.ccr.corp.intel.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 01, 2008 at 02:16:44PM +0200, Tomas Carnecky wrote:
+* Zhao, Yu <yu.zhao@intel.com>:
+> Just happened to see a change in fakephp when searching usage
+> of the pci_remove_bus_device(). I couldn't find the original
+> patches, but this
+> http://git.kernel.org/?p=linux/kernel/git/jbarnes/pci-2.6.git;a=commitdiff;h=fe99740cac117f208707488c03f3789cf4904957
+> shows, the pci_remove_bus_device() was removed while the
+> remove_slot() was added in disable_slot(), which means: 1)
+> fakephp can't remove pci_dev anymore; 2) deadlock happens
+> because remove_slot() tries to remove the sysfs entry calling
+> itself.
 
-> I just tested suspend/resume with the CDROM drive removed (an empty
-> bay). Suspend/resume now works just fine, regardless how I dock/undock
-> the laptop.
+Sorry about introducing this regression. Does the following patch
+fix it for you?
 
-Huh, interesting. We may be doing something wrong with the libata ACPI 
-calls on resume in that case, and it would explain why I haven't seen 
-this on my T-series (there's no bay in the dock :) ). Unfortunately all 
-the other docks I have present the bay as USB mass storage, so I don't 
-have anything to test here. I'll look into this tomorrow.
+I've tested it on my system, and I can again use fakephp to
+remove a device:
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+sapphire:/sys/bus/pci/slots # echo 0 > fake4/power 
+fakephp: disable_slot - physical_slot = fake4
+e1000 0000:01:02.1: PCI INT B disabled
+GSI 32 (level, low) -> CPU 2 (0x0200) vector 54 unregistered
+fakephp: Slot already scheduled for removal
+fakephp: removing slot fake4
+
+We get the "slot already scheduled for removal" because that
+particular device has 2 functions, and we're creating slots on a
+per-slot basis now, not a per-function basis.
+
+Although, I wonder, Willy -- is that really the right thing to
+do? Seems like fakephp would be more useful if we did operate on
+a per-function basis, and not per-slot. Especially given Yu's
+work with SR-IOV, where we can apparently have lots of functions
+per a physical device.
+
+Hm?
+
+Thanks.
+
+/ac
+
+From: Alex Chiang <achiang@hp.com>
+
+PCI Hotplug: fakephp: fix deadlock... again
+
+Commit fe99740cac117f208707488c03f3789cf4904957 (construct one
+fakephp slot per PCI slot) introduced a regression, causing a
+deadlock when removing a PCI device.
+
+We also never actually removed the device from the PCI core.
+
+So we:
+
+	- remove the device from the PCI core
+	- do not directly call remove_slot() to prevent deadlock
+
+Yu Zhao reported and diagnosed this defect.
+
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
+diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
+index 40337a0..146ca9c 100644
+--- a/drivers/pci/hotplug/fakephp.c
++++ b/drivers/pci/hotplug/fakephp.c
+@@ -320,15 +320,15 @@ static int disable_slot(struct hotplug_slot *slot)
+ 			return -ENODEV;
+ 		}
+ 
++		/* remove the device from the pci core */
++		pci_remove_bus_device(dev);
++
+ 		/* queue work item to blow away this sysfs entry and other
+ 		 * parts.
+ 		 */
+ 		INIT_WORK(&dslot->remove_work, remove_slot_worker);
+ 		queue_work(dummyphp_wq, &dslot->remove_work);
+ 
+-		/* blow away this sysfs entry and other parts. */
+-		remove_slot(dslot);
+-
+ 		pci_dev_put(dev);
+ 	}
+ 	return 0;
