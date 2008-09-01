@@ -1,101 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754210AbYIAOVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753618AbYIAOZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754210AbYIAOVo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 10:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYIAOVg
+	id S1753618AbYIAOZw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 10:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbYIAOZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 10:21:36 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:40333 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751108AbYIAOVf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 10:21:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=laswi7/0hUPrznIt+cpkoR37iYhZvyKnwCJCeMQAAPFXkZhk6oU/RwFJz/VP3FeQpj
-         owxrZmL3LyY74vMpCiRMJjbGzbQyQQyJNbKZ1oEs3CD68umvoSt2KWG9a+stXfAX6T0X
-         ZbTe0jrO0D1KTakqzhYfbQs0LFM7RmmCrDzSE=
-Message-ID: <48BBFA67.9070305@panasas.com>
-Date: Mon, 01 Sep 2008 17:21:27 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 1 Sep 2008 10:25:44 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:40438 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751362AbYIAOZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 10:25:43 -0400
+Date: Mon, 1 Sep 2008 16:25:49 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: linux-kernel@vger.kernel.org
+Subject: mtrr madness
+Message-ID: <20080901142549.GW25962@ics.muni.cz>
 MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Ivo van Doorn <IvDoorn@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/5] debug: BUILD_BUG_ON: error on non-const	 expressions
-References: <48BBE77D.7070007@panasas.com> <48BBEE04.30903@panasas.com> <48BC1065.76E4.0078.0@novell.com>
-In-Reply-To: <48BC1065.76E4.0078.0@novell.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Muni-Spam-TestIP: 147.251.3.109
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 01 Sep 2008 16:25:41 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
->>>> Boaz Harrosh <bharrosh@panasas.com> 01.09.08 15:28 >>>
->> --- a/include/linux/compiler.h
->> +++ b/include/linux/compiler.h
->> @@ -195,7 +195,10 @@ extern void __chk_io_ptr(const volatile void __iomem *);
->> #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
->>
->> /* Force a compilation error if condition is true */
->> -#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
->> +#define BUILD_BUG_ON(condition)					  \
->> +do {									  \
->> +	static struct { char arr[1 - 2*!!(condition)]; } x __maybe_unused;\
->> +} while(0)
->>
->> /* Force a compilation error if condition is true, but also produce a
->>    result (of value 0 and type size_t), so the expression can be used
-> 
-> I have to admit that I'm surprise this compiles: You replace an expression
-> with a statement, and hence you reduce the places where BUILD_BUG_ON()
-> can validly be used. 
+Hello,
 
-it is only an expression because of the (void)() cast, which is what
-I'm trying to avoid.
+it seems that all linux kernels contain a bug with mtrr:
 
-> Of course you could wrap the whole thing in ({}),
+ cat /proc/mtrr 
+reg00: base=0x00000000 (   0MB), size=198656MB: write-back, count=1
+reg01: base=0x80000000 (2048MB), size=197120MB: write-back, count=1
+reg02: base=0x9fc00000 (2556MB), size=196612MB: uncachable, count=1
+reg03: base=0x100000000 (4096MB), size=200704MB: write-back, count=1
+reg04: base=0x200000000 (8192MB), size=204800MB: write-back, count=1
 
-"do{}while(0)" is effectively an "{}" plus the added bonus
-of demanding an ";" ;-)
+(watch the size)
 
-> but I can't see why not to use a bit-field to achieve the intended effect.
+it is definitely  present in the kernels 2.6.16, 2.6.24, 2.6.25, 2.6.26.
 
-Sure, I can also use my suggested enum construct.
-(http://www.spinics.net/lists/kernel/msg772904.html)
+198656 is 0x3080000000, the correct value would be 0x80000000, similarly
+197120 is 0x3020000000, the correct would be 0x20000000. 
 
-But the thing I'm avoiding most is the (void)() cast, which makes the
-optimizer very lazy. See:
-[PATCH 4/5] rt2x00: Compiler warning unmasked by fix of BUILD_BUG_ON
-that has only popped out when I remove the (void)() cast.
+cpu info:
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Xeon(R) CPU            5160  @ 3.00GHz
+stepping	: 11
+cpu MHz		: 2992.510
+cache size	: 4096 KB
+physical id	: 0
+siblings	: 2
+core id		: 1
+cpu cores	: 2
+apicid		: 1
+initial apicid	: 1
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
+cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
+constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx est tm2
+ssse3 cx16 xtpr dca lahf_lm
+bogomips	: 5987.46
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 38 bits physical, 48 bits virtual
+power management:
 
-> Also, are you sure the compiler will eliminate the dead variable in all
-> cases?
-> 
-> Finally, using as common a variable as 'x' here seems dangerous, too:
-> What if somewhere x is #define-d to something more complex than a
-> simple identifier?
 
-No it is scoped in a dead do{}while(0). What gets optimized out most
-is the do nothing do{}while(0). The inside is just ignored.
-
-> 
-> Jan
-> 
-
-I will test for your approach, give me a sec ...
-
-Boaz
- 
+-- 
+Luká¹ Hejtmánek
