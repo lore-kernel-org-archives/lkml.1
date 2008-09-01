@@ -1,77 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756321AbYIAMRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbYIAMTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756321AbYIAMRS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 08:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbYIAMRB
+	id S1757365AbYIAMTe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 08:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbYIAMT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 08:17:01 -0400
-Received: from dbservice.com ([213.239.204.14]:33664 "EHLO
-	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753135AbYIAMRB (ORCPT
+	Mon, 1 Sep 2008 08:19:27 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:62906 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752823AbYIAMT0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 08:17:01 -0400
-Message-ID: <48BBDD2C.5020804@dbservice.com>
-Date: Mon, 01 Sep 2008 14:16:44 +0200
-From: Tomas Carnecky <tom@dbservice.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080731)
+	Mon, 1 Sep 2008 08:19:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=cOWiF4WmAn7ZNbsINAf9R3oLLB+JkSgVyRxPH6eq+0iSXmhRSc6u7YE77mf2WUfSc2
+         B0NAKCTT16qFnnbs6+TMH4JSH2tziY6aOJmxpNlKbjggXPHQzeDzB42dnauFothepdSI
+         eJqtFwJkl8GlE3iE/ZnbCp2pC4aAUPUYPSIpU=
+Message-ID: <48BBDDC9.9020003@gmail.com>
+Date: Mon, 01 Sep 2008 05:19:21 -0700
+From: Zev Weiss <zevweiss@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-CC: Zhang Rui <rui.zhang@intel.com>, Steven King <sfking@fdwdc.com>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       ibm-acpi-devel@lists.sourceforge.net
-Subject: Re: 2.6.26.[1-3] + x61 tablet + x6ultrabase: no resume after	undocking
-References: <200808301535.22419.sfking@fdwdc.com> <1220239048.24775.152.camel@rzhang-dt> <48BBC8FC.1020809@dbservice.com> <20080901112816.GA21970@khazad-dum.debian.net>
-In-Reply-To: <20080901112816.GA21970@khazad-dum.debian.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: David Woodhouse <dwmw2@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, Rodolfo Giometti <giometti@enneenne.com>
+Subject: Re: [PATCH] [MTD] mtdchar.c: Fix regression in MEMGETREGIONINFO	ioctl()
+References: <48ABCC0B.40607@gmail.com>	 <20080822153451.bb79bd1f.akpm@linux-foundation.org>	 <48AFC5ED.50005@gmail.com>	 <20080823222707.2fb972b5.akpm@linux-foundation.org>	 <48B13F88.3080306@gmail.com>  <48B4D884.5040204@gmail.com> <1220266884.2982.62.camel@pmac.infradead.org>
+In-Reply-To: <1220266884.2982.62.camel@pmac.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
-X-MailScanner-ID: 7D6EA20BB3D3.ABAD2
-X-Neopsis-MailScanner: Found to be clean
-X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=0.1, required 5, RDNS_DYNAMIC 0.10)
-X-MailScanner-From: tom@dbservice.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh wrote:
-> On Mon, 01 Sep 2008, Tomas Carnecky wrote:
->> There is one question though that was never answered: Is there any
->> interaction needed from the userspace when docking/undocking? Something
-> 
-> Yes.  umount filesystems on any device in the dock, and issue the "power off
-> dock" command (i.e. tell the kernel to *eject* the dock).  This is *very*
-> important, although the ThinkPad firmware/hardware will _try_ to protect the
-> electronics if you just pull the laptop off the dock while it is still
-> powered (but it might just not be able to do it, so Don't Do That!).
-> 
-> Anyway, if your dock led is going off before you remove the laptop from the
-> dock, you're doing everything correctly as far as the hardware is concerned.
-> 
-> And the kernel will scream bloody murder if you remove a device with live
-> filesystems in it, so it should be trivial to check if that part is being
-> taken care of by your userspace as well.  Not that something like this would
-> be an excuse to fail to suspend/resume after being undocked, mind you.
+From: Zev Weiss <zevweiss@gmail.com>
+Date: Mon, 1 Sep 2008 05:02:12 -0700
+Subject: [PATCH] [MTD] mtdchar.c: Fix regression in MEMGETREGIONINFO ioctl()
 
-To undock, I press the button on the dock, the led blinks a couple times
-and turns green (also, dmesg tells me that all USB devices have been
-removed and they indeed stop functioning). Then I take the laptop out of
-the dock.
+The MEMGETREGIONINFO ioctl() in mtdchar.c was clobbering user memory by
+overwriting more than intended, due the size of struct mtd_erase_region_info
+changing in commit 0ecbc81adfcb9f15f86b05ff576b342ce81bbef8.
 
-Because the X61 lacks a CDROM drive, I bought a bay CDROM drive along
-with the UltraBase. But there is no CDROM inside it (so no mounted
-filesystems). I also have an USB keyboard and mouse plugged into the USB
-slots in the dock. So it seems the kernel *should* take care of those
-things without any userspace interaction.
+Fix avoids this by copying struct members one by one with put_user(), as there
+is no longer a convenient struct to use the size of as the length argument to
+copy_to_user().
 
-I just tested suspend/resume with the CDROM drive removed (an empty
-bay). Suspend/resume now works just fine, regardless how I dock/undock
-the laptop.
+Signed-off-by: Zev Weiss <zevweiss@gmail.com>
+---
+  drivers/mtd/mtdchar.c |   16 ++++++++++------
+  1 files changed, 10 insertions(+), 6 deletions(-)
 
-Anyway, regarding the additional patches, which tree can I pull them
-from? (I'm eager to test them, I very much want my dock to work properly)
+diff --git a/drivers/mtd/mtdchar.c b/drivers/mtd/mtdchar.c
+index 13cc67a..424f318 100644
+--- a/drivers/mtd/mtdchar.c
++++ b/drivers/mtd/mtdchar.c
+@@ -410,16 +410,20 @@ static int mtd_ioctl(struct inode *inode, struct file *file,
 
-thanks
-tom
+  	case MEMGETREGIONINFO:
+  	{
+-		struct region_info_user ur;
++		u32 ur_idx;
++		struct mtd_erase_region_info *kr;
++		struct region_info_user *ur = (struct region_info_user *) argp;
+
+-		if (copy_from_user(&ur, argp, sizeof(struct region_info_user)))
++		if (get_user(ur_idx,&(ur->regionindex)))
+  			return -EFAULT;
+
+-		if (ur.regionindex >= mtd->numeraseregions)
+-			return -EINVAL;
+-		if (copy_to_user(argp, &(mtd->eraseregions[ur.regionindex]),
+-				sizeof(struct mtd_erase_region_info)))
++		kr = &(mtd->eraseregions[ur_idx]);
++
++		if (put_user(kr->offset, &(ur->offset))
++		    || put_user(kr->erasesize, &(ur->erasesize))
++		    || put_user(kr->numblocks, &(ur->numblocks)))
+  			return -EFAULT;
++
+  		break;
+  	}
+
+-- 
+1.5.4.1
 
