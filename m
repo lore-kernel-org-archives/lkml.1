@@ -1,25 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758101AbYIAMFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755697AbYIAMMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758101AbYIAMFt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 08:05:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbYIAMFm
+	id S1755697AbYIAMMq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 08:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbYIAMMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 08:05:42 -0400
-Received: from cantor.suse.de ([195.135.220.2]:35828 "EHLO mx1.suse.de"
+	Mon, 1 Sep 2008 08:12:36 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34635 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750761AbYIAMFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 08:05:41 -0400
-Date: Mon, 01 Sep 2008 14:05:39 +0200
-Message-ID: <s5htzd01370.wl%tiwai@suse.de>
+	id S1750761AbYIAMMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 08:12:35 -0400
+Date: Mon, 01 Sep 2008 14:12:34 +0200
+Message-ID: <s5hsksk12vh.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, matt.jared@intel.com,
-       andy.kopp@intel.com, dan.d.kogan@intel.com,
-       lkml <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <rdunlap@xenotime.net>, chaos.proton@gmail.com
-Subject: Re: Documentation/sound/alsa/ALSA-Configuration.txt: fix typo
-In-Reply-To: <48BBD092.2040908@gmail.com>
-References: <48BBD092.2040908@gmail.com>
+To: Julien Brunel <brunel@diku.dk>
+Cc: perex@perex.cz, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] sound/arm: Bad NULL test
+In-Reply-To: <200809011059.54939.brunel@diku.dk>
+References: <200809011059.54939.brunel@diku.dk>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.2
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -29,38 +27,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Mon, 01 Sep 2008 13:22:58 +0200,
-Michael Kerrisk wrote:
+At Mon, 1 Sep 2008 10:59:54 +0200,
+Julien Brunel wrote:
 > 
-> [contacts inb sound/pci/hda/hda_intel.c CCed]
+> From: Julien Brunel <brunel@diku.dk>
 > 
-> As noted by Gu Rui in http://bugzilla.kernel.org/show_bug.cgi?id=11444,
-> there is a typo in Documentation/sound/alsa/ALSA-Configuration.txt.
-> After checking the source (sound/pci/hda/hda_intel.c), the report
-> looks correct to me.
+> In case of error, the function aaci_init_card returns an ERR pointer,
+> but never returns a NULL pointer. We have noticed a bad NULL test,
+> which comes after a call to this function. Rather than doing an IS_ERR
+> test, we suggest to duplicate the label out: one label for the case where
+> aaci_init_card returns a valid pointer, and another for the case where
+> aaci_init_card returns an ERR pointer.
 > 
-> Signed-off-by: Michael Kerrisk <mtk.manpages@gmail.com>
+> The semantic match that finds this problem is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @match_bad_null_test@
+> expression x, E;
+> statement S1,S2;
+> @@
+> x =  aaci_init_card(...)
+> ... when != x = E
+> *  if (x != NULL) 
+> S1 else S2
+> // </smpl>
+> 
+> Signed-off-by:  Julien Brunel <brunel@diku.dk>
+> Signed-off-by:  Julia Lawall <julia@diku.dk>
 
-Thanks, applied.
+The fix below is simpler.  Could you check whether it's OK?
 
+thanks,
 
 Takashi
 
-> 
-> --- linux-2.6.27-rc2-orig/Documentation/sound/alsa/ALSA-Configuration.txt	2008-09-01 12:55:30.000000000 +0200
-> +++ linux-2.6.27-rc2/Documentation/sound/alsa/ALSA-Configuration.txt	2008-09-01 13:03:10.000000000 +0200
-> @@ -1079,7 +1079,7 @@
->   	    register value without FIFO size correction as the current
->   	    DMA pointer.  position_fix=2 will make the driver to use
->   	    the position buffer instead of reading SD_LPIB register.
-> -	    (Usually SD_LPLIB register is more accurate than the
-> +	    (Usually SD_LPIB register is more accurate than the
->   	    position buffer.)
-> 
->       NB: If you get many "azx_get_response timeout" messages at
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+
+diff --git a/sound/arm/aaci.c b/sound/arm/aaci.c
+index b0a4744..e46b7cb 100644
+--- a/sound/arm/aaci.c
++++ b/sound/arm/aaci.c
+@@ -1085,6 +1085,7 @@ static int __devinit aaci_probe(struct amba_device *dev, void *id)
+ 	aaci = aaci_init_card(dev);
+ 	if (IS_ERR(aaci)) {
+ 		ret = PTR_ERR(aaci);
++		aaci = NULL;
+ 		goto out;
+ 	}
+ 
