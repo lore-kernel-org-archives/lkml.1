@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753862AbYIAFAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753445AbYIAFKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753862AbYIAFAX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 01:00:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbYIAFAK
+	id S1753445AbYIAFKH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 01:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbYIAFJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 01:00:10 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:41633 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750753AbYIAFAJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 01:00:09 -0400
-Date: Sun, 31 Aug 2008 22:00:04 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, jwboyer@linux.vnet.ibm.com,
-       tnt@246tNt.com, grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-       manfred@colorfullife.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] prevent powerpc from invoking irq handlers on offline
-	CPUs
-Message-ID: <20080901050003.GN7015@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080831173127.GA15296@linux.vnet.ibm.com> <1220229284.13162.411.camel@pasglop> <20080901020640.GM7015@linux.vnet.ibm.com> <1220238880.13010.4.camel@pasglop>
+	Mon, 1 Sep 2008 01:09:55 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63304 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750970AbYIAFJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 01:09:55 -0400
+Message-ID: <48BB78E7.5080001@cn.fujitsu.com>
+Date: Mon, 01 Sep 2008 13:08:55 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1220238880.13010.4.camel@pasglop>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] res_counter: fix off-by-one bug in setting limit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 01, 2008 at 01:14:40PM +1000, Benjamin Herrenschmidt wrote:
-> On Sun, 2008-08-31 at 19:06 -0700, Paul E. McKenney wrote:
-> > On Mon, Sep 01, 2008 at 10:34:44AM +1000, Benjamin Herrenschmidt wrote:
-> > > On Sun, 2008-08-31 at 10:31 -0700, Paul E. McKenney wrote:
-> > > > Make powerpc refrain from clearing a given to-be-offlined CPU's bit in the
-> > > > cpu_online_mask until it has processed pending irqs.  This change
-> > > > prevents other CPUs from being blindsided by an apparently offline CPU
-> > > > nevertheless changing globally visible state.
-> > > > 
-> > > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > > ---
-> > > 
-> > > Sounds reasonable... the only possible worry here is if somebody tries
-> > > an IPI ... The IPI code will and the target CPU mask with the online
-> > > map, so it may try to send to the to-be-offlined CPU and timeout, no ?
-> > 
-> > OK.  Do we need separate IPI and online masks?
-> 
-> Shouldn't we already have routed all interrupts to other CPUs anyway ?
-> 
-> IE. The affinity of all interrupts should have been updated. So the
-> only thing we're going to get here are possibly IPIs and decrementer, 
-> I don't see it being a big deal making sure we test we are online when
-> receiving it.
+I found we can no longer set limit to 0 with 2.6.27-rcX:
+ # mount -t cgroup -omemory xxx /mnt
+ # mkdir /mnt/0
+ # echo 0 > /mnt/0/memory.limit_in_bytes
+ bash: echo: write error: Device or resource busy
 
-It did look to me that the CPU removed itself from the interrupt queue
-before re-enabling interrupts, so makes sense to me...
+It turned out 'limit' can't be set to 'usage', which is wrong IMO.
 
-							Thanx, Paul
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ include/linux/res_counter.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
+index fdeadd9..271c1c2 100644
+--- a/include/linux/res_counter.h
++++ b/include/linux/res_counter.h
+@@ -166,7 +166,7 @@ static inline int res_counter_set_limit(struct res_counter *cnt,
+ 	int ret = -EBUSY;
+ 
+ 	spin_lock_irqsave(&cnt->lock, flags);
+-	if (cnt->usage < limit) {
++	if (cnt->usage <= limit) {
+ 		cnt->limit = limit;
+ 		ret = 0;
+ 	}
+-- 1.5.4.rc3 
