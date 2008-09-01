@@ -1,93 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbYIAMao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbYIAMm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757474AbYIAMao (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 08:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbYIAMag
+	id S1756783AbYIAMm1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 08:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYIAMmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 08:30:36 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:57398 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752663AbYIAMaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 08:30:35 -0400
-Date: Mon, 1 Sep 2008 14:30:29 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Julien Brunel <brunel@diku.dk>, perex@perex.cz,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] sound/arm: Bad NULL test
-In-Reply-To: <s5hsksk12vh.wl%tiwai@suse.de>
-Message-ID: <Pine.LNX.4.64.0809011428010.9596@pc-004.diku.dk>
-References: <200809011059.54939.brunel@diku.dk> <s5hsksk12vh.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 1 Sep 2008 08:42:19 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:56727 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753060AbYIAMmS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 08:42:18 -0400
+Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Joe Perches <joe@perches.com>,
+       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>
+In-Reply-To: <200808261138.28076.rusty@rustcorp.com.au>
+References: <20080730165656.118280544@de.ibm.com>
+	 <200808131433.02966.rusty@rustcorp.com.au>
+	 <1219679790.16131.28.camel@localhost>
+	 <200808261138.28076.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Mon, 01 Sep 2008 14:28:50 +0200
+Message-Id: <1220272130.23719.6.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Sep 2008, Takashi Iwai wrote:
-
-> At Mon, 1 Sep 2008 10:59:54 +0200,
-> Julien Brunel wrote:
-> > 
-> > From: Julien Brunel <brunel@diku.dk>
-> > 
-> > In case of error, the function aaci_init_card returns an ERR pointer,
-> > but never returns a NULL pointer. We have noticed a bad NULL test,
-> > which comes after a call to this function. Rather than doing an IS_ERR
-> > test, we suggest to duplicate the label out: one label for the case where
-> > aaci_init_card returns a valid pointer, and another for the case where
-> > aaci_init_card returns an ERR pointer.
-> > 
-> > The semantic match that finds this problem is as follows:
-> > (http://www.emn.fr/x-info/coccinelle/)
-> > 
-> > // <smpl>
-> > @match_bad_null_test@
-> > expression x, E;
-> > statement S1,S2;
-> > @@
-> > x =  aaci_init_card(...)
-> > ... when != x = E
-> > *  if (x != NULL) 
-> > S1 else S2
-> > // </smpl>
-> > 
-> > Signed-off-by:  Julien Brunel <brunel@diku.dk>
-> > Signed-off-by:  Julia Lawall <julia@diku.dk>
+On Tue, 2008-08-26 at 11:38 +1000, Rusty Russell wrote:
+> On Tuesday 26 August 2008 01:56:30 Martin Schwidefsky wrote:
+> > On Wed, 2008-08-13 at 14:33 +1000, Rusty Russell wrote:
+> > > Can you hash the format string to generate the id?  6 hex digits should
+> > > be enough, and your tool can check for clashes.  As it's bad form to have
+> > > identical strings for different semantics anyway, this seems to make
+> > > sense.
+> >
+> > If we go with hashes there is one more thing: kmsg(0, <string>)
+> > The variant where we manually assign the message ids knows about the
+> > "special" id 0. There is no documentation required for id 0 and none is
+> > wanted. If we replace the manual ids with hashes this will get lost. You
+> > could argue that a kmsg with id 0 is a normal printk so why not just use
+> > printk? What is lost is the information that this printk has been found
+> > to be not important enough to be documented.
 > 
-> The fix below is simpler.  Could you check whether it's OK?
+> Hmm, #define KERN_IGNORE KERN_DEBUG?
 
-It is indeed simpler, and looks correct, but it seems a little odd to take 
-a value that can never be NULL and set it to NULL just to avoid changing a 
-test.  Another alternative would be to leave the value as it is, and put 
-an IS_ERR test at the out label.  But the value of the test is statically 
-determined by the goto that reaches it, so the original patch proposes 
-just getting rid of the test completely.
+Hmm, shouldn't KERN_xxx levels be independent of the special id 0? 
 
-I guess it depends on which sort of solution is preferred.
+-- 
+blue skies,
+  Martin.
 
-julia
+"Reality continues to ruin my life." - Calvin.
 
 
-> thanks,
-> 
-> Takashi
-> 
-> 
-> diff --git a/sound/arm/aaci.c b/sound/arm/aaci.c
-> index b0a4744..e46b7cb 100644
-> --- a/sound/arm/aaci.c
-> +++ b/sound/arm/aaci.c
-> @@ -1085,6 +1085,7 @@ static int __devinit aaci_probe(struct amba_device *dev, void *id)
->  	aaci = aaci_init_card(dev);
->  	if (IS_ERR(aaci)) {
->  		ret = PTR_ERR(aaci);
-> +		aaci = NULL;
->  		goto out;
->  	}
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
