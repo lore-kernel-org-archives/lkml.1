@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbYIAQvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759084AbYIAQvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756723AbYIAQvc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 12:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbYIAQvY
+	id S1759084AbYIAQvu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 12:51:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756072AbYIAQvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 12:51:24 -0400
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:60209 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751182AbYIAQvY (ORCPT
+	Mon, 1 Sep 2008 12:51:40 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:9422 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751876AbYIAQvj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 12:51:24 -0400
-Message-ID: <48BC1D8E.9050608@lwfinger.net>
-Date: Mon, 01 Sep 2008 11:51:26 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Mon, 1 Sep 2008 12:51:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=t78suJhhu/FjBdEb8oT6u5KmrhrzS/jndAM0SOcyO4vJSAGyqwbIOAEK5RfGgZtocd
+         nWuVVdkorxTM8UvWSzVkZAifqaR7JvW6Tzmwv6/Tf8CY+tRGSc3QEfp8Ty1PdLH6QY64
+         k28fs8A/4CSCWoCGdAUH72JksrXebNnkbQBJU=
+Message-ID: <3f9a31f40809010951p15ed7359w48d2b18adf0ca20f@mail.gmail.com>
+Date: Mon, 1 Sep 2008 12:51:39 -0400
+From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+To: "Gene Heskett" <gene.heskett@gmail.com>
+Subject: Re: Linux-2.6.27-rc5, drm errors in log
+Cc: "Dave Airlie" <airlied@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200808310655.45464.gene.heskett@gmail.com>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #11355] Regression in 2.6.27-rc2 when cross-building the
- kernel
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik>	 <VSpL6AnBTS.A.jvH.vaGsIB@albercik>  <200808242334.05993.rjw@sisk.pl> <1220261720.2982.51.camel@pmac.infradead.org>
-In-Reply-To: <1220261720.2982.51.camel@pmac.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <898503EB1E15BA4F944D1BE69D55AAC8AB540A@storexmb1.amd.com>
+	 <200808302219.45103.gene.heskett@verizon.net>
+	 <21d7e9970808302340w71483645macb34f8470a85c66@mail.gmail.com>
+	 <200808310655.45464.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Sun, 2008-08-24 at 23:34 +0200, Rafael J. Wysocki wrote:
->> On Saturday, 23 of August 2008, Rafael J. Wysocki wrote:
->>> This message has been generated automatically as a part of a report
->>> of recent regressions.
->>>
->>> The following bug entry is on the current list of known regressions
->>> from 2.6.26.  Please verify if it still should be listed and let me know
->>> (either way).
->>>
->>>
->>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11355
->>> Subject		: Regression in 2.6.27-rc2 when cross-building the kernel
->>> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
->>> Date		: 2008-08-16 2:38 (8 days old)
->>> References	: http://marc.info/?l=linux-kernel&m=121885432118368&w=4
->> As I wrote in the Bugzilla, I'm seeing a related problem.
->>
->> Namely, I build kernels on one box, with 'make O=<target>', then I mount
->> <target> on another one over NFS, 'cd' to it and try to install the kernel
->> modules with 'make modules_install'.  This results in 'HOSTCC firmware/ihex2fw'
->> and 'fatal error: ...: Read-only file system'.  It's readily reproducible.
->>
->> Commenting out line 1130 of Makefile
->> ("$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.fwinst obj=firmware __fw_modinst")
->> obviously helps, so it looks like Makefile.fwinst needs fixing.
-> 
-> I don't like this much, but it should do the trick... please confirm.
+Hello Gene,
 
-Yes, the patch fixes the problem. Thanks.
+On Sun, Aug 31, 2008 at 6:55 AM, Gene Heskett <gene.heskett@gmail.com> wrote:
+>
+> Yes I can, but how do I get that specific patch?  Or is that the git # for the
+> patch I first applied to -rc2, which added the firmware/radeon stuff?  I'm
+> familiar with patch, but not on a first name basis with git, sorry.
+>
+> So I'm going to do a bisect, my style.  I will rebuild, starting with -rc3,
+> using only the -rcX patch and the firmware addition patch, which applied to
+> -rc3 as follows:
+> now applying [PATCH]radeon_cp-use-request_firmware
+>
 
-Larry
+This patch is not included in 2.6.27-rc5. Please do not mix this patch
+now, first resolve your problem and if you want then you can add this
+patch above of it.
+
+Thank you,
+
+Jaswinder Singh.
