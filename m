@@ -1,204 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754931AbYIAOH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753610AbYIAOOB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754931AbYIAOH5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 10:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYIAOHs
+	id S1753610AbYIAOOB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 10:14:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbYIAONx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 10:07:48 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:46668 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751316AbYIAOHr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 10:07:47 -0400
-Message-ID: <59911.166.70.238.45.1220276384.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <48BAA364.7080503@panasas.com>
-References: <200808290547.m7T5leOa016106@wolfmountaingroup.com>
-    <48BAA364.7080503@panasas.com>
-Date: Mon, 1 Sep 2008 07:39:44 -0600 (MDT)
-Subject: Re: [PATCH 2.6.27-rc5 1/29] mdb: export ioapic read routines and 
-     detected ioapic count
-From: jmerkey@wolfmountaingroup.com
-To: "Benny Halevy" <bhalevy@panasas.com>
-Cc: jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.6
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Mon, 1 Sep 2008 10:13:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51216 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751433AbYIAONw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 10:13:52 -0400
+Subject: [PATCH] make setpriority POSIX compliant; introduce PRIO_THREAD
+	extension
+From: Denys Vlasenko <dvlasenk@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 01 Sep 2008 16:12:35 +0200
+Message-Id: <1220278355.3866.21.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Jeff, general comment: can you please send your patches as replies
-> to a leading message so they all be linked as a single thread?
-> Threading them together is helpful for maintaining several
-> versions of your patchset and it's simpler to ignore if one's
-> not really interested in this topic at all.
->
-> Benny
->
+POSIX and SUS say that setpriority(PRIO_PROCESS) should affect
+all threads in the process:
 
-Hi Benny,
+SYNOPSIS
+       #include <sys/resource.h>
+       int getpriority(int which, id_t who);
+       int setpriority(int which, id_t who, int value);
+DESCRIPTION
+       ...
+       The  nice value set with setpriority() shall be applied to
+       the process. If the process is multi-threaded, the nice value
+       shall affect all system scope threads in the process.
 
-I was already scolded about this by a few folks.  I had not located the
-git email programs when I submitted this project and I wrote something
-myself to submit them.  (see attached).  I have thrown the program in the
-trash I wrote to do this and moved to git.
+Currently, this is not the case. While PRIO_PGRP and PRIO_USER
+do set priority to the selected group of processes, PRIO_PROCESS
+sets priority only for the thread with tid == who.
 
-Now I have reviewed the git clients and patch tools and I understand and
-will use git and I see now why git works this way with the reply chain. I
-will not be submitting patch series on this list for every release unless
-the code has had major additions or changes in the future.   I will
-instead post the patches to the project site with a single post on this
-list to point to the patches.
+This mostly goes unnoticed because single-threaded processes have
+tid == pid.
 
-I will post patch series when x86_64 is finished and I have completed my
-rewrite of traps_32.c and traps_64.c -- Linux needs nested TSS gates over
-all the exceptions so the system can handle nested exceptions and switch
-to a known good stack during faults.  At present, what's there is ok but
-not as resilient as it could be.
+However, in multi-threaded processes
 
-Jeff
+setpriority(PRIO_PROCESS, getpid(), value)
 
+sets new priority only for the thread with tid == pid, leaving
+all other threads unaffected. This is wrong.
 
+Attached patch changes setpriority(PRIO_PROCESS) to set priority
+for all threads with selected pid. getpriority is changed accordingly,
+to return the (numerical) max of all threads' priority.
 
-#include <unistd.h>
-#include <stdio.h>
-#include <string.h>
+In order to allow priority of individual threads to be manipulated,
+patch adds PRIO_THREAD which acts on single thread, always.
 
-#define TESTING 1
+Since there may be programs which use the fact that
 
-unsigned char buffer[8192];
-unsigned char filename[64];
+setpriority(PRIO_PROCESS, tid, value)
 
-int output_comments(FILE *fl, int j)
-{
-    fprintf(fl, "\n");
-    return 0;
-}
+prior to this patch was setting priority for selected thread,
+this behavior is retained in case when tid != pid.
 
-int main(int argc, char *argv[])
-{
-    register int i = 1, j;
-    register FILE *fp = NULL, *fl, *fs;
-    char *s, *p;
+IOW: with PRIO_PROCESS, if pid specifies a thread group leader,
+all threads' prios are set. Otherwise, only selected thread's priority
+is set. (Alternative can be to just fail with ESRCH).
 
-    while (s = fgets(buffer, 8192, stdin))
-    {
-       if (!strncmp(s, "diff", 4))
-         continue;
+getpriority() is acting similarly.
 
-       if (!strncmp(s, "---", 3))
-       {
-          if (fp)
-          {
-             i++;
-             fclose(fp);
-          }
+Patch is run tested. I will post test program etc as a reply.
 
-          sprintf(filename, "%i.patch", i);
-          fp = fopen(filename, "wb");
-          if (!fp)
-          {
-             printf("file open error [%s]\n", filename);
-             return 1;
-          }
-
-          p = strchr(s, '/');
-          if (p)
-          {
-             fprintf(fp, "--- a");
-             fprintf(fp, "%s", p);
-          }
-          else
-             fprintf(fp, "%s", s);
-          continue;
-       }
-
-       if (!strncmp(s, "+++", 3))
-       {
-          p = strchr(s, '/');
-          if (p)
-          {
-             fprintf(fp, "+++ b");
-             fprintf(fp, "%s", p);
-          }
-          else
-             fprintf(fp, "%s", s);
-          continue;
-       }
-
-       if (fp);
-          fprintf(fp, "%s", s);
-    }
-    if (fp)
-       fclose(fp);
-
-    fs = fopen("mailer", "wb");
-    if (!fs)
-    {
-       printf("file open error [mailer]\n");
-       return 1;
-    }
-
-    for (j=1; j <= i; j++)
-    {
-       sprintf(filename, "%i.patch", j);
-       fp = fopen(filename, "rb");
-       if (!fp)
-       {
-          printf("file open error [%s]\n", filename);
-          return 1;
-       }
-
-       sprintf(filename, "%i.final", j);
-       fl = fopen(filename, "wb");
-       if (!fl)
-       {
-          printf("file open error [%s]\n", filename);
-          return 1;
-       }
-       fprintf(fs, "sendmail -f jmerkey@wolfmountaingroup.com -t < %s\n",
-               filename);
-
-#if TESTING
-       fprintf(fl, "To:jeff@wolfmountaingroup.com\n");
-#else
-       fprintf(fl, "To:linux-kernel@vger.kernel.org\n");
-#endif
-       fprintf(fl, "From:jmerkey@wolfmountaingroup.com\n");
-       fprintf(fl, "Subject:[PATCH %s %i/%i] mdb: ",
-               argv[1] ? argv[1] : "", j, i);
-
-       output_comments(fl, j);
-
-       fprintf(fl, "Signed-off-by: Jeffrey Vernon Merkey "
-                   "(jmerkey@wolfmountaingroup.com)\n\n");
-
-       while (s = fgets(buffer, 8192, fp))
-          fprintf(fl, "%s", s);
-
-       fclose(fp);
-       sprintf(filename, "%i.patch", j);
-       unlink(filename);
-
-       fclose(fl);
-    }
-    fclose(fs);
-    chmod("mailer", 755);
-    return 0;
-}
+Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
+--
+vda
 
 
 
-
-
-
-
-
-
-
-
+diff --git a/include/linux/resource.h b/include/linux/resource.h
+index aaa423a..f292690 100644
+--- a/include/linux/resource.h
++++ b/include/linux/resource.h
+@@ -51,6 +51,7 @@ struct rlimit {
+ #define	PRIO_PROCESS	0
+ #define	PRIO_PGRP	1
+ #define	PRIO_USER	2
++#define	PRIO_THREAD	3
+ 
+ /*
+  * Limit the stack by to some sane default: root can always
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 038a7bc..d339c1a 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -142,9 +142,9 @@ asmlinkage long sys_setpriority(int which, int who,
+int niceval)
+ 	struct task_struct *g, *p;
+ 	struct user_struct *user;
+ 	int error = -EINVAL;
+-	struct pid *pgrp;
++	struct pid *pgrp, *pid;
+ 
+-	if (which > PRIO_USER || which < PRIO_PROCESS)
++	if (which > PRIO_THREAD || which < PRIO_PROCESS)
+ 		goto out;
+ 
+ 	/* normalize: avoid signed division (rounding problems) */
+@@ -156,7 +156,7 @@ asmlinkage long sys_setpriority(int which, int who,
+int niceval)
+ 
+ 	read_lock(&tasklist_lock);
+ 	switch (which) {
+-		case PRIO_PROCESS:
++		case PRIO_THREAD:
+ 			if (who)
+ 				p = find_task_by_vpid(who);
+ 			else
+@@ -164,6 +164,19 @@ asmlinkage long sys_setpriority(int which, int who,
+int niceval)
+ 			if (p)
+ 				error = set_one_prio(p, niceval, error);
+ 			break;
++		case PRIO_PROCESS:
++			if (who)
++				pid = find_vpid(who);
++			else {
++				pid = task_pid(current);
++				who = current->pid;
++			}
++			do_each_pid_thread(pid, PIDTYPE_PID, p) {
++				if (who == p->pid || who == p->tgid) {
++					error = set_one_prio(p, niceval, error);
++				}
++			} while_each_pid_thread(pid, PIDTYPE_PID, p);
++			break;
+ 		case PRIO_PGRP:
+ 			if (who)
+ 				pgrp = find_vpid(who);
+@@ -206,14 +219,14 @@ asmlinkage long sys_getpriority(int which, int
+who)
+ 	struct task_struct *g, *p;
+ 	struct user_struct *user;
+ 	long niceval, retval = -ESRCH;
+-	struct pid *pgrp;
++	struct pid *pgrp, *pid;
+ 
+-	if (which > PRIO_USER || which < PRIO_PROCESS)
++	if (which > PRIO_THREAD || which < PRIO_PROCESS)
+ 		return -EINVAL;
+ 
+ 	read_lock(&tasklist_lock);
+ 	switch (which) {
+-		case PRIO_PROCESS:
++		case PRIO_THREAD:
+ 			if (who)
+ 				p = find_task_by_vpid(who);
+ 			else
+@@ -224,6 +237,21 @@ asmlinkage long sys_getpriority(int which, int who)
+ 					retval = niceval;
+ 			}
+ 			break;
++		case PRIO_PROCESS:
++			if (who)
++				pid = find_vpid(who);
++			else {
++				pid = task_pid(current);
++				who = current->pid;
++			}
++			do_each_pid_thread(pid, PIDTYPE_PID, p) {
++				if (who == p->pid || who == p->tgid) {
++					niceval = 20 - task_nice(p);
++					if (niceval > retval)
++						retval = niceval;
++				}
++			} while_each_pid_thread(pid, PIDTYPE_PID, p);
++			break;
+ 		case PRIO_PGRP:
+ 			if (who)
+ 				pgrp = find_vpid(who);
 
 
