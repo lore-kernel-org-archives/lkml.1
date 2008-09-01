@@ -1,117 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbYIASkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbYIASkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756186AbYIASkc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 14:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbYIASkX
+	id S1759300AbYIASkq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 14:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbYIASk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 14:40:23 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:29703 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751270AbYIASkW (ORCPT
+	Mon, 1 Sep 2008 14:40:28 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:48523 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751948AbYIASk1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 14:40:22 -0400
-Date: Mon, 1 Sep 2008 12:40:18 -0600
-From: Alex Chiang <achiang@hp.com>
-To: "Zhao, Yu" <yu.zhao@intel.com>, jbarnes@virtuousgeek.org
-Cc: Greg KH <gregkh@suse.de>, Matthew Wilcox <matthew@wil.cx>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] PCI Hotplug: fakephp: fix deadlock... again
-Message-ID: <20080901184018.GA14492@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	"Zhao, Yu" <yu.zhao@intel.com>, jbarnes@virtuousgeek.org,
-	Greg KH <gregkh@suse.de>, Matthew Wilcox <matthew@wil.cx>,
-	linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080821201918.GA24411@ldl.fc.hp.com> <20080821202504.GU8318@parisc-linux.org> <20080821204758.GB31543@suse.de> <20080821221438.GC20014@ldl.fc.hp.com> <7A25B56E4BE99C4283EB931CD1A40E110177E488@pdsmsx414.ccr.corp.intel.com> <20080830053755.GA16219@suse.de> <7A25B56E4BE99C4283EB931CD1A40E110177E490@pdsmsx414.ccr.corp.intel.com> <7A25B56E4BE99C4283EB931CD1A40E110177E4DA@pdsmsx414.ccr.corp.intel.com>
+	Mon, 1 Sep 2008 14:40:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=i/Ztt3hNfi2GJuV/sdb/v4ps7HOFIvTX6mUv9TRTDKNHL8BoVMgjM3OS9gbN/dh6iS
+         bdxSXlN6mi4qer+YboP9pugTJmTEUdU8lM9GgG1Gbl/WhJ0Lg/07FCBH4J9lbtTOC088
+         M1/JVr8+8MPrMoXOCPRoZQkRv7fGXIrC7gM9s=
+Message-ID: <3f9a31f40809011140t5c69b62ci41f20a306bb4a7f1@mail.gmail.com>
+Date: Mon, 1 Sep 2008 14:40:25 -0400
+From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: Linux-2.6.27-rc5, drm errors in log
+Cc: "Gene Heskett" <gene.heskett@verizon.net>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jaswinder Singh" <jaswinder@infradead.org>, xorg@lists.freedesktop.org,
+       davem@davemloft.net, torvalds@linux-foundation.org, nhaehnle@gmail.com,
+       airlied@linux.ie, glisse@freedesktop.org, tony@bakeyournoodle.com
+In-Reply-To: <20080901195225.3dcc50bc@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <7A25B56E4BE99C4283EB931CD1A40E110177E4DA@pdsmsx414.ccr.corp.intel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+References: <200808301452.04634.gene.heskett@verizon.net>
+	 <3f9a31f40809010934k468914d8sc43f323e9f32e9e7@mail.gmail.com>
+	 <20080901195225.3dcc50bc@hyperion.delvare>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Zhao, Yu <yu.zhao@intel.com>:
-> Just happened to see a change in fakephp when searching usage
-> of the pci_remove_bus_device(). I couldn't find the original
-> patches, but this
-> http://git.kernel.org/?p=linux/kernel/git/jbarnes/pci-2.6.git;a=commitdiff;h=fe99740cac117f208707488c03f3789cf4904957
-> shows, the pci_remove_bus_device() was removed while the
-> remove_slot() was added in disable_slot(), which means: 1)
-> fakephp can't remove pci_dev anymore; 2) deadlock happens
-> because remove_slot() tries to remove the sysfs entry calling
-> itself.
+Hello Jean,
 
-Sorry about introducing this regression. Does the following patch
-fix it for you?
+On Mon, Sep 1, 2008 at 1:52 PM, Jean Delvare <khali@linux-fr.org> wrote:
+> On Mon, 1 Sep 2008 12:34:28 -0400, Jaswinder Singh wrote:
+>> Hello Gene,
+>>
+>> On Sat, Aug 30, 2008 at 2:52 PM, Gene Heskett <gene.heskett@verizon.net> wrote:
+>> >
+>> > A re-repeat of a previous posting which has not drawn a comment. With added
+>> > content, added CC to a patch author, and some new questions.
+>> >
+>>
+>> This is not because of my radeon firmware patch, my patch is still in
+>> pipeline. Here is the list of developers who played with radeon :-
+>>
+>> 1. 4 days ago         Linus Torvalds  Merge branch 'drm-patches' of
+>> git://git.kernel.org ...
+>> 2. 7 days ago         Nicolai Haehnle         drm/radeon: r300_cmdbuf: Always emit
+>> INDX_BUFFER immediately ...
+>> 3. 7 days ago         Jerome Glisse   radeon: fix some hard lockups on r3/4/500s
+>> 4. 2008-08-12         David Miller    radeonfb: fix accel engine hangs
+>> 5. 2008-08-05         Jean Delvare    radeonfb: give i2c buses nicer names
+>> 6. 2008-08-05         David Miller    radeon: misc corrections
+>> 7. 2008-07-24         Tony Breeds     drivers/video/aty/radeon_base.c: notify
+>> user if sysfs ...
+>
+> radeonfb != drm/radeon
+>
 
-I've tested it on my system, and I can again use fakephp to
-remove a device:
+yes you are right.
 
-sapphire:/sys/bus/pci/slots # echo 0 > fake4/power 
-fakephp: disable_slot - physical_slot = fake4
-e1000 0000:01:02.1: PCI INT B disabled
-GSI 32 (level, low) -> CPU 2 (0x0200) vector 54 unregistered
-fakephp: Slot already scheduled for removal
-fakephp: removing slot fake4
+Sorry, to disturb other guy. Messages are coming from :
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=54f961a628b737f66710eca0b0d95346645dd33e
 
-We get the "slot already scheduled for removal" because that
-particular device has 2 functions, and we're creating slots on a
-per-slot basis now, not a per-function basis.
+Jerome Glisse and Dave Airlie :
 
-Although, I wonder, Willy -- is that really the right thing to
-do? Seems like fakephp would be more useful if we did operate on
-a per-function basis, and not per-slot. Especially given Yu's
-work with SR-IOV, where we can apparently have lots of functions
-per a physical device.
++       DRM_INFO("wait for fifo failed status : 0x%08X 0x%08X\n",
++                RADEON_READ(RADEON_RBBM_STATUS),
++                RADEON_READ(R300_VAP_CNTL_STATUS));
 
-Hm?
++       DRM_INFO("wait idle failed status : 0x%08X 0x%08X\n",
++                RADEON_READ(RADEON_RBBM_STATUS),
++                RADEON_READ(R300_VAP_CNTL_STATUS));
 
-Thanks.
+what is the idea of printing R300 STATUS on R200 code or common code ?
 
-/ac
+Please let me know what is the solution of R200 problem ?
 
-From: Alex Chiang <achiang@hp.com>
+Thank you,
 
-PCI Hotplug: fakephp: fix deadlock... again
-
-Commit fe99740cac117f208707488c03f3789cf4904957 (construct one
-fakephp slot per PCI slot) introduced a regression, causing a
-deadlock when removing a PCI device.
-
-We also never actually removed the device from the PCI core.
-
-So we:
-
-	- remove the device from the PCI core
-	- do not directly call remove_slot() to prevent deadlock
-
-Yu Zhao reported and diagnosed this defect.
-
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
-diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
-index 40337a0..146ca9c 100644
---- a/drivers/pci/hotplug/fakephp.c
-+++ b/drivers/pci/hotplug/fakephp.c
-@@ -320,15 +320,15 @@ static int disable_slot(struct hotplug_slot *slot)
- 			return -ENODEV;
- 		}
- 
-+		/* remove the device from the pci core */
-+		pci_remove_bus_device(dev);
-+
- 		/* queue work item to blow away this sysfs entry and other
- 		 * parts.
- 		 */
- 		INIT_WORK(&dslot->remove_work, remove_slot_worker);
- 		queue_work(dummyphp_wq, &dslot->remove_work);
- 
--		/* blow away this sysfs entry and other parts. */
--		remove_slot(dslot);
--
- 		pci_dev_put(dev);
- 	}
- 	return 0;
+Jaswinder Singh.
