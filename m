@@ -1,70 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbYIAGEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755082AbYIAGKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755105AbYIAGEP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 02:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYIAGD7
+	id S1755082AbYIAGKQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 02:10:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbYIAGKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 02:03:59 -0400
-Received: from pow-web.powerkom-dd.de ([212.80.237.131]:43487 "EHLO
-	mail.powerkom-dd.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750927AbYIAGD6 (ORCPT
+	Mon, 1 Sep 2008 02:10:04 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:60480 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751390AbYIAGKB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 02:03:58 -0400
-X-Greylist: delayed 2310 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Sep 2008 02:03:58 EDT
-Subject: Re: [Iscsitarget-devel] [RFC] future IET development
-From: Arne Redlich <agr@powerkom-dd.de>
-To: rae l <crquan@gmail.com>
-Cc: "Ross S. W. Walker" <RWalker@medallion.com>,
-       iscsitarget-devel <iscsitarget-devel@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org, unh-iscsi-checkins@lists.sourceforge.net
-In-Reply-To: <91b13c310808311036k2792d1fqaeb94a814f0bee81@mail.gmail.com>
-References: <1218829367.3145.31.camel@blackadder>
-	 <91b13c310808282007u7fc90eeah2b27661a7a5f595@mail.gmail.com>
-	 <E2BB8074E5500C42984D980D4BD78EF9022A73D4@MFG-NYC-EXCH2.mfg.prv>
-	 <91b13c310808311036k2792d1fqaeb94a814f0bee81@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 01 Sep 2008 07:25:18 +0200
-Message-Id: <1220246718.8763.31.camel@blackadder>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 1 Sep 2008 02:10:01 -0400
+Message-ID: <48BB8716.5090805@linux.vnet.ibm.com>
+Date: Mon, 01 Sep 2008 11:39:26 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>
+Subject: Re: [RFC][PATCH] Remove cgroup member from struct page
+References: <20080831174756.GA25790@balbir.in.ibm.com> <20080901090102.46b75141.kamezawa.hiroyu@jp.fujitsu.com> <48BB6160.4070904@linux.vnet.ibm.com> <20080901130351.f005d5b6.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080901130351.f005d5b6.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, den 01.09.2008, 01:36 +0800 schrieb rae l:
-
-> Have you read the Documentation/ of the kernel?
-> Didn't you know the benefits of getting the kernel code into the main
-> kernel tree?
+KAMEZAWA Hiroyuki wrote:
+> On Mon, 01 Sep 2008 08:58:32 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> Here is some reasons from Documentation/stable_api_nonsense.txt:
+>> KAMEZAWA Hiroyuki wrote:
+>>> On Sun, 31 Aug 2008 23:17:56 +0530
+>>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>>
+>>>> This is a rewrite of a patch I had written long back to remove struct page
+>>>> (I shared the patches with Kamezawa, but never posted them anywhere else).
+>>>> I spent the weekend, cleaning them up for 2.6.27-rc5-mmotm (29 Aug 2008).
+>>>>
+>>> It's just because I think there is no strong requirements for 64bit count/mapcount.
+>>> There is no ZERO_PAGE() for ANON (by Nick Piggin. I add him to CC.)
+>>> (shmem still use it but impact is not big.)
+>>>
+>> I understand the comment, but not it's context. Are you suggesting that the
+>> sizeof _count and _mapcount can be reduced? Hence the impact of having a member
+>> in struct page is not all that large? I think the patch is definitely very
+>> important for 32 bit systems.
+> Maybe they cannot be reduced. For 32bit systems, if the machine doesn't equip
+> crazy amounts of memory (as 32GB) I don't think this 32bit is not very large.
+> 
+> Let's calculate. 1GB/4096 x 4 bytes = 1 MB per 1GB. 
+> But you adds spinlock_t, then what this patch reduce is not so big. Maybe only
+> hundreds of kilobytes. (All pages in HIGHMEM will be used with structpage_cgroup.)
+> 
 
-[...]
+There are other things like sizeof(struct page) crossing cacheline boundaries
+and if we pass cgroup_disabled=memory, we save on the radix tree slots and
+memory used there.
 
-You can safely assume that we're aware of the benefits of having the
-code in the kernel, but it will not happen. It does not make much sense
-to merge an iSCSI target into the kernel when there are generic target
-frameworks around that can also support different transports such as FC,
-FCOE. So there's not the remotest chance of getting IET merged.
+> 
+>>>> I've tested the patches on an x86_64 box, I've run a simple test running
+>>>> under the memory control group and the same test running concurrently under
+>>>> two different groups (and creating pressure within their groups). I've also
+>>>> compiled the patch with CGROUP_MEM_RES_CTLR turned off.
+>>>>
+>>>> Advantages of the patch
+>>>>
+>>>> 1. It removes the extra pointer in struct page
+>>>>
+>>>> Disadvantages
+>>>>
+>>>> 1. It adds an additional lock structure to struct page_cgroup
+>>>> 2. Radix tree lookup is not an O(1) operation, once the page is known
+>>>>    getting to the page_cgroup (pc) is a little more expensive now.
+>>>>
+>>>> This is an initial RFC for comments
+>>>>
+>>>> TODOs
+>>>>
+>>>> 1. Test the page migration changes
+>>>> 2. Test the performance impact of the patch/approach
+>>>>
+>>>> Comments/Reviews?
+>>>>
+>>> plz wait until lockless page cgroup....
+>>>
+>> That depends, if we can get the lockless page cgroup done quickly, I don't mind
+>> waiting, but if it is going to take longer, I would rather push these changes
+>> in. 
+> The development of lockless-page_cgroup is not stalled. I'm just waiting for
+> my 8cpu box comes back from maintainance...
+> If you want to see, I'll post v3 with brief result on small (2cpu) box.
+> 
 
-Currently there's already STGT code in the kernel. It's basically an
-interface for kernel drivers such as FC, however most processing and
-many drivers (iSCSI, iSER, FCOE, ...) are done in userspace. And there's
-SCST. It also provides several transports and storage backends. It's
-mostly implemented in kernel space. Recently there's some movement to
-get it into the kernel.
+I understand and I am not pushing you to completing it, but at the same time I
+don't want to queue up behind it for long. I suspect the cost of porting
+lockless page cache on top of my patches should not be high, but I'll never know
+till I try :)
 
-If you're interested in more details just search the linux-scsi and the
-respective project's list archives.
+>> There should not be too much overhead in porting lockless page cgroup patch
+>> on top of this (remove pc->lock and use pc->flags). I'll help out, so as to
+>> avoid wastage of your effort.
+>>
+>>> And If you don't support radix-tree-delete(), pre-allocating all at boot is better.
+>>>
+>> We do use radix-tree-delete() in the code, please see below. Pre-allocating has
+>> the disadvantage that we will pre-allocate even for kernel pages, etc.
+>>
+> Sorry. I missed pc==NULL case.
+> 
 
-> Indeed, in sometimes I observed IET kernel module not very stable on
-> the latest 2.6.26 and 27-rcX kernels, sometimes it's kernel oops
-> after serveral stop-ietd-unload-ko-load-ko-start-ietd loops, but not
-> always reproducible, I'm still tracing on it;
+No Problem
 
-Please post the oops.
+> 
+>>> BTW, why pc->lock is necessary ? It increases size of struct page_cgroup and reduce 
+>>> the advantege of your patch's to half (8bytes -> 4bytes).
+>>>
+>> Yes, I've mentioned that as a disadvantage. Are you suggesting that with
+>> lockless page cgroup we won't need pc->lock?
+>>
+> Not so clear at this stage. 
+> 
+> Thanks,
+> -Kame
+> 
+> 
+> 
 
-Thanks,
-Arne
 
+-- 
+	Balbir
